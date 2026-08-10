@@ -50,16 +50,15 @@ markers = [
     "rung6: it stays fixed -- golden-file regression",
 ]
 
-# Hypothesis determinism is REQUIRED, not preferred.
+# Hypothesis determinism is REQUIRED, not preferred -- and it is configured in
+# tests/conftest.py, NOT here.
 #
-# The default (derandomize=False) draws a fresh seed per run, so property tests
-# explore different examples each time and no two runs are comparable. G1.5 asks
-# for bit-identical results across two provisionings; a randomised strategy
-# cannot deliver that, and the failure would look like an export-branch defect
-# rather than a test-harness artifact. See docs/milestones/F1.md sec.9.
-[tool.hypothesis]
-derandomize = true
-print_blob = true
+# Hypothesis has no pyproject.toml loader (verified against 6.152.1: there is no
+# such reader in hypothesis.configuration). A `[tool.hypothesis]` table here
+# would parse without error and do nothing, which is worse than absent for a
+# determinism guarantee that G1.5 depends on -- it would read as configured
+# while the suite kept drawing fresh seeds. The profile is registered and
+# activated in tests/conftest.py, which is the only mechanism that works.
 
 [tool.black]
 line-length = 100
