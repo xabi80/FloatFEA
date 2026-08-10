@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# NOT ignored: .hypothesis/
+# The example database is deliberately tracked. Hypothesis runs derandomized
+# (pyproject [tool.hypothesis], tests/conftest.py), and a stored falsifying
+# example is evidence -- if it is discarded on a fresh checkout, a corner one
+# machine found silently stops being tested everywhere else.
+
+# Solver output and scratch results, never committed.
+*.vtu
+*.vtk
+*.inp
+out/
+scratch/

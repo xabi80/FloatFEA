@@ -1,0 +1,85 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "floatfea"
+version = "0.1.0"
+description = "Structural finite element analysis of the FloatSim floating platform"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pyyaml>=6.0",
+    # The .flr load interchange container is HDF5 with JSON metadata in the
+    # root `meta` attribute -- docs/load-interchange-v1.md sec.3.
+    "h5py>=3.10",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "hypothesis>=6.100",
+    "black==24.*",
+    "ruff>=0.4",
+    "mypy>=1.9",
+    "types-PyYAML>=6.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["floatfea*"]
+exclude = ["tests*", "docs*"]
+
+# ---------------------------------------------------------------------------
+# pytest -- the verification ladder is wired here, not in CI alone.
+#
+# docs/verification/README.md orders the ladder by dependency: a failure at
+# rung n makes every rung above it uninterpretable. The `rung` marker exists so
+# that ordering is machine-enforced rather than a convention in a document, and
+# so adding a test to a rung is a one-line marker rather than a CI edit.
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config"
+markers = [
+    "rung1: solver is a solver -- rigid-body modes, patch test, unit scaling",
+    "rung2: element is the element it claims to be -- cantilever, torsion, modes",
+    "rung3: model is the platform -- mass correctness/consistency, sections",
+    "rung4: loads are the loads -- equilibrium, mapping, frames, strips",
+    "rung5: independent confirmation -- CalculiX, hand calculations",
+    "rung6: it stays fixed -- golden-file regression",
+]
+
+# Hypothesis determinism is REQUIRED, not preferred.
+#
+# The default (derandomize=False) draws a fresh seed per run, so property tests
+# explore different examples each time and no two runs are comparable. G1.5 asks
+# for bit-identical results across two provisionings; a randomised strategy
+# cannot deliver that, and the failure would look like an export-branch defect
+# rather than a test-harness artifact. See docs/milestones/F1.md sec.9.
+[tool.hypothesis]
+derandomize = true
+print_blob = true
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "NPY"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["h5py", "yaml", "scipy", "scipy.sparse", "scipy.sparse.linalg"]
+ignore_missing_imports = true

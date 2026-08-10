@@ -1,0 +1,137 @@
+"""The single home for every numerical tolerance in FloatFEA.
+
+**This file is deliberately empty of values.** It exists before the first
+tolerance does, because a guardrail that arrives after the thing it guards
+never takes: by then tolerances have already been scattered into call sites and
+default arguments, and consolidating them becomes a refactor nobody schedules.
+
+---
+
+## The rule
+
+Every numerical tolerance in this repository lives here. No exceptions, no
+local literals, no default arguments carrying a tolerance. This includes
+anything that functions as a tolerance under another name -- convergence
+thresholds, comparison epsilons, "small number" guards, tier cutoffs in
+screening, and any factor introduced to make two numbers agree.
+
+Do not modify this file to make a failing test pass. If a test fails, the
+default hypothesis is that the code is wrong, not that the tolerance is tight.
+
+Changing a value requires a written justification in the milestone closure
+artifact (`docs/closure/F<n>.md`) naming the physical or numerical reason the
+previous value was incorrect. A tolerance change in the same commit as the code
+change it rescues will be rejected in review.
+
+See `CLAUDE.md` sec. Tolerances and `WORKFLOW.md` sec. "The one habit that
+matters most".
+
+---
+
+## The comment convention
+
+Every entry carries four things, and a reviewer should be able to check the
+value without reading any other file:
+
+1. the **gate** it serves (G2.1, G4.1, ...) and the verification case (V1.1,
+   V4.5, ...) from `docs/verification/README.md`;
+2. **what is being compared** -- absolute or relative, and to what reference;
+3. the **physical or numerical reason** the value is what it is, not merely that
+   it passes;
+4. the **date and milestone** it was last changed under.
+
+Template::
+
+    # G<n.n> / V<n.n> -- <what is compared, absolute or relative>
+    # Reason: <physical or numerical basis for this magnitude>
+    # Set: <YYYY-MM-DD>, <milestone>
+    NAME: Final[float] = <value>
+
+A value whose comment says only "empirically determined" or "matches the
+reference" is not documented; it is a fudge factor with better manners.
+
+---
+
+## Layout
+
+Entries are grouped by verification-ladder rung, so that a reviewer reading a
+red test at rung 1 sees rung 1's tolerances together and is not invited to
+compare them against rung 5's, which answer a different kind of question.
+
+Rungs are defined in `docs/verification/README.md`.
+"""
+
+from __future__ import annotations
+
+# ---------------------------------------------------------------------------
+# Rung 1 -- The solver is a solver
+# Rigid-body modes (G2.1/V1.1), patch test (G2.2/V1.2), unit scaling (G2.5/V1.3).
+# These compare against exact algebraic results, so tolerances here are set by
+# floating-point accumulation and conditioning, never by physical judgement.
+# ---------------------------------------------------------------------------
+
+# (no entries yet -- F2)
+
+
+# ---------------------------------------------------------------------------
+# Rung 2 -- The element is the element it claims to be
+# Cantilever slender/stubby (G2.3/V2.1-2.2), torsion (V2.3), 3D coupling (V2.4),
+# free-free frequencies (G2.4/V2.5), releases and rigid links (V2.6).
+# Compared against closed-form textbook solutions.
+# ---------------------------------------------------------------------------
+
+# (no entries yet -- F2)
+
+
+# ---------------------------------------------------------------------------
+# Rung 3 -- The model is the platform
+# Mass correctness (G3.1a/V3.1a), mass consistency (G3.1b/V3.1b), YAML
+# round-trip (G3.2/V3.2), exact section properties (G3.3/V3.3).
+#
+# Note G3.1b is the convergence criterion of a design loop, not a code gate --
+# see PLAN.md sec.6 F3. Its tolerance expresses "close enough that the analysed
+# loads are representative", which is a different kind of claim from every other
+# entry in this file and must say so in its comment.
+# ---------------------------------------------------------------------------
+
+# (no entries yet -- F3)
+
+
+# ---------------------------------------------------------------------------
+# Rung 4 -- The loads are the loads
+# Equilibrium residual (G4.1/V4.1), rigid-body acceleration (G4.2/V4.2),
+# hydrostatic (G4.3/V4.3), mapping conservation (G4.4), residual convergence
+# rate (G4.5), hydrostatic reconciliation (G4.6), frame round-trip (V4.4),
+# strip integration (V4.5), reconstruction integrity (G1.6).
+#
+# G4.1's tolerance must NOT be set above the timestamp-alignment floor. The
+# exporter aligns each force to the index of the state it was evaluated from,
+# which removes an O(omega*dt) ~ 3.2% residual at full scale; declaring that
+# floor instead would put the tolerance at precisely the level that hides a real
+# load-path defect. G4.5 guards the alignment by convergence RATE, not by
+# magnitude. See docs/milestones/F1.md sec.6 and PLAN.md sec.8.
+# ---------------------------------------------------------------------------
+
+# (no entries yet -- F1/F4)
+
+
+# ---------------------------------------------------------------------------
+# Rung 5 -- Independent confirmation
+# CalculiX global cross-check (G7.1/V5.1), stress recovery (G6.2/V5.2), code
+# check hand calculations (G6.1/V5.3).
+#
+# G7.1's values are stated in PLAN.md sec.6 F7 (0.5% displacement, 1% member
+# force). An exceedance is explained in writing before the milestone closes --
+# never absorbed here.
+# ---------------------------------------------------------------------------
+
+# (no entries yet -- F6/F7)
+
+
+# ---------------------------------------------------------------------------
+# Rung 6 -- It stays fixed
+# Golden-file regression (V6.1). A golden-file change requires a written
+# explanation of why the numbers moved, in the milestone closure artifact.
+# ---------------------------------------------------------------------------
+
+# (no entries yet -- F6)
