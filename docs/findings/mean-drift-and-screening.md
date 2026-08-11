@@ -26,8 +26,33 @@ The cycle means march monotonically and the increments *grow* (1.09, 1.18, 1.32,
 Identical to five decimal places across all thirteen tracked bodies, so it is
 rigid-body motion of the whole platform, not a relative effect.
 
-At full scale: mean offset **−1.19 m** and growing at **≈0.0090 m/s**, i.e.
-**0.20 m per wave period**.
+**Magnitude — corrected, and the earlier figure was wrong by ~16x.**
+
+An earlier version of this document recorded the drift as **−1.19 m full
+scale**. That was the accumulated drift of the *cached 75.4 s case*, presented
+as if it were the drift magnitude generally. `run_case` returns only the final
+six periods, and the same truncation that made the second differences
+inconclusive also truncated this figure.
+
+```
+terminal drift rate    1.27 mm/s model (our linear fit)
+                       1.15 mm/s model (FloatSim, independent)
+                    =  0.20 m per wave period, full scale
+
+over the full 309.1 s integration   16 - 20 m full scale
+                                 =  ~2.3 spar diameters (D = 8.41 m)
+```
+
+**Not 0.14 of a diameter — roughly two diameters.** The spread is whether you
+integrate from t = 0 or from the end of the 20 s ramp; either way the conclusion
+is the same and the regime is different from the one previously recorded.
+
+**Cross-validation.** FloatSim's own instrumentation measured **1.153 mm/s**
+model drift velocity; our independent measurement, from a different harness and
+a different case, gives **1.266 mm/s** — **9.8% agreement**. Two independent
+measurements on two harnesses agreeing to within 10% is the strongest evidence
+in this investigation that the phenomenon is real and correctly characterised,
+rather than an artifact of either measurement chain.
 
 ## Mechanism
 
@@ -74,11 +99,20 @@ screened snapshots may be compared.
    window.** Q1 and G4.6 lock buoyancy to the **mean wetted surface**, matching
    FloatSim's linearisation about ξ = 0. A mean position that moves means "the
    mean wetted surface" is itself a moving target, and the reference the
-   linearisation was taken about is not where the body is. **Magnitude, not just
-   mechanism: −1.19 m is 14% of a spar diameter (8.41 m), reaching 38% after ten
-   more wave periods.** G4.6's write-up must carry that number, not only the
-   mechanism — a reviewer who reads "the mean surface moves" without "by 14% of a
-   diameter and rising" will price it as negligible.
+   linearisation was taken about is not where the body is.
+
+   **This is not a perturbation, and that is a change of regime.** At ~19 m —
+   **2.3 spar diameters** — by the end of the integration, the body is not near
+   the configuration the linearisation was taken about; it is somewhere else.
+   G4.6 locks buoyancy to the *mean* wetted surface to match FloatSim's
+   linearisation about ξ = 0, and that match is what degrades. A reviewer who
+   reads "the mean surface moves" without "by two spar diameters" will price it
+   as negligible, and would be wrong by more than an order of magnitude.
+
+   **Add an unvalidated band on top.** If the drift is tangential-plate-driven
+   (below), its magnitude is unvalidated *by construction*: `Cd_t = 1.5` is the
+   midpoint of a tank-pending [1, 2] range, so G4.6 and F5 inherit at least
+   **±33%** on everything above.
 
 3. **G4.1's residual inherits it.** A drifting rigid-body mode is precisely what
    inertia relief absorbs, so the residual should stay small — but the
@@ -279,6 +313,16 @@ contributions of opposite sign**: one carried by the plate drag (upstream), one
 independent of it (downstream). At the deck's `Cd_n = 5.0` the plate term
 dominates and the platform drifts upstream.
 
+**Limitation of this sweep, stated so it is not over-read.** It scaled `Cd_n`
+and `Cd_t` **together**, so it localises the drift to the plate drag *as a whole*
+and does **not** isolate which of the two plate terms drives it. Separating them
+needs a `Cd_t`-only sweep — the natural knob, and unlike `Cm` it exists.
+
+A prior reconciliation that fitted a scaling exponent across these points is
+**void**: the sign flip means they are not points on one curve, so no exponent
+can be fitted through them. Readings derived from that fit — including
+"`Cd_n` is the brake" — are withdrawn. `Cd_n` is net-*driving*.
+
 **The heave-plate drag model is what produces the upstream drift.** Two features
 of that model make it the natural suspect, both already documented:
 
@@ -286,7 +330,22 @@ of that model make it the natural suspect, both already documented:
   patch-resolved (`morison.py:589-595`) — flagged in the G1.0 audit as the one
   part of the plate load that is *not* distribution-resolved.
 - `Cd_t = 1.5` is recorded at `platform_rao_pilot.py:104` as **"mid of the [1,2]
-  tank-pending sensitivity"** — an unvalidated parameter awaiting tank data.
+  tank-pending sensitivity"** — an unvalidated parameter awaiting tank data. If
+  the tangential term is the driver, **the drift magnitude is unvalidated by
+  construction**, carrying at least ±33% before any other uncertainty.
+
+**Why the lumping is physically suspect, not merely inelegant.** Lumping a
+*quadratic* load at the disc centre puts it exactly where the **rotational**
+velocity contribution vanishes: the rim carries the pitch contribution, the
+centre carries none. So the model runs at a rotational mode while discarding the
+pitch contribution to the dominant damping surface's tangential drag. The drift
+localising to precisely that term is not a coincidence worth betting against.
+
+**This makes patch-resolving the tangential term the decisive experiment — and
+it is required work regardless.** The G1.0 audit already flagged it as the one
+part of the plate load that is not distribution-resolved, and FloatFEA needs it
+distributed for the export. Sequencing the strip/patch export module first
+resolves an open investigation as a side effect of scheduled work.
 
 **Status: mechanism localised, not yet confirmed.** It is not a startup artifact
 (phase sweep), not the wave kinematics sign (W1), not the heading metadata (D3),
