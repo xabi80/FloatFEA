@@ -284,9 +284,17 @@ local z  =  unit(r - (r . x) x)            r = the member's orientation referenc
 local y  =  z  x  x                        right-handed
 ```
 
-**Orientation is explicit per member. There is no implicit default for a
-vertical member, because the spars are vertical and the usual default is
-degenerate there.** The reference `r` is supplied as either:
+**The orientation node is a first-class REQUIRED field in the model-definition
+YAML, not an optional override.** All twelve spars are vertical, so the
+global-Z default path is the *exception* in this model, not the rule. A field
+that is optional in the schema but mandatory in practice invites members to be
+written without it, and each one fails at build time for a reason the author has
+to rediscover. Required-by-default inverts that: the common case is stated, and
+the rare horizontal member may omit it.
+
+**There is no implicit default for a vertical member, because the spars are
+vertical and the usual default is degenerate there.** The reference `r` is
+supplied as either:
 
 - an **orientation node** — a third point; local z lies in the plane of
   (A, B, orientation node), on the side of that point; or
@@ -324,6 +332,14 @@ non-circular section is introduced.
 - **Node and element numbering:** FloatFEA's own, assigned by the model builder
   from the YAML definition. **Member identifiers must be stable across model
   regeneration**, because envelope reports and golden files key on them.
+- **Orientation nodes must be stable across model regeneration, on exactly the
+  same footing as member identifiers.** Member forces are reported in *local*
+  axes, so moving an orientation node rotates every stored force for that member
+  **with no code change anywhere**. Every golden file keyed to it then fails, and
+  it fails looking like a solver regression — the diff shows moments moving with
+  no commit that could have moved them. This is the same failure mode as an
+  unstable member identifier and is pinned in the same place so the two are
+  reviewed together.
 - **Joint identifiers:** 16 joints — 12 buoy→hub, 4 hub→platform, all
   `yaw_locked` with 4 constraint rows each. `lam` is ordered by joint as
   constructed in the deck.

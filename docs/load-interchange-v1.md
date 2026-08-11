@@ -1,197 +1,246 @@
-# FloatSim → FloatFEA Load Interchange, v1
+# FloatSim → FloatFEA Load Interchange, v1.0
 
-**Schema version:** `1.0`
+**Schema version:** `1.0` — **LOCKED 2026-08-10**
 **File extension:** `.flr` (FloatSim Load Record)
-**Container:** HDF5, with metadata as a JSON document stored in the root
-attribute `meta`.
+**Container:** HDF5, metadata as a JSON document in the root attribute `meta`.
+**Audited against:** `docs/findings/G1.0-floatsim-output-audit.md`, HSP tag
+`floatfea-ref-1`
+
+Locked as **1.0, not 0.9**. The first end-to-end run will probably break
+something, and the answer to that is a 1.1 — which is the versioning scheme
+working as designed. Hedging the version to make the bump feel cheaper only
+makes the change invisible, which is the same reflex as widening a tolerance to
+avoid a red test.
 
 ---
 
-## 1. Why this document exists first
+## 1. What this schema reflects
 
-This schema is the contract between two repositories under separate review
-gating. Everything FloatFEA can ever conclude about the structure is bounded by
-what crosses this boundary, so the schema is specified and locked before either
-side writes code against it.
+v1.0 is written *after* the G1.0 audit, not before it. Four channel groups in
+the pre-audit draft described quantities FloatSim does not compute. They are
+gone, and recorded in §7 rather than deleted silently.
 
-HDF5 is the container because the time histories are large — tens of channels
-across a 38-DOF platform over a long simulation — and HDF5 gives typed arrays,
-chunking, and compression without a bespoke binary format. Metadata rides as
-JSON in an attribute so it stays human-readable with `h5dump` and diffable in
-review.
+The central design decision stands: **decompose by physical origin, because each
+source distributes onto the structure by a different rule.** What changed is
+which sources can actually be separated.
 
-## 2. The central design decision: decompose by physical origin
-
-**A net six-component load on a rigid body is not sufficient to load a flexible
-frame.** Each physical load source distributes onto the structure by a different
-rule:
-
-| Source | Distributes as | Needs |
+| source | distributes as | available as |
 |---|---|---|
-| Gravity | body force, by mass | mass distribution |
-| Inertia (d'Alembert) | body force, by mass × local acceleration | rigid-body acceleration field |
-| Hydrostatic / Froude-Krylov | surface pressure, by wetted geometry | instantaneous wetted surface or per-strip resultants |
-| Radiation / diffraction | surface pressure | per-strip resultants |
-| Morison drag | line load along the member | per-strip force per unit length |
-| Connector reactions | point load | attachment node and frame |
-| Mooring tension | point load | fairlead node and line direction |
+| Excitation (FK + diffraction, **combined**) | surface pressure | per-panel field + body resultant |
+| Radiation | surface pressure | per-panel field + body resultant |
+| Morison drag | line load along the member | per-strip, 10 per spar |
+| Plate drag | pressure over the disc face | per-patch, polar quadrature |
+| Joint reactions | point load | `lam`, per constraint row |
 
-If these arrive pre-summed, FloatFEA must invent a distribution and every member
-force downstream inherits the invention. So they arrive separately, each with
-its point or line of application.
-
-**v1 requirement:** connector and mooring loads at named attachment points, and
-**strip-resolved** distributed loads along each member — not per-body
-resultants. The rationale, and why this is affordable, is in PLAN.md §4: the
-strip values already exist inside FloatSim and are being discarded, and the
-storage problem is solved by the two-pass replay in §7 below rather than by
-reducing resolution.
-
-A per-body resultant fallback exists only for the case where replay determinism
-cannot be achieved (see `docs/hsp-coupling.md`). If it is ever used, the
-distribution assumption FloatFEA applies is recorded in the file's `assumptions`
-block and surfaced in the run log, so a result produced under a fallback can
-never be mistaken for one produced under strip data.
-
-## 3. Structure
+## 2. Structure
 
 ```
 /meta                       (root attribute, JSON)
   schema_version            "1.0"
-  floatsim_version          semver
-  hsp_git_sha               full 40-char SHA, dirty flag
-  run_id, created_utc
-  units                     {length: m, mass: kg, time: s, force: N,
-                             angle: rad}          — explicit, always
-  gravity                   [gx, gy, gz]
+  floatsim_version, hsp_git_sha (40-char, dirty flag), run_id, created_utc
+  units                     {length: m, mass: kg, time: s, force: N, angle: rad}
+  gravity                   [gx, gy, gz]     -- 9.81 from FloatSim, not 9.80665
   water_density, water_depth
+  scale                     "full" | "model" -- declared, never a factor to apply
   assumptions[]             free-text records of any fallback applied
 
 /frames
-  global                    origin, axis convention, z-up flag,
-                            still-water-level datum
-  bodies/<id>               origin relative to body reference point,
-                            orientation convention named explicitly
-                            (e.g. "quaternion, scalar-first, body←global")
+  global                    origin, axes, z-up flag, still-water-level datum
+  bodies/<id>               origin relative to the body REFERENCE POINT
 
 /bodies/<id>
   name, mass
-  cog[3]                    in body frame
-  inertia[3,3]              about CoG, in body frame
+  cog[3]                          body frame, relative to reference_point
+  inertia[3,3]
+  inertia_reference_point         REQUIRED: "reference_point" | "cog"
   reference_point[3]
 
 /time
   t[N], dt, n_samples
 
 /kinematics/<body>
-  position[N,3]             of reference point, global frame
-  quaternion[N,4]           scalar-first, body←global
-  velocity[N,3]
-  angular_velocity[N,3]     body frame — stated, not assumed
-  acceleration[N,3]
-  angular_acceleration[N,3]
+  position[N,3], velocity[N,3], acceleration[N,3]
+  rotation[N,3], angular_velocity[N,3], angular_acceleration[N,3]
+  rotation_parameterisation       REQUIRED -- see sec.3
 
-/loads/<body>/<source>      source ∈ {gravity, hydrostatic, froude_krylov,
-                                      radiation, diffraction, morison_drag,
-                                      morison_inertia}
-  force[N,3], moment[N,3]
-  application_point[3]      or [N,3] if it moves
-  frame                     "global" | "body"
+/loads/<body>/<source>            source in {excitation, radiation,
+                                             morison_drag, plate_drag}
+  force[N,3], moment[N,3]         the body resultant FloatSim APPLIED
+  application_point[3] or [N,3]
+  frame, rotation_parameterisation REQUIRED
+  time_alignment                  REQUIRED: "state_n" | "external_n_plus_1"
+
+/loads/<body>/radiation
+  mu[N,6]                         REQUIRED -- the convolution term; see sec.5
+  (A_inf . xi_ddot is reconstructed from the hydro database and /kinematics)
+
+/panels/<body>/<source>           source in {excitation, radiation}
+  centroid[P,3], area[P], normal[P,3]    panel geometry, body frame
+  pressure[K,P]                          complex per omega where harmonic
+  window_index[K]
 
 /loads/strips/<member>/<source>
-  s[M]                      arc-length stations along the member
-  node_a, node_b            member end identifiers, for mapping to the FE mesh
-  f_per_length[K,M,3]       K = replay window samples, not full history N
-  window_index[K]           index into /time, so strips locate in the history
-  frame
+  s[M], node_a, node_b
+  f_per_length[K,M,3]
+  window_index[K], frame, rotation_parameterisation
 
-/connectors/<id>
-  bodies                    [body_a, body_b]
-  attach_a[3], attach_b[3]  in respective body frames
-  force[N,3], moment[N,3]
-  frame
+/loads/patches/<body>/plate
+  centroid[P,3], area[P]
+  f_normal[K,P]                   per-patch normal force, BEFORE summation
 
-/mooring/<line>
-  fairlead_body, fairlead_point[3]
-  tension[N,3]
-  frame
+/joints/<id>
+  type                            "yaw_locked" | "hinge"
+  bodies                          [body_a, body_b]
+  attach_a[3], attach_b[3], axis[3]   in respective body frames
+  n_rows                          constraint rows (yaw_locked = 4)
+  lam[N,n_rows]                   multipliers, dt-free, physical
+  jacobian_evaluation             REQUIRED: "step_midpoint"
 
-/diagnostics
-  equilibrium_residual[N]   FloatSim's own per-step residual
-  solver_flags[N]
+/mooring/<line>                   OPTIONAL -- absent in the 12-buoy platform
+  fairlead_body, fairlead_point[3], tension[N,3], frame
+
+/diagnostics                      OPTIONAL -- FloatSim computes no per-step
+                                  residual today (G1.0 sec.3)
 ```
 
-## 4. Validation rules
+## 3. Rotation parameterisation is a required field
 
-The reader rejects — never warns and continues — on any of the following. Gate
-**G1.2** is the test that each rejection fires with a specific message.
+**FloatSim holds three interpretations of `xi[3:6]`** — ZYX-intrinsic Euler in
+`morison.py`, axis-angle in `joints.py`, linearised in `hydrostatics.py`
+(`docs/conventions.md` § Rotations). They agree only to first order, and at the
+measured ‖θ‖ = 0.15657 rad they differ by 0.4% on the spar lever.
 
-Unknown or future `schema_version`. Missing or partial `units` block. Any unit
-inconsistent with the declared system. A frame referenced but not declared in
-`/frames`. A quaternion whose norm deviates from unity beyond tolerance. NaN or
-inf anywhere in any channel. An inertia tensor that is not symmetric positive
-definite. A body referenced in `/loads` or `/connectors` but absent from
-`/bodies`. Non-monotonic or non-uniform `t` without an explicit flag. Missing
-`hsp_git_sha` or `run_id` — a record without provenance is not analysable, so it
-is not accepted.
+So `rotation_parameterisation` is **REQUIRED on every kinematics and load
+channel group**, with values `zyx_intrinsic_euler`, `rotation_vector`, or
+`linearised`. Per-group, not global — because upstream it is not global.
 
-Strip data adds three more. A `window_index` that does not resolve into `/time`.
-A member whose strip stations `s` are not monotonic or do not span the member
-length. And the important one: **strip loads that do not integrate back to the
-body resultant** for the same source and timestep, within tolerance. That last
-check is what catches a strip export which is internally consistent but does not
-correspond to the loads the simulator actually applied, and it is the numerical
-half of gate G1.4.
+A record carrying the loads but not the interpretation carries half the
+information. **The validator rejects absence** (§9, G1.2).
 
-## 5. Channels the screening pass requires
+The consumer rule is `docs/conventions.md`'s governing principle: **reconstruct
+as produced, not as correct.**
 
-Listed here because they constrain the schema, per §5 of PLAN.md: the metric
-list must be fixed during F1 even though screening is implemented in F5.
+## 4. Time alignment is a required field
 
-Per-connector force and moment; per-cluster interface resultants, which may be
-derived from connector channels rather than exported separately; global base
-shear and overturning moment, derivable from body loads; platform pitch and roll
-from kinematics; vertical acceleration per body; mooring line tension; and
-relative displacement between adjacent buoys, derivable from kinematics.
+`state_force` is evaluated at `(t[n], xi_n, xi_dot_n)` and applied to the
+step-(n+1) RHS; `external_force` is evaluated at `t[n+1]`
+(`newmark.py:401, 409`) — two timestamps inside one RHS.
 
-Everything on that list is either exported directly or derivable from exported
-channels. If a metric is added later that is neither, the schema version
-increments.
+Each channel is written at **the index of the state it was evaluated from** and
+declares which via `time_alignment`. Misalignment gives a residual of order
+`ωΔt` — 3.2% at full scale, the magnitude `PLAN.md` §8 names as quiet and wrong.
+Guarded by **G4.5** on convergence *rate*, not by a tolerance.
 
-## 6. Versioning
+## 5. `mu[N,6]` — new required channel
 
-The schema version is semantic. A patch increment adds optional groups only. A
-minor increment adds required groups, and the reader supports the previous minor
-behind an explicit compatibility flag. A major increment breaks the reader. The
-reader never guesses at an unknown version — the failure is loud and immediate,
-because the alternative is silently analysing a structure with misinterpreted
-loads.
+The radiation force applied is `A_inf·ξ̈ + μ(t)`. `A_inf` is in the hydro
+database and `ξ̈` is exported, so the first term is reconstructible. **`μ(t)` is
+not** — it is a loop local in `newmark.py` (created `:391`, updated `:449`,
+consumed `:421`) and appears in no return value.
 
-## 7. Two-pass generation
+**G1.6 compares a reconstructed radiation panel field against the body-level
+radiation force FloatSim actually applied.** Without `μ` that comparison cannot
+be made, and G1.6 is unenforceable for the largest of the BEM-sourced loads.
+This is the cheapest addition on the list: one array, already computed every
+step.
 
-A `.flr` record is written in two passes, because full-history strip data across
-a sea state runs to gigabytes while the screened snapshots that actually matter
-run to tens of megabytes.
+## 6. Two-pass generation
 
-**Pass one** writes body-level channels only — kinematics, per-body load
-decomposition, connectors, mooring, diagnostics. This is the record the
-screening pass in F5 consumes to select candidate snapshots.
+**Pass one** writes body-level channels — kinematics, per-source resultants,
+`mu`, joint `lam`. This is what screening consumes.
 
-**Pass two** replays the same run deterministically with strip output enabled,
-writing `/loads/strips/` for a short window around each selected snapshot. The
-window rather than a bare instant exists so that a peak can be confirmed as
-physical rather than a numerical spike.
+**Pass two** writes `/panels/`, `/loads/strips/` and `/loads/patches/` for a
+short window around each selected snapshot. A window rather than a bare instant,
+so a peak can be confirmed as physical rather than a numerical spike.
 
-The result is a single record containing full-history body-level channels and
-windowed strip-level channels. `window_index` is what ties the two resolutions
-together, and the reader requires every strip window to resolve into `/time`.
+Because every case is currently a **regular wave integrated to steady state**,
+panel pressures reconstruct from the frequency-domain BEM field at the case
+frequency — no per-panel retardation convolution needed. G1.6's spectral
+residual measures whether that suffices: energy at 2ω and 3ω is the signal that
+it does not, and roughly at what order of convolution would be required.
 
-This is only sound if pass two reproduces pass one. Gate **G1.4** requires
-bit-identical body-level channels between the passes. The protocol, and the
-decimated-full-history fallback for the case where determinism cannot be
-achieved, are in `docs/hsp-coupling.md`.
+Note that the storage pressure which originally motivated deterministic replay
+does not yet exist — there are no irregular seas and no RNG in the solve path
+(G1.0 §7). Replay determinism is retained as a test, not a gate.
 
-A record may legitimately contain no strip data at all — a screening-only
-record, pass one without pass two. The reader accepts it and the solver refuses
-to build load cases from it, rather than the reader accepting it silently and
-the solver inventing a distribution.
+A record may legitimately contain no strip or panel data — a screening-only
+record. **The reader accepts it and the solver refuses to build load cases from
+it**, rather than the reader accepting it silently and the solver inventing a
+distribution.
+
+## 7. Deliberately absent
+
+**These are not oversights. Each is a locked decision, and re-adding one in a
+future version would silently reverse it.**
+
+| absent | why | locked at |
+|---|---|---|
+| `gravity` load channel | Computed in FloatFEA from the FE mass distribution — the one load source FloatFEA knows better than FloatSim, which carries a lumped placeholder. | F1 §3 |
+| `hydrostatic` load channel | Gravity and buoyancy cancel inside `C` at ξ=0 upstream. `C` is a restoring *derivative*, not a load, so there is no pressure field in it to extract. Recomputed in FloatFEA from hull geometry, **on the MEAN wetted surface**, matching FloatSim's linearisation. | Q1, **G4.6** |
+| `froude_krylov` / `diffraction` separately | BEM produces one combined `F_exc(ω)`; not separable at source. | G1.0 §3 |
+| Structural properties (sections, materials, thicknesses) | FloatSim has none and never will. They live in the F3 model-definition YAML. | F1 §8 |
+| `quaternion` kinematics channel | FloatSim has no finite-rotation state; synthesising one would advertise a validity the source lacks. | conventions |
+
+**Anyone proposing to add one of these in v1.1 must first reopen the decision
+that removed it.** Adding a `hydrostatic` pressure channel breaks G4.6's
+mean-wetted-surface constraint; adding `gravity` reintroduces a lumped
+placeholder in place of a computed distribution. Both would read as improvements
+to someone who had not read this table — which is why the table exists.
+
+## 8. Screening metrics (re-derived post-audit)
+
+Fixed here because they constrain the channel set. Two changes from the
+pre-audit list, both from the final channel walk:
+
+| metric | status |
+|---|---|
+| Per-joint reaction force and moment | from `lam` + joint geometry |
+| Per-cluster interface resultant | derived from hub→platform joint rows |
+| **Platform-interface resultant** | **replaces "global base shear and overturning moment"** — a floating platform has no base; that framing was inherited from fixed jackets |
+| Platform pitch and roll extremes | from `/kinematics` |
+| Vertical acceleration per body | from `/kinematics` |
+| ~~Mooring line tension~~ | **STRUCK — the 12-buoy platform has no mooring** (`connections = 0`) |
+| Relative motion between adjacent buoys | from `/kinematics` |
+
+Every retained metric is exported directly or derivable from exported channels.
+A metric added later that is neither increments the schema version.
+
+**None of the retained metrics depends on separable Froude-Krylov, diffraction,
+or hydrostatic force** — checked explicitly, because a metric list that quietly
+assumed them would put a requirement back into the schema that the audit
+removed.
+
+## 9. Validation rules
+
+The reader **rejects** — never warns and continues. G1.2 tests that each
+rejection fires with a specific message.
+
+Carried from the pre-audit draft: unknown or future `schema_version`; missing or
+partial `units`; a frame referenced but not declared; NaN or inf in any channel;
+an inertia tensor that is not symmetric positive definite; a body referenced in
+`/loads` or `/joints` but absent from `/bodies`; non-monotonic or non-uniform
+`t` without an explicit flag; missing `hsp_git_sha` or `run_id`, since a record
+without provenance is not analysable.
+
+Added at v1.0:
+
+- **Missing `rotation_parameterisation`** on any kinematics or load group (§3).
+- **Missing `time_alignment`** on any load group (§4).
+- **Missing `inertia_reference_point`** on any body — G3.1a cannot catch a wrong
+  reference point, because both sides would be internally consistent and
+  consistently wrong.
+- **Missing `jacobian_evaluation`** on any joint carrying `lam`.
+- **Rotation exceeding the declared validity bound**, once Q2 supplies one.
+- Strip `window_index` that does not resolve into `/time`; strip stations `s`
+  non-monotonic or not spanning the member.
+- **Strips or panels that do not integrate back to the body resultant** for the
+  same source and timestep — the numerical half of the old G1.4, promoted to
+  **G1.6**, reported per body and per source with its spectral content.
+
+## 10. Versioning
+
+Semantic. A patch increment adds optional groups only. A minor increment adds
+required groups, with the previous minor supported behind an explicit
+compatibility flag. A major increment breaks the reader. **The reader never
+guesses at an unknown version** — the failure is loud and immediate, because the
+alternative is silently analysing a structure under misinterpreted loads.
