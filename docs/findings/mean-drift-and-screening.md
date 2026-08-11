@@ -202,6 +202,58 @@ labelled a FloatSim defect until someone has separated those. The screening
 consequences hold regardless, because they follow from the drift existing rather
 than from its cause.
 
+### DR3 and DR4 results — the drift is response-driven
+
+```
+case                        T      sparCd   mean surge   surge amp   max|theta|
+baseline                  3.141     1.2      -0.02371     0.05981     0.0378
+DR3 off-resonance         2.500     1.2      +0.00158     0.02390     0.0131
+DR4 half Cd               3.141     0.6      -0.04044     0.06161     0.0394
+DR4 tenth Cd              3.141     0.12     -0.07681     0.06464     0.0422
+```
+
+**DR3 — it collapses AND reverses sign.** Off-resonance the drift is
+**+0.00158 m, i.e. DOWNSTREAM** and 15× smaller; on-resonance it is −0.02371 m,
+upstream. Ratio off/on = −0.067.
+
+That reversal is the most informative number in the set. **A fixed excitation
+sign error is not amplitude-dependent** — it would shift phase by 180° at every
+frequency and flip the drift sign everywhere, not between one period and
+another. What *does* reverse across these two cases is the **response phase**:
+T = 3.141 s and T = 2.500 s straddle the rotational mode at T_rot = 3.257 s, and
+response phase relative to excitation sweeps through ~180° across a resonance.
+The rectified mean depends on exactly that relative phase, so it flips. This is
+ordinary resonant behaviour, not a convention.
+
+The amplitude ratio tracks it: off-resonance the body surges 0.0239 m against a
+0.0200 m fluid orbit (**1.2×**, comparable, drift downstream as drag
+rectification normally gives); on-resonance 0.0598 m against 0.0200 m
+(**2.99×**, body-dominated, drift upstream).
+
+**DR4 — the drift scales INVERSELY with Cd, and the experiment is confounded.**
+Halving spar Cd multiplies the drift by 1.7×; reducing it to a tenth multiplies
+it by 3.2×. Not the "scales with Cd" signature at all.
+
+The reason is visible in the same table: **Cd also sets the resonant response.**
+Lower Cd → less damping → larger response (surge amp 0.0598 → 0.0646, max‖θ‖
+0.0378 → 0.0422) → stronger rectification. The two effects oppose, and the
+response effect wins.
+
+So DR4 is weaker than "necessary but not sufficient" — as designed it **cannot
+discriminate**, because Cd is not an independent knob. What it does establish is
+that drag is *involved* (changing Cd changes the drift substantially) and that
+the drift is **response-driven rather than directly Cd-driven**, which is the
+same conclusion DR3 reaches by a different route.
+
+**Weight of evidence: legitimate physics, not a convention error.** Both
+experiments show the drift tracking response amplitude and phase. Recorded as a
+finding about the model's nonlinear behaviour near resonance.
+
+**DR2 remains worth running** — it would confirm the time-domain response phase
+matches the frequency-domain prediction and close the loop directly, rather than
+by inference from two sign observations. It is the only test that isolates the
+excitation sign convention, which is still formally untested.
+
 ### The three discriminating experiments
 
 **DR2 — closed-form frequency-domain response.** Same pattern as the `mu`
