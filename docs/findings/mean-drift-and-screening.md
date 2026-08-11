@@ -83,14 +83,71 @@ screened snapshots may be compared.
    (`PLAN.md` §6 F4). They should be read with this in mind rather than as
    evidence of a load-path error.
 
-## Incidental evidence on an UNRESOLVED convention
+## The drift is UPSTREAM, and that changes the diagnosis
 
-Mean drift under Morison drag is in the **wave propagation direction**. The
-measured drift is in **−x**, which is evidence that `heading_deg = 0` propagates
-along **−x**.
+An earlier draft of this document inferred from the −x drift that
+`heading_deg = 0` must propagate along −x. **That inference was wrong, and
+reading the source is what caught it.**
 
-Recorded as evidence, **not** as settled. `docs/conventions.md` leaves the
-heading-zero direction UNRESOLVED pending a reading of
-`floatsim/waves/regular.py` and `make_regular_wave_force`, and that reading is
-still the thing that closes it. A single inference from a drift sign is a good
-lead and a poor convention.
+`waves/regular.py:56-59` and `excitation.py:50` both state that heading 0
+propagates along **+X**. So the platform is drifting **upstream, against the
+waves.**
+
+Mean Morison drag rectification pushes *downstream*. Upstream drift is therefore
+not explained by drag rectification, and the two candidate mechanisms are:
+
+1. **Startup transient with zero restoring — the more likely.** The run applies
+   `HalfCosineRamp(duration=20 s)`. With no surge stiffness whatever, *any* net
+   impulse delivered during ramp-up leaves a **permanent velocity offset**,
+   whose sign is set by the wave phase at ramp start rather than by the
+   propagation direction. Nothing subsequently removes it: drag opposes the
+   motion but the mean force balance is about a drifting state, not about zero.
+   If this is the mechanism, the drift is a **startup artifact** whose magnitude
+   and sign vary case by case with ramp duration and initial phase.
+2. **A residual force-convention sign error.** The repository carries a
+   post-mortem (`docs/post-mortems/m6-epilogue-wave-force-convention-bug.md`) and
+   a branch `fix-make-regular-wave-force-convention`, so this class of error has
+   occurred here before and been fixed at least once.
+
+**Distinguishing them is one cheap experiment**: run the same case at two ramp
+durations, or two initial phases. If the drift changes sign or magnitude, it is
+mechanism 1. If it is invariant and downstream-negative, it is mechanism 2 and a
+FloatSim defect.
+
+This must be settled before drift is characterised any further — the two
+mechanisms imply completely different treatments, and the screening consequences
+in the previous section hold either way but their magnitude does not.
+
+## The drag hypothesis is disproved
+
+The proposal that the drag term might drop or linearise away the mean relative
+velocity — leaving nothing to arrest the drift — **is false.**
+`morison.py:_body_velocity_at` returns `v_ref + ω × arm` with
+`v_ref = xi_dot_body[0:3]`, the *full* inertial translational velocity of the
+reference point, mean component included. `morison_element_force` then forms
+`u_rel = u_fluid − v_body` with `u_fluid` sampled at the body's **drifted**
+position. Nothing is dropped and nothing is linearised. The arresting mechanism
+is present and correct.
+
+## Second differences: inconclusive, and the window is why
+
+The stored record returns only the final 6 periods (`run_case` returns one
+`window_periods` window). A one-period moving average isolates the slow
+component over 15.7 s, and it does not support an asymptote fit:
+
+```
+slow displacement  -0.02066 -> -0.02723 m
+slow velocity      +0.000690 -> -0.000560 m/s     (not monotonic)
+d|v|/dt            +0.000002 m/s2                 (at the leakage floor)
+```
+
+Fitting `dv/dt = a0 + c2 v²` — the saturating quadratic-drag signature — returns
+`a0 < 0, c2 > 0`, which is not that signature. But the moving-average leakage
+from the incommensurate period (314.1 samples binned at 314) is of the same
+order as the slow velocity itself, so **the estimator is at its noise floor and
+the result is inconclusive rather than negative.**
+
+The mean displacement moved 32% over five periods, which is far larger than any
+leak and is real. Everything beyond that fact needs a longer record than the
+stored window contains.
+

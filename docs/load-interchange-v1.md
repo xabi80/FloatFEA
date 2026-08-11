@@ -212,7 +212,26 @@ future version would silently reverse it.**
 |---|---|---|
 | `gravity` load channel | Computed in FloatFEA from the FE mass distribution — the one load source FloatFEA knows better than FloatSim, which carries a lumped placeholder. | F1 §3 |
 | `hydrostatic` load channel | Gravity and buoyancy cancel inside `C` at ξ=0 upstream. `C` is a restoring *derivative*, not a load, so there is no pressure field in it to extract. Recomputed in FloatFEA from hull geometry, **on the MEAN wetted surface**, matching FloatSim's linearisation. | Q1, **G4.6** |
-| `froude_krylov` / `diffraction` separately | BEM produces one combined `F_exc(ω)`; not separable at source. | G1.0 §3 |
+| `froude_krylov` / `diffraction` separately | **See the correction below — this justification is wrong.** | G1.0 §3 |
+
+> **CORRECTION, 2026-08-11 — candidate for v1.1, raised before the export is
+> built.** The stated reason is false. Capytaine's datasets carry
+> `Froude_Krylov_force` **and** `diffraction_force` as separate variables
+> alongside `excitation_force`; they are separable *at source*. What is not
+> separable is what **FloatSim retains** — its reader keeps the combined
+> excitation only.
+>
+> This matters, because FK and diffraction distribute over the hull by different
+> fields: FK is the incident pressure on the wetted surface, diffraction the
+> scattered field. Since the panel-pressure export computes from Capytaine's
+> potentials directly, it *can* carry them separately at no extra cost, and
+> `/loads/<body>/excitation` remains the combined body resultant FloatSim
+> applied — so G1.6 still compares the sum against what was applied.
+>
+> Not amended in place. v1.0 is locked, this is a v1.1 candidate, and it is
+> recorded here rather than fixed silently so the change is visible. Decide
+> before the panel-pressure module is written, since retrofitting the split
+> afterwards costs a re-run.
 | Structural properties (sections, materials, thicknesses) | FloatSim has none and never will. They live in the F3 model-definition YAML. | F1 §8 |
 | `quaternion` kinematics channel | FloatSim has no finite-rotation state; synthesising one would advertise a validity the source lacks. | conventions |
 

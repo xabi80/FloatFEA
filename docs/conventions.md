@@ -94,14 +94,18 @@ appears anywhere in the schema or the numerics.**
 - **Handedness:** right-handed.
 - **Water depth:** 200 m at model scale (`platform_common.py:184`) — deep water
   relative to the wavelengths in use.
-- **x axis — UNRESOLVED.** Wave heading is passed as `heading_deg=0.0`
-  (`platform_rao_pilot.py:262`) and the platform is four-fold symmetric, so no
-  committed result distinguishes the heading-zero direction. Whether 0°
-  propagates along `+x`, and whether the angle is direction-of-travel or
-  direction-of-origin, must be read out of `floatsim/waves/regular.py` and
-  `make_regular_wave_force` before any directional load case is built. It does
-  not affect the symmetric cases run so far — which is exactly why it has never
-  been forced to declare itself.
+- **x axis — RESOLVED 2026-08-11.** `heading_deg = 0` means waves **propagate
+  along +X**, and the angle is direction-of-travel, not direction-of-origin.
+  Verified in source: `waves/regular.py:56-59` — "Propagation heading in degrees
+  measured from the inertial `+X`" — and `hydro/excitation.py:50` — "travelling
+  in +X for heading 0".
+- **Capytaine agrees, and the cross-check is closed.** The BEM datasets carry
+  `wave_direction = 0.0` rad, and `readers/capytaine.py:191-194` converts it
+  straight through as `heading_deg = rad2deg(wave_direction)` with no sign flip
+  and no offset. Both sides put heading 0 on +X, so the 180° mismatch that would
+  have reversed every excitation force while leaving drag pointing the other way
+  **is not present**. Checked before the panel-pressure export was built, where
+  it would have been far more expensive to find.
 - **FloatSim agreement:** same frame, no transformation.
 
 ## Body frames
