@@ -202,57 +202,98 @@ labelled a FloatSim defect until someone has separated those. The screening
 consequences hold regardless, because they follow from the drift existing rather
 than from its cause.
 
-### DR3 and DR4 results — the drift is response-driven
+### DR3 / DR4 — first reading WITHDRAWN, and what the data actually says
 
 ```
-case                        T      sparCd   mean surge   surge amp   max|theta|
-baseline                  3.141     1.2      -0.02371     0.05981     0.0378
-DR3 off-resonance         2.500     1.2      +0.00158     0.02390     0.0131
-DR4 half Cd               3.141     0.6      -0.04044     0.06161     0.0394
-DR4 tenth Cd              3.141     0.12     -0.07681     0.06464     0.0422
+case                    T      sparCd   mean surge   surge amp   max|theta|
+baseline              3.141     1.2      -0.02371     0.05981     0.0378
+DR3 off-resonance     2.500     1.2      +0.00158     0.02390     0.0131
+DR4 half spar Cd      3.141     0.6      -0.04044     0.06161     0.0394
+DR4 tenth spar Cd     3.141     0.12     -0.07681     0.06464     0.0422
 ```
 
-**DR3 — it collapses AND reverses sign.** Off-resonance the drift is
-**+0.00158 m, i.e. DOWNSTREAM** and 15× smaller; on-resonance it is −0.02371 m,
-upstream. Ratio off/on = −0.067.
+**An earlier reading of this table is withdrawn in full.** It claimed the two
+periods straddled the rotational mode and that Cd set the resonant response.
+Both are false:
 
-That reversal is the most informative number in the set. **A fixed excitation
-sign error is not amplitude-dependent** — it would shift phase by 180° at every
-frequency and flip the drift sign everywhere, not between one period and
-another. What *does* reverse across these two cases is the **response phase**:
-T = 3.141 s and T = 2.500 s straddle the rotational mode at T_rot = 3.257 s, and
-response phase relative to excitation sweeps through ~180° across a resonance.
-The rectified mean depends on exactly that relative phase, so it flips. This is
-ordinary resonant behaviour, not a convention.
+- **They do not straddle.** `T_rot = 3.257 s` is `omega = 1.9291 rad/s`;
+  `T = 3.141 s` is `2.0004` and `T = 2.500 s` is `2.5133`. **Both sit above the
+  mode, on the same side.** The 180-degree phase-sweep explanation cannot apply.
+- **Reconciliation of 3.141 against 3.257.** The max||theta|| measurements (§9)
+  used T = 3.257 s, *at* the mode, giving 0.159 rad. The drift work used
+  T = 3.141 s to match the committed cache, where max||theta|| = 0.038 rad — four
+  times smaller. **Every drift measurement was taken off the rotational mode.**
+  Labelling T = 3.141 s "on-resonance" was wrong.
+- **The response is not drag-limited.** A quadratic-drag-limited resonance gives
+  response ~ `Cd^-0.5`: +41% at half Cd and +216% at a tenth. Observed: **+3.0%
+  and +8.1%.** Morison drag is not what limits this response — radiation damping
+  `B(omega)` most likely is, which would make the mode frequency-selective and
+  Cd-insensitive at the same time.
+- **The withdrawn explanation was quantitatively impossible.** Drift x1.7 from a
+  +3.0% response change requires `drift ~ response^18`. No rectification
+  mechanism scales that way.
 
-The amplitude ratio tracks it: off-resonance the body surges 0.0239 m against a
-0.0200 m fluid orbit (**1.2×**, comparable, drift downstream as drag
-rectification normally gives); on-resonance 0.0598 m against 0.0200 m
-(**2.99×**, body-dominated, drift upstream).
+**What the exponents say instead.** Fitting drift against spar Cd:
 
-**DR4 — the drift scales INVERSELY with Cd, and the experiment is confounded.**
-Halving spar Cd multiplies the drift by 1.7×; reducing it to a tenth multiplies
-it by 3.2×. Not the "scales with Cd" signature at all.
+```
+Cd x0.50 -> drift x1.706   exponent -0.770
+Cd x0.10 -> drift x3.240   exponent -0.510
+```
 
-The reason is visible in the same table: **Cd also sets the resonant response.**
-Lower Cd → less damping → larger response (surge amp 0.0598 → 0.0646, max‖θ‖
-0.0378 → 0.0422) → stronger rectification. The two effects oppose, and the
-response effect wins.
+Signatures: drag as **driver** would give **+1.0**; a constant mean force braked
+by **quadratic** damping gives **-0.5**; braked by **linear** damping, **-1.0**.
+Observed -0.77 and -0.51.
 
-So DR4 is weaker than "necessary but not sufficient" — as designed it **cannot
-discriminate**, because Cd is not an independent knob. What it does establish is
-that drag is *involved* (changing Cd changes the drift substantially) and that
-the drift is **response-driven rather than directly Cd-driven**, which is the
-same conclusion DR3 reaches by a different route.
+> **Spar drag is the BRAKE, not the driver.** A genuine mean force exists
+> elsewhere, and spar drag only limits the drift velocity it produces. The
+> exponent sitting between -0.5 and -1.0 is mixed quadratic drag plus linear
+> radiation damping — corroborating the response finding from entirely
+> independent data.
 
-**Weight of evidence: legitimate physics, not a convention error.** Both
-experiments show the drift tracking response amplitude and phase. Recorded as a
-finding about the model's nonlinear behaviour near resonance.
+### The plate drag is the source, and it sets the upstream sign
 
-**DR2 remains worth running** — it would confirm the time-domain response phase
-matches the frequency-domain prediction and close the loop directly, rather than
-by inference from two sign observations. It is the only test that isolates the
-excitation sign convention, which is still formally untested.
+The Morison **inertia** term was the natural next hypothesis — MWL clipping and
+`e^{kz}` bias fluid *acceleration* as well as velocity, so a `Cm` term would
+rectify independently of `Cd`, exactly the shape the exponents require. **It does
+not exist in this model.** `distributed_cylinder_drag` builds drag-only members,
+and `driver.py:447-452` **raises** on `include_inertia=True`, forcing it `False`
+at `:462`. `Cm` is not a knob here; the term is absent.
+
+But the previous sweep varied only the **spar** Cd — the **plate** was held at
+`Cd_n = 5.0` throughout. Within this model the only nonlinear terms are the two
+drag families, so if the spar is the brake, the plate is the remaining candidate
+driver. Sweeping it, with spar Cd fixed at 1.2:
+
+```
+plate Cd_n=5.00 Cd_t=1.50 -> mean surge -0.02371   amp 0.05981
+plate Cd_n=2.50 Cd_t=0.75 -> mean surge -0.01482   amp 0.06028
+plate Cd_n=0.50 Cd_t=0.15 -> mean surge +0.01327   amp 0.06533
+```
+
+**The drift passes through zero and reverses.** At a tenth of the plate drag it
+is **+0.01327 m — downstream**, the direction drag rectification normally gives.
+
+That is stronger evidence than a scaling exponent, and the exponent is in fact
+meaningless once the sign changes. It shows **two competing mean-force
+contributions of opposite sign**: one carried by the plate drag (upstream), one
+independent of it (downstream). At the deck's `Cd_n = 5.0` the plate term
+dominates and the platform drifts upstream.
+
+**The heave-plate drag model is what produces the upstream drift.** Two features
+of that model make it the natural suspect, both already documented:
+
+- The **tangential (edge-on) term is lumped at the disc centre**, not
+  patch-resolved (`morison.py:589-595`) — flagged in the G1.0 audit as the one
+  part of the plate load that is *not* distribution-resolved.
+- `Cd_t = 1.5` is recorded at `platform_rao_pilot.py:104` as **"mid of the [1,2]
+  tank-pending sensitivity"** — an unvalidated parameter awaiting tank data.
+
+**Status: mechanism localised, not yet confirmed.** It is not a startup artifact
+(phase sweep), not the wave kinematics sign (W1), not the heading metadata (D3),
+and not spar-drag rectification (spar Cd is the brake). It is carried by the
+plate drag term. Whether that is legitimate model physics or a defect in the
+lumped tangential treatment is the remaining question — and **the excitation
+sign convention is still formally untested**, which is DR2's job.
 
 ### The three discriminating experiments
 
@@ -270,11 +311,9 @@ drift is response-driven rectification it should largely collapse off-resonance;
 a convention error drifts regardless. The T = 2.5 s case (max‖θ‖ = 0.039 rad,
 0.39× the bound) is the natural comparison.
 
-**DR4 — Cd sweep, with its limit stated.** It establishes that the drift is
-**drag-mediated**, not that the phase driving the drag is correct. Scaling with
-Cd is consistent with legitimate rectification *and* with a phase error feeding
-the same drag term. **Necessary, not sufficient** — and it must not be reported
-as though it settled the question.
+**DR4 — run, and it inverted its own premise.** It was meant to show whether
+the drift was drag-mediated. It showed the opposite of the assumed sign: drag is
+the brake, and the driver is the plate term. Recorded above.
 
 ## Wave kinematics sign — checked independently of the heading metadata, and CLEAN
 
