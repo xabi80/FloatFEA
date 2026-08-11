@@ -74,8 +74,11 @@ screened snapshots may be compared.
    window.** Q1 and G4.6 lock buoyancy to the **mean wetted surface**, matching
    FloatSim's linearisation about ξ = 0. A mean position that moves means "the
    mean wetted surface" is itself a moving target, and the reference the
-   linearisation was taken about is not where the body is. At −1.19 m full scale
-   and growing, this is not negligible against a 8.41 m diameter spar.
+   linearisation was taken about is not where the body is. **Magnitude, not just
+   mechanism: −1.19 m is 14% of a spar diameter (8.41 m), reaching 38% after ten
+   more wave periods.** G4.6's write-up must carry that number, not only the
+   mechanism — a reviewer who reads "the mean surface moves" without "by 14% of a
+   diameter and rising" will price it as negligible.
 
 3. **G4.1's residual inherits it.** A drifting rigid-body mode is precisely what
    inertia relief absorbs, so the residual should stay small — but the
@@ -104,10 +107,25 @@ not explained by drag rectification, and the two candidate mechanisms are:
    motion but the mean force balance is about a drifting state, not about zero.
    If this is the mechanism, the drift is a **startup artifact** whose magnitude
    and sign vary case by case with ramp duration and initial phase.
-2. **A residual force-convention sign error.** The repository carries a
+2. **A residual force-convention sign error, in the EXCITATION path only.** The repository carries a
    post-mortem (`docs/post-mortems/m6-epilogue-wave-force-convention-bug.md`) and
    a branch `fix-make-regular-wave-force-convention`, so this class of error has
    occurred here before and been fixed at least once.
+
+### The ramp-to-period ratio shifts the prior — and is a full-scale trap
+
+`ramp_s = 20.0 s` against `T = 3.141 s` is **6.4 periods**. Over that many
+cycles the ramp's residual net impulse largely cancels, which argues *against*
+mechanism 1 being large — the prior should sit nearer mechanism 2 than the bare
+description suggests.
+
+**But the ratio is what matters, not the 20 s.** At full scale `T = 23.03 s`,
+and a ramp left at 20 s is **0.87 periods** — the impulse then barely cancels at
+all and the startup transient becomes large. **The ramp duration must be
+Froude-scaled with everything else**, to `20 × √50 = 141.4 s`, or the full-scale
+re-run acquires a startup artifact the model-scale runs never had. This is a
+concrete trap for the full-scale deck (F1 §3) and is recorded here because it
+would otherwise be discovered as an unexplained drift difference between scales.
 
 **Distinguishing them is one cheap experiment**: run the same case at two ramp
 durations, or two initial phases. If the drift changes sign or magnitude, it is
@@ -117,6 +135,31 @@ FloatSim defect.
 This must be settled before drift is characterised any further — the two
 mechanisms imply completely different treatments, and the screening consequences
 in the previous section hold either way but their magnitude does not.
+
+## Wave kinematics sign — checked independently of the heading metadata, and CLEAN
+
+The heading check (D3) confirmed the *metadata*: FloatSim's wave module and
+Capytaine's reader agree that heading 0 is +X. It did **not** confirm that
+`u_fluid` carries the sign that heading claims — excitation (a BEM force) and
+Morison drag (`u_fluid` sampled at a position) are separate code paths, and a
+sign error in horizontal orbital velocity would rectify drag in −X while
+excitation still acted +X. That is exactly what is observed, and it would have
+survived D3.
+
+**Checked, and it is correct.** For a wave travelling +X the horizontal orbital
+velocity is in phase with elevation, so `u_x` under a crest must be positive.
+Evaluated directly from `airy_velocity` at heading 0, A = 1, ω = 2:
+
+```
+t = 0 (crest)   eta = +1.0000   u_x = +2.0000 = +A*omega
+u_x over a cycle:  +2.000  +1.414   0.000  -2.000  -0.000   =  A*omega*cos(omega t)
+```
+
+In phase with elevation, positive under the crest. **This candidate is
+eliminated**, and with it the only mechanism that explained a *sustained* −X
+drift while D3 passed. Mechanism 1 gives a constant velocity offset, not
+sustained rectification — so if the phase sweep does not collapse the drift, the
+remaining explanation is confined to the excitation force path.
 
 ## The drag hypothesis is disproved
 

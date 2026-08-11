@@ -1,6 +1,8 @@
-# FloatSim → FloatFEA Load Interchange, v1.0
+# FloatSim → FloatFEA Load Interchange, v1.1
 
-**Schema version:** `1.0` — **LOCKED 2026-08-10**
+**Schema version:** `1.1` — **LOCKED 2026-08-11**
+*(1.0 locked 2026-08-10; 1.1 splits excitation into Froude-Krylov and
+diffraction — §7.1. A minor increment: it adds required groups.)*
 **File extension:** `.flr` (FloatSim Load Record)
 **Container:** HDF5, metadata as a JSON document in the root attribute `meta`.
 **Audited against:** `docs/findings/G1.0-floatsim-output-audit.md`, HSP tag
@@ -26,7 +28,9 @@ which sources can actually be separated.
 
 | source | distributes as | available as |
 |---|---|---|
-| Excitation (FK + diffraction, **combined**) | surface pressure | per-panel field + body resultant |
+| **Froude-Krylov** | incident pressure on the wetted surface | per-panel field (v1.1) |
+| **Diffraction** | scattered field | per-panel field (v1.1) |
+| Excitation (their sum) | — | body resultant, as applied |
 | Radiation | surface pressure | per-panel field + body resultant |
 | Morison drag | line load along the member | per-strip, 10 per spar |
 | Plate drag | pressure over the disc face | per-patch, polar quadrature |
@@ -36,7 +40,7 @@ which sources can actually be separated.
 
 ```
 /meta                       (root attribute, JSON)
-  schema_version            "1.0"
+  schema_version            "1.1"
   floatsim_version, hsp_git_sha (40-char, dirty flag), run_id, created_utc
   units                     {length: m, mass: kg, time: s, force: N, angle: rad}
   gravity                   [gx, gy, gz]     -- 9.81 from FloatSim, not 9.80665
@@ -74,7 +78,8 @@ which sources can actually be separated.
   mu[N,6]                         REQUIRED -- the convolution term; see sec.5
   (A_inf . xi_ddot is reconstructed from the hydro database and /kinematics)
 
-/panels/<body>/<source>           source in {excitation, radiation}
+/panels/<body>/<source>           source in {froude_krylov, diffraction,
+                                             radiation}          -- v1.1
   centroid[P,3], area[P], normal[P,3]    panel geometry, body frame
   pressure[K,P]                          complex per omega where harmonic
   window_index[K]
@@ -212,26 +217,52 @@ future version would silently reverse it.**
 |---|---|---|
 | `gravity` load channel | Computed in FloatFEA from the FE mass distribution — the one load source FloatFEA knows better than FloatSim, which carries a lumped placeholder. | F1 §3 |
 | `hydrostatic` load channel | Gravity and buoyancy cancel inside `C` at ξ=0 upstream. `C` is a restoring *derivative*, not a load, so there is no pressure field in it to extract. Recomputed in FloatFEA from hull geometry, **on the MEAN wetted surface**, matching FloatSim's linearisation. | Q1, **G4.6** |
-| `froude_krylov` / `diffraction` separately | **See the correction below — this justification is wrong.** | G1.0 §3 |
+*(The v1.0 entry merging Froude-Krylov and diffraction has been **struck** — its
+justification was factually wrong. See §7.1.)*
 
-> **CORRECTION, 2026-08-11 — candidate for v1.1, raised before the export is
-> built.** The stated reason is false. Capytaine's datasets carry
-> `Froude_Krylov_force` **and** `diffraction_force` as separate variables
-> alongside `excitation_force`; they are separable *at source*. What is not
-> separable is what **FloatSim retains** — its reader keeps the combined
-> excitation only.
->
-> This matters, because FK and diffraction distribute over the hull by different
-> fields: FK is the incident pressure on the wetted surface, diffraction the
-> scattered field. Since the panel-pressure export computes from Capytaine's
-> potentials directly, it *can* carry them separately at no extra cost, and
-> `/loads/<body>/excitation` remains the combined body resultant FloatSim
-> applied — so G1.6 still compares the sum against what was applied.
->
-> Not amended in place. v1.0 is locked, this is a v1.1 candidate, and it is
-> recorded here rather than fixed silently so the change is visible. Decide
-> before the panel-pressure module is written, since retrofitting the split
-> afterwards costs a re-run.
+### 7.1 Froude-Krylov and diffraction are split — v1.1
+
+The v1.0 justification, "BEM produces one combined `F_exc(ω)`; not separable at
+source", **was false.** Capytaine's datasets carry `Froude_Krylov_force` **and**
+`diffraction_force` as separate variables alongside `excitation_force`. They are
+separable at source; only FloatSim's *reader* merges them.
+
+Split, for four reasons:
+
+1. **Free at source** — no new computation, no new BEM run.
+2. **Physically distinct distributions.** FK is the incident-wave pressure on the
+   wetted surface; diffraction is the scattered field. They do not distribute
+   alike, and the whole premise of §1 is that sources distributing differently
+   must arrive separately.
+3. **Retrofitting costs a re-run**, and the panel-pressure module is about to be
+   written.
+4. **It future-proofs the decision most likely to be revisited.** If G4.6's
+   mean-wetted-surface constraint is ever reopened, **FK is the term that would
+   move to the instantaneous surface** — it is the incident pressure, defined
+   wherever the hull actually is — while diffraction stays on the mean. Merged,
+   that change would be impossible without a schema break.
+
+`/loads/<body>/excitation` is **retained** as the combined body resultant, because
+that is what FloatSim actually applied. The split lives in `/panels/`.
+
+### 7.2 Two guards, two purposes — do not conflate them
+
+**(a) The G1.6 gate.** The **sum** of the two panel fields, integrated over the
+hull, against **FloatSim's combined applied excitation**.
+
+> This must **not** be satisfiable by checking the halves separately.
+> **FloatSim never applied the halves to anything** — it applied their sum, and
+> only the sum has a counterpart in the simulation.
+
+**(b) A panel-extraction check.** Each field against **Capytaine's own** FK and
+diffraction resultants. Useful, and it is what catches an error in the pressure
+extraction itself.
+
+But (b) tests *agreement with Capytaine*, not *agreement with the simulation*.
+Conflating them would let a panel extraction that matches Capytaine perfectly
+pass while disagreeing with what the simulator actually applied — which is
+precisely the failure G1.6 exists to catch. Only (a) is the gate; (b) is a
+diagnostic and is labelled as one.
 | Structural properties (sections, materials, thicknesses) | FloatSim has none and never will. They live in the F3 model-definition YAML. | F1 §8 |
 | `quaternion` kinematics channel | FloatSim has no finite-rotation state; synthesising one would advertise a validity the source lacks. | conventions |
 
