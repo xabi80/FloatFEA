@@ -16,6 +16,39 @@ assumption.
 
 ---
 
+## The governing principle: reconstruct as produced, not as correct
+
+**When FloatFEA reproduces any quantity FloatSim computed, it reproduces the
+formulation FloatSim used — not the better one.**
+
+Consistency with the source beats accuracy against the truth, because every
+equilibrium and reconciliation gate in this project tests *self-consistency of
+the load path*. An improvement applied on one side of a comparison shows up as a
+residual, and it shows up looking like a mapping bug rather than like the
+improvement it is. The place to fix upstream physics is upstream, under its own
+gating — never silently, on the way past.
+
+Three instances are already locked, which is why this is stated as a rule rather
+than repeated as a special case:
+
+| instance | reconstruct as | not as |
+|---|---|---|
+| Buoyancy for G4.6 | **mean** wetted surface, matching FloatSim's linearisation | instantaneous wetted surface |
+| Rotations (below) | the parameterisation the **producing module** used | one globally "correct" parameterisation |
+| Timestamps (below) | the index the force was **evaluated from** | the index it was applied at |
+
+The rule decides the fourth case in advance. Departing from it in any specific
+instance requires reopening this gate and recording why, in the milestone
+closure artifact — it is not a judgement call to be made at the call site.
+
+The rule is *not* a licence to propagate an upstream defect silently. Where the
+source formulation is inconsistent with itself — as the rotation channels are —
+that is escalated as a finding about FloatSim (see `docs/milestones/F1.md` §10
+Q2), and the affected quantity is reconstructed per-producer *and* the resulting
+inconsistency is quantified rather than absorbed.
+
+---
+
 ## Units
 
 SI throughout, internally, with no exceptions: metres, kilograms, seconds,
@@ -82,6 +115,50 @@ appears anywhere in the schema or the numerics.**
 - **Moments are taken about the body reference point**, not the CoG
   (`morison.py:397-405, 430-432`). Every exported moment channel inherits this.
 - **FloatSim agreement:** same, no transformation.
+
+### The inertia tensor's reference point, and a defect it exposes
+
+The record declares the inertia tensor **about the body reference point, in the
+body frame**, matching the deck schema (`deck.py:88`). **The CoG offset must
+travel with it.** FloatSim has no field for that offset, so FloatFEA cannot
+recover it from the record and must take it from the model definition or the
+mesh.
+
+This matters because the two points are *not* coincident on this platform, and
+FloatSim assumes they are:
+
+| | value | source |
+|---|---|---|
+| Body reference point | `Z_BUOY_REF = −1.1956674` m | `platform_common.py:101` |
+| CoG, global | `−1.0163 − 0.21638 = −1.23268` m | `cluster_common.py:33`, `platform_common.py:48` |
+| **Offset** | **+37.0 mm** (CoG below the reference point) | |
+
+`driver.py:222` passes `cog_offset_body=None`, which `mass_properties.py:62`
+defines as *CoG at the reference point*, and `driver.py:208-209` states plainly
+that the deck has "no explicit CoG-offset field... Phase 2 may add an off-CoG
+reference-point field." Meanwhile `cluster_common.py:34` comments the values as
+"at single-buoy CoM" — so the numbers are stated about one point and consumed
+about another.
+
+Consequences, at model scale:
+
+- Parallel-axis term `m·d²` omitted: **0.039 kg·m², 0.164%** of `I_xx`. Small.
+- **Translation–rotation coupling block `m·d = 1.061 kg·m` omitted entirely** —
+  a **4.05%** coupling ratio against `√(m·I)`. This one is structural, not a
+  magnitude error: the 6×6 mass matrix is block-diagonal where it should not be.
+
+**G3.1a will not catch this**, because FloatFEA would compute its own tensor
+about its own reference point and be internally consistent. Both sides would be
+consistently wrong. The record must therefore state the tensor's reference point
+explicitly, and the validator must reject a record that omits it.
+
+**Candidate mechanism for KD-2, offered as a hypothesis rather than a claim.**
+KD-2-revised attributes a +20.54% FloatSim-vs-OpenFAST pitch-period gap to a
+"combined-deck mass-aggregation discrepancy". A missing CoG offset removes
+exactly the translation–rotation coupling that sets a pitch period. Whether the
+magnitudes account for the gap is not established here and should be tested by
+whoever owns KD-2 — but the two descriptions name the same class of defect, and
+that is worth someone's hour.
 
 ## Rotations
 
@@ -192,11 +269,47 @@ structural members:
 
 - Positive axial force: **tension positive**.
 - Positive bending moment, shear, torque: right-hand rule about the member local
-  axes.
-- **UNRESOLVED:** the local-axis triad (which reference vector orients local *y*
-  for a vertical member) is not yet fixed. It must be settled in F2 before any
-  member force is reported, because envelope reports and golden files key on the
-  sign.
+  axes, defined below.
+
+### Member local axes — DECIDED 2026-08-10
+
+Nothing upstream constrains this, so it is FloatFEA's own choice, and it is
+fixed now rather than carried open: it is upstream of every element sign
+convention, and retrofitting it after the element formulations exist means
+re-deriving every sign.
+
+```
+local x  =  unit(node_B - node_A)          member axis, A to B
+local z  =  unit(r - (r . x) x)            r = the member's orientation reference
+local y  =  z  x  x                        right-handed
+```
+
+**Orientation is explicit per member. There is no implicit default for a
+vertical member, because the spars are vertical and the usual default is
+degenerate there.** The reference `r` is supplied as either:
+
+- an **orientation node** — a third point; local z lies in the plane of
+  (A, B, orientation node), on the side of that point; or
+- a **roll angle** about local x, measured from the global-Z reference.
+
+Where no explicit orientation is given, `r = global Z`. **The model builder
+raises when that default is used on a member too close to vertical** — it does
+not silently fall back to global X. A silent axis switch is precisely the kind
+of convention change that produces sign errors nobody can trace, and it would
+fire on the most important members in this model.
+
+The near-vertical guard is a degeneracy threshold and therefore a tolerance: it
+lives in `floatfea/tolerances.py` as `MEMBER_ORIENTATION_DEGENERACY`, not here
+and not at the call site.
+
+Rationale for the guard rather than a fallback: local y is built from
+`Ẑ × x̂`, whose *direction* error amplifies any perturbation in the member axis
+by `1/|Ẑ × x̂|`. The construction is exactly singular at vertical and
+ill-conditioned near it. A tubular section is axisymmetric, so this does not
+move the stress *magnitude* — but it does move which circumferential recovery
+point is which, and member identifiers and recovery points are what envelope
+reports and golden files key on. It also stops being benign the moment a
+non-circular section is introduced.
 
 ## Numbering and identifiers
 

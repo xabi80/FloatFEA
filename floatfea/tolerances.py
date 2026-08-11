@@ -63,6 +63,36 @@ Rungs are defined in `docs/verification/README.md`.
 
 from __future__ import annotations
 
+from typing import Final
+
+# ---------------------------------------------------------------------------
+# Model construction -- geometric degeneracy guards
+#
+# Not tied to a verification rung: these guard the construction of the model
+# itself, and they fail loudly at build time rather than producing a wrong
+# number at solve time.
+# ---------------------------------------------------------------------------
+
+# G0.2 / docs/conventions.md sec. "Member local axes" -- minimum |z_hat x x_hat|
+# for the DEFAULT global-Z orientation reference to be admissible on a member.
+# Dimensionless; equals the sine of the member's angle from vertical.
+#
+# Compared: the magnitude of the cross product used to build local y, against
+# this floor. Below it the model builder RAISES and demands an explicit
+# orientation node or roll angle. It does not fall back to another axis.
+#
+# Reason: local y is built from z_hat x x_hat, so its direction error amplifies
+# any perturbation in the member axis by 1/|z_hat x x_hat|. The construction is
+# exactly singular at vertical and ill-conditioned near it. 0.05 corresponds to
+# 2.87 deg from vertical and bounds that amplification at 20x. The spars in this
+# platform are vertical, so this guard fires on the real model by design -- it
+# exists to force an explicit choice, not to be tuned until it stops firing.
+# Raising it excludes valid members; lowering it admits members whose section
+# axes are not reliably oriented.
+# Set: 2026-08-10, F0
+MEMBER_ORIENTATION_DEGENERACY: Final[float] = 0.05
+
+
 # ---------------------------------------------------------------------------
 # Rung 1 -- The solver is a solver
 # Rigid-body modes (G2.1/V1.1), patch test (G2.2/V1.2), unit scaling (G2.5/V1.3).
