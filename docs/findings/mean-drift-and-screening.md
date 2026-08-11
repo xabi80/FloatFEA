@@ -347,10 +347,67 @@ part of the plate load that is not distribution-resolved, and FloatFEA needs it
 distributed for the export. Sequencing the strip/patch export module first
 resolves an open investigation as a side effect of scheduled work.
 
+### N2 result — the TANGENTIAL term is NOT the driver; the NORMAL term is
+
+`Cd_n` held at 5.0, `Cd_t` swept over a factor of ten, spar Cd fixed:
+
+```
+Cd_n=5.00  Cd_t=1.50 -> mean surge -0.02371   amp 0.05981
+Cd_n=5.00  Cd_t=0.75 -> mean surge -0.02380   amp 0.05982
+Cd_n=5.00  Cd_t=0.15 -> mean surge -0.02387   amp 0.05983
+```
+
+**A tenfold reduction in `Cd_t` moves the drift by 0.7%.** The tangential term is
+not the driver.
+
+Differencing against the earlier sweep, which scaled `Cd_n` and `Cd_t` *together*
+and produced the sign reversal, the reversal is attributable to `Cd_n` alone:
+
+> **The plate NORMAL (broadside) drag drives the upstream drift.**
+
+*(Instrumentation note: the exponent column in this run's output is garbage —
+the scaling denominator was not updated when the script was derived from the
+previous sweep, so it divides by log(1.0). The mean-surge values are unaffected
+and are what the conclusion rests on. Recorded rather than quietly dropped.)*
+
+### This inverts the sequencing rationale for the strip/patch module
+
+The physical argument for expecting the tangential term — that lumping a
+quadratic load at the disc centre discards the rotational contribution, since the
+rim carries pitch and the centre carries none — was a good argument and it is
+**not what the data says**. The driver is the **normal** term, which is *already*
+patch-resolved by the polar quadrature (`_disc_patches`, `df_n` per patch at
+`morison.py:583`). The lumped term is the one that does nothing here.
+
+**Consequence: patch-resolving the tangential term will NOT resolve the drift.**
+It remains required work — the G1.0 audit flagged it as the one part of the plate
+load that is not distribution-resolved, and FloatFEA needs it distributed for the
+export — but it must not be scheduled on the expectation that it settles this
+investigation as a side effect. That rationale is withdrawn; the export
+justification stands on its own.
+
+### Candidate mechanism for a normal term producing horizontal drift
+
+The plate normal is `+z` in the body frame, so its drag responds to the *normal*
+component of relative velocity — largely heave. A horizontal mean force arises
+because `f_normal = n_hat * Σ df_n` with `n_hat = R · n_hat_body`
+(`morison.py:568-580`): **when the body pitches, `n_hat` tilts away from vertical
+and the normal force acquires a horizontal component.** The magnitude is
+quadratic in the normal relative velocity, so the product of a quadratic
+heave-driven magnitude with an oscillating pitch tilt rectifies into a mean
+horizontal force.
+
+This depends on the **correlation between heave velocity and pitch angle** — a
+phase relationship, therefore response-dependent, which is consistent with the
+off-resonance collapse and sign change already measured. It is a testable
+prediction rather than a restatement: it implies the drift should track the
+heave-pitch phase, and should be insensitive to `Cd_t` — which is what was just
+observed.
+
 **Status: mechanism localised, not yet confirmed.** It is not a startup artifact
 (phase sweep), not the wave kinematics sign (W1), not the heading metadata (D3),
 and not spar-drag rectification (spar Cd is the brake). It is carried by the
-plate drag term. Whether that is legitimate model physics or a defect in the
+plate **normal** drag term specifically (N2). Whether that is legitimate model physics or a defect in the
 lumped tangential treatment is the remaining question — and **the excitation
 sign convention is still formally untested**, which is DR2's job.
 
