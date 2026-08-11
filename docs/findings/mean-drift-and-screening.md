@@ -127,14 +127,70 @@ re-run acquires a startup artifact the model-scale runs never had. This is a
 concrete trap for the full-scale deck (F1 §3) and is recorded here because it
 would otherwise be discovered as an unexplained drift difference between scales.
 
-**Distinguishing them is one cheap experiment**: run the same case at two ramp
-durations, or two initial phases. If the drift changes sign or magnitude, it is
-mechanism 1. If it is invariant and downstream-negative, it is mechanism 2 and a
-FloatSim defect.
+### The phase sweep settles it: NOT a startup artifact
 
-This must be settled before drift is characterised any further — the two
-mechanisms imply completely different treatments, and the screening consequences
-in the previous section hold either way but their magnitude does not.
+Ran the identical case at initial phases 0/90/180/270° and phase-averaged.
+Phase 0 reproduces the committed cache exactly (−0.02371 m), which validates the
+harness before the other three points are read.
+
+```
+phase     mean surge      amp    mean/amp
+    0       -0.02371   0.05981     -0.396
+   90       -0.02449   0.06026     -0.406
+  180       -0.02538   0.05898     -0.430
+  270       -0.02460   0.05942     -0.414
+
+phase-average           = -0.024548 m
+spread across phases    =  0.000592 m   (2.4% of the mean)
+|phase-avg| / |mean individual| = 1.000
+```
+
+**The drift is phase-independent.** A startup transient's sign is set by the
+phase at ramp start and would average toward zero; this does not move at all.
+**Mechanism 1 is eliminated.** The drift is sustained rectification.
+
+### But "therefore a convention error" does not follow
+
+The sweep's binary verdict rules mechanism 1 *out*; it does not establish that
+the remainder is a defect, and two things now argue against that reading:
+
+- **W1 eliminated the kinematics sign** and **D3 eliminated the heading
+  metadata**, so the obvious convention candidates are already excluded.
+- **A first-order excitation sign error cannot produce a mean force at all.**
+  A harmonic force has zero mean by construction. Reversing its sign reverses
+  the response, not the drift.
+
+A physically legitimate mechanism fits better. At this case the platform surges
+**2.99× the fluid orbital amplitude**:
+
+```
+wave amplitude A                    0.0200 m      (H/2)
+fluid orbital displacement at z=0   0.0200 m      = A, deep water
+body surge amplitude                0.0598 m      -> 2.99x
+fluid orbital velocity              0.0400 m/s
+body surge velocity                 0.1196 m/s    -> 2.99x
+```
+
+So `u_rel = u_fluid − v_body` is **dominated by body motion, not by the wave** —
+the platform is being dragged through relatively still water rather than pushed
+by it. A pure sinusoid gives exactly zero mean for `u|u|`, so the mean force must
+come from the couplings that break that symmetry: the exponential depth decay
+`e^{kz}` sampled by a heaving and pitching body, and the MWL clipping documented
+at `kinematics.py:16-22` (`z > 0` clamped to `z = 0`, which "overestimates
+kinematics in the crest and underestimates in the trough" — an explicitly
+asymmetric treatment). Both are real, both are documented Phase-1 modelling
+choices, and both rectify.
+
+**Status: sustained rectification confirmed, mechanism not yet identified.** It
+is not a startup artifact and not one of the two conventions already checked.
+Whether it is legitimate physics of the linear-Airy-plus-clipping model or a
+defect deeper in the drag path is the open question, and it should not be
+labelled a FloatSim defect until someone has separated those. The screening
+consequences hold regardless, because they follow from the drift existing rather
+than from its cause.
+
+The next discriminating experiment is a Cd sweep: if the drift scales with Cd it
+is drag rectification, and if it survives Cd → 0 it is not drag at all.
 
 ## Wave kinematics sign — checked independently of the heading metadata, and CLEAN
 
