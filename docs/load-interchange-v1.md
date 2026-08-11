@@ -144,6 +144,25 @@ be made, and G1.6 is unenforceable for the largest of the BEM-sourced loads.
 This is the cheapest addition on the list: one array, already computed every
 step.
 
+### `mu` carries its own validation, built with the export
+
+In steady periodic motion at ω the total radiation force is
+`A(ω)·ξ̈ + B(ω)·ξ̇`, and the Cummins split is `A_inf·ξ̈ + μ(t)`. Equating gives
+an identity the exported channel must satisfy at the fundamental:
+
+```
+mu  =  [A(w) - A_inf] . xi_ddot  +  B(w) . xi_dot
+```
+
+`A(ω)` and `B(ω)` are already in the hydro database, so this needs **no new
+data**. It is the best available check on the newest and most error-prone
+channel in the schema, and it is **independent of G1.6**: this tests the export
+and the convolution implementation, G1.6 tests the panel reconstruction. A fault
+in either would otherwise be attributed to the other.
+
+**Written as a test alongside the exporter, not as a one-off script after it.**
+A validation that runs once during development validates nothing thereafter.
+
 ## 6. Two-pass generation
 
 **Pass one** writes body-level channels — kinematics, per-source resultants,
@@ -155,9 +174,25 @@ so a peak can be confirmed as physical rather than a numerical spike.
 
 Because every case is currently a **regular wave integrated to steady state**,
 panel pressures reconstruct from the frequency-domain BEM field at the case
-frequency — no per-panel retardation convolution needed. G1.6's spectral
-residual measures whether that suffices: energy at 2ω and 3ω is the signal that
-it does not, and roughly at what order of convolution would be required.
+frequency.
+
+**For radiation this reconstruction is not an approximation — it is exact.** The
+retardation kernel `K(t)` and the damping `B(ω)` are a Fourier pair (Ogilvie),
+and the convolution is linear, so a purely harmonic `ξ̇` at ω produces a
+radiation force at ω and nowhere else. No harmonics are generated. Fundamental-
+only reconstruction of radiation in steady periodic motion is therefore
+*identically* the frequency-domain result.
+
+This inverts an assumption carried through earlier drafts. **Radiation is the
+cleanest of the four sources, not the riskiest.** Any G1.6 residual on the
+radiation channel is harmonic content injected by the *nonlinear* sources — drag
+and the joint constraints — reaching radiation through the motion, and is
+**purely diagnostic**. It is not evidence that the radiation reconstruction is
+insufficient and must not be read as a trigger for per-panel convolution.
+
+The 2ω/3ω escalation signal therefore applies to **excitation only**, where the
+reconstruction genuinely is a fundamental-only approximation of a field driven
+by a not-quite-sinusoidal motion.
 
 Note that the storage pressure which originally motivated deterministic replay
 does not yet exist — there are no irregular seas and no RNG in the solve path
