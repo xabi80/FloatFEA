@@ -152,15 +152,27 @@ phase at ramp start and would average toward zero; this does not move at all.
 ### But "therefore a convention error" does not follow
 
 The sweep's binary verdict rules mechanism 1 *out*; it does not establish that
-the remainder is a defect, and two things now argue against that reading:
+the remainder is a defect. But **mechanism 2 is not eliminated either, and
+nothing so far has tested it.**
 
-- **W1 eliminated the kinematics sign** and **D3 eliminated the heading
-  metadata**, so the obvious convention candidates are already excluded.
-- **A first-order excitation sign error cannot produce a mean force at all.**
-  A harmonic force has zero mean by construction. Reversing its sign reverses
-  the response, not the drift.
+> **A sub-argument in an earlier draft of this document was wrong and is
+> struck.** It claimed that "a first-order excitation sign error cannot produce
+> a mean force, because a harmonic force has zero mean". That is true of the
+> excitation force *directly* and **false of the drift**. The drift comes from
+> drag rectification, which depends on the **relative phase between body motion
+> and fluid kinematics** — exactly what the depth-decay and clipping asymmetries
+> sample. Flipping the excitation sign shifts body motion 180° against an
+> unchanged fluid field, changing that correlation and potentially reversing the
+> rectified force. Zero mean of its own; can still set the sign of someone
+> else's.
 
-A physically legitimate mechanism fits better. At this case the platform surges
+What *has* been tested is narrower than it looked: **W1 tested the wave
+kinematics sign** and **D3 tested the heading metadata**. **The BEM excitation
+force sign convention itself — the subject of
+`docs/post-mortems/m6-epilogue-wave-force-convention-bug.md` — is untested.**
+That is now the leading candidate, not an excluded one.
+
+A physically legitimate mechanism also remains in play. At this case the platform surges
 **2.99× the fluid orbital amplitude**:
 
 ```
@@ -182,15 +194,35 @@ asymmetric treatment). Both are real, both are documented Phase-1 modelling
 choices, and both rectify.
 
 **Status: sustained rectification confirmed, mechanism not yet identified.** It
-is not a startup artifact and not one of the two conventions already checked.
+is not a startup artifact. It is *not* excluded from being the excitation sign
+convention, which remains untested.
 Whether it is legitimate physics of the linear-Airy-plus-clipping model or a
 defect deeper in the drag path is the open question, and it should not be
 labelled a FloatSim defect until someone has separated those. The screening
 consequences hold regardless, because they follow from the drift existing rather
 than from its cause.
 
-The next discriminating experiment is a Cd sweep: if the drift scales with Cd it
-is drag rectification, and if it survives Cd → 0 it is not drag at all.
+### The three discriminating experiments
+
+**DR2 — closed-form frequency-domain response.** Same pattern as the `mu`
+identity, and the data is already held. Solve the constrained response at the
+fundamental from `A(ω)`, `B(ω)`, `C` and Capytaine's excitation force, then
+compare against time-domain surge in **amplitude and phase**. A response 180°
+off the frequency-domain prediction isolates the sign error directly. It also
+independently cross-validates the 2.99× amplification.
+
+**DR3 — does the off-resonance case drift?** A free body has no surge restoring
+and therefore no surge resonance, so the 2.99× surge amplification is almost
+certainly the **rotational mode's horizontal component** at Q ≈ 134. If the
+drift is response-driven rectification it should largely collapse off-resonance;
+a convention error drifts regardless. The T = 2.5 s case (max‖θ‖ = 0.039 rad,
+0.39× the bound) is the natural comparison.
+
+**DR4 — Cd sweep, with its limit stated.** It establishes that the drift is
+**drag-mediated**, not that the phase driving the drag is correct. Scaling with
+Cd is consistent with legitimate rectification *and* with a phase error feeding
+the same drag term. **Necessary, not sufficient** — and it must not be reported
+as though it settled the question.
 
 ## Wave kinematics sign — checked independently of the heading metadata, and CLEAN
 
