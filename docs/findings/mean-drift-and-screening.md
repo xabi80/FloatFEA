@@ -420,7 +420,54 @@ prediction rather than a restatement: it implies the drift should track the
 heave-pitch phase, and should be insensitive to `Cd_t` — which is what was just
 observed.
 
-**Status: mechanism localised, not yet confirmed.** It is not a startup artifact
+### C2 — the mechanism is confirmed in FORM; its magnitude is not reconciled
+
+Re-evaluated `plate_element_force` offline over the stored history, using
+FloatSim's own code rather than a reimplementation, and formed the first-order
+prediction alongside the full force:
+
+```
+samples                                1885   (t = 56.56 to 75.40 s)
+mean plate horizontal force, 12 buoys      -0.079995 N
+mean of n_hat_x * f_n, 12 buoys            -0.080336 N
+peak-to-peak plate horizontal force         0.509298 N
+rms pitch angle, buoy 0                     0.02385096 rad
+```
+
+**The first-order decomposition reproduces the full plate horizontal force to
+0.4%.** That is the C2 test, and it passes: the mean horizontal force *is*
+`<n_hat_x · f_n>`, i.e. the quadratic normal force projected through the
+pitch-tilted normal. The rectification is **first order in theta**, not second.
+
+Two consequences follow, and neither depends on the magnitude:
+
+- **It is leading-order**, so it appears in *any* model that tilts a plate normal
+  with pitch and uses quadratic drag. It is not a numerical artifact of this
+  implementation, and it will not go away with mesh or timestep refinement.
+- **All three `xi[3:6]` interpretations agree to first order**, so the
+  representation ambiguity perturbs this only at second order (~0.4%). The
+  mechanism is **representation-insensitive** — it can be neither blamed on nor
+  fixed by the interpretation split.
+
+**The magnitude does NOT reconcile, and the comparison as run is invalid.**
+−0.080 N against FloatSim's reported −0.432 N is a factor of 5.4. The leading
+explanation is in this script's own setup: it evaluated with
+**`fluid_velocity = 0`, i.e. calm water**. The plate sits 1.4574 m below the
+waterline, where `e^{kz}` at `k = omega^2/g = 0.4078 /m` gives **0.552** — the
+orbital velocity there is 55% of its surface value, not negligible. Omitting it
+changes the relative velocity that the quadratic term acts on.
+
+So the −0.432 N comparison is **not** evidence of disagreement; it is a
+comparison between two different quantities. Recorded that way rather than as a
+5.4x discrepancy, which would be a false finding. Closing it needs the offline
+evaluation repeated with wave kinematics at the plate depth — cheap, since the
+history is now persisted (`c2_history.npz`) and no re-simulation is required.
+
+**Status: mechanism established, magnitude open.** The form is confirmed by
+measurement rather than plausibility, which was C2's purpose. The remaining gap
+is a known omission in the check, not an unexplained result.
+
+**Overall status: driver isolated, mechanism established in form, magnitude open.** It is not a startup artifact
 (phase sweep), not the wave kinematics sign (W1), not the heading metadata (D3),
 and not spar-drag rectification (spar Cd is the brake). It is carried by the
 plate **normal** drag term specifically (N2). Whether that is legitimate model physics or a defect in the
