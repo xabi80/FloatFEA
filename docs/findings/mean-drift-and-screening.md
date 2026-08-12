@@ -449,23 +449,45 @@ Two consequences follow, and neither depends on the magnitude:
   mechanism is **representation-insensitive** — it can be neither blamed on nor
   fixed by the interpretation split.
 
-**The magnitude does NOT reconcile, and the comparison as run is invalid.**
-−0.080 N against FloatSim's reported −0.432 N is a factor of 5.4. The leading
-explanation is in this script's own setup: it evaluated with
-**`fluid_velocity = 0`, i.e. calm water**. The plate sits 1.4574 m below the
-waterline, where `e^{kz}` at `k = omega^2/g = 0.4078 /m` gives **0.552** — the
-orbital velocity there is 55% of its surface value, not negligible. Omitting it
-changes the relative velocity that the quadratic term acts on.
+**What the 0.4% actually compares — and it is weaker than an earlier draft of
+this section implied.** Both quantities come from the **same** `f6`, evaluated
+with `fluid_velocity = 0`:
 
-So the −0.432 N comparison is **not** evidence of disagreement; it is a
-comparison between two different quantities. Recorded that way rather than as a
-5.4x discrepancy, which would be a false finding. Closing it needs the offline
-evaluation repeated with wave kinematics at the plate depth — cheap, since the
-history is now persisted (`c2_history.npz`) and no re-simulation is required.
+```python
+f6 = plate_element_force(..., fluid_velocity=np.zeros(3), ...)
+fx_total  += f6[0]                                   # full horizontal component
+theta_fn  += n_hat[0] * float(np.dot(f6[0:3], n_hat))  # normal-tilt projection
+```
 
-**Status: mechanism established, magnitude open.** The form is confirmed by
-measurement rather than plausibility, which was C2's purpose. The remaining gap
-is a known omission in the check, not an unexplained result.
+So the comparison is **internal to this calm-water reconstruction**. It shows
+that the horizontal plate force is essentially entirely the normal-tilt
+projection — the tangential contribution to horizontal force is 0.4% —
+corroborating the `Cd_t` sweep from a third direction. **It does not compare
+against the force the simulation applied**, because the simulation ran with wave
+kinematics and this reconstruction did not.
+
+**C2 is therefore NOT closed.** Had `theta_fn` been formed from the
+*simulation's* `f_n(t)`, its mean would reproduce the real mean automatically and
+−0.432 N would already be accounted for. It was not; the check never touched the
+simulation's plate force.
+
+**And the depth-decay explanation offered for the 5.4x is withdrawn — it does
+not survive its own sign.** Calm water *removes* the fluid term, so
+`u_rel = −v_body` rather than `u_fluid − v_body`, which for a body moving with
+the wave **increases** `|u_rel|` and should give a **larger** instantaneous
+force. The calm result is *smaller*. A magnitude-attenuation argument therefore
+cannot be the explanation, and `e^{kz} = 0.552` — correct arithmetic for
+T = 3.141 s — was answering the wrong question.
+
+A rectified mean is a **phase-sensitive correlation integral**. Adding fluid
+kinematics changes the phase relationship as well as the amplitude, so a redo can
+land anywhere, **including a sign change**. It must be treated as a **fresh
+measurement, not a correction toward −0.432 N** — the failure mode otherwise is
+tuning until it matches, which is the same reflex as widening a tolerance.
+
+**Status: driver isolated (two independent methods); first-order structure of
+the horizontal force established within the reconstruction; magnitude and
+mechanism-against-simulation both open.**
 
 **Overall status: driver isolated, mechanism established in form, magnitude open.** It is not a startup artifact
 (phase sweep), not the wave kinematics sign (W1), not the heading metadata (D3),

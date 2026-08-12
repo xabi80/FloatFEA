@@ -52,6 +52,32 @@ An assertion that fires is a defect found in one second. A silent `inf`, or a
 ratio taken against a partial window, is a defect found by a reviewer three
 rounds later — if at all.
 
+## Third guard: localise before you judge
+
+**A failing tolerance is tested for localisation — boundary, edge, degenerate
+region — before it is either widened or the code is blamed.**
+
+The C2 differentiation check failed at 19.7% and looked like a broken estimator.
+Split by region it was:
+
+```
+first 3 samples   13.1%      one-sided stencil
+last 3 samples    19.7%      one-sided stencil
+interior max       0.23%     clean
+```
+
+Both available responses to the bare 19.7% were wrong. Widening 5% -> 20% goes
+green and **hides a field that was fine to 0.2%**. Blaming the estimator
+discards a method that worked. Only localisation gives the actual answer, and it
+is cheaper than either.
+
+This guard catches the case **without needing the tightening to be tried first**.
+In C2 the tightened bound happened to be tried and happened to pass, which was
+luck; the rule should not depend on that.
+
+Sits alongside the two standing rules — **never widen to pass**
+(`CLAUDE.md`) and **raw columns only** (above).
+
 ## Corollary: persist the raw history
 
 Two of the three defects could not be re-derived from stored output because the
