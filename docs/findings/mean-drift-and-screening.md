@@ -370,6 +370,22 @@ the scaling denominator was not updated when the script was derived from the
 previous sweep, so it divides by log(1.0). The mean-surge values are unaffected
 and are what the conclusion rests on. Recorded rather than quietly dropped.)*
 
+### Independently converged — the second time in this investigation
+
+FloatSim's own force decomposition isolated the plate-**normal** term at
+**−0.432 N** mean. Our `Cd_t` sweep reached the same conclusion by elimination —
+a tenfold reduction in the tangential coefficient moving the drift by 0.7% —
+from a different harness, by a different method, with no shared intermediate.
+
+That is the **second independent convergence** here, after the drift-velocity
+cross-validation (FloatSim 1.153 mm/s against our 1.266 mm/s, 9.8%).
+
+Recorded deliberately: **two methods agreeing is stronger evidence than either
+standing alone**, and in an investigation where several confident readings have
+already been withdrawn, agreement reached without a shared path is the only kind
+that carries weight. Both convergences should be cited whenever the drift
+characterisation is relied on downstream.
+
 ### This inverts the sequencing rationale for the strip/patch module
 
 The physical argument for expecting the tangential term — that lumping a
