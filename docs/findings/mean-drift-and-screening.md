@@ -5,6 +5,16 @@
 (fin 0215, Cd_n = 5.0, H = 0.04 m, T = 3.141 s). No re-run required.
 **Affects:** F5 screening design, G4.3/G4.6 hydrostatic linearisation.
 
+> **SCALE CAVEAT — every result here is a MODEL-SCALE-Cd finding.** The spar
+> `Cd = 1.2` is a subcritical value (Re = 2.0e4); at full scale Re = 7.1e6 is
+> post-critical, where smooth-cylinder Cd is roughly half. The drift balance is a
+> near-cancellation — driver −0.220 N against brake +0.203 N, net −0.017 N — and
+> the spar carries almost all the brake, so halving its Cd changes the net by
+> **7×**. The 2.3 spar diameters, the `Cd_n` sign-flip behaviour and everything
+> derived from them inherit this. Oscillatory coefficients depend on KC as well
+> as Re so the exact factor is not claimed; the sensitivity is. See
+> `docs/milestones/F1.md` §11.
+
 ---
 
 ## What was measured
