@@ -72,6 +72,8 @@ which sources can actually be separated.
   position[N,3], velocity[N,3], acceleration[N,3]
   rotation[N,3], angular_velocity[N,3], angular_acceleration[N,3]
   rotation_parameterisation       REQUIRED -- see sec.3
+  rotation_validity_bound         REQUIRED -- rad; see sec.3.1. The RECORD
+                                     declares it; the validator enforces it.
 
 /loads/<body>/<source>            source in {excitation, radiation,
                                              morison_drag, plate_drag}
@@ -130,6 +132,43 @@ information. **The validator rejects absence** (§9, G1.2).
 
 The consumer rule is `docs/conventions.md`'s governing principle: **reconstruct
 as produced, not as correct.**
+
+### 3.1 The validity bound travels in the record
+
+"Validity bound" was doing two jobs at once, and they have to be separated
+before the rejection matrix is built:
+
+- a **required schema field**, and
+- an **unresolved conventions item** (§10 Q2 of `docs/milestones/F1.md`).
+
+One of the G1.2 rejections is *"rotation exceeding the declared validity
+bound"*. If the **validator** were expected to hold the number, that rejection
+would be unimplementable until Q2 closed, and F1 would either block on an open
+physics question or ship with a hole in its validator.
+
+**Resolution: the bound is a required declaration in the record.** The validator
+checks `‖θ‖` against whatever the record declares. Q2 decides what the *exporter*
+should declare. **The mechanism is complete and testable now; the value stays
+open.**
+
+This maps exactly onto the rule already governing `floatfea/io/frames.py`:
+resolved values live in the machine-readable source, unresolved ones stay in
+prose and are deliberately absent — because a machine-readable file carrying a
+placeholder would let the validator check records against a number nobody had
+decided. The bound is absent from `frames.py` for that reason, and present in
+the record for this one.
+
+**Consequence for the rejection matrix: two rejections, not one.**
+
+| fault | rejected because |
+|---|---|
+| `rotation_validity_bound` **not declared** | an undeclared bound cannot be checked, and a record that omits it is asserting nothing about its own validity |
+| `‖θ‖` **exceeds** the declared bound | the record's own declaration is violated |
+
+The first is as firm as the second. A record that quietly omits the field would
+otherwise pass every rotation check by having made no claim — which is the
+failure mode of every optional-when-it-should-be-required field this schema has
+already had to close.
 
 ## 4. Time alignment is a required field
 
@@ -591,7 +630,11 @@ Added at v1.0:
   reference point, because both sides would be internally consistent and
   consistently wrong.
 - **Missing `jacobian_evaluation`** on any joint carrying `lam`.
-- **Rotation exceeding the declared validity bound**, once Q2 supplies one.
+- **Missing `rotation_validity_bound`** on any kinematics group (§3.1) — an
+  undeclared bound cannot be checked, and omitting it must not be a way to pass.
+- **Rotation exceeding the declared validity bound** (§3.1). Implementable now:
+  the record declares the number, the validator enforces it, and Q2 decides what
+  the exporter should declare.
 - Strip `window_index` that does not resolve into `/time`; strip stations `s`
   non-monotonic or not spanning the member.
 - **Strips or panels that do not integrate back to the body resultant** for the

@@ -83,6 +83,52 @@ channel), so a wrong exponent is a silent factor-of-50 rather than an obviously
 broken number. See `docs/milestones/F1.md` §3. Consequence: **no scale factor
 appears anywhere in the schema or the numerics.**
 
+## Machine-readable frame definitions
+
+**`floatfea/io/frames.py` is the single source of truth.** The block below is
+*generated* from it, and `tests/verification/rung3/test_conventions_are_generated.py`
+fails if they diverge. **Edit the module, not this block.**
+
+This inverts the direction G0.2 originally asked for. "Tested against" would
+leave two hand-maintained artifacts held together by a comparison — which works
+until someone edits one and updates the test to match, at which point the test
+certifies the drift. "Generated from the document" would mean parsing prose,
+where a formatting change silently alters a definition. With the data as source
+and the prose as rendering, there is only one place a value can be stated, so
+drift is impossible rather than merely detected.
+
+Anything still UNRESOLVED below stays in prose and is deliberately absent from
+the module: a machine-readable file carrying a placeholder would let the
+validator check records against a value nobody had decided.
+
+<!-- GENERATED FROM floatfea/io/frames.py -- DO NOT EDIT BY HAND -->
+
+| quantity | value |
+|---|---|
+| Gravity | (0.0, 0.0, -9.81) m/s^2 (magnitude 9.81, FloatSim's value, **not** 9.80665) |
+| Water density | 1025.0 kg/m^3 |
+| Global origin | platform geometric centre |
+| Vertical datum | still_water_level, z up, right-handed |
+| Heading 0 | propagates along +x, direction of travel |
+| Body frame origin | body_reference_point (**not** the CoG) |
+| Moment reference | body_reference_point |
+| Rotation direction | body_to_global |
+| Bodies / DOF | 17 bodies, 102 DOF, 16 joints x 4 rows, **38 free** |
+| Hydro DOF | 72 (12 buoys x 6; hubs and platform are structural) |
+
+Rotation parameterisation **per producing module**:
+
+| producer | parameterisation |
+|---|---|
+| `morison_drag` | `zyx_intrinsic_euler` |
+| `plate_drag` | `zyx_intrinsic_euler` |
+| `strips` | `zyx_intrinsic_euler` |
+| `patches` | `zyx_intrinsic_euler` |
+| `joints` | `rotation_vector` |
+| `hydrostatic_restoring` | `linearised` |
+
+<!-- END GENERATED -->
+
 ## Global frame
 
 - **Origin:** platform geometric centre. `platform_common.py:51-58` places
