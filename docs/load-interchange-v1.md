@@ -278,6 +278,29 @@ in either would otherwise be attributed to the other.
 **Written as a test alongside the exporter, not as a one-off script after it.**
 A validation that runs once during development validates nothing thereafter.
 
+### 5.0 Reading a G1.6 failure — written before the first one
+
+The panel field reaches FloatFEA through a **different extraction path** than
+the body force DR2 validated, and carries its own phase convention along it. A
+mismatch is therefore possible even though DR2 passed, and G1.6 catches it by
+construction. Writing the diagnosis down now means the first failure is *read*
+rather than investigated from scratch — and the spectral reporting G1.6 already
+requires is what distinguishes the causes:
+
+| signature | cause |
+|---|---|
+| Large residual, **coherent at the fundamental** | phase-convention error in the panel extraction |
+| **Broadband**, or **spatially localised** on the hull | extraction error — geometry, panel ordering, normals |
+
+The two demand opposite responses. A coherent fundamental residual means the
+field is right and its *sign or phase* is wrong, which is a one-line fix in the
+extraction and a convention to declare. A broadband or localised residual means
+the field itself is wrong somewhere, and no convention change will help.
+
+Note this is only diagnosable because G1.6 reports **spectral content per body
+per source** rather than a single number. A scalar residual would show the same
+magnitude for both causes.
+
 ### 5.1 Panel-field validity — required of module 3, decided before it is written
 
 The BEM computes the panel field for a hull **at its reference position**, and
