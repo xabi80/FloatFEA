@@ -1,8 +1,9 @@
-# FloatSim → FloatFEA Load Interchange, v1.1
+# FloatSim → FloatFEA Load Interchange, v1.2
 
-**Schema version:** `1.1` — **LOCKED 2026-08-11**
-*(1.0 locked 2026-08-10; 1.1 splits excitation into Froude-Krylov and
-diffraction — §7.1. A minor increment: it adds required groups.)*
+**Schema version:** `1.2` — **LOCKED 2026-08-11**
+*(1.0 locked 2026-08-10. 1.1 split excitation into Froude-Krylov and diffraction,
+§7.1. 1.2 adds the integrator block, §4.1 — both minor increments, both adding
+required groups.)*
 **File extension:** `.flr` (FloatSim Load Record)
 **Container:** HDF5, metadata as a JSON document in the root attribute `meta`.
 **Audited against:** `docs/findings/G1.0-floatsim-output-audit.md`, HSP tag
@@ -40,13 +41,18 @@ which sources can actually be separated.
 
 ```
 /meta                       (root attribute, JSON)
-  schema_version            "1.1"
+  schema_version            "1.2"
   floatsim_version, hsp_git_sha (40-char, dirty flag), run_id, created_utc
   units                     {length: m, mass: kg, time: s, force: N, angle: rad}
   gravity                   [gx, gy, gz]     -- 9.81 from FloatSim, not 9.80665
   water_density, water_depth
   scale                     "full" | "model" -- declared, never a factor to apply
   assumptions[]             free-text records of any fallback applied
+  integrator                REQUIRED -- v1.2, see sec.4.1
+    scheme                  "generalized_alpha"
+    rho_inf, alpha_m, alpha_f, beta, gamma
+    dt
+    mu_treatment            "lagged_unblended"    -- see sec.4.1
 
 /frames
   global                    origin, axes, z-up flag, still-water-level datum
@@ -135,6 +141,93 @@ Each channel is written at **the index of the state it was evaluated from** and
 declares which via `time_alignment`. Misalignment gives a residual of order
 `ωΔt` — 3.2% at full scale, the magnitude `PLAN.md` §8 names as quiet and wrong.
 Guarded by **G4.5** on convergence *rate*, not by a tolerance.
+
+### 4.1 The integrator block — v1.2, and why blending is done reader-side
+
+`time_alignment` (§4) is a two-value **index** enum. It cannot carry numeric
+integrator parameters, so this is a **new required field and a version bump**,
+not a clarification. Checked rather than assumed, and far cheaper now than after
+the exporter exists.
+
+**The problem §4 does not solve.** Generalized-alpha does not form its balance at
+a timestep. It forms it at *alpha-weighted* states (`newmark.py:415-422`):
+
+```
+(1-alpha_m) M a_{n+1} + alpha_m M a_n
+  + (1-alpha_f) C x_{n+1} + alpha_f C x_n
+  + mu_n                                       <- LAGGED, NOT BLENDED
+  = (1-alpha_f) F_{n+1} + alpha_f F_n
+```
+
+Aligning each force to the index of the state it was evaluated from is
+necessary and **not sufficient**: the force the integrator actually applied over
+a step is a two-term blend, and no single index represents it.
+
+**Decision: export `F_n` per source, plus the blend parameters. Do NOT export the
+blended `F_alpha`.**
+
+- Blending **destroys the per-source decomposition G1.6 depends on** — a blended
+  sum cannot be taken apart again.
+- Blending *per source* stores exactly the information `F_n` already carries,
+  with extra steps.
+- Reader-side blending is a two-term weighted sum with **constant** weights.
+  Nothing is lost, and the convention is **declared rather than baked in** —
+  consistent with `rotation_parameterisation`, `time_alignment`,
+  `inertia_reference_point` and `jacobian_evaluation`.
+
+**Export `alpha_m` as well as `alpha_f`.** The inertia term blends with a
+*different* parameter. At the default `rho_inf = 0.9`:
+
+```
+alpha_m = 0.42105     alpha_f = 0.47368     difference 0.05263
+gamma   = 0.55263     beta    = 0.27701
+```
+
+Exporting only `alpha_f` would let FloatFEA form the right *force* blend against
+the wrong *acceleration* blend, **and that residual would look exactly like an FE
+mapping error** — the failure this schema exists to prevent. `beta`, `gamma` and
+`rho_inf` cost nothing and make the record self-describing.
+
+**`mu` is lagged, not blended.** The convolution enters as `mu_n` — the previous
+step's value — not as `mu_{n+1-alpha_f}` (`newmark.py:391, 421, 459`; the
+docstring at `:48` states the approximation). A reader that blended `mu` like the
+other terms would introduce an error while trying to remove one, so
+`mu_treatment` is declared explicitly.
+
+### 4.2 What this buys: G4.1 loses its floor entirely
+
+This is not damage limitation. Reconstructing the same blends means FloatFEA
+reproduces the **exact discrete equilibrium** the integrator solved, rather than
+approximating a continuous one. The balance then holds to **Newton tolerance**,
+and whatever residual remains is genuinely **FloatFEA's load distribution onto
+the FE mesh** — which is precisely what G4.1 was always meant to measure and,
+until now, never could.
+
+Both previously recorded floors are removed by construction, not budgeted for:
+the `omega*dt` lag (§4) and the alpha-state misalignment (§4.1). **G4.1 finally
+means what it says.**
+
+*Do not merge the two scales when quoting this.* `alpha_f * omega * dt = 0.91%`
+is an **instantaneous** misalignment, ~0.90 N on a 95 N swing. The 0.014 N figure
+is a **mean** residual, 1.6% of that instantaneous scale — dimensionally
+consistent with a second-order mean, which *supports* the alpha hypothesis but
+does not prove it. Quoting them interchangeably would make an inference read as a
+result.
+
+### 4.3 Consequences elsewhere
+
+**F5: a screened snapshot is an alpha-state, not a timestep.** Equilibrium holds
+*between* n and n+1, so selecting a snapshot at index n defines a load case at an
+instant where the balance does not hold. F5 must define the load case against the
+alpha-state explicitly, or F4 and F5 refer to different instants and the mismatch
+appears as an unexplained residual in whichever runs second.
+
+**G4.5 is superseded for this term, not deleted.** A convergence-*rate* guard was
+the right instrument while the best available treatment was an approximation. An
+exact identity is stronger than any rate. G4.5 should be restated to cover what
+remains — the `state_force` / `external_force` index alignment, where a
+regression is still possible — rather than removed, since the two protections
+answer different questions.
 
 ## 5. `mu[N,6]` — new required channel
 
@@ -311,6 +404,10 @@ Added at v1.0:
 
 - **Missing `rotation_parameterisation`** on any kinematics or load group (§3).
 - **Missing `time_alignment`** on any load group (§4).
+- **Missing or incomplete `/meta/integrator`** — all of `alpha_m`, `alpha_f`,
+  `beta`, `gamma`, `dt` and `mu_treatment` (§4.1). A partial block is rejected:
+  a reader with `alpha_f` but not `alpha_m` would silently blend the inertia term
+  wrongly.
 - **Missing `inertia_reference_point`** on any body — G3.1a cannot catch a wrong
   reference point, because both sides would be internally consistent and
   consistently wrong.
