@@ -78,6 +78,44 @@ luck; the rule should not depend on that.
 Sits alongside the two standing rules — **never widen to pass**
 (`CLAUDE.md`) and **raw columns only** (above).
 
+## Fourth guard: a window is not a history
+
+**Any export or diagnostic records the window it covers, and every derived
+quantity that needs pre-history is marked invalid over its warm-up length.**
+
+`run_case` returns only the final `window_periods` window, not the run. That one
+fact has now produced three separate defects:
+
+| consequence | how it showed up |
+|---|---|
+| Second differences inconclusive | only 6 cycles available, leakage at the signal's own order |
+| Drift magnitude wrong by ~16x | the 75 s window's accumulated drift read as the drift generally |
+| `mu` head invalid | zero-padded buffer where the solver had real history |
+
+Three instances of one cause is systemic. The first two were caught after being
+written down; the third was caught before, only because the pattern had been
+named by then.
+
+**The `mu` case is the sharpest, because the invalid region can exceed the data.**
+`mu[0] = 0` is correct at a true run start and simply wrong at the start of a
+window with prior history, and it stays wrong until the convolution buffer
+refills — one full kernel memory. On the 12-buoy platform that is a 60 s kernel,
+**6000 lag samples against ~1955 returned**, so a naive export of a truncated
+window would be invalid over its *entire* length while looking perfectly
+well-formed.
+
+The defences, in order of preference:
+
+1. **Export from the full run**, so the question does not arise.
+2. **Carry at least one kernel length of pre-history** into the window.
+3. **Mark the warm-up invalid and refuse to screen inside it** — the exporter
+   records `valid_from`, and the reader rejects any case selected before it.
+
+And the parameter that decides which case you are in gets **no default**.
+`recompute_mu(..., from_run_start=...)` is keyword-only and required, because a
+wrong default there produces plausible numbers rather than an error — the worst
+available failure mode, and the one the other three guards exist to prevent.
+
 ## Corollary: persist the raw history
 
 Two of the three defects could not be re-derived from stored output because the

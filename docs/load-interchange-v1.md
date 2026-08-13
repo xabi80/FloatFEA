@@ -194,6 +194,23 @@ docstring at `:48` states the approximation). A reader that blended `mu` like th
 other terms would introduce an error while trying to remove one, so
 `mu_treatment` is declared explicitly.
 
+### 4.1.1 The reader MUST branch on `mu_treatment`
+
+**A uniform alpha blend across all terms silently reintroduces the floor §4.2
+removes.**
+
+The exact-discrete-equilibrium claim holds only if *every* term's declared
+treatment is honoured, and `mu`'s differs from the rest: forces and stiffness
+blend with `alpha_f`, inertia with `alpha_m`, and **`mu` is lagged and not
+blended at all**. A reader that applied `alpha_f` uniformly — the natural
+implementation, and the one a careless reading of §4.1 invites — would introduce
+an error of the same order as the one it was correcting, while appearing to
+implement the fix.
+
+So `mu_treatment` is not documentation. It is a **branch condition**, and the
+reader is required to dispatch on it rather than assume `"lagged_unblended"`.
+A record declaring an unrecognised value is rejected, not defaulted.
+
 ### 4.2 What this buys: G4.1 loses its floor entirely
 
 This is not damage limitation. Reconstructing the same blends means FloatFEA
@@ -404,6 +421,12 @@ Added at v1.0:
 
 - **Missing `rotation_parameterisation`** on any kinematics or load group (§3).
 - **Missing `time_alignment`** on any load group (§4).
+- **A case screened inside the `mu` warm-up region.** Records carry
+  `mu_valid_from`; `mu` before that index saw a zero-padded convolution buffer
+  the solver did not, and is **invalid rather than approximate**. A record whose
+  entire history lies inside the warm-up is rejected outright.
+- **An unrecognised `mu_treatment`** — the reader branches on it (§4.1.1) and
+  must not default.
 - **Missing or incomplete `/meta/integrator`** — all of `alpha_m`, `alpha_f`,
   `beta`, `gamma`, `dt` and `mu_treatment` (§4.1). A partial block is rejected:
   a reader with `alpha_f` but not `alpha_m` would silently blend the inertia term
