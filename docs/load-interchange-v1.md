@@ -301,6 +301,64 @@ Note this is only diagnosable because G1.6 reports **spectral content per body
 per source** rather than a single number. A scalar residual would show the same
 magnitude for both causes.
 
+### 5.0.1 Radiation reconstruction sums over ALL radiating DOF — 72, not 6
+
+The database is a genuine 12-body coupled solve (G1.0 §4.3), so the radiation
+pressure field on body *i* depends on the motion of **every** body.
+**Reconstructing body *i*'s field from body *i*'s own motion alone silently drops
+the interaction** — measured at 2.7% of own-body added mass at the rotational
+mode.
+
+G1.6 would catch it, since 2.7% sits comfortably above any sensible tolerance.
+But catching it costs a debugging cycle that building it right does not, so it is
+stated here as a requirement rather than left to be discovered.
+
+**The count is 72, not 102.** The global state vector is 102 DOF (17 bodies), but
+only the **12 buoys carry hydrodynamics** — the four hubs and the platform are
+`structural=True` with no hydro database. `radiating_dof` and `influenced_dof`
+each have exactly 72 entries, `buoy1__Surge … buoy12__Yaw`. An implementation
+that summed over 102 would index past the end of the BEM data or, worse, pick up
+structural DOF that have no radiation field at all. `_hydro_dof(deck)` is the map
+between the two.
+
+### 5.0.2 Storage: export complex coefficients, reconstruct on read
+
+Sized before writing, because the windowing that made strip export cheap does
+**not** carry over — strips are ~20 per member, panels are three orders more.
+Measured counts: **1488** panels per hull, **17,856** for the 12-hull platform
+mesh; 72 radiating DOF; 81 frequencies in the swept database, 13 in the reduced
+grid the platform runs use.
+
+At 40 snapshots × a 101-sample window = 4040 samples:
+
+| option | arithmetic | volume |
+|---|---|---|
+| Time-domain, 3 fields, full platform mesh | 17,856 × 4040 × 8 B × 3 | **1.73 GB** |
+| Time-domain, single hull reused | 1488 × 4040 × 8 B × 3 | 0.14 GB |
+| **Complex coefficients**, FK + diffraction, 13 ω | 17,856 × 13 × 16 B × 2 | 7 MB |
+| **Complex coefficients**, radiation, 13 ω × 72 DOF | 17,856 × 72 × 13 × 16 B | 267 MB |
+| **Coefficient total at the case frequencies** | ~11 distinct ω in the fan | **~232 MB** |
+
+**Decision: store the complex field plus the motion, and reconstruct on read.**
+
+- **It loses nothing.** `K(t)` and `B(ω)` are a Fourier pair and the convolution
+  is linear, so in steady periodic motion the reconstruction is *exact at the
+  fundamental*, not approximate (§6). Storing coefficients rather than samples
+  discards no information the time-domain export would have carried.
+- **It collapses the volume by the window length** — 4040 samples become ~11
+  frequencies — for a net **~7× reduction**, 1.73 GB to ~232 MB.
+- **The motion is already exported.** `/kinematics/` carries what the
+  reconstruction needs, so the coefficient form adds no second data source that
+  could disagree with the first.
+- Radiation dominates the remainder because of its 72-DOF dimension. If that
+  becomes binding, the lever is the number of distinct case frequencies, not the
+  window — which is the opposite of where one would look by default, and the
+  reason for recording the arithmetic rather than the conclusion.
+
+The alternatives, rejected: narrower windows and fewer panel-carrying snapshots
+both trade away screening coverage to solve a problem that the coefficient form
+removes outright.
+
 ### 5.1 Panel-field validity — required of module 3, decided before it is written
 
 The BEM computes the panel field for a hull **at its reference position**, and
