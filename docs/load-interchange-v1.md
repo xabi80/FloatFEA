@@ -359,6 +359,41 @@ The alternatives, rejected: narrower windows and fewer panel-carrying snapshots
 both trade away screening coverage to solve a problem that the coefficient form
 removes outright.
 
+### 5.0.3 Time convention is a required field — and this is why
+
+Measured while building module 3: the relation that holds in Capytaine 2.3.1 is
+**`F_rad = ω²A + iωB`**, the conjugate of the form several references write,
+which fixes the time dependence as **`e^{-iωt}`**. FK and diffraction matched
+with no sign issue, so the difference is in the A/B relation, not in the pressure
+extraction.
+
+**Scope, stated so this does not read alarmingly later.** This is a property of
+the **new extraction path**, not a latent defect in FloatSim. FloatSim's own
+radiation convention is anchored by **stability**: a flipped sign on `B` is
+negative damping, and the runs would *diverge*, not drift. They do not. Nothing
+in the simulator is wrong here — the convention simply had to be established for
+a path that did not exist before.
+
+**But coefficient storage makes it a contract.** Because §5.0.2 stores complex
+coefficients and reconstructs on read, **the reader applies the time
+convention**. A reader written six months from now assuming `e^{+iωt}` would put
+a **180° phase error on every damping term while leaving added mass correct** —
+the same failure just caught, relocated downstream to where G1.6 sits on the far
+side of it and would report it as an unexplained residual.
+
+So `time_convention` is **required**, in the same class as
+`rotation_parameterisation` and `time_alignment`:
+
+```
+/meta
+  time_convention   REQUIRED: "exp_minus_i_omega_t" | "exp_plus_i_omega_t"
+```
+
+Missing or unrecognised is **rejected**, not defaulted. This is the second time
+the coefficient-storage decision has changed what the schema must carry — the
+first being the panel geometry itself — which is why §5.0.2 settles that decision
+with its sizing arithmetic *before* the writer is wired rather than alongside it.
+
 ### 5.1 Panel-field validity — required of module 3, decided before it is written
 
 The BEM computes the panel field for a hull **at its reference position**, and
@@ -543,6 +578,9 @@ Added at v1.0:
   `mu_valid_from`; `mu` before that index saw a zero-padded convolution buffer
   the solver did not, and is **invalid rather than approximate**. A record whose
   entire history lies inside the warm-up is rejected outright.
+- **Missing or unrecognised `time_convention`** (§5.0.3). With coefficients
+  stored rather than samples, the reader applies the convention; a wrong
+  assumption is a 180° phase error on every damping term.
 - **An unrecognised `mu_treatment`** — the reader branches on it (§4.1.1) and
   must not default.
 - **Missing or incomplete `/meta/integrator`** — all of `alpha_m`, `alpha_f`,

@@ -78,6 +78,39 @@ luck; the rule should not depend on that.
 Sits alongside the two standing rules — **never widen to pass**
 (`CLAUDE.md`) and **raw columns only** (above).
 
+## Fifth guard: only a convention-free anchor detects a convention error
+
+**A frequency-domain / time-domain comparison detects implementation errors. It
+does not detect convention errors, because both sides can share the convention
+and agree perfectly while both are flipped.**
+
+DR2 was built with this weakness and it is now demonstrated rather than
+hypothetical. The TD/FD comparison passed to <2°, and it *had* to — both sides
+read the same BEM data through the same convention. What actually established
+the excitation sign was the **physical anchor**: heave rides long waves in phase
+with `eta`, where a flip would read anti-phase. That anchor uses no BEM
+convention on either side, which is the only reason it can see the thing the
+comparison cannot.
+
+The same structure appeared immediately afterwards in the panel extraction,
+where the radiation damping sign turned out to be the conjugate of the assumed
+form (schema §5.0.3).
+
+**So every such comparison is built with an anchor, named alongside it:**
+
+| quantity | convention-free anchor |
+|---|---|
+| Excitation | heave in phase with `eta` in long waves |
+| Radiation | **stability** — positive dissipation; a flipped `B` diverges rather than drifts |
+
+The radiation anchor is worth dwelling on, because it is the one that settles
+scope. It is why the Capytaine finding is a property of the *new extraction
+path* and not a latent simulator defect: FloatSim's runs are stable, therefore
+its `B` sign is right, and no further argument is needed.
+
+When neither anchor exists for a quantity, that is itself the finding — say so
+rather than presenting an FD/TD agreement as if it closed the question.
+
 ## The general pattern: every reconstructed quantity carries its validity window
 
 The guard below started as a fact about `run_case`. It has since applied three
