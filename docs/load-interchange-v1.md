@@ -278,6 +278,43 @@ in either would otherwise be attributed to the other.
 **Written as a test alongside the exporter, not as a one-off script after it.**
 A validation that runs once during development validates nothing thereafter.
 
+### 5.1 Panel-field validity — required of module 3, decided before it is written
+
+The BEM computes the panel field for a hull **at its reference position**, and
+linear theory assumes small motion about that position. The platform translates
+**~2.3 spar diameters** over a run, so the field becomes progressively less
+applicable to where the hull actually is.
+
+This is the same validity-window logic as the `mu` warm-up (§5) and the
+stored-window rule, in its third application — see
+`docs/instrumentation.md` § "The general pattern".
+
+Required in `/panels/`:
+
+```
+/panels/<body>/<source>
+  reference_pose[7]         REQUIRED -- position + rotation the BEM assumed
+  body_pose[K,7]            REQUIRED -- actual pose at every exported instant
+  validity_bound            REQUIRED -- max admissible displacement from
+                                        reference, WITH its basis stated here
+```
+
+The validator **rejects or flags** any screened snapshot whose displacement from
+the reference exceeds `validity_bound`. The bound and its justification live in
+this schema, not in a code comment — a threshold whose reasoning is a comment is
+a number nobody can re-check.
+
+### 5.2 Module 3 carry-forward, so nothing is lost
+
+- **FK and diffraction are exported separately** (§7.1, v1.1).
+- **The G1.6 gate is on their SUM** against FloatSim's combined applied
+  excitation. The per-field comparison against Capytaine's own resultants is a
+  **different check** — panel extraction, not simulation agreement — and is
+  labelled as such (§7.2).
+- **The panel → FE mapping is G4.4, in F4, not this module's job.** Module 3
+  exports the field; F4 maps it. Keeping that boundary clean is what makes G1.6
+  and G4.4 independent failure modes rather than one blurred one.
+
 ## 6. Two-pass generation
 
 **Pass one** writes body-level channels — kinematics, per-source resultants,

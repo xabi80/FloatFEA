@@ -78,6 +78,40 @@ luck; the rule should not depend on that.
 Sits alongside the two standing rules — **never widen to pass**
 (`CLAUDE.md`) and **raw columns only** (above).
 
+## The general pattern: every reconstructed quantity carries its validity window
+
+The guard below started as a fact about `run_case`. It has since applied three
+times, to three unrelated quantities, which makes it a pattern rather than a
+rule about one function:
+
+| quantity | reconstructed from | valid only where |
+|---|---|---|
+| `mu` | replayed convolution | one kernel memory after real history begins |
+| drift, second differences | a returned window | the window actually covers |
+| panel pressure field | BEM at the hull's **reference position** | displacement from that reference stays small |
+
+> **Every reconstructed quantity is exported with the window over which it is
+> valid, and the validator refuses to use it outside that window.**
+
+The third row is the one still ahead of us and the reason to state the pattern
+now rather than after. Panel pressures are computed by the BEM for a hull *at its
+reference position*, and linear theory assumes small motion about that position.
+The platform translates **~2.3 spar diameters** over a run
+(`docs/findings/mean-drift-and-screening.md`), so the field becomes progressively
+less applicable to where the hull actually is. Same class as G4.6, but attached
+to the panel field rather than the waterline — and free to build in, expensive to
+retrofit once the exporter and its records exist.
+
+What that requires of module 3, decided before it is written:
+
+- record the **body pose at every exported instant**, not just the reference;
+- the validator **rejects or flags** any screened snapshot whose displacement
+  from the BEM reference exceeds a stated bound;
+- **the bound and its basis live in the schema**, not in a comment — a
+  threshold whose justification is a code comment is a number nobody can
+  re-check, which is the failure mode `docs/closure/F0.md` records under a
+  different heading.
+
 ## Fourth guard: a window is not a history
 
 **Any export or diagnostic records the window it covers, and every derived
