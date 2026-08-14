@@ -255,6 +255,20 @@ direct linear solve. Geometric stiffness is designed for but may be deferred.
 
 ### F3 — Model builder and mass reconciliation · *Week 4*
 
+**Precondition — full-scale deck and BEM re-run.** Deferred out of F1 by decision
+(2026-08-13) and binding here. G3.1b compares FE mass properties against the
+FloatSim body properties that generated the loads, and the FE model is inherently
+full scale — S355, an 8.41 m spar, 180 mm walls, full-scale allowables. Comparing
+that against a model-scale record requires exactly the conversion the
+full-scale decision forbids, not as a convenience but as the only way to make the
+comparison at all. F4 is where loads reach the structure; **F3 is where the scales
+must already agree.**
+
+Riding with it: re-characterisation of the surge drift at full-scale Reynolds
+(the spar carries almost all of the drift brake, and Cd = 1.2 is a subcritical
+value), and the carried G1.6 obligation from F1 — re-run on the first full-scale
+record and record the result.
+
 Parametric platform model generated from a YAML model definition. Body mass,
 centre of gravity, and inertia tensor computed from the FE mesh and reconciled
 against the values FloatSim used.

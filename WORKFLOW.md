@@ -71,6 +71,37 @@ out the verification suite while every build stays green.
 treat a tolerance change as a finding that needs a physical explanation, every
 time, even when it is obviously fine.
 
+## Two practices that earned their place
+
+These were not in the original plan. Both came out of things that went wrong, and
+both are cheap enough to apply everywhere.
+
+**Convert arguments into measurements.** Wherever a property is believed on
+reasoning — "the replay uses the same object so it must match", "the export is
+additive because nothing imports it", "this gate holds at either scale" — there
+is usually a cheap way to measure it instead, and the measurement finds things
+the reasoning does not. The pattern has now paid off on the radiation memory
+term, the strip-force sum, the panel extraction, and the additive-only property,
+and in one of those the reasoning was wrong. When a claim matters and a
+measurement exists, take the measurement.
+
+The corollary is that a check must be able to fail. A negative control on a
+degenerate fixture, a validator that rejects everything, a tolerance so wide
+nothing trips it — each passes while certifying nothing, which is worse than
+having no check at all, because a green result is read as evidence.
+
+**Re-read a milestone's stated dependencies at every status, not only when the
+milestone opens.** A dependency that goes unmentioned across several reports is
+either progressing, blocked, or forgotten, and only one of those is visible
+without looking. This failed once here in a way worth understanding: every
+individual status was complete and accurate about what it covered, nothing was
+concealed, and a locked dependency still sat unstarted for weeks while results
+accumulated on top of it. The guard is not "report more" — more reporting at the
+same scope would have changed nothing. It is that the dependency list is part of
+what gets re-read.
+
+Dependency lines should therefore carry status, not just names.
+
 ## Session hygiene
 
 Start each session by pointing Claude Code at `CLAUDE.md`, `PLAN.md`, and the
