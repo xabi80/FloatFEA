@@ -7,6 +7,56 @@
 
 ---
 
+## -1. THE CONTRADICTION, AND ITS LIKELY RESOLUTION
+
+Two measurements of the same quantity disagree by ~56×, and both cannot be right:
+
+```
+residual decomposition (same denominator, AA3)  dB = 2.79 x B_tab
+kernel transform, full 72x72 (Frobenius)        dB < 0.05 x B_tab
+```
+
+**AA3: not a denominator artifact.** Recomputed per-DOF at the fundamental on a
+common basis, `|Bterm|/|T| = 0.0986` against the earlier global-max `0.1032` —
+the two reductions agree, so the 2.09 (now 2.79) factor is real arithmetic, not a
+mismatched ratio. The AA3 suspicion was reasonable given precedent but does not
+hold here.
+
+**AA1 accepted: the A channel needs no test.** A purely quadrature residual *is*
+the statement that `A` is faithful — the in-phase component works out to 0.07% of
+the A-share. The sine transform would confirm what the data already says, and is
+not run.
+
+**AA4 is structurally unavailable on this record.** At a *single* frequency
+`ξ̈ = iω·ξ̇` in phasor terms, so `dA` and `dB` are **perfectly confounded** — no
+regression can separate them. The attempted fit returns `dB/B_tab` of 46.9, 44.6,
+39.2 and 6233 across DOF: not a measurement, a degenerate fit. It is also
+misspecified per-DOF, since `dA` and `dB` are 72×72 matrices and off-diagonal
+energy is 96.8% of `B_tab`. The in-phase/quadrature split is the *only*
+separation single-frequency data admits, and the phasor method already performs
+it. A third independent measurement needs **multi-frequency** data.
+
+### The resolution that fits every measurement
+
+The identity `mu = [A(ω)−A_inf]·ξ̈ + B(ω)·ξ̇` holds for a sinusoid extending back
+to `t = −∞`. `mu(t)` convolves **60 s of history** — the full kernel memory —
+whereas every check that excluded a transient (V1, W1) operated on an **8-cycle,
+25 s comparison window**.
+
+Those are different windows, and the response amplitude is *not* stationary over
+the longer one: the envelope was measured falling ×0.90 across 100 s. The
+convolution weights that varying history, so `mu` cannot equal a steady-state
+prediction built from a single instantaneous amplitude — while the kernel itself
+remains faithful, `A` remains faithful, and `B` remains faithful.
+
+**This reconciles all three measurements** rather than refuting a fourth
+mechanism. It is a property of the comparison window, not of FloatSim.
+
+**Test:** repeat on a record stationary over a full 60 s kernel memory — which
+the ~84-cycle re-run (W3) provides anyway. If the residual collapses, closed.
+
+---
+
 ## 0. HEADLINE CORRECTION — the direct measurement refutes the inference
 
 **Everything below §1 was written from an inference. The direct measurement
