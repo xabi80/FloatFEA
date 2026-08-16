@@ -7,6 +7,54 @@
 
 ---
 
+## 0. HEADLINE CORRECTION — the direct measurement refutes the inference
+
+**Everything below §1 was written from an inference. The direct measurement
+contradicts it, and the inference is withdrawn.**
+
+`B(ω) = ∫ K(t) cos(ωt) dt`, and the kernel actually used is in hand, so
+`B_eff(ω)` is directly computable — no simulation, no argument. Doing it:
+
+```
+hydro[40] = g52   w=2.0004   B_tab 3.072e-02   B_eff 3.229e-02   ratio 1.051
+hydro[46] = g58   w=2.0004   B_tab 2.928e-02   B_eff 3.053e-02   ratio 1.043
+hydro[ 2] = g2    w=2.0004   B_tab 1.962e-02   B_eff 1.961e-02   ratio 1.000
+
+frequency-resolved, median ratio across 0.5 < w < 8:  1.003
+  w > 2:   1.000 - 1.005   (excellent)
+  w < 1.5: wild ratios, but B_tab is 1e-6..1e-4 there -- negligible absolutely
+```
+
+**The kernel reproduces the tabulated diagonal damping to within 5% at the case
+frequency, and to 0.3% in the median across the band.** Neither proposed branch
+survives: it is not `+3.09 B_tab`, and it is not `-1.09 B_tab`. There is no
+factor of three and no sign reversal.
+
+**So the 206%-of-`B` figure cannot be attributed to a diagonal `B` error.** The
+residual itself is real and purely quadrature — that part stands — but its origin
+is not what §2–§3 infer. The remaining candidate is the **off-diagonal** kernel:
+the comparison above is diagonal-only, while `mu` is a full 72×72 matrix–vector
+product, and the database is a genuine multi-body solve with cross-body coupling
+already measured at 2.7% of own-body added mass.
+
+**Nothing goes upstream on the strength of §2–§3.** They are retained below only
+to show what was inferred and how the measurement overturned it.
+
+### An indexing error, caught in the same step
+
+The first run of this comparison indexed the **102-DOF global** kernel with a
+**72-DOF hydro-subset** index and compared it against `B_tab[j,j]` — two
+conventions inside one comparison. It put global DOF 46, which lies in hub2 and
+is *structural*, opposite a hydro DOF, and returned `B_eff = 0.000000e+00` with
+ratio 0.000. Read uncritically, that would have looked like a spectacular
+confirmation of "the kernel destroys the damping".
+
+The 72-vs-102 trap is one this project has already recorded twice
+(`docs/conventions.md` § Numbering, and the L1 radiation-DOF correction). It bit
+anyway, in the script written to resolve the question it bears on.
+
+---
+
 ## 1. What was measured
 
 Comparing the exported `mu` against a frequency-domain prediction built from the
