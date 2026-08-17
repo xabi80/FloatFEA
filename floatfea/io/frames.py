@@ -168,3 +168,85 @@ def render_markdown() -> str:
         "<!-- END GENERATED -->",
     ]
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Index-space conversion (Z4).
+#
+# Asserting N_HYDRO_DOF == 72 does NOT protect the mapping. What bit in practice
+# was an index-SPACE confusion: a 72-space index used against a 102-space array,
+# where BOTH spaces have a valid entry at 46 -- global 46 lands in hub2, which is
+# structural, so the comparison silently returned zero damping and looked like a
+# spectacular confirmation of the hypothesis under test.
+#
+# A count assertion cannot catch that. These helpers make the mapping structural
+# rather than remembered: never index across spaces by hand.
+# ---------------------------------------------------------------------------
+
+HYDRO_GLOBAL_DOF: Final[tuple[int, ...]] = tuple(
+    6 * buoy_body_index(k) + i for k in range(N_HYDRO_BODIES) for i in range(6)
+)
+"""The 72 GLOBAL DOF indices that carry hydrodynamics, in hydro-subset order."""
+
+
+def hydro_to_global(j: int) -> int:
+    """Global DOF index for hydro-subset index ``j`` (0 <= j < 72)."""
+    if not 0 <= j < N_DOF_HYDRO:
+        raise IndexError(
+            f"hydro index {j} outside [0, {N_DOF_HYDRO}). Passing a GLOBAL index "
+            "here is the error this function exists to prevent."
+        )
+    return HYDRO_GLOBAL_DOF[j]
+
+
+def global_to_hydro(g: int) -> int:
+    """Hydro-subset index for global DOF ``g``. Raises if ``g`` is structural.
+
+    The raise is the point: the hubs and platform have no radiation field, and a
+    silent zero from indexing into them is indistinguishable from a physical
+    result.
+    """
+    if not 0 <= g < N_DOF_TOTAL:
+        raise IndexError(f"global index {g} outside [0, {N_DOF_TOTAL})")
+    try:
+        return HYDRO_GLOBAL_DOF.index(g)
+    except ValueError:
+        raise IndexError(
+            f"global DOF {g} is STRUCTURAL (a hub or the platform) and carries no "
+            "hydrodynamics. Indexing a 72-space array with it, or a 102-space "
+            "array with a hydro index, is the 72-vs-102 trap."
+        ) from None
+
+
+def assert_comparison_window_is_valid(
+    comparison: tuple[float, float],
+    **validity: tuple[float, float],
+) -> None:
+    """Every side of a comparison must be valid across the comparison window.
+
+    Extends the validity-window rule (`docs/instrumentation.md`) from *carrying*
+    a window to *asserting containment*. The rule has now appeared five times —
+    ``mu``'s warm-up, the truncated stored window, the drift magnitude, the panel
+    reference pose, and a comparison window shorter than the kernel memory that
+    feeds one of its sides. The fifth is what motivates making it an assertion
+    rather than a note.
+
+    ``mu`` is valid only from ``t0 + kernel_memory``; a comparison window that
+    starts earlier is comparing a quantity against a prediction it cannot
+    satisfy, and the discrepancy looks like physics.
+    """
+    c0, c1 = comparison
+    if c1 <= c0:
+        raise ValueError(f"comparison window is empty or reversed: {comparison}")
+    bad = {
+        name: win
+        for name, win in validity.items()
+        if not (win[0] <= c0 and c1 <= win[1])
+    }
+    if bad:
+        detail = "; ".join(f"{n} valid over {w}" for n, w in sorted(bad.items()))
+        raise ValueError(
+            f"comparison window {comparison} is not contained in every side's "
+            f"validity window -- {detail}. A quantity compared outside its "
+            "validity window produces a discrepancy that looks like physics."
+        )
