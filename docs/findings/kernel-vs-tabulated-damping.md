@@ -1,13 +1,92 @@
-# The retardation kernel's damping differs materially from the tabulated `B(ω)`
+# The retardation kernel reproduces BOTH tabulated channels; it is not the source of the G1.6 residual
 
 **For:** FloatSim / HSP
-**From:** FloatFEA, G1.6 first pass, 2026-08-15
-**Status:** measured at one frequency on one case. **Not a defect claim** — see
-§4 — but an unexamined dependency on a quantity now measured to be approximate.
+**From:** FloatFEA, G1.6, 2026-08-15, **superseded 2026-08-25**
+**Status:** **the upstream claim is WITHDRAWN.** Both channels of the kernel are
+now measured directly against the tabulated coefficients, and both are faithful.
+Retained because the *route* to the withdrawn claim is the finding.
 
 ---
 
-## -1. THE CONTRADICTION, AND ITS LIKELY RESOLUTION
+## -2. THE KERNEL IS EXONERATED IN BOTH CHANNELS (AD1, AD2)
+
+### AD1 — the bridge that generated this whole document is invalid
+
+Everything from §-1 down rests on one inferential step: *the residual is purely
+quadrature, therefore the error is in `B`*. That step assumes an **uncoupled**
+system. In general
+
+```
+mu_j = -w^2 * sum_k (A - A_inf)_jk X_k   -   i w * sum_k B_jk X_k
+```
+
+and the two sums run over **different matrices**, so they carry different complex
+phases. The 90° separation the bridge needs holds only when
+`arg(sum A_jk X_k) == arg(sum B_jk X_k)` — exact for a single uncoupled DOF,
+false in general. Measured: **+90.0° exactly** for one uncoupled DOF, versus
+**+3.2°, −178.4°, −3.7°, −44.8°** on coupled trials. With **96.8% of `B`'s energy
+off-diagonal**, the failure is severe.
+
+**Consequence:** the residual (a measurement) and the kernel transform (a
+measurement) **both stand**. The 2.09× and the 42–56× "contradiction" were
+manufactured by the inference sitting between them. **There was never a `dB` to
+explain**, and no seventh mechanism is needed. §-1 below is superseded entire.
+
+### AD2 — the A channel, measured rather than inferred
+
+AA1 held that a purely quadrature residual *is* the statement that `A` is
+faithful, so the sine transform need not be run. AD1 removes that argument's
+foundation, so `A` is measured the same way `B` was — from the other half of the
+same Ogilvie pair, needing no simulation:
+
+```
+B(w) =        integral K(t) cos(w t) dt
+A(w) = A_inf - integral K(t) sin(w t) dt / w
+```
+
+At the case frequency `ω = 2.0004 rad/s`, Frobenius over the full 72×72:
+
+```
+||A_tab - A_inf||_F   2.5957e+01     <- the quantity mu actually multiplies
+||A_eff - A_tab||_F   1.2731e+00     ratio  0.0490
+||B_tab||_F           1.9667e+00
+||B_eff - B_tab||_F   3.9915e-02     ratio  0.0203
+
+dominant diagonals, (A_eff-A_inf)/(A_tab-A_inf):  0.982 .. 0.990
+median over 37 in-band frequencies:  dA 0.0507   dB 0.0258
+```
+
+`dB/B` reaches 1.09 at the low end, but `|B|_F` is `4.7e-02` there against
+`1.4e+02` at ω=5.3 — negligible in absolute terms, the same pattern the earlier
+diagonal comparison showed.
+
+**How much of the 20.9% residual can the kernel account for?** Since
+`||dA·x|| <= ||dA||_F·||x||`, these ratios bound it:
+
+```
+A-term share of |mu|   4.689e-01 / 4.884e-01 = 96.0%   x 0.0490 = 4.71%
+B-term share of |mu|   5.043e-02 / 4.884e-01 = 10.3%   x 0.0203 = 0.21%
+                                            bound on kernel error  ~4.9% of |mu|
+                                                 observed residual  20.9% of |mu|
+```
+
+**At most about a quarter, and that is an upper bound assuming worst-case
+alignment.** The kernel is faithful in both channels and cannot be the source.
+This is the first time the quantity has been *bounded* rather than inferred.
+
+**Withdrawn upstream:** the §5 claim that response amplitudes — including
+`max‖θ‖ = 8.97°` — inherit a kernel damping error at the "200%-of-`B`" level.
+`dB/B = 0.020`. Nothing goes to FloatSim on this.
+
+**Still open:** the residual itself. AD3 (broadband spectral) is the remaining
+candidate and the one never tested.
+
+---
+
+## -1. SUPERSEDED BY AD1 — the "contradiction" was an artifact of the bridge
+
+> Retained verbatim to show what was inferred. AD1 shows the 2.79× and the
+> kernel transform were never in conflict; the inference between them was.
 
 Two measurements of the same quantity disagree by ~56×, and both cannot be right:
 
