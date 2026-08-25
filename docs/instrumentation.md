@@ -199,3 +199,51 @@ This governs scratch and investigation scripts. Committed code is covered by the
 verification ladder and the tolerances rule, which are stricter. The point of
 writing it down is that scratch scripts are *not* covered by those, are trusted
 anyway, and feed conclusions into documents that outlive them.
+
+## Sixth guard: when mechanisms fall in sequence, suspect the inference
+
+**Six refutations in a row is evidence about the frame, not about the physics.**
+
+The G1.6 radiation investigation refuted, in order: harmonic content, my own
+frequency lookup, the free-decay transient, the driven build-up, a phase
+convention, a diagonal `B` error, an off-diagonal `B` error, and a comparison-
+window mismatch. Each refutation was sound. The sequence was the signal, and it
+was missed for six rounds.
+
+**The tell:** every refuted mechanism was *a way for `dB` to be large* — and
+`dB` being large was **never measured**. It was *derived*, from a bridge that
+said "the residual is purely quadrature, therefore the error is in `B`".
+
+That bridge assumes an **uncoupled** system:
+
+```
+mu_j = -w^2 * sum_k (A - A_inf)_jk X_k   -   i w * sum_k B_jk X_k
+```
+
+The two sums run over **different matrices**, so they carry different complex
+phases. The 90° relationship the bridge needs holds only when
+`arg(sum A_jk X_k) == arg(sum B_jk X_k)` — true for a single uncoupled DOF,
+false in general. With **96.8% of `B`'s energy off-diagonal**, it fails severely.
+
+So the contradiction between the residual decomposition and the kernel transform
+was **manufactured by the inference**. Both measurements stand. There was never
+a `dB` to explain.
+
+> **When several mechanisms are refuted in sequence, suspect the inference that
+> generated them, not the next mechanism.**
+
+The practical form: ask *which quantity in this chain was measured, and which was
+derived?* A derived quantity that has survived six rounds of mechanism-hunting
+without ever being measured directly is the thing to doubt.
+
+## Corollary to the persist rule: persist somewhere durable
+
+The rule above says scratch diagnostics persist their raw series. This
+investigation persisted to a **session-temporary scratchpad**, which was then
+wiped — losing a 20-minute record and every analysis script mid-diagnosis.
+
+**"Persisted" means persisted where the next session can reach it.** Analysis
+inputs that cost minutes to regenerate belong under `artifacts/`, not in a temp
+directory. Persisting to volatile storage is the same failure as not persisting,
+one level up, and it cost this investigation its data at the exact moment two
+decisive tests were queued.
