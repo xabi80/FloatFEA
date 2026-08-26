@@ -247,3 +247,55 @@ inputs that cost minutes to regenerate belong under `artifacts/`, not in a temp
 directory. Persisting to volatile storage is the same failure as not persisting,
 one level up, and it cost this investigation its data at the exact moment two
 decisive tests were queued.
+
+## Seventh guard: reproduce the solver's discretisation, not the textbook rule
+
+Checking a solver's numerics against *the correct rule for the same integral*
+answers a different question than the one asked.
+
+The G1.6 residual was chased for eight rounds and briefly **withdrawn as
+refuted** because the retardation kernel, transformed back with **trapezoid**
+weights, reproduced the tabulated `A(ω)` and `B(ω)` to ~5%. That measurement was
+sound. It was also irrelevant: `RadiationConvolution.evaluate()` is a **plain
+rectangular sum**, and the `dt·K[0]/2` difference between the two rules was
+`5.82×` the entire tabulated `B`.
+
+Recomputed with the solver's own weights, the quadrature rule alone predicted the
+measured residual — `0.2258` against `0.2085`, phase within 1.6°.
+
+> **A faithful kernel and an unfaithful sum over it are different findings, and
+> only the second one was ever applied to the platform.**
+
+The tell: a check that exonerates a component while the discrepancy persists.
+Before concluding a component is faithful, confirm the check used *its* arithmetic
+and not the arithmetic it should have used.
+
+## Eighth guard: a gate should carry the failure it detects, not only the success it asserts
+
+The general form of the vacuous-negative-control rule, which has now appeared in
+**four disguises**:
+
+| disguise | how it passes without testing anything |
+|---|---|
+| vacuous negative control | the control never had the property it was controlling for |
+| fixture-pose meta-test | the fixture's pose is near zero, so a pose-sensitive check cannot discriminate |
+| rename-detection test | `"nothing imports X"` passes **trivially** once `X` has been renamed away |
+| FloatSim's in-test rectangular rule | the gate cannot fail against a stub, because the stub is what it compares to |
+
+In every case the check is green and **certifies rather than tests**.
+
+> **A check that cannot demonstrate its own failure mode certifies rather than
+> tests. Build the failure into the gate, not just the pass.**
+
+Concretely, a gate should be able to answer: *what would make this red?* If the
+answer is "nothing available in this fixture", the gate is decoration. The
+remedies are cheap and specific — a meta-test that asserts the negative control
+*can* fail; a rename-detection test asserting the symbol still exists before
+asserting nothing imports it; a deliberately wrong rule checked in alongside the
+right one so the comparison has something to reject.
+
+This is why G1.6's move to a **round-off** target (AH2) is paired with AG5's
+per-DOF fingerprint. Under the old design a zero residual was self-evidently
+broken. Under a round-off target zero is the *expected* answer, so that alarm is
+gone and something must replace it: a *shape* — heave barely moving, pitch and
+surge collapsing, the change tracking `K(0)` — that a stub cannot fake.
