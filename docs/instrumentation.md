@@ -299,3 +299,66 @@ per-DOF fingerprint. Under the old design a zero residual was self-evidently
 broken. Under a round-off target zero is the *expected* answer, so that alarm is
 gone and something must replace it: a *shape* — heave barely moving, pitch and
 surge collapsing, the change tracking `K(0)` — that a stub cannot fake.
+
+## Ninth guard: a ratio against a varying denominator carries its operating point
+
+> **Reduction, frequency and configuration travel with the number, or the number
+> means nothing.**
+
+This resembles the unstated-input rule — the tube diameter, the lever arm — but it
+is sharper. Those were inputs someone forgot to write down; the value was fixed
+and recoverable. Here the **denominator itself varies by orders of magnitude**, so
+the *same computation, honestly performed and honestly reported*, gives:
+
+```
+dt*K(0)/2 against ||B(w)||_F, whole-matrix Frobenius:
+
+  w = 4.0     0.23x        w = 2.0     5.82x        w = 1.0    63.27x
+  and as a mean pitch diagonal at w = 1.0:        4605.93x
+```
+
+`0.23` and `4606` are both correct. Neither is wrong, and no amount of care in
+computing either one makes it interpretable alone.
+
+The failure this prevents is not a wrong number but a **wrongly-scoped** one: a
+reader who takes `43×` as "the size of the defect" concludes something false about
+a defect whose actual character is that it is **constant** while the thing it is
+compared against is not. That framing — see
+`docs/findings/radiation-convolution-endpoint.md` §1 — only becomes visible once
+the operating point is attached.
+
+It applied immediately and twice: the document's own title carried a bare `6×`,
+and a `278×` range figure differed from a measured `9059×` purely by the band it
+was taken over.
+
+## Why the dead-DOF rule is enforced in code (AJ3)
+
+The eighth guard was recorded, and violated one commit later. That alone argues
+for enforcement over memory. **The measured behaviour argues for it far more
+strongly.**
+
+The dead yaw DOF (`mu = 1.2e-17`) entered an AG5 correlation in two successive
+revisions of one script, and corrupted it in **opposite directions**:
+
+```
+revision 1   yaw's round-off read as a real -4.1% change    ->   +0.1246
+revision 2   yaw's nan mapped to zero                       ->   +0.6523
+truth        live DOF only                                  ->   +0.5256
+```
+
+The two contaminated values **bracket** the true one. The **sign of the error was
+set by an incidental choice about how the dead DOF's noise happened to be
+handled** — a detail neither revision considered a decision at all.
+
+> **A defect that can land on either side of the truth cannot be caught by
+> noticing that the answer looks wrong.**
+
+Every other guard here has a tell: a number too large, a residual that will not
+close, a mechanism that keeps not being found. This one has none. Plausibility
+review — the reviewer's last line of defence — is blind to it by construction,
+because the error has no characteristic direction to be suspicious of.
+
+That is the case for `frames.live_dof()` / `over_live()` being structural rather
+than remembered, and it generalises: **when a defect's sign is set by an
+incidental implementation choice, the only available defence is making the choice
+impossible to take.**
