@@ -292,6 +292,108 @@ def over_live(values: Any, reference: Any, *, what: str) -> "np.ndarray":
     return v[mask]
 
 
+class Reference:
+    """A reference value that carries **how it was obtained** (AK3).
+
+    Third time an interpolated reference manufactured a residual: the first
+    pass's nearest-neighbour lookup (8%), the AD2 band comparison, and the AF3
+    panel run (`5.914e-04` against a true `1.359e-15` — eleven orders, all
+    interpolation).
+
+    The structural point is that this will keep happening. Case frequencies are
+    chosen for **physics, not grid alignment**, so they land wherever they land:
+    ω=2.000377 sat at **48.6% of its gap** — dead centre, the worst available
+    position. That is not bad luck to be avoided next time.
+
+    So the provenance travels with the value, and
+    :func:`assert_reference_supports` refuses an interpolated one where the
+    tolerance is too tight for it to be distinguishable. Same treatment as the
+    index-space helpers and ``live_dof``: eleven orders between the artifact and
+    the real error is not something to catch by noticing it looks large.
+    """
+
+    __slots__ = ("value", "omega", "interpolated", "gap_fraction", "source")
+
+    def __init__(
+        self,
+        value: Any,
+        *,
+        omega: float,
+        interpolated: bool,
+        source: str,
+        gap_fraction: float | None = None,
+    ) -> None:
+        if interpolated and gap_fraction is None:
+            raise ValueError(
+                "an interpolated reference must record its gap_fraction -- how far "
+                "between grid points it sits is what sets the error it carries."
+            )
+        self.value = value
+        self.omega = float(omega)
+        self.interpolated = bool(interpolated)
+        self.gap_fraction = gap_fraction
+        self.source = source
+
+    def __repr__(self) -> str:  # pragma: no cover - diagnostic only
+        how = (
+            f"interpolated at {self.gap_fraction:.1%} of gap"
+            if self.interpolated
+            else "exact"
+        )
+        return f"Reference({self.source}, omega={self.omega:.6f}, {how})"
+
+
+def interpolated_reference(
+    grid: Any, values: Any, omega: float, *, source: str
+) -> Reference:
+    """Linear interpolation of ``values`` along ``grid`` to ``omega``, flagged.
+
+    Returns an *exact* reference when ``omega`` lands on a grid point, so a
+    comparison at a solved frequency is not penalised for using this helper.
+    """
+    import numpy as np
+
+    g = np.asarray(grid, dtype=np.float64)
+    v = np.asarray(values)
+    hit = np.flatnonzero(np.isclose(g, omega, rtol=0.0, atol=1e-12))
+    if hit.size:
+        return Reference(
+            v[..., int(hit[0])], omega=omega, interpolated=False, source=source
+        )
+    k = int(np.clip(np.searchsorted(g, omega), 1, g.size - 1))
+    f = (omega - g[k - 1]) / (g[k] - g[k - 1])
+    return Reference(
+        v[..., k - 1] * (1 - f) + v[..., k] * f,
+        omega=omega,
+        interpolated=True,
+        gap_fraction=float(f),
+        source=source,
+    )
+
+
+def assert_reference_supports(reference: Reference, *, tolerance: float, what: str) -> None:
+    """Refuse an interpolated reference for a comparison asserting at round-off.
+
+    The failure this prevents is not a wrong number but an **undetectable** one:
+    the interpolation error and the quantity under test enter the same scalar,
+    and no amount of care reading that scalar separates them.
+    """
+    from floatfea.tolerances import INTERPOLATED_REFERENCE_TOLERANCE_FLOOR
+
+    if not reference.interpolated:
+        return
+    if tolerance <= INTERPOLATED_REFERENCE_TOLERANCE_FLOOR:
+        raise ValueError(
+            f"{what}: comparing at tolerance {tolerance:.3e} against a reference "
+            f"INTERPOLATED at {reference.gap_fraction:.1%} of its grid gap "
+            f"(omega={reference.omega:.6f}, source={reference.source}). The "
+            f"interpolation injects an error the comparison cannot separate from "
+            f"what it is measuring -- measured at 5.914e-04 against a true "
+            f"1.359e-15 on exactly this case. Compare at a solved frequency, or "
+            f"interpolate BOTH sides identically so the error is common-mode."
+        )
+
+
 def assert_comparison_window_is_valid(
     comparison: tuple[float, float],
     **validity: tuple[float, float],

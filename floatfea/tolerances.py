@@ -114,6 +114,29 @@ MEMBER_ORIENTATION_DEGENERACY: Final[float] = 0.05
 DEAD_DOF_RELATIVE_FLOOR: Final[float] = 1e-12
 
 
+# G1.6 / diagnostics -- tolerance at or below which an INTERPOLATED reference is
+# inadmissible and `frames.assert_reference_supports` refuses the comparison.
+# Relative, same units as the comparison tolerance it is checked against.
+#
+# Compared: the tolerance a comparison intends to assert at, against this floor.
+# At or below it the reference must come from a solved/exact point, not from
+# interpolation between grid points.
+#
+# Reason: interpolating a reference across a grid gap injects an error set by how
+# much the quantity varies over that gap, and it is invisible in the result. The
+# measured case: omega = 2.000377 sits at 48.6% of the gap 1.930166 -> 2.074677 --
+# dead centre, because case frequencies are chosen for physics, not grid alignment
+# -- and B varies ~60% across it. That produced a residual of 5.914e-04 against a
+# true reconstruction error of 1.359e-15: ELEVEN orders, entirely from the
+# interpolation. 1e-3 sits just above the measured 5.9e-4 artifact, so a
+# comparison asserting at or below it cannot distinguish its own interpolation
+# from the thing it is measuring. Raising it would admit interpolated references
+# into comparisons the artifact dominates; lowering it below ~6e-4 would admit the
+# exact case already measured to fail.
+# Set: 2026-08-27, F1
+INTERPOLATED_REFERENCE_TOLERANCE_FLOOR: Final[float] = 1e-3
+
+
 # ---------------------------------------------------------------------------
 # Rung 1 -- The solver is a solver
 # Rigid-body modes (G2.1/V1.1), patch test (G2.2/V1.2), unit scaling (G2.5/V1.3).
