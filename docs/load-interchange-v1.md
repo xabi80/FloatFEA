@@ -326,19 +326,57 @@ construction. Writing the diagnosis down now means the first failure is *read*
 rather than investigated from scratch — and the spectral reporting G1.6 already
 requires is what distinguishes the causes:
 
-| signature | cause |
-|---|---|
-| Large residual, **coherent at the fundamental** | phase-convention error in the panel extraction |
-| **Broadband**, or **spatially localised** on the hull | extraction error — geometry, panel ordering, normals |
+Three axes, not one. **Spectral content alone is not sufficient** — the G1.6
+investigation spent six rounds inside a single row of the two-row table this
+replaces, because every candidate it could express was "coherent at the
+fundamental".
 
-The two demand opposite responses. A coherent fundamental residual means the
-field is right and its *sign or phase* is wrong, which is a one-line fix in the
-extraction and a convention to declare. A broadband or localised residual means
-the field itself is wrong somewhere, and no convention change will help.
+| signature | magnitude | phase | cause |
+|---|---|---|---|
+| Coherent at the fundamental | **a discrete value** — 2.000, 1.414, 1.92 | ±180°, ±90° | **convention error**: sign, rotation, or `time_convention` |
+| Coherent at the fundamental | **arbitrary**, with `\|R\|/\|T\|` ≈ 1 | one **coherent** angle, all DOF | **timing / quadrature**: a lag or a mismatched rule |
+| Coherent at the fundamental | arbitrary, `\|R\|/\|T\|` ≠ 1 | scattered across DOF | **scale or coefficient** error |
+| Energy at **2ω, 3ω** | any | — | harmonic content; expected, *is* the residual for drag |
+| **Broadband** or **spatially localised** | any | — | **extraction error**: geometry, panel ordering, normals |
+| Coherent, but the comparison window is shorter than the kernel memory | any | any | **not a finding** — window mismatch, see §5.0.3 |
 
-Note this is only diagnosable because G1.6 reports **spectral content per body
-per source** rather than a single number. A scalar residual would show the same
-magnitude for both causes.
+**The magnitude axis (X4) is what separates the first three, and only it can.**
+Convention errors are **discrete**: a sign flip gives `|R−T|/|T| = 2.000` exactly,
+a 90° rotation `1.414`, a conjugated `time_convention` ≈ `1.92` on this platform.
+Timing and scale errors take **any** value. So a residual of `0.209` is *already*
+excluded from the convention row by its size alone — which is how the real cause
+was eventually found, after six mechanisms had been proposed and refuted inside
+the row it never belonged to.
+
+**Report ratio and phase alongside the norm (X3).** `|R−T|/|T|` is a difference
+and cannot distinguish a missing term from a rotation from a gain error. The
+diagnostic triple is:
+
+```
+|R-T|/|T|        the norm          how big
+|R|/|T|          the gain          is anything missing, or only displaced
+arg(R/T)         the phase         is it displaced coherently
+```
+
+On the G1.6 radiation residual these read `0.2085`, `1.0223`, `−11.07°`: a gain of
+essentially 1 with a coherent phase offset, i.e. row 2 — **timing**, not a missing
+term. A single global complex factor then removed 79% of it. The two-row table
+could not express that hypothesis at all.
+
+**The last row is a precondition, not a cause (V4).** A comparison window shorter
+than the kernel memory produces a residual that looks like physics; assert
+containment with `frames.assert_comparison_window_is_valid` before reading any
+row above it.
+
+The rows demand opposite responses. A **convention** error means the field is
+right and its sign or phase is wrong — a one-line fix and a convention to declare.
+A **timing** error means both sides are right and are being compared at different
+instants or with different rules. An **extraction** error means the field itself
+is wrong somewhere, and no convention change will help.
+
+None of this is diagnosable from a scalar. G1.6 reports **spectral content, ratio
+and phase, per body per source** — a single number shows the same magnitude for
+every row.
 
 ### 5.0.1 Radiation reconstruction sums over ALL radiating DOF — 72, not 6
 
