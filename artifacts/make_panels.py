@@ -108,8 +108,12 @@ fk_p = extract_froude_krylov(dif_problem, geom_all)
 # Guard (b) from integrate_panel_pressure's docstring: does the extraction agree
 # with CAPYTAINE's own resultants? This tests the extraction, NOT agreement with
 # the simulation -- the two must not be conflated.
-added = np.asarray([r.added_mass[d] for r, d in zip(results[: len(dofs)], dofs)])
-damp = np.asarray([r.radiation_damping[d] for r, d in zip(results[: len(dofs)], dofs)])
+# FULL 72x72 from THIS solve, so the 72-row comparison needs no interpolation
+# (frames.assert_reference_supports would refuse an interpolated one at round-off).
+A_full = np.asarray([[r.added_mass[j] for j in dofs] for r in results[: len(dofs)]]).T
+B_full = np.asarray([[r.radiation_damping[j] for j in dofs] for r in results[: len(dofs)]]).T
+added = np.diag(A_full).copy()
+damp = np.diag(B_full).copy()
 print(f"\ncapytaine diagonal at w: A {added[:3]}  B {damp[:3]}")
 
 np.savez_compressed(
@@ -117,7 +121,7 @@ np.savez_compressed(
     diffraction=dif_p[None, ...], froude_krylov=fk_p[None, ...],
     centroid=geom_all.centroid, area=geom_all.area, normal=geom_all.normal,
     owner=owner, dof_names=np.array(dofs, dtype=object),
-    A_diag=added, B_diag=damp,
+    A_diag=added, B_diag=damp, A_full=A_full, B_full=B_full,
 )
 print(f"wrote {OUT.name}  {OUT.stat().st_size / 1e6:.1f} MB", flush=True)
 
