@@ -103,3 +103,45 @@ was withdrawn because the check used the wrong quadrature.
 discretisation — not the textbook rule for the same integral. A faithful kernel
 and an unfaithful convolution over it are different findings, and only the second
 one was ever applied to the platform.
+
+---
+
+## 6. AI2 — reconciling `6.73×` against `43.51×`
+
+Two independent measurements of the pitch excess, 6.5× apart, both in permanent
+records. Measured across every reduction of the *same* underlying quantity
+(`dt·K(0)/2` against `B`) on the 12-buoy platform:
+
+```
+  omega   whole-F  pitchblk-F  pitch-diag   |B|_F
+ 1.0000     63.27     1340.87     4605.93   1.809e-01
+ 1.5000     25.09       86.49      289.29   4.561e-01
+ 2.0004      5.82       13.87       43.52   1.967e+00
+ 2.5000      1.84        3.91       10.69   6.218e+00
+ 3.0000      0.80        1.53        3.39   1.436e+01
+ 4.0000      0.23        0.39        0.71   5.023e+01
+```
+
+**The gap is the reduction.** FloatFEA's `43.51×` is the **mean pitch diagonal**
+at ω=2.0004; FloatSim's figure is a **whole-matrix Frobenius**, which `9fb5b33`'s
+own note states as "~7× ‖B‖ in Frobenius". At ω=2.0004 the two reductions differ
+by **7.48×**, against the 6.5× to be explained. Neither measurement is wrong.
+
+A **16% remainder** is left (`5.82×` here against `6.73×` there) and is almost
+certainly configuration — 12-buoy against the 16-buoy `pin_vs_rigid` case — or a
+slightly different ω. **That one point is worth confirming with FloatSim**; the
+6.5× is settled without an exchange.
+
+### The larger point: neither number means anything without its ω
+
+The ratio spans **four orders of magnitude across the band** — `4606×` at ω=1.0,
+`0.71×` at ω=4.0 — because `dt·K(0)/2` is a **constant** while `B(ω)` varies by
+three orders. The excess is not large *because the defect is large at low
+frequency*; it is large because **`B` is small there**.
+
+> **Quoting "the pitch excess is 43×" without naming the reduction, the frequency
+> and the configuration is quoting one point on a very steep curve.** Both figures
+> in the record now carry all three.
+
+This also sharpens §3: the defect is worst exactly where radiation damping is
+weakest, which is where a lightly-damped resonance would otherwise live.

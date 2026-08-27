@@ -218,6 +218,80 @@ def global_to_hydro(g: int) -> int:
         ) from None
 
 
+def live_dof(reference: Any) -> "np.ndarray":
+    """Mask of DOF carrying real signal, excluding structurally dead ones.
+
+    Same treatment as the index-space helpers above, and for the same reason:
+    **enforced in code, not held in mind.** The dead-DOF rule was written into
+    `docs/instrumentation.md` as the eighth guard and then violated one commit
+    later, which is the evidence that recording it is not enough.
+
+    What this prevents
+    ------------------
+    A body of revolution has no yaw radiation, so yaw ``mu`` on this platform is
+    ``1.2e-17`` against ``4.2e-01`` in surge. That is round-off, not a small
+    physical quantity. A correlation or norm formed over it computes a statistic
+    on noise and reports it as a measurement -- it moved an AG5 correlation from
+    ``+0.53`` to ``+0.65``, and nothing in the output said so.
+
+    ``reference`` is the per-DOF magnitude the statistic is formed over (``|mu|``,
+    ``|B|``, whatever is being aggregated). The floor is **relative** to the
+    largest entry, because "dead" is only meaningful against the scale of the
+    live DOF beside it.
+
+    What this does NOT catch
+    ------------------------
+    Because the floor is relative, the largest entry is always ``1.0`` and so is
+    always live. **A uniformly dead set is reported as entirely live.** Comparing
+    a quantity that is round-off in *every* DOF -- yaw alone, say -- gets no
+    warning from this function, and the caller must supply the physical scale.
+
+    Stated rather than fixed: an absolute floor would need a scale this function
+    cannot know, and inventing one would be a fudge factor. The eighth guard
+    applies to guards too -- say what the check cannot see.
+    """
+    import numpy as np
+
+    from floatfea.tolerances import DEAD_DOF_RELATIVE_FLOOR
+
+    ref = np.abs(np.asarray(reference, dtype=np.float64))
+    if ref.ndim != 1:
+        raise ValueError(f"reference must be 1-D, one entry per DOF; got {ref.shape}")
+    peak = ref.max(initial=0.0)
+    if peak == 0.0:
+        raise ValueError(
+            "every DOF in this reference is exactly zero -- there is no signal to "
+            "form a statistic over, and a statistic computed anyway would be "
+            "meaningless rather than small."
+        )
+    return ref / peak >= DEAD_DOF_RELATIVE_FLOOR
+
+
+def over_live(values: Any, reference: Any, *, what: str) -> "np.ndarray":
+    """``values`` restricted to the DOF that carry signal.
+
+    Use this wherever a correlation, norm or mean is formed across DOF. Going
+    around it is possible; that is what makes it a guard rather than a proof, and
+    the raise below is the part worth having -- a fully dead set is an error, not
+    an empty aggregate that reduces to ``nan`` and gets read as a small number.
+    """
+    import numpy as np
+
+    v = np.asarray(values)
+    mask = live_dof(reference)
+    if v.shape[0] != mask.size:
+        raise ValueError(
+            f"{what}: values has {v.shape[0]} entries but the reference names "
+            f"{mask.size} DOF -- these must be the same DOF in the same order."
+        )
+    if not mask.any():
+        raise ValueError(
+            f"{what}: every DOF is below the dead-DOF floor. A statistic over an "
+            "empty set is not a small result, it is no result."
+        )
+    return v[mask]
+
+
 def assert_comparison_window_is_valid(
     comparison: tuple[float, float],
     **validity: tuple[float, float],

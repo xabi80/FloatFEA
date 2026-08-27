@@ -93,6 +93,27 @@ from typing import Final
 MEMBER_ORIENTATION_DEGENERACY: Final[float] = 0.05
 
 
+# G1.6 / diagnostics -- floor below which a DOF carries no signal and MUST NOT
+# enter any aggregate statistic. Relative, against the largest reference
+# magnitude across the DOF being aggregated.
+#
+# Compared: each DOF's reference magnitude (|mu|, |B|, whatever the statistic is
+# formed over) divided by the maximum over that same set, against this floor.
+# Below it the DOF is structurally dead and `frames.live_dof` excludes it.
+#
+# Reason: a body of revolution has no yaw radiation, so yaw `mu` on this platform
+# is 1.2e-17 against 4.2e-01 in surge -- a ratio of 3e-17, which is round-off, not
+# a small physical quantity. Including such a DOF in a correlation or a norm
+# computes a statistic over noise and reports it as a measurement; it did exactly
+# that once, moving an AG5 correlation from +0.53 to +0.65. The floor sits at
+# 1e-12 because double precision gives ~1e-16 relative and four orders of headroom
+# separates "accumulated round-off" from "small but real": the smallest genuinely
+# physical ratio measured on this platform is heave's 0.01x, twelve orders above.
+# Raising it would begin discarding real DOF; lowering it re-admits round-off.
+# Set: 2026-08-26, F1
+DEAD_DOF_RELATIVE_FLOOR: Final[float] = 1e-12
+
+
 # ---------------------------------------------------------------------------
 # Rung 1 -- The solver is a solver
 # Rigid-body modes (G2.1/V1.1), patch test (G2.2/V1.2), unit scaling (G2.5/V1.3).
