@@ -378,6 +378,28 @@ At 40 snapshots × a 101-sample window = 4040 samples:
 | **Complex coefficients**, radiation, 13 ω × 72 DOF | 17,856 × 72 × 13 × 16 B | 267 MB |
 | **Coefficient total at the case frequencies** | ~11 distinct ω in the fan | **~232 MB** |
 
+> **CORRECTED 2026-08-26 — this table is wrong by 4.2×.** The panel count above
+> (17,856) is not this platform's mesh. Measured directly from the mesh actually
+> fed to Capytaine: **`P = 10,560` wetted panels**, and the radiation array is
+> `(n_ω, 72, P)` complex128:
+>
+> ```
+> radiation coefficients,  1 omega  ->   12.2 MB
+> radiation coefficients, 81 omega  ->  985    MB
+> ```
+>
+> So the coefficient store at the **full** ω grid is **~985 MB**, not ~232 MB.
+> The panel count is *lower* than assumed; the total is higher because the
+> estimate used ~13 case frequencies where the solved grid carries 81.
+>
+> The **decision is unaffected** — coefficients still beat time samples, and the
+> lever is still the number of distinct frequencies rather than the window
+> length. Only the magnitude was wrong, and it was wrong because a size was
+> quoted without the panel count and frequency count it was computed from —
+> `docs/instrumentation.md` **ninth guard**, arriving in the schema this time.
+>
+> Both inputs now travel with the number: **P = 10,560**, **81 ω**.
+
 **Decision: store the complex field plus the motion, and reconstruct on read.**
 
 - **It loses nothing.** `K(t)` and `B(ω)` are a Fourier pair and the convolution
