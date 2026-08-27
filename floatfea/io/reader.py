@@ -77,15 +77,38 @@ class Fault(Enum):
     UNKNOWN_BODY = "load or joint references a body absent from /bodies"
 
 
-@dataclass(frozen=True)
 class FlrValidationError(ValueError):
-    """A specific, named rejection. Never a generic 'invalid record'."""
+    """A specific, named rejection. Never a generic 'invalid record'.
 
-    fault: Fault
-    detail: str
+    **Not a frozen dataclass, and it must not become one again.** It was one, and
+    that is a defect rather than a style choice: Python assigns ``__traceback__``
+    on an exception as it propagates, and a frozen dataclass forbids the
+    assignment. The failure is not a clean error but a *substitution* --
+    ``FrozenInstanceError: cannot assign to field '__traceback__'`` arrives in
+    place of the named fault, so the diagnostic this class exists to deliver is
+    replaced by an unrelated one at the moment it is needed.
+
+    It survived undetected because the rejection matrix catches the error at the
+    point of raise, where no propagation happens. The first real propagation --
+    a validator rejection reaching a test through a context manager, on the first
+    record the writer had actually produced (V2) -- lost the fault immediately.
+
+    A validation error that destroys its own message under the conditions it is
+    raised in is the reader's failure mode, applied to the reader.
+    """
+
+    __slots__ = ("fault", "detail")
+
+    def __init__(self, fault: Fault, detail: str) -> None:
+        super().__init__(fault, detail)
+        self.fault = fault
+        self.detail = detail
 
     def __str__(self) -> str:  # pragma: no cover - formatting only
         return f"[{self.fault.name}] {self.fault.value}: {self.detail}"
+
+    def __repr__(self) -> str:  # pragma: no cover - formatting only
+        return f"FlrValidationError(fault={self.fault!r}, detail={self.detail!r})"
 
 
 def _reject(fault: Fault, detail: str) -> None:
