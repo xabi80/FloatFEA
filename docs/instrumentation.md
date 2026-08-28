@@ -432,3 +432,45 @@ it destroyed that diagnostic under exactly the conditions it is raised in.
 Corollary, general: **an error type is part of the interface.** Making one a
 frozen dataclass, a `NamedTuple`, or anything else with restricted attribute
 assignment breaks a Python protocol that only shows up in transit.
+
+
+## Twelfth: an empty parameter set is an error, not a skip
+
+A parametrized test whose parameters are **discovered** — a glob, a directory
+walk, an enum, a registry — becomes a silent no-op the moment discovery returns
+nothing. pytest's default for this is `skip`, so the run stays green.
+
+It happened in the module written to prevent exactly this class of failure:
+`test_closure_evidence_exists.py` resolved the repo root one directory too
+shallow, its glob found no closure artifacts, and **four parametrized tests
+reported SKIPPED while checking nothing**. Only its own meta-test caught it.
+
+```toml
+empty_parameter_set_mark = "fail_at_collect"
+```
+
+is set in `pyproject.toml`. It is the backstop; a discovering test should also
+assert non-emptiness directly, because the backstop cannot say *what* should have
+been found.
+
+## Thirteenth: verify a claim by mutation, not by re-reading
+
+Reading asks the reviewer to re-form the judgement the author already formed, and
+they will usually re-form it the same way. **A mutation is a measurement.**
+
+> **Break exactly what the claim asserts — derived from the CLAIM TEXT, never
+> from the test — and confirm the check goes red.**
+
+Deriving from the claim rather than the test is what makes it independent. If you
+have to read the test to invent the mutation, that *is* the finding: the claim and
+its evidence have drifted, and the search for the mutation surfaced it.
+
+The F1 gate-table audit ran this over seven rows. Six behaved as their claim text
+predicted. **G1.2 did not, and reading had cleared it twice** — its
+message-distinctness assertion iterated `list(Fault)`, which yields only canonical
+enum members, so two faults declared with the same message became an *alias* and
+the duplicate never appeared. The assertion was structurally incapable of failing.
+One mutation found what two readings missed.
+
+Mutation choice remains judgement, so this is not a complete answer. It converts
+most of a reading exercise into execution, which is the part that was unreliable.

@@ -271,9 +271,23 @@ def test_no_two_faults_share_a_message() -> None:
     The easy implementation collapses faults into a generic 'invalid record',
     which satisfies 'it rejected' while destroying the diagnostic value.
     """
-    messages = [f.value for f in Fault]
-    assert len(set(messages)) == len(messages), "two faults share a message"
-    names = [f.name for f in Fault]
+    # `list(Fault)` yields only CANONICAL members. Python collapses two enum
+    # members with equal values into an ALIAS, so a duplicated message never
+    # reaches this list -- the count silently drops instead. Asserting over
+    # `list(Fault)` therefore cannot fail, which a mutation proved (AM1): giving
+    # MU_WARMUP the PROVENANCE_MISSING message left the whole matrix green.
+    #
+    # `__members__` includes aliases, so it is the only view that can see the
+    # collision.
+    by_name = {name: m.value for name, m in Fault.__members__.items()}
+    dupes = {v for v in by_name.values() if list(by_name.values()).count(v) > 1}
+    assert not dupes, f"two faults share a message: {sorted(dupes)}"
+
+    assert len(Fault.__members__) == len(list(Fault)), (
+        "an enum ALIAS exists -- two faults were declared with the same value and "
+        "Python merged them. The merged fault can never be raised distinctly."
+    )
+    names = list(Fault.__members__)
     assert len(set(names)) == len(names)
 
 

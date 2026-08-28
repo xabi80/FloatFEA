@@ -41,6 +41,23 @@ exclude = ["tests*", "docs*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers --strict-config"
+
+# AM5: an empty parameter set is an ERROR, not a skip.
+#
+# pytest's default (`skip`) is a vacuous-control generator with a very common
+# mechanism: a parametrized test whose parameters are DISCOVERED rather than
+# written silently becomes a no-op the moment discovery returns nothing, and the
+# run stays green.
+#
+# It happened here. `test_closure_evidence_exists.py` resolved the repo root one
+# directory too shallow, its glob found no closure artifacts, and FOUR parametrized
+# tests reported SKIPPED while checking nothing -- in the module written to stop
+# exactly that class of failure. Only its own meta-test caught it.
+#
+# `fail_at_collect` makes the empty set red at collection. Any test whose parameters come from a glob, a
+# directory walk, or an enum should also assert non-emptiness directly; this is the
+# backstop for the ones that forget.
+empty_parameter_set_mark = "fail_at_collect"
 markers = [
     "rung1: solver is a solver -- rigid-body modes, patch test, unit scaling",
     "rung2: element is the element it claims to be -- cantilever, torsion, modes",
