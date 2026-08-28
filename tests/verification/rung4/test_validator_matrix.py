@@ -114,6 +114,21 @@ def _m_provenance(h):
     h.attrs["meta"] = json.dumps(m)
 
 
+# PROVENANCE_MISSING has THREE raise sites -- absent `meta`, empty `hsp_git_sha`,
+# empty `run_id` -- and the matrix exercised only the last. Fault-level coverage
+# said it was covered; the other two paths could have been deleted without a test
+# noticing. Found by the F1 gate-table audit (AL2), which is the same gap one level
+# down: covering a fault is not covering the conditions that raise it.
+def _m_provenance_sha(h):
+    import json
+    m = _good_meta(); m["hsp_git_sha"] = ""
+    h.attrs["meta"] = json.dumps(m)
+
+
+def _m_provenance_meta_absent(h):
+    del h.attrs["meta"]
+
+
 def _m_gravity(h):
     import json
     m = _good_meta(); m["gravity"] = [0.0, 0.0, -9.80665]
@@ -194,6 +209,8 @@ MATRIX: list[tuple[Fault, Callable[[Any], None]]] = [
     (Fault.SCHEMA_VERSION, _m_schema),
     (Fault.UNITS_MISSING, _m_units),
     (Fault.PROVENANCE_MISSING, _m_provenance),
+    (Fault.PROVENANCE_MISSING, _m_provenance_sha),
+    (Fault.PROVENANCE_MISSING, _m_provenance_meta_absent),
     (Fault.GRAVITY_MISMATCH, _m_gravity),
     (Fault.INTEGRATOR_INCOMPLETE, _m_integrator),
     (Fault.MU_TREATMENT_UNKNOWN, _m_mu_treatment),

@@ -362,3 +362,73 @@ That is the case for `frames.live_dof()` / `over_live()` being structural rather
 than remembered, and it generalises: **when a defect's sign is set by an
 incidental implementation choice, the only available defence is making the choice
 impossible to take.**
+
+## Tenth guard: evidence provenance, not just existence
+
+Distinct from the eighth, and the distinction is the point:
+
+| guard | asks |
+|---|---|
+| **eighth** | *can this check fail?* |
+| **tenth** | *does this check point at the claim?* |
+
+A test can be fully capable of failing, exercise a real code path, and still be
+testing something **adjacent**.
+
+> **"A test exists and passes" is not "the right test exists and passes."**
+
+The case: gate **G1.1** (writer/reader round-trip, bit-exact) was recorded PASS
+citing a test that did not exist. It survived because something adjacent did —
+G1.2's positive control, a well-formed record the validator accepts. Both are "a
+valid record that passes validation". The difference is **provenance**: one was
+hand-built in Python, the other produced by the writer. **Provenance is invisible
+in a pass/fail**, so the substitution left no trace.
+
+When the real test was finally written, it found two defects within minutes — a
+fixture the validator correctly rejected, and an exception class that destroyed
+its own message on propagation. Neither was reachable from the adjacent test.
+
+The audit form, two questions per claim:
+
+1. **Does the cited evidence exist?** Mechanical — now enforced by
+   `tests/verification/rung3/test_closure_evidence_exists.py`.
+2. **Does it test what the claim says?** **Not mechanical.** It needs reading, and
+   it is where the failures live. Across the F1 gate table, (a) caught one row and
+   (b) caught three more: a half-tested claim (G1.3), a mischaracterised artifact
+   (G1.4), and unreproducible counts (G1.5).
+
+Coverage of a *fault* is not coverage of the *conditions that raise it*. G1.3's
+`PROVENANCE_MISSING` had three raise paths and one mutation, and the matrix's own
+coverage assertion reported it covered.
+
+## Eleventh: a rejection test that catches at the raise site never exercises propagation
+
+`FlrValidationError` was a frozen dataclass. Python assigns `__traceback__` to an
+exception as it propagates; a frozen dataclass forbids the assignment. So a real
+rejection travelling up through a context manager arrived as
+
+```
+FrozenInstanceError: cannot assign to field '__traceback__'
+```
+
+— **the named fault replaced by an unrelated error at the moment it was needed.**
+
+Thirty-nine rejection tests never saw it, because every one of them catches the
+exception **at the raise site**, where no propagation happens:
+
+```python
+with pytest.raises(FlrValidationError):
+    validate(mutated)          # raised and caught in the same frame
+```
+
+**Any exception-based suite has this blind spot**, and a validation error is the
+worst place for it to live: the class exists to deliver a specific diagnostic, and
+it destroyed that diagnostic under exactly the conditions it is raised in.
+
+> **Test the exception's journey, not only its birth.** At least one test should
+> let a real error propagate through an intervening frame and assert the fault
+> survives.
+
+Corollary, general: **an error type is part of the interface.** Making one a
+frozen dataclass, a `NamedTuple`, or anything else with restricted attribute
+assignment breaks a Python protocol that only shows up in transit.
