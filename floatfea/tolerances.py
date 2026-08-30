@@ -137,6 +137,25 @@ DEAD_DOF_RELATIVE_FLOOR: Final[float] = 1e-12
 INTERPOLATED_REFERENCE_TOLERANCE_FLOOR: Final[float] = 1e-3
 
 
+# G1.6 / V4.6 -- ceiling on the panel-reconstruction residual
+# ||R - T||_F / ||T||_F, where R integrates the exported per-panel radiation
+# pressure over each body's panels and T is w^2*A + i*w*B from the same BEM solve.
+# Relative, Frobenius, dimensionless.
+#
+# Reason: the identity is EXACT in exact arithmetic -- both sides are the same
+# surface integral, one evaluated panel-wise and one by the solver -- so the only
+# admissible residual is floating-point accumulation. Measured 1.308e-15 on the
+# 12-buoy platform (10,560 panels, 72 DOF) and 1.518e-16 on the committed
+# 64-panel fixture. 1e-12 sits ~3 orders above the larger of those, which covers
+# BLAS/platform variation in the einsum reduction without admitting anything
+# physical: the smallest deliberate defect measured -- ONE panel of 10,560 with
+# its area perturbed by 1% -- produced 1.082e-05, seven orders ABOVE this ceiling.
+# Raising it toward 1e-5 would begin admitting real geometry errors; lowering it
+# to ~1e-15 would make the gate sensitive to summation order.
+# Set: 2026-08-28, F1
+PANEL_RECONSTRUCTION_RESIDUAL: Final[float] = 1e-12
+
+
 # ---------------------------------------------------------------------------
 # Rung 1 -- The solver is a solver
 # Rigid-body modes (G2.1/V1.1), patch test (G2.2/V1.2), unit scaling (G2.5/V1.3).

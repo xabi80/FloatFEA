@@ -474,3 +474,43 @@ One mutation found what two readings missed.
 
 Mutation choice remains judgement, so this is not a complete answer. It converts
 most of a reading exercise into execution, which is the part that was unreliable.
+
+## Fourteenth: an assertion over a collection derived from the thing it checks can be blind by construction
+
+The U2 family — *verify the reference* — moved up from the reference's **value** to
+the assertion's **domain**.
+
+G1.2's message-distinctness check:
+
+```python
+messages = [f.value for f in Fault]
+assert len(set(messages)) == len(messages), "two faults share a message"
+```
+
+This is **structurally incapable of failing**. `list(Fault)` is built *after*
+Python collapses equal-valued enum members into aliases, so a duplicated message
+can never reach the list the assertion inspects — the member count silently drops
+from 18 to 17 instead. The collection the assertion iterates is derived from the
+very property it is checking, and the derivation removes the fault.
+
+**Reading could not have found this**, and did not — twice, by someone actively
+hunting for exactly this class of defect. The test *looks* correct, and it *is*
+correct: about a domain that excludes the fault. A mutation found it in one run
+(thirteenth guard).
+
+The general form:
+
+> **When an assertion iterates a collection produced by the same machinery it is
+> testing, ask what that machinery removes before the assertion sees it.**
+
+Instances to expect:
+
+- an enum, dict, or set keyed by the value under test — duplicates vanish into
+  aliases or key collisions;
+- a registry that de-duplicates on insert, checked for duplicates after insert;
+- a filesystem glob checked for the file the glob's own pattern would exclude;
+- any `set()` built from the property being asserted unique.
+
+The fix is to assert over a view that **retains** the fault — here
+`Fault.__members__`, which includes aliases — and, separately, to assert the
+collapse itself has not happened (`len(__members__) == len(list(Fault))`).
