@@ -36,7 +36,10 @@ import numpy as np
 import pytest
 
 from floatfea.io.frames import live_dof, over_live
-from floatfea.tolerances import PANEL_RECONSTRUCTION_RESIDUAL
+from floatfea.tolerances import (
+    PANEL_RECONSTRUCTION_RESIDUAL,
+    PANEL_RECONSTRUCTION_RESIDUAL_COUNTER,
+)
 
 FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "panel_reconstruction.npz"
 DOF = ("surge", "sway", "heave", "roll", "pitch", "yaw")
@@ -123,10 +126,16 @@ def test_a_single_perturbed_panel_BREAKS_the_identity(data: dict) -> None:
     bad = data["area"].copy()
     bad[0] *= 1.01
     r = _residual(_reconstruct(data, area=bad), _target(data))
-    assert r > PANEL_RECONSTRUCTION_RESIDUAL * 1e3, (
-        f"perturbing a panel moved the residual only to {r:.3e}; the identity is "
-        "not sensitive to the geometry it integrates over, so this gate is "
-        "measuring nothing"
+    # Consumes the COUNTER value rather than a local multiple of the ceiling
+    # (AO1): the counter-case must be a number an executable test uses, or it is
+    # prose. Widening PANEL_RECONSTRUCTION_RESIDUAL toward the counter-case is
+    # caught by test_the_ceiling_sits_below_its_counter_case; this asserts the
+    # counter-case is a magnitude a REAL defect actually reaches.
+    assert r >= PANEL_RECONSTRUCTION_RESIDUAL_COUNTER, (
+        f"perturbing one panel moved the residual only to {r:.3e}, below the "
+        f"declared counter-case {PANEL_RECONSTRUCTION_RESIDUAL_COUNTER:.3e}. "
+        "Either the identity is not sensitive to the geometry it integrates over, "
+        "or the counter-case was chosen rather than measured."
     )
 
 

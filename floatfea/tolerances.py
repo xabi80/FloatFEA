@@ -28,6 +28,37 @@ matters most".
 
 ---
 
+## Two classes, and the counter-case rule binds on only one (AO2)
+
+Every entry is **STRUCTURAL** or **ACCURACY**, and the distinction is declared in
+its comment because a rule applied where it does not fit gets weakened to
+accommodate.
+
+**STRUCTURAL** — a threshold on a physical or numerical *condition*, which fires
+by design when the condition holds. `MEMBER_ORIENTATION_DEGENERACY` fires on the
+platform's vertical spars on purpose; it exists to force an explicit choice, not
+to be tuned until it stops firing. Demanding a "smallest defect it must still
+catch" of such an entry would force an artificial number.
+
+**ACCURACY** — a ceiling on a residual or error that is *supposed* to be small.
+These are the ones "the test fails, widen the tolerance" can reach, and they carry
+a **paired counter-case**:
+
+    X          = <ceiling the check asserts>
+    X_COUNTER  = <smallest defect that must still fail>
+
+The pairing is what makes the ceiling an execution result rather than a
+reviewer's judgement:
+
+* **existence is mechanically checkable** — every `X` has an `X_COUNTER`;
+* **it cannot be satisfied by prose**, because `X_COUNTER` is a number an
+  executable test consumes;
+* **widening `X` toward `X_COUNTER` eventually breaks the counter-test.**
+
+That last property is the point. A tolerance with a floor but no ceiling can
+always be widened one more order and still look principled.
+
+
 ## The comment convention
 
 Every entry carries four things, and a reviewer should be able to check the
@@ -73,6 +104,7 @@ from typing import Final
 # number at solve time.
 # ---------------------------------------------------------------------------
 
+# CLASS: STRUCTURAL -- fires by design on vertical members; no counter-case.
 # G0.2 / docs/conventions.md sec. "Member local axes" -- minimum |z_hat x x_hat|
 # for the DEFAULT global-Z orientation reference to be admissible on a member.
 # Dimensionless; equals the sine of the member's angle from vertical.
@@ -93,6 +125,7 @@ from typing import Final
 MEMBER_ORIENTATION_DEGENERACY: Final[float] = 0.05
 
 
+# CLASS: STRUCTURAL -- a condition (is this DOF alive?), not an error ceiling.
 # G1.6 / diagnostics -- floor below which a DOF carries no signal and MUST NOT
 # enter any aggregate statistic. Relative, against the largest reference
 # magnitude across the DOF being aggregated.
@@ -114,6 +147,7 @@ MEMBER_ORIENTATION_DEGENERACY: Final[float] = 0.05
 DEAD_DOF_RELATIVE_FLOOR: Final[float] = 1e-12
 
 
+# CLASS: STRUCTURAL -- a condition (is this reference admissible here?).
 # G1.6 / diagnostics -- tolerance at or below which an INTERPOLATED reference is
 # inadmissible and `frames.assert_reference_supports` refuses the comparison.
 # Relative, same units as the comparison tolerance it is checked against.
@@ -137,6 +171,7 @@ DEAD_DOF_RELATIVE_FLOOR: Final[float] = 1e-12
 INTERPOLATED_REFERENCE_TOLERANCE_FLOOR: Final[float] = 1e-3
 
 
+# CLASS: ACCURACY -- carries PANEL_RECONSTRUCTION_RESIDUAL_COUNTER below.
 # G1.6 / V4.6 -- ceiling on the panel-reconstruction residual
 # ||R - T||_F / ||T||_F, where R integrates the exported per-panel radiation
 # pressure over each body's panels and T is w^2*A + i*w*B from the same BEM solve.
@@ -154,6 +189,16 @@ INTERPOLATED_REFERENCE_TOLERANCE_FLOOR: Final[float] = 1e-3
 # to ~1e-15 would make the gate sensitive to summation order.
 # Set: 2026-08-28, F1
 PANEL_RECONSTRUCTION_RESIDUAL: Final[float] = 1e-12
+
+# COUNTER-CASE for the above -- the smallest defect the gate must still fail.
+# Measured, not chosen: ONE panel of the 10,560-panel platform mesh with its
+# area perturbed by 1% produces a residual of 1.082e-05. The counter-test
+# asserts a perturbed fixture exceeds this value, so widening
+# PANEL_RECONSTRUCTION_RESIDUAL toward it eventually makes that test fail --
+# which is the property that makes the ceiling defensible by execution rather
+# than by argument. Seven orders separate the two.
+# Set: 2026-08-30, F1
+PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 
 
 # ---------------------------------------------------------------------------

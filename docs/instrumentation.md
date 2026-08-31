@@ -514,3 +514,31 @@ Instances to expect:
 The fix is to assert over a view that **retains** the fault — here
 `Fault.__members__`, which includes aliases — and, separately, to assert the
 collapse itself has not happened (`len(__members__) == len(list(Fault))`).
+
+## What these guards are, and what they are not (AO5)
+
+The AN3 script asserted that `newmark` was **actually instrumented** before
+trusting a zero — without it, the run compares `recompute_mu` against itself and
+reports a perfect result, which is precisely the shape that cost six rounds on
+G1.6. That guard fired *prospectively*: written before being bitten, rather than
+after.
+
+**It is worth being exact about why, because the flattering reading is wrong.**
+
+That guard was cheap only because six rounds of G1.6 had already made its failure
+shape recognisable. It is not foresight. **These guards are compressed
+hindsight** — each one is a defect that was paid for once, written down so the
+next instance costs a line instead of a week.
+
+The expectation this sets, and it should be held to for F2:
+
+> **They fire prospectively for shapes already seen, and not at all for new ones.**
+
+A guard list is not protection against being wrong; it is protection against being
+wrong *the same way twice*. F2 will be wrong in ways this document does not
+describe, and the list will grow by exactly those.
+
+The corollary matters for how a new milestone is planned: **do not treat the
+guard list as coverage.** Ask what F2's failure modes are on their own terms —
+references, convergence rates, tolerance pressure — and expect the list to be
+silent on most of them until after the fact.
