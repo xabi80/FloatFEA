@@ -542,3 +542,54 @@ The corollary matters for how a new milestone is planned: **do not treat the
 guard list as coverage.** Ask what F2's failure modes are on their own terms —
 references, convergence rates, tolerance pressure — and expect the list to be
 silent on most of them until after the fact.
+
+## Fifteenth: ask what would flip the decision, not how confident you are
+
+> **When a decision looks sensitive to an uncertain input, compute the value of
+> that input that would REVERSE it. Do not estimate your confidence in the value
+> you have.**
+
+The two questions feel similar and are not:
+
+| question | what it produces |
+|---|---|
+| *how confident am I in this input?* | a judgement, defended |
+| *what value would flip the decision?* | **a number, computed** |
+
+The second has an answer. The first invites **margin-defending** — which is
+exactly what "the margin is large, so the conclusion is not delicate" was, and why
+it had to be withdrawn from F2's lock. A margin is a property of the current
+estimate; a flip threshold is a property of the decision.
+
+**Q1 answered itself twice this way inside one lock question.**
+
+*Load uncertainty.* The design moment is 150–300 MN·m and only the FE model can
+pin it — the dominant uncertainty in the project. Asking what moment would flip
+the decision produced the **invariance**:
+
+```
+P/P_E = sigma_allow * lambda^2 / (pi^2 E)
+```
+
+The load cancels against the area it sized. **No value of the moment flips it**,
+because the moment does not enter. That is a far stronger statement than any
+confidence interval in the moment could have been.
+
+*Geometry uncertainty.* The margin over the threshold was 11%, which looks
+fragile. Asking what geometry would flip it produced **braces 33% shorter than
+assumed** — a 6.7 m truss depth at 45°, a layout that makes geometric stiffness
+pointless rather than marginal. **A large move, not a nudge.**
+
+Neither uncertainty could reach the decision, and neither fact was visible from
+the margin. Both fell straight out of asking for the flip threshold.
+
+**Distinct from the sixth guard.** That one aims at a **stuck investigation** —
+when mechanisms keep falling, suspect the inference. This one aims at a **live
+decision** — before committing, find what would reverse it. They share only the
+move of stepping back from the object to the frame around it.
+
+**Practical form:** invert the decision rule and solve. If the answer is "no value
+of this input reverses it", record *that*, not the margin — it is stronger and it
+does not decay as estimates change. If the answer is a reachable value, the
+decision is genuinely open and should be recorded as undecided rather than taken
+on a preference.
