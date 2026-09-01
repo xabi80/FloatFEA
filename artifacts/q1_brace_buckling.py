@@ -114,3 +114,39 @@ for M in (150e6, 200e6, 250e6, 300e6):
 print(f"\nworst (stockiest buildable, across 150-300 MN.m): P/P_E = {worst:.3f}")
 print(f"margin over the 0.2 include threshold: {(worst/0.2 - 1)*100:+.0f}%")
 print(f"amplification 1/(1 - P/P_E) at that point: {1/(1-worst):.2f}")
+
+# ---------------------------------------------------------------------------
+# AQ1/AQ2 -- what the F3 re-check would have to find, and which way the error
+# runs if the decision is wrong.
+#
+# lambda = L/r and r ~ 0.3477 D at the class-3 wall, so lambda ~ 2.88 L/D: the
+# ratio is set by BRACING PANEL GEOMETRY. Truss depth was named a free variable
+# at Q3; PANEL SPACING and DIAGONAL ANGLE set L directly and linearly and have
+# never been named in any document. They are the named dependency of the re-check.
+# ---------------------------------------------------------------------------
+print("\n" + "=" * 68)
+print("AQ1 -- what sets lambda, and therefore what F3 must specify")
+D_worst = 0.877          # stockiest buildable at 300 MN.m, from the sweep above
+r_over_D = tube_radius_of_gyration(1.0, 1.0 / C3)   # r/D at the class-3 wall
+print(f"  r/D at the class-3 wall            {r_over_D:.4f}")
+print(f"  lambda = L / r = {1/r_over_D:.2f} * L/D   -> set by L, i.e. by panel geometry")
+print(f"  current L = {L:.2f} m from a 10 m depth at 45 deg (BOTH assumed)")
+print(f"  L/D at the worst buildable section {L/D_worst:.2f}")
+
+for target, label in ((0.2, "include/defer threshold"), (0.1, "deferral DEFENSIBLE")):
+    lam = lambda_at(target)
+    LD = lam * r_over_D
+    L_needed = LD * D_worst
+    print(f"\n  to reach P/P_E = {target:.1f} ({label}):")
+    print(f"    lambda <= {lam:.1f}  ->  L/D <= {LD:.2f}  ->  L <= {L_needed:.2f} m "
+          f"at D = {D_worst:.3f} m")
+    print(f"    i.e. brace length {(1 - L_needed/L)*100:.0f}% shorter than assumed")
+
+print("\nAQ2 -- the error is ASYMMETRIC, and the cheap side is INCLUDE")
+for ratio in (0.200, 0.221, 0.332, 0.443):
+    print(f"  P/P_E = {ratio:.3f}  ->  amplification 1/(1-P/P_E) = {1/(1-ratio):.3f}"
+          f"   ({(1/(1-ratio)-1)*100:.0f}% on governing-member moments)")
+print("  cost of INCLUDING wrongly: a day on a standard, well-tested formulation.")
+print("  Amplification is already 1.25 at P/P_E = 0.200 exactly, so there is NO")
+print("  point inside the undecided band where deferral becomes attractive.")
+print("  => F3's re-check is a CONFIRMATION, not a decision point.")
