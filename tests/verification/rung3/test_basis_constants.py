@@ -1,4 +1,4 @@
-"""Single-source constants: the values, and the identities that pin them (AP2).
+"""The project basis: values, and the identities that pin them (AP2/AS1/AS2).
 
 `sigma_allow` and `kappa` have each appeared with two values in two documents.
 These tests pin the values against their stated sources so a second value cannot
@@ -10,7 +10,7 @@ import math
 
 import pytest
 
-from floatfea import sections as sec
+from floatfea import basis as sec
 
 
 def test_sigma_allow_is_the_project_basis_not_a_safety_factor() -> None:
@@ -28,8 +28,44 @@ def test_sigma_allow_is_the_project_basis_not_a_safety_factor() -> None:
 
 def test_kappa_matches_cowper() -> None:
     """Cowper (1966) Table 1 at nu = 0.3."""
-    assert sec.kappa_thin_tube(0.3) == pytest.approx(0.5305, abs=5e-4)
-    assert sec.kappa_solid_circular(0.3) == pytest.approx(0.8864, abs=5e-4)
+    assert sec.kappa("thin_tube", 0.3) == pytest.approx(0.5305, abs=5e-4)
+    assert sec.kappa("solid_circular", 0.3) == pytest.approx(0.8864, abs=5e-4)
+
+
+def test_kappa_depends_on_BOTH_shape_and_nu() -> None:
+    """AS1: kappa belongs to neither container alone, so it cannot be a field.
+
+    If it varied with only one of the two, storing it on that one would be
+    defensible and the computed-not-stored rule would be ceremony.
+    """
+    assert sec.kappa("thin_tube", 0.3) != sec.kappa("solid_circular", 0.3)
+    assert sec.kappa("thin_tube", 0.0) != sec.kappa("thin_tube", 0.5)
+
+
+def test_an_unknown_shape_RAISES_rather_than_defaulting() -> None:
+    """A silent fallback to a tube value on a non-tube section is the
+    two-different-beams failure this module exists to prevent."""
+    with pytest.raises(ValueError, match="no shear coefficient"):
+        sec.kappa("i_beam", 0.3)
+
+
+def test_the_shear_geometric_product_is_invariant(request) -> None:
+    """AS3: Phi * (P/P_E) = 12 sigma / (kappa G pi^2), independent of slenderness.
+
+    Asserted against the closed form AND against a direct evaluation at several
+    slendernesses, because the invariance is the whole argument for not
+    refining k_g -- if it held only approximately, the deferral would be a
+    judgement rather than a proof.
+    """
+    import math
+
+    p = sec.shear_geometric_product()
+    assert p == pytest.approx(0.006043, abs=5e-6)
+    g = sec.E_STEEL / (2 * (1 + sec.NU_STEEL))
+    c_phi = 12 * sec.E_STEEL / (sec.kappa("thin_tube") * g)
+    c_pe = sec.SIGMA_ALLOW_S355 / (math.pi**2 * sec.E_STEEL)
+    for lam in (15.0, 30.0, 46.4, 70.0, 140.0):
+        assert (c_phi / lam**2) * (c_pe * lam**2) == pytest.approx(p, rel=1e-12)
 
 
 def test_kappa_is_distinguishable_from_the_simple_argument() -> None:
@@ -39,7 +75,7 @@ def test_kappa_is_distinguishable_from_the_simple_argument() -> None:
     would be ceremony -- a verification test could use either and never notice.
     """
     simple = 0.5
-    assert abs(sec.kappa_thin_tube(0.3) - simple) / simple > 0.05
+    assert abs(sec.kappa("thin_tube", 0.3) - simple) / simple > 0.05
 
 
 def test_chs_class_limits_follow_the_code_formula() -> None:

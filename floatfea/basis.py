@@ -1,4 +1,11 @@
-"""Material and section constants — one source, consumed everywhere.
+"""The project basis: material constants, allowables, and section formulae.
+
+**Named `basis.py`, not `sections.py` (AS2).** The earlier name described half the
+contents, and *a file called `sections.py` holding material constants will
+eventually attract a `materials.py` with its own `E`*. That is the duplication
+this module exists to prevent, arriving through **naming** rather than
+carelessness. `docs/milestones/F1.md` §8 already calls `0.6 f_y` "the project
+basis"; the module takes the phrase.
 
 **Not tolerances.** These are physical and code-derived constants, so they do not
 belong in `tolerances.py`. What they share with it is the single-source rule, and
@@ -67,24 +74,27 @@ def chs_class_limits(fy: float = FY_S355) -> tuple[float, float, float]:
 
 
 # ---------------------------------------------------------------------------
-# Shear correction factor. SECTION-DEPENDENT AND SOURCE-DEPENDENT -- the whole
-# reason this module exists.
+# Shear correction factor -- COMPUTED, NEVER STORED (AS1).
 #
-# The element and every verification reference MUST take kappa from here. A
-# Timoshenko tip-deflection formula evaluated with a different kappa than the
-# element uses is a comparison between two different beams.
+# kappa depends on BOTH the section geometry AND Poisson's ratio: 0.5306 for a
+# thin-walled tube at nu = 0.3, 0.8864 for solid circular, and both vary with nu.
+# It therefore belongs to NEITHER a Material nor a Section alone -- it is a
+# property of the pair.
 #
-# Values and their sources:
-#   thin-walled circular tube, simple shear-flow argument   0.5
-#   thin-walled circular tube, Cowper (1966) at nu = 0.3    0.53
-#   solid circular, Cowper (1966) at nu = 0.3               0.886
-#   rectangular, Cowper (1966) at nu = 0.3                  0.850
+# THE RULE: kappa is obtained by calling `kappa(section, material)`. It is never a
+# field on Material, never a field on Section, and never a default argument.
 #
-# Cowper, G.R., "The Shear Coefficient in Timoshenko's Beam Theory", J. Appl.
-# Mech. 33(2), 1966, pp. 335-340 -- Table 1.
+# This is a stronger rule than "single source", and it outlives the reason for it:
+# a stored kappa is wrong as soon as the section or nu changes, so the physics
+# forbids the field even for someone who has forgotten why duplication is banned.
 #
-# THE PROJECT USES COWPER THROUGHOUT, because it is a single consistent source
-# across section types rather than a mix of conventions.
+# Values, all Cowper (1966) J. Appl. Mech. 33(2) 335-340 Table 1, at nu = 0.3:
+#   thin-walled circular tube    0.5306   (simple shear-flow argument gives 0.5)
+#   solid circular               0.8864
+#   rectangular                  0.8497
+#
+# THE PROJECT USES COWPER THROUGHOUT -- one consistent source across section
+# types rather than a mix of conventions.
 # ---------------------------------------------------------------------------
 KAPPA_SOURCE: Final[str] = "Cowper (1966), J. Appl. Mech. 33(2) 335-340, Table 1"
 
@@ -124,3 +134,58 @@ def tube_second_moment(d_outer: float, t: float) -> float:
 
 def tube_radius_of_gyration(d_outer: float, t: float) -> float:
     return math.sqrt(tube_second_moment(d_outer, t) / tube_area(d_outer, t))
+
+
+# ---------------------------------------------------------------------------
+# The dispatcher. `Section` carries a SHAPE, not a kappa.
+# ---------------------------------------------------------------------------
+_KAPPA_BY_SHAPE = {
+    "thin_tube": kappa_thin_tube,
+    "solid_circular": kappa_solid_circular,
+}
+
+
+def kappa(shape: str, nu: float = NU_STEEL) -> float:
+    """Shear correction factor for ``shape`` at Poisson's ratio ``nu``.
+
+    The only sanctioned way to obtain kappa. Raises on an unknown shape rather
+    than defaulting: a silent fallback to a tube value on a section that is not a
+    tube is precisely the two-different-beams failure this module prevents.
+    """
+    try:
+        return _KAPPA_BY_SHAPE[shape](nu)
+    except KeyError:
+        raise ValueError(
+            f"no shear coefficient for shape {shape!r}; known: "
+            f"{sorted(_KAPPA_BY_SHAPE)}. Add it from {KAPPA_SOURCE} rather than "
+            "defaulting -- a wrong kappa makes an element and its verification "
+            "reference two different beams."
+        ) from None
+
+
+# ---------------------------------------------------------------------------
+# Why the cubic geometric stiffness needs no shear-flexible refinement (AS3).
+#
+# The refinement matters in proportion to Phi = 12 E I / (kappa G A L^2); the
+# geometric stiffness itself matters in proportion to P/P_E. For any section,
+# I = A r^2, so both reduce to functions of slenderness alone:
+#
+#     Phi   = (12 E / (kappa G)) / lambda^2
+#     P/P_E = (sigma_allow / (pi^2 E)) * lambda^2
+#
+# and their PRODUCT is independent of lambda, of the section, and of the load:
+#
+#     Phi * (P/P_E) = 12 sigma_allow / (kappa G pi^2)
+#
+# The two effects are ANTI-CORRELATED BY CONSTRUCTION. A member slender enough for
+# geometric stiffness to matter has negligible shear flexibility; one stocky
+# enough for shear flexibility to matter has negligible P/P_E. The correction has
+# nowhere to be large.
+# ---------------------------------------------------------------------------
+def shear_geometric_product(nu: float = NU_STEEL, shape: str = "thin_tube") -> float:
+    """``Phi * (P/P_E)`` -- the bound on the shear-flexible k_g refinement.
+
+    0.604% for S355 at 0.6 f_y. Constant in slenderness by construction.
+    """
+    g = E_STEEL / (2.0 * (1.0 + nu))
+    return 12.0 * SIGMA_ALLOW_S355 / (kappa(shape, nu) * g * math.pi**2)
