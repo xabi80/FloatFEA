@@ -49,23 +49,53 @@ def test_an_unknown_shape_RAISES_rather_than_defaulting() -> None:
         sec.kappa("i_beam", 0.3)
 
 
-def test_the_shear_geometric_product_is_invariant(request) -> None:
-    """AS3: Phi * (P/P_E) = 12 sigma / (kappa G pi^2), independent of slenderness.
+def test_the_shear_geometric_bound_is_invariant_in_slenderness() -> None:
+    """Phi * (P/P_E) <= 12 sigma_allow / (kappa G pi^2), lambda cancelling.
 
-    Asserted against the closed form AND against a direct evaluation at several
-    slendernesses, because the invariance is the whole argument for not
-    refining k_g -- if it held only approximately, the deferral would be a
-    judgement rather than a proof.
+    Asserted against the closed form AND a direct evaluation at several
+    slendernesses: the invariance is the whole argument for not refining k_g, and
+    if it held only approximately the deferral would be a judgement, not a proof.
     """
     import math
 
-    p = sec.shear_geometric_product()
-    assert p == pytest.approx(0.006043, abs=5e-6)
+    b = sec.shear_geometric_bound()
+    assert b == pytest.approx(0.006043, abs=5e-6)
     g = sec.E_STEEL / (2 * (1 + sec.NU_STEEL))
     c_phi = 12 * sec.E_STEEL / (sec.kappa("thin_tube") * g)
     c_pe = sec.SIGMA_ALLOW_S355 / (math.pi**2 * sec.E_STEEL)
     for lam in (15.0, 30.0, 46.4, 70.0, 140.0):
-        assert (c_phi / lam**2) * (c_pe * lam**2) == pytest.approx(p, rel=1e-12)
+        assert (c_phi / lam**2) * (c_pe * lam**2) == pytest.approx(b, rel=1e-12)
+
+
+def test_it_is_a_BOUND_understressed_members_sit_below_it() -> None:
+    """AT1: the identity is at sigma_actual; the BOUND is at sigma_allow.
+
+    A member carrying half its allowable stress has half the product, so the
+    bound covers the whole model rather than the strength-sized subset. Asserting
+    this is what makes it a bound rather than an identity quoted as one.
+    """
+    import math
+
+    g = sec.E_STEEL / (2 * (1 + sec.NU_STEEL))
+    bound = sec.shear_geometric_bound()
+    for util in (1.0, 0.5, 0.1):
+        sigma_actual = util * sec.SIGMA_ALLOW_S355
+        actual = 12 * sigma_actual / (sec.kappa("thin_tube") * g * math.pi**2)
+        assert actual <= bound + 1e-15
+        if util < 1.0:
+            assert actual < bound
+
+
+@pytest.mark.parametrize(
+    "fy, expected", [(235e6, 0.00400), (355e6, 0.00604), (460e6, 0.00783)]
+)
+def test_the_bound_scales_with_the_material_and_survives_all_of_them(
+    fy: float, expected: float
+) -> None:
+    """If it ever breaks it will be the material or the allowable basis, never
+    the geometry -- so the scaling is pinned across the structural steels."""
+    assert sec.shear_geometric_bound(fy=fy) == pytest.approx(expected, abs=5e-5)
+    assert sec.shear_geometric_bound(fy=fy) < 0.01
 
 
 def test_kappa_is_distinguishable_from_the_simple_argument() -> None:

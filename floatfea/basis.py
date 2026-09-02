@@ -164,28 +164,45 @@ def kappa(shape: str, nu: float = NU_STEEL) -> float:
 
 
 # ---------------------------------------------------------------------------
-# Why the cubic geometric stiffness needs no shear-flexible refinement (AS3).
+# Why the cubic geometric stiffness needs no shear-flexible refinement.
 #
-# The refinement matters in proportion to Phi = 12 E I / (kappa G A L^2); the
-# geometric stiffness itself matters in proportion to P/P_E. For any section,
-# I = A r^2, so both reduce to functions of slenderness alone:
+# STATED AS A BOUND, NOT AN IDENTITY (AT1). The identity
 #
-#     Phi   = (12 E / (kappa G)) / lambda^2
-#     P/P_E = (sigma_allow / (pi^2 E)) * lambda^2
+#     Phi * (P/P_E) = 12 sigma_actual / (kappa G pi^2)
 #
-# and their PRODUCT is independent of lambda, of the section, and of the load:
+# holds at whatever stress a member happens to carry, so on its own it is a
+# statement about strength-sized members and nothing else. The useful form is the
+# INEQUALITY: any member passing its strength check has sigma_actual <= sigma_allow,
+# therefore
 #
-#     Phi * (P/P_E) = 12 sigma_allow / (kappa G pi^2)
+#     Phi * (P/P_E)  <=  12 sigma_allow / (kappa G pi^2)
 #
-# The two effects are ANTI-CORRELATED BY CONSTRUCTION. A member slender enough for
-# geometric stiffness to matter has negligible shear flexibility; one stocky
-# enough for shear flexibility to matter has negligible P/P_E. The correction has
-# nowhere to be large.
+# Under-stressed members satisfy it with room to spare, so the bound covers the
+# WHOLE MODEL rather than the sized subset -- which is what the self-limiting
+# argument for the cubic k_g actually needs.
+#
+# lambda cancels identically (I = A r^2 for any section), so the bound is
+# independent of slenderness, section and load. It scales with sigma_allow / G:
+#
+#     S235 at 0.6 f_y   0.400%
+#     S355 at 0.6 f_y   0.604%
+#     S460 at 0.6 f_y   0.783%
+#
+# The claim survives any structural steel. If it ever breaks it will be the
+# material pair or the allowable basis that breaks it, NEVER the geometry -- which
+# is why the bound is computed from the basis rather than quoted as a constant.
 # ---------------------------------------------------------------------------
-def shear_geometric_product(nu: float = NU_STEEL, shape: str = "thin_tube") -> float:
-    """``Phi * (P/P_E)`` -- the bound on the shear-flexible k_g refinement.
+def shear_geometric_bound(fy: float = FY_S355, nu: float = NU_STEEL,
+                          shape: str = "thin_tube") -> float:
+    """Upper bound on ``Phi * (P/P_E)`` for any member passing its strength check.
 
-    0.604% for S355 at 0.6 f_y. Constant in slenderness by construction.
+    Returns ``12 sigma_allow / (kappa G pi^2)``. This bounds the worth of a
+    shear-flexible refinement to the geometric stiffness: 0.604% for S355, i.e.
+    0.17% on the moment at a 28% amplification.
+
+    **Do not quote the number without recomputing it.** It moves with the
+    allowable basis and the material, and a bare constant in a document silently
+    stops being a bound the first time either changes.
     """
     g = E_STEEL / (2.0 * (1.0 + nu))
-    return 12.0 * SIGMA_ALLOW_S355 / (kappa(shape, nu) * g * math.pi**2)
+    return 12.0 * (ALLOWABLE_FACTOR * fy) / (kappa(shape, nu) * g * math.pi**2)
