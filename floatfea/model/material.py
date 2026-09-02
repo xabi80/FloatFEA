@@ -94,6 +94,6 @@ class Section:
             A=basis.tube_area(d_outer, t),
             I_y=i,
             I_z=i,                 # circular: equal in both bending planes
-            J=2.0 * i,             # thin/thick circular: J = I_y + I_z exactly
+            J=basis.torsion_constant("thin_tube", i, i),
             shape="thin_tube",
         )

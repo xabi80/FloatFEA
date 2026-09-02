@@ -206,3 +206,36 @@ def shear_geometric_bound(fy: float = FY_S355, nu: float = NU_STEEL,
     """
     g = E_STEEL / (2.0 * (1.0 + nu))
     return 12.0 * (ALLOWABLE_FACTOR * fy) / (kappa(shape, nu) * g * math.pi**2)
+
+
+# ---------------------------------------------------------------------------
+# Torsion constant. RAISES on shapes it cannot handle (AU3).
+#
+# J = I_y + I_z is the polar second moment, and it is the torsion constant ONLY
+# for circular sections, where the cross-section does not warp. For any other
+# shape the polar moment OVERSTATES torsional stiffness -- badly for open
+# sections -- and the member comes out torsionally over-stiff with nothing in the
+# suite looking for it.
+#
+# A docstring caveat documents the trap; it does not guard against it. So the
+# unsupported case is an ERROR, never a default -- the same discipline as
+# rejecting an empty parameter set, and as kappa refusing an unknown shape.
+# ---------------------------------------------------------------------------
+_CIRCULAR_SHAPES = frozenset({"thin_tube", "solid_circular"})
+
+
+def torsion_constant(shape: str, i_y: float, i_z: float) -> float:
+    """St Venant torsion constant ``J``.
+
+    For circular sections ``J = I_y + I_z`` exactly. Raises for every other
+    shape rather than returning the polar moment.
+    """
+    if shape not in _CIRCULAR_SHAPES:
+        raise ValueError(
+            f"no torsion constant for shape {shape!r}. J = I_y + I_z holds ONLY "
+            "for circular sections, which do not warp; using it elsewhere makes "
+            "the member torsionally over-stiff and nothing downstream checks it. "
+            "Add the shape's St Venant constant here, and revisit the "
+            "no-warping assumption in docs/verification/README.md before doing so."
+        )
+    return i_y + i_z
