@@ -289,6 +289,40 @@ SUBDIVISION_INVARIANCE: Final[float] = 1e-11
 SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
 
 
+# CLASS: ACCURACY -- carries PATCH_TEST_EXACTNESS_COUNTER below.
+# G2.2 / V1.2 -- deviation of the interior nodal displacements from the exact
+# constant-strain field, in a DISPLACEMENT-DRIVEN patch test on an irregular
+# mesh. Relative, scaled by the largest component of the exact field, so it is
+# dimensionless and survives V1.3's unit rescaling.
+#
+# Reason: the four constant-strain states -- axial, curvature, twist, and
+# constant shear with linear moment -- are reproduced EXACTLY by this element,
+# not in the limit, so the only admissible deviation is round-off. Measured over
+# all four states:
+#
+#   axis-aligned   2.88e-17 .. 2.00e-16
+#   skew straight  6.24e-16 .. 4.21e-15   (transform accumulation)
+#
+# 1e-12 sits ~240x above the worst measured value, which covers the transform
+# path and longer chains, and ~6000x below the counter-case.
+#
+# THIS IS AN EXACTNESS TOLERANCE, NOT A CONVERGENCE ONE. An element that
+# reproduces constant curvature only in the limit is passing a convergence test
+# wearing the patch test's clothes; there is nothing between exact and wrong here,
+# which is why the value sits at ULP scale rather than at an engineering one.
+# Set: 2026-09-02, F2
+PATCH_TEST_EXACTNESS: Final[float] = 1e-12
+
+# COUNTER-CASE, measured on the same quantity and in the WORST state.
+# A relative stiffness error in ONE interior element perturbs the interior field
+# linearly: at 1e-6 the four states move by 4.82e-08 (axial), 4.82e-08 (twist),
+# 7.30e-09 (shear) and 6.28e-09 (curvature). The counter is set at the SMALLEST
+# of those, so every state must catch a one-part-in-10^6 stiffness error, not
+# merely the most sensitive one.
+# Set: 2026-09-02, F2
+PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 6.0e-9
+
+
 # ---------------------------------------------------------------------------
 # Rung 2 -- The element is the element it claims to be
 # Cantilever slender/stubby (G2.3/V2.1-2.2), torsion (V2.3), 3D coupling (V2.4),
