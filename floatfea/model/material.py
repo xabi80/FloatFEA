@@ -69,6 +69,46 @@ class Section:
     J: float
     shape: str
 
+    def __post_init__(self) -> None:
+        """Validate on the TYPE, not only on the convenience constructor (AW3).
+
+        The AU3 guard was placed inside `circular_tube`, which meant
+        `Section(...)` accepted any `J` and any `shape` with no check at all --
+        so the claim that a non-circular section fails loudly at construction was
+        false for every caller that did not happen to use the classmethod. A
+        guard on one construction path is not a guard on the type.
+
+        Found because a test constructed `I_y != I_z` while labelling the shape
+        `thin_tube`, which additionally drew the CIRCULAR `kappa` for a
+        non-circular section -- an incoherent object the production path could
+        equally have built.
+        """
+        if self.A <= 0.0 or self.I_y <= 0.0 or self.I_z <= 0.0 or self.J <= 0.0:
+            raise ValueError(
+                f"section properties must be positive; got A={self.A}, "
+                f"I_y={self.I_y}, I_z={self.I_z}, J={self.J}"
+            )
+        # `kappa` raises for an unknown shape; calling it here moves that failure
+        # to construction rather than to first use in an element.
+        basis.kappa(self.shape, basis.NU_STEEL)
+
+        if self.shape in ("thin_tube", "solid_circular"):
+            if self.I_y != self.I_z:
+                raise ValueError(
+                    f"shape {self.shape!r} is circular but I_y ({self.I_y}) != "
+                    f"I_z ({self.I_z}). A circular section has equal second "
+                    "moments; this object would draw the circular kappa and the "
+                    "circular J for a section that is neither."
+                )
+            expected = basis.torsion_constant(self.shape, self.I_y, self.I_z)
+            if self.J != expected:
+                raise ValueError(
+                    f"shape {self.shape!r} requires J = I_y + I_z = {expected}; "
+                    f"got {self.J}. Supplying J directly bypasses "
+                    "basis.torsion_constant, which is the only place the "
+                    "no-warping assumption is checked."
+                )
+
     def kappa(self, material: Material) -> float:
         """Shear correction factor for this section in this material.
 

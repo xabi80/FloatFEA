@@ -593,3 +593,50 @@ of this input reverses it", record *that*, not the margin — it is stronger and
 does not decay as estimates change. If the answer is a reachable value, the
 decision is genuinely open and should be recorded as undecided rather than taken
 on a preference.
+
+
+## Sixteenth: a guard on one construction path is not a guard on the type
+
+`basis.torsion_constant` was added to refuse `J` for any non-circular shape, and
+reported as making "the first non-circular section fail loudly at construction".
+**It did not.** The call sat inside `Section.circular_tube`, a convenience
+classmethod, while the dataclass constructor accepted anything:
+
+```python
+Section(A=1.0, I_y=1.0, I_z=3.0, J=99.0, shape="i_beam")   # constructed fine
+```
+
+Found because a negative control built `I_y != I_z` while labelling the shape
+`thin_tube` — which additionally drew the **circular** `kappa` for a non-circular
+section. The control was reaching the element by a route production code could
+also take, so it was not merely a weak control; it was evidence the guard was
+misplaced.
+
+> **Ask which construction paths reach the invariant, not whether the check
+> exists.** A validator on the happy path leaves every other path unguarded, and
+> the code that finds the gap is usually a test doing something slightly unusual.
+
+Moved into `__post_init__`, so it binds on the type. The related discipline for
+tests: **a negative control that bypasses production paths must say so**, because
+its scope is then smaller than it appears — the rewritten control builds a local
+matrix by hand and records that it demonstrates transformation behaviour, not
+section machinery.
+
+## Also seen this turn: an absolute tolerance on a dimensional quantity
+
+`atol` on a displacement is what V1.3 (unit scaling) exists to catch: the same
+problem posed in millimetres moves the round-off floor three orders while the
+tolerance stays put, so the unit-scaling gate either fails on the assertion or
+passes it vacuously.
+
+The tell was already visible in *why* the first draft failed — the offending
+component's exact value was **zero**, and no absolute floor is meaningful there.
+
+> **Scale the tolerance to the quantity being compared, and let the scale handle
+> the components whose exact value is zero.**
+
+A `_COUNTER` must be measured **in the same quantity as its assertion**. A
+displacement-residual assertion paired with a spectrum-shift counter is two
+different measurements wearing one name — and the first attempt at it substituted
+an unrelated rotation and produced a constant `12.6` at every perturbation size,
+which was not a counter-case but a mismatch.

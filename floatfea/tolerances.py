@@ -209,38 +209,84 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 # ---------------------------------------------------------------------------
 
 # CLASS: ACCURACY -- carries TRANSFORM_INVARIANCE_COUNTER below.
-# G2.5 / V2.4 -- relative agreement for quantities an ORTHOGONAL transform cannot
-# change: the rotated response against the rotated local response, and the
-# spectrum of T^T K T against that of K. Relative, scaled by the largest entry of
-# the quantity compared.
+# G2.5 / V2.4 -- agreement between the rotated response and the rotated local
+# response. RELATIVE AND DIMENSIONLESS, scaled by the response itself:
 #
-# Reason: these are exact in exact arithmetic -- an orthogonal transform preserves
-# eigenvalues identically -- so the only admissible discrepancy is floating-point
-# accumulation through a 12x12 triple product and a 6x6 solve. Measured: the
-# spectrum shift under an orthogonal transform is 2.71e-16, and a rotated
-# cantilever response reproduces the rotated local response with translational
-# components at 1.07e-18 against an exact zero. 1e-11 sits ~5 orders above the
-# measured floor, which covers BLAS variation in the triple product without
-# admitting anything structural.
+#     |u_global - R u_local|  <=  TRANSFORM_INVARIANCE * ||u_local||_inf
 #
-# A first draft of the V2.4 test used an absolute 1e-18, which is BELOW the
-# round-off floor of the solve -- the test failed on round-off in a component
-# whose exact value is zero, for reasons unrelated to the transform. That is a
-# tolerance being wrong rather than tight, and the distinction is the one
-# CLAUDE.md asks to check before widening: the identity was verified exactly
-# first, and only then was the tolerance changed.
+# Reason: an orthogonal transform cannot change the response, so this is exact in
+# exact arithmetic and the only admissible discrepancy is accumulation through a
+# 12x12 triple product and a 6x6 solve. Measured worst-case over all six load
+# DOF: 3.836e-15. 1e-11 sits ~4 orders above that floor.
+#
+# THE FORM MATTERS AS MUCH AS THE VALUE (AW1). An earlier draft used an ABSOLUTE
+# atol on a displacement, which is a dimensional quantity: posing the same problem
+# in millimetres moves the round-off floor by three orders while the tolerance
+# stays put, so V1.3 (unit scaling) would either fail on this assertion or pass it
+# vacuously. The offending component's exact value is also ZERO, where no absolute
+# floor is meaningful at all -- which is why the first draft's 1e-18 failed against
+# a measured 1.07e-18 for reasons unrelated to the transform. Scaling to
+# ||u_local||_inf handles the zero components by the scale rather than by a floor.
 # Set: 2026-09-02, F2
 TRANSFORM_INVARIANCE: Final[float] = 1e-11
 
-# COUNTER-CASE -- the smallest defect the invariance must still catch.
-# Measured on the I + [theta x] first-order rotation, the non-orthogonal trap
-# docs/conventions.md warns about: it shifts the spectrum by 1.30e-03 at
-# theta = 0.05 rad, 5.20e-05 at 0.01, and 5.20e-07 at 0.001. The counter-case is
-# set at the SMALLEST of those, so the gate must catch a first-order rotation of
-# a milliradian -- four orders above the ceiling, and far below any angle a real
-# model would use.
+# COUNTER-CASE, measured IN THE SAME QUANTITY as the assertion (AW1).
+# A _COUNTER is the smallest defect the SAME assertion detects, so it is measured
+# on the displacement residual, not on the spectrum. Perturbing the correct
+# rotation by the non-orthogonal I + [theta x] map gives a residual linear in
+# theta: 1.227e-02 at 1e-3 rad, 1.228e-05 at 1e-6, 1.228e-07 at 1e-8. The
+# counter is set at the last of these, so the gate must catch a non-orthogonality
+# of TEN NANORADIANS -- four orders above the ceiling, and far below any
+# first-order-rotation bug a real model could contain.
 # Set: 2026-09-02, F2
-TRANSFORM_INVARIANCE_COUNTER: Final[float] = 5.0e-7
+TRANSFORM_INVARIANCE_COUNTER: Final[float] = 1.2e-7
+
+
+# CLASS: ACCURACY -- carries TRANSFORM_SPECTRUM_INVARIANCE_COUNTER below.
+# G2.5 / V2.4 -- relative agreement between eig(T^T K T) and eig(K), scaled by the
+# largest eigenvalue. A separate entry from TRANSFORM_INVARIANCE because it is a
+# DIFFERENT QUANTITY: the spectrum test is the only one that detects a
+# non-orthogonal T without reference to any particular load case.
+#
+# Reason: an orthogonal similarity preserves eigenvalues identically. Measured
+# shift under the real transform: 2.71e-16. 1e-11 sits ~5 orders above it.
+# Set: 2026-09-02, F2
+TRANSFORM_SPECTRUM_INVARIANCE: Final[float] = 1e-11
+
+# COUNTER-CASE for the spectrum test, measured on the spectrum.
+# The I + [theta x] trap shifts the spectrum by 1.30e-03 at theta = 0.05 rad,
+# 5.20e-05 at 0.01, and 5.20e-07 at 0.001 -- so the gate must catch a first-order
+# rotation of a milliradian.
+# Set: 2026-09-02, F2
+TRANSFORM_SPECTRUM_INVARIANCE_COUNTER: Final[float] = 5.0e-7
+
+
+# CLASS: ACCURACY -- carries SUBDIVISION_INVARIANCE_COUNTER below.
+# G2.2 / V1.2 -- relative agreement of a fixed-length cantilever's tip response
+# across element counts. Dimensionless (a ratio of like quantities).
+#
+# Reason: the element is NODALLY EXACT for constant section and load, so
+# subdividing changes nothing but round-off. Measured deviation from the
+# one-element result: 9.99e-15 at n=2, 1.16e-14 at n=5, 4.58e-13 at n=11 -- and
+# the per-solve equilibrium residual grows with it, 1.38e-14 to 8.79e-13 over the
+# same range. That growth is a CONDITIONING signature, not a formulation error:
+# more DOF means a longer factorisation chain. 1e-11 sits ~20x above the worst
+# measured deviation, which leaves room for that growth at the mesh sizes F3 will
+# use without admitting anything structural.
+#
+# DECLARED LATE (AW2). This value existed as an undeclared `rtol=1e-10` literal
+# inside the test before it was measured, which is the local-literal failure this
+# file exists to prevent.
+# Set: 2026-09-02, F2
+SUBDIVISION_INVARIANCE: Final[float] = 1e-11
+
+# COUNTER-CASE, measured on the same quantity.
+# A relative stiffness error in ONE member of the chain produces a tip deviation
+# linear in it: 4.84e-04 at 1e-3, 4.85e-06 at 1e-5, 4.85e-08 at 1e-7. The counter
+# is set at the last, so the gate must catch a one-part-in-10^7 error in a single
+# element -- three orders above the ceiling.
+# Set: 2026-09-02, F2
+SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
 
 
 # ---------------------------------------------------------------------------

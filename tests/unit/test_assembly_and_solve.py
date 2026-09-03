@@ -21,11 +21,16 @@ from floatfea.assemble.system import (
     BeamElement,
     assemble,
     assemble_dense,
+    element_global_stiffness,
     solve,
 )
 from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
-from floatfea.tolerances import TRANSFORM_INVARIANCE
+from floatfea.tolerances import (
+    SUBDIVISION_INVARIANCE,
+    SUBDIVISION_INVARIANCE_COUNTER,
+    TRANSFORM_INVARIANCE,
+)
 
 SEC = Section.circular_tube(0.6, 0.012)
 
@@ -148,8 +153,38 @@ def test_SUBDIVISION_changes_nothing_under_an_end_load() -> None:
         r = solve(k, f, node_dofs(0))
         assert r.residual < TRANSFORM_INVARIANCE
         tips.append(r.u[last[1]])
-    assert np.allclose(tips, tips[0], rtol=1e-10), (
-        f"subdivision changed the tip response: {tips}. The element is nodally "
-        "exact, so this is a formulation or assembly error -- refinement is not "
-        "the response."
+    dev = max(abs(t / tips[0] - 1.0) for t in tips)
+    assert dev <= SUBDIVISION_INVARIANCE, (
+        f"subdivision changed the tip response by {dev:.3e}: {tips}. The element "
+        "is nodally exact, so this is a formulation or assembly error -- "
+        "refinement is not the response."
+    )
+
+
+def test_the_subdivision_counter_case_is_reachable() -> None:
+    """AW2: a one-part-in-10^7 stiffness error in ONE member must be caught.
+
+    Measured linear in the perturbation: 4.84e-04 at 1e-3, 4.85e-08 at 1e-7. The
+    counter consumes that value, so widening SUBDIVISION_INVARIANCE toward it
+    breaks this test.
+    """
+    eps = 1.0e-7
+    tips = []
+    for scale in (1.0, 1.0 + eps):
+        m, els = _frame(n_el=5)
+        k = assemble(m, els).tolil()
+        d = np.arange(12)
+        kb = element_global_stiffness(m, els[0])
+        for i in range(12):
+            for j in range(12):
+                k[d[i], d[j]] += (scale - 1.0) * kb[i, j]
+        f = np.zeros(m.n_dof)
+        last = node_dofs(len(m.nodes) - 1)
+        f[last[1]] = 1.0e5
+        tips.append(solve(k.tocsr(), f, node_dofs(0)).u[last[1]])
+
+    dev = abs(tips[1] / tips[0] - 1.0)
+    assert dev >= SUBDIVISION_INVARIANCE_COUNTER, (
+        f"a {eps:.0e} stiffness error in one member moved the tip by only "
+        f"{dev:.3e}, below the counter-case {SUBDIVISION_INVARIANCE_COUNTER:.3e}"
     )

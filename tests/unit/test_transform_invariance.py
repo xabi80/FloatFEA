@@ -30,6 +30,8 @@ from floatfea.model.material import S355, Section
 from floatfea.tolerances import (
     TRANSFORM_INVARIANCE,
     TRANSFORM_INVARIANCE_COUNTER,
+    TRANSFORM_SPECTRUM_INVARIANCE_COUNTER,
+    TRANSFORM_SPECTRUM_INVARIANCE,
 )
 
 SEC = Section.circular_tube(0.8, 0.020)
@@ -90,14 +92,17 @@ def test_rotation_invariance_of_the_response(dof: int) -> None:
     f_glo = r6.T @ f_loc
     u_glo = np.linalg.solve(k_glo[np.ix_(free, free)], f_glo)
 
-    # Scaled by the response magnitude. An absolute floor below the round-off of
-    # the solve fails on components whose exact value is zero -- which a first
-    # draft of this test did, at 1e-18 against a measured 1.07e-18.
+    # RELATIVE AND DIMENSIONLESS, scaled by the response (AW1). An absolute
+    # tolerance on a displacement is what V1.3 exists to catch: the same problem
+    # posed in millimetres moves the round-off floor three orders while the
+    # tolerance stays put. Scaling also handles the components whose exact value
+    # is zero, where no absolute floor is meaningful.
     scale = np.abs(u_loc).max()
-    assert np.allclose(
-        u_glo, r6.T @ u_loc, rtol=TRANSFORM_INVARIANCE,
-        atol=TRANSFORM_INVARIANCE * scale,
-    ), "global response is not the rotated local response; a coupling entry in T^T K T is wrong"
+    residual = np.abs(u_glo - r6.T @ u_loc).max() / scale
+    assert residual <= TRANSFORM_INVARIANCE, (
+        f"scaled response residual {residual:.3e} exceeds "
+        f"{TRANSFORM_INVARIANCE:.0e}; a coupling entry in T^T K T is wrong"
+    )
 
 
 def test_spectrum_invariance_under_the_transform() -> None:
@@ -112,7 +117,9 @@ def test_spectrum_invariance_under_the_transform() -> None:
     ev_loc = np.sort(np.linalg.eigvalsh(k_loc))
     ev_glo = np.sort(np.linalg.eigvalsh(k_glo))
     scale = np.abs(ev_loc).max()
-    assert np.allclose(ev_loc, ev_glo, rtol=0, atol=TRANSFORM_INVARIANCE * scale)
+    assert np.allclose(
+        ev_loc, ev_glo, rtol=0, atol=TRANSFORM_SPECTRUM_INVARIANCE * scale
+    )
 
 
 def test_a_NON_orthogonal_transform_moves_the_spectrum() -> None:
@@ -136,9 +143,9 @@ def test_a_NON_orthogonal_transform_moves_the_spectrum() -> None:
     shift = np.abs(ev_bad - ev_loc).max() / scale
     # Consumes the COUNTER value: the defect must reach the declared magnitude,
     # so the ceiling cannot be widened toward it without breaking the pairing.
-    assert shift >= TRANSFORM_INVARIANCE_COUNTER, (
+    assert shift >= TRANSFORM_SPECTRUM_INVARIANCE_COUNTER, (
         f"a non-orthogonal transform shifted the spectrum by only {shift:.3e}, "
-        f"below the declared counter-case {TRANSFORM_INVARIANCE_COUNTER:.3e}"
+        f"below the declared counter-case {TRANSFORM_SPECTRUM_INVARIANCE_COUNTER:.3e}"
     )
 
 
@@ -168,18 +175,104 @@ def test_roll_invariance_for_a_circular_section(roll_deg: float) -> None:
 def test_roll_invariance_would_FAIL_for_an_unequal_section() -> None:
     """Negative control: the invariance must be a property of the SECTION.
 
-    If it held for I_y != I_z as well, the test above would be insensitive to the
-    triad entirely.
+    If roll-invariance held for `I_y != I_z` too, the test above would be
+    insensitive to the triad entirely and would certify rather than test.
+
+    **This control builds the local matrix BY HAND, and that is a deliberate
+    weakening that has to be stated.** `Section` refuses to represent `I_y !=
+    I_z` -- correctly, since the only shapes it supports are circular -- so there
+    is no production route to an unequal section, and this control therefore
+    reaches the element by a path production code cannot take. It demonstrates
+    that the *transformation* is roll-sensitive when the bending stiffnesses
+    differ; it does not exercise the section machinery.
+
+    The earlier version of this control was worse: it constructed `I_y != I_z`
+    while labelling the shape `thin_tube`, which drew the circular `kappa` and
+    the circular `J` for a section that was neither. That object is now refused
+    at construction (AW3), which is what surfaced the guard being on the
+    classmethod rather than on the type.
     """
-    unequal = Section(A=SEC.A, I_y=SEC.I_y, I_z=3.0 * SEC.I_z, J=SEC.J,
-                      shape="thin_tube")
+    from floatfea.element.beam import bending_stiffness
+
+    ei_z, ei_y = 3.0e9, 1.0e9          # deliberately unequal
+    k_loc = np.zeros((12, 12))
+    kz = bending_stiffness(ei_z, L, 0.1)
+    ky = bending_stiffness(ei_y, L, 0.1)
+    flip = np.diag([1.0, -1.0, 1.0, -1.0])
+    k_loc[np.ix_([1, 5, 7, 11], [1, 5, 7, 11])] = kz
+    k_loc[np.ix_([2, 4, 8, 10], [2, 4, 8, 10])] = flip @ ky @ flip
+
     a = np.array([0.0, 0.0, 0.0])
     b = a + L * SKEW[0]
-    k_ref = to_global(local_stiffness(unequal, S355, L), rotation_matrix(a, b))
-    k_rolled = to_global(
-        local_stiffness(unequal, S355, L),
-        rotation_matrix(a, b, roll_rad=np.radians(37.0)),
-    )
+    k_ref = to_global(k_loc, rotation_matrix(a, b))
+    k_rolled = to_global(k_loc, rotation_matrix(a, b, roll_rad=np.radians(37.0)))
     assert not np.allclose(
         k_ref, k_rolled, rtol=0, atol=TRANSFORM_INVARIANCE * np.abs(k_ref).max()
+    ), "roll did not change an unequal-section member; the test is triad-blind"
+
+
+def test_an_incoherent_section_is_REFUSED_at_construction() -> None:
+    """AW3: the guard is on the TYPE, not on one construction path.
+
+    `Section(...)` previously accepted any `J` and any `shape` with no check --
+    so `basis.torsion_constant` guarded only `circular_tube`, and the claim that
+    a non-circular section fails loudly at construction was false for any caller
+    using the plain constructor.
+    """
+    from floatfea.model.material import Section as S
+
+    with pytest.raises(ValueError, match="circular but I_y"):
+        S(A=1.0, I_y=1.0, I_z=3.0, J=2.0, shape="thin_tube")
+    with pytest.raises(ValueError, match="no shear coefficient"):
+        S(A=1.0, I_y=1.0, I_z=1.0, J=2.0, shape="i_beam")
+    with pytest.raises(ValueError, match=r"requires J = I_y \+ I_z"):
+        S(A=1.0, I_y=1.0, I_z=1.0, J=99.0, shape="thin_tube")
+    with pytest.raises(ValueError, match="must be positive"):
+        S(A=-1.0, I_y=1.0, I_z=1.0, J=2.0, shape="thin_tube")
+
+
+def test_the_supported_section_still_constructs() -> None:
+    """Meta-test: a guard that refuses everything would pass every test above."""
+    s = Section.circular_tube(0.6, 0.012)
+    assert s.I_y == s.I_z and s.J == pytest.approx(s.I_y + s.I_z)
+
+
+def test_the_displacement_counter_case_is_reachable() -> None:
+    """AW1: the counter must be measured in the SAME quantity as the assertion.
+
+    The assertion is on a scaled displacement residual, so the counter is too --
+    perturbing the CORRECT rotation by the non-orthogonal `I + [theta x]` map,
+    rather than substituting an unrelated rotation.
+
+    A first version substituted `I + [theta x]` for the rotation entirely and
+    measured ~12.6 at every theta, because it was comparing a response under one
+    rotation against an expectation under a different one. That number was not a
+    counter-case; it was a mismatch.
+    """
+    a, b, o = _triad_from(SKEW)
+    r = rotation_matrix(a, b, orientation_node=o)
+    k_loc = local_stiffness(SEC, S355, L)
+    free = [6, 7, 8, 9, 10, 11]
+    r6 = np.zeros((6, 6))
+    r6[:3, :3] = SKEW
+    r6[3:, 3:] = SKEW
+
+    theta = 1.0e-8
+    th = np.array([theta, -0.6 * theta, 0.4 * theta])
+    kx = np.array([[0, -th[2], th[1]], [th[2], 0, -th[0]], [-th[1], th[0], 0]])
+    bad = transformation((np.eye(3) + kx) @ r)
+    k_bad = bad.T @ k_loc @ bad
+
+    worst = 0.0
+    for dof in range(6):
+        f = np.zeros(6)
+        f[dof] = LOAD
+        u_loc = np.linalg.solve(k_loc[np.ix_(free, free)], f)
+        u_bad = np.linalg.solve(k_bad[np.ix_(free, free)], r6.T @ f)
+        worst = max(worst, np.abs(u_bad - r6.T @ u_loc).max() / np.abs(u_loc).max())
+
+    assert worst >= TRANSFORM_INVARIANCE_COUNTER, (
+        f"a non-orthogonality of {theta:.0e} rad produced a residual of only "
+        f"{worst:.3e}, below the declared counter-case "
+        f"{TRANSFORM_INVARIANCE_COUNTER:.3e}"
     )
