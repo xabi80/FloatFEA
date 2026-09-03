@@ -208,7 +208,39 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 # floating-point accumulation and conditioning, never by physical judgement.
 # ---------------------------------------------------------------------------
 
-# (no entries yet -- F2)
+# CLASS: ACCURACY -- carries TRANSFORM_INVARIANCE_COUNTER below.
+# G2.5 / V2.4 -- relative agreement for quantities an ORTHOGONAL transform cannot
+# change: the rotated response against the rotated local response, and the
+# spectrum of T^T K T against that of K. Relative, scaled by the largest entry of
+# the quantity compared.
+#
+# Reason: these are exact in exact arithmetic -- an orthogonal transform preserves
+# eigenvalues identically -- so the only admissible discrepancy is floating-point
+# accumulation through a 12x12 triple product and a 6x6 solve. Measured: the
+# spectrum shift under an orthogonal transform is 2.71e-16, and a rotated
+# cantilever response reproduces the rotated local response with translational
+# components at 1.07e-18 against an exact zero. 1e-11 sits ~5 orders above the
+# measured floor, which covers BLAS variation in the triple product without
+# admitting anything structural.
+#
+# A first draft of the V2.4 test used an absolute 1e-18, which is BELOW the
+# round-off floor of the solve -- the test failed on round-off in a component
+# whose exact value is zero, for reasons unrelated to the transform. That is a
+# tolerance being wrong rather than tight, and the distinction is the one
+# CLAUDE.md asks to check before widening: the identity was verified exactly
+# first, and only then was the tolerance changed.
+# Set: 2026-09-02, F2
+TRANSFORM_INVARIANCE: Final[float] = 1e-11
+
+# COUNTER-CASE -- the smallest defect the invariance must still catch.
+# Measured on the I + [theta x] first-order rotation, the non-orthogonal trap
+# docs/conventions.md warns about: it shifts the spectrum by 1.30e-03 at
+# theta = 0.05 rad, 5.20e-05 at 0.01, and 5.20e-07 at 0.001. The counter-case is
+# set at the SMALLEST of those, so the gate must catch a first-order rotation of
+# a milliradian -- four orders above the ceiling, and far below any angle a real
+# model would use.
+# Set: 2026-09-02, F2
+TRANSFORM_INVARIANCE_COUNTER: Final[float] = 5.0e-7
 
 
 # ---------------------------------------------------------------------------

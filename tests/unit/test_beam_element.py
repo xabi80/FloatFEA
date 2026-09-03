@@ -109,3 +109,77 @@ def test_zero_length_and_bad_section_are_refused() -> None:
         shear_parameter(SEC, S355, 0.0, plane="xy")
     with pytest.raises(ValueError, match="invalid tube"):
         Section.circular_tube(0.4, 0.25)
+
+
+# ---------------------------------------------------------------------------
+# AV0/AV1 -- what the local 12x12 actually has to satisfy.
+# ---------------------------------------------------------------------------
+LOCAL_BLOCKS = {
+    "axial": (0, 6),
+    "torsion": (3, 9),
+    "bending_xy": (1, 5, 7, 11),
+    "bending_xz": (2, 4, 8, 10),
+}
+
+
+def test_the_local_element_is_BLOCK_DIAGONAL_with_exactly_zero_couplings() -> None:
+    """AV1: in the LOCAL frame a straight prismatic member has NO couplings.
+
+    The four blocks -- axial, torsion, bending-xy, bending-xz -- are independent
+    by construction, so every entry outside them is identically zero. That is not
+    a small number; it is zero.
+
+    This catches what the closed-form cantilever tests cannot: an INDEX-MAPPING
+    error that leaks a term into the wrong block. Such an error can leave every
+    in-plane response correct while coupling axial to bending, and no per-plane
+    assertion would see it.
+
+    Every coupling entry that genuinely exists lives in `T^T K T` -- it belongs to
+    the transformation, which is V2.4's territory, not the element's.
+    """
+    k = local_stiffness(SEC, S355, L)
+    owner = np.full(12, -1, dtype=int)
+    for b, (name, idx) in enumerate(LOCAL_BLOCKS.items()):
+        owner[list(idx)] = b
+    assert (owner >= 0).all(), "the four blocks do not cover all 12 local DOF"
+
+    offblock = owner[:, None] != owner[None, :]
+    leaked = np.abs(k[offblock])
+    assert leaked.max() == 0.0, (
+        "the local stiffness has non-zero coupling between blocks; max |entry| = "
+        f"{leaked.max():.6e}. A straight prismatic member has none in local axes, "
+        "so this is an index-mapping error, not physics."
+    )
+
+
+def test_every_block_is_actually_populated() -> None:
+    """Meta-test for the zero assertion above.
+
+    An all-zero matrix is block-diagonal too. Without this, a `local_stiffness`
+    that returned zeros would pass the coupling test cleanly.
+    """
+    k = local_stiffness(SEC, S355, L)
+    for name, idx in LOCAL_BLOCKS.items():
+        block = k[np.ix_(list(idx), list(idx))]
+        assert np.abs(block).max() > 0.0, f"{name} block is identically zero"
+
+
+def test_reciprocity_maxwell_betti() -> None:
+    """AV0: the flexibility matrix is symmetric.
+
+    Free, so asserted directly on the measured responses rather than inferred
+    from K's symmetry -- it is the physical statement, and it catches a
+    transcription error that leaves a wrong element self-consistent.
+
+    Concretely: deflection per unit applied moment must equal rotation per unit
+    applied force. On the x-z case both are -3.677e-03.
+    """
+    k = local_stiffness(SEC, S355, L)
+    free = [6, 7, 8, 9, 10, 11]
+    flex = np.linalg.inv(k[np.ix_(free, free)])
+    assert np.allclose(flex, flex.T, rtol=0, atol=1e-14 * np.abs(flex).max()), (
+        "flexibility is not symmetric -- Maxwell-Betti reciprocity is violated"
+    )
+    # The specific pair the AV0 reconstruction used: uz per unit My == ry per unit Fz.
+    assert flex[2, 4] == pytest.approx(flex[4, 2], rel=1e-14)
+    assert flex[2, 4] < 0.0, "sign lost: the x-z cross term must be negative"
