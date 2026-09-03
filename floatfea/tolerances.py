@@ -301,10 +301,10 @@ SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
 # all four states:
 #
 #   axis-aligned   2.88e-17 .. 2.00e-16
-#   skew straight  6.24e-16 .. 4.21e-15   (transform accumulation)
+#   skew straight  1.41e-15 .. 4.19e-15   (transform accumulation)
 #
 # 1e-12 sits ~240x above the worst measured value, which covers the transform
-# path and longer chains, and ~6000x below the counter-case.
+# path and longer chains, and ~30000x below the counter-case.
 #
 # THIS IS AN EXACTNESS TOLERANCE, NOT A CONVERGENCE ONE. An element that
 # reproduces constant curvature only in the limit is passing a convergence test
@@ -315,12 +315,18 @@ PATCH_TEST_EXACTNESS: Final[float] = 1e-12
 
 # COUNTER-CASE, measured on the same quantity and in the WORST state.
 # A relative stiffness error in ONE interior element perturbs the interior field
-# linearly: at 1e-6 the four states move by 4.82e-08 (axial), 4.82e-08 (twist),
-# 7.30e-09 (shear) and 6.28e-09 (curvature). The counter is set at the SMALLEST
+# linearly: at 1e-6 the four states move by 1.09e-07 (axial), 1.09e-07 (twist),
+# 3.72e-08 (curvature) and 3.02e-08 (shear). The counter is set at the SMALLEST
 # of those, so every state must catch a one-part-in-10^6 stiffness error, not
 # merely the most sensitive one.
+#
+# RE-MEASURED after the mesh was made incommensurate. The earlier value of 6.0e-9
+# came from a mesh containing 0.9/0.6 = 3/2 exactly; removing that symmetry
+# improved the weakest state's sensitivity about fivefold, so the old counter was
+# stale in the SAFE direction (it under-claimed detection) but stale nonetheless.
+# The per-state detection thresholds are recorded alongside the test.
 # Set: 2026-09-02, F2
-PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 6.0e-9
+PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 3.0e-8
 
 
 # ---------------------------------------------------------------------------

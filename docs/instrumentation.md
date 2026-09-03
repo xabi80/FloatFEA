@@ -640,3 +640,52 @@ displacement-residual assertion paired with a spectrum-shift counter is two
 different measurements wearing one name — and the first attempt at it substituted
 an unrelated rotation and produced a constant `12.6` at every perturbation size,
 which was not a counter-case but a mismatch.
+
+
+## Seventeenth: a check written from the defects you met tests those defects, not the property
+
+The patch-test mesh must be **irregular**, because commensurate element lengths
+let errors cancel by symmetry — which is exactly what an exactness test must not
+allow.
+
+The first mesh ended at 9.4, making the last element `2x` the first. Caught. The
+replacement was checked against *that* defect — "no length an integer multiple of
+another" — and passed, while containing **`0.9/0.6 = 3/2` exactly** and
+`2.8/1.7` within 0.02 of `5/3`. A 3:2 pair cancels by symmetry in some node
+patterns just as a 2:1 pair does.
+
+> **A check written from the defects already met is a test of those defects. Write
+> it from the PROPERTY.**
+
+The property is "no pair in a small-integer ratio", so the check sweeps `p/q` for
+`p, q <= 5` rather than enumerating the ratios that have bitten. The third mesh
+was chosen by searching for one whose closest approach to any such ratio is
+`0.0877`.
+
+**It was not a cosmetic fix.** Removing the symmetry improved the weakest state's
+detection threshold about **fivefold**, from `1.51e-10` to `3.31e-11`. The
+narrower check had left real sensitivity on the table, not merely a theoretical
+gap.
+
+## Corollary: record the DETECTION THRESHOLD, not only the counter-case
+
+A counter-case is one perturbation the gate must catch. The **threshold** is where
+the gate stops catching anything, and it is the number that says what a tolerance
+change would cost:
+
+```
+state        sensitivity   smallest defect detected at the ceiling
+axial         1.0908e-01              9.17e-12
+curvature     3.7161e-02              2.69e-11
+twist         1.0908e-01              9.17e-12
+shear         3.0170e-02              3.31e-11   <- weakest
+```
+
+Measured by verification, not extrapolation: perturbing by the threshold lands the
+error on the declared ceiling to within 0.3%.
+
+The thresholds are **asserted**, not merely recorded — so a formulation or mesh
+change that alters sensitivity fails a test rather than silently leaving the
+recorded numbers describing a gate that no longer exists. That assertion earned
+itself immediately: it went red the moment the mesh changed, which is how the
+stale counter-case was found.

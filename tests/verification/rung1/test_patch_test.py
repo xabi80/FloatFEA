@@ -50,9 +50,12 @@ from floatfea.model.nodes import Model, Node, node_dofs
 from floatfea.tolerances import PATCH_TEST_EXACTNESS, PATCH_TEST_EXACTNESS_COUNTER
 
 SEC = Section.circular_tube(0.6, 0.012)
-# Deliberately irregular: no two elements the same length, and no length a simple
-# multiple of another. A uniform mesh lets errors cancel by symmetry.
-STATIONS = np.array([0.0, 1.7, 2.3, 5.1, 6.0, 9.1])
+# Deliberately irregular: no pair of element lengths in a SMALL-INTEGER RATIO.
+# Lengths [3.27, 3.00, 0.90, 0.79, 1.71]; the closest any pairwise ratio comes to
+# p/q with p,q <= 5 is 0.0877. Two earlier meshes failed this: one ended at 9.4,
+# making the last element exactly 2x the first, and its replacement contained
+# 0.9/0.6 = 3/2 exactly and 2.8/1.7 within 0.02 of 5/3.
+STATIONS = np.array([0.0, 3.27, 6.27, 7.17, 7.96, 9.67])
 AXIS_ALIGNED = np.array([1.0, 0.0, 0.0])
 SKEW = np.array([1.0, 0.35, 0.22]) / np.linalg.norm(np.array([1.0, 0.35, 0.22]))
 
@@ -149,21 +152,25 @@ def test_the_mesh_is_actually_irregular() -> None:
     above would pass on an element that is merely consistent."""
     lengths = np.diff(STATIONS)
     assert len(set(np.round(lengths, 9))) == len(lengths), "element lengths repeat"
-    # No length an integer multiple of another. The first draft compared every
-    # length against the FIRST one, which trivially includes the self-ratio of
-    # 1.0 -- and it also caught a real defect: the mesh then ended at 9.4, making
-    # the last element exactly 2x the first.
+
+    # IRREGULAR MEANS NO SMALL-INTEGER RATIO, not merely no equal pair and no 2:1
+    # (AX1). A 3:2 pair cancels by symmetry in some node patterns just as a 2:1
+    # pair does, so checking only the ratios previously met would make this a test
+    # of two known defects rather than of the property. Both earlier meshes passed
+    # the narrower check and failed this one.
+    worst = 1e9
     for i, a in enumerate(lengths):
         for j, b in enumerate(lengths):
-            if i == j:
+            if i == j or a < b:
                 continue
             ratio = a / b
-            if ratio < 1.0:
-                continue
-            assert abs(ratio - round(ratio)) > 0.05, (
-                f"lengths {a} and {b} are commensurate (ratio {ratio:.3f}); "
-                "errors can cancel by symmetry on such a mesh"
-            )
+            for q in range(1, 6):
+                for pp in range(1, 6):
+                    worst = min(worst, abs(ratio - pp / q))
+    assert worst > 0.05, (
+        f"some pair of element lengths sits {worst:.4f} from a small-integer "
+        "ratio; errors can cancel by symmetry on such a mesh"
+    )
 
 
 def test_the_shear_state_actually_contains_shear() -> None:
@@ -179,6 +186,49 @@ def test_the_shear_state_actually_contains_shear() -> None:
     bending = p * (ll * ll**2 / 2.0 - ll**3 / 6.0) / ei
     shear = p * ll / kga
     assert shear / (bending + shear) > 1e-4, "shear term is negligible in state 4"
+
+
+# Detection thresholds, MEASURED (AX1). A counter-case is one perturbation; the
+# threshold is where the state stops seeing one at all, and it is the number a
+# later reader needs to judge whether a tolerance change has cost detection.
+#
+#   state       sensitivity (err/eps)   smallest eps detected at 1e-12
+#   axial              1.0908e-01              9.17e-12
+#   curvature          3.7161e-02              2.69e-11
+#   twist              1.0908e-01              9.17e-12
+#   shear              3.0170e-02              3.31e-11   <- weakest
+#
+# Verified rather than extrapolated: perturbing by the threshold eps lands the
+# error on 1e-12 to within 0.3% in every state. So the patch test stops seeing a
+# single-element stiffness error below ~3.3e-11 relative. Widening
+# PATCH_TEST_EXACTNESS by an order moves that to ~3.3e-10.
+#
+# These numbers are FROM THE INCOMMENSURATE MESH. On the previous mesh -- which
+# contained 0.9/0.6 = 3/2 exactly -- the weakest state's threshold was 1.51e-10,
+# so removing the symmetry cancellation improved detection about FIVEFOLD. The
+# assertion below caught the old numbers going stale the moment the mesh changed.
+DETECTION_THRESHOLD = {
+    "axial": 9.17e-12,
+    "curvature": 2.69e-11,
+    "twist": 9.17e-12,
+    "shear": 3.31e-11,
+}
+
+
+@pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear"])
+def test_the_measured_detection_threshold_still_holds(state: str) -> None:
+    """The threshold is a recorded property of the gate, so it is asserted.
+
+    If a formulation change alters sensitivity, this fails and the recorded
+    numbers get revisited -- rather than silently ceasing to describe the gate.
+    """
+    eps = DETECTION_THRESHOLD[state]
+    err, _ = _run(state, SKEW, stiffness_scale=1.0 + eps)
+    assert err == pytest.approx(PATCH_TEST_EXACTNESS, rel=0.05), (
+        f"{state}: perturbing by the recorded threshold {eps:.3e} gave {err:.3e}, "
+        f"not the declared ceiling {PATCH_TEST_EXACTNESS:.0e}. The gate's "
+        "sensitivity has changed and the recorded thresholds are stale."
+    )
 
 
 @pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear"])
