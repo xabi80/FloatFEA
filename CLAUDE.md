@@ -94,6 +94,36 @@ All four are declared in `docs/conventions.md` and carried explicitly in the
 interchange file. If something is ambiguous, stop and ask rather than picking
 the convention that makes the current test pass.
 
+## Step gating
+
+Within a milestone, work proceeds in the numbered steps of the locked plan, and
+**every step is reviewed before the next opens.** The mechanism:
+
+1. Finish the step. Write `docs/reports/F<n>/step-<k>.md`: what was built, the
+   test counts from your own run, every number with its threshold, every
+   tolerance touched, and a `Carried` section answering each open item from
+   the previous review — or stating "checked, nothing carried". Commit.
+2. Invoke the `gating-supervisor` subagent on the step. It reads the diff and
+   runs the tests itself; it writes `docs/reviews/F<n>/step-<k>.md` with a
+   verdict. Commit the verdict **separately** from the code it judges.
+3. `PASS` opens step k+1. `HOLD` means the listed items are answered before
+   anything else and the supervisor is re-invoked. `STOP` means the plan is
+   wrong or a low rung is red: implementation halts and the plan reopens.
+
+A `Stop` hook refuses to end a turn while the newest report has no verdict, or
+while an earlier step holds and a later one has been started. A `PreToolUse`
+hook refuses edits under `docs/reviews/` — the implementer never writes,
+edits, or deletes a verdict.
+
+When a PR is open for the milestone (see `docs/SUPERVISOR.md`), read the latest
+`[witness ...]` comment before opening any step and treat a witness HOLD exactly
+as an inside HOLD. Where the two reviewers disagree, the stricter verdict
+stands and the disagreement is recorded in the next report.
+
+The point of the arrangement is not more reporting. It is that the dependency
+list — the open items from the last review — is part of what gets re-read at
+every step, by a reader that was not the one who skipped it.
+
 ## Conventions
 
 `docs/conventions.md` is locked at F0 and is authoritative for frames, signs,
