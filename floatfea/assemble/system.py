@@ -5,6 +5,9 @@ Diagnostics are **per solve, never averaged** (`CLAUDE.md` § Non-negotiables).
 single case it describes; there is deliberately no aggregate, because an outlier
 hidden in a mean is the specific thing these numbers exist to catch. This is
 where V4.1's discipline starts, and it costs one line.
+
+`equilibrate` is a tested utility and is **not** on the solve path -- see its
+docstring, and BD2 in `docs/milestones/F2.md`.
 """
 from __future__ import annotations
 
@@ -37,20 +40,34 @@ class BeamElement:
 def equilibrate(k: sp.spmatrix) -> tuple[sp.csc_matrix, NDArray[np.float64]]:
     """Symmetric diagonal equilibration: ``(D^-1/2 K D^-1/2, sqrt(diag K))``.
 
-    Why the solve does this (R2). A beam stiffness mixes translational and
-    rotational DOF, whose diagonal entries scale **oppositely** under a change of
-    length unit: with lengths x S, translational entries go as ``S^-1``
-    (``EA/L``, ``12EI/L^3``) and rotational as ``S^+1`` (``4EI/L``), while the
-    coupling terms (``6EI/L^2``) are unchanged. Measured on this element, both to
-    four digits. So their ratio moves by ``S^2`` and the conditioning of the
-    assembled matrix is a function of the unit system rather than of the problem.
+    **A tested utility, NOT on the solve path (BD2).** `solve` factorises the
+    original matrix.
 
-    Equilibration removes exactly that. For any diagonal ``S``,
-    ``diag(S K S) = S diag(K) S``, so the scaled matrix is **algebraically
-    invariant**: ``cond`` is the same number in metres, millimetres and
-    kilometres. Without it an exactness tolerance is not unit-invariant even when
-    it is relative -- being relative scales numerator and denominator together,
-    but it does not scale the round-off floor with them.
+    What it does. A beam stiffness mixes translational and rotational DOF, whose
+    diagonal entries scale **oppositely** under a change of length unit: with
+    lengths x S, translational entries go as ``S^-1`` (``EA/L``, ``12EI/L^3``) and
+    rotational as ``S^+1`` (``4EI/L``), coupling (``6EI/L^2``) unchanged --
+    measured on this element to four digits. Since ``diag(SKS) = S diag(K) S``,
+    the scaled matrix is algebraically invariant, so ``cond(K~) = 3.85e2`` at
+    every unit system where ``cond(K_ff)`` runs ``9.2e2 .. 6.0e8``.
+
+    Why it is not on the solve path. It was put there on a claim that the
+    unit-invariance of the patch test "required two fixes". The ablation refutes
+    that: **the error measure alone is necessary and sufficient**, and
+    equilibration alone leaves the kilometre breach exactly where it was. The
+    replacement justification -- a "6x" improvement -- was a ratio of extremes;
+    per scale the benefit runs
+
+        S      1e-4  1e-3  1e-2   0.1     1    10   100  1e3   1e4
+        ratio  9.93  5.84  3.87  5.10  1.58  1.08  0.77 1.97  1.69
+
+    median 1.97 and **below 1 at S = 100**. A production solve-path change with no
+    gate, no test through the solve, and a benefit that is sometimes negative does
+    not stay. Deleting it left 289 tests passing, which is the measurement that
+    settled it.
+
+    Retained as a utility because the conditioning property is real and tested,
+    and it is a candidate for F3 if conditioning bites on the full model.
     """
     d = np.sqrt(np.abs(k.diagonal()))
     if not np.all(d > 0.0):
@@ -150,12 +167,8 @@ def solve(
         raise ValueError("every DOF is fixed; there is nothing to solve")
 
     kff = k[free][:, free].tocsc()
-    # Equilibrated solve (R2): factorise D^-1/2 K D^-1/2, then undo the scaling.
-    # This makes the conditioning -- and therefore the achievable accuracy --
-    # independent of the length unit the problem is posed in.
-    kff_eq, d = equilibrate(kff)
-    lu = spla.splu(kff_eq, permc_spec=SPARSE_PERMC_SPEC)
-    uf = lu.solve(f[free] / d) / d
+    lu = spla.splu(kff, permc_spec=SPARSE_PERMC_SPEC)
+    uf = lu.solve(f[free])
 
     u = np.zeros(n, dtype=np.float64)
     u[free] = uf

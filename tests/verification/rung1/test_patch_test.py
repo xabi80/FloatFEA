@@ -389,8 +389,13 @@ def test_the_OTHER_plane_is_blind_to_it(block: str) -> None:
 # R2: unit invariance. Not V1.3 -- that gate poses a scaled problem and checks
 # the RESULTS scale correctly. This checks the weaker property V1.3 depends on:
 # that the achievable accuracy, and therefore this gate's ceiling, does not move
-# with the length unit. Both had to be fixed for that to hold, and neither fix
-# was a tolerance change.
+# with the length unit.
+#
+# WHAT CLOSED IT: the ERROR MEASURE alone, necessary and sufficient by ablation.
+# Equilibration was briefly added to the solve on a claim that two fixes were
+# required; that claim is refuted and the change is reverted (BD2). The
+# conditioning tests below exercise `equilibrate` as a utility, which is what it
+# now is.
 # ---------------------------------------------------------------------------
 UNIT_SCALES = [1.0, 10.0, 1000.0, 0.001]      # metres, decimetres, mm, km
 
