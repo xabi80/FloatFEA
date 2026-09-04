@@ -31,5 +31,10 @@ case "$path" in
 {"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"docs/reviews/ is written only by the gating-supervisor through scripts/write_verdict.py. The implementer does not write, edit, or delete verdicts."}}
 EOF
     ;;
+  *tests/corpus/*)
+    cat <<'EOF'
+{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"tests/corpus/ holds adversarial cases written by the REVIEWER (BE3). A check measured against a corpus its own author wrote measures nothing; that is why this directory is not the implementer's. Write the check, not the cases it is scored against."}}
+EOF
+    ;;
 esac
 exit 0

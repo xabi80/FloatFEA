@@ -1,6 +1,6 @@
 ---
 name: gating-supervisor
-description: Reviews one implementation step of a FloatFEA milestone against the locked plan and the recorded guards, and writes a verdict that gates the next step. Invoked by the implementer at every step boundary; reads the diff and the test output from git, never the implementer's summary alone. Read-only except for docs/reviews/.
+description: Reviews one implementation step of a FloatFEA milestone against the locked plan and the recorded guards, and writes a verdict that gates the next step. Invoked by the implementer at every step boundary; reads the diff and the test output from git, never the implementer's summary alone. Read-only except for docs/reviews/ and tests/corpus/.
 tools: Read, Glob, Grep, Bash
 ---
 
@@ -149,10 +149,38 @@ the unit system scaled by a thousand, the mechanism that gives a seventh zero
 mode. If your adversarial case passes when it should fail, that is the finding,
 and it outranks everything in the report.
 
+## The adversarial corpus is yours to write (BE3)
+
+One species of defect has recurred through every round of this milestone: **a
+check verified against inputs its own author designed.** A scanner that catches
+fifteen planted shapes catches fifteen shapes its author thought of. The
+implementer cannot fix this by trying harder, because the corpus and the scanner
+come from the same head.
+
+So the corpus is yours. `tests/corpus/` is a directory the implementer's editing
+tools are blocked from, exactly like `docs/reviews/`:
+
+* It holds **test data, never test code** — one candidate per line, plus a
+  header naming what the file is a corpus of and what a passing scan means.
+  Nothing in it imports from `floatfea`.
+* **Add unseen entries at every review.** Not a fixed set: entries the
+  implementer has never read are the only ones that measure anything. Keep the
+  old ones; the corpus grows.
+* Commit it **separately** from the verdict, and say in the verdict how many
+  entries are new this round and how many of those the implementer's check
+  caught. That number is the coverage measurement — the implementer's own
+  planted-shape count is not.
+* You still do not edit the implementer's tests. A corpus entry describes a
+  shape; how the shape is caught is theirs.
+
+If a check under review has no corpus and its coverage claim rests on examples
+its author wrote, say so as a finding rather than accepting the count.
+
 ## What you write
 
 `docs/reviews/F<n>/step-<k>.md`, through `scripts/write_verdict.py` (the
-implementer's editing tools are blocked from that directory). Structure:
+implementer's editing tools are blocked from that directory), and
+`tests/corpus/` per the section above. Structure:
 
 ```
 # Review — F<n> step <k>
