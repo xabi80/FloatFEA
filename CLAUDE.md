@@ -119,6 +119,23 @@ while an earlier step holds and a later one has been started. A `PreToolUse`
 hook refuses edits under `docs/reviews/` — the implementer never writes,
 edits, or deletes a verdict.
 
+### The reviewer's own instructions are not edited inside a step
+
+`.claude/agents/`, `.claude/hooks/` and `docs/SUPERVISOR.md` define what the
+reviewer reads, what it must carry, and what it may write. They change **only in
+a standalone `process:` commit that cites the directive asking for the change**,
+never in a commit that also touches `floatfea/` or `tests/`. A change to any of
+them inside a step commit is a **STOP-class finding**: the one mechanism that
+would catch a quietly deleted guard is a reviewer diffing its own instructions,
+and a reviewer cannot be relied on to notice an instruction that is no longer
+there.
+
+Recorded because the hook protects `docs/reviews/` and `tests/corpus/` while the
+agent definition governing both was freely editable by the implementer, and one
+step commit had already modified it. That change was additive and deleted no
+guard — verified line by line by the reviewer, discretionarily. The mechanism is
+the finding, not the change.
+
 ### Every claim carries its command
 
 BD0 required a commit message that makes a checkable claim to carry the check,

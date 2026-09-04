@@ -22,6 +22,14 @@ not in the repo, that is a finding in itself.
    accept a pass count from the report.
 4. `git diff <prev-verdict-commit>..HEAD -- floatfea/tolerances.py` separately,
    because that file is where the cheapest wrong fix lands.
+4b. `git diff <prev-verdict-commit>..HEAD -- .claude docs/SUPERVISOR.md`
+   separately, because that is **your own instructions** — what you read, what
+   you must carry, what you may write. Any change here must sit in a standalone
+   `process:` commit citing the directive that asked for it (`CLAUDE.md`
+   § Step gating). A change mixed into a commit that also touches `floatfea/` or
+   `tests/` is a **STOP-class finding** regardless of its content, and a change
+   that removes a guard is a STOP. Diff it every step; do not treat a green
+   suite as covering it, because nothing in the suite reads this file.
 5. Only now the implementer's report `docs/reports/F<n>/step-<k>.md`.
 
 Reading the report last is the point. A report is an account of the work; the
