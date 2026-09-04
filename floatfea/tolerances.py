@@ -386,6 +386,55 @@ PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
 
 
 
+# CLASS: ACCURACY -- carries RESULTANT_EXACTNESS_COUNTER below.
+# G2.2 / V1.2 -- deviation of the RECOVERED element end forces from the analytic
+# resultants of the constant-strain state: EA*eps, EI*kappa in each bending plane,
+# GJ*phi', and for state 4 the constant shear P with its linear moment P(L-x).
+# Relative, scaled per element by the largest analytic resultant of that element,
+# so it is dimensionless.
+#
+# A SEPARATE ENTRY FROM PATCH_TEST_EXACTNESS BECAUSE IT IS A DIFFERENT QUANTITY.
+# The displacement check compares a field; this compares a stiffness-weighted
+# FIRST DIFFERENCE of that field, so it loses two to three digits to cancellation
+# and cannot share a ceiling. Reusing the displacement ceiling for a quantity of
+# another kind is what made the solve-residual line it replaces unfalsifiable
+# (R41) -- that line sat at 1e-15 against a 1e-12 ceiling and did not move under a
+# defect that failed the displacement check by eleven orders.
+#
+# Reason: exact in exact arithmetic -- the states are reproduced exactly, so the
+# recovered forces are the analytic ones. Measured worst over six states x two
+# orientations, on the shipped path:
+#
+#   S = 1e-3   axis-aligned 2.892e-11   skew 4.558e-11   <- worst
+#   S = 1      axis-aligned 1.525e-13   skew 3.921e-13
+#   S = 1e+3   axis-aligned 2.900e-13   skew 1.484e-12
+#
+# 1e-9 sits 22x above the worst of those and ~700x below the counter-case.
+#
+# OPERATING POINT, because a ratio against a varying denominator carries one or it
+# carries nothing (ninth guard). These are the scales the shipped test runs
+# (S = 1e-3, 1, 1e3) at the posed geometry, tube 0.6/0.012, element lengths
+# 0.79..3.27 m. The error tracks the conditioning of the solve rather than the
+# element: outside that band it grows to 7.2e-10 at S = 1e-4, where
+# cond(K_ff) = 6.0e10. The ceiling is claimed over the band the test runs, not
+# beyond it.
+# Set: 2026-09-04, F2
+RESULTANT_EXACTNESS: Final[float] = 1e-9
+
+# COUNTER-CASE, measured on the same quantity and in the WORST state.
+# A 1e-6 relative stiffness error in ONE interior element moves the recovered
+# resultants by 6.898e-07 (axial, twist), 6.934e-07 (both curvature states) and
+# 7.983e-07 (both shear states). The counter is set just below the SMALLEST, so
+# every state must catch a one-part-in-10^6 stiffness error through the forces as
+# well as through the displacements.
+#
+# The same defect moves the DISPLACEMENT error by 1.076e-07 .. 1.174e-07, so the
+# resultant channel is ~6.4x the more sensitive of the two -- which is the reason
+# it is worth having beside the field check rather than instead of it.
+# Set: 2026-09-04, F2
+RESULTANT_EXACTNESS_COUNTER: Final[float] = 6.8e-7
+
+
 # CLASS: ACCURACY -- carries MATRIX_SYMMETRY_COUNTER below.
 # G2.1 / V1.1 -- symmetry of an assembled or element stiffness matrix, relative,
 # scaled by the largest entry. Dimensionless.

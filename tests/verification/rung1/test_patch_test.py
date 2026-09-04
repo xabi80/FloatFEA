@@ -63,11 +63,21 @@ from floatfea.assemble.system import BeamElement, assemble, solve
 from floatfea.element.transform import rotation_matrix
 from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
-from floatfea.tolerances import DETECTION_THRESHOLD_BAND, PATCH_TEST_EXACTNESS, PATCH_TEST_EXACTNESS_COUNTER
+from floatfea.tolerances import (DETECTION_THRESHOLD_BAND, PATCH_TEST_EXACTNESS,
+                                 PATCH_TEST_EXACTNESS_COUNTER, RESULTANT_EXACTNESS,
+                                 RESULTANT_EXACTNESS_COUNTER)
 from floatfea.testing import assert_close, assert_differs
 from floatfea.tolerances import COND_UNIT_INVARIANCE, ROUNDOFF_IDENTITY
 
 SEC = Section.circular_tube(0.6, 0.012)
+
+# The four state amplitudes, in ONE place. `_exact_local` poses the field from
+# them and `_exact_resultants` poses the internal forces from them, so the two
+# cannot drift apart into a comparison of one state against another.
+EPS_AXIAL = 1.0e-4        # axial strain, dimensionless
+CURVATURE = 2.0e-4        # 1/m
+TWIST_RATE = 3.0e-5       # rad/m
+SHEAR_LOAD = 1.0e5        # N, constant shear with its linear moment
 # Irregular: no pair of element lengths in a SMALL-INTEGER RATIO. Lengths
 # [3.27, 3.00, 0.90, 0.79, 1.71]; the closest pairwise ratio to p/q with p,q <= 5
 # is 0.0877. Kept as standard practice -- a controlled measurement found the
@@ -92,27 +102,27 @@ def _exact_local(state: str, x: np.ndarray) -> np.ndarray:
     kga = SEC.kappa(S355) * S355.G * SEC.A
     u = np.zeros((x.size, 6))
     if state == "axial":
-        u[:, 0] = 1.0e-4 * x
+        u[:, 0] = EPS_AXIAL * x
     elif state == "curvature":
-        c = 2.0e-4
+        c = CURVATURE
         u[:, 1] = c * x**2 / 2.0
         u[:, 5] = c * x
     elif state == "twist":
-        u[:, 3] = 3.0e-5 * x
+        u[:, 3] = TWIST_RATE * x
     elif state == "shear":
-        p, ll = 1.0e5, STATIONS[-1]
+        p, ll = SHEAR_LOAD, STATIONS[-1]
         u[:, 1] = p * (ll * x**2 / 2.0 - x**3 / 6.0) / ei + p * x / kga
         u[:, 5] = p * (ll * x - x**2 / 2.0) / ei
     elif state == "curvature_xz":
         # x-z plane. `w' = -phi_y`, so a positive curvature about +y bends the
         # member the other way in w -- the sign the x-y states cannot see.
-        c = 2.0e-4
+        c = CURVATURE
         u[:, 2] = -c * x**2 / 2.0
         u[:, 4] = c * x
     elif state == "shear_xz":
         # Constant shear in x-z, with its linear moment. Same field as `shear`
         # with the rotation negated, per `w' = -phi_y`; EI uses I_y.
-        p, ll = 1.0e5, STATIONS[-1]
+        p, ll = SHEAR_LOAD, STATIONS[-1]
         ei_y = S355.E * SEC.I_y
         u[:, 2] = p * (ll * x**2 / 2.0 - x**3 / 6.0) / ei_y + p * x / kga
         u[:, 4] = -p * (ll * x - x**2 / 2.0) / ei_y
@@ -161,6 +171,83 @@ def relative_error(got, exact, char_length: float) -> float:
     w = _np.ones(6)
     w[3:] = char_length
     return float((_np.abs(got - exact) * w).max() / (_np.abs(exact) * w).max())
+
+
+def _element_resultants(model, elements, u_global: np.ndarray) -> np.ndarray:
+    """(n_el, 12) LOCAL end forces, ``k_loc (T u_e)``, from a solved global field.
+
+    The standard recovery: rotate the element's two nodal DOF into local axes and
+    push them through the element stiffness. F5's stress recovery supersedes this;
+    it lives here because G2.2 needs a quantity that is not the displacement it
+    already checks.
+    """
+    from floatfea.assemble.system import element_length
+    from floatfea.element.beam import local_stiffness
+    from floatfea.element.transform import rotation_matrix, transformation
+    from floatfea.model.nodes import element_dofs
+
+    out = np.empty((len(elements), 12))
+    for i, e in enumerate(elements):
+        k = local_stiffness(e.section, e.material, element_length(model, e))
+        r = rotation_matrix(model.nodes[e.node_a].xyz, model.nodes[e.node_b].xyz,
+                            orientation_node=e.orientation_node, roll_rad=e.roll_rad)
+        out[i] = k @ (transformation(r) @ u_global[element_dofs(e.node_a, e.node_b)])
+    return out
+
+
+def _exact_resultants(state: str, x_a: float, x_b: float) -> np.ndarray:
+    """(12,) analytic LOCAL end forces for one element of a constant-strain state.
+
+    From STATICS AND SECTION PROPERTIES, not from the solve: ``EA eps``,
+    ``EI kappa`` in each plane, ``GJ phi'``, and for state 4 the constant shear
+    ``P`` with its linear moment ``P(L - x)``. Sign convention is the element's
+    own -- ``f = k u`` is the force the stiffness applies at each end -- so end
+    `a` carries the negative of a tension, and it is VERIFIED rather than
+    asserted by `test_the_resultant_recovery_is_EXACT_on_the_exact_field`.
+
+    Note what this does and does not exercise. `kappa G A` does not appear: the
+    resultants of state 4 are fixed by equilibrium, so a wrong shear coefficient
+    moves the FIELD (which `_exact_local` poses and the gate checks) and not
+    these. What it adds over the displacement check is a stiffness-weighted
+    derivative of the field, which is why a stiffness defect moves it by more
+    than it moves the displacement -- measured 0.41-0.48 against 0.064-0.069 at
+    a 2x defect.
+    """
+    ea = S355.E * SEC.A
+    gj = S355.G * SEC.J
+    ei_z = S355.E * SEC.I_z
+    ei_y = S355.E * SEC.I_y
+    ll = STATIONS[-1]
+    f = np.zeros(12)
+    if state == "axial":
+        f[0], f[6] = -ea * EPS_AXIAL, ea * EPS_AXIAL
+    elif state == "twist":
+        f[3], f[9] = -gj * TWIST_RATE, gj * TWIST_RATE
+    elif state == "curvature":
+        f[5], f[11] = -ei_z * CURVATURE, ei_z * CURVATURE
+    elif state == "curvature_xz":
+        f[4], f[10] = -ei_y * CURVATURE, ei_y * CURVATURE
+    elif state == "shear":
+        f[1], f[7] = -SHEAR_LOAD, SHEAR_LOAD
+        f[5], f[11] = -SHEAR_LOAD * (ll - x_a), SHEAR_LOAD * (ll - x_b)
+    elif state == "shear_xz":
+        # w' = -phi_y, so the moments carry the opposite sign to the x-y pair.
+        f[2], f[8] = -SHEAR_LOAD, SHEAR_LOAD
+        f[4], f[10] = SHEAR_LOAD * (ll - x_a), -SHEAR_LOAD * (ll - x_b)
+    else:  # pragma: no cover
+        raise ValueError(state)
+    return f
+
+
+def _worst_resultant_error(model, elements, u_global: np.ndarray, state: str) -> float:
+    """Worst relative resultant error over the elements, scaled per element."""
+    got = _element_resultants(model, elements, u_global)
+    worst = 0.0
+    for i, e in enumerate(elements):
+        ex = _exact_resultants(state, float(STATIONS[e.node_a]),
+                               float(STATIONS[e.node_b]))
+        worst = max(worst, float(np.abs(got[i] - ex).max() / np.abs(ex).max()))
+    return worst
 
 
 def _run(
@@ -217,7 +304,8 @@ def _run(
     got = u.reshape(n_nodes, 6)
 
     err = relative_error(got, u_ex, STATIONS[-1])
-    return err, res
+    res_err = _worst_resultant_error(m, els, u, state)
+    return err, res, res_err
 
 
 @pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear", "curvature_xz", "shear_xz"])
@@ -225,14 +313,24 @@ def _run(
 def test_the_four_constant_strain_states_are_EXACT(state: str, orientation: str) -> None:
     """G2.2. Exactness at ULP scale, not convergence."""
     d = AXIS_ALIGNED if orientation == "axis_aligned" else SKEW
-    err, res = _run(state, d)
+    err, res, res_err = _run(state, d)
     assert err <= PATCH_TEST_EXACTNESS, (
         f"{state}/{orientation}: interior nodes deviate from the exact field by "
         f"{err:.3e}, above {PATCH_TEST_EXACTNESS:.0e}. This is a patch-test "
         "failure -- every accuracy comparison above rung 1 is uninterpretable "
         "until it is fixed, and refinement is not the response."
     )
-    assert res.residual <= PATCH_TEST_EXACTNESS
+    # The SECOND quantity, and the one that moves under a stiffness defect (R41).
+    # `res.residual` used to sit here; it measures the SOLVE, not the element, and
+    # it does not move under a defect the line above fails by eleven orders -- it
+    # moved DOWN for two of three states at a 2x defect. It is now
+    # `test_the_solve_residual_is_a_SOLVE_check`, out of the G2.2 evidence.
+    assert res_err <= RESULTANT_EXACTNESS, (
+        f"{state}/{orientation}: recovered element resultants deviate from the "
+        f"analytic EA*eps / EI*kappa / GJ*phi' / P values by {res_err:.3e}, above "
+        f"{RESULTANT_EXACTNESS:.0e}. The nodal field can be right while the "
+        "internal forces are wrong -- that is what this line is for."
+    )
 
 
 def test_the_mesh_is_actually_irregular() -> None:
@@ -353,7 +451,7 @@ def test_the_measured_detection_threshold_still_holds(state: str) -> None:
     state already sits a little off 1.000.
     """
     eps = DETECTION_THRESHOLD[state]
-    err, _ = _run(state, SKEW, stiffness_scale=1.0 + eps)
+    err, _, _ = _run(state, SKEW, stiffness_scale=1.0 + eps)
     ratio = err / PATCH_TEST_EXACTNESS
     assert_close(
         ratio, 1.0, DETECTION_THRESHOLD_BAND, floor=np.finfo(float).eps,
@@ -374,7 +472,7 @@ def test_a_perturbed_element_BREAKS_the_patch_test(state: str) -> None:
     One interior element's stiffness is perturbed -- the defect a wrong length or
     a wrong section produces -- and every state must detect it.
     """
-    err, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-6)
+    err, _, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-6)
     assert err >= PATCH_TEST_EXACTNESS_COUNTER, (
         f"{state}: a 1e-6 stiffness error in one element moved the interior "
         f"field by only {err:.3e}, below the counter-case "
@@ -390,6 +488,54 @@ def test_a_perturbed_element_BREAKS_the_patch_test(state: str) -> None:
 # one local block is what demonstrates that the x-z states are actually loading
 # the x-z stiffness -- and that they were needed.
 # ---------------------------------------------------------------------------
+@pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear", "curvature_xz", "shear_xz"])
+@pytest.mark.parametrize("orientation", ["axis_aligned", "skew"])
+def test_the_resultant_recovery_is_EXACT_on_the_exact_field(
+    state: str, orientation: str
+) -> None:
+    """The analytic table is verified, not asserted -- eighth guard.
+
+    `_exact_resultants` writes down a sign convention: `f = k u` is the force the
+    stiffness applies at each end, so end `a` carries the negative of a tension,
+    and the x-z moments carry the opposite sign to the x-y pair because
+    `w' = -phi_y`. If any of that is wrong the error is O(1), not O(eps) -- a
+    flipped sign doubles the discrepancy. Pushing the EXACT field through the
+    recovery isolates the table from the solve: no factorisation is involved, so
+    a failure here is the table or the element, never the solve.
+
+    Measured on the exact field: 7.5e-16 (axial) to 1.19e-13 (shear, skew). That
+    is the cancellation floor of `k @ u`, and it is why the resultant channel
+    cannot share the displacement ceiling.
+    """
+    d = AXIS_ALIGNED if orientation == "axis_aligned" else SKEW
+    m, els, r = _model(d)
+    u_exact_global = _to_global(_exact_local(state, STATIONS), r).reshape(-1)
+    err = _worst_resultant_error(m, els, u_exact_global, state)
+    assert err <= RESULTANT_EXACTNESS, (
+        f"{state}/{orientation}: k_loc @ u_exact disagrees with the analytic "
+        f"resultants by {err:.3e}. No solve is involved, so this is the analytic "
+        "table's signs and magnitudes, or the element."
+    )
+
+
+@pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear", "curvature_xz", "shear_xz"])
+def test_a_perturbed_element_BREAKS_the_recovered_RESULTANTS(state: str) -> None:
+    """Negative control for the resultant channel, per state.
+
+    The line this channel replaced could not do this: a solve residual does not
+    move under a stiffness defect, and at a 2x defect it moved DOWN for two of
+    three states. Here a 1e-6 defect in one interior element must show, in every
+    state.
+    """
+    _, _, res_err = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-6)
+    assert res_err >= RESULTANT_EXACTNESS_COUNTER, (
+        f"{state}: a 1e-6 stiffness error in one element moved the recovered "
+        f"resultants by only {res_err:.3e}, below the counter-case "
+        f"{RESULTANT_EXACTNESS_COUNTER:.3e}. The channel has lost sensitivity "
+        "and the ceiling above it is no longer defensible."
+    )
+
+
 PLANE_STATES = {
     "bending_xy": ("curvature", "shear"),
     "bending_xz": ("curvature_xz", "shear_xz"),
@@ -400,7 +546,7 @@ PLANE_STATES = {
 def test_a_defect_in_ONE_bending_plane_is_caught_by_THAT_plane(block: str) -> None:
     """Each plane's states detect a defect confined to their own block."""
     for state in PLANE_STATES[block]:
-        err, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
+        err, _, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
         assert err >= PATCH_TEST_EXACTNESS_COUNTER, (
             f"{state} did not detect a 1e-3 defect confined to {block}: "
             f"{err:.3e} < {PATCH_TEST_EXACTNESS_COUNTER:.3e}"
@@ -418,7 +564,7 @@ def test_the_OTHER_plane_is_blind_to_it(block: str) -> None:
     """
     other = "bending_xz" if block == "bending_xy" else "bending_xy"
     for state in PLANE_STATES[other] + ("axial", "twist"):
-        err, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
+        err, _, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
         assert err <= PATCH_TEST_EXACTNESS, (
             f"{state} responded to a defect confined to {block} ({err:.3e}); the "
             "blocks are not independent and the local matrix is not block-diagonal"
