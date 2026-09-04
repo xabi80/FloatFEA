@@ -309,6 +309,7 @@ def _run(
     stiffness_scale: float = 1.0,
     block: str | None = None,
     scale: float = 1.0,
+    transpose_transform: bool = False,
 ):
     """Solve the patch test. `stiffness_scale` perturbs element 1 -- the whole
     element by default, or only `block`'s local entries when named. `scale` poses
@@ -317,6 +318,28 @@ def _run(
     u_ex = _to_global(_exact_local(state, STATIONS * scale, scale), r)
 
     k = assemble(m, els)
+    if transpose_transform:
+        # The plan's named counter-case for this gate, made executable (R4): ONE
+        # element's rotation used transposed. R is orthogonal so R.T is a valid
+        # rotation -- the element is not corrupted, it is oriented wrongly, which
+        # is what a transform bug actually looks like.
+        from floatfea.assemble.system import element_length
+        from floatfea.element.beam import local_stiffness
+        from floatfea.element.transform import rotation_matrix, to_global
+
+        e = els[1]
+        k_loc = local_stiffness(e.section, e.material, element_length(m, e))
+        rot = rotation_matrix(m.nodes[e.node_a].xyz, m.nodes[e.node_b].xyz,
+                              orientation_node=e.orientation_node,
+                              roll_rad=e.roll_rad)
+        delta = to_global(k_loc, rot.T) - to_global(k_loc, rot)
+        k = k.tolil()
+        dd = np.concatenate([node_dofs(1), node_dofs(2)])
+        for i in range(12):
+            for j in range(12):
+                k[dd[i], dd[j]] += delta[i, j]
+        k = k.tocsr()
+
     if stiffness_scale != 1.0:
         from floatfea.assemble.system import element_global_stiffness, element_length
         from floatfea.element.beam import local_stiffness
@@ -675,6 +698,34 @@ def test_the_solve_residual_would_CATCH_a_wrong_solution() -> None:
         "ceiling above it means nothing."
     )
     assert clean.residual <= SOLVE_RESIDUAL, "the clean solve must sit below it"
+
+
+@pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear", "curvature_xz", "shear_xz"])
+def test_a_TRANSPOSED_TRANSFORM_on_one_element_breaks_every_state(state: str) -> None:
+    """The counter-case `F2.md` sec. D5 names for this gate, executed (R4).
+
+    The plan promised "one element's transformation transposed" and nothing ran
+    it, so the row was prose where every other counter-case in this file is a
+    number a test consumes. It is a good case: `R.T` is itself a valid rotation,
+    so the element stays a legitimate beam and only its ORIENTATION is wrong --
+    which is what a transform bug looks like, and is not reachable by scaling a
+    stiffness.
+
+    Measured response, six states, skew orientation:
+    axial 1.53e+00, curvature 2.01e-01, twist 1.57e-01, shear 3.02e-01,
+    curvature_xz 1.01e-01, shear_xz 1.49e-01 -- every state, at O(1).
+    """
+    err, _, res_err = _run(state, SKEW, transpose_transform=True)
+    assert err >= PATCH_TEST_EXACTNESS_COUNTER, (
+        f"{state}: one element's transform transposed moved the interior field "
+        f"by only {err:.3e}, below the counter-case "
+        f"{PATCH_TEST_EXACTNESS_COUNTER:.3e}. A wrongly oriented element is "
+        "invisible to this gate."
+    )
+    assert res_err >= RESULTANT_EXACTNESS_COUNTER, (
+        f"{state}: the recovered resultants moved by only {res_err:.3e} under a "
+        "transposed transform."
+    )
 
 
 PLANE_STATES = {
