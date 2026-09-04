@@ -382,3 +382,80 @@ R4, R5, R6 — carried to step 5 as the first verdict permits.
 ## Witness channel
 
 Unavailable. No git remote, so no PR and no `[witness ...]` comment.
+
+---
+
+# Revision 4 — the third verdict answered (BD0–BD5)
+
+**2026-09-03.** Verdict `docs/reviews/F2/step-4.md` (HOLD @ `1acb5dc`). One
+finding per commit, each carrying the check its claim needs (BD0).
+
+## Carried — from the third verdict
+
+| item | commit | status |
+|---|---|---|
+| **BD0** helper | `407e5ad` | `assert_close` refuses operands within 100× of the stated floor |
+| **BD1** the widening | `49a3acc` | `ROUNDOFF_IDENTITY` reverted `1e-12 → 1e-14`; `_MEASURED` on all 9 accuracy entries |
+| **BD2** equilibration | `d6f1ad3` | removed from `solve()`; retained as a tested utility |
+| **BD3** R9 | `9c57584` | compares an O(1) ratio; both controls bite |
+| **BD4/BD5** scanner | `3f9ff25` | AST; 15/15 planted shapes; 25 further sites swept |
+
+## The checks, as run
+
+**BD1 — "no value loosened", the claim that was false last time:**
+
+```
+MATRIX_SYMMETRY          new 1e-09  tightest replaced 1e-09  OK
+ROUNDOFF_IDENTITY        new 1e-14  tightest replaced 1e-14  OK
+COND_UNIT_INVARIANCE     new 1e-06  tightest replaced 1e-06  OK
+PASS -- no value loosened
+```
+
+**BD2 — the ablation, and the per-scale benefit:**
+
+```
+delete equilibration from solve():  289 passed   <- no test exercised it
+
+S      1e-4  1e-3  1e-2   0.1     1    10   100  1e3   1e4
+ratio  9.93  5.84  3.87  5.10  1.58  1.08  0.77 1.97  1.69
+min 0.77   median 1.97   max 9.93
+```
+
+**BD3 — operands and floor, not the pass:**
+
+```
+homogeneous : m=4.150920e-12  mm=4.150920e-12  ratio=1.000000000  floor=2.220e-16
+mixed max() : m=4.292575e-13  mm=4.292575e-16  ratio=1.000000e-03  -> drifts 1000x
+w[3:]=0     : m=0.000000e+00  mm=0.000000e+00  -> blind
+```
+
+**BD4 — red on the named shapes first, then clean:**
+
+```
+RED   matrix_rank(k, tol=1e-9 * abs(k).max())
+RED   pytest.approx(PATCH_TEST_EXACTNESS, rel=0.99)
+15/15 planted shapes caught (regex caught 2); repo sweep 0 remaining
+```
+
+## New tolerance
+
+`DETECTION_THRESHOLD_BAND = 0.05`, measured `9.9523e-03`, counter `0.25` — R13's
+**third** literal, which the regex scanner had read as clean.
+
+## A third defect of the same species, self-caught
+
+BD3's first degenerate branch used `return` where a measure produced `0/0` — a
+test passing while asserting nothing, written *in the code fixing the second
+instance of that*. It now asserts the blindness is symmetric across unit systems.
+
+## Numbers
+
+`309 passed`, my run.
+
+## Still open
+
+R4, R5, R6 — carried to step 5 as the first verdict permits.
+
+## Witness channel
+
+Unavailable. No git remote, so no PR and no `[witness ...]` comment.
