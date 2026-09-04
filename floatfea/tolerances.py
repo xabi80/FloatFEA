@@ -315,42 +315,51 @@ SUBDIVISION_INVARIANCE_MEASURED: Final[float] = 6.0130e-13
 # mesh. Relative, scaled by the largest component of the exact field, so it is
 # dimensionless and survives V1.3's unit rescaling.
 #
-# Reason: the four constant-strain states -- axial, curvature, twist, and
-# constant shear with linear moment -- are reproduced EXACTLY by this element,
+# Reason: the six constant-strain states -- axial, twist, and curvature and
+# constant shear in EACH bending plane -- are reproduced EXACTLY by this element,
 # not in the limit, so the only admissible deviation is round-off. Measured over
-# all four states:
+# all six, on the shipped solve path:
 #
-#   axis-aligned   2.88e-17 .. 2.00e-16
-#   skew straight  1.41e-15 .. 4.19e-15   (transform accumulation)
+#   axis-aligned   1.87e-16 .. 3.88e-15
+#   skew straight  4.80e-16 .. 1.25e-14   (transform accumulation)
 #
-# 1e-12 sits ~240x above the worst measured value, which covers the transform
-# path and longer chains, and ~30000x below the counter-case.
+# 1e-12 sits 80x above the worst of those, which covers the transform path and
+# longer chains, and 5 orders below the counter-case.
 #
-# UNIT SYSTEM AND FLOOR. Declared in SI metres, and VERIFIED invariant across
-# length-unit factors S = 1e-4 .. 1e+4: worst error 3.19e-14, no breach at any
-# scale.
+# UNIT SYSTEM. Declared in SI metres, and VERIFIED invariant across length-unit
+# factors S = 1e-4 .. 1e+4 ON THE PATH THAT SHIPS: worst error 2.00e-13, no
+# breach at any scale. 5.0x of headroom at the worst scale, against 80x at the
+# metre scale the gate is posed in.
 #
 # WHAT CLOSED IT, measured by ablation (R8). An earlier version of this comment
-# said the invariance "required two fixes". The one-at-a-time cells refute that:
+# said the invariance "required two fixes". All four cells, worst error over the
+# six states at each S:
 #
-#   equilibrate   weighted measure   worst err    first breach of 1e-12
+#   equilibrate   weighted measure   worst err    breaches of 1e-12
 #      yes              yes           3.19e-14         none
-#      NO               yes           2.00e-13         none
-#      yes              NO            2.09e-11         S = 1e-3
+#      NO   <- ships    yes           2.00e-13         none
+#      yes              NO            2.09e-11    S = 1e-4, 1e-3, 1e4
+#      NO               NO            2.07e-10    S = 1e-4, 1e-3, 1e3, 1e4
 #
 # The ERROR MEASURE alone is necessary and sufficient. Taking max() across all six
 # DOF mixes metres with radians, so the measure was unit-dependent on its own; a
 # spurious rotation divided by a translational scale grows with S while the solve
 # is untouched. Weighting rotations by a characteristic length fixes it.
 #
-# EQUILIBRATION IS RETAINED ON A DIFFERENT JUSTIFICATION than the one this comment
-# used to give: a measured 6x reduction in worst error (3.19e-14 against 2.00e-13)
-# and cond(K~) = 3.85e2 at every unit system where cond(K_ff) runs 9.2e2 .. 6.0e8.
-# Both are under test. It would be removed if either stopped holding.
+# EQUILIBRATION IS NOT ON THE SOLVE PATH (BD2). It was, for two commits, and this
+# comment described that configuration for two more: the "3.19e-14 across all
+# scales", the retention argument, and the floor below all belonged to a path
+# `solve` no longer takes. Row 2 is what ships. Equilibration remains a tested
+# utility -- cond(K~) = 3.85e2 at every unit system is real and asserted -- and
+# `floatfea/assemble/system.py` carries why it is not in the solve.
 #
-# Floor, as a multiple of the equilibrated conditioning: cond(K~) * eps =
-# 3.85e2 * 2.22e-16 = 8.5e-14. The worst measured error is 0.37x that floor and
-# this ceiling is ~12x it.
+# FLOOR. There is no single conditioning floor on the shipped path, because
+# cond(K_ff) is a property of the unit system: it runs 9.21e2 at S = 1 to 5.98e10
+# at S = 1e-4, so cond(K_ff) * eps spans 2.05e-13 .. 1.33e-05. The measured error
+# does NOT track that bound -- err / (cond * eps) is 0.061 at worst and below
+# 0.01 at seven of the nine scales -- so this ceiling is justified by measurement
+# across the range, not by a conditioning estimate. At the metre scale where the
+# gate is posed, cond(K_ff) * eps = 2.05e-13 and the ceiling is 4.9x it.
 #
 # THIS IS AN EXACTNESS TOLERANCE, NOT A CONVERGENCE ONE. An element that
 # reproduces constant curvature only in the limit is passing a convergence test
