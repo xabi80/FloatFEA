@@ -7,7 +7,9 @@ hidden in a mean is the specific thing these numbers exist to catch. This is
 where V4.1's discipline starts, and it costs one line.
 
 `equilibrate` is a tested utility and is **not** on the solve path -- see its
-docstring, and BD2 in `docs/milestones/F2.md`.
+docstring, and `docs/milestones/F2.md` sec. R8 for the measurement that removed
+it (BD2). There is no section named BD2 in that file; an earlier version of this
+line cited one.
 """
 from __future__ import annotations
 
