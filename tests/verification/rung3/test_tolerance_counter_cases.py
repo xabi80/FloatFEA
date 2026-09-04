@@ -64,11 +64,10 @@ def test_every_float_tolerance_declares_a_class() -> None:
         for m in re.finditer(r"^([A-Z][A-Z0-9_]*)\s*:\s*Final\[float\]", body, re.M)
     }
     classified = {n for _, n in _classified()}
-    # A _COUNTER or _MEASURED is documented by the entry it belongs to, not
-    # separately -- both are satellites of a classified name.
+    # A _COUNTER is documented by the entry it belongs to, not separately.
     missing = {
         d for d in declared - classified
-        if not d.endswith(("_COUNTER", "_MEASURED"))
+        if not d.endswith("_COUNTER")
     }
     assert not missing, f"tolerances without a CLASS declaration: {sorted(missing)}"
 
@@ -117,29 +116,21 @@ def test_structural_tolerances_do_NOT_carry_a_counter_case(name: str) -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "name", [n for c, n in _classified() if c == "ACCURACY"] or ["<none>"]
-)
-def test_measured_below_ceiling_below_counter(name: str) -> None:
-    """BD1: MEASURED < TOL < COUNTER, for every accuracy entry.
+def test_no_entry_carries_a_hand_written_MEASURED_value() -> None:
+    """BE2: a measured value does not live in the file that declares the ceiling.
 
-    The middle inequality is the counter-case rule. The left one is new: it
-    records the worst value actually seen at the entry's sites, so an entry whose
-    sites drift toward the ceiling fails rather than silently consuming headroom.
+    `X_MEASURED` was added in BD1 and removed here. The assertion it powered --
+    ``MEASURED < TOL < COUNTER`` -- compared three literals from one file, so it
+    was satisfied by whatever the author typed: four of nine were wrong when
+    written, two of those measured on a solve path deleted one commit later, and
+    the suite stayed green throughout.
 
-    It does NOT by itself catch a widening -- 1e-12 would satisfy it as happily
-    as 1e-14 did. That is why BD0's rule exists: a commit message claiming "no
-    value loosened" carries the check that says so.
+    The worst measured value is reported by the run that measures it, in
+    `docs/reports/F<n>/step-<k>.md`. This test keeps the shape from coming back.
     """
-    assert name != "<none>", "no ACCURACY entries found"
-    measured = getattr(tolerances, f"{name}_MEASURED", None)
-    assert measured is not None, (
-        f"{name} has no {name}_MEASURED. Every accuracy entry records the worst "
-        "value actually measured at its sites."
-    )
-    ceiling = getattr(tolerances, name)
-    counter = getattr(tolerances, f"{name}_COUNTER")
-    assert measured < ceiling < counter, (
-        f"{name}: measured {measured:.4e} < ceiling {ceiling:.4e} < counter "
-        f"{counter:.4e} does not hold"
+    reintroduced = [n for n in dir(tolerances) if n.endswith("_MEASURED")]
+    assert not reintroduced, (
+        f"{sorted(reintroduced)} declare a measurement in the file that declares "
+        "the ceiling. A check cannot take its own subject from its own source; "
+        "put the number in the step report, where a run produces it."
     )
