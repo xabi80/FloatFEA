@@ -1,0 +1,78 @@
+# CORPUS: model configurations G2.2's ceiling is claimed over.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the sixth verdict on F2 step 4 (HEAD 15bbc3b).
+#
+# WHY THIS FILE EXISTS (BE3). The shipped gate poses ONE geometry in TWO
+# orientations at THREE length units. Every negative control on it was designed
+# by the same hand as the gate, so the coverage it demonstrates is coverage of
+# the cases its author thought of. These are cases the author did not run. They
+# are written down rather than left in a verdict so the next round can measure
+# against them instead of re-deriving them.
+#
+# WHAT A PASSING SCAN MEANS. For each entry, the six constant-strain states are
+# solved in the named orientation and the worst relative field error is compared
+# against PATCH_TEST_EXACTNESS, and the worst recovered-resultant error against
+# RESULTANT_EXACTNESS. A passing scan means every entry marked expect=hold is
+# below both ceilings AND the 1e-6 single-element negative control still exceeds
+# both counters at that entry. It does NOT mean the shipped test suite runs the
+# entry -- the `runs_in_suite` field records that separately, and it is the
+# coverage measurement.
+#
+# expect=hold    the ceilings are claimed to hold here
+# expect=breach  measured above PATCH_TEST_EXACTNESS at this reviewer's run
+# expect=raise   the configuration must RAISE, not default to a silent fallback
+#
+# FIELDS
+#   id            stable name
+#   section       circular_tube D=<m> t=<m>            (the only shape basis.kappa knows)
+#   stations      total member length in m; the mesh is the gate's own ratio set
+#   orient        axis | skew | vertical | in_plane_y
+#   extra         orientation_node=..., roll=<rad>, I_y_over_I_z=<r>, or none
+#   runs_in_suite yes | no       -- does a shipped test execute this configuration
+#   expect        hold | breach
+#
+# ---------------------------------------------------------------------------
+id=posed_metre        section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew        extra=none                       runs_in_suite=yes expect=hold
+id=posed_axis         section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=axis        extra=none                       runs_in_suite=yes expect=hold
+
+# --- orientations the gate never poses -------------------------------------
+# The platform's spars are vertical. A member along global Z is the branch the
+# default local-axis construction must refuse; with an orientation_node supplied
+# it is the branch F3's real model will take, and no rung-1 test enters it.
+id=vertical_no_onode  section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=vertical    extra=none                       runs_in_suite=no  expect=raise
+id=vertical_onode     section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=vertical    extra=orientation_node=5,0,0     runs_in_suite=no  expect=hold
+id=in_plane_y         section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=in_plane_y  extra=none                       runs_in_suite=no  expect=hold
+id=roll_quarter       section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew        extra=roll=0.7853981634          runs_in_suite=no  expect=hold
+id=roll_one_rad       section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew        extra=roll=1.0                   runs_in_suite=no  expect=hold
+
+# --- the stubby member ------------------------------------------------------
+# R15 recorded that on a stubby configuration the six responses to the 1e-6
+# control fell BELOW PATCH_TEST_EXACTNESS_COUNTER. That was measured under the
+# pre-R2 mixed-unit error measure. Kept as an entry so the claim stays under
+# measurement rather than being withdrawn by argument.
+id=stubby_thin        section=circular_tube,D=2.000,t=0.04000 stations=3.00 orient=skew        extra=none                       runs_in_suite=no  expect=hold
+id=stubby_thick       section=circular_tube,D=2.000,t=0.10000 stations=3.00 orient=skew        extra=none                       runs_in_suite=no  expect=hold
+
+# --- slenderness, at constant D/t = 50 --------------------------------------
+# tolerances.py declares a boundary at element L/r = 119 and F2.md D7 item 5
+# turns it into an F3 obligation. These entries are the counter-evidence: the
+# error is NOT monotone in slenderness and there are breaches well inside the
+# declared-safe region. Any F3 builder assertion of the form "L/r < 119" admits
+# slender_L_r_79.
+id=slender_L_r_47     section=circular_tube,D=0.200,t=0.00400 stations=9.67 orient=skew        extra=none                       runs_in_suite=no  expect=hold
+id=slender_L_r_63     section=circular_tube,D=0.150,t=0.00300 stations=9.67 orient=skew        extra=none                       runs_in_suite=no  expect=hold
+id=slender_L_r_79     section=circular_tube,D=0.120,t=0.00240 stations=9.67 orient=skew        extra=none                       runs_in_suite=no  expect=breach
+id=slender_L_r_86     section=circular_tube,D=0.110,t=0.00220 stations=9.67 orient=skew        extra=none                       runs_in_suite=no  expect=hold
+id=slender_L_r_94     section=circular_tube,D=0.100,t=0.00200 stations=9.67 orient=skew        extra=none                       runs_in_suite=no  expect=breach
+id=slender_L_r_99     section=circular_tube,D=0.095,t=0.00190 stations=9.67 orient=skew        extra=none                       runs_in_suite=no  expect=hold
+id=slender_L_r_118    section=circular_tube,D=0.080,t=0.00160 stations=9.67 orient=skew        extra=none                       runs_in_suite=no  expect=breach
+
+# --- the section the type cannot build --------------------------------------
+# basis.kappa knows only thin_tube and solid_circular, both of which force
+# I_y == I_z, so no test in the repository can distinguish the two bending
+# inertias. Measured: replacing every `section.I_y` in floatfea/element/beam.py
+# with `section.I_z` leaves all 366 tests green. Kept as an entry so the hole is
+# scored rather than argued; it opens when a non-circular shape exists.
+id=aniso_I_y_2x       section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew        extra=I_y_over_I_z=2.0           runs_in_suite=no  expect=hold
