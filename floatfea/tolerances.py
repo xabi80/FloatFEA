@@ -386,6 +386,40 @@ PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
 
 
 
+# CLASS: ACCURACY -- carries SOLVE_RESIDUAL_COUNTER below.
+# Rung 1 -- ``||K u - f|| / ||f||`` over the free DOF, for ONE case. Relative,
+# dimensionless. This is a SOLVE-accuracy measure: it says the factorisation
+# solved the system it was given, and nothing about whether that system was the
+# right one.
+#
+# IT IS NOT AN ELEMENT CHECK, and it used to be asserted as one (R41). Sitting
+# inside G2.2's gate assertion against PATCH_TEST_EXACTNESS, it did not move under
+# a stiffness defect that failed the displacement line by eleven orders -- for two
+# of three states it moved DOWN. The quantity was wrong and so was the tolerance
+# it borrowed. It is now asserted on its own, labelled, outside the gate.
+#
+# Reason: a direct factorisation of a well-conditioned system leaves a residual at
+# round-off. Measured worst over the twelve patch-test cases (six states x two
+# orientations): 1.7295e-15. 1e-13 sits 58x above that, which covers the
+# conditioning growth of a longer chain without admitting a solve that missed.
+# Set: 2026-09-04, F2
+SOLVE_RESIDUAL: Final[float] = 1e-13
+
+# COUNTER-CASE, measured on the same quantity. The residual tracks a wrong
+# solution one-for-one -- a solved field in error by a relative delta gives a
+# residual of delta, measured over four decades on the patch system:
+#
+#   delta   1e-06   1e-08   1e-10    1e-12
+#   resid   1.0e-06 1.0e-08 1.0e-10  9.9998e-13
+#
+# The counter is set just under the last, so the assertion must catch a solve
+# wrong in the twelfth significant figure -- 7.7x above the ceiling, the tightest
+# pair in this file, because the two are separated by nothing but the round-off
+# floor of an exact operation.
+# Set: 2026-09-04, F2
+SOLVE_RESIDUAL_COUNTER: Final[float] = 9.9e-13
+
+
 # CLASS: ACCURACY -- carries RESULTANT_EXACTNESS_COUNTER below.
 # G2.2 / V1.2 -- deviation of the RECOVERED element end forces from the analytic
 # resultants of the constant-strain state: EA*eps, EI*kappa in each bending plane,

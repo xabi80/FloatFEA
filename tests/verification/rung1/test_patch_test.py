@@ -65,7 +65,8 @@ from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
 from floatfea.tolerances import (DETECTION_THRESHOLD_BAND, PATCH_TEST_EXACTNESS,
                                  PATCH_TEST_EXACTNESS_COUNTER, RESULTANT_EXACTNESS,
-                                 RESULTANT_EXACTNESS_COUNTER)
+                                 RESULTANT_EXACTNESS_COUNTER, SOLVE_RESIDUAL,
+                                 SOLVE_RESIDUAL_COUNTER)
 from floatfea.testing import assert_close, assert_differs
 from floatfea.tolerances import COND_UNIT_INVARIANCE, ROUNDOFF_IDENTITY
 
@@ -534,6 +535,77 @@ def test_a_perturbed_element_BREAKS_the_recovered_RESULTANTS(state: str) -> None
         f"{RESULTANT_EXACTNESS_COUNTER:.3e}. The channel has lost sensitivity "
         "and the ceiling above it is no longer defensible."
     )
+
+
+@pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear", "curvature_xz", "shear_xz"])
+@pytest.mark.parametrize("orientation", ["axis_aligned", "skew"])
+def test_the_solve_residual_is_a_SOLVE_check(state: str, orientation: str) -> None:
+    """Labelled for what it is, and OUTSIDE the G2.2 evidence (R41).
+
+    `||K u - f|| / ||f||` says the factorisation solved the system it was handed.
+    It says nothing about whether that system was the right one, which is why it
+    is no longer inside the gate assertion: it did not move under a stiffness
+    defect that failed the gate by eleven orders.
+
+    Kept because a silently bad solve would make every number above it
+    meaningless, and it costs one line. Against `SOLVE_RESIDUAL`, in its own
+    quantity, not against the displacement ceiling it used to borrow.
+    """
+    d = AXIS_ALIGNED if orientation == "axis_aligned" else SKEW
+    _, res, _ = _run(state, d)
+    assert res.residual <= SOLVE_RESIDUAL, (
+        f"{state}/{orientation}: the solve left a residual of {res.residual:.3e}, "
+        f"above {SOLVE_RESIDUAL:.0e}. The factorisation did not solve the system "
+        "it was given; nothing above this line is interpretable."
+    )
+
+
+def test_the_solve_residual_would_CATCH_a_wrong_solution() -> None:
+    """Counter-case for `SOLVE_RESIDUAL`, measured over four decades.
+
+    STATED LIMITATION, because it decides how much this control is worth. There
+    is no way to make the shipped `solve` return a large residual without
+    breaking the factorisation itself: hand it any right-hand side and it returns
+    the solution to that side. So this control perturbs the solved field and
+    recomputes the residual **by the same definition `solve` uses**
+    (`system.py:181-184`) -- it exercises the residual's discriminating power,
+    not the shipped code path that computes it. A defect in `solve`'s own residual
+    arithmetic would not be caught here.
+
+    What it does establish: the measure responds one-for-one to a wrong solution,
+    so the 58x between the measured 1.7e-15 and the 1e-13 ceiling is headroom
+    over round-off rather than over a blind spot.
+    """
+    m, els, r = _model(SKEW)
+    u_ex = _to_global(_exact_local("shear", STATIONS), r)
+    k = assemble(m, els)
+    n_nodes = len(STATIONS)
+    ends = np.concatenate([node_dofs(0), node_dofs(n_nodes - 1)])
+    free = np.setdiff1d(np.arange(m.n_dof), ends)
+    u_pres = np.zeros(m.n_dof)
+    u_pres[node_dofs(0)] = u_ex[0]
+    u_pres[node_dofs(n_nodes - 1)] = u_ex[-1]
+    f = -(k @ u_pres)
+    f[ends] = 0.0
+
+    clean = solve(k, f, ends)
+    kff = k[free][:, free].tocsc()
+    ff = f[free]
+    wrong = clean.u[free] * (1.0 + SOLVE_RESIDUAL_COUNTER)
+    residual = float(np.linalg.norm(kff @ wrong - ff) / np.linalg.norm(ff))
+
+    # The counter-case property: a defect of this size is CAUGHT, i.e. it puts
+    # the residual above the ceiling. Note the residual tracks the relative
+    # solution error at 0.9997 of it, not 1.0000, so asserting
+    # residual >= COUNTER would fail by that 0.03% -- the property is that the
+    # gate fires, not that the two numbers are equal.
+    assert residual > SOLVE_RESIDUAL, (
+        f"a solved field wrong by {SOLVE_RESIDUAL_COUNTER:.3e} relative left a "
+        f"residual of {residual:.3e}, which does NOT exceed the ceiling "
+        f"{SOLVE_RESIDUAL:.0e}. The assertion would pass a wrong solve, and the "
+        "ceiling above it means nothing."
+    )
+    assert clean.residual <= SOLVE_RESIDUAL, "the clean solve must sit below it"
 
 
 PLANE_STATES = {
