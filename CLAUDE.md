@@ -119,6 +119,37 @@ while an earlier step holds and a later one has been started. A `PreToolUse`
 hook refuses edits under `docs/reviews/` — the implementer never writes,
 edits, or deletes a verdict.
 
+### Every claim carries its command
+
+BD0 required a commit message that makes a checkable claim to carry the check,
+run and pasted. **BF0 extends that to prose.** In a step report, every sentence
+that states a fact about the code is written as a triple:
+
+    claim    — what is asserted about the repository
+    command  — the one-line check that would refute it
+    output   — what that command printed, at this commit
+
+A claim without its command is not written. Not "the three sites are fixed" but
+the `git diff` hunk that shows them; not "no value was loosened" but the `grep`
+over the diff; not "80x of headroom" but the run that measured it and the
+geometry it was measured at.
+
+This was earned five times in one review. Four findings in the fifth verdict on
+F2 step 4 were sentences in files a reader trusts — three test strings
+describing a deleted solve path, a module docstring describing a `tests/` tree
+it did not match, a headroom figure with no operating point, a plan row naming
+an entry that does not exist — and each was refuted by a one-line command. None
+was an element defect. The question that catches them is: *for every sentence in
+this diff that states a fact about the code, what is the command that checks
+it?*
+
+**A closing condition that names sites is closed site by site.** When a review's
+`Closed when` names files and lines, the answering report lists each named site
+with its diff hunk, or states that the site was left and why. Half of an item is
+not the item: R29's condition named `tolerances.py` *and* three lines in the
+test file, the first was fixed, the second was untouched, and the report recorded
+the item as answered.
+
 When a PR is open for the milestone (see `docs/SUPERVISOR.md`), read the latest
 `[witness ...]` comment before opening any step and treat a witness HOLD exactly
 as an inside HOLD. Where the two reviewers disagree, the stricter verdict
