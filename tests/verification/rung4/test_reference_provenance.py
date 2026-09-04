@@ -25,13 +25,13 @@ B_VALUES = np.array([[1.0, 1.6]])  # B varies ~60% across this gap
 def test_fixture_really_is_a_mid_gap_case() -> None:
     """Without this the guard tests could pass on a reference that is nearly exact."""
     f = (W_CASE - GRID[0]) / (GRID[1] - GRID[0])
-    assert 0.3 < f < 0.7, f"fixture is not mid-gap (f={f:.3f}); it cannot exercise the guard"
+    assert 0.3 < f < 0.7, f"fixture is not mid-gap (f={f:.3f}); it cannot exercise the guard"  # not-a-tolerance: fixture property -- asserts the fixture is in a usable range
 
 
 def test_interpolation_is_flagged_with_its_gap_fraction() -> None:
     ref = interpolated_reference(GRID, B_VALUES, W_CASE, source="hdb.B")
     assert ref.interpolated
-    assert ref.gap_fraction == pytest.approx(0.486, abs=5e-3)
+    assert ref.gap_fraction == pytest.approx(0.486, abs=5e-3)  # not-a-tolerance: reference pin, not a ceiling -- asserts a RECORDED measurement is unchanged
 
 
 def test_a_solved_frequency_is_not_flagged() -> None:

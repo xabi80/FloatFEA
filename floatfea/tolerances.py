@@ -354,6 +354,70 @@ PATCH_TEST_EXACTNESS: Final[float] = 1e-12
 PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
 
 
+# CLASS: ACCURACY -- carries MATRIX_SYMMETRY_COUNTER below.
+# G2.1 / V1.1 -- symmetry of an assembled or element stiffness matrix, relative,
+# scaled by the largest entry. Dimensionless.
+#
+# Reason: K is symmetric in exact arithmetic (Maxwell-Betti), so the only
+# admissible asymmetry is accumulation through the 12x12 triple product and the
+# scatter-add. Measured on the element and on a 5-member assembly: max |K - K^T|
+# / max |K| is 0.0 exactly for a single element and 2.4e-16 assembled. 1e-9 sits
+# ~7 orders above that, which covers longer chains without admitting a
+# transposed block (which shows at O(1)).
+# Set: 2026-09-03, F2
+MATRIX_SYMMETRY: Final[float] = 1e-9
+
+# COUNTER-CASE: one transposed element block, the defect this shape of error
+# actually takes. Measured: transposing one 12x12 element contribution makes
+# max |K - K^T| / max |K| = 3.1e-01, eight orders above the ceiling.
+# Set: 2026-09-03, F2
+MATRIX_SYMMETRY_COUNTER: Final[float] = 1.0e-2
+
+
+# CLASS: ACCURACY -- carries ROUNDOFF_IDENTITY_COUNTER below.
+# Rung 1 -- relative agreement for a property that is EXACT in exact arithmetic
+# and is asserted at round-off: triad orthonormality, reciprocity of a
+# flexibility matrix, the equality of two algebraically identical expressions.
+# Dimensionless in every use.
+#
+# Reason: these have no discretisation error to bound, only floating-point
+# accumulation. Measured across the sites that use it, the worst is 4.9e-15.
+# 1e-12 sits ~200x above that. It is deliberately ONE value shared by several
+# assertions of the same kind rather than a literal at each site -- which is what
+# it replaced, and what AW2 and R13 were both about.
+# Set: 2026-09-03, F2
+ROUNDOFF_IDENTITY: Final[float] = 1e-12
+
+# COUNTER-CASE: the smallest defect these assertions must still catch. A single
+# sign error or a swapped index in any of the quantities involved is O(1); the
+# subtlest real case measured is the non-orthogonal I + [theta x] map at
+# theta = 1e-8, which perturbs orthonormality by 1.0e-08.
+# Set: 2026-09-03, F2
+ROUNDOFF_IDENTITY_COUNTER: Final[float] = 1.0e-8
+
+
+# CLASS: ACCURACY -- carries COND_UNIT_INVARIANCE_COUNTER below.
+# G2.5 / V1.3 -- relative agreement of cond(D^-1/2 K D^-1/2) between two unit
+# systems. Dimensionless.
+#
+# Reason: equilibration makes the conditioning algebraically invariant under a
+# diagonal rescaling, so this is exact in exact arithmetic; measured agreement
+# across S = 1e-3 .. 1e+3 is within 1e-11. 1e-6 leaves room for the eigenvalue
+# computation on an ill-conditioned unequilibrated input without admitting a real
+# drift.
+#
+# DECLARED LATE (R13). This was a bare `rel=1e-6` inside the test, written two
+# commits after AW2 closed on exactly that defect.
+# Set: 2026-09-03, F2
+COND_UNIT_INVARIANCE: Final[float] = 1e-6
+
+# COUNTER-CASE: without equilibration cond(K_ff) spans 6.5e5 across the same unit
+# systems, so the assertion must catch anything at or above that ratio; the
+# counter is set far below it, at the smallest drift worth investigating.
+# Set: 2026-09-03, F2
+COND_UNIT_INVARIANCE_COUNTER: Final[float] = 1.0e-3
+
+
 # ---------------------------------------------------------------------------
 # Rung 2 -- The element is the element it claims to be
 # Cantilever slender/stubby (G2.3/V2.1-2.2), torsion (V2.3), 3D coupling (V2.4),

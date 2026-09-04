@@ -36,6 +36,7 @@ import pytest
 
 from floatfea.element.beam import bending_stiffness, local_stiffness, shear_parameter
 from floatfea.model.material import S355, Section
+from floatfea.tolerances import ROUNDOFF_IDENTITY
 
 # Slender and stubby. Phi = 0.0112 and 0.7769 -- at the stubby end the shear share
 # of tip deflection is (Phi/4)/(1+Phi/4) = 16.3%, so an Euler-Bernoulli element
@@ -136,11 +137,11 @@ def test_a_MAGNITUDE_only_check_would_MISS_a_wrong_flip() -> None:
     c_mom, w_mom = tip(correct, 1), tip(wrong, 1)
 
     # Under END FORCE the deflection magnitude is identical -- the trap.
-    assert abs(c_force[0]) == pytest.approx(abs(w_force[0]), rel=1e-12)
+    assert abs(c_force[0]) == pytest.approx(abs(w_force[0]), rel=ROUNDOFF_IDENTITY)
     # But the rotation sign is reversed, and so is the deflection under moment.
-    assert c_force[1] == pytest.approx(-w_force[1], rel=1e-12)
-    assert c_mom[0] == pytest.approx(-w_mom[0], rel=1e-12)
-    assert c_force[1] != pytest.approx(w_force[1], rel=1e-6)
+    assert c_force[1] == pytest.approx(-w_force[1], rel=ROUNDOFF_IDENTITY)
+    assert c_mom[0] == pytest.approx(-w_mom[0], rel=ROUNDOFF_IDENTITY)
+    assert c_force[1] != pytest.approx(w_force[1], rel=1e-6)  # not-a-tolerance: negative control -- asserts the two DIFFER, so loosening cannot hide a defect
 
 
 def test_the_stubby_case_has_a_shear_share_worth_detecting() -> None:
@@ -152,13 +153,13 @@ def test_the_stubby_case_has_a_shear_share_worth_detecting() -> None:
     section, length = CASES[1][1], CASES[1][2]
     phi = shear_parameter(section, S355, length, plane="xy")
     share = (phi / 4.0) / (1.0 + phi / 4.0)
-    assert phi == pytest.approx(0.7769, abs=5e-4)
-    assert share > 0.15, f"shear share only {share:.1%}; V2.2 would not discriminate"
+    assert phi == pytest.approx(0.7769, abs=5e-4)  # not-a-tolerance: reference pin, not a ceiling -- asserts a RECORDED measurement is unchanged
+    assert share > 0.15, f"shear share only {share:.1%}; V2.2 would not discriminate"  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
 
 
 def test_the_slender_case_is_nearly_euler_bernoulli() -> None:
     """The other end of the pair: the two cases must actually differ."""
     section, length = CASES[0][1], CASES[0][2]
     phi = shear_parameter(section, S355, length, plane="xy")
-    assert phi == pytest.approx(0.0112, abs=5e-4)
-    assert (phi / 4.0) / (1.0 + phi / 4.0) < 0.01
+    assert phi == pytest.approx(0.0112, abs=5e-4)  # not-a-tolerance: reference pin, not a ceiling -- asserts a RECORDED measurement is unchanged
+    assert (phi / 4.0) / (1.0 + phi / 4.0) < 0.01  # not-a-tolerance: fixture property -- bounds an input, not a computed discrepancy

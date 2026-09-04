@@ -28,6 +28,7 @@ from floatfea.element.beam import local_stiffness
 from floatfea.element.transform import rotation_matrix, to_global, transformation
 from floatfea.model.material import S355, Section
 from floatfea.tolerances import (
+    ROUNDOFF_IDENTITY,
     TRANSFORM_INVARIANCE,
     TRANSFORM_INVARIANCE_COUNTER,
     TRANSFORM_SPECTRUM_INVARIANCE_COUNTER,
@@ -60,13 +61,13 @@ def _triad_from(rot: np.ndarray):
 def test_the_fixture_rotation_is_not_axis_aligned() -> None:
     """Meta-test: an axis-aligned rotation would only permute entries."""
     for col in SKEW.T:
-        assert np.abs(col).min() > 0.05, "rotation is too close to axis-aligned"
-    assert np.allclose(SKEW @ SKEW.T, np.eye(3), atol=1e-14)
+        assert np.abs(col).min() > 0.05, "rotation is too close to axis-aligned"  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
+    assert np.allclose(SKEW @ SKEW.T, np.eye(3), atol=ROUNDOFF_IDENTITY)
 
 
 def test_the_member_triad_equals_the_intended_rotation() -> None:
     a, b, o = _triad_from(SKEW)
-    assert np.allclose(rotation_matrix(a, b, orientation_node=o), SKEW, atol=1e-12)
+    assert np.allclose(rotation_matrix(a, b, orientation_node=o), SKEW, atol=ROUNDOFF_IDENTITY)
 
 
 @pytest.mark.parametrize("dof", [0, 1, 2, 3, 4, 5])
@@ -133,7 +134,7 @@ def test_a_NON_orthogonal_transform_moves_the_spectrum() -> None:
     kx = np.array([[0, -theta[2], theta[1]], [theta[2], 0, -theta[0]],
                    [-theta[1], theta[0], 0]])
     first_order = np.eye(3) + kx                     # NOT orthogonal
-    assert not np.allclose(first_order @ first_order.T, np.eye(3), atol=1e-6)
+    assert not np.allclose(first_order @ first_order.T, np.eye(3), atol=1e-6)  # not-a-tolerance: negative control -- asserts the fixture rotation is NOT orthogonal
 
     t = transformation(first_order)
     bad = t.T @ k_loc @ t

@@ -64,6 +64,7 @@ from floatfea.element.transform import rotation_matrix
 from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
 from floatfea.tolerances import PATCH_TEST_EXACTNESS, PATCH_TEST_EXACTNESS_COUNTER
+from floatfea.tolerances import COND_UNIT_INVARIANCE
 
 SEC = Section.circular_tube(0.6, 0.012)
 # Irregular: no pair of element lengths in a SMALL-INTEGER RATIO. Lengths
@@ -249,7 +250,7 @@ def test_the_mesh_is_actually_irregular() -> None:
             for q in range(1, 6):
                 for pp in range(1, 6):
                     worst = min(worst, abs(ratio - pp / q))
-    assert worst > 0.05, (
+    assert worst > 0.05, (  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
         f"some pair of element lengths sits {worst:.4f} from a small-integer "
         "ratio; errors can cancel by symmetry on such a mesh"
     )
@@ -267,7 +268,7 @@ def test_the_shear_state_actually_contains_shear() -> None:
     p, ll = 1.0e5, STATIONS[-1]
     bending = p * (ll * ll**2 / 2.0 - ll**3 / 6.0) / ei
     shear = p * ll / kga
-    assert shear / (bending + shear) > 1e-4, "shear term is negligible in state 4"
+    assert shear / (bending + shear) > 1e-4, "shear term is negligible in state 4"  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
 
 
 # Detection thresholds, MEASURED (AX1). A counter-case is one perturbation; the
@@ -428,7 +429,7 @@ def test_the_equilibrated_conditioning_is_unit_INVARIANT(scale: float) -> None:
         kff = assemble(model, elements)[free][:, free].tocsc()
         return float(np.linalg.cond(equilibrate(kff)[0].toarray()))
 
-    assert cond_eq(m, els) == pytest.approx(cond_eq(ref_m, ref_els), rel=1e-6), (
+    assert cond_eq(m, els) == pytest.approx(cond_eq(ref_m, ref_els), rel=COND_UNIT_INVARIANCE), (
         "the equilibrated conditioning moved with the length unit; the solve is "
         "not unit-robust and every exactness ceiling above it is unit-dependent"
     )
@@ -442,7 +443,7 @@ def test_the_UNequilibrated_conditioning_DOES_move() -> None:
         m, els = _scaled_model(scale)
         free = np.setdiff1d(np.arange(m.n_dof), ends)
         conds.append(np.linalg.cond(assemble(m, els)[free][:, free].toarray()))
-    assert max(conds) / min(conds) > 1e4, (
+    assert max(conds) / min(conds) > 1e4, (  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
         f"cond(K_ff) spans only {max(conds) / min(conds):.1e} across "
         "these unit systems; this test cannot demonstrate what equilibration is for"
     )

@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 
 from floatfea.model.local_axes import DegenerateMemberOrientation, member_local_axes
-from floatfea.tolerances import MEMBER_ORIENTATION_DEGENERACY
+from floatfea.tolerances import MEMBER_ORIENTATION_DEGENERACY, ROUNDOFF_IDENTITY
 
 # The real spar: vertical, full-scale submerged length (docs/milestones/F1.md sec.8).
 _SPAR_BOTTOM = np.array([0.0, 0.0, -72.87])
@@ -77,9 +77,9 @@ def test_triad_is_right_handed_and_orthonormal() -> None:
     x, y, z = member_local_axes(np.zeros(3), np.array([50.0, 0.0, 0.0]))
     for v in (x, y, z):
         assert np.isclose(np.linalg.norm(v), 1.0)
-    assert np.isclose(np.dot(x, y), 0.0, atol=1e-12)
-    assert np.isclose(np.dot(y, z), 0.0, atol=1e-12)
-    assert np.isclose(np.dot(z, x), 0.0, atol=1e-12)
+    assert np.isclose(np.dot(x, y), 0.0, atol=ROUNDOFF_IDENTITY)
+    assert np.isclose(np.dot(y, z), 0.0, atol=ROUNDOFF_IDENTITY)
+    assert np.isclose(np.dot(z, x), 0.0, atol=ROUNDOFF_IDENTITY)
     np.testing.assert_allclose(np.cross(z, x), y, atol=1e-12)
 
 

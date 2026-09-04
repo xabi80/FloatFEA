@@ -27,6 +27,7 @@ from floatfea.assemble.system import (
 from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
 from floatfea.tolerances import (
+    ROUNDOFF_IDENTITY,
     SUBDIVISION_INVARIANCE,
     SUBDIVISION_INVARIANCE_COUNTER,
     TRANSFORM_INVARIANCE,
@@ -71,7 +72,7 @@ def test_the_two_assemblies_are_not_trivially_equal() -> None:
     """Meta-test: two zero matrices are also bit-equal."""
     m, els = _frame()
     k = assemble(m, els).toarray()
-    assert np.abs(k).max() > 0.0
+    assert np.abs(k).max() > 0.0  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
     assert (k != 0).sum() > 12 * 12, "assembly did not overlap any elements"
 
 
@@ -122,7 +123,7 @@ def test_reaction_equilibrium_CAN_FAIL() -> None:
     broken[node_dofs(0)[1]] = 0.0
     applied = np.array([f[i::6].sum() for i in range(3)])
     react = np.array([broken[i::6].sum() for i in range(3)])
-    assert not np.allclose(react + applied, 0.0, atol=1e-6 * abs(applied).max())
+    assert not np.allclose(react + applied, 0.0, atol=1e-6 * abs(applied).max())  # not-a-tolerance: negative control -- asserts the BROKEN reaction FAILS equilibrium
 
 
 def test_a_fully_fixed_model_is_refused() -> None:
@@ -145,7 +146,7 @@ def test_SUBDIVISION_changes_nothing_under_an_end_load() -> None:
     for n_el in (1, 2, 5, 11):
         m, els = _frame(n_el=n_el)
         total = float(np.linalg.norm(m.nodes[len(m.nodes) - 1].xyz))
-        assert total == pytest.approx(TOTAL_LENGTH, rel=1e-12)
+        assert total == pytest.approx(TOTAL_LENGTH, rel=ROUNDOFF_IDENTITY)
         k = assemble(m, els)
         f = np.zeros(m.n_dof)
         last = node_dofs(len(m.nodes) - 1)

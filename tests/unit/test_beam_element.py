@@ -21,6 +21,7 @@ from floatfea.element.beam import (
     shear_parameter,
 )
 from floatfea.model.material import S355, Section
+from floatfea.tolerances import MATRIX_SYMMETRY, ROUNDOFF_IDENTITY
 
 EI = 4.2e9
 L = 7.5
@@ -79,7 +80,7 @@ def test_bending_stiffness_is_symmetric_and_singular() -> None:
     """Symmetry, and exactly two rigid-body modes in the plane (translation and
     rotation) -- a 4x4 bending block must have rank 2."""
     k = bending_stiffness(EI, L, phi=0.4)
-    assert np.allclose(k, k.T, rtol=0, atol=1e-9 * abs(k).max())
+    assert np.allclose(k, k.T, rtol=0, atol=MATRIX_SYMMETRY * abs(k).max())
     assert np.linalg.matrix_rank(k, tol=1e-9 * abs(k).max()) == 2
 
 
@@ -99,7 +100,7 @@ def test_phi_uses_kappa_from_basis_not_a_literal() -> None:
 def test_local_stiffness_is_symmetric_with_six_rigid_body_modes() -> None:
     k = local_stiffness(SEC, S355, L)
     assert k.shape == (12, 12)
-    assert np.allclose(k, k.T, rtol=0, atol=1e-9 * abs(k).max())
+    assert np.allclose(k, k.T, rtol=0, atol=MATRIX_SYMMETRY * abs(k).max())
     # A free element has exactly six rigid-body modes: rank 12 - 6 = 6.
     assert np.linalg.matrix_rank(k, tol=1e-9 * abs(k).max()) == 6
 
@@ -177,9 +178,9 @@ def test_reciprocity_maxwell_betti() -> None:
     k = local_stiffness(SEC, S355, L)
     free = [6, 7, 8, 9, 10, 11]
     flex = np.linalg.inv(k[np.ix_(free, free)])
-    assert np.allclose(flex, flex.T, rtol=0, atol=1e-14 * np.abs(flex).max()), (
+    assert np.allclose(flex, flex.T, rtol=0, atol=ROUNDOFF_IDENTITY * np.abs(flex).max()), (
         "flexibility is not symmetric -- Maxwell-Betti reciprocity is violated"
     )
     # The specific pair the AV0 reconstruction used: uz per unit My == ry per unit Fz.
-    assert flex[2, 4] == pytest.approx(flex[4, 2], rel=1e-14)
+    assert flex[2, 4] == pytest.approx(flex[4, 2], rel=ROUNDOFF_IDENTITY)
     assert flex[2, 4] < 0.0, "sign lost: the x-z cross term must be negative"

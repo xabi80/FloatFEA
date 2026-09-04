@@ -77,9 +77,9 @@ def test_exclusion_changes_the_statistic_it_guards(
         over_live(change, MU_MEASURED, what="d|mu|"),
     )[0, 1]
 
-    assert naive == pytest.approx(contaminated, abs=5e-3)
-    assert guarded == pytest.approx(0.5256, abs=5e-3)
-    assert abs(naive - guarded) > 0.05, "the guard would be decorative on this data"
+    assert naive == pytest.approx(contaminated, abs=5e-3)  # not-a-tolerance: reference pin -- the recorded contaminated values
+    assert guarded == pytest.approx(0.5256, abs=5e-3)  # not-a-tolerance: reference pin, not a ceiling -- asserts a RECORDED measurement is unchanged
+    assert abs(naive - guarded) > 0.05, "the guard would be decorative on this data"  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
 
 
 def test_a_uniformly_dead_set_is_NOT_caught() -> None:
