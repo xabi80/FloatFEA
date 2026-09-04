@@ -319,6 +319,42 @@ SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
 # 1e-12 sits 80x above the worst of those, which covers the transform path and
 # longer chains, and 5 orders below the counter-case.
 #
+# OPERATING POINT OF THE 80x, because a ratio carries one or it carries nothing
+# (ninth guard). It belongs to ONE geometry: tube D = 0.6 m, t = 0.012 m, element
+# lengths 0.79 .. 3.27 m, i.e. a longest-element slenderness L/r = 15.7. The
+# ceiling is breached by slender members. Sweeping the section at constant
+# D/t = 50 and re-running all six states in both orientations:
+#
+#   D (m)   elem L/r   worst err   x ceiling
+#    0.60      15.7    1.251e-14      0.013
+#    0.40      23.6    3.807e-14      0.038
+#    0.20      47.2    1.571e-13      0.157
+#    0.10      94.4    1.762e-12      1.762   BREACH
+#    0.05     188.7    4.415e-12      4.415   BREACH
+#    0.02     471.8    1.844e-11     18.440   BREACH
+#
+# Bisected, the boundary is D = 0.0791 m, element L/r = 119. F3's governing brace
+# sits at lambda = 46.4 (F2.md sec. 5, corrected Q1 table), which is inside the
+# valid region at ~1.6e-13 -- 6x of margin -- so THIS IS NOT A DEFECT for the
+# platform being analysed. It is the range the ceiling is claimed over, and F3
+# carries a named dependency to assert every member falls inside it
+# (F2.md sec. D7 item 5).
+#
+# The breach localises: it is entirely on the SKEW orientation, in the AXIAL
+# state, in the rotational DOF, whose exact value is identically zero -- so it is
+# a spurious-rotation-over-translation ratio through the transform chain, the same
+# structure as the kilometre breach in R2/R8 arriving down the slenderness axis
+# instead of the unit axis. Measured at D = 0.10: skew/axial 1.762e-12 against
+# axis-aligned/axial 1.121e-16, and the worst component is node 4 rz -- a
+# rotation whose exact value is 0.0, carrying 1.575e-15 against the whole
+# translational field's 3.688e-16. The axis-aligned orientation stays below
+# 1.3e-14 in every state at that section.
+#
+# The sweep convention matters and is stated: at FIXED wall t = 0.012 m the same
+# diameters give 6.42e-13 at D = 0.10 and no breach until D = 0.05, because a
+# thick-walled small tube is not slender. D/t = 50 holds the section's proportions
+# and is the sweep that isolates slenderness.
+#
 # UNIT SYSTEM, ASSERTED BY THE SHIPPED TEST (R40). The gate runs at
 # S = 1e-3, 1, 1e3 -- 36 nodes -- so the number below is produced by pytest, not
 # by a harness. Worst over six states x two orientations at each:
