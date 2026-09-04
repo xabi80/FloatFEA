@@ -317,13 +317,52 @@ def test_the_measured_detection_threshold_still_holds(state: str) -> None:
 
     If a formulation change alters sensitivity, this fails and the recorded
     numbers get revisited -- rather than silently ceasing to describe the gate.
+
+    R38: THE COMPARISON IS ON THE O(1) RATIO, NOT ON TWO 1e-12 NUMBERS.
+    The previous form was
+
+        assert err == pytest.approx(PATCH_TEST_EXACTNESS, rel=DETECTION_THRESHOLD_BAND)
+
+    where `rel * |expected| = 0.05 * 1e-12 = 5e-14` but `pytest.approx`'s
+    UNDECLARED default `abs = 1e-12` is twenty times larger and therefore
+    decided. The band in force was `0 .. 2e-12` rather than the declared
+    `9.5e-13 .. 1.05e-12`, so `err = 0.0` passed: with the perturbation dropped
+    from `_run` -- the gate's sensitivity exactly zero -- all six of these nodes
+    stayed green. This was G2.2's ONLY guard against widening
+    `PATCH_TEST_EXACTNESS`, so the ceiling had no live guard at all.
+
+    Dividing by the ceiling puts both operands at O(1), where a 5% relative band
+    is the only thing that can decide. `assert_close` is relative-only and
+    carries no defaults, which is the same move BD3 made for R9.
+
+    WHAT THE BAND BUYS, measured by bisection on the shipped predicate rather
+    than derived (the inverted number the verdict asked for). The smallest
+    sensitivity change this assertion detects, per state::
+
+        state          ratio at f=1   detected above   detected below
+        axial              0.997640          +5.24%           -5.01%
+        curvature          1.003067          +4.88%           -5.54%
+        twist              0.999703          +5.25%           -5.02%
+        shear              1.009952          +4.50%           -5.95%
+        curvature_xz       0.999730          +5.27%           -5.08%
+        shear_xz           1.000443          +5.47%           -5.07%
+
+    So a formulation change that moved any state's sensitivity by **+5.5% or
+    -6.0% is caught in every state**, and by +4.5% / -5.0% in the tightest. Not
+    a symmetric +/-5%: the band is relative to the LARGER operand, and each
+    state already sits a little off 1.000.
     """
     eps = DETECTION_THRESHOLD[state]
     err, _ = _run(state, SKEW, stiffness_scale=1.0 + eps)
-    assert err == pytest.approx(PATCH_TEST_EXACTNESS, rel=DETECTION_THRESHOLD_BAND), (
-        f"{state}: perturbing by the recorded threshold {eps:.3e} gave {err:.3e}, "
-        f"not the declared ceiling {PATCH_TEST_EXACTNESS:.0e}. The gate's "
-        "sensitivity has changed and the recorded thresholds are stale."
+    ratio = err / PATCH_TEST_EXACTNESS
+    assert_close(
+        ratio, 1.0, DETECTION_THRESHOLD_BAND, floor=np.finfo(float).eps,
+        what=(
+            f"{state}: perturbing by the recorded threshold {eps:.3e} gave "
+            f"{err:.4e} against the ceiling {PATCH_TEST_EXACTNESS:.0e}, a ratio "
+            f"of {ratio:.6f}. The gate's sensitivity has changed and the "
+            "recorded thresholds are stale"
+        ),
     )
 
 
