@@ -61,8 +61,8 @@ def test_gravity_is_floatsim_not_standard() -> None:
     Small as physics and not small as a discrepancy: a mismatch appears
     downstream as an unexplained mass error and gets hunted in the wrong place.
     """
-    assert GRAVITY_MAGNITUDE == 9.81
-    assert GRAVITY_MAGNITUDE != 9.80665
+    assert GRAVITY_MAGNITUDE == 9.81  # not-a-tolerance: the declared value itself, exact equality
+    assert GRAVITY_MAGNITUDE != 9.80665  # not-a-tolerance: standard gravity, asserted NOT to be the value
 
 
 def test_the_dof_arithmetic_closes() -> None:

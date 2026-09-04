@@ -81,7 +81,7 @@ def test_bending_stiffness_is_symmetric_and_singular() -> None:
     rotation) -- a 4x4 bending block must have rank 2."""
     k = bending_stiffness(EI, L, phi=0.4)
     assert np.allclose(k, k.T, rtol=0, atol=MATRIX_SYMMETRY * abs(k).max())
-    assert np.linalg.matrix_rank(k, tol=1e-9 * abs(k).max()) == 2
+    assert np.linalg.matrix_rank(k, tol=MATRIX_SYMMETRY * abs(k).max()) == 2
 
 
 def test_phi_uses_kappa_from_basis_not_a_literal() -> None:
@@ -102,7 +102,7 @@ def test_local_stiffness_is_symmetric_with_six_rigid_body_modes() -> None:
     assert k.shape == (12, 12)
     assert np.allclose(k, k.T, rtol=0, atol=MATRIX_SYMMETRY * abs(k).max())
     # A free element has exactly six rigid-body modes: rank 12 - 6 = 6.
-    assert np.linalg.matrix_rank(k, tol=1e-9 * abs(k).max()) == 6
+    assert np.linalg.matrix_rank(k, tol=MATRIX_SYMMETRY * abs(k).max()) == 6
 
 
 def test_zero_length_and_bad_section_are_refused() -> None:

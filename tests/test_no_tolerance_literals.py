@@ -1,134 +1,216 @@
-"""No numeric tolerance literals in assertions (BC2, enforcing AW2 mechanically).
+"""No undeclared tolerance may reach a comparison (BD4). AST, not regex.
 
-`CLAUDE.md` § Tolerances says every numerical tolerance lives in
-`floatfea/tolerances.py` -- no local literals. That was a rule, and it was broken
-twice: `SUBDIVISION_INVARIANCE` shipped as an undeclared `rtol=1e-10` (AW2), and
-two commits after AW2 closed, `rel=1e-6` and `> 1e4` appeared in new assertions
-(R13). A rule the same hand keeps breaking is a rule that needs to be a test.
+`CLAUDE.md` § Tolerances: every numerical tolerance lives in
+`floatfea/tolerances.py`. That was a rule, and it was broken three times -- an
+undeclared `rtol=1e-10` (AW2), then `rel=1e-6` and `> 1e4` two commits after AW2
+closed (R13), then a regex scanner that missed 13 of 15 planted shapes.
 
-What this scans
+Why the regex failed, and why this walks the AST instead
+--------------------------------------------------------
+The regex cleared a whole LINE if a tolerance name appeared anywhere on it --
+including inside the f-string message -- so
+``pytest.approx(PATCH_TEST_EXACTNESS, rel=0.99)`` read clean. It also keyed on
+lines beginning ``assert ``, so ``np.testing.assert_allclose(...)`` was invisible,
+and on a fixed keyword set, so ``matrix_rank(tol=...)`` was invisible.
+
+Walking the AST closes all three by construction: the check is on the *argument
+node*, message strings are not on that path, and every comparison call is found
+wherever it sits.
+
+What is flagged
 ---------------
-Every `assert` statement under `tests/`, for a numeric literal that is being used
-as a comparison threshold. A line is acceptable if it references a name imported
-from `floatfea.tolerances`, or if it carries an explicit `# not-a-tolerance:`
-annotation naming why.
+* any keyword named ``tol``/``atol``/``rtol``/``abs``/``rel`` whose value carries
+  a numeric constant;
+* the second positional argument of ``approx`` -- its tolerance slot;
+* a bare ``pytest.approx(x)`` with no ``abs``/``rel``, itself an undeclared
+  tolerance since it defaults to ``rel=1e-6, abs=1e-12``;
+* a comparison against any float threshold other than ``0.0`` or ``1.0``, which
+  are canonical structural bounds; integers are counts and are never flagged.
 
-The annotation is deliberately noisy rather than a quiet allow-list: an exemption
-has to appear in the diff where a reviewer sees it, next to the line it exempts.
+Each must resolve to a `Name` imported from `floatfea.tolerances`, or be a call to
+`floatfea.testing.assert_close` / `assert_differs`, which carry their own floor.
 """
 from __future__ import annotations
 
-import re
+import ast
 from pathlib import Path
 
 import pytest
 
 TESTS = Path(__file__).resolve().parent
-# A literal in a TOLERANCE POSITION -- not every number on an assert line.
-#
-# `pytest.approx(0.486, abs=5e-3)` contains two literals with different roles:
-# `0.486` is a measured REFERENCE VALUE, which belongs in the test beside what it
-# describes, and `5e-3` is a COMPARISON EPSILON, which `CLAUDE.md` names
-# explicitly as a tolerance. Only the second is in scope. Flagging both would make
-# the check unusable and it would be turned off, which is worse than not having it.
-# A tolerance is a NON-TRIVIAL threshold on a discrepancy. Excluded by
-# construction, because nothing about them can be widened to hide an error:
-#   * comparisons against 0      -- 'is this non-zero?', a structural check
-#   * comparisons against integers -- 'are there enough panels/bodies?', a count
-# In a keyword position (rel=, abs=, atol=, rtol=) any literal counts, because
-# there the number IS the tolerance whatever its value.
-_KWNUM = r"\d+\.?\d*(?:[eE][-+]?\d+)?"
-_CMPNUM = r"(?=\d*\.\d|\d+[eE])(?!0+\.?0*[,)\s])" + _KWNUM
-_LITERAL = re.compile(
-    r"(?:rel|abs|atol|rtol)\s*=\s*" + _KWNUM
-    + r"|[<>]=?\s*" + _CMPNUM
-)
-_EXEMPT = re.compile(r"#\s*not-a-tolerance:")
-_TOL_NAMES: set[str] = set()
+TOL_KEYWORDS = {"tol", "atol", "rtol", "abs", "rel"}
+APPROX_NAMES = {
+    "approx", "assert_allclose", "allclose", "isclose",
+    "assert_array_almost_equal", "almost_equal",
+}
+SAFE_CALLS = {"assert_close", "assert_differs"}
+EXEMPT = "not-a-tolerance:"
 
 
 def _tolerance_names() -> set[str]:
-    global _TOL_NAMES
-    if not _TOL_NAMES:
-        from floatfea import tolerances
+    from floatfea import tolerances
 
-        _TOL_NAMES = {n for n in dir(tolerances) if n.isupper()}
-    return _TOL_NAMES
+    return {n for n in dir(tolerances) if n.isupper()}
 
 
-def _offending_lines(path: Path) -> list[tuple[int, str]]:
-    """Assertion lines carrying a bare numeric threshold."""
-    out: list[tuple[int, str]] = []
+def _declared(node: ast.AST, names: set[str]) -> bool:
+    """True if this argument resolves to a declared tolerance name."""
+    for sub in ast.walk(node):
+        if isinstance(sub, ast.Name) and sub.id in names:
+            return True
+        if isinstance(sub, ast.Attribute) and sub.attr in names:
+            return True
+    return False
+
+
+def _has_number(node: ast.AST) -> bool:
+    return any(
+        isinstance(s, ast.Constant) and isinstance(s.value, (int, float))
+        and not isinstance(s.value, bool)
+        for s in ast.walk(node)
+    )
+
+
+def _call_name(node: ast.Call) -> str:
+    f = node.func
+    if isinstance(f, ast.Attribute):
+        return f.attr
+    if isinstance(f, ast.Name):
+        return f.id
+    return ""
+
+
+def offending(path: Path) -> list[tuple[int, str]]:
     names = _tolerance_names()
-    text = path.read_text(encoding="utf-8").splitlines()
-    in_assert = False
-    for i, line in enumerate(text, 1):
-        stripped = line.strip()
-        if stripped.startswith("assert ") or stripped.startswith("assert("):
-            in_assert = True
-        if not in_assert:
-            continue
-        if _LITERAL.search(line) and not _EXEMPT.search(line):
-            if not any(n in line for n in names):
-                out.append((i, stripped))
-        # An assertion ends at the first line that is not obviously a continuation.
-        if not line.rstrip().endswith((",", "(", "\\", "and", "or")):
-            in_assert = False
-    return out
+    src = path.read_text(encoding="utf-8")
+    exempt_lines = {
+        i for i, line in enumerate(src.splitlines(), 1) if EXEMPT in line
+    }
+    tree = ast.parse(src)
+    out: list[tuple[int, str]] = []
+
+    def flag(node: ast.AST, why: str) -> None:
+        if node.lineno not in exempt_lines:
+            out.append((node.lineno, why))
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            cname = _call_name(node)
+            if cname in SAFE_CALLS:
+                continue
+            for kw in node.keywords:
+                if kw.arg in TOL_KEYWORDS and _has_number(kw.value):
+                    # `rtol=0` DISABLES a tolerance rather than setting one --
+                    # there is no value to declare, and flagging it would push
+                    # callers toward a non-zero default they did not choose.
+                    zero = (isinstance(kw.value, ast.Constant)
+                            and kw.value.value == 0)
+                    if not zero and not _declared(kw.value, names):
+                        flag(node, f"{cname}({kw.arg}=<literal>)")
+            if cname == "approx":
+                if len(node.args) > 1 and not _declared(node.args[1], names):
+                    flag(node, "approx(_, <literal>)")
+                if not node.keywords and len(node.args) == 1:
+                    flag(node, "approx() with NO abs/rel -- its defaults "
+                               "(rel=1e-6, abs=1e-12) are an undeclared tolerance")
+        elif isinstance(node, ast.Compare):
+            for comp in node.comparators:
+                if isinstance(comp, ast.Constant) and isinstance(comp.value, float):
+                    # Any FLOAT threshold, at any magnitude: `> 1e4` is as much a
+                    # tolerance as `< 0.05`, and the first is what R13 named.
+                    # Integers are counts and 0.0 / 1.0 are canonical structural
+                    # bounds ("is this non-zero", "is this a ratio above unity").
+                    if abs(comp.value) not in (0.0, 1.0):
+                        flag(node, f"comparison against {comp.value!r}")
+    return sorted(set(out))
 
 
 def _test_files() -> list[Path]:
     return sorted(p for p in TESTS.rglob("test_*.py") if p.name != Path(__file__).name)
 
 
+# --------------------------------------------------------------------------
+# The scanner's own tests. The fifteen shapes are the ones the regex version
+# was measured against: it caught two.
+# --------------------------------------------------------------------------
+PLANTED = [
+    "assert a == pytest.approx(b, rel=1e-6)",
+    "assert spread > 1e4",
+    "assert np.linalg.matrix_rank(k, tol=1e-9 * abs(k).max()) == 6",
+    "np.testing.assert_allclose(a, b, atol=1e-12)",
+    "assert np.allclose(a, b, rtol=0, atol=1e-9)",
+    "assert np.isclose(x, 0.0, atol=1e-12)",
+    "assert a == pytest.approx(PATCH_TEST_EXACTNESS, rel=0.99)",
+    "assert a == pytest.approx(b)",
+    "assert ratio < 0.05",
+    "np.testing.assert_array_almost_equal(a, b, atol=1e-8)",
+    "assert err <= 1e-13",
+    "assert abs(x - y) < 0.001",
+    "assert v == pytest.approx(1.0, abs=5e-4)",
+    "assert np.allclose(a, b, atol=2e-15 * scale)",
+    "assert q > 0.15",
+]
+
+_HEADER = (
+    "import numpy as np\n"
+    "import pytest\n"
+    "from floatfea.testing import assert_close\n"
+    "from floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n"
+    "                                 ROUNDOFF_IDENTITY)\n"
+    "def test_x():\n    "
+)
+
+
+def test_the_scanner_catches_every_planted_shape(tmp_path: Path) -> None:
+    """All fifteen. The regex this replaces caught two of them."""
+    missed = []
+    for i, line in enumerate(PLANTED):
+        p = tmp_path / f"test_p{i}.py"
+        p.write_text(_HEADER + line + "\n", encoding="utf-8")
+        if not offending(p):
+            missed.append(line)
+    assert not missed, (
+        f"{len(missed)} of {len(PLANTED)} shapes missed:\n" + "\n".join(missed)
+    )
+
+
+def test_declared_usages_are_NOT_flagged(tmp_path: Path) -> None:
+    """A corpus that must stay clean, or the scanner is unusable and gets removed."""
+    ok = [
+        "assert a == pytest.approx(b, rel=ROUNDOFF_IDENTITY)",
+        "assert np.allclose(a, b, rtol=0, atol=MATRIX_SYMMETRY * s)",
+        "assert err <= PATCH_TEST_EXACTNESS",
+        "assert_close(a, b, ROUNDOFF_IDENTITY, floor=1e-16)",
+        "assert n >= 32",
+        "assert np.abs(x).max() > 0.0",
+        "assert mask.sum() == 5",
+    ]
+    for i, line in enumerate(ok):
+        p = tmp_path / f"test_ok{i}.py"
+        p.write_text(_HEADER + line + "\n", encoding="utf-8")
+        assert not offending(p), f"false positive on: {line}"
+
+
+def test_the_annotation_exempts_a_line(tmp_path: Path) -> None:
+    p = tmp_path / "test_e.py"
+    p.write_text(
+        "def test_x():\n    assert q > 0.15  # not-a-tolerance: mesh station\n",
+        encoding="utf-8",
+    )
+    assert not offending(p)
+
+
 def test_there_are_test_files_to_scan() -> None:
-    """Meta-test: an empty glob would make this pass while checking nothing."""
-    files = _test_files()
-    assert len(files) > 5, f"only {len(files)} test files found; the scan is vacuous"
-
-
-def test_the_scanner_detects_a_known_violation() -> None:
-    """Negative control, on the exact shape R13 found.
-
-    Without this the scan could stop matching -- a regex that silently matches
-    nothing reads identical to a clean repository.
-    """
-    import tempfile
-
-    sample = (
-        "def test_x():\n"
-        "    assert cond_a == pytest.approx(cond_b, rel=1e-6), (\n"
-        '        "message"\n'
-        "    )\n"
-        "    assert spread > 1e4\n"
-    )
-    with tempfile.TemporaryDirectory() as d:
-        p = Path(d) / "test_sample.py"
-        p.write_text(sample, encoding="utf-8")
-        found = _offending_lines(p)
-    assert len(found) == 2, f"scanner found {len(found)} of 2 planted violations: {found}"
-
-
-def test_the_annotation_exempts_a_line() -> None:
-    """And the exemption must actually work, or it is not an escape hatch."""
-    import tempfile
-
-    sample = (
-        "def test_x():\n"
-        "    assert spread > 1e4  # not-a-tolerance: asserts the SPREAD is large\n"
-    )
-    with tempfile.TemporaryDirectory() as d:
-        p = Path(d) / "test_sample.py"
-        p.write_text(sample, encoding="utf-8")
-        assert _offending_lines(p) == []
+    assert len(_test_files()) > 5, "the scan is vacuous"
 
 
 @pytest.mark.parametrize("path", _test_files(), ids=lambda p: p.name)
-def test_no_bare_tolerance_literals_in_assertions(path: Path) -> None:
-    bad = _offending_lines(path)
+def test_no_undeclared_tolerance_reaches_a_comparison(path: Path) -> None:
+    bad = offending(path)
     assert not bad, (
-        f"{path.name} asserts against bare numeric literals:\n"
-        + "\n".join(f"  line {n}: {s[:100]}" for n, s in bad)
-        + "\n\nMove the value to floatfea/tolerances.py with a counter-case, or "
-        "annotate the line `# not-a-tolerance: <why>` if it is not a threshold."
+        f"{path.name}:\n"
+        + "\n".join(f"  line {n}: {w}" for n, w in bad)
+        + "\n\nDeclare the value in floatfea/tolerances.py, use "
+        "floatfea.testing.assert_close, or annotate `# not-a-tolerance: <what the "
+        "quantity is and why it is an input, not a comparison>`."
     )

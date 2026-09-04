@@ -472,6 +472,33 @@ COND_UNIT_INVARIANCE_COUNTER: Final[float] = 1.0e-3
 COND_UNIT_INVARIANCE_MEASURED: Final[float] = 1.7319e-14
 
 
+# CLASS: ACCURACY -- carries DETECTION_THRESHOLD_BAND_COUNTER below.
+# G2.2 / V1.2 -- how closely a perturbation AT a recorded detection threshold must
+# reproduce the ceiling. Relative, dimensionless.
+#
+# Reason: the thresholds are computed as TOL/sensitivity, so perturbing by one
+# should land the error on TOL exactly; the deviation is the departure from
+# linearity over that range. Worst measured across the six states: 9.9523e-03.
+# 0.05 sits 5x above it -- enough that linearity's own curvature does not trip the
+# check, tight enough that a real change in sensitivity does.
+#
+# DECLARED LATE. This was R13's THIRD bare literal, and the regex scanner it was
+# reported against read the line as clean because a tolerance NAME appeared
+# elsewhere on it (`pytest.approx(PATCH_TEST_EXACTNESS, rel=0.05)`). The AST
+# scanner checks the argument node, so the hole is closed by construction.
+# Set: 2026-09-03, F2
+DETECTION_THRESHOLD_BAND: Final[float] = 0.05
+
+# WORST MEASURED at this entry's sites, from the shipped tests (BD1).
+DETECTION_THRESHOLD_BAND_MEASURED: Final[float] = 9.9523e-03
+
+# COUNTER-CASE: a sensitivity change large enough to matter. If a formulation
+# change moved any state's sensitivity by 25%, perturbing by the recorded
+# threshold would miss the ceiling by that much and this must catch it.
+# Set: 2026-09-03, F2
+DETECTION_THRESHOLD_BAND_COUNTER: Final[float] = 0.25
+
+
 # ---------------------------------------------------------------------------
 # Rung 2 -- The element is the element it claims to be
 # Cantilever slender/stubby (G2.3/V2.1-2.2), torsion (V2.3), 3D coupling (V2.4),

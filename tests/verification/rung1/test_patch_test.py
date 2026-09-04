@@ -63,7 +63,7 @@ from floatfea.assemble.system import BeamElement, assemble, solve
 from floatfea.element.transform import rotation_matrix
 from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
-from floatfea.tolerances import PATCH_TEST_EXACTNESS, PATCH_TEST_EXACTNESS_COUNTER
+from floatfea.tolerances import DETECTION_THRESHOLD_BAND, PATCH_TEST_EXACTNESS, PATCH_TEST_EXACTNESS_COUNTER
 from floatfea.testing import assert_close, assert_differs
 from floatfea.tolerances import COND_UNIT_INVARIANCE, ROUNDOFF_IDENTITY
 
@@ -320,7 +320,7 @@ def test_the_measured_detection_threshold_still_holds(state: str) -> None:
     """
     eps = DETECTION_THRESHOLD[state]
     err, _ = _run(state, SKEW, stiffness_scale=1.0 + eps)
-    assert err == pytest.approx(PATCH_TEST_EXACTNESS, rel=0.05), (
+    assert err == pytest.approx(PATCH_TEST_EXACTNESS, rel=DETECTION_THRESHOLD_BAND), (
         f"{state}: perturbing by the recorded threshold {eps:.3e} gave {err:.3e}, "
         f"not the declared ceiling {PATCH_TEST_EXACTNESS:.0e}. The gate's "
         "sensitivity has changed and the recorded thresholds are stale."

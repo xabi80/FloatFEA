@@ -21,8 +21,8 @@ def test_sigma_allow_is_the_project_basis_not_a_safety_factor() -> None:
     one. This asserts which basis is in force, and that the other is measurably
     different rather than an equivalent rounding.
     """
-    assert sec.SIGMA_ALLOW_S355 == pytest.approx(213.0e6)
-    assert sec.ALLOWABLE_FACTOR == 0.6
+    assert sec.SIGMA_ALLOW_S355 == pytest.approx(213.0e6, rel=ROUNDOFF_IDENTITY)
+    assert sec.ALLOWABLE_FACTOR == 0.6  # not-a-tolerance: the allowable FACTOR itself, an exact declared constant
     wrong = sec.FY_S355 / 1.5
     assert wrong / sec.SIGMA_ALLOW_S355 == pytest.approx(1.1111, abs=1e-4)  # not-a-tolerance: reference pin, not a ceiling -- asserts a RECORDED measurement is unchanged
 
@@ -112,13 +112,15 @@ def test_kappa_is_distinguishable_from_the_simple_argument() -> None:
 def test_chs_class_limits_follow_the_code_formula() -> None:
     c1, c2, c3 = sec.chs_class_limits(sec.FY_S355)
     eps2 = 235e6 / sec.FY_S355
-    assert (c1, c2, c3) == pytest.approx((50 * eps2, 70 * eps2, 90 * eps2))
+    assert (c1, c2, c3) == pytest.approx((50 * eps2, 70 * eps2, 90 * eps2), rel=ROUNDOFF_IDENTITY)
     assert c3 == pytest.approx(59.6, abs=0.1)  # not-a-tolerance: reference pin, not a ceiling -- asserts a RECORDED measurement is unchanged
 
 
 def test_shear_modulus_is_derived_not_declared() -> None:
     """G must follow from E and nu, or the three can drift apart."""
-    assert sec.G_STEEL == pytest.approx(sec.E_STEEL / (2 * (1 + sec.NU_STEEL)))
+    assert sec.G_STEEL == pytest.approx(
+        sec.E_STEEL / (2 * (1 + sec.NU_STEEL)), rel=ROUNDOFF_IDENTITY
+    )
 
 
 @pytest.mark.parametrize("d,t", [(0.6, 0.012), (2.5, 0.18), (0.9, 0.015)])
@@ -133,7 +135,9 @@ def test_tube_properties_are_exact_not_thin_walled(d: float, t: float) -> None:
     i_exact = sec.tube_second_moment(d, t)
     a_thin = math.pi * d * t
     i_thin = math.pi * d**3 * t / 8.0
-    assert a_exact == pytest.approx(math.pi * (d**2 - (d - 2 * t) ** 2) / 4)
+    assert a_exact == pytest.approx(
+        math.pi * (d**2 - (d - 2 * t) ** 2) / 4, rel=ROUNDOFF_IDENTITY
+    )
     assert a_exact < a_thin          # thin-wall over-states area
     assert i_exact < i_thin
     assert abs(i_exact - i_thin) / i_exact > 1e-3, "difference too small to detect a swap"  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
@@ -142,7 +146,8 @@ def test_tube_properties_are_exact_not_thin_walled(d: float, t: float) -> None:
 def test_radius_of_gyration_is_consistent_with_area_and_inertia() -> None:
     r = sec.tube_radius_of_gyration(0.9, 0.015)
     assert r == pytest.approx(
-        math.sqrt(sec.tube_second_moment(0.9, 0.015) / sec.tube_area(0.9, 0.015))
+        math.sqrt(sec.tube_second_moment(0.9, 0.015) / sec.tube_area(0.9, 0.015)),
+        rel=ROUNDOFF_IDENTITY,
     )
     # Thin tube: r -> D / (2 sqrt 2) = 0.3536 D. Exact is slightly below.
     assert 0.34 < r / 0.9 < 0.3536  # not-a-tolerance: fixture property -- asserts the fixture is in a usable range

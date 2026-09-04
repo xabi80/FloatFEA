@@ -67,9 +67,9 @@ def test_orientation_node_admits_the_vertical_spar() -> None:
     x, y, z = member_local_axes(
         _SPAR_BOTTOM, _SPAR_TOP, orientation_node=np.array([1.0, 0.0, -72.87])
     )
-    np.testing.assert_allclose(x, [0.0, 0.0, 1.0], atol=1e-12)
-    np.testing.assert_allclose(z, [1.0, 0.0, 0.0], atol=1e-12)
-    np.testing.assert_allclose(y, np.cross(z, x), atol=1e-12)
+    np.testing.assert_allclose(x, [0.0, 0.0, 1.0], atol=ROUNDOFF_IDENTITY)
+    np.testing.assert_allclose(z, [1.0, 0.0, 0.0], atol=ROUNDOFF_IDENTITY)
+    np.testing.assert_allclose(y, np.cross(z, x), atol=ROUNDOFF_IDENTITY)
 
 
 def test_triad_is_right_handed_and_orthonormal() -> None:
@@ -80,7 +80,7 @@ def test_triad_is_right_handed_and_orthonormal() -> None:
     assert np.isclose(np.dot(x, y), 0.0, atol=ROUNDOFF_IDENTITY)
     assert np.isclose(np.dot(y, z), 0.0, atol=ROUNDOFF_IDENTITY)
     assert np.isclose(np.dot(z, x), 0.0, atol=ROUNDOFF_IDENTITY)
-    np.testing.assert_allclose(np.cross(z, x), y, atol=1e-12)
+    np.testing.assert_allclose(np.cross(z, x), y, atol=ROUNDOFF_IDENTITY)
 
 
 def test_collinear_orientation_node_is_refused() -> None:

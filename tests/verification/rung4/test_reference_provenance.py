@@ -13,7 +13,7 @@ from floatfea.io.frames import (
     assert_reference_supports,
     interpolated_reference,
 )
-from floatfea.tolerances import INTERPOLATED_REFERENCE_TOLERANCE_FLOOR
+from floatfea.tolerances import INTERPOLATED_REFERENCE_TOLERANCE_FLOOR, ROUNDOFF_IDENTITY
 
 # The measured AF3 case: the case frequency sits near dead centre of its gap
 # because case frequencies are chosen for physics, not grid alignment.
@@ -38,7 +38,7 @@ def test_a_solved_frequency_is_not_flagged() -> None:
     """Landing on a grid point must not be penalised, or callers route around."""
     ref = interpolated_reference(GRID, B_VALUES, float(GRID[1]), source="hdb.B")
     assert not ref.interpolated
-    assert ref.value == pytest.approx(B_VALUES[..., 1])
+    assert ref.value == pytest.approx(B_VALUES[..., 1], rel=ROUNDOFF_IDENTITY)
 
 
 def test_round_off_comparison_refuses_an_interpolated_reference() -> None:

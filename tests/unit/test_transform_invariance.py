@@ -235,7 +235,7 @@ def test_an_incoherent_section_is_REFUSED_at_construction() -> None:
 def test_the_supported_section_still_constructs() -> None:
     """Meta-test: a guard that refuses everything would pass every test above."""
     s = Section.circular_tube(0.6, 0.012)
-    assert s.I_y == s.I_z and s.J == pytest.approx(s.I_y + s.I_z)
+    assert s.I_y == s.I_z and s.J == pytest.approx(s.I_y + s.I_z, rel=ROUNDOFF_IDENTITY)
 
 
 def test_the_displacement_counter_case_is_reachable() -> None:
