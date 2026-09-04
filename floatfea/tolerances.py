@@ -200,6 +200,11 @@ PANEL_RECONSTRUCTION_RESIDUAL: Final[float] = 1e-12
 # Set: 2026-08-30, F1
 PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 
+# WORST MEASURED at this entry's sites, from the shipped tests (BD1).
+# Asserted MEASURED < TOL < COUNTER, so an entry whose sites drift toward
+# its ceiling fails rather than quietly consuming its headroom.
+PANEL_RECONSTRUCTION_RESIDUAL_MEASURED: Final[float] = 1.5183e-16
+
 
 # ---------------------------------------------------------------------------
 # Rung 1 -- The solver is a solver
@@ -241,6 +246,11 @@ TRANSFORM_INVARIANCE: Final[float] = 1e-11
 # Set: 2026-09-02, F2
 TRANSFORM_INVARIANCE_COUNTER: Final[float] = 1.2e-7
 
+# WORST MEASURED at this entry's sites, from the shipped tests (BD1).
+# Asserted MEASURED < TOL < COUNTER, so an entry whose sites drift toward
+# its ceiling fails rather than quietly consuming its headroom.
+TRANSFORM_INVARIANCE_MEASURED: Final[float] = 3.8357e-15
+
 
 # CLASS: ACCURACY -- carries TRANSFORM_SPECTRUM_INVARIANCE_COUNTER below.
 # G2.5 / V2.4 -- relative agreement between eig(T^T K T) and eig(K), scaled by the
@@ -259,6 +269,11 @@ TRANSFORM_SPECTRUM_INVARIANCE: Final[float] = 1e-11
 # rotation of a milliradian.
 # Set: 2026-09-02, F2
 TRANSFORM_SPECTRUM_INVARIANCE_COUNTER: Final[float] = 5.0e-7
+
+# WORST MEASURED at this entry's sites, from the shipped tests (BD1).
+# Asserted MEASURED < TOL < COUNTER, so an entry whose sites drift toward
+# its ceiling fails rather than quietly consuming its headroom.
+TRANSFORM_SPECTRUM_INVARIANCE_MEASURED: Final[float] = 2.7112e-16
 
 
 # CLASS: ACCURACY -- carries SUBDIVISION_INVARIANCE_COUNTER below.
@@ -287,6 +302,11 @@ SUBDIVISION_INVARIANCE: Final[float] = 1e-11
 # element -- three orders above the ceiling.
 # Set: 2026-09-02, F2
 SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
+
+# WORST MEASURED at this entry's sites, from the shipped tests (BD1).
+# Asserted MEASURED < TOL < COUNTER, so an entry whose sites drift toward
+# its ceiling fails rather than quietly consuming its headroom.
+SUBDIVISION_INVARIANCE_MEASURED: Final[float] = 6.0130e-13
 
 
 # CLASS: ACCURACY -- carries PATCH_TEST_EXACTNESS_COUNTER below.
@@ -362,6 +382,11 @@ PATCH_TEST_EXACTNESS: Final[float] = 1e-12
 # Set: 2026-09-03, F2
 PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
 
+# WORST MEASURED at this entry's sites, from the shipped tests (BD1).
+# Asserted MEASURED < TOL < COUNTER, so an entry whose sites drift toward
+# its ceiling fails rather than quietly consuming its headroom.
+PATCH_TEST_EXACTNESS_MEASURED: Final[float] = 8.2144e-15
+
 
 # CLASS: ACCURACY -- carries MATRIX_SYMMETRY_COUNTER below.
 # G2.1 / V1.1 -- symmetry of an assembled or element stiffness matrix, relative,
@@ -382,6 +407,11 @@ MATRIX_SYMMETRY: Final[float] = 1e-9
 # Set: 2026-09-03, F2
 MATRIX_SYMMETRY_COUNTER: Final[float] = 1.0e-2
 
+# WORST MEASURED at this entry's sites, from the shipped tests (BD1).
+# Asserted MEASURED < TOL < COUNTER, so an entry whose sites drift toward
+# its ceiling fails rather than quietly consuming its headroom.
+MATRIX_SYMMETRY_MEASURED: Final[float] = 3.7107e-17
+
 
 # CLASS: ACCURACY -- carries ROUNDOFF_IDENTITY_COUNTER below.
 # Rung 1 -- relative agreement for a property that is EXACT in exact arithmetic
@@ -390,12 +420,17 @@ MATRIX_SYMMETRY_COUNTER: Final[float] = 1.0e-2
 # Dimensionless in every use.
 #
 # Reason: these have no discretisation error to bound, only floating-point
-# accumulation. Measured across the sites that use it, the worst is 4.9e-15.
-# 1e-12 sits ~200x above that. It is deliberately ONE value shared by several
-# assertions of the same kind rather than a literal at each site -- which is what
-# it replaced, and what AW2 and R13 were both about.
+# accumulation. Worst measured across its nine sites is 2.2204e-16 -- one ULP.
+# 1e-14 sits ~45x above that.
+#
+# SET BY THE TIGHTEST MEMBER OF THE GROUP (BD1). It was briefly 1e-12, which was
+# a 100x WIDENING of three sites that had carried 1e-14 and measured 3.7e-17 ..
+# 1.9e-16 -- 53x to 267x of headroom, and nothing forcing the change. That was
+# done while the commit message asserted no value had been loosened. When a group
+# of literals is consolidated the new entry takes the tightest member, or the
+# group splits; it never takes a round number chosen for looking tidy.
 # Set: 2026-09-03, F2
-ROUNDOFF_IDENTITY: Final[float] = 1e-12
+ROUNDOFF_IDENTITY: Final[float] = 1e-14
 
 # COUNTER-CASE: the smallest defect these assertions must still catch. A single
 # sign error or a swapped index in any of the quantities involved is O(1); the
@@ -403,6 +438,11 @@ ROUNDOFF_IDENTITY: Final[float] = 1e-12
 # theta = 1e-8, which perturbs orthonormality by 1.0e-08.
 # Set: 2026-09-03, F2
 ROUNDOFF_IDENTITY_COUNTER: Final[float] = 1.0e-8
+
+# WORST MEASURED at this entry's sites, from the shipped tests (BD1).
+# Asserted MEASURED < TOL < COUNTER, so an entry whose sites drift toward
+# its ceiling fails rather than quietly consuming its headroom.
+ROUNDOFF_IDENTITY_MEASURED: Final[float] = 2.2204e-16
 
 
 # CLASS: ACCURACY -- carries COND_UNIT_INVARIANCE_COUNTER below.
@@ -425,6 +465,11 @@ COND_UNIT_INVARIANCE: Final[float] = 1e-6
 # counter is set far below it, at the smallest drift worth investigating.
 # Set: 2026-09-03, F2
 COND_UNIT_INVARIANCE_COUNTER: Final[float] = 1.0e-3
+
+# WORST MEASURED at this entry's sites, from the shipped tests (BD1).
+# Asserted MEASURED < TOL < COUNTER, so an entry whose sites drift toward
+# its ceiling fails rather than quietly consuming its headroom.
+COND_UNIT_INVARIANCE_MEASURED: Final[float] = 1.7319e-14
 
 
 # ---------------------------------------------------------------------------

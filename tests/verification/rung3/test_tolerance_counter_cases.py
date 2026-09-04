@@ -64,8 +64,12 @@ def test_every_float_tolerance_declares_a_class() -> None:
         for m in re.finditer(r"^([A-Z][A-Z0-9_]*)\s*:\s*Final\[float\]", body, re.M)
     }
     classified = {n for _, n in _classified()}
-    # A _COUNTER is documented by the entry it belongs to, not separately.
-    missing = {d for d in declared - classified if not d.endswith("_COUNTER")}
+    # A _COUNTER or _MEASURED is documented by the entry it belongs to, not
+    # separately -- both are satellites of a classified name.
+    missing = {
+        d for d in declared - classified
+        if not d.endswith(("_COUNTER", "_MEASURED"))
+    }
     assert not missing, f"tolerances without a CLASS declaration: {sorted(missing)}"
 
 
@@ -110,4 +114,32 @@ def test_structural_tolerances_do_NOT_carry_a_counter_case(name: str) -> None:
     assert not hasattr(tolerances, f"{name}_COUNTER"), (
         f"{name} is STRUCTURAL but carries a counter-case. Either it is really an "
         "ACCURACY tolerance and the CLASS is wrong, or the counter-case is invented."
+    )
+
+
+@pytest.mark.parametrize(
+    "name", [n for c, n in _classified() if c == "ACCURACY"] or ["<none>"]
+)
+def test_measured_below_ceiling_below_counter(name: str) -> None:
+    """BD1: MEASURED < TOL < COUNTER, for every accuracy entry.
+
+    The middle inequality is the counter-case rule. The left one is new: it
+    records the worst value actually seen at the entry's sites, so an entry whose
+    sites drift toward the ceiling fails rather than silently consuming headroom.
+
+    It does NOT by itself catch a widening -- 1e-12 would satisfy it as happily
+    as 1e-14 did. That is why BD0's rule exists: a commit message claiming "no
+    value loosened" carries the check that says so.
+    """
+    assert name != "<none>", "no ACCURACY entries found"
+    measured = getattr(tolerances, f"{name}_MEASURED", None)
+    assert measured is not None, (
+        f"{name} has no {name}_MEASURED. Every accuracy entry records the worst "
+        "value actually measured at its sites."
+    )
+    ceiling = getattr(tolerances, name)
+    counter = getattr(tolerances, f"{name}_COUNTER")
+    assert measured < ceiling < counter, (
+        f"{name}: measured {measured:.4e} < ceiling {ceiling:.4e} < counter "
+        f"{counter:.4e} does not hold"
     )
