@@ -14,9 +14,9 @@ every accuracy comparison above it uninterpretable.
 **Unequal element lengths**, as standard practice for patch tests. Note that the
 benefit is *not* demonstrated for this gate: a controlled measurement holding the
 perturbed element's length and position fixed found commensurability worth
-`0.848x` -- i.e. nothing, and marginally the wrong way. See `docs/instrumentation.md`
-on what was withdrawn. The mesh stays irregular because it costs nothing, not
-because it was measured to help.
+nothing: across draws the ratio to a UNIFORM mesh spans roughly 0.85-1.09, i.e.
+both sides of 1. See `docs/instrumentation.md` on what was withdrawn. The mesh
+stays irregular because it costs nothing, not because it was measured to help.
 
 **Straight member only.** A non-collinear assembly is a frame test and belongs at
 V2.4. Both an axis-aligned and a skew-but-straight orientation are run, so the
@@ -64,7 +64,7 @@ from floatfea.element.transform import rotation_matrix
 from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
 from floatfea.tolerances import PATCH_TEST_EXACTNESS, PATCH_TEST_EXACTNESS_COUNTER
-from floatfea.tolerances import COND_UNIT_INVARIANCE
+from floatfea.tolerances import COND_UNIT_INVARIANCE, ROUNDOFF_IDENTITY
 
 SEC = Section.circular_tube(0.6, 0.012)
 # Irregular: no pair of element lengths in a SMALL-INTEGER RATIO. Lengths
@@ -140,6 +140,28 @@ LOCAL_BLOCKS = {
 }
 
 
+def relative_error(got, exact, char_length: float) -> float:
+    """Dimensionally homogeneous relative error over a (n_nodes, 6) field.
+
+    Taking `max()` across all six DOF mixes metres with radians, which makes the
+    measure itself unit-dependent: under a length-unit factor S the translations
+    scale by S and the rotations do not, so a spurious rotation divided by a
+    translational scale grows with S while the solve is untouched. Measured, the
+    axial state -- whose exact rotations are exactly zero -- breached the ceiling
+    by 2.8x in kilometres for precisely this reason.
+
+    Rotations are converted to equivalent translations through `char_length`
+    before the norm is taken. Extracted as a function so the property can be
+    tested by BEHAVIOUR rather than by inspecting how the weighting is spelled
+    (R9): a structural check for `w[3:]` is satisfied by `w[3:] = 0.0 * L`.
+    """
+    import numpy as _np
+
+    w = _np.ones(6)
+    w[3:] = char_length
+    return float((_np.abs(got - exact) * w).max() / (_np.abs(exact) * w).max())
+
+
 def _run(
     state: str,
     direction: np.ndarray,
@@ -193,21 +215,7 @@ def _run(
     u = res.u + u_pres
     got = u.reshape(n_nodes, 6)
 
-    # DIMENSIONALLY HOMOGENEOUS error (R2). Taking `max()` across all six DOF
-    # mixes metres with radians, so the measure itself is unit-dependent: under a
-    # length-unit factor S the translations scale by S and the rotations do not,
-    # and a spurious rotation divided by a translational scale grows without any
-    # change to the solve. Measured: the axial state, whose exact rotations are
-    # exactly zero, breached the ceiling by 2.8x in kilometres for precisely this
-    # reason -- every one of its erroneous components was rotational, with the
-    # translations at 1e-15.
-    #
-    # Rotations are converted to equivalent translations through the model's
-    # characteristic length before the norm is taken, which makes the comparison
-    # dimensionally coherent and the measure unit-invariant.
-    w = np.ones(6)
-    w[3:] = STATIONS[-1]
-    err = float((np.abs(got - u_ex) * w).max() / (np.abs(u_ex) * w).max())
+    err = relative_error(got, u_ex, STATIONS[-1])
     return err, res
 
 
@@ -229,9 +237,10 @@ def test_the_four_constant_strain_states_are_EXACT(state: str, orientation: str)
 def test_the_mesh_is_actually_irregular() -> None:
     """The mesh has the property the module claims for it.
 
-    Kept, but note what it does NOT establish: a controlled measurement found
-    commensurability worth 0.848x for this gate -- nothing. This asserts the
-    stated property holds, not that the property buys sensitivity.
+    Kept, but note what it does NOT establish: controlled measurement found
+    commensurability worth nothing for this gate, the ratio to a uniform mesh
+    straddling 1 across draws. This asserts the stated property holds, not that
+    the property buys sensitivity.
     """
     lengths = np.diff(STATIONS)
     assert len(set(np.round(lengths, 9))) == len(lengths), "element lengths repeat"
@@ -283,22 +292,14 @@ def test_the_shear_state_actually_contains_shear() -> None:
 #   curvature_xz         1.0764e-01              9.29e-12
 #   shear_xz             1.1743e-01              8.52e-12
 #
-# RE-MEASURED under the dimensionally homogeneous error (R2), which also
-# SHARPENED the bending states: curvature and shear previously responded at
-# 3.72e-08 and 3.02e-08 to a 1e-6 defect, because their rotational error was
-# being divided by a translational scale and thereby understated. All six now
-# respond at ~1.1e-07 and the weakest threshold tightens from 3.31e-11 to
-# 9.29e-12.
+# All six regenerated by running the shipped tests (R14). The bending states'
+# sensitivities were previously understated at 3.72e-02 / 3.02e-02 because their
+# rotational error was divided by a translational scale; under the homogeneous
+# measure all six respond at ~1.1e-01 and the weakest threshold is 8.52e-12.
 #
-# Verified rather than extrapolated: perturbing by the threshold eps lands the
-# error on 1e-12 to within 0.3% in every state. So the patch test stops seeing a
-# single-element stiffness error below ~3.3e-11 relative. Widening
-# PATCH_TEST_EXACTNESS by an order moves that to ~3.3e-10.
-#
-# These numbers are FROM THE INCOMMENSURATE MESH. On the previous mesh -- which
-# contained 0.9/0.6 = 3/2 exactly -- the weakest state's threshold was 1.51e-10,
-# so removing the symmetry cancellation improved detection about FIVEFOLD. The
-# assertion below caught the old numbers going stale the moment the mesh changed.
+# NOTE what is NOT claimed here. An earlier version of this block said removing
+# mesh commensurability improved detection "about FIVEFOLD". That is WITHDRAWN --
+# see docs/instrumentation.md. The comparison was uncontrolled.
 DETECTION_THRESHOLD = {
     "axial": 9.17e-12,
     "curvature": 9.29e-12,
@@ -449,20 +450,51 @@ def test_the_UNequilibrated_conditioning_DOES_move() -> None:
     )
 
 
-def test_the_error_measure_weights_rotations_by_a_length() -> None:
-    """The measure must be dimensionally homogeneous, or it is unit-dependent.
+def _synthetic(scale: float):
+    """A field and an error posed at length-unit factor `scale`.
 
-    Asserted structurally rather than by outcome: a `max()` taken across metres
-    and radians together is the defect, and it is invisible in any single-unit
-    run. The axial state breached the ceiling by 2.8x in kilometres purely
-    through this, with every erroneous component rotational.
+    Faithful to how the real failure arises, which a first version of this was
+    not. The ERROR is solve round-off concentrated in the rotational DOF, and
+    round-off does NOT scale with the unit system -- it is set by the
+    conditioning. The FIELD's translations do scale. Scaling the error along with
+    the field, as the first version did, makes even the mixed measure invariant
+    and the control demonstrates nothing.
     """
-    import inspect
+    rng = np.random.default_rng(4)
+    exact = np.abs(rng.standard_normal((6, 6))) + 0.5
+    exact[:, 3:] *= 1.0e-3                 # rotations are small, in radians
+    exact[:, :3] *= scale                  # translations carry the length unit
+    err = np.zeros((6, 6))
+    err[:, 3:] = 1.0e-12                   # round-off, absolute, unit-independent
+    return exact + err, exact
 
-    from tests.verification.rung1 import test_patch_test as mod
 
-    src = inspect.getsource(mod._run)
-    assert "w[3:]" in src and "STATIONS[-1]" in src, (
-        "the error measure no longer weights rotational DOF by a characteristic "
-        "length; it is mixing metres with radians"
+def test_the_error_measure_is_UNIT_INVARIANT() -> None:
+    """R9: the property, tested by BEHAVIOUR, not by how the code spells it.
+
+    The structural check this replaces asserted the source contained `w[3:]` and
+    `STATIONS[-1]` -- and was satisfied by `w[3:] = 0.0 * STATIONS[-1]`, which
+    discards the rotations entirely. This one does not care how the weighting is
+    written.
+    """
+    lc = 9.67
+    m = relative_error(*_synthetic(1.0), lc)
+    mm = relative_error(*_synthetic(1000.0), lc * 1000.0)
+    assert m == pytest.approx(mm, rel=ROUNDOFF_IDENTITY), (
+        f"the error measure is unit-dependent: {m:.6e} in metres against "
+        f"{mm:.6e} in millimetres"
+    )
+
+
+def test_a_MIXED_unit_measure_would_FAIL_that() -> None:
+    """Negative control: the pre-R2 measure must move with the unit system."""
+    def mixed(got, exact, _lc):
+        return float(np.abs(got - exact).max() / np.abs(exact).max())
+
+    m = mixed(*_synthetic(1.0), 9.67)
+    mm = mixed(*_synthetic(1000.0), 9670.0)
+    assert mm < m / 100.0, (  # not-a-tolerance: negative control -- asserts the two DIFFER by orders
+        f"the mixed-unit measure gave {m:.3e} and {mm:.3e}; it did not move with "
+        "the unit system, so this control cannot demonstrate what the weighting "
+        "is for"
     )

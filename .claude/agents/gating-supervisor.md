@@ -120,6 +120,16 @@ value (a strength-sized member, a particular load), the load-bearing form is the
 inequality that covers the whole model. Record the direction of the inequality
 and what it scales with.
 
+**A causal claim carries its ablation.** "X caused Y", "Y required X", "X fixed
+Y" — the measurement *without* X is what makes it a finding rather than a story.
+This has failed twice in two commits: a mesh change credited with a fivefold
+sensitivity gain that a controlled pair showed was worth nothing, and a solver
+change on the production path credited with a unit-invariance fix that the
+one-at-a-time cells showed was neither necessary nor sufficient. The ablation cell
+is always cheap. **Any "because", "required" or "fixed by" in a report, a comment
+or a tolerance justification is checked for its ablation; if none exists the claim
+is recorded as unverified and the wording is reduced to what was measured.**
+
 **Convert arguments into measurements.** Wherever a property is believed on
 reasoning and a cheap measurement exists, the measurement is taken. The
 reasoning has been wrong at least once in this project.

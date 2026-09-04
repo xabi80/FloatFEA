@@ -672,10 +672,17 @@ Measured properly — element 1 exactly `2.0 m` and total exactly `10.0 m` in
 **both** meshes, so only commensurability varies:
 
 ```
-A  [2.0 2.0 2.0 2.0 2.0]          maximally commensurate   7.7448e-08
-B  [1.069 2.0 2.311 3.658 0.962]  incommensurate           6.5661e-08
-                                            ratio B/A       0.848
+A  [2.0 2.0 2.0 2.0 2.0]   maximally commensurate, reference   7.7448e-08
+
+ratio of an incommensurate mesh to A, over independent draws:
+  9 draws   min 0.847   median 0.862   max 1.091
+  (an independent 6-draw run gave min 0.60, median 0.906, max 1.01)
 ```
+
+**The ratio straddles 1.** A single pair was originally reported as `0.848`; that
+is one sample of a quantity whose scatter is wider than the effect (R11). The
+conclusion survives -- commensurability buys nothing -- but the *precision* does
+not, and the record carries the spread rather than the point.
 
 **Commensurability is worth nothing here, and the incommensurate mesh is
 marginally *less* sensitive.** What actually drives the sensitivity is *which*
@@ -703,12 +710,18 @@ the gate stops catching anything, and it is the number that says what a toleranc
 change would cost:
 
 ```
-state        sensitivity   smallest defect detected at the ceiling
-axial         1.0908e-01              9.17e-12
-curvature     3.7161e-02              2.69e-11
-twist         1.0908e-01              9.17e-12
-shear         3.0170e-02              3.31e-11   <- weakest
+state          sensitivity   smallest defect detected at the ceiling
+axial           1.0908e-01              9.17e-12
+curvature       1.0764e-01              9.29e-12
+twist           1.0908e-01              9.17e-12
+shear           1.1743e-01              8.52e-12   <- weakest
+curvature_xz    1.0764e-01              9.29e-12
+shear_xz        1.1743e-01              8.52e-12
 ```
+
+Regenerated after the error measure changed (R14). The bending states previously
+read `3.7161e-02` / `3.0170e-02`, understated because their rotational error was
+divided by a translational scale.
 
 Measured by verification, not extrapolation: perturbing by the threshold lands the
 error on the declared ceiling to within 0.3%.

@@ -306,19 +306,27 @@ SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
 # 1e-12 sits ~240x above the worst measured value, which covers the transform
 # path and longer chains, and ~30000x below the counter-case.
 #
-# UNIT SYSTEM AND FLOOR (R2). Declared in SI metres, and VERIFIED invariant
-# across length-unit factors S = 1e-3 .. 1e+3 (kilometres to millimetres): worst
-# error 3.12e-14, no breach at any scale. That invariance is not automatic and was
-# not present when this entry was written -- it required two fixes, neither of
-# them a tolerance change:
+# UNIT SYSTEM AND FLOOR. Declared in SI metres, and VERIFIED invariant across
+# length-unit factors S = 1e-4 .. 1e+4: worst error 3.19e-14, no breach at any
+# scale.
 #
-#   1. the solve equilibrates (assemble.system.equilibrate), because translational
-#      and rotational diagonal entries scale as S^-1 and S^+1, so their ratio moves
-#      by S^2 and cond(K_ff) went 9.2e2 -> 4.0e7 over that range. Equilibrated,
-#      cond(K~) = 3.85e2 at EVERY scale.
-#   2. the error measure weights rotations by a characteristic length, because
-#      taking max() across all six DOF mixes metres with radians and is therefore
-#      unit-dependent on its own.
+# WHAT CLOSED IT, measured by ablation (R8). An earlier version of this comment
+# said the invariance "required two fixes". The one-at-a-time cells refute that:
+#
+#   equilibrate   weighted measure   worst err    first breach of 1e-12
+#      yes              yes           3.19e-14         none
+#      NO               yes           2.00e-13         none
+#      yes              NO            2.09e-11         S = 1e-3
+#
+# The ERROR MEASURE alone is necessary and sufficient. Taking max() across all six
+# DOF mixes metres with radians, so the measure was unit-dependent on its own; a
+# spurious rotation divided by a translational scale grows with S while the solve
+# is untouched. Weighting rotations by a characteristic length fixes it.
+#
+# EQUILIBRATION IS RETAINED ON A DIFFERENT JUSTIFICATION than the one this comment
+# used to give: a measured 6x reduction in worst error (3.19e-14 against 2.00e-13)
+# and cond(K~) = 3.85e2 at every unit system where cond(K_ff) runs 9.2e2 .. 6.0e8.
+# Both are under test. It would be removed if either stopped holding.
 #
 # Floor, as a multiple of the equilibrated conditioning: cond(K~) * eps =
 # 3.85e2 * 2.22e-16 = 8.5e-14. The worst measured error is 0.37x that floor and
@@ -347,7 +355,8 @@ PATCH_TEST_EXACTNESS: Final[float] = 1e-12
 #
 # Its earlier history: 6.0e-9 came from a mesh containing 0.9/0.6 = 3/2 exactly.
 # The claim that changing that mesh bought a fivefold improvement is WITHDRAWN --
-# controlled measurement puts commensurability at 0.848x, i.e. nothing. The value
+# controlled measurement puts commensurability at nothing, the ratio to a
+# uniform mesh straddling 1 across draws (0.85-1.09). The value
 # moved because the perturbed element's length and position changed with it. See
 # docs/instrumentation.md, seventeenth guard.
 # Set: 2026-09-03, F2
