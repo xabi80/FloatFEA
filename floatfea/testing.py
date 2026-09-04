@@ -20,9 +20,22 @@ of the resolution the comparison actually has, so a vacuous control fails loudly
 instead of passing quietly.
 
 This is the eighth guard -- a gate carries its own failure -- made executable at
-the operand level, which is where it kept failing. `pytest.approx`,
-`np.allclose` and friends are not called directly under `tests/`; the scanner
-enforces that.
+the operand level, which is where it kept failing.
+
+What is true about `tests/` today (R39)
+---------------------------------------
+An earlier version of this docstring said `pytest.approx`, `np.allclose` and
+friends "are not called directly under `tests/`; the scanner enforces that".
+Neither half held. Counted by walking the AST of every test file except the
+scanner's own corpus: **70 call sites in 12 files** -- 42 `approx`, 17
+`allclose`, 7 `isclose`, 4 `assert_allclose`. And the scanner checks that a
+tolerance ARGUMENT resolves to a declared name; it has never had an opinion
+about which function is called.
+
+`assert_close` and `assert_differs` are used at three sites, all in the patch
+test (plus ten in its own unit test). **Banning the rest by presence is step 4a's proposal**
+(`docs/milestones/F2a.md` sec. 2A), not the state of the repository -- and a
+module a reader trusts does not carry a future tense as a present one.
 """
 from __future__ import annotations
 
