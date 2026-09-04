@@ -53,10 +53,29 @@ def equilibrate(k: sp.spmatrix) -> tuple[sp.csc_matrix, NDArray[np.float64]]:
 
     Why it is not on the solve path. It was put there on a claim that the
     unit-invariance of the patch test "required two fixes". The ablation refutes
-    that: **the error measure alone is necessary and sufficient**, and
-    equilibration alone leaves the kilometre breach exactly where it was. The
-    replacement justification -- a "6x" improvement -- was a ratio of extremes;
-    per scale the benefit runs
+    that: **the error measure alone is necessary and sufficient**. All four
+    cells, worst error over the six patch-test states at each length-unit factor
+    ``S``, ceiling ``1e-12``::
+
+        S           1e-4    1e-3    1e-2     0.1       1      10     100     1e3     1e4 | worst  breach
+        eq + wtd  2.0e-14 2.7e-14 2.0e-14 2.5e-14 7.9e-15 1.1e-14 3.1e-14 2.5e-14 3.2e-14| 3.2e-14  none
+        -- + wtd  2.0e-13 1.6e-13 7.6e-14 1.3e-13 1.3e-14 1.2e-14 2.4e-14 4.9e-14 5.4e-14| 2.0e-13  none
+        eq + mix  2.1e-11 2.8e-12 2.0e-13 2.5e-14 1.9e-15 9.9e-15 3.5e-14 5.8e-13 7.8e-12| 2.1e-11  1e-4
+        -- + mix  2.1e-10 1.7e-11 4.2e-13 1.3e-13 4.2e-15 4.2e-14 1.5e-13 1.9e-11 1.3e-10| 2.1e-10  1e-4
+
+    The measure alone (row 2) breaches at no scale; that is the whole of the fix.
+
+    **CORRECTION (R34).** An earlier version of this docstring added "and
+    equilibration alone leaves the kilometre breach exactly where it was". Row 3
+    refutes it: equilibration alone is precisely what removes the kilometre
+    breach, ``1.9e-11 -> 5.8e-13``. What it does not do is remove the other
+    three (``S = 1e-4``, ``1e-3``, ``1e4``), which is why it is not sufficient
+    and the measure is. The conclusion stands; the mechanism as stated was
+    false, and it was written one commit after BC1 named exactly this shape of
+    claim. See `docs/milestones/F2.md` sec. R8, "The fourth cell".
+
+    The replacement justification -- a "6x" improvement -- was a ratio of
+    extremes; per scale the benefit runs
 
         S      1e-4  1e-3  1e-2   0.1     1    10   100  1e3   1e4
         ratio  9.93  5.84  3.87  5.10  1.58  1.08  0.77 1.97  1.69
