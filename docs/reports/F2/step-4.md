@@ -322,3 +322,63 @@ Also corrected under R11: `0.848` was one draw. Across 9 independent draws the
 ratio to a uniform mesh runs `0.847 .. 1.091`, median `0.862`; an independent
 6-draw run gave `0.60 .. 1.01`, median `0.906`. It straddles 1. The conclusion
 holds; the precision does not.
+
+---
+
+# Revision 3 — the re-verdict answered (R8–R14, BC0–BC4)
+
+**2026-09-03.** Verdict `docs/reviews/F2/step-4.md` (HOLD @ `ec8b237`). Commits
+`f8a99d1` (R13) and `f53a420` (R8–R14, BC1, BC4).
+
+## Carried — from the re-verdict
+
+- **R8 — answered**, `f53a420`. The necessity claim is replaced by the ablation.
+  **The error measure alone is necessary and sufficient**; equilibration alone
+  achieves nothing. Equilibration retained on a measured justification: 6×
+  reduction in worst error (`3.19e-14` vs `2.00e-13`) and `cond(K~)` invariance,
+  both under test.
+- **R9 — answered**, `f53a420`. `relative_error()` extracted and tested by
+  behaviour in two unit systems. My first negative control for it was malformed —
+  I scaled the error with the field — and that is recorded.
+- **R10 — answered**, `f53a420`, by grep rather than memory. The missed site was
+  `test_patch_test.py`'s "FIVEFOLD" ten lines below the corrected block.
+- **R11 — answered**, `f53a420`. `0.847..1.091` over 9 draws, median `0.862`;
+  an independent 6-draw run gave `0.60..1.01`. **It straddles 1.**
+- **R12 — answered**, `f53a420`. AV4 item 2 says curvature in each plane; item 4
+  does not say it of shear. Six combinations, not eight.
+- **R13 — answered**, `f8a99d1`, and made mechanical. The scan found **42** sites,
+  not 2.
+- **R14 — answered**, `f53a420`. Figures regenerated; `CLAUDE.md` now requires it.
+- **BC1** — the ablation guard is in `gating-supervisor.md`.
+
+## Numbers, regenerated against shipped code
+
+```
+state           clean(skew)   sens(err/1e-6)   threshold   block-confined 1e-3
+axial            7.937e-15      1.0908e-01   9.168e-12   1.4066e-14
+curvature        2.977e-15      1.0764e-01   9.291e-12   1.0756e-04
+twist            2.022e-16      1.0908e-01   9.168e-12   2.5276e-16
+shear            4.119e-15      1.1743e-01   8.516e-12   1.1734e-04
+curvature_xz     2.050e-15      1.0764e-01   9.291e-12   1.0756e-04
+shear_xz         3.622e-15      1.1743e-01   8.516e-12   1.1734e-04
+```
+
+`289 passed`, my run.
+
+## Tolerances touched
+
+| name | old | new | direction | why |
+|---|---|---|---|---|
+| `MATRIX_SYMMETRY` | — | `1e-9` | new | replaces 2 literals; counter `1e-2` (a transposed block gives `3.1e-01`) |
+| `ROUNDOFF_IDENTITY` | — | `1e-12` | new | replaces 10 literals; counter `1e-8` |
+| `COND_UNIT_INVARIANCE` | — | `1e-6` | new | **was** R13's bare `rel=1e-6`; counter `1e-3` |
+
+No value loosened: each declared entry sits at or below every literal it replaced.
+
+## Still open
+
+R4, R5, R6 — carried to step 5 as the first verdict permits.
+
+## Witness channel
+
+Unavailable. No git remote, so no PR and no `[witness ...]` comment.
