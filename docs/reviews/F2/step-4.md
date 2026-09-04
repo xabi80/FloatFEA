@@ -1,576 +1,445 @@
 # Review � F2 step 4
-Reviewed commit: 2b91340a23e9c450804eaf7c06c0d8c300ba20d9
+Reviewed commit: 44f4e14d97f5e6b628691c812ae104ac24d76148
 Verdict: HOLD
-Tests: 309 passed, 0 failed, 0 skipped   (my run, `pytest -q`, 0.68s)
+Tests: 301 passed, 0 failed, 0 skipped   (my run, `python -m pytest -q`, 0.76s)
 
-Fourth pass. Four of the eight gated items are genuinely closed and I reproduced
-the work behind each: the widening is reverted and this time I re-ran the
-"no value loosened" check myself and it holds; `rel=0.05` is declared with a
-margin I reproduce to five digits; R22's ratio test now reddens on the pre-R2
-mixed measure, which is the first time that control has bitten; R23's two
-sentences say what the ablation measured. Equilibration leaving `solve()` is
-right, and I re-ran the nine-decade sweep on the new production path myself to
-confirm the gate still holds without it.
+Fifth pass, and the first in which the element rather than the instrumentation is
+the main subject. **The narrowing is accepted** -- see the note below -- and
+within the narrowed scope the four named corrections are real: I reproduced the
+four-cell ablation through my own harness, re-measured every G2.2 figure the
+report publishes, and verified by AST that no ceiling and no counter moved.
 
-Four gated items are not answered — R20 and R21 are untouched, R24 is now
-contradicted rather than corrected — and the two artifacts built to close the
-others do not do what they say. Every `_MEASURED` value is a hand-written
-literal that no test recomputes, and three of the nine do not describe their
-entry's sites; I located one of them exactly, on the code path BD2 deleted two
-commits later. The AST scanner misses 23 of 25 shapes it has not been shown,
-three of which the regex it replaced caught.
+It is still a HOLD, and the first reason is the standing one. **R29 was a gated
+item and half of it is untouched.** Its closing condition named
+`tolerances.py:329-353` *and* `test_patch_test.py:423, 440, 446`; `70515f9` fixed
+the first and `git diff e8c221a..HEAD -- tests/verification/rung1/test_patch_test.py`
+is **empty**. All three strings still describe a solve that equilibrates. The
+report records R29 as "answered" without distinguishing the half it did.
+
+Three new findings are inside the narrowed scope and were found by measurement,
+not by reading: the assertion that is G2.2's only guard against widening its own
+ceiling admits a total loss of sensitivity (**R38**); the unit invariance the
+narrowed step closes on is asserted by **no shipped test** (**R40**); and the
+`1e-12` ceiling's "80x headroom" is breached at a slenderness the locked plan's
+own tables discuss (**R43**).
 
 ## Carried
 
-Every item from `docs/reviews/F2/step-4.md` (HOLD @ `1acb5dc`), traced through
-`64cf5c5..HEAD` rather than taken from the report.
+Every item from `docs/reviews/F2/step-4.md` (HOLD @ `2b91340`, committed
+`e8c221a`), traced through `e8c221a..44f4e14` and re-measured, not taken from the
+report.
 
-- **1. R17 (gated) — ANSWERED.** `floatfea/tolerances.py:433` is back to
-  `1e-14`. I re-ran the check rather than reading the pasted table: extracted
-  every literal replaced by a declared name across `ec8b237..HEAD` and paired it
-  with its successor. `ROUNDOFF_IDENTITY` absorbs literals of `1e-12` (x8) and
-  `1e-14` (x3); `1e-14` is at or below all of them. `MATRIX_SYMMETRY = 1e-9`
-  replaced `1e-9` x4. `COND_UNIT_INVARIANCE = 1e-6` replaced `1e-6`.
-  `DETECTION_THRESHOLD_BAND = 0.05` replaced `0.05`. **No value loosened — the
-  claim is true this time.** The entry's own comment records the episode, which
-  is the right place for it. The closure-artifact clause is not yet due;
-  `docs/closure/` has F0 and F1 only.
+- **1. R28 (gated) -- ANSWERED, by removal.** `ab23181` deletes all nine
+  `_MEASURED` entries and the test that consumed them. I verified the "no ceiling
+  or counter moved" claim independently of the pasted `grep`: parsing both
+  revisions of `tolerances.py` with `ast` and diffing the name-to-value maps gives
+  *nine* names only in the old file, all `_MEASURED`, **zero names only in the
+  new**, and **zero moved values**. The replacement guard bites -- I appended
+  `MATRIX_SYMMETRY_MEASURED: Final[float] = 3.7107e-17` to the file and got
+  `2 failed, 22 passed`, then restored. The commit's own re-measurements check
+  out: `PATCH_TEST_EXACTNESS` worst on the shipped path is `1.2513e-14` (my run,
+  exactly) and both `MATRIX_SYMMETRY` sites are `0.0`. The diagnosis in the
+  commit message -- that `TRANSFORM_INVARIANCE` has eight sites measuring six
+  quantities, so no single number existed -- is the right reason and is stronger
+  than the verdict's.
 
-  Separately I checked the ~22 conversions from a *bare* `pytest.approx()`
-  (default `rel=1e-6`) to `rel=ROUNDOFF_IDENTITY`, since those tighten by eight
-  orders. I measured the residual at all fifteen: **every one is `0.0` exactly**.
-  Nothing is now passing that should not, and nothing became flaky. What the
-  conversions did *not* do is make the declared name decide — see **R33**.
+- **2. R29 (gated) -- HALF ANSWERED. Carried as R37a below and blocking.**
+  `tolerances.py:308-360` is correct now and I re-derived every figure in it
+  through my own harness: metre-scale worst `1.2513e-14` (file: `1.2513e-14`),
+  nine-decade worst `2.004e-13` (file: `2.00e-13`), `cond(K_ff)` `9.210e+02` at
+  `S = 1` and `5.983e+10` at `S = 1e-4` (file: `9.21e2`, `5.98e10`). The floor
+  paragraph is rebuilt honestly: there is no single conditioning floor
+  unequilibrated, and saying so rather than quoting one is the right call.
+  **The three test strings the closing condition named are unchanged**:
+  `test_patch_test.py:423` "the algebraic fact **the equilibrated solve rests
+  on**"; `:440-441` "the solve is not unit-robust and every exactness ceiling
+  above it is unit-dependent"; `:446` "if it did not, equilibration would be
+  ceremony". None is true of the solve that ships. The file was not touched in
+  this step at all.
 
-- **2. R18 (gated) — ANSWERED, one residual.** `rel=0.05` at
-  `test_patch_test.py:323` is now `DETECTION_THRESHOLD_BAND`, declared at
-  `tolerances.py:493` with `_MEASURED = 9.9523e-03` and `_COUNTER = 0.25`. I
-  reproduce the measured value **exactly**: perturbing by each recorded
-  threshold gives per-state deviations `0.236 / 0.307 / 0.030 / 0.995 / 0.027 /
-  0.044 %`, worst `9.9523e-03`. The per-line clearance hole is closed for
-  tolerance *names* — the AST checks the argument node. It is **not** closed for
-  the exemption: `test_no_tolerance_literals.py:86-88` still tests
-  `EXEMPT in line` on raw source, and `EXEMPT` is now the bare substring
-  `not-a-tolerance:` rather than the regex's `#\s*not-a-tolerance:`. So
-  `assert err < 1e-9, "not-a-tolerance: sneaky"` is cleared by the new scanner
-  and was **caught** by the old one. Recorded in **R32**.
+- **3. R30, R31 (gated) -- MOVED to step 4a. Accepted.** Four dead counters and
+  eleven `abs=` annotations, all attached to apparatus that gates nothing in
+  G2.2. I re-checked that the four counters are still consumed by nothing outside
+  `test_tolerance_counter_cases.py`, and that none of the eleven `abs=` sites is
+  in `tests/verification/rung1/`. The move does not touch this gate.
 
-- **3. R19 (gated) — PARTIALLY answered.** The four live sites carry a declared
-  name: `test_beam_element.py:84, 105` -> `MATRIX_SYMMETRY`,
-  `test_member_local_axes.py:70-72, 83` -> `ROUNDOFF_IDENTITY`. But at three of
-  those four the declared name is in the slot that does not decide (**R33**),
-  and the closed-when clause "its negative control carries shapes it has not
-  already been shown" was not met: `PLANTED` at
-  `test_no_tolerance_literals.py:136-152` is verbatim the fifteen shapes the
-  previous verdict planted. I planted twenty-five it has not seen; twenty-three
-  are missed (**R32**).
+- **4. R32 (gated) -- MOVED to step 4a. Accepted.** The scanner's coverage is not
+  load-bearing on G2.2. I did not re-plant the twenty-five shapes; the report
+  concedes 2 of 25 rather than disputing it, which is the right posture, and
+  `F2a.md` sec. 2B replaces the design rather than patching the count.
 
-- **4. R20 (gated) — NOT answered.** All eleven `pytest.approx(..., abs=)`
-  lines labelled "reference pin, not a ceiling" are unchanged, verbatim, at the
-  same paths: `test_cantilever_closed_form.py:156, 164`;
-  `test_basis_constants.py:27, 32, 33, 63, 98, 116`; `test_live_dof.py:80, 81`;
-  `test_reference_provenance.py:34`. Nor were the three "wrong reason" labels
-  repaired (`test_basis_constants.py:99`, `test_cantilever_closed_form.py:165`,
-  `test_live_dof.py:80`). The one thing that did change is that the scanner's
-  docstring no longer contains the sentence that contradicted the annotation on
-  the same line — the contradiction was resolved by deleting the correct half.
-  Carried as **R31**.
+- **5. R33 (gated) -- MOVED to step 4a, and one instance comes back.** The move is
+  right for the ~30 sites outside this gate. It is **not** right for
+  `test_patch_test.py:323`, which is inside G2.2 and is the only assertion that
+  reddens when `PATCH_TEST_EXACTNESS` is widened. Measured and mutation-confirmed
+  as **R38**. The narrowing's own carve-out applies: the apparatus does gate G2.2
+  here.
 
-- **5. R21 (gated) — NOT answered.** `MATRIX_SYMMETRY_COUNTER`,
-  `ROUNDOFF_IDENTITY_COUNTER` and `COND_UNIT_INVARIANCE_COUNTER` still appear
-  nowhere outside `floatfea/tolerances.py` and
-  `test_tolerance_counter_cases.py`'s three-literal comparison. A fourth,
-  `DETECTION_THRESHOLD_BAND_COUNTER = 0.25`, was added in this step with the
-  same defect. Carried as **R30**.
-
-- **6. R22 (gated) — ANSWERED, verified by mutation.** This is the strongest
-  thing in the diff. I substituted six weightings into `relative_error` and ran
-  the shipped assertion at `test_patch_test.py:496`:
+- **6. R34 (gated) -- ANSWERED, and I reproduce all four cells.** I wrote my own
+  sweep from the element up (assembly, equilibration switched at the
+  factorisation, weighted and mixed measures) and got:
 
   ```
-  w[3:] = char_length (shipped)   ratio 1.000000000                  PASS
-  w[3:] = 1.0  (THE PRE-R2 MIXED MEASURE)  m=4.293e-13 mm=4.293e-16   RED
-  w[3:] = char_length**2                                              RED
-  w[3:] = sqrt(char_length)                                           RED
-  w[3:] = 0.0 * char_length       m=mm=0   degenerate guard fires
-  w[3:] = 1e-30 * char_length     ratio 1.000000000                  PASS
+  cell         1e-4    1e-3    1e-2     0.1       1      10     100     1e3     1e4 | worst   breaches
+  eq + wtd   2.0e-14 2.7e-14 2.0e-14 2.0e-14 7.9e-15 1.1e-14 3.1e-14 2.5e-14 3.2e-14| 3.19e-14  none
+  -- + wtd   2.0e-13 1.6e-13 9.6e-14 1.3e-13 1.3e-14 1.2e-14 2.2e-14 6.0e-14 1.0e-13| 2.00e-13  none
+  eq + mix   2.1e-11 2.8e-12 2.0e-13 2.0e-14 1.9e-15 9.9e-15 2.7e-14 6.3e-13 4.3e-12| 2.09e-11  1e-4,1e-3,1e4
+  -- + mix   2.1e-10 1.7e-11 4.2e-13 1.3e-13 4.3e-15 4.2e-14 1.0e-13 2.3e-11 1.0e-10| 2.07e-10  1e-4,1e-3,1e3,1e4
   ```
 
-  The comparison is genuinely `O(1)`: `scale = max(|ratio|, 1.0) = 1.0`, so
-  `1e-14` is what decides and pytest's `abs=1e-12` is out of the picture. The
-  1000x drift that passed last time is red. The surviving `1e-30 * L` pass is
-  correct — that weighting *is* unit-invariant, and blindness is caught by the
-  six-state gate, which I confirmed reddens on `w[3:] = 0`.
+  All four worsts agree to three digits with the shipped table, and the reversal
+  the correction turns on is confirmed: at `S = 1e3` the mixed measure is
+  `2.3e-11` unequilibrated and `6.3e-13` equilibrated, so **equilibration alone
+  is what removes the kilometre breach**. `tolerances.py:339`'s breach column now
+  reads `S = 1e-4, 1e-3, 1e4` for row 3, which is what I measure. The one
+  sentence in the last diff that carried "alone" and "exactly" is withdrawn and
+  replaced by the cells. This is the ablation guard applied correctly.
 
-  One note, not a finding: at the only production call site the operands are
-  `ratio` and `1.0`, so `assert_close`'s floor check (`scale < 100 * floor`) can
-  never fire. BD0's guard is structurally inert there; what closed R22 is the
-  `O(1)` reframing, not the floor. The docstring at `:487-488` credits the floor.
+- **7. R35 (gated) -- ANSWERED.** `floatfea/assemble/system.py:9-12` now cites
+  `docs/milestones/F2.md` sec. R8, and `## R8` exists at `F2.md:891`. Checked
+  mechanically. The line also states that the earlier pointer resolved to
+  nothing, which is the right way to leave a corrected citation. **But the same
+  species is live one module over** -- `floatfea/testing.py:23-25`, **R39**.
 
-- **7. R23 (gated) — ANSWERED.** `floatfea/assemble/system.py:40-73` no longer
-  claims a relative tolerance is not unit-invariant without equilibration; it
-  carries the per-scale table and states the change is reverted. `:167-171` is
-  gone with the equilibrated solve. `test_patch_test.py:392-399` replaces "both
-  had to be fixed" with the ablation result. Three of the four sentences are
-  now right; the fourth is refuted (**R34**).
+- **8. R36 (recordable) -- carried to 4a. Accepted with one note.** The four
+  literals are still there, verbatim: `io/reader.py:157, 208, 225`,
+  `io/frames.py:358`. The reason given -- F1 code, and fixing it under a rule
+  that is about to change would be a third pass -- is sound. It is now recorded
+  in `F2a.md` sec. 5, so it has a home rather than a mention.
 
-- **8. R24 (gated) — NOT answered, and now contradicted.**
-  `floatfea/tolerances.py:346-349` still reads "**EQUILIBRATION IS RETAINED** ON
-  A DIFFERENT JUSTIFICATION ... **Both are under test.** It would be removed if
-  either stopped holding." Equilibration was removed from `solve()` at
-  `d6f1ad3`. The paragraph describes the production path as it was two commits
-  ago, "both under test" was already shown false, and the promise to remove it
-  has been overtaken by its removal. Carried and widened into **R29**.
+- **9. R37 (recordable) -- one bullet answered in the wrong place, two open.**
+  `docs/instrumentation.md:727` still reads "to within **0.3%**". I re-measured
+  the six deviations at the recorded thresholds -- `-0.24 / +0.31 / -0.03 / +1.00
+  / -0.03 / +0.04 %`, worst `0.995%` -- so the document is wrong by 3x, and the
+  `_MEASURED` entry that carried the right number has been deleted, which leaves
+  the repository holding only the wrong one. The report answers this as though
+  the finding were about its own AX1 revision; the finding named
+  `instrumentation.md`. `:672` ("so only commensurability varies") is unchanged.
+  `docs/milestones/F2.md:470` still says "DRAFT, awaiting review" after five
+  rounds (R27). Permitted to carry, but the count is now two verdicts.
 
-- **R4, R5, R6, R15, R16, R25, R26, R27 — still open**, as the previous verdict
-  permits. `docs/milestones/F2.md:775` still names `PATCH_TEST_STRAIN`;
-  `test_patch_test.py:235` still asserts `res.residual <= PATCH_TEST_EXACTNESS`;
-  `pin_threads` still has one caller; `test_the_four_constant_strain_states_are_EXACT`
-  still says four and runs six; `assemble/system.py` unchanged for R16;
-  `docs/milestones/F2.md:470` still says "DRAFT, awaiting review";
-  `docs/instrumentation.md:672, 727` unchanged. The report's `Carried` table
-  lists only R4, R5, R6 and omits R15, R16, R25, R26 and R27 — the previous
-  verdict named eight. See **R37**.
+- **10. R4, R5, R6, R15, R16, R25, R26, R27 -- still open**, as verdict 1
+  permitted. Two of them are no longer background: under the narrowing **R4 and
+  R5 are G2.2's own items**, see **R41**. The report's `Carried` again lists
+  R4/R5/R6 and omits R15, R16, R25, R26, R27 -- the same omission R37 recorded.
 
 ## Findings
 
-**R28. (blocking) Three of the nine `_MEASURED` values do not describe their
-entry's sites, and the guard written to make them meaningful cannot detect it.**
+**R37a. (blocking) R29's second half is untouched: three strings in G2.2's own
+test file still assert a property of a solve path that was deleted.**
+`tests/verification/rung1/test_patch_test.py` -- `git diff e8c221a..HEAD` on that
+path is empty. `:423` says the conditioning identity is "the algebraic fact the
+equilibrated solve rests on"; the solve rests on nothing of the kind, it
+factorises `K_ff` directly. `:440-441`, the failure message of
+`test_the_equilibrated_conditioning_is_unit_INVARIANT`, tells a future reader
+that if that test fails "**the solve is not unit-robust and every exactness
+ceiling above it is unit-dependent**" -- a false implication now, and in the
+dangerous direction, because it would send someone to the solve when the test
+measures a utility. `:446` calls the unequilibrated control the thing that stops
+equilibration being "ceremony"; on the production path it *is* ceremony, and
+`system.py:91` says so in the honest words ("retained as a utility").
+**Closed when** the three read as statements about `equilibrate` the utility and
+about the conditioning property, with no claim about `solve`.
 
-`floatfea/tolerances.py` — each accuracy entry now carries `X_MEASURED` under
-the comment "WORST MEASURED at this entry's sites, from the shipped tests (BD1).
-Asserted MEASURED < TOL < COUNTER, **so an entry whose sites drift toward its
-ceiling fails** rather than quietly consuming its headroom."
+**R38. (blocking) G2.2's only anti-widening guard admits a total loss of
+sensitivity. Its declared 5% band is not the band in force.**
+`tests/verification/rung1/test_patch_test.py:323`:
 
-The mechanism does not exist. `test_measured_below_ceiling_below_counter`
-(`test_tolerance_counter_cases.py:123-145`) reads all three values with
-`getattr(tolerances, ...)` and compares them to each other. Nothing in the repo
-recomputes `X_MEASURED`: `grep -rn "_MEASURED" tests/ floatfea/` outside
-`tolerances.py` returns only that one test and unrelated names in
-`test_live_dof.py`. A site can drift by nine orders and the test stays green.
-This is an unablated causal claim, repeated on nine entries.
-
-I recomputed all nine against the shipped assertion sites. Five reproduce or are
-plausible (`COND_UNIT_INVARIANCE` 1.7278e-14 vs 1.7319e-14;
-`DETECTION_THRESHOLD_BAND` 9.9523e-03 exactly; `ROUNDOFF_IDENTITY` and
-`TRANSFORM_SPECTRUM_INVARIANCE` at ULP; `PANEL_RECONSTRUCTION_RESIDUAL` not
-re-derived). Four do not:
-
-```
-entry                     declared     my measurement at its sites   where
-PATCH_TEST_EXACTNESS      8.2144e-15   1.3881e-14   blind bending_xz/shear (:383)
-MATRIX_SYMMETRY           3.7107e-17   0.0 exactly  test_beam_element.py:83, 103
-TRANSFORM_INVARIANCE      3.8357e-15   1.5623e-12   test_assembly_and_solve.py:155
-SUBDIVISION_INVARIANCE    6.0130e-13   8.4821e-14   test_assembly_and_solve.py:158
+```python
+assert err == pytest.approx(PATCH_TEST_EXACTNESS, rel=DETECTION_THRESHOLD_BAND)
 ```
 
-Each has a locatable cause, and two of them are the same cause:
-
-- `PATCH_TEST_EXACTNESS_MEASURED = 8.2144e-15` is `gate axis_aligned/shear_xz`
-  measured **with equilibration in `solve()`** — I restored the pre-`d6f1ad3`
-  solve and got `8.2144e-15` to five digits. `SUBDIVISION_INVARIANCE_MEASURED =
-  6.0130e-13` likewise: on the equilibrated path I get `6.0130e-13` exactly, on
-  the shipped path `8.4821e-14`. Both were recorded at `49a3acc` and not
-  regenerated when `d6f1ad3` removed equilibration two commits later. This is
-  precisely what `CLAUDE.md:105-109` — added at R14, by this implementer —
-  requires: every figure regenerated by running the shipped tests at the
-  report's own commit.
-- Even at its own commit, `8.2144e-15` was not the worst at the entry's sites:
-  `blind bending_xy/axial` was `1.4066e-14`. The `err <= PATCH_TEST_EXACTNESS`
-  assertions inside `test_the_OTHER_plane_is_blind_to_it` (`:383`) were not in
-  the sample.
-- `MATRIX_SYMMETRY_MEASURED = 3.7107e-17` is **another entry's site**. I get
-  `max|K - K^T| / max|K| = 3.7107e-17` for the assembled frame at
-  `test_assembly_and_solve.py:82` — which is a `TRANSFORM_INVARIANCE` site. Both
-  actual `MATRIX_SYMMETRY` sites measure `0.0` exactly, and the two rank sites
-  give `3.49e-17` and `1.36e-16`.
-- `TRANSFORM_INVARIANCE_MEASURED = 3.8357e-15` is 400x below the worst at its
-  sites on *either* path: `r.residual = 1.5623e-12` at `n_el=11`
-  (`test_assembly_and_solve.py:155`), `2.565e-12` equilibrated. The entry's true
-  headroom against `1e-11` is 6.4x, not 2600x.
-
-The direction matters. Three of the four understate, and the whole point of the
-number is to tell a later reader how much headroom is left before the ceiling is
-consumed. `TRANSFORM_INVARIANCE` is at 16% of its ceiling and reads as 0.04%.
-
-**Closed when** each `X_MEASURED` is produced by the shipped tests rather than
-written down — the cheapest form is a fixture that records the worst value each
-assertion actually saw and a session-end check against the declared number, so
-that a drift or a solve-path change reddens — and the four values above are
-regenerated at HEAD, over *all* of the entry's assertion sites. Until the value
-is computed, `MEASURED` is prose with a float type, and the comment must not say
-that drift fails.
-
-**R29. (blocking) The justification for the load-bearing rung-1 tolerance still
-describes the solve path this step deleted.**
-`floatfea/tolerances.py:329-353`, three consecutive paragraphs:
-
-- `:329-331` — "VERIFIED invariant across length-unit factors S = 1e-4 .. 1e+4:
-  **worst error 3.19e-14**, no breach at any scale." I re-ran the sweep on the
-  shipped path through my own harness (E proportional to S^-2, dimensions to S,
-  translations of the exact field to S), six states, nine decades. **Worst is
-  `2.0036e-13`** at `S = 1e-4`; the `3.19e-14` figure is the equilibrated one,
-  which my harness also reproduces to three digits (`3.1967e-14`, `S = 1e4`) —
-  so the harness is calibrated against their own published row. The good news is
-  that there are still **zero breaches**: BD2 is safe and the gate holds without
-  equilibration. The bad news is the recorded headroom is 5x, not 31x, and the
-  number in the file is 6.3x optimistic about the code that ships.
-- `:346-349` — "EQUILIBRATION IS RETAINED ... Both are under test. It would be
-  removed if either stopped holding." It was removed, in this step. R24, verbatim.
-- `:351-353` — "Floor, as a multiple of the equilibrated conditioning:
-  cond(K~) * eps = 3.85e2 * 2.22e-16 = 8.5e-14. The worst measured error is
-  **0.37x** that floor and this ceiling is ~12x it." There is no equilibrated
-  conditioning on the solve path; `cond(K_ff)` runs `9.2e2 .. 6.0e8` over these
-  scales. Against the same stated floor the measured worst is now `2.36x`, not
-  `0.37x` — the recorded ratio is on the wrong side of the floor it cites.
-
-The same staleness reaches the tests. `test_patch_test.py:423` — "the algebraic
-fact **the equilibrated solve rests on**"; `:440`, the failure message — "the
-solve is not unit-robust and every exactness ceiling above it is unit-dependent";
-`:446` — "if it did not, equilibration would be ceremony". All three describe a
-solve that equilibrates.
-
-**Closed when** `:329-331` states the measured worst on the shipped path with
-its scale (`2.00e-13` at `S = 1e-4`, no breach), `:346-353` is rewritten for a
-solve that does not equilibrate — including the floor paragraph, which now has
-to be built on `cond(K_ff)` or dropped — and the three test strings stop
-asserting a property of the production solve that the two conditioning tests do
-not test.
-
-**R30. (blocking) R21 is unanswered and the step added a fourth dead counter.**
-`MATRIX_SYMMETRY_COUNTER`, `ROUNDOFF_IDENTITY_COUNTER`,
-`COND_UNIT_INVARIANCE_COUNTER` and now `DETECTION_THRESHOLD_BAND_COUNTER` appear
-in no assertion. Checked mechanically: zero occurrences under `tests/` outside
-`test_tolerance_counter_cases.py`. The five older counters
-(`PATCH_TEST_EXACTNESS`, `SUBDIVISION_INVARIANCE`, `TRANSFORM_INVARIANCE`,
-`TRANSFORM_SPECTRUM_INVARIANCE`, `PANEL_RECONSTRUCTION_RESIDUAL`) are all
-consumed by a test. `DETECTION_THRESHOLD_BAND_COUNTER = 0.25` is justified as
-"if a formulation change moved any state's sensitivity by 25% ... this must catch
-it" — an executable claim that nothing executes, and a round number rather than a
-measured detection threshold. The gated wording was: the argument of an assertion
-that reddens on it, in the tolerance's own quantity, at a measured threshold.
-**Closed when** that holds for all four.
-
-**R31. (blocking) R20 is unanswered; the eleven annotations stand verbatim.**
-Direction test, unchanged from the previous verdict: widening `abs=5e-4` on
-`sec.kappa("thin_tube", 0.3) == pytest.approx(0.5305, abs=5e-4)`
-(`test_basis_constants.py:32`) hides a wrong shear coefficient. That is a
-ceiling, whatever the comment calls it. Eleven such lines, three more with a
-category that does not survive inspection. **Closed when** the eleven epsilons
-are declared entries — a single quantisation entry with a stated rule would cover
-most, but then the rule has to hold: `abs=5e-6` on `0.006043`, `abs=0.1` on
-`59.6`, `abs=1e-4` on `1.1111` are 5, 2 and 1 units in the last place, not half —
-or the "reference pin" category is retired.
-
-**R32. (blocking) The AST scanner misses 23 of 25 shapes it has not been shown,
-three of which the regex it replaced caught.**
-`tests/test_no_tolerance_literals.py`. Its docstring says the regex's three holes
-are closed "by construction". I planted twenty-five shapes outside its own corpus
-and ran the shipped `offending()`:
+`rel * |expected| = 0.05 * 1e-12 = 5e-14`; `pytest.approx`'s undeclared default
+`abs = 1e-12` is twenty times larger, so the tolerance in force is `1e-12`.
+Solved rather than sampled, by bisection on the shipped predicate:
 
 ```
-MISSED  assert_close(a, b, 1e-9, floor=1e-16)          SAFE_CALLS skips the whole call
-MISSED  assert_differs(a, b, by=0.5, floor=1e-16)      same
-MISSED  assert math.isclose(a, b, rel_tol=1e-9)        rel_tol/abs_tol not in TOL_KEYWORDS
-MISSED  assert math.isclose(a, b, abs_tol=1e-9)
-MISSED  self.assertAlmostEqual(a, b, delta=1e-9)       delta/places not in TOL_KEYWORDS
-MISSED  assert np.allclose(a, b)                       bare-default rule is `approx`-only
-MISSED  assert np.isclose(a, b)
-MISSED  np.testing.assert_allclose(a, b)
-MISSED  np.testing.assert_allclose(a, b, 1e-7)         positional rtol
-MISSED  TOL = 1e-9 ... assert err < TOL                comparator is a Name
-MISSED  eps = 1e-9; assert a == approx(b, rel=eps)     kw value carries no Constant
-MISSED  assert err < 5e-3 * scale                      <- OLD REGEX CAUGHT THIS
-MISSED  assert err <= 1e-13 * abs(k).max()             <- OLD REGEX CAUGHT THIS
-MISSED  assert err < 1e-9, "not-a-tolerance: sneaky"   <- OLD REGEX CAUGHT THIS
-MISSED  assert spread > 10000                          integer form, documented choice
-MISSED  self.assertLess(abs(a-b), 1e-9)
-MISSED  assert err < 10**-9
-CAUGHT  assert (\n err\n < 1e-9\n)                     genuine improvement over the regex
-CAUGHT  assert err < 0.000000001
+band as declared would admit:  9.5000e-13 .. 1.0500e-12
+band actually in force:        0.0        .. 2.0000e-12
+err = 0.0 passes?  True
 ```
 
-`APPROX_NAMES` at `:42-45` is defined and never referenced — the six call names
-it lists (`assert_allclose`, `allclose`, `isclose`,
-`assert_array_almost_equal`, ...) are only ever reached through their keywords.
+Per state the admissible sensitivity is `[0, ~2x]` against a measured
+`~1.08e-01` -- i.e. **-100% to +100%**, not plus-or-minus 5%. Confirmed by
+mutation rather than left as algebra: I replaced `if stiffness_scale != 1.0:` in
+`_run` with `if False:` -- the perturbation silently dropped, the gate's
+sensitivity exactly zero -- and **all six
+`test_the_measured_detection_threshold_still_holds` nodes stayed green** (8
+others failed; file restored). The docstring at `:316-319` says "If a formulation
+change alters sensitivity, this fails."
 
-Three of these are live and were not caught by either scanner:
+Why this is G2.2's and not step 4a's: I mutated `PATCH_TEST_EXACTNESS` to
+`1e-11`, `1e-10` and `1e-9` and in each case exactly six tests reddened -- these
+six. It is the **only** widening guard on the gate's ceiling. Tightened to
+`1e-13`, where `err ~ 1e-12` sits ten times above the ceiling, the whole suite
+stays green, which is the same defect seen from the other side. The fourth
+verdict reproduced `DETECTION_THRESHOLD_BAND_MEASURED = 9.9523e-03` and recorded
+"margin 5x"; the margin is not 5x, because `0.05` does not decide.
+**Closed when** the assertion's deciding tolerance is the declared one -- the
+one-line form is `assert_close(err, PATCH_TEST_EXACTNESS,
+DETECTION_THRESHOLD_BAND, floor=...)`, which has no defaults -- and the closing
+number is the inverted one: the smallest sensitivity change the assertion
+detects, measured, stated beside the `0.05`.
 
-- `tests/unit/test_beam_element.py:76` —
-  `assert np.linalg.eigvalsh(stiff - soft).min() >= -1e-6 * abs(stiff[0, 0])`.
-  A negative-eigenvalue floor deciding a physical-direction test, seven lines
-  above a site this step declared.
-- `tests/verification/rung3/test_basis_constants.py:85` —
-  `assert actual <= bound + 1e-15`.
-- `tests/unit/test_member_local_axes.py:60, 61, 62, 79` —
-  `np.isclose(np.linalg.norm(x), 1.0)`, numpy defaults `rtol=1e-5, atol=1e-8`,
-  in the file this commit edited, ten lines above the sites it declared.
+**R39. (blocking, cheap) A false claim about the repository, in a production
+module, of exactly the species `c737358` fixed one module over.**
+`floatfea/testing.py:23-25`: "`pytest.approx`, `np.allclose` and friends are
+**not called directly under `tests/`**; the scanner enforces that." Counted at
+HEAD, excluding the scanner's own corpus: **45** `approx` call sites and **28**
+`assert_allclose`/`allclose`/`isclose`/`assert_array_almost_equal` call sites
+under `tests/`. Two of the 45 are in the patch test itself (`:323`, `:439`), and
+`:323` is R38. The scanner does not enforce it and never claimed to. This is not
+a scanner finding -- it is a sentence in `floatfea/` asserting a fact about the
+tree that a one-line `grep` refutes, in the module BD0 created.
+**Closed when** the sentence states what is true (`assert_close` exists and is
+used at two sites; the ban is step 4a's proposal, not the present state) or is
+deleted.
 
-And the `SAFE_CALLS` blanket is the regex's line-clearance re-created at call
-granularity: `tests/unit/test_testing_helpers.py` — introduced in this step —
-carries sixteen bare literals (`tol=1e-12` x6, `floor=1e-16` x6, `floor=1e-12`
-x2, `by=0.5` x3) that the scanner cannot see, and `test_patch_test.py:535`
-carries `by=0.5` on a live negative control. The new preferred helper is the one
-call form exempt from the check.
+**R40. (blocking) "Unit invariance on the shipped solve path" is one of the four
+things the narrowed step closes on, and no shipped test asserts it.**
+`_scaled_model` (`test_patch_test.py:404`) is consumed only by the two
+conditioning tests at `:419` and `:445`. `_run` is never called at any scale but
+`1.0`. So the nine-decade sweep exists only in a scratch harness -- the
+implementer's, and mine. The consequence is in `tolerances.py:317-321`, which
+justifies the ceiling with "VERIFIED invariant across length-unit factors
+`S = 1e-4 .. 1e+4` ON THE PATH THAT SHIPS: worst error `2.00e-13` ... **5.0x of
+headroom at the worst scale**, against 80x at the metre scale". `5.0x` is the
+binding number and nothing in the suite measures at the scale it belongs to.
 
-**Closed when** the check descends into `assert_close`/`assert_differs`
-arguments rather than skipping the call; `TOL_KEYWORDS` covers
-`rel_tol`/`abs_tol`/`delta`, positional tolerance arguments, and library defaults
-for the whole `APPROX_NAMES` set it already declares; a comparator that is a
-`BinOp` containing a float is flagged (the regression); the exemption is a
-comment token, not a substring anywhere on the line; the three live sites above
-are declared or annotated; and `PLANTED` carries shapes drawn from somewhere
-other than the previous verdict's list. `docs/instrumentation.md:657-658` states
-this principle about the mesh check: a control drawn from the defects already met
-is a test of those defects.
+The claim itself is **true** -- I reproduce `2.004e-13` and, extending past the
+recorded range, there is no breach anywhere from `S = 1e-8` to `S = 1e+8`
+(worst `2.404e-13` at `S = 1e-7`, where `cond(K_ff) = 5.7e16`). So this is not a
+correctness finding. It is that the number which decides whether `1e-12` is
+defensible has exactly the epistemic status `_MEASURED` had, and `ab23181`
+deleted `_MEASURED` for that reason: *"a hand-written literal ... is a check
+whose subject the check itself supplies"*. Moving it from a `Final[float]` to a
+comment line one screen up does not change what a run can falsify.
+**Closed when** `test_the_four_constant_strain_states_are_EXACT` is parametrised
+over scales as well as states and orientations -- `_run` already takes everything
+needed and `_scaled_model` exists -- so that the `5.0x` figure is an execution
+result. If nine decades is too slow, three (`1e-4, 1, 1e4`) covers the worst cell
+and is 18 more nodes.
 
-**R33. (blocking) At about seventeen sites the declared name is in the slot that
-does not decide, and the scanner's own stated reason says so.**
+**R41. (blocking under the narrowing) R4 and R5 are G2.2's items, and the
+narrowing is what makes them due.**
+They were allowed to carry when step 4 was large. Step 4 now closes on G2.2
+alone, so the locked plan's obligations *for this gate* are the whole of what is
+left, and two are open.
 
-`tests/test_no_tolerance_literals.py:25-26` flags a bare `pytest.approx(x)`
-because "it defaults to `rel=1e-6, abs=1e-12`". `pytest.approx(x, rel=NAME)`
-keeps `abs=1e-12` and is not flagged. `approx` applies
-`max(rel*|expected|, abs)`, so wherever `|expected| < abs/rel = 100`, the
-undeclared absolute is what decides. Measured at
-`tests/unit/test_beam_element.py:185`:
+- **R4.** `docs/milestones/F2.md:775` still names the entry `PATCH_TEST_STRAIN`,
+  which does not exist, and gives its counter-case as "one element's
+  transformation transposed", which no test runs. I ran it -- `rotation_matrix`
+  returning `R.T` for element 1 only -- and every state detects it:
+  `axial 1.53e+00, curvature 2.01e-01, twist 1.57e-01, shear 3.02e-01,
+  curvature_xz 1.01e-01, shear_xz 1.49e-01`. So the gate is not weak; the plan's
+  named counter-case is prose. The guard is that a counter-case is an executable
+  value, not a sentence.
+- **R5.** `test_patch_test.py:235`, `assert res.residual <= PATCH_TEST_EXACTNESS`,
+  inside the gate assertion itself. Re-measured at HEAD, and further than the
+  first verdict went -- with a **2x** element-stiffness defect, which puts the
+  displacement error at 6.5%:
 
-```
-flex[2,4] = -1.397e-07, flex[4,2] = -1.397e-07, true residual 1.894e-16
-rel * |expected| = 1.397e-21   vs   pytest default abs = 1e-12
-injected relative defect 1e-14 .. 7e-6  ->  assertion PASSES
-injected relative defect 1e-5           ->  assertion fails
-```
+  ```
+  state         clean      1e-3 defect   2x defect   (field err at 2x)
+  axial       5.931e-16     4.700e-16    3.356e-16      6.46e-02
+  curvature   1.056e-15     1.258e-15    1.490e-15      6.37e-02
+  shear       1.729e-15     1.418e-15    1.162e-15      6.89e-02
+  ```
 
-The declared ceiling is `1e-14`; the ceiling in force is `7.2e-6`, a factor of
-7e8. That is the Maxwell-Betti reciprocity check — the one assertion a
-transcription error in the flexibility cannot survive. At least thirteen of the
-~30 `ROUNDOFF_IDENTITY` sites are in this regime (`kappa` 0.53, `tube_area`
-0.0222 / 1.31 / 0.0417, `J` 1.9e-3, `torsion_constant` 7.0 x2,
-`chs_class_limits` 59.6, `radius_of_gyration` 0.313, `basis:68` 0.006, `flex`
-1.4e-7, `transform:238`).
+  The residual does not move; for two of the three it moves *down*. A defect that
+  fails the line above by eleven orders leaves this line green. It is a
+  linear-solve residual compared against a displacement-field exactness
+  tolerance -- the wrong quantity as well as a vacuous assertion.
 
-The same shape with numpy. `np.testing.assert_allclose` defaults to `rtol=1e-7`,
-so at `test_member_local_axes.py:70, 71, 72, 83` — three of R19's four live
-sites, declared in this step — the declared `atol=1e-14` is inert:
+**Closed when** `F2.md:775` names the shipped entry and its shipped counter-case,
+the transposed-transform case is a test or is withdrawn from the plan with a
+reason, and `:235` either compares the residual against a tolerance in its own
+quantity or is removed. A `SOLVE_RESIDUAL` entry with its own counter is the
+honest form; reusing this one is what made the line unfalsifiable.
 
-```
-np.testing.assert_allclose([0,0,1+d], [0,0,1], atol=ROUNDOFF_IDENTITY)
-  d = 1e-14 .. 1e-7  ->  PASSES        d = 5e-7  ->  fails
-```
+**R42. (recordable) The implementer edits the reviewer's own instructions, and
+nothing gates that.**
+`8ba62d3` modifies `.claude/agents/gating-supervisor.md` -- the file that defines
+what I read, what I must carry, and what I may write. I diffed it line by line:
+this change is purely additive (the BE3 section, the description line, the "What
+you write" clause) and **deletes no guard**, so there is nothing wrong with the
+change itself. The mechanism is the finding.
+`.claude/hooks/protect-reviews.sh` denies `docs/reviews/` and now
+`tests/corpus/`; the agent definition that governs both is freely editable by the
+implementer, and the only thing that would catch a quietly deleted guard is a
+reviewer diffing their own instructions -- which is not in the instructions.
+**Closed when** either the hook covers `.claude/agents/gating-supervisor.md`, or
+the review protocol names it as a file to diff at every step. I did diff it this
+round; that was discretionary.
 
-A local-axis unit vector wrong in the seventh digit passes a check declared at
-the fourteenth. (`:80-82` use `np.isclose(x, 0.0, atol=...)`, where the desired
-value is zero and the declared `atol` correctly decides — those are sound.)
-
-This is not a pre-existing defect the step merely failed to fix. The step's own
-BD0 module docstring names it: "`pytest.approx(mm, rel=1e-12)` carries an
-**undeclared default** `abs=1e-12`". `assert_close` was written to remove it, and
-was then applied at exactly one site while ~30 comparisons were given a declared
-`rel` and left with an undeclared `abs`.
-
-**Closed when** each site either passes `abs=` explicitly from a declared entry,
-or uses `assert_close`, or is shown by measurement to be in the regime where the
-declared value decides. The check is one line: assert `rel*|expected|` exceeds
-the default `abs` at the site, or invert it — solve for the smallest defect the
-assertion detects and compare it to the declared number. The guard is "invert the
-decision rule and solve"; here the two differ by eight orders.
-
-**R34. (blocking) A causal claim on the production path, refuted by its own
-ablation, in the commit written to answer that guard.**
-`floatfea/assemble/system.py:57-58` — "the error measure alone is necessary and
-sufficient, and **equilibration alone leaves the kilometre breach exactly where
-it was**."
-
-I ran the four-cell ablation. My harness reproduces all four shipped worsts
-(`3.1967e-14 / 2.0036e-13 / 2.0859e-11 / 2.0720e-10` against the file's
-`3.19e-14 / 2.00e-13 / 2.09e-11 / 2.07e-10`), so it is calibrated against their
-numbers. Per scale, under the mixed measure:
-
-```
-S            1e-4     1e-3     1e-2     1e-1      1       10      100     1e3      1e4
-equil NO   2.07e-10 1.66e-11 5.12e-13 7.24e-14 4.19e-15 4.55e-14 1.52e-13 2.30e-11 1.07e-10
-equil YES  2.09e-11 2.84e-12 2.26e-13 2.20e-14 1.91e-15 1.11e-14 3.85e-14 5.75e-13 7.80e-12
-```
-
-At `S = 1e3` — kilometres, the scale the sentence names — the breach of `1e-12`
-is present without equilibration (`2.30e-11`) and **absent with it**
-(`5.75e-13`). Equilibration alone removes the kilometre breach; it leaves the
-ones at `1e-4`, `1e-3` and `1e4`. The sentence is backwards on the single scale
-it cites.
-
-The *decision* is not affected — rows 1 and 2 both have zero breaches, so the
-error measure alone is sufficient and BD2 stands. What is affected is that the
-one sentence in the diff carrying "alone" and "exactly" is the one the ablation
-contradicts. **Closed when** the sentence states what the cells measured: the
-error measure alone is necessary and sufficient; equilibration alone reduces
-every scale's error by roughly 3-9x but still breaches at `1e-4`, `1e-3` and
-`1e4` under the mixed measure.
-
-While there: `tolerances.py:339` records the row-3 first breach as `S = 1e-3`; I
-measure `S = 1e-4` (`2.09e-11`), which is also the row's own worst. Same
-correction, one line up.
-
-**R35. (recordable) A citation that does not resolve, in a production module.**
-`floatfea/assemble/system.py:8-10` — "`equilibrate` is a tested utility and is
-**not** on the solve path -- see its docstring, and **BD2 in
-`docs/milestones/F2.md`**." `grep -n "BD0\|BD1\|BD2\|BD3\|BD4\|BD5"
-docs/milestones/F2.md` returns nothing. The BD items exist only in
-`docs/reports/F2/step-4.md`. The guard is "every citation resolves"; this is the
-first phantom I have found pointing out of `floatfea/`.
-
-**R36. (recordable) The scanner's domain cannot contain a production violation,
-and there are four.**
-`test_no_tolerance_literals.py:40` sets `TESTS = Path(__file__).parent` and
-`:129` globs `TESTS.rglob("test_*.py")`. `floatfea/` is never scanned, while
-`CLAUDE.md` section Tolerances binds it — "no local literals, no default
-arguments carrying a tolerance" — and binds it hardest, because three of these
-decide whether a record is rejected:
+**R43. (recordable, and the one a later reader will need) `1e-12`'s "80x
+headroom" carries no operating point, and the ceiling is breached inside the
+slenderness range the locked plan's own tables discuss.**
+The gate is posed at one geometry: `Section.circular_tube(0.6, 0.012)` with
+element lengths `0.79..3.27 m`, i.e. longest-element `L/r ~ 16`. Sweeping the
+section and re-running all six states in both orientations:
 
 ```
-floatfea/io/reader.py:157   np.isclose(abs(gravity[2]), GRAVITY_MAGNITUDE, rtol=0.0, atol=1e-9)
-floatfea/io/reader.py:208   np.allclose(dt, dt[0], rtol=1e-9, atol=0.0)
-floatfea/io/reader.py:225   np.allclose(inertia, inertia.T, rtol=1e-10, atol=0.0)
-floatfea/io/frames.py:358   np.isclose(g, omega, rtol=0.0, atol=1e-12)
+  D (m)   elem L/r   worst err    x ceiling
+   0.60       15.7   1.251e-14      0.013
+   0.40       23.6   3.807e-14      0.038
+   0.20       47.2   1.571e-13      0.157
+   0.10       94.4   1.762e-12      1.762   BREACH
+   0.05      188.7   4.415e-12      4.415   BREACH
+   0.02      471.8   1.844e-11     18.440   BREACH
 ```
 
-"Assertion domain blindness": the collection the assertion inspects cannot
-contain the failure. The report's "repo sweep 0 remaining" is true of `tests/`
-and reads as true of the repo.
+Bisected, the boundary is `D = 0.078 m`, longest-element `L/r ~ 121`. `F2.md`
+sec. D3's own table runs `lambda = 20 .. 100`, and sec. 5's corrected Q1 table
+puts the governing brace at `lambda = 46.4` -- comfortably inside the safe region
+(`~4e-14`, 25x of margin), so **F3's expected sections are covered and this is
+not a defect**. It is a missing operating point on the headroom figure this
+revision leads with, and the guard is "a ratio carries its operating point".
 
-**R37. (recordable) Stale and divergent figures.**
-- `docs/instrumentation.md:727` — "perturbing by the threshold lands the error on
-  the declared ceiling to within **0.3%**". Measured: worst `0.995%`. This step
-  declared the correct figure as `DETECTION_THRESHOLD_BAND_MEASURED =
-  9.9523e-03` in `tolerances.py`, so the repo now carries two different numbers
-  for the same measurement. R26 was recordable; it is now a contradiction
-  introduced by this step's own correct half.
-- `docs/instrumentation.md:672` — "so only commensurability varies", the sentence
-  R11 refuted. Unchanged.
-- The report's `Carried` table lists three of the eight items the previous
-  verdict permitted to be carried; R15, R16, R25, R26 and R27 are absent rather
-  than marked open.
-- `docs/milestones/F2.md:470` still says "DRAFT, awaiting review" after four
-  executed steps (R27).
+Localised before being reported, per the second guard. The breach is entirely on
+the **skew** orientation, in the **axial** state, in the **rotational** DOF:
+
+```
+  D=0.60  err 1.251e-14 at node 3 rz   translational part 3.66e-15   cond 9.21e2
+  D=0.10  err 1.762e-12 at node 4 rz   translational part 4.13e-13   cond 3.03e4
+```
+
+The axial state's exact rotations are identically zero, so its error is a pure
+spurious-rotation-over-translation ratio through the transform chain -- the same
+structure that produced the kilometre breach in R2/R8, arriving down the
+slenderness axis instead of the unit axis. Axis-aligned stays at `1e-16`
+throughout. **Closed when** `tolerances.py` states the geometry the `80x` belongs
+to, and either the measured `L/r` boundary or the range the ceiling is claimed
+over. One sentence; no value needs to move.
+
+**R44. (recordable) The gate is blind to `kappa`, correctly, and does not say so.**
+I set `Section.kappa` to `0.5` -- the simple thin-tube value against the shipped
+Cowper `0.5305`, the 6% gap Q1b was written about -- and re-ran all six states on
+the skew orientation. **All six green**, worst `8.6e-15`. That is right: the
+reference field at `_exact_local:92` consumes `SEC.kappa(S355)`, the same source
+the element uses, which is exactly what Q1b pinned. But it means G2.2 certifies
+formulation *self-consistency*, not any section constant, and the module
+docstring does not say which way that runs. Recorded because the counter-case it
+should be read against is V2.2's, not this gate's. Positively: the discrimination
+AV4 claims for state 4 **does** work -- substituting
+`euler_bernoulli_bending_stiffness` for the shear-flexible block reddens `shear`
+and `shear_xz` at `6.2e-03` while the other four states stay at `1e-14`, which is
+the state-4 argument measured rather than asserted.
 
 ---
 
-**What I verified positively.**
+**On the narrowing itself -- accepted, and here is the test I applied.**
 
-- 309 tests pass in my run. No `xfail`, no skips, no empty parametrisation: the
-  ACCURACY set parses to nine entries and the `["<none>"]` sentinel is asserted,
-  so `test_tolerance_counter_cases.py`'s 32 nodes are all real.
-- The "no value loosened" claim is **true this time**, checked by my own
-  extraction of every replaced literal rather than from the pasted table.
-- BD2 is right on the merits. Nine-decade sweep on the shipped path: worst
-  `2.0036e-13`, **zero breaches** of `1e-12`. The six-state gate at `S = 1`
-  worsens from `7.94e-15` to `1.25e-14`, which is nothing. Nothing in the repo
-  consumed the equilibrated solve; the two conditioning tests call `equilibrate`
-  directly and are unaffected.
-- BD3 closes R22. The mutation table above is the ablation R22 asked for, and
-  `w[3:] = 1.0` is red.
-- `DETECTION_THRESHOLD_BAND` is a real accuracy tolerance, correctly declared,
-  with a measured value I reproduce to five digits and 5x of margin.
-- All fifteen bare-`approx` conversions measure `0.0` residual — the tightening
-  from `rel=1e-6` to `rel=1e-14` changed no verdict and introduced no flake.
-- `COND_UNIT_INVARIANCE_MEASURED` reproduces (`1.7278e-14` against `1.7319e-14`);
-  `cond(K~) = 3.849144e+02` at all four scales, identical to seven digits.
-- Commit hygiene is clean: no commit touches `docs/reviews/`; no tolerance value
-  moves in the same commit as code it would rescue; `407e5ad` (the helper)
-  precedes its uses.
-- The AST walk is a genuine improvement on two shapes the regex could not reach —
-  the black-wrapped multi-line assert, and a threshold inside an `if ... raise`
-  rather than an `assert`.
-- Adversarial cases that produced **no** finding: the axis-aligned orientation;
-  the all-zero field; `w[3:] = 1e-30 * L` (passes, and correctly — that weighting
-  is unit-invariant, and the six-state gate catches the blindness); the
-  degenerate zero-over-zero branch, which asserts rather than returning silently.
+The question is whether the scope was cut to route around open items. I do not
+think it was, for three reasons I could check:
+
+1. **It returns step 4 to the locked plan rather than departing from it.**
+   `F2.md` sec. D2 row 4 is "V1.2 patch test / proves assembly, transformation,
+   connectivity / G2.2". The scanner, `testing.py`, the exemption scheme and the
+   `_MEASURED` registry were never in that row. The narrowing is the plan being
+   re-read, which is the opposite of the failure this loop exists to catch.
+2. **Nothing that gates G2.2 left with them.** I tested this rather than
+   accepting it. Of the moved items, R30, R31, R32 and R36 touch no assertion in
+   `tests/verification/rung1/`. R33 does, at one site, and I have brought that
+   one back as R38 rather than letting the move carry it.
+3. **`F2a.md` is a real skeleton, not a parking space.** It carries the diagnosis
+   (sec. 2A: the scanner failed because it reasoned about precedence, so remove
+   the question), six questions that are genuinely open, and an exit criterion
+   that the reviewer's corpus must have caught shapes the implementer did not
+   see. A plan written to bury something does not pre-register that its coverage
+   number will be supplied by someone else.
+
+**What the narrowing does not do is remove the apparatus from the tree.**
+`tests/test_no_tolerance_literals.py` still runs in CI, still nominally enforces
+`CLAUDE.md` sec. Tolerances -- the rule the whole file exists for -- and reads
+green at a measured 2-of-25 on unseen shapes. The report states this honestly;
+the *tree* does not. That is not blocking on G2.2, but a green suite is the
+signal a later reader gets, and right now it overstates one thing. The cheapest
+fix is a sentence in the scanner's own docstring recording its measured coverage
+and that it is unplanned pending 4a -- the same move `system.py:91` makes for
+`equilibrate`.
 
 ## Tolerances touched
 
 | name | old | new | form | counter | justification located |
 |---|---|---|---|---|---|
-| `ROUNDOFF_IDENTITY` | `1e-12` | `1e-14` | relative, dimensionless | `1.0e-8`, **unused** (**R30**) | `floatfea/tolerances.py:416-443`. **Tightening**, back to the tightest literal it absorbs. Re-verified against all eleven replaced literals: `1e-12` x8, `1e-14` x3 — at or below every one. R17 closed. `_MEASURED = 2.2204e-16` is machine epsilon written as a measurement; my worst at its reachable sites is `1.894e-16`. The comment still says "its **nine** sites"; `3f9ff25` took it to about 30 and the figure was not re-measured. At 13 or more of those sites the value is inert (**R33**). |
-| `DETECTION_THRESHOLD_BAND` | — (bare `rel=0.05`) | `0.05` | relative, dimensionless | `0.25`, **unused** (**R30**) | `floatfea/tolerances.py:473-499`. Same value as the literal — not a widening. `_MEASURED = 9.9523e-03` reproduces exactly; margin 5x. R18's declaration clause closed. The counter is a round number, not a measured detection threshold. |
-| `PATCH_TEST_EXACTNESS` | `1e-12` | `1e-12` (unchanged) | relative, dimensionless | `1.0e-7`, asserted | `floatfea/tolerances.py:312-388`. Value unmoved. Its justification block now describes a deleted code path (**R29**); `_MEASURED = 8.2144e-15` is a pre-BD2 figure and was not the worst even then (**R28**). |
-| `MATRIX_SYMMETRY` | `1e-9` | `1e-9` (unchanged) | relative to largest entry | `1.0e-2`, **unused** | `_MEASURED = 3.7107e-17` is another entry's site (**R28**). |
-| the other five accuracy entries | — | unchanged | — | unchanged | `_MEASURED` added to each. `TRANSFORM_INVARIANCE` and `SUBDIVISION_INVARIANCE` are wrong (**R28**). |
+| nine `X_MEASURED` entries | various | **deleted** | -- | -- | `tolerances.py:50-57` and `test_tolerance_counter_cases.py:119-133`. Verified by `ast` diff of both revisions: nine names removed, none added, **no value moved**. The right direction -- the class was unfalsifiable by construction. |
+| `PATCH_TEST_EXACTNESS` | `1e-12` | `1e-12` (unchanged) | relative, dimensionless | `1.0e-7`, asserted at `:339` | `tolerances.py:305-360`, rewritten for the shipped path; every figure in it reproduces through my own harness. Two gaps: the `5.0x` worst-scale headroom is asserted by no run (**R40**), and the `80x` metre-scale headroom has no operating point and does not survive `L/r ~ 94` (**R43**). |
+| `PATCH_TEST_EXACTNESS_COUNTER` | `1.0e-7` | `1.0e-7` (unchanged) | relative, dimensionless | -- | `test_a_perturbed_element_BREAKS_the_patch_test`. Measured margin at HEAD `1.076e-07 .. 1.174e-07` against `1.0e-7`: **7.6% at the weakest state**. Thin, but on the right side and failing in the safe direction. Worth one sentence recording that it is calibrated against a `1e-6` perturbation at a measured sensitivity of `1.08e-01`, so a reader knows why it is not round. |
+| `DETECTION_THRESHOLD_BAND` | `0.05` | `0.05` (unchanged) | relative, dimensionless | `0.25`, unused (4a) | `tolerances.py:461-489`. Value unmoved, **but it does not decide its only assertion** -- the band in force is `0 .. 2x` (**R38**). The previous verdict's "margin 5x" should be read as withdrawn. |
+| everything else | -- | unchanged | -- | -- | No other declared value moved anywhere in `e8c221a..44f4e14`, verified by parsing both revisions rather than by reading the diff. |
 
-New undeclared thresholds introduced by this step:
-`tests/unit/test_testing_helpers.py` sixteen literals inside `assert_close` and
-`assert_differs` calls, and `test_patch_test.py:535` `by=0.5` — all invisible to
-the scanner by the `SAFE_CALLS` exemption (**R32**).
+No tolerance was widened. No golden file moved. No test was skipped or `xfail`ed;
+the suite has zero skips and the ACCURACY parametrisation still resolves to real
+entries rather than the sentinel.
 
 ## Next step opens when
 
 Step 5 (V1.1, rigid-body modes) does not begin until:
 
-1. **R28** — `X_MEASURED` is produced by running the shipped tests rather than
-   written down, so that a site drifting toward its ceiling reddens; and
-   `PATCH_TEST_EXACTNESS_MEASURED`, `MATRIX_SYMMETRY_MEASURED`,
-   `TRANSFORM_INVARIANCE_MEASURED` and `SUBDIVISION_INVARIANCE_MEASURED` are
-   regenerated at HEAD over every one of their entry's assertion sites. Until the
-   value is computed, the nine comments must stop claiming that drift fails.
-2. **R29** — `tolerances.py:329-353` describes the solve that ships: the sweep
-   figure is `2.00e-13` at `S = 1e-4` with no breach, "equilibration is retained
-   ... both are under test" is gone, and the floor paragraph is rebuilt on
-   `cond(K_ff)` or dropped. `test_patch_test.py:423, 440, 446` likewise.
-3. **R30** — the four dead counters are each the argument of an assertion that
-   reddens on them, in the tolerance's own quantity, at a measured threshold.
-   Third consecutive verdict for the first three.
-4. **R31** — the eleven `pytest.approx(..., abs=)` epsilons are declared entries,
-   or the "reference pin" category is retired. Third consecutive verdict.
-5. **R32** — the scanner descends into `assert_close` and `assert_differs`,
-   covers `rel_tol`, `abs_tol`, `delta` and positional tolerance arguments and
-   the library defaults for the `APPROX_NAMES` set it already declares, flags a
-   `BinOp` comparator containing a float (the three regressions from the regex),
-   and keys the exemption on a comment token; the three live sites
-   (`test_beam_element.py:76`, `test_basis_constants.py:85`,
-   `test_member_local_axes.py:60-62, 79`) are declared or annotated; and
-   `PLANTED` carries shapes not taken from a previous verdict.
-6. **R33** — at every site where a declared name shares a call with an undeclared
-   library default, either the default is declared too or the site is shown by
-   measurement to be in the regime where the declared value decides. The two
-   demonstrated sites (`test_beam_element.py:185`,
-   `test_member_local_axes.py:70-72, 83`) are the minimum.
-7. **R34** — the kilometre sentence in `floatfea/assemble/system.py:57-58` says
-   what the cells measured, and `tolerances.py:339`'s first-breach column reads
-   `S = 1e-4`.
+1. **R37a** -- `test_patch_test.py:423, 440-441, 446` stop asserting a property
+   of `solve`. Gated at the fourth verdict as the second half of R29, and the
+   only item here that is a repeat.
+2. **R38** -- the deciding tolerance at `test_patch_test.py:323` is the declared
+   one, and the smallest sensitivity change the assertion detects is measured and
+   recorded beside `DETECTION_THRESHOLD_BAND`. The mutation that closes it is the
+   one I ran: drop the perturbation in `_run` and confirm those six nodes go red.
+3. **R39** -- `floatfea/testing.py:23-25` says something true about `tests/`.
+4. **R40** -- a shipped test runs the six states through the solve at more than
+   one length unit, so that `2.00e-13` and the `5.0x` headroom are execution
+   results rather than scratch-harness figures.
+5. **R41** -- `F2.md:775` names the entry that exists with a counter-case that
+   runs, and `test_patch_test.py:235` compares a residual against a tolerance in
+   its own quantity or is removed.
 
-R35, R36 and R37 — together with R4, R5, R6, R15, R16, R25, R26 and R27 — may be
-answered in step 5's `Carried` section rather than before step 5 opens, and that
-section must list all of them, open or answered.
+R42, R43 and R44 -- together with R4's plan-text half, R6, R15, R16, R25, R26,
+R27 and R37's two open bullets -- may be answered in step 5's `Carried` section,
+**and that section must list every one of them, open or answered.** That
+instruction was given at the fourth verdict and this step's report again lists
+three of eight.
 
-**Not a STOP.** No rung is red. The element itself survived every adversarial
-case I could build: the patch test holds at `2.00e-13` across nine decades of
-unit change on the shipped, unequilibrated path, through a harness I wrote and
-then calibrated against the implementer's own published ablation row; the
-six-state gate is exact at both orientations; the block-confined controls
-separate by ten orders; and removing equilibration cost the `S = 1` error a
-factor of 1.6. The physics and the formulation are in good shape and have been
-since `e1ea251`.
+**Not a STOP.** No rung is red, and the element is in better shape than any
+document in the repository claims. Everything I could think to break, I ran: the
+six states are exact at `1.25e-14` in both orientations at the posed geometry
+(80x); the Euler-Bernoulli substitution reddens exactly the two shear states and
+nothing else, which is AV4's state-4 argument measured; a transposed
+transformation on one element is caught by all six states at `1e-01` and above; a
+defect confined to one bending block is seen by that plane at `1.08e-04` and by
+the other at `1.4e-14`, ten orders apart; and the shipped, unequilibrated solve
+holds the ceiling across **seventeen** decades of length unit, at conditioning up
+to `5e19`, worst `2.4e-13`. The four corrections in this step are all genuine,
+and the ablation behind R34 is the best-executed piece of work in the milestone
+-- I rebuilt it independently and it reproduces to three digits, including the
+cell that refutes the sentence.
 
-What is not in good shape is the instrumentation, and the pattern from the last
-three verdicts repeats a fourth time in a sharper form. Each of the six commits
-answers its finding and creates a new instance of the species it answers: BD1
-introduces nine "worst measured" values, four of which are not measurements of
-what they name, guarded by a test that compares three literals to each other;
-BD2 corrects an unablated causal claim and writes a new one that its own ablation
-refutes on the scale it names; BD4 replaces a scanner that missed thirteen shapes
-with one that misses twenty-three, three of them regressions, and exempts
-wholesale the helper family BD0 had just created. The report is accurate about
-what it covers, as every report in this step has been. What it does not cover is
-whether the new instrument can fail.
-
-Two of those — the `_MEASURED` literal and the `SAFE_CALLS` exemption — are the
-same mistake in different clothes: a check whose subject is a value the check
-itself supplies. Before step 5 I would want the standing question asked of each
-new artifact in the commit that introduces it: if the thing this claims were
-false, would this go red? For `test_measured_below_ceiling_below_counter` the
-answer is no, and one perturbation finds that out.
+What the findings have in common is narrower than in the last four rounds, and
+worth naming because it is now the *only* pattern left: **five of the seven are
+sentences and numbers that describe the repository, in files a reader trusts,
+that a one-line check refutes** -- three test strings about a deleted solve path,
+a `floatfea/` docstring about what `tests/` contains, a headroom figure with no
+operating point, a plan row naming an entry that does not exist. Not one of them
+is an element defect. The standing question for the next round is the one that
+would have caught all five: *for every sentence in this diff that states a fact
+about the code, what is the command that checks it?* `c737358` asked exactly
+that about citations and found one; the same sweep over claims rather than
+citations finds four more.
 
 **Witness channel unavailable.** No git remote, so no PR and no `[witness ...]`
-comment; per `docs/SUPERVISOR.md` that is an unavailable check, not a pass. Four
-consecutive reviews of this step have now been produced by a single reader, and
-every instrument in it was written by the same hand as the element, against
-fields they share Timoshenko kinematics with. Until V5.1 puts CalculiX on the
-other side, 309 green means "not yet contradicted".
+comment; per `docs/SUPERVISOR.md` that is an unavailable check, not a pass. Five
+consecutive reviews by one reader. Until V5.1 puts CalculiX on the other side,
+301 green means "not yet contradicted" -- and this round it means slightly less
+than that, because R38 and R41 are two assertions inside the green count that
+cannot fail.
+
+**Adversarial corpus (BE3): `tests/corpus/` holds ZERO entries, and I did not
+create it this round.** The reason, stated so it is a decision rather than an
+omission: the check it scores is 4a's, and 4a's Q3 and Q5 leave the checker's
+*rule* open -- a corpus written against an undesigned checker fixes the design
+from the reviewer's side, which is the same error BE3 identifies, mirrored. The
+shapes I would seed it with are already measured and public: the three
+regressions from the regex (`err < 5e-3 * scale`, `err <= 1e-13 * abs(k).max()`,
+the in-message exemption), the `SAFE_CALLS` blind spot, `rel_tol`/`abs_tol`/
+`delta`, positional `rtol`, library defaults for the whole `APPROX_NAMES` set,
+and the name-indirection form `TOL = 1e-9; assert err < TOL`. **The corpus opens
+when `F2a.md` is locked**, and its first count will be reported in the verdict on
+4a's build, not before.
