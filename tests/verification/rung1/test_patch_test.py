@@ -651,6 +651,12 @@ def test_the_solve_residual_is_a_SOLVE_check(state: str, orientation: str) -> No
     Kept because a silently bad solve would make every number above it
     meaningless, and it costs one line. Against `SOLVE_RESIDUAL`, in its own
     quantity, not against the displacement ceiling it used to borrow.
+
+    METRE SCALE ONLY, deliberately. The gate runs at three unit systems; this
+    does not, because the residual is conditioning-limited and its ceiling is a
+    metre-scale number -- at S = 1e-3 the same solves leave 2.3036e-13, above the
+    1e-13 ceiling, with cond(K_ff) six orders larger. See the entry in
+    `tolerances.py`; parametrising this over `GATE_UNIT_SCALES` turns it red.
     """
     d = AXIS_ALIGNED if orientation == "axis_aligned" else SKEW
     _, res, _ = _run(state, d)

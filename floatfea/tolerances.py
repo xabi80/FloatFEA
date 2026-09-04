@@ -445,8 +445,28 @@ PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
 #
 # Reason: a direct factorisation of a well-conditioned system leaves a residual at
 # round-off. Measured worst over the twelve patch-test cases (six states x two
-# orientations): 1.7295e-15. 1e-13 sits 58x above that, which covers the
-# conditioning growth of a longer chain without admitting a solve that missed.
+# orientations) AT THE METRE SCALE: 1.7295e-15. 1e-13 sits 58x above that.
+#
+# OPERATING POINT, AND THE ONE PLACE THIS ENTRY DOES NOT HOLD. The residual is
+# conditioning-limited, and cond(K_ff) is a property of the unit system, so this
+# ceiling is a metre-scale number:
+#
+#   S = 1e-3   worst residual 2.3036e-13    <- ABOVE this ceiling
+#   S = 1      worst residual 1.7295e-15
+#   S = 1e+3   worst residual 6.9139e-15
+#
+# `test_the_solve_residual_is_a_SOLVE_check` therefore runs at S = 1 only, while
+# the gate itself runs at all three. **Do not parametrise it over
+# GATE_UNIT_SCALES without first deciding what the ceiling means at S = 1e-3**,
+# where cond(K_ff) = 5.98e8 against 9.21e2 at metres -- six orders of conditioning
+# buying two and a half orders of residual is the expected behaviour of a direct
+# solve, not a defect, and the field error there is 1.6e-13 and passes.
+#
+# Found by running every reported figure through one harness at the end of the
+# step (R43's lesson applied to an entry added in the same step): the first
+# version of this comment gave 1.7295e-15 as "the worst over the twelve cases"
+# without saying which unit system produced it, which is the ninth guard's
+# failure in a tolerance written to answer the ninth guard.
 # Set: 2026-09-04, F2
 SOLVE_RESIDUAL: Final[float] = 1e-13
 
