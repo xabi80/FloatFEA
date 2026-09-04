@@ -319,10 +319,19 @@ SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
 # 1e-12 sits 80x above the worst of those, which covers the transform path and
 # longer chains, and 5 orders below the counter-case.
 #
-# UNIT SYSTEM. Declared in SI metres, and VERIFIED invariant across length-unit
-# factors S = 1e-4 .. 1e+4 ON THE PATH THAT SHIPS: worst error 2.00e-13, no
-# breach at any scale. 5.0x of headroom at the worst scale, against 80x at the
-# metre scale the gate is posed in.
+# UNIT SYSTEM, ASSERTED BY THE SHIPPED TEST (R40). The gate runs at
+# S = 1e-3, 1, 1e3 -- 36 nodes -- so the number below is produced by pytest, not
+# by a harness. Worst over six states x two orientations at each:
+#
+#   S = 1e-3   axis-aligned 1.150e-14   skew 1.603e-13   <- worst, 6.2x headroom
+#   S = 1      axis-aligned 3.883e-15   skew 1.251e-14   <- 80x
+#   S = 1e+3   axis-aligned 8.858e-15   skew 4.924e-14
+#
+# OUT OF BAND, measured but NOT asserted by any test: across S = 1e-4 .. 1e+4 the
+# worst is 2.00e-13 and there is no breach; from 1e-8 to 1e+8 the reviewer
+# measured 2.4e-13. Those figures are context for how far the property extends,
+# and they are labelled as unasserted because the previous version of this
+# comment let a scratch-harness number carry the ceiling.
 #
 # WHAT CLOSED IT, measured by ablation (R8). An earlier version of this comment
 # said the invariance "required two fixes". All four cells, worst error over the

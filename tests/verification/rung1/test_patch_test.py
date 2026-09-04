@@ -88,43 +88,67 @@ AXIS_ALIGNED = np.array([1.0, 0.0, 0.0])
 SKEW = np.array([1.0, 0.35, 0.22]) / np.linalg.norm(np.array([1.0, 0.35, 0.22]))
 
 
-def _model(direction: np.ndarray) -> tuple[Model, list[BeamElement], np.ndarray]:
+def _section_material(scale: float):
+    """The same physical section and material posed at length-unit factor `scale`.
+
+    `scale == 1.0` returns the module's own SEC/S355 objects, so every figure
+    measured before the sweep existed is reproduced bit-for-bit rather than
+    recomputed through a scaling path.
+    """
+    if scale == 1.0:
+        return SEC, S355
+    from floatfea import basis
+    from floatfea.model.material import Material
+
+    mat = Material(E=basis.E_STEEL / scale**2, nu=basis.NU_STEEL,
+                   rho=basis.RHO_STEEL, fy=basis.FY_S355, name="scaled")
+    return Section.circular_tube(0.6 * scale, 0.012 * scale), mat
+
+
+def _model(direction: np.ndarray, scale: float = 1.0):
+    sec, mat = _section_material(scale)
     m = Model()
-    for s in STATIONS:
+    for s in STATIONS * scale:
         m.nodes.add(Node(*(s * direction)))
-    els = [BeamElement(i, i + 1, SEC, S355) for i in range(len(STATIONS) - 1)]
+    els = [BeamElement(i, i + 1, sec, mat) for i in range(len(STATIONS) - 1)]
     a, b = m.nodes[0].xyz, m.nodes[1].xyz
     return m, els, rotation_matrix(a, b)
 
 
-def _exact_local(state: str, x: np.ndarray) -> np.ndarray:
-    """(n_nodes, 6) exact LOCAL displacement for a constant-strain state."""
-    ei = S355.E * SEC.I_z
-    kga = SEC.kappa(S355) * S355.G * SEC.A
+def _exact_local(state: str, x: np.ndarray, scale: float = 1.0) -> np.ndarray:
+    """(n_nodes, 6) exact LOCAL displacement for a constant-strain state.
+
+    Under a length-unit factor `scale` the amplitudes carrying 1/length scale as
+    1/scale, and the shear load `P` is invariant: `EI ~ scale^2` and
+    `kappa G A ~ scale^0`, so `u ~ scale` and `phi ~ scale^0` with `P` fixed.
+    """
+    sec, mat = _section_material(scale)
+    ei = mat.E * sec.I_z
+    kga = sec.kappa(mat) * mat.G * sec.A
     u = np.zeros((x.size, 6))
     if state == "axial":
         u[:, 0] = EPS_AXIAL * x
     elif state == "curvature":
-        c = CURVATURE
+        c = CURVATURE / scale
         u[:, 1] = c * x**2 / 2.0
         u[:, 5] = c * x
     elif state == "twist":
-        u[:, 3] = TWIST_RATE * x
+        u[:, 3] = (TWIST_RATE / scale) * x
     elif state == "shear":
-        p, ll = SHEAR_LOAD, STATIONS[-1]
+        p, ll = SHEAR_LOAD, STATIONS[-1] * scale
         u[:, 1] = p * (ll * x**2 / 2.0 - x**3 / 6.0) / ei + p * x / kga
         u[:, 5] = p * (ll * x - x**2 / 2.0) / ei
     elif state == "curvature_xz":
         # x-z plane. `w' = -phi_y`, so a positive curvature about +y bends the
         # member the other way in w -- the sign the x-y states cannot see.
-        c = CURVATURE
+        c = CURVATURE / scale
         u[:, 2] = -c * x**2 / 2.0
         u[:, 4] = c * x
     elif state == "shear_xz":
         # Constant shear in x-z, with its linear moment. Same field as `shear`
         # with the rotation negated, per `w' = -phi_y`; EI uses I_y.
-        p, ll = SHEAR_LOAD, STATIONS[-1]
-        ei_y = S355.E * SEC.I_y
+        p, ll = SHEAR_LOAD, STATIONS[-1] * scale
+        ei_y = mat.E * sec.I_y
         u[:, 2] = p * (ll * x**2 / 2.0 - x**3 / 6.0) / ei_y + p * x / kga
         u[:, 4] = -p * (ll * x - x**2 / 2.0) / ei_y
     else:  # pragma: no cover
@@ -196,7 +220,8 @@ def _element_resultants(model, elements, u_global: np.ndarray) -> np.ndarray:
     return out
 
 
-def _exact_resultants(state: str, x_a: float, x_b: float) -> np.ndarray:
+def _exact_resultants(state: str, x_a: float, x_b: float,
+                      scale: float = 1.0) -> np.ndarray:
     """(12,) analytic LOCAL end forces for one element of a constant-strain state.
 
     From STATICS AND SECTION PROPERTIES, not from the solve: ``EA eps``,
@@ -214,20 +239,22 @@ def _exact_resultants(state: str, x_a: float, x_b: float) -> np.ndarray:
     than it moves the displacement -- measured 0.41-0.48 against 0.064-0.069 at
     a 2x defect.
     """
-    ea = S355.E * SEC.A
-    gj = S355.G * SEC.J
-    ei_z = S355.E * SEC.I_z
-    ei_y = S355.E * SEC.I_y
-    ll = STATIONS[-1]
+    sec, mat = _section_material(scale)
+    ea = mat.E * sec.A
+    gj = mat.G * sec.J
+    ei_z = mat.E * sec.I_z
+    ei_y = mat.E * sec.I_y
+    ll = STATIONS[-1] * scale
+    curv = CURVATURE / scale
     f = np.zeros(12)
     if state == "axial":
         f[0], f[6] = -ea * EPS_AXIAL, ea * EPS_AXIAL
     elif state == "twist":
-        f[3], f[9] = -gj * TWIST_RATE, gj * TWIST_RATE
+        f[3], f[9] = -gj * (TWIST_RATE / scale), gj * (TWIST_RATE / scale)
     elif state == "curvature":
-        f[5], f[11] = -ei_z * CURVATURE, ei_z * CURVATURE
+        f[5], f[11] = -ei_z * curv, ei_z * curv
     elif state == "curvature_xz":
-        f[4], f[10] = -ei_y * CURVATURE, ei_y * CURVATURE
+        f[4], f[10] = -ei_y * curv, ei_y * curv
     elif state == "shear":
         f[1], f[7] = -SHEAR_LOAD, SHEAR_LOAD
         f[5], f[11] = -SHEAR_LOAD * (ll - x_a), SHEAR_LOAD * (ll - x_b)
@@ -240,13 +267,14 @@ def _exact_resultants(state: str, x_a: float, x_b: float) -> np.ndarray:
     return f
 
 
-def _worst_resultant_error(model, elements, u_global: np.ndarray, state: str) -> float:
+def _worst_resultant_error(model, elements, u_global: np.ndarray, state: str,
+                           scale: float = 1.0) -> float:
     """Worst relative resultant error over the elements, scaled per element."""
     got = _element_resultants(model, elements, u_global)
     worst = 0.0
     for i, e in enumerate(elements):
-        ex = _exact_resultants(state, float(STATIONS[e.node_a]),
-                               float(STATIONS[e.node_b]))
+        ex = _exact_resultants(state, float(STATIONS[e.node_a] * scale),
+                               float(STATIONS[e.node_b] * scale), scale)
         worst = max(worst, float(np.abs(got[i] - ex).max() / np.abs(ex).max()))
     return worst
 
@@ -256,11 +284,13 @@ def _run(
     direction: np.ndarray,
     stiffness_scale: float = 1.0,
     block: str | None = None,
+    scale: float = 1.0,
 ):
     """Solve the patch test. `stiffness_scale` perturbs element 1 -- the whole
-    element by default, or only `block`'s local entries when named."""
-    m, els, r = _model(direction)
-    u_ex = _to_global(_exact_local(state, STATIONS), r)
+    element by default, or only `block`'s local entries when named. `scale` poses
+    the same physical problem in a different length unit (R40)."""
+    m, els, r = _model(direction, scale)
+    u_ex = _to_global(_exact_local(state, STATIONS * scale, scale), r)
 
     k = assemble(m, els)
     if stiffness_scale != 1.0:
@@ -304,19 +334,33 @@ def _run(
     u = res.u + u_pres
     got = u.reshape(n_nodes, 6)
 
-    err = relative_error(got, u_ex, STATIONS[-1])
-    res_err = _worst_resultant_error(m, els, u, state)
+    err = relative_error(got, u_ex, STATIONS[-1] * scale)
+    res_err = _worst_resultant_error(m, els, u, state, scale)
     return err, res, res_err
+
+
+# The length units the gate is asserted in (R40). `PATCH_TEST_EXACTNESS`'s comment
+# justifies 1e-12 by invariance across unit systems, and until this parametrisation
+# existed that justification was produced by a scratch harness -- the number that
+# decided whether the ceiling was defensible had exactly the status `_MEASURED`
+# was deleted for. Three decades is what covers the worst measured cell (S = 1e-3)
+# at 36 nodes rather than 108; G2.5/V1.3 remains its own gate and is not closed
+# early by this.
+GATE_UNIT_SCALES = [1e-3, 1.0, 1e3]
 
 
 @pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear", "curvature_xz", "shear_xz"])
 @pytest.mark.parametrize("orientation", ["axis_aligned", "skew"])
-def test_the_four_constant_strain_states_are_EXACT(state: str, orientation: str) -> None:
-    """G2.2. Exactness at ULP scale, not convergence."""
+@pytest.mark.parametrize("scale", GATE_UNIT_SCALES, ids=lambda s: f"S={s:g}")
+def test_the_four_constant_strain_states_are_EXACT(
+    state: str, orientation: str, scale: float
+) -> None:
+    """G2.2. Exactness at ULP scale, not convergence -- in three length units."""
     d = AXIS_ALIGNED if orientation == "axis_aligned" else SKEW
-    err, res, res_err = _run(state, d)
+    err, res, res_err = _run(state, d, scale=scale)
     assert err <= PATCH_TEST_EXACTNESS, (
-        f"{state}/{orientation}: interior nodes deviate from the exact field by "
+        f"{state}/{orientation}/S={scale:g}: interior nodes deviate from the "
+        f"exact field by "
         f"{err:.3e}, above {PATCH_TEST_EXACTNESS:.0e}. This is a patch-test "
         "failure -- every accuracy comparison above rung 1 is uninterpretable "
         "until it is fixed, and refinement is not the response."
@@ -327,7 +371,8 @@ def test_the_four_constant_strain_states_are_EXACT(state: str, orientation: str)
     # moved DOWN for two of three states at a 2x defect. It is now
     # `test_the_solve_residual_is_a_SOLVE_check`, out of the G2.2 evidence.
     assert res_err <= RESULTANT_EXACTNESS, (
-        f"{state}/{orientation}: recovered element resultants deviate from the "
+        f"{state}/{orientation}/S={scale:g}: recovered element resultants "
+        f"deviate from the "
         f"analytic EA*eps / EI*kappa / GJ*phi' / P values by {res_err:.3e}, above "
         f"{RESULTANT_EXACTNESS:.0e}. The nodal field can be right while the "
         "internal forces are wrong -- that is what this line is for."
@@ -659,17 +704,12 @@ UNIT_SCALES = [1.0, 10.0, 1000.0, 0.001]      # metres, decimetres, mm, km
 
 
 def _scaled_model(scale: float):
-    """The same physical beam posed with lengths x `scale`."""
-    from floatfea import basis
-    from floatfea.model.material import Material
+    """The same physical beam posed with lengths x `scale`, skew orientation.
 
-    mat = Material(E=basis.E_STEEL / scale**2, nu=basis.NU_STEEL,
-                   rho=basis.RHO_STEEL, fy=basis.FY_S355, name="scaled")
-    sec = Section.circular_tube(0.6 * scale, 0.012 * scale)
-    m = Model()
-    for st in STATIONS * scale:
-        m.nodes.add(Node(*(st * SKEW)))
-    els = [BeamElement(i, i + 1, sec, mat) for i in range(len(STATIONS) - 1)]
+    One scaling path, not two: this delegates to `_model`, so the conditioning
+    tests below and the gate's own unit sweep cannot drift apart.
+    """
+    m, els, _ = _model(SKEW, scale)
     return m, els
 
 
