@@ -53,6 +53,30 @@ test.** The other three states are satisfied by formulations that fail state 4.
 Exactness is asserted at ULP scale, per AU4 — not convergence. An element that
 reproduces constant curvature only in the limit is passing a convergence test
 wearing the patch test's clothes.
+
+What this gate is BLIND to, by design (R44)
+-------------------------------------------
+**The shear coefficient `kappa`.** `_exact_local` builds state 4's reference from
+`SEC.kappa(S355)` — the same source the element uses — which is exactly what Q1b
+pinned, because a patch test's reference must be the state the element is being
+asked to reproduce. The consequence is that no value of `kappa` can fail this
+gate. Measured: substituting the simple thin-tube `0.5` for the shipped Cowper
+`0.530612`, a 5.8% error, leaves all twelve cases green at a worst field error of
+`8.58e-15` and a worst resultant error of `2.00e-13`.
+
+That is correct behaviour, not a hole, but it decides what a green G2.2 means:
+**this gate certifies formulation self-consistency, not any section constant.**
+`kappa` is gated at V2.2, the stubby cantilever, where the reference is a
+manufactured solution and a closed form rather than the element's own input. A
+reader who takes G2.2 as covering the section properties is reading it wrong, so
+it is written here rather than left to be inferred.
+
+The gate is NOT blind to the shear FORMULATION: substituting the Euler-Bernoulli
+bending block for the shear-flexible one reddens `shear` and `shear_xz` at
+`6.198e-03` in the field and `7.687e-02` in the resultants, while the other four
+states stay at or below `2.32e-14` — AV4's state-4 argument, measured. So state 4
+discriminates the formulation; it is the section CONSTANT feeding both sides that
+it cannot see.
 """
 from __future__ import annotations
 
