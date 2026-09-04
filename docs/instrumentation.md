@@ -669,7 +669,17 @@ differed in the perturbed element's *length* and *position* as well as in
 commensurability, and the number moved for one of those reasons, not this one.
 
 Measured properly — element 1 exactly `2.0 m` and total exactly `10.0 m` in
-**both** meshes, so only commensurability varies:
+**both** meshes:
+
+**"So only commensurability varies" is withdrawn (R26).** Element 1's *position*
+also differs between the two meshes, and at index 1 of a five-element mesh
+anchored at the origin it cannot be held fixed while the other lengths become
+incommensurate. Holding the length and the total is as much control as this
+comparison can have; the position is confounded and stays confounded. That is
+why the conclusion below is stated as a spread straddling 1 rather than as a
+figure — the measurement refutes the fivefold claim without establishing a
+replacement, and this sentence claimed a cleaner isolation than the design
+allows:
 
 ```
 A  [2.0 2.0 2.0 2.0 2.0]   maximally commensurate, reference   7.7448e-08
@@ -724,7 +734,11 @@ read `3.7161e-02` / `3.0170e-02`, understated because their rotational error was
 divided by a translational scale.
 
 Measured by verification, not extrapolation: perturbing by the threshold lands the
-error on the declared ceiling to within 0.3%.
+error on the declared ceiling to within **0.995%** — measured per state at this
+commit: `-0.24 / +0.31 / -0.03 / +1.00 / -0.03 / +0.04 %`, worst `0.995%` in the
+`shear` state. (The figure read `0.3%` for three verdicts. It is the deviation
+from linearity over the perturbation range, and `DETECTION_THRESHOLD_BAND = 0.05`
+sits 5x above the worst of it.)
 
 The thresholds are **asserted**, not merely recorded — so a formulation or mesh
 change that alters sensitivity fails a test rather than silently leaving the
