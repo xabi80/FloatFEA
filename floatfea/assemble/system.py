@@ -34,6 +34,34 @@ class BeamElement:
     roll_rad: float = 0.0
 
 
+def equilibrate(k: sp.spmatrix) -> tuple[sp.csc_matrix, NDArray[np.float64]]:
+    """Symmetric diagonal equilibration: ``(D^-1/2 K D^-1/2, sqrt(diag K))``.
+
+    Why the solve does this (R2). A beam stiffness mixes translational and
+    rotational DOF, whose diagonal entries scale **oppositely** under a change of
+    length unit: with lengths x S, translational entries go as ``S^-1``
+    (``EA/L``, ``12EI/L^3``) and rotational as ``S^+1`` (``4EI/L``), while the
+    coupling terms (``6EI/L^2``) are unchanged. Measured on this element, both to
+    four digits. So their ratio moves by ``S^2`` and the conditioning of the
+    assembled matrix is a function of the unit system rather than of the problem.
+
+    Equilibration removes exactly that. For any diagonal ``S``,
+    ``diag(S K S) = S diag(K) S``, so the scaled matrix is **algebraically
+    invariant**: ``cond`` is the same number in metres, millimetres and
+    kilometres. Without it an exactness tolerance is not unit-invariant even when
+    it is relative -- being relative scales numerator and denominator together,
+    but it does not scale the round-off floor with them.
+    """
+    d = np.sqrt(np.abs(k.diagonal()))
+    if not np.all(d > 0.0):
+        raise ValueError(
+            "a free DOF has zero diagonal stiffness; the system is singular "
+            "before equilibration and the caller has an unconstrained mechanism."
+        )
+    dinv = sp.diags(1.0 / d)
+    return (dinv @ k @ dinv).tocsc(), d
+
+
 @dataclass(frozen=True)
 class SolveResult:
     """One solve. Every diagnostic here describes THIS case only."""
@@ -122,13 +150,20 @@ def solve(
         raise ValueError("every DOF is fixed; there is nothing to solve")
 
     kff = k[free][:, free].tocsc()
-    lu = spla.splu(kff, permc_spec=SPARSE_PERMC_SPEC)
-    uf = lu.solve(f[free])
+    # Equilibrated solve (R2): factorise D^-1/2 K D^-1/2, then undo the scaling.
+    # This makes the conditioning -- and therefore the achievable accuracy --
+    # independent of the length unit the problem is posed in.
+    kff_eq, d = equilibrate(kff)
+    lu = spla.splu(kff_eq, permc_spec=SPARSE_PERMC_SPEC)
+    uf = lu.solve(f[free] / d) / d
 
     u = np.zeros(n, dtype=np.float64)
     u[free] = uf
 
     # Per-case equilibrium residual. Never averaged across cases.
+    # Residual on the ORIGINAL system, not the equilibrated one: the equilibrated
+    # residual would be small by construction and would not describe the solve the
+    # caller asked for.
     ff = f[free]
     denom = np.linalg.norm(ff)
     residual = float(np.linalg.norm(kff @ uf - ff) / denom) if denom > 0 else 0.0

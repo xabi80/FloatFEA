@@ -662,10 +662,39 @@ The property is "no pair in a small-integer ratio", so the check sweeps `p/q` fo
 was chosen by searching for one whose closest approach to any such ratio is
 `0.0877`.
 
-**It was not a cosmetic fix.** Removing the symmetry improved the weakest state's
-detection threshold about **fivefold**, from `1.51e-10` to `3.31e-11`. The
-narrower check had left real sensitivity on the table, not merely a theoretical
-gap.
+**The fivefold figure this section originally carried is WITHDRAWN.** It said
+removing the symmetry improved the weakest state's detection threshold from
+`1.51e-10` to `3.31e-11`. That comparison was **uncontrolled**: the two meshes
+differed in the perturbed element's *length* and *position* as well as in
+commensurability, and the number moved for one of those reasons, not this one.
+
+Measured properly — element 1 exactly `2.0 m` and total exactly `10.0 m` in
+**both** meshes, so only commensurability varies:
+
+```
+A  [2.0 2.0 2.0 2.0 2.0]          maximally commensurate   7.7448e-08
+B  [1.069 2.0 2.311 3.658 0.962]  incommensurate           6.5661e-08
+                                            ratio B/A       0.848
+```
+
+**Commensurability is worth nothing here, and the incommensurate mesh is
+marginally *less* sensitive.** What actually drives the sensitivity is *which*
+element is perturbed and *where it sits*: on a uniform mesh, where every element
+is identically `1.934 m`, the response still varies **4.5x** across element index
+(`8.52e-08` at the first, `1.91e-08` at the last).
+
+The irregular mesh stays — an irregular mesh is standard practice for patch tests
+in general, and it costs nothing — but **it is not claimed to buy anything
+measurable for this gate**, because measurement says it does not.
+
+**The guard itself stands, and this is the guard applied to itself.** "Write the
+check from the property, not from the defects you met" is sound. Its supporting
+measurement was an uncontrolled comparison dressed as a controlled one, which is
+the same species of error as the mechanism R3 was raised about — a plausible story
+beside a real number. The lesson is the narrower one:
+
+> **A comparison that moves more than one variable measures none of them. Hold
+> everything but the property fixed, or report the result as unattributed.**
 
 ## Corollary: record the DETECTION THRESHOLD, not only the counter-case
 

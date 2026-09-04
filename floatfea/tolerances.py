@@ -306,6 +306,24 @@ SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
 # 1e-12 sits ~240x above the worst measured value, which covers the transform
 # path and longer chains, and ~30000x below the counter-case.
 #
+# UNIT SYSTEM AND FLOOR (R2). Declared in SI metres, and VERIFIED invariant
+# across length-unit factors S = 1e-3 .. 1e+3 (kilometres to millimetres): worst
+# error 3.12e-14, no breach at any scale. That invariance is not automatic and was
+# not present when this entry was written -- it required two fixes, neither of
+# them a tolerance change:
+#
+#   1. the solve equilibrates (assemble.system.equilibrate), because translational
+#      and rotational diagonal entries scale as S^-1 and S^+1, so their ratio moves
+#      by S^2 and cond(K_ff) went 9.2e2 -> 4.0e7 over that range. Equilibrated,
+#      cond(K~) = 3.85e2 at EVERY scale.
+#   2. the error measure weights rotations by a characteristic length, because
+#      taking max() across all six DOF mixes metres with radians and is therefore
+#      unit-dependent on its own.
+#
+# Floor, as a multiple of the equilibrated conditioning: cond(K~) * eps =
+# 3.85e2 * 2.22e-16 = 8.5e-14. The worst measured error is 0.37x that floor and
+# this ceiling is ~12x it.
+#
 # THIS IS AN EXACTNESS TOLERANCE, NOT A CONVERGENCE ONE. An element that
 # reproduces constant curvature only in the limit is passing a convergence test
 # wearing the patch test's clothes; there is nothing between exact and wrong here,
@@ -320,13 +338,20 @@ PATCH_TEST_EXACTNESS: Final[float] = 1e-12
 # of those, so every state must catch a one-part-in-10^6 stiffness error, not
 # merely the most sensitive one.
 #
-# RE-MEASURED after the mesh was made incommensurate. The earlier value of 6.0e-9
-# came from a mesh containing 0.9/0.6 = 3/2 exactly; removing that symmetry
-# improved the weakest state's sensitivity about fivefold, so the old counter was
-# stale in the SAFE direction (it under-claimed detection) but stale nonetheless.
-# The per-state detection thresholds are recorded alongside the test.
-# Set: 2026-09-02, F2
-PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 3.0e-8
+# TIGHTENED 2026-09-03, from 3.0e-8, under the dimensionally homogeneous error
+# measure (R2). The assertion is `err >= COUNTER`, so raising it makes the negative
+# control STRICTER, not weaker. Under the old mixed-unit measure the bending
+# states' rotational error was divided by a translational scale and thereby
+# understated at 3.72e-08 and 3.02e-08; measured coherently all six states respond
+# at 1.08e-07 .. 1.17e-07 and the counter moves to the smallest of those.
+#
+# Its earlier history: 6.0e-9 came from a mesh containing 0.9/0.6 = 3/2 exactly.
+# The claim that changing that mesh bought a fivefold improvement is WITHDRAWN --
+# controlled measurement puts commensurability at 0.848x, i.e. nothing. The value
+# moved because the perturbed element's length and position changed with it. See
+# docs/instrumentation.md, seventeenth guard.
+# Set: 2026-09-03, F2
+PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
 
 
 # ---------------------------------------------------------------------------

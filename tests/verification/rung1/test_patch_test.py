@@ -11,9 +11,12 @@ It does not exercise connectivity the way the displacement-driven form does, and
 connectivity is the whole reason V1.2 sits at rung 1: a patch-test failure makes
 every accuracy comparison above it uninterpretable.
 
-**Unequal element lengths.** A uniform mesh cannot distinguish an element that is
-exact from one that is merely consistent, because the errors cancel by symmetry.
-The mesh here is deliberately irregular.
+**Unequal element lengths**, as standard practice for patch tests. Note that the
+benefit is *not* demonstrated for this gate: a controlled measurement holding the
+perturbed element's length and position fixed found commensurability worth
+`0.848x` -- i.e. nothing, and marginally the wrong way. See `docs/instrumentation.md`
+on what was withdrawn. The mesh stays irregular because it costs nothing, not
+because it was measured to help.
 
 **Straight member only.** A non-collinear assembly is a frame test and belongs at
 V2.4. Both an axis-aligned and a skew-but-straight orientation are run, so the
@@ -28,6 +31,19 @@ For a Timoshenko beam with ``V = kappa G A (v' - phi)`` and ``M = EI phi'``:
 3. **constant twist**          ``rx = tau x``
 4. **constant shear, linear moment**
    ``phi = P(Lx - x^2/2)/EI``, ``v = P(Lx^2/2 - x^3/6)/EI + Px/(kappa G A)``
+
+States 2 and 4 are required **in each bending plane** (locked plan, AV4 item 2),
+so there are six in total. The x-z versions carry the sign flip ``w' = -phi_y``:
+``phi_y = c x`` with ``w = -c x^2 / 2``, and the shear analogue with the rotation
+negated.
+
+**The x-z pair was missing until R1.** All four original states lived in local DOF
+``{0}``, ``{3}`` and ``{1,5}``; local DOF ``{2,4,8,10}`` -- the block ``beam.py``
+builds as ``flip @ ky @ flip`` -- was identically zero in every state and in both
+orientations, because the skew direction rotates the *global* field without giving
+the *local* field any x-z content. G2.2 was passing on half the element's bending
+stiffness. That is assertion-domain blindness: the collection the assertion
+inspected could not contain the failure.
 
 State 4 is the one that matters. It is the only state whose exact solution
 contains the shear term, so it is where an element that is *convergent* rather
@@ -50,11 +66,10 @@ from floatfea.model.nodes import Model, Node, node_dofs
 from floatfea.tolerances import PATCH_TEST_EXACTNESS, PATCH_TEST_EXACTNESS_COUNTER
 
 SEC = Section.circular_tube(0.6, 0.012)
-# Deliberately irregular: no pair of element lengths in a SMALL-INTEGER RATIO.
-# Lengths [3.27, 3.00, 0.90, 0.79, 1.71]; the closest any pairwise ratio comes to
-# p/q with p,q <= 5 is 0.0877. Two earlier meshes failed this: one ended at 9.4,
-# making the last element exactly 2x the first, and its replacement contained
-# 0.9/0.6 = 3/2 exactly and 2.8/1.7 within 0.02 of 5/3.
+# Irregular: no pair of element lengths in a SMALL-INTEGER RATIO. Lengths
+# [3.27, 3.00, 0.90, 0.79, 1.71]; the closest pairwise ratio to p/q with p,q <= 5
+# is 0.0877. Kept as standard practice -- a controlled measurement found the
+# property itself worth nothing for this gate (R3, docs/instrumentation.md).
 STATIONS = np.array([0.0, 3.27, 6.27, 7.17, 7.96, 9.67])
 AXIS_ALIGNED = np.array([1.0, 0.0, 0.0])
 SKEW = np.array([1.0, 0.35, 0.22]) / np.linalg.norm(np.array([1.0, 0.35, 0.22]))
@@ -86,6 +101,19 @@ def _exact_local(state: str, x: np.ndarray) -> np.ndarray:
         p, ll = 1.0e5, STATIONS[-1]
         u[:, 1] = p * (ll * x**2 / 2.0 - x**3 / 6.0) / ei + p * x / kga
         u[:, 5] = p * (ll * x - x**2 / 2.0) / ei
+    elif state == "curvature_xz":
+        # x-z plane. `w' = -phi_y`, so a positive curvature about +y bends the
+        # member the other way in w -- the sign the x-y states cannot see.
+        c = 2.0e-4
+        u[:, 2] = -c * x**2 / 2.0
+        u[:, 4] = c * x
+    elif state == "shear_xz":
+        # Constant shear in x-z, with its linear moment. Same field as `shear`
+        # with the rotation negated, per `w' = -phi_y`; EI uses I_y.
+        p, ll = 1.0e5, STATIONS[-1]
+        ei_y = S355.E * SEC.I_y
+        u[:, 2] = p * (ll * x**2 / 2.0 - x**3 / 6.0) / ei_y + p * x / kga
+        u[:, 4] = -p * (ll * x - x**2 / 2.0) / ei_y
     else:  # pragma: no cover
         raise ValueError(state)
     return u
@@ -99,20 +127,56 @@ def _to_global(u_local: np.ndarray, r: np.ndarray) -> np.ndarray:
     return out
 
 
-def _run(state: str, direction: np.ndarray, stiffness_scale: float = 1.0):
+# Local DOF owned by each independent block of the element. In local axes the
+# 12x12 is block-diagonal (asserted in tests/unit/test_beam_element.py), so a
+# perturbation confined to one block is a defect confined to one physical
+# behaviour -- which is what a negative control for a single plane needs.
+LOCAL_BLOCKS = {
+    "axial": (0, 6),
+    "torsion": (3, 9),
+    "bending_xy": (1, 5, 7, 11),
+    "bending_xz": (2, 4, 8, 10),
+}
+
+
+def _run(
+    state: str,
+    direction: np.ndarray,
+    stiffness_scale: float = 1.0,
+    block: str | None = None,
+):
+    """Solve the patch test. `stiffness_scale` perturbs element 1 -- the whole
+    element by default, or only `block`'s local entries when named."""
     m, els, r = _model(direction)
     u_ex = _to_global(_exact_local(state, STATIONS), r)
 
     k = assemble(m, els)
     if stiffness_scale != 1.0:
-        from floatfea.assemble.system import element_global_stiffness
+        from floatfea.assemble.system import element_global_stiffness, element_length
+        from floatfea.element.beam import local_stiffness
+        from floatfea.element.transform import rotation_matrix, to_global
+
+        if block is None:
+            kb = element_global_stiffness(m, els[1])
+            delta = (stiffness_scale - 1.0) * kb
+        else:
+            # Scale one LOCAL block, then transform -- so the defect stays in the
+            # physical behaviour named, not spread across the global matrix.
+            e = els[1]
+            k_loc = local_stiffness(e.section, e.material, element_length(m, e))
+            idx = list(LOCAL_BLOCKS[block])
+            pert = np.zeros_like(k_loc)
+            pert[np.ix_(idx, idx)] = (stiffness_scale - 1.0) * k_loc[np.ix_(idx, idx)]
+            rot = rotation_matrix(m.nodes[e.node_a].xyz, m.nodes[e.node_b].xyz,
+                                  orientation_node=e.orientation_node,
+                                  roll_rad=e.roll_rad)
+            delta = to_global(pert, rot)
 
         k = k.tolil()
-        kb = element_global_stiffness(m, els[1])
         d = np.concatenate([node_dofs(1), node_dofs(2)])
         for i in range(12):
             for j in range(12):
-                k[d[i], d[j]] += (stiffness_scale - 1.0) * kb[i, j]
+                k[d[i], d[j]] += delta[i, j]
         k = k.tocsr()
 
     n_nodes = len(STATIONS)
@@ -127,12 +191,26 @@ def _run(state: str, direction: np.ndarray, stiffness_scale: float = 1.0):
     res = solve(k, f, ends)
     u = res.u + u_pres
     got = u.reshape(n_nodes, 6)
-    scale = np.abs(u_ex).max()
-    err = np.abs(got - u_ex).max() / scale
+
+    # DIMENSIONALLY HOMOGENEOUS error (R2). Taking `max()` across all six DOF
+    # mixes metres with radians, so the measure itself is unit-dependent: under a
+    # length-unit factor S the translations scale by S and the rotations do not,
+    # and a spurious rotation divided by a translational scale grows without any
+    # change to the solve. Measured: the axial state, whose exact rotations are
+    # exactly zero, breached the ceiling by 2.8x in kilometres for precisely this
+    # reason -- every one of its erroneous components was rotational, with the
+    # translations at 1e-15.
+    #
+    # Rotations are converted to equivalent translations through the model's
+    # characteristic length before the norm is taken, which makes the comparison
+    # dimensionally coherent and the measure unit-invariant.
+    w = np.ones(6)
+    w[3:] = STATIONS[-1]
+    err = float((np.abs(got - u_ex) * w).max() / (np.abs(u_ex) * w).max())
     return err, res
 
 
-@pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear"])
+@pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear", "curvature_xz", "shear_xz"])
 @pytest.mark.parametrize("orientation", ["axis_aligned", "skew"])
 def test_the_four_constant_strain_states_are_EXACT(state: str, orientation: str) -> None:
     """G2.2. Exactness at ULP scale, not convergence."""
@@ -148,8 +226,12 @@ def test_the_four_constant_strain_states_are_EXACT(state: str, orientation: str)
 
 
 def test_the_mesh_is_actually_irregular() -> None:
-    """Meta-test: a uniform mesh lets errors cancel by symmetry, so the states
-    above would pass on an element that is merely consistent."""
+    """The mesh has the property the module claims for it.
+
+    Kept, but note what it does NOT establish: a controlled measurement found
+    commensurability worth 0.848x for this gate -- nothing. This asserts the
+    stated property holds, not that the property buys sensitivity.
+    """
     lengths = np.diff(STATIONS)
     assert len(set(np.round(lengths, 9))) == len(lengths), "element lengths repeat"
 
@@ -192,11 +274,20 @@ def test_the_shear_state_actually_contains_shear() -> None:
 # threshold is where the state stops seeing one at all, and it is the number a
 # later reader needs to judge whether a tolerance change has cost detection.
 #
-#   state       sensitivity (err/eps)   smallest eps detected at 1e-12
-#   axial              1.0908e-01              9.17e-12
-#   curvature          3.7161e-02              2.69e-11
-#   twist              1.0908e-01              9.17e-12
-#   shear              3.0170e-02              3.31e-11   <- weakest
+#   state         sensitivity (err/eps)   smallest eps detected at 1e-12
+#   axial                1.0908e-01              9.17e-12
+#   curvature            1.0764e-01              9.29e-12   <- weakest
+#   twist                1.0908e-01              9.17e-12
+#   shear                1.1743e-01              8.52e-12
+#   curvature_xz         1.0764e-01              9.29e-12
+#   shear_xz             1.1743e-01              8.52e-12
+#
+# RE-MEASURED under the dimensionally homogeneous error (R2), which also
+# SHARPENED the bending states: curvature and shear previously responded at
+# 3.72e-08 and 3.02e-08 to a 1e-6 defect, because their rotational error was
+# being divided by a translational scale and thereby understated. All six now
+# respond at ~1.1e-07 and the weakest threshold tightens from 3.31e-11 to
+# 9.29e-12.
 #
 # Verified rather than extrapolated: perturbing by the threshold eps lands the
 # error on 1e-12 to within 0.3% in every state. So the patch test stops seeing a
@@ -209,13 +300,15 @@ def test_the_shear_state_actually_contains_shear() -> None:
 # assertion below caught the old numbers going stale the moment the mesh changed.
 DETECTION_THRESHOLD = {
     "axial": 9.17e-12,
-    "curvature": 2.69e-11,
+    "curvature": 9.29e-12,
     "twist": 9.17e-12,
-    "shear": 3.31e-11,
+    "shear": 8.52e-12,
+    "curvature_xz": 9.29e-12,
+    "shear_xz": 8.52e-12,
 }
 
 
-@pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear"])
+@pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear", "curvature_xz", "shear_xz"])
 def test_the_measured_detection_threshold_still_holds(state: str) -> None:
     """The threshold is a recorded property of the gate, so it is asserted.
 
@@ -231,7 +324,7 @@ def test_the_measured_detection_threshold_still_holds(state: str) -> None:
     )
 
 
-@pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear"])
+@pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear", "curvature_xz", "shear_xz"])
 def test_a_perturbed_element_BREAKS_the_patch_test(state: str) -> None:
     """Negative control, per state.
 
@@ -244,4 +337,131 @@ def test_a_perturbed_element_BREAKS_the_patch_test(state: str) -> None:
         f"{state}: a 1e-6 stiffness error in one element moved the interior "
         f"field by only {err:.3e}, below the counter-case "
         f"{PATCH_TEST_EXACTNESS_COUNTER:.3e}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# R1's negative control: a defect confined to ONE bending plane.
+#
+# The whole-element control above cannot show that a plane is covered, because
+# every state responds to a whole-element scaling. Confining the perturbation to
+# one local block is what demonstrates that the x-z states are actually loading
+# the x-z stiffness -- and that they were needed.
+# ---------------------------------------------------------------------------
+PLANE_STATES = {
+    "bending_xy": ("curvature", "shear"),
+    "bending_xz": ("curvature_xz", "shear_xz"),
+}
+
+
+@pytest.mark.parametrize("block", ["bending_xy", "bending_xz"])
+def test_a_defect_in_ONE_bending_plane_is_caught_by_THAT_plane(block: str) -> None:
+    """Each plane's states detect a defect confined to their own block."""
+    for state in PLANE_STATES[block]:
+        err, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
+        assert err >= PATCH_TEST_EXACTNESS_COUNTER, (
+            f"{state} did not detect a 1e-3 defect confined to {block}: "
+            f"{err:.3e} < {PATCH_TEST_EXACTNESS_COUNTER:.3e}"
+        )
+
+
+@pytest.mark.parametrize("block", ["bending_xy", "bending_xz"])
+def test_the_OTHER_plane_is_blind_to_it(block: str) -> None:
+    """The mirror, and the reason R1 was possible.
+
+    A defect confined to one bending plane is invisible to every state outside
+    it. That is not a flaw -- it is why both planes need their own states, and
+    it is the property that made the x-z block untested while four states passed.
+    Asserted so the coverage argument rests on a measurement.
+    """
+    other = "bending_xz" if block == "bending_xy" else "bending_xy"
+    for state in PLANE_STATES[other] + ("axial", "twist"):
+        err, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
+        assert err <= PATCH_TEST_EXACTNESS, (
+            f"{state} responded to a defect confined to {block} ({err:.3e}); the "
+            "blocks are not independent and the local matrix is not block-diagonal"
+        )
+
+
+# ---------------------------------------------------------------------------
+# R2: unit invariance. Not V1.3 -- that gate poses a scaled problem and checks
+# the RESULTS scale correctly. This checks the weaker property V1.3 depends on:
+# that the achievable accuracy, and therefore this gate's ceiling, does not move
+# with the length unit. Both had to be fixed for that to hold, and neither fix
+# was a tolerance change.
+# ---------------------------------------------------------------------------
+UNIT_SCALES = [1.0, 10.0, 1000.0, 0.001]      # metres, decimetres, mm, km
+
+
+def _scaled_model(scale: float):
+    """The same physical beam posed with lengths x `scale`."""
+    from floatfea import basis
+    from floatfea.model.material import Material
+
+    mat = Material(E=basis.E_STEEL / scale**2, nu=basis.NU_STEEL,
+                   rho=basis.RHO_STEEL, fy=basis.FY_S355, name="scaled")
+    sec = Section.circular_tube(0.6 * scale, 0.012 * scale)
+    m = Model()
+    for st in STATIONS * scale:
+        m.nodes.add(Node(*(st * SKEW)))
+    els = [BeamElement(i, i + 1, sec, mat) for i in range(len(STATIONS) - 1)]
+    return m, els
+
+
+@pytest.mark.parametrize("scale", UNIT_SCALES)
+def test_the_equilibrated_conditioning_is_unit_INVARIANT(scale: float) -> None:
+    """`cond(D^-1/2 K D^-1/2)` is the same number in every length unit.
+
+    This is the algebraic fact the equilibrated solve rests on: for diagonal `S`,
+    `diag(SKS) = S diag(K) S`, so the scaled matrix is invariant. Without it the
+    conditioning is a property of the unit system rather than of the problem --
+    measured, `cond(K_ff)` runs 9.2e2 to 6.0e8 over these scales.
+    """
+    from floatfea.assemble.system import equilibrate
+
+    ref_m, ref_els = _scaled_model(1.0)
+    m, els = _scaled_model(scale)
+    ends = np.concatenate([node_dofs(0), node_dofs(len(STATIONS) - 1)])
+    free = np.setdiff1d(np.arange(m.n_dof), ends)
+
+    def cond_eq(model, elements):
+        kff = assemble(model, elements)[free][:, free].tocsc()
+        return float(np.linalg.cond(equilibrate(kff)[0].toarray()))
+
+    assert cond_eq(m, els) == pytest.approx(cond_eq(ref_m, ref_els), rel=1e-6), (
+        "the equilibrated conditioning moved with the length unit; the solve is "
+        "not unit-robust and every exactness ceiling above it is unit-dependent"
+    )
+
+
+def test_the_UNequilibrated_conditioning_DOES_move() -> None:
+    """Negative control: if it did not, equilibration would be ceremony."""
+    ends = np.concatenate([node_dofs(0), node_dofs(len(STATIONS) - 1)])
+    conds = []
+    for scale in UNIT_SCALES:
+        m, els = _scaled_model(scale)
+        free = np.setdiff1d(np.arange(m.n_dof), ends)
+        conds.append(np.linalg.cond(assemble(m, els)[free][:, free].toarray()))
+    assert max(conds) / min(conds) > 1e4, (
+        f"cond(K_ff) spans only {max(conds) / min(conds):.1e} across "
+        "these unit systems; this test cannot demonstrate what equilibration is for"
+    )
+
+
+def test_the_error_measure_weights_rotations_by_a_length() -> None:
+    """The measure must be dimensionally homogeneous, or it is unit-dependent.
+
+    Asserted structurally rather than by outcome: a `max()` taken across metres
+    and radians together is the defect, and it is invisible in any single-unit
+    run. The axial state breached the ceiling by 2.8x in kilometres purely
+    through this, with every erroneous component rotational.
+    """
+    import inspect
+
+    from tests.verification.rung1 import test_patch_test as mod
+
+    src = inspect.getsource(mod._run)
+    assert "w[3:]" in src and "STATIONS[-1]" in src, (
+        "the error measure no longer weights rotational DOF by a characteristic "
+        "length; it is mixing metres with radians"
     )
