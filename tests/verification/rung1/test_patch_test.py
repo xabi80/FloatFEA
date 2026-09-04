@@ -399,7 +399,7 @@ GATE_UNIT_SCALES = [1e-3, 1.0, 1e3]
 @pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear", "curvature_xz", "shear_xz"])
 @pytest.mark.parametrize("orientation", ["axis_aligned", "skew"])
 @pytest.mark.parametrize("scale", GATE_UNIT_SCALES, ids=lambda s: f"S={s:g}")
-def test_the_four_constant_strain_states_are_EXACT(
+def test_the_six_constant_strain_states_are_EXACT(
     state: str, orientation: str, scale: float
 ) -> None:
     """G2.2. Exactness at ULP scale, not convergence -- in three length units."""
@@ -564,6 +564,15 @@ def test_a_perturbed_element_BREAKS_the_patch_test(state: str) -> None:
     A patch test that cannot fail certifies connectivity rather than testing it.
     One interior element's stiffness is perturbed -- the defect a wrong length or
     a wrong section produces -- and every state must detect it.
+
+    THE MARGIN, written down because a counter-case without one says nothing
+    about how close the gate is to losing the case (R15): the smallest response
+    is `1.0764e-07` against a counter of `1.0e-07` -- **7.6%**. That is tight by
+    design. The counter was moved to the smallest of the six measured responses
+    (R2), so it sits just under the weakest state rather than comfortably under
+    the strongest, and a formulation change that cost any state 8% of its
+    sensitivity would fail here rather than quietly reducing the gate to five
+    working states.
     """
     err, _, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-6)
     assert err >= PATCH_TEST_EXACTNESS_COUNTER, (
@@ -736,7 +745,15 @@ PLANE_STATES = {
 
 @pytest.mark.parametrize("block", ["bending_xy", "bending_xz"])
 def test_a_defect_in_ONE_bending_plane_is_caught_by_THAT_plane(block: str) -> None:
-    """Each plane's states detect a defect confined to their own block."""
+    """Each plane's states detect a defect confined to their own block.
+
+    THE MARGIN (R15): at a `1e-3` defect confined to `bending_xz` the smallest
+    detecting state is `1.0756e-04` and the largest blind state is `1.3881e-14`
+    -- a separation of **7.7e+09**. Nearly ten orders, and it is not a coincidence to be relied
+    on: it is the difference between a state that contains the defective block
+    and one whose exact field has no content in it at all, so the blind states
+    sit at round-off rather than at a small response.
+    """
     for state in PLANE_STATES[block]:
         err, _, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
         assert err >= PATCH_TEST_EXACTNESS_COUNTER, (
@@ -820,7 +837,7 @@ def test_the_equilibrated_conditioning_is_unit_INVARIANT(scale: float) -> None:
         "the equilibrated conditioning moved with the length unit, so "
         "`equilibrate` does not do the one thing it is retained for. This says "
         "NOTHING about the solve, which does not use it: the gate's own unit "
-        "invariance is asserted by test_the_four_constant_strain_states_are_EXACT"
+        "invariance is asserted by test_the_six_constant_strain_states_are_EXACT"
     )
 
 
