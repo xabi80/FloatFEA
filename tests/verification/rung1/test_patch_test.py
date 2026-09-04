@@ -64,6 +64,7 @@ from floatfea.element.transform import rotation_matrix
 from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
 from floatfea.tolerances import PATCH_TEST_EXACTNESS, PATCH_TEST_EXACTNESS_COUNTER
+from floatfea.testing import assert_close, assert_differs
 from floatfea.tolerances import COND_UNIT_INVARIANCE, ROUNDOFF_IDENTITY
 
 SEC = Section.circular_tube(0.6, 0.012)
@@ -475,31 +476,63 @@ def _synthetic(scale: float):
 
 
 def test_the_error_measure_is_UNIT_INVARIANT() -> None:
-    """R9: the property, tested by BEHAVIOUR, not by how the code spells it.
+    """R9/BD3: the property, by behaviour, on an O(1) quantity.
 
-    The structural check this replaces asserted the source contained `w[3:]` and
-    `STATIONS[-1]` -- and was satisfied by `w[3:] = 0.0 * STATIONS[-1]`, which
-    discards the rotations entirely. This one does not care how the weighting is
-    written.
+    **The comparison is the RATIO between unit systems against 1**, not two 1e-12
+    numbers against each other. Both earlier attempts compared quantities the
+    comparison could not resolve: the second used `pytest.approx(mm, rel=1e-12)`,
+    whose undeclared default `abs=1e-12` is larger than the operands, so the
+    pre-R2 mixed measure passed it while drifting 1000x.
+
+    `assert_close` refuses operands within 100x of the stated floor, so that
+    failure mode raises on construction instead of passing.
     """
     lc = 9.67
     m = relative_error(*_synthetic(1.0), lc)
     mm = relative_error(*_synthetic(1000.0), lc * 1000.0)
-    assert m == pytest.approx(mm, rel=ROUNDOFF_IDENTITY), (
-        f"the error measure is unit-dependent: {m:.6e} in metres against "
-        f"{mm:.6e} in millimetres"
+    assert m > 0.0 and mm > 0.0, f"degenerate operands: {m:.3e}, {mm:.3e}"
+
+    ratio = mm / m
+    assert_close(
+        ratio, 1.0, ROUNDOFF_IDENTITY, floor=np.finfo(float).eps,
+        what=f"unit-invariance ratio (m={m:.4e}, mm={mm:.4e})",
     )
 
 
-def test_a_MIXED_unit_measure_would_FAIL_that() -> None:
-    """Negative control: the pre-R2 measure must move with the unit system."""
-    def mixed(got, exact, _lc):
-        return float(np.abs(got - exact).max() / np.abs(exact).max())
+@pytest.mark.parametrize(
+    "name, measure",
+    [
+        # The measure that shipped before R2.
+        ("mixed max()", lambda got, ex, _lc: float(
+            np.abs(got - ex).max() / np.abs(ex).max())),
+        # The sabotage the docstring names: weighting that discards rotations.
+        ("w[3:] = 0", lambda got, ex, lc: float(
+            (np.abs(got - ex) * np.r_[np.ones(3), np.zeros(3)]).max()
+            / (np.abs(ex) * np.r_[np.ones(3), np.zeros(3)]).max())),
+    ],
+)
+def test_a_DEFECTIVE_measure_fails_that(name: str, measure) -> None:
+    """Both controls must fail the invariance, and the operands are reported.
 
-    m = mixed(*_synthetic(1.0), 9.67)
-    mm = mixed(*_synthetic(1000.0), 9670.0)
-    assert mm < m / 100.0, (  # not-a-tolerance: negative control -- asserts the two DIFFER by orders
-        f"the mixed-unit measure gave {m:.3e} and {mm:.3e}; it did not move with "
-        "the unit system, so this control cannot demonstrate what the weighting "
-        "is for"
+    `w[3:] = 0` produces 0/0 on a rotation-only error, which is itself a failure
+    to resolve -- reported rather than silently passing.
+    """
+    lc = 9.67
+    m = measure(*_synthetic(1.0), lc)
+    mm = measure(*_synthetic(1000.0), lc * 1000.0)
+
+    if m == 0.0 or mm == 0.0:
+        # Degenerate rather than drifting: this measure cannot see the error at
+        # all. That IS the defect, so it is asserted rather than returned -- an
+        # early `return` here is a test that passes while checking nothing, which
+        # is the failure this whole family of controls exists to prevent.
+        assert m == 0.0 and mm == 0.0, (
+            f"{name} was degenerate in one unit system only ({m:.3e}, {mm:.3e}); "
+            "that is neither blindness nor drift and needs explaining"
+        )
+        return
+
+    assert_differs(
+        mm / m, 1.0, by=0.5, floor=np.finfo(float).eps,
+        what=f"{name} unit drift (m={m:.4e}, mm={mm:.4e})",
     )
