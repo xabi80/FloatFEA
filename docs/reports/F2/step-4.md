@@ -185,3 +185,111 @@ is an unavailable check, and it is recorded as such here.
 ## Test count at this revision
 
 `242 passed` (unchanged; this revision edits only this report).
+
+---
+
+# Revision 2 — the step-4 HOLD answered (R1, R2, R3, R7)
+
+**2026-09-03.** Verdict `docs/reviews/F2/step-4.md` (HOLD @ `ab7e45a`) listed R1,
+R2, R3 and R7 as blocking, with R4–R6 deferrable to step 5's `Carried`. Commits
+`d4c2fe5` (R7, alone) and `ba8c3c4` (R1, R2, R3).
+
+## Carried — from the step-4 verdict
+
+- **R7 — answered**, `d4c2fe5`, committed alone and first so R1 would be judged
+  against the locked scope. Three cells carried the overwrite, not one: the G2.2
+  gate row, the build-order row, and the V1.2 provenance row. All reverted; the
+  scope now states AV4 item 2's requirement of curvature and shear **in each
+  bending plane** — eight state/plane combinations. Results live in the step
+  reports and, at closure, `docs/closure/F2.md`.
+- **R1 — answered**, `ba8c3c4`. Below.
+- **R2 — answered**, `ba8c3c4`. Below. Two fixes, neither a tolerance change.
+- **R3 — answered by withdrawal**, `ba8c3c4`. The claim is refuted, not
+  re-attributed. Below.
+- **R4, R5, R6** — still open, deferred to step 5's `Carried` as the verdict
+  permits. R6 (`pin_threads` never called) is inherited from an ungated step 3.
+
+## R1 — the x-z plane
+
+Two states added: `curvature_xz` (`phi_y = c x`, `w = -c x^2/2`) and `shear_xz`
+(the shear analogue with the rotation negated per `w' = -phi_y`, using `I_y`).
+Written here from the verdict's description; the supervisor is read-only and left
+nothing in the working tree, which was verified before starting.
+
+Six states x two orientations. Clean, worst case: `8.21e-15` against `1e-12`.
+
+**The control is now confined to one local block**, which is what demonstrates
+coverage — a whole-element scaling is seen by every state and proves nothing about
+which plane is exercised. `1e-3` confined to `bending_xz`:
+
+```
+curvature_xz 3.714e-05   shear_xz 3.015e-05        <- detect
+axial 1.9e-15  curvature 4.3e-15  twist 9.8e-16  shear 5.8e-15   <- blind
+```
+
+matching the verdict's independent `3.7e-05` / `3.0e-05`. The mirror is asserted
+too: each plane's states are blind to the other's defect.
+
+## R2 — unit invariance, and a correction to my own mechanism
+
+**The mechanism I wrote was wrong.** "`EA/L` and `12EI/L^3` move in opposite
+directions" is false — both are translational, both scale `S^-1`. What diverges is
+**translation against rotation**: translational diagonals `S^-1`, rotational
+(`4EI/L`) `S^+1`, coupling (`6EI/L^2`) `S^0`. Verified on this element to four
+digits.
+
+1. **The solve equilibrates** (`assemble.system.equilibrate`). Since
+   `diag(SKS) = S diag(K) S`, `K~ = D^-1/2 K D^-1/2` is algebraically invariant:
+   `cond(K~) = 3.85e+02` at every unit system, where `cond(K_ff)` ran
+   `9.2e2 -> 6.0e8`.
+2. **One breach survived it** — axial in kilometres, `2.84e-12`. Localising showed
+   every erroneous component was **rotational** (`1e-13 .. 2.8e-12`) with
+   translations at `1e-15`, in a state whose exact rotations are zero. The **error
+   measure** was mixing metres and radians in one `max()`, so it was itself
+   unit-dependent. Rotations are now weighted by a characteristic length.
+
+Across `S = 1e-3 .. 1e+3`, six states: **no breach**, worst `3.12e-14`. Floor now
+stated as a multiple of `cond(K~) * eps = 8.5e-14`; the ceiling is ~12x it, and
+`tolerances.py` records the unit system the entry is declared in.
+
+**Neither fix moved a tolerance.** The homogeneous measure additionally *sharpened*
+detection — curvature and shear had been understating at `3.72e-08` / `3.02e-08`
+because rotational error was divided by a translational scale — so
+`PATCH_TEST_EXACTNESS_COUNTER` is **tightened** `3.0e-8 -> 1.0e-7`.
+
+## R3 — withdrawn, not re-attributed
+
+The "short 0.6 m element" story was a hypothesis, and measuring it refuted the
+whole comparison rather than relocating it. Controlled — element 1 exactly `2.0 m`
+and total exactly `10.0 m` in both, so only commensurability varies:
+
+```
+A  [2.0 2.0 2.0 2.0 2.0]          commensurate     7.7448e-08
+B  [1.069 2.0 2.311 3.658 0.962]  incommensurate   6.5661e-08   ratio 0.848
+```
+
+**Commensurability is worth nothing here**, marginally the wrong way. Sensitivity
+is driven by which element is perturbed and where it sits: on a **uniform** mesh,
+every element identically `1.934 m`, the response still varies **4.5x** across
+element index (`8.52e-08` first, `1.91e-08` last). Both the original `4.6x` and my
+`1.6x` were uncontrolled.
+
+Corrected in all three places that carried it: `docs/instrumentation.md`, the test
+docstring, and the `_COUNTER` comment. The irregular mesh stays as standard
+practice with **no claimed benefit**.
+
+## Tolerances touched in this revision
+
+| name | old | new | direction | why |
+|---|---|---|---|---|
+| `PATCH_TEST_EXACTNESS` | `1e-12` | `1e-12` | **unchanged** | comment gains the unit system and the `cond(K~)*eps` floor |
+| `PATCH_TEST_EXACTNESS_COUNTER` | `3.0e-8` | `1.0e-7` | **tightened** | assertion is `err >= COUNTER`, so this makes the control stricter; all six states now respond at `~1.1e-07` under the coherent measure |
+
+## Numbers
+
+`260 passed`, my run.
+
+## Witness channel
+
+Still unavailable. No git remote exists, so no PR and no `[witness ...]` comment.
+Per `docs/SUPERVISOR.md` that is an unavailable check, not a pass.
