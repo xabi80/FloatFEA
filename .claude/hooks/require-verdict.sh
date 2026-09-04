@@ -65,9 +65,18 @@ fi
 
 # Report or code changed since the verdict's reviewed commit: the step was
 # reworked after review. Uses git, not mtimes, so a fresh clone cannot trip it.
+#
+# tests/corpus/ is EXCLUDED because it is the reviewer's, not the implementer's
+# (BE3): the supervisor commits its adversarial corpus after the commit it
+# reviewed, so counting it as implementer rework made every review that opened a
+# corpus demand a re-review of itself. docs/reviews/ is exempt for the same
+# reason and was never in this list. The exclusion does not widen what the
+# implementer can change unseen -- protect-reviews.sh denies it those paths --
+# but note the KNOWN LIMITATION both hooks share: they see Write|Edit|MultiEdit,
+# not a shell redirect through Bash.
 reviewed=$(grep -m1 -E '^Reviewed commit:' "$review" | awk '{print $3}')
 if [ -n "$reviewed" ] && git cat-file -e "$reviewed" 2>/dev/null; then
-  if ! git diff --quiet "$reviewed" -- "$report" floatfea tests 2>/dev/null; then
+  if ! git diff --quiet "$reviewed" -- "$report" floatfea tests ':(exclude)tests/corpus' 2>/dev/null; then
     block "floatfea/, tests/, or $report changed since the verdict at $reviewed. Re-invoke the gating-supervisor so the verdict covers the current state."
   fi
 fi
