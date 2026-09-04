@@ -717,10 +717,18 @@ def _scaled_model(scale: float):
 def test_the_equilibrated_conditioning_is_unit_INVARIANT(scale: float) -> None:
     """`cond(D^-1/2 K D^-1/2)` is the same number in every length unit.
 
-    This is the algebraic fact the equilibrated solve rests on: for diagonal `S`,
-    `diag(SKS) = S diag(K) S`, so the scaled matrix is invariant. Without it the
-    conditioning is a property of the unit system rather than of the problem --
-    measured, `cond(K_ff)` runs 9.2e2 to 6.0e8 over these scales.
+    A PROPERTY OF `equilibrate` THE UTILITY, NOT OF `solve` (R37a). An earlier
+    version of this line called it "the algebraic fact the equilibrated solve
+    rests on". `solve` does not equilibrate -- it factorises `K_ff` directly
+    (BD2, `system.py`) -- so there is no equilibrated solve for anything to rest
+    on, and the sentence survived two commits after the path it described was
+    deleted.
+
+    What the property is: for diagonal `S`, `diag(SKS) = S diag(K) S`, so the
+    scaled matrix is algebraically invariant. Measured, `cond(K~) = 3.85e2` at
+    every unit system while `cond(K_ff)` runs 9.2e2 to 6.0e8 over these scales.
+    It is asserted because it is the reason `equilibrate` is kept as a candidate
+    for F3, and it would be removed with the utility.
     """
     from floatfea.assemble.system import equilibrate
 
@@ -734,13 +742,22 @@ def test_the_equilibrated_conditioning_is_unit_INVARIANT(scale: float) -> None:
         return float(np.linalg.cond(equilibrate(kff)[0].toarray()))
 
     assert cond_eq(m, els) == pytest.approx(cond_eq(ref_m, ref_els), rel=COND_UNIT_INVARIANCE), (
-        "the equilibrated conditioning moved with the length unit; the solve is "
-        "not unit-robust and every exactness ceiling above it is unit-dependent"
+        "the equilibrated conditioning moved with the length unit, so "
+        "`equilibrate` does not do the one thing it is retained for. This says "
+        "NOTHING about the solve, which does not use it: the gate's own unit "
+        "invariance is asserted by test_the_four_constant_strain_states_are_EXACT"
     )
 
 
 def test_the_UNequilibrated_conditioning_DOES_move() -> None:
-    """Negative control: if it did not, equilibration would be ceremony."""
+    """Negative control for the test above: the invariance is not automatic.
+
+    Says what it is a control FOR, which is the utility's property. It used to
+    say that without this, "equilibration would be ceremony" -- but on the
+    production path equilibration IS absent, and `system.py` says so in the
+    honest words ("retained as a utility"). A control cannot argue for a
+    production choice that was not made.
+    """
     ends = np.concatenate([node_dofs(0), node_dofs(len(STATIONS) - 1)])
     conds = []
     for scale in UNIT_SCALES:
