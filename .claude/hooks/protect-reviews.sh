@@ -33,11 +33,23 @@
 #   * `sed -i` in the same segment;
 #   * `git checkout|restore|rm|mv` in the same segment.
 #
-# LIMITATION, stated because it decides what this is worth: it would not catch a
-# path assembled at runtime from pieces, nor a verb outside that list. It takes
-# accidental writes to zero and makes a deliberate one require intent; the
-# outside witness's commit-separation check remains the guard that does not
-# depend on this hook at all.
+# THREE HOLES THE REVIEWER MEASURED, TWO CLOSED HERE (BH5):
+#
+#   1. `cd tests/corpus && echo x > y` was ALLOWED -- the protected path is in
+#      one segment and the write in another. Closed: for a caller that is not the
+#      supervisor, ANY command mentioning a protected directory together with a
+#      redirect or a mutating verb ANYWHERE in it is denied. Over-blocking costs
+#      the implementer nothing, because it has no legitimate write there.
+#   2. Malformed JSON FAILED OPEN -- the python helper printed nothing, `agent`
+#      and `hit` came back empty, and the case fell through to `exit 0`. Closed:
+#      the helper prints a sentinel on any parse failure and the hook denies.
+#   3. `NotebookEdit` was not in the matcher. Closed in settings.json.
+#
+# LIMITATION that remains, stated because it decides what this is worth: a path
+# assembled at runtime from pieces is not caught, and neither is a mutating verb
+# outside the list. It takes accidental writes to zero and makes a deliberate one
+# require intent; the outside witness's commit-separation check remains the guard
+# that does not depend on this hook at all.
 
 input=$(cat)
 
@@ -56,8 +68,13 @@ import json, re, sys
 PROTECTED = r"(?:docs[/\\]+reviews|tests[/\\]+corpus)"
 VERBS = r"(?:tee|cp|mv|rm|install|truncate|dd|touch)"
 
-d = json.load(sys.stdin)
-ti = d.get("tool_input", {}) or {}
+try:
+    d = json.load(sys.stdin)
+    ti = d.get("tool_input", {}) or {}
+except Exception:
+    # FAIL CLOSED. Input this hook cannot parse is input it cannot clear.
+    print("- unparseable")
+    raise SystemExit(0)
 agent = d.get("agent_type") or "-"
 
 path = ti.get("file_path") or ti.get("path") or ""
@@ -66,23 +83,22 @@ command = ti.get("command") or ""
 hit = "none"
 if re.search(PROTECTED, path):
     hit = "reviews" if re.search(r"docs[/\\]+reviews", path) else "corpus"
-elif command:
-    # Write intent only -- see the header. Segments split on ; | && so a verb in
-    # one command does not tar the path in another.
-    for seg in re.split(r"[;|&]+", command):
-        if not re.search(PROTECTED, seg):
-            continue
-        writes = (
-            re.search(r">>?\s*[\x27\"]?\S*" + PROTECTED, seg)
-            or re.search(r"\b" + VERBS + r"\b[^\n]*" + PROTECTED, seg)
-            or re.search(r"\bsed\b[^\n]*-i[^\n]*" + PROTECTED, seg)
-            or re.search(r"\bgit\b[^\n]*\b(?:checkout|restore|rm|mv)\b[^\n]*"
-                         + PROTECTED, seg)
-        )
-        if writes:
-            hit = ("reviews" if re.search(r"docs[/\\]+reviews", seg)
-                   else "corpus")
-            break
+elif command and re.search(PROTECTED, command):
+    # WHOLE COMMAND, not per segment (BH5 hole 1). Segmenting let
+    # `cd tests/corpus && echo x > y` through: the path was in one segment and
+    # the write in another. A caller that is not the supervisor has no
+    # legitimate write here, so any write shape anywhere in a command that
+    # mentions a protected directory is refused.
+    writes = (
+        re.search(r">>?", command)
+        or re.search(r"\b" + VERBS + r"\b", command)
+        or re.search(r"\bsed\b[^\n]*-i", command)
+        or re.search(r"\bgit\b[^\n]*\b(?:checkout|restore|rm|mv)\b", command)
+        or re.search(r"\bcd\b", command)
+    )
+    if writes:
+        hit = ("reviews" if re.search(r"docs[/\\]+reviews", command)
+               else "corpus")
 print(agent, hit)
 ' 2>/dev/null)
 EOF
@@ -94,6 +110,11 @@ if [ "$agent" = "gating-supervisor" ]; then
 fi
 
 case "$hit" in
+  unparseable)
+    cat <<'EOF'
+{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"protect-reviews.sh could not parse its own hook input. A hook that cannot read the request cannot clear it, so this fails CLOSED (BH5)."}}
+EOF
+    ;;
   reviews)
     cat <<'EOF'
 {"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"docs/reviews/ is written only by the gating-supervisor, through scripts/write_verdict.py. The implementer does not write, edit, or delete verdicts -- and this now covers Bash as well as the editing tools, so a shell redirect is refused too."}}
