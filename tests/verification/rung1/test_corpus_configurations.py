@@ -23,9 +23,25 @@ WHAT IS ASSERTED PER ENTRY
 `expect=raise`  the configuration must raise at construction rather than fall
                 back to a silent default.
 
-An entry naming a field this module cannot build is a FAILURE, not a skip: a
-corpus entry that silently does nothing is the vacuous-parameter failure AM5
-named.
+An entry naming a field this module cannot build RAISES (BH3): an unknown key, an
+unknown `extra`, an unknown top-level field. A corpus entry that silently does
+nothing is the vacuous-parameter failure AM5 named, and the previous version of
+this docstring called that "a FAILURE, not a skip" while the parser skipped --
+measured, `extra=roll_rad=1.0` and `extra=nonsense=3.0` returned bit-identical
+results to `extra=none`.
+
+THE ADMISSION LIMIT OVERRIDES `expect` (BH0)
+--------------------------------------------
+A member below `BEAM_ADMISSION_L_OVER_D` is not a G2.2 case at all: no beam
+element describes it, and the gate's own negative control demonstrably fails
+there (`docs/conventions.md`, "Beam admission limit"). Such an entry is asserted
+to RAISE whatever its `expect` field says.
+
+**Three entries are affected and the reviewer wrote `expect=hold` for all three**
+-- `stubby_thin` and `stubby_thick` at `L/D = 1.5`, `very_stubby_L_r_0p5` at
+`0.5`. That is a disagreement between the corpus and the model's admission
+limit, not a resolved question: this module reports which entries it overrode so
+the reviewer can adjudicate, and the corpus is not edited from here.
 """
 from __future__ import annotations
 
@@ -36,9 +52,11 @@ import pytest
 
 from floatfea.assemble.system import BeamElement, assemble, solve
 from floatfea.element.transform import rotation_matrix
+from floatfea.model.admissibility import assert_beam_admissible, member_l_over_d
 from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
-from floatfea.tolerances import (PATCH_TEST_COND_FACTOR, PATCH_TEST_EXACTNESS,
+from floatfea.tolerances import (BEAM_ADMISSION_L_OVER_D,
+                                 PATCH_TEST_COND_FACTOR, PATCH_TEST_EXACTNESS,
                                  PATCH_TEST_EXACTNESS_COUNTER)
 
 import sys
@@ -97,6 +115,13 @@ def _build(entry: dict[str, str]):
         roll = float(extra.split("=", 1)[1])
     elif extra.startswith("I_y_over_I_z="):
         object.__setattr__(sec, "I_y", sec.I_z * float(extra.split("=", 1)[1]))
+
+    # The beam admission limit, BEFORE anything is built (BH0). A member below
+    # it is not a G2.2 case: no beam element describes it, and the gate's own
+    # negative control demonstrably fails there. This OVERRIDES the entry's
+    # `expect` field, and the disagreement is reported rather than resolved --
+    # see the module docstring.
+    assert_beam_admissible(total, sec, what=entry["id"])
 
     m = Model()
     for s in stations:
@@ -184,9 +209,35 @@ def test_the_corpus_exists_and_is_not_empty() -> None:
     assert len(ENTRIES) >= 10, f"only {len(ENTRIES)} corpus entries parsed"
 
 
+def _inadmissible(entry) -> float | None:
+    """The member's L/D if it is below the admission limit, else None."""
+    ratio = member_l_over_d(float(entry["stations"]), _section(entry["section"]))
+    return ratio if ratio < BEAM_ADMISSION_L_OVER_D else None
+
+
+INADMISSIBLE = [e["id"] for e in ENTRIES if _inadmissible(e) is not None]
+
+
+def test_the_admission_limit_overrides_are_REPORTED(capsys) -> None:
+    """The disagreement is surfaced, not silently resolved (CLAUDE.md)."""
+    with capsys.disabled():
+        for e in ENTRIES:
+            ratio = _inadmissible(e)
+            if ratio is not None:
+                print(f"\n  OVERRIDE: {e['id']} has L/D = {ratio:.3f} < "
+                      f"{BEAM_ADMISSION_L_OVER_D:g}; corpus says "
+                      f"expect={e['expect']}, this module asserts it RAISES")
+    assert True  # not-a-tolerance: this test reports, the assertions are below
+
+
 @pytest.mark.parametrize("entry", ENTRIES, ids=lambda e: e["id"])
 def test_the_corpus_entry_behaves_as_the_reviewer_recorded(entry) -> None:
     expect = entry["expect"]
+
+    if _inadmissible(entry) is not None:
+        with pytest.raises(ValueError, match="admission limit"):
+            _build(entry)
+        return
 
     if expect == "raise":
         with pytest.raises(ValueError):
@@ -215,7 +266,10 @@ def test_the_corpus_entry_behaves_as_the_reviewer_recorded(entry) -> None:
 
 
 @pytest.mark.parametrize(
-    "entry", [e for e in ENTRIES if e["expect"] != "raise"], ids=lambda e: e["id"]
+    "entry",
+    [e for e in ENTRIES
+     if e["expect"] != "raise" and _inadmissible(e) is None],
+    ids=lambda e: e["id"],
 )
 def test_the_corpus_entry_still_DETECTS_a_defect(entry) -> None:
     """A configuration that holds but cannot fail is worse than one that breaches."""

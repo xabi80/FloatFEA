@@ -149,6 +149,43 @@ from typing import Final
 MEMBER_ORIENTATION_DEGENERACY: Final[float] = 0.05
 
 
+# CLASS: STRUCTURAL -- a modelling admission limit. It fires by design on parts
+# that are not beams, and it exists to force an explicit choice (an F7 shell
+# sub-model), not to be tuned until it stops firing. No counter-case, per AO2.
+#
+# BH0 / docs/conventions.md sec. "Beam admission limit" -- the smallest member
+# length-to-depth ratio for which a Timoshenko beam element is an admissible
+# model. Dimensionless: member length over `D = 4 sqrt(I/A)`.
+#
+# ON THE MEMBER, NOT THE ELEMENT, and that was measured rather than assumed. The
+# gate's own mesh has a member at L/D = 16.12 and two of its five elements at
+# L/D = 1.32 and 1.50, so an element-wise limit of 2 would reject the patch
+# test's own model. Beam validity is a property of the physical member;
+# subdividing it is ordinary practice and changes nothing.
+#
+# Reason for 2.0: shear-flexible beam kinematics still assume plane sections and
+# a length over which stresses redistribute, and below L/D ~ 2 there is no such
+# length. The value is a MODELLING JUDGEMENT, proposed by the supervisor and
+# PENDING XABIER'S CONFIRMATION -- it is not derived from a measurement here, and
+# it is written down as a judgement rather than dressed as one.
+#
+# WHAT IT COSTS AND WHAT IT BUYS, measured. Sweeping member L/D with the gate's
+# own station ratios, the weakest state's response to a 1e-6 single-element
+# stiffness defect (against PATCH_TEST_EXACTNESS_COUNTER = 1.0e-7):
+#
+#   L/D    0.50    1.00    1.50 | 2.00    3.00    8.00   16.10   48.00
+#   resp  9.50e-8 8.80e-8 1.08e-7| 1.08e-7 1.07e-7 1.07e-7 1.08e-7 1.08e-7
+#          FAILS   FAILS        | -------- admitted range --------
+#
+# Below the limit the gate's own negative control FAILS -- the counter-case is
+# not detected at L/D = 0.5 or 1.0. That is the concrete cost of analysing a
+# non-beam as a beam, and it is the measurement the limit rests on. Over the
+# admitted range the response is flat to 0.9% and scale-free in D: at L/D = 2 it
+# is 1.0805e-07 for every diameter from 0.1 m to 4 m.
+# Set: 2026-09-04, F2
+BEAM_ADMISSION_L_OVER_D: Final[float] = 2.0
+
+
 # CLASS: STRUCTURAL -- a condition (is this DOF alive?), not an error ceiling.
 # G1.6 / diagnostics -- floor below which a DOF carries no signal and MUST NOT
 # enter any aggregate statistic. Relative, against the largest reference
