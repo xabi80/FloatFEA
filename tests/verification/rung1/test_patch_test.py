@@ -54,40 +54,34 @@ Exactness is asserted at ULP scale, per AU4 — not convergence. An element that
 reproduces constant curvature only in the limit is passing a convergence test
 wearing the patch test's clothes.
 
-What this gate is BLIND to, by design — the general statement (R44, R53)
------------------------------------------------------------------------
-**Every UNIFORM material or section error.** Not just `kappa`: any property error
-applied to *every* element is invisible to this gate, and a property error in
-*one* element of five is caught at one part in 10^6. Measured, same mesh, same
-states:
+What this gate is BLIND to, by design (R44, R53, narrowed by BH4/R59)
+---------------------------------------------------------------------
+**A uniform SCALAR factor on K, and nothing wider.** Multiplying every element's
+stiffness by the same number leaves the displacement-imposed patch test exactly
+where it was: the interior nodes solve `K u = 0` with the ends prescribed, and a
+scalar factor cancels out of that. `E x 2` is such a factor and is invisible.
+Absolute properties are gated at **V2.1/V2.2**, against a closed form, where the
+reference does not come from the model.
 
-    uniform, applied to every element          worst err     ceiling 1e-12
-      E x 2                                     1.2513e-14   invisible
-      nu 0.30 -> 0.45                           3.3044e-14   invisible
-      section scaled x 1.5                      4.3564e-15   invisible
-      kappa 0.530612 -> 0.5 (a 5.8% error)      8.5848e-15   invisible
+**THE WIDER CLAIM WAS WRONG AND IS WITHDRAWN.** An earlier version of this
+docstring said *every* uniform material or section error was invisible, listing
+`nu` and a scaled section as evidence. Both were artefacts of the measurement:
+the test moved the REFERENCE with the element, so it was comparing a beam
+against itself. Holding the reference fixed and moving only the element:
 
-    non-uniform, one element of five
-      x 1.000001                                1.1743e-07   CAUGHT
-      x 1.001                                   1.1734e-04   CAUGHT
-      x 2.0                                     6.8860e-02   CAUGHT
+    defect                  both moved   reference HELD
+    E x 2                   1.2513e-14   1.2513e-14   invisible
+    nu 0.30 -> 0.45         3.3044e-14   5.5281e-04   CAUGHT
+    section x 1.5           9.7418e-15   7.3011e-03   CAUGHT
 
-**Why, and it is the patch test's definition rather than a hole.** The test is
-displacement-driven with ZERO interior load, and the exact field lies in the
-element's own solution space. The interior nodes are then fixed by the end
-conditions and by the RATIOS of the element stiffnesses; a uniform factor
-cancels out of those ratios exactly. So `G2.2 certifies relative consistency
-between elements — assembly, connectivity, transformation — and no absolute
-property at all.`
+`nu` moves `G/E`, hence `Phi`, hence the SHAPE of K; a scaled section moves `A`
+as `D` and `I` as `D^3`. Neither is a scalar multiple, and the gate sees both at
+1e-4 and 1e-3. Only `E` scales K uniformly.
 
-This subsumes the earlier statement about `kappa` alone. `_exact_local` does draw
-state 4's reference from `SEC.kappa(S355)`, the same source the element uses, per
-Q1b's pin -- but even an independent reference would not change the conclusion,
-because `E` and the section are drawn independently and are equally invisible.
-
-Absolute properties are gated at **V2.1/V2.2**, the cantilever against a closed
-form, where the reference does not come from the model. A reader who takes a
-green G2.2 as covering the section properties is reading it wrong.
+`kappa` behaves like `nu` for the same reason, and the gate is blind to it only
+because Q1b pins state 4's reference to `SEC.kappa(S355)` -- the same source the
+element uses. That is a property of the reference, deliberately chosen, not of
+the gate.
 
 The gate is NOT blind to the shear FORMULATION: substituting the Euler-Bernoulli
 bending block for the shear-flexible one reddens `shear` and `shear_xz` at
@@ -1029,51 +1023,97 @@ def test_a_STIFFNESS_DEFECT_moves_the_equilibrated_conditioning() -> None:
     assert drift > COND_UNIT_INVARIANCE, "the counter must exceed the ceiling"
 
 
-UNIFORM_ERRORS = [
-    ("E x 2", "material", 2.0),
-    ("nu 0.30 -> 0.45", "nu", 0.45),
-    ("section x 1.5", "section", 1.5),
-]
+def _run_with_independent_reference(state: str, sec_el, mat_el) -> float:
+    """Solve with `sec_el`/`mat_el` while the exact field comes from the MODULE's
+    own section and material.
 
-
-@pytest.mark.parametrize("label, kind, value", UNIFORM_ERRORS,
-                         ids=[u[0] for u in UNIFORM_ERRORS])
-def test_a_UNIFORM_property_error_is_invisible_to_this_gate(
-    label: str, kind: str, value: float
-) -> None:
-    """The boundary of what G2.2 certifies, asserted so it stays true (R44/R53).
-
-    This asserts a BLINDNESS, deliberately. The gate is displacement-driven with
-    zero interior load and the exact field lies in the element's solution space,
-    so the interior nodes depend on the RATIOS of element stiffnesses and a
-    uniform factor cancels exactly. Recording it stops a later reader treating a
-    green G2.2 as evidence about `E`, `nu`, `kappa` or the section -- and if a
-    change ever makes the gate sensitive to a uniform error, this goes red and
-    the docstring above it gets revisited rather than quietly ceasing to be true.
-
-    Its partner is `test_a_perturbed_element_BREAKS_the_patch_test`: the same
-    magnitude of error in ONE element of five is caught at 1e-6.
+    This is what separates a property of the ELEMENT from a property of the
+    measurement. `_run` builds both sides from the same globals, so a change to
+    them moves the reference too and the comparison is a beam against itself.
     """
-    from dataclasses import replace
+    m_ref, _, _ = _model(SKEW)
+    u_ex_local = _exact_local(state, STATIONS)
 
     global SEC, S355
     sec_before, mat_before = SEC, S355
     try:
-        if kind == "material":
-            S355 = replace(mat_before, E=mat_before.E * value)
-        elif kind == "nu":
-            S355 = replace(mat_before, nu=value)
-        else:
-            SEC = Section.circular_tube(0.6 * value, 0.012 * value)
-        worst = max(_run(st, SKEW)[0] for st in STATES)
+        SEC, S355 = sec_el, mat_el
+        m, els, r = _model(SKEW)
     finally:
         SEC, S355 = sec_before, mat_before
 
+    u_ex = _to_global(u_ex_local, r)
+    k = assemble(m, els)
+    n_nodes = len(STATIONS)
+    ends = np.concatenate([node_dofs(0), node_dofs(n_nodes - 1)])
+    u_pres = np.zeros(m.n_dof)
+    u_pres[node_dofs(0)] = u_ex[0]
+    u_pres[node_dofs(n_nodes - 1)] = u_ex[-1]
+    f = -(k @ u_pres)
+    f[ends] = 0.0
+    u = (solve(k, f, ends).u + u_pres).reshape(n_nodes, 6)
+    return relative_error(u, u_ex, STATIONS[-1])
+
+
+@pytest.mark.parametrize("factor", [2.0, 0.5], ids=lambda f: f"E x {f:g}")
+def test_a_uniform_SCALAR_factor_on_K_is_invisible(factor: float) -> None:
+    """The boundary of what G2.2 certifies, narrowed to what was measured (BH4).
+
+    A scalar factor on every element cancels out of `K u = 0` with the ends
+    prescribed, so it cannot move an interior node. `E` is the only property in
+    this model that scales K uniformly.
+
+    This asserts a BLINDNESS deliberately, and it is asserted with an INDEPENDENT
+    reference -- so it is a property of the gate, not of the harness. The earlier
+    version of this test moved the reference too and therefore also reported
+    `nu` and a scaled section as invisible; both are caught, see below.
+    """
+    from dataclasses import replace
+
+    worst = max(_run_with_independent_reference(st, SEC, replace(S355, E=S355.E * factor))
+                for st in STATES)
     assert worst <= PATCH_TEST_EXACTNESS, (
-        f"{label} was DETECTED at {worst:.4e}. That contradicts the gate's own "
-        "docstring, which says a uniform property error cancels out of the "
-        "stiffness ratios. Either the docstring or the formulation is wrong, and "
-        "this is not a case of tightening a tolerance."
+        f"E x {factor:g} was DETECTED at {worst:.4e}. A scalar factor on K cannot "
+        "move an interior node of a displacement-imposed patch test, so either "
+        "the formulation or this docstring is wrong."
+    )
+
+
+NON_SCALAR_ERRORS = [
+    ("nu 0.30 -> 0.45", "nu", 0.45, 1.0e-4),
+    ("section x 1.5", "section", 1.5, 1.0e-3),
+]
+
+
+@pytest.mark.parametrize("label, kind, value, floor",
+                         NON_SCALAR_ERRORS, ids=[e[0] for e in NON_SCALAR_ERRORS])
+def test_a_uniform_NON_scalar_property_error_IS_caught(
+    label: str, kind: str, value: float, floor: float
+) -> None:
+    """The half of the old claim that was false, now asserted the right way round.
+
+    `nu` moves `G/E` and hence `Phi`; a scaled section moves `A` as `D` and `I`
+    as `D^3`. Neither is a scalar multiple of K, and with an independent
+    reference the gate sees both -- `5.5281e-04` and `7.3011e-03` at this commit,
+    eight and nine orders above the ceiling.
+
+    The `floor` here is a discrimination floor, not a tolerance: it asserts the
+    response is LARGE, and it is set an order below the measured value so a
+    formulation change has to lose an order of sensitivity before it passes.
+    """
+    from dataclasses import replace
+
+    if kind == "nu":
+        sec_el, mat_el = SEC, replace(S355, nu=value)
+    else:
+        sec_el, mat_el = Section.circular_tube(0.6 * value, 0.012 * value), S355
+
+    worst = max(_run_with_independent_reference(st, sec_el, mat_el)
+                for st in STATES)
+    assert worst > floor, (  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE
+        f"{label} moved the interior field by only {worst:.4e}. The gate is "
+        "supposed to see a non-scalar uniform property error; if it no longer "
+        "does, the blindness docstring above is wider than the code."
     )
 
 
