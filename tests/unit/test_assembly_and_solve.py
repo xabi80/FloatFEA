@@ -25,8 +25,10 @@ from floatfea.assemble.system import (
     solve,
 )
 from floatfea.model.material import S355, Section
-from floatfea.model.nodes import Model, Node, node_dofs
+from floatfea.model.nodes import Model, Node, element_dofs, node_dofs
 from floatfea.tolerances import (
+    MATRIX_SYMMETRY,
+    MATRIX_SYMMETRY_COUNTER,
     ROUNDOFF_IDENTITY,
     SUBDIVISION_INVARIANCE,
     SUBDIVISION_INVARIANCE_COUNTER,
@@ -80,6 +82,46 @@ def test_assembly_is_symmetric() -> None:
     m, els = _frame()
     k = assemble(m, els).toarray()
     assert np.allclose(k, k.T, rtol=0, atol=TRANSFORM_INVARIANCE * np.abs(k).max())
+
+
+def test_a_MISINDEXED_scatter_BREAKS_the_symmetry() -> None:
+    """BG1: MATRIX_SYMMETRY's counter, injected -- and the injection refuted the
+    defect the entry named.
+
+    `MATRIX_SYMMETRY_COUNTER = 1e-2` said it came from "one transposed element
+    block ... 3.1e-01". Running it: **an element contribution is symmetric**
+    (`max|kg - kg^T| / max|kg| = 3.7e-17`), so transposing one is a no-op and the
+    assembly's asymmetry stays at `3.711e-17` -- which is the CLEAN value. The
+    named defect could never have been caught because it is not a defect.
+
+    The defect that is real, and that this injects, is a **mis-indexed scatter**:
+    the element's columns landing on the wrong node's DOF while its rows land
+    correctly. Every entry is still present and only the pattern is wrong, which
+    is what a wrong `element_dofs` ordering produces. Measured on this frame:
+
+        transpose the block (the named defect)   3.7107e-17   <- no-op
+        columns scattered to the wrong node      7.9020e-02
+        upper triangle only                      5.0000e-01
+        one off-diagonal entry, 5%               2.5000e-02
+
+    The VALUE 1e-2 survives -- the realistic defect is 8x above it and even a 5%
+    single-entry error is 2.5x above it. The sentence explaining it did not.
+    """
+    m, els = _frame()
+    k = assemble(m, els).toarray()
+    dofs = element_dofs(els[0].node_a, els[0].node_b)
+    kg = element_global_stiffness(m, els[0])
+    # Columns scattered to the other node's block; rows correct.
+    wrong_columns = list(range(6, 12)) + list(range(6))
+    k[np.ix_(dofs, dofs)] += kg[:, wrong_columns] - kg
+
+    asym = float(np.abs(k - k.T).max() / np.abs(k).max())
+    assert asym >= MATRIX_SYMMETRY_COUNTER, (
+        f"a mis-indexed scatter left max|K - K^T| / max|K| = {asym:.3e}, "
+        f"below the declared counter-case {MATRIX_SYMMETRY_COUNTER:.3e}. The "
+        "symmetry check cannot see the defect its counter names."
+    )
+    assert asym > MATRIX_SYMMETRY, "the counter must exceed the ceiling"
 
 
 def test_the_solve_reports_a_PER_CASE_residual() -> None:

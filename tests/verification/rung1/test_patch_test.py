@@ -87,14 +87,21 @@ from floatfea.assemble.system import BeamElement, assemble, solve
 from floatfea.element.transform import rotation_matrix
 from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
-from floatfea.tolerances import (DETECTION_THRESHOLD_BAND, PATCH_TEST_EXACTNESS,
+from floatfea.tolerances import (DETECTION_THRESHOLD_BAND, PATCH_TEST_COND_FACTOR,
+                                 PATCH_TEST_COND_FACTOR_COUNTER_DEFECT,
+                                 PATCH_TEST_EXACTNESS,
                                  PATCH_TEST_EXACTNESS_COUNTER, RESULTANT_EXACTNESS,
                                  RESULTANT_EXACTNESS_COUNTER, SOLVE_RESIDUAL,
                                  SOLVE_RESIDUAL_COUNTER)
 from floatfea.testing import assert_close, assert_differs
-from floatfea.tolerances import COND_UNIT_INVARIANCE, ROUNDOFF_IDENTITY
+from floatfea.tolerances import (COND_UNIT_INVARIANCE,
+                                 COND_UNIT_INVARIANCE_COUNTER,
+                                 DETECTION_THRESHOLD_BAND_COUNTER,
+                                 ROUNDOFF_IDENTITY)
 
 SEC = Section.circular_tube(0.6, 0.012)
+STATES = ["axial", "curvature", "twist", "shear",
+          "curvature_xz", "shear_xz"]
 
 # The four state amplitudes, in ONE place. `_exact_local` poses the field from
 # them and `_exact_resultants` poses the internal forces from them, so the two
@@ -303,6 +310,29 @@ def _worst_resultant_error(model, elements, u_global: np.ndarray, state: str,
     return worst
 
 
+def _free_conditioning(model, elements) -> float:
+    """`cond(K_ff)` for the patch system: the achievable accuracy of this solve.
+
+    Dense, because the free block is 24x24 and the number is wanted exactly.
+    """
+    ends = np.concatenate([node_dofs(0), node_dofs(len(STATIONS) - 1)])
+    free = np.setdiff1d(np.arange(model.n_dof), ends)
+    return float(np.linalg.cond(assemble(model, elements)[free][:, free].toarray()))
+
+
+def floor_aware_ceiling(model, elements) -> float:
+    """`PATCH_TEST_COND_FACTOR * cond(K_ff) * eps` -- the ceiling that scales.
+
+    `PATCH_TEST_EXACTNESS`, a constant, is what breaks on slender members: its
+    ratio spans 141x over element L/r = 15.7 .. 117.9 and crosses 1 three times,
+    non-monotonically. This form spans 8x and never reaches 1. Both are asserted
+    where the constant is claimed, and at the posed geometry THIS one is tighter
+    (8.18e-13 against 1e-12), so it binds.
+    """
+    return PATCH_TEST_COND_FACTOR * _free_conditioning(model, elements) * float(
+        np.finfo(float).eps)
+
+
 def _run(
     state: str,
     direction: np.ndarray,
@@ -412,6 +442,18 @@ def test_the_six_constant_strain_states_are_EXACT(
         "failure -- every accuracy comparison above rung 1 is uninterpretable "
         "until it is fixed, and refinement is not the response."
     )
+    # The floor-aware bound (R46). A constant ceiling is what breaks on slender
+    # members; this one scales with the achievable accuracy of the solve. At the
+    # posed geometry it is TIGHTER than the constant above, so it binds here too.
+    m_c, els_c, _ = _model(d, scale)
+    ceiling = floor_aware_ceiling(m_c, els_c)
+    assert err <= ceiling, (
+        f"{state}/{orientation}/S={scale:g}: {err:.3e} exceeds "
+        f"{PATCH_TEST_COND_FACTOR:g} * cond(K_ff) * eps = {ceiling:.3e}. The "
+        "error is above the accuracy this solve can achieve, which is a "
+        "formulation or assembly defect rather than round-off."
+    )
+
     # The SECOND quantity, and the one that moves under a stiffness defect (R41).
     # `res.residual` used to sit here; it measures the SOLVE, not the element, and
     # it does not move under a defect the line above fails by eleven orders -- it
@@ -620,6 +662,61 @@ def test_the_resultant_recovery_is_EXACT_on_the_exact_field(
     )
 
 
+# The resultant channel's DECISION thresholds -- the defect each shipped
+# predicate actually detects, by bisection on the predicate itself (R47). These
+# are what a reader comparing the two channels needs; the raw responses to one
+# arbitrary 1e-6 defect are not, and quoting them as "6.4x the more sensitive"
+# said the opposite of what the code does.
+#
+#   state            via field  via resultants    ratio
+#   axial           9.1808e-12      1.4498e-09   157.9x
+#   curvature       9.2518e-12      1.4422e-09   155.9x
+#   twist           9.1708e-12      1.4498e-09   158.1x
+#   shear           8.4540e-12      1.2527e-09   148.2x
+#   curvature_xz    9.2976e-12      1.4422e-09   155.1x
+#   shear_xz        8.4953e-12      1.2527e-09   147.5x
+#
+# As a GATE the resultant channel is ~150x weaker. It is kept for what it sees,
+# not for sensitivity: it is a different quantity, verified against statics, and
+# four of five planted sign defects in its analytic table are caught by it.
+RESULTANT_DETECTION_THRESHOLD = {
+    "axial": 1.4498e-09,
+    "curvature": 1.4422e-09,
+    "twist": 1.4498e-09,
+    "shear": 1.2527e-09,
+    "curvature_xz": 1.4422e-09,
+    "shear_xz": 1.2527e-09,
+}
+
+
+@pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear", "curvature_xz", "shear_xz"])
+def test_the_RESULTANT_detection_threshold_still_holds(state: str) -> None:
+    """BG1/R48: the guard that makes `RESULTANT_EXACTNESS` un-widenable.
+
+    Measured: the entry could be moved `1e-9 -> 1e-7` with the whole suite green.
+    Its only guard was `ceiling < counter`, a comparison between two literals in
+    `tolerances.py`, plus a control asserting a response exceeded the counter --
+    neither of which mentions the ceiling's magnitude. 680x of free travel.
+
+    This is `test_the_measured_detection_threshold_still_holds` with `res_err` in
+    place of `err`, which is what the sixth verdict named as the cheapest form.
+    Perturbing by the recorded threshold must land the resultant error ON the
+    ceiling, within the declared band, so any move of the ceiling in either
+    direction fails here.
+    """
+    eps = RESULTANT_DETECTION_THRESHOLD[state]
+    _, _, res_err = _run(state, SKEW, stiffness_scale=1.0 + eps)
+    ratio = res_err / RESULTANT_EXACTNESS
+    assert_close(
+        ratio, 1.0, DETECTION_THRESHOLD_BAND, floor=np.finfo(float).eps,
+        what=(
+            f"{state}: perturbing by the recorded resultant threshold {eps:.3e} "
+            f"gave {res_err:.4e} against the ceiling {RESULTANT_EXACTNESS:.0e}, "
+            f"a ratio of {ratio:.6f}"
+        ),
+    )
+
+
 @pytest.mark.parametrize("state", ["axial", "curvature", "twist", "shear", "curvature_xz", "shear_xz"])
 def test_a_perturbed_element_BREAKS_the_recovered_RESULTANTS(state: str) -> None:
     """Negative control for the resultant channel, per state.
@@ -630,6 +727,11 @@ def test_a_perturbed_element_BREAKS_the_recovered_RESULTANTS(state: str) -> None
     state.
     """
     _, _, res_err = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-6)
+    assert res_err > RESULTANT_EXACTNESS, (
+        f"{state}: a 1e-6 stiffness error left the recovered resultants at "
+        f"{res_err:.3e}, at or below the ceiling {RESULTANT_EXACTNESS:.0e}. The "
+        "assertion does not trip on the defect it is required to catch."
+    )
     assert res_err >= RESULTANT_EXACTNESS_COUNTER, (
         f"{state}: a 1e-6 stiffness error in one element moved the recovered "
         f"resultants by only {res_err:.3e}, below the counter-case "
@@ -741,6 +843,135 @@ def test_a_TRANSPOSED_TRANSFORM_on_one_element_breaks_every_state(state: str) ->
         f"{state}: the recovered resultants moved by only {res_err:.3e} under a "
         "transposed transform."
     )
+
+
+# Sections for the floor-aware counter test: the posed geometry and three slender
+# ones the constant ceiling cannot cover. D/t = 50 throughout, which holds the
+# section's proportions so the sweep isolates slenderness.
+COND_FACTOR_SECTIONS = [0.600, 0.120, 0.100, 0.080]
+
+
+@pytest.mark.parametrize("d_outer", COND_FACTOR_SECTIONS, ids=lambda d: f"D={d:g}")
+def test_the_floor_aware_ceiling_CATCHES_its_counter_defect(d_outer: float) -> None:
+    """BG1: the counter is a MUTATION, not a value sitting in a file.
+
+    `RESULTANT_EXACTNESS` could be widened 680x in silence because nothing
+    injected a defect and asserted the assertion tripped -- its only guard was
+    `ceiling < counter`, which is a comparison between two literals. This test
+    injects `PATCH_TEST_COND_FACTOR_COUNTER_DEFECT` and requires the floor-aware
+    assertion to FIRE, on four sections spanning element L/r = 15.7 .. 117.9.
+
+    Widening the factor raises the ceiling and the detection threshold together,
+    so a factor much above 4 pushes the threshold past the counter and this test
+    goes red. That is what makes silent widening structurally impossible rather
+    than something review has to catch.
+    """
+    global SEC
+    original = SEC
+    try:
+        SEC = Section.circular_tube(d_outer, d_outer / 50.0)
+        m, els, _ = _model(SKEW)
+        ceiling = floor_aware_ceiling(m, els)
+
+        clean = max(_run(st, SKEW)[0] for st in STATES)
+        assert clean <= ceiling, (
+            f"D={d_outer:g}: the CLEAN configuration is already at {clean:.3e} "
+            f"against a ceiling of {ceiling:.3e}; the counter below would be "
+            "vacuous because the assertion is already tripped."
+        )
+
+        worst_missed = 0.0
+        for st in STATES:
+            err, _, _ = _run(st, SKEW, stiffness_scale=1.0 + PATCH_TEST_COND_FACTOR_COUNTER_DEFECT)
+            if err <= ceiling:
+                worst_missed = max(worst_missed, err)
+        assert worst_missed == 0.0, (
+            f"D={d_outer:g}: a single-element stiffness defect of "
+            f"{PATCH_TEST_COND_FACTOR_COUNTER_DEFECT:.3e} left at least one state at "
+            f"{worst_missed:.3e}, below the ceiling {ceiling:.3e}. The ceiling "
+            "has been widened past the defect it is required to catch."
+        )
+    finally:
+        SEC = original
+
+
+def test_a_SENSITIVITY_CHANGE_breaks_the_threshold_band() -> None:
+    """BG1: `DETECTION_THRESHOLD_BAND`'s counter, injected.
+
+    The entry says a 25% change in any state's sensitivity must be caught. That
+    was never run: `DETECTION_THRESHOLD_BAND_COUNTER = 0.25` sat beside the
+    ceiling with nothing perturbing anything.
+
+    A sensitivity change by factor `f` is posed by perturbing by `f x` the
+    recorded threshold -- the error is linear in the perturbation over this
+    range, which is the property the band measures in the first place. Both
+    directions, because the band is relative to the larger operand and is not
+    symmetric.
+    """
+    for direction, factor in (("up", 1.0 + DETECTION_THRESHOLD_BAND_COUNTER),
+                              ("down", 1.0 - DETECTION_THRESHOLD_BAND_COUNTER)):
+        missed = []
+        for state in STATES:
+            eps = DETECTION_THRESHOLD[state] * factor
+            err, _, _ = _run(state, SKEW, stiffness_scale=1.0 + eps)
+            ratio = err / PATCH_TEST_EXACTNESS
+            try:
+                assert_close(ratio, 1.0, DETECTION_THRESHOLD_BAND,
+                             floor=np.finfo(float).eps, what="")
+            except AssertionError:
+                continue
+            missed.append(f"{state} {ratio:.4f}")
+        assert not missed, (
+            f"a {DETECTION_THRESHOLD_BAND_COUNTER:.0%} sensitivity change "
+            f"({direction}) was NOT caught in: {', '.join(missed)}. The band is "
+            "wider than the change it is declared to detect."
+        )
+
+
+def test_a_STIFFNESS_DEFECT_moves_the_equilibrated_conditioning() -> None:
+    """BG1: `COND_UNIT_INVARIANCE`'s counter, injected.
+
+    `COND_UNIT_INVARIANCE_COUNTER = 1e-3` is "the smallest drift worth
+    investigating" in `cond(K~)` between unit systems. Nothing produced a drift,
+    so the ceiling above it was unguarded.
+
+    The injection is a stiffness defect in one element rather than a unit change,
+    because a unit change CANNOT move this quantity -- that is the property under
+    test. What must be true is that the assertion can resolve a drift of the
+    declared size at all, and a 10% single-element error is the cheapest defect
+    that produces one.
+
+    NOTE, measured: the response is not monotone in the defect. A 10% error moves
+    cond(K~) by 7.05e-03 and a 100% error by 5.05e-03. The counter is set below
+    both, and the non-monotonicity is recorded rather than smoothed.
+    """
+    from floatfea.assemble.system import element_global_stiffness, equilibrate
+
+    ends = np.concatenate([node_dofs(0), node_dofs(len(STATIONS) - 1)])
+
+    def cond_eq(stiffness_scale: float) -> float:
+        m, els = _scaled_model(1.0)
+        k = assemble(m, els)
+        if stiffness_scale != 1.0:
+            delta = (stiffness_scale - 1.0) * element_global_stiffness(m, els[1])
+            k = k.tolil()
+            d = np.concatenate([node_dofs(1), node_dofs(2)])
+            for i in range(12):
+                for j in range(12):
+                    k[d[i], d[j]] += delta[i, j]
+            k = k.tocsr()
+        free = np.setdiff1d(np.arange(m.n_dof), ends)
+        return float(np.linalg.cond(equilibrate(k[free][:, free].tocsc())[0].toarray()))
+
+    base = cond_eq(1.0)
+    drift = abs(cond_eq(1.1) - base) / base
+    assert drift >= COND_UNIT_INVARIANCE_COUNTER, (
+        f"a 10% stiffness error in one element moved cond(K~) by only "
+        f"{drift:.3e}, below the declared counter-case "
+        f"{COND_UNIT_INVARIANCE_COUNTER:.3e}. The invariance assertion cannot "
+        "resolve a drift of the size it claims to catch."
+    )
+    assert drift > COND_UNIT_INVARIANCE, "the counter must exceed the ceiling"
 
 
 PLANE_STATES = {

@@ -47,6 +47,21 @@ a **paired counter-case**:
     X          = <ceiling the check asserts>
     X_COUNTER  = <smallest defect that must still fail>
 
+A counter comes in two kinds and they are not interchangeable (BG1):
+
+* `X_COUNTER` is a **response magnitude**, in the assertion's own quantity, and
+  it must sit above the ceiling -- so widening `X` toward it eventually breaks a
+  test.
+* `X_COUNTER_DEFECT` is a **defect size**: the perturbation that must still be
+  caught. It is used where the ceiling is not a constant, so no ordering between
+  the two numbers exists to check. It carries a stronger obligation instead:
+  a test injects it and asserts the shipped assertion FIRES.
+
+The second kind exists because the first can be inert. `RESULTANT_EXACTNESS`
+could be widened 680x in silence, because its only guard was `ceiling < counter`
+-- a comparison between two literals in this file, with nothing running the
+defect. **A counter that nothing injects is a number, not a check.**
+
 **And nothing else.** An `X_MEASURED` -- the worst value seen at the entry's
 sites -- lived here briefly (BD1) and was removed (BE2). A hand-written literal
 in this file, compared against two other hand-written literals in this file, is
@@ -458,6 +473,81 @@ PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
 
 
 
+# CLASS: ACCURACY -- carries PATCH_TEST_COND_FACTOR_COUNTER_DEFECT below.
+# G2.2 / V1.2 -- the FLOOR-AWARE form of the patch-test ceiling, in multiples of
+# the achievable accuracy of the solve:
+#
+#     err <= PATCH_TEST_COND_FACTOR * cond(K_ff) * eps
+#
+# Dimensionless, and it scales with the problem posed rather than with the one
+# geometry the gate happens to run.
+#
+# WHY A SECOND FORM (R46). `PATCH_TEST_EXACTNESS = 1e-12` is a constant, and the
+# constant is what breaks on slender members: over element L/r = 15.7 .. 117.9 the
+# ratio err/1e-12 spans 0.013 .. 1.76 -- 141x, crossing 1 three times, NOT
+# monotone. The same errors against cond(K_ff)*eps span 0.033 .. 0.262 -- 8x, and
+# never reach 1. The scatter inside that 8x is the round-off it is made of: moving
+# only the fill-reducing permutation, which cannot change the exact solution,
+# moves the error 2.3x-3.5x on its own.
+#
+#   D      L/r    cond(K_ff)   worst err   err/1e-12   err/(cond.eps)
+#   0.600  15.7    9.210e+02   1.251e-14      0.013        0.061
+#   0.400  23.6    1.969e+03   3.807e-14      0.038        0.087
+#   0.200  47.2    7.631e+03   1.571e-13      0.157        0.093
+#   0.150  62.9    1.350e+04   9.796e-14      0.098        0.033
+#   0.120  78.6    2.105e+04   1.010e-12      1.010  B     0.216
+#   0.110  85.8    2.504e+04   2.273e-13      0.227        0.041
+#   0.100  94.4    3.028e+04   1.762e-12      1.762  B     0.262
+#   0.095  99.3    3.355e+04   4.638e-13      0.464        0.062
+#   0.080 117.9    4.727e+04   1.028e-12      1.028  B     0.098
+#
+# NOTHING IS LOOSENED BY THIS. At the geometry the gate is posed in,
+# 4.0 * 9.210e2 * 2.22e-16 = 8.180e-13, which is TIGHTER than the 1e-12 it sits
+# beside; both are asserted, so the tighter one binds. 4.0 is set by two
+# measurements: it keeps the posed-geometry ceiling below the constant it
+# accompanies (4.89 would equal it exactly), and it sits 15x above the worst
+# measured ratio across the slenderness range.
+#
+# THE SELF-REFERENCE IS MEASURED, NOT ASSUMED. The ceiling is computed from the
+# same matrix the gate tests, so a defect could in principle raise its own
+# ceiling. Injecting each counter-case and measuring both sides:
+#
+#   clean          cond 9.2096e+02   ceiling 8.180e-13
+#   1e-6 defect    cond 9.2096e+02   ceiling 8.180e-13   err 1.17e-07  FIRES
+#   2x defect      cond 7.8533e+02   ceiling 6.975e-13   err 6.89e-02  FIRES
+#   transposed R   cond 1.0366e+03   ceiling 9.207e-13   err 1.53e+00  FIRES
+#
+# The ceiling moves by at most 1.13x under any defect the gate must catch, while
+# the errors sit 5 to 12 orders above it.
+# Set: 2026-09-04, F2
+PATCH_TEST_COND_FACTOR: Final[float] = 4.0
+
+# COUNTER-CASE, and it is a DEFECT SIZE rather than a response, because this
+# entry's ceiling varies with the configuration (BG1). Measured by bisecting the
+# shipped predicate for the smallest single-element relative stiffness defect the
+# floor-aware assertion detects:
+#
+# PER STATE, because the counter has to be caught by every state and not merely
+# by the most sensitive one (the same rule PATCH_TEST_EXACTNESS_COUNTER follows):
+#
+#   D      L/r      axial  curvature      twist      shear   curv_xz   shear_xz
+#   0.600  15.7  7.513e-12  7.567e-12  7.502e-12  6.880e-12  7.578e-12  6.961e-12
+#   0.120  78.6  1.725e-10  1.720e-10  1.714e-10  1.593e-10  1.734e-10  1.611e-10
+#   0.100  94.4  2.480e-10  2.487e-10  2.466e-10  2.307e-10  2.489e-10  2.313e-10
+#   0.080 117.9  3.845e-10  3.897e-10  3.849e-10  3.609e-10  3.906e-10  3.634e-10
+#
+# The counter is set just above the WORST cell, 3.906e-10, so every state of
+# every configuration must catch it. A first draft used 3.7e-10, taken from a
+# bisection on max-over-states rather than per state, and the D = 0.080 case went
+# red -- correctly, which is the counter test doing its job on its own author.
+#
+# Because the ceiling and the detection threshold move together, doubling this
+# factor pushes the threshold past the counter and the counter test goes red.
+# That is what makes silent widening impossible rather than reviewed-for.
+# Set: 2026-09-04, F2
+PATCH_TEST_COND_FACTOR_COUNTER_DEFECT: Final[float] = 4.0e-10
+
+
 # CLASS: ACCURACY -- carries SOLVE_RESIDUAL_COUNTER below.
 # Rung 1 -- ``||K u - f|| / ||f||`` over the free DOF, for ONE case. Relative,
 # dimensionless. This is a SOLVE-accuracy measure: it says the factorisation
@@ -554,9 +644,27 @@ RESULTANT_EXACTNESS: Final[float] = 1e-9
 # every state must catch a one-part-in-10^6 stiffness error through the forces as
 # well as through the displacements.
 #
-# The same defect moves the DISPLACEMENT error by 1.076e-07 .. 1.174e-07, so the
-# resultant channel is ~6.4x the more sensitive of the two -- which is the reason
-# it is worth having beside the field check rather than instead of it.
+# WHAT THIS CHANNEL IS FOR, corrected (R47). An earlier version of this entry
+# said the resultant channel is "~6.4x the more sensitive", from the ratio of raw
+# responses to one 1e-6 defect (6.90e-07 against 1.08e-07). That is a RESPONSE
+# ratio standing where a DECISION ratio is meant, and the two channels are
+# compared against ceilings a thousand times apart. Inverting each shipped
+# predicate instead -- the smallest single-element stiffness defect each one
+# actually detects:
+#
+#   state            via field  via resultants    ratio
+#   axial           9.1808e-12      1.4498e-09   157.9x
+#   curvature       9.2518e-12      1.4422e-09   155.9x
+#   twist           9.1708e-12      1.4498e-09   158.1x
+#   shear           8.4540e-12      1.2527e-09   148.2x
+#   curvature_xz    9.2976e-12      1.4422e-09   155.1x
+#   shear_xz        8.4953e-12      1.2527e-09   147.5x
+#
+# As a gate it is ~150x WEAKER, not 6.4x stronger. It is kept for what it sees
+# rather than for sensitivity: a different quantity, checked against statics
+# rather than against the solve, catching four of five planted sign defects in
+# its own analytic table. NOTE against that claim (R53): with I_y == I_z forced
+# by every shape `basis.kappa` knows, it cannot see an I_y/I_z swap either.
 # Set: 2026-09-04, F2
 RESULTANT_EXACTNESS_COUNTER: Final[float] = 6.8e-7
 
@@ -574,10 +682,24 @@ RESULTANT_EXACTNESS_COUNTER: Final[float] = 6.8e-7
 # Set: 2026-09-03, F2
 MATRIX_SYMMETRY: Final[float] = 1e-9
 
-# COUNTER-CASE: one transposed element block, the defect this shape of error
-# actually takes. Measured: transposing one 12x12 element contribution makes
-# max |K - K^T| / max |K| = 3.1e-01, eight orders above the ceiling.
-# Set: 2026-09-03, F2
+# COUNTER-CASE: a MIS-INDEXED SCATTER -- the element's columns landing on the
+# wrong node's DOF while its rows land correctly. Measured on a 5-member frame:
+# max |K - K^T| / max |K| = 7.902e-02, eight times the ceiling.
+#
+# CORRECTED BY INJECTING IT (BG1). This entry said the defect was "one transposed
+# element block ... 3.1e-01". An element contribution is SYMMETRIC
+# (max|kg - kg^T| / max|kg| = 3.7e-17), so transposing one is a no-op: the
+# assembly's asymmetry stays at 3.711e-17, which is its clean value. The named
+# defect was not a defect, and nothing ran it for four rounds. Measured
+# alternatives, on the same frame:
+#
+#   transpose the block (the named defect)   3.7107e-17   <- no-op, = clean
+#   columns scattered to the wrong node      7.9020e-02   <- the counter
+#   upper triangle only                      5.0000e-01
+#   one off-diagonal entry, 5%               2.5000e-02
+#
+# The value 1e-2 stands on the second and third rows. Only the sentence moved.
+# Set: 2026-09-03, F2; basis corrected 2026-09-04
 MATRIX_SYMMETRY_COUNTER: Final[float] = 1.0e-2
 
 
@@ -603,9 +725,20 @@ ROUNDOFF_IDENTITY: Final[float] = 1e-14
 
 # COUNTER-CASE: the smallest defect these assertions must still catch. A single
 # sign error or a swapped index in any of the quantities involved is O(1); the
-# subtlest real case measured is the non-orthogonal I + [theta x] map at
-# theta = 1e-8, which perturbs orthonormality by 1.0e-08.
-# Set: 2026-09-03, F2
+# subtlest real case is the non-orthogonal I + [theta x] first-order map, whose
+# orthonormality deviation is O(theta^2) because the map is orthogonal to first
+# order: ``M^T M - I = K^T K``. Measured:
+#
+#   theta      ||M^T M - I||_max     theta^2
+#   1e-08          5.7022e-17         1.0e-16
+#   1e-06          1.5019e-12         1.0e-12
+#   1e-04          1.5018e-08         1.0e-08     <- the counter
+#   1e-02          1.5018e-04         1.0e-04
+#
+# CORRECTED BY INJECTING IT (BG1). This entry said the 1e-08 deviation came from
+# "theta = 1e-8", which is wrong by EIGHT ORDERS -- at that angle the deviation is
+# 5.7e-17, i.e. round-off. The value stands; the angle that produces it is 1e-4.
+# Set: 2026-09-03, F2; basis corrected 2026-09-04
 ROUNDOFF_IDENTITY_COUNTER: Final[float] = 1.0e-8
 
 

@@ -64,10 +64,10 @@ def test_every_float_tolerance_declares_a_class() -> None:
         for m in re.finditer(r"^([A-Z][A-Z0-9_]*)\s*:\s*Final\[float\]", body, re.M)
     }
     classified = {n for _, n in _classified()}
-    # A _COUNTER is documented by the entry it belongs to, not separately.
+    # A _COUNTER or _COUNTER_DEFECT is documented by the entry it belongs to.
     missing = {
         d for d in declared - classified
-        if not d.endswith("_COUNTER")
+        if not d.endswith(("_COUNTER", "_COUNTER_DEFECT"))
     }
     assert not missing, f"tolerances without a CLASS declaration: {sorted(missing)}"
 
@@ -77,6 +77,8 @@ def test_every_float_tolerance_declares_a_class() -> None:
 )
 def test_accuracy_tolerances_have_a_counter_case(name: str) -> None:
     assert name != "<none>", "no ACCURACY entries found"
+    if hasattr(tolerances, f"{name}_COUNTER_DEFECT"):
+        return  # the defect-size kind; its obligations are the two tests below
     counter = f"{name}_COUNTER"
     assert hasattr(tolerances, counter), (
         f"{name} is an ACCURACY tolerance with no {counter}. The counter-case is "
@@ -91,6 +93,12 @@ def test_accuracy_tolerances_have_a_counter_case(name: str) -> None:
 def test_the_ceiling_sits_below_its_counter_case(name: str) -> None:
     """Property 3: widening the ceiling toward the counter-case breaks this."""
     assert name != "<none>", "no ACCURACY entries found"
+    if hasattr(tolerances, f"{name}_COUNTER_DEFECT"):
+        # A defect SIZE is not in the ceiling's quantity, so no ordering between
+        # them exists to assert. Applying the rule here anyway would force an
+        # artificial number, which is how a rule gets weakened to accommodate the
+        # cases it was never for (AO2).
+        return
     ceiling = getattr(tolerances, name)
     counter = getattr(tolerances, f"{name}_COUNTER")
     assert ceiling < counter, (
@@ -133,4 +141,40 @@ def test_no_entry_carries_a_hand_written_MEASURED_value() -> None:
         f"{sorted(reintroduced)} declare a measurement in the file that declares "
         "the ceiling. A check cannot take its own subject from its own source; "
         "put the number in the step report, where a run produces it."
+    )
+
+
+@pytest.mark.parametrize(
+    "name", [n for c, n in _classified() if c == "ACCURACY"] or ["<none>"]
+)
+def test_every_accuracy_entry_has_a_counter_that_something_INJECTS(name: str) -> None:
+    """BG1: a counter that nothing injects is a number, not a check.
+
+    `RESULTANT_EXACTNESS` shipped with `ceiling < counter` as its only guard --
+    a comparison between two literals in `tolerances.py` -- and could be widened
+    from 1e-9 to 1e-7 with the whole suite still green. The obligation is that
+    some test under `tests/` NAMES the counter, which is the cheapest mechanical
+    proxy for "injects it": a counter no test mentions cannot be being injected.
+
+    It does not prove the naming test perturbs anything. That is the limitation,
+    and it is why the per-entry mutation tests exist beside it rather than this
+    standing in for them.
+    """
+    assert name != "<none>", "no ACCURACY entries found"
+    counters = [c for c in (f"{name}_COUNTER", f"{name}_COUNTER_DEFECT")
+                if hasattr(tolerances, c)]
+    assert counters, f"{name} has neither a _COUNTER nor a _COUNTER_DEFECT"
+
+    root = Path(__file__).resolve().parents[3]
+    users: list[str] = []
+    for f in sorted(root.glob("tests/**/*.py")):
+        if f.name == Path(__file__).name:
+            continue
+        text = f.read_text(encoding="utf-8")
+        if any(c in text for c in counters):
+            users.append(str(f.relative_to(root)))
+    assert users, (
+        f"{name}'s counter ({', '.join(counters)}) is named by no test under "
+        "tests/. It is a literal sitting beside another literal, and the ceiling "
+        "above it can be widened until something else notices."
     )

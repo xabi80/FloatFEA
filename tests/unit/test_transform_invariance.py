@@ -29,6 +29,7 @@ from floatfea.element.transform import rotation_matrix, to_global, transformatio
 from floatfea.model.material import S355, Section
 from floatfea.tolerances import (
     ROUNDOFF_IDENTITY,
+    ROUNDOFF_IDENTITY_COUNTER,
     TRANSFORM_INVARIANCE,
     TRANSFORM_INVARIANCE_COUNTER,
     TRANSFORM_SPECTRUM_INVARIANCE_COUNTER,
@@ -276,4 +277,42 @@ def test_the_displacement_counter_case_is_reachable() -> None:
         f"a non-orthogonality of {theta:.0e} rad produced a residual of only "
         f"{worst:.3e}, below the declared counter-case "
         f"{TRANSFORM_INVARIANCE_COUNTER:.3e}"
+    )
+
+
+def test_the_ROUNDOFF_IDENTITY_counter_is_reachable() -> None:
+    """BG1: the counter is injected here, and the injection corrected the entry.
+
+    `ROUNDOFF_IDENTITY_COUNTER = 1e-8` is the smallest orthonormality defect the
+    round-off identities must still catch. Its entry said that defect came from
+    the `I + [theta x]` trap "at theta = 1e-8". Measured, that is wrong by eight
+    orders, and it is wrong for a reason worth stating: `I + [theta x]` is
+    orthogonal to FIRST order, so ``M^T M - I = K^T K`` is O(theta^2).
+
+        theta      ||M^T M - I||_max     theta^2
+        1e-08          5.7022e-17         1.0e-16
+        1e-06          1.5019e-12         1.0e-12
+        1e-04          1.5018e-08         1.0e-08
+        1e-02          1.5018e-04         1.0e-04
+
+    The VALUE survives; the sentence explaining it did not, and the entry now
+    says theta = 1e-4. This test injects that defect and requires the identity to
+    see it.
+    """
+    a, b, o = _triad_from(SKEW)
+    r = rotation_matrix(a, b, orientation_node=o)
+
+    theta = 1.0e-4
+    th = np.array([theta, -0.6 * theta, 0.4 * theta])
+    kx = np.array([[0, -th[2], th[1]], [th[2], 0, -th[0]], [-th[1], th[0], 0]])
+    bad = (np.eye(3) + kx) @ r
+
+    deviation = float(np.abs(bad.T @ bad - np.eye(3)).max())
+    assert deviation >= ROUNDOFF_IDENTITY_COUNTER, (
+        f"a first-order rotation of {theta:.0e} rad left an orthonormality "
+        f"deviation of only {deviation:.3e}, below the declared counter-case "
+        f"{ROUNDOFF_IDENTITY_COUNTER:.3e}"
+    )
+    assert deviation > ROUNDOFF_IDENTITY, (
+        "the counter-case must exceed the ceiling it is the counter for"
     )
