@@ -107,7 +107,21 @@ class SolveResult:
     u: NDArray[np.float64]
     reactions: NDArray[np.float64]
     residual: float
-    """``||K u - f|| / ||f||`` over the free DOF, for this case."""
+    """``||K u - f|| / ||f||`` over the free DOF, for this case.
+
+    Reported, not gated. Its denominator is a property of the LOAD, and across
+    the twelve cases G2.2 runs it varies by eight orders, so a ceiling on it is a
+    ceiling on the load case rather than on the solve (R45).
+    """
+    backward_error: float
+    """``||K u - f|| / (||K||_max ||u||_2 + ||f||_2)`` -- the standard
+    normalisation, and the one that is gated.
+
+    Dimensionless, bounded by a small multiple of eps for a backward-stable
+    factorisation whatever the scaling of the problem. ``||K||_max`` is the
+    largest-magnitude entry: a norm choice, so it is named here rather than left
+    for a reader to infer.
+    """
     reaction_imbalance: float
     """``||sum(reactions) + sum(applied)|| / ||applied||``, translations only."""
 
@@ -199,8 +213,15 @@ def solve(
     # residual would be small by construction and would not describe the solve the
     # caller asked for.
     ff = f[free]
+    resid_abs = float(np.linalg.norm(kff @ uf - ff))
     denom = np.linalg.norm(ff)
-    residual = float(np.linalg.norm(kff @ uf - ff) / denom) if denom > 0 else 0.0
+    residual = float(resid_abs / denom) if denom > 0 else 0.0
+
+    # Backward error: how large a perturbation of THIS system the computed
+    # solution solves exactly. The denominator cannot collapse the way ||f||
+    # alone does, which is what made the residual a ceiling on the load case.
+    scale = float(abs(kff).max() * np.linalg.norm(uf) + denom)
+    backward_error = float(resid_abs / scale) if scale > 0 else 0.0
 
     # Reactions at the fixed DOF, and the equilibrium they must satisfy.
     reactions = np.zeros(n, dtype=np.float64)
@@ -213,4 +234,5 @@ def solve(
         float(np.linalg.norm(react_t + applied_t) / scale) if scale > 0 else 0.0
     )
     return SolveResult(u=u, reactions=reactions, residual=residual,
+                       backward_error=backward_error,
                        reaction_imbalance=imbalance)

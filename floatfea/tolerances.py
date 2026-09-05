@@ -548,58 +548,57 @@ PATCH_TEST_COND_FACTOR: Final[float] = 4.0
 PATCH_TEST_COND_FACTOR_COUNTER_DEFECT: Final[float] = 4.0e-10
 
 
-# CLASS: ACCURACY -- carries SOLVE_RESIDUAL_COUNTER below.
-# Rung 1 -- ``||K u - f|| / ||f||`` over the free DOF, for ONE case. Relative,
-# dimensionless. This is a SOLVE-accuracy measure: it says the factorisation
-# solved the system it was given, and nothing about whether that system was the
-# right one.
+# CLASS: ACCURACY -- carries SOLVE_BACKWARD_ERROR_FACTOR_COUNTER_DEFECT below.
+# Rung 1 -- the solve's BACKWARD ERROR, in multiples of eps:
 #
-# IT IS NOT AN ELEMENT CHECK, and it used to be asserted as one (R41). Sitting
-# inside G2.2's gate assertion against PATCH_TEST_EXACTNESS, it did not move under
-# a stiffness defect that failed the displacement line by eleven orders -- for two
-# of three states it moved DOWN. The quantity was wrong and so was the tolerance
-# it borrowed. It is now asserted on its own, labelled, outside the gate.
+#     ||K u - f|| / (||K||_max ||u||_2 + ||f||_2)  <=  FACTOR * eps
 #
-# Reason: a direct factorisation of a well-conditioned system leaves a residual at
-# round-off. Measured worst over the twelve patch-test cases (six states x two
-# orientations) AT THE METRE SCALE: 1.7295e-15. 1e-13 sits 58x above that.
+# Dimensionless. This is how large a perturbation of the system the computed
+# solution solves exactly, and for a backward-stable factorisation it is a small
+# multiple of eps whatever the scaling of the problem.
 #
-# OPERATING POINT, AND THE ONE PLACE THIS ENTRY DOES NOT HOLD. The residual is
-# conditioning-limited, and cond(K_ff) is a property of the unit system, so this
-# ceiling is a metre-scale number:
+# WHY NOT ||r|| / ||f||, WHICH THIS REPLACES (R45). That normalisation was gated
+# at 1e-13 and restricted to metres on the recorded ground that "the residual is
+# conditioning-limited, and cond(K_ff) is a property of the unit system". THE
+# CELL REFUTES IT. cond(K_ff) is a property of the MATRIX, so it is identical for
+# all six states at a scale; holding it fixed and varying the state:
 #
-#   S = 1e-3   worst residual 2.3036e-13    <- ABOVE this ceiling
-#   S = 1      worst residual 1.7295e-15
-#   S = 1e+3   worst residual 6.9139e-15
+#   state          S=1e-3 r/f    bwd      K.u/f        S=1 r/f     bwd
+#   axial            3.54e-16  6.17e-17  4.7e+00      5.93e-16  1.03e-16
+#   curvature        1.93e-15  1.54e-19  1.3e+04      1.06e-15  3.09e-17
+#   twist            2.30e-13  1.62e-21  1.4e+08      1.47e-15  1.02e-17
+#   shear            2.49e-15  2.20e-19  1.1e+04      1.73e-15  4.73e-17
+#   curvature_xz     2.12e-15  1.69e-19  1.3e+04      7.47e-16  2.18e-17
+#   shear_xz         1.96e-15  1.73e-19  1.1e+04      1.14e-15  3.11e-17
 #
-# `test_the_solve_residual_is_a_SOLVE_check` therefore runs at S = 1 only, while
-# the gate itself runs at all three. **Do not parametrise it over
-# GATE_UNIT_SCALES without first deciding what the ceiling means at S = 1e-3**,
-# where cond(K_ff) = 5.98e8 against 9.21e2 at metres -- six orders of conditioning
-# buying two and a half orders of residual is the expected behaviour of a direct
-# solve, not a defect, and the field error there is 1.6e-13 and passes.
+# Five of six states at S = 1e-3 sit at round-off at the very conditioning that
+# was blamed. The whole excursion is the `twist` cell, whose ||K||.||u||/||f|| is
+# 1.4e+08 against 4.7 for axial -- a collapsing LOAD norm, not conditioning.
 #
-# Found by running every reported figure through one harness at the end of the
-# step (R43's lesson applied to an entry added in the same step): the first
-# version of this comment gave 1.7295e-15 as "the worst over the twelve cases"
-# without saying which unit system produced it, which is the ninth guard's
-# failure in a tolerance written to answer the ninth guard.
+# Reason for the value: the worst backward error over all eighteen cells the gate
+# runs is 1.0343e-16, which is 0.47 eps. 8.0 sits 17x above it, and the whole
+# spread across the eighteen is 1.62e-21 .. 1.03e-16 -- so the ceiling is bounded
+# by the arithmetic rather than by any property of the load case, which is the
+# point of the change. It is asserted at ALL THREE unit scales, where the
+# quantity it replaces could only be asserted at one.
 # Set: 2026-09-04, F2
-SOLVE_RESIDUAL: Final[float] = 1e-13
+SOLVE_BACKWARD_ERROR_FACTOR: Final[float] = 8.0
 
-# COUNTER-CASE, measured on the same quantity. The residual tracks a wrong
-# solution one-for-one -- a solved field in error by a relative delta gives a
-# residual of delta, measured over four decades on the patch system:
+# COUNTER-CASE, a DEFECT SIZE (BG1): the relative error in the solved field that
+# must still push the backward error above the ceiling. Measured by bisection on
+# the shipped predicate, per cell -- and it is strongly configuration-dependent,
+# which is the cost of this normalisation and is recorded rather than buried:
 #
-#   delta   1e-06   1e-08   1e-10    1e-12
-#   resid   1.0e-06 1.0e-08 1.0e-10  9.9998e-13
+#   worst cell (twist, S = 1e-3, where ||K||.||u||/||f|| = 1.4e8)   see below
+#   best  cell (axial, S = 1,    where ||K||.||u||/||f|| = 4.7)
 #
-# The counter is set just under the last, so the assertion must catch a solve
-# wrong in the twelfth significant figure -- 7.7x above the ceiling, the tightest
-# pair in this file, because the two are separated by nothing but the round-off
-# floor of an exact operation.
+# The counter is set above the WORST cell so every cell catches it. NOTE the
+# trade this makes explicit: ||r||/||f|| detected a wrong solve at ~1e-12, and
+# this detects one at the value below. Backward error is the right measure of
+# STABILITY and a weaker detector of a WRONG ANSWER on a badly scaled system;
+# both are now reported by `SolveResult` and only this one is gated.
 # Set: 2026-09-04, F2
-SOLVE_RESIDUAL_COUNTER: Final[float] = 9.9e-13
+SOLVE_BACKWARD_ERROR_FACTOR_COUNTER_DEFECT: Final[float] = 1.0e-6
 
 
 # CLASS: ACCURACY -- carries RESULTANT_EXACTNESS_COUNTER below.
