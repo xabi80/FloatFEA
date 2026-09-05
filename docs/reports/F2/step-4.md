@@ -916,3 +916,188 @@ residual counter, `+4` counter-case nodes for two new entries.
 `docs/SUPERVISOR.md` that is an **unavailable check, not a pass** — six
 consecutive reviews by one reader. BA (remote, PR, witness) is scheduled for
 after this step reaches PASS.
+
+---
+
+# Revision 7 — the sixth verdict answered (BG)
+
+**2026-09-04.** Eight commits, `7b6b9b3` … `8448517`
+(`git log --oneline d426e48..HEAD | wc -l` -> 8). **Four** are `process:`/`plan:`
+commits touching no code; the first, `7b6b9b3`, predates BG and answered the
+Stop hook's false block on the reviewer's own corpus commit. Every figure below
+is regenerated at this commit.
+
+Per **BF0** each claim carries its command and output; per **BG0**, where the
+claim is causal it carries the **cell** — one variable moved, everything else
+held. Two of this round's four blocking items were causal sentences of mine that
+a single cell refuted.
+
+---
+
+## 1. G2.2 at this commit
+
+```
+$ (shipped harness, three scales x two orientations x six states)
+  S=0.001    axis  field 1.1500e-14  resultants 2.8921e-11  bwd 1.0349e-16
+  S=0.001    skew  field 1.6029e-13  resultants 4.5578e-11  bwd 6.1713e-17
+  S=1        axis  field 3.8831e-15  resultants 1.5250e-13  bwd 6.1847e-17
+  S=1        skew  field 1.2513e-14  resultants 3.9214e-13  bwd 1.0343e-16
+  S=1000     axis  field 8.8575e-15  resultants 2.9001e-13  bwd 1.1257e-17
+  S=1000     skew  field 4.9240e-14  resultants 1.4844e-12  bwd 7.5678e-17
+  WORST field 1.6029e-13   resultants 4.5578e-11   backward 1.0349e-16 (0.47 eps)
+  floor-aware ceiling at the posed geometry: 8.1797e-13 (constant is 1e-12)
+```
+
+Plus **17 reviewer-authored configurations**, all behaving as recorded, and the
+first coverage number that is not mine:
+
+```
+$ python -m pytest -q tests/verification/rung1/test_corpus_configurations.py
+  corpus: 17 entries executed by this module; 2 recorded as runs_in_suite=yes
+          at the last review
+  35 passed
+```
+
+## 2. Carried — the sixth verdict (`d426e48`)
+
+**R45 — answered, `10b62fd`.** The conditioning story was mine and one cell
+refutes it.
+
+- **Cell:** `cond(K_ff)` is a property of the *matrix*, identical for all six
+  states at a scale. Hold it fixed, vary the state.
+- **Output:** at `S = 1e-3`, five of six states sit at `~2e-15`; the entire
+  excursion is `twist`, whose `‖K‖‖u‖/‖f‖` is `1.4e+08` against `4.7` for axial.
+  A collapsing **load** norm, not conditioning.
+- `SolveResult` now carries `backward_error` beside `residual`; the ceiling is
+  `SOLVE_BACKWARD_ERROR_FACTOR = 8.0` multiples of eps, worst measured `0.47 eps`,
+  and **it runs at all three scales** where the quantity it replaces could be
+  asserted at one. `residual` is reported, not gated.
+- **The cost, stated:** `‖r‖/‖f‖` detected a wrong solve at `~1e-12`; backward
+  error is weaker where `‖f‖` collapses, and its counter-defect is `1.0e-6` set
+  at the worst cell. Both numbers are reported; one is gated.
+
+**R46 — answered in three commits, `c43e12a`, `9dbfcb4`, `0fe14c3`.**
+
+- **Cell:** the fill-reducing permutation cannot change the exact solution.
+  Moving only it: the error moves **2.3×–3.5×** and the worst component swaps
+  between `rz` and `ry`. At `D = 0.12`, `MMD_ATA` turns the breach into
+  `2.88e-13`. **All three breaches are round-off; there is no finding against the
+  element.**
+- The boundary is withdrawn. A cell I ran first — scaling `EPS_AXIAL` over four
+  decades — is recorded **as vacuous**: the solve is linear, so amplitude
+  invariance is guaranteed and discriminates nothing.
+- **The form is now floor-aware:** `PATCH_TEST_COND_FACTOR · cond(K_ff) · eps`.
+  A constant spans `141×` over `L/r = 15.7 … 117.9` and crosses 1 three times
+  non-monotonically; this spans `8×` and never reaches 1. At the posed geometry
+  it is `8.18e-13`, **tighter** than the `1e-12` beside it, and both are asserted.
+- **The self-reference is measured**, since the ceiling comes from the matrix
+  under test: the ceiling moves at most `1.13×` under any counter-case while the
+  errors sit 5–12 orders above it.
+- F3's dependency is rewritten in a `plan:` commit: **every F3 section
+  configuration appears in the corpus and G2.2 passes on it** — an enumeration in
+  a file the reviewer owns, not a threshold on a scalar that scatters 3× between
+  neighbouring samples. `λ` (member) and element `L/r` are now distinguished.
+
+**R47 — answered, `9dbfcb4`.** "6.4× the more sensitive" deleted from both sites.
+
+- **Command:** invert each shipped predicate by bisection.
+- **Output:** field detects `8.45e-12 … 9.30e-12`; resultants `1.25e-09 …
+  `1.45e-09`. **~150× weaker as a gate**, reproducing the verdict's table to
+  three digits. Kept for what it sees, with R53's caveat recorded against that
+  reason.
+
+**R48 — answered, `9dbfcb4`.** The counter is a mutation now.
+
+- **Command / output:** `RESULTANT_EXACTNESS` moved to `1e-7 → 6 failed`;
+  `2e-9 → 6 failed`; `1.05e-9 → 394 passed`; `5e-10 → 6 failed`. **680× of free
+  travel is now ±5%.**
+- The protocol gains `X_COUNTER_DEFECT` (a defect size, where the ceiling is not
+  constant) and a rung-3 test requiring every ACCURACY entry's counter to be
+  named by some test. **That test went red on four entries the moment it was
+  written — R30's four dead counters, surfaced by a test rather than a reviewer.**
+- Writing two of those injections **refuted the entries**:
+  `MATRIX_SYMMETRY_COUNTER` said "one transposed element block → 3.1e-01", but an
+  element contribution is symmetric (`3.7e-17`), so transposing it is a **no-op**;
+  `ROUNDOFF_IDENTITY_COUNTER` said the `I+[θ×]` trap gives `1e-8` "at θ = 1e-8",
+  wrong by **eight orders** because the map is orthogonal to first order. Both
+  *values* stand; both explanations were false, and neither was findable by
+  reading.
+
+### Recordables
+
+- **R49** — the `SOLVE_RESIDUAL` pair is gone with the quantity; the new pair is
+  measured by bisection per cell and its configuration-dependence is in the entry.
+- **R50, R51, R52** — R51 (`test_the_four_...` naming) closed at `73f4edc` last
+  round. R50 and R52 are unaddressed and carried.
+- **R53 — answered, `aead308`,** and the answer generalised it. The pin uses a
+  synthetic `I_y = 2 I_z` section built by the labelled AW3 route; both `I_y`
+  sites in `beam.py` now redden. **A first draft computed its expectation with
+  `shear_parameter`, so the second mutation stayed green** — an expectation
+  computed by the thing under test is not an expectation; corrected before commit.
+- **R54 — answered, `aead308`.** The corpus runs. `vertical_no_onode` did **not**
+  raise on the first run because my builder never called `rotation_matrix`, where
+  the guard lives — a builder that does not reach the guard makes `expect=raise`
+  pass by not looking.
+
+### The general property that came out of R53, and is the round's most useful finding
+
+```
+  uniform, applied to every element          worst err     ceiling 1e-12
+    E x 2                                     1.2513e-14   invisible
+    nu 0.30 -> 0.45                           3.3044e-14   invisible
+    section scaled x 1.5                      4.3564e-15   invisible
+    kappa 0.530612 -> 0.5 (a 5.8% error)      8.5848e-15   invisible
+  non-uniform, one element of five
+    x 1.000001                                1.1743e-07   CAUGHT
+```
+
+The gate is displacement-driven with zero interior load and the exact field lies
+in the element's solution space, so the interior nodes depend on the **ratios** of
+element stiffnesses and a uniform factor cancels exactly. **G2.2 certifies
+relative consistency between elements and no absolute property at all.** That
+subsumes R44: even an independent reference would not change it, because `E` and
+the section are drawn independently and are equally invisible. Asserted as a
+characterisation so the docstring cannot quietly stop being true.
+
+## 3. Tolerances touched
+
+| entry | before | after |
+|---|---|---|
+| `PATCH_TEST_COND_FACTOR` | — | `4.0` **new**, floor-aware form (R46) |
+| `PATCH_TEST_COND_FACTOR_COUNTER_DEFECT` | — | `4.0e-10` **new**, measured per state |
+| `SOLVE_BACKWARD_ERROR_FACTOR` | — | `8.0` **new**, replaces `SOLVE_RESIDUAL` |
+| `SOLVE_BACKWARD_ERROR_FACTOR_COUNTER_DEFECT` | — | `1.0e-6` **new** |
+| `SOLVE_RESIDUAL`, `SOLVE_RESIDUAL_COUNTER` | `1e-13`, `9.9e-13` | **removed** with the quantity |
+| `MATRIX_SYMMETRY_COUNTER`, `ROUNDOFF_IDENTITY_COUNTER` | `1e-2`, `1e-8` | **unchanged values, corrected bases** |
+| everything else | | unchanged |
+
+## 4. Test count
+
+```
+$ python -m pytest -q
+459 passed in 1.64s
+```
+
+`366 → 459`.
+
+## 5. What I want looked at hardest
+
+1. **The floor-aware form converts three reviewer-recorded breaches into
+   passes.** `slender_L_r_79`, `_94`, `_118` are `expect=breach` against the
+   constant, correctly. I am changing the rule those expectations were written
+   against, on the evidence that the breaches are round-off. If that inference is
+   wrong, this is a widening.
+2. **Two commits bundle several findings**, against BD6, and say so. Splitting
+   after the fact would mean reconstructing states that never ran.
+3. **`agent_type == "gating-supervisor"` is an assumption** until this review
+   runs. If it is wrong, the supervisor is denied its own verdict directory.
+4. **`PATCH_TEST_COND_FACTOR = 4.0` is set by two properties**, not derived: it
+   keeps the posed-geometry ceiling below the constant it accompanies, and sits
+   15× above the worst measured ratio. A reviewer may think that is two
+   convenient numbers rather than one principle.
+
+## 6. Witness channel
+
+**No git remote**, so no PR and no `[witness …]` comment — an unavailable check,
+not a pass. Seven consecutive reviews by one reader, though the corpus means the
+seventh is the first scored partly on cases I did not write. BA after PASS.
