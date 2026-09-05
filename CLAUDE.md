@@ -160,6 +160,27 @@ was an element defect. The question that catches them is: *for every sentence in
 this diff that states a fact about the code, what is the command that checks
 it?*
 
+**A causal sentence carries the cell that isolates it (BG0).** Where the claim
+is causal — any "because", "so", "therefore", "which is why" — the triple gains a
+fourth field:
+
+    cell — the controlled measurement: one variable moved, everything else held
+
+One variable moved, the rest held, or the sentence is rewritten as the bare
+measurement with no cause attached. A number that is correct does not license
+the explanation attached to it. This applies to `tolerances.py` comments as much
+as to reports: an entry's "Reason:" paragraph is a causal claim about why the
+value is what it is.
+
+Three of the six review rounds on F2 step 4 turned on this and each was refuted
+by one loop. "Equilibration alone leaves the kilometre breach where it was" —
+refuted by the fourth ablation cell. "The residual is conditioning-limited, so
+this ceiling is a metre-scale number" — refuted by holding `cond(K_ff)` fixed and
+varying the state, which put five of six states at round-off and the whole effect
+in one. "The resultant channel is 6.4× the more sensitive" — a response ratio
+where a decision ratio was meant; inverting each predicate made it ~150× weaker.
+Each figure quoted was correct. The reasoning attached to it was not measured.
+
 **A closing condition that names sites is closed site by site.** When a review's
 `Closed when` names files and lines, the answering report lists each named site
 with its diff hunk, or states that the site was left and why. Half of an item is
