@@ -369,55 +369,6 @@ point is which, and member identifiers and recovery points are what envelope
 reports and golden files key on. It also stops being benign the moment a
 non-circular section is introduced.
 
-## Beam admission limit
-
-**A member with `L/D < 2` is not analysed as a beam. The model builder refuses
-it, and it is routed to an F7 shell sub-model.**
-
-`L` is the member's length; `D` is the outer diameter, recovered exactly from
-the section's own `A` and `I` (`floatfea/model/admissibility.py`) rather than
-stored, so a section built by any route reports the same ratio.
-
-**On the member, not the element.** Beam validity is a property of the physical
-member; subdividing a valid member into short elements is ordinary practice and
-changes nothing about the idealisation. Measured on G2.2's own mesh: the member
-is `L/D = 16.12` and admissible while two of its five elements sit at `L/D =
-1.32` and `1.50`. An element-wise limit of 2 would reject the patch test's own
-model.
-
-**Why there is a limit at all, and what it costs to ignore it.** Shear-flexible
-beam kinematics still assume plane sections and a length over which stresses
-redistribute; below `L/D ≈ 2` there is no such length, and the answer is not
-"less accurate" but "a different model". The concrete cost is measured — the
-weakest state's response to a 1e-6 single-element stiffness defect, against
-`PATCH_TEST_EXACTNESS_COUNTER = 1.0e-7`:
-
-```
-L/D    0.50    1.00    1.50 | 2.00    3.00    8.00   16.10   48.00
-resp  9.50e-8 8.80e-8 1.08e-7| 1.08e-7 1.07e-7 1.07e-7 1.08e-7 1.08e-7
-       FAILS   FAILS        | ---------- admitted range ----------
-```
-
-**G2.2's own negative control fails below the limit.** At `L/D = 0.5` and `1.0`
-the gate can no longer detect the defect it is required to catch. Over the
-admitted range the response is flat to 0.9% and scale-free in `D`: at the limit
-it is `1.0805e-07` for every diameter from 0.1 m to 4 m.
-
-**Status: proposed by the supervisor (BH0), PENDING XABIER'S CONFIRMATION of the
-value.** `2.0` is a modelling judgement, not a measured optimum — the
-measurement above says only that the gate's control fails below `~1.2` and is
-flat above `2`. It is written here as a judgement rather than dressed as a
-derivation. Enforced by `floatfea/tolerances.py` `BEAM_ADMISSION_L_OVER_D` and
-`floatfea/model/admissibility.py`; F3's model builder calls it per member as a
-named dependency (`docs/milestones/F2.md` §D7).
-
-**On this file's F0 lock.** This section is an *addition*, and it changes no
-frame, sign, unit, rotation or numbering convention already locked at F0. It is
-recorded here because it is a modelling assumption a reader must not have to
-infer from code, which is what this file is for. If the F0 gate's owner judges
-that additions also require reopening, that is a process finding and this
-section moves — the content does not change.
-
 ## Numbering and identifiers
 
 - **Body names** match FloatSim exactly: `buoy1`…`buoy12`, `hub1`…`hub4`,
