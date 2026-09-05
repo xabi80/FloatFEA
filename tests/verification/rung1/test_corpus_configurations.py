@@ -377,7 +377,28 @@ def test_the_corpus_coverage_is_reported(capsys) -> None:
     with capsys.disabled():
         print(f"\n  corpus: {runs} entries executed by this module; "
               f"{recorded} recorded as runs_in_suite=yes at the last review")
-    assert runs > recorded or recorded == runs, "coverage cannot go backwards"
+    # The property worth asserting is that this module executes EVERY entry --
+    # the coverage number and the count of entries are the same number, or some
+    # entry is being skipped. The previous assertion, `runs > recorded or
+    # recorded == runs`, is false only if the reviewer's recorded count exceeds
+    # the number of entries in their own file, which cannot happen: it asserted
+    # nothing.
+    solved = {e["id"] for e in ENTRIES
+              if e["expect"] != "raise" and "_error" not in e
+              and _inadmissible(e) is None}
+    refused = {e["id"] for e in ENTRIES
+               if e["expect"] == "raise" or "_error" in e
+               or _inadmissible(e) is not None}
+    all_ids = {e["id"] for e in ENTRIES}
+    assert not (solved & refused), f"entries in both sets: {sorted(solved & refused)}"
+    assert solved | refused == all_ids, (
+        f"entries in neither set: "
+        f"{sorted(all_ids - solved - refused)}. "
+        "An entry that is neither solved nor explicitly refused is a silent skip."
+    )
+    with capsys.disabled():
+        print(f"          {len(solved)} solved, {len(refused)} refused, "
+              f"{len(ENTRIES)} total")
 
 
 # ---------------------------------------------------------------------------

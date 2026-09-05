@@ -116,9 +116,16 @@ class SolveResult:
     residual: float
     """``||K u - f|| / ||f||`` over the free DOF, for this case.
 
-    Reported, not gated. Its denominator is a property of the LOAD, and across
-    the twelve cases G2.2 runs it varies by eight orders, so a ceiling on it is a
-    ceiling on the load case rather than on the solve (R45).
+    Its denominator is a property of the LOAD, and across the cases G2.2 runs it
+    varies by eight orders, so a ceiling on it is a ceiling on the load case
+    rather than on the solve (R45). `backward_error` is what G2.2 gates.
+
+    **It is still gated in two places**, and this docstring said "Reported, not
+    gated" while they existed: `tests/unit/test_assembly_and_solve.py:133` and
+    `:197`, both against `TRANSFORM_INVARIANCE` -- a tolerance borrowed from
+    another quantity entirely. That reuse is R33's species and belongs to step
+    4a's sweep; it is named here rather than left to contradict the sentence
+    above it.
     """
     backward_error: float
     """``||K u - f|| / (||K||_max ||u||_2 + ||f||_2)`` -- the standard

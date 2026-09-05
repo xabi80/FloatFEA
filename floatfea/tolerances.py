@@ -650,12 +650,17 @@ SOLVE_BACKWARD_ERROR_FACTOR: Final[float] = 8.0
 # the shipped predicate, per cell -- and it is strongly configuration-dependent,
 # which is the cost of this normalisation and is recorded rather than buried:
 #
-#   worst cell (twist, S = 1e-3, where ||K||.||u||/||f|| = 1.4e8)   see below
-#   best  cell (axial, S = 1,    where ||K||.||u||/||f|| = 4.7)
+#   worst cell   twist  at S = 1e-3   detects a solution wrong by 2.5283e-07
+#   best  cell   axial  at S = 1      detects a solution wrong by 1.0103e-14
 #
-# The counter is set above the WORST cell so every cell catches it. NOTE the
-# trade this makes explicit: ||r||/||f|| detected a wrong solve at ~1e-12, and
-# this detects one at the value below. Backward error is the right measure of
+# A spread of 2.5e7 across the eighteen cells the gate runs -- which is the whole
+# of the trade this normalisation makes, and the first version of this comment
+# wrote "see below" where those two numbers belong and then never gave them.
+#
+# The counter, 1.0e-6, is set above the WORST cell (2.53e-07) so every cell
+# catches it. NOTE the trade this makes explicit: ||r||/||f|| detected a wrong
+# solve at ~1e-12 everywhere, and this detects one at 1.0e-14 in the best cell
+# and 2.5e-07 in the worst. Backward error is the right measure of
 # STABILITY and a weaker detector of a WRONG ANSWER on a badly scaled system;
 # both are now reported by `SolveResult` and only this one is gated.
 # Set: 2026-09-04, F2
