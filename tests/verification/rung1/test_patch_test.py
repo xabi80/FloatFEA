@@ -54,22 +54,40 @@ Exactness is asserted at ULP scale, per AU4 — not convergence. An element that
 reproduces constant curvature only in the limit is passing a convergence test
 wearing the patch test's clothes.
 
-What this gate is BLIND to, by design (R44)
--------------------------------------------
-**The shear coefficient `kappa`.** `_exact_local` builds state 4's reference from
-`SEC.kappa(S355)` — the same source the element uses — which is exactly what Q1b
-pinned, because a patch test's reference must be the state the element is being
-asked to reproduce. The consequence is that no value of `kappa` can fail this
-gate. Measured: substituting the simple thin-tube `0.5` for the shipped Cowper
-`0.530612`, a 5.8% error, leaves all twelve cases green at a worst field error of
-`8.58e-15` and a worst resultant error of `2.00e-13`.
+What this gate is BLIND to, by design — the general statement (R44, R53)
+-----------------------------------------------------------------------
+**Every UNIFORM material or section error.** Not just `kappa`: any property error
+applied to *every* element is invisible to this gate, and a property error in
+*one* element of five is caught at one part in 10^6. Measured, same mesh, same
+states:
 
-That is correct behaviour, not a hole, but it decides what a green G2.2 means:
-**this gate certifies formulation self-consistency, not any section constant.**
-`kappa` is gated at V2.2, the stubby cantilever, where the reference is a
-manufactured solution and a closed form rather than the element's own input. A
-reader who takes G2.2 as covering the section properties is reading it wrong, so
-it is written here rather than left to be inferred.
+    uniform, applied to every element          worst err     ceiling 1e-12
+      E x 2                                     1.2513e-14   invisible
+      nu 0.30 -> 0.45                           3.3044e-14   invisible
+      section scaled x 1.5                      4.3564e-15   invisible
+      kappa 0.530612 -> 0.5 (a 5.8% error)      8.5848e-15   invisible
+
+    non-uniform, one element of five
+      x 1.000001                                1.1743e-07   CAUGHT
+      x 1.001                                   1.1734e-04   CAUGHT
+      x 2.0                                     6.8860e-02   CAUGHT
+
+**Why, and it is the patch test's definition rather than a hole.** The test is
+displacement-driven with ZERO interior load, and the exact field lies in the
+element's own solution space. The interior nodes are then fixed by the end
+conditions and by the RATIOS of the element stiffnesses; a uniform factor
+cancels out of those ratios exactly. So `G2.2 certifies relative consistency
+between elements — assembly, connectivity, transformation — and no absolute
+property at all.`
+
+This subsumes the earlier statement about `kappa` alone. `_exact_local` does draw
+state 4's reference from `SEC.kappa(S355)`, the same source the element uses, per
+Q1b's pin -- but even an independent reference would not change the conclusion,
+because `E` and the section are drawn independently and are equally invisible.
+
+Absolute properties are gated at **V2.1/V2.2**, the cantilever against a closed
+form, where the reference does not come from the model. A reader who takes a
+green G2.2 as covering the section properties is reading it wrong.
 
 The gate is NOT blind to the shear FORMULATION: substituting the Euler-Bernoulli
 bending block for the shear-flexible one reddens `shear` and `shear_xz` at
@@ -980,6 +998,54 @@ def test_a_STIFFNESS_DEFECT_moves_the_equilibrated_conditioning() -> None:
         "resolve a drift of the size it claims to catch."
     )
     assert drift > COND_UNIT_INVARIANCE, "the counter must exceed the ceiling"
+
+
+UNIFORM_ERRORS = [
+    ("E x 2", "material", 2.0),
+    ("nu 0.30 -> 0.45", "nu", 0.45),
+    ("section x 1.5", "section", 1.5),
+]
+
+
+@pytest.mark.parametrize("label, kind, value", UNIFORM_ERRORS,
+                         ids=[u[0] for u in UNIFORM_ERRORS])
+def test_a_UNIFORM_property_error_is_invisible_to_this_gate(
+    label: str, kind: str, value: float
+) -> None:
+    """The boundary of what G2.2 certifies, asserted so it stays true (R44/R53).
+
+    This asserts a BLINDNESS, deliberately. The gate is displacement-driven with
+    zero interior load and the exact field lies in the element's solution space,
+    so the interior nodes depend on the RATIOS of element stiffnesses and a
+    uniform factor cancels exactly. Recording it stops a later reader treating a
+    green G2.2 as evidence about `E`, `nu`, `kappa` or the section -- and if a
+    change ever makes the gate sensitive to a uniform error, this goes red and
+    the docstring above it gets revisited rather than quietly ceasing to be true.
+
+    Its partner is `test_a_perturbed_element_BREAKS_the_patch_test`: the same
+    magnitude of error in ONE element of five is caught at 1e-6.
+    """
+    from dataclasses import replace
+
+    global SEC, S355
+    sec_before, mat_before = SEC, S355
+    try:
+        if kind == "material":
+            S355 = replace(mat_before, E=mat_before.E * value)
+        elif kind == "nu":
+            S355 = replace(mat_before, nu=value)
+        else:
+            SEC = Section.circular_tube(0.6 * value, 0.012 * value)
+        worst = max(_run(st, SKEW)[0] for st in STATES)
+    finally:
+        SEC, S355 = sec_before, mat_before
+
+    assert worst <= PATCH_TEST_EXACTNESS, (
+        f"{label} was DETECTED at {worst:.4e}. That contradicts the gate's own "
+        "docstring, which says a uniform property error cancels out of the "
+        "stiffness ratios. Either the docstring or the formulation is wrong, and "
+        "this is not a case of tightening a tolerance."
+    )
 
 
 PLANE_STATES = {

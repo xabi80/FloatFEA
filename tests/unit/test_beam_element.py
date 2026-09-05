@@ -184,3 +184,75 @@ def test_reciprocity_maxwell_betti() -> None:
     # The specific pair the AV0 reconstruction used: uz per unit My == ry per unit Fz.
     assert flex[2, 4] == pytest.approx(flex[4, 2], rel=ROUNDOFF_IDENTITY)
     assert flex[2, 4] < 0.0, "sign lost: the x-z cross term must be negative"
+
+
+# ---------------------------------------------------------------------------
+# R53: the I_y / I_z index, pinned by the only section that can see it.
+# ---------------------------------------------------------------------------
+def _anisotropic_section(ratio: float) -> Section:
+    """A section with `I_y = ratio * I_z`, built by bypassing the type guard.
+
+    **This is the AW3 route, used deliberately and labelled.** `Section` refuses
+    `I_y != I_z` for every shape `basis.kappa` knows, because both of them are
+    circular -- which is correct, and which is exactly why no test in the
+    repository could distinguish the two bending inertias. Measured: replacing
+    every `section.I_y` in `floatfea/element/beam.py` with `section.I_z` left all
+    366 tests green (R53).
+
+    So this object is constructed through `object.__setattr__` on the frozen
+    dataclass, AFTER a valid section has passed `__post_init__`. It exists only
+    to see the index. It is not a section any production path can build, it is
+    never solved with, and if a non-circular shape is ever added to `basis` this
+    helper is deleted rather than kept as a second construction route.
+    """
+    sec = Section.circular_tube(0.6, 0.012)
+    object.__setattr__(sec, "I_y", sec.I_z * ratio)
+    return sec
+
+
+def test_the_xz_bending_block_uses_I_y_and_the_xy_block_uses_I_z() -> None:
+    """R53: the mapping is pinned by ratio, on a section that can show it.
+
+    With `I_y = 2 I_z`, the x-z bending block must scale by exactly 2 against the
+    x-y block, entry for entry, once the sign flip is undone. If the element read
+    `I_z` for both -- the mutation that leaves the whole suite green -- the ratio
+    would be 1.
+    """
+    ratio = 2.0
+    sec = _anisotropic_section(ratio)
+    k = local_stiffness(sec, S355, L)
+
+    xy = k[np.ix_([1, 5, 7, 11], [1, 5, 7, 11])]
+    flip = np.diag([1.0, -1.0, 1.0, -1.0])
+    xz = flip @ k[np.ix_([2, 4, 8, 10], [2, 4, 8, 10])] @ flip
+
+    # Phi enters as 1/(1+Phi) and Phi itself carries I, so the blocks are not a
+    # clean multiple; the leading translational stiffness is what carries I
+    # linearly and is compared here.
+    got = xz[0, 0] / xy[0, 0]
+    # Phi FROM FIRST PRINCIPLES, not from `shear_parameter` -- Przemieniecki
+    # eq. 5.36: Phi = 12 E I / (kappa G A L^2). A first draft of this test called
+    # `shear_parameter` for both planes, so its expectation moved with the code
+    # and the mutation at `beam.py:73` (reading I_z for both planes) left the
+    # whole suite green. An expectation computed by the thing under test is not
+    # an expectation.
+    kga = sec.kappa(S355) * S355.G * sec.A
+    phi_z = 12.0 * S355.E * sec.I_z / (kga * L**2)
+    phi_y = 12.0 * S355.E * sec.I_y / (kga * L**2)
+    expected = ratio * (1.0 + phi_z) / (1.0 + phi_y)
+
+    assert got == pytest.approx(expected, rel=ROUNDOFF_IDENTITY), (
+        f"with I_y = {ratio} I_z the x-z bending stiffness is {got:.6f} times "
+        f"the x-y, against {expected:.6f} expected. The element is not reading "
+        "I_y for the x-z plane."
+    )
+    assert got != pytest.approx(1.0, rel=ROUNDOFF_IDENTITY), (
+        "the two blocks are identical on an anisotropic section, so the element "
+        "reads one inertia for both planes"
+    )
+
+
+def test_the_anisotropic_helper_cannot_be_built_the_normal_way() -> None:
+    """The bypass is a bypass, and the type still refuses the object (AW3)."""
+    with pytest.raises(ValueError, match="I_y"):
+        Section(A=1.0, I_y=2.0, I_z=1.0, J=3.0, shape="thin_tube")
