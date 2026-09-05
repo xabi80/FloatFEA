@@ -1101,3 +1101,154 @@ $ python -m pytest -q
 **No git remote**, so no PR and no `[witness …]` comment — an unavailable check,
 not a pass. Seven consecutive reviews by one reader, though the corpus means the
 seventh is the first scored partly on cases I did not write. BA after PASS.
+
+---
+
+# Revision 8 — the seventh verdict answered (BH)
+
+**2026-09-04.** Eight commits, `977514f` … `71f5919`
+(`git log --oneline 25b2dcb..HEAD | wc -l` → 8). One is a `process:` commit
+touching no code. Every figure regenerated at this commit.
+
+Claim/command/output per BF0; where the claim is causal it carries the cell per
+BG0. **Three of the four blocking items were causal or quantitative statements of
+mine that one cell refuted**, and the fourth was a parser doing the opposite of
+what its docstring said.
+
+---
+
+## 1. G2.2 at this commit
+
+```
+  S=0.001   axis  field 1.1500e-14  resultants 2.8921e-11  bwd 1.0349e-16
+  S=0.001   skew  field 1.6029e-13  resultants 4.5578e-11  bwd 6.1713e-17
+  S=1       axis  field 3.8831e-15  resultants 1.5250e-13  bwd 6.1847e-17
+  S=1       skew  field 1.2513e-14  resultants 3.9214e-13  bwd 1.0343e-16
+  S=1000    axis  field 8.8575e-15  resultants 2.9001e-13  bwd 1.1257e-17
+  S=1000    skew  field 4.9240e-14  resultants 1.4844e-12  bwd 7.5678e-17
+  WORST field 1.6029e-13   resultants 4.5578e-11   backward 1.0349e-16 (0.47 eps)
+  binding ceiling at the posed geometry: min(4.2734e-13, 1e-12) = 4.2734e-13
+```
+
+Plus the reviewer's corpus, now 36 entries:
+
+```
+  corpus: 36 entries executed by this module; 2 recorded as runs_in_suite=yes
+          29 solved, 7 refused, 36 total
+```
+
+**`502 passed`.** The suite was red at the start of this round on two of the
+reviewer's entries; both are answered, neither by narrowing a check.
+
+## 2. Carried — the seventh verdict (`25b2dcb`)
+
+**R55 — answered, `977514f`.** The floor is the equilibrated conditioning.
+
+- **Cell:** one variable moved — which conditioning the floor uses.
+- **Output:** `cond(K~)` is `3.8491e+02` at `S = 1e-3, 1, 1e3`, spread
+  **`1.000000×`**, while `cond(K_ff)` spans six orders. And it keeps the other
+  property: `121.7×` over `D = 0.6 … 0.05`, so it is not a constant in disguise.
+- BD2 stands — the solve path is unchanged. `equilibrate`'s docstring now says
+  what it is for and nothing more.
+
+**R56 — answered, `8217c65`.** The self-reference is bounded, not denied.
+
+- **Cell:** `J × 0.01` moves `cond(K_ff)` **65.0×** — the reviewer's number — and
+  `cond(K~)` **5.4×**. Equilibrating the floor damped the self-reference 12×, and
+  that was *not* BH1's reason; it is measured here rather than claimed for it.
+- **The bound**, over the admitted corpus: worst `5.313×`; **`1.000×` on every
+  slender entry**, where the floor-aware term already exceeds the constant, so no
+  loosening is possible at all. Under `J × 0.01` the binding ceiling moves
+  `1.463×`.
+- **The cap now applies on the corpus too** — the runner asserted the floor-aware
+  value alone, so the cap protected the gate's three configurations and none of
+  the reviewer's. It asserts `min(floor-aware, constant)` now.
+- **Detection survives inside the bound:** counter response `3.23e-11 … 3.52e-11`
+  clean and unchanged with `J × 0.01` applied.
+
+**R57 — answered, `7c66c35`.** The parser raises instead of skipping. Seven
+malformed shapes, each with a test, plus the meta-test that a well-formed line
+still parses. **Per line, not per file** — my first version aborted collection of
+the whole module on the reviewer's deliberate typo, which lets one bad entry hide
+eighteen good ones.
+
+**R58 — answered in two halves, `5de8fd8`.**
+
+- **The modelling half.** `docs/conventions.md` gains "Beam admission limit":
+  a member with `L/D < 2` is refused and routed to F7.
+- **On the member, not the element, and the directive's form was unworkable.**
+  The gate's own mesh has elements at `L/D = 1.32` and `1.50` while its member is
+  `16.12`; an element-wise limit of 2 would reject the patch test's own model.
+- **The counter over the admitted range:**
+
+  ```
+  L/D    0.50    1.00    1.50 | 2.00    3.00    8.00   16.10   48.00
+  resp  9.50e-8 8.80e-8 1.08e-7| 1.08e-7 1.07e-7 1.07e-7 1.08e-7 1.08e-7
+         FAILS   FAILS        | ---------- admitted range ----------
+  minimum over the admitted range: 1.0710e-07, counter 1.0e-07 → 7.1%
+  at the limit, D = 0.1 … 4.0 m: 1.0805e-07 at every one
+  ```
+
+  R58's failure is entirely in geometry the tool now refuses.
+
+### Recordables answered
+
+- **R59** (`cbb265f`) — the uniform-blindness claim narrowed to the one true
+  case. Reproduced the reviewer's cell: with the reference held, `nu` is caught
+  at `5.5281e-04` and the section at `7.3011e-03`; only `E` scales K uniformly.
+  The two false blindnesses became **detection** tests.
+- **R60, R62, R63** (`beeb4f5`) — `residual` documented "not gated" while gated
+  at two sites; a counter table that said "see below" and gave no numbers; a
+  coverage assertion that asserted nothing.
+- **R64** (`71f5919`) — the factor is centred in a band whose ends are both
+  named: `3.0` fails on a clean configuration, `8.2` fails on the counter. `5.0`
+  is the geometric centre.
+- **BH5** (`7c60eed`) — two of the three hook holes closed (`cd && echo` and
+  fail-open on malformed JSON), the third was a missing `NotebookEdit` matcher.
+
+### Still open
+
+R6, R16, R25, R30–R33, R36, and R61, R65–R68 from the seventh verdict. All are
+apparatus (step 4a) or later-step items.
+
+## 3. Where I was wrong inside this round, caught by my own runs
+
+1. **`4 sqrt(I/A)` is the solid-circle relation.** It overstated a thin tube's
+   depth by `√2` — the gate's 0.6 m section came out 0.8317 m. Replaced by the
+   exact hollow inversion, verified to `2.2e-16` relative for walls from `D/50`
+   to `D/2.07`.
+2. **My first R63 replacement was also vacuous** — `sum(1 for e in ENTRIES if …
+   or True)`. Caught while writing it, not in review.
+3. **The factor at 8.0 sat 1.3% below the top of its live band.** I had argued it
+   from one end only.
+4. **The strict parser aborted the whole module** on one bad line before I made
+   it per-line.
+
+## 4. Tolerances touched
+
+| entry | before | after |
+|---|---|---|
+| `BEAM_ADMISSION_L_OVER_D` | — | `2.0` **new**, STRUCTURAL, no counter (AO2) |
+| `PATCH_TEST_COND_FACTOR` | `4.0` on `cond(K_ff)` | `5.0` on `cond(K~)` — different quantity, centred band |
+| `PATCH_TEST_COND_FACTOR_COUNTER_DEFECT` | `4.0e-10` | `3.0e-10`, re-measured per state |
+| everything else | | unchanged |
+
+## 5. What I want looked at hardest
+
+1. **`BEAM_ADMISSION_L_OVER_D = 2.0` is a judgement, not a measurement**, and it
+   is pending Xabier. The measurement says only that the gate's control fails
+   below `~1.2` and is flat above `2`.
+2. **Three corpus entries are overridden**, all marked `expect=hold` by the
+   reviewer: `stubby_thin`, `stubby_thick` (`L/D = 1.5`), `very_stubby_L_r_0p5`
+   (`0.5`). The disagreement is printed by a test; the corpus is not edited from
+   here. **Two of those three pass today** — only `very_stubby` fails — so the
+   limit refuses more than the failure strictly required.
+3. **BH6's condition.** The form now has the three properties it was missing:
+   unit-invariant floor, bounded self-reference, constant cap. If the eighth
+   verdict finds a defect in the *form* again, that is a STOP on the form.
+
+## 6. Witness channel
+
+**No git remote**, so no PR and no `[witness …]` comment — an unavailable check,
+not a pass. Eight consecutive reviews by one reader, now scored against 36
+configurations the implementer did not write. BA after PASS.
