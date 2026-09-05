@@ -77,18 +77,81 @@ ORIENTATIONS = {
 }
 
 
+FIELDS = {"id", "section", "stations", "orient", "extra", "runs_in_suite",
+          "expect"}
+EXTRAS = ("none", "orientation_node=", "roll=", "I_y_over_I_z=")
+EXPECTS = {"hold", "breach", "raise"}
+
+
+class CorpusError(ValueError):
+    """A corpus line this module cannot execute. Never a skip (BH3/R57)."""
+
+
 def _parse() -> list[dict[str, str]]:
+    """Strict. Anything unrecognised RAISES; nothing is ignored.
+
+    The previous version built a dict from whatever it found and read the keys it
+    knew, so a typo silently produced the default configuration:
+    `extra=roll_rad=1.0`, `extra=nonsense=3.0` and an unknown top-level key all
+    returned `1.251313e-14`, bit-identical to `extra=none`. The module docstring
+    said an unbuildable field was "a FAILURE, not a skip" while the parser
+    skipped -- and the reviewer's corpus caught it with an entry whose whole
+    purpose was to be a typo.
+
+    Twelfth guard: the parser reports what it cannot do rather than doing
+    something else.
+    """
     rows: list[dict[str, str]] = []
-    for line in CORPUS.read_text(encoding="utf-8").splitlines():
+    for n, line in enumerate(CORPUS.read_text(encoding="utf-8").splitlines(), 1):
         line = line.strip()
         if not line or line.startswith("#"):
             continue
+        try:
+            rows.append(_parse_line(n, line))
+        except CorpusError as exc:
+            # A malformed line does NOT vanish and does NOT stop the module: it
+            # becomes an entry whose only admissible expectation is `raise`,
+            # asserted per entry below. Swallowing it here would be the skip
+            # this whole change exists to remove; aborting collection here would
+            # let one bad line hide the other eighteen.
+            ident = next((f.split("=", 1)[1] for f in line.split()
+                          if f.startswith("id=")), f"line{n}")
+            rows.append({"id": ident, "expect": "raise", "_error": str(exc),
+                         "_line": line})
+    return rows
+
+
+def _parse_line(n: int, line: str) -> dict[str, str]:
         row: dict[str, str] = {}
         for field in line.split():
-            key, _, value = field.partition("=")
+            key, sep, value = field.partition("=")
+            if not sep:
+                raise CorpusError(
+                    f"{CORPUS.name}:{n}: field {field!r} is not key=value")
+            if key not in FIELDS:
+                raise CorpusError(
+                    f"{CORPUS.name}:{n}: unknown field {key!r}. Known fields are "
+                    f"{sorted(FIELDS)}. This module executes the corpus; a field "
+                    "it does not understand is not silently ignored.")
             row[key] = value
-        rows.append(row)
-    return rows
+
+        missing = {"id", "section", "stations", "orient", "expect"} - row.keys()
+        if missing:
+            raise CorpusError(f"{CORPUS.name}:{n}: missing {sorted(missing)}")
+        if row["expect"] not in EXPECTS:
+            raise CorpusError(
+                f"{CORPUS.name}:{n}: expect={row['expect']!r} is not one of "
+                f"{sorted(EXPECTS)}")
+        if row["orient"] not in ORIENTATIONS:
+            raise CorpusError(
+                f"{CORPUS.name}:{n}: orient={row['orient']!r} is not one of "
+                f"{sorted(ORIENTATIONS)}")
+        extra = row.get("extra", "none")
+        if not any(extra == e or extra.startswith(e) for e in EXTRAS):
+            raise CorpusError(
+                f"{CORPUS.name}:{n}: extra={extra!r} is not one of {EXTRAS}. A "
+                "typo here used to produce the DEFAULT configuration and pass.")
+        return row
 
 
 ENTRIES = _parse()
@@ -109,12 +172,16 @@ def _build(entry: dict[str, str]):
     extra = entry.get("extra", "none")
     onode = None
     roll = 0.0
-    if extra.startswith("orientation_node="):
+    if extra == "none":
+        pass
+    elif extra.startswith("orientation_node="):
         onode = np.array([float(v) for v in extra.split("=", 1)[1].split(",")])
     elif extra.startswith("roll="):
         roll = float(extra.split("=", 1)[1])
     elif extra.startswith("I_y_over_I_z="):
         object.__setattr__(sec, "I_y", sec.I_z * float(extra.split("=", 1)[1]))
+    else:  # pragma: no cover -- _parse refuses these first; belt and braces
+        raise CorpusError(f"{entry['id']}: unhandled extra {extra!r}")
 
     # The beam admission limit, BEFORE anything is built (BH0). A member below
     # it is not a G2.2 case: no beam element describes it, and the gate's own
@@ -211,6 +278,8 @@ def test_the_corpus_exists_and_is_not_empty() -> None:
 
 def _inadmissible(entry) -> float | None:
     """The member's L/D if it is below the admission limit, else None."""
+    if "_error" in entry:
+        return None
     ratio = member_l_over_d(float(entry["stations"]), _section(entry["section"]))
     return ratio if ratio < BEAM_ADMISSION_L_OVER_D else None
 
@@ -233,6 +302,17 @@ def test_the_admission_limit_overrides_are_REPORTED(capsys) -> None:
 @pytest.mark.parametrize("entry", ENTRIES, ids=lambda e: e["id"])
 def test_the_corpus_entry_behaves_as_the_reviewer_recorded(entry) -> None:
     expect = entry["expect"]
+
+    if "_error" in entry:
+        # The line could not be parsed. That is only acceptable if the corpus
+        # says so; a malformed line the corpus expected to WORK is a failure.
+        assert expect == "raise", (
+            f"{entry['id']}: the corpus expects {expect!r} but the line cannot "
+            f"be executed at all -- {entry['_error']}"
+        )
+        with pytest.raises(CorpusError):
+            _parse_line(0, entry["_line"])
+        return
 
     if _inadmissible(entry) is not None:
         with pytest.raises(ValueError, match="admission limit"):
@@ -268,7 +348,8 @@ def test_the_corpus_entry_behaves_as_the_reviewer_recorded(entry) -> None:
 @pytest.mark.parametrize(
     "entry",
     [e for e in ENTRIES
-     if e["expect"] != "raise" and _inadmissible(e) is None],
+     if e["expect"] != "raise" and "_error" not in e
+     and _inadmissible(e) is None],
     ids=lambda e: e["id"],
 )
 def test_the_corpus_entry_still_DETECTS_a_defect(entry) -> None:
@@ -291,3 +372,41 @@ def test_the_corpus_coverage_is_reported(capsys) -> None:
         print(f"\n  corpus: {runs} entries executed by this module; "
               f"{recorded} recorded as runs_in_suite=yes at the last review")
     assert runs > recorded or recorded == runs, "coverage cannot go backwards"
+
+
+# ---------------------------------------------------------------------------
+# The parser's own tests (BH3/R57). Each shape RAISES; none is a skip.
+# ---------------------------------------------------------------------------
+MALFORMED = [
+    ("unknown top-level field", "id=x section=circular_tube,D=0.6,t=0.012 "
+     "stations=9.67 orient=skew expect=hold nonsense=1"),
+    ("unknown extra", "id=x section=circular_tube,D=0.6,t=0.012 stations=9.67 "
+     "orient=skew extra=roll_rad=1.0 expect=hold"),
+    ("misspelled extra key", "id=x section=circular_tube,D=0.6,t=0.012 "
+     "stations=9.67 orient=skew extra=nonsense=3.0 expect=hold"),
+    ("field with no '='", "id=x section=circular_tube,D=0.6,t=0.012 "
+     "stations=9.67 orient=skew bare expect=hold"),
+    ("unknown expect", "id=x section=circular_tube,D=0.6,t=0.012 stations=9.67 "
+     "orient=skew expect=maybe"),
+    ("unknown orient", "id=x section=circular_tube,D=0.6,t=0.012 stations=9.67 "
+     "orient=diagonal expect=hold"),
+    ("missing stations", "id=x section=circular_tube,D=0.6,t=0.012 orient=skew "
+     "expect=hold"),
+]
+
+
+@pytest.mark.parametrize("label, line", MALFORMED, ids=[m[0] for m in MALFORMED])
+def test_a_malformed_corpus_line_RAISES(label: str, line: str) -> None:
+    """Measured before this existed: every one of these produced the DEFAULT
+    configuration and a passing result identical to `extra=none`."""
+    with pytest.raises(CorpusError):
+        _parse_line(1, line)
+
+
+def test_a_WELL_FORMED_line_still_parses() -> None:
+    """The strictness must not refuse everything -- the meta-test for a guard."""
+    row = _parse_line(
+        1,
+        "id=ok section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=skew "
+        "extra=roll=0.5 runs_in_suite=no expect=hold")
+    assert row["id"] == "ok" and row["extra"] == "roll=0.5"
