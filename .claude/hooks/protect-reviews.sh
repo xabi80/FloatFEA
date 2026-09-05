@@ -38,8 +38,15 @@
 #   1. `cd tests/corpus && echo x > y` was ALLOWED -- the protected path is in
 #      one segment and the write in another. Closed: for a caller that is not the
 #      supervisor, ANY command mentioning a protected directory together with a
-#      redirect or a mutating verb ANYWHERE in it is denied. Over-blocking costs
-#      the implementer nothing, because it has no legitimate write there.
+#      redirect or a mutating verb ANYWHERE in it is denied.
+#
+#      "Over-blocking the implementer costs nothing" was WRONG as first written.
+#      The scan also listed a bare `cd` as write intent, which denied every READ
+#      of a verdict made from a command beginning with `cd` -- nearly all of
+#      them, and it blocked the first attempt to read the eighth verdict. The
+#      `cd` clause bought nothing: `cd tests/corpus && echo x > y` is already
+#      caught by the redirect in the same command string. Over-blocking a WRITE
+#      costs nothing; over-blocking a READ costs the ability to work.
 #   2. Malformed JSON FAILED OPEN -- the python helper printed nothing, `agent`
 #      and `hit` came back empty, and the case fell through to `exit 0`. Closed:
 #      the helper prints a sentinel on any parse failure and the hook denies.
@@ -94,7 +101,6 @@ elif command and re.search(PROTECTED, command):
         or re.search(r"\b" + VERBS + r"\b", command)
         or re.search(r"\bsed\b[^\n]*-i", command)
         or re.search(r"\bgit\b[^\n]*\b(?:checkout|restore|rm|mv)\b", command)
-        or re.search(r"\bcd\b", command)
     )
     if writes:
         hit = ("reviews" if re.search(r"docs[/\\]+reviews", command)
