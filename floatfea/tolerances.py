@@ -333,22 +333,49 @@ SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
 #    0.05     188.7    4.415e-12      4.415   BREACH
 #    0.02     471.8    1.844e-11     18.440   BREACH
 #
-# Bisected, the boundary is D = 0.0791 m, element L/r = 119. F3's governing brace
-# sits at lambda = 46.4 (F2.md sec. 5, corrected Q1 table), which is inside the
-# valid region at ~1.6e-13 -- 6x of margin -- so THIS IS NOT A DEFECT for the
-# platform being analysed. It is the range the ceiling is claimed over, and F3
-# carries a named dependency to assert every member falls inside it
-# (F2.md sec. D7 item 5).
+# THERE IS NO BOUNDARY, and the one this comment carried is WITHDRAWN (R46).
+# It read "bisected, the boundary is D = 0.0791 m, element L/r = 119" while the
+# table three lines above records D = 0.10 as a breach -- self-contradictory in
+# one block. The number was carried from a verdict rather than regenerated. A
+# finer sweep shows the quantity is NOT MONOTONE in slenderness:
 #
-# The breach localises: it is entirely on the SKEW orientation, in the AXIAL
-# state, in the rotational DOF, whose exact value is identically zero -- so it is
-# a spurious-rotation-over-translation ratio through the transform chain, the same
-# structure as the kilometre breach in R2/R8 arriving down the slenderness axis
-# instead of the unit axis. Measured at D = 0.10: skew/axial 1.762e-12 against
-# axis-aligned/axial 1.121e-16, and the worst component is node 4 rz -- a
-# rotation whose exact value is 0.0, carrying 1.575e-15 against the whole
-# translational field's 3.688e-16. The axis-aligned orientation stays below
-# 1.3e-14 in every state at that section.
+#   L/r      78.6    85.8    94.4    99.3   111.0   117.9   125.8
+#   err   1.01e-12 2.27e-13 1.76e-12 4.64e-13 8.03e-13 1.03e-12 8.97e-13
+#            B                 B                          B
+#
+#   (The reviewer records 5.662e-13 at L/r = 111.0 where this run gives
+#    8.031e-13, on the same code and the same section. The discrepancy is not
+#    resolved and is recorded rather than averaged away; it is one more sample of
+#    the scatter this block is about.)
+#
+# Breaches with clean points between them, so bisection measures nothing: two
+# runs of it on the same predicate returned L/r = 93.3 and L/r = 119.
+#
+# WHY, by the cell that isolates it (BG0). The fill-reducing permutation of the
+# factorisation CANNOT change the exact solution -- it changes only the order the
+# arithmetic happens in. Moving that one variable and holding everything else:
+#
+#   D      L/r     COLAMD      NATURAL     MMD_ATA   MMD_AT_PLUS_A   spread
+#   0.600  15.7  1.25e-14 rz  7.97e-15 rz  1.02e-14 rz  2.11e-14 rz   2.65x
+#   0.120  78.6  1.01e-12 rz  6.20e-13 rz  2.88e-13 rz  5.12e-13 rz   3.51x
+#   0.100  94.4  1.76e-12 rz  9.92e-13 rz  1.08e-12 ry  5.72e-13 rz   3.08x
+#   0.080 117.9  1.03e-12 ry  1.53e-12 rz  8.46e-13 ry  6.72e-13 rz   2.27x
+#
+# The magnitude moves by 2.3x to 3.5x and the worst COMPONENT changes between rz
+# and ry, on a change that provably cannot move the answer. **The residual field
+# is round-off, not the element**, and whether a given section "breaches" is
+# decided by the pinned `SPARSE_PERMC_SPEC`. At D = 0.12, MMD_ATA turns the
+# breach into 2.88e-13.
+#
+# Where it sits: entirely on the SKEW orientation, in the AXIAL state, worst
+# component a ROTATION whose exact value is identically zero (axis-aligned stays
+# at 1.1e-16 in that state). The denominator is the axial state's own weighted
+# maximum, 8.94e-04, which contains no rotational content at all, so the ratio is
+# an amplified round-off over an unrelated scale.
+#
+# NOT the amplitude: scaling EPS_AXIAL over four decades leaves the ratio flat to
+# 1.3x, which is guaranteed by linearity and therefore discriminates nothing.
+# That cell was run first and is recorded as vacuous rather than as evidence.
 #
 # The sweep convention matters and is stated: at FIXED wall t = 0.012 m the same
 # diameters give 6.42e-13 at D = 0.10 and no breach until D = 0.05, because a
