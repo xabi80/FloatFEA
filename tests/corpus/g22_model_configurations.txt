@@ -161,3 +161,93 @@ id=aniso_I_y_10x      section=circular_tube,D=0.600,t=0.01200 stations=9.67 orie
 # This entry asserts the module's own docstring. It is expected to redden until
 # `_build` raises on a field it does not honour.
 id=typo_field_roll_rad section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew       extra=roll_rad=1.0               runs_in_suite=no  expect=raise
+
+# ===========================================================================
+# ADDED AT THE EIGHTH VERDICT (HEAD ad2246a). 14 entries, none seen by the
+# implementer. Every figure below was measured by the reviewer through the
+# shipped `test_corpus_configurations` helpers at ad2246a.
+#
+# FIVE of these fourteen are expected to be RED at ad2246a, and the redness is
+# the finding rather than a mistake in the entry. They are marked <-- RED.
+# ---------------------------------------------------------------------------
+
+# --- the floor-aware ceiling REJECTS A CLEAN MODEL --------------------------
+# The unit axis and the roll axis are each already in this file; nothing had
+# combined them with a wall thickness. Measured at ad2246a on the first entry:
+#   worst field error 4.4681e-13  (axial state, skew)
+#   floor-aware ceiling 5.0 * cond(K~) * eps = 4.2034e-13   -> err/ceiling 1.063
+#   PATCH_TEST_EXACTNESS = 1e-12                            -> err/constant 0.447
+#   L/D = 16.12 (admissible), 1e-6 control fires at 1.0763e-07
+# A clean, admissible model that the CONSTANT accepts with 2.2x of margin and
+# the floor-aware term REFUSES. It is round-off and nothing else: the same
+# configuration gives err/ceiling 0.174 under NATURAL, 0.112 under MMD_ATA and
+# 0.195 under MMD_AT_PLUS_A -- a 6.1x permutation spread on a change that
+# provably cannot move the exact solution. The other two entries are the same
+# corner without the breach (0.529 and 0.536 of their ceilings).
+id=unit_mm_D_t_100_roll_neg section=circular_tube,D=0.000600,t=0.00000600 stations=0.00967 orient=skew extra=roll=-2.5 runs_in_suite=no expect=hold
+id=unit_mm_D_t_200_roll_1 section=circular_tube,D=0.000600,t=0.00000300 stations=0.00967 orient=skew extra=roll=1.0 runs_in_suite=no expect=hold
+id=unit_mm_roll_half_pi section=circular_tube,D=0.000600,t=0.00001200 stations=0.00967 orient=skew extra=roll=1.5707963268 runs_in_suite=no expect=hold
+
+# --- the FRAME axis, which cond(K~) is not invariant to ---------------------
+# cond(K_ff) is identical for every orientation of the same beam (9.20958e+02,
+# exactly, because a rotation is an orthogonal congruence). cond(K~) is NOT:
+# 1.0596e+02 axis-aligned, 3.8491e+02 skew, 6.3199e+02 at 45 deg -- 6.0x on the
+# same physical model. And along the axis-aligned orientation cond(K~) barely
+# tracks slenderness at all: 105.96 at D = 0.6 to 433.88 at D = 0.05, 4.1x,
+# against the 121.7x the tolerance entry publishes for the skew orientation.
+# These three entries put the other orientation under measurement at the slender
+# end. All three hold; the ceiling there is 4.6e-13 .. 4.8e-13, i.e. TIGHTER
+# than the constant and flat, which is the shape of a constant, not of a floor.
+id=slender_axis_L_r_189 section=circular_tube,D=0.050,t=0.00100 stations=9.67 orient=axis extra=none runs_in_suite=no expect=hold
+id=slender_axis_L_r_118 section=circular_tube,D=0.080,t=0.00160 stations=9.67 orient=axis extra=none runs_in_suite=no expect=hold
+id=slender_in_plane_y_L_r_94 section=circular_tube,D=0.100,t=0.00200 stations=9.67 orient=in_plane_y extra=none runs_in_suite=no expect=hold
+
+# --- the parser is strict about FIELD NAMES and not about FIELD VALUES ------
+# BH3 closed the top-level key and the `extra=` prefix. The `section=` value is
+# still unparsed: `_section` reads only the D and t after the first comma and
+# never looks at the shape token or at any further key. Measured at ad2246a,
+# all three produce 1.251313e-14 -- BIT-IDENTICAL to the reference entry:
+#   section=rectangle,D=0.600,t=0.01200          builds a CIRCULAR TUBE
+#   section=circular_tube,D=0.600,t=0.01200,b=0.300   the b is dropped
+#   a repeated `orient=` field                   silently takes the last one
+# The first is the one that matters: this file's own header says circular_tube
+# is "the only shape basis.kappa knows", so the natural way for the next
+# reviewer to write the non-circular candidate the aniso block is waiting for is
+# `section=rectangle,...` -- and it would be scored green as a circular tube.
+id=typo_section_shape section=rectangle,D=0.600,t=0.01200 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise
+id=typo_section_extra_key section=circular_tube,D=0.600,t=0.01200,b=0.300 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise
+id=duplicate_orient_field section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise orient=axis
+
+# --- the beam admission limit, at its own boundary and just inside it -------
+# BEAM_ADMISSION_L_OVER_D = 2.0, on the member. These pin both sides of it: the
+# first two agree with the limit as coded. The third is the adjudication
+# evidence: at L/D = 1.3 the 1e-6 negative control responds at 1.0853e-07,
+# ABOVE PATCH_TEST_EXACTNESS_COUNTER = 1.0e-7, so the gate demonstrably still
+# fires there and the member is refused anyway. Reproduced at ad2246a with the
+# limit bypassed: the control fails only below L/D ~ 1.2
+# (0.50 -> 9.5011e-08, 1.00 -> 8.8011e-08, 1.20 -> 1.0758e-07, 1.50 -> 1.0839e-07).
+id=admissible_L_over_D_2p05 section=circular_tube,D=2.000,t=0.04000 stations=4.10 orient=skew extra=none runs_in_suite=no expect=hold
+id=inadmissible_L_over_D_1p95 section=circular_tube,D=2.000,t=0.04000 stations=3.90 orient=skew extra=none runs_in_suite=no expect=raise
+id=stubby_L_over_D_1p3 section=circular_tube,D=2.000,t=0.04000 stations=2.60 orient=skew extra=none runs_in_suite=no expect=hold
+
+# --- section physics the type permits and nothing checks --------------------
+# `Section.circular_tube` labels EVERY wall thickness `thin_tube` and therefore
+# draws Cowper's THIN-WALL-LIMIT coefficient 0.53061 whatever the wall is. The
+# hollow-circle coefficient (Cowper Table 1, verified against this repository's
+# own two endpoints: it returns 0.53061 as Ri/Ro -> 1 and 0.88636 at Ri/Ro = 0)
+# gives 0.53297 at D/t = 20, 0.58238 at D/t = 5 (-8.9%), and 0.88366 at the
+# constructor's own limit D/t -> 2.07 (-40%). `thick_wall_D_t_5` above is
+# already inside that. This entry sits at D/t = 2.1 and passes G2.2, which is
+# the point: G2.2 is documented blind to a uniform kappa error, so nothing in
+# rung 1 can see a 40% wrong shear coefficient.
+id=nearly_solid_D_t_2p1 section=circular_tube,D=0.600,t=0.28571 stations=9.67 orient=skew extra=none runs_in_suite=no expect=hold
+
+# --- PATCH_TEST_EXACTNESS_COUNTER's domain fails on a SECOND axis -----------
+# R58 asked for the counter's operating point. The answer given was a limit on
+# stubbiness. Anisotropy is a second axis and the admission limit does not cover
+# it: at I_y/I_z = 500 the member is L/D = 16.12, comfortably admissible, and
+# the weakest state responds to the 1e-6 control at 8.6804e-08 -- BELOW the
+# counter. Non-monotone (1000x gives 9.4675e-08), which is the signature of the
+# same round-off. The ratio is extreme and no real section reaches it; the entry
+# is evidence about the counter's undeclared domain, not about the element.
+id=aniso_I_y_500x section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=I_y_over_I_z=500.0 runs_in_suite=no expect=hold
