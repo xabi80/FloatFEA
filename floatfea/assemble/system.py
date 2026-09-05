@@ -87,8 +87,15 @@ def equilibrate(k: sp.spmatrix) -> tuple[sp.csc_matrix, NDArray[np.float64]]:
     not stay. Deleting it left 289 tests passing, which is the measurement that
     settled it.
 
-    Retained as a utility because the conditioning property is real and tested,
-    and it is a candidate for F3 if conditioning bites on the full model.
+    WHAT IT IS FOR (BH1). It estimates the FLOOR that G2.2's ceiling is built on:
+    `cond(D^-1/2 K_ff D^-1/2)` is the same number in every length unit -- measured
+    `3.8491e+02` at `S = 1e-3, 1, 1e3`, a spread of `1.000000x` -- while
+    `cond(K_ff)` spans six orders over the same three. A floor that moves with the
+    unit system is a floor on the unit system. It also still tracks slenderness,
+    `121.7x` over `D = 0.6 .. 0.05`, so it is not a constant in disguise. Those
+    two properties together are the whole reason this function exists.
+
+    It remains a candidate for F3 if conditioning bites on the full model.
     """
     d = np.sqrt(np.abs(k.diagonal()))
     if not np.all(d > 0.0):

@@ -330,23 +330,52 @@ def _worst_resultant_error(model, elements, u_global: np.ndarray, state: str,
 
 
 def _free_conditioning(model, elements) -> float:
-    """`cond(K_ff)` for the patch system: the achievable accuracy of this solve.
+    """`cond(D^-1/2 K_ff D^-1/2)` -- the EQUILIBRATED conditioning of the patch
+    system, which is what the floor is built on (BH1/R55).
+
+    NOT `cond(K_ff)`. That was the first form and it fails the property a floor
+    most needs: it is not unit-invariant, and the gate runs three unit systems.
+    Measured, same six states, same two orientations:
+
+        S        cond(K_ff)     cond(K~)    worst err   err/(c~.eps)
+        1e-3     5.9831e+08   3.8491e+02   1.6029e-13       1.8754
+        1        9.2096e+02   3.8491e+02   1.2513e-14       0.1464
+        1e+3     4.0490e+07   3.8491e+02   4.9240e-14       0.5761
+
+    `cond(K~)` is the SAME NUMBER at all three -- spread `1.000000x` -- because
+    `diag(SKS) = S diag(K) S` makes the equilibrated matrix algebraically
+    invariant under a diagonal rescaling. `cond(K_ff)` spans six orders over the
+    same three, so a ceiling built on it was 5.4e5x weaker at millimetres than at
+    metres: it moved with the unit system rather than with the problem.
+
+    It keeps the other property too -- it still tracks slenderness, `121.7x` over
+    `D = 0.6 .. 0.05` -- so it is not a constant wearing a floor's clothes.
+
+    `equilibrate` is a tested utility and is still NOT on the solve path (BD2).
+    Estimating this floor is what it is for.
 
     Dense, because the free block is 24x24 and the number is wanted exactly.
     """
+    from floatfea.assemble.system import equilibrate
+
     ends = np.concatenate([node_dofs(0), node_dofs(len(STATIONS) - 1)])
     free = np.setdiff1d(np.arange(model.n_dof), ends)
-    return float(np.linalg.cond(assemble(model, elements)[free][:, free].toarray()))
+    kff = assemble(model, elements)[free][:, free].tocsc()
+    return float(np.linalg.cond(equilibrate(kff)[0].toarray()))
 
 
 def floor_aware_ceiling(model, elements) -> float:
-    """`PATCH_TEST_COND_FACTOR * cond(K_ff) * eps` -- the ceiling that scales.
+    """`PATCH_TEST_COND_FACTOR * cond(K~) * eps` -- the ceiling that scales.
 
     `PATCH_TEST_EXACTNESS`, a constant, is what breaks on slender members: its
     ratio spans 141x over element L/r = 15.7 .. 117.9 and crosses 1 three times,
-    non-monotonically. This form spans 8x and never reaches 1. Both are asserted
-    where the constant is claimed, and at the posed geometry THIS one is tighter
-    (8.18e-13 against 1e-12), so it binds.
+    non-monotonically. Against the equilibrated conditioning the same errors span
+    7.9x and never reach 1.
+
+    **Both are asserted**, and the constant is the CAP that bounds this one's
+    self-reference (BH2): a floor computed from `K` moves when `K` is defective,
+    so the loosening any defect can buy is bounded by
+    `PATCH_TEST_EXACTNESS / floor_aware_ceiling`.
     """
     return PATCH_TEST_COND_FACTOR * _free_conditioning(model, elements) * float(
         np.finfo(float).eps)

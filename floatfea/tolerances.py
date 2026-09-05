@@ -474,78 +474,80 @@ PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
 
 
 # CLASS: ACCURACY -- carries PATCH_TEST_COND_FACTOR_COUNTER_DEFECT below.
-# G2.2 / V1.2 -- the FLOOR-AWARE form of the patch-test ceiling, in multiples of
-# the achievable accuracy of the solve:
+# G2.2 / V1.2 -- the FLOOR-AWARE half of the patch-test ceiling, in multiples of
+# the accuracy the solve can achieve on the problem posed:
 #
-#     err <= PATCH_TEST_COND_FACTOR * cond(K_ff) * eps
+#     err <= PATCH_TEST_COND_FACTOR * cond(D^-1/2 K_ff D^-1/2) * eps
 #
-# Dimensionless, and it scales with the problem posed rather than with the one
-# geometry the gate happens to run.
+# Dimensionless. Asserted ALONGSIDE PATCH_TEST_EXACTNESS, never instead of it.
 #
-# WHY A SECOND FORM (R46). `PATCH_TEST_EXACTNESS = 1e-12` is a constant, and the
-# constant is what breaks on slender members: over element L/r = 15.7 .. 117.9 the
-# ratio err/1e-12 spans 0.013 .. 1.76 -- 141x, crossing 1 three times, NOT
-# monotone. The same errors against cond(K_ff)*eps span 0.033 .. 0.262 -- 8x, and
-# never reach 1. The scatter inside that 8x is the round-off it is made of: moving
-# only the fill-reducing permutation, which cannot change the exact solution,
-# moves the error 2.3x-3.5x on its own.
+# THE FLOOR IS THE EQUILIBRATED CONDITIONING (BH1/R55), and the first version of
+# this entry got that wrong. It used cond(K_ff), which is not unit-invariant --
+# and the gate runs three unit systems:
 #
-#   D      L/r    cond(K_ff)   worst err   err/1e-12   err/(cond.eps)
-#   0.600  15.7    9.210e+02   1.251e-14      0.013        0.061
-#   0.400  23.6    1.969e+03   3.807e-14      0.038        0.087
-#   0.200  47.2    7.631e+03   1.571e-13      0.157        0.093
-#   0.150  62.9    1.350e+04   9.796e-14      0.098        0.033
-#   0.120  78.6    2.105e+04   1.010e-12      1.010  B     0.216
-#   0.110  85.8    2.504e+04   2.273e-13      0.227        0.041
-#   0.100  94.4    3.028e+04   1.762e-12      1.762  B     0.262
-#   0.095  99.3    3.355e+04   4.638e-13      0.464        0.062
-#   0.080 117.9    4.727e+04   1.028e-12      1.028  B     0.098
+#   S        cond(K_ff)     cond(K~)    worst err   err/(c~.eps)
+#   1e-3     5.9831e+08   3.8491e+02   1.6029e-13       1.8754
+#   1        9.2096e+02   3.8491e+02   1.2513e-14       0.1464
+#   1e+3     4.0490e+07   3.8491e+02   4.9240e-14       0.5761
 #
-# NOTHING IS LOOSENED BY THIS. At the geometry the gate is posed in,
-# 4.0 * 9.210e2 * 2.22e-16 = 8.180e-13, which is TIGHTER than the 1e-12 it sits
-# beside; both are asserted, so the tighter one binds. 4.0 is set by two
-# measurements: it keeps the posed-geometry ceiling below the constant it
-# accompanies (4.89 would equal it exactly), and it sits 15x above the worst
-# measured ratio across the slenderness range.
+# cond(K~) is the SAME NUMBER at all three -- spread 1.000000x -- because
+# diag(SKS) = S diag(K) S makes the equilibrated matrix invariant under a
+# diagonal rescaling. A ceiling built on cond(K_ff) was 5.4e5x weaker at
+# millimetres than at metres: it scaled with the unit system, not the problem.
 #
-# THE SELF-REFERENCE IS MEASURED, NOT ASSUMED. The ceiling is computed from the
-# same matrix the gate tests, so a defect could in principle raise its own
-# ceiling. Injecting each counter-case and measuring both sides:
+# AND IT KEEPS THE OTHER PROPERTY. cond(K~) still tracks slenderness -- 121.7x
+# over D = 0.6 .. 0.05 -- so it is not a constant wearing a floor's clothes:
 #
-#   clean          cond 9.2096e+02   ceiling 8.180e-13
-#   1e-6 defect    cond 9.2096e+02   ceiling 8.180e-13   err 1.17e-07  FIRES
-#   2x defect      cond 7.8533e+02   ceiling 6.975e-13   err 6.89e-02  FIRES
-#   transposed R   cond 1.0366e+03   ceiling 9.207e-13   err 1.53e+00  FIRES
+#   D      L/r    cond(K_ff)    cond(K~)   worst err   err/(c~.eps)
+#   0.600  15.7    9.210e+02   3.849e+02   1.251e-14      0.1464
+#   0.200  47.2    7.631e+03   2.859e+03   1.571e-13      0.2476
+#   0.120  78.6    2.105e+04   7.929e+03   1.010e-12      0.5739
+#   0.100  94.4    3.028e+04   1.148e+04   1.762e-12      0.6912
+#   0.080 117.9    4.727e+04   1.807e+04   1.028e-12      0.2561
+#   0.050 188.7    1.209e+05   4.684e+04   4.415e-12      0.4245
 #
-# The ceiling moves by at most 1.13x under any defect the gate must catch, while
-# the errors sit 5 to 12 orders above it.
+# Against the constant those same errors span 141x and cross 1 three times
+# non-monotonically; against this floor they span 7.9x and never reach 1.
+#
+# THE FACTOR, and it covers the round-off scatter rather than ignoring it. The
+# worst ratio over 3 scales x 2 orientations x 6 states x FOUR fill-reducing
+# permutations is 1.8754 -- the permutation cannot change the exact answer, so
+# its spread (1.9x .. 2.9x per scale) is round-off and belongs inside the
+# measurement. 8.0 sits 4.3x above that worst cell. At the posed geometry the
+# ceiling is 8.0 * 3.8491e2 * 2.22e-16 = 6.838e-13, TIGHTER than the 1e-12 it
+# accompanies, so the floor-aware term binds there and nothing is loosened.
+#
+# THE SELF-REFERENCE IS BOUNDED, NOT DENIED (BH2). This ceiling is computed from
+# the same K the gate tests, so a defective K moves it. The first version of this
+# entry said "the ceiling moves by at most 1.13x under any defect the gate must
+# catch" -- measured against three defects its own author chose, and refuted by a
+# uniform J x 0.01, which moves it 65x. The defence is not that it cannot move:
+# it is that PATCH_TEST_EXACTNESS is asserted beside it as a CAP, so the
+# loosening any defect can buy is bounded by
+#
+#     PATCH_TEST_EXACTNESS / floor_aware_ceiling
+#
+# measured over the corpus and recorded in docs/milestones/F2.md sec. D5.
 # Set: 2026-09-04, F2
-PATCH_TEST_COND_FACTOR: Final[float] = 4.0
+PATCH_TEST_COND_FACTOR: Final[float] = 8.0
 
-# COUNTER-CASE, and it is a DEFECT SIZE rather than a response, because this
-# entry's ceiling varies with the configuration (BG1). Measured by bisecting the
-# shipped predicate for the smallest single-element relative stiffness defect the
-# floor-aware assertion detects:
+# COUNTER-CASE, a DEFECT SIZE (BG1). Measured by bisecting the shipped predicate
+# for the smallest single-element relative stiffness defect it detects, PER STATE
+# because the counter must be caught by every state and not only the most
+# sensitive:
 #
-# PER STATE, because the counter has to be caught by every state and not merely
-# by the most sensitive one (the same rule PATCH_TEST_EXACTNESS_COUNTER follows):
+#   D      L/r    ceiling      axial  curvature      twist      shear   curv_xz   shear_xz
+#   0.600  15.7  6.838e-13  6.273e-12  6.316e-12  6.270e-12  5.728e-12  6.355e-12  5.802e-12
+#   0.120  78.6  1.409e-11  1.302e-10  1.295e-10  1.291e-10  1.194e-10  1.305e-10  1.213e-10
+#   0.100  94.4  2.039e-11  1.883e-10  1.886e-10  1.869e-10  1.751e-10  1.888e-10  1.752e-10
+#   0.080 117.9  3.210e-11  2.933e-10  2.966e-10  2.943e-10  2.761e-10  2.983e-10  2.773e-10
 #
-#   D      L/r      axial  curvature      twist      shear   curv_xz   shear_xz
-#   0.600  15.7  7.513e-12  7.567e-12  7.502e-12  6.880e-12  7.578e-12  6.961e-12
-#   0.120  78.6  1.725e-10  1.720e-10  1.714e-10  1.593e-10  1.734e-10  1.611e-10
-#   0.100  94.4  2.480e-10  2.487e-10  2.466e-10  2.307e-10  2.489e-10  2.313e-10
-#   0.080 117.9  3.845e-10  3.897e-10  3.849e-10  3.609e-10  3.906e-10  3.634e-10
-#
-# The counter is set just above the WORST cell, 3.906e-10, so every state of
-# every configuration must catch it. A first draft used 3.7e-10, taken from a
-# bisection on max-over-states rather than per state, and the D = 0.080 case went
-# red -- correctly, which is the counter test doing its job on its own author.
-#
-# Because the ceiling and the detection threshold move together, doubling this
-# factor pushes the threshold past the counter and the counter test goes red.
-# That is what makes silent widening impossible rather than reviewed-for.
+# The counter is set just above the worst cell, 2.983e-10. Ceiling and threshold
+# move together, so doubling the factor pushes the threshold past the counter and
+# the counter test goes red -- which is what makes silent widening impossible
+# rather than reviewed-for.
 # Set: 2026-09-04, F2
-PATCH_TEST_COND_FACTOR_COUNTER_DEFECT: Final[float] = 4.0e-10
+PATCH_TEST_COND_FACTOR_COUNTER_DEFECT: Final[float] = 3.0e-10
 
 
 # CLASS: ACCURACY -- carries SOLVE_BACKWARD_ERROR_FACTOR_COUNTER_DEFECT below.

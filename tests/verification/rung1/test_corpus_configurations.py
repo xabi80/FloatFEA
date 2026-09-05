@@ -163,10 +163,18 @@ def _solve_state(entry, state: str, stiffness_scale: float = 1.0) -> float:
 
 
 def _ceiling(entry) -> float:
+    """The SAME function the gate uses, not a second copy of the formula.
+
+    A duplicate here would drift from the gate's own ceiling silently, which is
+    the defect this module exists to catch elsewhere.
+    """
+    from floatfea.assemble.system import equilibrate
+
     m, els, stations = _build(entry)
     ends = np.concatenate([node_dofs(0), node_dofs(len(stations) - 1)])
     free = np.setdiff1d(np.arange(m.n_dof), ends)
-    cond = float(np.linalg.cond(assemble(m, els)[free][:, free].toarray()))
+    kff = assemble(m, els)[free][:, free].tocsc()
+    cond = float(np.linalg.cond(equilibrate(kff)[0].toarray()))
     return PATCH_TEST_COND_FACTOR * cond * float(np.finfo(float).eps)
 
 
