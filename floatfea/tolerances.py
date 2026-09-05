@@ -558,13 +558,35 @@ PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
 # the same K the gate tests, so a defective K moves it. The first version of this
 # entry said "the ceiling moves by at most 1.13x under any defect the gate must
 # catch" -- measured against three defects its own author chose, and refuted by a
-# uniform J x 0.01, which moves it 65x. The defence is not that it cannot move:
-# it is that PATCH_TEST_EXACTNESS is asserted beside it as a CAP, so the
-# loosening any defect can buy is bounded by
+# UNIFORM J x 0.01, which is the class the neighbouring blindness test declares
+# invisible.
 #
-#     PATCH_TEST_EXACTNESS / floor_aware_ceiling
+# THE CELL, and it also measures what BH1 bought. One variable moved -- which
+# conditioning the floor uses -- everything else held:
 #
-# measured over the corpus and recorded in docs/milestones/F2.md sec. D5.
+#   defect        cond(K_ff)    move     cond(K~)    move
+#   clean         9.2096e+02      --   3.8491e+02      --
+#   J x 0.01      5.9831e+04   65.0x   2.0847e+03    5.4x
+#   J x 100       3.0630e+03    3.3x   5.5615e+02    1.4x
+#   A x 0.01      4.5522e+02    0.5x   5.9826e+01    0.2x
+#
+# The 65x that refuted the old claim is the UNEQUILIBRATED floor. Equilibrating it
+# (BH1) damps the same defect to 5.4x -- a 12x reduction that was not the reason
+# for that change and is measured here rather than claimed for it.
+#
+# THE DEFENCE IS THE CAP, not an assertion that it cannot move.
+# PATCH_TEST_EXACTNESS is asserted beside this term, so the effective ceiling is
+# min(constant, floor-aware) and the loosening ANY defect can buy is bounded by
+# constant / binding_clean. Measured over the admitted corpus:
+#
+#   worst bound, over every admitted entry            5.313x
+#   every slender entry, where floor-aware > constant 1.000x  (no loosening at all)
+#   the posed geometry                                1.463x
+#
+# And under the J x 0.01 defect the floor-aware term moves 5.4x while the BINDING
+# ceiling moves 1.463x. Detection survives inside that bound: the counter defect's
+# response is 3.23e-11 .. 3.52e-11 clean and 3.23e-11 .. 3.52e-11 with J x 0.01
+# applied, against a binding ceiling of 1.0e-12 -- every state still fires.
 # Set: 2026-09-04, F2
 PATCH_TEST_COND_FACTOR: Final[float] = 8.0
 

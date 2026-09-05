@@ -339,9 +339,15 @@ def test_the_corpus_entry_behaves_as_the_reviewer_recorded(entry) -> None:
         )
         return
 
-    assert worst <= _ceiling(entry), (
-        f"{entry['id']}: worst state error {worst:.4e} exceeds the floor-aware "
-        f"ceiling {_ceiling(entry):.4e}"
+    # THE BINDING CEILING is the tighter of the two, which is what caps the
+    # floor-aware term's self-reference (BH2). Asserting the floor-aware value
+    # alone here would have left the cap applying to the gate's own three
+    # configurations and to nothing in the corpus.
+    binding = min(_ceiling(entry), PATCH_TEST_EXACTNESS)
+    assert worst <= binding, (
+        f"{entry['id']}: worst state error {worst:.4e} exceeds the binding "
+        f"ceiling {binding:.4e} = min(floor-aware {_ceiling(entry):.4e}, "
+        f"constant {PATCH_TEST_EXACTNESS:.0e})"
     )
 
 
