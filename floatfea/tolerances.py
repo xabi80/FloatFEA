@@ -546,13 +546,28 @@ PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
 # Against the constant those same errors span 141x and cross 1 three times
 # non-monotonically; against this floor they span 7.9x and never reach 1.
 #
-# THE FACTOR, and it covers the round-off scatter rather than ignoring it. The
-# worst ratio over 3 scales x 2 orientations x 6 states x FOUR fill-reducing
-# permutations is 1.8754 -- the permutation cannot change the exact answer, so
-# its spread (1.9x .. 2.9x per scale) is round-off and belongs inside the
-# measurement. 8.0 sits 4.3x above that worst cell. At the posed geometry the
-# ceiling is 8.0 * 3.8491e2 * 2.22e-16 = 6.838e-13, TIGHTER than the 1e-12 it
-# accompanies, so the floor-aware term binds there and nothing is loosened.
+# THE FACTOR IS CENTRED IN ITS LIVE BAND, and both ends of that band are named
+# (R64). Scanning the shipped suite, the factor may take any value in roughly
+# [3.1, 8.1]:
+#
+#   3.0  -> FAILED test_the_corpus_entry_behaves_as_the_reviewer_recorded[unit_mm_similar]
+#   3.2 .. 8.0  502 passed
+#   8.2  -> FAILED test_the_floor_aware_ceiling_CATCHES_its_counter_defect[D=0.08]
+#
+# The lower end is pinned by a clean configuration breaching; the upper end by
+# the counter defect ceasing to be detected. 5.0 is the geometric centre: 1.6x
+# of margin to each end. It also sits 2.7x above the worst measured clean ratio,
+# 1.8754, which is itself measured over 3 scales x 2 orientations x 6 states x
+# FOUR fill-reducing permutations -- the permutation cannot change the exact
+# answer, so its 1.9x .. 2.9x spread is round-off and belongs inside that number.
+#
+# A first version used 8.0, which passed but sat 1.3% below the upper edge: any
+# scatter in the counter measurement would have flipped it. Being near an end of
+# a live band is not the same as being defensible in it.
+#
+# At the posed geometry the ceiling is 5.0 * 3.8491e2 * 2.22e-16 = 4.274e-13,
+# TIGHTER than the 1e-12 it accompanies, so the floor-aware term binds there and
+# nothing is loosened.
 #
 # THE SELF-REFERENCE IS BOUNDED, NOT DENIED (BH2). This ceiling is computed from
 # the same K the gate tests, so a defective K moves it. The first version of this
@@ -588,7 +603,7 @@ PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
 # response is 3.23e-11 .. 3.52e-11 clean and 3.23e-11 .. 3.52e-11 with J x 0.01
 # applied, against a binding ceiling of 1.0e-12 -- every state still fires.
 # Set: 2026-09-04, F2
-PATCH_TEST_COND_FACTOR: Final[float] = 8.0
+PATCH_TEST_COND_FACTOR: Final[float] = 5.0
 
 # COUNTER-CASE, a DEFECT SIZE (BG1). Measured by bisecting the shipped predicate
 # for the smallest single-element relative stiffness defect it detects, PER STATE
