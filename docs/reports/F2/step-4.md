@@ -1676,3 +1676,170 @@ corpus: 62 entries executed; branches: inadmissible 5, measured 48, refused 3,
 not a pass. Nine consecutive reviews by one reader; this report asks for the
 tenth, scored against 62 configurations the implementer did not write. BA after
 PASS.
+
+---
+
+# Revision 11 — R91, R92, R93 answered; R94 is a plan item and is NOT answered here
+
+**2026-09-06.** Three commits since the tenth verdict, `0862f31` … `1f32c7f`
+(`git log --oneline 51fc886..HEAD | wc -l` → 1 code commit; the other two are the
+reviewer's corpus and the verdict itself).
+
+**The suite is RED at this commit and that is deliberate.**
+
+```
+$ python -m pytest -q
+2 failed, 594 passed
+FAILED tests/verification/rung1/test_corpus_configurations.py::test_the_corpus_entry_still_DETECTS_a_defect[lam900_skew_undetectable]
+FAILED tests/verification/rung1/test_corpus_configurations.py::test_the_corpus_entry_still_DETECTS_a_defect[lam900_axis_undetectable]
+```
+
+Both are **R94**, and R94 is a **plan item awaiting Xabier**, not a step item.
+Neither entry is skipped, `xfail`ed, deleted, nor accommodated by moving a number.
+The reason the red stands rather than being fixed is in §3.
+
+---
+
+## 1. BM0 — the headroom, as a measurement on the record
+
+| quantity | value |
+|---|---|
+| worst residual, **whole** corpus (57 solved entries) | `1.8641e-16` = `0.0373×` the ceiling (`nearly_solid_D_t_2p1`, λ 64.4, 0.84 ε) |
+| counter ÷ ceiling at the most slender entry with **λ ≤ 300** | `4.53×` (`slender_L_r_99`, λ 293.7) |
+| weakest detection anywhere with **λ ≤ 300** | `4.30×` the counter (`slender_in_plane_y_L_r_94`, λ 279.0) |
+| the same at **λ ≤ 200** | `11.25×` and `6.68×` |
+| the same at **λ ≤ 630** (the measured detection edge) | `1.02×` — i.e. no margin at all |
+
+Read the last two rows together: **the proposed admission limit is not a
+restatement of the detection edge, it is comfortably inside it.** At λ ≤ 300 the
+weakest configuration in the corpus still responds at `4.3×` the counter; at the
+edge itself there is 2%.
+
+## 2. BM1 — R91, R92, R93
+
+**R91 — the parser no longer writes the field the test checks itself against.**
+`_parse` replaced the reviewer's `expect` with `"raise"` on any unexecutable
+line, and the per-entry test then asserted `expect == "raise"`. A line recorded
+`hold` read green while measuring nothing, on the one instrument in this
+repository the implementer does not write.
+
+> **cmd** `python -m pytest tests/verification/rung1/test_corpus_configurations.py -q -k EXPECT_survives`
+> **out** `1 passed` — the test builds the reviewer's own probe line, asserts the
+> row keeps `expect=hold`, and asserts the per-entry check **raises** on it.
+
+**And the capability the reviewer could not write now exists.** `extra=` took one
+key, which is why `roll_and_aniso_together` was unparseable in the first place.
+It now takes a sequence: a comma-separated token containing `=` starts a new key,
+one without continues the previous key's value — so `orientation_node=1,0,0` and
+`roll=0.3,I_y_over_I_z=0.5` both parse, with no second separator to remember.
+Twelve new tests: five accepted shapes, seven refused. The entry moves from
+*unparseable* to **measured**.
+
+**R92 — the scratch table leaves `tolerances.py`, and a second one goes with it.**
+BI3 gives two routes; `ls scripts/` is `write_verdict.py`, so the report it is,
+and the entry keeps the one number it needs (`1.14e-09` at the limit, `11371×`
+the counter) with a pointer. Searching for the same shape found a second
+instance the finding did not name: `RESULTANT_EXACTNESS_COUNTER` carried the
+two-channel table with the retired quantity's `via field` column and the sentence
+"as a gate it is ~150× WEAKER".
+
+> **cmd** `git grep -n "157.9x\|9.1808e-12\|150x WEAKER" -- floatfea tests`
+> **out** (nothing)
+
+**R93 — the blanket provenance sentence is replaced by a per-block one, and all
+four blocks are regenerated on the shipped predicates.**
+
+*(i)* The two-channel decision table. The `~150×` conclusion is **withdrawn**: on
+the predicates that ship the ratio spans `5.1×` (twist) to `14303×` (axial).
+
+```
+  state            via field  via resultants      ratio
+  axial           1.0136e-13      1.4498e-09   14302.8x
+  curvature       2.1805e-10      1.4422e-09       6.6x
+  twist           2.8348e-10      1.4498e-09       5.1x
+  shear           1.1300e-10      1.2527e-09      11.1x
+  curvature_xz    2.1806e-10      1.4422e-09       6.6x
+  shear_xz        1.0509e-10      1.2527e-09      11.9x
+```
+
+Three orders where one number stood. The spread is a **better** argument for
+keeping both channels than the number was: they are sensitive to different
+things.
+
+*(ii)* The transposed transform, "every state, at O(1)". None is O(1); the
+smallest is `7.1889e-04`, and the plan already quoted that figure.
+
+```
+  axial 2.8565e-02  curvature 1.4356e-02  twist 7.1889e-04
+  shear 2.1497e-02  curvature_xz 8.2813e-03  shear_xz 1.2401e-02
+```
+
+*(iii)* `WHAT THE BAND BUYS`, byte-identical to its form at `620ec96` — it
+survived the quantity change unmeasured. Regenerated by bisection; two of its six
+ratios crossed 1.000 where none does now. The claim becomes **+5.5% / −5.0%
+caught in every state**, +5.3% / −4.9% in the tightest.
+
+*(iv)* The unit-scale sentence, `3.8× (0.13–0.49 ε)`, came from a scratch sweep
+over other configurations. The 36 cells this parametrisation runs:
+
+```
+  S = 1e-3   worst 1.4761e-16 (0.665 eps)
+  S = 1      worst 8.7042e-17 (0.392 eps)
+  S = 1e+3   worst 8.7042e-17 (0.392 eps)         per-scale worst spans 1.70x
+```
+
+## 3. R94 — NOT answered here, and the reason it is a plan item
+
+The finding is right and it is the cost named when the residual form was
+recommended: detection falls as `1/λ²`, so somewhere along λ the 1e-6 defect stops
+being visible. The reviewer found the edge at λ ≈ 630 and planted entries at 900.
+
+**The answer proposed is not another envelope.** A member at λ = 900 is not a
+structural member under the standard this project locked (`PLAN.md`: API RP
+2A-WSD). If the standard's slenderness limit bounds the model's admissible domain,
+then the tool is bounded at both ends by modelling and by code — `L/D ≥ 2` at one
+end, the slenderness limit at the other — and neither bound is a test artefact.
+
+**The proposal, pending Xabier:** model admission limit member `λ ≤ 300`, with F6
+applying `200` to compression members through the code check;
+`assert_beam_admissible` gains the upper bound; `PATCH_TEST_EXACTNESS_COUNTER`
+becomes a function of λ recorded with its value at λ = 300 and the measured edge
+at ≈ 630 beside it; the mutation test runs at the most slender **admissible**
+entry; the λ = 900 entries become `expect=raise`.
+
+**IT IS BLOCKED ON A CITATION, AND THE BLOCK IS DELIBERATE.** The rule that a
+reference is verified before it is relied on applies to the standard as much as
+to a textbook equation. I attempted the verbatim clauses and **could not obtain
+them**: ANSI/AISC 360's own PDF on `aisc.org` returns HTTP 403, and API RP 2A-WSD
+is a paid document with no accessible text. Multiple secondary sources agree —
+AISC 360 §D1, tension, "preferably should not exceed 300", with `L` the actual
+and not the effective length, framed in the Commentary as serviceability rather
+than strength; and a compression recommendation of `KL/r ≤ 200` — **but a
+secondary source is not the clause**, and two details that change the engineering
+cannot be settled from one: whether the compression figure is a User Note or a
+requirement in the edition in force, and that it is on `KL/r` with an effective
+length where the corpus's λ is `L/r` on the bare member.
+
+So nothing is written to the plan, `tolerances.py` or `admissibility.py` for R94
+in this revision. What is needed is one of: the clause text from API RP 2A-WSD
+§3.2 and ANSI/AISC 360 §D1 and Chapter E, or Xabier's own citation of them.
+
+## 4. Carried
+
+R94 **open, and blocked as above**. R63, R76, R79, R80 open and unchanged. R6,
+R16, R25, R30, R31, R32, R33 (outside G2.2), R36, R50, R52, R62 open, routed to
+step 4a or later steps. R65 withdrawn by the reviewer. R77, R78, R81–R93 closed
+or dissolved as recorded in revision 10 and above.
+
+**One new item, recorded rather than fixed, because BM3 says no other scope:**
+`orient_norm_overflow` passes for the wrong reason. `_direction` tests the norm of
+the **input**, so `1e308,1e308,0` overflows to `inf`, `v / inf` is the zero
+vector, and the function returns the very thing its docstring says it refuses; the
+entry is caught downstream by the node constructor. The reviewer documented this
+in the tenth-round corpus. It is a one-line fix — test the norm of the **result** —
+and it is not in this commit because it was not in the directive.
+
+## 5. Witness
+
+No git remote, so no PR and no `[witness …]` comment — an unavailable check, not a
+pass.
