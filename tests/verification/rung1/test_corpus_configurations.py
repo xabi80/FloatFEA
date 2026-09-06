@@ -545,6 +545,26 @@ def test_the_admission_limit_overrides_are_REPORTED(capsys) -> None:
     assert True  # not-a-tolerance: this test reports, the assertions are below
 
 
+def _branch(entry) -> str:
+    """Which path the per-entry test takes for this entry.
+
+    Named and returned rather than left implicit in a chain of `if`s, so the
+    coverage test can recompute the partition by a SECOND route and compare
+    (R77). The previous coverage assertion built `solved` and `refused` from
+    predicates that were exact complements by De Morgan, so `solved & refused`
+    was empty and `solved | refused` was everything -- for any corpus, including
+    an empty one. It asserted nothing, and was carried as an open finding for
+    three rounds.
+    """
+    if "_error" in entry:
+        return "unparseable"
+    if _inadmissible(entry) is not None:
+        return "inadmissible"
+    if entry["expect"] == "raise":
+        return "refused"
+    return "measured"
+
+
 @pytest.mark.parametrize("entry", ENTRIES, ids=lambda e: e["id"])
 def test_the_corpus_entry_behaves_as_the_reviewer_recorded(entry) -> None:
     expect = entry["expect"]
@@ -697,25 +717,35 @@ def test_the_corpus_coverage_is_reported(capsys) -> None:
     with capsys.disabled():
         print(f"\n  corpus: {runs} entries executed by this module; "
               f"{recorded} recorded as runs_in_suite=yes at the last review")
-    # The property worth asserting is that this module executes EVERY entry --
-    # the coverage number and the count of entries are the same number, or some
-    # entry is being skipped. The previous assertion, `runs > recorded or
-    # recorded == runs`, is false only if the reviewer's recorded count exceeds
-    # the number of entries in their own file, which cannot happen: it asserted
-    # nothing.
-    solved = {e["id"] for e in ENTRIES
-              if e["expect"] != "raise" and "_error" not in e
-              and _inadmissible(e) is None}
-    refused = {e["id"] for e in ENTRIES
-               if e["expect"] == "raise" or "_error" in e
-               or _inadmissible(e) is not None}
-    all_ids = {e["id"] for e in ENTRIES}
-    assert not (solved & refused), f"entries in both sets: {sorted(solved & refused)}"
-    assert solved | refused == all_ids, (
-        f"entries in neither set: "
-        f"{sorted(all_ids - solved - refused)}. "
-        "An entry that is neither solved nor explicitly refused is a silent skip."
+    # TWO INDEPENDENT ROUTES TO THE SAME PARTITION, COMPARED (R77). One is the
+    # branch the per-entry test actually takes; the other is the predicate that
+    # decides which entries the DETECTION test is parametrised over. They are
+    # written separately and can drift, and if they do, an entry is measured by
+    # one test and silently absent from the other -- which is the failure this
+    # test is for. Comparing a predicate with its own negation, as this did for
+    # three rounds, could not detect that or anything else.
+    measured = {e["id"] for e in ENTRIES if _branch(e) == "measured"}
+    parametrised = {e["id"] for e in SOLVED}
+    assert measured == parametrised, (
+        f"the per-entry test measures {sorted(measured - parametrised)} that the "
+        f"detection test never sees, and the detection test is parametrised over "
+        f"{sorted(parametrised - measured)} that the per-entry test refuses. One "
+        "of the two predicates has drifted."
     )
+
+    # And the partition is non-degenerate in BOTH directions: a predicate bug
+    # that routed every entry to one branch would leave the other empty and
+    # score nothing, with every remaining assertion vacuously satisfied.
+    tally: dict[str, int] = {}
+    for e in ENTRIES:
+        tally[_branch(e)] = tally.get(_branch(e), 0) + 1
+    assert tally.get("measured", 0) > 0, "no entry is measured at all"
+    assert len(ENTRIES) - tally.get("measured", 0) > 0, "no entry is refused at all"
+    solved = measured
+    refused = {e["id"] for e in ENTRIES} - measured
+    with capsys.disabled():
+        print("          branches: "
+              + ", ".join(f"{k} {v}" for k, v in sorted(tally.items())))
     with capsys.disabled():
         print(f"          {len(solved)} solved, {len(refused)} refused, "
               f"{len(ENTRIES)} total")
