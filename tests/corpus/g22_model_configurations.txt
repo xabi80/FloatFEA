@@ -427,3 +427,47 @@ id=roll_1e300           section=circular_tube,D=0.600,t=0.01200 stations=9.67   
 # reads green while measuring nothing. That is the finding; the entry stays as
 # it is until the module either builds it or reports the disagreement.
 id=roll_and_aniso_together section=circular_tube,D=0.600,t=0.01200 stations=9.67    orient=skew extra=roll=0.3,I_y_over_I_z=0.5 runs_in_suite=no expect=hold
+
+# --- eleventh round: the counter's domain is NOT on the reported lambda axis --
+# Revision 11 proposes bounding the model at member lambda <= 300 (F6: 200 in
+# compression) so the 1e-6 control still clears the counter everywhere admitted.
+# These four entries measure that proposal on the coordinate it does not sample.
+# `member_lambda(entry)` rebuilds the section from `section=` and discards
+# `extra=I_y_over_I_z=`, so the lambda the runner PRINTS is the strong axis. The
+# governing (min-I) lambda is in the comment beside each line, and it is what the
+# 1/lambda^2 response actually follows.
+#
+# aniso_weak_lam154_undetectable: reported lambda 153.9 -- inside BOTH proposed
+# limits -- governing lambda 1539.0, clean 0.044x the ceiling, and the 1e-6
+# defect responds at 2.1370e-14 = 0.214x the counter. The gate holds here and
+# CANNOT FAIL here, at half the proposed compression limit. A limit written on
+# the reported lambda does not bound the counter; one written on min(I_y, I_z)
+# would refuse this line at 1539.
+id=aniso_weak_lam154_undetectable section=circular_tube,D=0.600,t=0.01200 stations=32.0 orient=skew extra=I_y_over_I_z=0.01  runs_in_suite=no expect=hold
+# The same reported lambda, one twentieth instead of one hundredth: governing
+# lambda 688.2, det 1.0684e-13 = 1.068x the counter. A 7% loss of sensitivity
+# reddens it. Two entries with the SAME printed lambda, 5x apart in detection.
+id=aniso_weak_lam154_pin        section=circular_tube,D=0.600,t=0.01200 stations=32.0 orient=skew extra=I_y_over_I_z=0.05  runs_in_suite=no expect=hold
+# Governing lambda 458.1, det 2.3999e-13 = 2.400x. Brackets the pin from below on
+# the anisotropy axis rather than on the length axis.
+id=aniso_weak_lam102_detects    section=circular_tube,D=0.600,t=0.01200 stations=21.3 orient=skew extra=I_y_over_I_z=0.05  runs_in_suite=no expect=hold
+# Anisotropy the OTHER way, same length: I_y/I_z = 100 leaves the governing axis
+# at 153.9 and detection at 16.3x. Sign control on the axis above -- if the
+# response tracked |I_y/I_z - 1| rather than the weak axis, this would also fall.
+id=aniso_reversed_I_y_over_I_z  section=circular_tube,D=0.600,t=0.01200 stations=32.0 orient=skew extra=I_y_over_I_z=100.0 runs_in_suite=no expect=hold
+
+# --- eleventh round: extra= as a SEQUENCE, in shapes the twelve new tests omit -
+# The five accepted shapes in MULTI_EXTRAS are (roll), (roll, aniso), (onode),
+# (onode, roll), (none). These two are the pairs it does not cover.
+# onode + aniso, no roll: det 4.6044e-12, clean 0.018x.
+id=onode_and_aniso_together     section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=orientation_node=0.13,-0.91,0.39,I_y_over_I_z=0.20 runs_in_suite=no expect=hold
+# ALL THREE keys at once, on a free direction. Clean out-of-balance 2.2595e-16 =
+# 1.018 eps, which is the largest in this corpus and the first above one eps --
+# the plan's "0.13-0.49 eps across every configuration" (F2.md D7 item 7) is 7.8x
+# below it. Still 0.045x of the ceiling; det 1.0717e-11.
+id=all_three_extras_free_dir    section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=0.41,-0.77,0.49 extra=orientation_node=0,0,1,roll=0.61,I_y_over_I_z=0.35 runs_in_suite=no expect=hold
+# Two lines the sequence parser must still REFUSE rather than resolve: a key
+# repeated across a vector value, and a vector truncated so the next key is
+# swallowed as its third component.
+id=extra_key_repeated_with_onode section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=roll=0.2,orientation_node=1,0,0,roll=0.4 runs_in_suite=no expect=raise
+id=extra_onode_truncated        section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=orientation_node=1,0,I_y_over_I_z=0.5 runs_in_suite=no expect=raise
