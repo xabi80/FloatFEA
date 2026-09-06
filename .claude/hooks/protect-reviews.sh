@@ -47,6 +47,14 @@
 #      `cd` clause bought nothing: `cd tests/corpus && echo x > y` is already
 #      caught by the redirect in the same command string. Over-blocking a WRITE
 #      costs nothing; over-blocking a READ costs the ability to work.
+#
+#      That sentence had to be applied twice more. The whole-command redirect
+#      match also fired on `2>&1`, so `pytest ... 2>&1` on a path under
+#      tests/corpus/ was denied -- a read, again. The redirect clause now ignores
+#      file-descriptor redirections. THE PATTERN, recorded because it is the
+#      third instance: every widening of this rule has cost a read and bought
+#      nothing, because the implementer's writes here are already caught by the
+#      narrow forms.
 #   2. Malformed JSON FAILED OPEN -- the python helper printed nothing, `agent`
 #      and `hit` came back empty, and the case fell through to `exit 0`. Closed:
 #      the helper prints a sentinel on any parse failure and the hook denies.
@@ -97,7 +105,11 @@ elif command and re.search(PROTECTED, command):
     # legitimate write here, so any write shape anywhere in a command that
     # mentions a protected directory is refused.
     writes = (
-        re.search(r">>?", command)
+        # A redirect, but NOT a file-descriptor one: `2>&1` and `2>/dev/null`
+        # are not writes to anything, and matching a bare `>` denied every
+        # `pytest ... 2>&1` that mentioned a protected path. Third false
+        # positive from this clause; see the header.
+        re.search(r"(?<![0-9])>{1,2}(?!&)", command)
         or re.search(r"\b" + VERBS + r"\b", command)
         or re.search(r"\bsed\b[^\n]*-i", command)
         or re.search(r"\bgit\b[^\n]*\b(?:checkout|restore|rm|mv)\b", command)
