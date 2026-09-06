@@ -12,8 +12,14 @@ backward error -- and five successive attempts to bound it with a constant
 (1e-12), a conditioning-scaled ceiling, an equilibrated floor and a validated
 slenderness domain were each refuted by one more axis the envelope had not
 spanned. It is now REPORTED per corpus entry and asserted nowhere; the solve is
-gated by its BACKWARD error, which is cond-independent by construction. Every
-figure below this line was re-measured on the shipped quantity at this commit.
+gated by its BACKWARD error, which is cond-independent by construction.
+
+PROVENANCE, PER BLOCK, BECAUSE A BLANKET CLAIM IS THE CHEAPEST KIND TO REFUTE
+(R93). A previous version of this paragraph said "every figure below this line
+was re-measured at this commit". Three blocks below it had not been, and two of
+them were contradicted by measurements elsewhere in this same file. Each block of
+figures now states which quantity it was measured on and when. Where a block
+carries a table that no shipped test produces, it says so.
 
 Form
 ----
@@ -495,10 +501,19 @@ def _run(
 # THE PARAMETRISATION MATTERS LESS TO THE CEILING THAN IT DID, and that is worth
 # stating rather than leaving as an unexplained survival: the shipped quantity is
 # a ratio of two quantities that both carry the largest stiffness, so a change of
-# length unit cannot move it the way it moved the solved field error. Measured
-# across six orders of length unit the clean value spans 3.8x (0.13-0.49 eps),
-# against the decades of spread that broke the previous form. The three scales
-# stay because a claim of unit-invariance should be asserted, not derived.
+# length unit cannot move it the way it moved the solved field error.
+#
+# MEASURED OVER THE 36 CELLS THIS PARAMETRISATION ACTUALLY RUNS (R93). The
+# sentence here previously quoted "3.8x (0.13-0.49 eps)", which came from a
+# scratch sweep over different configurations, not from these cells:
+#
+#   S = 1e-3   worst 1.4761e-16 (0.665 eps)
+#   S = 1      worst 8.7042e-17 (0.392 eps)
+#   S = 1e+3   worst 8.7042e-17 (0.392 eps)
+#
+# The per-scale worst spans 1.70x across six orders of length unit, and the
+# individual cells run 0.0001 to 0.665 eps. The three scales stay because a claim
+# of unit-invariance should be asserted, not derived.
 GATE_UNIT_SCALES = [1e-3, 1.0, 1e3]
 
 
@@ -659,15 +674,19 @@ def test_the_measured_detection_threshold_still_holds(state: str) -> None:
     sensitivity change this assertion detects, per state::
 
         state          ratio at f=1   detected above   detected below
-        axial              0.997640          +5.24%           -5.01%
-        curvature          1.003067          +4.88%           -5.54%
-        twist              0.999703          +5.25%           -5.02%
-        shear              1.009952          +4.50%           -5.95%
-        curvature_xz       0.999730          +5.27%           -5.08%
-        shear_xz           1.000443          +5.47%           -5.07%
+        axial              0.996385          +5.44%           -4.92%
+        curvature          0.999760          +5.34%           -5.02%
+        twist              0.998301          +5.49%           -4.88%
+        shear              0.999578          +5.28%           -4.97%
+        curvature_xz       0.999695          +5.34%           -5.02%
+        shear_xz           0.999133          +5.39%           -4.92%
+
+    REGENERATED 2026-09-06 ON THE SHIPPED PREDICATE (R93). The previous table was
+    byte-identical to the one at `620ec96`, i.e. it survived the quantity change
+    unmeasured; two of its six ratios crossed 1.000 where none does now.
 
     So a formulation change that moved any state's sensitivity by **+5.5% or
-    -6.0% is caught in every state**, and by +4.5% / -5.0% in the tightest. Not
+    -5.0% is caught in every state**, and by +5.3% / -4.9% in the tightest. Not
     a symmetric +/-5%: the band is relative to the LARGER operand, and each
     state already sits a little off 1.000.
     """
@@ -754,17 +773,29 @@ def test_the_resultant_recovery_is_EXACT_on_the_exact_field(
 # arbitrary 1e-6 defect are not, and quoting them as "6.4x the more sensitive"
 # said the opposite of what the code does.
 #
-#   state            via field  via resultants    ratio
-#   axial           9.1808e-12      1.4498e-09   157.9x
-#   curvature       9.2518e-12      1.4422e-09   155.9x
-#   twist           9.1708e-12      1.4498e-09   158.1x
-#   shear           8.4540e-12      1.2527e-09   148.2x
-#   curvature_xz    9.2976e-12      1.4422e-09   155.1x
-#   shear_xz        8.4953e-12      1.2527e-09   147.5x
+# REGENERATED 2026-09-06 ON THE SHIPPED PREDICATES (R93). The `via field` column
+# used to hold the RETIRED quantity's thresholds -- reproducible to three digits
+# by bisecting `fwd > 1e-12`, and contradicted by `DETECTION_THRESHOLD` 130 lines
+# above in this same file. Both columns below come from bisecting the predicate
+# each channel actually asserts:
 #
-# As a GATE the resultant channel is ~150x weaker. It is kept for what it sees,
-# not for sensitivity: it is a different quantity, verified against statics, and
-# four of five planted sign defects in its analytic table are caught by it.
+#   state            via field  via resultants      ratio
+#   axial           1.0136e-13      1.4498e-09   14302.8x
+#   curvature       2.1805e-10      1.4422e-09       6.6x
+#   twist           2.8348e-10      1.4498e-09       5.1x
+#   shear           1.1300e-10      1.2527e-09      11.1x
+#   curvature_xz    2.1806e-10      1.4422e-09       6.6x
+#   shear_xz        1.0509e-10      1.2527e-09      11.9x
+#
+# THE SINGLE NUMBER IS WITHDRAWN WITH THE OLD COLUMN. This block used to conclude
+# "as a GATE the resultant channel is ~150x weaker", which was true of the two
+# retired columns and is not true of these: the ratio spans 5.1x to 14303x, three
+# orders, and no single figure describes it. What the spread says is that the two
+# channels are sensitive to DIFFERENT things -- the field channel is 14000x the
+# sharper in axial and only 5x in twist -- which is the argument for keeping both
+# and is stronger than the number it replaces. The resultant channel is kept for
+# what it sees: a different quantity, verified against statics, with four of five
+# planted sign defects in its analytic table caught by it.
 RESULTANT_DETECTION_THRESHOLD = {
     "axial": 1.4498e-09,
     "curvature": 1.4422e-09,
@@ -921,9 +952,22 @@ def test_a_TRANSPOSED_TRANSFORM_on_one_element_breaks_every_state(state: str) ->
     which is what a transform bug looks like, and is not reachable by scaling a
     stiffness.
 
-    Measured response, six states, skew orientation:
-    axial 1.53e+00, curvature 2.01e-01, twist 1.57e-01, shear 3.02e-01,
-    curvature_xz 1.01e-01, shear_xz 1.49e-01 -- every state, at O(1).
+    MEASURED RESPONSE ON THE QUANTITIES THIS TEST ASSERTS, regenerated
+    2026-09-06 (R93). The figures here were the retired field error and read
+    "every state, at O(1)"; none of these is O(1) and the smallest is 2000x below
+    the smallest of those:
+
+        state          field (oob)   resultants
+        axial           2.8565e-02   1.7621e+00
+        curvature       1.4356e-02   1.1156e+01
+        twist           7.1889e-04   5.6707e+00
+        shear           2.1497e-02   2.1081e+01
+        curvature_xz    8.2813e-03   6.2014e+00
+        shear_xz        1.2401e-02   1.1719e+01
+
+    Every state still detects it by nine orders or more against its counter, and
+    the resultant channel is the one that is O(1) here. `twist` is the weakest
+    field response and is the number to watch if the transform changes.
     """
     _, _, res_err, err = _run(state, SKEW, transpose_transform=True)
     assert err >= PATCH_TEST_EXACTNESS_COUNTER, (

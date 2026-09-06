@@ -166,7 +166,7 @@ def _validate_section(n: int, spec: str) -> None:
 
 FIELDS = {"id", "section", "stations", "orient", "extra", "runs_in_suite",
           "expect"}
-EXTRAS = ("none", "orientation_node=", "roll=", "I_y_over_I_z=")
+EXTRA_KEYS = ("orientation_node", "roll", "I_y_over_I_z")
 EXPECTS = {"hold", "breach", "raise"}
 
 
@@ -239,11 +239,99 @@ def _parse() -> list[dict[str, str]]:
             # asserted per entry below. Swallowing it here would be the skip
             # this whole change exists to remove; aborting collection here would
             # let one bad line hide the other eighteen.
-            ident = next((f.split("=", 1)[1] for f in line.split()
-                          if f.startswith("id=")), f"line{n}")
-            rows.append({"id": ident, "expect": "raise", "_error": str(exc),
-                         "_line": line})
+            rows.append(_error_row(n, line, exc))
     return rows
+
+
+def _field(line: str, key: str, default: str) -> str:
+    """One `key=value` token out of a raw corpus line, without parsing the line.
+
+    Used only on lines the parser has already refused, where the structured row
+    does not exist and the raw text is all there is.
+    """
+    for token in line.split():
+        if token.startswith(key + "="):
+            return token.split("=", 1)[1]
+    return default
+
+
+def _error_row(n: int, line: str, exc: Exception) -> dict[str, str]:
+    """The row for a line that cannot be executed.
+
+    **THE REVIEWER'S `expect` SURVIVES (R91).** This used to write
+    `"expect": "raise"` unconditionally, and the per-entry test then asserted
+    `expect == "raise"` -- comparing a variable with the constant assigned to it
+    eighty lines earlier, on the one instrument in this repository the
+    implementer does not write. A line the reviewer recorded as `hold` and the
+    module cannot build read GREEN while measuring nothing.
+
+    Twelfth guard, again: the parser reports what it cannot do rather than doing
+    something else. Overwriting a field to make a downstream comparison succeed
+    IS doing something else, and it is worse than the skip that guard was written
+    against, because a skip is visible in the count.
+
+    `unrecorded` is used when the line carries no `expect` at all -- itself a
+    malformed line, and one whose only admissible reading is not "raise".
+    """
+    return {
+        "id": _field(line, "id", f"line{n}"),
+        "expect": _field(line, "expect", "unrecorded"),
+        "_error": str(exc),
+        "_line": line,
+    }
+
+
+def _extras(n: int, text: str) -> dict[str, list[str]]:
+    """`extra=` is a SEQUENCE of `key=value` pairs, not one (R91).
+
+    The reviewer asked for roll and anisotropy on one member and could not write
+    it: the field took a single key, so the line was unparseable, and the parser
+    then recorded it as `expect=raise` and the entry read green. Two defects in
+    one line -- the missing capability and the overwritten field -- and only the
+    second is a correctness bug. This closes both.
+
+    The separator is a comma, because that is what the corpus already uses, and a
+    value may itself contain commas (`orientation_node=1,0,0`). The rule that
+    resolves it without a second separator: a comma-separated token containing
+    `=` starts a NEW key; a token without one continues the previous key's value.
+    Ambiguity is refused, not guessed at -- a leading token with no key raises.
+    """
+    if text == "none":
+        return {}
+    out: dict[str, list[str]] = {}
+    key: str | None = None
+    for token in text.split(","):
+        name, sep, value = token.partition("=")
+        if sep:
+            if name not in EXTRA_KEYS:
+                raise CorpusError(
+                    f"{CORPUS.name}:{n}: extra key {name!r} is not one of "
+                    f"{list(EXTRA_KEYS)}. A typo here used to produce the "
+                    "DEFAULT configuration and pass.")
+            if name in out:
+                raise CorpusError(
+                    f"{CORPUS.name}:{n}: extra key {name!r} appears twice. "
+                    "Taking the last silently runs a configuration nobody "
+                    "wrote.")
+            key = name
+            out[key] = [value]
+        else:
+            if key is None:
+                raise CorpusError(
+                    f"{CORPUS.name}:{n}: extra={text!r} starts with {token!r}, "
+                    "which names no key")
+            out[key].append(token)
+
+    for name, parts in out.items():
+        want = 3 if name == "orientation_node" else 1
+        if len(parts) != want:
+            raise CorpusError(
+                f"{CORPUS.name}:{n}: extra {name} takes {want} value(s); got "
+                f"{len(parts)} ({parts})")
+        for i, part in enumerate(parts):
+            _finite(n, f"extra {name}[{i}]" if want > 1 else f"extra {name}",
+                    part)
+    return out
 
 
 def _parse_line(n: int, line: str) -> dict[str, str]:
@@ -278,17 +366,7 @@ def _parse_line(n: int, line: str) -> dict[str, str]:
             raise CorpusError(
                 f"{CORPUS.name}:{n}: stations={row['stations']!r} is not "
                 "positive; a member has a length or it is not a member")
-        extra = row.get("extra", "none")
-        if not any(extra == e or extra.startswith(e) for e in EXTRAS):
-            raise CorpusError(
-                f"{CORPUS.name}:{n}: extra={extra!r} is not one of {EXTRAS}. A "
-                "typo here used to produce the DEFAULT configuration and pass.")
-        # EVERY numeric payload, not only the ones a state happens to reach.
-        if extra != "none":
-            key, _, payload = extra.partition("=")
-            for i, part in enumerate(payload.split(",")):
-                _finite(n, f"extra {key}[{i}]" if "," in payload
-                        else f"extra {key}", part)
+        _extras(n, row.get("extra", "none"))
         return row
 
 
@@ -307,19 +385,19 @@ def _build(entry: dict[str, str]):
     direction = _direction(0, entry["orient"])
     stations = STATIONS * (total / STATIONS[-1])
 
-    extra = entry.get("extra", "none")
+    # EVERY extra the line carries, not the first one that matches (R91).
+    extras = _extras(0, entry.get("extra", "none"))
     onode = None
     roll = 0.0
-    if extra == "none":
-        pass
-    elif extra.startswith("orientation_node="):
-        onode = np.array([float(v) for v in extra.split("=", 1)[1].split(",")])
-    elif extra.startswith("roll="):
-        roll = float(extra.split("=", 1)[1])
-    elif extra.startswith("I_y_over_I_z="):
-        object.__setattr__(sec, "I_y", sec.I_z * float(extra.split("=", 1)[1]))
-    else:  # pragma: no cover -- _parse refuses these first; belt and braces
-        raise CorpusError(f"{entry['id']}: unhandled extra {extra!r}")
+    for name, parts in extras.items():
+        if name == "orientation_node":
+            onode = np.array([float(v) for v in parts])
+        elif name == "roll":
+            roll = float(parts[0])
+        elif name == "I_y_over_I_z":
+            object.__setattr__(sec, "I_y", sec.I_z * float(parts[0]))
+        else:  # pragma: no cover -- _extras refuses these first
+            raise CorpusError(f"{entry['id']}: unhandled extra {name!r}")
 
     # The beam admission limit, BEFORE anything is built (BH0). A member below
     # it is not a G2.2 case: no beam element describes it, and the gate's own
@@ -573,8 +651,11 @@ def test_the_corpus_entry_behaves_as_the_reviewer_recorded(entry) -> None:
         # The line could not be parsed. That is only acceptable if the corpus
         # says so; a malformed line the corpus expected to WORK is a failure.
         assert expect == "raise", (
-            f"{entry['id']}: the corpus expects {expect!r} but the line cannot "
-            f"be executed at all -- {entry['_error']}"
+            f"{entry['id']}: the corpus records expect={expect!r}, and this "
+            f"module cannot execute the line at all -- {entry['_error']}. The "
+            "disagreement is the finding: either the entry names something this "
+            "module should be able to build and does not, or the entry is "
+            "malformed and belongs at expect=raise. It is not resolved here."
         )
         with pytest.raises(CorpusError):
             _parse_line(0, entry["_line"])
@@ -803,6 +884,87 @@ def test_a_malformed_corpus_line_RAISES(label: str, line: str) -> None:
     configuration and a passing result identical to `extra=none`."""
     with pytest.raises(CorpusError):
         _parse_line(1, line)
+
+
+def test_the_reviewers_EXPECT_survives_a_parse_failure() -> None:
+    """R91. The field the per-entry test compares against is not written by the
+    thing it is comparing.
+
+    `_error_row` used to write `expect="raise"` unconditionally, so the per-entry
+    assertion `expect == "raise"` compared a variable with the constant assigned
+    to it eighty lines earlier. A line the reviewer recorded as `hold` that this
+    module cannot build read GREEN while measuring nothing -- on the one
+    instrument in this repository the implementer does not write.
+    """
+    line = ("id=probe_hold_unparseable section=circular_tube,D=0.6,t=0.012 "
+            "stations=9.67 orient=skew extra=nonsense=1 expect=hold")
+    with pytest.raises(CorpusError):
+        _parse_line(1, line)
+
+    row = _error_row(1, line, CorpusError("x"))
+    assert row["expect"] == "hold", (
+        f"the reviewer wrote expect=hold and the row records "
+        f"{row['expect']!r}; the module is overwriting the field it is about "
+        "to check itself against"
+    )
+    assert row["id"] == "probe_hold_unparseable"
+
+    # And the per-entry assertion now REDDENS on it, which is the whole point.
+    with pytest.raises(AssertionError, match="disagreement is the finding"):
+        test_the_corpus_entry_behaves_as_the_reviewer_recorded(row)
+
+    # The meta-test: a line the reviewer DID record as raise still passes.
+    ok = _error_row(1, line.replace("expect=hold", "expect=raise"),
+                    CorpusError("x"))
+    assert ok["expect"] == "raise"
+
+    # A line carrying no `expect` at all is not silently read as "raise" either.
+    none = _error_row(1, "id=x section=nonsense", CorpusError("x"))
+    assert none["expect"] == "unrecorded"
+
+
+MULTI_EXTRAS = [
+    ("one key", "roll=0.3", {"roll": ["0.3"]}),
+    ("two keys", "roll=0.3,I_y_over_I_z=0.5",
+     {"roll": ["0.3"], "I_y_over_I_z": ["0.5"]}),
+    ("a vector value", "orientation_node=1,0,0",
+     {"orientation_node": ["1", "0", "0"]}),
+    ("a vector and a scalar", "orientation_node=0,0,1,roll=-1.2",
+     {"orientation_node": ["0", "0", "1"], "roll": ["-1.2"]}),
+    ("none", "none", {}),
+]
+
+
+@pytest.mark.parametrize("label, text, expected", MULTI_EXTRAS,
+                         ids=[e[0] for e in MULTI_EXTRAS])
+def test_extra_takes_MORE_THAN_ONE_key(label: str, text: str, expected) -> None:
+    """R91's other half: the capability the reviewer asked for and could not write.
+
+    A comma-separated token containing `=` starts a new key; one without
+    continues the previous key's value. That resolves `orientation_node=1,0,0`
+    and `roll=0.3,I_y_over_I_z=0.5` with the separator the corpus already uses,
+    and without a second separator to remember.
+    """
+    assert _extras(1, text) == expected
+
+
+BAD_EXTRAS = [
+    ("unknown key", "nonsense=3.0"),
+    ("the old typo", "roll_rad=1.0"),
+    ("no key at all", "0.3,0.4"),
+    ("duplicate key", "roll=0.1,roll=0.2"),
+    ("too few components", "orientation_node=1,0"),
+    ("too many components", "orientation_node=1,0,0,0"),
+    ("non-finite", "roll=NaN"),
+]
+
+
+@pytest.mark.parametrize("label, text", BAD_EXTRAS,
+                         ids=[e[0] for e in BAD_EXTRAS])
+def test_an_extra_that_cannot_be_built_RAISES(label: str, text: str) -> None:
+    """Opening the field up did not open a silent default with it."""
+    with pytest.raises(CorpusError):
+        _extras(1, text)
 
 
 def test_a_REFUSING_entry_does_not_take_the_module_out_at_collection() -> None:
