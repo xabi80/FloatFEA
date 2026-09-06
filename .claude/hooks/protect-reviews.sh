@@ -70,7 +70,12 @@
 #   2. Malformed JSON FAILED OPEN -- the python helper printed nothing, `agent`
 #      and `hit` came back empty, and the case fell through to `exit 0`. Closed:
 #      the helper prints a sentinel on any parse failure and the hook denies.
-#   3. `NotebookEdit` was not in the matcher. Closed in settings.json.
+#   3. `NotebookEdit` was not in the matcher. Closed in settings.json -- and
+#      NOT closed in the hook, which read only `file_path` and `path`, so
+#      `notebook_path` resolved to the empty string and the call was ALLOWED for
+#      three further rounds. Half a fix, on a hole whose two halves live in two
+#      files. Closed properly: the hook reads every key a tool names a target
+#      with, and the matrix carries a row per key.
 #
 # LIMITATION that remains, stated because it decides what this is worth: a path
 # assembled at runtime from pieces is not caught, and neither is a mutating verb
@@ -104,7 +109,13 @@ except Exception:
     raise SystemExit(0)
 agent = d.get("agent_type") or "-"
 
-path = ti.get("file_path") or ti.get("path") or ""
+# EVERY key a tool names a target with, not the two the editing tools use
+# (R78, hole 3, open since the third round). `NotebookEdit` passes
+# `notebook_path`, so a verdict written as a notebook went straight past a
+# hook whose whole job is that directory. The matcher in settings.json was
+# fixed to LIST NotebookEdit; the hook still could not see its argument.
+path = next((ti[k] for k in ("file_path", "path", "notebook_path")
+             if ti.get(k)), "")
 command = ti.get("command") or ""
 
 hit = "none"
