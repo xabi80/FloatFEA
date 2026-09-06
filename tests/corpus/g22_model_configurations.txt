@@ -347,3 +347,83 @@ id=roll_field_nan section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=s
 # `ERROR ... Interrupted: 1 error during collection`:
 #   id=section_negative_wall section=circular_tube,D=0.600,t=-0.01200 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise
 #   id=stations_negative     section=circular_tube,D=0.600,t=0.01200 stations=-9.67 orient=skew extra=none runs_in_suite=no expect=raise
+
+# ===========================================================================
+# TENTH ROUND (HEAD 47d117e). The gate changed QUANTITY: it now asserts the
+# interior out-of-balance of the exact field, `max|K_hat w|_interior /
+# (max|K_hat| max|w|)`, with no solve in it. Every entry below was scored
+# against that quantity by the reviewer before being written down.
+#
+# WHAT A PASSING SCAN MEANS FOR THESE ENTRIES. `expect=hold` now means two
+# things and both are asserted: the six states' out-of-balance is below
+# PATCH_TEST_EXACTNESS, AND the 1e-6 single-element control still exceeds
+# PATCH_TEST_EXACTNESS_COUNTER. The second is the one this round is about.
+# The header's older paragraph, which describes the solved field error against
+# two ceilings, belongs to the retired quantity; it is left as the record of
+# what the earlier entries were written against.
+#
+# THERE IS NO `expect` VALUE FOR "THE CEILING HOLDS AND THE GATE CANNOT FAIL
+# HERE", which is the failure mode the new quantity introduces. Entries 2 and 3
+# below are that shape and are written `expect=hold`, so the red comes from the
+# detection assertion, which is where it belongs.
+# ---------------------------------------------------------------------------
+
+# --- the domain, moved from the ceiling to the counter -----------------------
+# The 1e-6 defect's residual falls as 1/lambda^2, so detection -- not the
+# ceiling -- is what runs out with slenderness. Measured by the reviewer at this
+# HEAD, skew, the gate's own five-element station ratios:
+#
+#   member lam    558 (corpus worst)   600     620     650     900    1600
+#   x counter            1.075x       1.088x  1.019x  0.927x  0.484x  0.153x
+#                                              ^ pin   ^ first red
+#
+# So the corpus's most slender entry sits 7.5% from a red and 11% of member
+# lambda from one. That boundary is recorded in no file in this repository, and
+# `F2.md` sec. 5b Q6 says the domain question is "dissolved" and there is "no
+# boundary". The ceiling's domain is genuinely dissolved -- 1500 random
+# configurations over D, D/t, member lambda, free direction and free roll put
+# the worst clean value at 0.092x of 5e-15. The counter's is not.
+id=lam620_counter_pin   section=circular_tube,D=0.600,t=0.01200 stations=128.9182   orient=skew                            runs_in_suite=no  expect=hold
+id=lam900_skew_undetectable section=circular_tube,D=0.600,t=0.01200 stations=187.1394 orient=skew                          runs_in_suite=no  expect=hold
+id=lam900_axis_undetectable section=circular_tube,D=0.600,t=0.01200 stations=187.1394 orient=axis                          runs_in_suite=no  expect=hold
+
+# --- the ninth verdict's counterexample, now expressible ---------------------
+# `orient=` takes a free direction as of e13a69f, so the configuration that
+# produced the ninth verdict's STOP can be carried as an entry instead of as a
+# comment. Under the retired quantity it breached 1e-12 by 7.58x at member
+# lambda 58.26, admissible and unwarned. Under the shipped quantity the reviewer
+# measures 0.022x of the ceiling and 113x of the counter. It is here so that a
+# future change to the quantity is scored against the case that broke the last
+# one.
+id=r81_counterexample   section=circular_tube,D=5.6809e-4,t=5.24165e-6 stations=1.159406e-2 orient=-0.384196,-0.923213,0.008385 extra=roll=-1.5774 runs_in_suite=no expect=hold
+
+# --- the degeneracy boundary, taken from both sides --------------------------
+# MEMBER_ORIENTATION_DEGENERACY = 0.05 is a sine. These two straddle it by
+# +2% and -2% of the threshold: 0.0501 is admitted, 0.0499 is refused. A
+# threshold sampled on one side only is a threshold nobody has measured.
+id=degeneracy_just_admitted section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=0.0501,0,0.99874                   runs_in_suite=no  expect=hold
+id=degeneracy_just_refused  section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=0.0499,0,0.99875                   runs_in_suite=no  expect=raise
+
+# --- the free direction reaches sections and axes the four names cannot ------
+id=thickwall_free_dir   section=circular_tube,D=0.600,t=0.29000 stations=9.67       orient=0.11,-0.97,0.21                  runs_in_suite=no  expect=hold
+id=aniso_free_dir_weak  section=circular_tube,D=0.600,t=0.01200 stations=9.67       orient=0.6,0.2,-0.77 extra=I_y_over_I_z=0.02 runs_in_suite=no expect=hold
+
+# --- the parser's remaining value-shaped holes -------------------------------
+# `orient=1e308,1e308,0`: the norm OVERFLOWS to inf, `v / inf` is the zero
+# vector, and the `norm == 0.0` guard tests the input norm rather than the
+# result -- so `_direction` returns the zero vector its own docstring says it
+# refuses, with a numpy RuntimeWarning. It is refused downstream, by the node
+# constructor, for a different reason. expect=raise passes today and passes for
+# the wrong reason.
+id=orient_norm_overflow section=circular_tube,D=0.600,t=0.01200 stations=9.67       orient=1e308,1e308,0                    runs_in_suite=no  expect=raise
+id=orient_subnormal_near_z section=circular_tube,D=0.600,t=0.01200 stations=9.67    orient=1e-320,0,1                       runs_in_suite=no  expect=raise
+# A finite roll of 1e300 carries no significant digits of angle. It builds, and
+# the gate holds on it.
+id=roll_1e300           section=circular_tube,D=0.600,t=0.01200 stations=9.67       orient=skew extra=roll=1e300            runs_in_suite=no  expect=hold
+# ROLL AND ANISOTROPY TOGETHER cannot be written: `extra=` takes one key. This
+# line is what the reviewer wants MEASURED, so it says expect=hold. The module
+# cannot parse it, and `_parse` REPLACES the reviewer's `expect` with "raise"
+# before the per-entry test compares `expect` against "raise" -- so this entry
+# reads green while measuring nothing. That is the finding; the entry stays as
+# it is until the module either builds it or reports the disagreement.
+id=roll_and_aniso_together section=circular_tube,D=0.600,t=0.01200 stations=9.67    orient=skew extra=roll=0.3,I_y_over_I_z=0.5 runs_in_suite=no expect=hold
