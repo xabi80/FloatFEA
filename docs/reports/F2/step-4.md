@@ -1252,3 +1252,164 @@ apparatus (step 4a) or later-step items.
 **No git remote**, so no PR and no `[witness …]` comment — an unavailable check,
 not a pass. Eight consecutive reviews by one reader, now scored against 36
 configurations the implementer did not write. BA after PASS.
+
+---
+
+# Revision 9 — the STOP answered: plan reopened, Q&A re-locked, fallback executed
+
+**2026-09-06.** Nine commits, `a418e38` … `626d8f7`
+(`git log --oneline 6191f9c..HEAD | wc -l` → 9). Four are `process:`, three are
+`plan:`, one is a `revert:`, and **one is the step commit**. Every figure
+regenerated at this commit.
+
+The eighth verdict was a **STOP on the tolerance form**, which under `CLAUDE.md`
+§ Step gating halts implementation and reopens the plan. It did: no code moved
+until the plan was re-locked, and the one code commit executes a decision the
+plan already carries.
+
+---
+
+## 1. What the STOP's four blocking items became
+
+**R69/R70/R71/R72 — the form.** BH6's pre-registered fallback, authorised as a
+plan edit and then executed. `PATCH_TEST_EXACTNESS` is the ceiling again;
+`PATCH_TEST_COND_FACTOR` and its counter are **removed, not demoted**;
+`equilibrate()` went with them, having lost its last caller; and
+`COND_UNIT_INVARIANCE` with its counter went too, for the same reason.
+
+The two measurements that killed the form are kept in `F2.md` §D7 item 6, because
+they are the expensive part of this milestone:
+
+- **Frame axis.** `cond(K_ff)` is `9.209576e+02` for all four orientations of one
+  beam — spread `1.000000×`, as an orthogonal congruence must be — while
+  `cond(K~)` spans `5.964×`. The floor I moved onto in R55 was not frame-invariant
+  and the one I moved off was.
+- **The slenderness tracking claimed for it held on one orientation only:**
+  `121.68×` skew against `4.09×` axis-aligned.
+
+**R73 — the admission limit, reversed properly.** `docs/conventions.md` is
+byte-identical to its pre-BH0 state (`git diff 5de8fd8^ --` is empty). The limit
+re-enters as **Q5** in the reopened Q&A, answered by Xabier, and reaches
+`conventions.md` only by an F0 reopen commit citing it.
+
+One figure in the directive is corrected in the plan: the shear share of tip
+deflection at `L/D = 2` is `Φ/(4+Φ)` = **30.6%**, not 46%. `Φ = 1.7655` is right.
+46% would need `Φ = 3.407`, i.e. `L/D = 1.44` — bisected.
+
+**R74 — the stale formula** in `F2.md` D7 item 5, corrected in the same edit.
+
+**R75 — closed in the step commit.** The parser validates the section spec's
+*value*: `section=rectangle,…` silently built a circular tube. Four new malformed
+shapes assert a raise; the reviewer's three entries go green by raising.
+
+## 2. Q6, and the confound that had to be settled first
+
+**The guard I proposed was dropped on its own pre-registered condition.**
+`cond(Ŝ K Ŝ)` is flat to round-off on both axes exactly as derived — and that is
+why no threshold on it separates the failures. Three twin pairs at identical
+conditioning differ in error by **34×, 113× and 451×**.
+
+**Then both of the directive's sweeps turned out to be confounded**, as BK's had
+been. `n`, member λ and element `L/r` are three quantities of which only two are
+independent (`element L/r = λ/n`), so the axis needed a 2-D grid:
+
+```
+orientation                exponent on n     exponent on member lambda
+theta = 33.5 (worst)       +1.77 +/- 0.24    +2.19 +/- 0.18
+corpus SKEW (22.46)        +1.57 +/- 0.21    +1.94 +/- 0.15
+axis-aligned (control)     +2.35 +/- 0.26    +0.68 +/- 0.19
+```
+
+- **Member λ carries the frame-dependent floor**, exponent ≈ 2 skew against
+  `0.68` axis-aligned.
+- **Element `L/r` is refuted**: if it governed, the two exponents would be equal
+  and opposite. Both are positive.
+- **Element count is a second, frame-INDEPENDENT driver** — present in the
+  control too. It is AW2's factorisation-chain effect.
+
+**The claim, and it is a property of the test at its mesh.**
+`PATCH_TEST_EXACTNESS` is validated for **member λ ≤ 60 at the gate mesh
+(n = 5)** — the lower bracket of the `0.1 ×` crossing, so the exactness claim
+carries 10× over the orientation envelope. At fixed member λ, changing only the
+mesh moves the floor **35–57×**, which is why the number is not a structural
+limit and why **F3 measures its own floor** — backward error plus the V4.1/V4.2
+residuals — rather than inheriting this one.
+
+The mechanism cell behind it: the axial/bending stiffness ratio is exactly
+`λ²/12` (measured `79.90` against `75.00`; `3338.23` against `3333.33`), and the
+round-trip representation error is **exactly `0.0` axis-aligned** at every λ and
+non-zero skew. Its magnitude is `0.02–0.13` of `ε·λ²/12` and its exponent is
+`1.41` against the solve's `1.86`, so it identifies the axis without accounting
+for the magnitude — **the 23–359× amplification through the solve stays recorded
+as unexplained**, per BL3.
+
+## 3. The two tiers
+
+```
+G22_VALIDATED_MEMBER_LAMBDA = 60.0     STRUCTURAL, no counter (AO2)
+PATCH_TEST_ROUNDOFF         = 2e-11    round-off tracking, beyond the boundary
+PATCH_TEST_ROUNDOFF_COUNTER = 1.0e-7
+```
+
+The tier's value is the finest sampling run — fifteen corpus entries past the
+boundary, envelope over 8 angles × 9 rolls × 6 states, worst `6.5565e-12` — with
+`3.05×` of margin. **And the label is asserted, not just written:** the runner
+requires `smallest > 100 × ceiling` on every entry, and the tier clears by
+`5400×`, 3.7 orders. No entry is deleted and none is `xfail`ed.
+
+The model builder **warns** past the boundary and does not refuse. Two limits now
+sit on two different axes and a test asserts they are different numbers: `L/D < 2`
+**refuses** (not a beam), `L/r > 60` **warns** (past one gate's validated domain).
+
+## 4. G2.2 at this commit
+
+```
+gate:  field 1.6029e-13 / 1e-12   resultants 4.5578e-11 / 1e-09
+       backward 1.0349e-16 (0.47 eps)
+corpus: 50 entries executed; 38 solved, 12 refused, 50 total
+```
+
+```
+$ python -m pytest -q
+524 passed in 1.75s
+```
+
+**All five of the reviewer's reds are answered, none by narrowing a check** —
+three by the section-spec parser, one by the two-tier scheme, one by stating a
+counter's domain.
+
+## 5. Recorded rather than fixed
+
+**`aniso_I_y_500x` fails `PATCH_TEST_EXACTNESS_COUNTER`:** at `I_y/I_z = 500` the
+weakest response is `8.6804e-08`, **13% below** `1.0e-7`. The counter's domain is
+circular sections — every shape `basis.kappa` admits forces `I_y == I_z`, and
+that entry builds its section by bypassing the type guard. The domain is now
+stated at the assertion with the measurement. Lowering the counter to accommodate
+a section the type refuses to build would weaken the claim on every other entry;
+the entry keeps its ceiling-clearance control.
+
+## 6. Where I was wrong inside this round
+
+1. **My own hook blocked reads three times.** `cd` blocked reading a verdict, a
+   bare `>` in a commit *message* blocked committing, and `2>&1` blocked running
+   a test and reading its output. Each widening cost a read and bought nothing.
+   The pattern is now in the hook's header.
+2. **The first BL1 sweeps were both confounded** on element count — the same
+   species as the confound they were sent to fix.
+3. **A hardcoded `SKEW` truncated to six decimals** was not a unit vector, so
+   every SKEW row of the first BL1 run read `1.4e-07`: a reference built for a
+   different beam.
+4. **`_validate_section` was defined after the parser that calls it** at import.
+
+## 7. Still open, listed in full
+
+R6, R16, R25, R30, R31, R32, R33 (outside G2.2), R36, R50, R52, R62, R63, R65,
+R76, R77, R78, R79, R80 — apparatus (step 4a) or later steps. R79 in particular
+is a section-physics finding (`circular_tube` draws the thin-wall κ at any
+thickness: −8.9% at `D/t = 5`) and belongs with V2.2, which owns κ.
+
+## 8. Witness channel
+
+**No git remote**, so no PR and no `[witness …]` comment — an unavailable check,
+not a pass. Nine consecutive reviews by one reader, now scored against 50
+configurations the implementer did not write. BA after PASS.
