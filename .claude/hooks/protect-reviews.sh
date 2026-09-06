@@ -55,6 +55,18 @@
 #      third instance: every widening of this rule has cost a read and bought
 #      nothing, because the implementer's writes here are already caught by the
 #      narrow forms.
+#
+#      AND THEN THE THIRD FIX OVER-CORRECTED (R84). "Ignore file-descriptor
+#      redirections" was implemented as "ignore any redirect preceded by a
+#      digit", which cleared `2> <protected path>` -- a write. The exemption is
+#      now the two things that write no file: `>&`, and a redirect to the null
+#      device.
+#
+#      THE MATRIX IS RUN IN BOTH DIRECTIONS on every change to this clause, and
+#      the run is pasted into the commit that makes the change. Four of the four
+#      defects in this hook were found by someone hitting them, not by the hook
+#      being exercised; a guard whose only evidence is that it has not fired is
+#      not evidence.
 #   2. Malformed JSON FAILED OPEN -- the python helper printed nothing, `agent`
 #      and `hit` came back empty, and the case fell through to `exit 0`. Closed:
 #      the helper prints a sentinel on any parse failure and the hook denies.
@@ -105,11 +117,22 @@ elif command and re.search(PROTECTED, command):
     # legitimate write here, so any write shape anywhere in a command that
     # mentions a protected directory is refused.
     writes = (
-        # A redirect, but NOT a file-descriptor one: `2>&1` and `2>/dev/null`
-        # are not writes to anything, and matching a bare `>` denied every
-        # `pytest ... 2>&1` that mentioned a protected path. Third false
-        # positive from this clause; see the header.
-        re.search(r"(?<![0-9])>{1,2}(?!&)", command)
+        # A redirect, with exactly two exemptions and no more (R84). The
+        # previous form was `(?<![0-9])>{1,2}(?!&)`, and that lookbehind exempted
+        # EVERY numbered redirect -- so `2> tests/corpus/entry.txt` and
+        # `2>> docs/reviews/step-4.md` were cleared as if they were `2>&1`.
+        # Both are ordinary writes. A stream number in front of `>` says WHICH
+        # STREAM is redirected, not whether a file is written, and `2>` is the
+        # shape an accidental write is most likely to take here precisely because
+        # it looks like the `2>&1` the rule was relaxed for.
+        #
+        # What stays exempt is the two shapes that genuinely write no file: `>&`
+        # (a descriptor duplication) and a redirect whose TARGET is the null
+        # device, which is what the third false positive was actually about.
+        # Those are stripped from the copy this clause scans; every other
+        # redirect in the same command is still there to be caught.
+        re.search(r">{1,2}(?!&)", re.sub(
+            r"[0-9]*>>?\s*(?:/dev/null|NUL)\b", "", command))
         or re.search(r"\b" + VERBS + r"\b", command)
         or re.search(r"\bsed\b[^\n]*-i", command)
         or re.search(r"\bgit\b[^\n]*\b(?:checkout|restore|rm|mv)\b", command)

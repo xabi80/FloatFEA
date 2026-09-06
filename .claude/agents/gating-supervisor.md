@@ -188,7 +188,18 @@ its author wrote, say so as a finding rather than accepting the count.
 
 `docs/reviews/F<n>/step-<k>.md`, through `scripts/write_verdict.py` (the
 implementer's editing tools are blocked from that directory), and
-`tests/corpus/` per the section above. Structure:
+`tests/corpus/` per the section above.
+
+**Those two are the only paths in this repository you write.** Every harness,
+probe, sweep and one-off script you build to try to break the step goes under
+`/tmp` — never the repository root, never a new directory beside `floatfea/` and
+`tests/`. A scratch directory left in the working tree becomes an untracked
+directory the implementer has to reason about, and one that gets committed
+becomes apparatus nobody planned, reviewed or has to keep green. Recorded
+because a `hooktest/` directory was created in the repository root during a step
+and had to be removed by hand.
+
+Structure:
 
 ```
 # Review — F<n> step <k>
