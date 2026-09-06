@@ -69,10 +69,12 @@ from floatfea.assemble.system import BeamElement, assemble, solve
 from floatfea.element.transform import rotation_matrix
 from floatfea.model.admissibility import assert_beam_admissible, member_l_over_d
 from floatfea.model.material import S355, Section
+from floatfea.testing import assert_close
 from floatfea.model.nodes import Model, Node, node_dofs
 from floatfea.tolerances import (BEAM_ADMISSION_L_OVER_D,
                                  PATCH_TEST_EXACTNESS,
-                                 PATCH_TEST_EXACTNESS_COUNTER)
+                                 PATCH_TEST_EXACTNESS_COUNTER,
+                                 ROUNDOFF_IDENTITY)
 
 import sys
 
@@ -85,6 +87,9 @@ from test_patch_test import (  # noqa: E402
 CORPUS = (Path(__file__).resolve().parents[2] / "corpus"
           / "g22_model_configurations.txt")
 
+# Four NAMED directions, kept because the corpus already uses them and a name is
+# easier to read than three numbers. They are shorthand, not the vocabulary: the
+# reviewer may write any direction (see `_direction`).
 ORIENTATIONS = {
     "axis": np.array([1.0, 0.0, 0.0]),
     "skew": np.array([1.0, 0.35, 0.22]) / np.linalg.norm([1.0, 0.35, 0.22]),
@@ -163,6 +168,44 @@ class CorpusError(ValueError):
     """A corpus line this module cannot execute. Never a skip (BH3/R57)."""
 
 
+def _direction(n: int, text: str) -> np.ndarray:
+    """`orient=` is a NAME or a FREE VECTOR, and the free form is the point.
+
+    A fixed set of four directions makes the orientation axis a parameter the
+    IMPLEMENTER chose, which is the failure BE3 moved the corpus out of this
+    repository's editable tree to prevent: an adversarial case that can only be
+    written in the shapes the author of the check thought of is not adversarial.
+    The floor of a skew solve was measured to vary 5.964x across orientations, so
+    "which direction" is a live axis and the reviewer must be able to reach all
+    of it.
+
+    `orient=x,y,z` takes any three finite numbers and NORMALISES them, so the
+    reviewer writes a direction and not a unit vector. Normalising rather than
+    demanding a unit vector is deliberate: a hand-written direction truncated to
+    six decimals is not a unit vector, and that exact mistake -- a hardcoded SKEW
+    at `1.0, 0.35, 0.22` truncated -- produced a whole sweep of numbers belonging
+    to a beam nobody was testing.
+
+    A zero vector is REFUSED rather than normalised: `rotation_matrix` would see
+    a degenerate element and there is no direction to test.
+    """
+    if text in ORIENTATIONS:
+        return ORIENTATIONS[text]
+    parts = text.split(",")
+    if len(parts) != 3:
+        raise CorpusError(
+            f"{CORPUS.name}:{n}: orient={text!r} is neither one of "
+            f"{sorted(ORIENTATIONS)} nor three comma-separated numbers")
+    v = np.array([_finite(n, f"orient[{i}]", t) for i, t in enumerate(parts)])
+    norm = float(np.linalg.norm(v))
+    if norm == 0.0:
+        raise CorpusError(
+            f"{CORPUS.name}:{n}: orient={text!r} is the zero vector; there is no "
+            "direction to build a member along")
+    return v / norm
+
+
+
 def _parse() -> list[dict[str, str]]:
     """Strict. Anything unrecognised RAISES; nothing is ignored.
 
@@ -223,10 +266,7 @@ def _parse_line(n: int, line: str) -> dict[str, str]:
             raise CorpusError(
                 f"{CORPUS.name}:{n}: expect={row['expect']!r} is not one of "
                 f"{sorted(EXPECTS)}")
-        if row["orient"] not in ORIENTATIONS:
-            raise CorpusError(
-                f"{CORPUS.name}:{n}: orient={row['orient']!r} is not one of "
-                f"{sorted(ORIENTATIONS)}")
+        _direction(n, row["orient"])
         _validate_section(n, row["section"])
         _finite(n, "stations", row["stations"])
         extra = row.get("extra", "none")
@@ -255,7 +295,7 @@ def _build(entry: dict[str, str]):
     """Model and elements for one corpus entry, or raise as the entry expects."""
     sec = _section(entry["section"])
     total = float(entry["stations"])
-    direction = ORIENTATIONS[entry["orient"]]
+    direction = _direction(0, entry["orient"])
     stations = STATIONS * (total / STATIONS[-1])
 
     extra = entry.get("extra", "none")
@@ -369,6 +409,64 @@ def member_lambda(entry) -> float:
     """
     sec = _section(entry["section"])
     return float(float(entry["stations"]) / np.sqrt(sec.I_z / sec.A))
+
+
+FREE_DIRECTIONS = [
+    ("named", "skew", ORIENTATIONS["skew"]),
+    ("unit vector", "0,0,1", np.array([0.0, 0.0, 1.0])),
+    ("NOT a unit vector", "3,4,0", np.array([0.6, 0.8, 0.0])),
+    ("truncated, as a hand-written one is",
+     "-0.384196,-0.923213,0.008385",
+     np.array([-0.384196, -0.923213, 0.008385])
+     / np.linalg.norm([-0.384196, -0.923213, 0.008385])),
+]
+
+
+@pytest.mark.parametrize("label, text, expected", FREE_DIRECTIONS,
+                         ids=[d[0] for d in FREE_DIRECTIONS])
+def test_orient_takes_any_direction_and_NORMALISES_it(
+    label: str, text: str, expected
+) -> None:
+    """The reviewer writes a direction; this module makes it a unit vector.
+
+    `3,4,0` is the case that matters: it is not a unit vector, and if it were
+    used as one the member would be 5x its stated length and every figure
+    measured on it would belong to a different beam. That is not hypothetical --
+    a hardcoded SKEW truncated to six decimals did exactly this and produced a
+    whole sweep of numbers for a beam nobody was testing.
+    """
+    got = _direction(0, text)
+    assert_close(float(np.linalg.norm(got)), 1.0, ROUNDOFF_IDENTITY,
+                 floor=np.finfo(float).eps,
+                 what=f"|orient={text}| after normalisation")
+    # THE DIRECTION, on an O(1) quantity (R38). `got . expected` is 1 exactly
+    # when the two are parallel AND both unit, so this one comparison carries
+    # both properties without ever comparing two numbers near zero -- which is
+    # the comparison `assert_close` refuses to make, for the reason R38 records.
+    assert_close(float(got @ expected), 1.0, ROUNDOFF_IDENTITY,
+                 floor=np.finfo(float).eps,
+                 what=f"orient={text} against its normalised expectation")
+
+
+BAD_DIRECTIONS = [
+    ("zero vector", "0,0,0"),
+    ("two components", "1,0"),
+    ("four components", "1,0,0,0"),
+    ("a bare number", "1.0"),
+    ("a typo'd name", "skewed"),
+    ("non-finite", "1,NaN,0"),
+    ("infinite", "1,inf,0"),
+]
+
+
+@pytest.mark.parametrize("label, text", BAD_DIRECTIONS,
+                         ids=[d[0] for d in BAD_DIRECTIONS])
+def test_a_direction_that_cannot_be_built_RAISES(label: str, text: str) -> None:
+    """Never a silent default. A typo'd name used to be caught by the name check
+    and everything else did not exist; opening the field up without opening the
+    refusals up would have been the vacuous-parameter failure again."""
+    with pytest.raises(CorpusError):
+        _direction(0, text)
 
 
 def test_the_corpus_exists_and_is_not_empty() -> None:
