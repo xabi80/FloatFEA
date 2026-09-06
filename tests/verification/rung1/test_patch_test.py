@@ -99,17 +99,14 @@ from floatfea.assemble.system import BeamElement, assemble, solve
 from floatfea.element.transform import rotation_matrix
 from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
-from floatfea.tolerances import (DETECTION_THRESHOLD_BAND, PATCH_TEST_COND_FACTOR,
-                                 PATCH_TEST_COND_FACTOR_COUNTER_DEFECT,
+from floatfea.tolerances import (DETECTION_THRESHOLD_BAND,
                                  PATCH_TEST_EXACTNESS,
                                  PATCH_TEST_EXACTNESS_COUNTER, RESULTANT_EXACTNESS,
                                  RESULTANT_EXACTNESS_COUNTER,
                                  SOLVE_BACKWARD_ERROR_FACTOR_COUNTER_DEFECT,
                                  SOLVE_BACKWARD_ERROR_FACTOR)
 from floatfea.testing import assert_close, assert_differs
-from floatfea.tolerances import (COND_UNIT_INVARIANCE,
-                                 COND_UNIT_INVARIANCE_COUNTER,
-                                 DETECTION_THRESHOLD_BAND_COUNTER,
+from floatfea.tolerances import (DETECTION_THRESHOLD_BAND_COUNTER,
                                  ROUNDOFF_IDENTITY)
 
 SEC = Section.circular_tube(0.6, 0.012)
@@ -323,58 +320,6 @@ def _worst_resultant_error(model, elements, u_global: np.ndarray, state: str,
     return worst
 
 
-def _free_conditioning(model, elements) -> float:
-    """`cond(D^-1/2 K_ff D^-1/2)` -- the EQUILIBRATED conditioning of the patch
-    system, which is what the floor is built on (BH1/R55).
-
-    NOT `cond(K_ff)`. That was the first form and it fails the property a floor
-    most needs: it is not unit-invariant, and the gate runs three unit systems.
-    Measured, same six states, same two orientations:
-
-        S        cond(K_ff)     cond(K~)    worst err   err/(c~.eps)
-        1e-3     5.9831e+08   3.8491e+02   1.6029e-13       1.8754
-        1        9.2096e+02   3.8491e+02   1.2513e-14       0.1464
-        1e+3     4.0490e+07   3.8491e+02   4.9240e-14       0.5761
-
-    `cond(K~)` is the SAME NUMBER at all three -- spread `1.000000x` -- because
-    `diag(SKS) = S diag(K) S` makes the equilibrated matrix algebraically
-    invariant under a diagonal rescaling. `cond(K_ff)` spans six orders over the
-    same three, so a ceiling built on it was 5.4e5x weaker at millimetres than at
-    metres: it moved with the unit system rather than with the problem.
-
-    It keeps the other property too -- it still tracks slenderness, `121.7x` over
-    `D = 0.6 .. 0.05` -- so it is not a constant wearing a floor's clothes.
-
-    `equilibrate` is a tested utility and is still NOT on the solve path (BD2).
-    Estimating this floor is what it is for.
-
-    Dense, because the free block is 24x24 and the number is wanted exactly.
-    """
-    from floatfea.assemble.system import equilibrate
-
-    ends = np.concatenate([node_dofs(0), node_dofs(len(STATIONS) - 1)])
-    free = np.setdiff1d(np.arange(model.n_dof), ends)
-    kff = assemble(model, elements)[free][:, free].tocsc()
-    return float(np.linalg.cond(equilibrate(kff)[0].toarray()))
-
-
-def floor_aware_ceiling(model, elements) -> float:
-    """`PATCH_TEST_COND_FACTOR * cond(K~) * eps` -- the ceiling that scales.
-
-    `PATCH_TEST_EXACTNESS`, a constant, is what breaks on slender members: its
-    ratio spans 141x over element L/r = 15.7 .. 117.9 and crosses 1 three times,
-    non-monotonically. Against the equilibrated conditioning the same errors span
-    7.9x and never reach 1.
-
-    **Both are asserted**, and the constant is the CAP that bounds this one's
-    self-reference (BH2): a floor computed from `K` moves when `K` is defective,
-    so the loosening any defect can buy is bounded by
-    `PATCH_TEST_EXACTNESS / floor_aware_ceiling`.
-    """
-    return PATCH_TEST_COND_FACTOR * _free_conditioning(model, elements) * float(
-        np.finfo(float).eps)
-
-
 def _run(
     state: str,
     direction: np.ndarray,
@@ -484,18 +429,6 @@ def test_the_six_constant_strain_states_are_EXACT(
         "failure -- every accuracy comparison above rung 1 is uninterpretable "
         "until it is fixed, and refinement is not the response."
     )
-    # The floor-aware bound (R46). A constant ceiling is what breaks on slender
-    # members; this one scales with the achievable accuracy of the solve. At the
-    # posed geometry it is TIGHTER than the constant above, so it binds here too.
-    m_c, els_c, _ = _model(d, scale)
-    ceiling = floor_aware_ceiling(m_c, els_c)
-    assert err <= ceiling, (
-        f"{state}/{orientation}/S={scale:g}: {err:.3e} exceeds "
-        f"{PATCH_TEST_COND_FACTOR:g} * cond(K_ff) * eps = {ceiling:.3e}. The "
-        "error is above the accuracy this solve can achieve, which is a "
-        "formulation or assembly defect rather than round-off."
-    )
-
     # The SECOND quantity, and the one that moves under a stiffness defect (R41).
     # `res.residual` used to sit here; it measures the SOLVE, not the element, and
     # it does not move under a defect the line above fails by eleven orders -- it
@@ -894,56 +827,6 @@ def test_a_TRANSPOSED_TRANSFORM_on_one_element_breaks_every_state(state: str) ->
     )
 
 
-# Sections for the floor-aware counter test: the posed geometry and three slender
-# ones the constant ceiling cannot cover. D/t = 50 throughout, which holds the
-# section's proportions so the sweep isolates slenderness.
-COND_FACTOR_SECTIONS = [0.600, 0.120, 0.100, 0.080]
-
-
-@pytest.mark.parametrize("d_outer", COND_FACTOR_SECTIONS, ids=lambda d: f"D={d:g}")
-def test_the_floor_aware_ceiling_CATCHES_its_counter_defect(d_outer: float) -> None:
-    """BG1: the counter is a MUTATION, not a value sitting in a file.
-
-    `RESULTANT_EXACTNESS` could be widened 680x in silence because nothing
-    injected a defect and asserted the assertion tripped -- its only guard was
-    `ceiling < counter`, which is a comparison between two literals. This test
-    injects `PATCH_TEST_COND_FACTOR_COUNTER_DEFECT` and requires the floor-aware
-    assertion to FIRE, on four sections spanning element L/r = 15.7 .. 117.9.
-
-    Widening the factor raises the ceiling and the detection threshold together,
-    so a factor much above 4 pushes the threshold past the counter and this test
-    goes red. That is what makes silent widening structurally impossible rather
-    than something review has to catch.
-    """
-    global SEC
-    original = SEC
-    try:
-        SEC = Section.circular_tube(d_outer, d_outer / 50.0)
-        m, els, _ = _model(SKEW)
-        ceiling = floor_aware_ceiling(m, els)
-
-        clean = max(_run(st, SKEW)[0] for st in STATES)
-        assert clean <= ceiling, (
-            f"D={d_outer:g}: the CLEAN configuration is already at {clean:.3e} "
-            f"against a ceiling of {ceiling:.3e}; the counter below would be "
-            "vacuous because the assertion is already tripped."
-        )
-
-        worst_missed = 0.0
-        for st in STATES:
-            err, _, _ = _run(st, SKEW, stiffness_scale=1.0 + PATCH_TEST_COND_FACTOR_COUNTER_DEFECT)
-            if err <= ceiling:
-                worst_missed = max(worst_missed, err)
-        assert worst_missed == 0.0, (
-            f"D={d_outer:g}: a single-element stiffness defect of "
-            f"{PATCH_TEST_COND_FACTOR_COUNTER_DEFECT:.3e} left at least one state at "
-            f"{worst_missed:.3e}, below the ceiling {ceiling:.3e}. The ceiling "
-            "has been widened past the defect it is required to catch."
-        )
-    finally:
-        SEC = original
-
-
 def test_a_SENSITIVITY_CHANGE_breaks_the_threshold_band() -> None:
     """BG1: `DETECTION_THRESHOLD_BAND`'s counter, injected.
 
@@ -975,52 +858,6 @@ def test_a_SENSITIVITY_CHANGE_breaks_the_threshold_band() -> None:
             f"({direction}) was NOT caught in: {', '.join(missed)}. The band is "
             "wider than the change it is declared to detect."
         )
-
-
-def test_a_STIFFNESS_DEFECT_moves_the_equilibrated_conditioning() -> None:
-    """BG1: `COND_UNIT_INVARIANCE`'s counter, injected.
-
-    `COND_UNIT_INVARIANCE_COUNTER = 1e-3` is "the smallest drift worth
-    investigating" in `cond(K~)` between unit systems. Nothing produced a drift,
-    so the ceiling above it was unguarded.
-
-    The injection is a stiffness defect in one element rather than a unit change,
-    because a unit change CANNOT move this quantity -- that is the property under
-    test. What must be true is that the assertion can resolve a drift of the
-    declared size at all, and a 10% single-element error is the cheapest defect
-    that produces one.
-
-    NOTE, measured: the response is not monotone in the defect. A 10% error moves
-    cond(K~) by 7.05e-03 and a 100% error by 5.05e-03. The counter is set below
-    both, and the non-monotonicity is recorded rather than smoothed.
-    """
-    from floatfea.assemble.system import element_global_stiffness, equilibrate
-
-    ends = np.concatenate([node_dofs(0), node_dofs(len(STATIONS) - 1)])
-
-    def cond_eq(stiffness_scale: float) -> float:
-        m, els = _scaled_model(1.0)
-        k = assemble(m, els)
-        if stiffness_scale != 1.0:
-            delta = (stiffness_scale - 1.0) * element_global_stiffness(m, els[1])
-            k = k.tolil()
-            d = np.concatenate([node_dofs(1), node_dofs(2)])
-            for i in range(12):
-                for j in range(12):
-                    k[d[i], d[j]] += delta[i, j]
-            k = k.tocsr()
-        free = np.setdiff1d(np.arange(m.n_dof), ends)
-        return float(np.linalg.cond(equilibrate(k[free][:, free].tocsc())[0].toarray()))
-
-    base = cond_eq(1.0)
-    drift = abs(cond_eq(1.1) - base) / base
-    assert drift >= COND_UNIT_INVARIANCE_COUNTER, (
-        f"a 10% stiffness error in one element moved cond(K~) by only "
-        f"{drift:.3e}, below the declared counter-case "
-        f"{COND_UNIT_INVARIANCE_COUNTER:.3e}. The invariance assertion cannot "
-        "resolve a drift of the size it claims to catch."
-    )
-    assert drift > COND_UNIT_INVARIANCE, "the counter must exceed the ceiling"
 
 
 def _run_with_independent_reference(state: str, sec_el, mat_el) -> float:
@@ -1169,77 +1006,11 @@ def test_the_OTHER_plane_is_blind_to_it(block: str) -> None:
 # WHAT CLOSED IT: the ERROR MEASURE alone, necessary and sufficient by ablation.
 # Equilibration was briefly added to the solve on a claim that two fixes were
 # required; that claim is refuted and the change is reverted (BD2). The
-# conditioning tests below exercise `equilibrate` as a utility, which is what it
-# now is.
+# `equilibrate` was later used to estimate a conditioning-scaled floor for this
+# gate's ceiling; that form was withdrawn after a STOP (F2.md sec. D7 item 6) and
+# the function went with it, having no other caller.
 # ---------------------------------------------------------------------------
 UNIT_SCALES = [1.0, 10.0, 1000.0, 0.001]      # metres, decimetres, mm, km
-
-
-def _scaled_model(scale: float):
-    """The same physical beam posed with lengths x `scale`, skew orientation.
-
-    One scaling path, not two: this delegates to `_model`, so the conditioning
-    tests below and the gate's own unit sweep cannot drift apart.
-    """
-    m, els, _ = _model(SKEW, scale)
-    return m, els
-
-
-@pytest.mark.parametrize("scale", UNIT_SCALES)
-def test_the_equilibrated_conditioning_is_unit_INVARIANT(scale: float) -> None:
-    """`cond(D^-1/2 K D^-1/2)` is the same number in every length unit.
-
-    A PROPERTY OF `equilibrate` THE UTILITY, NOT OF `solve` (R37a). An earlier
-    version of this line called it "the algebraic fact the equilibrated solve
-    rests on". `solve` does not equilibrate -- it factorises `K_ff` directly
-    (BD2, `system.py`) -- so there is no equilibrated solve for anything to rest
-    on, and the sentence survived two commits after the path it described was
-    deleted.
-
-    What the property is: for diagonal `S`, `diag(SKS) = S diag(K) S`, so the
-    scaled matrix is algebraically invariant. Measured, `cond(K~) = 3.85e2` at
-    every unit system while `cond(K_ff)` runs 9.2e2 to 6.0e8 over these scales.
-    It is asserted because it is the reason `equilibrate` is kept as a candidate
-    for F3, and it would be removed with the utility.
-    """
-    from floatfea.assemble.system import equilibrate
-
-    ref_m, ref_els = _scaled_model(1.0)
-    m, els = _scaled_model(scale)
-    ends = np.concatenate([node_dofs(0), node_dofs(len(STATIONS) - 1)])
-    free = np.setdiff1d(np.arange(m.n_dof), ends)
-
-    def cond_eq(model, elements):
-        kff = assemble(model, elements)[free][:, free].tocsc()
-        return float(np.linalg.cond(equilibrate(kff)[0].toarray()))
-
-    assert cond_eq(m, els) == pytest.approx(cond_eq(ref_m, ref_els), rel=COND_UNIT_INVARIANCE), (
-        "the equilibrated conditioning moved with the length unit, so "
-        "`equilibrate` does not do the one thing it is retained for. This says "
-        "NOTHING about the solve, which does not use it: the gate's own unit "
-        "invariance is asserted by test_the_six_constant_strain_states_are_EXACT"
-    )
-
-
-def test_the_UNequilibrated_conditioning_DOES_move() -> None:
-    """Negative control for the test above: the invariance is not automatic.
-
-    Says what it is a control FOR, which is the utility's property. It used to
-    say that without this, "equilibration would be ceremony" -- but on the
-    production path equilibration IS absent, and `system.py` says so in the
-    honest words ("retained as a utility"). A control cannot argue for a
-    production choice that was not made.
-    """
-    ends = np.concatenate([node_dofs(0), node_dofs(len(STATIONS) - 1)])
-    conds = []
-    for scale in UNIT_SCALES:
-        m, els = _scaled_model(scale)
-        free = np.setdiff1d(np.arange(m.n_dof), ends)
-        conds.append(np.linalg.cond(assemble(m, els)[free][:, free].toarray()))
-    assert max(conds) / min(conds) > 1e4, (  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
-        f"cond(K_ff) spans only {max(conds) / min(conds):.1e} across "
-        "these unit systems; this test cannot demonstrate what equilibration is for"
-    )
 
 
 def _synthetic(scale: float):

@@ -354,6 +354,100 @@ SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
 
 
 
+# CLASS: STRUCTURAL -- a domain boundary. It fires by design on members outside
+# the range one gate's claim was validated over, and it exists to force an
+# explicit choice (the second tier below), not to be tuned until it stops firing.
+# No counter-case, per AO2.
+#
+# G2.2 / V1.2 -- the largest MEMBER slenderness `lambda = L_member / r` for which
+# PATCH_TEST_EXACTNESS is claimed, AT THE GATE'S OWN MESH (n = 5, the shipped
+# irregular station set). Dimensionless.
+#
+# A PROPERTY OF THE TEST AT ITS MESH, NEVER OF A STRUCTURE (F2.md sec. 5b, Q6).
+# At fixed member lambda, changing only the element count moves the floor by
+# 35-57x:
+#
+#   member lam          n=2   n=5 (gate)         n=11     n=11/n=2
+#         46.4   1.3325e-15   9.5745e-14   7.5703e-14        56.8x
+#        100.0   8.0001e-15   2.3967e-13   2.7613e-13        34.5x
+#        200.0   3.1598e-14   8.8139e-13   1.4810e-12        46.9x
+#
+# So this number says nothing about F3's model, whose chain is far longer; F3
+# measures its own floor with backward error and the V4.1/V4.2 residuals.
+#
+# WHY MEMBER LAMBDA AND NOT ELEMENT L/r, measured on a 2-D grid because both
+# one-dimensional sweeps were confounded on element count (element L/r = lam/n,
+# so only two of the three are independent):
+#
+#   orientation                exponent on n     exponent on member lambda
+#   theta = 33.5 (worst)       +1.77 +/- 0.24    +2.19 +/- 0.18
+#   corpus SKEW (22.46)        +1.57 +/- 0.21    +1.94 +/- 0.15
+#   axis-aligned (control)     +2.35 +/- 0.26    +0.68 +/- 0.19
+#
+# Member lambda carries the FRAME-dependent part -- exponent ~2 skew against 0.68
+# axis-aligned. Element L/r is refuted: if it governed, the two exponents would be
+# equal and opposite, and both are positive. Element count is a second,
+# frame-INDEPENDENT driver, present in the control too.
+#
+# Reason for 60: it is the lower bracket of the crossing of 0.1 x
+# PATCH_TEST_EXACTNESS by the orientation envelope (6 angles x 7 rolls x 6
+# states), so the exactness claim carries 10x of margin over that envelope:
+#
+#   member lam   20.0   30.0   46.4   60.0   80.0  130.0  200.0
+#   envelope    9.8e-15 3.0e-14 9.6e-14 7.4e-14 2.8e-13 3.5e-13 8.8e-13
+#   x 1e-12       0.010  0.030  0.096  0.074  0.279  0.352  0.881
+#                                            ^ first above 0.1
+#
+# THE ENVELOPE CARRIES ITS SAMPLING, because the crossing moves with it: a finer
+# search (7 angles x 9 rolls) puts the full-ceiling crossing at member lambda
+# ~177-207 where this one does not reach it by 250.
+#
+# Context, with its mesh: the platform's governing brace at member lambda = 46.4
+# measures 9.5745e-14 -- 0.0957 of the ceiling, 10.4x of margin, at n = 5.
+# Set: 2026-09-06, F2
+G22_VALIDATED_MEMBER_LAMBDA: Final[float] = 60.0
+
+
+# CLASS: ACCURACY -- carries PATCH_TEST_ROUNDOFF_COUNTER below.
+# G2.2 / V1.2 -- the SECOND TIER: the ceiling for members beyond
+# G22_VALIDATED_MEMBER_LAMBDA at the gate's mesh. Same quantity as
+# PATCH_TEST_EXACTNESS -- relative nodal field error, dimensionless -- and a
+# different claim about it.
+#
+# THIS IS ROUND-OFF TRACKING, NOT EXACTNESS, and the label is the point. Beyond
+# the validated domain the element is still nodally exact; what grows is the
+# floor at which that exactness can be observed, at exponent ~2 in member lambda
+# through the skew transform chain. A test that asserted exactness here would be
+# asserting something the arithmetic cannot show.
+#
+# Reason: measured over the fifteen corpus entries past the boundary, envelope at
+# the gate mesh over 8 angles x 9 rolls x 6 states -- the finest sampling run:
+#
+#   nearly_solid_D_t_2p1   lam    64.4   8.3956e-14
+#   slender_L_r_63         lam   186.0   8.4335e-13
+#   slender_L_r_86         lam   253.7   2.2805e-12
+#   slender_L_r_126        lam   372.0   4.5028e-12
+#   very_slender_L_r_189   lam   558.1   6.5565e-12   <- worst
+#
+# 2e-11 sits 3.05x above that worst envelope, which covers the sampling
+# dependence the same table demonstrates, and 5400x below the counter-case.
+# Set: 2026-09-06, F2
+PATCH_TEST_ROUNDOFF: Final[float] = 2e-11
+
+# COUNTER-CASE, measured on the same quantity and on the tier's own
+# configurations: a 1e-6 relative stiffness error in ONE interior element. The
+# weakest response over all fifteen is 1.0767e-07 -- flat to four digits across
+# the tier, because the defect's response is set by the perturbation and not by
+# the slenderness. The counter sits just under it, so the tier's ceiling is 5400x
+# below the smallest defect it must still catch.
+#
+# That ratio is the whole point of the label. A looser ceiling is only round-off
+# tracking rather than a weakened gate if it still reddens on a real defect by
+# orders, and here it does: 3.7 of them.
+# Set: 2026-09-06, F2
+PATCH_TEST_ROUNDOFF_COUNTER: Final[float] = 1.0e-7
+
+
 # CLASS: ACCURACY -- carries PATCH_TEST_EXACTNESS_COUNTER below.
 # G2.2 / V1.2 -- deviation of the interior nodal displacements from the exact
 # constant-strain field, in a DISPLACEMENT-DRIVEN patch test on an irregular
@@ -434,6 +528,12 @@ SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
 # thick-walled small tube is not slender. D/t = 50 holds the section's proportions
 # and is the sweep that isolates slenderness.
 #
+# VALIDATED DOMAIN (F2.md sec. 5b, Q6). This ceiling is G2.2's claim for member
+# slenderness `lambda <= G22_VALIDATED_MEMBER_LAMBDA` AT THE GATE'S MESH. Beyond
+# it, PATCH_TEST_ROUNDOFF applies and is labelled round-off tracking. A
+# floor-aware form of this ceiling was tried over four review rounds and
+# withdrawn after a STOP; F2.md sec. D7 item 6 carries why.
+#
 # UNIT SYSTEM, ASSERTED BY THE SHIPPED TEST (R40). The gate runs at
 # S = 1e-3, 1, 1e3 -- 36 nodes -- so the number below is produced by pytest, not
 # by a harness. Worst over six states x two orientations at each:
@@ -510,118 +610,6 @@ PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
 
 
 
-# CLASS: ACCURACY -- carries PATCH_TEST_COND_FACTOR_COUNTER_DEFECT below.
-# G2.2 / V1.2 -- the FLOOR-AWARE half of the patch-test ceiling, in multiples of
-# the accuracy the solve can achieve on the problem posed:
-#
-#     err <= PATCH_TEST_COND_FACTOR * cond(D^-1/2 K_ff D^-1/2) * eps
-#
-# Dimensionless. Asserted ALONGSIDE PATCH_TEST_EXACTNESS, never instead of it.
-#
-# THE FLOOR IS THE EQUILIBRATED CONDITIONING (BH1/R55), and the first version of
-# this entry got that wrong. It used cond(K_ff), which is not unit-invariant --
-# and the gate runs three unit systems:
-#
-#   S        cond(K_ff)     cond(K~)    worst err   err/(c~.eps)
-#   1e-3     5.9831e+08   3.8491e+02   1.6029e-13       1.8754
-#   1        9.2096e+02   3.8491e+02   1.2513e-14       0.1464
-#   1e+3     4.0490e+07   3.8491e+02   4.9240e-14       0.5761
-#
-# cond(K~) is the SAME NUMBER at all three -- spread 1.000000x -- because
-# diag(SKS) = S diag(K) S makes the equilibrated matrix invariant under a
-# diagonal rescaling. A ceiling built on cond(K_ff) was 5.4e5x weaker at
-# millimetres than at metres: it scaled with the unit system, not the problem.
-#
-# AND IT KEEPS THE OTHER PROPERTY. cond(K~) still tracks slenderness -- 121.7x
-# over D = 0.6 .. 0.05 -- so it is not a constant wearing a floor's clothes:
-#
-#   D      L/r    cond(K_ff)    cond(K~)   worst err   err/(c~.eps)
-#   0.600  15.7    9.210e+02   3.849e+02   1.251e-14      0.1464
-#   0.200  47.2    7.631e+03   2.859e+03   1.571e-13      0.2476
-#   0.120  78.6    2.105e+04   7.929e+03   1.010e-12      0.5739
-#   0.100  94.4    3.028e+04   1.148e+04   1.762e-12      0.6912
-#   0.080 117.9    4.727e+04   1.807e+04   1.028e-12      0.2561
-#   0.050 188.7    1.209e+05   4.684e+04   4.415e-12      0.4245
-#
-# Against the constant those same errors span 141x and cross 1 three times
-# non-monotonically; against this floor they span 7.9x and never reach 1.
-#
-# THE FACTOR IS CENTRED IN ITS LIVE BAND, and both ends of that band are named
-# (R64). Scanning the shipped suite, the factor may take any value in roughly
-# [3.1, 8.1]:
-#
-#   3.0  -> FAILED test_the_corpus_entry_behaves_as_the_reviewer_recorded[unit_mm_similar]
-#   3.2 .. 8.0  502 passed
-#   8.2  -> FAILED test_the_floor_aware_ceiling_CATCHES_its_counter_defect[D=0.08]
-#
-# The lower end is pinned by a clean configuration breaching; the upper end by
-# the counter defect ceasing to be detected. 5.0 is the geometric centre: 1.6x
-# of margin to each end. It also sits 2.7x above the worst measured clean ratio,
-# 1.8754, which is itself measured over 3 scales x 2 orientations x 6 states x
-# FOUR fill-reducing permutations -- the permutation cannot change the exact
-# answer, so its 1.9x .. 2.9x spread is round-off and belongs inside that number.
-#
-# A first version used 8.0, which passed but sat 1.3% below the upper edge: any
-# scatter in the counter measurement would have flipped it. Being near an end of
-# a live band is not the same as being defensible in it.
-#
-# At the posed geometry the ceiling is 5.0 * 3.8491e2 * 2.22e-16 = 4.274e-13,
-# TIGHTER than the 1e-12 it accompanies, so the floor-aware term binds there and
-# nothing is loosened.
-#
-# THE SELF-REFERENCE IS BOUNDED, NOT DENIED (BH2). This ceiling is computed from
-# the same K the gate tests, so a defective K moves it. The first version of this
-# entry said "the ceiling moves by at most 1.13x under any defect the gate must
-# catch" -- measured against three defects its own author chose, and refuted by a
-# UNIFORM J x 0.01, which is the class the neighbouring blindness test declares
-# invisible.
-#
-# THE CELL, and it also measures what BH1 bought. One variable moved -- which
-# conditioning the floor uses -- everything else held:
-#
-#   defect        cond(K_ff)    move     cond(K~)    move
-#   clean         9.2096e+02      --   3.8491e+02      --
-#   J x 0.01      5.9831e+04   65.0x   2.0847e+03    5.4x
-#   J x 100       3.0630e+03    3.3x   5.5615e+02    1.4x
-#   A x 0.01      4.5522e+02    0.5x   5.9826e+01    0.2x
-#
-# The 65x that refuted the old claim is the UNEQUILIBRATED floor. Equilibrating it
-# (BH1) damps the same defect to 5.4x -- a 12x reduction that was not the reason
-# for that change and is measured here rather than claimed for it.
-#
-# THE DEFENCE IS THE CAP, not an assertion that it cannot move.
-# PATCH_TEST_EXACTNESS is asserted beside this term, so the effective ceiling is
-# min(constant, floor-aware) and the loosening ANY defect can buy is bounded by
-# constant / binding_clean. Measured over the admitted corpus:
-#
-#   worst bound, over every admitted entry            5.313x
-#   every slender entry, where floor-aware > constant 1.000x  (no loosening at all)
-#   the posed geometry                                1.463x
-#
-# And under the J x 0.01 defect the floor-aware term moves 5.4x while the BINDING
-# ceiling moves 1.463x. Detection survives inside that bound: the counter defect's
-# response is 3.23e-11 .. 3.52e-11 clean and 3.23e-11 .. 3.52e-11 with J x 0.01
-# applied, against a binding ceiling of 1.0e-12 -- every state still fires.
-# Set: 2026-09-04, F2
-PATCH_TEST_COND_FACTOR: Final[float] = 5.0
-
-# COUNTER-CASE, a DEFECT SIZE (BG1). Measured by bisecting the shipped predicate
-# for the smallest single-element relative stiffness defect it detects, PER STATE
-# because the counter must be caught by every state and not only the most
-# sensitive:
-#
-#   D      L/r    ceiling      axial  curvature      twist      shear   curv_xz   shear_xz
-#   0.600  15.7  6.838e-13  6.273e-12  6.316e-12  6.270e-12  5.728e-12  6.355e-12  5.802e-12
-#   0.120  78.6  1.409e-11  1.302e-10  1.295e-10  1.291e-10  1.194e-10  1.305e-10  1.213e-10
-#   0.100  94.4  2.039e-11  1.883e-10  1.886e-10  1.869e-10  1.751e-10  1.888e-10  1.752e-10
-#   0.080 117.9  3.210e-11  2.933e-10  2.966e-10  2.943e-10  2.761e-10  2.983e-10  2.773e-10
-#
-# The counter is set just above the worst cell, 2.983e-10. Ceiling and threshold
-# move together, so doubling the factor pushes the threshold past the counter and
-# the counter test goes red -- which is what makes silent widening impossible
-# rather than reviewed-for.
-# Set: 2026-09-04, F2
-PATCH_TEST_COND_FACTOR_COUNTER_DEFECT: Final[float] = 3.0e-10
 
 
 # CLASS: ACCURACY -- carries SOLVE_BACKWARD_ERROR_FACTOR_COUNTER_DEFECT below.
@@ -823,26 +811,6 @@ ROUNDOFF_IDENTITY_COUNTER: Final[float] = 1.0e-8
 
 
 
-# CLASS: ACCURACY -- carries COND_UNIT_INVARIANCE_COUNTER below.
-# G2.5 / V1.3 -- relative agreement of cond(D^-1/2 K D^-1/2) between two unit
-# systems. Dimensionless.
-#
-# Reason: equilibration makes the conditioning algebraically invariant under a
-# diagonal rescaling, so this is exact in exact arithmetic; measured agreement
-# across S = 1e-3 .. 1e+3 is within 1e-11. 1e-6 leaves room for the eigenvalue
-# computation on an ill-conditioned unequilibrated input without admitting a real
-# drift.
-#
-# DECLARED LATE (R13). This was a bare `rel=1e-6` inside the test, written two
-# commits after AW2 closed on exactly that defect.
-# Set: 2026-09-03, F2
-COND_UNIT_INVARIANCE: Final[float] = 1e-6
-
-# COUNTER-CASE: without equilibration cond(K_ff) spans 6.5e5 across the same unit
-# systems, so the assertion must catch anything at or above that ratio; the
-# counter is set far below it, at the smallest drift worth investigating.
-# Set: 2026-09-03, F2
-COND_UNIT_INVARIANCE_COUNTER: Final[float] = 1.0e-3
 
 
 

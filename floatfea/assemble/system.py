@@ -6,10 +6,11 @@ single case it describes; there is deliberately no aggregate, because an outlier
 hidden in a mean is the specific thing these numbers exist to catch. This is
 where V4.1's discipline starts, and it costs one line.
 
-`equilibrate` is a tested utility and is **not** on the solve path -- see its
-docstring, and `docs/milestones/F2.md` sec. R8 for the measurement that removed
-it (BD2). There is no section named BD2 in that file; an earlier version of this
-line cited one.
+`equilibrate` used to live here. BD2 took it off the solve path
+(`docs/milestones/F2.md` sec. R8 has that measurement) and BH1 gave it a second
+life estimating a conditioning-scaled floor for G2.2's ceiling. That floor was
+withdrawn after a STOP (sec. D7 item 6), which left the function with no caller,
+so it is gone: dead code with a test around it reads like coverage.
 """
 from __future__ import annotations
 
@@ -37,74 +38,6 @@ class BeamElement:
     material: Material
     orientation_node: NDArray[np.float64] | None = None
     roll_rad: float = 0.0
-
-
-def equilibrate(k: sp.spmatrix) -> tuple[sp.csc_matrix, NDArray[np.float64]]:
-    """Symmetric diagonal equilibration: ``(D^-1/2 K D^-1/2, sqrt(diag K))``.
-
-    **A tested utility, NOT on the solve path (BD2).** `solve` factorises the
-    original matrix.
-
-    What it does. A beam stiffness mixes translational and rotational DOF, whose
-    diagonal entries scale **oppositely** under a change of length unit: with
-    lengths x S, translational entries go as ``S^-1`` (``EA/L``, ``12EI/L^3``) and
-    rotational as ``S^+1`` (``4EI/L``), coupling (``6EI/L^2``) unchanged --
-    measured on this element to four digits. Since ``diag(SKS) = S diag(K) S``,
-    the scaled matrix is algebraically invariant, so ``cond(K~) = 3.85e2`` at
-    every unit system where ``cond(K_ff)`` runs ``9.2e2 .. 6.0e8``.
-
-    Why it is not on the solve path. It was put there on a claim that the
-    unit-invariance of the patch test "required two fixes". The ablation refutes
-    that: **the error measure alone is necessary and sufficient**. All four
-    cells, worst error over the six patch-test states at each length-unit factor
-    ``S``, ceiling ``1e-12``::
-
-        S           1e-4    1e-3    1e-2     0.1       1      10     100     1e3     1e4 | worst  breach
-        eq + wtd  2.0e-14 2.7e-14 2.0e-14 2.5e-14 7.9e-15 1.1e-14 3.1e-14 2.5e-14 3.2e-14| 3.2e-14  none
-        -- + wtd  2.0e-13 1.6e-13 7.6e-14 1.3e-13 1.3e-14 1.2e-14 2.4e-14 4.9e-14 5.4e-14| 2.0e-13  none
-        eq + mix  2.1e-11 2.8e-12 2.0e-13 2.5e-14 1.9e-15 9.9e-15 3.5e-14 5.8e-13 7.8e-12| 2.1e-11  1e-4
-        -- + mix  2.1e-10 1.7e-11 4.2e-13 1.3e-13 4.2e-15 4.2e-14 1.5e-13 1.9e-11 1.3e-10| 2.1e-10  1e-4
-
-    The measure alone (row 2) breaches at no scale; that is the whole of the fix.
-
-    **CORRECTION (R34).** An earlier version of this docstring added "and
-    equilibration alone leaves the kilometre breach exactly where it was". Row 3
-    refutes it: equilibration alone is precisely what removes the kilometre
-    breach, ``1.9e-11 -> 5.8e-13``. What it does not do is remove the other
-    three (``S = 1e-4``, ``1e-3``, ``1e4``), which is why it is not sufficient
-    and the measure is. The conclusion stands; the mechanism as stated was
-    false, and it was written one commit after BC1 named exactly this shape of
-    claim. See `docs/milestones/F2.md` sec. R8, "The fourth cell".
-
-    The replacement justification -- a "6x" improvement -- was a ratio of
-    extremes; per scale the benefit runs
-
-        S      1e-4  1e-3  1e-2   0.1     1    10   100  1e3   1e4
-        ratio  9.93  5.84  3.87  5.10  1.58  1.08  0.77 1.97  1.69
-
-    median 1.97 and **below 1 at S = 100**. A production solve-path change with no
-    gate, no test through the solve, and a benefit that is sometimes negative does
-    not stay. Deleting it left 289 tests passing, which is the measurement that
-    settled it.
-
-    WHAT IT IS FOR (BH1). It estimates the FLOOR that G2.2's ceiling is built on:
-    `cond(D^-1/2 K_ff D^-1/2)` is the same number in every length unit -- measured
-    `3.8491e+02` at `S = 1e-3, 1, 1e3`, a spread of `1.000000x` -- while
-    `cond(K_ff)` spans six orders over the same three. A floor that moves with the
-    unit system is a floor on the unit system. It also still tracks slenderness,
-    `121.7x` over `D = 0.6 .. 0.05`, so it is not a constant in disguise. Those
-    two properties together are the whole reason this function exists.
-
-    It remains a candidate for F3 if conditioning bites on the full model.
-    """
-    d = np.sqrt(np.abs(k.diagonal()))
-    if not np.all(d > 0.0):
-        raise ValueError(
-            "a free DOF has zero diagonal stiffness; the system is singular "
-            "before equilibration and the caller has an unconstrained mechanism."
-        )
-    dinv = sp.diags(1.0 / d)
-    return (dinv @ k @ dinv).tocsc(), d
 
 
 @dataclass(frozen=True)
