@@ -166,23 +166,28 @@ MEMBER_ORIENTATION_DEGENERACY: Final[float] = 0.05
 # Reason for 2.0: shear-flexible beam kinematics still assume plane sections and
 # a length over which stresses redistribute, and below L/D ~ 2 there is no such
 # length. The value is a MODELLING JUDGEMENT, proposed by the supervisor and
-# PENDING XABIER'S CONFIRMATION -- it is not derived from a measurement here, and
-# it is written down as a judgement rather than dressed as one.
+# CONFIRMED BY XABIER on 2026-09-06 (F2.md sec. 5b, Q5) -- it is not derived from
+# a measurement here, and it is written down as a judgement rather than dressed
+# as one.
 #
-# WHAT IT COSTS AND WHAT IT BUYS, measured. Sweeping member L/D with the gate's
-# own station ratios, the weakest state's response to a 1e-6 single-element
-# stiffness defect (against PATCH_TEST_EXACTNESS_COUNTER = 1.0e-7):
+# THE MEASUREMENT THAT USED TO SUPPORT IT IS WITHDRAWN, AND THE JUDGEMENT NOW
+# STANDS ALONE. This entry carried a sweep showing the gate's negative control
+# FAILING below L/D = 2 (9.50e-8 and 8.80e-8 against a counter of 1.0e-7), and
+# that was a property of the SOLVED nodal field error, which G2.2 no longer
+# asserts. Re-measured on the quantity that ships -- interior out-of-balance,
+# same station ratios, same 1e-6 single-element defect:
 #
-#   L/D    0.50    1.00    1.50 | 2.00    3.00    8.00   16.10   48.00
-#   resp  9.50e-8 8.80e-8 1.08e-7| 1.08e-7 1.07e-7 1.07e-7 1.08e-7 1.08e-7
-#          FAILS   FAILS        | -------- admitted range --------
+#   L/D           0.50       1.00       1.50 |     2.00       8.00      48.00
+#   response   8.80e-09   4.55e-09   2.02e-09| 1.14e-09   7.12e-11   2.02e-12
+#   x counter    88000      45478      20213 |    11371        712         20
 #
-# Below the limit the gate's own negative control FAILS -- the counter-case is
-# not detected at L/D = 0.5 or 1.0. That is the concrete cost of analysing a
-# non-beam as a beam, and it is the measurement the limit rests on. Over the
-# admitted range the response is flat to 0.9% and scale-free in D: at L/D = 2 it
-# is 1.0805e-07 for every diameter from 0.1 m to 4 m.
-# Set: 2026-09-04, F2
+# The control does NOT fail below the limit on this quantity -- it is STRONGER
+# there, because the response falls with slenderness. So the limit keeps its
+# physical justification and loses its numerical one, and that is recorded rather
+# than papered over: nothing in this repository now measures a cost to analysing
+# an L/D = 1 stub as a beam. The reason to refuse it is that beam kinematics do
+# not describe it, which is a statement about the model and not about round-off.
+# Set: 2026-09-04, F2. Support re-measured and withdrawn 2026-09-06, F2
 BEAM_ADMISSION_L_OVER_D: Final[float] = 2.0
 
 
@@ -354,259 +359,82 @@ SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
 
 
 
-# CLASS: STRUCTURAL -- a domain boundary. It fires by design on members outside
-# the range one gate's claim was validated over, and it exists to force an
-# explicit choice (the second tier below), not to be tuned until it stops firing.
-# No counter-case, per AO2.
-#
-# G2.2 / V1.2 -- the largest MEMBER slenderness `lambda = L_member / r` for which
-# PATCH_TEST_EXACTNESS is claimed, AT THE GATE'S OWN MESH (n = 5, the shipped
-# irregular station set). Dimensionless.
-#
-# A PROPERTY OF THE TEST AT ITS MESH, NEVER OF A STRUCTURE (F2.md sec. 5b, Q6).
-# At fixed member lambda, changing only the element count moves the floor by
-# 35-57x:
-#
-#   member lam          n=2   n=5 (gate)         n=11     n=11/n=2
-#         46.4   1.3325e-15   9.5745e-14   7.5703e-14        56.8x
-#        100.0   8.0001e-15   2.3967e-13   2.7613e-13        34.5x
-#        200.0   3.1598e-14   8.8139e-13   1.4810e-12        46.9x
-#
-# So this number says nothing about F3's model, whose chain is far longer; F3
-# measures its own floor with backward error and the V4.1/V4.2 residuals.
-#
-# WHY MEMBER LAMBDA AND NOT ELEMENT L/r, measured on a 2-D grid because both
-# one-dimensional sweeps were confounded on element count (element L/r = lam/n,
-# so only two of the three are independent):
-#
-#   orientation                exponent on n     exponent on member lambda
-#   theta = 33.5 (worst)       +1.77 +/- 0.24    +2.19 +/- 0.18
-#   corpus SKEW (22.46)        +1.57 +/- 0.21    +1.94 +/- 0.15
-#   axis-aligned (control)     +2.35 +/- 0.26    +0.68 +/- 0.19
-#
-# Member lambda carries the FRAME-dependent part -- exponent ~2 skew against 0.68
-# axis-aligned. Element L/r is refuted: if it governed, the two exponents would be
-# equal and opposite, and both are positive. Element count is a second,
-# frame-INDEPENDENT driver, present in the control too.
-#
-# Reason for 60: it is the lower bracket of the crossing of 0.1 x
-# PATCH_TEST_EXACTNESS by the orientation envelope (6 angles x 7 rolls x 6
-# states), so the exactness claim carries 10x of margin over that envelope:
-#
-#   member lam   20.0   30.0   46.4   60.0   80.0  130.0  200.0
-#   envelope    9.8e-15 3.0e-14 9.6e-14 7.4e-14 2.8e-13 3.5e-13 8.8e-13
-#   x 1e-12       0.010  0.030  0.096  0.074  0.279  0.352  0.881
-#                                            ^ first above 0.1
-#
-# THE ENVELOPE CARRIES ITS SAMPLING, because the crossing moves with it: a finer
-# search (7 angles x 9 rolls) puts the full-ceiling crossing at member lambda
-# ~177-207 where this one does not reach it by 250.
-#
-# Context, with its mesh: the platform's governing brace at member lambda = 46.4
-# measures 9.5745e-14 -- 0.0957 of the ceiling, 10.4x of margin, at n = 5.
-# Set: 2026-09-06, F2
-G22_VALIDATED_MEMBER_LAMBDA: Final[float] = 60.0
-
-
-# CLASS: ACCURACY -- carries PATCH_TEST_ROUNDOFF_COUNTER below.
-# G2.2 / V1.2 -- the SECOND TIER: the ceiling for members beyond
-# G22_VALIDATED_MEMBER_LAMBDA at the gate's mesh. Same quantity as
-# PATCH_TEST_EXACTNESS -- relative nodal field error, dimensionless -- and a
-# different claim about it.
-#
-# THIS IS ROUND-OFF TRACKING, NOT EXACTNESS, and the label is the point. Beyond
-# the validated domain the element is still nodally exact; what grows is the
-# floor at which that exactness can be observed, at exponent ~2 in member lambda
-# through the skew transform chain. A test that asserted exactness here would be
-# asserting something the arithmetic cannot show.
-#
-# Reason: measured over the fifteen corpus entries past the boundary, envelope at
-# the gate mesh over 8 angles x 9 rolls x 6 states -- the finest sampling run:
-#
-#   nearly_solid_D_t_2p1   lam    64.4   8.3956e-14
-#   slender_L_r_63         lam   186.0   8.4335e-13
-#   slender_L_r_86         lam   253.7   2.2805e-12
-#   slender_L_r_126        lam   372.0   4.5028e-12
-#   very_slender_L_r_189   lam   558.1   6.5565e-12   <- worst
-#
-# 2e-11 sits 3.05x above that worst envelope, which covers the sampling
-# dependence the same table demonstrates, and 5400x below the counter-case.
-# Set: 2026-09-06, F2
-PATCH_TEST_ROUNDOFF: Final[float] = 2e-11
-
-# COUNTER-CASE, measured on the same quantity and on the tier's own
-# configurations: a 1e-6 relative stiffness error in ONE interior element. The
-# weakest response over all fifteen is 1.0767e-07 -- flat to four digits across
-# the tier, because the defect's response is set by the perturbation and not by
-# the slenderness. The counter sits just under it, so the tier's ceiling is 5400x
-# below the smallest defect it must still catch.
-#
-# That ratio is the whole point of the label. A looser ceiling is only round-off
-# tracking rather than a weakened gate if it still reddens on a real defect by
-# orders, and here it does: 3.7 of them.
-# Set: 2026-09-06, F2
-PATCH_TEST_ROUNDOFF_COUNTER: Final[float] = 1.0e-7
-
-
 # CLASS: ACCURACY -- carries PATCH_TEST_EXACTNESS_COUNTER below.
-# G2.2 / V1.2 -- deviation of the interior nodal displacements from the exact
-# constant-strain field, in a DISPLACEMENT-DRIVEN patch test on an irregular
-# mesh. Relative, scaled by the largest component of the exact field, so it is
-# dimensionless and survives V1.3's unit rescaling.
+# G2.2 / V1.2 -- the INTERIOR OUT-OF-BALANCE OF THE EXACT FIELD. With
+# `D = diag(I3, l I3)` per node, `w = D u_exact`, `K_hat = D^-1 K D^-1`:
 #
-# Reason: the six constant-strain states -- axial, twist, and curvature and
-# constant shear in EACH bending plane -- are reproduced EXACTLY by this element,
-# not in the limit, so the only admissible deviation is round-off. Measured over
-# all six, on the shipped solve path:
+#     max |(K_hat w)[interior]| / (max|K_hat| * max|w|)
 #
-#   axis-aligned   1.87e-16 .. 3.88e-15
-#   skew straight  4.80e-16 .. 1.25e-14   (transform accumulation)
+# Dimensionless, and homogeneous -- rotations weighted by a characteristic
+# length, so metres are never divided by radians (R2, applied to the matrix as
+# well as the field).
 #
-# 1e-12 sits 80x above the worst of those, which covers the transform path and
-# longer chains, and 5 orders below the counter-case.
+# Reason: Irons' test says the exact constant-strain field SATISFIES the discrete
+# equations. That is checkable without solving anything, and the quantity has no
+# factorisation in it: numerator and denominator both carry the largest
+# stiffness, so `cond` cannot enter and the `lambda^2` amplification that comes
+# from measuring a bending displacement against axial round-off cannot arise.
 #
-# OPERATING POINT OF THE 80x, because a ratio carries one or it carries nothing
-# (ninth guard). It belongs to ONE geometry: tube D = 0.6 m, t = 0.012 m, element
-# lengths 0.79 .. 3.27 m, i.e. a longest-element slenderness L/r = 15.7. The
-# ceiling is breached by slender members. Sweeping the section at constant
-# D/t = 50 and re-running all six states in both orientations:
+# THIS REPLACES THE SOLVED NODAL FIELD ERROR, AND THE REPLACEMENT IS THE ROUND'S
+# WHOLE FINDING (F2.md sec. 5b, Q6). That quantity is the FORWARD error of a
+# linear solve -- `cond` x backward error -- and five successive attempts to bound
+# it with a constant, a conditioning-scaled ceiling, an equilibrated floor and a
+# validated domain were each refuted by one more axis the envelope had not
+# spanned: unit system, member lambda, mesh at fixed lambda, orientation, roll,
+# and finally section size at fixed lambda. It is now reported per corpus entry
+# and asserted nowhere. `PATCH_TEST_ROUNDOFF`, its counter and
+# `G22_VALIDATED_MEMBER_LAMBDA` were removed with it -- the second tier existed to
+# relieve entries this quantity does not strain.
 #
-#   D (m)   elem L/r   worst err   x ceiling
-#    0.60      15.7    1.251e-14      0.013
-#    0.40      23.6    3.807e-14      0.038
-#    0.20      47.2    1.571e-13      0.157
-#    0.10      94.4    1.762e-12      1.762   BREACH
-#    0.05     188.7    4.415e-12      4.415   BREACH
-#    0.02     471.8    1.844e-11     18.440   BREACH
+# WHY 5e-15 AND NOT THE 1e-12 THIS ENTRY CARRIED. A ceiling derived for one
+# quantity does not transfer to another; keeping the number would be R41's
+# species. The new quantity's live band is 577x wide, and AT 1e-12 THE COUNTER
+# SITS BELOW THE CEILING -- a 1e-6 single-element defect on the corpus's most
+# slender entry would not be caught (margin 0.11x). 5e-15 is the geometric centre
+# of the band, 4.47e-15 rounded up: 26.8x above the worst clean corpus entry and
+# 21.5x below the smallest defect response. It is a TIGHTENING by 200x.
 #
-# THERE IS NO BOUNDARY, and the one this comment carried is WITHDRAWN (R46).
-# It read "bisected, the boundary is D = 0.0791 m, element L/r = 119" while the
-# table three lines above records D = 0.10 as a breach -- self-contradictory in
-# one block. The number was carried from a verdict rather than regenerated. A
-# finer sweep shows the quantity is NOT MONOTONE in slenderness:
+# THE FLOOR AND THE COUNTER, and the band between them, are regenerated by the
+# shipped tests and tabulated in docs/reports/F2/step-4.md rev 10 (BI3: a table
+# in this file is produced by a script at its own commit or it is not in this
+# file, and that mechanism is step 4a's).
 #
-#   L/r      78.6    85.8    94.4    99.3   111.0   117.9   125.8
-#   err   1.01e-12 2.27e-13 1.76e-12 4.64e-13 8.03e-13 1.03e-12 8.97e-13
-#            B                 B                          B
-#
-#   (The reviewer records 5.662e-13 at L/r = 111.0 where this run gives
-#    8.031e-13, on the same code and the same section. The discrepancy is not
-#    resolved and is recorded rather than averaged away; it is one more sample of
-#    the scatter this block is about.)
-#
-# Breaches with clean points between them, so bisection measures nothing: two
-# runs of it on the same predicate returned L/r = 93.3 and L/r = 119.
-#
-# WHY, by the cell that isolates it (BG0). The fill-reducing permutation of the
-# factorisation CANNOT change the exact solution -- it changes only the order the
-# arithmetic happens in. Moving that one variable and holding everything else:
-#
-#   D      L/r     COLAMD      NATURAL     MMD_ATA   MMD_AT_PLUS_A   spread
-#   0.600  15.7  1.25e-14 rz  7.97e-15 rz  1.02e-14 rz  2.11e-14 rz   2.65x
-#   0.120  78.6  1.01e-12 rz  6.20e-13 rz  2.88e-13 rz  5.12e-13 rz   3.51x
-#   0.100  94.4  1.76e-12 rz  9.92e-13 rz  1.08e-12 ry  5.72e-13 rz   3.08x
-#   0.080 117.9  1.03e-12 ry  1.53e-12 rz  8.46e-13 ry  6.72e-13 rz   2.27x
-#
-# The magnitude moves by 2.3x to 3.5x and the worst COMPONENT changes between rz
-# and ry, on a change that provably cannot move the answer. **The residual field
-# is round-off, not the element**, and whether a given section "breaches" is
-# decided by the pinned `SPARSE_PERMC_SPEC`. At D = 0.12, MMD_ATA turns the
-# breach into 2.88e-13.
-#
-# Where it sits: entirely on the SKEW orientation, in the AXIAL state, worst
-# component a ROTATION whose exact value is identically zero (axis-aligned stays
-# at 1.1e-16 in that state). The denominator is the axial state's own weighted
-# maximum, 8.94e-04, which contains no rotational content at all, so the ratio is
-# an amplified round-off over an unrelated scale.
-#
-# NOT the amplitude: scaling EPS_AXIAL over four decades leaves the ratio flat to
-# 1.3x, which is guaranteed by linearity and therefore discriminates nothing.
-# That cell was run first and is recorded as vacuous rather than as evidence.
-#
-# The sweep convention matters and is stated: at FIXED wall t = 0.012 m the same
-# diameters give 6.42e-13 at D = 0.10 and no breach until D = 0.05, because a
-# thick-walled small tube is not slender. D/t = 50 holds the section's proportions
-# and is the sweep that isolates slenderness.
-#
-# VALIDATED DOMAIN (F2.md sec. 5b, Q6). This ceiling is G2.2's claim for member
-# slenderness `lambda <= G22_VALIDATED_MEMBER_LAMBDA` AT THE GATE'S MESH. Beyond
-# it, PATCH_TEST_ROUNDOFF applies and is labelled round-off tracking. A
-# floor-aware form of this ceiling was tried over four review rounds and
-# withdrawn after a STOP; F2.md sec. D7 item 6 carries why.
-#
-# UNIT SYSTEM, ASSERTED BY THE SHIPPED TEST (R40). The gate runs at
-# S = 1e-3, 1, 1e3 -- 36 nodes -- so the number below is produced by pytest, not
-# by a harness. Worst over six states x two orientations at each:
-#
-#   S = 1e-3   axis-aligned 1.150e-14   skew 1.603e-13   <- worst, 6.2x headroom
-#   S = 1      axis-aligned 3.883e-15   skew 1.251e-14   <- 80x
-#   S = 1e+3   axis-aligned 8.858e-15   skew 4.924e-14
-#
-# OUT OF BAND, measured but NOT asserted by any test: across S = 1e-4 .. 1e+4 the
-# worst is 2.00e-13 and there is no breach; from 1e-8 to 1e+8 the reviewer
-# measured 2.4e-13. Those figures are context for how far the property extends,
-# and they are labelled as unasserted because the previous version of this
-# comment let a scratch-harness number carry the ceiling.
-#
-# WHAT CLOSED IT, measured by ablation (R8). An earlier version of this comment
-# said the invariance "required two fixes". All four cells, worst error over the
-# six states at each S:
-#
-#   equilibrate   weighted measure   worst err    breaches of 1e-12
-#      yes              yes           3.19e-14         none
-#      NO   <- ships    yes           2.00e-13         none
-#      yes              NO            2.09e-11    S = 1e-4, 1e-3, 1e4
-#      NO               NO            2.07e-10    S = 1e-4, 1e-3, 1e3, 1e4
-#
-# The ERROR MEASURE alone is necessary and sufficient. Taking max() across all six
-# DOF mixes metres with radians, so the measure was unit-dependent on its own; a
-# spurious rotation divided by a translational scale grows with S while the solve
-# is untouched. Weighting rotations by a characteristic length fixes it.
-#
-# EQUILIBRATION IS NOT ON THE SOLVE PATH (BD2). It was, for two commits, and this
-# comment described that configuration for two more: the "3.19e-14 across all
-# scales", the retention argument, and the floor below all belonged to a path
-# `solve` no longer takes. Row 2 is what ships. Equilibration remains a tested
-# utility -- cond(K~) = 3.85e2 at every unit system is real and asserted -- and
-# `floatfea/assemble/system.py` carries why it is not in the solve.
-#
-# FLOOR. There is no single conditioning floor on the shipped path, because
-# cond(K_ff) is a property of the unit system: it runs 9.21e2 at S = 1 to 5.98e10
-# at S = 1e-4, so cond(K_ff) * eps spans 2.05e-13 .. 1.33e-05. The measured error
-# does NOT track that bound -- err / (cond * eps) is 0.061 at worst and below
-# 0.01 at seven of the nine scales -- so this ceiling is justified by measurement
-# across the range, not by a conditioning estimate. At the metre scale where the
-# gate is posed, cond(K_ff) * eps = 2.05e-13 and the ceiling is 4.9x it.
+# THE COUNTER CARRIES AN OPERATING POINT because this quantity has a cost: a
+# bending-block defect's response falls as 1/lambda^2 -- measured slope -2.0 over
+# member lambda 15.7 .. 188.7 -- so the counter is recorded at the corpus's most
+# slender entry, not at the posed geometry.
 #
 # THIS IS AN EXACTNESS TOLERANCE, NOT A CONVERGENCE ONE. An element that
 # reproduces constant curvature only in the limit is passing a convergence test
 # wearing the patch test's clothes; there is nothing between exact and wrong here,
 # which is why the value sits at ULP scale rather than at an engineering one.
-# Set: 2026-09-02, F2
-PATCH_TEST_EXACTNESS: Final[float] = 1e-12
+# Set: 2026-09-02, F2. Quantity and value REPLACED 2026-09-06, F2.
+PATCH_TEST_EXACTNESS: Final[float] = 5e-15
 
-# COUNTER-CASE, measured on the same quantity and in the WORST state.
-# A relative stiffness error in ONE interior element perturbs the interior field
-# linearly: at 1e-6 the four states move by 1.09e-07 (axial), 1.09e-07 (twist),
-# 3.72e-08 (curvature) and 3.02e-08 (shear). The counter is set at the SMALLEST
-# of those, so every state must catch a one-part-in-10^6 stiffness error, not
-# merely the most sensitive one.
+# COUNTER-CASE, measured on the same quantity and in the WEAKEST state, AT THE
+# CORPUS'S MOST SLENDER CONFIGURATION.
+# A 1e-6 relative stiffness error in ONE interior element must leave an interior
+# out-of-balance above this. The smallest response over all 48 solved corpus
+# entries is 1.0746e-13, at `slender_axis_L_r_189`; the counter sits just under
+# it, so the claim is that EVERY corpus configuration detects a
+# one-part-in-10^6 single-element error, not merely the most sensitive one.
 #
-# TIGHTENED 2026-09-03, from 3.0e-8, under the dimensionally homogeneous error
-# measure (R2). The assertion is `err >= COUNTER`, so raising it makes the negative
-# control STRICTER, not weaker. Under the old mixed-unit measure the bending
-# states' rotational error was divided by a translational scale and thereby
-# understated at 3.72e-08 and 3.02e-08; measured coherently all six states respond
-# at 1.08e-07 .. 1.17e-07 and the counter moves to the smallest of those.
+# THE OPERATING POINT IS THE ENTRY, not the posed geometry, and it has to be:
+# this quantity's sensitivity to a bending-block defect falls as `1/lambda^2` --
+# measured slope -2.0 over member lambda 15.7 .. 188.7 -- so a counter recorded
+# at the posed geometry (1.7638e-11) would be 164x too generous for the slender
+# end of the corpus and would assert nothing there.
 #
-# Its earlier history: 6.0e-9 came from a mesh containing 0.9/0.6 = 3/2 exactly.
-# The claim that changing that mesh bought a fivefold improvement is WITHDRAWN --
-# controlled measurement puts commensurability at nothing, the ratio to a
-# uniform mesh straddling 1 across draws (0.85-1.09). The value
-# moved because the perturbed element's length and position changed with it. See
-# docs/instrumentation.md, seventeenth guard.
-# Set: 2026-09-03, F2
-PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-7
+# RE-DERIVED 2026-09-06 with the quantity (F2.md sec. 5b, Q6). The previous value
+# 1.0e-7 belonged to the solved nodal field error and does not transfer.
+#
+# THE ANISOTROPIC EXEMPTION IS GONE, AND THAT IS A STRENGTHENING (R83). Under the
+# retired quantity `aniso_I_y_500x` responded at 8.6804e-08, 13% below its
+# counter, and the entry had to carry a stated domain of circular sections.
+# Under this quantity it responds at 1.7605e-11 -- 164x clear -- so the corpus
+# runner asserts the counter on every entry with no exemption branch.
+# Set: 2026-09-03, F2. Quantity and value REPLACED 2026-09-06, F2.
+PATCH_TEST_EXACTNESS_COUNTER: Final[float] = 1.0e-13
 
 
 

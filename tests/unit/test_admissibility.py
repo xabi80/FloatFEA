@@ -1,17 +1,21 @@
-"""The two member-level limits: one refuses, one warns (BH0, Q5/Q6)."""
+"""The member-level admission limit: `L/D >= 2` refuses (BH0, Q5).
+
+ONE LIMIT NOW, NOT TWO. `warn_outside_validated_domain` and its
+`G22_VALIDATED_MEMBER_LAMBDA` boundary are gone with the quantity they belonged
+to (F2.md sec. 5b, Q6): the floor they tracked is the forward error of a linear
+solve, which G2.2 reports and no longer asserts, so there is nothing left for a
+warning to be about. `member_lambda` survives as a reported diagnostic and is
+still tested here for being a DIFFERENT axis from `L/D`.
+"""
 from __future__ import annotations
 
 import pytest
 
-from floatfea.model.admissibility import (OutsideValidatedDomain,
-                                          assert_beam_admissible,
-                                          member_l_over_d, member_lambda,
-                                          warn_outside_validated_domain)
+from floatfea.model.admissibility import (assert_beam_admissible,
+                                          member_l_over_d, member_lambda)
 from floatfea.model.material import Section
 from floatfea.testing import assert_close, assert_differs
-from floatfea.tolerances import (BEAM_ADMISSION_L_OVER_D,
-                                 G22_VALIDATED_MEMBER_LAMBDA,
-                                 ROUNDOFF_IDENTITY)
+from floatfea.tolerances import BEAM_ADMISSION_L_OVER_D, ROUNDOFF_IDENTITY
 
 SEC = Section.circular_tube(0.6, 0.012)
 
@@ -38,32 +42,11 @@ def test_an_admissible_member_passes_silently() -> None:
     assert member_l_over_d(9.67, SEC) > BEAM_ADMISSION_L_OVER_D
 
 
-def test_a_slender_member_WARNS_and_does_not_raise() -> None:
-    """Past G2.2's validated domain the element is right and the floor is higher.
-
-    A warning, not a refusal, and not CLAUDE.md's forbidden warning: nothing is
-    invalid here. The distinction is written out in the function's docstring.
-    """
-    long_enough = (G22_VALIDATED_MEMBER_LAMBDA + 40.0) * (SEC.I_z / SEC.A) ** 0.5
-    with pytest.warns(OutsideValidatedDomain, match="validated domain"):
-        ratio = warn_outside_validated_domain(long_enough, SEC, what="slender")
-    assert ratio > G22_VALIDATED_MEMBER_LAMBDA
-
-
-def test_a_member_INSIDE_the_domain_does_not_warn() -> None:
-    """The other half: it must be silent where the claim holds."""
-    import warnings
-
-    inside = (G22_VALIDATED_MEMBER_LAMBDA - 20.0) * (SEC.I_z / SEC.A) ** 0.5
-    with warnings.catch_warnings():
-        warnings.simplefilter("error", OutsideValidatedDomain)
-        warn_outside_validated_domain(inside, SEC, what="inside")
-
-
-def test_the_two_limits_are_DIFFERENT_axes() -> None:
-    """`L/D` asks whether this is a beam; `L/r` asks how high the floor has risen.
+def test_the_two_ratios_are_DIFFERENT_axes() -> None:
+    """`L/D` asks whether this is a beam; `L/r` asks how high a SOLVE's floor is.
 
     Conflating them is what F2.md sec. D7 item 5 had to correct once already.
+    Only the first is a limit now; the second is reported.
     """
     assert_differs(member_l_over_d(9.67, SEC), member_lambda(9.67, SEC),
                    by=0.5, floor=1e-12,

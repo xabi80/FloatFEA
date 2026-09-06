@@ -23,8 +23,7 @@ corpus runner, and F3's builder calls it per member as a named dependency.
 from __future__ import annotations
 
 from floatfea.model.material import Section
-from floatfea.tolerances import (BEAM_ADMISSION_L_OVER_D,
-                                 G22_VALIDATED_MEMBER_LAMBDA)
+from floatfea.tolerances import BEAM_ADMISSION_L_OVER_D
 
 
 def member_l_over_d(length: float, section: Section) -> float:
@@ -75,57 +74,26 @@ def assert_beam_admissible(length: float, section: Section, what: str = "") -> N
         )
 
 
-class OutsideValidatedDomain(UserWarning):
-    """A member outside the slenderness range G2.2's exactness claim covers."""
-
-
 def member_lambda(length: float, section: Section) -> float:
-    """`L / r` with `r = sqrt(I/A)` -- the axis G2.2's floor tracks.
+    """`L / r` with `r = sqrt(I/A)` -- a REPORTED diagnostic axis, not a limit.
 
     Not `L/D`, which is the admission limit's axis. The two answer different
     questions: `L/D` asks whether this is a beam at all, `L/r` asks how far the
-    round-off floor of a skew solve has risen. Measured on a 2-D grid over
-    element count and member `L/r` (F2.md sec. 5b, Q6): member `L/r` carries the
+    round-off floor of a SOLVE has risen. Measured on a 2-D grid over element
+    count and member `L/r` (F2.md sec. 5b, Q6): member `L/r` carries the
     frame-dependent part at exponent ~2 in skew against 0.68 axis-aligned, and
     element `L/r` is refuted as the axis because both exponents come out positive
     where a governing quantity would give equal and opposite ones.
+
+    NOTHING IS GATED ON IT. `warn_outside_validated_domain` and the
+    `G22_VALIDATED_MEMBER_LAMBDA` boundary it enforced were removed when G2.2
+    stopped asserting a solved quantity: the floor this axis tracks belongs to
+    the forward error of a linear solve, which is now reported and never
+    asserted. The value is still worth carrying, because it is the axis along
+    which the counter-case's sensitivity falls -- as `1/lambda^2`, which is why
+    `PATCH_TEST_EXACTNESS_COUNTER` is recorded at the most slender configuration
+    in the corpus.
     """
     if length <= 0.0:
         raise ValueError(f"member length must be positive; got {length}")
     return float(length / (section.I_z / section.A) ** 0.5)
-
-
-def warn_outside_validated_domain(length: float, section: Section,
-                                  what: str = "") -> float:
-    """Warn -- do NOT raise -- when a member is past G2.2's validated domain.
-
-    **This is not `CLAUDE.md`'s forbidden warning.** That rule forbids a
-    *validation failure* degrading to a warning: a bad record, a misinterpreted
-    load, a structure analysed under the wrong assumptions. Nothing here is
-    invalid. The record is good, the loads are right, the element solves these
-    members correctly -- to a floor that has risen, which is ordinary for any FE
-    solve and is why the second tier `PATCH_TEST_ROUNDOFF` exists.
-
-    What is reported is narrower than it sounds: this member sits outside the
-    slenderness range **one gate's exactness claim was validated over, at that
-    gate's own five-element mesh**. It is not a statement about the model the
-    caller is building, whose floor depends on its own mesh -- measured, 35-57x
-    between `n = 2` and `n = 11` at fixed member lambda. F3 measures its own.
-
-    Returns the ratio so a caller can record it.
-    """
-    import warnings
-
-    ratio = member_lambda(length, section)
-    if ratio > G22_VALIDATED_MEMBER_LAMBDA:
-        warnings.warn(
-            f"{what or 'member'} has L/r = {ratio:.1f}, past G2.2's validated "
-            f"domain of {G22_VALIDATED_MEMBER_LAMBDA:g} (at the gate's own "
-            f"mesh). The element solves it correctly; the round-off floor is "
-            f"higher there and PATCH_TEST_ROUNDOFF is the applicable claim. "
-            f"This is not a defect and not a refusal -- see docs/milestones/"
-            f"F2.md sec. 5b, Q6.",
-            OutsideValidatedDomain,
-            stacklevel=2,
-        )
-    return ratio

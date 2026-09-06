@@ -13,21 +13,28 @@ touch it.
 
 WHAT IS ASSERTED PER ENTRY
 --------------------------
-`expect=hold`   the six states are below the floor-aware ceiling in the named
-                orientation, and the 1e-6 single-element control still exceeds
-                `PATCH_TEST_EXACTNESS_COUNTER`.
-`expect=breach` the entry is ABOVE `PATCH_TEST_EXACTNESS`. Recorded by the
-                reviewer, and the measurement stays under test whichever tier
-                now covers the entry.
-
-TWO TIERS (F2.md sec. 5b, Q6). `PATCH_TEST_EXACTNESS` is an exactness claim
-validated for member lambda <= `G22_VALIDATED_MEMBER_LAMBDA` at the gate's mesh;
-beyond it `PATCH_TEST_ROUNDOFF` applies and is labelled round-off tracking. No
-entry is deleted and none is `xfail`ed: the ones past the boundary move tier and
-keep both their assertions, including a negative control that must still clear
-the looser ceiling by orders.
+EVERY entry that builds  the six states' INTERIOR OUT-OF-BALANCE is below
+                `PATCH_TEST_EXACTNESS`, and the 1e-6 single-element control
+                still exceeds `PATCH_TEST_EXACTNESS_COUNTER`.
 `expect=raise`  the configuration must raise at construction rather than fall
                 back to a silent default.
+
+ONE TIER, AND THE QUANTITY CHANGED (F2.md sec. 5b, Q6). The gate asserts how far
+the EXACT constant-strain field is from satisfying `K u = 0` on the interior --
+no solve in it. The solved nodal field error is the FORWARD error of a linear
+solve and is now REPORTED per entry and asserted nowhere; `PATCH_TEST_ROUNDOFF`,
+its counter and `G22_VALIDATED_MEMBER_LAMBDA` are gone with it. This is a
+STRENGTHENING of the corpus: the eleven entries the second tier relieved and the
+entries the reviewer marked `breach` are now all held to the tightest ceiling in
+`tolerances.py`.
+
+`expect=breach` IS THE REVIEWER'S RECORD AGAINST A RETIRED QUANTITY, so this
+module can no longer assert it: the ceiling it was recorded against no longer
+exists as a constant, and inventing one to keep the assertion alive would be a
+tolerance in disguise. Those entries are REPORTED with both quantities by
+`test_the_recorded_breaches_are_REPORTED_for_re_recording`, for the reviewer to
+re-record. They are not exempted from anything -- the single-tier gate and the
+counter apply to them like every other entry.
 
 An entry naming a field this module cannot build RAISES (BH3): an unknown key, an
 unknown `extra`, an unknown top-level field. A corpus entry that silently does
@@ -53,6 +60,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import math
+
 import numpy as np
 import pytest
 
@@ -62,17 +71,15 @@ from floatfea.model.admissibility import assert_beam_admissible, member_l_over_d
 from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
 from floatfea.tolerances import (BEAM_ADMISSION_L_OVER_D,
-                                 G22_VALIDATED_MEMBER_LAMBDA,
                                  PATCH_TEST_EXACTNESS,
-                                 PATCH_TEST_EXACTNESS_COUNTER,
-                                 PATCH_TEST_ROUNDOFF,
-                                 PATCH_TEST_ROUNDOFF_COUNTER)
+                                 PATCH_TEST_EXACTNESS_COUNTER)
 
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_patch_test import (  # noqa: E402
-    STATES, STATIONS, _exact_local, _to_global, relative_error,
+    STATES, STATIONS, _exact_local, _to_global, interior_out_of_balance,
+    relative_error,
 )
 
 CORPUS = (Path(__file__).resolve().parents[2] / "corpus"
@@ -87,6 +94,30 @@ ORIENTATIONS = {
 
 
 SECTION_SHAPES = {"circular_tube": {"D", "t"}}
+
+
+def _finite(n: int, label: str, text: str) -> float:
+    """Every number the corpus carries, parsed strictly.
+
+    `float()` accepts `nan`, `inf` and `-inf`, and NumPy propagates them without
+    complaint: `roll=NaN` built a rotation matrix of NaN, assembled a matrix of
+    NaN, solved it, and produced `nan` -- which is not `> ceiling`, so every
+    comparison in this module came out False and the entry PASSED. A corpus entry
+    written to be refused was instead absorbed. The parser is the place to stop
+    it, because the failure is silent everywhere downstream of here.
+    """
+    try:
+        value = float(text)
+    except ValueError:
+        raise CorpusError(
+            f"{CORPUS.name}:{n}: {label}={text!r} is not a number") from None
+    if not math.isfinite(value):
+        raise CorpusError(
+            f"{CORPUS.name}:{n}: {label}={text!r} is not finite. NaN and inf "
+            "propagate silently through assembly and the solve, and a NaN "
+            "result compares False against every ceiling -- so this would have "
+            "been recorded as a pass.")
+    return value
 
 
 def _validate_section(n: int, spec: str) -> None:
@@ -106,7 +137,9 @@ def _validate_section(n: int, spec: str) -> None:
             "tube.")
     keys = set()
     for part in rest.split(","):
-        k, sep, _ = part.partition("=")
+        k, sep, v = part.partition("=")
+        if sep:
+            _finite(n, f"section {k}", v)
         if not sep:
             raise CorpusError(
                 f"{CORPUS.name}:{n}: section parameter {part!r} is not key=value")
@@ -195,11 +228,18 @@ def _parse_line(n: int, line: str) -> dict[str, str]:
                 f"{CORPUS.name}:{n}: orient={row['orient']!r} is not one of "
                 f"{sorted(ORIENTATIONS)}")
         _validate_section(n, row["section"])
+        _finite(n, "stations", row["stations"])
         extra = row.get("extra", "none")
         if not any(extra == e or extra.startswith(e) for e in EXTRAS):
             raise CorpusError(
                 f"{CORPUS.name}:{n}: extra={extra!r} is not one of {EXTRAS}. A "
                 "typo here used to produce the DEFAULT configuration and pass.")
+        # EVERY numeric payload, not only the ones a state happens to reach.
+        if extra != "none":
+            key, _, payload = extra.partition("=")
+            for i, part in enumerate(payload.split(",")):
+                _finite(n, f"extra {key}[{i}]" if "," in payload
+                        else f"extra {key}", part)
         return row
 
 
@@ -252,7 +292,15 @@ def _build(entry: dict[str, str]):
     return m, els, stations
 
 
-def _solve_state(entry, state: str, stiffness_scale: float = 1.0) -> float:
+def _measure(entry, state: str,
+             stiffness_scale: float = 1.0) -> tuple[float, float]:
+    """`(forward, oob)` for one state: the SOLVED nodal field error, and G2.2's
+    quantity -- the interior out-of-balance of the EXACT field.
+
+    Both are computed from the same assembled matrix, so the reported forward
+    error is the one belonging to the configuration the gate is asserting on.
+    Only `oob` is asserted (F2.md sec. 5b, Q6).
+    """
     m, els, stations = _build(entry)
     e0 = els[0]
     r = rotation_matrix(m.nodes[0].xyz, m.nodes[1].xyz,
@@ -300,7 +348,14 @@ def _solve_state(entry, state: str, stiffness_scale: float = 1.0) -> float:
     f = -(k @ up)
     f[ends] = 0.0
     u = (solve(k, f, ends).u + up).reshape(n, 6)
-    return relative_error(u, u_ex, stations[-1])
+
+    oob = interior_out_of_balance(m, els, u_ex.reshape(-1),
+                                  float(stations[-1]), k=k)
+    return relative_error(u, u_ex, stations[-1]), oob
+
+
+def _oob_state(entry, state: str, stiffness_scale: float = 1.0) -> float:
+    return _measure(entry, state, stiffness_scale)[1]
 
 
 def member_lambda(entry) -> float:
@@ -314,25 +369,6 @@ def member_lambda(entry) -> float:
     """
     sec = _section(entry["section"])
     return float(float(entry["stations"]) / np.sqrt(sec.I_z / sec.A))
-
-
-def _tier(entry) -> tuple[str, float, float]:
-    """Which claim covers this entry: `(name, ceiling, counter)`.
-
-    Two tiers, not a scaled ceiling. `PATCH_TEST_EXACTNESS` is an EXACTNESS claim
-    and it is validated for member lambda <= G22_VALIDATED_MEMBER_LAMBDA at the
-    gate's own mesh; beyond that the element is still nodally exact and what
-    grows is the floor at which exactness can be observed, so the claim there is
-    `PATCH_TEST_ROUNDOFF` and it is labelled round-off tracking.
-
-    The boundary is a property of THIS TEST AT ITS MESH. At fixed member lambda,
-    changing only the element count moves the floor 35-57x, so it is not a
-    statement about any structure and F3 measures its own floor rather than
-    inheriting this one.
-    """
-    if member_lambda(entry) > G22_VALIDATED_MEMBER_LAMBDA:
-        return "round-off tracking", PATCH_TEST_ROUNDOFF, PATCH_TEST_ROUNDOFF_COUNTER
-    return "exactness", PATCH_TEST_EXACTNESS, PATCH_TEST_EXACTNESS_COUNTER
 
 
 def test_the_corpus_exists_and_is_not_empty() -> None:
@@ -389,24 +425,16 @@ def test_the_corpus_entry_behaves_as_the_reviewer_recorded(entry) -> None:
             _build(entry)
         return
 
-    worst = max(_solve_state(entry, st) for st in STATES)
+    # ONE TIER, EVERY ENTRY, INCLUDING THE ONES MARKED `breach`. There is no
+    # relief branch here any more: the quantity that needed one is no longer
+    # asserted.
+    worst = max(_oob_state(entry, st) for st in STATES)
 
-    tier, ceiling, _ = _tier(entry)
-
-    if expect == "breach":
-        # The reviewer recorded these against the CONSTANT, and that measurement
-        # stays under test: an entry marked breach must still exceed the
-        # exactness ceiling, whichever tier now covers it.
-        assert worst > PATCH_TEST_EXACTNESS, (
-            f"{entry['id']}: the reviewer recorded a breach of "
-            f"PATCH_TEST_EXACTNESS and this run gives {worst:.4e} <= "
-            f"{PATCH_TEST_EXACTNESS:.0e}. Either the entry or the code moved."
-        )
-
-    assert worst <= ceiling, (
-        f"{entry['id']}: worst state error {worst:.4e} exceeds the {tier} "
-        f"ceiling {ceiling:.3e} (member lambda {member_lambda(entry):.1f}, "
-        f"boundary {G22_VALIDATED_MEMBER_LAMBDA:g})"
+    assert worst <= PATCH_TEST_EXACTNESS, (
+        f"{entry['id']}: the exact constant-strain field leaves an interior "
+        f"out-of-balance of {worst:.4e}, above {PATCH_TEST_EXACTNESS:.0e} "
+        f"(member lambda {member_lambda(entry):.1f}, expect={expect}). The "
+        "field does not satisfy the discrete equations on this configuration."
     )
 
 
@@ -419,36 +447,101 @@ def test_the_corpus_entry_behaves_as_the_reviewer_recorded(entry) -> None:
 )
 def test_the_corpus_entry_still_DETECTS_a_defect(entry) -> None:
     """A configuration that holds but cannot fail is worse than one that breaches."""
-    tier, ceiling, counter = _tier(entry)
-    smallest = min(_solve_state(entry, st, stiffness_scale=1.0 + 1.0e-6)
+    smallest = min(_oob_state(entry, st, stiffness_scale=1.0 + 1.0e-6)
                    for st in STATES)
 
-    # THE COUNTER'S DOMAIN IS CIRCULAR SECTIONS, and an anisotropic entry is
-    # outside it. `I_y_over_I_z` builds its section by bypassing the type guard
-    # (the AW3 route); no production path can construct one, because every shape
-    # `basis.kappa` admits forces `I_y == I_z`. Measured, the counter does NOT
-    # hold there: at `I_y/I_z = 500` the weakest response falls to 8.6804e-08,
-    # 13% below `PATCH_TEST_EXACTNESS_COUNTER`.
-    #
-    # That is recorded rather than fixed by lowering the counter, which would
-    # weaken the claim on every circular entry to accommodate a section the type
-    # refuses to build. The ceiling-clearance assertion below still applies here,
-    # so the entry keeps a live negative control.
-    if not entry.get("extra", "none").startswith("I_y_over_I_z="):
-        assert smallest >= counter, (
-            f"{entry['id']}: the weakest state responded to a 1e-6 "
-            f"single-element defect with only {smallest:.4e}, below the {tier} "
-            f"counter {counter:.3e}. The gate holds here and cannot fail here."
-        )
-    # The second tier is a LOOSER ceiling, not a weakened gate, and this is the
-    # assertion that makes the difference measurable: the defect must still
-    # redden it by orders.
-    assert smallest > 100.0 * ceiling, (  # not-a-tolerance: discrimination floor -- asserts a separation is LARGE
-        f"{entry['id']}: the 1e-6 defect responds at {smallest:.4e} against a "
-        f"{tier} ceiling of {ceiling:.3e} -- only {smallest / ceiling:.0f}x. A "
-        "looser ceiling is round-off tracking only while a real defect still "
-        "clears it by orders."
+    # NO EXEMPTION BRANCH, and its removal is a strengthening (R83). Under the
+    # retired quantity the anisotropic entry `aniso_I_y_500x` responded at
+    # 8.6804e-08 -- 13% below its counter -- and had to be excluded by name, with
+    # the counter carrying a stated domain of circular sections. Under the
+    # out-of-balance quantity it responds at 1.7605e-11, 164x clear, so every
+    # entry in the corpus is now held to this control.
+    assert smallest >= PATCH_TEST_EXACTNESS_COUNTER, (
+        f"{entry['id']}: the weakest state responded to a 1e-6 single-element "
+        f"defect with only {smallest:.4e}, below the counter "
+        f"{PATCH_TEST_EXACTNESS_COUNTER:.3e}. The gate holds here and cannot "
+        "fail here."
     )
+
+    # The ceiling and the counter must stay SEPARATED, and the separation is
+    # asserted rather than assumed. This is the assertion that would have caught
+    # the 1e-12 ceiling being carried across to the new quantity, where the
+    # counter sat 0.11x BELOW it.
+    assert smallest > 10.0 * PATCH_TEST_EXACTNESS, (  # not-a-tolerance: discrimination floor -- asserts a separation is LARGE
+        f"{entry['id']}: the 1e-6 defect responds at {smallest:.4e} against a "
+        f"ceiling of {PATCH_TEST_EXACTNESS:.3e} -- only "
+        f"{smallest / PATCH_TEST_EXACTNESS:.1f}x. A ceiling is a gate only "
+        "while a real defect clears it by orders."
+    )
+
+
+SOLVED = [e for e in ENTRIES
+          if e["expect"] != "raise" and "_error" not in e
+          and _inadmissible(e) is None]
+
+
+def test_the_recorded_breaches_are_REPORTED_for_re_recording(capsys) -> None:
+    """The reviewer's `expect=breach` record was against a RETIRED quantity.
+
+    It was the solved nodal field error against a 1e-12 ceiling. Both are gone:
+    the quantity is reported and not asserted, and the constant it was recorded
+    against does not exist. This module will not manufacture a replacement
+    constant to keep the assertion alive -- that is a tolerance wearing a
+    record's clothes -- so it prints both quantities for every breach entry and
+    the reviewer re-records `expect`.
+
+    What is NOT relaxed: these entries are asserted by the single-tier gate and
+    by the counter exactly like every other entry, in the two tests above.
+    """
+    breaches = [e for e in SOLVED if e["expect"] == "breach"]
+    with capsys.disabled():
+        print(f"\n  RE-RECORD ({len(breaches)} entries marked expect=breach "
+              "against the retired quantity):")
+        print(f"  {'id':32} {'member lam':>10} {'forward':>12} "
+              f"{'out-of-balance':>15} {'x ceiling':>10}")
+        for e in breaches:
+            fwd = max(_measure(e, st)[0] for st in STATES)
+            oob = max(_measure(e, st)[1] for st in STATES)
+            print(f"  {e['id']:32} {member_lambda(e):10.1f} {fwd:12.4e} "
+                  f"{oob:15.4e} {oob / PATCH_TEST_EXACTNESS:9.3f}x")
+    assert True  # not-a-tolerance: this test reports, the assertions are above
+
+
+def test_the_forward_error_is_REPORTED_and_the_floor_is_too(capsys) -> None:
+    """The diagnostic the gate stopped asserting, kept visible per entry.
+
+    Printed rather than asserted, because it is `cond` x backward error and no
+    constant survives contact with the axes `cond` moves along. The gate's own
+    floor and the counter's smallest response are printed with it, because those
+    two numbers are what set `PATCH_TEST_EXACTNESS` and they must be regenerable
+    from the shipped suite (BI3).
+    """
+    rows = []
+    for e in SOLVED:
+        fwd = max(_measure(e, st)[0] for st in STATES)
+        oob = max(_measure(e, st)[1] for st in STATES)
+        det = min(_oob_state(e, st, stiffness_scale=1.0 + 1.0e-6)
+                  for st in STATES)
+        rows.append((e["id"], member_lambda(e), fwd, oob, det))
+    eps = float(np.finfo(float).eps)
+    worst_oob = max(r[3] for r in rows)
+    worst_id = max(rows, key=lambda r: r[3])[0]
+    least_det = min(r[4] for r in rows)
+    least_id = min(rows, key=lambda r: r[4])[0]
+    with capsys.disabled():
+        print(f"\n  {'id':32} {'member lam':>10} {'forward':>12} "
+              f"{'out-of-balance':>15} {'1e-6 defect':>13}")
+        for i, lam, fwd, oob, det in sorted(rows, key=lambda r: -r[3]):
+            print(f"  {i:32} {lam:10.1f} {fwd:12.4e} {oob:15.4e} {det:13.4e}")
+        print(f"\n  FLOOR    worst clean out-of-balance {worst_oob:.4e} "
+              f"({worst_oob / eps:.2f} eps, {worst_id})")
+        print(f"  COUNTER  smallest 1e-6 response      {least_det:.4e} "
+              f"({least_id})")
+        print(f"  CEILING  PATCH_TEST_EXACTNESS        "
+              f"{PATCH_TEST_EXACTNESS:.4e}   "
+              f"{PATCH_TEST_EXACTNESS / worst_oob:.1f}x above the floor, "
+              f"{least_det / PATCH_TEST_EXACTNESS:.1f}x below the counter")
+    assert True  # not-a-tolerance: this test reports, the assertions are above
 
 
 def test_the_corpus_coverage_is_reported(capsys) -> None:

@@ -1,4 +1,19 @@
-"""V1.2 / G2.2 — the patch test. FOUR constant-strain states, all EXACT (AW4).
+"""V1.2 / G2.2 — the patch test. FOUR KINDS of constant-strain state, SIX in
+total, all EXACT (AW4).
+
+WHAT IS ASSERTED, AND IT IS NOT THE SOLVED FIELD (F2.md sec. 5b, Q6)
+--------------------------------------------------------------------
+The gate asserts the **interior out-of-balance of the EXACT field**: impose the
+constant-strain field on every node, form `K u_exact` in homogeneous units, and
+the interior rows must vanish to round-off. There is **no solve in the gate**.
+
+The solved nodal field error is the FORWARD error of a linear solve -- `cond` x
+backward error -- and five successive attempts to bound it with a constant
+(1e-12), a conditioning-scaled ceiling, an equilibrated floor and a validated
+slenderness domain were each refuted by one more axis the envelope had not
+spanned. It is now REPORTED per corpus entry and asserted nowhere; the solve is
+gated by its BACKWARD error, which is cond-independent by construction. Every
+figure below this line was re-measured on the shipped quantity at this commit.
 
 Form
 ----
@@ -70,25 +85,35 @@ the test moved the REFERENCE with the element, so it was comparing a beam
 against itself. Holding the reference fixed and moving only the element:
 
     defect                  both moved   reference HELD
-    E x 2                   1.2513e-14   1.2513e-14   invisible
-    nu 0.30 -> 0.45         3.3044e-14   5.5281e-04   CAUGHT
-    section x 1.5           9.7418e-15   7.3011e-03   CAUGHT
+    E x 2                   8.0516e-17   8.0516e-17   invisible
+    nu 0.30 -> 0.45         9.4103e-17   2.1581e-06   CAUGHT
+    section x 1.5           1.7827e-16   2.8875e-05   CAUGHT
+
+(`E x 2` reference-held is 8.0516e-17, the CLEAN value to every digit -- a
+uniform scalar is not merely small here, it is exactly cancelled.)
 
 `nu` moves `G/E`, hence `Phi`, hence the SHAPE of K; a scaled section moves `A`
 as `D` and `I` as `D^3`. Neither is a scalar multiple, and the gate sees both at
-1e-4 and 1e-3. Only `E` scales K uniformly.
+1e-7 and 1e-6, the floors the shipped test asserts. Only `E` scales K uniformly.
 
 `kappa` behaves like `nu` for the same reason, and the gate is blind to it only
 because Q1b pins state 4's reference to `SEC.kappa(S355)` -- the same source the
 element uses. That is a property of the reference, deliberately chosen, not of
 the gate.
 
-The gate is NOT blind to the shear FORMULATION: substituting the Euler-Bernoulli
-bending block for the shear-flexible one reddens `shear` and `shear_xz` at
-`6.198e-03` in the field and `7.687e-02` in the resultants, while the other four
-states stay at or below `2.32e-14` — AV4's state-4 argument, measured. So state 4
-discriminates the formulation; it is the section CONSTANT feeding both sides that
-it cannot see.
+The gate is NOT blind to the shear FORMULATION. Substituting the
+Euler-Bernoulli bending block for the shear-flexible one, with the reference
+field held:
+
+    axial 9.79e-17   curvature 3.46e-17   twist 6.33e-18   curvature_xz 9.41e-17
+    shear 1.2913e-04                      shear_xz 1.3895e-04
+
+Only the two shear states move, and they move by twelve orders — AV4's state-4
+argument, measured on the shipped quantity. So state 4 discriminates the
+formulation; it is the section CONSTANT feeding both sides that it cannot see.
+(The resultant channel's response to the same substitution is not restated here:
+it was measured on the solved recovery and has not been regenerated at this
+commit, and a figure that is not regenerated does not belong in a docstring.)
 """
 from __future__ import annotations
 
@@ -320,6 +345,62 @@ def _worst_resultant_error(model, elements, u_global: np.ndarray, state: str,
     return worst
 
 
+def interior_out_of_balance(model, elements, u_exact: np.ndarray,
+                            char_length: float, k=None) -> float:
+    """G2.2's quantity: how far the EXACT field is from satisfying `K u = 0`.
+
+    Irons' test says a constant-strain field satisfies the discrete equations.
+    That is checkable without solving anything: impose the field on every node,
+    form `K u_exact`, and the interior out-of-balance must be zero.
+
+    HOMOGENEOUS UNITS, so the comparison is dimensionless and does not mix
+    metres with radians (the R2 lesson, applied to the matrix as well as the
+    field). With `D = diag(I3, l I3)` per node,
+
+        w      = D u_exact          translations, and l x rotations
+        K_hat  = D^-1 K D^-1        forces, and moments / l
+        r_hat  = K_hat w            = D^-1 K u_exact
+
+    and the residual is `max |r_hat[interior]| / (max|K_hat| max|w|)`.
+
+    WHY THIS AND NOT THE SOLVED FIELD (F2.md sec. 5b, Q6). The solved field's
+    error is the FORWARD error of a linear solve -- `cond` x backward error --
+    and `cond` moves with the unit system, the frame, the slenderness, the mesh
+    and the section size. Five successive attempts to bound it with a constant,
+    a conditioning-scaled ceiling and a validated domain were each refuted by one
+    more axis the envelope had not spanned. This quantity has no factorisation in
+    it at all: numerator and denominator both carry the largest stiffness, so the
+    `lambda^2` amplification that comes from measuring a bending displacement
+    against axial round-off cannot arise. Measured, it sits at 0.13-0.49 eps
+    across six orders of length unit, 12x of slenderness, and the configuration
+    that refuted the domain.
+
+    THE COST, recorded because it decides the counter's operating point: a
+    bending-block defect's residual falls as `1/lambda^2` -- measured slope -2.0
+    over `lambda = 15.7 .. 188.7`. The counter is therefore recorded at the
+    corpus's most slender entry, not at the posed geometry.
+    """
+    n_nodes = len(u_exact) // 6
+    ends = np.concatenate([node_dofs(0), node_dofs(n_nodes - 1)])
+    interior = np.setdiff1d(np.arange(len(u_exact)), ends)
+
+    dw = np.ones(len(u_exact))
+    for n in range(n_nodes):
+        dw[node_dofs(n)[3:]] = char_length
+
+    # `k` IS PASSED IN BY EVERY CALLER THAT PERTURBS. Re-assembling here would
+    # silently discard the caller's defect and make every mutation test green --
+    # the quantity would then be measuring a matrix nobody was testing.
+    kd = assemble(model, elements).toarray() if k is None else np.asarray(
+        k.toarray() if hasattr(k, "toarray") else k, dtype=float)
+    k_hat = (kd / dw[:, None]) / dw[None, :]
+    w = dw * u_exact
+    r_hat = k_hat @ w
+
+    denom = float(np.abs(k_hat).max() * np.abs(w).max())
+    return float(np.abs(r_hat[interior]).max() / denom)
+
+
 def _run(
     state: str,
     direction: np.ndarray,
@@ -400,16 +481,24 @@ def _run(
 
     err = relative_error(got, u_ex, STATIONS[-1] * scale)
     res_err = _worst_resultant_error(m, els, u, state, scale)
-    return err, res, res_err
+    oob = interior_out_of_balance(m, els, u_ex.reshape(-1),
+                                  float(STATIONS[-1] * scale), k=k)
+    return err, res, res_err, oob
 
 
-# The length units the gate is asserted in (R40). `PATCH_TEST_EXACTNESS`'s comment
-# justifies 1e-12 by invariance across unit systems, and until this parametrisation
-# existed that justification was produced by a scratch harness -- the number that
-# decided whether the ceiling was defensible had exactly the status `_MEASURED`
-# was deleted for. Three decades is what covers the worst measured cell (S = 1e-3)
-# at 36 nodes rather than 108; G2.5/V1.3 remains its own gate and is not closed
-# early by this.
+# The length units the gate is asserted in (R40). Until this parametrisation
+# existed, the unit-invariance justification for the ceiling was produced by a
+# scratch harness -- the number that decided whether the ceiling was defensible
+# had exactly the status `_MEASURED` was deleted for. Three decades is run here;
+# G2.5/V1.3 remains its own gate and is not closed early by this.
+#
+# THE PARAMETRISATION MATTERS LESS TO THE CEILING THAN IT DID, and that is worth
+# stating rather than leaving as an unexplained survival: the shipped quantity is
+# a ratio of two quantities that both carry the largest stiffness, so a change of
+# length unit cannot move it the way it moved the solved field error. Measured
+# across six orders of length unit the clean value spans 3.8x (0.13-0.49 eps),
+# against the decades of spread that broke the previous form. The three scales
+# stay because a claim of unit-invariance should be asserted, not derived.
 GATE_UNIT_SCALES = [1e-3, 1.0, 1e3]
 
 
@@ -421,19 +510,31 @@ def test_the_six_constant_strain_states_are_EXACT(
 ) -> None:
     """G2.2. Exactness at ULP scale, not convergence -- in three length units."""
     d = AXIS_ALIGNED if orientation == "axis_aligned" else SKEW
-    err, res, res_err = _run(state, d, scale=scale)
-    assert err <= PATCH_TEST_EXACTNESS, (
-        f"{state}/{orientation}/S={scale:g}: interior nodes deviate from the "
-        f"exact field by "
-        f"{err:.3e}, above {PATCH_TEST_EXACTNESS:.0e}. This is a patch-test "
-        "failure -- every accuracy comparison above rung 1 is uninterpretable "
-        "until it is fixed, and refinement is not the response."
+    _, _, res_err, oob = _run(state, d, scale=scale)
+
+    # THE GATE, and there is no solve in it. Irons' test: the exact field either
+    # satisfies the discrete equations or it does not.
+    assert oob <= PATCH_TEST_EXACTNESS, (
+        f"{state}/{orientation}/S={scale:g}: the exact constant-strain field "
+        f"leaves an interior out-of-balance of {oob:.3e}, above "
+        f"{PATCH_TEST_EXACTNESS:.0e}. The field does not satisfy the discrete "
+        "equations, which is an assembly, transformation or connectivity "
+        "defect. Refinement is not the response."
     )
+
+    # THE SOLVED FIELD IS NOT ASSERTED HERE AT ALL (F2.md sec. 5b Q6). Its error
+    # is the forward error of a linear solve -- `cond` x backward error -- and
+    # five successive attempts to bound it with a constant, a
+    # conditioning-scaled ceiling and a validated domain were each refuted by one
+    # more axis the envelope had not spanned. It is reported per corpus entry as
+    # a diagnostic, and the solve is gated by its BACKWARD error, in
+    # test_the_solve_is_BACKWARD_STABLE.
+
     # The SECOND quantity, and the one that moves under a stiffness defect (R41).
     # `res.residual` used to sit here; it measures the SOLVE, not the element, and
     # it does not move under a defect the line above fails by eleven orders -- it
     # moved DOWN for two of three states at a 2x defect. It is now
-    # `test_the_solve_residual_is_a_SOLVE_check`, out of the G2.2 evidence.
+    # `test_the_solve_is_BACKWARD_STABLE`, out of the G2.2 evidence.
     assert res_err <= RESULTANT_EXACTNESS, (
         f"{state}/{orientation}/S={scale:g}: recovered element resultants "
         f"deviate from the "
@@ -493,29 +594,39 @@ def test_the_shear_state_actually_contains_shear() -> None:
 # threshold is where the state stops seeing one at all, and it is the number a
 # later reader needs to judge whether a tolerance change has cost detection.
 #
-#   state         sensitivity (err/eps)   smallest eps detected at 1e-12
-#   axial                1.0908e-01              9.17e-12
-#   curvature            1.0764e-01              9.29e-12   <- weakest
-#   twist                1.0908e-01              9.17e-12
-#   shear                1.1743e-01              8.52e-12
-#   curvature_xz         1.0764e-01              9.29e-12
-#   shear_xz             1.1743e-01              8.52e-12
+#   state       out-of-balance per 1e-6   smallest eps detected at 5e-15
+#   axial              4.9589e-08                 1.01e-13   <- most sensitive
+#   curvature          2.2929e-11                 2.18e-10
+#   twist              1.7638e-11                 2.83e-10   <- weakest
+#   shear              4.4206e-11                 1.13e-10
+#   curvature_xz       2.2929e-11                 2.18e-10
+#   shear_xz           4.7570e-11                 1.05e-10
 #
-# All six regenerated by running the shipped tests (R14). The bending states'
-# sensitivities were previously understated at 3.72e-02 / 3.02e-02 because their
-# rotational error was divided by a translational scale; under the homogeneous
-# measure all six respond at ~1.1e-01 and the weakest threshold is 8.52e-12.
+# All six regenerated by running the shipped tests (R14). The table above is on
+# the SHIPPED quantity; the previous one (sensitivities ~1.1e-01, thresholds
+# ~9e-12) described the solved nodal field error and does not transfer.
 #
 # NOTE what is NOT claimed here. An earlier version of this block said removing
 # mesh commensurability improved detection "about FIVEFOLD". That is WITHDRAWN --
 # see docs/instrumentation.md. The comparison was uncontrolled.
+# RE-DERIVED 2026-09-06 WITH THE QUANTITY (F2.md sec. 5b, Q6). The values above
+# this line describe the SOLVED nodal field error, which the gate no longer
+# asserts; these describe the interior out-of-balance against 5e-15. Linearity
+# was checked before inverting, not assumed: the response at 1e-9 is 1.0000 of
+# the response at 1e-6 scaled, in all six states.
+#
+# THE SPREAD IS NEW AND IT IS THE POINT. Under the retired quantity all six
+# thresholds sat within 9% of each other; here they span 2800x, because this
+# quantity is far more sensitive in AXIAL (4.96e-08 per 1e-6) than in the
+# bending and twist states (1.8e-11 .. 4.8e-11 per 1e-6). A single flat
+# threshold would have been describing the axial state and nothing else.
 DETECTION_THRESHOLD = {
-    "axial": 9.17e-12,
-    "curvature": 9.29e-12,
-    "twist": 9.17e-12,
-    "shear": 8.52e-12,
-    "curvature_xz": 9.29e-12,
-    "shear_xz": 8.52e-12,
+    "axial": 1.01e-13,
+    "curvature": 2.18e-10,
+    "twist": 2.83e-10,
+    "shear": 1.13e-10,
+    "curvature_xz": 2.18e-10,
+    "shear_xz": 1.05e-10,
 }
 
 
@@ -561,7 +672,7 @@ def test_the_measured_detection_threshold_still_holds(state: str) -> None:
     state already sits a little off 1.000.
     """
     eps = DETECTION_THRESHOLD[state]
-    err, _, _ = _run(state, SKEW, stiffness_scale=1.0 + eps)
+    _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + eps)
     ratio = err / PATCH_TEST_EXACTNESS
     assert_close(
         ratio, 1.0, DETECTION_THRESHOLD_BAND, floor=np.finfo(float).eps,
@@ -582,19 +693,19 @@ def test_a_perturbed_element_BREAKS_the_patch_test(state: str) -> None:
     One interior element's stiffness is perturbed -- the defect a wrong length or
     a wrong section produces -- and every state must detect it.
 
-    THE MARGIN, written down because a counter-case without one says nothing
-    about how close the gate is to losing the case (R15): the smallest response
-    is `1.0764e-07` against a counter of `1.0e-07` -- **7.6%**. That is tight by
-    design. The counter was moved to the smallest of the six measured responses
-    (R2), so it sits just under the weakest state rather than comfortably under
-    the strongest, and a formulation change that cost any state 8% of its
-    sensitivity would fail here rather than quietly reducing the gate to five
-    working states.
+    THE MARGIN, AND WHERE THE TIGHTNESS ACTUALLY LIVES (R15). At THIS geometry
+    the smallest of the six responses is `1.7638e-11` against a counter of
+    `1.0e-13` -- 176x, which is loose, and saying so is the point. The counter is
+    recorded at the corpus's most slender entry (`slender_axis_L_r_189`,
+    `1.0746e-13`, 7.5%) because this quantity's sensitivity falls as
+    `1/lambda^2`, so the binding measurement is in
+    `test_corpus_configurations.py` and not here. This test asserts that the
+    posed geometry detects; that one asserts that the whole corpus does.
     """
-    err, _, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-6)
+    _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-6)
     assert err >= PATCH_TEST_EXACTNESS_COUNTER, (
-        f"{state}: a 1e-6 stiffness error in one element moved the interior "
-        f"field by only {err:.3e}, below the counter-case "
+        f"{state}: a 1e-6 stiffness error in one element left an interior "
+        f"out-of-balance of only {err:.3e}, below the counter-case "
         f"{PATCH_TEST_EXACTNESS_COUNTER:.3e}"
     )
 
@@ -680,7 +791,7 @@ def test_the_RESULTANT_detection_threshold_still_holds(state: str) -> None:
     direction fails here.
     """
     eps = RESULTANT_DETECTION_THRESHOLD[state]
-    _, _, res_err = _run(state, SKEW, stiffness_scale=1.0 + eps)
+    _, _, res_err, _ = _run(state, SKEW, stiffness_scale=1.0 + eps)
     ratio = res_err / RESULTANT_EXACTNESS
     assert_close(
         ratio, 1.0, DETECTION_THRESHOLD_BAND, floor=np.finfo(float).eps,
@@ -701,7 +812,7 @@ def test_a_perturbed_element_BREAKS_the_recovered_RESULTANTS(state: str) -> None
     three states. Here a 1e-6 defect in one interior element must show, in every
     state.
     """
-    _, _, res_err = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-6)
+    _, _, res_err, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-6)
     assert res_err > RESULTANT_EXACTNESS, (
         f"{state}: a 1e-6 stiffness error left the recovered resultants at "
         f"{res_err:.3e}, at or below the ceiling {RESULTANT_EXACTNESS:.0e}. The "
@@ -736,7 +847,7 @@ def test_the_solve_is_BACKWARD_STABLE(state: str, orientation: str,
     denominator: worst over the eighteen cells is 1.0343e-16, or 0.47 eps.
     """
     d = AXIS_ALIGNED if orientation == "axis_aligned" else SKEW
-    _, res, _ = _run(state, d, scale=scale)
+    _, res, _, _ = _run(state, d, scale=scale)
     ceiling = SOLVE_BACKWARD_ERROR_FACTOR * float(np.finfo(float).eps)
     assert res.backward_error <= ceiling, (
         f"{state}/{orientation}/S={scale:g}: backward error "
@@ -814,7 +925,7 @@ def test_a_TRANSPOSED_TRANSFORM_on_one_element_breaks_every_state(state: str) ->
     axial 1.53e+00, curvature 2.01e-01, twist 1.57e-01, shear 3.02e-01,
     curvature_xz 1.01e-01, shear_xz 1.49e-01 -- every state, at O(1).
     """
-    err, _, res_err = _run(state, SKEW, transpose_transform=True)
+    _, _, res_err, err = _run(state, SKEW, transpose_transform=True)
     assert err >= PATCH_TEST_EXACTNESS_COUNTER, (
         f"{state}: one element's transform transposed moved the interior field "
         f"by only {err:.3e}, below the counter-case "
@@ -845,7 +956,7 @@ def test_a_SENSITIVITY_CHANGE_breaks_the_threshold_band() -> None:
         missed = []
         for state in STATES:
             eps = DETECTION_THRESHOLD[state] * factor
-            err, _, _ = _run(state, SKEW, stiffness_scale=1.0 + eps)
+            _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + eps)
             ratio = err / PATCH_TEST_EXACTNESS
             try:
                 assert_close(ratio, 1.0, DETECTION_THRESHOLD_BAND,
@@ -888,8 +999,12 @@ def _run_with_independent_reference(state: str, sec_el, mat_el) -> float:
     u_pres[node_dofs(n_nodes - 1)] = u_ex[-1]
     f = -(k @ u_pres)
     f[ends] = 0.0
-    u = (solve(k, f, ends).u + u_pres).reshape(n_nodes, 6)
-    return relative_error(u, u_ex, STATIONS[-1])
+    solve(k, f, ends)
+    # THE GATE'S QUANTITY, from the INDEPENDENT reference field: `u_ex` is built
+    # from the unmodified module state above, so a property error that moves the
+    # reference too cannot hide in it.
+    return interior_out_of_balance(m, els, u_ex.reshape(-1),
+                                   float(STATIONS[-1]), k=k)
 
 
 @pytest.mark.parametrize("factor", [2.0, 0.5], ids=lambda f: f"E x {f:g}")
@@ -916,9 +1031,14 @@ def test_a_uniform_SCALAR_factor_on_K_is_invisible(factor: float) -> None:
     )
 
 
+# THE FLOORS ARE RE-DERIVED WITH THE QUANTITY (F2.md sec. 5b, Q6), not carried:
+# the worst response is 2.1581e-06 for `nu` and 2.8875e-05 for the section, so
+# each floor sits an order below its own measurement -- 21.6x and 28.9x. They are
+# discrimination floors, asserted from BELOW, so setting them low weakens the
+# claim rather than propping it up.
 NON_SCALAR_ERRORS = [
-    ("nu 0.30 -> 0.45", "nu", 0.45, 1.0e-4),
-    ("section x 1.5", "section", 1.5, 1.0e-3),
+    ("nu 0.30 -> 0.45", "nu", 0.45, 1.0e-7),
+    ("section x 1.5", "section", 1.5, 1.0e-6),
 ]
 
 
@@ -964,15 +1084,17 @@ PLANE_STATES = {
 def test_a_defect_in_ONE_bending_plane_is_caught_by_THAT_plane(block: str) -> None:
     """Each plane's states detect a defect confined to their own block.
 
-    THE MARGIN (R15): at a `1e-3` defect confined to `bending_xz` the smallest
-    detecting state is `1.0756e-04` and the largest blind state is `1.3881e-14`
-    -- a separation of **7.7e+09**. Nearly ten orders, and it is not a coincidence to be relied
-    on: it is the difference between a state that contains the defective block
-    and one whose exact field has no content in it at all, so the blind states
-    sit at round-off rather than at a small response.
+    THE MARGIN (R15), re-measured on the shipped quantity: at a `1e-3` defect
+    confined to `bending_xz` the smallest detecting state is `2.2929e-08` and the
+    largest blind state is `1.2077e-16` -- a separation of **1.90e+08**. Eight
+    orders, and it is not a coincidence to be relied on: it is the difference
+    between a state that contains the defective block and one whose exact field
+    has no content in it at all, so the blind states sit at round-off rather than
+    at a small response. (`bending_xy` gives 2.2929e-08 against 1.0064e-16,
+    2.28e+08.)
     """
     for state in PLANE_STATES[block]:
-        err, _, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
+        _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
         assert err >= PATCH_TEST_EXACTNESS_COUNTER, (
             f"{state} did not detect a 1e-3 defect confined to {block}: "
             f"{err:.3e} < {PATCH_TEST_EXACTNESS_COUNTER:.3e}"
@@ -990,7 +1112,7 @@ def test_the_OTHER_plane_is_blind_to_it(block: str) -> None:
     """
     other = "bending_xz" if block == "bending_xy" else "bending_xy"
     for state in PLANE_STATES[other] + ("axial", "twist"):
-        err, _, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
+        _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
         assert err <= PATCH_TEST_EXACTNESS, (
             f"{state} responded to a defect confined to {block} ({err:.3e}); the "
             "blocks are not independent and the local matrix is not block-diagonal"
