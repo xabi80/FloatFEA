@@ -251,3 +251,99 @@ id=nearly_solid_D_t_2p1 section=circular_tube,D=0.600,t=0.28571 stations=9.67 or
 # same round-off. The ratio is extreme and no real section reaches it; the entry
 # is evidence about the counter's undeclared domain, not about the element.
 id=aniso_I_y_500x section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=I_y_over_I_z=500.0 runs_in_suite=no expect=hold
+
+# ===========================================================================
+# NINTH VERDICT (F2 step 4). The axes this round created: the two-tier scheme,
+# the validated-domain boundary at member lambda = 60, and the section-SIZE
+# axis that the envelope behind that boundary does not span.
+# ===========================================================================
+
+# --- inside the validated domain, on the axis its envelope does not span ----
+# `G22_VALIDATED_MEMBER_LAMBDA = 60` was set from an envelope over 6 angles x 7
+# rolls x 6 states AT ONE SECTION, and its entry claims "10x of margin over that
+# envelope". Section SIZE is a free axis: these two sit at member lambda 56.0 and
+# 58.3, both admissible (L/D 19.8 and 20.6), both with the 1e-6 control firing,
+# and they reach 0.532 and 0.356 of PATCH_TEST_EXACTNESS. The claimed margin is
+# 10x; the measured margin at the boundary, inside this schema, is 1.9x.
+#
+# NOT EXPRESSIBLE IN THIS SCHEMA, and it is the decisive case: with the member
+# direction free rather than one of the four named orientations,
+#   D = 5.6809e-04 m, t = 5.24165e-06 m, L = 1.159406e-02 m,
+#   axis = (-0.384196, -0.923213, 0.008385)/|.|, roll = -1.5774 rad
+# is clean, admissible (L/D = 20.41), lambda = 58.26 (INSIDE the domain), the
+# control fires at 1.0766e-07 -- and the worst state is 7.5786e-12, 7.58x
+# PATCH_TEST_EXACTNESS. The permutation cell puts it at round-off: COLAMD
+# 7.58e-12, NATURAL 4.36e-12, MMD_ATA 7.27e-14, MMD_AT_PLUS_A 1.11e-13, a 104x
+# spread on a quantity the ordering cannot change. `orient=` needs a free vector
+# before this file can carry it.
+id=boundary_mm_lam56_roll section=circular_tube,D=0.000362767,t=9.50772e-07 stations=0.00716362 orient=skew extra=roll=1.4181 runs_in_suite=no expect=hold
+id=boundary_mm_lam58_skew section=circular_tube,D=0.000362767,t=9.50772e-07 stations=0.0074581 orient=skew extra=roll=2.89167 runs_in_suite=no expect=hold
+
+# --- the tier boundary is a 20x step in the ceiling, not in the error --------
+# One section, one orientation, one roll; only the member length moves, from
+# member lambda 59 to 61. The measured error moves 2.3x. The ceiling applied to
+# it moves 20x, from PATCH_TEST_EXACTNESS to PATCH_TEST_ROUNDOFF. The third
+# entry is the same lambda = 61 member turned axis-aligned, where the error is
+# 1.2e-14 and the ceiling it is now judged against is 2e-11: 1650x of headroom
+# on an entry that cleared the constant by 83x.
+id=straddle_below_lam59 section=circular_tube,D=0.000600,t=6.0e-06 stations=0.0123913 orient=skew extra=roll=-2.5 runs_in_suite=no expect=hold
+id=straddle_above_lam61 section=circular_tube,D=0.000600,t=6.0e-06 stations=0.0128113 orient=skew extra=roll=-2.5 runs_in_suite=no expect=hold
+id=straddle_above_lam61_axis section=circular_tube,D=0.000600,t=6.0e-06 stations=0.0128113 orient=axis extra=roll=-2.5 runs_in_suite=no expect=hold
+
+# --- tier 2 applied where nothing asked for it -------------------------------
+# Both are past the boundary on member lambda and both are in orientations whose
+# measured exponent on lambda is 0.68 (the implementer's fit) / 0.52 (mine),
+# against ~2.2 in skew. They measure 8.1e-15 and 7.5e-15 -- 120x and 130x BELOW
+# PATCH_TEST_EXACTNESS -- and the shipped runner judges them against 2e-11. The
+# cost is measurable: on `slender_axis_L_r_189` a single-element relative
+# stiffness defect of 1.73e-10 passes the round-off tier, where the constant
+# catches anything above 8.65e-12.
+id=tier2_axis_lam65_metre section=circular_tube,D=0.600,t=0.01200 stations=13.5156 orient=axis extra=none runs_in_suite=no expect=hold
+id=tier2_in_plane_y_lam70 section=circular_tube,D=0.600,t=0.01200 stations=14.5553 orient=in_plane_y extra=none runs_in_suite=no expect=hold
+
+# --- member_lambda reads I_z alone, so the weak axis is invisible to the tier -
+# `member_lambda` (admissibility.py:95) is `L / sqrt(I_z/A)`. For I_y < I_z the
+# slenderness about the WEAK axis is larger and the tier never sees it. The first
+# entry has I_y/I_z = 0.05: lambda on I_z is 46.5 and on the weak axis 208, and
+# it is placed in the EXACTNESS tier. The second is at I_y/I_z = 0.5, lambda 59
+# and weak-axis lambda 83.4 -- also exactness. Both hold today, which is the
+# point: the collection the tier inspects cannot contain the weak-axis case, so
+# a pass here certifies nothing about it.
+id=aniso_I_y_twentieth section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=I_y_over_I_z=0.05 runs_in_suite=no expect=hold
+id=aniso_I_y_half_lam59 section=circular_tube,D=0.600,t=0.01200 stations=12.268 orient=skew extra=I_y_over_I_z=0.5 runs_in_suite=no expect=hold
+
+# --- R79's kappa axis, now inside the validated domain -----------------------
+# D/t = 3, where Cowper's hollow-circle coefficient is 0.71402 against the
+# shipped 0.53061 -- 25.7% wrong -- at member lambda 50, comfortably inside the
+# domain the exactness claim now names. It passes, because G2.2 is documented
+# blind to a uniform kappa error. The entry records that the validated domain
+# says nothing about kappa.
+id=thick_wall_D_t_3_lam50 section=circular_tube,D=0.600,t=0.20000 stations=7.90569 orient=skew extra=none runs_in_suite=no expect=hold
+
+# --- the parser's remaining unvalidated VALUES (R75 one field over) ----------
+# R75 closed the section spec's SHAPE. Two further values are still unchecked.
+# The first passes: `section=D=0.6,...` is refused by the new shape check, at
+# PARSE time, which is the only place a refusal is safe here (see the note at
+# the end of this block).
+id=section_shape_absent section=D=0.6,t=0.012 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise
+# THE THIRD IS RED, and it is not a corpus problem. `extra=roll=NaN` parses,
+# BUILDS A MODEL SILENTLY, and surfaces only inside the solve as
+# `RuntimeError: Factor is exactly singular` -- a message that names a mechanism
+# where the cause is a bad input field. Measured in floatfea, not in this
+# module: `rotation_matrix(..., roll_rad=nan)` RETURNS a matrix containing NaN
+# with a numpy RuntimeWarning and no refusal (`local_axes.py:118`), and so does
+# roll_rad=inf. The degeneracy guard twenty lines above refuses a near-parallel
+# member loudly; a NaN roll goes through.
+id=roll_field_nan section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=roll=NaN runs_in_suite=no expect=raise
+
+# TWO ENTRIES ARE NOT COMMITTED, because each takes the whole module out at
+# COLLECTION
+# rather than producing a failing test, and a corpus that cannot be run is not a
+# corpus. `INADMISSIBLE = [...]` (test_corpus_configurations.py:352) runs
+# `_inadmissible` at IMPORT, which calls `_section` and `member_l_over_d`
+# unguarded. Anything either of them refuses is an import-time crash, so an
+# `expect=raise` entry can only be carried here when the refusal happens at
+# PARSE time. The two lines, for whoever fixes it -- each gives
+# `ERROR ... Interrupted: 1 error during collection`:
+#   id=section_negative_wall section=circular_tube,D=0.600,t=-0.01200 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise
+#   id=stations_negative     section=circular_tube,D=0.600,t=0.01200 stations=-9.67 orient=skew extra=none runs_in_suite=no expect=raise
