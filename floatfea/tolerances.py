@@ -153,9 +153,18 @@ MEMBER_ORIENTATION_DEGENERACY: Final[float] = 0.05
 # that are not beams, and it exists to force an explicit choice (an F7 shell
 # sub-model), not to be tuned until it stops firing. No counter-case, per AO2.
 #
-# BH0 / docs/conventions.md sec. "Beam admission limit" -- the smallest member
-# length-to-depth ratio for which a Timoshenko beam element is an admissible
-# model. Dimensionless: member length over `D = 4 sqrt(I/A)`.
+# BH0 / docs/milestones/F2.md sec. 5b, Q5 -- the smallest member length-to-depth
+# ratio for which a Timoshenko beam element is an admissible model.
+# Dimensionless: member length over the OUTER DIAMETER,
+#
+#     D_o = 2 sqrt( 2 I / A  +  A / (2 pi) )
+#
+# which is what `_outer_diameter` computes. This entry used to give
+# `D = 4 sqrt(I/A)`, the solid-circle relation the code records as a rejected
+# first draft: on the gate's own section it returns 0.8317 m against the true
+# 0.600 m, a factor of 1.3862, so every ratio derived from it was 28% low
+# (R87). The limit is NOT in `docs/conventions.md` -- that file is F0-locked
+# and a new section there needs an F0 reopen commit.
 #
 # ON THE MEMBER, NOT THE ELEMENT, and that was measured rather than assumed. The
 # gate's own mesh has a member at L/D = 16.12 and two of its five elements at

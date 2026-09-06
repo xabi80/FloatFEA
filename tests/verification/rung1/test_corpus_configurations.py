@@ -47,7 +47,7 @@ THE ADMISSION LIMIT OVERRIDES `expect` (BH0)
 --------------------------------------------
 A member below `BEAM_ADMISSION_L_OVER_D` is not a G2.2 case at all: no beam
 element describes it, and the gate's own negative control demonstrably fails
-there (`docs/conventions.md`, "Beam admission limit"). Such an entry is asserted
+there (`docs/milestones/F2.md sec. 5b, Q5`). Such an entry is asserted
 to RAISE whatever its `expect` field says.
 
 **Three entries are affected and the reviewer wrote `expect=hold` for all three**
@@ -67,7 +67,9 @@ import pytest
 
 from floatfea.assemble.system import BeamElement, assemble, solve
 from floatfea.element.transform import rotation_matrix
-from floatfea.model.admissibility import assert_beam_admissible, member_l_over_d
+from floatfea.model.admissibility import (assert_beam_admissible,
+                                          member_l_over_d)
+from floatfea.model.admissibility import member_lambda as _member_lambda
 from floatfea.model.material import S355, Section
 from floatfea.testing import assert_close
 from floatfea.model.nodes import Model, Node, node_dofs
@@ -143,8 +145,12 @@ def _validate_section(n: int, spec: str) -> None:
     keys = set()
     for part in rest.split(","):
         k, sep, v = part.partition("=")
-        if sep:
-            _finite(n, f"section {k}", v)
+        if sep and _finite(n, f"section {k}", v) <= 0.0:
+            raise CorpusError(
+                f"{CORPUS.name}:{n}: section {k}={v!r} is not positive. "
+                "Refused HERE rather than at `Section(...)`, because this "
+                "module builds sections while collecting and a constructor "
+                "raising at import takes every other entry down with it (R89).")
         if not sep:
             raise CorpusError(
                 f"{CORPUS.name}:{n}: section parameter {part!r} is not key=value")
@@ -268,7 +274,10 @@ def _parse_line(n: int, line: str) -> dict[str, str]:
                 f"{sorted(EXPECTS)}")
         _direction(n, row["orient"])
         _validate_section(n, row["section"])
-        _finite(n, "stations", row["stations"])
+        if _finite(n, "stations", row["stations"]) <= 0.0:
+            raise CorpusError(
+                f"{CORPUS.name}:{n}: stations={row['stations']!r} is not "
+                "positive; a member has a length or it is not a member")
         extra = row.get("extra", "none")
         if not any(extra == e or extra.startswith(e) for e in EXTRAS):
             raise CorpusError(
@@ -407,8 +416,7 @@ def member_lambda(entry) -> float:
     at exponent ~2 in skew against 0.68 axis-aligned; element L/r is refuted,
     since if it governed the two exponents would be equal and opposite.
     """
-    sec = _section(entry["section"])
-    return float(float(entry["stations"]) / np.sqrt(sec.I_z / sec.A))
+    return _member_lambda(float(entry["stations"]), _section(entry["section"]))
 
 
 FREE_DIRECTIONS = [
@@ -469,6 +477,29 @@ def test_a_direction_that_cannot_be_built_RAISES(label: str, text: str) -> None:
         _direction(0, text)
 
 
+def test_the_counter_is_ABOVE_the_ceiling() -> None:
+    """The one relation that makes a ceiling and a counter into a gate (R85).
+
+    If the smallest defect a configuration must detect sits BELOW the largest
+    clean value the gate admits, then an entry can hold and be undetectable at
+    the same time and the pair asserts nothing. This is not hypothetical: at the
+    ceiling this gate carried one commit ago -- 1e-12, a value derived for the
+    quantity G2.2 no longer asserts -- the counter sat at 0.11x of it, and a 1e-6
+    single-element defect on the most slender corpus entry would have passed.
+
+    Stated with the two values `tolerances.py` already owns and no third number,
+    because a multiplier written here is a decision threshold outside
+    `tolerances.py`, which is what R85 found (`100.0`, settable to `1e-30` with
+    the suite green).
+    """
+    assert PATCH_TEST_EXACTNESS_COUNTER > PATCH_TEST_EXACTNESS, (
+        f"the counter {PATCH_TEST_EXACTNESS_COUNTER:.3e} is not above the "
+        f"ceiling {PATCH_TEST_EXACTNESS:.3e}. A defect the gate is required to "
+        "catch is smaller than the deviation the gate is allowed to ignore, so "
+        "an entry can pass the ceiling and fail nothing."
+    )
+
+
 def test_the_corpus_exists_and_is_not_empty() -> None:
     """AM5: an empty parameter set is an error, not a silent pass."""
     assert CORPUS.exists(), f"{CORPUS} is missing; the corpus is the reviewer's"
@@ -476,10 +507,26 @@ def test_the_corpus_exists_and_is_not_empty() -> None:
 
 
 def _inadmissible(entry) -> float | None:
-    """The member's L/D if it is below the admission limit, else None."""
+    """The member's L/D if it is below the admission limit, else None.
+
+    NEVER RAISES, because it runs at IMPORT (R89). It used to call `_section` and
+    `member_l_over_d` unguarded while building `INADMISSIBLE` at module level, so
+    a single entry whose section or length the constructors refuse took the whole
+    module out at COLLECTION -- and every other entry stopped being measured. Two
+    such shapes had to be carried in the corpus as comments rather than as
+    entries, which is a corpus that cannot be run.
+
+    A configuration this cannot evaluate is not "admissible"; it is one whose
+    refusal belongs to `_build`, where it produces a FAILING TEST that names the
+    entry instead of a collection error that names nothing.
+    """
     if "_error" in entry:
         return None
-    ratio = member_l_over_d(float(entry["stations"]), _section(entry["section"]))
+    try:
+        ratio = member_l_over_d(float(entry["stations"]),
+                                _section(entry["section"]))
+    except Exception:
+        return None
     return ratio if ratio < BEAM_ADMISSION_L_OVER_D else None
 
 
@@ -561,16 +608,17 @@ def test_the_corpus_entry_still_DETECTS_a_defect(entry) -> None:
         "fail here."
     )
 
-    # The ceiling and the counter must stay SEPARATED, and the separation is
-    # asserted rather than assumed. This is the assertion that would have caught
-    # the 1e-12 ceiling being carried across to the new quantity, where the
-    # counter sat 0.11x BELOW it.
-    assert smallest > 10.0 * PATCH_TEST_EXACTNESS, (  # not-a-tolerance: discrimination floor -- asserts a separation is LARGE
-        f"{entry['id']}: the 1e-6 defect responds at {smallest:.4e} against a "
-        f"ceiling of {PATCH_TEST_EXACTNESS:.3e} -- only "
-        f"{smallest / PATCH_TEST_EXACTNESS:.1f}x. A ceiling is a gate only "
-        "while a real defect clears it by orders."
-    )
+    # THE SEPARATION IS ASSERTED WITH NO FRESH NUMBER (R85). The previous form
+    # was `smallest > 100.0 * ceiling`, and the reviewer set that multiplier to
+    # `1e-30` with the suite green: a decision threshold living outside
+    # `tolerances.py`, which `CLAUDE.md` forbids under "tier cutoffs in
+    # screening". A second literal here would have been the fourth instance.
+    #
+    # The property that matters is that the counter is ABOVE the ceiling -- if it
+    # is not, an entry can hold and be undetectable at the same time -- and that
+    # is a relation between two values `tolerances.py` already owns. It is
+    # asserted once, in `test_the_counter_is_ABOVE_the_ceiling`, and needs no
+    # third number to state.
 
 
 SOLVED = [e for e in ENTRIES
@@ -699,6 +747,23 @@ MALFORMED = [
      "stations=9.67 orient=skew expect=hold"),
     ("duplicate top-level field", "id=x section=circular_tube,D=0.6,t=0.012 "
      "stations=9.67 orient=skew expect=hold orient=axis"),
+    # THE TWO SHAPES THAT USED TO TAKE THE MODULE OUT AT COLLECTION (R89). Each
+    # is a value, not a key, so every check above passed it and `Section(...)` or
+    # `member_l_over_d` raised while `INADMISSIBLE` was being built at import --
+    # taking every other entry's measurement with it. They were carried in the
+    # corpus as comments for exactly that reason.
+    ("negative wall", "id=x section=circular_tube,D=0.600,t=-0.01200 "
+     "stations=9.67 orient=skew expect=raise"),
+    ("negative stations", "id=x section=circular_tube,D=0.6,t=0.012 "
+     "stations=-9.67 orient=skew expect=raise"),
+    ("zero diameter", "id=x section=circular_tube,D=0,t=0.012 "
+     "stations=9.67 orient=skew expect=raise"),
+    ("non-finite wall", "id=x section=circular_tube,D=0.6,t=inf "
+     "stations=9.67 orient=skew expect=raise"),
+    ("non-finite roll", "id=x section=circular_tube,D=0.6,t=0.012 "
+     "stations=9.67 orient=skew extra=roll=NaN expect=raise"),
+    ("free direction, zero vector", "id=x section=circular_tube,D=0.6,t=0.012 "
+     "stations=9.67 orient=0,0,0 expect=raise"),
 ]
 
 
@@ -708,6 +773,30 @@ def test_a_malformed_corpus_line_RAISES(label: str, line: str) -> None:
     configuration and a passing result identical to `extra=none`."""
     with pytest.raises(CorpusError):
         _parse_line(1, line)
+
+
+def test_a_REFUSING_entry_does_not_take_the_module_out_at_collection() -> None:
+    """R89's real closing condition, and it is about WHEN the failure happens.
+
+    `INADMISSIBLE` is built at import from every entry, so a construction error
+    there is a COLLECTION error: pytest reports one broken file and 48 solved
+    entries stop being measured. That is worse than a silent pass, because a
+    silent pass at least leaves the other entries scored.
+
+    Both halves are asserted: the parser refuses these values (above), and
+    `_inadmissible` -- the function that runs at import -- returns rather than
+    raising on anything it cannot evaluate.
+    """
+    for entry in ({"id": "x", "stations": "-9.67",
+                   "section": "circular_tube,D=0.6,t=0.012", "expect": "raise"},
+                  {"id": "x", "stations": "9.67",
+                   "section": "circular_tube,D=0.6,t=-0.012", "expect": "raise"},
+                  {"id": "x", "stations": "9.67",
+                   "section": "circular_tube,D=0.0,t=0.0", "expect": "raise"}):
+        assert _inadmissible(entry) is None, (
+            f"{entry}: _inadmissible returned a value for a section it cannot "
+            "build; it runs at import and must never raise or guess"
+        )
 
 
 def test_a_WELL_FORMED_line_still_parses() -> None:

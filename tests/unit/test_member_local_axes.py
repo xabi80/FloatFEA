@@ -96,3 +96,31 @@ def test_roll_does_not_rescue_a_vertical_member() -> None:
     for which that reference does not exist. Documented in local_axes."""
     with pytest.raises(DegenerateMemberOrientation):
         member_local_axes(_SPAR_BOTTOM, _SPAR_TOP, roll_rad=np.pi / 4)
+
+
+def test_a_NON_FINITE_roll_is_REFUSED(capsys) -> None:
+    """R88. `nan` and `inf` used to sail through and fail as a singular matrix.
+
+    Measured before the guard: `rotation_matrix(roll_rad=nan)` RETURNED, with a
+    matrix of NaN and only a numpy RuntimeWarning; the failure surfaced at solve
+    time as `RuntimeError: Factor is exactly singular`, which names a mechanism
+    where the cause is an input field. `CLAUDE.md` Non-negotiables: the reader
+    rejects bad records, and a validation failure does not get to degrade.
+
+    The degeneracy guard twenty lines above refuses a near-parallel member loudly
+    and explains why there is no silent fallback; this is the same class of bad
+    input reaching the same construction.
+    """
+    import numpy as np
+    import pytest
+
+    from floatfea.element.transform import rotation_matrix
+
+    a, b = np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0])
+    for bad in (float("nan"), float("inf"), float("-inf")):
+        with pytest.raises(ValueError, match="not.*finite"):
+            rotation_matrix(a, b, roll_rad=bad)
+
+    # The meta-test: a guard that refuses everything is not a guard.
+    r = rotation_matrix(a, b, roll_rad=0.7)
+    assert np.isfinite(r).all(), "a finite roll must still build a rotation"
