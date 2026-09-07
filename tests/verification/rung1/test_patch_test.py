@@ -410,14 +410,22 @@ def interior_out_of_balance(model, elements, u_exact: np.ndarray,
 def _run(
     state: str,
     direction: np.ndarray,
-    stiffness_scale: float = 1.0,
+    defect_size: float = 0.0,
     block: str | None = None,
     scale: float = 1.0,
     transpose_transform: bool = False,
 ):
-    """Solve the patch test. `stiffness_scale` perturbs element 1 -- the whole
-    element by default, or only `block`'s local entries when named. `scale` poses
-    the same physical problem in a different length unit (R40)."""
+    """Solve the patch test. `defect_size` is the RELATIVE stiffness error put
+    into element 1 -- the whole element by default, or only `block`'s local
+    entries when named. `scale` poses the same physical problem in a different
+    length unit (R40).
+
+    THE SIZE IS APPLIED DIRECTLY, not as `(1 + size) - 1` (BR1). That subtraction
+    loses `eps/size` of relative precision to cancellation, which is harmless at
+    `1e-3` and is not harmless everywhere: on the bisection in
+    `test_corpus_configurations.py` it quantised the probe in steps of `1.9e-3`
+    relative and moved a published edge. The same shape is fixed here so there is
+    one convention rather than two."""
     m, els, r = _model(direction, scale)
     u_ex = _to_global(_exact_local(state, STATIONS * scale, scale), r)
 
@@ -444,14 +452,14 @@ def _run(
                 k[dd[i], dd[j]] += delta[i, j]
         k = k.tocsr()
 
-    if stiffness_scale != 1.0:
+    if defect_size != 0.0:
         from floatfea.assemble.system import element_global_stiffness, element_length
         from floatfea.element.beam import local_stiffness
         from floatfea.element.transform import rotation_matrix, to_global
 
         if block is None:
             kb = element_global_stiffness(m, els[1])
-            delta = (stiffness_scale - 1.0) * kb
+            delta = defect_size * kb
         else:
             # Scale one LOCAL block, then transform -- so the defect stays in the
             # physical behaviour named, not spread across the global matrix.
@@ -459,7 +467,7 @@ def _run(
             k_loc = local_stiffness(e.section, e.material, element_length(m, e))
             idx = list(LOCAL_BLOCKS[block])
             pert = np.zeros_like(k_loc)
-            pert[np.ix_(idx, idx)] = (stiffness_scale - 1.0) * k_loc[np.ix_(idx, idx)]
+            pert[np.ix_(idx, idx)] = defect_size * k_loc[np.ix_(idx, idx)]
             rot = rotation_matrix(m.nodes[e.node_a].xyz, m.nodes[e.node_b].xyz,
                                   orientation_node=e.orientation_node,
                                   roll_rad=e.roll_rad)
@@ -691,7 +699,7 @@ def test_the_measured_detection_threshold_still_holds(state: str) -> None:
     state already sits a little off 1.000.
     """
     eps = DETECTION_THRESHOLD[state]
-    _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + eps)
+    _, _, _, err = _run(state, SKEW, defect_size=eps)
     ratio = err / PATCH_TEST_EXACTNESS
     assert_close(
         ratio, 1.0, DETECTION_THRESHOLD_BAND, floor=np.finfo(float).eps,
@@ -726,7 +734,7 @@ def test_a_perturbed_element_BREAKS_the_patch_test(state: str) -> None:
     against a ceiling of `5e-15`, i.e. `3528x`. Loose, and saying so is the point;
     the binding measurement is the curve, not this line.
     """
-    _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-6)
+    _, _, _, err = _run(state, SKEW, defect_size=1.0e-6)
     assert err > PATCH_TEST_EXACTNESS, (
         f"{state}: a 1e-6 stiffness error in one element left an interior "
         f"out-of-balance of only {err:.3e}, at or below the ceiling "
@@ -828,7 +836,7 @@ def test_the_RESULTANT_detection_threshold_still_holds(state: str) -> None:
     direction fails here.
     """
     eps = RESULTANT_DETECTION_THRESHOLD[state]
-    _, _, res_err, _ = _run(state, SKEW, stiffness_scale=1.0 + eps)
+    _, _, res_err, _ = _run(state, SKEW, defect_size=eps)
     ratio = res_err / RESULTANT_EXACTNESS
     assert_close(
         ratio, 1.0, DETECTION_THRESHOLD_BAND, floor=np.finfo(float).eps,
@@ -849,7 +857,7 @@ def test_a_perturbed_element_BREAKS_the_recovered_RESULTANTS(state: str) -> None
     three states. Here a 1e-6 defect in one interior element must show, in every
     state.
     """
-    _, _, res_err, _ = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-6)
+    _, _, res_err, _ = _run(state, SKEW, defect_size=1.0e-6)
     assert res_err > RESULTANT_EXACTNESS, (
         f"{state}: a 1e-6 stiffness error left the recovered resultants at "
         f"{res_err:.3e}, at or below the ceiling {RESULTANT_EXACTNESS:.0e}. The "
@@ -1034,7 +1042,7 @@ def test_a_SENSITIVITY_CHANGE_breaks_the_threshold_band() -> None:
         missed = []
         for state in STATES:
             eps = DETECTION_THRESHOLD[state] * factor
-            _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + eps)
+            _, _, _, err = _run(state, SKEW, defect_size=eps)
             ratio = err / PATCH_TEST_EXACTNESS
             try:
                 assert_close(ratio, 1.0, DETECTION_THRESHOLD_BAND,
@@ -1172,7 +1180,7 @@ def test_a_defect_in_ONE_bending_plane_is_caught_by_THAT_plane(block: str) -> No
     2.28e+08.)
     """
     for state in PLANE_STATES[block]:
-        _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
+        _, _, _, err = _run(state, SKEW, defect_size=1.0e-3, block=block)
         # AGAINST THE CEILING, WHICH IS THE GATE'S OWN DECISION, and not against
         # a response floor. A counter-case is the DEFECT, and the check that it
         # is caught is a comparison with the gate's own ceiling (BO0). The
@@ -1196,7 +1204,7 @@ def test_the_OTHER_plane_is_blind_to_it(block: str) -> None:
     """
     other = "bending_xz" if block == "bending_xy" else "bending_xy"
     for state in PLANE_STATES[other] + ("axial", "twist"):
-        _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
+        _, _, _, err = _run(state, SKEW, defect_size=1.0e-3, block=block)
         assert err <= PATCH_TEST_EXACTNESS, (
             f"{state} responded to a defect confined to {block} ({err:.3e}); the "
             "blocks are not independent and the local matrix is not block-diagonal"

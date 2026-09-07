@@ -874,52 +874,61 @@ INJECTED_DEFECTS = ("dropped_flip", "wrong_dof_index",
                     "dropped_shear_parameter", "one_element_scaled")
 
 
+def _homogeneous(k: np.ndarray, ell: float) -> np.ndarray:
+    """`D^-1 k D^-1` with `D = diag(I3, l I3, I3, l I3)` -- the residual's units.
+
+    The same scaling `interior_out_of_balance` applies before it takes a norm, so
+    a defect measured through here is measured in the units the gate decides in.
+    """
+    w = np.ones(12)
+    w[3:6] = ell
+    w[9:12] = ell
+    return (k / w[:, None]) / w[None, :]
+
+
 def injected_delta(entry, kind: str) -> float:
-    """The largest RELATIVE change the defect makes to any element-matrix entry.
+    """The defect's EFFECTIVE SIZE: `max |dK_hat| / max |K_hat|` (BR1).
 
-    Measured on the element stiffness matrices themselves, over every entry the
-    defect moves:
+    The absolute change normalised by the LARGEST stiffness in the element, in the
+    residual's homogeneous units, taken over every element the defect touches.
 
-        delta = max over (i, j) where k_bad != k_clean  of  |dk| / |k_clean|
+    WHY THIS RATHER THAN THE RELATIVE CHANGE INSIDE THE BLOCK. Two rules were
+    refuted before this one, and the second by its own premise. It compared a
+    defect's relative change within its block against the declared resolution --
+    and the residual does not see a block, it normalises by the largest stiffness
+    in the element. At equal declared size a bending-block defect responds
+    `2.00/lambda^2` of a whole-element one, measured to +/-6% over 59x in lambda
+    and four section families. So a bending defect of "size 1e-6" is not a defect
+    of size 1e-6 to this gate, and calling it one put two corpus entries 25-36x
+    above the declared resolution and undetected.
 
-    with an entry that appears where there was none counting as infinite -- a
-    change from nothing is total. If nothing moves, the delta is `0.0`, which is
-    the limiting case of the same rule and not a separate branch (BQ0).
+    THERE IS NO `lambda` IN THIS. The `lambda^2` suppression falls out of the
+    matrix rather than being declared, which is why the corpus entry whose
+    `L/r_min` moves tenfold with no change in margin stops being a
+    counterexample: the variable was never a slenderness, it was which block the
+    defect lands in.
 
-    WHY RELATIVE, AND WHY ON THE BLOCK RATHER THAN THE ASSEMBLED NORM. The gate's
-    claim is that it reddens on a defect of size
-    `PATCH_TEST_EXACTNESS_COUNTER_DEFECT` -- a relative stiffness error. For that
-    claim to classify anything, the measure has to be in the same units as the
-    claim, which the previous `max|K_bad - K_clean| / max|K|` was not: it divided
-    a bending-block change by the AXIAL stiffness, so it fell with slenderness for
-    the same reason the response does and could not say whether a defect was
-    larger or smaller than the one the gate claims to detect.
-
-    `test_the_delta_measure_is_CALIBRATED` pins it: the counter-defect injection
-    must measure exactly `PATCH_TEST_EXACTNESS_COUNTER_DEFECT` under this
-    definition, which is the property that makes the comparison meaningful.
+    `test_the_delta_measure_is_CALIBRATED` pins it in both directions.
     """
     import floatfea.assemble.system as system
 
-    m, els, _ = _build(entry)
+    m, els, stations = _build(entry)
+    ell = float(stations[-1])
     worst = 0.0
     for i, e in enumerate(els):
         length = element_length(m, e)
-        clean = system.local_stiffness(e.section, e.material, length)
+        clean = ORIGINAL_LOCAL_STIFFNESS(e.section, e.material, length)
         if kind == "one_element_scaled":
             if i != 1:
                 continue
-            bad = clean + PATCH_TEST_EXACTNESS_COUNTER_DEFECT * clean
+            change = PATCH_TEST_EXACTNESS_COUNTER_DEFECT * clean
         else:
-            bad = _defective_stiffness(kind)(e.section, e.material, length)
-        moved = bad != clean
-        if not moved.any():
-            continue
-        num = np.abs(bad - clean)[moved]
-        den = np.abs(clean)[moved]
-        ratios = np.where(den > 0.0, num / np.where(den > 0.0, den, 1.0),
-                          np.inf)
-        worst = max(worst, float(ratios.max()))
+            change = (_defective_stiffness(kind)(e.section, e.material, length)
+                      - clean)
+        denom = float(np.abs(_homogeneous(clean, ell)).max())
+        if denom > 0.0:
+            worst = max(worst,
+                        float(np.abs(_homogeneous(change, ell)).max() / denom))
     return worst
 
 
@@ -947,6 +956,21 @@ def classify(entry, kind: str) -> str:
     """
     return ("live" if injected_delta(entry, kind)
             >= PATCH_TEST_EXACTNESS_COUNTER_DEFECT else "below resolution")
+
+
+# THE DEFECTS WHOSE REDNESS IS NOT SUBJECT TO CLASSIFICATION (BR3). These are
+# asserted red on EVERY entry with no classification in front of them, so no
+# change to `injected_delta` or to a tolerance can exempt them.
+#
+# THE DIRECTIVE ASKED FOR THEM TO BE ASSERTED `live` AS WELL, AND MEASUREMENT
+# REFUSES THAT. On 19 (entry, defect) pairs -- the most slender corpus entries --
+# a structural defect's effective size falls below `1e-6`, because
+# `K_bend/K_max ~ 12/lambda_elem^2` shrinks any bending-block defect however
+# structural it is. Every one of those 19 is still RED, from `2.838e+05x` at the
+# weakest to `1.114e+08x`. So the surviving half of the claim is the half that
+# matters, and the `live` half is withdrawn rather than asserted where it does
+# not hold.
+UNCONDITIONALLY_RED = ("dropped_flip", "wrong_dof_index", "one_element_scaled")
 
 
 def _oob_with_injected(entry, state: str, kind: str) -> float:
@@ -993,7 +1017,7 @@ def test_the_corpus_entry_goes_RED_under_every_injected_defect(
     state.
     """
     delta = injected_delta(entry, kind)
-    if classify(entry, kind) == "below resolution":
+    if kind not in UNCONDITIONALLY_RED and classify(entry, kind) == "below resolution":
         # NOT A PASS AND NOT A SKIP: the pair is classified, every classified
         # pair is printed by `test_the_forward_error_is_REPORTED_and_the_floor_
         # is_too`, and `test_every_entry_carries_at_least_one_LIVE_defect`
@@ -1030,13 +1054,54 @@ def test_the_delta_measure_is_CALIBRATED() -> None:
         # differences directly would be comparing two 1e-6 numbers through that
         # cancellation and would report a 4.5e-12 disagreement that is the
         # arithmetic, not the measure (R38's lesson, in a new place).
-        assert_close(
-            1.0 + measured, 1.0 + PATCH_TEST_EXACTNESS_COUNTER_DEFECT,
-            ROUNDOFF_IDENTITY, floor=np.finfo(float).eps,
-            what=(f"{entry['id']}: the counter-defect injection measures "
-                  f"{measured:.9e} under `injected_delta`, against its declared "
-                  f"size {PATCH_TEST_EXACTNESS_COUNTER_DEFECT:g}"),
+        # EXACTLY, not to round-off: the injection is `CD * k` and the measure
+        # is `max|CD * k_hat| / max|k_hat|`, so the constant divides out and the
+        # result is the same float. If this ever needs a tolerance, the two sides
+        # have stopped being the same quantity.
+        assert measured == PATCH_TEST_EXACTNESS_COUNTER_DEFECT, (
+            f"{entry['id']}: the counter-defect injection measures "
+            f"{measured:.17g} under `injected_delta`, against its declared size "
+            f"{PATCH_TEST_EXACTNESS_COUNTER_DEFECT:.17g}. The measure and the "
+            "claim are no longer in the same units."
         )
+
+    # THE OTHER DIRECTION: a bending-only defect of the SAME declared size must
+    # measure the block ratio, which is where the lambda^2 suppression enters --
+    # from the matrix, not from a declaration.
+    stub = min(SOLVED, key=member_lambda)
+    slender = max(SOLVED, key=member_lambda)
+    ratios = [_bending_only_effective_size(e) / PATCH_TEST_EXACTNESS_COUNTER_DEFECT
+              for e in (stub, slender)]
+    assert ratios[0] > ratios[1], (
+        f"the bending-block ratio does not fall with slenderness: "
+        f"{stub['id']} (L/r_min {member_lambda(stub):.0f}) gives {ratios[0]:.3e} "
+        f"and {slender['id']} (L/r_min {member_lambda(slender):.0f}) gives "
+        f"{ratios[1]:.3e}. The suppression this measure exists to capture is "
+        "not in it."
+    )
+    assert ratios[0] < 1.0, (
+        f"a bending-only defect measures {ratios[0]:.3e} of its declared size "
+        "even on the stubbiest entry in the corpus; it should be strictly below "
+        "1, since the bending block is never the largest stiffness in the element"
+    )
+
+
+def _bending_only_effective_size(entry) -> float:
+    """`injected_delta` for a defect confined to the x-y bending block.
+
+    Not a shipped defect -- it is the control that shows the measure carries the
+    block ratio, which is the whole reason the metric changed (BR1).
+    """
+    m, els, stations = _build(entry)
+    ell = float(stations[-1])
+    e = els[1]
+    clean = ORIGINAL_LOCAL_STIFFNESS(e.section, e.material, element_length(m, e))
+    change = np.zeros_like(clean)
+    idx = [1, 5, 7, 11]
+    change[np.ix_(idx, idx)] = (PATCH_TEST_EXACTNESS_COUNTER_DEFECT
+                                * clean[np.ix_(idx, idx)])
+    denom = float(np.abs(_homogeneous(clean, ell)).max())
+    return float(np.abs(_homogeneous(change, ell)).max() / denom)
 
 
 def test_an_UNRECOGNISED_defect_name_raises() -> None:
