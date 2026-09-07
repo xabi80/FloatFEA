@@ -464,6 +464,37 @@ PATCH_TEST_EXACTNESS: Final[float] = 5e-15
 # orders against nothing in the ceiling's quantity (AO2).
 PATCH_TEST_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-6
 
+# CLASS: STRUCTURAL -- the guard on the line above, and it exists because that
+# line had none. No counter-case of its own, per AO2: it is a bound on how far a
+# defect SIZE may sit above the smallest one the gate can still catch.
+#
+# G2.2 / V1.2 -- `PATCH_TEST_EXACTNESS_COUNTER_DEFECT` must satisfy
+#
+#     COUNTER_DEFECT  <=  PATCH_TEST_COUNTER_HEADROOM  x  edge
+#
+# where `edge` is the smallest single-element defect the gate still reddens on,
+# bisected at the worst corpus entry under the gate's own rule (worst state).
+# Dimensionless.
+#
+# WHY IT EXISTS. `COUNTER_DEFECT` could be raised from `1e-6` to `1e+6` -- a
+# defect multiplying one element by a million -- with the entire suite green.
+# RAISING IT WEAKENS THE CLAIM: "the gate reddens on a sixth-digit slip" is
+# strictly stronger than "the gate reddens on a 100x element". The
+# `_COUNTER_DEFECT` form correctly exempts the value from the ceiling-below-
+# counter ordering, since a defect size is not in the ceiling's quantity, and
+# nothing replaced the guard that exemption removed.
+#
+# Reason for 2.0e7: measured, the edge is `1.1513e-13` at `slender_axis_L_r_189`
+# and the shipped `1e-6` sits `8.686e+06x` above it, so this leaves `2.30x` and
+# any raise of `2.31x` or more fails the build. The margin is eaten from BOTH
+# sides -- a harder corpus entry raises the edge and loosens this, but a
+# formulation change that IMPROVES sensitivity at the worst entry lowers the edge
+# and tightens it. `1.0e7` leaves `1.15x` and would redden on a `1.16x`
+# improvement; `2.0e7` absorbs that and still catches every order-of-magnitude
+# raise. The demonstration that it catches one is a shipped test.
+# Set: 2026-09-07, F2
+PATCH_TEST_COUNTER_HEADROOM: Final[float] = 2.0e7
+
 
 
 

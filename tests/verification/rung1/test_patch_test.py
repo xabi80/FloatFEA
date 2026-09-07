@@ -962,10 +962,19 @@ def test_a_TRANSPOSED_TRANSFORM_on_one_element_breaks_every_state(state: str) ->
     CORPUS-WIDE CONTROL (BO1). `R.T` differs from `R` only when `R` is not
     symmetric, and an axis-aligned member with no roll has `R = I` -- so
     transposing it injects NOTHING. Measured over the corpus, `|R - R.T| = 0`
-    exactly on 8 entries and the response there equals the clean value; on 2
-    further near-axis entries the injected difference leaves the balance below
-    the ceiling. The defect is real and this gate sees it, on a member whose
-    frame is actually rotated, which is the case the defect describes.
+    exactly on 8 entries and the response there equals the clean value.
+
+    THE OTHER TWO ENTRIES WERE DESCRIBED WRONGLY AND THE SENTENCE IS CORRECTED
+    (R120). They were called "near-axis, below the ceiling"; the count was right
+    and the cause was not. `onode_just_outside` has `|R - R.T| = 2.000` -- as
+    far from symmetric as a rotation gets -- and an injected `to_global` delta of
+    **exactly zero**; `straddle_above_lam61_axis` has `|R - R.T| = 1.197` and a
+    relative delta of `3.09e-18`. In both the difference is ABSENT from the
+    assembled matrix, not present and too small to see. Neither is near-axis, and
+    "below the ceiling" describes a response that was never injected.
+
+    The defect is real and this gate sees it, on a member whose frame is actually
+    rotated, which is the case the defect describes.
 
     MEASURED RESPONSE ON THE QUANTITIES THIS TEST ASSERTS, regenerated
     2026-09-06 (R93). The figures here were the retired field error and read
