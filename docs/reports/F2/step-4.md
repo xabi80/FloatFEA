@@ -2360,3 +2360,114 @@ sensitivity after BP2. §4 has the measurement.
 
 No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
 a pass.
+
+---
+
+# Revision 15 — the HOLD answered, and BQ0's premise refuted by measurement
+
+**2026-09-07.** One commit since the fourteenth verdict: `3830838`.
+
+```
+$ python -m pytest -q
+2 failed, 898 passed in 77s
+```
+
+**The suite is RED on two entries and the reason is a refuted premise, not a
+defect in the work.** Committed red rather than narrowed; §5 has the measurement.
+
+## 1. R124, R125 — the edge no longer depends on the constant it bounds
+
+`_hardest_entry` selected by margin at `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`, so
+the edge moved with the value it was meant to bound. It is now bisected on every
+solved entry with the **minimum** taken, ties broken by name.
+
+| rule | worst state against `PATCH_TEST_EXACTNESS` — the gate's own decision |
+|---|---|
+
+```
+smallest edge 3.9413e-14 at band_edge_isotropic_bracing   (unique, no tie)
+largest  edge 1.1513e-13                                  (exact two-way tie -- R125)
+shipped 1e-6 is 2.537e+07x the smallest edge
+```
+
+`PATCH_TEST_COUNTER_HEADROOM` is **re-derived to `6.0e7`**, leaving `2.37×`. The
+old `2.0e7` was measured against the *largest* edge under the selection R124
+refuted, and fails against the smallest. The "any raise of 2.31×" sentence is
+gone with the selection that produced it.
+
+## 2. R126 — a classification that can say no
+
+An unrecognised defect name **raises**; it used to return the clean matrix, so
+`injected_delta(entry, "transposed_transform")` reported `0.0` — classification by
+typo. Two negative controls ship: an unknown name raises, and `no_op` — a named
+builder returning the element unchanged — must classify *below resolution*. The
+`delta > 0` guard that passed at `3.497e-301` is retired; zero is the limiting
+case of the same rule.
+
+## 3. BQ0's measure, and the injection defect calibrating it found
+
+> **cmd** `python -m pytest … -k CALIBRATED` **out** `1 passed`
+
+The counter-defect injection measures exactly
+`PATCH_TEST_EXACTNESS_COUNTER_DEFECT` on all 74 solved entries — **after** a real
+fix. The perturbation was applied as `(1 + size) − 1`, which loses `eps/size ≈
+2e-10` to cancellation: a defect declared `1e-6` was injected at
+`9.99999999955e-07`. Under the new rule that put the gate's **own** counter-defect
+below its own resolution on every entry — arithmetic deciding a classification.
+The size is now applied directly, and all 324 (entry, defect) pairs classify
+`live`.
+
+## 4. R122, R127, R128 — the stale sites
+
+`:835` named two defects where three inject; `:825` carried "undetectable on 22 of
+63 … V2.2's defect" one line above the tuple that now contains it; `:969` carried
+four minima the module's own regenerated table refuted by `2.0×` and `7.4×` — that
+block is removed with a pointer to the test that prints them (BP0/BI3).
+
+**R127**: the two transposed-transform entries are *not* the same case. In
+`onode_just_outside` the difference is absent — exactly zero. In
+`straddle_above_lam61_axis` it is **present**, at `1.83e-12`, and merely far below
+what the gate resolves. **R128**: the anisotropy range is justified by what the
+route is *for* — pinning the index mapping R53 records — with no floor argument;
+the previous one derived a bound from the sensitivity band, deleted in the same
+commit.
+
+## 5. BQ0's premise is refuted, and that is why the suite is red
+
+The rule was reasoned from `Φ ≈ 59/λ² ≈ 1.5e-7` at `L/r_min ≈ 2e4`, below the
+`1e-6` the gate claims to resolve. **Measured, that is off by 149×**: `Φ` is an
+*element* property and `Φ ∝ 1/L²`, and the gate's shortest element is about a
+twelfth of the member.
+
+```
+shear_edge_iso_L4000   member L/r_min 19237   member-level 59/lam^2 = 1.594e-07
+                       element Phi 1.39e-06 .. 2.38e-05
+                       injected delta 3.571e-05 = 35.7x the declared resolution
+                       response 0.8806x of the ceiling                     RED
+
+shear_edge_thin_L400   member L/r_min 23084   delta 2.480e-05 = 24.8x
+                       response 0.4247x of the ceiling                     RED
+```
+
+Both are far **above** the declared resolution, so the rule requires them to
+redden and they do not.
+
+**What the measurement says instead: delta alone does not predict
+detectability.** At `shear_edge_iso_L4000` the shear defect has `35.7×` the delta
+of the counter-defect and produces a response nine orders *smaller*, because it
+lands in the bending block while the residual normalises by the axial stiffness.
+Where a defect lands matters by `~λ²`, and a rule stated on size alone cannot
+carry that. No per-entry measured resolution was reached for — R56's species
+stands as recorded.
+
+## 6. Carried
+
+R122, R124, R125, R126, R127, R128 **closed**. R123 **open, and the directed
+answer is refuted** — §5. R113, R95, R97, R98, R100–R103, R63, R76, R79, R80 and
+the older set **open**, unchanged. R115, R116, R117, R118, R119, R120 closed at
+the fourteenth verdict; R121 was credit.
+
+## 7. Witness
+
+No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
+a pass.
