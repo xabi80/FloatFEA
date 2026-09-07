@@ -471,3 +471,54 @@ id=all_three_extras_free_dir    section=circular_tube,D=0.600,t=0.01200 stations
 # swallowed as its third component.
 id=extra_key_repeated_with_onode section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=roll=0.2,orientation_node=1,0,0,roll=0.4 runs_in_suite=no expect=raise
 id=extra_onode_truncated        section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=orientation_node=1,0,I_y_over_I_z=0.5 runs_in_suite=no expect=raise
+
+# --- twelfth round: the two claims are stated over a SPACE and measured on ----
+# --- this LIST, and each is refuted by a configuration inside the same space --
+# Measured by the reviewer at 121a35a on the shipped runner's own quantity.
+#
+# CLAIM 1 ("formulation defects, every entry, no exception, no domain") has an
+# edge, and the edge is 1.4% away in its own axis from the corpus entry that
+# already binds it. Solved rather than sampled: both structural defects fall as
+# (L/r_min)^-1.99 -- measured on this family, 900 -> 2885 -- so
+# `wrong_dof_index` crosses PATCH_TEST_EXACTNESS_COUNTER at L/r_min ~ 912.
+#
+#   L/r_min    900     930     1058    1250    1443    1924    2885
+#   x counter  1.028   0.964   0.747   0.536   0.403   0.227   0.101
+#              ^ lam900_axis_undetectable, the corpus's binding entry
+#
+# The same family as lam900_axis_undetectable, 3.4% longer. Nothing about it is
+# new except the length. clean 8.7042e-17 = 0.0174x the ceiling.
+id=lam930_axis_counter_edge     section=circular_tube,D=0.600,t=0.01200 stations=193.4 orient=axis runs_in_suite=no expect=hold
+# Unambiguously past the edge: wrong_dof_index 0.747x, dropped_flip 2.930x.
+id=lam1058_axis_counter_red     section=circular_tube,D=0.600,t=0.01200 stations=220.0 orient=axis runs_in_suite=no expect=hold
+# The edge is NOT one number in L/r_min: on a nearly solid wall (D/t = 2.07) with
+# a weak axis, the binding defect is the OTHER one -- dropped_flip 0.736x while
+# wrong_dof_index is 15.0x. A single scalar bound would have to cover both.
+id=flip_counter_edge_thickwall  section=circular_tube,D=0.600,t=0.29000 stations=35.0 orient=skew extra=I_y_over_I_z=0.01 runs_in_suite=no expect=hold
+#
+# CLAIM 2's band is saturated by ORDINARY members, and its stated 1.39x of margin
+# is a property of the 63 entries it was fitted on. Over 360 random admissible
+# configurations (D 0.1-300 m, D/t 3-30, L/r_min 30-200, free direction, free
+# roll, I_y/I_z 0.01-0.2) the worst deviation from the recorded curve is 0.594
+# against a band of 0.60 -- 0.99 of it. This line crosses.
+# ratio 2.5847, deviation 0.6131 = 1.022x the band. L/D 8.3, L/r_min 92.9, and
+# the ceiling holds here at 0.053x -- the element is fine, the CURVE is not.
+id=band_edge_thickwall_aniso    section=circular_tube,D=2.88803,t=0.547075 stations=24.1118 orient=-0.603839,0.545380,0.581326 extra=roll=-2.399378,I_y_over_I_z=0.0932001 runs_in_suite=no expect=hold
+# A second shape from the same region, just inside: ratio 2.4614 = 0.990 of the
+# band. Two lines 4% apart on either side of the edge, so the boundary is
+# bracketed rather than asserted from one side.
+id=band_edge_thickwall_free_dir section=circular_tube,D=4.2183,t=0.91077 stations=23.8329 orient=-0.605654,0.585875,0.538455 extra=roll=-1.667200,I_y_over_I_z=0.093016 runs_in_suite=no expect=hold
+# ANISOTROPY IS NOT REQUIRED. A plain circular tube the shipped model can build
+# today -- D/t 4.5, L/D 111, a bracing member -- sits at ratio 2.3505, 0.958 of
+# the band. clean 4.4363e-16 = 2.00 eps, the largest in this corpus.
+id=band_edge_isotropic_bracing  section=circular_tube,D=0.290954,t=0.0640574 stations=32.3916 orient=-0.581897,-0.576984,-0.573136 extra=roll=-0.677087 runs_in_suite=no expect=hold
+#
+# THE SYNTHETIC ANISOTROPY ROUTE VALIDATES NOTHING, which is a different subject
+# from the two claims and is recorded here rather than argued. `_extras` checks
+# that the value is finite and stops; `I_y_over_I_z=0` builds a member with ZERO
+# bending stiffness in one plane and `=-1.0` builds one with NEGATIVE bending
+# stiffness, both silently, both measured at 121a35a. A mechanism assembled
+# without complaint is the wrong-answer-that-looks-right this repository exists
+# to prevent, and the refusal belongs where the value is parsed.
+id=aniso_zero_I_y_must_refuse   section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=I_y_over_I_z=0 runs_in_suite=no expect=raise
+id=aniso_negative_I_y_must_refuse section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=I_y_over_I_z=-1.0 runs_in_suite=no expect=raise
