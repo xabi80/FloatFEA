@@ -1,531 +1,497 @@
 # Review — F2 step 4
-Reviewed commit: 931d71da6dc94cceafc90db0760d26f0254d26e6
+Reviewed commit: 8a415e10884fe7e8a1dba5578c1dff8b709ff03d
 Verdict: STOP
-Tests: 594 passed, 2 failed, 0 skipped   (my run at `36a3702`, `python -m pytest -q`, 3.51s.
-With my eleventh-round corpus applied at `931d71d`: **3 failed, 607 passed**.)
+Tests: 741 passed, 0 failed, 0 skipped   (my run at `121a35a`, `python -m pytest -q`, 6.22s.
+With my twelfth-round corpus applied at `8a415e1`: **7 failed, 760 passed**.)
 
-**Reviewed code commit: `36a3702`.** The header stamp is `931d71d`, my own corpus
+**Reviewed code commit: `121a35a`.** The header stamp is `8a415e1`, my own corpus
 commit, made immediately before this verdict and touching no code.
 
-Eleventh pass. Range `51fc886..36a3702`, two commits: one code commit `1f32c7f`
-and the report `36a3702`. `git diff 51fc886..36a3702 -- .claude docs/SUPERVISOR.md`
-is **empty** -- my own instructions were not touched, and I diffed them rather
-than inferring it from a green suite that does not read them.
+Twelfth pass. Range `fc3c9a8..121a35a`, three commits: `8834fba` (plan, re-lock),
+`aa843ae` (step) and `121a35a` (report).
+`git diff fc3c9a8..121a35a -- .claude docs/SUPERVISOR.md` is **empty** -- my own
+instructions were not touched, and I diffed them rather than inferring it from a
+green suite that does not read them.
 
-**Three of the four blocking items are genuinely answered and one of them is the
-best-executed fix of this milestone.** R91's parser is right: I tried fourteen
-`extra=` shapes against the new disambiguation rule and could not make one
-resolve silently wrong; the per-entry assertion now reddens on a `hold` line the
-module cannot build; `roll_and_aniso_together` moved from *unparseable* to
-measured (`0.035x` ceiling, `1.1467e-11` detection). R93's four blocks reproduce
-on my own harness -- blocks (i), (ii) and (iv) **to the digit**. Nothing was
-widened; the `Final[` lines of `git diff -U0 -- floatfea/tolerances.py` are empty
-in both directions. No test is skipped or `xfail`ed.
+**The eleventh verdict's two blocking items are answered, and the work is good.**
+R94's withdrawals are real: `grep -n "dissolve" docs/milestones/F2.md` no longer
+returns anything in sec. 5b Q6, and `0.13-0.49 eps` is withdrawn in the text that
+supported it. R99's list is complete -- every item by number. R96 is fixed *and
+locked*: I reverted `member_lambda` to the strong axis on my own copy and **six
+entries go red** in the new band test, so the weak axis is asserted structurally
+and not merely reported. R104 is fixed. The `I_y <-> I_z` refutation reproduces
+**to the digit** (`8.247e-17` against a clean `2.191e-16` at
+`aniso_weak_lam154_undetectable`), and recording a proposed control as refuted
+rather than swapping it out quietly is the right instinct and is credited. The
+defect harness carries its own ablation: I ran the reconstruction with **neither**
+defect and it returns `2.56e-19 .. 2.26e-16`, i.e. round-off, so `5.8789e-05` and
+`3.5991e-05` isolate the defect and are not the reconstruction's own error.
 
-**And the verdict is STOP, on two independent grounds that the report itself
-states.** A rung-1 verification test is red at HEAD, and the locked plan is wrong
-in text that is load-bearing. `CLAUDE.md` sec. Step gating defines exactly this:
-"`STOP` means the plan is wrong or a low rung is red: implementation halts and
-the plan reopens." The report's own framing -- "R94 is a plan item awaiting
-Xabier" -- is the definition of a STOP written in other words, and my instructions
-forbid softening one into a HOLD. **This is not a criticism of `1f32c7f`, which
-is good work; it is the routing the situation requires.** The work goes into a
-`plan:` commit on `docs/milestones/F2.md`, not into step 5 and not into another
-step commit.
-
-**Was leaving the suite red the right call? Yes, unambiguously.** Every
-alternative available inside the step was forbidden: deleting my entries (the
-corpus is not the implementer's to edit), lowering `PATCH_TEST_EXACTNESS_COUNTER`
-(weakens the control -- my own closing condition warned against it), `xfail`,
-`skip`. `CLAUDE.md`: "Never widen a tolerance, skip a test, or mark a test
-`xfail` to get a green build. Report the failure instead." That is what happened.
-**Is "R94 is a plan item" a real distinction? Half of one.** It is right about
-*where* the fix goes. It is not a category that lets a step close with a rung-1
-red, and it is not the whole reason the item is open -- see R99.
-
-**The finding of this round.** Revision 11 proposes bounding the model at member
-`lambda <= 300` (F6 applying `200` in compression) so that the counter clears
-everywhere admitted. **I measured that proposal and it does not hold.** The
-runner's `member_lambda(entry)` rebuilds the section from `section=` and discards
-`extra=I_y_over_I_z=`, so the `lambda` it prints is the *strong* axis, while the
-`1/lambda^2` response follows the *governing* one:
+**And the verdict is STOP, on the same species the last one was, one level down.**
+The plan no longer says the *ceiling* has no domain and means the whole gate; it
+now says the *counter* and the *curve* have no domain, and both statements are
+refuted by configurations inside the space they are asserted over. The gate makes
+two claims; I measured both against shapes the corpus did not contain, and each
+has an edge:
 
 ```
-  entry                            printed lam   min-I lam   x counter
-  aniso_weak_lam154_undetectable       153.9        1539.0      0.214x   RED
-  aniso_weak_lam154_pin                153.9         688.2      1.068x
-  aniso_weak_lam102_detects            102.4         458.1      2.400x
-  aniso_reversed_I_y_over_I_z          153.9         153.9     16.301x
+claim   "asserted on every entry with no exception and no domain"      F2.md:493
+cmd     the shipped runner's own quantity, family D=0.6 t=0.012 axis, L swept
+out     L/r_min    900     930    1058    1250    1443    1924    2885
+        x counter  1.028   0.964  0.747   0.536   0.403   0.227   0.101
+        wrong_dof_index crosses PATCH_TEST_EXACTNESS_COUNTER at L/r_min ~ 912
+
+claim   "0.60 holds the measured scatter with 1.39x of margin"      tolerances:487
+cmd     360 random admissible configurations, D 0.1-300 m, D/t 3-30,
+        L/r_min 30-200, free direction, free roll, I_y/I_z 0.01-0.2
+out     worst deviation 0.5937 against a band of 0.60 = 0.990 of it; a local
+        search from there crosses at 0.6131 = 1.022x, L/r_min 92.9, L/D 8.3,
+        ceiling still held at 0.053x
 ```
 
-An entry at printed `lambda 153.9` -- **half the proposed compression limit** --
-holds at `0.044x` of the ceiling and responds to the 1e-6 defect at `0.214x` of
-the counter. The gate holds there and cannot fail there. Two entries with the
-**same printed lambda** sit `5x` apart in detection, and the fourth line is the
-sign control: anisotropy the other way (`I_y/I_z = 100`) leaves the governing axis
-at `153.9` and detection at `16.3x`, so this tracks the weak axis and not
-`|I_y/I_z - 1|`. This is the ninth verdict's STOP species exactly -- a domain claim
-sampled on one coordinate of the space it is asserted over -- and it arrives
-*before* the bound is written, which is the cheapest moment for it to arrive.
+Neither is an element defect. Both are the plan describing a space from a list.
 
 ## Carried
 
-Every item from the tenth verdict (`HOLD @ 47d117e`, committed `51fc886`), traced
-through `51fc886..36a3702` and re-measured. The four gated items first.
+Every item from the eleventh verdict (`STOP @ 36a3702`, committed `fc3c9a8`),
+traced through `fc3c9a8..121a35a` and re-measured, plus the older carry.
 
-- **1. R91 (blocking) -- ANSWERED, and it is the best fix in this round.** Both
-  halves. `_error_row` reads the reviewer's `expect` off the raw line with
-  `_field` and no longer writes `"raise"` over it; a `hold` line the module
-  cannot build now reddens with "the disagreement is the finding". I did not take
-  the new test's word for it -- I drove `_error_row` and the per-entry assertion
-  directly on five probe lines: `expect=hold` **RED**, `expect=breach` **RED**, no
-  `expect` at all gives `"unrecorded"` **RED**, `expect=raise` green. And the
-  capability: `extra=` now takes a sequence, and I attacked the disambiguation
-  rule with fourteen shapes -- `roll` then `onode`, `onode` then `roll`, a
-  two-component vector followed by a key, a key name used as a vector component,
-  an empty value, empty components, leading and trailing commas, an inner `=`, an
-  uppercase key, `none` followed by a key, `inf`, `1e400`. **Every ambiguous shape
-  raises; not one resolves silently wrong.** My two adversarial refusal entries
-  (`extra_key_repeated_with_onode`, `extra_onode_truncated`) are both refused by
-  the shipped parser. `roll_and_aniso_together` is measured. Closing condition
-  taken in full. One residual, small: **R104**.
-- **2. R92 (blocking) -- ANSWERED at the site the condition named, and one more
-  taken voluntarily.** The `L/D` sweep is out of `tolerances.py`; the entry keeps
-  `1.14e-09` / `11371x` and points at revision 10 sec. 4, and I confirmed that
-  section carries the sweep. The second removal (`RESULTANT_EXACTNESS_COUNTER`)
-  was found without being asked for and is credited. But the exhaustiveness is
-  not established -- **R100** -- and the second entry's pointer resolves to the
-  withdrawn claim -- **R101**.
-- **3. R93 (blocking) -- ANSWERED, and I re-derived all four blocks rather than
-  reading them.** Blocks (i), (ii) and (iv) reproduce **to the digit** on my own
-  harness:
-
-  ```
-  (i)  axial via field 1.0136e-13  via resultants 1.4498e-09   14302.8x
-       twist          2.8348e-10                1.4498e-09        5.1x
-  (ii) axial oob 2.8565e-02 ... twist 7.1889e-04 ... shear_xz 1.2401e-02
-  (iv) S=1e-3 worst 1.4761e-16 (0.665 eps); S=1 and S=1e3 8.7042e-17 (0.392 eps)
-       36 cells span 0.000132 .. 0.6648 eps; per-scale worst ratio 1.696
-  ```
-
-  Block (iii) reproduces in its ratio column and not quite in its percentages --
-  **R102**. The blanket sentence is replaced by a per-block one, which is what the
-  condition asked for.
-
-  **On the withdrawal of "~150x weaker": it is honest, and the replacement is a
-  better argument.** I bisected both shipped predicates myself, six states, and
-  got `5.1x` to `14303x`. A single number cannot describe a three-order spread,
-  and the entry now says why the spread is the reason to keep both channels
-  rather than a reason to drop one: the field channel is `14000x` the sharper in
-  axial and `5.1x` in twist, so they are not two measurements of one thing. That
-  is a genuine improvement on the number it replaces, and it was reached by
-  deleting a claim rather than by defending it.
-- **4. R94 (blocking) -- NOT ANSWERED, correctly declared, and it is the STOP.**
-  See R94 below. Two of the three closing conditions I offered needed nothing from
-  Xabier and neither was taken (**R99**).
-- **5. R95 (recordable) -- carried, open, and NOT in the report's `Carried`
-  section.** The report records the `_direction` overflow in prose without its
-  number and calls it "one new item"; it is R95, from the tenth verdict. Recording
-  it rather than fixing it is the right call under the scope the directive set.
-  The finding is broader than the report states -- **R95** below.
-- **6. R96 (recordable) -- carried, OPEN, unmentioned, and it is load-bearing for
-  R94.** `grep -n "second_moment" tests/` is still empty; `member_lambda(entry)`
-  still reads `_section(entry["section"])`. That is not a cosmetic gap any more:
-  it is the reason the proposed `lambda <= 300` bound does not bound the counter.
-- **7. R97 (recordable) -- carried, OPEN, unmentioned.** `grep -rn "never
-  asserted at a constant"` still returns `F2.md:506` and `F2.md:1208`, and
-  `test_the_six_constant_strain_states_are_EXACT` still asserts `res_err <=
-  RESULTANT_EXACTNESS` on the solved field at all 36 cells.
-- **8. R98 (recordable) -- carried, OPEN, unmentioned.** `INADMISSIBLE` is still
-  assigned at line 611 and read nowhere; `grep -rn "INADMISSIBLE" tests/ floatfea/`
-  gives one assignment and three comments.
-- **9. R65 -- WITHDRAWN by me at the tenth verdict.** Correctly recorded as
-  withdrawn.
-- **10. R63 -- carried, unanswered, correctly declared open.** `MATRIX_SYMMETRY`
-  and `ROUNDOFF_IDENTITY` remain widenable in silence.
-- **11. R76, R79, R80 -- carried, unanswered, correctly declared open.**
-- **12. R6, R16, R25, R30, R31, R32, R33 (outside G2.2), R36, R50, R52, R62 --
-  still open**, correctly declared, routed to step 4a or later.
-- **13. R77, R78, R81-R90 -- closed at the tenth verdict**, correctly recorded.
-- **14. R68's standard -- BROKEN, fifth round.** Four rounds running, the report
-  listed every open item by number. This one lists thirteen and omits four
-  (**R99**), and one of the four turns out to decide the item the round is about.
+- **R94 (STOP) -- ANSWERED in its letter, and the finding it named has moved
+  rather than closed.** The three withdrawals are in the plan and I checked each:
+  "dissolves" is gone from sec. 5b Q6 and D7 item 7, `0.13-0.49 eps` is withdrawn,
+  the axis is `min(I_y, I_z)`, and the two reds are green without a skip, an
+  `xfail`, a deleted line or a touched `expect` (`git diff fc3c9a8..121a35a --
+  tests/corpus` is empty). **The proposed `lambda <= 300` bound was abandoned
+  rather than defended, which is the right call and is credited.** What is not
+  closed is the underlying item: a domain claim measured on the corpus and
+  asserted over the space. It is re-opened as **R105** and **R107** against the
+  new text.
+- **R95 -- carried, OPEN, correctly declared.** `expect == "raise"` at
+  `test_corpus_configurations.py:703` still uses a bare `pytest.raises(ValueError)`
+  with no `match`, where the inadmissible branch twenty lines above uses
+  `match="admission limit"`. My two new refusal entries land in this branch and
+  show the second half of it too -- see **R114**.
+- **R96 -- CLOSED, and it is the best-executed fix of this round.** `member_lambda`
+  reads `_entry_section`, `extra=` included. I checked every site an entry is
+  characterised: `grep -n "_section(entry" ` gives two, `_build` (`:393`) and
+  `_inadmissible` (`:639`); the second reads only the depth through
+  `_outer_diameter`, which is `I_z` and `A`, and the only section-modifying extra
+  moves `I_y`. So the strong axis is gone from every reading that could show it.
+  One sentence overstates it -- **R113** -- and it is cosmetic.
+- **R97 -- carried, OPEN, correctly declared, and the report's reading is fair.**
+  `grep -rn "never asserted at a constant" docs/milestones/F2.md` still returns
+  `:579` and `:1288`. The report's point that the sentence is about the forward
+  *field* error while `RESULTANT_EXACTNESS` is a different quantity is correct;
+  the plan still does not say so.
+- **R98 -- carried, OPEN, correctly declared.** `INADMISSIBLE` is assigned at
+  `:645` and read by no assertion.
+- **R99 -- CLOSED.** The `Carried` table lists every item by number with a status,
+  and the omission is recorded first rather than explained away. R68's standard is
+  restored.
+- **R100 -- carried, OPEN, correctly routed to step 4a -- and the count went up.**
+  `ls scripts/` is still `write_verdict.py` alone. The bracket table added this
+  round is a fourth table with no generator: see **R111**.
+- **R101 -- carried, OPEN, correctly declared.** `grep -n "revision 1"
+  floatfea/tolerances.py` still returns `:189` and `:623`, both "revision 10", and
+  `:623` is `RESULTANT_EXACTNESS_COUNTER`'s pointer to the withdrawn claim.
+- **R102 -- carried, OPEN, correctly declared.**
+- **R103 -- carried, OPEN, correctly declared, and now moot in its second half**:
+  the `lambda <= 300` framing it criticised is withdrawn with R94.
+- **R104 -- CLOSED.** `_field` returns `AMBIGUOUS(raise|hold)` on a duplicate and
+  the per-entry assertion reddens on it. I drove `_error_row` myself on both
+  orderings; both now reach the assertion as a disagreement.
+- **R63 -- carried, unanswered, correctly declared open.**
+- **R65 -- WITHDRAWN by me at the tenth verdict.** Correctly recorded.
+- **R76, R79, R80 -- carried, unanswered, correctly declared open.**
+- **R6, R16, R25, R30, R31, R32, R33 (outside G2.2), R36, R50, R52, R62 -- still
+  open**, correctly declared, routed to step 4a or later.
+- **R77, R78, R81-R93 -- closed** at the tenth and eleventh verdicts, correctly
+  recorded.
+- **R68's standard -- HELD.** Six rounds of five.
 
 ## Findings
 
-**R94. (STOP) The locked plan asserts a domain claim that is false at this
-commit, a rung-1 test is red on it, and the answer proposed in revision 11 is
-refuted by measurement before it is written.**
-`docs/milestones/F2.md` sec. 5b Q6 (`:415`, `:457`) and sec. D7 item 7 (`:1189`,
-`:1202`); `tests/verification/rung1/test_corpus_configurations.py:705`.
+**R105. (STOP) Claim 1's "no exception and no domain" is false at `L/r_min ~ 912`,
+1.4% in its own axis from the corpus entry that already binds it -- and the
+mechanism sentence that licenses the claim is refuted by the claim's own two
+defects.** `docs/milestones/F2.md:472-493`, `:1277-1283`;
+`floatfea/tolerances.py:425-445`;
+`tests/verification/rung1/test_corpus_configurations.py:786-806`.
 
-*The plan text, three claims, each checked:*
-
-```
-claim   "This dissolves the domain question rather than answering it. No
-         boundary ... every corpus entry under one claim."   F2.md:457, :1202
-command python -m pytest -q
-output  2 failed, 594 passed -- lam900_skew_undetectable, lam900_axis_undetectable
-
-claim   "it measures 0.13-0.49 eps across every configuration"   F2.md:1194
-command the 36 shipped gate cells, and the corpus reporting test
-output  gate cells 0.000132 .. 0.6648 eps; corpus floor 0.84 eps
-        (nearly_solid_D_t_2p1); 1.018 eps at my new all_three_extras_free_dir
-```
-
-The second is the same withdrawn `0.13-0.49 eps` figure that R93(iv) found stale
-in `test_patch_test.py`. The copy in the test file was regenerated this round.
-**The identical figure in the locked plan was not, and in the plan it is the
-support for "dissolved".** A number can be fixed in one file and left standing in
-the file that decides.
-
-*The proposed answer, measured.* Revision 11 sec. 3 proposes "model admission
-limit member `lambda <= 300`, with F6 applying `200` to compression members". On
-the `lambda` this repository computes, that admits a configuration the gate
-cannot fail on:
+*The domain, solved rather than sampled.* Both injected defects fall with
+slenderness at the measured exponent `-1.99`, on the family
+`D=0.600 t=0.01200 orient=axis` that `lam900_axis_undetectable` belongs to:
 
 ```
-  entry                            printed lam   min-I lam   x counter   x ceiling
-  aniso_weak_lam154_undetectable       153.9        1539.0      0.214x     0.044x
-  aniso_weak_lam154_pin                153.9         688.2      1.068x     0.019x
-  aniso_weak_lam102_detects            102.4         458.1      2.400x     0.030x
-  aniso_reversed_I_y_over_I_z          153.9         153.9     16.301x     0.014x
+  L/r_min       900      1058      1250      1443      1924      2885
+  wrong_dof   3.599e-05 2.614e-05 1.876e-05 1.412e-05 7.960e-06 3.543e-06
+  x counter     1.028     0.747     0.536     0.403     0.227     0.101
+  flip        1.412e-04 1.025e-04 7.362e-05 5.539e-05 3.123e-05 1.390e-05
+  1e-6 defect 4.132e-14 2.990e-14 2.140e-14 1.608e-14 9.044e-15 4.019e-15
 ```
 
-All four are `L/D` 35-53, ordinary members, not the `L/D 215-312` filaments the
-tenth verdict's `lam900` entries were. `I_y/I_z = 0.01` is a plate-like member and
-`0.05` is roughly a 4.5:1 rectangle -- both are shapes a platform carries.
+`wrong_dof_index / 1e-6 defect` is `8.71e+08` at `900` and `8.82e+08` at `2885` --
+**constant to 1%.** The two claims are not two mechanisms. They are one curve at
+two amplitudes, and claim 1 clears a fixed constant over a wider slenderness range
+only because it starts `8.8e+08` higher. Its edge is `L/r_min ~ 912`.
 
-*The engineering details the report flags, judged.* Both are real and there is a
-third that decides.
+*The mechanism sentence, checked.* "They are `O(1)` relative to the block they
+corrupt and do not fall with slenderness" (`F2.md:475`; the same words at
+`tolerances.py:432-437`). Measured, `dropped_flip` falls `178x` and
+`wrong_dof_index` `475x` across the corpus's own slenderness range, at the same
+exponent as the small defect the sentence contrasts them with. **A number that is
+correct does not license the explanation attached to it (BG0).** The correct
+statement is about amplitude, not about scaling, and it has a different
+consequence: an amplitude ratio moves the edge, it does not remove it.
 
-* **Is the compression figure a User Note or a requirement?** In ANSI/AISC 360-16
-  it is a **User Note** -- as is the tension `300` in sec. D1, which the report
-  reads as the firmer of the two. Neither is a Specification requirement; sec. D1's
-  own sentence is "There is no maximum slenderness limit for members in tension."
-  **I record this as knowledge, not as verification.** I have no network in this
-  environment, so I could not open sec. D1, Chapter E or API RP 2A-WSD sec. 3.2
-  either. **The citation is not obtained and the block stands.** Refusing to write
-  an unverified clause into a locked plan is the correct call and I endorse it
-  without reservation -- it is "verify the reference" applied to a standard.
-* **`KL/r` versus `L/r`.** Correct and material: the AISC `300` is on `L/r`
-  (actual length) and the `200` is on `Lc/r` (effective). The corpus `lambda` is
-  neither -- it is `L/r` on a single member with no `K`.
-* **The third, which neither detail covers: `r` is `sqrt(I_min/A)`, and this
-  repository's corpus computes it on the strong axis.**
-  `floatfea/model/admissibility.py:135` already defaults to `min(I_y, I_z)`; the
-  corpus `member_lambda` never passes it (**R96**). A limit written on the printed
-  `lambda` admits `aniso_weak_lam154_undetectable`; the same limit written on
-  `min(I_y, I_z)` refuses it at `1539`. **R96 is not a loose end -- it is the
-  difference between a bound that works and one that does not.**
-
-*And a causal claim with no cell (BG0).* "A member at `lambda = 900` is not a
-structural member under the standard this project locked ... **so** the tool is
-bounded at both ends by modelling and by code." A code serviceability
-recommendation and a `1/lambda^2` detection floor are unrelated quantities; that
-they might land near each other is a coincidence, not a derivation. The bound
-that is *measured* is where the counter stops clearing on the governing axis. If
-a code slenderness limit happens to sit inside it, that is a convenience worth
-recording -- not the reason.
-
-**Closed when** the plan reopens and sec. 5b Q6 / D7 item 7 say what was
-measured: the *ceiling's* domain is dissolved (which I verified hard at the tenth
-verdict and again here -- nothing I ran moved it above `0.05x`), the *counter's*
-falls as `1/lambda^2` on `min(I_y, I_z)`, and the edge is at governing
-`lambda ~ 630` with the corpus's own numbers beside it. Whether a code
-slenderness limit is also adopted is a separate decision and needs Xabier;
-**narrowing the plan's word from "dissolved" needs nobody**, and until it is
-narrowed the plan states something the suite refutes at its own commit.
-`0.13-0.49 eps` goes with it.
-
-**R99. (blocking) The report's `Carried` section omits R95, R96, R97 and R98,
-against an explicit condition of the tenth verdict -- and one of the four decides
-R94.** `docs/reports/F2/step-4.md` sec. 4.
-
-The tenth verdict's closing text: "R95 through R98, together with R63, R76, R79,
-R80, ... may be answered in the next report `Carried` section, **and that section
-must list every one of them, open or answered.**" Section 4 lists R94, R63, R76,
-R79, R80, R6, R16, R25, R30, R31, R32, R33, R36, R50, R52, R62, R65, and "R77,
-R78, R81-R93 closed or dissolved". The range stops at 93. R95 appears as prose
-under "one new item" without its number; R96, R97 and R98 do not appear at all.
-
-This is the guard the whole arrangement exists for, and it failed on the one
-species it was written against: **the omitted item is the one the round needed.**
-R96 says `member_lambda` reads the strong axis and that no test exercises the
-weak-axis argument; R94's proposed fix is a limit on `lambda`; the two were never
-put side by side because one of them was not on the list. The tenth verdict's own
-header warned that a step had once been "executed cleanly on top of three
-unanswered items" -- this is that shape again, with the dependency present in the
-repository and absent from the list.
-
-**Closed when** the next report's `Carried` section lists R94, R95, R96, R97,
-R98, R99, R100, R101, R102, R103, R104, R63, R76, R79, R80, R6, R16, R25, R30,
-R31, R32, R33, R36, R50, R52 and R62 -- each by number, each with a status.
-
-**R95. (recordable, carried and now broader) `expect=raise` certifies that
-*something* raised, not that the named thing was refused.**
-`tests/verification/rung1/test_corpus_configurations.py:206-211` and `:672-675`.
-
-The tenth verdict's instance stands unchanged: `_direction` tests the norm of the
-input, so `1e308,1e308,0` overflows to `inf`, `v / inf` is the zero vector, and
-the function returns what its docstring says it refuses; the RuntimeWarning is in
-my suite output at this commit. The report records it accurately and declines to
-fix it, which is correct under the scope the directive set.
-
-**What the report does not record is that the mechanism is general.** The
-parseable-refusal branch is
-
-```python
-if expect == "raise":
-    with pytest.raises(ValueError):
-        _build(entry)
-    return
-```
-
--- no `match`, where the inadmissible branch twenty lines above uses
-`match="admission limit"`. So every `expect=raise` entry in the corpus passes on
-any `ValueError` raised anywhere in `_build`, including the wrong one. That is
-why `orient_norm_overflow` reads green: it is caught by the `Node` constructor's
-"node_a and node_b must be distinct", a refusal about a different thing.
-
-**Closed when** `_direction` refuses a non-finite norm and a zero result, the
-normalisation test's parametrisation contains an overflowing input, and the
-`expect=raise` branch asserts *which* refusal fired -- a `match`, or a per-entry
-`refuses=` field the reviewer writes.
-
-**R100. (recordable) `tolerances.py` still carries at least three tables with no
-generator, and the command offered as evidence does not establish otherwise.**
-`floatfea/tolerances.py:469-475`, `:531-533`, `:641-644`;
-`docs/reports/F2/step-4.md` sec. 2.
-
-The report's evidence for the sweep is
-`git grep -n "157.9x\|9.1808e-12\|150x WEAKER" -- floatfea tests` returning
-nothing. That command proves the two *named* tables are gone. It cannot say a
-third does not exist, and three do:
+*A third formulation defect, and it is not O(1).* The directive asked me to
+construct one. **Dropping the shear parameter** -- Timoshenko to Euler-Bernoulli,
+`phi = 0`, one of the classic element formulation errors and one character in
+`local_stiffness` -- measured on all 63 solved entries:
 
 ```
-:469-475  SOLVE_BACKWARD_ERROR_FACTOR    6 rows x 5 columns
-:531-533  RESULTANT_EXACTNESS            3 rows x 3 columns
-:641-644  rotation deviation vs angle    4 rows x 3 columns
+  L/r_min      5.9     46.5     139.5     328.8     900
+  response  1.161e-02 1.390e-04 1.906e-06 4.937e-08 9.190e-10
+  x counter   331.6     3.97      0.054     0.001     0.000
+  below PATCH_TEST_EXACTNESS_COUNTER on 22 of 63 entries
 ```
 
-`ls scripts/` is still `write_verdict.py` alone. **I regenerated two of the three
-and both reproduce exactly** -- `S=1e-3 axial r/f 3.5385e-16 bwd 6.1713e-17` and
-the rest of that block, and `RESULTANT_EXACTNESS` worst `4.5578e-11` at `S=1e-3`
-skew, `21.9x` -- so nothing here is stale today, and this is a recordable rather
-than a blocker. BI3's point is the mechanism, not the current values: "a comment
-that carries measurements is a report that never gets regenerated unless
-something regenerates it."
+It is a formulation defect, it changes the element's structure, and it is
+`phi`-sized -- which falls as `1/lambda^2` itself, so the response falls as
+`1/lambda^4`. **The gate still catches it**, everywhere, against the *ceiling*
+(`9.190e-10` is `1.8e+05x` of `5e-15`), which is the honest form of the claim. The
+class sentence is what fails.
 
-**Closed when** the report's claim is stated as what its command shows (the two
-named tables are gone), and the three remaining are either listed as a known
-carry-over with a route, or moved, or `scripts/` gains the generator. A grep that
-finds tables by *shape* rather than by content is the honest command:
-`grep -nE "^#   [A-Za-z_].*[0-9][.][0-9]+e[-+][0-9]" floatfea/tolerances.py`.
+*And the entry contradicts itself three paragraphs down.* `I_y <-> I_z` is a
+formulation defect -- which inertia goes with which plane -- and its response is
+**identically the clean value**, on every entry including the anisotropic ones. It
+is recorded as refuted at `tolerances.py:446-452`, immediately below the sentence
+saying structural defects do not behave that way. I verified the refutation and it
+is correct; I also verified *why*, and the reason generalises: the interior
+out-of-balance of a constant-strain field is insensitive to a **uniform** change of
+section properties, because a uniform change keeps the field in the kernel. That is
+the patch test's defining property, not an accident, and it is the boundary of what
+this control can be claimed for.
 
-**R101. (recordable) `RESULTANT_EXACTNESS_COUNTER`'s pointer resolves to the
-claim the entry has just withdrawn.** `floatfea/tolerances.py:566-568`.
+*What the corpus does with it.* `lam930_axis_counter_edge` (`0.964x`),
+`lam1058_axis_counter_red` (`0.747x`) and `flip_counter_edge_thickwall`
+(`dropped_flip 0.736x`, `wrong_dof_index 15.0x`) are red at `8a415e1`. The third
+is the one that matters for the shape of any fix: on a nearly solid wall
+(`D/t = 2.07`) with a weak axis, **the other defect binds**, so the edge is not one
+number in `L/r_min`.
 
-The entry says the regenerated table is "in `tests/verification/rung1/
-test_patch_test.py` beside `RESULTANT_DETECTION_THRESHOLD` ... and in
-`docs/reports/F2/step-4.md` revision 10." The first resolves. The second does not:
+**Closed when** sec. 5b Q6 and D7 item 7 say what was measured: both injected
+defects fall as `(L/r_min)^-1.99`, the same exponent as the small defect; they
+clear a fixed counter over a bounded range whose edge is `L/r_min ~ 912` for
+`wrong_dof_index` and a different number on a different shape family; and the claim
+that has no domain is the one against the **ceiling**, which is what the gate
+decides on. "Do not fall with slenderness" is replaced by the amplitude statement
+that is true, or by nothing.
 
-```
-command grep -n "157.9\|150x weaker\|14302\|14303" docs/reports/F2/step-4.md
-output  1005: **~150x weaker as a gate**, reproducing the verdict's table to
-        1753: the predicates that ship the ratio spans 5.1x ... 14303x
-        1757:   axial           1.0136e-13      1.4498e-09   14302.8x
-```
-
-Line 1005 is revision 10; lines 1753-1757 are revision **11**. A reader following
-the entry's own pointer lands on "~150x weaker as a gate", which is the sentence
-the entry three lines earlier declares withdrawn. Every citation resolves -- this
-one resolves to the wrong side of a withdrawal.
-
-Second, smaller: BI3's two routes are "a committed script produces the table" or
-"the table belongs in the step report". Moving a table from `tolerances.py` into
-`test_patch_test.py` is neither. It is defensible -- the table now sits beside the
-dict it describes, which is better placement -- but it puts the table back in the
-file where R93 found four stale blocks, with no generator, so the mechanism BI3
-names is unchanged for it.
-
-**Closed when** the pointer names revision 11, and the entry says which of BI3's
-routes the test-file placement claims, or that it claims neither.
-
-**R102. (recordable) `WHAT THE BAND BUYS` reproduces in its ratio column and not
-in its percentages, and the summary sentence is 0.06 pp optimistic.**
-`tests/verification/rung1/test_patch_test.py:674-680`.
-
-Bisecting the shipped predicate myself -- `_run(state, SKEW, 1 + f*eps)`, ratio
-against `PATCH_TEST_EXACTNESS`, `assert_close(ratio, 1.0, 0.05, floor=eps)` --
-the `ratio at f=1` column reproduces exactly, all six. The other two do not:
+**R106. (STOP) The locked plan ships a different constant from the code, in the
+number this round is about.** `docs/milestones/F2.md:511-515` against
+`floatfea/tolerances.py:503`, and
+`tests/verification/rung1/test_corpus_configurations.py:877-881`.
 
 ```
-  state          ratio at f=1     shipped          mine
-  axial              0.996385   +5.44 / -4.92   +5.42 / -4.92
-  curvature          0.999760   +5.34 / -5.02   +5.29 / -4.98
-  twist              0.998301   +5.49 / -4.88   +5.44 / -4.84
-  shear              0.999578   +5.28 / -4.97   +5.28 / -4.95
-  curvature_xz       0.999695   +5.34 / -5.02   +5.29 / -4.97
-  shear_xz           0.999133   +5.39 / -4.92   +5.35 / -4.93
+cmd  grep -n "SENSITIVITY_BAND_COUNTER" docs/milestones/F2.md floatfea/tolerances.py
+out  F2.md:514         PATCH_TEST_SENSITIVITY_BAND_COUNTER = 3.0 injected in both directions
+     tolerances.py:503 PATCH_TEST_SENSITIVITY_BAND_COUNTER: Final[float] = 5.0
+
+cmd  grep -n "2.5x" docs/milestones/F2.md floatfea/tolerances.py
+out  F2.md:513         "it detects a 2.5x change in the gate's sensitivity and nothing finer"
+     tolerances.py:499 "the derivation that said 2.5x ignored the scatter it sits on top of"
 ```
 
-Eight of the twelve cells differ by 0.03-0.05 pp, consistently in one direction,
-so the generator differs from the shipped predicate in some small way rather than
-drifting. The conclusion survives -- "+5.5% or -5.0% caught in every state" is
-true on my numbers too (worst `+5.44`, `-4.98`) -- but the tightest is quoted as
-`+5.3% / -4.9%` where I measure `+5.28% / -4.84%`, and `-4.84` is not `-4.9`.
-The closed form for the band, `f_above = 1/(0.95 r0)`, matches my bisection in
-four states and not in axial, which is the state where the response is least
-linear.
+The plan states as settled the value and the buy-claim that `tolerances.py`, one
+commit later in the same round, records as **refuted by injection**. I reproduced
+the refutation exactly -- `3x` up leaves four entries inside the band at
+`2.362-2.464` -- so the plan is not merely stale, it states a number the shipped
+suite would fail on. The test module's docstring at `:877-881` is stale the same
+way: it describes a `3.0x` injection and a `1.2x` clearance while the code injects
+`PATCH_TEST_SENSITIVITY_BAND_COUNTER = 5.0`.
 
-**Closed when** the block states the perturbation the percentages were bisected
-on (the multiplier applied to `DETECTION_THRESHOLD[state]`, or something else),
-so the table is reproducible from its own description, and the tightest figure is
-the measured `-4.84%`.
+This is R94's shape at one-tenth the scale and it arrived in the round that fixed
+R94: a figure corrected in `tolerances.py` and left standing in the plan that
+decides and in the test that runs. Three files, one number, two of them wrong.
 
-**R103. (recordable) The BM0 headroom table's second row is labelled as a
-different quantity from the one it reports, and its `lambda <= 300` rows are
-statements about 57 corpus entries presented as properties of a limit.**
-`docs/reports/F2/step-4.md` sec. 1.
+**Closed when** `F2.md:511-515` and the docstring at `:877-881` carry `5.0` and
+the measured `5x`, each with the bracket that produced it.
 
-The numbers themselves all reproduce, and I checked every one against the shipped
-reporting test at this commit:
+**R107. (blocking) The band's stated `1.39x` of margin is a property of the 63
+entries it was fitted on; over the admissible space the margin is `1.01x` and an
+ordinary member crosses.** `floatfea/tolerances.py:485-489`;
+`tests/verification/rung1/test_corpus_configurations.py:840-872`.
 
-```
-  worst residual, whole corpus       1.8641e-16 = 0.0373x ceiling            OK
-                                     nearly_solid_D_t_2p1, lam 64.4, 0.84 eps
-  most slender with lam <= 300       slender_L_r_99, lam 293.7, 4.53x        OK
-  weakest detection, lam <= 300      slender_in_plane_y_L_r_94, 4.30x        OK
-  the same at lam <= 200             slender_L_r_63 11.25x; aniso_free_dir_weak 6.68x OK
-  the same at lam <= 630             lam620_counter_pin 1.0187e-13 = 1.02x   OK
-```
-
-Two things about them:
-
-* Row 2 is labelled "counter / ceiling at the most slender entry". `4.53x` is
-  *response / counter*. Counter over ceiling is `20x` for every row and does not
-  vary. Row 2 reports the same quantity as row 3, at a different entry.
-* The weakest `lambda <= 200` entry is `aniso_free_dir_weak` at
-  **`lambda = 46.5`**, `6.68x`. The report prints that number without remarking
-  that the binding entry under a slenderness cap is the *least slender* one in the
-  group. That is the whole of R94 visible in the report's own table, one column
-  from being read: detection is not monotone in the printed `lambda`, so bounding
-  the printed `lambda` does not bound detection. The sentence "the proposed
-  admission limit is not a restatement of the detection edge, it is comfortably
-  inside it" is true of these 57 entries and false of the domain `lambda <= 300`.
-
-**Closed when** row 2 is labelled with the quantity it reports, and the
-`lambda <= 300` claim is stated over the corpus it was measured on rather than
-over the limit -- or re-measured on `min(I_y, I_z)`, where it becomes a claim
-about a domain.
-
-**R104. (recordable) `_field` takes the first matching token where `_parse_line`
-treats a duplicate as fatal, so one shape of unexecutable line is still green.**
-`tests/verification/rung1/test_corpus_configurations.py:250-257`.
-
-Driven directly:
+The acceptance window of `assert_close(ratio, 1.0, 0.60)` is
+`ratio in (0.400, 2.500)`, which I solved rather than read. The corpus's clean
+scatter is `0.787 .. 1.761`, so the entry-wise margin is `1.42x` up and `1.97x`
+down -- the entry's `1.39x` is right about the corpus. Over 360 random admissible
+configurations (`D` 0.1-300 m, `D/t` 3-30, `L/r_min` 30-200, free direction, free
+roll, `I_y/I_z` 0.01-0.2) the worst deviation is **`0.5937`, `0.990` of the band**,
+and a local search from there crosses:
 
 ```
-  ... extra=bogus=1 expect=raise expect=hold   ->  row expect='raise'  per-entry GREEN
-  ... extra=bogus=1 expect=hold expect=raise   ->  row expect='hold'   per-entry RED
+  band_edge_thickwall_aniso   D 2.888  t 0.5471  L 24.11  I_y/I_z 0.0932
+      L/r_min 92.9   L/D 8.3   ratio 2.5847   deviation 0.6131 = 1.022x the band
+      clean out-of-balance 2.661e-16 = 0.053x the ceiling
 ```
 
-`_parse_line` refuses a duplicated field precisely because "taking the last
-silently runs a configuration nobody wrote"; `_field` then takes the first and the
-per-entry test agrees with it. The reviewer wrote a contradiction, so no
-expectation is being overwritten -- this is much smaller than R91 -- but it is the
-one line I could build that is unexecutable and reads green, and the fix is the
-rule `_parse_line` already applies one function away.
+**This is not a slender member and not a degenerate one.** `L/D 8.3`, a thick wall,
+a free direction and a roll -- a shape a platform carries. The element is fine
+there; the *curve* is not. Two more entries bracket it,
+`band_edge_thickwall_free_dir` at `0.990` of the band and -- the one that removes
+the "synthetic anisotropy" reply -- `band_edge_isotropic_bracing`, a plain circular
+tube the shipped model builds today (`D/t 4.5`, `L/D 111`), at `2.3505`, `0.958` of
+the band.
 
-**Closed when** `_field` refuses a key that appears more than once, so a
-duplicated `expect` reaches the per-entry assertion as a disagreement.
+A consequence I did not predict and the suite found for me: with those three
+entries present, `test_a_SENSITIVITY_CHANGE_breaks_the_band[down]` **fails** --
+`5.0` no longer catches a `1/5` change, because the required downward factor is
+`max_ratio / 0.400 = 2.5847 / 0.4 = 6.46`. **The band's counter is a property of
+the list too.**
+
+**Closed when** the band and its counter are stated over the sample they were
+measured on, or re-measured over the admissible space and set from that -- and the
+`1.39x` margin sentence says which of the two it is.
+
+**R108. (blocking) The only per-entry claim that a small defect is detectable at
+all was removed and not replaced, and the replacement is free.**
+`tests/verification/rung1/test_corpus_configurations.py:786-872`.
+
+Before this round, every corpus entry had to respond to a 1e-6 single-element
+defect above a counter. That claim is gone: claim 1 injects *structural* defects,
+and claim 2 asserts only that the small-defect response tracks a curve -- a curve
+that passes **below the ceiling** at `L/r_min ~ 2978`, where the response is
+undetectable and the ratio is still `1.0` and green. So nothing in the suite now
+says any configuration can fail on a small defect.
+
+The replacement needs no new number, and it is the pattern this round adopted at
+the posed geometry (`assert err > PATCH_TEST_EXACTNESS`, `test_patch_test.py:735`):
+assert the small-defect response against the **ceiling**, per entry. Measured over
+all 63 entries at this commit it holds, worst first:
+
+```
+  aniso_weak_lam154_undetectable  L/r_min 1539  2.1370e-14 =  4.27x the ceiling
+  lam900_axis_undetectable        L/r_min  900  4.1317e-14 =  8.26x
+  lam900_skew_undetectable        L/r_min  900  4.8362e-14 =  9.67x
+  lam620_counter_pin              L/r_min  620  1.0187e-13 = 20.37x
+```
+
+`4.27x` on the entry the last two rounds were fought over. The claim that was red
+at `1e-13` is true at the ceiling, on every entry, with no new constant and no
+domain -- and it is the claim a reader of a patch test expects to find.
+
+**Closed when** either that assertion exists, or the plan records that the gate no
+longer claims small-defect detectability per entry and says where the claim went.
+
+**R109. (recordable) "The only number in the claim that decides a pass is the
+band" is refuted by measurement: `SENSITIVITY_SCALE` decides passes and has
+untested slack of `x1.5` up and `x0.8` down.** `floatfea/tolerances.py:461-470`;
+`tests/verification/rung1/test_corpus_configurations.py:809-831`;
+`docs/reports/F2/step-4.md` sec. 4.
+
+**The placement is defensible and I endorse it** -- `DETECTION_THRESHOLD` sets the
+precedent, `test_no_entry_carries_a_hand_written_MEASURED_value` positively
+requires measured values to live outside `tolerances.py`, and the meta-tests did
+reject the first attempt for a real reason. What did not come across with the
+precedent is the guard that makes it safe. `DETECTION_THRESHOLD_BAND_COUNTER` is
+injected by perturbing **the recorded threshold itself**
+(`test_patch_test.py:1008`, `eps = DETECTION_THRESHOLD[state] * factor`), so the
+recorded numbers cannot be tuned by more than the counter without going red. The
+new counter perturbs the **physical response** instead, so nothing constrains the
+curve. Measured by moving the constant with everything else held:
+
+```
+  SENSITIVITY_SCALE  x1.2 x1.4 x1.5  ALL GREEN     x2.0  1 entry red
+  SENSITIVITY_SCALE  x0.8            ALL GREEN     x0.6  2 entries red
+  SENSITIVITY_EXPONENT  +-0.05       ALL GREEN     +-0.10  1-2 entries red
+```
+
+A `x1.5` knob that no test constrains, sitting in front of the number that decides
+the ratio, is "a factor introduced to make two numbers agree" (`CLAUDE.md`
+sec. Tolerances) -- and the scatter is not centred on it: the geometric centre of
+`0.787 .. 1.761` is `1.178`, so moving `SCALE` up by that factor would buy margin
+on both sides. Nothing did that. But nothing would notice.
+
+**Closed when** either the band's counter is also injected on the recorded curve --
+the precedent's own form -- or the claim in sec. 4 is narrowed to what is true: the
+band is the only number in `tolerances.py`, and the curve is a recorded value with
+`x1.5 / x0.8` of unconstrained slack.
+
+**R110. (recordable) A phantom citation in `tolerances.py`.** `:467`.
+
+```
+cmd  grep -rn "SENSITIVITY_CURVE" --include=*.py .
+out  floatfea/tolerances.py:467 only -- nothing under tests/
+```
+
+The entry names the curve "as `SENSITIVITY_CURVE` in
+`tests/verification/rung1/test_corpus_configurations.py`". No such symbol exists;
+the file defines `SENSITIVITY_SCALE`, `SENSITIVITY_EXPONENT` and
+`sensitivity_curve()`. **Closed when** the entry names a symbol that resolves.
+
+**R111. (recordable) The bracket table is a fourth generatorless table in
+`tolerances.py`, added one commit after BI3 was adopted against exactly that.**
+`floatfea/tolerances.py:479-484`; `8d6ba7d`.
+
+The shipped reporting test regenerates the ceiling, the two formulation controls
+and the curve's residual range -- that part of the BI3 claim is true and I checked
+it prints them. It does **not** produce the `3x / 4x / 5x` escape bracket; the
+shipped test injects `5.0` only. I reproduced every cell of the bracket by hand and
+it is exactly right today, which is why this is recordable rather than blocking.
+BI3's point is the mechanism: the table is a report that nothing regenerates.
+
+Second, smaller: the entry brackets where it could solve. The exact edges are
+`3.175x` up (binding entry `lam900_axis_undetectable` at ratio `0.787`) and
+`4.403x` down (`aniso_free_dir_weak` at `1.761`), so the smallest two-sided factor
+is `4.403` and the margin `5.0` carries is `1.14x`. "Invert the decision rule and
+solve" gives a number; the bracket gives an interval.
+
+**Closed when** the bracket moves to the report (which is regenerated by rule) with
+a pointer here, or `scripts/` gains the generator.
+
+**R112. (recordable) The withdrawn framing survives in a production module, on the
+function this round changed.** `floatfea/model/admissibility.py:129-137`.
+
+```
+"The value is still worth carrying, because it is the axis along which the
+ counter-case's sensitivity falls -- as 1/lambda^2, which is why
+ PATCH_TEST_EXACTNESS_COUNTER is recorded at the most slender configuration
+ in the corpus."
+```
+
+At this commit `PATCH_TEST_EXACTNESS_COUNTER` is the formulation control, it is not
+recorded at the most slender configuration (`1539`) but at `900`, and the causal
+"which is why" is the sentence the plan withdrew. Three test-file docstrings were
+regenerated this round and the production module was not. The docstring also
+carries a three-row table with no generator (R100's family).
+
+**Closed when** the docstring describes the constant that exists.
+
+**R113. (recordable) "Everything characterising an entry now goes through one
+`_entry_section`" is refuted by a one-line grep, and is currently harmless.**
+`docs/reports/F2/step-4.md` sec. 3;
+`tests/verification/rung1/test_corpus_configurations.py:639`.
+
+`_inadmissible` still calls `_section(entry["section"])`. I measured that it does
+not matter today -- `member_l_over_d` reads `_outer_diameter`, which is `I_z` and
+`A`, and the only section-modifying extra moves `I_y` -- so the L/D branch is
+unaffected. It matters the day an extra touches `D`, `t` or `I_z`. The finding is
+the sentence, not the code: it states a fact about the repository that its own grep
+contradicts (BF0).
+
+**Closed when** the sentence says "everything that reads the weak axis", or
+`_inadmissible` reads `_entry_section`.
+
+**R114. (recordable, new subject) The synthetic anisotropy route validates nothing:
+`I_y_over_I_z=0` builds a member with zero bending stiffness in one plane and
+`=-1.0` builds one with negative bending stiffness, both silently.**
+`tests/verification/rung1/test_corpus_configurations.py:325-343` (`_extras`) and
+`:405-407` (`_build`).
+
+`_extras` checks that the value is finite and stops. Driven directly at this
+commit:
+
+```
+  I_y_over_I_z=0     _build ACCEPTS,  I_y = 0.0000e+00   I_z = 9.5842e-04
+  I_y_over_I_z=-1.0  _build ACCEPTS,  I_y = -9.5842e-04  I_z = 9.5842e-04
+```
+
+A mechanism and an indefinite element, assembled without complaint. The refusal
+belongs where the value is parsed; today the first symptom is a `ValueError` from
+`member_lambda` inside a diagnostic, which is a crash in the reporting path rather
+than a refusal of the configuration. `aniso_zero_I_y_must_refuse` and
+`aniso_negative_I_y_must_refuse` are in the corpus at `expect=raise` and both are
+red. This is a different subject from BN1-BN3 and it is **not** part of the STOP;
+it is the next round's item.
 
 ## Tolerances touched
 
 | name | old | new | form | counter | justification located |
 |---|---|---|---|---|---|
-| -- | -- | -- | -- | -- | **None.** The `Final[` lines of `git diff 51fc886..36a3702 -U0 -- floatfea/tolerances.py` are **empty in both directions**. Every change to that file this round is comment text: two tables removed under R92, and prose. No value moved, none was widened, none was tightened, and nothing was moved to rescue a red -- the red is still red. |
+| `PATCH_TEST_EXACTNESS_COUNTER` | `1.0e-13` | `3.5e-05` | dimensionless residual, the same quantity as the ceiling | it *is* the counter; ceiling `5e-15` sits `7.0e+09x` below it | `tolerances.py:425-453`, `F2.md:472-493`, report sec. 2 |
+| `PATCH_TEST_SENSITIVITY_BAND` | -- | `0.60` | relative to the larger operand, dimensionless | `PATCH_TEST_SENSITIVITY_BAND_COUNTER = 5.0`, injected two-sided | `tolerances.py:455-500` |
+| `PATCH_TEST_SENSITIVITY_BAND_COUNTER` | -- | `5.0` | multiplicative factor | it is a counter | `tolerances.py:496-503` -- **and `F2.md:514` says `3.0` (R106)** |
 
-`BEAM_ADMISSION_L_OVER_D` (`2.0`) and `PATCH_TEST_EXACTNESS_COUNTER` (`1.0e-13`)
-are the two entries whose *comments* changed. I re-read both against the
-measurements: `1.14e-09` at the limit and `11371x` the counter reproduce (I
-measured all six columns of the withdrawn sweep at the tenth verdict), and the
-`1/lambda^2` statement in the counter's entry is the one thing in this repository
-that predicts my `aniso_weak_lam154_undetectable` correctly. **The entry is right
-and the plan is wrong**, which is an unusual and welcome direction for that
-disagreement to run.
+**The move that matters is the first, and it is not a widening -- it is a
+replacement of the claim, and it must be read as one.** Raising a counter weakens
+the assertion attached to it, and this one rose by eight orders. It is defensible
+because the assertion changed with it: the old one ("every entry detects a 1e-6
+defect at `1e-13`") is a universal that is false, which is what the last two rounds
+established, and deleting a false universal is right. What is not defensible is
+deleting it and leaving nothing behind, because the true form of the claim holds on
+every entry with `4.27x` to spare -- **R108**.
 
-No golden file moved -- `git diff --stat 51fc886..36a3702 -- tests/regression` is
-empty. `grep -rn "xfail\|pytest.skip" tests/` returns nothing. The two red tests
-are red, named in the report, and not accommodated anywhere -- which is the
-correct handling of a failure and is why this STOP is about the plan and not
-about the commit.
+I re-derived the new value independently: `dropped_flip 5.8789e-05` at
+`L/r_min 1539` and `wrong_dof_index 3.5991e-05` at `900` reproduce **to the
+digit**, the clean reconstruction is round-off, and the `I_y <-> I_z` refutation
+reproduces to the digit. The bracket behind `5.0` reproduces cell for cell.
+Nothing here is mis-measured; the findings are about what the measurements are said
+to mean.
+
+No golden file moved -- `git diff --stat fc3c9a8..121a35a -- tests/regression` is
+empty. `grep -rn "xfail\|pytest.skip" tests/` returns nothing. No `expect` on any
+corpus line was touched: `git diff fc3c9a8..121a35a -- tests/corpus` is empty.
 
 ## Next step opens when
 
 Step 5 (V1.1, rigid-body modes) does not begin, and **neither does another step
-commit**. This is a STOP: `docs/milestones/F2.md` reopens.
+commit**. This is a STOP: `docs/milestones/F2.md` reopens. **The suite at `121a35a`
+is green and the element is not implicated in anything here** -- every red at
+`8a415e1` is mine, and every one of them is a sentence in the plan meeting a
+configuration it did not sample.
 
-1. **R94 -- the plan.** Sec. 5b Q6 and sec. D7 item 7 say what was measured. The
-   *ceiling's* domain is dissolved, and I could not break it in two consecutive
-   rounds on five axes; the *counter's* is not, it falls as `1/lambda^2`, and the
-   axis it falls along is `min(I_y, I_z)` and not the `lambda` the runner prints.
-   `0.13-0.49 eps` goes with the sentence it supports. **This part needs nobody
-   and blocks on nothing.** Whether a code slenderness limit is *also* adopted is
-   a separate decision, still blocked on the clause, and correctly so.
-2. **R99 -- the list.** The next report's `Carried` section carries R94 through
-   R104 and the older items, by number, each with a status. R96 in particular is
-   answered *before* any bound is written on `lambda`, because it decides whether
-   the bound bounds anything.
-3. **R100, R101 -- the two loose ends of R92**, both one-line.
-4. **R102, R103, R104, R95 -- recordable**, answerable in the next report's
-   `Carried` section.
-
-I want to be exact about what I am not saying. **`1f32c7f` is the cleanest step
-commit of this milestone.** Three blocking items answered, two of them at the
-level the condition asked for rather than at the level that would have closed it;
-a capability added because the reviewer could not express a case; a second stale
-table found without being asked; a claim withdrawn rather than defended; a red
-left red and named. Every figure I checked in it reproduced, most to the digit.
-The STOP is because the *plan* now contradicts the suite at its own commit, and
-because a plan is the one artifact a step commit may not fix.
+1. **R106 -- the plan against the code.** `3.0` versus `5.0`, `2.5x` versus `5x`,
+   in the plan and in a test docstring. One line each, needs nobody, and it is the
+   cheapest of the three to close.
+2. **R105 -- claim 1's edge.** The plan says what was measured: both structural
+   defects fall at the small defect's own exponent; the counter is cleared over a
+   bounded range whose edge is `L/r_min ~ 912` on one family and a different number
+   on another; the claim with no domain is the one against the ceiling. Whether the
+   corpus entries past the edge are configurations this project intends to admit is
+   a separate question and a legitimate answer -- but it is an **admission**
+   answer, and BN4 has just ruled that no admission limit enters G2.2, so the two
+   cannot both stand as written.
+3. **R107 -- claim 2's band over the space, not the list.** `1.39x` is `1.01x` off
+   the corpus, and `band_edge_thickwall_aniso` is an ordinary member. The band's
+   own counter fails downward once the three new entries are present.
+4. **R108 -- the detectability claim, free to restore**, and the one thing in this
+   round I would call a loss rather than a change.
+5. **R109-R114 -- recordable**, answerable in the next report's `Carried` section.
+   R114 is a new subject and not part of the STOP.
 
 **Adversarial corpus (BE3): 8 new entries committed, all unseen by the
-implementer; 7 scored exactly as recorded, 1 red.**
-`tests/corpus/g22_model_configurations.txt`, now **82**, committed separately at
-`931d71d` immediately before this verdict and touching no code. Full suite with
-the corpus applied: **3 failed, 607 passed**.
+implementer; 2 of 8 scored as the implementer's checks would predict, 6 red.**
+`tests/corpus/g22_model_configurations.txt`, now **90**, committed separately at
+`8a415e1` immediately before this verdict and touching no code. Full suite with the
+corpus applied: **7 failed, 760 passed** -- six from the new entries plus
+`test_a_SENSITIVITY_CHANGE_breaks_the_band[down]`, which the new entries broke
+without being aimed at it.
 
-Four measure the `lambda` proposal on the coordinate it does not sample, and one
-of them is the finding of this round. Four attack the new sequence parser in
-shapes the implementer's twelve tests omit: `onode + aniso` (the five accepted
-shapes cover `roll`, `roll + aniso`, `onode`, `onode + roll`, `none`), all three
-keys on a free direction, a key repeated *across* a vector value, and a vector
-truncated so the following key is swallowed as its third component. **Both
-refusal shapes are refused by the shipped parser** -- that is the coverage
-measurement for R91, and it is a pass: the seven planted refusals generalise to
-two the author did not plant. `all_three_extras_free_dir` is now the corpus's
-worst clean value at `2.2595e-16` = **1.018 eps**, the first entry above one eps
-and `7.8x` the plan's quoted range, at `0.045x` of the ceiling.
+The coverage measurement, stated plainly: **three configurations break claim 1, one
+breaks claim 2, two build a mechanism silently, and two are green witnesses that
+pin the margin from inside.** The implementer's own count -- 63 entries, two
+planted defects -- is what it is: the entries and the defects came from the same
+head as the claims, and the claims are what the entries cannot test.
 
-**Twelve consecutive rounds have found no element defect.** Per the guard, that
-still means "not yet contradicted", and it stays that way until V5.1 puts
-CalculiX on the other side. What twelve rounds *have* found is a consistent
-pattern, and this round names it precisely: **the element has been right every
-time and the sentences around it have not.** Eleven of the last fifteen findings
-were a figure, a docstring, a pointer or a plan word describing the repository as
-it was one commit ago.
+**Twelve consecutive rounds have found no element defect**, and the guard's reading
+is unchanged: not yet contradicted, until V5.1 puts CalculiX on the other side.
+This round sharpens the pattern the eleventh named. It is no longer "the sentences
+around the element are wrong" -- the sentences this round are careful, and three of
+them were withdrawn by their own author before I read them. It is narrower:
+**every remaining error is a quantifier.** "Every entry", "no domain", "do not fall
+with slenderness", "the only pass-deciding number", "1.39x of margin" -- five
+claims, five measurements over a list, five statements about a space. The
+measurements are right. The quantifiers are what nobody measures, because measuring
+a quantifier means leaving the list.
 
 **Witness channel unavailable.** No git remote, so no PR and no `[witness ...]`
-comment; per `docs/SUPERVISOR.md` that is an unavailable check, not a pass.
-Eleven consecutive reviews by one reader, and the standing consequence is
-unchanged: nothing here has been read by anyone who does not share this
-repository's assumptions.
+comment; per `docs/SUPERVISOR.md` that is an unavailable check, not a pass. Twelve
+consecutive reviews by one reader, and the standing consequence is unchanged.
 
-**The standing question for the next round**, narrower than the tenth's: **for
-every claim in this diff that is a statement about a *space* rather than about a
-*list*, which coordinate of that space was varied?** `lambda <= 300` was measured
-over 57 entries and asserted over a domain, and the coordinate that broke it --
-section anisotropy -- was already in the corpus, already in the signature of
-`admissibility.member_lambda`, and already an open finding.
+**The standing question for the next round**, sharper than the eleventh's: **for
+every quantifier in this diff -- "every", "any", "no", "always" -- what is the
+sample it was measured on, and what is the cheapest configuration outside that
+sample?** If the answer is "the corpus", the quantifier is a claim about 90 lines
+written by one reader, and the next round will find the ninety-first.
