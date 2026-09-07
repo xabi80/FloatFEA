@@ -561,3 +561,52 @@ id=aniso_denormal_I_y_must_refuse section=circular_tube,D=0.600,t=0.01200 statio
 # route at ratio 1.0 changes nothing (weakest 3300x, clean 0.016x). If this one
 # were red the route itself would be the finding, not the configurations.
 id=aniso_ratio_one_is_a_noop    section=circular_tube,D=0.600,t=0.01200 stations=10.0 orient=skew        extra=I_y_over_I_z=1.0           runs_in_suite=no expect=hold
+#
+# --- FOURTEENTH ROUND (BP / rev 14). THE FOURTH DEFECT ARRIVES WITH NO -------
+# --- DOMAIN, AND ITS EDGE IS 5.6x OUTSIDE THE CORPUS, NOT 6.4x ---------------
+#
+# BP3 reinstates `dropped_shear_parameter` as an INJECTED_DEFECT asserted over
+# every solved entry. Measured at f8df590 the minimum is 1739x the ceiling at
+# plan_headline_lam2885, which reproduces; the plan's scoping ("anywhere in the
+# corpus") is honest. What is not measured is the exponent. The plan and the
+# report both attach `Phi ~ 1/lambda^2` to the shrinkage; the MARGIN falls as
+# lambda^-4.0, solved on one family with L the only variable moved:
+#
+#   L        600     2000     6000        D=0.600 t=0.01200 axis
+#   L/r     2886     9618    28860
+#   x       1739    14.09   0.1739        log(1739/0.1739)/log(10) over log(10)
+#
+# lambda^-2 would put the edge at L/r ~ 1.2e5; lambda^-4 puts it at ~1.9e4. The
+# published mechanism is 6.4x optimistic in lambda, which is the difference
+# between "unreachable" and "the next corpus round reaches it". The defect
+# responds in the `shear` and `shear_xz` states only, which is right.
+#
+# RED, on a plain circular tube with no extras: dropped_shear = 0.8806x, and the
+# clean field is 0.0000x -- the element is fine here and only the control loses.
+id=shear_edge_iso_L4000         section=circular_tube,D=0.600,t=0.01200 stations=4000.0 orient=axis      extra=none                       runs_in_suite=no expect=hold
+# The bracket from inside, one variable moved: 2.783x, green, clean 0.0174x.
+id=shear_edge_iso_L3000         section=circular_tube,D=0.600,t=0.01200 stations=3000.0 orient=axis      extra=none                       runs_in_suite=no expect=hold
+# The SAME geometry in skew is on the other side of the edge -- 1.069x, green.
+# Orientation moves this margin by 1.21x, so the edge is a surface and not a
+# number in L/r_min alone. This entry is the reason the two above mean something.
+id=shear_edge_iso_L4000_skew    section=circular_tube,D=0.600,t=0.01200 stations=4000.0 orient=skew      extra=none                       runs_in_suite=no expect=hold
+# A second section family reaches the same edge: D=0.050 t=0.00100 axis, L=400
+# gives 0.4247x (RED, clean 0.0098x) and L=200 gives 6.795x (green). So it is not
+# an artefact of the thick-wall 0.6 m tube.
+id=shear_edge_thin_L400         section=circular_tube,D=0.050,t=0.00100 stations=400.0 orient=axis       extra=none                       runs_in_suite=no expect=hold
+id=shear_edge_thin_L200         section=circular_tube,D=0.050,t=0.00100 stations=200.0 orient=axis       extra=none                       runs_in_suite=no expect=hold
+#
+# BP5's DECLARED RANGE, probed at its own boundaries. `I_Y_OVER_I_Z_RANGE =
+# (1e-6, 1e6)` is declared rather than derived and says so, which is honest. The
+# derived boundary exists and was not taken: under the rule that ships,
+# `dropped_flip` stops reddening below ratio ~7.9e-14 (bisected, skew, D=0.600
+# t=0.01200 stations=9.67), so the declared floor is 1.27e+07x above the measured
+# edge. The reason written at the site -- "weakest-state response is exactly 0.0"
+# -- is in the quantity BP2 deleted in the same commit.
+#
+# Both declared boundaries are admissible and behave: green everywhere.
+id=aniso_range_floor_1e_6       section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew        extra=I_y_over_I_z=1e-6          runs_in_suite=no expect=hold
+id=aniso_range_ceiling_1e6      section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew        extra=I_y_over_I_z=1e6           runs_in_suite=no expect=hold
+# And the refusal is where the constant says it is, on both sides.
+id=aniso_below_range_floor      section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew        extra=I_y_over_I_z=9e-7          runs_in_suite=no expect=raise
+id=aniso_above_range_ceiling    section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew        extra=I_y_over_I_z=1.1e6         runs_in_suite=no expect=raise
