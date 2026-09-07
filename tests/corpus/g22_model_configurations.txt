@@ -610,3 +610,54 @@ id=aniso_range_ceiling_1e6      section=circular_tube,D=0.600,t=0.01200 stations
 # And the refusal is where the constant says it is, on both sides.
 id=aniso_below_range_floor      section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew        extra=I_y_over_I_z=9e-7          runs_in_suite=no expect=raise
 id=aniso_above_range_ceiling    section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew        extra=I_y_over_I_z=1.1e6         runs_in_suite=no expect=raise
+#
+# --- FIFTEENTH ROUND -------------------------------------------------------
+# Eight entries. What this round measures is the CLASSIFICATION rule added at
+# 3830838, not the element: `classify` exempts a defect whose `injected_delta`
+# is below PATCH_TEST_EXACTNESS_COUNTER_DEFECT. Every outcome below was measured
+# before the line was written.
+#
+# 1. A THIRD SECTION FAMILY reaches the shear edge, so it is not an artefact of
+#    the two families the fourteenth round used. D=1.200 t=0.06000 axis:
+#    L=4000 gives 12.5x (green) and L=8000 gives 0.7813x (RED, clean 0.0287x).
+id=shear_edge_thick_L8000       section=circular_tube,D=1.200,t=0.06000 stations=8000.0 orient=axis      extra=none                       runs_in_suite=no expect=hold
+id=shear_edge_thick_L4000       section=circular_tube,D=1.200,t=0.06000 stations=4000.0 orient=axis      extra=none                       runs_in_suite=no expect=hold
+#
+# 2. THE EXEMPTION BRANCH, REACHED BY A SHIPPED DEFECT. Measured at this commit
+#    the branch is dead: 324 of 324 (entry, defect) pairs classify `live`, so
+#    the only thing that exercises `below resolution` is the `no_op` control.
+#    D=0.050 t=0.00100 axis, L the only variable moved:
+#      L=1990  delta 1.002e-06  LIVE, response 6.9e-04x of the ceiling  RED
+#      L=2500  delta 6.348e-07  EXEMPT, and the entry passes
+#    The pair is the rule's own operating point. Just above the declared
+#    resolution the gate is 1400x short of reddening, and just below it the
+#    defect is excused -- so the exemption arrives where the gate is blindest,
+#    not where the defect is negligible.
+id=shear_defect_live_thin_L1990 section=circular_tube,D=0.050,t=0.00100 stations=1990.0 orient=axis      extra=none                       runs_in_suite=no expect=hold
+id=shear_defect_exempt_L2500    section=circular_tube,D=0.050,t=0.00100 stations=2500.0 orient=axis      extra=none                       runs_in_suite=no expect=hold
+#
+# 3. L/r_min IS NOT THE VARIABLE, and this refutes the reviewer's own fourteenth-
+#    round `lambda^-4` fit as well as the plan's `lambda^-2`. Same geometry as
+#    shear_edge_iso_L4000 with I_y/I_z = 0.01: r_min falls 10x so L/r_min goes
+#    19237 -> 192370, and the shear defect's margin does not move at all --
+#    0.8806x in both. The governing quantity is Phi in the WORST-STATE plane,
+#    which the anisotropy leaves alone.
+id=shear_edge_L4000_aniso_weak  section=circular_tube,D=0.600,t=0.01200 stations=4000.0 orient=axis      extra=I_y_over_I_z=0.01          runs_in_suite=no expect=hold
+#
+# 4. AN EXACT TIE AT THE SMALLEST DETECTION EDGE. R125 was answered with "ties
+#    broken by name", and at this commit the minimum is unique, so the tie-break
+#    has no data. This entry is band_edge_isotropic_bracing's geometry under a
+#    name that sorts first; both bisect to 3.9459028621e-14, bit-identical, so
+#    the id the guard prints must change and its ratio must not.
+id=aaa_band_edge_twin           section=circular_tube,D=0.290954,t=0.0640574 stations=32.3916 orient=-0.581897,-0.576984,-0.573136 extra=roll=-0.677087 runs_in_suite=no expect=hold
+#
+# 5. THE SAME PHYSICAL MEMBER IN A 1000x LENGTH UNIT, both ways from
+#    plan_headline_lam2885 (D=0.600 t=0.01200 L=600, L/r_min 2885.5). All four
+#    defect margins are identical to four digits across 10^6 in length scale --
+#    2.78e+09x, 7.087e+08x, 1739x, 8.701e+06x -- which is the unit-invariance
+#    claim measured rather than argued. The CLEAN residual is not invariant:
+#    0.0174x, 2.49e-06x and 0.0166x of the ceiling at km, m and mm, so the
+#    "0.13-0.49 eps across six orders of length unit" recorded in
+#    interior_out_of_balance's docstring does not span this pair.
+id=unit_kilo_lam2885            section=circular_tube,D=600.0,t=12.00 stations=600000.0 orient=axis      extra=none                       runs_in_suite=no expect=hold
+id=unit_milli_lam2885           section=circular_tube,D=0.000600,t=0.0000120 stations=0.600 orient=axis  extra=none                       runs_in_suite=no expect=hold
