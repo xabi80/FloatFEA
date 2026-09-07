@@ -522,3 +522,42 @@ id=band_edge_isotropic_bracing  section=circular_tube,D=0.290954,t=0.0640574 sta
 # to prevent, and the refusal belongs where the value is parsed.
 id=aniso_zero_I_y_must_refuse   section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=I_y_over_I_z=0 runs_in_suite=no expect=raise
 id=aniso_negative_I_y_must_refuse section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=I_y_over_I_z=-1.0 runs_in_suite=no expect=raise
+#
+# --- THIRTEENTH ROUND (BO / rev 13). THE PER-STATE CLAIM HAS A DOMAIN, AND ---
+# --- THE PLAN'S OWN HEADLINE CONFIGURATION IS PAST IT ------------------------
+#
+# `test_EVERY_STATE_detects_the_small_defect` is asserted over every entry with
+# no domain, at a worst margin of 1.867x. Solved rather than sampled, the edge on
+# a PLAIN CIRCULAR TUBE -- legal section, no extras, no synthetic anisotropy --
+# is L/r_min ~ 2580, which is 1.11x past the corpus's most slender entry and
+# BELOW the L/r_min = 2885 the plan, tolerances.py:420/444 and the report all
+# cite as the proof that detection is nine orders wide.
+#
+# The plan's own example, reproduced exactly: D=0.6 t=0.012 axis, L=600 m gives
+# L/r_min = 2885.5 and wrong_dof_index = 3.5433e-06 = 7.09e+08x the ceiling, so
+# THAT claim is true to two digits. At the same configuration the weakest state
+# under a 1e-6 element defect is 0.804x the ceiling and the per-state assertion
+# is RED, while the clean field sits at 0.017x. The element is fine here.
+id=plan_headline_lam2885        section=circular_tube,D=0.600,t=0.01200 stations=600.0 orient=axis        extra=none                       runs_in_suite=no expect=hold
+# The edge bracketed from both sides on one family, one variable moved:
+# L=85 -> 1.048x (green), L=90 -> 0.935x (red). Clean at 0.032x and 0.000x.
+id=every_state_edge_iso_L85     section=circular_tube,D=0.100,t=0.00500 stations=85.0 orient=axis         extra=none                       runs_in_suite=no expect=hold
+id=every_state_edge_iso_L90     section=circular_tube,D=0.100,t=0.00500 stations=90.0 orient=axis         extra=none                       runs_in_suite=no expect=hold
+# And the same edge reached from the entry that BINDS the 1.867x margin, by
+# moving L alone from 35 to 50 and holding D, t, orient and I_y/I_z: 0.916x,
+# red, clean 0.028x. L/D 83 rather than 1000.
+id=every_state_edge_thickwall_L50 section=circular_tube,D=0.600,t=0.29000 stations=50.0 orient=skew      extra=I_y_over_I_z=0.01          runs_in_suite=no expect=hold
+#
+# R114 IS HALF CLOSED. The new guard is a SIGN test (`ratio > 0.0`), and the
+# invariant `Section.__post_init__` actually enforces for a circular shape is
+# `I_y == I_z` -- `dataclasses.replace(sec, I_y=0.01*sec.I_z)` RAISES. A denormal
+# ratio passes the sign test and builds a section whose weakest-state response to
+# a 1e-6 defect is EXACTLY 0.0 and whose clean field passes the ceiling at
+# 0.0045x. `tests/unit/test_beam_element.py:202-209` builds the same object by
+# the same route and its docstring says it "is never solved with"; this module
+# solves with it on 14 entries.
+id=aniso_denormal_I_y_must_refuse section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=axis      extra=I_y_over_I_z=1e-300        runs_in_suite=no expect=raise
+# The green witness that makes the four above interpretable: the same bypass
+# route at ratio 1.0 changes nothing (weakest 3300x, clean 0.016x). If this one
+# were red the route itself would be the finding, not the configurations.
+id=aniso_ratio_one_is_a_noop    section=circular_tube,D=0.600,t=0.01200 stations=10.0 orient=skew        extra=I_y_over_I_z=1.0           runs_in_suite=no expect=hold
