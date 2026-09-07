@@ -121,14 +121,19 @@ def member_lambda(length: float, section: Section,
     element `L/r` is refuted as the axis because both exponents come out positive
     where a governing quantity would give equal and opposite ones.
 
-    NOTHING IS GATED ON IT. `warn_outside_validated_domain` and the
-    `G22_VALIDATED_MEMBER_LAMBDA` boundary it enforced were removed when G2.2
-    stopped asserting a solved quantity: the floor this axis tracks belongs to
-    the forward error of a linear solve, which is now reported and never
-    asserted. The value is still worth carrying, because it is the axis along
-    which the counter-case's sensitivity falls -- as `1/lambda^2`, which is why
-    `PATCH_TEST_EXACTNESS_COUNTER` is recorded at the most slender configuration
-    in the corpus.
+    NOTHING IS GATED ON IT, and the framing that once justified it is withdrawn
+    (R112). `warn_outside_validated_domain` and the `G22_VALIDATED_MEMBER_LAMBDA`
+    boundary it enforced were removed when G2.2 stopped asserting a solved
+    quantity. The later justification -- that this is the axis along which a
+    counter-case's sensitivity falls, so the counter is recorded at the most
+    slender configuration -- went with the form it belonged to: a counter-case is
+    an injected DEFECT and the comparison is to the ceiling, so there is no
+    slenderness at which a counter needs recording (BO0).
+
+    WHAT IS TRUE, MEASURED: every defect's response falls as `1/lambda_weak^2`,
+    at a measured exponent of `-1.99` for structural and small defects alike,
+    because the residual normalises by the largest stiffness in the matrix.
+    That makes this a useful axis to REPORT a margin against. It gates nothing.
     """
     if length <= 0.0:
         raise ValueError(f"member length must be positive; got {length}")

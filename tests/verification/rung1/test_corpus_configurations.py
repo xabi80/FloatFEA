@@ -14,8 +14,9 @@ touch it.
 WHAT IS ASSERTED PER ENTRY
 --------------------------
 EVERY entry that builds  the six states' INTERIOR OUT-OF-BALANCE is below
-                `PATCH_TEST_EXACTNESS`, and the 1e-6 single-element control
-                still exceeds `PATCH_TEST_EXACTNESS_COUNTER`.
+                `PATCH_TEST_EXACTNESS`, and every NAMED DEFECT injected into it
+                pushes the out-of-balance ABOVE `PATCH_TEST_EXACTNESS` -- the
+                gate goes red. The margin is reported, never asserted (BO0).
 `expect=raise`  the configuration must raise at construction rather than fall
                 back to a silent default.
 
@@ -75,9 +76,7 @@ from floatfea.testing import assert_close
 from floatfea.model.nodes import Model, Node, node_dofs
 from floatfea.tolerances import (BEAM_ADMISSION_L_OVER_D,
                                  PATCH_TEST_EXACTNESS,
-                                 PATCH_TEST_EXACTNESS_COUNTER,
-                                 PATCH_TEST_SENSITIVITY_BAND,
-                                 PATCH_TEST_SENSITIVITY_BAND_COUNTER,
+                                 PATCH_TEST_EXACTNESS_COUNTER_DEFECT,
                                  ROUNDOFF_IDENTITY)
 
 import sys
@@ -334,6 +333,25 @@ def _extras(n: int, text: str) -> dict[str, list[str]]:
 
     for name, parts in out.items():
         want = 3 if name == "orientation_node" else 1
+        if name == "I_y_over_I_z" and len(parts) == 1:
+            # R114. `I_y_over_I_z=0` built a section with ZERO bending stiffness
+            # about one axis and `=-1.0` built a NEGATIVE one, both silently:
+            # `object.__setattr__` writes past `Section.__post_init__`, which is
+            # the only place that checks. A structure with negative bending
+            # stiffness is not a structure, and the entry that asks for one is
+            # asking this module to build something no production path can.
+            try:
+                ratio = float(parts[0])
+            except ValueError:
+                ratio = float("nan")
+            if not (ratio > 0.0):
+                raise CorpusError(
+                    f"{CORPUS.name}:{n}: extra I_y_over_I_z={parts[0]!r} is not "
+                    "positive. A second moment of area is positive by "
+                    "definition; zero or negative would build an element with "
+                    "no bending stiffness or with negative bending stiffness, "
+                    "and `Section.__post_init__` -- the only guard -- is bypassed "
+                    "by the route this field uses.")
         if len(parts) != want:
             raise CorpusError(
                 f"{CORPUS.name}:{n}: extra {name} takes {want} value(s); got "
@@ -589,29 +607,6 @@ def test_a_direction_that_cannot_be_built_RAISES(label: str, text: str) -> None:
         _direction(0, text)
 
 
-def test_the_counter_is_ABOVE_the_ceiling() -> None:
-    """The one relation that makes a ceiling and a counter into a gate (R85).
-
-    If the smallest defect a configuration must detect sits BELOW the largest
-    clean value the gate admits, then an entry can hold and be undetectable at
-    the same time and the pair asserts nothing. This is not hypothetical: at the
-    ceiling this gate carried one commit ago -- 1e-12, a value derived for the
-    quantity G2.2 no longer asserts -- the counter sat at 0.11x of it, and a 1e-6
-    single-element defect on the most slender corpus entry would have passed.
-
-    Stated with the two values `tolerances.py` already owns and no third number,
-    because a multiplier written here is a decision threshold outside
-    `tolerances.py`, which is what R85 found (`100.0`, settable to `1e-30` with
-    the suite green).
-    """
-    assert PATCH_TEST_EXACTNESS_COUNTER > PATCH_TEST_EXACTNESS, (
-        f"the counter {PATCH_TEST_EXACTNESS_COUNTER:.3e} is not above the "
-        f"ceiling {PATCH_TEST_EXACTNESS:.3e}. A defect the gate is required to "
-        "catch is smaller than the deviation the gate is allowed to ignore, so "
-        "an entry can pass the ceiling and fail nothing."
-    )
-
-
 def test_the_corpus_exists_and_is_not_empty() -> None:
     """AM5: an empty parameter set is an error, not a silent pass."""
     assert CORPUS.exists(), f"{CORPUS} is missing; the corpus is the reviewer's"
@@ -729,7 +724,7 @@ def _defective_stiffness(kind: str):
     These are FORMULATION defects: they change what the element is, not how stiff
     it is. That is the class this gate exists for, and it is the class whose
     response does NOT fall with slenderness -- which is why it, and not a fixed
-    small-defect threshold, is what `PATCH_TEST_EXACTNESS_COUNTER` asserts.
+    small-defect threshold, is what the red-on-defect assertion is about.
     """
     from floatfea.element.beam import bending_stiffness, shear_parameter
 
@@ -761,10 +756,13 @@ def _defective_stiffness(kind: str):
     return build
 
 
-FORMULATION_DEFECTS = ("dropped_flip", "wrong_dof_index")
-
-
 def _oob_with_defect(entry, state: str, kind: str) -> float:
+    """`_oob_state` with `kind` injected into every element's local stiffness.
+
+    The assembler imports `local_stiffness` by name, so the patch goes on
+    `floatfea.assemble.system` -- patching `floatfea.element.beam` changes
+    nothing and every defect then reports the clean value.
+    """
     import floatfea.assemble.system as system
 
     original = system.local_stiffness
@@ -775,7 +773,40 @@ def _oob_with_defect(entry, state: str, kind: str) -> float:
         system.local_stiffness = original
 
 
-@pytest.mark.parametrize("kind", FORMULATION_DEFECTS)
+# THE DEFECTS THIS GATE IS ASSERTED AGAINST, each injected and each required to
+# turn the gate red on EVERY entry (BO0/BO1).
+#
+# `dropped_flip` and `wrong_dof_index` are injected into `local_stiffness`;
+# `one_element_scaled` is the `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`-sized
+# perturbation of a single interior element.
+#
+# TWO DEFECTS ARE DELIBERATELY NOT HERE, and where they go vacuous is measured
+# rather than assumed:
+#
+#   `I_y <-> I_z`         a no-op wherever `I_y == I_z`, which is every section
+#                         `basis.kappa` admits (R53).
+#   transposed transform  a no-op wherever the rotation is SYMMETRIC. Measured,
+#                         `|R - R.T| = 0` exactly on 8 corpus entries -- an
+#                         axis-aligned member with no roll has `R = I` -- and on
+#                         2 further near-axis entries the injected difference
+#                         leaves the balance below the ceiling. It stays the SKEW
+#                         counter-case it already is, in `test_patch_test.py`.
+#
+# A third, the dropped shear parameter, is undetectable on 22 of 63 entries
+# because `Phi ~ 1/lambda^2` makes the DEFECT vanish on a slender member: there is
+# nothing left to corrupt. That is V2.2's defect, on a stubby member.
+INJECTED_DEFECTS = ("dropped_flip", "wrong_dof_index", "one_element_scaled")
+
+
+def _oob_with_injected(entry, state: str, kind: str) -> float:
+    if kind == "one_element_scaled":
+        return _oob_state(
+            entry, state,
+            stiffness_scale=1.0 + PATCH_TEST_EXACTNESS_COUNTER_DEFECT)
+    return _oob_with_defect(entry, state, kind)
+
+
+@pytest.mark.parametrize("kind", INJECTED_DEFECTS)
 @pytest.mark.parametrize(
     "entry",
     [e for e in ENTRIES
@@ -783,55 +814,40 @@ def _oob_with_defect(entry, state: str, kind: str) -> float:
      and _inadmissible(e) is None],
     ids=lambda e: e["id"],
 )
-def test_the_corpus_entry_DETECTS_a_FORMULATION_defect(entry, kind: str) -> None:
-    """CLAIM 1, and it holds on every entry with no domain and no exception.
+def test_the_corpus_entry_goes_RED_under_every_injected_defect(
+    entry, kind: str
+) -> None:
+    """THE COUNTER-CASE, in the only form that means anything (BO0).
 
-    A configuration that holds but cannot fail is worse than one that breaches.
-    This is the claim the gate exists for -- an assembly, transformation or
-    connectivity defect -- and it does not weaken with slenderness, because a
-    structural defect corrupts the block itself rather than adding a small
-    multiple of it.
+    A counter-case is the DEFECT whose presence must make the gate red. The
+    comparison is to the gate's own ceiling and to nothing else; the margin is
+    reported by `test_the_forward_error_is_REPORTED_and_the_floor_is_too` and
+    asserted against no constant.
 
-    Measured over all 63 solved entries, the smallest response anywhere is
-    `3.5991e-05` (`wrong_dof_index` at `L/r_min = 900`) and `5.8789e-05`
-    (`dropped_flip` at `L/r_min = 1539`) -- seven orders above the ceiling at the
-    most slender configurations in the corpus.
+    THE FORM THIS REPLACES WAS WRONG FOR SIX ROUNDS. `1.0e-7`, `1.0e-13` and
+    `3.5e-05` were each called a counter while functioning as a floor on the
+    RESPONSE, so an entry "failed to detect" when its response fell below a
+    constant rather than below the ceiling. At `L/r_min = 2885` the wrong-DOF
+    defect responds at `3.5e-06` against a ceiling of `5e-15` -- nine orders of
+    detection, reported as a wall.
+
+    Measured minima of `response / ceiling` over every solved entry, which is what
+    that form was hiding:
+
+        dropped flip               5.150e+09x   at L/r_min 2332
+        one wrong DOF index        5.227e+09x   at L/r_min 1058
+        one element x (1 + 1e-6)   8.701e+06x   at L/r_min  558
+
+    The gate fails if ANY state exceeds the ceiling, so detection is the worst
+    state.
     """
-    # The gate fails if ANY state exceeds, so detection is the worst state.
-    worst = max(_oob_with_defect(entry, st, kind) for st in STATES)
-    assert worst >= PATCH_TEST_EXACTNESS_COUNTER, (
-        f"{entry['id']}: the {kind} defect left an interior out-of-balance of "
-        f"only {worst:.4e}, below the counter "
-        f"{PATCH_TEST_EXACTNESS_COUNTER:.3e} (L/r_min "
-        f"{member_lambda(entry):.1f}). The gate holds here and cannot fail here."
+    worst = max(_oob_with_injected(entry, st, kind) for st in STATES)
+    assert worst > PATCH_TEST_EXACTNESS, (
+        f"{entry['id']}: the {kind} defect left the interior out-of-balance at "
+        f"{worst:.4e}, at or below the ceiling {PATCH_TEST_EXACTNESS:.0e} "
+        f"(L/r_min {member_lambda(entry):.1f}). The gate holds here and cannot "
+        "fail here."
     )
-
-
-# THE RECORDED SENSITIVITY CURVE (F2.md sec. 5b, Q6). A measurement, not a
-# tolerance -- the same status as `DETECTION_THRESHOLD` in `test_patch_test.py`,
-# and it lives beside the code that consumes it for the same reason. The only
-# number in this claim that decides a pass is `PATCH_TEST_SENSITIVITY_BAND`, and
-# that is in `tolerances.py` with its counter.
-#
-# Fitted over all 63 solved corpus entries, 1e-6 single-element defect, weakest
-# state per entry:
-#
-#     response = 3.327e-08 * (L/r_min) ** (-1.964)     scatter 0.788x .. 1.762x
-#
-# THE EXPONENT IS THE MECHANISM, not the fit's convenience. The residual
-# normalises by the LARGEST stiffness, and a bending defect's contribution is
-# smaller than that by the ratio of bending to axial stiffness, which is
-# `12/lambda^2`. The fitted -1.964 is that -2 to within the scatter. The WEAK axis
-# is the one that governs: two entries at the same strong-axis `lambda = 153.9`
-# sit 5x apart in response, and on `min(I_y, I_z)` they are 688 and 1539 and the
-# ordering is right (R96).
-SENSITIVITY_SCALE = 3.327e-08
-SENSITIVITY_EXPONENT = -1.964
-
-
-def sensitivity_curve(lam: float) -> float:
-    """The recorded response of a 1e-6 single-element defect at `L/r_min`."""
-    return SENSITIVITY_SCALE * lam ** SENSITIVITY_EXPONENT
 
 
 @pytest.mark.parametrize(
@@ -841,67 +857,29 @@ def sensitivity_curve(lam: float) -> float:
      and _inadmissible(e) is None],
     ids=lambda e: e["id"],
 )
-def test_the_corpus_entry_SENSITIVITY_matches_the_recorded_curve(entry) -> None:
-    """CLAIM 2: sensitivity to a SMALL defect is a function, never a threshold.
+def test_EVERY_STATE_detects_the_small_defect(entry) -> None:
+    """The stronger per-state claim, for the one defect that supports it (R108).
 
-    A fixed threshold on this quantity is a universal the physics forbids. The
-    residual normalises by the largest stiffness in the matrix, so a defect in the
-    weakest bending mode falls as the ratio of the two -- `1/lambda_weak^2` -- and
-    there is no slenderness at which a fixed small defect stays visible. Six
-    review rounds were spent bounding a domain around that; the domain was the
-    wrong answer to the right observation.
+    A structural defect corrupts one block, so states with no content in that
+    block are blind to it by construction -- that is the plane-confinement
+    property R1 exists for, not a weakness. A scaled ELEMENT touches every block,
+    so every state must respond, and asserting that is what keeps the gate from
+    quietly reducing to the two or three states that happen to be sensitive.
 
-    So the response is asserted TWO-SIDED against the recorded curve. A
-    formulation change that costs the gate sensitivity fails here, and so does one
-    that inflates it -- the second direction matters because a response that grows
-    is a defect the reference is absorbing.
+    Worst over the corpus: `1.867x` the ceiling, at `L/r_min = 2332`. Thin, and it
+    is the honest number -- the fall-off is `1/lambda_weak^2` and the corpus now
+    reaches `L/r_min = 2332`.
     """
-    lam = member_lambda(entry)
-    worst = min(_oob_state(entry, st, stiffness_scale=1.0 + 1.0e-6)
-                for st in STATES)
-    ratio = worst / sensitivity_curve(lam)
-    assert_close(
-        ratio, 1.0, PATCH_TEST_SENSITIVITY_BAND, floor=np.finfo(float).eps,
-        what=(
-            f"{entry['id']}: at L/r_min {lam:.1f} the recorded curve predicts "
-            f"{sensitivity_curve(lam):.4e} for a 1e-6 single-element defect and "
-            f"the measurement is {worst:.4e}, a ratio of {ratio:.4f}. The gate's "
-            "sensitivity has moved and the recorded curve is stale"
-        ),
-    )
-
-
-@pytest.mark.parametrize("direction", ["up", "down"])
-def test_a_SENSITIVITY_CHANGE_breaks_the_band(direction: str) -> None:
-    """The band's own counter, INJECTED rather than asserted of itself (BG1).
-
-    `PATCH_TEST_SENSITIVITY_BAND = 0.60` stops catching at a ratio of `2.5x` up
-    and `0.40x` down, so a `3.0x` change clears the edge by `1.2x` on each side.
-    A band widened past `0.667` would let `3.0` through, and this reddens.
-
-    The change is injected by scaling the PERTURBATION, which is legitimate here
-    because linearity in the perturbation was measured before the curve was
-    fitted, not assumed: the response at 1e-9 is 1.0000 of the response at 1e-6
-    scaled, in all six states.
-    """
-    factor = (PATCH_TEST_SENSITIVITY_BAND_COUNTER if direction == "up"
-              else 1.0 / PATCH_TEST_SENSITIVITY_BAND_COUNTER)
-    missed = []
-    for entry in SOLVED:
-        lam = member_lambda(entry)
-        worst = min(_oob_state(entry, st, stiffness_scale=1.0 + 1.0e-6 * factor)
-                    for st in STATES)
-        ratio = worst / sensitivity_curve(lam)
-        try:
-            assert_close(ratio, 1.0, PATCH_TEST_SENSITIVITY_BAND,
-                         floor=np.finfo(float).eps, what="")
-        except AssertionError:
-            continue
-        missed.append(f"{entry['id']} {ratio:.3f}")
-    assert not missed, (
-        f"a {PATCH_TEST_SENSITIVITY_BAND_COUNTER:g}x sensitivity change "
-        f"({direction}) was NOT caught in: {', '.join(missed)}. The band is "
-        "wider than the change it is declared to detect."
+    weakest = min(
+        _oob_state(entry, st,
+                   stiffness_scale=1.0 + PATCH_TEST_EXACTNESS_COUNTER_DEFECT)
+        for st in STATES)
+    assert weakest > PATCH_TEST_EXACTNESS, (
+        f"{entry['id']}: the weakest state left the interior out-of-balance at "
+        f"{weakest:.4e} under a "
+        f"{PATCH_TEST_EXACTNESS_COUNTER_DEFECT:g} single-element defect, at or "
+        f"below the ceiling {PATCH_TEST_EXACTNESS:.0e}. One state has stopped "
+        "detecting and the gate is running on the others."
     )
 
 
@@ -951,36 +929,48 @@ def test_the_forward_error_is_REPORTED_and_the_floor_is_too(capsys) -> None:
         lam = member_lambda(e)
         fwd = max(_measure(e, st)[0] for st in STATES)
         oob = max(_measure(e, st)[1] for st in STATES)
-        small = min(_oob_state(e, st, stiffness_scale=1.0 + 1.0e-6)
-                    for st in STATES)
-        form = {k: max(_oob_with_defect(e, st, k) for st in STATES)
-                for k in FORMULATION_DEFECTS}
-        rows.append((e["id"], lam, fwd, oob, small, form))
+        form = {k: max(_oob_with_injected(e, st, k) for st in STATES)
+                for k in INJECTED_DEFECTS}
+        # The WEAKEST state under the scaled element -- the quantity the recorded
+        # curve describes. The margins above are the worst state, because the
+        # gate fails if any state exceeds; the curve is about the state that
+        # responds least, which is the one slenderness eats.
+        weak = min(_oob_with_injected(e, st, "one_element_scaled")
+                   for st in STATES)
+        rows.append((e["id"], lam, fwd, oob, form, weak))
 
     worst = max(rows, key=lambda r: r[3])
     with capsys.disabled():
         print(f"\n  {'id':32} {'L/r_min':>9} {'forward':>11} {'out-of-bal':>11}"
-              f" {'1e-6':>11} {'/curve':>7} "
-              + "".join(f"{k:>14}" for k in FORMULATION_DEFECTS))
-        for i, lam, fwd, oob, small, form in sorted(rows, key=lambda r: r[1]):
-            print(f"  {i:32} {lam:9.1f} {fwd:11.3e} {oob:11.3e} {small:11.3e} "
-                  f"{small / sensitivity_curve(lam):7.3f} "
-                  + "".join(f"{form[k]:14.3e}" for k in FORMULATION_DEFECTS))
+              + "".join(f"{k[:16]:>18}" for k in INJECTED_DEFECTS))
+        for i, lam, fwd, oob, form, _w in sorted(rows, key=lambda r: r[1]):
+            print(f"  {i:32} {lam:9.1f} {fwd:11.3e} {oob:11.3e}"
+                  + "".join(f"{form[k] / PATCH_TEST_EXACTNESS:18.4g}"
+                            for k in INJECTED_DEFECTS))
 
+        eps = float(np.finfo(float).eps)
         print(f"\n  CEILING  {PATCH_TEST_EXACTNESS:.3e}   worst clean "
               f"{worst[3]:.4e} ({worst[3] / eps:.2f} eps, {worst[0]}) "
               f"= {worst[3] / PATCH_TEST_EXACTNESS:.4f}x")
-        for k in FORMULATION_DEFECTS:
-            lo = min(rows, key=lambda r: r[5][k])
-            print(f"  COUNTER  {PATCH_TEST_EXACTNESS_COUNTER:.3e}   {k:18} "
-                  f"smallest {lo[5][k]:.4e} at {lo[0]} "
-                  f"(L/r_min {lo[1]:.1f}) = "
-                  f"{lo[5][k] / PATCH_TEST_EXACTNESS_COUNTER:.2f}x the counter, "
-                  f"{lo[5][k] / PATCH_TEST_EXACTNESS:.3e}x the ceiling")
-        ratios = [r[4] / sensitivity_curve(r[1]) for r in rows]
-        print(f"  CURVE    {SENSITIVITY_SCALE:.3e} * (L/r_min)^{SENSITIVITY_EXPONENT}"
-              f"   residuals {min(ratios):.3f}x .. {max(ratios):.3f}x, "
-              f"band {PATCH_TEST_SENSITIVITY_BAND:.2f}")
+        print("  MARGINS  response / ceiling, reported and asserted against no "
+              "constant (BO0):")
+        for k in INJECTED_DEFECTS:
+            lo = min(rows, key=lambda r: r[4][k])
+            print(f"    {k:22} minimum {lo[4][k] / PATCH_TEST_EXACTNESS:12.4g}x"
+                  f"   at {lo[0]} (L/r_min {lo[1]:.1f})")
+        # The fitted curve is a DIAGNOSTIC and nothing asserts it (BO2). It is
+        # regenerated here so the step report's statement of what the gate's
+        # sensitivity IS comes from a run rather than from a scratch harness.
+        lam = np.array([r[1] for r in rows])
+        sml = np.array([r[5] for r in rows])
+        fit = np.polyfit(np.log(lam), np.log(sml), 1)
+        resid = sml / np.exp(np.polyval(fit, np.log(lam)))
+        print(f"  CURVE    weakest-state response = {np.exp(fit[1]):.3e} * "
+              f"(L/r_min)^({fit[0]:.3f})   scatter {resid.min():.3f}x .. "
+              f"{resid.max():.3f}x   DIAGNOSTIC, asserted nowhere")
+        wk = min(rows, key=lambda r: r[5])
+        print(f"           weakest state anywhere {wk[5] / PATCH_TEST_EXACTNESS:.3f}x "
+              f"the ceiling, at {wk[0]} (L/r_min {wk[1]:.1f})")
     assert True  # not-a-tolerance: this test reports, the assertions are above
 
 

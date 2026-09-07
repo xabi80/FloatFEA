@@ -132,7 +132,7 @@ from floatfea.model.material import S355, Section
 from floatfea.model.nodes import Model, Node, node_dofs
 from floatfea.tolerances import (DETECTION_THRESHOLD_BAND,
                                  PATCH_TEST_EXACTNESS,
-                                 PATCH_TEST_EXACTNESS_COUNTER, RESULTANT_EXACTNESS,
+                                 RESULTANT_EXACTNESS,
                                  RESULTANT_EXACTNESS_COUNTER,
                                  SOLVE_BACKWARD_ERROR_FACTOR_COUNTER_DEFECT,
                                  SOLVE_BACKWARD_ERROR_FACTOR)
@@ -958,6 +958,15 @@ def test_a_TRANSPOSED_TRANSFORM_on_one_element_breaks_every_state(state: str) ->
     which is what a transform bug looks like, and is not reachable by scaling a
     stiffness.
 
+    THE SKEW ORIENTATION IS PART OF THE CASE, AND IT IS WHY THIS IS NOT A
+    CORPUS-WIDE CONTROL (BO1). `R.T` differs from `R` only when `R` is not
+    symmetric, and an axis-aligned member with no roll has `R = I` -- so
+    transposing it injects NOTHING. Measured over the corpus, `|R - R.T| = 0`
+    exactly on 8 entries and the response there equals the clean value; on 2
+    further near-axis entries the injected difference leaves the balance below
+    the ceiling. The defect is real and this gate sees it, on a member whose
+    frame is actually rotated, which is the case the defect describes.
+
     MEASURED RESPONSE ON THE QUANTITIES THIS TEST ASSERTS, regenerated
     2026-09-06 (R93). The figures here were the retired field error and read
     "every state, at O(1)"; none of these is O(1) and the smallest is 2000x below
@@ -976,11 +985,14 @@ def test_a_TRANSPOSED_TRANSFORM_on_one_element_breaks_every_state(state: str) ->
     field response and is the number to watch if the transform changes.
     """
     _, _, res_err, err = _run(state, SKEW, transpose_transform=True)
-    assert err >= PATCH_TEST_EXACTNESS_COUNTER, (
-        f"{state}: one element's transform transposed moved the interior field "
-        f"by only {err:.3e}, below the counter-case "
-        f"{PATCH_TEST_EXACTNESS_COUNTER:.3e}. A wrongly oriented element is "
-        "invisible to this gate."
+    # AGAINST THE CEILING (BO0). The counter-case is the DEFECT; the assertion is
+    # that injecting it turns the gate red, and the margin lives in the docstring
+    # rather than in a constant.
+    assert err > PATCH_TEST_EXACTNESS, (
+        f"{state}: one element's transform transposed left the interior "
+        f"out-of-balance at {err:.3e}, at or below the ceiling "
+        f"{PATCH_TEST_EXACTNESS:.0e}. A wrongly oriented element is invisible "
+        "to this gate."
     )
     assert res_err >= RESULTANT_EXACTNESS_COUNTER, (
         f"{state}: the recovered resultants moved by only {res_err:.3e} under a "
@@ -1146,10 +1158,11 @@ def test_a_defect_in_ONE_bending_plane_is_caught_by_THAT_plane(block: str) -> No
     for state in PLANE_STATES[block]:
         _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
         # AGAINST THE CEILING, WHICH IS THE GATE'S OWN DECISION, and not against
-        # `PATCH_TEST_EXACTNESS_COUNTER` -- that is now the FORMULATION-defect
-        # control and a scaled block is not one. The separation this test is
-        # about is in the docstring and is nine orders wide; a second constant
-        # here would be a threshold outside `tolerances.py` (R80/R85).
+        # a response floor. A counter-case is the DEFECT, and the check that it
+        # is caught is a comparison with the gate's own ceiling (BO0). The
+        # separation this test is about is in the docstring and is nine orders
+        # wide; a second constant here would be a threshold outside
+        # `tolerances.py` (R80/R85).
         assert err > PATCH_TEST_EXACTNESS, (
             f"{state} did not detect a 1e-3 defect confined to {block}: "
             f"{err:.3e} <= {PATCH_TEST_EXACTNESS:.0e}"
