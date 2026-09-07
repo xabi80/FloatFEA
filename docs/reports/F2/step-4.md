@@ -2471,3 +2471,144 @@ the fourteenth verdict; R121 was credit.
 
 No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
 a pass.
+
+---
+
+# Revision 16 — the defect is measured in the gate's norm, and the plan is held to the code
+
+**2026-09-07.** Two commits since the fifteenth verdict: `d920a8d` (plan,
+re-locked) and `a634970` (step).
+
+```
+$ python -m pytest -q
+947 passed in 30s
+```
+
+Green on the reviewer's 105-entry corpus, including all five entries red at
+`7daffed` — and none of them by moving a number, deleting an entry, changing an
+`expect`, or skipping. Every figure below carries the rule it was measured
+against.
+
+## 1. What the two refuted rules had in common
+
+BQ0 compared a defect's relative change **inside its block** with the declared
+resolution. Its premise was wrong twice over. `Φ` is an *element* property falling
+as `1/L_elem²`, so the shear defect at `L/r_min ≈ 2e4` is **149×** larger than the
+member-level estimate said — and separately, a defect's size inside its block is
+not what the gate sees, because the residual normalises by the **largest**
+stiffness in the element. The reviewer measured that second error directly:
+`R = 2.00/λ²` to ±6% over 59× in λ and four section families.
+
+The corpus entry whose `L/r_min` moved tenfold with no change in margin was the
+tell. The variable was never a slenderness. It was **which block the defect lands
+in**.
+
+## 2. BR1 — the metric, and its calibration in both directions
+
+| rule | the residual's own homogeneous units, `D = diag(I3, ℓI3, I3, ℓI3)` |
+|---|---|
+
+```
+effective = max over elements of   max |ΔK_hat| / max |K_hat|
+```
+
+> **cmd** `python -m pytest … -k CALIBRATED` **out** `1 passed`
+
+A whole-element `(1 + CD)` injection measures **exactly** `CD` — asserted with
+`==`, on all 89 solved entries. The constant divides out of
+`max|CD·k_hat| / max|k_hat|`, so if that ever needs a tolerance the two sides have
+stopped being the same quantity.
+
+The other direction is asserted too, and it is where the `λ²` suppression enters —
+**from the matrix, not from a declaration**:
+
+```
+L/r_min        6      47      65     233     389    2527   23084
+bending-only   0.193  0.0450  0.0258 2.28e-3 8.22e-4 1.95e-5 2.34e-7   (× CD)
+```
+
+And the entries that were red:
+
+```
+shear_edge_iso_L4000    effective 1.1566e-10   response 0.8806x
+shear_edge_thin_L400    effective 5.5780e-11   response 0.4247x
+shear_edge_thick_L8000  effective 1.0262e-10   response 0.7813x
+```
+
+`25–36×` **above** the declared resolution under the refuted metric; four orders
+**below** it under this one.
+
+## 3. BR2 — the rule, and how tight it is
+
+Effective size `≥ CD`: red. Below: classified, reported, never passed.
+
+```
+(response/ceiling) / (effective/CD)   spans 4447x .. 4.263e+08x over every live pair
+```
+
+The claim rests on the smaller end: a live defect responds at no less than
+`4447×` the ceiling. That is the margin, and it is `5` orders of spread wide,
+which is why the rule is stated as an inequality and not as a proportionality.
+
+## 4. BR3 — narrower than directed, because measurement refuses the wider form
+
+`dropped_flip`, `wrong_dof_index` and the whole-element counter-defect are
+asserted **red on every entry, unconditionally**, with no classification in front
+of them.
+
+They are **not** all `live`. On 19 pairs — the most slender entries — a structural
+defect's effective size falls below `1e-6`, because `K_bend/K_max ≈ 12/λ_elem²`
+shrinks any bending-block defect however structural it is. **Every one of those 19
+is still red**, from `2.838e+05×` at the weakest (`shear_defect_exempt_L2500`,
+`wrong_dof_index`) to `1.114e+08×`. So the surviving half of BR3 is the half that
+matters, and the `live` half is withdrawn rather than asserted where it does not
+hold.
+
+The shear-parameter defect classifies below resolution on **15 of 89** entries.
+
+## 5. BR0 — the plan is held to the code by a test
+
+`PATCH_TEST_COUNTER_HEADROOM` was re-derived to `6.0e7` in a step commit while
+`F2.md` went on saying `2.0e7` for a full round — found by a review, not by the
+build, in the round whose subject was figures outliving the rule that produced
+them.
+
+> **cmd** set `CD = 1e-4` and `HEADROOM = 3.0e9`, then run the new test
+> **out** `FAILED …[564-PATCH_TEST_COUNTER_HEADROOM-6.0e7]` — `1 failed, 5 passed`
+
+That is the two-line exemption move the fifteenth verdict found, now a failing
+build rather than something a reviewer has to notice.
+
+**It found a second drift on its first run, unprompted:** `F2.md:1410` stated
+`PATCH_TEST_EXACTNESS = 1e-12` where `5e-15` ships — D7 item 6's record of the BH6
+fallback, true when written and superseded by item 7. It is rewritten to say so
+rather than exempted.
+
+The test states what it does **not** do: it checks that the numbers agree, not
+that the plan's prose is true.
+
+## 6. R124's remaining half, and a convention that dissolved
+
+All eight `(1 + size) − 1` sites in `test_patch_test.py` now apply the size
+directly, so there is one convention rather than two. The infinite-ratio
+convention is **gone with the metric that needed it** — `max|ΔK_hat| / max|K_hat|`
+is finite by construction.
+
+## 7. BR4 — a pre-registered end
+
+This is the third classification rule in three rounds. **If the sixteenth verdict
+refutes it, it is removed in the following step commit.** No fourth rule. What
+remains in that case is §4's unconditional claim, which the measurements above
+already support on its own, with the shear-parameter defect demoted to a reported
+diagnostic carrying `Φ ∝ 1/L_elem²` and block placement as its mechanism.
+
+## 8. Carried
+
+R122–R128 **closed**. R123 **answered by §2–§4**, under the third rule and with
+the fallback pre-registered. R113, R95, R97, R98, R100–R103, R63, R76, R79, R80
+and the older set **open**, unchanged. R115–R121 closed at the fourteenth verdict.
+
+## 9. Witness
+
+No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
+a pass.
