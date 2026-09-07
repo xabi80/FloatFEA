@@ -66,7 +66,9 @@ import math
 import numpy as np
 import pytest
 
-from floatfea.assemble.system import BeamElement, assemble, solve
+from floatfea.assemble.system import (BeamElement, assemble,
+                                      element_length, solve)
+from floatfea.element.beam import local_stiffness
 from floatfea.element.transform import rotation_matrix
 from floatfea.model.admissibility import (assert_beam_admissible,
                                           member_l_over_d)
@@ -178,13 +180,21 @@ EXTRA_KEYS = ("orientation_node", "roll", "I_y_over_I_z")
 # bending stiffness 300 orders below its axial one, its weakest-state response to
 # a defect is exactly `0.0`, and a control measured on it certifies nothing.
 #
-# The range is declared rather than derived, and it is deliberately generous: the
-# corpus already carries `0.02` and `500`, and the point is not to draw a physical
-# boundary -- no section `basis.kappa` admits is anisotropic at all -- but to keep
-# the SYNTHETIC route inside the range where an element still resolves both
-# bending planes in double precision. `1e-6 .. 1e6` is twelve orders, which is
-# 3000x wider than the widest entry any reviewer has written, and it refuses the
-# denormal end where the control goes vacuous.
+# THE RANGE IS JUSTIFIED BY WHAT THE ROUTE IS FOR, not by a numerical floor
+# (R128). Synthetic anisotropy exists to pin the INDEX MAPPING: with `I_y == I_z`
+# forced on every section the type admits, an element that swapped the two
+# bending blocks would be indistinguishable from a correct one, and R53 is that
+# blindness recorded. Making `I_y != I_z` by the only route past
+# `Section.__post_init__` is how a corpus entry can tell them apart.
+#
+# A ratio far from 1 serves that purpose no better than a ratio near it -- one
+# order either way already separates the blocks unambiguously -- so the range is
+# set wide enough to leave the reviewer room (the corpus carries `0.02` and
+# `500`) and no wider than the purpose needs. `1e-6 .. 1e6` is twelve orders,
+# 3000x beyond the widest entry written so far.
+#
+# The first version of this comment argued the bound from a numerical floor
+# derived from the sensitivity band -- a quantity deleted in the same commit.
 I_Y_OVER_I_Z_RANGE = (1.0e-6, 1.0e6)
 EXPECTS = {"hold", "breach", "raise"}
 
@@ -470,7 +480,7 @@ def _build(entry: dict[str, str]):
 
 
 def _measure(entry, state: str,
-             stiffness_scale: float = 1.0) -> tuple[float, float]:
+             defect_size: float = 0.0) -> tuple[float, float]:
     """`(forward, oob)` for one state: the SOLVED nodal field error, and G2.2's
     quantity -- the interior out-of-balance of the EXACT field.
 
@@ -507,9 +517,16 @@ def _measure(entry, state: str,
 
     u_ex = _to_global(u_ex_local, r)
     k = assemble(m, els)
-    if stiffness_scale != 1.0:
+    if defect_size != 0.0:
         from floatfea.assemble.system import element_global_stiffness
-        delta = (stiffness_scale - 1.0) * element_global_stiffness(m, els[1])
+        # THE DEFECT SIZE IS APPLIED DIRECTLY, not as `(1 + size) - 1` (BQ0).
+        # That subtraction loses `eps/size ~ 2e-10` of relative precision to
+        # cancellation, so a defect declared as `1e-6` was injected at
+        # `9.99999999955e-07` -- and `classify`, comparing the measured size
+        # against the declared one, put the gate's OWN counter-defect below its
+        # own resolution on every entry. The arithmetic was deciding a
+        # classification.
+        delta = defect_size * element_global_stiffness(m, els[1])
         k = k.tolil()
         d = np.concatenate([node_dofs(1), node_dofs(2)])
         for i in range(12):
@@ -531,8 +548,8 @@ def _measure(entry, state: str,
     return relative_error(u, u_ex, stations[-1]), oob
 
 
-def _oob_state(entry, state: str, stiffness_scale: float = 1.0) -> float:
-    return _measure(entry, state, stiffness_scale)[1]
+def _oob_state(entry, state: str, defect_size: float = 0.0) -> float:
+    return _measure(entry, state, defect_size)[1]
 
 
 def _entry_section(entry) -> Section:
@@ -740,8 +757,24 @@ SOLVED = [e for e in ENTRIES
           and _inadmissible(e) is None]
 
 
+# `no_op` is a NAMED control, not a defect: it returns the element unchanged, so
+# `classify` must place it below the declared resolution. A classification that
+# cannot say `no` classifies nothing (R126).
+ORIGINAL_LOCAL_STIFFNESS = local_stiffness
+
+DEFECT_BUILDERS = ("dropped_flip", "wrong_dof_index",
+                   "dropped_shear_parameter", "no_op")
+
+
 def _defective_stiffness(kind: str):
     """A builder for `local_stiffness` carrying ONE structural defect.
+
+    AN UNRECOGNISED NAME RAISES (BQ2/R126). It used to fall through every branch
+    and return the CLEAN matrix, so a typo -- or `injected_delta(entry,
+    "transposed_transform")`, a defect this builder does not implement -- reported
+    a delta of `0.0` and was classified as changing nothing. A builder that
+    silently returns the thing it was asked to corrupt is the vacuous-parameter
+    failure AM5 named, one level down.
 
     These are FORMULATION defects: they change what the element is, not how stiff
     it is. That is the class this gate exists for, and it is the class whose
@@ -750,7 +783,15 @@ def _defective_stiffness(kind: str):
     """
     from floatfea.element.beam import bending_stiffness, shear_parameter
 
+    if kind not in DEFECT_BUILDERS:
+        raise ValueError(
+            f"no defect builder for {kind!r}; known builders are "
+            f"{list(DEFECT_BUILDERS)}. Returning the clean matrix for an "
+            "unrecognised name would report the defect as changing nothing.")
+
     def build(section, material, ll):
+        if kind == "no_op":
+            return ORIGINAL_LOCAL_STIFFNESS(section, material, ll)
         k = np.zeros((12, 12))
         k[np.ix_([0, 6], [0, 6])] = (material.E * section.A / ll) * np.array(
             [[1.0, -1.0], [-1.0, 1.0]])
@@ -806,73 +847,113 @@ def _oob_with_defect(entry, state: str, kind: str) -> float:
 # THE DEFECTS THIS GATE IS ASSERTED AGAINST, each injected and each required to
 # turn the gate red on EVERY entry (BO0/BO1).
 #
-# `dropped_flip` and `wrong_dof_index` are injected into `local_stiffness`;
+# `dropped_flip`, `wrong_dof_index` and `dropped_shear_parameter` are injected
+# into `local_stiffness`;
 # `one_element_scaled` is the `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`-sized
 # perturbation of a single interior element.
 #
 # TWO DEFECTS ARE DELIBERATELY NOT HERE, and where they go vacuous is measured
-# rather than assumed:
+# rather than assumed. Both are cases of the defect being ABSENT, which is what
+# `classify` now states as a rule rather than as a list:
 #
 #   `I_y <-> I_z`         a no-op wherever `I_y == I_z`, which is every section
 #                         `basis.kappa` admits (R53).
 #   transposed transform  a no-op wherever the rotation is SYMMETRIC. Measured,
 #                         `|R - R.T| = 0` exactly on 8 corpus entries -- an
-#                         axis-aligned member with no roll has `R = I` -- and on
-#                         2 further near-axis entries the injected difference
-#                         leaves the balance below the ceiling. It stays the SKEW
-#                         counter-case it already is, in `test_patch_test.py`.
+#                         axis-aligned member with no roll has `R = I`. On two
+#                         further entries the injected difference is ABSENT from
+#                         the assembled matrix rather than small: see the
+#                         corrected statement in `test_patch_test.py`. It stays
+#                         the SKEW counter-case it already is.
 #
-# A third, the dropped shear parameter, is undetectable on 22 of 63 entries
-# because `Phi ~ 1/lambda^2` makes the DEFECT vanish on a slender member: there is
-# nothing left to corrupt. That is V2.2's defect, on a stubby member.
+# THE DROPPED SHEAR PARAMETER IS IN THE SET (BP3), and the sentence that excluded
+# it is withdrawn: "undetectable on 22 of 63 entries" was measured against a
+# response floor deleted in the same round, and against the CEILING no corpus
+# entry was below it at that commit.
 INJECTED_DEFECTS = ("dropped_flip", "wrong_dof_index",
                     "dropped_shear_parameter", "one_element_scaled")
 
 
 def injected_delta(entry, kind: str) -> float:
-    """How much of the assembled matrix the defect actually changes.
+    """The largest RELATIVE change the defect makes to any element-matrix entry.
 
-    `max |K_defect - K_clean| / max |K_clean|`. A pair whose delta is exactly
-    zero is a control that certifies NOTHING, and the runner records it as **not
-    injectable** rather than passing it (BP5).
+    Measured on the element stiffness matrices themselves, over every entry the
+    defect moves:
 
-    This is R120 stated correctly. The transposed transform's two "further
-    near-axis entries" had the count right and the cause wrong: `onode_just_
-    outside` has `|R - R.T| = 2.000` and an injected delta of exactly zero. The
-    difference is absent; "near-axis" described neither entry.
+        delta = max over (i, j) where k_bad != k_clean  of  |dk| / |k_clean|
+
+    with an entry that appears where there was none counting as infinite -- a
+    change from nothing is total. If nothing moves, the delta is `0.0`, which is
+    the limiting case of the same rule and not a separate branch (BQ0).
+
+    WHY RELATIVE, AND WHY ON THE BLOCK RATHER THAN THE ASSEMBLED NORM. The gate's
+    claim is that it reddens on a defect of size
+    `PATCH_TEST_EXACTNESS_COUNTER_DEFECT` -- a relative stiffness error. For that
+    claim to classify anything, the measure has to be in the same units as the
+    claim, which the previous `max|K_bad - K_clean| / max|K|` was not: it divided
+    a bending-block change by the AXIAL stiffness, so it fell with slenderness for
+    the same reason the response does and could not say whether a defect was
+    larger or smaller than the one the gate claims to detect.
+
+    `test_the_delta_measure_is_CALIBRATED` pins it: the counter-defect injection
+    must measure exactly `PATCH_TEST_EXACTNESS_COUNTER_DEFECT` under this
+    definition, which is the property that makes the comparison meaningful.
     """
     import floatfea.assemble.system as system
 
     m, els, _ = _build(entry)
-    clean = assemble(m, els).toarray()
-    if kind == "one_element_scaled":
-        e = els[1]
-        from floatfea.assemble.system import element_length
-        from floatfea.element.transform import to_global
-        kl = system.local_stiffness(e.section, e.material, element_length(m, e))
-        rot = rotation_matrix(m.nodes[e.node_a].xyz, m.nodes[e.node_b].xyz,
-                              orientation_node=e.orientation_node,
-                              roll_rad=e.roll_rad)
-        d = np.concatenate([node_dofs(1), node_dofs(2)])
-        bad = clean.copy()
-        bad[np.ix_(d, d)] += (PATCH_TEST_EXACTNESS_COUNTER_DEFECT
-                              * to_global(kl, rot))
-    else:
-        original = system.local_stiffness
-        system.local_stiffness = _defective_stiffness(kind)
-        try:
-            bad = assemble(m, els).toarray()
-        finally:
-            system.local_stiffness = original
-    scale = float(np.abs(clean).max())
-    return float(np.abs(bad - clean).max() / scale) if scale > 0.0 else 0.0
+    worst = 0.0
+    for i, e in enumerate(els):
+        length = element_length(m, e)
+        clean = system.local_stiffness(e.section, e.material, length)
+        if kind == "one_element_scaled":
+            if i != 1:
+                continue
+            bad = clean + PATCH_TEST_EXACTNESS_COUNTER_DEFECT * clean
+        else:
+            bad = _defective_stiffness(kind)(e.section, e.material, length)
+        moved = bad != clean
+        if not moved.any():
+            continue
+        num = np.abs(bad - clean)[moved]
+        den = np.abs(clean)[moved]
+        ratios = np.where(den > 0.0, num / np.where(den > 0.0, den, 1.0),
+                          np.inf)
+        worst = max(worst, float(ratios.max()))
+    return worst
+
+
+def classify(entry, kind: str) -> str:
+    """`live` if the defect is at least the size the gate claims to detect.
+
+    THE RULE, AND IT REPLACES A DOMAIN ON SLENDERNESS (BQ0/R123). A named defect
+    must redden the gate wherever it is at least as large as the defect the gate
+    claims to detect. Below that it is not a failure of the gate: the gate says
+    it resolves `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`, and a defect smaller than
+    that is outside what it ever claimed.
+
+    The dropped shear parameter is why this is a rule and not a boundary. Its
+    magnitude is `Phi ~ 59/lambda^2`, so at `L/r_min ~ 2e4` it changes the bending
+    block by `1.5e-07` -- less than the `1e-6` the gate claims to resolve -- and
+    its measured margin falls as `lambda^-4`, which is `Phi(lambda)` times the
+    residual's own `lambda^-2`. Bounding it by a slenderness would state the
+    consequence; this states the cause, and it needs no new constant.
+
+    THE RESOLUTION IS THE DECLARED ONE, NEVER A MEASURED PER-ENTRY ONE. A gate
+    that went blind would coarsen its own resolution and exempt exactly the
+    defects it had stopped seeing -- R56's species. The declared constant is
+    guarded in both directions by `test_the_counter_DEFECT_SIZE_cannot_be_raised`
+    and its counter, and this classification borrows that guard.
+    """
+    return ("live" if injected_delta(entry, kind)
+            >= PATCH_TEST_EXACTNESS_COUNTER_DEFECT else "below resolution")
 
 
 def _oob_with_injected(entry, state: str, kind: str) -> float:
     if kind == "one_element_scaled":
         return _oob_state(
             entry, state,
-            stiffness_scale=1.0 + PATCH_TEST_EXACTNESS_COUNTER_DEFECT)
+            defect_size=PATCH_TEST_EXACTNESS_COUNTER_DEFECT)
     return _oob_with_defect(entry, state, kind)
 
 
@@ -901,30 +982,26 @@ def test_the_corpus_entry_goes_RED_under_every_injected_defect(
     defect responds at `3.5e-06` against a ceiling of `5e-15` -- nine orders of
     detection, reported as a wall.
 
-    Measured minima of `response / ceiling` over every solved entry, which is what
-    that form was hiding:
-
-        dropped flip               5.150e+09x   at L/r_min 2332
-        one wrong DOF index        5.227e+09x   at L/r_min 1058
-        one element x (1 + 1e-6)   8.701e+06x   at L/r_min  558
+    THE MINIMA ARE NOT REPEATED HERE (BP0/BI3). They move with every corpus
+    round -- the four figures this docstring carried were already refuted by the
+    module's own regenerated table by `2.0x` and `7.4x` at the commit that
+    published them -- so they are printed by
+    `test_the_forward_error_is_REPORTED_and_the_floor_is_too`, which runs, and
+    quoted in the step report, which is regenerated by rule.
 
     The gate fails if ANY state exceeds the ceiling, so detection is the worst
     state.
     """
-    # A DEFECT THAT CHANGES NOTHING IS NOT A PASS (BP5), and it is not a skip
-    # either. Measured at this commit, all four defects are live on all 74 solved
-    # entries, so a zero delta means the injection has broken or an entry has
-    # been added that one of these defects cannot reach -- both of which are for
-    # the reviewer to see, loudly.
     delta = injected_delta(entry, kind)
-    assert delta > 0.0, (
-        f"{entry['id']}: NOT INJECTABLE -- {kind} changes nothing in this "
-        "entry's assembled matrix, so there is no defect here to detect and the "
-        "red-on-defect assertion below would certify nothing. This is a FAILURE "
-        "rather than a skip: `CLAUDE.md` forbids a skip for a green build, and a "
-        "pair that cannot be injected is a decision for the reviewer, not a "
-        "branch this module takes on its own."
-    )
+    if classify(entry, kind) == "below resolution":
+        # NOT A PASS AND NOT A SKIP: the pair is classified, every classified
+        # pair is printed by `test_the_forward_error_is_REPORTED_and_the_floor_
+        # is_too`, and `test_every_entry_carries_at_least_one_LIVE_defect`
+        # refuses an entry whose every defect lands here. The gate claims to
+        # resolve `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`; a smaller defect is
+        # outside that claim, not a failure of it.
+        assert delta < PATCH_TEST_EXACTNESS_COUNTER_DEFECT
+        return
 
     worst = max(_oob_with_injected(entry, st, kind) for st in STATES)
     assert worst > PATCH_TEST_EXACTNESS, (
@@ -933,6 +1010,62 @@ def test_the_corpus_entry_goes_RED_under_every_injected_defect(
         f"(L/r_min {member_lambda(entry):.1f}). The gate holds here and cannot "
         "fail here."
     )
+
+
+def test_the_delta_measure_is_CALIBRATED() -> None:
+    """The classification is only meaningful if the measure agrees with the claim.
+
+    `classify` compares `injected_delta` against
+    `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`, which is the size of the counter-defect
+    injection. So that injection must measure exactly that size under the same
+    definition, or the two sides of the comparison are in different units -- which
+    is what the previous `max|K_bad - K_clean| / max|K|` was, dividing a
+    bending-block change by the AXIAL stiffness.
+    """
+    for entry in SOLVED:
+        measured = injected_delta(entry, "one_element_scaled")
+        # COMPARED ON THE O(1) QUANTITY, which is where the defect actually
+        # lives: the injection is `k * (1 + CD)`, and `(1 + CD) - 1` loses
+        # `eps/CD ~ 2e-10` of relative precision to cancellation. Comparing the
+        # differences directly would be comparing two 1e-6 numbers through that
+        # cancellation and would report a 4.5e-12 disagreement that is the
+        # arithmetic, not the measure (R38's lesson, in a new place).
+        assert_close(
+            1.0 + measured, 1.0 + PATCH_TEST_EXACTNESS_COUNTER_DEFECT,
+            ROUNDOFF_IDENTITY, floor=np.finfo(float).eps,
+            what=(f"{entry['id']}: the counter-defect injection measures "
+                  f"{measured:.9e} under `injected_delta`, against its declared "
+                  f"size {PATCH_TEST_EXACTNESS_COUNTER_DEFECT:g}"),
+        )
+
+
+def test_an_UNRECOGNISED_defect_name_raises() -> None:
+    """BQ2/R126's first control. The builder used to return the CLEAN matrix for
+    any name it did not implement, so `injected_delta` reported `0.0` for a defect
+    that simply does not exist here -- classification by typo."""
+    with pytest.raises(ValueError, match="no defect builder"):
+        _defective_stiffness("transposed_transform")
+    with pytest.raises(ValueError, match="no defect builder"):
+        _defective_stiffness("")
+
+
+def test_a_NO_OP_defect_classifies_below_resolution() -> None:
+    """BQ2/R126's second control: the classification must be able to say `no`.
+
+    `no_op` is a named builder that returns the element unchanged. It is a defect
+    of size zero, and zero is the limiting case of "below the declared
+    resolution" rather than a branch of its own -- which is what retires the old
+    `delta > 0` guard, a guard that passed at `3.497e-301` and could not fire on
+    any of the four shipped defects.
+
+    If this ever classified `live`, every below-resolution pair in the suite would
+    be one the classification cannot actually reject.
+    """
+    for entry in SOLVED[:5]:
+        assert injected_delta(entry, "no_op") == 0.0
+        assert classify(entry, "no_op") == "below resolution"
+    # And the meta-half: a real defect on the same entries classifies `live`.
+    assert classify(SOLVED[0], "dropped_flip") == "live"
 
 
 def test_every_entry_carries_at_least_one_LIVE_defect() -> None:
@@ -965,15 +1098,34 @@ def test_every_entry_carries_at_least_one_LIVE_defect() -> None:
     )
 
 
-def _hardest_entry():
-    """The entry with the least margin at the shipped defect size.
+# Bisecting 74 entries costs a few seconds; the two tests that need it get the
+# same answer, so it is computed once. A cache is safe here because the corpus and
+# the code are both fixed for the duration of a run -- and it is a LIST rather
+# than a module constant so that nothing can read a stale value at import.
+_EDGE_CACHE: list[tuple[str, float]] = []
 
-    The edge is bisected on this one alone, which is what the plan says and what
-    the guard needs: a bound that holds at the hardest configuration holds
-    everywhere. Selecting it costs one pass instead of bisecting 74 times.
+
+def _smallest_detection_edge() -> tuple[str, float]:
+    """`(entry id, edge)` for the entry with the SMALLEST detection edge.
+
+    Bisected on every solved entry and the minimum taken. **The selection does
+    not use the constant the guard bounds** (R124): the previous version picked
+    the entry by its margin at `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`, so the edge
+    moved with the value it was supposed to bound, the named entry changed five
+    times across a sweep, and the published boundary ("any raise of 2.31x or
+    more") was wrong -- solved, it was 2.26x..2.28x.
+
+    Ties are broken BY NAME, deterministically, and a tie is reported rather than
+    hidden: at the fourteenth verdict the largest edge was an exact two-way tie
+    resolved by file order, which is not a property anyone chose (R125).
     """
-    return min(SOLVED, key=lambda e: max(
-        _oob_with_injected(e, st, "one_element_scaled") for st in STATES))
+    if _EDGE_CACHE:
+        return _EDGE_CACHE[0]
+    edges = sorted((_detection_edge(e), e["id"]) for e in SOLVED)
+    smallest = edges[0][0]
+    tied = sorted(name for value, name in edges if value == smallest)
+    _EDGE_CACHE.append((tied[0], smallest))
+    return _EDGE_CACHE[0]
 
 
 def _detection_edge(entry) -> float:
@@ -987,7 +1139,7 @@ def _detection_edge(entry) -> float:
     lo, hi = 1e-20, 1e-1
     for _ in range(200):
         mid = (lo * hi) ** 0.5
-        if max(_oob_state(entry, st, stiffness_scale=1.0 + mid)
+        if max(_oob_state(entry, st, defect_size=mid)
                for st in STATES) > PATCH_TEST_EXACTNESS:
             hi = mid
         else:
@@ -1012,8 +1164,7 @@ def test_the_counter_DEFECT_SIZE_cannot_be_raised(capsys) -> None:
     still reddens on, bisected at the WORST entry, and the shipped size must sit
     within `PATCH_TEST_COUNTER_HEADROOM` of it.
     """
-    hardest = _hardest_entry()
-    worst_id, edge = hardest["id"], _detection_edge(hardest)
+    worst_id, edge = _smallest_detection_edge()
     ratio = PATCH_TEST_EXACTNESS_COUNTER_DEFECT / edge
     with capsys.disabled():
         print(f"\n  detection edge {edge:.4e} at {worst_id}; shipped defect "
@@ -1036,7 +1187,7 @@ def test_a_RAISED_counter_defect_breaks_that(capsys) -> None:
     shipped size is multiplied by `1e3` -- three orders, far inside the range the
     suite tolerated before this test existed -- and the assertion above must fail.
     """
-    edge = _detection_edge(_hardest_entry())
+    _, edge = _smallest_detection_edge()
     raised = PATCH_TEST_EXACTNESS_COUNTER_DEFECT * 1.0e3
     ratio = raised / edge
     with capsys.disabled():

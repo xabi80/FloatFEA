@@ -473,8 +473,13 @@ PATCH_TEST_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-6
 #     COUNTER_DEFECT  <=  PATCH_TEST_COUNTER_HEADROOM  x  edge
 #
 # where `edge` is the smallest single-element defect the gate still reddens on,
-# bisected at the worst corpus entry under the gate's own rule (worst state).
-# Dimensionless.
+# bisected on EVERY solved corpus entry under the gate's own rule (worst state)
+# and the MINIMUM taken. Dimensionless.
+#
+# THE SELECTION DOES NOT USE THE CONSTANT IT BOUNDS (R124). The first version
+# picked one entry by its margin at `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`, so the
+# edge moved with the value it was supposed to bound: the named entry changed
+# five times across a sweep and the published boundary was wrong by 2%.
 #
 # WHY IT EXISTS. `COUNTER_DEFECT` could be raised from `1e-6` to `1e+6` -- a
 # defect multiplying one element by a million -- with the entire suite green.
@@ -484,16 +489,19 @@ PATCH_TEST_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-6
 # counter ordering, since a defect size is not in the ceiling's quantity, and
 # nothing replaced the guard that exemption removed.
 #
-# Reason for 2.0e7: measured, the edge is `1.1513e-13` at `slender_axis_L_r_189`
-# and the shipped `1e-6` sits `8.686e+06x` above it, so this leaves `2.30x` and
-# any raise of `2.31x` or more fails the build. The margin is eaten from BOTH
-# sides -- a harder corpus entry raises the edge and loosens this, but a
-# formulation change that IMPROVES sensitivity at the worst entry lowers the edge
-# and tightens it. `1.0e7` leaves `1.15x` and would redden on a `1.16x`
-# improvement; `2.0e7` absorbs that and still catches every order-of-magnitude
-# raise. The demonstration that it catches one is a shipped test.
+# Reason for 6.0e7: measured, the smallest edge over the corpus is `3.9413e-14`
+# at `band_edge_isotropic_bracing` and the shipped `1e-6` sits `2.537e+07x` above
+# it, so this leaves `2.37x`. The margin is eaten from BOTH sides -- a harder
+# corpus entry raises the minimum edge and loosens this, but a formulation change
+# that IMPROVES sensitivity anywhere lowers it and tightens it -- and `2.37x`
+# absorbs that while still catching every order-of-magnitude raise. The
+# demonstration that it catches one is a shipped test.
+#
+# RE-DERIVED 2026-09-07 with the selection rule. The first value, `2.0e7`, was
+# measured against the LARGEST edge under a selection that used the constant it
+# bounds; against the smallest edge the ratio is `2.537e+07` and `2.0e7` fails.
 # Set: 2026-09-07, F2
-PATCH_TEST_COUNTER_HEADROOM: Final[float] = 2.0e7
+PATCH_TEST_COUNTER_HEADROOM: Final[float] = 6.0e7
 
 
 

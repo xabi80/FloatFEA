@@ -969,9 +969,16 @@ def test_a_TRANSPOSED_TRANSFORM_on_one_element_breaks_every_state(state: str) ->
     and the cause was not. `onode_just_outside` has `|R - R.T| = 2.000` -- as
     far from symmetric as a rotation gets -- and an injected `to_global` delta of
     **exactly zero**; `straddle_above_lam61_axis` has `|R - R.T| = 1.197` and a
-    relative delta of `3.09e-18`. In both the difference is ABSENT from the
-    assembled matrix, not present and too small to see. Neither is near-axis, and
-    "below the ceiling" describes a response that was never injected.
+    relative delta of `3.09e-18`.
+
+    THOSE TWO ARE NOT THE SAME CASE, AND THE SENTENCE THAT SAID SO IS CORRECTED
+    (R127). In `onode_just_outside` the difference is ABSENT from the assembled
+    matrix -- exactly zero. In `straddle_above_lam61_axis` it is PRESENT, at
+    `1.83e-12` absolute, and merely far below anything the gate resolves. One is
+    a defect that was never injected; the other is a defect smaller than the
+    declared resolution -- the two classifications `classify` now separates by
+    rule. Neither entry is near-axis, which is what the original sentence claimed
+    for both.
 
     The defect is real and this gate sees it, on a member whose frame is actually
     rotated, which is the case the defect describes.
