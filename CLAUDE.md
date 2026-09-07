@@ -160,6 +160,31 @@ was an element defect. The question that catches them is: *for every sentence in
 this diff that states a fact about the code, what is the command that checks
 it?*
 
+**A figure carries the RULE it was measured against (BP0).** The triple gains a
+fourth field wherever the number is a measurement:
+
+    rule — the assertion the figure was measured against
+
+and **when a decision rule changes, every figure citing the old rule is
+regenerated or withdrawn in the same commit.** Not the next one, and not when
+someone notices.
+
+This is one mechanical check standing in for three findings in a single review.
+G2.2's counter-case changed from *a floor on the response* to *an injected defect
+compared with the ceiling*, and three figures crossed the boundary unchanged and
+were republished as if they still described the code: "the dropped shear
+parameter is undetectable on 22 of 63 entries" (measured against the deleted
+floor; against the ceiling it is **0 of 69**, minimum margin `9.6e+04x`, and it
+was the live reason a defect was excluded from the gate), "a 5x loss of
+sensitivity turns the worst entry red" (**2 of 69**, and none of the 52
+legally-constructible entries), and a mechanism sentence about where a defect is
+vacuous that had the count right and the cause wrong.
+
+Every number in that diff was correct when it was taken. Nothing in this
+repository re-takes a measurement when the rule beneath it moves, and a green
+suite never says so — which is why the rule is written down here rather than left
+to attention.
+
 **A causal sentence carries the cell that isolates it (BG0).** Where the claim
 is causal — any "because", "so", "therefore", "which is why" — the triple gains a
 fourth field:
