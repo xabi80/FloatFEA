@@ -712,20 +712,26 @@ def test_a_perturbed_element_BREAKS_the_patch_test(state: str) -> None:
     One interior element's stiffness is perturbed -- the defect a wrong length or
     a wrong section produces -- and every state must detect it.
 
-    THE MARGIN, AND WHERE THE TIGHTNESS ACTUALLY LIVES (R15). At THIS geometry
-    the smallest of the six responses is `1.7638e-11` against a counter of
-    `1.0e-13` -- 176x, which is loose, and saying so is the point. The counter is
-    recorded at the corpus's most slender entry (`slender_axis_L_r_189`,
-    `1.0746e-13`, 7.5%) because this quantity's sensitivity falls as
-    `1/lambda^2`, so the binding measurement is in
-    `test_corpus_configurations.py` and not here. This test asserts that the
-    posed geometry detects; that one asserts that the whole corpus does.
+    THE THRESHOLD IS THE GATE'S OWN, AND THERE IS NO SECOND NUMBER HERE. A fixed
+    counter on a small defect is a universal the physics forbids: the response
+    falls as `1/lambda_weak^2`, so any constant is wrong at some slenderness, and
+    six review rounds were spent bounding a domain around that. What this test
+    asserts is that at THIS geometry every state detects, i.e. exceeds the ceiling
+    the gate decides on. The QUANTITATIVE claim -- that the response follows
+    `3.327e-08 * (L/r_min)^(-1.964)` within a declared band -- is asserted per
+    corpus entry in `test_corpus_configurations.py`, where it can be measured
+    across three decades of slenderness instead of at one point.
+
+    THE MARGIN (R15): the smallest of the six responses here is `1.7638e-11`
+    against a ceiling of `5e-15`, i.e. `3528x`. Loose, and saying so is the point;
+    the binding measurement is the curve, not this line.
     """
     _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-6)
-    assert err >= PATCH_TEST_EXACTNESS_COUNTER, (
+    assert err > PATCH_TEST_EXACTNESS, (
         f"{state}: a 1e-6 stiffness error in one element left an interior "
-        f"out-of-balance of only {err:.3e}, below the counter-case "
-        f"{PATCH_TEST_EXACTNESS_COUNTER:.3e}"
+        f"out-of-balance of only {err:.3e}, at or below the ceiling "
+        f"{PATCH_TEST_EXACTNESS:.0e}. This state does not detect the defect at "
+        "all, and a gate that holds here cannot fail here."
     )
 
 
@@ -1139,9 +1145,14 @@ def test_a_defect_in_ONE_bending_plane_is_caught_by_THAT_plane(block: str) -> No
     """
     for state in PLANE_STATES[block]:
         _, _, _, err = _run(state, SKEW, stiffness_scale=1.0 + 1.0e-3, block=block)
-        assert err >= PATCH_TEST_EXACTNESS_COUNTER, (
+        # AGAINST THE CEILING, WHICH IS THE GATE'S OWN DECISION, and not against
+        # `PATCH_TEST_EXACTNESS_COUNTER` -- that is now the FORMULATION-defect
+        # control and a scaled block is not one. The separation this test is
+        # about is in the docstring and is nine orders wide; a second constant
+        # here would be a threshold outside `tolerances.py` (R80/R85).
+        assert err > PATCH_TEST_EXACTNESS, (
             f"{state} did not detect a 1e-3 defect confined to {block}: "
-            f"{err:.3e} < {PATCH_TEST_EXACTNESS_COUNTER:.3e}"
+            f"{err:.3e} <= {PATCH_TEST_EXACTNESS:.0e}"
         )
 
 
