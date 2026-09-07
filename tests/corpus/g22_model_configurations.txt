@@ -661,3 +661,64 @@ id=aaa_band_edge_twin           section=circular_tube,D=0.290954,t=0.0640574 sta
 #    interior_out_of_balance's docstring does not span this pair.
 id=unit_kilo_lam2885            section=circular_tube,D=600.0,t=12.00 stations=600000.0 orient=axis      extra=none                       runs_in_suite=no expect=hold
 id=unit_milli_lam2885           section=circular_tube,D=0.000600,t=0.0000120 stations=0.600 orient=axis  extra=none                       runs_in_suite=no expect=hold
+
+# ---------------------------------------------------------------------------
+# SIXTEENTH ROUND (reviewer, at 9b866ce). Subject: BR1's metric and BR2's rule.
+# Every outcome below was measured before the line was written.
+#
+# 1. THE CLASSIFICATION BOUNDARY, SOLVED RATHER THAN SAMPLED. `effective` for
+#    dropped_shear_parameter crosses PATCH_TEST_EXACTNESS_COUNTER_DEFECT at
+#    L = 414.6 for D=0.600 t=0.01200 (bisected, 46 steps, L the only variable).
+#    The shipped corpus has no entry within 3 orders of that crossing, so the one
+#    number BR2 decides on is not exercised by any line in this file. These three
+#    put a pair on each side of it and one ON it.
+#      live   eff/CD 1.416     response 1.081e+04x ceiling
+#      exempt eff/CD 0.9495    response      7245x ceiling
+#      exempt eff/CD 0.999928  response      9267x ceiling   (skew, on the edge)
+id=boundary_shear_live_L380     section=circular_tube,D=0.600,t=0.01200 stations=380.0 orient=axis       extra=none                       runs_in_suite=no expect=hold
+id=boundary_exempt_detected_L420 section=circular_tube,D=0.600,t=0.01200 stations=420.0 orient=axis      extra=none                       runs_in_suite=no expect=hold
+id=boundary_on_the_edge_L414p6  section=circular_tube,D=0.600,t=0.01200 stations=414.6 orient=skew       extra=none                       runs_in_suite=no expect=hold
+#
+# 2. THE EXEMPTION DROPS ASSERTIONS THE GATE PASSES. Of the 15 shear pairs the
+#    shipped corpus classifies below resolution, 9 respond ABOVE the ceiling --
+#    up to 2956x at every_state_edge_iso_L85. Entry 1b above is the tightest case
+#    that can be posed: eff/CD = 0.9495, five per cent under the declared
+#    resolution, and the gate detects it by 7245x while asserting nothing.
+#
+# 3. IS THE CLASSIFICATION UNIT-INVARIANT? Nothing measures this. The same
+#    physical member at the boundary in a 10^3 and a 10^-3 length unit. Measured:
+#    eff/CD = 0.999928 at all three, identical to six digits, so BR1's metric is
+#    dimensionless in fact and not only by construction. Recorded as a positive
+#    result; the day it stops holding, these two lines are the only ones that say so.
+id=boundary_milli_L414p6        section=circular_tube,D=600.0,t=12.00 stations=414600.0 orient=axis      extra=none                       runs_in_suite=no expect=hold
+id=boundary_kilo_L414p6         section=circular_tube,D=0.000600,t=0.0000120 stations=0.4146 orient=axis extra=none                       runs_in_suite=no expect=hold
+#
+# 4. THE BOUNDARY IN TWO MORE SECTION FAMILIES. The shipped bending-only table is
+#    indexed by L/r_min; the crossing is not at a fixed L/r_min either. Measured:
+#    thin D=0.050 t=0.00100 crosses at L/r_min 1847-2193, thick D=0.600 t=0.15000
+#    at 1848-2147, isotropic at 1994. The BR2 ratio AT the crossing is 7627-7633
+#    in all three, which is the decision-relevant margin -- the published 4447x is
+#    the minimum of a response ratio over pairs whose sizes span nine orders, and
+#    is not measured at the operating point the rule decides at.
+id=boundary_thin_live_L32       section=circular_tube,D=0.050,t=0.00100 stations=32.0 orient=axis        extra=none                       runs_in_suite=no expect=hold
+id=boundary_thin_exempt_L38     section=circular_tube,D=0.050,t=0.00100 stations=38.0 orient=axis        extra=none                       runs_in_suite=no expect=hold
+id=boundary_thick_live_L310     section=circular_tube,D=0.600,t=0.15000 stations=310.0 orient=axis       extra=none                       runs_in_suite=no expect=hold
+#
+# 5. BELOW THE PUBLISHED BR2 FLOOR. The plan and the report state the tightness
+#    span as 4447x .. 4.263e+08x and call 4447x "the margin the rule stands on".
+#    Measured on this entry: (response/ceiling) / (effective/CD) = 3999x, 11%
+#    under it. A sweep of 3045 live pairs put 103 below 4447x. The floor is a
+#    property of the corpus, not of the rule -- and no live pair anywhere in the
+#    sweep responded below the ceiling, so BR2 itself is NOT refuted by this.
+id=br2_floor_thick_iy1e6_L1000  section=circular_tube,D=3.000,t=0.15000 stations=1000.0 orient=axis      extra=I_y_over_I_z=1e6           runs_in_suite=no expect=hold
+#
+# 6. "THE MOST SLENDER ENTRIES" IS NOT WHAT SELECTS THE 19. Same L/r_min as
+#    shear_edge_iso_L4000 (1.924e+04), where dropped_flip measures eff/CD = 0.397
+#    and is one of the 19 below the declared resolution. Here it measures
+#    4.013e+04 -- five orders higher at the same slenderness -- because
+#    I_y/I_z = 1e6 makes the defective block the largest stiffness in the element.
+#    The characterisation in F2.md, in UNCONDITIONALLY_RED's comment and in the
+#    report is `K_bend/K_max ~ 12/lambda_elem^2`; measured over the 89 solved
+#    entries that relation is wrong by more than 2x on 15 of them and by 7.8e+05x
+#    at worst.
+id=aniso_bend_block_is_largest  section=circular_tube,D=0.600,t=0.01200 stations=4000.0 orient=axis      extra=I_y_over_I_z=1e6           runs_in_suite=no expect=hold
