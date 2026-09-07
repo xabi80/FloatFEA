@@ -1843,3 +1843,181 @@ and it is not in this commit because it was not in the directive.
 
 No git remote, so no PR and no `[witness …]` comment — an unavailable check, not a
 pass.
+
+---
+
+# Revision 12 — the counter becomes two claims, and the axis becomes `L/r_min`
+
+**2026-09-06.** Two commits since the eleventh verdict, `8834fba` (plan, re-lock)
+and `aa843ae` (step). The STOP is answered by changing what the counter claims,
+not by bounding a domain around it.
+
+```
+$ python -m pytest -q
+741 passed in 6.27s
+
+corpus: 82 entries executed
+        branches: inadmissible 5, measured 63, refused 6, unparseable 8
+```
+
+**The two reds are green, and not by skipping, `xfail`ing, deleting or moving a
+number.** No `expect` on any reviewer line was touched.
+
+---
+
+## 1. What the STOP was right about
+
+The plan said "dissolved", "no boundary" and "0.13–0.49 ε across every
+configuration" while two rung-1 tests were red on it. Both figures were written
+of the **ceiling** and then read as covering the whole gate. The ceiling's domain
+genuinely is dissolved — 1500 random configurations put the worst clean value at
+`0.092×` of it. The **counter's** was not, and a domain had moved into it rather
+than disappearing.
+
+## 2. The universal was never available
+
+The residual measures a defect's contribution against the **largest** stiffness
+in the matrix, so a defect in the weakest bending mode falls as the ratio of the
+two — `1/λ_weak²`. **There is no slenderness at which a fixed small defect stays
+visible**, and no envelope can supply one. Six rounds were spent bounding a
+domain around a universal the physics forbids.
+
+So the gate makes two claims.
+
+### Claim 1 — formulation defects, every entry, no exception
+
+A dropped `flip`, a wrong DOF index, a transposed transform change the element's
+*structure*. They are `O(1)` relative to the block they corrupt and do not fall
+with slenderness.
+
+> **cmd** `python -m pytest tests/verification/rung1/test_corpus_configurations.py -q -k FORMULATION_defect`
+> **out** `126 passed`
+
+```
+COUNTER 3.500e-05  dropped_flip     smallest 5.8789e-05  at L/r_min 1539  1.176e+10x the ceiling
+COUNTER 3.500e-05  wrong_dof_index  smallest 3.5991e-05  at L/r_min  900  7.198e+09x the ceiling
+```
+
+**The tightest margin in the repository is here and it is 2.8%** —
+`wrong_dof_index` at `lam900_axis_undetectable` responds at `1.03×` the counter.
+Stated rather than relieved: the counter is the value the plan locked, and
+lowering it to buy room would weaken the claim on all 63 entries to flatter one.
+
+**`I_y ↔ I_z` was the directive's third defect and measurement refutes it.** Every
+shape `basis.kappa` admits forces `I_y == I_z`, so the swap is a no-op; on the
+synthetic anisotropic entries it measures `8.247e-17` against a clean
+`2.191e-16` — *below* the clean value. That is R53's recorded blindness. It is
+written down as refuted rather than swapped out quietly; the third structural
+control is the transposed transform, `7.1889e-04`, which has its own test.
+
+### Claim 2 — sensitivity is a curve, asserted two-sided
+
+```
+CURVE 3.327e-08 * (L/r_min)^-1.964    residuals 0.787x .. 1.761x   band 0.60
+```
+
+The exponent is the mechanism's `−2` to within the scatter.
+
+**What the band buys, bracketed by injection rather than derived:**
+
+```
+factor  3x   4 entries escape (2.362-2.464)   |   1/3   9 escape (0.401-0.587)
+factor  4x   none escape                      |   1/4   2 escape (0.425-0.440)
+factor  5x   none escape                      |   1/5   none escape
+```
+
+So the band detects a **5× change in the gate's sensitivity and nothing finer**,
+and `PATCH_TEST_SENSITIVITY_BAND_COUNTER = 5.0`. My first derivation said `2.5×`
+from the band's arithmetic alone; that ignored the scatter the injected change
+multiplies, and the injection refuted it before it was written down. This is far
+coarser than the fixed `1e-7` counter it replaces — and it is true at every
+slenderness, which that counter was not: it sat below the response at
+`L/r_min = 648`, and the corpus contains entries past it.
+
+## 3. The axis (BN1 / R96)
+
+`member_lambda(entry)` rebuilt each section from `section=` and discarded
+`extra=I_y_over_I_z=`, so it reported the **strong** axis. Two entries printed the
+same `λ = 153.9` and sat `5×` apart in detection; on `min(I_y, I_z)` they are
+`688` and `1539` and the ordering is right. Everything characterising an entry now
+goes through one `_entry_section`.
+
+This was the reviewer's finding and it is the one that decided the round: a bound
+written on the printed λ would have admitted the very entry that cannot be
+detected.
+
+## 4. Where each number lives, and the meta-tests that decided it
+
+`SENSITIVITY_SCALE` / `_EXPONENT` are a recorded **measurement** and sit beside
+the code that consumes them — the same status as `DETECTION_THRESHOLD`. The only
+number in the claim that decides a pass is the **band**, which is in
+`tolerances.py` with its counter. The first attempt put all four in
+`tolerances.py`; `tests/verification/rung3/test_tolerance_counter_cases.py`
+rejected it, because two ACCURACY entries then had no counter-case. The guard
+worked on its author.
+
+**Two tests at the posed geometry lost their second constant.**
+`test_a_perturbed_element_BREAKS_the_patch_test` and the plane-confinement test
+asserted small defects against `PATCH_TEST_EXACTNESS_COUNTER`, which is now the
+formulation control. Both assert against the **ceiling** instead — the gate's own
+decision, no new number (R80/R85) — with their margins (`3528×`, nine orders) in
+the docstrings. The quantitative claim moved to the curve, where it is measured
+across three decades of slenderness instead of at one point.
+
+## 5. No slenderness limit from a standard enters this gate (BN4)
+
+The AISC figures are **User Notes** — recommendations, not requirements — and
+`360-16` §D1 opens by saying there is no maximum slenderness limit for members in
+tension; API RP 2A-WSD sets no hard cap. **Neither agent on this milestone can
+reach the text**, so that is recorded as knowledge and *not* as a citation. The
+causal claim it was carrying had no cell: a design-practice recommendation and a
+`1/λ²` detection floor are unrelated quantities, and that the one sat inside the
+other was a measurement, not a consequence. If the recommendation is adopted it is
+an **F3 model-admission item**, cited from Xabier's own copy and written as a
+recommendation adopted rather than a requirement.
+
+## 6. Carried — every open item, by number, with status
+
+**The omission is recorded first.** Revision 11's `Carried` listed thirteen items
+and omitted R95, R96, R97 and R98, against an explicit condition of the tenth
+verdict (**R99**). One of the four — R96 — turned out to decide the item that
+round was about. R68's standard had held for four rounds and I broke it.
+
+| item | status |
+|---|---|
+| R94 (STOP) | **answered** — the counter splits; the plan's "dissolved"/"no boundary"/"0.13–0.49 ε" are withdrawn and replaced by what is measured |
+| R95 | **open** — the `expect=raise` branch uses `pytest.raises(ValueError)` with no `match`, so a refusal entry certifies only that *something* raised. Broader than first recorded. Not fixed: outside BN3 |
+| R96 | **closed** — BN1, above |
+| R97 | **open** — `F2.md` says "never asserted at a constant" while the gate asserts `res_err <= RESULTANT_EXACTNESS` on the solved field at all 36 cells. The sentence is about the forward *field* error and the resultant channel is a different quantity with its own ceiling and counter, but the plan does not say so |
+| R98 | **open** — `INADMISSIBLE` is assigned at module level and read nowhere. Dead code I introduced. Not fixed: outside BN3 |
+| R99 | **closed** — this table |
+| R100 | **open** — three tables remain in `tolerances.py` with no generator. The reviewer regenerated two and both reproduce, so nothing is stale; the mechanism is the finding, and it is step 4a's |
+| R101 | **open** — `RESULTANT_EXACTNESS_COUNTER`'s pointer resolves to revision 10, which is where the *withdrawn* "~150× weaker" lives |
+| R102 | **open** — `WHAT THE BAND BUYS` reproduces in its ratio column; 8 of 12 percentage cells differ by 0.03–0.05 pp from the reviewer's bisection |
+| R103 | **open** — the BM0 table's second row is labelled "counter ÷ ceiling" and reports response ÷ counter; and its weakest λ ≤ 200 entry sits at λ = 46.5, which is R94 visible in my own table |
+| R104 | **closed** — `_field` took the first match where `_parse_line` refuses duplicates, so `expect=raise expect=hold` passed. It returns `AMBIGUOUS(raise\|hold)` and the assertion reddens |
+| R63 | **open** — `MATRIX_SYMMETRY` and `ROUNDOFF_IDENTITY` widenable in silence |
+| R65 | **withdrawn by the reviewer** at the tenth verdict |
+| R76, R79, R80 | **open** — apparatus, section physics (κ at low `D/t`, V2.2's), and the literals-outside-`tolerances.py` finding whose third instance closed with R85 |
+| R6, R16, R25, R30, R31, R32, R33 (outside G2.2), R36, R50, R52, R62 | **open** — step 4a or later steps, unchanged |
+| R77, R78, R81–R93 | **closed** at the tenth and eleventh verdicts |
+
+## 7. Where I was wrong inside this round
+
+1. **The band counter was derived, not measured.** `2.5×` came from the band's
+   arithmetic; injection showed four entries escaping a `3×` change and two
+   escaping `1/4`, because each entry's clean ratio already sits between `0.787`
+   and `1.761` and the change multiplies that. The value is `5.0`.
+2. **The first defect harness monkey-patched the wrong symbol.**
+   `floatfea.assemble.system` imports `local_stiffness` by name, so patching
+   `floatfea.element.beam` changed nothing and all three defects reported
+   identical, tiny numbers. Caught because three unrelated defects agreeing to
+   four digits is not a result.
+3. **I measured the formulation defects with `min` over states first**, which is
+   the small-defect convention. The gate fails if *any* state exceeds, so
+   detection is the `max`. Under `min` the O(1) defects looked invisible.
+
+## 8. Witness
+
+No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
+a pass.
