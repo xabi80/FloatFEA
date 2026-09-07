@@ -2183,3 +2183,180 @@ touches every block, so every state must respond:
 
 No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
 a pass.
+
+---
+
+# Revision 14 — rule-carrying figures, the counter-defect's guard, no new surface
+
+**2026-09-07.** Three commits since the thirteenth verdict: `36ded5b` (`process:`,
+CLAUDE.md), `b690472` (plan, re-locked) and `b42d834` (step).
+
+```
+$ python -m pytest -q
+860 passed in 9.85s
+
+corpus: 96 entries executed
+        branches: inadmissible 5, measured 74, refused 6, unparseable 11
+```
+
+Green on the reviewer's thirteenth-round corpus, including all four entries that
+were red at `de32be3`. One of them (`aniso_denormal_I_y_must_refuse`) goes green
+by **raising**, which is what it asks for.
+
+**Every figure below carries the rule it was measured against**, which is BP0 and
+is the point of the round.
+
+---
+
+## 1. The species, and the mechanism for it (BP0, `36ded5b`)
+
+Three of the thirteenth verdict's findings are one failure: **a figure measured
+under one decision rule and republished under another.** G2.2's counter-case
+changed from *a floor on the response* to *an injected defect compared with the
+ceiling*, and three numbers crossed that boundary unchanged. Each was correct
+when taken. Nothing in the repository re-takes a measurement when the rule
+beneath it moves, and a green suite never says so.
+
+`CLAUDE.md`'s report triple gains a fourth field — **rule** — and the standing
+obligation that when a decision rule changes, every figure citing the old one is
+regenerated or withdrawn **in the same commit**.
+
+**One of the three was mine to catch and I did not.** I built BO3's exclusion of
+the shear defect on the reviewer's "22 of 63" without asking which rule it was
+measured under. It was measured against the `3.5e-05` floor I had just deleted.
+
+## 2. BP3 — the fourth defect returns
+
+| rule | worst state against `PATCH_TEST_EXACTNESS` |
+|---|---|
+
+```
+dropped_flip             minimum 2.530e+09x   at every_state_edge_thickwall_L50 (L/r_min 3332)
+wrong_dof_index          minimum 7.087e+08x   at plan_headline_lam2885          (L/r_min 2886)
+dropped_shear_parameter  minimum      1739x   at plan_headline_lam2885          (L/r_min 2886)
+one_element_scaled       minimum 8.701e+06x   at slender_axis_L_r_189           (L/r_min  558)
+```
+
+**Zero entries at or below the ceiling under any defect.** `Φ ∝ 1/λ²` does shrink
+the shear defect on a slender member — `1739×` is three orders below its
+companions — but it does not take it below the ceiling anywhere in the corpus.
+BO3 is withdrawn.
+
+## 3. BP1 — the guard the counter-defect never had (R115)
+
+`PATCH_TEST_EXACTNESS_COUNTER_DEFECT` could be raised `1e-6 → 1e+6` with the
+whole suite green, and **raising it weakens the claim**: "the gate reddens on a
+sixth-digit slip" is strictly stronger than "the gate reddens on a 100× element".
+
+> **rule** worst state against the ceiling — the gate's own decision
+> **cmd** `python -m pytest … -k counter_DEFECT_SIZE -s`
+> **out** `detection edge 1.1513e-13 at slender_axis_L_r_189; shipped defect 1e-06 is 8.686e+06x it, against a headroom of 2e+07 (2.30x of room)`
+
+> **cmd** `python -m pytest … -k RAISED_counter -s`
+> **out** `raised defect 0.001 is 8.686e+09x the edge, 434.3x past the headroom`
+
+`PATCH_TEST_COUNTER_HEADROOM = 2.0e7` rather than `1.0e7` because the margin is
+eaten from **both** sides: a harder corpus entry raises the edge and loosens the
+guard, but a formulation change that *improves* sensitivity at the hardest entry
+lowers the edge and tightens it. `1.0e7` leaves `1.15×` and would redden on a
+`1.16×` improvement; `2.0e7` absorbs that and still catches any raise of `2.31×`
+or more.
+
+## 4. BP2 — the per-state assertion is removed, and the cost is recorded
+
+It asserted a `min`-over-states universal that the gate never decides on, with no
+stated domain, and its edge lies inside the corpus:
+
+```
+PER-STATE  weakest state / ceiling: minimum 0.804x at plan_headline_lam2885
+           3 of 74 entries below 1.0 -- DIAGNOSTIC, asserted nowhere
+```
+
+The plan's own headline configuration is red on it while the gate itself is nine
+orders clear.
+
+**AND THIS IS THE ROUND'S REAL COST, named rather than absorbed.** That assertion
+was the only one in the suite a modest loss of sensitivity would redden. Under
+the rule that ships, the small-defect control clears the ceiling by `8.701e+06×`
+at the hardest entry — so what it detects is a loss of sensitivity greater than
+*that*, which is no practical sensitivity guard at all.
+
+**G2.2 now asserts exactness and detection, and does not assert sensitivity.**
+That gap is written into `F2.md` §5b as well as here. Closing it is not this
+step's work, and I would rather it be visible than papered over with a check that
+looks like one.
+
+## 5. BP4 — the band's removal, on the reason that survives
+
+`PATCH_TEST_SENSITIVITY_BAND` was at `1.01×` of margin over 360 random admissible
+configurations with its own counter failing downward. **That is the whole reason,
+and it stands alone.** The justification I put in its place — "a 5× loss turns the
+worst entry red" — is **withdrawn**: under the per-state rule it holds on 2 of 69
+entries and none of the 52 legally-constructible ones; under the shipped rule the
+figure is `8.701e+06×`. Same species as §1.
+
+## 6. BP5 — controls that cannot be vacuous (R119, R120)
+
+**A defect that changes nothing is a failure, not a pass — and not a skip.** The
+red-on-defect test asserts `injected_delta(entry, kind) > 0` before it asserts
+red, and an aggregate test requires every entry to carry at least one live
+defect. Measured: all four defects are live on all 74 solved entries; zero dead
+pairs. A `pytest.skip` was the first shape I wrote and `CLAUDE.md` forbids it for
+exactly this reason — a pair that cannot be injected is the reviewer's decision,
+not a branch this module takes on its own.
+
+**R120's sentence had the count right and the cause wrong, and is corrected at
+the site.** `onode_just_outside` has `|R − R.T| = 2.000` — as far from symmetric
+as a rotation gets — and an injected `to_global` delta of **exactly zero**;
+`straddle_above_lam61_axis` has `1.197` and a relative delta of `3.09e-18`. The
+difference is *absent from the assembled matrix*, not present and too small to
+see. Neither entry is near-axis.
+
+**The synthetic anisotropy route is bounded**: `I_Y_OVER_I_Z_RANGE = (1e-6, 1e6)`.
+R114 closed this as a **sign** test, which let `1e-300` through — an element whose
+weakest-state response to a defect is exactly `0.0`. The invariant
+`Section.__post_init__` enforces for a circular shape is `I_y == I_z`, and this
+field is the only route in the repository past it.
+
+## 7. Carried — every open item, by number
+
+| item | status |
+|---|---|
+| R115 | **closed** — §3, with its counter demonstrated |
+| R116 | **closed** — the assertion removed; the cost recorded in §4 |
+| R117 | **closed** — the justification withdrawn; the decision stands on the band's own vacuity |
+| R118 | **closed** — the defect reinstated, §2 |
+| R119 | **closed** — the range declared, the bypass named at the site |
+| R120 | **closed** — the sentence corrected with the measurement |
+| R121 | credit, not a finding |
+| R113 | **open** — untouched this round |
+| R95 | **open** — the `expect=raise` branch uses `pytest.raises(ValueError)` with no `match` |
+| R97 | **open** — the plan says "never asserted at a constant" while the gate asserts `res_err <= RESULTANT_EXACTNESS`; the resultant channel is a different quantity and the plan does not say so |
+| R98 | **open** — `INADMISSIBLE` assigned and read nowhere |
+| R100 | **open** — three tables in `tolerances.py` with no generator; step 4a's mechanism |
+| R101 | **open** — `RESULTANT_EXACTNESS_COUNTER`'s pointer resolves to a revision carrying a withdrawn claim |
+| R102 | **open** — `WHAT THE BAND BUYS`'s percentage cells differ by 0.03–0.05 pp from the reviewer's bisection |
+| R103 | **open** — revision 11's mislabelled BM0 row |
+| R63 | **open** — `MATRIX_SYMMETRY` and `ROUNDOFF_IDENTITY` widenable in silence |
+| R65 | **withdrawn by the reviewer** |
+| R76, R79, R80 | **open** |
+| R6, R16, R25, R30, R31, R32, R33 (outside G2.2), R36, R50, R52, R62 | **open** — step 4a or later |
+| R77, R78, R81–R94, R96, R99, R104–R112, R114 | **closed** in earlier rounds |
+
+**A new gap, recorded as an item rather than as prose:** G2.2 asserts no bound on
+sensitivity after BP2. §4 has the measurement.
+
+## 8. Where I was wrong inside this round
+
+1. **BO3's exclusion**, §1 — I inherited a figure without asking its rule, in the
+   commit that changed the rule.
+2. **A `pytest.skip` for "not injectable"** was my first implementation of BP5.
+   `CLAUDE.md` forbids it and the directive said "never as a pass"; a failure is
+   both.
+3. **The first bisection ran on all 74 entries** and took the suite from 7 s to
+   42 s for a number that only the hardest entry decides.
+
+## 9. Witness
+
+No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
+a pass.
