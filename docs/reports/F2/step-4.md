@@ -2852,3 +2852,146 @@ to 39 entries; the reason is a corpus round.
 
 No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
 a pass.
+
+---
+
+# Revision 19 — the criterion, the injected counters, and green meaning green
+
+Answers: verdict 18 @ 7e6df21
+
+**2026-09-08.** Three commits since the eighteenth verdict: `6c6ff3c`
+(`process:`), `864b716` (plan, re-locked) and `98b5747` (step).
+
+## 0. A step boundary is green again (BU1, and the reviewer's operational note)
+
+`tests/test_report_carried.py` now checks the report against the verdict its
+header names — `Answers: verdict <n> @ <sha>`, the line at the top of this
+revision — rather than against the newest verdict. A missing header is a failure,
+not a fall-back, and the sha must be a commit here.
+
+Before this, `pytest` at HEAD between a verdict landing and the report answering
+it was **34 failed, 1219 passed**, all in that one file, *by construction*: the
+report legitimately predates the findings it must carry. Moving the carry guard
+into pytest had made "green" stop meaning anything exactly where it is most
+needed. The reviewer raised it as an operational note; it is closed rather than
+lived with, and what a machine cannot check — that the header names the *latest*
+verdict — is now the reviewer's reading-order item 1b.
+
+## 1. What blocks step 4, and what belongs to 4a (BU0)
+
+A finding blocks if it touches the gate's assertion, a tolerance or the form of
+one, a counter and how it is injected, or **the truth of a published figure or
+sentence**. Otherwise it is recorded and becomes a **step 4a** lock item.
+
+Rung 1 has been green and `floatfea/` untouched for four consecutive rounds; what
+remains under review is apparatus, and holes in parsers and prose can be found
+indefinitely. Without a stated criterion this step has no terminating condition —
+a defect in the arrangement, not in the reviews. **Nothing in the gate's claim
+moves by drawing the line here**, and the instruction says explicitly that the
+criterion is a default and not a gag: if the reviewer judges an apparatus item
+touches the gate's claim, they block on it.
+
+**R170** (the `--check` cut, with the planted `5.150e+09×` row that passed) and
+**R171** (five parser holes in my own carry guard, including that two of my three
+"no change" declarations answered a parser artefact) are the first 4a items.
+
+## 2. The three tolerance defects — this round's species inside its own fix
+
+**R163.** The calibration's counter computed `40·ulp(CD)/ulp(CD)` and checked
+`40 > 4`. Arithmetic on two constants: it passed with the calibration's own
+assertion neutered. It now perturbs what `injected_delta` returns and requires
+the calibration to redden, with the counter at `5.0` — the smallest whole number
+of ULP above the ceiling, since 2 passes and 5 fails — and the unperturbed
+calibration runs in the same test so a failure is the injection.
+
+**R164.** `EXEMPT_RESPONSE_DRIFT` was `1e-11`, **byte-identical to
+`SUBDIVISION_INVARIANCE`** — the borrowed band renamed, inside the commit that
+fixed borrowing. Now `EXEMPT_RESPONSE_DRIFT_ULP = 4.0`, in ULP of the recorded
+ratio, which is what its own stated reason demanded: `1e-11` relative is
+`4.81e+04` ULP of the smallest recorded ratio. Counter `10.0`, injected.
+
+**R166.** `classify`'s floor borrowed `ROUNDOFF_IDENTITY` — `47.0` ULP — under a
+comment saying it used the calibration's allowance, which the commit writing that
+comment had made false by `11.75×`. It is `DELTA_CALIBRATION_ULP × math.ulp(·)`
+now, so the sentence is true by construction.
+
+## 3. The record (BU3)
+
+**R165**: both remaining "carries no red assertion" sentences are corrected —
+only `dropped_shear_parameter` loses its assertion when classified below
+resolution; the other three are in `UNCONDITIONALLY_RED`, which was false for 22
+of 39 golden rows.
+
+**R168**: the record is the histogram, not a single value — `0 ULP ×5106`,
+`1 ×113`, **`2.000 ×3`** over 5222 configurations. The ceiling holds with `2×` of
+headroom; "four times the only value ever observed" is withdrawn.
+
+**R167**: every named site is a figure reference. `90-entry` →
+`{{fig:corpus_entries}}`; **"Zero entries fail to redden" is withdrawn** — it was
+refuted six lines above its own generated figure; "19 pairs / `2.838e+05×` /
+15 of 89" → `{{fig:exempt_detected}}`, `{{fig:exempt_total}}`,
+`{{fig:margin_wrong_dof_index}}`, `{{fig:exempt_by_defect}}`. **R148**:
+`12/λ_elem²` is no longer stated as a general law — it is the isotropic case and
+fails by `7.8e5×` off it.
+
+## 4. R169 — not a disagreement, and neither of us was right
+
+The generator bisects **every** solved base now and reproduces the reviewer's
+sweep independently:
+
+```
+boundary_margin_min      7616x     at boundary_kilo_L414p6
+boundary_margin_max   2.392e+04x   at band_edge_thickwall_free_dir
+boundary_margin_spread   3.14x
+```
+
+The held variable was **orientation**, not the section family. "9267× on one
+family" and "7630.2× to five digits across nine" were never in conflict and
+neither described the quantity. The figure also stopped depending on which base
+is selected — one admissible corpus entry had already moved the published value
+from `9267×` to `7630×` with nothing about the gate changing.
+
+## 5. Carried
+
+| item | status |
+|---|---|
+| R163 | **closed** — §2, injected |
+| R164 | **closed** — §2, its own number in ULP |
+| R165 | **closed** — §3, both sentences |
+| R166 | **closed** — §2, true by construction |
+| R167 | **closed** — §3, every named site generated |
+| R168 | **closed** — §3, the histogram |
+| R169 | **closed** — §4, both claims withdrawn |
+| R170 | **4a lock item** under BU0 — the `--check` cut. Apparatus: it touches no assertion, tolerance or published figure |
+| R171 | **4a lock item** under BU0 — five parser holes in the carry guard, including that two of my three "no change" declarations answered a parser artefact |
+| R172 | **open** — the exempt mark is a kind-level count, not a per-entry mark. `docs/milestones/F2_figures.md`, `floatfea/tolerances.py`, `tests/regression/g22_exempt_pair_responses.json` and `tests/verification/rung1/test_corpus_configurations.py`: all four regenerated or edited this round, but not for R172 specifically |
+| R148 | **closed** — §3, no longer stated as a law |
+| R151, R152 | **open** — stale counts and two sentences about the exemption's guards |
+| R153, R154, R155, R156, R157, R158, R159, R160, R161, R162 | R153–R158, R160, R161 **closed in revision 18**; R159 **open** (the causal sentence in `_homogeneous`); R162 **open** (§5's third figure carries no command) |
+| R140, R141, R142, R143, R144, R145, R146, R147, R149, R150 | **closed** in revision 17 |
+| R129, R130, R131, R132, R133, R134, R135, R136, R137, R138, R139 | R130, R133 **closed**; R129 closed at three sites of five; R131, R132, R134, R135, R136, R137, R138, R139 **open**, four untouched |
+| R101, R102, R103, R113, R95, R97, R98, R100, R63, R76, R79, R80 | **open**, unchanged |
+| R115, R128 | **closed** in earlier rounds |
+| R31, R32, R65, R68 | R65 withdrawn by the reviewer; R68 is the standard, now mechanical; R31, R32 open |
+| R6, R16, R25, R30, R33, R36, R50, R52, R62 | **open** — step 4a or later |
+
+
+### Sites named by findings and not touched
+
+The findings' own text names these paths; the step's diff does not touch them and
+they are declared here rather than left silent. **Most of them are the parser
+artefact R171 describes**: the last finding's block runs to end-of-file, so every
+path mentioned anywhere below it is attributed to that finding. `docs/SUPERVISOR.md`
+and the corpus file belong to the reviewer in any case — the implementer does not
+write either.
+
+| site | status |
+|---|---|
+| `docs/SUPERVISOR.md` | **no change** this round |
+| `tests/corpus/g22_model_configurations.txt` | **no change** this round |
+| `tests/test_plan_figures.py` | **no change** this round |
+
+## 6. Witness
+
+No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
+a pass.
