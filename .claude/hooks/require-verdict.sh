@@ -75,11 +75,6 @@ fi
 # but note the KNOWN LIMITATION both hooks share: they see Write|Edit|MultiEdit,
 # not a shell redirect through Bash.
 reviewed=$(grep -m1 -E '^Reviewed commit:' "$review" | awk '{print $3}')
-if [ -n "$reviewed" ] && git cat-file -e "$reviewed" 2>/dev/null; then
-  if ! git diff --quiet "$reviewed" -- "$report" floatfea tests ':(exclude)tests/corpus' 2>/dev/null; then
-    block "floatfea/, tests/, or $report changed since the verdict at $reviewed. Re-invoke the gating-supervisor so the verdict covers the current state."
-  fi
-fi
 
 # EVERY FINDING IN THE NEWEST VERDICT IS CARRIED BY THE NEWEST REPORT (BS0).
 # Twice in three rounds the report's `Carried` section dropped a whole verdict's
@@ -87,6 +82,18 @@ fi
 # untouched in the repository -- and both times a review caught it rather than
 # the build. CLAUDE.md's dependency-list rule is the point of the arrangement;
 # this makes it mechanical.
+#
+# PLACED BEFORE THE DIRTY-TREE BRANCH, because it was placed after it and could
+# therefore never run (R153): that branch blocks and exits whenever the report or
+# `floatfea`/`tests` differs from the reviewed commit, and the report is inside
+# its pathspec, so the two conditions were mutually exclusive. The evidence for
+# "this is now a build failure" was a manual invocation.
+#
+# AND THE REAL GUARD IS NOW A TEST, `tests/test_report_carried.py`. Five hook
+# defects in this milestone say the hook is the wrong home for anything that must
+# run; the supervisor runs pytest, so an incomplete Carried is red inside the
+# verdict that reads it. This call stays as a fast local signal, not as the
+# mechanism.
 #
 # It runs only when the report is NEWER than the verdict it must carry, i.e.
 # after the implementer has answered. Before that the report legitimately
@@ -102,6 +109,12 @@ if [ -n "$reviewed" ] && git cat-file -e "$reviewed" 2>/dev/null; then
     if ! carried=$("$PY_BIN" "scripts/check_carried.py" --verdict "$review" --report "$report" 2>&1); then
       block "$carried  -- CLAUDE.md requires the next report's Carried section to list every open item, and BS0 makes that a build failure rather than a review finding."
     fi
+  fi
+fi
+
+if [ -n "$reviewed" ] && git cat-file -e "$reviewed" 2>/dev/null; then
+  if ! git diff --quiet "$reviewed" -- "$report" floatfea tests ':(exclude)tests/corpus' 2>/dev/null; then
+    block "floatfea/, tests/, or $report changed since the verdict at $reviewed. Re-invoke the gating-supervisor so the verdict covers the current state."
   fi
 fi
 
