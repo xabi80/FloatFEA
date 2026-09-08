@@ -856,3 +856,51 @@ id=bu_midprobe_drop_D5000_aniso_L1e7 section=circular_tube,D=5000,t=2250 station
 #    (eff/CD = 0.97642), the closest approach to it in the corpus.
 id=bu_exempt_detected_margin_1p03 section=circular_tube,D=0.168649,t=0.029277 stations=931.134 orient=axis extra=none runs_in_suite=no expect=hold
 id=bu_exempt_floor_edge_0p976 section=circular_tube,D=0.0218583,t=0.000981875 stations=14.8212 orient=axis extra=none runs_in_suite=no expect=hold
+
+# ---------------------------------------------------------------------------
+# TWENTIETH VERDICT (F2 step 4). Four entries, none seen by the implementer.
+# Every outcome below was measured at `cfb61fe` BEFORE the line was written.
+#
+# 1. THE PUBLISHED BOUNDARY MINIMUM IS A PLATEAU, AND `boundary_margin_min_at`
+#    IS DECIDED AT THE NINTH DIGIT. At `cfb61fe`, 49 of the 116 converged bases
+#    print as `7630.16x`; the generated `_min_at` names whichever of them wins at
+#    the 9th significant figure, and that winner is set by the bisection's
+#    hard-coded `hi/lo < 1.000001`. Moving only that threshold to `1+1e-12`
+#    moves `_min_at` from `boundary_kilo_L414p6` to `aniso_bend_block_is_largest`
+#    while `boundary_margin_min` still prints `7630.16x`.
+#    The first two entries below converge to margins of `7630.155134976928` and
+#    `7630.155136496935`, BELOW the published `7630.155140054562`. Adding them
+#    changes `boundary_margin_min_at` and leaves `boundary_margin_min` reading
+#    `7630.16x`. A figure whose `_at` column moves while its value does not is a
+#    selection, not a location.
+#
+# 2. AND THEY SIT ON THE CLASSIFICATION BOUNDARY ITSELF, from both sides.
+#    `dropped_shear_parameter` has eff/CD = 1.00001531315 (live),
+#    0.999996865945 and 0.999993001633 (below resolution) -- 1.5e-5, 3.1e-6 and
+#    7.0e-6 from `CD`, against a previous closest approach of 2.4e-2. The two
+#    below-resolution ones are detected anyway, at 7630x of the ceiling, so they
+#    are new exempt-and-detected pairs and BS2's golden file must grow.
+#    Solving for the boundary rather than sampling one side of it: the
+#    classification's decision surface is now bracketed to 1.5e-5 in the corpus.
+#
+# 3. A FOURTH 2-ULP CALIBRATION CONFIGURATION, found 4296 targeted draws away
+#    from the three planted at the eighteenth verdict, so `calibration_ulp_worst`
+#    = 2.000 ULP is not a property of three hand-placed entries.
+#    MEASURED NEGATIVE RESULT, recorded because it supports the constant: over
+#    2947 admissible random configurations (D 1e-4..8 m, t/D 0.004..0.499,
+#    L/D 2.5..1e6, four orientations, anisotropy to 1e6) the maximum deviation
+#    was 1.000 ULP, and over 4296 draws targeted at the known 2-ULP region it was
+#    2.000 ULP. No configuration above 2 ULP was found in 7243 tries.
+#    `DELTA_CALIBRATION_ULP = 4.0` therefore has 2x of headroom against a
+#    measured ceiling, which is the strongest support that entry has had.
+#
+# 4. WHAT I COULD NOT BUILD, stated so the figure is not over-read.
+#    `boundary_margin_unbracketed` is `0: none` at `cfb61fe`. eff/CD falls as
+#    about L^-4, so with the bracket `[shortest admissible, 1e9]` a base would
+#    need eff/CD > 1 at L = 1e9 to escape the top, and > 1e30 of headroom at the
+#    admission limit to escape it. I could not construct one. That figure may be
+#    structurally unreachable, and a figure that cannot move is not a check.
+id=cf_minshadow_D0p239_t0p0903_axis section=circular_tube,D=0.239044,t=0.0902592 stations=122.675 orient=axis extra=none runs_in_suite=no expect=hold
+id=cf_minshadow_D0p4317_t0p1687_axis section=circular_tube,D=0.431718,t=0.168693 stations=220.276 orient=axis extra=none runs_in_suite=no expect=hold
+id=cf_minshadow_D0p0586_t0p0064_axis section=circular_tube,D=0.058565,t=0.00639997 stations=37.0491 orient=axis extra=none runs_in_suite=no expect=hold
+id=cf_calib_2ulp_skew_aniso2p2e5_L0p906 section=circular_tube,D=0.294208596,t=0.108351642 stations=0.90554701 orient=skew extra=I_y_over_I_z=224679.4 runs_in_suite=no expect=hold
