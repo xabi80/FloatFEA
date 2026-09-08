@@ -722,3 +722,63 @@ id=br2_floor_thick_iy1e6_L1000  section=circular_tube,D=3.000,t=0.15000 stations
 #    entries that relation is wrong by more than 2x on 15 of them and by 7.8e+05x
 #    at worst.
 id=aniso_bend_block_is_largest  section=circular_tube,D=0.600,t=0.01200 stations=4000.0 orient=axis      extra=I_y_over_I_z=1e6           runs_in_suite=no expect=hold
+
+# ===========================================================================
+# SEVENTEENTH ROUND (reviewer, at e8920b8). The subject is the OPERATING POINT
+# of the classification rule and the ULP band the `==` calibration was replaced
+# with. Every figure below was measured before the line was written.
+#
+# 1. THE MARGIN AT THE BOUNDARY IS FAMILY-INDEPENDENT AND IT IS 7.6e3x, NOT
+#    8.7e6x. F2.md:642 answers R147 by quoting `8.698e+06x` "at the pair
+#    sitting closest to the boundary ... where it is actually tight". That
+#    figure is measured under `one_element_scaled`, the one defect kind whose
+#    effective size is CD IDENTICALLY on every entry -- so its "closest to the
+#    boundary" is not a selection, it is an identity, and it reports the kind
+#    where the boundary is free rather than the kind where it binds.
+#    Bisecting L to `effective(dropped_shear_parameter) = CD` -- L the only
+#    variable moved, 70 steps -- gives the SAME response to five digits across
+#    nine section families spanning D = 6e-4 .. 3.0 m, t/D = 0.02 .. 0.25,
+#    L/r_min = 1994 .. 1.99e6, two orientations, roll and anisotropy to 1e6:
+#      axis families      7630.2x    skew 9267.2x    skew+roll 9530.3x
+#    Six of the entries below sit on that boundary in families the corpus does
+#    not carry. The construction the plan declines to reproduce is one
+#    bisection on one variable, and its answer is three orders under the
+#    figure published beside it.
+id=bs_boundary_thick_L334       section=circular_tube,D=0.600,t=0.15000 stations=334.38 orient=axis    extra=none                       runs_in_suite=no expect=hold
+id=bs_boundary_aniso688_L10875  section=circular_tube,D=0.600,t=0.01200 stations=10874.66 orient=axis  extra=I_y_over_I_z=688           runs_in_suite=no expect=hold
+id=bs_boundary_aniso1e6_L414590 section=circular_tube,D=0.600,t=0.01200 stations=414590.0 orient=axis  extra=I_y_over_I_z=1e6           runs_in_suite=no expect=hold
+id=bs_boundary_roll_skew_L414p6 section=circular_tube,D=0.600,t=0.01200 stations=414.59 orient=skew    extra=roll=0.37                  runs_in_suite=no expect=hold
+id=bs_boundary_micro_L0p4146    section=circular_tube,D=0.0006,t=0.000012 stations=0.41459 orient=skew extra=none                       runs_in_suite=no expect=hold
+#
+# 2. STRADDLING THE BOUNDARY IN THE ISOTROPIC FAMILY. eff/CD = 1.1539 at
+#    L = 400 (live, response 8806x) and 0.86433 at L = 430 (exempt, response
+#    6594x). The rule flips between two members 7.5% apart in length while the
+#    response moves by 1.34x. Nothing in the shipped corpus brackets the
+#    crossing this tightly in the isotropic family.
+id=bs_just_above_iso_L400       section=circular_tube,D=0.600,t=0.01200 stations=400.0 orient=axis     extra=none                       runs_in_suite=no expect=hold
+id=bs_just_below_iso_L430       section=circular_tube,D=0.600,t=0.01200 stations=430.0 orient=axis     extra=none                       runs_in_suite=no expect=hold
+#
+# 3. EXEMPT BY 4e-5 AND DETECTED BY 7630x. D = 3.0 m at L = 2079.9 measures
+#    eff/CD = 0.99996 -- forty billion times further below CD than the
+#    `1 - ROUNDOFF_IDENTITY` floor `classify` gained this round, so no ULP
+#    allowance reaches it -- and the gate detects it by 7630x anyway. It is the
+#    single cleanest statement of what the exemption drops: a pair the gate
+#    catches by three orders, whose assertion is not made, four parts in 1e5
+#    below the declared resolution.
+id=bs_boundary_big_D3_L2080     section=circular_tube,D=3.000,t=0.05000 stations=2079.9 orient=axis    extra=none                       runs_in_suite=no expect=hold
+#
+# 4. THE ULP BAND, FROM BOTH SIDES. `injected_delta(one_element_scaled)` is
+#    `max|CD k_hat| / max|k_hat|` and the division is a second rounding, so it
+#    lands off CD by one unit in the last place on a few per cent of members --
+#    measured, 6 of 121 admissible random configurations, not the 1 of 99 the
+#    shipped corpus shows. These two are +1 ULP and -1 ULP at the shipped
+#    constant. The first is the case the withdrawn `==` would have reddened
+#    from ABOVE, which no shipped entry exercises.
+#    THE REPLACEMENT IS 47 ULP WIDE, NOT ONE. `assert_close(..., tol =
+#    ROUNDOFF_IDENTITY = 1e-14)` admits `1e-14 x 1e-6 = 1e-20`, and one ULP of
+#    1e-6 is 2.1176e-22: 47.2 ULP. Over 99 shipped entries, 372 grid
+#    configurations and 360 random ones the largest deviation observed is
+#    exactly 1.000 ULP. The code comment, the assertion message and the report
+#    all say "one ULP".
+id=bs_ulp_plus1_aniso688_L4p42  section=circular_tube,D=1.343780,t=0.03459700 stations=4.4243 orient=axis extra=I_y_over_I_z=688        runs_in_suite=no expect=hold
+id=bs_ulp_minus1_aniso1e6_L62p15 section=circular_tube,D=0.909065,t=0.23074500 stations=62.1465 orient=skew extra=I_y_over_I_z=1e6     runs_in_suite=no expect=hold
