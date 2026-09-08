@@ -2612,3 +2612,140 @@ and the older set **open**, unchanged. R115–R121 closed at the fourteenth verd
 
 No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
 a pass.
+
+---
+
+# Revision 17 — the HOLD answered, and the carry made mechanical
+
+**2026-09-07.** Three commits since the sixteenth verdict: `f9c64fc`
+(`process:`), `253ee7a` (plan, re-locked) and `6c1e834` (step).
+
+```
+$ python -m pytest -q
+1028 passed in 35s
+```
+
+Green on the reviewer's 113-entry corpus, including the entry that reddened the
+`==` calibration at the shipped constant.
+
+## 1. R140 — the carry stops depending on attention
+
+Twice in three rounds `Carried` dropped a whole verdict's findings. That is now a
+**build failure**: `scripts/check_carried.py` parses every `**R<n>.` finding
+heading in the newest verdict and every `R<n>` in the newest revision's `Carried`
+section, and the Stop hook refuses to end a turn on a difference.
+
+> **cmd** `python scripts/check_carried.py` (at revision 16)
+> **out** `omits R140, R141, … R152 — verdict declares 13 findings; 0 are carried`
+
+It says what it cannot do: whether the **status** beside a carried item is true is
+the reviewer's half. It decodes both files permissively, because a verdict with a
+Windows-1252 dash would make it raise, and a guard that raises gets removed.
+
+## 2. R142 — the load-bearing assertion, and a withdrawn argument
+
+The `==` was justified as *"the constant divides out and the result is the same
+float"*. It does not: `(CD·x)/x ≠ CD` for **0.19%** of random `x` at `CD = 1e-6`,
+24% at `3.7e-6`. Green at the commit that published it was 89 draws at
+`p = 0.0019` — about one-in-seven odds of having been red — and the reviewer's
+entry reddened it at the shipped constant, against a message that called one ULP
+of rounding a units error.
+
+Now `assert_close` at `ROUNDOFF_IDENTITY` with the floor rule, and the message
+says one ULP. **The same boundary was in the classification**: a bare `>=` put the
+gate's own counter-defect below its own resolution on one entry; `classify`
+carries the same allowance and the exempt count drops `41 → 40`.
+
+## 3. R143 / R144 — marked, counted, and golden
+
+```
+EXEMPT   40 of 396 (entry, defect) pairs are below the declared resolution and
+         carry no red assertion: dropped_flip 9, dropped_shear_parameter 20,
+         wrong_dof_index 11
+         of those, 34 ARE detected by the gate today
+```
+
+Those 34 responses are golden values in
+`tests/regression/g22_exempt_pair_responses.json`, with three assertions: every
+recorded pair is still detected, its response has not moved, and the measured set
+has not **grown** without the file being regenerated.
+
+**No assertion is added on the outcome**, and the reason is at the site: asserting
+"red wherever the response exceeds the ceiling regardless of classification"
+asserts the measurement against itself — predicate and outcome are the same
+number, and such a test passes whatever the code does. The claim stays at the
+classification; the protection extends to everything measured.
+
+## 4. R145 — the scaling gets a control on each side
+
+`test_the_delta_measure_is_UNIT_INVARIANT`: the same member at `1e-3`, `1` and
+`1e3` metres, all four defects. `test_a_CONSTANT_ell_breaks_unit_invariance`:
+with `ell` frozen at `1.0` the three disagree by more than `10×`.
+
+**The first version of that control passed for the wrong reason and failed
+honestly.** It patched `_homogeneous` through `import test_corpus_configurations`
+— under pytest a *second* module object — so it measured the unpatched function
+and reported perfect invariance. It patches `globals()` now, and says why.
+
+The convention is recorded at the site: `ell` is the member length, and what
+matters is that it **scales with the model**. A proportional `1000×` is a change
+of convention; `ell` becoming a **constant** is the defect.
+
+## 5. BS4's normalisation change — measured, and not made
+
+The directive asked that the metric and the residual normalise by the same
+matrix, assembled, closing the `1.03–7.33×` gap. Measured, that breaks the rule
+it serves:
+
+```
+uniform (1+CD) on the whole model      measures CD to 9.8e-11 relative
+one-element (1+CD), the shipped        measures 0.1206 .. 0.1409 x CD
+  counter-defect                       -> below the declared resolution on ALL 99
+```
+
+The assembled maximum is attained where two elements sum and the shortest
+dominates, so element 1's contribution is ~12% of it. Normalising there makes the
+gate's **own counter-defect exempt everywhere under its own rule**. Local
+normalisation stays; the gap is recorded rather than closed; the uniform-model
+calibration is noted as the one that would survive there.
+
+## 6. R141, R146, R147, R150 — in the plan, and in their own commit
+
+`R141`: "0 of 74 entries, minimum `1739×`" was itself measured at 74 solved
+entries; the runner now gives **6 of 99**, minimum `0.0006932×`. `R146`: the
+bending-only table is re-indexed by `K_bend/K_max`, which it is a function of —
+at `L/r_min = 47` the ratio spans `470×`. `R147`: tightness is quoted at two
+operating points, the corpus minimum `3999×` and `8.698e+06×` at the pair closest
+to the boundary; **the reviewer's `7630×` is attributed, not published, because I
+did not reproduce that construction**. `R150`: every declared tolerance is
+tabulated and the plan test binds on all **25**, `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`
+first — the one it was missing, and exactly the constant the exemption move needs.
+
+`R149`: **the plan edit is in its own commit this time.** The breach is not
+re-split — history stays linear — and it is not repeated.
+
+## 7. Carried
+
+| item | status |
+|---|---|
+| R140 | **closed** — §1, mechanical |
+| R141 | **closed** — §6 |
+| R142 | **closed** — §2, both halves |
+| R143 | **closed** — §3, marked and counted |
+| R144 | **closed** — §3, golden rather than asserted |
+| R145 | **closed** — §4, control on each side |
+| R146 | **closed** — re-indexed |
+| R147 | **closed** — both operating points |
+| R148 | **open** — `12/λ_elem²` is stated more generally than it holds; it fails by `7.8e5×` off the isotropic case, and the sentence is not yet rewritten |
+| R149 | **closed by not repeating it** — §6 |
+| R150 | **closed** — 25 of 25 |
+| R151 | **open** — three stale counts in prose (`105-entry corpus`, `eight sites`) |
+| R152 | **open** — two sentences about the guards behind the exemption |
+| R129–R139 | **carried from the fifteenth verdict**: R130 closed; R132, R133, R136, R137 **open and untouched**; R129 closed at three sites of five, the remaining two answered in §6; R131, R134, R135, R138 open |
+| R113, R95, R97, R98, R100–R103, R63, R76, R79, R80 | **open**, unchanged |
+| R6, R16, R25, R30–R33, R36, R50, R52, R62 | **open** — step 4a or later |
+
+## 8. Witness
+
+No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
+a pass.
