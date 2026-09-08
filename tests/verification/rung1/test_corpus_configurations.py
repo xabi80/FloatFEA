@@ -991,13 +991,23 @@ def classify(entry, kind: str) -> str:
 # change to `injected_delta` or to a tolerance can exempt them.
 #
 # THE DIRECTIVE ASKED FOR THEM TO BE ASSERTED `live` AS WELL, AND MEASUREMENT
-# REFUSES THAT. On 19 (entry, defect) pairs -- the most slender corpus entries --
-# a structural defect's effective size falls below `1e-6`, because
-# `K_bend/K_max ~ 12/lambda_elem^2` shrinks any bending-block defect however
-# structural it is. Every one of those 19 is still RED, from `2.838e+05x` at the
-# weakest to `1.114e+08x`. So the surviving half of the claim is the half that
-# matters, and the `live` half is withdrawn rather than asserted where it does
-# not hold.
+# REFUSES THAT. On the most slender corpus entries a structural defect's
+# effective size falls below `CD`, because the bending block is a shrinking
+# fraction of the largest stiffness in the element. Every one of those pairs is
+# still RED. So the surviving half of the claim is the half that matters, and the
+# `live` half is withdrawn rather than asserted where it does not hold.
+#
+# THE COUNTS AND MARGINS ARE NOT REPEATED HERE (R176). The figures that stood in
+# this comment -- "19 pairs", "2.838e+05x at the weakest" -- were 191x off and a
+# corpus round stale by the time they were read, and this is the fifth round in
+# which a stale figure survived in prose. They are generated:
+# `exempt_total`, `exempt_detected`, `exempt_by_defect` and
+# `margin_wrong_dof_index` in docs/milestones/F2_figures.md, printed per run by
+# `test_the_forward_error_is_REPORTED_and_the_floor_is_too`.
+#
+# `K_bend/K_max ~ 12/lambda_elem^2` IS NOT A GENERAL LAW and is not stated as one
+# (R148): it is the isotropic circular case, and off it the relation fails by
+# `7.8e5x`. The metric measures the ratio; there is no closed form in the code.
 UNCONDITIONALLY_RED = ("dropped_flip", "wrong_dof_index", "one_element_scaled")
 
 
@@ -1085,9 +1095,13 @@ def test_the_delta_measure_is_CALIBRATED() -> None:
         # IN ULP OF THE DECLARED SIZE (R156). The `==` came first and its
         # argument was wrong -- `(CD * x) / x != CD` for 0.19% of random `x` --
         # and the `ROUNDOFF_IDENTITY` band that replaced it was described as
-        # "one ULP" while admitting **47.22**. Both records are withdrawn. The
-        # measured deviation is exactly 1.000 ULP, the single rounding of
-        # `max|CD k| / max|k|`, and the ceiling is four times it.
+        # "one ULP" while admitting **47.22**. Both records are withdrawn --
+        # AND SO IS THE ONE THAT REPLACED THEM (R177/R178): "exactly 1.000 ULP
+        # ... the ceiling is four times it" survived here after being withdrawn
+        # elsewhere, and it was one unseeded draw. The distribution is seeded and
+        # generated now -- `calibration_ulp_histogram` in
+        # docs/milestones/F2_figures.md -- and the observed maximum is 2 ULP, so
+        # the ceiling carries 2x of headroom.
         ulp = abs(measured - PATCH_TEST_EXACTNESS_COUNTER_DEFECT) / math.ulp(
             PATCH_TEST_EXACTNESS_COUNTER_DEFECT)
         assert ulp <= DELTA_CALIBRATION_ULP, (

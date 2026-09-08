@@ -27,10 +27,23 @@ WHAT IS CHECKED
 1. Every `R<n>` the answered verdict mentions -- its own findings AND its own
    `Carried` section, so an item carried forward keeps propagating instead of
    ageing out -- appears in the newest report revision's `Carried`.
-2. Every `file:line` a finding names is either touched by the step's diff since
-   the reviewed commit, or named in the report with an explicit "no change"
-   beside it. Three rounds running, a condition that named sites was closed at
-   some of them and recorded as answered; this fails before it can be reported.
+2. Every `file:line` a finding names is either **inside a changed hunk** of
+   `git diff <reviewed>..HEAD -U0`, or declared in the report as `no change`
+   beside that exact site.
+
+**AT LINE RESOLUTION, WHICH IS THE RESOLUTION FINDINGS ARE WRITTEN IN (BV0).**
+The file-level version passed while a finding was answered at four of its eight
+sites -- five consecutive rounds of the same species. What makes lines work: the
+verdict's numbers are at the REVIEWED commit, and `-U0` hunks carry old-side
+ranges in exactly those coordinates, so a named line is closed when it falls
+inside one.
+
+FOUR PARSER HOLES CLOSED HERE rather than deferred, because a guard is only as
+good as its parser (R171): the site pattern no longer requires a `/`, so a bare
+`test_corpus_configurations.py` is seen; a finding's block ends at the next
+finding OR the next `##` heading, so the last one no longer absorbs every path to
+end-of-file; a heading written `**R162 (recordable)` without the dot is caught;
+and a range `:a-b` expands to every line in it rather than to its endpoints.
 
 WHAT IS NOT CHECKED, stated so the guard is not trusted past its reach: whether
 the status written beside a carried item is TRUE, and whether a touched file was
@@ -48,12 +61,17 @@ ROOT = Path(__file__).resolve().parents[1]
 VERDICT = ROOT / "docs" / "reviews" / "F2" / "step-4.md"
 REPORT = ROOT / "docs" / "reports" / "F2" / "step-4.md"
 
-_FINDING = re.compile(r"^\*\*(R\d+)\.", re.MULTILINE)
+# `**R12.` and `**R12 ` both open a finding: the missing dot dropped one silently.
+_FINDING = re.compile(r"^\*\*(R\d+)[.\s]", re.MULTILINE)
 _MENTION = re.compile(r"\bR\d+\b")
 # `path/to/file.py:123` or `:123-145`, as the verdicts write them.
 # The leading dot of `.claude/...` is part of the path; `` before it would
 # cut it off and the file would never match the diff.
-_SITE = re.compile(r"((?:\.?[\w.-]+/)+[\w.-]+\.(?:py|md|sh|txt|json))")
+# The directory part is OPTIONAL, because findings name bare files too and
+# those were invisible to this pattern (R171). The optional `:line` and `:a-b`
+# suffixes are what take the guard to line resolution.
+_SITE = re.compile(
+    r"((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json))(?::(\d+)(?:-(\d+))?)?")
 
 
 def _read(path: Path) -> str:
@@ -133,6 +151,11 @@ def test_the_report_names_the_verdict_it_answers() -> None:
         f"the report answers verdict `{ANSWERED}`, which is not a commit in "
         "this repository."
     )
+    assert len(re.findall(r"^Answers:", _newest_revision(REPORT_TEXT),
+                          re.MULTILINE)) == 1, (
+        "the newest revision carries more than one `Answers:` header, so which "
+        "verdict it claims to answer is ambiguous."
+    )
 
 
 def test_the_parse_found_something_to_check() -> None:
@@ -162,52 +185,98 @@ def test_the_report_carries_the_finding(finding: str) -> None:
     )
 
 
-def _changed_files() -> set[str]:
+def _changed_lines() -> dict[str, set[int]]:
+    """`{path: {old-side line numbers touched}}` since the reviewed commit.
+
+    `-U0` so a hunk covers only what changed, and the OLD side because that is
+    the coordinate system the verdict's line numbers are written in.
+
+    Reviewed commit -> WORKING TREE, not -> HEAD: the step is answered before it
+    is committed, and a check that only saw committed work would demand the
+    answer be committed before it could be shown to be an answer.
+    """
     reviewed = _reviewed_commit(VERDICT_TEXT)
     if not reviewed:
-        return set()
-    # Reviewed commit -> WORKING TREE, not -> HEAD. The step is answered before
-    # it is committed, and a check that only sees committed work would demand
-    # the answer be committed before it can be shown to be an answer.
-    out = subprocess.run(["git", "diff", "--name-only", reviewed],
-                         cwd=ROOT, capture_output=True, text=True)
-    return {line.strip() for line in out.stdout.splitlines() if line.strip()}
+        return {}
+    out = subprocess.run(["git", "diff", "-U0", reviewed], cwd=ROOT,
+                         capture_output=True)
+    text = out.stdout.decode("utf-8", errors="replace")
+    touched: dict[str, set[int]] = {}
+    path = ""
+    for line in text.splitlines():
+        if line.startswith("--- a/"):
+            path = line[6:].strip()
+        elif line.startswith("--- /dev/null"):
+            path = ""
+        elif line.startswith("+++ b/") and not path:
+            path = line[6:].strip()
+        elif line.startswith("@@") and path:
+            m = re.match(r"@@ -(\d+)(?:,(\d+))? ", line)
+            if m:
+                start, count = int(m.group(1)), int(m.group(2) or 1)
+                # A pure insertion has count 0 and sits AFTER `start`; count the
+                # neighbouring lines so an answer that ADDS lines at a named site
+                # closes it.
+                span = (range(start, start + count) if count
+                        else (start, start + 1))
+                touched.setdefault(path, set()).update(span)
+    return touched
 
 
-def _sites_by_finding() -> list[tuple[str, str]]:
-    """`(finding, path)` for every file a finding names."""
-    blocks = list(re.finditer(r"^\*\*(R\d+)\.", VERDICT_TEXT, re.MULTILINE))
-    out: list[tuple[str, str]] = []
+def _sites_by_finding() -> list[tuple[str, str, int]]:
+    """`(finding, path, line)` for every site a finding names; line 0 = no line.
+
+    A finding's block ends at the next finding OR the next `##` heading, so the
+    last finding no longer absorbs every path to end-of-file (R171).
+    """
+    blocks = list(re.finditer(r"^\*\*(R\d+)[.\s]", VERDICT_TEXT, re.MULTILINE))
+    out: list[tuple[str, str, int]] = []
     for i, m in enumerate(blocks):
         end = blocks[i + 1].start() if i + 1 < len(blocks) else len(VERDICT_TEXT)
-        body = VERDICT_TEXT[m.start():end]
-        for path in set(_SITE.findall(body)):
-            out.append((m.group(1), path))
+        nxt = re.search(r"^##+ ", VERDICT_TEXT[m.end():end], re.MULTILINE)
+        if nxt:
+            end = m.end() + nxt.start()
+        for path, first, last in _SITE.findall(VERDICT_TEXT[m.start():end]):
+            if not first:
+                out.append((m.group(1), path, 0))
+                continue
+            lo, hi = int(first), int(last or first)
+            for line in range(lo, hi + 1):  # ranges expand, not endpoints
+                out.append((m.group(1), path, line))
     return sorted(set(out))
 
 
 SITES = _sites_by_finding()
+TOUCHED = _changed_lines()
 
 
-@pytest.mark.parametrize("finding, path", SITES,
-                         ids=[f"{f}-{p}" for f, p in SITES])
-def test_every_named_site_is_touched_or_declared(finding: str, path: str) -> None:
-    """A finding that names files is answered at all of them, or says which not.
+@pytest.mark.parametrize(
+    "finding, path, line", SITES,
+    ids=[f"{f}-{p}" + (f":{n}" if n else "") for f, p, n in SITES])
+def test_every_named_site_is_touched_or_declared(
+    finding: str, path: str, line: int
+) -> None:
+    """A finding that names lines is answered at all of them, or says which not.
 
-    Three consecutive rounds closed a site-naming condition at some of its sites
-    and recorded it as answered. The escape hatch is deliberate and explicit: the
-    report may write `no change` beside the path, which is a claim a reviewer can
-    check, rather than an omission nobody sees.
+    FIVE consecutive rounds closed a site-naming condition at some of its sites
+    and recorded it as answered -- four of eight in the last one, at file
+    resolution. The escape hatch is deliberate and explicit: the report may write
+    `no change` beside the exact site, which is a claim a reviewer can check,
+    rather than an omission nobody sees.
     """
-    if path in _changed_files():
+    hit = [p for p in TOUCHED if p.endswith(path)]
+    if hit and (line == 0 or any(line in TOUCHED[p] for p in hit)):
         return
-    revision = _newest_revision(REPORT_TEXT)
-    for line in revision.splitlines():
-        if path in line and re.search(r"no change", line, re.IGNORECASE):
+
+    site = f"{path}:{line}" if line else path
+    for text_line in _newest_revision(REPORT_TEXT).splitlines():
+        if not re.search(r"no change", text_line, re.IGNORECASE):
+            continue
+        if site in text_line or (line == 0 and path in text_line):
             return
     pytest.fail(
-        f"{finding} names {path}, the step's diff does not touch it, and the "
-        f"newest report revision does not say `no change` beside it. Either "
-        "answer the site or declare it unanswered by name -- half of an item is "
-        "not the item."
+        f"{finding} names {site}, the step's diff does not touch it, and the "
+        "newest report revision does not say `no change` beside that exact "
+        "site. Either answer it or declare it unanswered by name -- half of an "
+        "item is not the item."
     )

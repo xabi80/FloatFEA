@@ -87,13 +87,42 @@ def _figures() -> list[tuple[str, str]]:
     rows.append(("counter_headroom_room",
                  f"{PATCH_TEST_COUNTER_HEADROOM / (CD / edge):.2f}x"))
 
-    lo, hi, lo_at, hi_at = _boundary_margins(C, ceil, CD)
-    rows.append(("boundary_margin_min", f"{lo:.4g}x"))
-    rows.append(("boundary_margin_max", f"{hi:.4g}x"))
-    rows.append(("boundary_margin_spread", f"{hi / lo:.2f}x"))
+    lo, hi, lo_at, hi_at, n, unbracketed, refused = _boundary_margins(
+        C, ceil, CD)
+    rows.append(("boundary_margin_min", f"{lo:.6g}x"))
+    rows.append(("boundary_margin_max", f"{hi:.6g}x"))
+    rows.append(("boundary_margin_spread", f"{hi / lo:.3f}x"))
     rows.append(("boundary_margin_min_at", lo_at))
     rows.append(("boundary_margin_max_at", hi_at))
+    rows.append(("boundary_margin_bases", f"{n} converged"))
+    rows.append(("boundary_margin_unbracketed",
+                 f"{len(unbracketed)}: {', '.join(unbracketed) or 'none'}"))
+    rows.append(("boundary_margin_refused",
+                 f"{len(refused)}: {', '.join(refused) or 'none'}"))
+    rows.append(("calibration_ulp_histogram", _ulp_histogram(C, CD)))
     return rows
+
+
+def _ulp_histogram(C, CD: float) -> str:
+    """The calibration deviation's distribution, SEEDED so the table reproduces.
+
+    The histogram published in `tolerances.py` was one unseeded draw, and
+    re-drawing it to the same protocol gave a different table with no 2-ULP case
+    at all (R178). The maximum was reproducible through `calibration_ulp_worst`;
+    the table was not, which is BI3 -- a figure in a file a reader trusts, that
+    nothing regenerates.
+    """
+    import random
+
+    rng = random.Random(20260908)
+    counts: dict[int, int] = {}
+    bases = list(C.SOLVED)
+    for _ in range(5000):
+        entry = bases[rng.randrange(len(bases))]
+        k = int(round(abs(C.injected_delta(entry, "one_element_scaled") - CD)
+                      / math.ulp(CD)))
+        counts[k] = counts.get(k, 0) + 1
+    return ", ".join(f"{k} ULP x{counts[k]}" for k in sorted(counts))
 
 
 def _boundary_margins(C, ceil: float, CD: float):
@@ -118,10 +147,49 @@ def _boundary_margins(C, ceil: float, CD: float):
     corpus moved the published figure from 9267x to 7630x without anything about
     the gate changing.
     """
-    out = []
+    out, unbracketed, refused = [], [], []
     for entry in C.SOLVED:
         base = dict(entry)
-        lo, hi = 1.0, 1.0e7
+
+        # THE BRACKET STARTS AT THE SHORTEST ADMISSIBLE MEMBER, not at 1 metre.
+        # A fixed low end of 1.0 is below `BEAM_ADMISSION_L_OVER_D` for most
+        # sections, so `_build` raised and 80 of 110 bases were "refused" -- an
+        # artefact of the probe, not a property of the base.
+        from floatfea.model.admissibility import member_l_over_d
+        from floatfea.tolerances import BEAM_ADMISSION_L_OVER_D
+        try:
+            outer = 1.0 / member_l_over_d(1.0, C._entry_section(entry))
+        except Exception as exc:
+            refused.append(f"{entry['id']} ({type(exc).__name__})")
+            continue
+        lo, hi = 1.000001 * BEAM_ADMISSION_L_OVER_D * outer, 1.0e9
+
+        # THE BRACKET IS CHECKED BEFORE IT IS TRUSTED (R175). Without this the
+        # loop ran inside a fixed [1, 1e7] and never asked whether the crossing
+        # was in it: 13 of 110 bases never left `lo = 1.0`, and the published
+        # MINIMUM was one of them -- reported as a margin "at the boundary" while
+        # sitting at `eff/CD = 0.0296`, 34x below the crossing it was named for.
+        # A base whose crossing lies outside the bracket is recorded by name as
+        # unbracketed. It is never a margin.
+        try:
+            base["stations"] = repr(lo)
+            at_lo = C.injected_delta(base, "dropped_shear_parameter")
+            base["stations"] = repr(hi)
+            at_hi = C.injected_delta(base, "dropped_shear_parameter")
+        except Exception as exc:
+            # AND NOTHING IS SWALLOWED (R175). `except: continue` dropped five
+            # bases silently, which is a skip by another name.
+            refused.append(f"{entry['id']} ({type(exc).__name__})")
+            continue
+
+        if not (at_lo >= CD > at_hi):
+            unbracketed.append(entry["id"])
+            continue
+
+        # EVERY REFUSAL IS RECORDED BY NAME AND TYPE, never swallowed (R175).
+        # Changing a base's length can make its orientation node degenerate or
+        # its member inadmissible; that is a fact about the probe on that base
+        # and it is published, not dropped.
         try:
             for _ in range(200):
                 mid = (lo * hi) ** 0.5
@@ -136,12 +204,18 @@ def _boundary_margins(C, ceil: float, CD: float):
             eff = C.injected_delta(base, "dropped_shear_parameter")
             resp = max(C._oob_with_injected(base, st, "dropped_shear_parameter")
                        for st in C.STATES) / ceil
-        except Exception:
+        except Exception as exc:
+            refused.append(f"{entry['id']} ({type(exc).__name__})")
             continue
-        if eff > 0.0:
-            out.append((float(resp / (eff / CD)), entry["id"]))
+        out.append((float(resp / (eff / CD)), entry["id"]))
+
+    if not out:
+        raise RuntimeError(
+            "no base bracketed the classification boundary; the range below "
+            "would be empty and the figures would publish nothing")
     out.sort()
-    return out[0][0], out[-1][0], out[0][1], out[-1][1]
+    return (out[0][0], out[-1][0], out[0][1], out[-1][1],
+            len(out), sorted(unbracketed), sorted(refused))
 
 
 def render() -> str:
@@ -170,11 +244,15 @@ def main(argv: list[str] | None = None) -> int:
     text = render()
     if args.check:
         current = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
-        # The trailing commit line moves with every commit and is context, not a
-        # figure; compare everything above it.
-        cut = lambda s: s.split("\nGenerated at ")[0]  # noqa: E731
-        if cut(current) != cut(text):
-            print("regen_figures: F2_figures.md is stale", file=sys.stderr)
+        # THE WHOLE FILE, INCLUDING THE COMMIT LINE (R170/R179). The comparison
+        # used to stop at `Generated at`, so anything appended below it was never
+        # checked but WAS read by the plan's resolver -- a hand-typed row could
+        # sit there, and one was planted to prove it. And the commit line itself
+        # was false at the commit that published it, which only a whole-file
+        # comparison can catch.
+        if current != text:
+            print("regen_figures: F2_figures.md is not what this script "
+                  "produces at HEAD", file=sys.stderr)
             return 1
         print("regen_figures: up to date")
         return 0

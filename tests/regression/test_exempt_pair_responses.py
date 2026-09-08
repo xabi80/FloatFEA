@@ -131,13 +131,28 @@ def test_a_MOVED_response_is_caught() -> None:
     nothing. The injection is `EXEMPT_RESPONSE_DRIFT_ULP_COUNTER` ULP of a
     recorded ratio, the smallest round multiple above the ceiling.
     """
-    recorded = _recorded()
-    key = sorted(recorded)[0]
-    b = recorded[key] / PATCH_TEST_EXACTNESS
-    a = b + EXEMPT_RESPONSE_DRIFT_ULP_COUNTER * math.ulp(b)
-    moved = abs(a - b) / math.ulp(b)
-    assert moved > EXEMPT_RESPONSE_DRIFT_ULP, (
-        f"a {EXEMPT_RESPONSE_DRIFT_ULP_COUNTER:g}-ULP injection measures "
-        f"{moved:.1f} ULP against a ceiling of {EXEMPT_RESPONSE_DRIFT_ULP:g}; "
-        "the comparison above would not catch it."
-    )
+    # INJECTED INTO THE RECORD AND RUN THROUGH THE GATE (R173/BV1). The first
+    # version computed `10 > 4` on two constants and passed with the gate's own
+    # comparison neutered -- the same defect as R163, one round later, in the
+    # commit that fixed R163. It now perturbs a recorded value and requires
+    # `test_every_recorded_pair_is_still_detected` to fail on it, so the counter
+    # cannot pass unless the comparison it defends is live.
+    original = globals()["_recorded"]
+    key = sorted(original())[0]
+
+    def perturbed():
+        out = dict(original())
+        ratio = out[key] / PATCH_TEST_EXACTNESS
+        out[key] = (ratio + EXEMPT_RESPONSE_DRIFT_ULP_COUNTER
+                    * math.ulp(ratio)) * PATCH_TEST_EXACTNESS
+        return out
+
+    globals()["_recorded"] = perturbed
+    try:
+        with pytest.raises(AssertionError, match="ULP of the recorded ratio"):
+            test_every_recorded_pair_is_still_detected()
+    finally:
+        globals()["_recorded"] = original
+
+    # And unperturbed it passes, so the failure above is the injection.
+    test_every_recorded_pair_is_still_detected()
