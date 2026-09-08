@@ -2749,3 +2749,106 @@ re-split — history stays linear — and it is not repeated.
 
 No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
 a pass.
+
+---
+
+# Revision 18 — two guards moved out of the hook, and the figures out of the prose
+
+**2026-09-07.** Three commits since the seventeenth verdict: `69c5858`
+(`process:`), `ba4c21a` (plan, re-locked) and `ad2164d` (step).
+
+## 1. R153 — the guard I added last round could not run
+
+`check_carried.py` was never executed. The branch above it blocks and exits
+whenever the report or `floatfea`/`tests` differs from the reviewed commit, and
+the report is inside that pathspec — the two conditions were mutually exclusive.
+My evidence for "that is now a build failure" was a **manual invocation**.
+
+The call moved above that branch (`.claude/hooks/require-verdict.sh`,
+`scripts/check_carried.py` — both touched in `69c5858`). **But the mechanism is
+now a test**, `tests/test_report_carried.py`: five hook defects in this milestone
+say a hook is the wrong home for anything that must run, and the supervisor runs
+`pytest`.
+
+It checks two things, and **it found 23 failures on the state that produced R154
+and R155** — 18 uncarried numbers and 5 named sites:
+
+1. every `R<n>` in the newest verdict, its findings *and* its own `Carried`, so
+   an item keeps propagating instead of ageing out;
+2. every file a finding names is touched by the step's diff, or written in the
+   report with **no change** beside it.
+
+**Two bugs in it, found by running it.** It compared `reviewed → HEAD`, so a step
+answered but not committed looked unanswered; and its path pattern began at a
+word boundary, so `.claude/…` matched from `claude/…` and could never equal a
+real path.
+
+## 2. R155 — the figures leave the prose
+
+`scripts/regen_figures.py` → `docs/milestones/F2_figures.md`, referenced from the
+plan as `{{fig:NAME}}`, with `tests/test_plan_figures.py` asserting every name
+resolves and the file is what a fresh run produces. R155's own numbers are the
+first entries: `5.150e+09×` and `5.227e+09×` regenerate to `6.264e+05×` and
+`1486×` — the four orders it measured.
+
+## 3. R156, R157 — a band described as 47× tighter than it was, and an identity
+
+`ROUNDOFF_IDENTITY` relative to `1e-6` admits `1e-20`; one ULP is `2.1176e-22`.
+A **47.22-ULP** band was described as one ULP in three places. Now
+`DELTA_CALIBRATION_ULP = 4.0` with its counter at `40.0` — placed *inside* the
+band the old form admitted, so it reddens where that form was silent. Measured
+deviation: `1.000 ULP` everywhere.
+
+**R157: `8.698e+06×` was an identity, not a selection** — `one_element_scaled`'s
+effective size *is* `CD` on every entry. The figure is now the boundary solved
+for. My bisection on one section family gives `9267×`; the reviewer reports
+`7630.2×` across nine. **The two constructions differ, both are recorded, neither
+is averaged**, and the published name says which one this repository computes.
+
+## 4. R133, R154, R158, R160, R161
+
+R133's contradiction resolves to the ablation: **one** entry. R154: the exempt
+classification is printed in the defect's own row, not only in the count. R158:
+the golden file's premise is corrected — three of four defects are in
+`UNCONDITIONALLY_RED`, so "carries no red assertion" was true only of the shear
+defect. R160: `EXEMPT_RESPONSE_DRIFT` and `DELTA_CALIBRATION_ULP` stop borrowing
+`SUBDIVISION_INVARIANCE` and `ROUNDOFF_IDENTITY`; each has its own entry and its
+own injected counter. R161: the plan test runs both directions and **caught all
+four constants added this round**.
+
+**And the golden file earned itself again**: the reviewer's five new
+exempt-and-detected pairs reddened it by name on their first round. Regenerated
+to 39 entries; the reason is a corpus round.
+
+## 5. Carried
+
+| item | status |
+|---|---|
+| R140, R141, R142, R143, R144, R145, R146, R147, R149, R150 | **carried from the sixteenth verdict and closed in revision 17** — the carry, the three regenerated figures, the ULP band's predecessor, the exemption's marking, the scaling's controls, the plan edit's placement and the tolerance table's coverage |
+| R148 | **open** — `12/λ_elem²` is stated more generally than it holds; it fails by `7.8e5×` off the isotropic case |
+| R151, R152 | **open** — three stale counts, and two sentences about the exemption's guards; not addressed this round |
+| R153 | **closed** — §1, and the mechanism moved out of the hook. `scripts/check_carried.py`: **no change** this round — it was written in `f9c64fc` and only the hook's ordering moved |
+| R154 | **closed** — classification in the row |
+| R155 | **closed** — §2, generated |
+| R156 | **closed** — §3, ULP band with its own counter |
+| R157 | **closed** — §3, with the disagreement recorded |
+| R158 | **closed** — premise corrected |
+| R159 | **open** — the causal sentence in `_homogeneous` is not yet reduced to a cell or a bare measurement |
+| R160 | **closed** — two own entries, two counters |
+| R161 | **closed** — both directions |
+| R162 | **open** — §5's third figure still carries no command. `docs/SUPERVISOR.md`: **no change**. `tests/corpus/g22_model_configurations.txt`: **no change** — it is the reviewer's and the implementer does not write it |
+| R101 | **open** — pointer resolves to a revision carrying a withdrawn claim |
+| R102 | **open** — percentage cells differ by 0.03–0.05 pp |
+| R115 | **closed** at the fourteenth verdict, carried for the chain |
+| R128 | **closed** — the range is justified by purpose |
+| R31, R32 | **open** — step 4a or later, unchanged |
+| R65 | **withdrawn by the reviewer** |
+| R68 | **standard, not a finding** — the complete-list rule, now mechanical |
+| R129–R139 | R130 closed; R131, R134, R135, R138 open; R133 **closed** in §4; R132, R136, R137 **open and untouched** |
+| R113, R95, R97, R98, R100, R103, R63, R76, R79, R80 | **open**, unchanged |
+| R6, R16, R25, R30, R33, R36, R50, R52, R62 | **open** — step 4a or later |
+
+## 6. Witness
+
+No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
+a pass.
