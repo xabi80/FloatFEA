@@ -81,6 +81,30 @@ if [ -n "$reviewed" ] && git cat-file -e "$reviewed" 2>/dev/null; then
   fi
 fi
 
+# EVERY FINDING IN THE NEWEST VERDICT IS CARRIED BY THE NEWEST REPORT (BS0).
+# Twice in three rounds the report's `Carried` section dropped a whole verdict's
+# findings -- eleven items once, five of them blocking or STOP-class, four
+# untouched in the repository -- and both times a review caught it rather than
+# the build. CLAUDE.md's dependency-list rule is the point of the arrangement;
+# this makes it mechanical.
+#
+# It runs only when the report is NEWER than the verdict it must carry, i.e.
+# after the implementer has answered. Before that the report legitimately
+# predates the findings and carrying them is impossible.
+#
+# WHAT IT CANNOT CHECK: whether the status written beside each carried item is
+# true. A report can carry R142 and lie about it. That half is the reviewer's.
+if [ -n "$reviewed" ] && git cat-file -e "$reviewed" 2>/dev/null; then
+  if git diff --quiet "$reviewed" -- "$report" 2>/dev/null; then
+    : # report unchanged since the reviewed commit: nothing to carry yet
+  elif command -v python >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1; then
+    PY_BIN=$(command -v python3 || command -v python)
+    if ! carried=$("$PY_BIN" "scripts/check_carried.py" --verdict "$review" --report "$report" 2>&1); then
+      block "$carried  -- CLAUDE.md requires the next report's Carried section to list every open item, and BS0 makes that a build failure rather than a review finding."
+    fi
+  fi
+fi
+
 verdict=$(grep -m1 -E '^Verdict:' "$review" | awk '{print $2}')
 case "$verdict" in
   PASS) exit 0 ;;
