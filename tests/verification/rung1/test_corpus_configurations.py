@@ -879,6 +879,18 @@ def _homogeneous(k: np.ndarray, ell: float) -> np.ndarray:
 
     The same scaling `interior_out_of_balance` applies before it takes a norm, so
     a defect measured through here is measured in the units the gate decides in.
+
+    THE CONVENTION IS `ell = MEMBER LENGTH`, and what matters is not the number
+    but that it SCALES WITH THE MODEL. Multiplying it by a constant is a change
+    of convention, not a defect: it rescales every rotational row and column of
+    both the numerator and the denominator, and `injected_delta` is a ratio of
+    the two. What would be a defect is `ell` becoming a CONSTANT -- then a member
+    measured in millimetres and the same member in kilometres would weight their
+    rotations identically and the measure would stop being unit-invariant.
+
+    That is the property, and it has a shipped control on each side:
+    `test_the_delta_measure_is_UNIT_INVARIANT` and its negative
+    `test_a_CONSTANT_ell_breaks_unit_invariance` (BS3, from BI1's pattern).
     """
     w = np.ones(12)
     w[3:6] = ell
@@ -954,8 +966,13 @@ def classify(entry, kind: str) -> str:
     guarded in both directions by `test_the_counter_DEFECT_SIZE_cannot_be_raised`
     and its counter, and this classification borrows that guard.
     """
-    return ("live" if injected_delta(entry, kind)
-            >= PATCH_TEST_EXACTNESS_COUNTER_DEFECT else "below resolution")
+    # THE COMPARISON CARRIES THE SAME ULP ALLOWANCE THE CALIBRATION DOES
+    # (R142). `injected_delta` computes `max|CD k_hat| / max|k_hat|`, which lands
+    # one ULP below `CD` on some entries -- and a bare `>=` then classified the
+    # gate's OWN counter-defect as below its own resolution on one of them.
+    floor = PATCH_TEST_EXACTNESS_COUNTER_DEFECT * (1.0 - ROUNDOFF_IDENTITY)
+    return ("live" if injected_delta(entry, kind) >= floor
+            else "below resolution")
 
 
 # THE DEFECTS WHOSE REDNESS IS NOT SUBJECT TO CLASSIFICATION (BR3). These are
@@ -1054,15 +1071,22 @@ def test_the_delta_measure_is_CALIBRATED() -> None:
         # differences directly would be comparing two 1e-6 numbers through that
         # cancellation and would report a 4.5e-12 disagreement that is the
         # arithmetic, not the measure (R38's lesson, in a new place).
-        # EXACTLY, not to round-off: the injection is `CD * k` and the measure
-        # is `max|CD * k_hat| / max|k_hat|`, so the constant divides out and the
-        # result is the same float. If this ever needs a tolerance, the two sides
-        # have stopped being the same quantity.
-        assert measured == PATCH_TEST_EXACTNESS_COUNTER_DEFECT, (
-            f"{entry['id']}: the counter-defect injection measures "
-            f"{measured:.17g} under `injected_delta`, against its declared size "
-            f"{PATCH_TEST_EXACTNESS_COUNTER_DEFECT:.17g}. The measure and the "
-            "claim are no longer in the same units."
+        # TO ONE ULP, NOT EXACTLY, AND THE ARGUMENT FOR `==` IS WITHDRAWN
+        # (R142). It said the constant "divides out and the result is the same
+        # float". It does not: `(CD * x) / x != CD` for 0.19% of random `x` at
+        # `CD = 1e-6`, and for 24% at `3.7e-6`. Green here was 89 draws at
+        # p = 0.0019 -- about one-in-seven odds of having been red at the commit
+        # that published the claim, and a reviewer's corpus entry duly reddened
+        # it at the shipped constant. A one-ULP disagreement is rounding, not a
+        # units error, and the message said units.
+        assert_close(
+            measured, PATCH_TEST_EXACTNESS_COUNTER_DEFECT, ROUNDOFF_IDENTITY,
+            floor=np.finfo(float).eps * PATCH_TEST_EXACTNESS_COUNTER_DEFECT,
+            what=(f"{entry['id']}: the counter-defect injection measures "
+                  f"{measured:.17g} under `injected_delta`, against its declared "
+                  f"size {PATCH_TEST_EXACTNESS_COUNTER_DEFECT:.17g}. Within one "
+                  "ULP this is rounding; beyond it the measure and the claim "
+                  "have stopped being the same quantity"),
         )
 
     # THE OTHER DIRECTION: a bending-only defect of the SAME declared size must
@@ -1102,6 +1126,66 @@ def _bending_only_effective_size(entry) -> float:
                                 * clean[np.ix_(idx, idx)])
     denom = float(np.abs(_homogeneous(clean, ell)).max())
     return float(np.abs(_homogeneous(change, ell)).max() / denom)
+
+
+SAME_MEMBER_DIFFERENT_UNITS = ("unit_mm_similar", "posed_metre",
+                               "unit_km_similar")
+
+
+def _by_id(name: str):
+    return next(e for e in SOLVED if e["id"] == name)
+
+
+def test_the_delta_measure_is_UNIT_INVARIANT() -> None:
+    """The same physical member in three length units measures the same defect.
+
+    `injected_delta` normalises by the largest stiffness in the residual's
+    homogeneous units, and both of those carry the length unit, so the ratio must
+    not. Three corpus entries are the same member at `10^-3`, `1` and `10^3`
+    metres, six orders end to end.
+    """
+    for kind in INJECTED_DEFECTS:
+        values = [injected_delta(_by_id(n), kind)
+                  for n in SAME_MEMBER_DIFFERENT_UNITS]
+        for name, value in zip(SAME_MEMBER_DIFFERENT_UNITS[1:], values[1:]):
+            assert_close(
+                value, values[0], ROUNDOFF_IDENTITY,
+                floor=np.finfo(float).eps * values[0],
+                what=(f"{kind}: measured {value:.9e} on {name} against "
+                      f"{values[0]:.9e} on {SAME_MEMBER_DIFFERENT_UNITS[0]} -- "
+                      "the same member in a different length unit"),
+            )
+
+
+def test_a_CONSTANT_ell_breaks_unit_invariance() -> None:
+    """BS3's negative control, in BI1's pattern: the property must be losable.
+
+    `_homogeneous`'s `ell` scales with the model. Freeze it at `1.0` -- the shape
+    of the mistake, a characteristic length that does not follow the geometry --
+    and the same member in millimetres and in kilometres must stop agreeing. If
+    this ever passes, the invariance above is a property of the arithmetic rather
+    than of the scaling, and the scaling is unguarded.
+    """
+    # PATCHED THROUGH `globals()`, NOT THROUGH AN `import` OF THIS FILE. Pytest
+    # imports this module under its package-qualified name; `import
+    # test_corpus_configurations` inside the test creates a SECOND module object,
+    # and patching that one leaves the running code untouched. The first version
+    # of this control did exactly that and measured the unpatched function --
+    # reporting perfect invariance and failing for the right reason.
+    original = globals()["_homogeneous"]
+    globals()["_homogeneous"] = lambda k, ell: original(k, 1.0)
+    try:
+        broken = [injected_delta(_by_id(n), "dropped_flip")
+                  for n in SAME_MEMBER_DIFFERENT_UNITS]
+    finally:
+        globals()["_homogeneous"] = original
+
+    spread = max(broken) / min(broken)
+    assert spread > 10.0, (  # not-a-tolerance: discrimination floor -- asserts a separation is LARGE
+        f"with `ell` frozen at 1.0 the three unit systems still agree to "
+        f"{spread:.4g}x ({broken}). The unit invariance asserted above does not "
+        "depend on the scaling it is attributed to, so nothing is guarding it."
+    )
 
 
 def test_an_UNRECOGNISED_defect_name_raises() -> None:
@@ -1335,6 +1419,25 @@ def test_the_forward_error_is_REPORTED_and_the_floor_is_too(capsys) -> None:
         print(f"\n  CEILING  {PATCH_TEST_EXACTNESS:.3e}   worst clean "
               f"{worst[3]:.4e} ({worst[3] / eps:.2f} eps, {worst[0]}) "
               f"= {worst[3] / PATCH_TEST_EXACTNESS:.4f}x")
+        exempt: dict[str, list[str]] = {}
+        for e in SOLVED:
+            for k in INJECTED_DEFECTS:
+                if classify(e, k) == "below resolution":
+                    exempt.setdefault(k, []).append(e["id"])
+        n_exempt = sum(len(v) for v in exempt.values())
+        print(f"  EXEMPT   {n_exempt} of {len(SOLVED) * len(INJECTED_DEFECTS)} "
+              f"(entry, defect) pairs are below the declared resolution and "
+              f"carry no red assertion: "
+              + ", ".join(f"{k} {len(v)}" for k, v in sorted(exempt.items())))
+        detected = sum(
+            1 for k, ids in exempt.items() for i in ids
+            if max(_oob_with_injected(next(e for e in SOLVED if e["id"] == i),
+                                      st, k) for st in STATES)
+            > PATCH_TEST_EXACTNESS)
+        print(f"           of those, {detected} ARE detected by the gate today; "
+              "their responses are golden values in "
+              "tests/regression/test_exempt_pair_responses.py, so a pair that is "
+              "caught now cannot stop being caught in silence (BS2)")
         print("  MARGINS  response / ceiling, reported and asserted against no "
               "constant (BO0):")
         # PER-STATE responses, a DIAGNOSTIC since BP2. The assertion that every
