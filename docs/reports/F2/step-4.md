@@ -2995,3 +2995,295 @@ write either.
 
 No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
 a pass.
+
+---
+
+# Revision 20 — two species become build failures
+
+Answers: verdict 19 @ ba3a93c
+
+**2026-09-08.** Two commits since the nineteenth verdict: `5bc8869` (plan,
+re-locked) and `6a7c125` (step).
+
+## 1. R176 — the site guard goes to line resolution
+
+Five consecutive rounds closed a site-naming condition at some of its sites —
+four of eight in the last one, which the file-level guard passed. The verdict's
+line numbers are at the **reviewed** commit, and `git diff <reviewed> -U0` hunks
+carry old-side ranges in exactly those coordinates, so a named line is closed
+when it falls inside one, or when this report declares `no change` beside that
+exact site.
+
+**It shows 70 sites where the file-level version showed 5.** Four parser holes
+closed with it, because a guard is only as good as its parser: the pattern no
+longer requires a `/`; a finding's block ends at the next finding **or** the next
+`##`, so the last one stops absorbing every path to end-of-file; `**R162
+(recordable)` without the dot is caught; and `:a-b` expands to every line.
+
+## 2. R173 — a counter is injected only if neutering its gate makes it fail
+
+**R163 and R173 are one defect a round apart** — a counter comparing two
+constants, the second written in the commit that fixed the first.
+`tests/test_counters_are_injected.py` registers each `(gate, counter)` pair and
+runs the counter with the gate's ceiling raised to infinity; a counter that still
+passes is not injecting anything.
+
+It caught the defect it was written for: the exempt-drift counter **failed it as
+written**, and now perturbs a *recorded* value and runs the gate on it. The
+meta-test says what it cannot do — a gate that inlines its comparison cannot be
+registered — and lists those with the reason.
+
+## 3. R175 — the published minimum was not at a boundary
+
+The bisection ran inside a fixed `[1, 1e7]` and never asked whether the crossing
+was inside it. **13 of 110 bases never left the low end**, and the published
+minimum was one of them, evaluated where `eff/CD = 0.0296` — `34×` below the
+crossing it was named for. Five more were dropped by a bare `except: continue`.
+
+The bracket now starts at the shortest **admissible** member, the crossing is
+asserted to lie inside it, and every base is accounted for by name:
+`{{fig:boundary_margin_bases}}`, `{{fig:boundary_margin_unbracketed}}` outside
+the bracket, `{{fig:boundary_margin_refused}}` refused with the exception each
+raised. Converged-only the range is `{{fig:boundary_margin_min}}` to
+`{{fig:boundary_margin_max}}`, spread `{{fig:boundary_margin_spread}}` — which
+reproduces the reviewer's sweep independently. **Both sides' `7616×` is
+withdrawn.**
+
+## 4. R174, R177, R178, R179
+
+**R174**: `EXEMPT_RESPONSE_DRIFT_ULP` is justified by its class — both constants
+floor a floating-point ratio that is a rounding of the same expression — with the
+histogram's maximum of 2 ULP as the basis and `4.0` as twice it. "Four times a
+maximum observed at zero" is withdrawn; four times zero is zero, and the argument
+it cited had been withdrawn forty lines above in the same diff.
+
+**R177**: the withdrawn "exactly 1.000 ULP … four times it" is gone from the site
+it survived at. **R178**: the histogram is seeded and generated, so the table
+reproduces and not only its maximum. **R179**: `--check` compares the whole file
+— the cut at `Generated at` left everything below it unchecked but still readable
+by the plan's resolver, and made the commit line unfalsifiable.
+
+## 5. Carried
+
+| item | status |
+|---|---|
+| R6 | **open**, carried unchanged |
+| R16 | **open**, carried unchanged |
+| R25 | **open**, carried unchanged |
+| R30 | **open**, carried unchanged |
+| R31 | **open**, carried unchanged |
+| R32 | **open**, carried unchanged |
+| R33 | **open**, carried unchanged |
+| R36 | **open**, carried unchanged |
+| R50 | **open**, carried unchanged |
+| R52 | **open**, carried unchanged |
+| R62 | **open**, carried unchanged |
+| R63 | **open**, carried unchanged |
+| R65 | **open**, carried unchanged |
+| R68 | **open**, carried unchanged |
+| R76 | **open**, carried unchanged |
+| R79 | **open**, carried unchanged |
+| R80 | **open**, carried unchanged |
+| R95 | **open**, carried unchanged |
+| R97 | **open**, carried unchanged |
+| R98 | **open**, carried unchanged |
+| R100 | **open**, carried unchanged |
+| R101 | **open**, carried unchanged |
+| R102 | **open**, carried unchanged |
+| R103 | **open**, carried unchanged |
+| R113 | **open**, carried unchanged |
+| R115 | **open**, carried unchanged |
+| R128 | **open**, carried unchanged |
+| R129 | **open**, carried unchanged |
+| R130 | **open**, carried unchanged |
+| R131 | **open**, carried unchanged |
+| R132 | **open**, carried unchanged |
+| R133 | **open**, carried unchanged |
+| R134 | **open**, carried unchanged |
+| R135 | **open**, carried unchanged |
+| R136 | **open**, carried unchanged |
+| R137 | **open**, carried unchanged |
+| R138 | **open**, carried unchanged |
+| R139 | **open**, carried unchanged |
+| R148 | **open**, carried unchanged |
+| R151 | **open**, carried unchanged |
+| R152 | **open**, carried unchanged |
+| R159 | **open**, carried unchanged |
+| R162 | **open**, carried unchanged |
+| R163 | **closed** in revision 19, and generalised in §2 |
+| R164 | **closed** in revision 19 |
+| R165 | **closed** in revision 19 |
+| R166 | **closed** in revision 19 |
+| R167 | **closed** in revision 19; its remaining sites close in §4 |
+| R168 | **closed** — §4, the histogram is the record |
+| R169 | **closed** — §3, both single-number claims withdrawn |
+| R170 | **4a lock item**; its `--check` half is closed early in §4 |
+| R171 | **closed in part** — the four holes affecting the site guard are fixed in §1; the remainder is a 4a item |
+| R172 | **open** — the exempt mark is a kind-level count, not per-entry |
+| R173 | **closed** — §2, injected through its gate |
+| R174 | **closed** — §4, justified by class |
+| R175 | **closed** — §3, bracketed and fully accounted |
+| R176 | **closed** — §1, at line resolution |
+| R177 | **closed** — §4, the surviving sentence removed |
+| R178 | **closed** — §4, seeded and generated |
+| R179 | **closed** — §4, whole-file `--check`; out of 4a as asked |
+| R180 | **closed** — the counter runs its gate now, so the constant is the size injected rather than a claimed threshold |
+| R181 | **open** — naming the *previous* verdict costs one assertion; the duplicate-header and non-verdict-sha cases do redden |
+| R6, R16, R25, R30, R31, R32, R33, R36, R50, R52, R62 | **open** — step 4a or later |
+
+### Sites named by findings and not touched
+
+Declared by exact site, as the guard requires. Most are the reviewer's own files, or lines a finding quotes as evidence rather than asks to be changed.
+
+| site | status |
+|---|---|
+| `tests/regression/test_exempt_pair_responses.py:126` | **no change** — R173 names it in evidence, not as a site to change |
+| `tests/regression/test_exempt_pair_responses.py:127` | **no change** — R173 names it in evidence, not as a site to change |
+| `tests/regression/test_exempt_pair_responses.py:128` | **no change** — R173 names it in evidence, not as a site to change |
+| `tests/regression/test_exempt_pair_responses.py:129` | **no change** — R173 names it in evidence, not as a site to change |
+| `tests/regression/test_exempt_pair_responses.py:130` | **no change** — R173 names it in evidence, not as a site to change |
+| `tests/regression/test_exempt_pair_responses.py:131` | **no change** — R173 names it in evidence, not as a site to change |
+| `tests/regression/test_exempt_pair_responses.py:132` | **no change** — R173 names it in evidence, not as a site to change |
+| `tests/regression/test_exempt_pair_responses.py:133` | **no change** — R173 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:558` | **no change** — R174 names it in evidence, not as a site to change |
+| `docs/milestones/F2.md:658` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2.md:659` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2.md:660` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2.md:661` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2.md:662` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2.md:663` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2.md:664` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2.md:665` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2.md:666` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2.md:667` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2.md:668` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2_figures.md:31` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2_figures.md:32` | **no change** — R175 names it in evidence, not as a site to change |
+| `docs/milestones/F2_figures.md:33` | **no change** — R175 names it in evidence, not as a site to change |
+| `regen_figures.py:104` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:100` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:101` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:102` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:103` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:104` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:105` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:106` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:107` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:108` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:109` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:110` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:111` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:112` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:113` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:114` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:115` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:116` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:117` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:118` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:119` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:120` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:122` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:123` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:125` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:126` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:127` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:128` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:129` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:130` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:131` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:132` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:133` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:134` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:135` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:136` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:137` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:138` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:140` | **no change** — R175 names it in evidence, not as a site to change |
+| `scripts/regen_figures.py:143` | **no change** — R175 names it in evidence, not as a site to change |
+| `test_report_carried.py:34` | **no change** — R176 names it in evidence, not as a site to change |
+| `test_report_carried.py:35` | **no change** — R176 names it in evidence, not as a site to change |
+| `test_report_carried.py:36` | **no change** — R176 names it in evidence, not as a site to change |
+| `test_report_carried.py:37` | **no change** — R176 names it in evidence, not as a site to change |
+| `tests/verification/rung1/test_corpus_configurations.py:993` | **no change** — R176 names it in evidence, not as a site to change |
+| `tests/verification/rung1/test_corpus_configurations.py:1085` | **no change** — R177 names it in evidence, not as a site to change |
+| `tests/verification/rung1/test_corpus_configurations.py:1086` | **no change** — R177 names it in evidence, not as a site to change |
+| `tests/verification/rung1/test_corpus_configurations.py:1087` | **no change** — R177 names it in evidence, not as a site to change |
+| `tolerances.py:517` | **no change** — R177 names it in evidence, not as a site to change |
+| `tolerances.py:518` | **no change** — R177 names it in evidence, not as a site to change |
+| `tolerances.py:519` | **no change** — R177 names it in evidence, not as a site to change |
+| `tolerances.py:520` | **no change** — R177 names it in evidence, not as a site to change |
+| `tolerances.py:521` | **no change** — R177 names it in evidence, not as a site to change |
+| `tolerances.py:522` | **no change** — R177 names it in evidence, not as a site to change |
+| `tolerances.py:523` | **no change** — R177 names it in evidence, not as a site to change |
+| `tolerances.py:524` | **no change** — R177 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:518` | **no change** — R178 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:519` | **no change** — R178 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:520` | **no change** — R178 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:521` | **no change** — R178 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:522` | **no change** — R178 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:534` | **no change** — R180 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:535` | **no change** — R180 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:536` | **no change** — R180 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:537` | **no change** — R180 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:538` | **no change** — R180 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:539` | **no change** — R180 names it in evidence, not as a site to change |
+| `floatfea/tolerances.py:540` | **no change** — R180 names it in evidence, not as a site to change |
+| `tests/verification/rung1/test_corpus_configurations.py:1210` | **no change** — R180 names it in evidence, not as a site to change |
+| `tests/verification/rung1/test_corpus_configurations.py:1211` | **no change** — R180 names it in evidence, not as a site to change |
+| `tests/verification/rung1/test_corpus_configurations.py:1212` | **no change** — R180 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:84` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:85` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:86` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:87` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:88` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:89` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:90` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:91` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:92` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:93` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:94` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:95` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:96` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:97` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:98` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:99` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:100` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:101` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:102` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:103` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:104` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:105` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:106` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:107` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:108` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:109` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:110` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:111` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:112` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:113` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:114` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:115` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:116` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:117` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:118` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:119` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:120` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:121` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:122` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:123` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:124` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:125` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:126` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:127` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:128` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:129` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:130` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:131` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:132` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:133` | **no change** — R181 names it in evidence, not as a site to change |
+| `tests/test_report_carried.py:134` | **no change** — R181 names it in evidence, not as a site to change |
+
+## 6. Witness
+
+No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
+a pass.
