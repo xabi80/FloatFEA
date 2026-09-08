@@ -821,3 +821,38 @@ id=bt_stubbiest_thinwall_axis_L4p004 section=circular_tube,D=2,t=0.005 stations=
 #    tightest of them is not the one published.
 id=bt_boundary_axis_iso_below_L414p593 section=circular_tube,D=0.6,t=0.012 stations=414.592501 orient=axis extra=none runs_in_suite=no expect=hold
 id=bt_boundary_rolled_aniso_below_L513p206 section=circular_tube,D=0.9,t=0.2 stations=513.205887 orient=-0.603839,0.545380,0.581326 extra=roll=-2.399378,I_y_over_I_z=0.0932001 runs_in_suite=no expect=hold
+
+# --- NINETEENTH VERDICT: the bisection that never brackets, and the tightest
+#     exempt-and-detected pair in the corpus ------------------------------------
+#
+# 1. THE PUBLISHED BOUNDARY MARGIN IS NOT ALWAYS AT A BOUNDARY. `_boundary_margins`
+#    in scripts/regen_figures.py bisects member length inside the FIXED bracket
+#    [1 m, 1e7 m] and never checks that the crossing lies inside it. Measured at
+#    f963b3d, 13 of the 110 bases it reports never leave `lo = 1.0`, and the
+#    published MINIMUM -- boundary_margin_min = 7616x at boundary_kilo_L414p6 --
+#    is one of them: the shear defect's effective size where the figure is
+#    evaluated is 0.0296 CD, 34x BELOW the boundary the figure is named for. Over
+#    the 97 bases that do converge (eff within 1% of CD) the range is 7630.16x to
+#    23918.6x. These first two entries are the OTHER end of the same hole: their
+#    crossing is ABOVE the bracket top, eff/CD = 597.9 and 9.620e+05 at L = 1e7.
+id=bu_bracket_top_D1e5_axis_L1e7 section=circular_tube,D=100000,t=45000 stations=1.0e7 orient=axis extra=none runs_in_suite=no expect=hold
+id=bu_bracket_top_D1e6_skew_L1e7 section=circular_tube,D=1000000,t=450000 stations=1.0e7 orient=skew extra=roll=0.7 runs_in_suite=no expect=hold
+
+# 2. A BASE THE GENERATOR DROPS WITHOUT SAYING SO. `except Exception: continue`
+#    swallows any base whose bisection probe leaves the admissible band. These two
+#    are admissible at their own length (L/D = 5000 and 2000) and inadmissible at
+#    the bisection's first probe, L = 3162 m, where L/D falls to 1.58 and 0.63.
+#    Five of the 115 solved bases are already dropped this way at f963b3d and
+#    nothing counts them. The first also carries a shear pair that is exempt and
+#    NOT detected -- response 0.7689x of the ceiling.
+id=bu_midprobe_drop_D2000_L1e7 section=circular_tube,D=2000,t=900 stations=1.0e7 orient=axis extra=none runs_in_suite=no expect=hold
+id=bu_midprobe_drop_D5000_aniso_L1e7 section=circular_tube,D=5000,t=2250 stations=1.0e7 orient=skew extra=I_y_over_I_z=1e4 runs_in_suite=no expect=hold
+
+# 3. THE TIGHTEST EXEMPT-AND-DETECTED PAIR IN THE CORPUS. The shear defect is
+#    classified below resolution here (eff/CD = 1.3543e-04) and the gate still
+#    reddens on it -- by 1.0311x of the ceiling. A 3% drift in that response flips
+#    it to undetected, and the only guard on that response is the 4-ULP golden
+#    band. The second sits 2.4% below the classification floor from underneath
+#    (eff/CD = 0.97642), the closest approach to it in the corpus.
+id=bu_exempt_detected_margin_1p03 section=circular_tube,D=0.168649,t=0.029277 stations=931.134 orient=axis extra=none runs_in_suite=no expect=hold
+id=bu_exempt_floor_edge_0p976 section=circular_tube,D=0.0218583,t=0.000981875 stations=14.8212 orient=axis extra=none runs_in_suite=no expect=hold
