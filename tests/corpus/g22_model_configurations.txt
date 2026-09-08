@@ -782,3 +782,42 @@ id=bs_boundary_big_D3_L2080     section=circular_tube,D=3.000,t=0.05000 stations
 #    all say "one ULP".
 id=bs_ulp_plus1_aniso688_L4p42  section=circular_tube,D=1.343780,t=0.03459700 stations=4.4243 orient=axis extra=I_y_over_I_z=688        runs_in_suite=no expect=hold
 id=bs_ulp_minus1_aniso1e6_L62p15 section=circular_tube,D=0.909065,t=0.23074500 stations=62.1465 orient=skew extra=I_y_over_I_z=1e6     runs_in_suite=no expect=hold
+
+# --- EIGHTEENTH VERDICT: the new ULP ceiling, and the boundary that is a
+#     selection rather than a construction ------------------------------------
+#
+# 1. THE CALIBRATION DEVIATES BY TWO ULP, NOT ONE. `DELTA_CALIBRATION_ULP = 4.0`
+#    is justified in `floatfea/tolerances.py` as "four times the only value ever
+#    observed", the only value being `1.000 ULP` over 99 shipped, 372 grid and
+#    360 random configurations. Over 5222 further admissible configurations
+#    drawn at this verdict the histogram is 0 ULP x5106, 1 ULP x113, **2 ULP x3**.
+#    These are those three. The ceiling still holds -- the observed margin is 2x,
+#    not the 4x the entry claims -- and the three share thick walls (t/D 0.44 to
+#    0.48) with strong anisotropy, where the argmax of |k_hat| and of |CD k_hat|
+#    can differ and the deviation stops being two roundings of one ratio.
+id=bt_calib_2ulp_thick_aniso5e4_L68 section=circular_tube,D=1.7098758,t=0.825315059 stations=68.4906304 orient=axis extra=I_y_over_I_z=49887.4 runs_in_suite=no expect=hold
+id=bt_calib_2ulp_skew_aniso37e4_L0p86 section=circular_tube,D=0.294208596,t=0.108351642 stations=0.862654714 orient=skew extra=I_y_over_I_z=369539 runs_in_suite=no expect=hold
+id=bt_calib_2ulp_inplane_aniso1e5_L30 section=circular_tube,D=2.92890462,t=1.27909902 stations=30.1197141 orient=in_plane_y extra=I_y_over_I_z=108680 runs_in_suite=no expect=hold
+#
+# 2. THE PUBLISHED BOUNDARY MARGIN IS DECIDED BY WHICH ENTRY HAPPENS TO HAVE THE
+#    SMALLEST LAMBDA. `scripts/regen_figures.py::_boundary_margin` bisects from
+#    `min(SOLVED, key=member_lambda)`, today `admissible_L_over_D_2p05` at
+#    lambda = 5.9154, orientation `skew`, and publishes `9267x`. This entry is
+#    lambda = 5.6767 and axis-aligned; it is admissible (L/D = 2.002) and it
+#    takes that selection. With it in the corpus the generated figure
+#    `boundary_margin_one_family` regenerates to `7630x` -- the reviewer's
+#    number, from the repository's own construction. The two constructions never
+#    disagreed: the variable neither held is ORIENTATION. The bisection discards
+#    the base entry's length, so the stated rationale ("the corpus's stubbiest
+#    entry") does not determine the answer; section and orientation do.
+id=bt_stubbiest_thinwall_axis_L4p004 section=circular_tube,D=2,t=0.005 stations=4.004 orient=axis extra=none runs_in_suite=no expect=hold
+#
+# 3. THE BOUNDARY MARGIN'S SPREAD, AS TWO SHIPPED PAIRS RATHER THAN AN ARGUMENT.
+#    Both sit at `effective/CD = 1.00000000` for `dropped_shear_parameter`, both
+#    classify `below resolution`, both are detected. Their margins are `7630.2x`
+#    and `21991x` -- 2.88x apart at the same operating point. Over all 104 corpus
+#    entries used as a bisection base the boundary margin runs `7616.2x` to
+#    `23918.6x`; a single published figure for it is a selection, and the
+#    tightest of them is not the one published.
+id=bt_boundary_axis_iso_below_L414p593 section=circular_tube,D=0.6,t=0.012 stations=414.592501 orient=axis extra=none runs_in_suite=no expect=hold
+id=bt_boundary_rolled_aniso_below_L513p206 section=circular_tube,D=0.9,t=0.2 stations=513.205887 orient=-0.603839,0.545380,0.581326 extra=roll=-2.399378,I_y_over_I_z=0.0932001 runs_in_suite=no expect=hold
