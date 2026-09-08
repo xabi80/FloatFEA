@@ -3287,3 +3287,231 @@ Declared by exact site, as the guard requires. Most are the reviewer's own files
 
 No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
 a pass.
+
+---
+
+# Revision 21 — the gate is closed; the apparatus goes to 4a by name
+
+Answers: verdict 20 @ 8bfb95f
+
+**2026-09-08.** Two commits since the twentieth verdict: `56c0927` (plan,
+re-locked) and `7fbae22` (step).
+
+## 0. Where this stands, said plainly
+
+**The gate has not changed since the ninth round.** Six constant-strain states,
+both bending planes, the interior out-of-balance of the exact field, ceiling
+`5e-15`, four injected defects. Eleven rounds of adversarial corpus — now 149
+entries, none written by me — have not moved it, and no finding since the ninth
+verdict has touched what G2.2 asserts.
+
+Everything found since is in the **apparatus that certifies the gate**: counter
+meta-tests, site guards, figure generators, histograms, bisection plateaus. That
+apparatus is now large enough that each guard ships with a defect the next round
+finds — this round included, twice, and one of those was found *by the guard I
+had just written*. There is no reason to expect that to converge, because a guard
+on a guard is the same kind of object as the thing it guards.
+
+**Step 4a exists for exactly this**, with its own plan and lock. So: record-truth
+items are fixed here because they are cheap and about honesty; mechanism items go
+to 4a by name; and §3 classifies every remaining item under BU0 with a one-line
+reason, so the ruling asked for is on classification rather than on polish.
+
+## 1. R182 — the guard I was proudest of could not fail
+
+`tests/test_counters_are_injected.py` neutered the ceiling **constant**. A
+degenerate counter is precisely one shaped `assert value > CEILING`, so raising
+the ceiling to infinity made *that* comparison fail too, and the meta-test read
+the failure as injection:
+
+```
+counter body                ceiling -> inf      gate -> no-op
+R163's, as written          AssertionError      PASSES   <- defect
+R173's, as written          AssertionError      PASSES   <- defect
+shipped calibration         Failed              Failed
+shipped exempt-drift        Failed              Failed
+```
+
+**Revision 20's sentence "it caught the exempt-drift counter as written" is
+withdrawn** — refuted by the first cell. It neuters the **gate function** now.
+
+## 2. R183 — the exemption was dishonest, and registering it found a third defect
+
+`PATCH_TEST_EXACTNESS_COUNTER_DEFECT` was listed unregisterable "because its gate
+compares inline across 296 parametrised cases". That named the wrong gate: this
+constant's gate is the headroom assertion, a single test. Registered, its counter
+**failed the meta-test** — `test_a_RAISED_counter_defect_breaks_that` computed a
+ratio and compared it with the headroom, arithmetic on two constants, **R163's
+defect a third time**. It injects into the constant and runs the gate now.
+
+Three counters registered, none exempt: `4 passed`.
+
+## 3. The rest, classified under BU0
+
+| item | class | reason |
+|---|---|---|
+| R182, R183 | **blocking — counter and how it is injected** | fixed, §1–§2 |
+| R184 | **blocking — truth of a published figure** | the unseeded histogram is out of `tolerances.py`; the entry keeps the maximum and points at the generated distribution |
+| R185 | **blocking — truth of a published figure** | the generated histogram is exact, one count per solved entry; resampling 121 deterministic points measured the sampler |
+| R187 | **blocking — a decision constant outside `tolerances.py`** | `BOUNDARY_BISECTION_CONVERGENCE` declared; `boundary_margin_min_at` withdrawn for the plateau's width |
+| R188 | **blocking — truth of a published sentence** | the guard's discrimination is **18 / 2**, not the 70 / 5 revision 20 stated. Withdrawn here |
+| R186 | **blocking — truth of the record** | two site declarations named the findings themselves as "evidence" and the items were then recorded closed. Both reversed; see §4 |
+| R181 | **4a** | the header's reach — naming the *previous* verdict costs one assertion. Mechanism, no figure or tolerance |
+| R189 | **4a** | the declaration matcher is a bare substring test, so four sites are already declared away by rows naming different lines. Mechanism |
+| R170, R171 remainder | **4a** | the `--check` cut is closed; the residual parser holes are mechanism |
+| R172 | **4a** | the exempt mark is a kind-level count rather than per-entry. Reporting shape, not a claim |
+| R159, R162 | **4a** | a causal sentence's cell and a figure's command, both in apparatus docstrings |
+| R151, R152 | **4a** | stale counts and two sentences about the exemption's guards |
+| R129, R131, R132, R134, R135, R136, R137, R138, R139 | **4a** | apparatus and reporting, four untouched, none touching the gate's claim |
+| R101, R102, R103, R113, R95, R97, R98, R100, R63, R76, R79, R80 | **4a or later steps** | as declared in earlier revisions |
+| R6, R16, R25, R30, R31, R32, R33, R36, R50, R52, R62 | **4a or later steps** | unchanged |
+
+**Named for 4a's lock, with the general question the round exposed:** R189, the
+residual R171 holes, the 145-declaration surface and how it should be sampled,
+and — the one that matters — **how a guard's own falsifiability is demonstrated
+without a further guard**. This round produced two answers to that by accident:
+a guard that found its own defect when registered, and a guard whose defect only
+appeared when someone tried the other neutering.
+
+## 4. R186 — two declarations reversed, and what that means
+
+Two sites declared "names it in evidence, not as a site to change" were **the
+findings themselves**: R178's `tolerances.py:518-522` and R180's two blocks. Both
+items were then recorded closed. That is the species the declaration mechanism
+exists to stop, committed in the same round as the mechanism.
+
+Both are reversed: R178's site is fixed in §3's row (the histogram is gone from
+that file), and R180's is fixed by the counter now injecting through its gate.
+Neither is declared away.
+
+## 5. Carried
+
+| item | status |
+|---|---|
+| R6 | **4a or later** — classified in §3 |
+| R16 | **4a or later** — classified in §3 |
+| R25 | **4a or later** — classified in §3 |
+| R30 | **4a or later** — classified in §3 |
+| R31 | **4a or later** — classified in §3 |
+| R32 | **4a or later** — classified in §3 |
+| R33 | **4a or later** — classified in §3 |
+| R36 | **4a or later** — classified in §3 |
+| R50 | **4a or later** — classified in §3 |
+| R52 | **4a or later** — classified in §3 |
+| R62 | **4a or later** — classified in §3 |
+| R63 | **4a or later** — classified in §3 |
+| R65 | **4a or later** — classified in §3 |
+| R68 | **4a or later** — classified in §3 |
+| R76 | **4a or later** — classified in §3 |
+| R79 | **4a or later** — classified in §3 |
+| R80 | **4a or later** — classified in §3 |
+| R95 | **4a or later** — classified in §3 |
+| R97 | **4a or later** — classified in §3 |
+| R98 | **4a or later** — classified in §3 |
+| R100 | **4a or later** — classified in §3 |
+| R101 | **4a or later** — classified in §3 |
+| R102 | **4a or later** — classified in §3 |
+| R103 | **4a or later** — classified in §3 |
+| R113 | **4a or later** — classified in §3 |
+| R129 | **4a or later** — classified in §3 |
+| R131 | **4a or later** — classified in §3 |
+| R132 | **4a or later** — classified in §3 |
+| R134 | **4a or later** — classified in §3 |
+| R135 | **4a or later** — classified in §3 |
+| R136 | **4a or later** — classified in §3 |
+| R137 | **4a or later** — classified in §3 |
+| R138 | **4a or later** — classified in §3 |
+| R139 | **4a or later** — classified in §3 |
+| R148 | **4a or later** — classified in §3 |
+| R151 | **4a or later** — classified in §3 |
+| R152 | **4a or later** — classified in §3 |
+| R159 | **4a or later** — classified in §3 |
+| R162 | **4a or later** — classified in §3 |
+| R170 | **4a lock item**; the `--check` half closed in revision 20 |
+| R171 | **4a for the remainder**; the four site-guard holes are closed |
+| R172 | **4a lock item** — a kind-level count, not per-entry |
+| R173 | **closed** in revision 20, and generalised in §1 |
+| R174 | **closed** in revision 20 — judged a reason, not a rationalisation |
+| R175 | **closed** in revision 20; the five refusals verified as the probe's |
+| R176 | **closed** in revision 20 — the line guard |
+| R177 | **closed** in revision 20 |
+| R178 | **closed** — §3/§4, the site itself now fixed |
+| R179 | **closed** in revision 20 — whole-file `--check` |
+| R180 | **closed** — §2, the counter injects through its gate |
+| R181 | **4a lock item** — the header's reach |
+| R182 | **closed** — §1, the gate is neutered now |
+| R183 | **closed** — §2, and it found a third instance |
+| R184 | **closed** — §3, out of `tolerances.py` |
+| R185 | **closed** — §3, exact rather than resampled |
+| R186 | **closed** — §4, both declarations reversed |
+| R187 | **closed** — §3, plateau published and the threshold declared |
+| R188 | **closed** — §3, 18/2 not 70/5 |
+| R189 | **4a lock item** — the declaration matcher is a substring test |
+| R190 | **4a or later** — classified in §3 |
+| R191 | **4a or later** — classified in §3 |
+| R192 | **4a or later** — classified in §3 |
+| R6, R16, R25, R30, R31, R32, R33, R36, R50, R52, R62 | **4a or later steps** |
+
+### Sites named by findings and not touched
+
+Declared by exact site. **Two declarations from revision 20 were wrong and are reversed in §4** — they named the findings themselves as evidence. The rest are the reviewer's own files, or lines a finding quotes to show a measurement rather than asks to be changed.
+
+| site | status |
+|---|---|
+| `floatfea/tolerances.py:518` | **no change** — R184 quotes it as evidence |
+| `scripts/regen_figures.py:104` | **no change** — R185 quotes it as evidence |
+| `scripts/regen_figures.py:105` | **no change** — R185 quotes it as evidence |
+| `scripts/regen_figures.py:106` | **no change** — R185 quotes it as evidence |
+| `scripts/regen_figures.py:108` | **no change** — R185 quotes it as evidence |
+| `scripts/regen_figures.py:116` | **no change** — R185 quotes it as evidence |
+| `scripts/regen_figures.py:118` | **no change** — R185 quotes it as evidence |
+| `scripts/regen_figures.py:122` | **no change** — R185 quotes it as evidence |
+| `scripts/regen_figures.py:123` | **no change** — R185 quotes it as evidence |
+| `scripts/regen_figures.py:124` | **no change** — R185 quotes it as evidence |
+| `scripts/regen_figures.py:125` | **no change** — R185 quotes it as evidence |
+| `floatfea/tolerances.py:534` | **no change** — R186 quotes it as evidence |
+| `floatfea/tolerances.py:542` | **no change** — R186 quotes it as evidence |
+| `floatfea/tolerances.py:543` | **no change** — R186 quotes it as evidence |
+| `tests/verification/rung1/test_corpus_configurations.py:1210` | **no change** — R186 quotes it as evidence |
+| `tests/verification/rung1/test_corpus_configurations.py:1224` | **no change** — R186 quotes it as evidence |
+| `tests/verification/rung1/test_corpus_configurations.py:1225` | **no change** — R186 quotes it as evidence |
+| `tests/verification/rung1/test_corpus_configurations.py:1226` | **no change** — R186 quotes it as evidence |
+| `CLAUDE.md` | **no change** — R187 quotes it as evidence |
+| `tests/test_no_tolerance_literals.py:128` | **no change** — R187 quotes it as evidence |
+| `docs/milestones/F2.md:66` | **no change** — R189 quotes it as evidence |
+| `floatfea/tolerances.py:53` | **no change** — R189 quotes it as evidence |
+| `scripts/regen_figures.py:10` | **no change** — R189 quotes it as evidence |
+| `tests/test_report_carried.py:12` | **no change** — R189 quotes it as evidence |
+| `tests/test_report_carried.py:271` | **no change** — R189 quotes it as evidence |
+| `tests/test_report_carried.py:272` | **no change** — R189 quotes it as evidence |
+| `tests/test_report_carried.py:273` | **no change** — R189 quotes it as evidence |
+| `tests/test_report_carried.py:274` | **no change** — R189 quotes it as evidence |
+| `tests/test_report_carried.py:275` | **no change** — R189 quotes it as evidence |
+| `tests/test_report_carried.py:276` | **no change** — R189 quotes it as evidence |
+| `tests/test_report_carried.py:277` | **no change** — R189 quotes it as evidence |
+| `tests/test_plan_figures.py:39` | **no change** — R190 quotes it as evidence |
+| `tests/test_plan_figures.py:40` | **no change** — R190 quotes it as evidence |
+| `floatfea/tolerances.py:570` | **no change** — R191 quotes it as evidence |
+| `floatfea/tolerances.py:571` | **no change** — R191 quotes it as evidence |
+| `floatfea/tolerances.py:572` | **no change** — R191 quotes it as evidence |
+| `floatfea/tolerances.py:573` | **no change** — R191 quotes it as evidence |
+| `floatfea/tolerances.py:574` | **no change** — R191 quotes it as evidence |
+| `floatfea/tolerances.py:575` | **no change** — R191 quotes it as evidence |
+| `floatfea/tolerances.py:576` | **no change** — R191 quotes it as evidence |
+| `floatfea/tolerances.py:505` | **no change** — R192 quotes it as evidence |
+| `floatfea/tolerances.py:506` | **no change** — R192 quotes it as evidence |
+| `floatfea/tolerances.py:507` | **no change** — R192 quotes it as evidence |
+
+## 6. What I am asking for
+
+**A PASS with the 4a list**, or a **HOLD naming the specific item and the BU0 head
+it falls under.** If the ruling is that an item classified 4a here belongs to step
+4, that is a disagreement about the criterion rather than about the work, and it
+goes to the supervisor rather than into another round.
+
+## 7. Witness
+
+No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
+a pass. On PASS the remote, PR and witness channel open (BA), then step 5: V1.1
+rigid-body modes on the AX3 shape — exactly six, spanned by the six analytic
+vectors, negative controls in both directions.
