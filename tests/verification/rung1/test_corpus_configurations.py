@@ -1391,18 +1391,21 @@ def test_a_RAISED_counter_defect_breaks_that(capsys) -> None:
     shipped size is multiplied by `1e3` -- three orders, far inside the range the
     suite tolerated before this test existed -- and the assertion above must fail.
     """
-    _, edge = _smallest_detection_edge()
-    raised = PATCH_TEST_EXACTNESS_COUNTER_DEFECT * 1.0e3
-    ratio = raised / edge
-    with capsys.disabled():
-        print(f"\n  raised defect {raised:g} is {ratio:.4g}x the edge, "
-              f"{ratio / PATCH_TEST_COUNTER_HEADROOM:.1f}x past the headroom")
-    assert ratio > PATCH_TEST_COUNTER_HEADROOM, (
-        f"multiplying the counter-defect by 1e3 gives {ratio:.4g}x the detection "
-        f"edge, which is still within the headroom "
-        f"{PATCH_TEST_COUNTER_HEADROOM:.3g}. The guard above would not have "
-        "caught it, so it is not a guard."
-    )
+    # INJECTED INTO THE CONSTANT AND RUN THROUGH THE GATE (BW1). Computing the
+    # raised ratio here and comparing it with the headroom was a third instance
+    # of R163's defect -- a counter asserting arithmetic on two constants -- and
+    # it was found by registering this pair in
+    # `tests/test_counters_are_injected.py`, which is what that file is for.
+    original = globals()["PATCH_TEST_EXACTNESS_COUNTER_DEFECT"]
+    globals()["PATCH_TEST_EXACTNESS_COUNTER_DEFECT"] = original * 1.0e3
+    try:
+        with pytest.raises(AssertionError, match="declared headroom"):
+            test_the_counter_DEFECT_SIZE_cannot_be_raised(capsys)
+    finally:
+        globals()["PATCH_TEST_EXACTNESS_COUNTER_DEFECT"] = original
+
+    # And unraised it passes, so the failure above is the injection.
+    test_the_counter_DEFECT_SIZE_cannot_be_raised(capsys)
 
 
 def test_the_recorded_breaches_are_REPORTED_for_re_recording(capsys) -> None:

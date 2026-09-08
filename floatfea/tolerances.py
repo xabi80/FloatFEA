@@ -508,6 +508,19 @@ PATCH_TEST_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-6
 # Set: 2026-09-07, F2
 PATCH_TEST_COUNTER_HEADROOM: Final[float] = 6.0e7
 
+# CLASS: STRUCTURAL -- a convergence threshold, and it lives here because every
+# decision constant does, `scripts/` included (R187). No counter-case, per AO2.
+#
+# The relative width at which the boundary bisection in `scripts/regen_figures.py`
+# stops. It decides which base is reported as the minimum: moving it from `1e-6`
+# to `1e-12` moves `boundary_margin_min_at` to a different entry while the VALUE
+# stays `7630.16x`, because the minimum is a plateau many bases wide -- see
+# `boundary_margin_min_plateau` in the generated figures. A number that
+# selects what gets published is a decision constant however small it looks, and
+# `tests/test_no_tolerance_literals.py` does not scan `scripts/`.
+# Set: 2026-09-08, F2
+BOUNDARY_BISECTION_CONVERGENCE: Final[float] = 1e-6
+
 # CLASS: ACCURACY -- carries DELTA_CALIBRATION_ULP_COUNTER below.
 # G2.2 / V1.2 -- how far `injected_delta`'s measurement of the counter-defect may
 # sit from the counter-defect's declared size, in UNITS OF `math.ulp` of that
@@ -520,16 +533,18 @@ PATCH_TEST_COUNTER_HEADROOM: Final[float] = 6.0e7
 # 372 grid and 360 random configurations is zero, and the record was wrong in
 # three places, which is the finding.
 #
-# Reason for 4.0, with the DISTRIBUTION rather than a single value (R168). The
-# record here said "exactly 1.000 ULP over every configuration tried", and over
-# 5222 admissible configurations the histogram is
+# Reason for 4.0: the observed maximum deviation is 2 ULP, so the ceiling carries
+# 2x of headroom. It is still 11.8x tighter than the `ROUNDOFF_IDENTITY` band it
+# replaced. A value that must be raised is a formulation change, not a rounding
+# one.
 #
-#     0 ULP x 5106      1 ULP x 113      2.000 ULP x 3
-#
-# so the observed maximum is 2, not 1, and the ceiling carries 2x of headroom
-# rather than the 4x the withdrawn sentence claimed. It is still 11.8x tighter
-# than the `ROUNDOFF_IDENTITY` band it replaced. A value that must be raised is a
-# formulation change, not a rounding one.
+# THE DISTRIBUTION IS NOT TABULATED HERE (R184/BI3). A histogram stood in this
+# comment and was one unseeded draw: re-drawn to the same protocol it gave a
+# different table, and it contradicted the generated one in every cell. The
+# distribution is `calibration_ulp_histogram` in docs/milestones/F2_figures.md,
+# an EXACT count over every solved corpus entry -- no sampling, because
+# resampling deterministic points measures the sampler (R185). What this entry
+# needs from it is the maximum, and that is `calibration_ulp_worst`.
 # Set: 2026-09-07, F2. Record corrected 2026-09-08, F2.
 DELTA_CALIBRATION_ULP: Final[float] = 4.0
 

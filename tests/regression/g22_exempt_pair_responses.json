@@ -19,6 +19,8 @@
  "bu_exempt_floor_edge_0p976|dropped_shear_parameter": 3.7250187316391303e-11,
  "bu_midprobe_drop_D2000_L1e7|dropped_flip": 2.9264818285215785e-07,
  "bu_midprobe_drop_D2000_L1e7|wrong_dof_index": 7.458872599115883e-08,
+ "cf_minshadow_D0p0586_t0p0064_axis|dropped_shear_parameter": 3.8150656005437636e-11,
+ "cf_minshadow_D0p4317_t0p1687_axis|dropped_shear_parameter": 3.815050842401336e-11,
  "every_state_edge_iso_L85|dropped_shear_parameter": 1.478221811065684e-11,
  "every_state_edge_iso_L90|dropped_shear_parameter": 1.176102765356825e-11,
  "plan_headline_lam2885|dropped_shear_parameter": 8.697293774065568e-12,

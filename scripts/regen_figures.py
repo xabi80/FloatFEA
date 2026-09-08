@@ -36,7 +36,8 @@ sys.path.insert(0, str(ROOT / "tests" / "verification" / "rung1"))
 
 def _figures() -> list[tuple[str, str]]:
     import test_corpus_configurations as C
-    from floatfea.tolerances import (PATCH_TEST_COUNTER_HEADROOM,
+    from floatfea.tolerances import (BOUNDARY_BISECTION_CONVERGENCE,
+                                     PATCH_TEST_COUNTER_HEADROOM,
                                      PATCH_TEST_EXACTNESS,
                                      PATCH_TEST_EXACTNESS_COUNTER_DEFECT as CD)
 
@@ -87,12 +88,16 @@ def _figures() -> list[tuple[str, str]]:
     rows.append(("counter_headroom_room",
                  f"{PATCH_TEST_COUNTER_HEADROOM / (CD / edge):.2f}x"))
 
-    lo, hi, lo_at, hi_at, n, unbracketed, refused = _boundary_margins(
+    lo, hi, lo_at, hi_at, n, unbracketed, refused, lo_n = _boundary_margins(
         C, ceil, CD)
     rows.append(("boundary_margin_min", f"{lo:.6g}x"))
     rows.append(("boundary_margin_max", f"{hi:.6g}x"))
     rows.append(("boundary_margin_spread", f"{hi / lo:.3f}x"))
-    rows.append(("boundary_margin_min_at", lo_at))
+    # `boundary_margin_min_at` IS WITHDRAWN (R187). The minimum is a PLATEAU,
+    # and which base is reported as owning it is decided by the bisection's
+    # convergence threshold rather than by anything about the gate: moving that
+    # threshold moves the name while the value stands.
+    rows.append(("boundary_margin_min_plateau", f"{lo_n} bases"))
     rows.append(("boundary_margin_max_at", hi_at))
     rows.append(("boundary_margin_bases", f"{n} converged"))
     rows.append(("boundary_margin_unbracketed",
@@ -104,21 +109,18 @@ def _figures() -> list[tuple[str, str]]:
 
 
 def _ulp_histogram(C, CD: float) -> str:
-    """The calibration deviation's distribution, SEEDED so the table reproduces.
+    """The calibration deviation's EXACT distribution over the solved corpus.
 
-    The histogram published in `tolerances.py` was one unseeded draw, and
-    re-drawing it to the same protocol gave a different table with no 2-ULP case
-    at all (R178). The maximum was reproducible through `calibration_ulp_worst`;
-    the table was not, which is BI3 -- a figure in a file a reader trusts, that
-    nothing regenerates.
+    One count per solved entry, no sampling. The version before this drew 5000
+    times with replacement from those same deterministic points, which makes the
+    cells a property of the SEED -- they swing +/-20% on it -- rather than of the
+    code (R185). Resampling deterministic points measures the sampler.
+
+    And the version before THAT was one unseeded draw published in
+    `tolerances.py`, contradicting this in every cell (R184/BI3). It is removed.
     """
-    import random
-
-    rng = random.Random(20260908)
     counts: dict[int, int] = {}
-    bases = list(C.SOLVED)
-    for _ in range(5000):
-        entry = bases[rng.randrange(len(bases))]
+    for entry in C.SOLVED:
         k = int(round(abs(C.injected_delta(entry, "one_element_scaled") - CD)
                       / math.ulp(CD)))
         counts[k] = counts.get(k, 0) + 1
@@ -156,13 +158,15 @@ def _boundary_margins(C, ceil: float, CD: float):
         # sections, so `_build` raised and 80 of 110 bases were "refused" -- an
         # artefact of the probe, not a property of the base.
         from floatfea.model.admissibility import member_l_over_d
-        from floatfea.tolerances import BEAM_ADMISSION_L_OVER_D
+        from floatfea.tolerances import (BEAM_ADMISSION_L_OVER_D,
+                                         BOUNDARY_BISECTION_CONVERGENCE)
         try:
             outer = 1.0 / member_l_over_d(1.0, C._entry_section(entry))
         except Exception as exc:
             refused.append(f"{entry['id']} ({type(exc).__name__})")
             continue
-        lo, hi = 1.000001 * BEAM_ADMISSION_L_OVER_D * outer, 1.0e9
+        lo, hi = ((1.0 + BOUNDARY_BISECTION_CONVERGENCE)
+                  * BEAM_ADMISSION_L_OVER_D * outer), 1.0e9
 
         # THE BRACKET IS CHECKED BEFORE IT IS TRUSTED (R175). Without this the
         # loop ran inside a fixed [1, 1e7] and never asked whether the crossing
@@ -198,7 +202,7 @@ def _boundary_margins(C, ceil: float, CD: float):
                     hi = mid
                 else:
                     lo = mid
-                if hi / lo < 1.000001:  # not-a-tolerance: bisection convergence
+                if hi / lo < 1.0 + BOUNDARY_BISECTION_CONVERGENCE:
                     break
             base["stations"] = repr(lo)
             eff = C.injected_delta(base, "dropped_shear_parameter")
@@ -214,8 +218,10 @@ def _boundary_margins(C, ceil: float, CD: float):
             "no base bracketed the classification boundary; the range below "
             "would be empty and the figures would publish nothing")
     out.sort()
+    # The plateau: how many bases share the minimum to the digits published.
+    lo_n = sum(1 for v, _ in out if f"{v:.6g}" == f"{out[0][0]:.6g}")
     return (out[0][0], out[-1][0], out[0][1], out[-1][1],
-            len(out), sorted(unbracketed), sorted(refused))
+            len(out), sorted(unbracketed), sorted(refused), lo_n)
 
 
 def render() -> str:
