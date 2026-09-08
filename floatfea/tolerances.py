@@ -503,6 +503,56 @@ PATCH_TEST_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-6
 # Set: 2026-09-07, F2
 PATCH_TEST_COUNTER_HEADROOM: Final[float] = 6.0e7
 
+# CLASS: ACCURACY -- carries DELTA_CALIBRATION_ULP_COUNTER below.
+# G2.2 / V1.2 -- how far `injected_delta`'s measurement of the counter-defect may
+# sit from the counter-defect's declared size, in UNITS OF `math.ulp` of that
+# size. Dimensionless by construction.
+#
+# WHY IN ULP AND NOT RELATIVE (R156). This was `ROUNDOFF_IDENTITY` used as a
+# relative band, and the record beside it said "one ULP". It is not: `1e-14`
+# relative to `1e-6` admits `1e-20`, while one ULP of `1e-6` is `2.1176e-22` --
+# a band of **47.22 ULP** described as one. The harm measured over 99 shipped,
+# 372 grid and 360 random configurations is zero, and the record was wrong in
+# three places, which is the finding.
+#
+# Reason for 4.0: the measured deviation is exactly `1.000 ULP` over every
+# configuration tried -- the single rounding of `max|CD k| / max|k|` -- so `4.0`
+# is four times the only value ever observed and still 12x tighter than the band
+# it replaces. A value that must be raised is a formulation change, not a
+# rounding one.
+# Set: 2026-09-07, F2
+DELTA_CALIBRATION_ULP: Final[float] = 4.0
+
+# COUNTER-CASE, injected: a deviation of this many ULP must fail the calibration.
+# Reason for 40.0: it is ten times the ceiling, inside the 47.22-ULP band the
+# previous form admitted, so this counter reddens exactly where the old
+# formulation was silent.
+# Set: 2026-09-07, F2
+DELTA_CALIBRATION_ULP_COUNTER: Final[float] = 40.0
+
+# CLASS: ACCURACY -- carries EXEMPT_RESPONSE_DRIFT_COUNTER below.
+# G2.2 / V6.1 -- the relative move allowed in a recorded response of an
+# exempt-but-detected (entry, defect) pair before the golden file is stale.
+# Dimensionless; compared on the ratio to the ceiling, which is O(1).
+#
+# ITS OWN ENTRY BECAUSE IT IS ITS OWN QUANTITY (R160). It was
+# `SUBDIVISION_INVARIANCE` borrowed -- a tolerance declared for the deviation
+# between meshes of the same member, which is not this. Borrowing an ACCURACY
+# tolerance into a second quantity means one number answers to two measurements
+# and can be moved by either.
+#
+# Reason for 1e-11: these responses are deterministic -- same corpus, same code,
+# same arithmetic -- so the admissible move is round-off in the ratio and nothing
+# else. Measured across a full re-run, every recorded pair reproduces to 0.0.
+# Set: 2026-09-07, F2
+EXEMPT_RESPONSE_DRIFT: Final[float] = 1e-11
+
+# COUNTER-CASE, injected: the smallest move that must be caught.
+# Reason for 1e-6: five orders above the ceiling, and the shipped test injects it
+# to show the comparison is live rather than inspecting two equal numbers.
+# Set: 2026-09-07, F2
+EXEMPT_RESPONSE_DRIFT_COUNTER: Final[float] = 1e-6
+
 
 
 

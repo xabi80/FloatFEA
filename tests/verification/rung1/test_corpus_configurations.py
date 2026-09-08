@@ -77,6 +77,8 @@ from floatfea.model.material import S355, Section
 from floatfea.testing import assert_close
 from floatfea.model.nodes import Model, Node, node_dofs
 from floatfea.tolerances import (BEAM_ADMISSION_L_OVER_D,
+                                 DELTA_CALIBRATION_ULP,
+                                 DELTA_CALIBRATION_ULP_COUNTER,
                                  PATCH_TEST_COUNTER_HEADROOM,
                                  PATCH_TEST_EXACTNESS,
                                  PATCH_TEST_EXACTNESS_COUNTER_DEFECT,
@@ -1071,22 +1073,21 @@ def test_the_delta_measure_is_CALIBRATED() -> None:
         # differences directly would be comparing two 1e-6 numbers through that
         # cancellation and would report a 4.5e-12 disagreement that is the
         # arithmetic, not the measure (R38's lesson, in a new place).
-        # TO ONE ULP, NOT EXACTLY, AND THE ARGUMENT FOR `==` IS WITHDRAWN
-        # (R142). It said the constant "divides out and the result is the same
-        # float". It does not: `(CD * x) / x != CD` for 0.19% of random `x` at
-        # `CD = 1e-6`, and for 24% at `3.7e-6`. Green here was 89 draws at
-        # p = 0.0019 -- about one-in-seven odds of having been red at the commit
-        # that published the claim, and a reviewer's corpus entry duly reddened
-        # it at the shipped constant. A one-ULP disagreement is rounding, not a
-        # units error, and the message said units.
-        assert_close(
-            measured, PATCH_TEST_EXACTNESS_COUNTER_DEFECT, ROUNDOFF_IDENTITY,
-            floor=np.finfo(float).eps * PATCH_TEST_EXACTNESS_COUNTER_DEFECT,
-            what=(f"{entry['id']}: the counter-defect injection measures "
-                  f"{measured:.17g} under `injected_delta`, against its declared "
-                  f"size {PATCH_TEST_EXACTNESS_COUNTER_DEFECT:.17g}. Within one "
-                  "ULP this is rounding; beyond it the measure and the claim "
-                  "have stopped being the same quantity"),
+        # IN ULP OF THE DECLARED SIZE (R156). The `==` came first and its
+        # argument was wrong -- `(CD * x) / x != CD` for 0.19% of random `x` --
+        # and the `ROUNDOFF_IDENTITY` band that replaced it was described as
+        # "one ULP" while admitting **47.22**. Both records are withdrawn. The
+        # measured deviation is exactly 1.000 ULP, the single rounding of
+        # `max|CD k| / max|k|`, and the ceiling is four times it.
+        ulp = abs(measured - PATCH_TEST_EXACTNESS_COUNTER_DEFECT) / math.ulp(
+            PATCH_TEST_EXACTNESS_COUNTER_DEFECT)
+        assert ulp <= DELTA_CALIBRATION_ULP, (
+            f"{entry['id']}: the counter-defect injection measures "
+            f"{measured:.17g} under `injected_delta`, against its declared size "
+            f"{PATCH_TEST_EXACTNESS_COUNTER_DEFECT:.17g} -- {ulp:.3f} ULP, above "
+            f"{DELTA_CALIBRATION_ULP:g}. Within a few ULP this is rounding; "
+            "beyond it the measure and the claim have stopped being the same "
+            "quantity."
         )
 
     # THE OTHER DIRECTION: a bending-only defect of the SAME declared size must
@@ -1185,6 +1186,24 @@ def test_a_CONSTANT_ell_breaks_unit_invariance() -> None:
         f"with `ell` frozen at 1.0 the three unit systems still agree to "
         f"{spread:.4g}x ({broken}). The unit invariance asserted above does not "
         "depend on the scaling it is attributed to, so nothing is guarding it."
+    )
+
+
+def test_a_LARGER_deviation_fails_the_calibration() -> None:
+    """`DELTA_CALIBRATION_ULP`'s counter, injected (BG1).
+
+    The band this replaced admitted `47.22` ULP while its record said one, so the
+    counter is placed inside that band: a deviation of
+    `DELTA_CALIBRATION_ULP_COUNTER` ULP must fail, which is exactly where the old
+    formulation was silent.
+    """
+    cd = PATCH_TEST_EXACTNESS_COUNTER_DEFECT
+    nudged = cd + DELTA_CALIBRATION_ULP_COUNTER * math.ulp(cd)
+    ulp = abs(nudged - cd) / math.ulp(cd)
+    assert ulp > DELTA_CALIBRATION_ULP, (
+        f"a {DELTA_CALIBRATION_ULP_COUNTER:g}-ULP deviation measures {ulp:.3f} "
+        f"ULP and the ceiling is {DELTA_CALIBRATION_ULP:g}; the calibration "
+        "would not catch it, so it is not a calibration."
     )
 
 
@@ -1455,8 +1474,11 @@ def test_the_forward_error_is_REPORTED_and_the_floor_is_too(capsys) -> None:
               "entries below 1.0 -- DIAGNOSTIC, asserted nowhere (BP2)")
         for k in INJECTED_DEFECTS:
             lo = min(rows, key=lambda r: r[4][k])
+            n_ex = len(exempt.get(k, ()))
+            mark = ("" if not n_ex
+                    else f"   [{n_ex} EXEMPT: below the declared resolution]")
             print(f"    {k:22} minimum {lo[4][k] / PATCH_TEST_EXACTNESS:12.4g}x"
-                  f"   at {lo[0]} (L/r_min {lo[1]:.1f})")
+                  f"   at {lo[0]} (L/r_min {lo[1]:.1f}){mark}")
         # The fitted curve is a DIAGNOSTIC and nothing asserts it (BO2). It is
         # regenerated here so the step report's statement of what the gate's
         # sensitivity IS comes from a run rather than from a scratch harness.

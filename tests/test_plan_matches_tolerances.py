@@ -89,3 +89,20 @@ def test_the_plan_and_the_code_agree(line: int, name: str, literal: str) -> None
         "plan edit or it does not move: the plan is the locked artifact, and a "
         "value that has drifted from it is a decision nobody reviewed."
     )
+
+
+@pytest.mark.parametrize("name", sorted(_declared()))
+def test_every_declared_tolerance_appears_in_the_plan(name: str) -> None:
+    """The other direction (R161): a NEW tolerance cannot hide from the plan.
+
+    The check above runs plan -> code, so a constant added to `tolerances.py` and
+    never written into the plan was invisible to it -- and the plan is the locked
+    artifact a tolerance is supposed to move with. Both directions together mean
+    the set of declared tolerances and the set the plan fixes are the same set.
+    """
+    stated = {n for _, n, _ in _stated_in_plan()}
+    assert name in stated, (
+        f"{name} is declared in floatfea/tolerances.py and docs/milestones/F2.md "
+        "does not state its value. A tolerance the plan does not name is one no "
+        "reopen has to approve. Add it to the plan's tolerance table."
+    )

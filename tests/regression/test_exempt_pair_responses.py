@@ -1,10 +1,16 @@
 """Exempt (entry, defect) pairs the gate detects today keep detecting (BS2).
 
 A pair whose injected defect is below `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`
-carries no red assertion: the gate claims to resolve defects of that size, and a
-smaller one is outside the claim. **But 34 of the 40 exempt pairs are detected
-anyway**, one of them by `2956x`, and dropping the assertion there means a pair
-the gate catches now could stop being caught with the suite green.
+carries no red assertion **from the classification** -- three of the four defects
+are in `UNCONDITIONALLY_RED` and are asserted red whatever their classification,
+so the premise stated here at first ("carries no red assertion") was true only of
+`dropped_shear_parameter` (R158). What every exempt pair does lack is a claim
+that it MUST be caught, and that is what this file replaces with a record.
+
+**And most of them are detected anyway** -- see `exempt_detected` in
+`docs/milestones/F2_figures.md`, regenerated -- one of them by `2956x`.
+Leaving that unrecorded means a pair the gate catches now could stop being
+caught with the suite green.
 
 WHY A GOLDEN FILE AND NOT AN ASSERTION ON THE OUTCOME. Asserting "red wherever
 the response exceeds the ceiling, regardless of classification" asserts the
@@ -38,8 +44,9 @@ from test_corpus_configurations import (  # noqa: E402
 )
 
 from floatfea.testing import assert_close  # noqa: E402
-from floatfea.tolerances import (PATCH_TEST_EXACTNESS,  # noqa: E402
-                                 SUBDIVISION_INVARIANCE)
+from floatfea.tolerances import (EXEMPT_RESPONSE_DRIFT,  # noqa: E402
+                                 EXEMPT_RESPONSE_DRIFT_COUNTER,
+                                 PATCH_TEST_EXACTNESS)
 
 GOLDEN = Path(__file__).with_name("g22_exempt_pair_responses.json")
 
@@ -74,9 +81,11 @@ def test_every_recorded_pair_is_still_detected() -> None:
     """The regression: a pair caught today does not stop being caught.
 
     Compared on the RATIO to the ceiling, which is `O(1)`, rather than on two
-    numbers near `1e-14` -- R38's lesson. `SUBDIVISION_INVARIANCE` is the
-    round-off band already declared for a quantity that should not move at all;
-    these responses are deterministic, so anything above it is a real change.
+    numbers near `1e-14` -- R38's lesson. The band is `EXEMPT_RESPONSE_DRIFT`,
+    which is this quantity's own entry: it was `SUBDIVISION_INVARIANCE` borrowed,
+    and a tolerance declared for the deviation between meshes of one member is
+    not the admissible drift of a recorded response (R160). One number answering
+    to two measurements can be moved by either.
     """
     recorded, measured = _recorded(), _measured()
     missing = sorted(set(recorded) - set(measured))
@@ -89,7 +98,7 @@ def test_every_recorded_pair_is_still_detected() -> None:
         now = measured[key]
         assert_close(
             now / PATCH_TEST_EXACTNESS, was / PATCH_TEST_EXACTNESS,
-            SUBDIVISION_INVARIANCE, floor=np.finfo(float).eps,
+            EXEMPT_RESPONSE_DRIFT, floor=np.finfo(float).eps,
             what=(f"{key}: the response moved from {was:.6e} to {now:.6e}. This "
                   "pair carries no red assertion because its defect is below "
                   "the declared resolution, so nothing else would have noticed"),
@@ -108,3 +117,21 @@ def test_the_recorded_set_is_the_measured_set() -> None:
         "it and state in the closure artifact why the set grew -- a corpus round "
         "is a reason; a classification change is a different one."
     )
+
+
+def test_a_MOVED_response_is_caught() -> None:
+    """`EXEMPT_RESPONSE_DRIFT`'s counter, injected (BG1).
+
+    Without this the comparison above inspects two numbers that are equal by
+    construction on a clean tree, and would look identical to one that compares
+    nothing. The injected move is `EXEMPT_RESPONSE_DRIFT_COUNTER`, five orders
+    above the band.
+    """
+    recorded = _recorded()
+    key = sorted(recorded)[0]
+    was = recorded[key]
+    moved = was * (1.0 + EXEMPT_RESPONSE_DRIFT_COUNTER)
+    with pytest.raises(AssertionError):
+        assert_close(moved / PATCH_TEST_EXACTNESS, was / PATCH_TEST_EXACTNESS,
+                     EXEMPT_RESPONSE_DRIFT, floor=np.finfo(float).eps,
+                     what=f"{key}: injected drift")
