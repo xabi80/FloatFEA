@@ -904,3 +904,51 @@ id=cf_minshadow_D0p239_t0p0903_axis section=circular_tube,D=0.239044,t=0.0902592
 id=cf_minshadow_D0p4317_t0p1687_axis section=circular_tube,D=0.431718,t=0.168693 stations=220.276 orient=axis extra=none runs_in_suite=no expect=hold
 id=cf_minshadow_D0p0586_t0p0064_axis section=circular_tube,D=0.058565,t=0.00639997 stations=37.0491 orient=axis extra=none runs_in_suite=no expect=hold
 id=cf_calib_2ulp_skew_aniso2p2e5_L0p906 section=circular_tube,D=0.294208596,t=0.108351642 stations=0.90554701 orient=skew extra=I_y_over_I_z=224679.4 runs_in_suite=no expect=hold
+
+# --- TWENTY-FIRST VERDICT (2026-09-08, reviewed HEAD 2cf0c97) ---------------
+#
+# Seven entries, none seen by the implementer. Every field below was measured at
+# `2cf0c97` BEFORE the line was written; nothing here is predicted.
+#
+# 1. THE CALIBRATION MAXIMUM, PROBED FROM OUTSIDE THE CORPUS. `DELTA_CALIBRATION_ULP
+#    = 4.0` is justified as "2x the observed maximum of 2 ULP", and that maximum
+#    rested on four corpus entries, all planted by this reviewer. I drew 677
+#    admissible random configurations (D 1e-2..8 m, t/D 0.006..0.49, L/D 2.5..3e5,
+#    four orientations, anisotropy to 1e6): maximum 1.000 ULP, histogram
+#    {0: 668, 1: 9}. I then drew 1919 admissible configurations TARGETED at the
+#    thick-wall / high-anisotropy / short-member region where every known 2-ULP
+#    case lives: histogram {0: 1326, 1: 587, 2: 6}, MAXIMUM 2.0000 ULP.
+#    NOTHING ABOVE 2 ULP IN 2596 CONFIGURATIONS. The 2x headroom is real, and it
+#    is now supported by a population the implementer did not choose.
+#    The four `cg_calib_2ulp_*` entries below are the four distinct 2-ULP shapes
+#    that hunt found; each measured 2.0000 ULP at 2cf0c97.
+#
+# 2. THE BOUNDARY PLATEAU IS A PROPERTY OF THE CONSTRUCTION, NOT OF THE CORPUS.
+#    `boundary_margin_min_plateau` publishes "52 bases". I ran the shipped
+#    boundary construction on 458 admissible bases of my own: 458 OF 458 landed on
+#    `7630.16x`. The lowest was 7630.155133030 -- below the corpus minimum
+#    7630.15514 -- and still rounds to the published six figures. So the minimum
+#    is not a minimum over the corpus; it is what the construction returns for
+#    every non-skew base, because the bisection discards the base's length. The
+#    published count measures how many solved corpus entries are non-skew.
+#    `cg_plateau_*` are two of those 458, chosen far from any existing shape.
+#
+# 3. THE DETECTION EDGE. `PATCH_TEST_COUNTER_HEADROOM = 6.0e7` sits 2.37x above
+#    `counter_defect_over_edge = 2.534e+07`, which is set by the SMALLEST
+#    detection edge in the corpus (3.9459e-14, at the planted `aaa_band_edge_twin`).
+#    In 677 random admissible configurations I could not get below 9.547e-14
+#    (CD/edge 1.047e+07). `cg_edgeprobe_*` is that smallest one. It does not
+#    threaten the headroom and it is recorded so nobody re-derives it.
+#
+# 4. WHAT A PASSING SCAN MEANS FOR THESE. Each is `expect=hold`: measured at
+#    2cf0c97 the worst clean state is 0.011x .. 0.031x of PATCH_TEST_EXACTNESS.
+#    `cg_edgeprobe_D0p037_L5490_skew_a6e4` classifies `dropped_shear_parameter`
+#    and `wrong_dof_index` as `below resolution` -- it is an exempt entry, and
+#    whether BS2's golden file demands its response is the coverage measurement.
+id=cg_calib_2ulp_inplane_aniso8e4_L3p25 section=circular_tube,D=0.490111317,t=0.150005704 stations=3.24815434 orient=in_plane_y extra=I_y_over_I_z=81040.9 runs_in_suite=no expect=hold
+id=cg_calib_2ulp_axis_aniso1p4e4_L3p17 section=circular_tube,D=0.328813175,t=0.142014037 stations=3.17129815 orient=axis extra=I_y_over_I_z=14080.48 runs_in_suite=no expect=hold
+id=cg_calib_2ulp_skew_aniso1p4e5_L1p05 section=circular_tube,D=0.182625297,t=0.0684969569 stations=1.04994045 orient=skew extra=I_y_over_I_z=138869.4 runs_in_suite=no expect=hold
+id=cg_calib_2ulp_axis_aniso1p4e5_L0p24 section=circular_tube,D=0.0874089385,t=0.0309724365 stations=0.239866532 orient=axis extra=I_y_over_I_z=140968.8 runs_in_suite=no expect=hold
+id=cg_plateau_D0p276_t0p077_axis section=circular_tube,D=0.276116,t=0.0773361 stations=56.9495 orient=axis extra=none runs_in_suite=no expect=hold
+id=cg_plateau_D6p75_t2p61_inplane section=circular_tube,D=6.74664,t=2.61384 stations=63.3491 orient=in_plane_y extra=none runs_in_suite=no expect=hold
+id=cg_edgeprobe_D0p037_L5490_skew_a6e4 section=circular_tube,D=0.0370137,t=0.00936507 stations=5489.88 orient=skew extra=I_y_over_I_z=63953.7 runs_in_suite=no expect=hold
