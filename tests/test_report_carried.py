@@ -6,9 +6,25 @@ hook could never reach because the branch above it returns first. **A guard that
 must run belongs where the reviewer runs it.** The supervisor runs `pytest`, so
 an incomplete `Carried` is red inside the verdict that reads it.
 
+AGAINST THE VERDICT THE REPORT CLAIMS TO ANSWER, NOT THE NEWEST ONE (BU1). The
+newest revision carries a header line
+
+    Answers: verdict <n> @ <sha>
+
+and this file checks the report against THAT verdict. Comparing against the
+newest one made a step boundary permanently red: between a verdict landing and
+the report answering it, the report legitimately predates the findings, so
+`pytest` at HEAD was `34 failed` by construction and "green" stopped meaning
+anything at the moment it is most needed.
+
+With the header, green means green: a report cannot claim to answer verdict `n`
+without carrying verdict `n`'s findings, and the one thing left for a reader is
+whether the header names the LATEST verdict -- which is `docs/SUPERVISOR.md`
+item 1, one comparison, not a diff.
+
 WHAT IS CHECKED
 ---------------
-1. Every `R<n>` the newest verdict mentions -- its own findings AND its own
+1. Every `R<n>` the answered verdict mentions -- its own findings AND its own
    `Carried` section, so an item carried forward keeps propagating instead of
    ageing out -- appears in the newest report revision's `Carried`.
 2. Every `file:line` a finding names is either touched by the step's diff since
@@ -65,14 +81,58 @@ def _reviewed_commit(text: str) -> str:
     return m.group(1) if m else ""
 
 
-VERDICT_TEXT = _read(VERDICT)
+def _answered_verdict(report_text: str) -> str:
+    """The `Answers: verdict <n> @ <sha>` header of the newest revision.
+
+    Returns the sha, or `""` when the header is absent -- which
+    `test_the_report_names_the_verdict_it_answers` turns into a failure rather
+    than a silent fall back to the newest verdict.
+    """
+    m = re.search(r"^Answers:\s*verdict\s*\d+\s*@\s*(\S+)",
+                  _newest_revision(report_text), re.MULTILINE)
+    return m.group(1) if m else ""
+
+
+def _verdict_text_at(sha: str) -> str:
+    """The verdict file as it stood at `sha`, or the working copy if unknown."""
+    if not sha:
+        return _read(VERDICT)
+    out = subprocess.run(
+        ["git", "show", f"{sha}:docs/reviews/F2/step-4.md"],
+        cwd=ROOT, capture_output=True)
+    if out.returncode != 0:
+        return _read(VERDICT)
+    return out.stdout.decode("utf-8", errors="replace")
+
+
 REPORT_TEXT = _read(REPORT)
+ANSWERED = _answered_verdict(REPORT_TEXT)
+VERDICT_TEXT = _verdict_text_at(ANSWERED)
 CARRIED = _section(_newest_revision(REPORT_TEXT), "Carried")
 EXPECTED = sorted(
     set(_FINDING.findall(VERDICT_TEXT))
     | set(_MENTION.findall(_section(VERDICT_TEXT, "Carried"))),
     key=lambda r: int(r[1:]),
 )
+
+
+def test_the_report_names_the_verdict_it_answers() -> None:
+    """BU1. Without the header this file silently checks the wrong verdict.
+
+    A missing header would make it fall back to the newest verdict -- which is
+    the behaviour BU1 replaces -- so the absence is a failure, not a default.
+    """
+    assert ANSWERED, (
+        "the newest report revision has no `Answers: verdict <n> @ <sha>` "
+        "header. Without it there is no way to tell a report that predates a "
+        "verdict from one that ignores it."
+    )
+    out = subprocess.run(["git", "cat-file", "-e", ANSWERED], cwd=ROOT,
+                         capture_output=True)
+    assert out.returncode == 0, (
+        f"the report answers verdict `{ANSWERED}`, which is not a commit in "
+        "this repository."
+    )
 
 
 def test_the_parse_found_something_to_check() -> None:

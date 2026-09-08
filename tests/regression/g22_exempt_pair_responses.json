@@ -11,6 +11,8 @@
  "bs_boundary_aniso688_L10875|wrong_dof_index": 1.080030545697884e-08,
  "bs_boundary_big_D3_L2080|dropped_shear_parameter": 3.814923926438396e-11,
  "bs_just_below_iso_L430|dropped_shear_parameter": 3.296972456678872e-11,
+ "bt_boundary_axis_iso_below_L414p593|dropped_shear_parameter": 3.815077554915994e-11,
+ "bt_boundary_rolled_aniso_below_L513p206|dropped_shear_parameter": 1.0995305505697369e-10,
  "every_state_edge_iso_L85|dropped_shear_parameter": 1.478221811065684e-11,
  "every_state_edge_iso_L90|dropped_shear_parameter": 1.176102765356825e-11,
  "plan_headline_lam2885|dropped_shear_parameter": 8.697293774065568e-12,

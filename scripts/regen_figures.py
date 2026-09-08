@@ -87,43 +87,61 @@ def _figures() -> list[tuple[str, str]]:
     rows.append(("counter_headroom_room",
                  f"{PATCH_TEST_COUNTER_HEADROOM / (CD / edge):.2f}x"))
 
-    rows.append(("boundary_margin_one_family",
-                 f"{_boundary_margin(C, ceil, CD):.4g}x"))
+    lo, hi, lo_at, hi_at = _boundary_margins(C, ceil, CD)
+    rows.append(("boundary_margin_min", f"{lo:.4g}x"))
+    rows.append(("boundary_margin_max", f"{hi:.4g}x"))
+    rows.append(("boundary_margin_spread", f"{hi / lo:.2f}x"))
+    rows.append(("boundary_margin_min_at", lo_at))
+    rows.append(("boundary_margin_max_at", hi_at))
     return rows
 
 
-def _boundary_margin(C, ceil: float, CD: float) -> float:
-    """Response margin where the SHEAR defect's effective size crosses `CD`.
+def _boundary_margins(C, ceil: float, CD: float):
+    """`(min, max, min_at, max_at)` of the margin at the classification boundary.
 
-    The operating point the rule actually decides at, and the one figure that
-    cannot be read off a corpus entry: `one_element_scaled`'s effective size is
-    `CD` identically on every entry, so "the corpus pair closest to the boundary"
-    is an identity rather than a selection (R157). Bisected on member length,
-    varying nothing else, from the corpus's stubbiest entry.
+    The operating point the rule decides at: `one_element_scaled`'s effective
+    size is `CD` identically on every entry, so "the corpus pair closest to the
+    boundary" selects nothing (R157). This bisects each base's member length
+    until the SHEAR defect's effective size crosses `CD`, and reports the range.
 
-    ONE FAMILY, AND THE NAME SAYS SO. The reviewer reports `7630.2x` to five
-    digits across nine section families; this construction gives `9267x` on one.
-    The two are not reconciled and the difference is recorded rather than
-    averaged: theirs solves for the boundary across families, this one walks a
-    single member's length. The figure published from this repository is the one
-    this repository computes.
+    A RANGE, BECAUSE IT IS NOT ONE NUMBER AND BOTH EARLIER CLAIMS SAID IT WAS
+    (R169). This file published `9267x` "on one family" and the reviewer
+    published `7630.2x` "to five digits across nine"; neither was a
+    disagreement, because the held variable is ORIENTATION -- axis-aligned bases
+    give ~7616-7659, skew ~9267, rolled and anisotropic up to ~23919. Both
+    single-number claims are withdrawn on both sides, and what is published is
+    what varies and by how much.
+
+    It also stops depending on which base is selected: the bisection discards the
+    base's length, so "the corpus's stubbiest entry" never determined the answer
+    -- 38 bases give bit-identical results, and one admissible entry added to the
+    corpus moved the published figure from 9267x to 7630x without anything about
+    the gate changing.
     """
-    base = dict(min(C.SOLVED, key=C.member_lambda))
-    lo, hi = 1.0, 1.0e7
-    for _ in range(200):
-        mid = (lo * hi) ** 0.5
-        base["stations"] = repr(mid)
-        if C.injected_delta(base, "dropped_shear_parameter") < CD:
-            hi = mid
-        else:
-            lo = mid
-        if hi / lo < 1.000001:  # not-a-tolerance: bisection convergence
-            break
-    base["stations"] = repr(lo)
-    eff = C.injected_delta(base, "dropped_shear_parameter")
-    resp = max(C._oob_with_injected(base, st, "dropped_shear_parameter")
-               for st in C.STATES) / ceil
-    return float(resp / (eff / CD))
+    out = []
+    for entry in C.SOLVED:
+        base = dict(entry)
+        lo, hi = 1.0, 1.0e7
+        try:
+            for _ in range(200):
+                mid = (lo * hi) ** 0.5
+                base["stations"] = repr(mid)
+                if C.injected_delta(base, "dropped_shear_parameter") < CD:
+                    hi = mid
+                else:
+                    lo = mid
+                if hi / lo < 1.000001:  # not-a-tolerance: bisection convergence
+                    break
+            base["stations"] = repr(lo)
+            eff = C.injected_delta(base, "dropped_shear_parameter")
+            resp = max(C._oob_with_injected(base, st, "dropped_shear_parameter")
+                       for st in C.STATES) / ceil
+        except Exception:
+            continue
+        if eff > 0.0:
+            out.append((float(resp / (eff / CD)), entry["id"]))
+    out.sort()
+    return out[0][0], out[-1][0], out[0][1], out[-1][1]
 
 
 def render() -> str:

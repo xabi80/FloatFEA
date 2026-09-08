@@ -968,11 +968,20 @@ def classify(entry, kind: str) -> str:
     guarded in both directions by `test_the_counter_DEFECT_SIZE_cannot_be_raised`
     and its counter, and this classification borrows that guard.
     """
-    # THE COMPARISON CARRIES THE SAME ULP ALLOWANCE THE CALIBRATION DOES
-    # (R142). `injected_delta` computes `max|CD k_hat| / max|k_hat|`, which lands
-    # one ULP below `CD` on some entries -- and a bare `>=` then classified the
-    # gate's OWN counter-defect as below its own resolution on one of them.
-    floor = PATCH_TEST_EXACTNESS_COUNTER_DEFECT * (1.0 - ROUNDOFF_IDENTITY)
+    # THE SAME ULP ALLOWANCE THE CALIBRATION USES, AND NOW BY CONSTRUCTION
+    # (R166). This borrowed `ROUNDOFF_IDENTITY` -- 47.0 ULP -- under a comment
+    # saying it matched the calibration, which the commit that wrote the comment
+    # had just made false by 11.75x. It is now literally the calibration's
+    # constant times an ULP of the value it brackets, so the sentence cannot
+    # drift from the code again.
+    #
+    # Why an allowance at all: `injected_delta` computes
+    # `max|CD k_hat| / max|k_hat|`, which lands an ULP below `CD` on some
+    # entries, and a bare `>=` classified the gate's OWN counter-defect as below
+    # its own resolution on one of them.
+    floor = (PATCH_TEST_EXACTNESS_COUNTER_DEFECT
+             - DELTA_CALIBRATION_ULP * math.ulp(
+                 PATCH_TEST_EXACTNESS_COUNTER_DEFECT))
     return ("live" if injected_delta(entry, kind) >= floor
             else "below resolution")
 
@@ -1190,21 +1199,34 @@ def test_a_CONSTANT_ell_breaks_unit_invariance() -> None:
 
 
 def test_a_LARGER_deviation_fails_the_calibration() -> None:
-    """`DELTA_CALIBRATION_ULP`'s counter, injected (BG1).
+    """`DELTA_CALIBRATION_ULP`'s counter, INJECTED into the measured quantity.
 
-    The band this replaced admitted `47.22` ULP while its record said one, so the
-    counter is placed inside that band: a deviation of
-    `DELTA_CALIBRATION_ULP_COUNTER` ULP must fail, which is exactly where the old
-    formulation was silent.
+    THE FIRST VERSION ASSERTED ITSELF (R163): it computed `40 * ulp(CD)`,
+    divided by `ulp(CD)`, and checked `40 > 4`. That is arithmetic on two
+    constants -- it passed with the calibration's own assertion neutered, and
+    certified nothing about the measurement.
+
+    This perturbs what `injected_delta` returns, by the smallest whole number of
+    ULP above the ceiling, and requires the calibration to redden. Measured, 2
+    ULP passes and 5 ULP fails, so the counter sits at the first value that must
+    be caught.
     """
     cd = PATCH_TEST_EXACTNESS_COUNTER_DEFECT
-    nudged = cd + DELTA_CALIBRATION_ULP_COUNTER * math.ulp(cd)
-    ulp = abs(nudged - cd) / math.ulp(cd)
-    assert ulp > DELTA_CALIBRATION_ULP, (
-        f"a {DELTA_CALIBRATION_ULP_COUNTER:g}-ULP deviation measures {ulp:.3f} "
-        f"ULP and the ceiling is {DELTA_CALIBRATION_ULP:g}; the calibration "
-        "would not catch it, so it is not a calibration."
-    )
+    entry = SOLVED[0]
+    original = globals()["injected_delta"]
+    globals()["injected_delta"] = (
+        lambda e, k, _o=original: _o(e, k)
+        + (DELTA_CALIBRATION_ULP_COUNTER * math.ulp(cd)
+           if k == "one_element_scaled" else 0.0))
+    try:
+        with pytest.raises(AssertionError, match="ULP"):
+            test_the_delta_measure_is_CALIBRATED()
+    finally:
+        globals()["injected_delta"] = original
+
+    # The meta-half: with nothing injected the calibration passes, so the failure
+    # above is the injection and not a broken test.
+    test_the_delta_measure_is_CALIBRATED()
 
 
 def test_an_UNRECOGNISED_defect_name_raises() -> None:
@@ -1445,8 +1467,10 @@ def test_the_forward_error_is_REPORTED_and_the_floor_is_too(capsys) -> None:
                     exempt.setdefault(k, []).append(e["id"])
         n_exempt = sum(len(v) for v in exempt.values())
         print(f"  EXEMPT   {n_exempt} of {len(SOLVED) * len(INJECTED_DEFECTS)} "
-              f"(entry, defect) pairs are below the declared resolution and "
-              f"carry no red assertion: "
+              f"(entry, defect) pairs are below the declared resolution. Only "
+              f"dropped_shear_parameter loses its red assertion there; the other "
+              f"three are in UNCONDITIONALLY_RED and are asserted regardless "
+              f"(R165). By defect: "
               + ", ".join(f"{k} {len(v)}" for k, v in sorted(exempt.items())))
         detected = sum(
             1 for k, ids in exempt.items() for i in ids

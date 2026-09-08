@@ -515,43 +515,59 @@ PATCH_TEST_COUNTER_HEADROOM: Final[float] = 6.0e7
 # 372 grid and 360 random configurations is zero, and the record was wrong in
 # three places, which is the finding.
 #
-# Reason for 4.0: the measured deviation is exactly `1.000 ULP` over every
-# configuration tried -- the single rounding of `max|CD k| / max|k|` -- so `4.0`
-# is four times the only value ever observed and still 12x tighter than the band
-# it replaces. A value that must be raised is a formulation change, not a
-# rounding one.
-# Set: 2026-09-07, F2
+# Reason for 4.0, with the DISTRIBUTION rather than a single value (R168). The
+# record here said "exactly 1.000 ULP over every configuration tried", and over
+# 5222 admissible configurations the histogram is
+#
+#     0 ULP x 5106      1 ULP x 113      2.000 ULP x 3
+#
+# so the observed maximum is 2, not 1, and the ceiling carries 2x of headroom
+# rather than the 4x the withdrawn sentence claimed. It is still 11.8x tighter
+# than the `ROUNDOFF_IDENTITY` band it replaced. A value that must be raised is a
+# formulation change, not a rounding one.
+# Set: 2026-09-07, F2. Record corrected 2026-09-08, F2.
 DELTA_CALIBRATION_ULP: Final[float] = 4.0
 
-# COUNTER-CASE, injected: a deviation of this many ULP must fail the calibration.
-# Reason for 40.0: it is ten times the ceiling, inside the 47.22-ULP band the
-# previous form admitted, so this counter reddens exactly where the old
-# formulation was silent.
-# Set: 2026-09-07, F2
-DELTA_CALIBRATION_ULP_COUNTER: Final[float] = 40.0
+# COUNTER-CASE, INJECTED into the measured quantity (R163). The previous value,
+# `40.0`, was compared with the ceiling directly -- `40 > 4` is arithmetic, and
+# the test passed with the calibration's own assertion neutered. Nothing was
+# being injected.
+# Reason for 5.0: the smallest whole number of ULP above the ceiling. Perturbing
+# `injected_delta`'s result by this many ULP must fail the calibration, and
+# measured, 2 ULP passes and 5 ULP fails -- so the counter sits at the first
+# value that must be caught rather than at ten times it.
+# Set: 2026-09-07, F2. Made an injection 2026-09-08, F2.
+DELTA_CALIBRATION_ULP_COUNTER: Final[float] = 5.0
 
 # CLASS: ACCURACY -- carries EXEMPT_RESPONSE_DRIFT_COUNTER below.
 # G2.2 / V6.1 -- the relative move allowed in a recorded response of an
 # exempt-but-detected (entry, defect) pair before the golden file is stale.
 # Dimensionless; compared on the ratio to the ceiling, which is O(1).
 #
-# ITS OWN ENTRY BECAUSE IT IS ITS OWN QUANTITY (R160). It was
-# `SUBDIVISION_INVARIANCE` borrowed -- a tolerance declared for the deviation
-# between meshes of the same member, which is not this. Borrowing an ACCURACY
-# tolerance into a second quantity means one number answers to two measurements
-# and can be moved by either.
+# ITS OWN ENTRY AND, THIS TIME, ITS OWN NUMBER (R164). The first version gave it
+# `1e-11` -- byte-identical to `SUBDIVISION_INVARIANCE`, the band it was declared
+# to stop borrowing. Renaming a band is not giving a quantity its own tolerance,
+# and it happened inside the commit that fixed borrowing, which is the finding.
 #
-# Reason for 1e-11: these responses are deterministic -- same corpus, same code,
-# same arithmetic -- so the admissible move is round-off in the ratio and nothing
-# else. Measured across a full re-run, every recorded pair reproduces to 0.0.
-# Set: 2026-09-07, F2
-EXEMPT_RESPONSE_DRIFT: Final[float] = 1e-11
+# IN ULP, BECAUSE ITS OWN STATED REASON DEMANDS IT. "The admissible move is
+# round-off in the ratio and nothing else" justifies a small multiple of an ULP,
+# and `1e-11` relative is `4.81e+04` ULP of the smallest recorded ratio -- four
+# orders looser than the reason it was given. Measured, the drift run-to-run and
+# run-to-golden is `0.000e+00`: these responses are deterministic, same corpus,
+# same code, same arithmetic.
+#
+# Reason for 4.0: the same choice as `DELTA_CALIBRATION_ULP`, for the same
+# argument -- four times a maximum observed at zero, which is room for a
+# platform's last-bit rounding and nothing wider.
+# Set: 2026-09-07, F2. Re-derived in ULP 2026-09-08, F2.
+EXEMPT_RESPONSE_DRIFT_ULP: Final[float] = 4.0
 
-# COUNTER-CASE, injected: the smallest move that must be caught.
-# Reason for 1e-6: five orders above the ceiling, and the shipped test injects it
-# to show the comparison is live rather than inspecting two equal numbers.
-# Set: 2026-09-07, F2
-EXEMPT_RESPONSE_DRIFT_COUNTER: Final[float] = 1e-6
+# COUNTER-CASE, injected into a recorded value.
+# Reason for 10.0: the smallest round multiple above the ceiling that leaves the
+# injection unambiguous. The shipped test perturbs a golden ratio by this many
+# ULP and requires the comparison to fail.
+# Set: 2026-09-07, F2. Re-derived in ULP 2026-09-08, F2.
+EXEMPT_RESPONSE_DRIFT_ULP_COUNTER: Final[float] = 10.0
 
 
 

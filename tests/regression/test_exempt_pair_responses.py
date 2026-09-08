@@ -30,6 +30,7 @@ a legitimate reason, stated per round.
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -43,9 +44,8 @@ from test_corpus_configurations import (  # noqa: E402
     INJECTED_DEFECTS, SOLVED, STATES, _oob_with_injected, classify,
 )
 
-from floatfea.testing import assert_close  # noqa: E402
-from floatfea.tolerances import (EXEMPT_RESPONSE_DRIFT,  # noqa: E402
-                                 EXEMPT_RESPONSE_DRIFT_COUNTER,
+from floatfea.tolerances import (EXEMPT_RESPONSE_DRIFT_ULP,  # noqa: E402
+                                 EXEMPT_RESPONSE_DRIFT_ULP_COUNTER,
                                  PATCH_TEST_EXACTNESS)
 
 GOLDEN = Path(__file__).with_name("g22_exempt_pair_responses.json")
@@ -81,11 +81,13 @@ def test_every_recorded_pair_is_still_detected() -> None:
     """The regression: a pair caught today does not stop being caught.
 
     Compared on the RATIO to the ceiling, which is `O(1)`, rather than on two
-    numbers near `1e-14` -- R38's lesson. The band is `EXEMPT_RESPONSE_DRIFT`,
-    which is this quantity's own entry: it was `SUBDIVISION_INVARIANCE` borrowed,
-    and a tolerance declared for the deviation between meshes of one member is
-    not the admissible drift of a recorded response (R160). One number answering
-    to two measurements can be moved by either.
+    numbers near `1e-14` -- R38's lesson -- and in ULP of that ratio, because
+    these responses are deterministic and the admissible move is round-off.
+
+    THE BAND'S FIRST VERSION WAS THE BORROWED ONE RENAMED (R164): it read
+    `1e-11`, byte-identical to `SUBDIVISION_INVARIANCE`, inside the commit that
+    fixed borrowing. `1e-11` relative is `4.81e+04` ULP of the smallest recorded
+    ratio -- four orders looser than the reason written beside it.
     """
     recorded, measured = _recorded(), _measured()
     missing = sorted(set(recorded) - set(measured))
@@ -96,12 +98,14 @@ def test_every_recorded_pair_is_still_detected() -> None:
     )
     for key, was in sorted(recorded.items()):
         now = measured[key]
-        assert_close(
-            now / PATCH_TEST_EXACTNESS, was / PATCH_TEST_EXACTNESS,
-            EXEMPT_RESPONSE_DRIFT, floor=np.finfo(float).eps,
-            what=(f"{key}: the response moved from {was:.6e} to {now:.6e}. This "
-                  "pair carries no red assertion because its defect is below "
-                  "the declared resolution, so nothing else would have noticed"),
+        a, b = now / PATCH_TEST_EXACTNESS, was / PATCH_TEST_EXACTNESS
+        moved = abs(a - b) / math.ulp(b)
+        assert moved <= EXEMPT_RESPONSE_DRIFT_ULP, (
+            f"{key}: the response moved from {was:.6e} to {now:.6e}, "
+            f"{moved:.1f} ULP of the recorded ratio, above "
+            f"{EXEMPT_RESPONSE_DRIFT_ULP:g}. Its defect is below the declared "
+            "resolution, so the classification makes no claim about it -- and "
+            "for a shear-defect pair nothing else does either."
         )
 
 
@@ -124,14 +128,16 @@ def test_a_MOVED_response_is_caught() -> None:
 
     Without this the comparison above inspects two numbers that are equal by
     construction on a clean tree, and would look identical to one that compares
-    nothing. The injected move is `EXEMPT_RESPONSE_DRIFT_COUNTER`, five orders
-    above the band.
+    nothing. The injection is `EXEMPT_RESPONSE_DRIFT_ULP_COUNTER` ULP of a
+    recorded ratio, the smallest round multiple above the ceiling.
     """
     recorded = _recorded()
     key = sorted(recorded)[0]
-    was = recorded[key]
-    moved = was * (1.0 + EXEMPT_RESPONSE_DRIFT_COUNTER)
-    with pytest.raises(AssertionError):
-        assert_close(moved / PATCH_TEST_EXACTNESS, was / PATCH_TEST_EXACTNESS,
-                     EXEMPT_RESPONSE_DRIFT, floor=np.finfo(float).eps,
-                     what=f"{key}: injected drift")
+    b = recorded[key] / PATCH_TEST_EXACTNESS
+    a = b + EXEMPT_RESPONSE_DRIFT_ULP_COUNTER * math.ulp(b)
+    moved = abs(a - b) / math.ulp(b)
+    assert moved > EXEMPT_RESPONSE_DRIFT_ULP, (
+        f"a {EXEMPT_RESPONSE_DRIFT_ULP_COUNTER:g}-ULP injection measures "
+        f"{moved:.1f} ULP against a ceiling of {EXEMPT_RESPONSE_DRIFT_ULP:g}; "
+        "the comparison above would not catch it."
+    )
