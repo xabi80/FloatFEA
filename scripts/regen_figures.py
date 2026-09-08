@@ -219,8 +219,11 @@ def _boundary_margins(C, ceil: float, CD: float):
 
 
 def render() -> str:
-    head = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
-                          capture_output=True, text=True).stdout.strip()
+    # NO `Generated at <sha>` LINE (R179). It recorded the commit the file was
+    # written at, which is never the commit it is committed in -- so it was false
+    # the moment it landed, and once `--check` compared the whole file it failed
+    # on the sha rather than on a figure. Content equality answers the staleness
+    # question by itself; the sha added a claim nothing could keep true.
     lines = [
         "# F2 figures — GENERATED, do not edit",
         "",
@@ -233,7 +236,6 @@ def render() -> str:
         "|---|---|",
     ]
     lines += [f"| `{n}` | {v} |" for n, v in _figures()]
-    lines += ["", f"Generated at `{head}`." if head else ""]
     return "\n".join(lines).rstrip() + "\n"
 
 

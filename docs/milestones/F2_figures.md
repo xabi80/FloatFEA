@@ -40,5 +40,3 @@ this file is not what a fresh run produces.
 | `boundary_margin_unbracketed` | 0: none |
 | `boundary_margin_refused` | 5: all_three_extras_free_dir (DegenerateMemberOrientation), onode_and_aniso_together (DegenerateMemberOrientation), onode_just_outside (DegenerateMemberOrientation), vertical_onode (DegenerateMemberOrientation), vertical_onode_y (DegenerateMemberOrientation) |
 | `calibration_ulp_histogram` | 0 ULP x4760, 1 ULP x137, 2 ULP x103 |
-
-Generated at `ba3a93c`.
