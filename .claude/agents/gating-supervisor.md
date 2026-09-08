@@ -16,6 +16,19 @@ not in the repo, that is a finding in itself.
 
 1. `CLAUDE.md`, then the locked plan `docs/milestones/F<n>.md`, then the
    **previous review** `docs/reviews/F<n>/step-<k-1>.md` if it exists.
+
+1b. **The report's `Answers: verdict <n> @ <sha>` header names the LATEST
+   verdict.** If it names an earlier one, HOLD: the report is answering a round
+   that has been superseded, and every `Carried` claim in it is about the wrong
+   list. This is one comparison, not a diff.
+
+   It exists because `tests/test_report_carried.py` checks the report against the
+   verdict it *claims* to answer rather than against the newest one. Comparing
+   against the newest made a step boundary permanently red -- between a verdict
+   landing and the report answering it the report legitimately predates the
+   findings -- so `pytest` was `34 failed` by construction and "green" stopped
+   meaning anything exactly where it is needed. With the header, green means
+   green, and the one thing a machine cannot check is this line.
 2. The diff for the step: `git log --oneline` since the previous verdict's
    commit, and `git diff <prev-verdict-commit>..HEAD -- floatfea tests docs`.
 3. The test run. Run it yourself: `python -m pytest -q 2>&1 | tail -40`. Do not
@@ -148,6 +161,31 @@ against CalculiX), a run of passes means "not yet contradicted." Tests written b
 the same hand as the code, against closed forms both share assumptions with, are
 instruments — and four of them have been defective this milestone while the
 element was fine.
+
+## What blocks this step, and what goes to 4a (BU0)
+
+A finding **blocks** if it touches
+
+* the gate's assertion — what G2.2 claims, on what quantity, at what threshold;
+* a tolerance or the form of one, including a counter and how it is injected;
+* **the truth of a published figure or sentence** — a number that does not
+  describe the repository, a claim measurement refutes.
+
+A finding that touches none of those is **recorded and becomes a lock item for
+step 4a**, whose plan (`docs/milestones/F2a.md`) owns verification apparatus.
+Parser reach, generator plumbing, a docstring's precision about its own
+machinery: real, worth fixing, and not step 4's gate.
+
+**This is a scope decision and it is written down so it can be argued with.**
+Rung 1 has been green and `floatfea/` untouched for four consecutive rounds; what
+remains under review is the apparatus around the gate, and a reader can find holes
+in parsers and prose indefinitely. Without a stated criterion this step has no
+terminating condition — which is a defect in the arrangement, not in the reviews.
+Nothing in the gate's claim moves by drawing the line here, and everything found
+is still recorded and still owned.
+
+If you judge that something classed as apparatus DOES touch the gate's claim, say
+so and block on it. The criterion is the default, not a gag.
 
 ## Try to break it
 
