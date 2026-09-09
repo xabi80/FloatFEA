@@ -32,6 +32,13 @@ kept open until closure. Each step lands as one or more commits; the step
 report `docs/reports/F<n>/step-<k>.md` is committed with the step; the inside
 verdict `docs/reviews/F<n>/step-<k>.md` is committed **separately**, after.
 
+**F2's channel is live: `xabi80/FloatFEA`, private, PR #1, `F2 -> master`.**
+Opened late — at the close of step 4 rather than at the milestone's first commit
+— because the repository did not exist until then. **Steps 1 to 4 therefore have
+no witness comment and never will**, and that is a gap in the record rather than
+a clean bill: twenty-five consecutive reviews of step 4 were written by one
+reader. The first witness comment this milestone can carry is on step 5.
+
 The witness posts as a PR comment prefixed `[witness F<n> step <k>]`, in the
 same block format the reviews use (`Verdict`, `Carried`, `Findings`,
 `Tolerances touched`, `Next step opens when`). The implementer's standing
