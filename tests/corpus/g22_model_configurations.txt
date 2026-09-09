@@ -1125,3 +1125,80 @@ id=cj_edgemin_D0p0316_roll0p78_aniso1p9e5 section=circular_tube,D=0.031550331861
 id=cj_wall_equals_the_radius section=circular_tube,D=0.6,t=0.3 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise
 id=cj_wall_thicker_than_the_radius section=circular_tube,D=0.6,t=0.36 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise
 id=cj_aniso_one_ulp_class_over_range section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=I_y_over_I_z=1000000.000001 runs_in_suite=no expect=raise
+
+# --- TWENTY-FIFTH VERDICT (HEAD 4ccd166) -----------------------------------
+# Ten entries, all unseen by the implementer, measured at `4ccd166` before this
+# block was written. The round's question was not the detection edge, which
+# three rounds of search have failed to lower: it was the OTHER side of
+# `PATCH_TEST_EXACTNESS`, the worst clean entry, whose margin has fallen at every
+# corpus round since the ceiling was set and which nobody had searched for
+# directly.
+#
+# 1. THE WORST CLEAN RATIO MORE THAN DOUBLES UNDER A DIRECT SEARCH. Published at
+#    `4ccd166`: `clean_worst_ratio 0.1261x` over 177 entries. Entry 1 measures
+#    `0.2765x` -- a margin on `PATCH_TEST_EXACTNESS = 5e-15` of `3.62x` where the
+#    figures say `7.93x`. It is not a lucky point: 33 independent hill-climbs
+#    from 10,000 random starts, and 5 of the 8 in the first pass alone exceeded
+#    the published worst. Entries 2 and 3 are two of those independent maxima,
+#    `0.2509x` at kilometre scale with a near-solid wall and `0.1647x` at metre
+#    scale with a 3.7% wall, kept so the plateau is in the file rather than the
+#    claim.
+#
+# 2. THE MAXIMUM SITS ON THE ADMISSIBLE BOUNDARY, WHICH IS WHY SAMPLING MISSED
+#    IT. Entry 1 has `I_y_over_I_z` exactly `1e6` -- the top of the declared
+#    range -- and a wall `0.4989 D`, against the `< D/2` the constructor
+#    enforces. A search that draws the ratio log-uniformly reaches the corner
+#    with probability ~0; the four earlier rounds all sampled. The ceiling holds
+#    at the corner, and it holds by 3.6x rather than by the 26.8x its derivation
+#    recorded.
+#
+# 3. THE CEILING'S MARGIN IS FALLING MONOTONICALLY AND THE FALL IS NOT SLOWING.
+#    Measured over every commit of docs/milestones/F2_figures.md: 0.0887x at 133
+#    entries, held to 156, then 0.0982x (163), 0.1142x (170), 0.1261x (177), and
+#    0.2765x here. Four consecutive outside rounds, four rises, none of them from
+#    a region the previous round had entered. This is a statement about the
+#    corpus's coverage, not about the element: the field error itself has not
+#    moved.
+#
+# 4. THE DETECTION EDGE IS NOT BEATEN, FOURTH ROUND RUNNING. Breaking
+#    `PATCH_TEST_COUNTER_HEADROOM = 6.0e7` needs an edge below `1.6667e-14`. The
+#    best of ~1,500 candidates this round is entry 4 at `3.9971e-14`, from a
+#    region the corpus had not entered (thick wall, anisotropy ~860), and the
+#    published minimum `3.6275e-14` still stands. Entries 1-3, the clean maxima,
+#    have edges `3.84e-14`, `4.10e-14` and `6.53e-14` -- so the shape that
+#    maximises round-off is NOT the shape that minimises detection.
+#
+# 5. THE CLEAN RATIO IS NOT SCALE-INVARIANT, AND THE BOUND IS NOW OVER SIXTEEN
+#    ORDERS. The twenty-fourth round measured `2.85x` of spread over eight orders
+#    on this shape. Entries 5 and 6 extend it to `1e-8` and `1e+8`: the ratio runs
+#    0.0417x, 0.1261x, 0.0305x at `1e-8`, `1e0`, `1e+8` -- `4.14x` of spread, with
+#    the MAXIMUM at the SI scale, which is the safe side. The detection edge over
+#    the same sixteen orders is 6.125e-14 .. 6.298e-14, `2.8%`. Sensitivity is
+#    scale-free; the round-off floor is not, and any future unit-invariance claim
+#    on this quantity is bounded at 4.2x, never an identity.
+#
+# 6. THE ANISOTROPY RANGE IS CLOSED AT ITS BOTTOM TOO, TO ONE ULP. The
+#    twenty-fourth round bracketed the top. Entries 7 and 8 bracket the floor:
+#    `math.nextafter(1e-6, 0)` is refused and `1e-06` exactly is accepted. Both
+#    ends are now measured rather than declared.
+#
+# 7. ROLL IS NOT RANGE-CHECKED, AND THAT IS RECORDED RATHER THAN ASSERTED.
+#    Entries 9 and 10: a roll of `1e6` radians is accepted and gives a field
+#    error bit-comparable to `2*pi` (0.0161x both). Nothing here says it should
+#    be refused; it says the file now contains the case, so a future claim that
+#    the roll is bounded has a counter-example on disk.
+#
+# 8. WHAT I COULD NOT BUILD, FOURTH ROUND. An edge below 1.6667e-14, and a clean
+#    ratio above 1.0. The second is now 3.6x away rather than 11x. Recorded so
+#    the next round does not re-derive it, and still not evidence that neither
+#    exists.
+id=ck_cleanmax_D18p8_tw0p499_aniso1e6 section=circular_tube,D=18.7706160440213,t=9.364660344362226 stations=126.44458962388472 orient=-0.734348982991284,0.14017573190933788,-0.6641402979516815 extra=I_y_over_I_z=1000000.0,roll=0.7978999969817765 runs_in_suite=no expect=hold
+id=ck_cleanmax_corner_D2216_aniso3p7e4 section=circular_tube,D=2215.994641417378,t=1107.7628458235156 stations=60088.06110175523 orient=0.2235332859195207,-0.5558929956144038,0.8006346529553078 extra=I_y_over_I_z=37338.19828226297,roll=-1.25967525706822 runs_in_suite=no expect=hold
+id=ck_cleanmax_D0p44_aniso8e3 section=circular_tube,D=0.4397794109389423,t=0.016112767184211885 stations=2.021814549733274 orient=0.27452497120676544,0.9213228266677759,0.27531852325047773 extra=I_y_over_I_z=8056.807623008435,roll=0.9122259426790462 runs_in_suite=no expect=hold
+id=ck_edgeprobe_D0p16_tw0p26_aniso858 section=circular_tube,D=0.16048845475050716,t=0.04178933480684147 stations=0.46520864225727737 orient=0.3366301834382315,0.8157254732152551,-0.4703956546845333 extra=I_y_over_I_z=858.0787634968764,roll=-2.4080871351959217 runs_in_suite=no expect=hold
+id=ck_cleanmax_x1em8 section=circular_tube,D=4.994357479349659e-10,t=9.84748744775683e-11 stations=2.3446998691339833e-09 orient=-0.38868357899231215,-0.6535325531248817,-0.6473240509538862 extra=I_y_over_I_z=205.8780446210576,roll=-1.4556782160578072 runs_in_suite=no expect=hold
+id=ck_cleanmax_x1e8 section=circular_tube,D=4994357.479349659,t=984748.744775683 stations=23446998.69133983 orient=-0.38868357899231215,-0.6535325531248817,-0.6473240509538862 extra=I_y_over_I_z=205.8780446210576,roll=-1.4556782160578072 runs_in_suite=no expect=hold
+id=ck_aniso_one_ulp_under_floor section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=skew extra=I_y_over_I_z=9.999999999999997e-07 runs_in_suite=no expect=raise
+id=ck_aniso_floor_exact section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=skew extra=I_y_over_I_z=1e-06 runs_in_suite=no expect=hold
+id=ck_roll_one_million_radians section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=skew extra=roll=1000000.0 runs_in_suite=no expect=hold
+id=ck_roll_two_pi section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=skew extra=roll=6.283185307179586 runs_in_suite=no expect=hold
