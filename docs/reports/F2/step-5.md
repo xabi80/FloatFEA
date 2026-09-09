@@ -174,3 +174,257 @@ will — twenty-five consecutive reviews of step 4 were written by one reader, a
 opening the channel now does not change that. **Step 5 is the first step that can
 carry one.** There is no `[witness ...]` comment yet, which is an unavailable
 check rather than a pass.
+
+---
+
+# Revision 2 — the range that had no report, and two guards that had no corpus
+
+Answers: verdict 27 @ 8ffbd51
+
+**2026-09-09.** Five commits since the twenty-sixth verdict: `e5f6deb` (lint),
+`99d0565` (CI), `3577930` (`process:`), `76c186a` (CB0/CB1) and this one.
+
+## 0. What this revision is, and what it is not
+
+**R223 and R224 are NOT answered here.** G2.1's replacement quantity is a lock
+Q&A (Q7) and the cross-platform golden question is another (Q8); both are with
+the technical supervisor, and CB3 puts them after this work. They stay open on
+the record.
+
+**R232 is why this revision exists.** Three commits landed with no step report
+covering them, in a milestone whose whole method is that every range is
+reported. This revision covers all five.
+
+## 1. R229 — the exemption window, with the reviewer's corpus
+
+The window was rewritten twice without a corpus and was wrong both times. It is
+now run against the reviewer's twenty-eight shapes, in the suite.
+
+```
+cmd    python -m pytest tests/test_marker_exemption_corpus.py -q
+out    26 passed
+rule   expect=caught -> `offending()` must return something;
+       expect=exempt -> it must return nothing
+out    4 of 28 remain, all four are `expect=caught`;
+       all four `expect=exempt` entries pass, and the whole tests/ tree still
+       scans clean -- no false positive anywhere
+```
+
+Three changes, one per species the reviewer measured:
+
+- **markers are read from COMMENT TOKENS**, never from raw text. The scanner's
+  own docstring said "message strings are not on that path" while a marker
+  inside an assertion message exempted the statement.
+- **a compound statement's header ends at the first DESCENDANT statement**, not
+  at `body[0]`. `ast.Match` has no `body`, so every `match` fell to the
+  whole-statement branch — the "far larger hole" the comment claimed to avoid,
+  in the one compound statement it did not name.
+- **one marker exempts at most one node**, consumed in source order.
+
+**The four that remain are one species, and naming it is worth more than the
+list.** Each is a multi-line statement holding exactly one flaggable node, with
+a marker annotating a different sub-expression — a bare comment above the
+arguments, a dict entry, a lambda default, a starred argument. "One marker, one
+node" cannot tell which node was meant when there is only one to choose. The
+tightening that would close it is what CA0 already tried and had to abandon,
+because `black` moves a trailing comment onto the closing bracket; trading
+nineteen misses for that regression is not an improvement.
+
+**Not `xfail`, not `skip`.** The first version of that file reached for `xfail`,
+which is the mechanism `CLAUDE.md` forbids wearing a reason. The miss set is
+asserted instead, in the golden-file idiom: `KNOWN_MISSES` must **equal** the
+measured miss set, so a miss that gets fixed and a miss that appears are both
+build failures.
+
+## 2. R230 — the ladder's gate, and the sentence withdrawn
+
+```
+cmd    python -m pytest tests/test_ci_ladder_gating.py -q
+out    12 passed -- all ten of the reviewer's layouts, in the suite, so in CI
+```
+
+The step body is `scripts/run_rung.sh` now, so it can be executed off GitHub,
+and the expectation is **declared** per directory rather than inferred from a
+glob:
+
+```
+full:<dir>    exists, collects at least one test, and the run then stands on
+              its own exit code. Exit 5 is a FAILURE.
+empty:<dir>   exists, carries `.empty-by-design`, collects nothing. A test
+              appearing there is a stale declaration and fails.
+```
+
+**The withdrawn sentence.** `ci.yml` named "a renamed directory" as a defect the
+guard caught, and the reviewer measured it going from exit 4 to exit 0. The
+sentence is withdrawn in the comment, and it is true now because
+`ci_rung_directory_renamed` runs and requires the failure.
+
+**Two of the ten require a different outcome under the declared rule**, both
+stricter, both recorded in `REQUIREMENT_CHANGED` and asserted rather than
+assumed:
+
+| entry | why the requirement changes |
+|---|---|
+| `ci_rung_genuinely_empty` | rung 1 is declared `full:`, so a rung 1 holding only `__init__.py` now FAILS — the emptied-directory case CB1 asks to redden |
+| `ci_rung6_both_populated` | rung 6's directory is declared `empty:`, so a test appearing in it FAILS as a stale declaration rather than running silently |
+
+These change the reviewer's own `require=` field and are theirs to rule on.
+
+## 3. R233 — the enumeration that was not complete
+
+`e5f6deb`'s body typed six line numbers and they are the pre-commit ones for two
+and neither pre nor post for four. The six sites are the right six.
+
+```
+cmd    grep -n NPY002 tests/verification/rung3/test_determinism_pins.py, at HEAD
+out    :53 :55 :69 :70 :71 :72
+```
+
+And the rule enumeration was presented as complete and was not. Produced rather
+than typed, at the commit that published it:
+
+```
+cmd    python -m ruff check floatfea tests --statistics, before e5f6deb
+out    43 E501, 8 E702, 8 SIM300, 7 I001, 6 NPY002, 4 SIM117, 4 UP037,
+       3 F401, 2 B905, 2 E741, 2 F821, 1 B007, 1 F841, 1 SIM102, 1 UP035
+       -- 93, and the body named ten of the fifteen rules
+judge  `SIM300` reflected the operand order of three assertions and `I001`
+       sorted imports. The reviewer checked both are semantically inert and I
+       am not re-asserting it; what was wrong was calling the list complete.
+```
+
+## 4. A finding of my own, found by fixing R232
+
+**The carry guard has been reading step 4 since step 5 opened.**
+`tests/test_report_carried.py` named `step-4.md` in two places. Step 5 has a
+report and two verdicts, and the guard went on checking a report that could not
+change against a verdict already answered — green for free, on a step nobody was
+working on.
+
+```
+cmd    pytest tests/test_report_carried.py -q, before this commit
+out    122 passed
+cmd    the same, with the guard following the newest step and before this
+       revision was written
+out    80 failed, 13 passed
+judge  every one of the 80 is a step-5 finding the report did not carry. The
+       guard was not passing; it was reading the wrong file.
+```
+
+It follows the newest report now, and `test_the_guard_reads_the_step_being_worked_on`
+fails if the verdict beside it is missing.
+
+## 5. Classified under BU0
+
+| item | class | reason |
+|---|---|---|
+| R229 | **blocking — a guard's reach, and it is a counter to the tolerance rule** | answered, §1 |
+| R230 | **blocking — a published sentence about what CI catches** | answered, §2 |
+| R231 | **open, and correctly** — the platform finding | Q8 is with the technical supervisor; nothing here touches it |
+| R232 | **blocking — the record** | this revision |
+| R233 | **4a by the reviewer, taken here** | §3, one command each |
+| R223, R224 | **open** | Q7. Not answered here and not claimed to be |
+| R225–R228 | **4a**, unchanged | |
+
+## 6. Carried
+
+| item | status |
+|---|---|
+| R6 | **4a or later** - classified in section 5 |
+| R16 | **4a or later** - classified in section 5 |
+| R25 | **4a or later** - classified in section 5 |
+| R30 | **4a or later** - classified in section 5 |
+| R33 | **4a or later** - classified in section 5 |
+| R36 | **4a or later** - classified in section 5 |
+| R50 | **4a or later** - classified in section 5 |
+| R52 | **4a or later** - classified in section 5 |
+| R62 | **4a or later** - classified in section 5 |
+| R63 | **4a or later** - classified in section 5 |
+| R65 | **4a or later** - classified in section 5 |
+| R68 | **4a or later** - classified in section 5 |
+| R76 | **4a or later** - classified in section 5 |
+| R79 | **4a or later** - classified in section 5 |
+| R80 | **4a or later** - classified in section 5 |
+| R95 | **4a or later** - classified in section 5 |
+| R97 | **4a or later** - classified in section 5 |
+| R98 | **4a or later** - classified in section 5 |
+| R100 | **4a or later** - classified in section 5 |
+| R103 | **4a or later** - classified in section 5 |
+| R113 | **4a or later** - classified in section 5 |
+| R124 | **4a or later** - classified in section 5 |
+| R129 | **4a or later** - classified in section 5 |
+| R131 | **4a or later** - classified in section 5 |
+| R132 | **4a or later** - classified in section 5 |
+| R134 | **4a or later** - classified in section 5 |
+| R139 | **4a or later** - classified in section 5 |
+| R148 | **4a or later** - classified in section 5 |
+| R151 | **4a or later** - classified in section 5 |
+| R152 | **4a or later** - classified in section 5 |
+| R159 | **4a or later** - classified in section 5 |
+| R162 | **4a or later** - classified in section 5 |
+| R170 | **4a or later** - classified in section 5 |
+| R171 | **4a or later** - classified in section 5 |
+| R172 | **4a or later** - classified in section 5 |
+| R181 | **4a or later** - classified in section 5 |
+| R189 | **4a or later** - classified in section 5 |
+| R190 | **4a or later** - classified in section 5 |
+| R198 | **4a or later** - classified in section 5 |
+| R199 | **4a or later** - classified in section 5 |
+| R200 | **4a or later** - classified in section 5 |
+| R215 | **4a or later** - classified in section 5 |
+| R216 | **4a or later** - classified in section 5 |
+| R222 | **4a or later** - classified in section 5 |
+| R223 | **open** — G2.1's quantity is Q7, with the technical supervisor |
+| R224 | **open** — answered with Q7's plan edit, not before it |
+| R225 | **4a lock item**, unchanged |
+| R226 | **4a lock item**, unchanged |
+| R227 | **4a lock item**, unchanged |
+| R228 | **4a lock item**, unchanged |
+| R229 | **closed** — §1, the corpus runs in the suite; 4 of 28 remain, named |
+| R230 | **closed** — §2, the ten layouts run in the suite |
+| R231 | **open by instruction** — the platform finding; Q8 is with the supervisor |
+| R232 | **closed** — this revision covers all five commits |
+| R233 | **closed** — §3, taken from 4a; the enumeration is produced, not typed |
+
+### Sites named by findings and not touched
+
+Declared by exact site, each row saying what the line is.
+
+| site | status |
+|---|---|
+| `CLAUDE.md` | **no change** -- R229 quotes it as evidence, not as a site to change |
+| `tests/corpus/tolerance_marker_exemptions.txt` | **no change** -- R229 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:108` | **no change** -- R229 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:109` | **no change** -- R229 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:110` | **no change** -- R229 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:114` | **no change** -- R229 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:115` | **no change** -- R229 quotes it as evidence, not as a site to change |
+| `tolerances.py` | **no change** -- R229 quotes it as evidence, not as a site to change |
+| `__init__.py` | **no change** -- R230 quotes it as evidence, not as a site to change |
+| `test_exempt_pair_responses.py` | **no change** -- R230 quotes it as evidence, not as a site to change |
+| `tests/corpus/ci_ladder_gating.txt` | **no change** -- R230 quotes it as evidence, not as a site to change |
+| `tests/verification/rung4/test_writer_round_trip.py:92` | **no change, and deliberately** -- this is the cross-platform golden question. Changing what it asserts is a plan edit (Q8) and it comes before code, not after |
+| `tests/verification/rung4/test_writer_round_trip.py:93` | **no change, and deliberately** -- this is the cross-platform golden question. Changing what it asserts is a plan edit (Q8) and it comes before code, not after |
+| `tests/verification/rung4/test_writer_round_trip.py:94` | **no change, and deliberately** -- this is the cross-platform golden question. Changing what it asserts is a plan edit (Q8) and it comes before code, not after |
+| `tests/verification/rung4/test_writer_round_trip.py:95` | **no change, and deliberately** -- this is the cross-platform golden question. Changing what it asserts is a plan edit (Q8) and it comes before code, not after |
+| `tests/verification/rung4/test_writer_round_trip.py:96` | **no change, and deliberately** -- this is the cross-platform golden question. Changing what it asserts is a plan edit (Q8) and it comes before code, not after |
+| `tests/verification/rung4/test_writer_round_trip.py:97` | **no change, and deliberately** -- this is the cross-platform golden question. Changing what it asserts is a plan edit (Q8) and it comes before code, not after |
+| `tests/verification/rung4/test_writer_round_trip.py:98` | **no change, and deliberately** -- this is the cross-platform golden question. Changing what it asserts is a plan edit (Q8) and it comes before code, not after |
+| `tests/verification/rung4/test_writer_round_trip.py:99` | **no change, and deliberately** -- this is the cross-platform golden question. Changing what it asserts is a plan edit (Q8) and it comes before code, not after |
+| `tests/verification/rung4/test_writer_round_trip.py:100` | **no change, and deliberately** -- this is the cross-platform golden question. Changing what it asserts is a plan edit (Q8) and it comes before code, not after |
+| `tests/verification/rung4/test_writer_round_trip.py:101` | **no change, and deliberately** -- this is the cross-platform golden question. Changing what it asserts is a plan edit (Q8) and it comes before code, not after |
+| `tests/verification/rung4/test_writer_round_trip.py:102` | **no change, and deliberately** -- this is the cross-platform golden question. Changing what it asserts is a plan edit (Q8) and it comes before code, not after |
+| `tests/verification/rung4/test_writer_round_trip.py:103` | **no change, and deliberately** -- this is the cross-platform golden question. Changing what it asserts is a plan edit (Q8) and it comes before code, not after |
+| `docs/SUPERVISOR.md:63` | **no change** -- R232 quotes it as evidence, not as a site to change |
+| `tests/verification/rung3/test_determinism_pins.py` | **no change** -- R233 quotes it as evidence, not as a site to change |
+
+## 7. What I am asking for
+
+**A PASS on CB0–CB2**, or a **HOLD naming the item.** R223, R224 and R231 stay
+open by instruction, not by omission.
+
+## 8. Witness and CI
+
+CI at the previous commit: static, unit and rungs 1–3 green; **rung 4 red with
+13 failures**, which is R231 and is untouched here. Rungs 5 and 6 have still
+never executed on this branch. No `[witness ...]` comment yet.

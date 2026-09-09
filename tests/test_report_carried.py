@@ -59,8 +59,30 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-VERDICT = ROOT / "docs" / "reviews" / "F2" / "step-4.md"
-REPORT = ROOT / "docs" / "reports" / "F2" / "step-4.md"
+REVIEWS = ROOT / "docs" / "reviews" / "F2"
+REPORTS = ROOT / "docs" / "reports" / "F2"
+
+
+def _newest_step() -> int:
+    """The highest step number that has a report.
+
+    HARDCODED TO STEP 4 UNTIL CB2. Step 5 opened, a report and two verdicts were
+    written for it, and this guard went on reading step 4's pair -- so every
+    assertion below stayed green about a step nobody was working on, which is
+    the most expensive way for a guard to pass. It follows the newest report
+    now.
+    """
+    steps = [
+        int(q.stem.split("-")[1])
+        for q in REPORTS.glob("step-*.md")
+        if q.stem.split("-")[1].isdigit()
+    ]
+    return max(steps) if steps else 0
+
+
+STEP = _newest_step()
+VERDICT = REVIEWS / f"step-{STEP}.md"
+REPORT = REPORTS / f"step-{STEP}.md"
 
 # `**R12.` and `**R12 ` both open a finding: the missing dot dropped one silently.
 _FINDING = re.compile(r"^\*\*(R\d+)[.\s]", re.MULTILINE)
@@ -117,7 +139,7 @@ def _verdict_text_at(sha: str) -> str:
     if not sha:
         return _read(VERDICT)
     out = subprocess.run(
-        ["git", "show", f"{sha}:docs/reviews/F2/step-4.md"], cwd=ROOT, capture_output=True
+        ["git", "show", f"{sha}:docs/reviews/F2/step-{STEP}.md"], cwd=ROOT, capture_output=True
     )
     if out.returncode != 0:
         return _read(VERDICT)
@@ -152,6 +174,22 @@ def test_the_report_names_the_verdict_it_answers() -> None:
     assert len(re.findall(r"^Answers:", _newest_revision(REPORT_TEXT), re.MULTILINE)) == 1, (
         "the newest revision carries more than one `Answers:` header, so which "
         "verdict it claims to answer is ambiguous."
+    )
+
+
+def test_the_guard_reads_the_step_being_worked_on() -> None:
+    """Meta-test for CB2: a guard pointed at the wrong step is green for free.
+
+    It named step 4 while step 5 was open, so it checked a report that could not
+    change against a verdict that had already been answered. Both files have to
+    exist for the step this guard claims to cover.
+    """
+    assert STEP > 0, f"no step report found under {REPORTS}"
+    assert REPORT.is_file(), f"{REPORT} is the newest report and does not exist"
+    assert VERDICT.is_file(), (
+        f"{REPORT.name} is the newest step report and {VERDICT} does not exist. "
+        "A step with no verdict file is a step whose carry list this guard "
+        "cannot check at all."
     )
 
 
