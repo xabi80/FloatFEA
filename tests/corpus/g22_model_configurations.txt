@@ -1065,3 +1065,63 @@ id=ci_scalefree_D0p787_rollm0p674_aniso4e5 section=circular_tube,D=0.78714507227
 id=ci_iso_roll_immaterial section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=roll=1.05,I_y_over_I_z=1.0 runs_in_suite=no expect=hold
 id=ci_roll_two_pi_wrap section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=roll=6.283185307179586 runs_in_suite=no expect=hold
 id=ci_orient_1e17_from_globalZ section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=1e-17,0,1 extra=none runs_in_suite=no expect=raise
+
+# --- TWENTY-FOURTH VERDICT (HEAD 3e225c5) ---------------------------------
+# Every field below was measured at 3e225c5 before the line was written. The
+# region is one the previous three rounds did not enter: THICK walls, MODERATE
+# anisotropy, and the same shape carried across eight orders of geometric scale.
+#
+# 1. A NEW WORST CLEAN ENTRY, AND IT IS NOT WHERE THE CORPUS WAS LOOKING. The
+#    published `clean_worst_ratio` is 0.1142x at an entry with I_y/I_z = 9.6e5
+#    and a 1.4%-thick wall. Entry 1 reaches 0.1261x with I_y/I_z = 206 and a wall
+#    19.7% of the diameter -- a factor 4700 less anisotropic and 14x thicker. It
+#    was found by 1180 candidates over four searches; the previous rounds' region
+#    was not the only one, and the margin on PATCH_TEST_EXACTNESS falls from
+#    8.76x to 7.93x. The CEILING HOLDS. The point is that three consecutive
+#    rounds of search have each lowered it, and nothing says where it stops.
+#
+# 2. THE RATIO IS NOT SCALE-INVARIANT, AND THIS BOUNDS ANY CLAIM THAT IT IS.
+#    Entries 2 and 3 are entry 1's shape multiplied by 1e+4 and 1e-4 -- the same
+#    dimensionless problem, the same member lambda to four figures (16.1). The
+#    clean ratio is 0.1261x, 0.0642x and 0.0442x: a 2.85x spread across eight
+#    orders. The DETECTION EDGE over the same three is 6.2171e-14, 6.2978e-14,
+#    6.1796e-14 -- a 1.9% spread. So sensitivity is scale-free here and the
+#    round-off floor is not, and a future unit-invariance claim on this quantity
+#    must be stated as a bound at 2.9x, never as an identity. The spread is
+#    entirely on the SAFE side: the metre-scale entry is the worst of the three.
+#
+# 3. PATCH_TEST_COUNTER_HEADROOM = 6.0e7 HOLDS, third round running against a
+#    reviewer trying to break it. Breaking it needs an edge below 1.6667e-14.
+#    1180 candidates across four searches -- thick-wall, thin-wall, mixed, and a
+#    400-candidate refinement around the best of them -- reached 4.0274e-14,
+#    which is 2.42x short of breaking it and ABOVE the corpus minimum already
+#    published (3.6275e-14). Entry 4 pins the best of them. The plateau this
+#    round measured sits near 1e-13: seven hand-chosen extremes -- near-solid
+#    wall, kilometre scale, micrometre scale, inverted anisotropy at the range
+#    floor, and a member one part in 1e7 above the admission limit -- all landed
+#    between 9.86e-14 and 1.0126e-13, within 2.7% of each other.
+#
+# 4. THE SECTION CONSTRUCTOR REFUSES A WALL THAT IS NOT THINNER THAN THE RADIUS,
+#    including the exactly-degenerate case. Entries 5 and 6: t = D/2 (a solid
+#    rod, the limit of the tube family) and t = 0.6 D (an inner radius that is
+#    negative). Both raise ValueError at construction rather than building a
+#    section with a zero or negative bore. The equality case is the one an
+#    inclusive comparison would let through, and it is the one that yields
+#    I = 0 for the bore term with no other symptom.
+#
+# 5. THE ANISOTROPY RANGE IS CLOSED AT ITS TOP, not merely declared. Entry 7 is
+#    1e6 + 1e-6, the smallest over-range value that survives a decimal round
+#    trip; the parser refuses it. `I_y_over_I_z=1000000.0` is already in the
+#    corpus and accepted, so the two entries bracket the boundary from both
+#    sides and the range is a measured edge rather than a comment.
+#
+# 6. WHAT I COULD NOT BUILD, AGAIN, AND NOW FOR THE THIRD ROUND. An edge below
+#    1.6667e-14, and a clean ratio above 1.0. Recorded so the next round does not
+#    re-derive it, and still not evidence that neither exists.
+id=cj_cleanmax_D0p0499_rollm1p456_aniso206 section=circular_tube,D=0.049943574793496585,t=0.00984748744775683 stations=0.23446998691339832 orient=-0.38868357899231215,-0.6535325531248817,-0.6473240509538862 extra=I_y_over_I_z=205.8780446210576,roll=-1.4556782160578072 runs_in_suite=no expect=hold
+id=cj_cleanmax_x1e4 section=circular_tube,D=499.43574793496583,t=98.4748744775683 stations=2344.699869133983 orient=-0.38868357899231215,-0.6535325531248817,-0.6473240509538862 extra=I_y_over_I_z=205.8780446210576,roll=-1.4556782160578072 runs_in_suite=no expect=hold
+id=cj_cleanmax_x1em4 section=circular_tube,D=4.994357479349659e-06,t=9.84748744775683e-07 stations=2.3446998691339834e-05 orient=-0.38868357899231215,-0.6535325531248817,-0.6473240509538862 extra=I_y_over_I_z=205.8780446210576,roll=-1.4556782160578072 runs_in_suite=no expect=hold
+id=cj_edgemin_D0p0316_roll0p78_aniso1p9e5 section=circular_tube,D=0.03155033186138778,t=0.0018408444166217728 stations=0.3199517429501736 orient=-0.24640582238174952,-0.9418476414293876,-0.7298549522194544 extra=I_y_over_I_z=194808.38790375795,roll=0.7801560321362033 runs_in_suite=no expect=hold
+id=cj_wall_equals_the_radius section=circular_tube,D=0.6,t=0.3 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise
+id=cj_wall_thicker_than_the_radius section=circular_tube,D=0.6,t=0.36 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise
+id=cj_aniso_one_ulp_class_over_range section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=I_y_over_I_z=1000000.000001 runs_in_suite=no expect=raise
