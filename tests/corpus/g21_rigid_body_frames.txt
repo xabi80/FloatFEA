@@ -1,0 +1,88 @@
+# CORPUS: frame configurations G2.1's two ceilings are claimed over.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the twenty-sixth verdict on F2, the first verdict
+# on step 5 (HEAD fba8ace).
+#
+# WHY THIS FILE EXISTS (BE3). The shipped gate poses ONE frame: one section, one
+# mesh, one unit system. Both negative controls, both counters and both published
+# headroom figures are measured at that single configuration, by the same hand
+# that chose it. These are configurations that hand did not run.
+#
+# WHAT A PASSING SCAN MEANS. For each entry the frame is assembled and the two
+# shipped quantities are read through the shipped functions -- mode_ratio(K)
+# against RIGID_BODY_MODE_RATIO, and subspace_loss(K, model) against
+# RIGID_BODY_SUBSPACE_LOSS, both in
+# tests/verification/rung1/test_rigid_body_modes.py. A passing scan means every
+# entry marked expect=hold is below both ceilings.
+#
+# IT DOES NOT MEAN THE ELEMENT IS DEFECTIVE AT AN expect=breach ENTRY. Every
+# entry here is the SAME defect-free element. The strain energy of the analytic
+# rigid-body vectors, max over j of (vKv)/(norm(v)^2 max-abs-K), stays at or
+# below 6.3e-17 at every one of these twenty configurations -- the energy field.
+# What moves is the eigenvalue-based quantity the gate reads: divided by
+# eps * (lambda_max / lambda_7) both quantities collapse from a spread of 1.1e+06
+# to 16.5x and 8.7x respectively. A breach is a statement about the FRAME's
+# conditioning, and therefore about what the ceiling is a ceiling on.
+#
+# expect=hold    both ceilings are claimed to hold here, and do at this run
+# expect=breach  at least one ceiling is exceeded, with a defect-free element
+#
+# FIELDS
+#   id            stable name
+#   section       circular_tube D=<m> t=<m>, in metres, physical
+#   subdiv        each of the seven members divided into this many elements
+#   unit          model length units per metre; the SAME PHYSICAL STRUCTURE
+#                 re-expressed (coords x unit, section x unit, E / unit^2).
+#                 Verified as a re-expression, not a new structure: K_new equals
+#                 unit * P^-1 K P^-1 with P = diag(unit on translations, 1 on
+#                 rotations), relative residual 9.7e-16.
+#   stretch       node coordinates scaled by this, section held: a longer frame,
+#                 which is a different structure and not a unit change
+#   tip           node 4 coordinates in metres, before stretch and unit
+#   ratio         measured lambda_6 / lambda_7            (ceiling 1e-12)
+#   loss          measured worst vector outside the span  (ceiling 1e-13)
+#   energy        max over j of (vKv)/(norm(v)^2 max-abs-K) for the six analytic
+#                 vectors -- NOT asserted by any shipped test; carried as the
+#                 control that separates a frame effect from an element effect
+#   runs_in_suite yes | no -- does a shipped test execute this configuration
+#   expect        hold | breach
+#
+# ---------------------------------------------------------------------------
+id=rb_shipped_frame section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=1.6009e-14 loss=5.3061e-15 energy=2.002e-17 runs_in_suite=yes expect=hold
+
+# --- the section the gate never poses: ordinary bracing ---------------------
+id=rb_brace_D0p1_t0p001 section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=2.1772e-13 loss=1.5026e-13 energy=1.234e-17 runs_in_suite=no expect=breach
+id=rb_brace_D0p15_t0p002 section=circular_tube,D=0.15,t=0.002 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=4.7253e-13 loss=1.1493e-13 energy=2.494e-17 runs_in_suite=no expect=breach
+id=rb_brace_D0p05_t0p0005 section=circular_tube,D=0.05,t=0.0005 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=1.1366e-12 loss=6.6229e-13 energy=2.742e-17 runs_in_suite=no expect=breach
+id=rb_heavy_D2p0_t0p2 section=circular_tube,D=2.0,t=0.2 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=7.2288e-15 loss=3.3541e-15 energy=2.034e-17 runs_in_suite=no expect=hold
+
+# --- the mesh the gate never poses ------------------------------------------
+id=rb_subdiv2 section=circular_tube,D=0.6,t=0.012 subdiv=2 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=5.4620e-14 loss=1.9655e-14 energy=2.310e-17 runs_in_suite=no expect=hold
+id=rb_subdiv4 section=circular_tube,D=0.6,t=0.012 subdiv=4 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=7.6855e-14 loss=7.8416e-14 energy=5.885e-18 runs_in_suite=no expect=hold
+id=rb_subdiv6 section=circular_tube,D=0.6,t=0.012 subdiv=6 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=3.4614e-13 loss=1.1943e-13 energy=7.170e-18 runs_in_suite=no expect=breach
+id=rb_subdiv8 section=circular_tube,D=0.6,t=0.012 subdiv=8 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=1.3378e-13 loss=1.4618e-13 energy=6.534e-18 runs_in_suite=no expect=breach
+
+# --- the unit system the gate never poses. The same structure, re-expressed --
+id=rb_unit_decimetre section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=10 stretch=1 tip=4.4,1.1,2.8 ratio=2.2849e-13 loss=6.0771e-14 energy=1.319e-18 runs_in_suite=no expect=hold
+id=rb_unit_centimetre section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=100 stretch=1 tip=4.4,1.1,2.8 ratio=2.2698e-11 loss=5.3180e-12 energy=1.704e-20 runs_in_suite=no expect=breach
+id=rb_unit_millimetre section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1000 stretch=1 tip=4.4,1.1,2.8 ratio=2.0019e-09 loss=1.3188e-09 energy=2.439e-22 runs_in_suite=no expect=breach
+id=rb_unit_kilometre section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=0.001 stretch=1 tip=4.4,1.1,2.8 ratio=7.7590e-09 loss=2.3019e-09 energy=6.246e-17 runs_in_suite=no expect=breach
+
+# --- the span the gate never poses. Section held; a slenderer frame ---------
+id=rb_span_x10 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=10 tip=4.4,1.1,2.8 ratio=4.0649e-13 loss=3.8175e-13 energy=1.627e-17 runs_in_suite=no expect=breach
+id=rb_span_x40 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=40 tip=4.4,1.1,2.8 ratio=4.6856e-11 loss=9.6097e-12 energy=1.819e-17 runs_in_suite=no expect=breach
+id=rb_span_x100 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=100 tip=4.4,1.1,2.8 ratio=9.4283e-11 loss=3.3566e-11 energy=2.950e-17 runs_in_suite=no expect=breach
+
+# --- the release control premise, both sides of it --------------------------
+# The premise assertion at :356 fires at both of these, so neither reaches the
+# count. They are on disk so a later reading of "the member is parallel to
+# global x" has the two configurations that bracket it. 1e-12 m is the smallest
+# offset the coordinate can express there and it is caught.
+id=rb_tip_off_axis_1em12 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=4.4,1.100000000001,2.8 ratio=1.7469e-14 loss=4.4715e-15 energy=2.002e-17 runs_in_suite=no expect=hold
+id=rb_tip_off_axis_first_version section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,3.6 ratio=3.6031e-14 loss=5.7857e-15 energy=1.692e-17 runs_in_suite=no expect=hold
+
+# --- two effects together, to show they compose -----------------------------
+id=rb_brace_subdiv4 section=circular_tube,D=0.1,t=0.001 subdiv=4 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=3.5113e-12 loss=1.0044e-12 energy=7.865e-18 runs_in_suite=no expect=breach
+id=rb_brace_centimetre section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=100 stretch=1 tip=4.4,1.1,2.8 ratio=2.2175e-11 loss=8.5598e-12 energy=2.650e-19 runs_in_suite=no expect=breach
