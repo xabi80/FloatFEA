@@ -1,0 +1,79 @@
+# CORPUS: exemption-window shapes for the tolerance-literal scanner.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line. Written at the twenty-seventh
+# verdict on F2, the second verdict on step 5 (HEAD 3577930).
+#
+# WHY THIS FILE EXISTS (BE3). `tests/test_no_tolerance_literals.py` is the guard
+# that keeps every tolerance in `floatfea/tolerances.py`. At CA0 its
+# `# not-a-tolerance:` exemption was re-keyed from a single LINE to a STATEMENT,
+# because `black` split long calls and voided twenty correctly-placed markers.
+# The scanner's own coverage claim rests on a PLANTED list of fifteen shapes
+# written by the scanner's author, and none of the fifteen exercises the
+# exemption at all -- the one exemption test in the file is a single line with a
+# single comparison. These are shapes that author did not run.
+#
+# FORMAT. Four whitespace-separated fields, the last running to end of line.
+# `measured` is what the SHIPPED scanner returned at 3577930; `expect` is what the
+# entry requires. Where they differ, the entry is a miss.
+#   id=<name> expect=<caught|exempt> measured=<caught|exempt> src=<python source,  (backslash-n = newline)
+# Decode with `src.encode().decode("unicode_escape")` or an equivalent. Every
+# entry is a complete module: it imports numpy, pytest and one declared
+# tolerance, then defines the shape.
+#
+# WHAT A PASSING SCAN MEANS. Each entry is written to a file and passed to
+# `offending()` from `tests/test_no_tolerance_literals.py`.
+#   expect=caught  -- the entry contains an UNDECLARED tolerance that no marker
+#                     legitimately annotates; `offending()` must return non-empty.
+#   expect=exempt  -- the marker legitimately annotates the only flaggable node;
+#                     `offending()` must return empty, or the guard is unusable
+#                     and gets deleted, which is the failure mode that matters
+#                     more than any single miss.
+# A passing scan means every entry gets its expected verdict. IT DOES NOT MEAN
+# THE SHIPPED SUITE RUNS THE ENTRY: nothing in `pytest -q` reads this file.
+#
+# MEASURED AT 3577930 by the reviewer, against the shipped `offending()`:
+#   28 entries, 9 get the required verdict, 19 do NOT.
+#   All 4 expect=exempt entries pass -- the guard is usable.
+#   19 of 24 expect=caught entries are EXEMPTED by the new statement window.
+#   Every one of those 19 was CAUGHT by the line-keyed window CA0 replaced.
+#
+# TWO SPECIES, both measured rather than argued:
+#   (a) A statement can hold more than one flaggable node. One marker anywhere in
+#       its span exempts all of them. This is most of the list.
+#   (b) `ast.Match` has no `body` attribute, so the header-only rule that
+#       protects `If`/`For`/`FunctionDef` does not apply to it and a `match`
+#       takes the WHOLE-STATEMENT branch: a marker anywhere in a match exempts
+#       every comparison in every case body.
+#   (c) The marker is matched against raw TEXT, so a marker inside an assertion
+#       MESSAGE STRING exempts the statement. The file's own docstring says
+#       "message strings are not on that path".
+
+id=two_compares_one_black_split_assert  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (\n        station > 0.15  # not-a-tolerance: an input coordinate, not a comparison\n        and residual < 1e-9\n    )\n
+id=two_compares_multiline_if_header  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    if (\n        station > 0.15  # not-a-tolerance: an input coordinate, not a comparison\n        and residual < 1e-9\n    ):\n        pass\n
+id=two_tolerance_kwargs_one_marked  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    np.testing.assert_allclose(\n        a, b,\n        rtol=0.5,  # not-a-tolerance: an input coordinate, not a comparison\n        atol=1e-12,\n    )\n
+id=marker_on_bare_comment_line_inside_call  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    np.testing.assert_allclose(\n        # not-a-tolerance: an input coordinate, not a comparison\n        a,\n        b,\n        atol=1e-12,\n    )\n
+id=marker_inside_assert_message_string  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (\n        residual < 1e-9\n    ), (\n        "not-a-tolerance: reported for context only"\n    )\n
+id=marker_inside_fstring_message  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (\n        residual < 1e-9\n    ), f"not-a-tolerance: {residual}"\n
+id=marker_in_match_statement_subject  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    match kind:  # not-a-tolerance: an input coordinate, not a comparison\n        case "a":\n            assert residual < 1e-9\n        case _:\n            assert other > 0.05\n
+id=marker_in_match_case_body  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    match kind:\n        case "a":\n            assert station > 0.15  # not-a-tolerance: an input coordinate, not a comparison\n        case _:\n            assert residual < 1e-9\n
+id=marker_in_multiline_while_header  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    while (\n        station > 0.15  # not-a-tolerance: an input coordinate, not a comparison\n        and residual < 1e-9\n    ):\n        break\n
+id=marker_in_multiline_with_header  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    with open(\n        name,\n        buffering=0,  # not-a-tolerance: an input coordinate, not a comparison\n    ) as f:\n        assert np.allclose(a, b, atol=1e-12)\n
+id=two_approx_calls_one_statement_one_marker  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (\n        pytest.approx(a, rel=0.5) == b  # not-a-tolerance: an input coordinate, not a comparison\n        and pytest.approx(c, rel=1e-9) == d\n    )\n
+id=marker_in_chained_compare_plus_second_literal  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (\n        0.34 < r < 0.36  # not-a-tolerance: an input coordinate, not a comparison\n        and err <= 1e-13\n    )\n
+id=marker_in_multiline_dict_literal_same_stmt  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert check(\n        {\n            "station": 0.15,  # not-a-tolerance: an input coordinate, not a comparison\n        },\n        atol=1e-12,\n    )\n
+id=marker_in_elif_header  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    if a:\n        pass\n    elif (\n        station > 0.15  # not-a-tolerance: an input coordinate, not a comparison\n        and residual < 1e-9\n    ):\n        pass\n
+id=marker_in_multiline_return_statement  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef helper():\n    return (\n        station > 0.15  # not-a-tolerance: an input coordinate, not a comparison\n        and residual < 1e-9\n    )\n
+id=marker_in_nested_def_header_default  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    def inner(\n        floor=0.15,  # not-a-tolerance: an input coordinate, not a comparison\n    ):\n        assert residual < 1e-9\n    inner()\n
+id=marker_in_lambda_default_same_stmt  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    f = (\n        lambda s=0.15: s  # not-a-tolerance: an input coordinate, not a comparison\n    ) if err < 1e-9 else None\n
+id=marker_in_comprehension_condition_plus_second  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (\n        [x for x in xs if x > 0.15]  # not-a-tolerance: an input coordinate, not a comparison\n        and residual < 1e-9\n    )\n
+id=marker_in_multiline_subscript_same_stmt  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert np.allclose(\n        a[\n            idx > 0.15  # not-a-tolerance: an input coordinate, not a comparison\n        ],\n        b,\n        atol=1e-12,\n    )\n
+id=marker_in_walrus_same_stmt  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (\n        (m := station > 0.15)  # not-a-tolerance: an input coordinate, not a comparison\n        and residual < 1e-9\n    )\n
+id=marker_in_class_body_other_statement  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nclass TestX:\n    FLOOR = 0.15  # not-a-tolerance: an input coordinate, not a comparison\n    def test_y(self):\n        assert residual < 1e-9\n
+id=marker_on_decorator_line  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\n@pytest.mark.parametrize("s", [0.15])  # not-a-tolerance: an input coordinate, not a comparison\ndef test_x(s):\n    assert residual < 1e-9\n
+id=marker_on_a_different_statement_in_same_function  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert station > 0.15  # not-a-tolerance: an input coordinate, not a comparison\n    assert residual < 1e-9\n
+id=marker_in_multiline_starred_call_args  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    np.testing.assert_allclose(\n        *pair,  # not-a-tolerance: an input coordinate, not a comparison\n        atol=1e-12,\n    )\n
+id=black_split_trailing_marker_after_close_paren  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (\n        factor == 0.6\n    )  # not-a-tolerance: an input coordinate, not a comparison\n
+id=marker_inside_call_parens_single_flag  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert v == pytest.approx(\n        0.7769,\n        abs=5e-4,\n        # not-a-tolerance: an input coordinate, not a comparison\n    )\n
+id=single_line_trailing_marker  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert q > 0.15  # not-a-tolerance: an input coordinate, not a comparison\n
+id=marker_wrapped_over_two_comment_lines  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (\n        share\n        > 0.15\n        # not-a-tolerance: an input coordinate, not a comparison\n        # continued\n    ), "message"\n

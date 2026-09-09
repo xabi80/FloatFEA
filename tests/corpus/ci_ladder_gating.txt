@@ -1,0 +1,48 @@
+# CORPUS: repository-layout shapes the verification-ladder CI jobs must gate on.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the twenty-seventh verdict on F2, the second
+# verdict on step 5 (HEAD 3577930).
+#
+# WHY THIS FILE EXISTS (BE3). At CA1 each ladder job in .github/workflows/ci.yml
+# gained a guard that decides, from a shell glob, whether a rung is EMPTY (pass
+# quietly) or POPULATED (run pytest and let its exit code stand). The comment
+# above those jobs states which defects the arrangement catches. That claim has
+# a corpus of zero: it was reasoned, not run, which is the same failure the
+# commit itself was written to correct ("an empty rung passes" was written in
+# this file and had never been executed). These are layouts nobody ran.
+#
+# FORMAT
+#   id=<name> layout=<what is on disk> require=<pass|fail|run> measured=<what
+#   the shipped step did at 3577930>
+#
+#   require=pass  the job must succeed AND it is correct that nothing ran
+#   require=run   the job must actually EXECUTE the tests that are present
+#   require=fail  the job must go red
+#
+# WHAT A PASSING SCAN MEANS. For each entry, build the layout in a scratch tree,
+# run the shipped step body for that rung verbatim, and compare the outcome with
+# `require`. A passing scan means every entry agrees. IT DOES NOT MEAN CI EXERCISES
+# THE ENTRY: rungs 5 and 6 have not executed once on this branch, because rung 4
+# is red and every rung is `needs:`-gated behind the one below it.
+#
+# MEASURED AT 3577930 by the reviewer, bash + pytest, the step body copied from
+# ci.yml unchanged: 10 entries, 5 agree, 5 do not. `ci_rung6_live` is not a
+# hypothetical -- it is the repository as it stands.
+#
+# THE MECHANISM BEHIND THE FIVE. `ls A B` exits non-zero when EITHER glob fails
+# to match, so a two-glob guard runs its rung only when BOTH halves are
+# populated; and a glob that matches nothing is indistinguishable, to this
+# guard, from a directory that is not there.
+
+id=ci_rung6_live layout=rung6_has_only___init__py,tests_regression_has_test_exempt_pair_responses_py require=run measured=guard_fired_exit0_regression_never_ran
+id=ci_rung6_regression_removed layout=rung6_has_test_r6_py,tests_regression_absent require=fail measured=guard_fired_exit0
+id=ci_rung6_both_populated layout=rung6_has_test_r6_py,tests_regression_has_test_golden_py require=run measured=ran_2_passed_exit0
+id=ci_rung_directory_renamed layout=tests_verification_rung1_renamed_to_rung_one_with_a_passing_test require=fail measured=guard_fired_exit0_was_exit4_before_CA1
+id=ci_rung_genuinely_empty layout=rung1_has_only___init__py require=pass measured=guard_fired_exit0
+id=ci_rung_file_collects_nothing layout=rung1_has_test_a_py_whose_functions_are_named_check_ require=fail measured=pytest_exit5
+id=ci_rung_file_broken_import layout=rung1_has_test_a_py_importing_a_missing_module require=fail measured=pytest_exit2
+id=ci_rung_files_renamed_off_the_test_prefix layout=rung1_has_check_a_py_containing_test_a require=fail measured=guard_fired_exit0_was_exit5_before_CA1
+id=ci_rung_has_a_failing_test layout=rung1_has_test_a_py_asserting_1_eq_2 require=fail measured=pytest_exit1
+id=ci_rung_tests_moved_into_a_subdirectory layout=rung1_sub_has_test_a_py_asserting_1_eq_2 require=fail measured=guard_fired_exit0_a_FAILING_test_reported_green
