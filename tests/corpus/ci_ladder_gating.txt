@@ -82,3 +82,39 @@ id=ci_rung_full_carries_a_stale_empty_by_design_marker layout=rung1_declared_ful
 id=ci_rung_path_contains_a_space layout=tests_ver_ification_rung1_with_a_space_in_the_path_declared_full require=run measured=fail_exit4_RUN_DIRS_word_split
 id=ci_rung6_second_dir_declared_full_collects_nothing layout=rung6_declared_full_and_populated,tests_regression_exists_but_empty require=fail measured=fail_exit1
 id=ci_rung6_regression_present_but_empty layout=rung6_empty_by_design,tests_regression_exists_and_holds_no_test_file require=fail measured=fail_exit1
+
+# ---------------------------------------------------------------------------
+# TWENTY-NINTH VERDICT, the fourth on step 5 (HEAD 37799aa). 7 new layouts.
+#
+# The four residues the twenty-eighth round found are FIXED, and I re-measured
+# two of them here rather than reading it: a failing rung no longer prints the
+# success line, alone or after a declared-empty one. These seven are elsewhere.
+#
+# THE SKIP GUARD IS A SUBSTRING TEST OVER THE WHOLE PYTEST OUTPUT
+# -- case $out in *skipped* -- and it is wrong in both directions at once:
+#   - xfailed does not contain skipped, so a rung whose only test is
+#     @pytest.mark.xfail exits 0 and prints OK. CLAUDE.md forbids xfail to get a
+#     green build in the same sentence as skip; the repair stopped one word
+#     short of the rule it cites.
+#   - a rung that skips NOTHING reddens if any test own diagnostic contains the
+#     word. This repository prints diagnostics through capsys.disabled() in rung
+#     1 today, so it is a live shape and not a contrivance.
+#
+# AND THE DECLARATION IS NOT REQUIRED. The kind is taken as everything before
+# the first colon; with no colon in the argument the kind becomes the whole
+# path, which is not empty, so the directory runs as full. An argument that
+# declares nothing DEFAULTS instead of raising -- and the opening line of the
+# script is: Run one rung of the verification ladder, with its expectation
+# DECLARED. With no arguments at all the script prints OK -- 0 directories ran
+# and exits 0.
+#
+# MEASURED AT 37799aa by the reviewer, sh scripts/run_rung.sh in a scratch tree
+# with the shipped script unchanged: 7 new entries, 3 agree, 4 do not.
+
+id=ci_rung_full_every_test_is_xfail layout=rung1_declared_full_its_only_test_is_pytest_mark_xfail require=fail measured=pass_exit0_1_xfailed_OK_printed
+id=ci_run_rung_with_no_arguments_at_all layout=script_invoked_with_zero_arguments require=fail measured=pass_exit0_OK_0_directories_ran
+id=ci_argument_without_a_kind_prefix layout=argument_is_tests_verification_rung1_with_no_full_or_empty_prefix require=fail measured=pass_exit0_silently_treated_as_full_and_run
+id=ci_passing_rung_whose_output_contains_the_word_skipped layout=rung1_declared_full_one_PASSING_test_printing_no_case_was_skipped_in_this_rung require=run measured=fail_exit1_false_skip_alarm
+id=ci_misspelled_kind_capital_Empty layout=rung2_declared_Empty_capitalised_carrying_empty_by_design_and_no_tests require=fail measured=fail_exit1_treated_as_full_marker_contradiction
+id=ci_full_rung_with_a_failing_test_prints_no_OK_line layout=rung1_declared_full_one_passing_and_one_failing_test require=fail measured=fail_exit1_no_OK_line
+id=ci_empty_then_full_rung_fails_prints_no_OK_line layout=empty_rung2_with_marker_then_full_rung1_holding_a_failing_test require=fail measured=fail_exit1_no_OK_line

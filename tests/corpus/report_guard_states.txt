@@ -51,6 +51,56 @@
 id=baseline state=step5_report_and_step5_verdict_both_present require=green measured=green_93_passed
 id=newest_report_has_no_verdict_yet state=docs_reports_F2_step6_md_added_no_docs_reviews_F2_step6_md require=named_fail measured=COLLECTION_ERROR_FileNotFoundError_whole_suite_interrupted
 id=newest_verdict_file_present_but_empty state=step6_report_added_and_step6_verdict_is_a_zero_byte_file require=named_fail measured=collection_error_empty_parameter_set_at_test_the_report_carries_the_finding
-id=two_digit_step_number state=step10_report_and_step10_verdict_both_present require=named_fail measured=named_fail_82_failed_11_passed
+id=two_digit_step_number state=step10_report_and_step10_verdict_both_present require=green measured=named_fail_82_failed_11_passed_at_5737fa6,green_122_passed_at_37799aa
 id=non_numeric_step_suffix state=step5b_md_added_beside_step5_md require=ignored measured=ignored_green_93_passed
 id=reports_directory_renamed_away state=docs_reports_F2_renamed_to_docs_reports_F2_moved require=named_fail measured=COLLECTION_ERROR_FileNotFoundError_step_0_md
+
+# ---------------------------------------------------------------------------
+# TWENTY-NINTH VERDICT, the fourth on step 5 (HEAD 37799aa). 11 new entries and
+# ONE RULING ON AN EXISTING ONE.
+#
+# THE RULING. two_digit_step_number carried require=named_fail. The
+# implementer REQUIREMENT_CHANGED entry argues that a step-10 report and a
+# step-10 verdict are a COHERENT pair, so the repaired guard is green and the
+# 82 failures measured at 5737fa6 were the module-scope read. ACCEPTED, and the
+# require field is changed here rather than overridden in test code -- BUT NOT
+# ON THE ARGUMENT. green is also what a guard comparing step numbers as STRINGS
+# would print, because 10 sorts below 5 lexically and such a guard would
+# silently check step 5 while reporting nothing. The two outcomes are
+# indistinguishable on that state, which is why it was written named_fail.
+# So the property was measured instead: entry
+# two_digit_step_number_discriminating puts a finding in the step-10 VERDICT
+# that the step-10 report does not carry. At 37799aa the guard goes red naming
+# it, so int() is parsing ten. The ruling stands and the discriminator is what
+# keeps it honest.
+#
+# THE STATE THAT MATTERS MOST HERE IS shallow_clone_depth_1, and it is not
+# hypothetical: it is what actions/checkout@v4 produces by default, which is
+# what the guards job added at 4a8d2a3 runs on. Measured as a controlled pair
+# on ONE machine, one variable moved:
+#     git clone           file://<repo> full     -> 122 passed
+#     git clone --depth 1 file://<repo> shallow  -> 23 failed, 99 passed
+# Same commit, same interpreter, same libm. The 23 are not a platform
+# difference. _changed_lines() runs git diff -U0 <reviewed> and never checks the
+# return code, so a commit the clone does not have gives an empty touched set,
+# which is indistinguishable from -- the step changed nothing.
+#
+# superscript_digit_step_number is R234 failure mode still reachable at
+# 37799aa: str.isdigit() is true for a strictly larger set than int() accepts,
+# _steps() catches only OSError, and the module dies at import. pytest prints
+# 1 error and zero of 1656 tests run.
+#
+# MEASURED AT 37799aa by the reviewer, in scratch copies of the repository:
+# 11 new entries, 8 agree with require, 3 do not.
+
+id=superscript_digit_step_number state=docs_reports_F2_step_U00B9_md_added_superscript_one require=ignored measured=COLLECTION_ERROR_ValueError_invalid_literal_for_int_whole_suite_interrupted
+id=shallow_clone_depth_1 state=repository_cloned_with_actions_checkout_v4_default_fetch_depth_1_nothing_else_changed require=green measured=23_failed_99_passed_every_named_site_falsely_unanswered
+id=reviews_directory_renamed_away state=docs_reviews_F2_renamed_to_docs_reviews_F2_moved require=named_fail measured=named_fail_5_failed_no_collection_error
+id=answers_header_names_a_sha_that_is_not_a_commit state=newest_report_revision_Answers_header_reads_deadbee require=named_fail measured=named_fail_1_failed_121_passed
+id=two_reports_ahead_of_the_newest_verdict state=step6_and_step7_reports_added_verdicts_stop_at_step5 require=named_fail measured=named_fail_1_failed_121_passed_STEP_REPORT_minus_STEP_is_2
+id=report_file_is_a_directory state=docs_reports_F2_step6_md_is_a_DIRECTORY_and_a_step6_verdict_exists require=named_fail measured=named_fail_91_failed_31_passed
+id=verdict_file_is_a_directory state=step6_report_added_and_docs_reviews_F2_step6_md_is_a_DIRECTORY require=named_fail measured=named_fail_3_failed_2_passed
+id=draft_suffix_beside_a_step_report state=docs_reports_F2_step6_draft_md_added_beside_step5_md require=ignored measured=named_fail_read_as_a_step6_report_with_no_verdict
+id=step_number_is_the_empty_string state=docs_reports_F2_step_dash_md_added require=ignored measured=ignored_green_122_passed
+id=two_digit_step_number_discriminating state=step10_report_and_step10_verdict_where_the_verdict_carries_R999_and_the_report_does_not require=named_fail measured=named_fail_2_failed_122_passed_names_R999
+id=verdict_amended_after_the_commit_the_report_answers state=R999_appended_to_the_working_copy_of_step5_verdict_after_8e7418f require=green measured=green_122_passed_the_guard_reads_git_show_at_the_answered_sha
