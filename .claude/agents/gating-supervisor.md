@@ -33,6 +33,21 @@ not in the repo, that is a finding in itself.
    commit, and `git diff <prev-verdict-commit>..HEAD -- floatfea tests docs`.
 3. The test run. Run it yourself: `python -m pytest -q 2>&1 | tail -40`. Do not
    accept a pass count from the report.
+
+3b. **CI, for the commit you are reviewing** (CA2):
+
+    gh run list --commit <sha> --json name,conclusion,workflowName
+
+   **A red CI is a HOLD regardless of what the local run says**, and the reason
+   is measured rather than assumed: the first time this project's CI reached the
+   ladder it found thirteen failures in a rung that had been green locally for
+   weeks. CI is a machine neither the implementer nor you controls -- different
+   operating system, different libm, different BLAS -- and a claim that holds
+   only where it was written is a claim about a machine, not about the code.
+
+   A run that has not finished is not a pass. A workflow that did not run on the
+   reviewed commit is an unavailable check, and it is recorded as unavailable
+   rather than skipped over.
 4. `git diff <prev-verdict-commit>..HEAD -- floatfea/tolerances.py` separately,
    because that file is where the cheapest wrong fix lands.
 4b. `git diff <prev-verdict-commit>..HEAD -- .claude docs/SUPERVISOR.md`

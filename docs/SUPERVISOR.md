@@ -57,7 +57,15 @@ Run these in order. Do not skip to the report.
 ```
 gh pr list --state open --json number,headRefName,title
 gh pr view <n> --comments --json comments,commits,headRefOid
+gh run list --commit <sha> --json name,conclusion,workflowName
 ```
+
+**A red CI is a HOLD regardless of what a local run says** (CA2), and the reason
+is measured: the first time this project's CI reached the verification ladder it
+found thirteen failures in a rung that had been green locally for weeks. CI is a
+machine neither reviewer controls. A run that has not finished is not a pass, and
+a workflow that did not run on the reviewed commit is an unavailable check --
+recorded as unavailable, never skipped over.
 
 1. Identify the newest `docs/reports/F<n>/step-<k>.md` on the branch and the
    newest `[witness ...]` comment. Every step report newer than the last
