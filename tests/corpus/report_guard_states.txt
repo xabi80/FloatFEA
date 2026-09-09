@@ -104,3 +104,34 @@ id=draft_suffix_beside_a_step_report state=docs_reports_F2_step6_draft_md_added_
 id=step_number_is_the_empty_string state=docs_reports_F2_step_dash_md_added require=ignored measured=ignored_green_122_passed
 id=two_digit_step_number_discriminating state=step10_report_and_step10_verdict_where_the_verdict_carries_R999_and_the_report_does_not require=named_fail measured=named_fail_2_failed_122_passed_names_R999
 id=verdict_amended_after_the_commit_the_report_answers state=R999_appended_to_the_working_copy_of_step5_verdict_after_8e7418f require=green measured=green_122_passed_the_guard_reads_git_show_at_the_answered_sha
+
+# ---------------------------------------------------------------------------
+# THE THIRTIETH VERDICT'S FOUR (fifth verdict on step 5, HEAD fa3b070).
+#
+# R243 was answered at CD1 with `fetch-depth: 0` on all nine checkouts and a
+# named test carrying git's return code. I ran the state myself: at fa3b070 a
+# `git clone --depth 1 --no-local` gives 2 failed, 121 passed, and both failures
+# are named tests. That is the right behaviour and the `require=green` I wrote
+# last round is withdrawn -- a guard that cannot see the diff must SAY so.
+#
+# BUT THE OUTCOME CLASS DOES NOT MEASURE IT. Ablation cell, one machine, one
+# commit, one variable -- the return-code branch in `_changed_lines` removed and
+# nothing else:
+#
+#     shipped   `--depth 1` clone -> 2 failed, 121 passed, exit 1
+#     ablated   `--depth 1` clone -> 16 failed, 107 passed, exit 1
+#
+# `assert code != 0` passes on both, so the harness certifies R243's answer and
+# would certify its absence. The named-reporter list does not separate them
+# either: `test_every_named_site_is_touched_or_declared` is IN that list, and it
+# is what the sixteen are. The requirement below is written so the two sides are
+# distinguishable -- one diagnosis, not sixteen -- and the field that carries it
+# is `forbid=`.
+#
+# MEASURED AT fa3b070 by the reviewer, in scratch clones and copies of the
+# repository: 4 new entries, 1 agrees with require, 3 do not.
+
+id=shallow_clone_depth_1_reports_one_diagnosis_not_sixteen state=repository_cloned_with_git_clone_depth_1_no_local_at_fa3b070_nothing_else_changed require=named_fail forbid=any_test_every_named_site_is_touched_or_declared_parametrisation_may_not_fail measured=named_fail_2_failed_121_passed_shipped_and_named_fail_16_failed_107_passed_with_the_return_code_branch_ablated_both_satisfy_code_ne_0
+id=zero_padded_step_number state=docs_reports_F2_step_06_md_added_no_step_6_md_exists require=ignored measured=named_fail_1_failed_122_passed_the_guard_resolves_step_6_and_reads_docs_reports_F2_step_6_md_which_does_not_exist
+id=zero_padded_step_number_beside_the_unpadded_one state=docs_reports_F2_step_06_md_and_step_6_md_both_added_with_a_step_6_verdict require=named_fail measured=green_123_passed_two_report_files_map_to_one_step_number_and_the_guard_is_silent_about_the_one_it_does_not_read
+id=answers_header_names_an_older_verdict_commit state=newest_revision_Answers_header_changed_from_476f909_to_8ffbd51_which_is_a_real_earlier_step_5_verdict_commit require=named_fail measured=named_fail_67_failed_30_passed_through_the_site_checks_en_masse_not_through_one_reporter

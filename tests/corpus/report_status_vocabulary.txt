@@ -1,0 +1,66 @@
+# CORPUS: status cells the report vocabulary guard must rule on (CC1).
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. Written at the thirtieth verdict on F2, the fifth
+# verdict on step 5 (HEAD fa3b070).
+#
+# WHY THIS FILE EXISTS (BE3). CC1 removed the word `closed` from what a step
+# report may write beside a carried item, because revision 3 recorded R230
+# closed at a verdict whose own text read "Carried, not closed". The reasoning
+# in the report is that this "removes the failure mode instead of detecting
+# it". That is a claim about the repository, and the only inputs it had ever
+# been run against were the report's own table and the shapes its author wrote.
+#
+# It is a detector, so it has a reach, and a reach is measured or it is assumed.
+#
+# FORMAT
+#   id=<name> expect=<refused|allowed> measured=<what the shipped guard did at
+#   fa3b070> row=<the markdown table row, verbatim, to end of line>
+#
+#   expect=refused   the row records a status a report may not give, or gives
+#                    none at all; `test_a_report_does_not_say_CLOSED` or
+#                    `test_every_carried_item_carries_one_of_the_report_words`
+#                    must report it.
+#   expect=allowed   the row is a legitimate report status and must pass. A
+#                    corpus with no `allowed` row cannot show the vocabulary is
+#                    usable, which is a worse failure than any miss.
+#
+# WHAT A PASSING SCAN MEANS. Append the row to the newest revision's `Carried`
+# table in a scratch copy, run `tests/test_report_carried.py`, and compare the
+# outcome with `expect`. A passing scan means every row agrees. IT DOES NOT MEAN
+# THE STATUS IS TRUE: `test_report_carried.py`'s own docstring says the guard
+# never checks whether the status beside an item is true, and that is still the
+# reviewer's job. This file measures only whether the WORD can be got past.
+#
+# MEASURED AT fa3b070 by the reviewer, by running the shipped `_ROW` /
+# `_status_cells` / `VERDICT_ONLY` / `REPORT_WORDS` logic over the newest
+# revision's Carried section with each row appended: 12 rows, 4 agree with
+# expect, 8 do not.
+#
+# THE FIVE THAT ARE NOT PARSED AT ALL ARE THE SAME DEFECT. `_ROW` anchors on
+# `^\|\s*(R\d+...)`, so a row whose first cell is bolded, backticked, indented
+# or prefixed with a word produces NO status cell -- and then neither guard sees
+# it, including the half that exists so that "banning a word cannot become
+# saying nothing". The row that made the rule, `| R230 | **closed** at the third
+# verdict |`, is one keystroke from escaping: the report's own adjacent table
+# ("Sites named by findings and not touched") backticks every first cell.
+#
+# AND THE THIRD CHECK CANNOT SEE THE ONE WITHDRAWAL IN THE REPORT.
+# `test_no_status_claims_more_than_the_verdict_allows` builds its domain by
+# scanning the verdict for the phrases "not closed", "still carried" and "still
+# open". Over verdict 29 that domain is exactly {R230, R234, R242} of 21
+# findings; every `(BLOCKS ...)` heading is outside it, including R241 -- which
+# is the only item revision 4 reports as `withdrawn`. Measured, not argued.
+
+id=plain_bold_closed_the_shape_that_made_the_rule expect=refused measured=refused row=| R230 | **closed** at the third verdict |
+id=uppercase_CLOSED expect=refused measured=refused row=| R230 | CLOSED |
+id=carried_heading_renamed_so_no_cell_parses expect=refused measured=refused row=(the newest revision's heading `## 6. Carried` renamed to `## 6. Dependency list`; no row appended)
+id=legitimate_open_row expect=allowed measured=allowed row=| R231 | **open** - Q8 is locked; the measurement comes next |
+id=bold_item_cell expect=refused measured=allowed_row_not_parsed_no_status_cell_produced row=| **R230** | **closed** at the third verdict |
+id=backticked_item_cell expect=refused measured=allowed_row_not_parsed_no_status_cell_produced row=| `R230` | **closed** at the third verdict |
+id=indented_row expect=refused measured=allowed_row_not_parsed_no_status_cell_produced row=  | R230 | **closed** at the third verdict |
+id=item_cell_with_leading_prose expect=refused measured=allowed_row_not_parsed_no_status_cell_produced row=| item R230 | **closed** at the third verdict |
+id=three_columns_status_in_the_middle expect=refused measured=allowed_only_the_LAST_column_is_read_as_the_status row=| R230 | **closed** at the third verdict | still open |
+id=three_columns_note_carries_a_report_word expect=refused measured=allowed_only_the_LAST_column_is_read_as_the_status row=| R230 | closed | answered later |
+id=status_that_is_none_of_the_three_report_words expect=refused measured=allowed_the_substring_open_appears_inside_nothing_open row=| R230 | **resolved**, nothing open |
+id=withdrawn_on_an_item_the_verdict_heads_BLOCKS expect=refused measured=allowed_the_contradiction_domain_is_only_R230_R234_R242 row=| R241 | **withdrawn by me** |

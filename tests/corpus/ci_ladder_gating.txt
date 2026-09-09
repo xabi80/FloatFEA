@@ -118,3 +118,47 @@ id=ci_passing_rung_whose_output_contains_the_word_skipped layout=rung1_declared_
 id=ci_misspelled_kind_capital_Empty layout=rung2_declared_Empty_capitalised_carrying_empty_by_design_and_no_tests require=fail measured=fail_exit1_treated_as_full_marker_contradiction
 id=ci_full_rung_with_a_failing_test_prints_no_OK_line layout=rung1_declared_full_one_passing_and_one_failing_test require=fail measured=fail_exit1_no_OK_line
 id=ci_empty_then_full_rung_fails_prints_no_OK_line layout=empty_rung2_with_marker_then_full_rung1_holding_a_failing_test require=fail measured=fail_exit1_no_OK_line
+
+# ---------------------------------------------------------------------------
+# THE THIRTIETH VERDICT'S FIVE (fifth verdict on step 5, HEAD fa3b070).
+#
+# CD1 fixed five defects the twenty-ninth round's seven layouts found, and I
+# verified all five. These five sit one step along from three of them.
+#
+# THE xfail GUARD NAMES A STATE ITS OWN PRODUCER CANNOT EMIT. The new code is
+#
+#     summary=$(printf '%s\n' "$out" | grep -E '[0-9]+ (passed|failed|skipped|xfailed)' | tail -1)
+#     case "$summary" in *skipped*|*xfailed*|*xpassed*) ...
+#
+# and `xpassed` is in the case arm but not in the alternation that BUILDS the
+# line. A rung whose only test is `@pytest.mark.xfail` and PASSES prints
+# `1 xpassed in 0.22s`, no counter on that line matches, `$summary` is empty,
+# and the arm never fires. Measured, one machine, one variable:
+#
+#     only test is xfail-marked and FAILS   -> `1 xfailed`            exit 1  caught
+#     only test is xfail-marked and PASSES  -> `1 xpassed`            exit 0  MISSED
+#     xfail-marked passes + one plain pass  -> `1 xpassed, 1 passed`  exit 1  caught
+#
+# The detection depends on whether an unrelated test happens to share the line.
+#
+# AND THE `require=pass` BRANCH OF THE RUNNER IS UNREACHABLE. The one entry that
+# uses it is in `REQUIREMENT_CHANGED` and returns early, so nothing runs
+# `assert "empty by design" in log` -- and `scripts/run_rung.sh` never prints
+# that phrase, so it would fail if anything reached it. The shape below is not a
+# contrivance: it is what `ci.yml` runs for rung 2 and rung 5 on every push.
+#
+# THE RUNG-6 ENTRY IS ABOUT THIS COMMIT. `82a4b33` deleted
+# `tests/verification/rung6/.empty-by-design` and dropped
+# `empty:tests/verification/rung6` from the rung-6 job, unmentioned in the commit
+# message and in the report. `tests/verification/rung6/` is still tracked and is
+# now named by no CI job. Run the SHIPPED rung-6 arguments, not the ones in
+# `ARGS["rung6"]`, which no longer match the workflow.
+#
+# MEASURED AT fa3b070 by the reviewer, sh scripts/run_rung.sh in a scratch tree
+# with the shipped script unchanged: 5 new entries, 1 agrees, 4 do not.
+
+id=ci_rung_full_every_test_is_xfail_and_PASSES layout=rung1_declared_full_its_only_test_is_pytest_mark_xfail_whose_body_passes require=fail measured=pass_exit0_1_xpassed_run_rung_OK_1_directory_ran
+id=ci_rung_declared_empty_with_its_marker_and_nothing_in_it layout=rung2_declared_empty_carrying_empty_by_design_and_no_tests_the_live_rung2_and_rung5_shape require=pass measured=pass_exit0_OK_0_directories_ran_and_the_log_never_contains_the_phrase_empty_by_design
+id=ci_rung6_job_as_shipped_leaves_its_own_rung_undeclared layout=rung6_holds_a_passing_test_and_tests_regression_holds_a_passing_test_run_with_the_arguments_ci_yml_ACTUALLY_carries_at_fa3b070_namely_full_tests_regression_alone require=fail measured=pass_exit0_OK_1_directory_ran_the_populated_rung6_is_named_by_nothing_and_no_declaration_contradicts_it
+id=ci_rung_full_prints_a_counter_line_AFTER_pytests_summary layout=rung1_declared_full_one_PASSING_test_whose_module_registers_an_atexit_hook_printing_1_skipped_in_0_01s require=run measured=fail_exit1_false_skip_alarm_the_tail_1_heuristic_takes_the_later_line
+id=ci_rung_argument_path_carries_a_trailing_slash layout=rung1_declared_full_one_passing_test_argument_written_full_tests_verification_rung1_slash require=run measured=run_exit0_1_passed_OK_1_directory_ran

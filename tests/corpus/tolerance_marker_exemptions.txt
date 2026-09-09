@@ -175,3 +175,43 @@ id=detect_chained_left_and_right_literals expect=caught measured=caught src=impo
 id=detect_assert_allclose_rtol_kw expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    np.testing.assert_allclose(a, b, rtol=2e-08)\n
 id=detect_approx_abs_kw expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert a == pytest.approx(b, abs=1e-12)\n
 id=marker_on_a_neighbouring_statement_not_the_assert expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    n = 1  # not-a-tolerance: an input coordinate, not a comparison\n    assert r < 1e-09\n
+
+# ---------------------------------------------------------------------------
+# THE THIRTIETH VERDICT'S TEN (fifth verdict on step 5, HEAD fa3b070).
+#
+# CD2 closed the two shapes that were `CLAUDE.md` sec. Tolerances written out
+# literally -- `TOL = 1e-9; assert r < TOL` and `def check(r, tol=1e-9)` -- and
+# read `node.left`. I verified all three at fa3b070. THE SAME TWO CLAUSES GO
+# CLEAN IN SIX NEIGHBOURING SPELLINGS, and one of them is the form `CLAUDE.md`
+# sec. Style prescribes: `TOL: float = 1e-09` is an `ast.AnnAssign`, and only
+# `ast.Assign` is read. Function-local, keyword-only, lambda-default,
+# negative-literal and arithmetic-built are the other five.
+#
+# TWO ROWS ARE THE EXEMPTION TRADE, MEASURED. Keying the exemption on the NODE
+# means one marker exempts every threshold in one `Compare` or one `Call`. The
+# reason given for it is that keying on the VALUE reddens two correct,
+# correctly-marked live sites, and I reproduced that exactly -- the two, and only
+# the two, over every file in `tests/`:
+#
+#     tests/verification/rung3/test_basis_constants.py:192    0.34 < r / 0.9 < 0.3536
+#     tests/verification/rung4/test_reference_provenance.py:30    0.3 < f < 0.7
+#
+# A THIRD OPTION WAS NOT OFFERED AND IT IS CHEAPER THAN EITHER. Cell: value-keyed
+# exemption, plus ONE extra `# not-a-tolerance:` comment inside each of those two
+# statements naming the lower bound of the same bracket. Both files then scan
+# clean -- measured, `offending()` returns `[]` for both -- and the two rows
+# below stop being misses. Cost: two comment lines, in two files.
+#
+# MEASURED AT fa3b070 by the reviewer, each shape written to a file and passed to
+# the SHIPPED `offending()`: 10 new entries, 2 agree with expect, 8 do not.
+
+id=detect_annotated_module_float_threshold expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\nTOL: float = 1e-09\ndef test_x():\n    assert r < TOL\n
+id=detect_function_local_float_threshold expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    tol = 1e-09\n    assert r < tol\n
+id=detect_keyword_only_default_tolerance expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef check(r, *, tol=1e-09):\n    assert r < tol\n
+id=detect_lambda_default_tolerance expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ncheck = lambda r, tol=1e-09: r < tol\n
+id=detect_negative_module_float_threshold expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\nFLOOR = -1e-09\ndef test_x():\n    assert r > FLOOR\n
+id=detect_module_float_built_by_arithmetic expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\nTOL = 1e-09 * 2\ndef test_x():\n    assert r < TOL\n
+id=exempt_chain_one_marker_two_distinct_literals expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert 1e-09 < r < 0.05  # not-a-tolerance: only the LOWER bound is deliberate\n
+id=exempt_two_tolerance_kwargs_one_marker expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    np.testing.assert_allclose(a, b, rtol=2e-08, atol=1e-12)  # not-a-tolerance: rtol only\n
+id=exempt_marker_only_inside_a_string_not_a_comment expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < 1e-09, "not-a-tolerance: this is a message, not a comment"\n
+id=detect_module_float_shadowed_by_a_later_int expect=caught measured=caught_but_the_message_names_1e-09_while_the_value_at_the_comparison_is_3 src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\nTOL = 1e-09\nTOL = 3\ndef test_x():\n    assert r < TOL\n
