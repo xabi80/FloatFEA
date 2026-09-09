@@ -3515,3 +3515,303 @@ No git remote, so no PR and no `[witness …]` comment — an unavailable check,
 a pass. On PASS the remote, PR and witness channel open (BA), then step 5: V1.1
 rigid-body modes on the AX3 shape — exactly six, spanned by the six analytic
 vectors, negative controls in both directions.
+
+---
+
+# Revision 22 — the five blocking items, answered where they were named
+
+Answers: verdict 21 @ ec09ea6
+
+**2026-09-08.** Two commits since the twenty-first verdict: `3d91954` (plan,
+re-locked) and `f1b226b` (step).
+
+## 0. What this round is
+
+The twenty-first verdict endorsed revision 21's 4a classification and ruled five
+items blocking. **None of the five is an item this report classified 4a**: four
+are new (R193, R195, R196, R197) and one is a reclassification of a finding my §3
+omitted altogether (R194). So the pre-registered escalation — a HOLD on an item
+classified 4a is a disagreement about the criterion — did not fire, and this is
+the ordinary HOLD the criterion was written to produce. Each item is answered at
+the site it names.
+
+Two of them are the same species one round apart: **a sentence made false by the
+commit that made it false.** R195's three statements about a seeded histogram
+were written into the commit that removed the seeding. R193's clause was refuted
+by the measurement printed beside it. That species is why §5 exists and why R198
+and R199 are recorded rather than argued.
+
+## 1. R197 — running the gate is not being sized by the constant
+
+The meta-test proved a counter **runs** its gate. It never proved the counter is
+**sized by** the constant it defends, which is the property the file's own first
+paragraph claims. The reviewer's body calls the gate faithfully and injects a
+100% relative error where the constant says N ULP:
+
+```
+cell   DELTA_CALIBRATION_ULP moved, one variable, the reviewer's body registered
+out    4.0 -> green   40 -> green   4000 -> green   1e9 -> green
+```
+
+**The file now carries two cells.** The gate cell replaces the assertion with a
+no-op and requires the counter to fail. The ceiling cell widens the constant to
+`WIDEN` times the counter's own declared injection and requires the counter to
+fail. Neither alone is the guard, and both halves are mistakes this repository
+actually made — the ceiling cell alone was R182, the gate cell alone is R197.
+
+**And that is not a claim in a docstring (BP5).** Three defective bodies ship as
+negative controls, each asserted to be rejected by its own cell **and admitted by
+the other**, so deleting either cell turns a control green:
+
+```
+cmd    python -m pytest tests/test_counters_are_injected.py -q
+out    10 passed  (1 registry + 3 gate cells + 3 ceiling cells + 3 controls)
+rule   a control is REJECTED by a cell when it PASSES that cell's perturbation
+
+           body                        gate cell   ceiling cell
+           R163's, as written          rejects     admits
+           R173's, as written          rejects     admits
+           R197's wrong-quantity       admits      rejects
+           the three shipped counters  admits      admits
+```
+
+**The qualifier, recorded rather than dropped.** The `4.0 -> 1e9` widening was
+never silent repo-wide: the plan states the value, so `test_plan_matches_tolerances`
+reddens on it. The hole was in the guard written for exactly this, not in the
+repository's defence.
+
+```
+cell   DELTA_CALIBRATION_ULP = 1e9 at this commit, one variable moved
+out    6 failed -- both cells on `calibration ULP` and on `exempt-response
+       drift`, R163's control, and the plan test.
+       Before f1b226b the reviewer's body was green through all of it.
+```
+
+One judgement recorded for the reviewer: the ceiling cell has to know how far the
+raised-defect counter lifts the measured ratio, so its `1.0e3` is now
+`RAISED_COUNTER_DEFECT_FACTOR` in the corpus module rather than a literal copied
+into two files. It is marked `not-a-tolerance` because nothing is accepted or
+rejected by comparison with it — it is the size of an injected defect. If that
+reads as a decision constant that belongs in `tolerances.py`, say so and it moves
+with the plan row it would need.
+
+## 2. R193, R195 — the record species, at every site
+
+**R193.** R186's `Closed when` named five lines. They were byte-identical, and my
+own site table declared them `no change` forty lines below §4's "Neither is
+declared away." Both lines are rewritten, and the measurement is published:
+
+```
+cell   inject k ULP into `injected_delta`, run the shipped calibration, at HEAD
+out    +0 PASS  +1 PASS  +2 PASS  +2.5 FAIL  +3 FAIL  +4 FAIL  +5 FAIL
+judge  the first whole number caught is 3, not 5, because the worst entry
+       already sits 2 ULP from the declared size and the ceiling is 4.
+       `5.0` is where the next whole number above the ceiling falls, which is
+       a DEFINITIONAL reason. The extremal clause is gone from both sites.
+cmd    grep -rn "sits at the first value that must be caught" floatfea/ tests/
+out    (empty)
+```
+
+**R195.** Three shipped statements said the histogram is seeded, in the commit
+that made that false — one of them in the locked plan, in a plan commit whose
+message read "the histogram is exact".
+
+```
+cmd    grep -rn "seeded" docs/milestones/F2.md floatfea/ tests/ scripts/
+out    9 hits. Eight are the word "unseeded", about the withdrawn version --
+       F2.md:752 and :1510, tolerances.py:563, determinism.py:71,
+       test_corpus_configurations.py:1101, test_determinism_pins.py:52/:55/:63,
+       regen_figures.py:119. The ninth is tolerances.py:619-620, which is the
+       sentence recording that this pointer said "seeded histogram" for a round.
+       No live statement says the histogram is seeded.
+cmd    grep -n "calibration_ulp_worst" floatfea/tolerances.py
+out    :568 and :617 -- both pointers name the figure, per the closing condition
+```
+
+## 3. R194, R196 — a number and a reason
+
+**R194.** `tolerances.py:507` read `2.537e+07` where the figure and the shipped
+test both read `2.534e+07`. It is not retyped now — it is cited by name — and two
+more retyped figures in the same entry went with it.
+
+```
+cmd    grep -n "2.5e+07\|2.4x\|2.37x" floatfea/tolerances.py
+out    (empty) -- the two other retyped figures in the same entry
+cmd    grep -n "2.537e+07" floatfea/tolerances.py
+out    :509  ONE hit, and it is the sentence recording the correction:
+       "This line read `2.537e+07` while `counter_defect_over_edge` and the
+       test that prints it both read `2.534e+07`". The wrong number is not
+       stated as fact anywhere.
+cmd    grep -n "counter_defect_over_edge\|counter_headroom_room" floatfea/tolerances.py
+out    :496 :498 :510  cited by name
+```
+
+R194's other half — three items carried as "classified in §3" that §3 does not
+classify — is §4's first three rows.
+
+**R196.** The entry's Reason cited `boundary_margin_min_at`, a figure the same
+commit deleted, and carried no measurement. The boundary is solved for now:
+
+```
+cell   BOUNDARY_BISECTION_CONVERGENCE swept, everything else held, at HEAD
+out    conv     1e-1  1e-2  1e-3  1e-4  1e-6  1e-8  1e-10  1e-12
+       plateau     1     2    36    57    57    57     57      57
+       minimum  7630.23, then 7630.16 unchanged from 1e-2 down
+       maximum  23926.2, then 23918.6 unchanged from 1e-3 down
+judge  the figure the constant selects converges between `1e-3` and `1e-4`, so
+       `1e-6` carries two orders of margin. Same shape as the reviewer's sweep;
+       the counts differ (36/57 against 34/52) because the corpus grew by seven
+       entries between the two runs, which is the reason they are not typed
+       into `tolerances.py` (BI3).
+```
+
+## 4. Every item, classified under BU0
+
+The three rows the twenty-first verdict found missing, first:
+
+| item | class | reason |
+|---|---|---|
+| R190 | **4a** | `test_plan_figures.py`'s `_referenced()` reads the PLAN only, so a `{{fig:}}` name used in a step report is bound by nothing. All eleven the report uses resolve, checked by hand — which is the finding. Mechanism, no figure moved |
+| R191 | **blocking — truth of a published sentence** | the pointer named the wrong file; it now names `calibration_ulp_worst` in the figures file, and R195 fixed what it says the thing *is* |
+| R192 | **blocking — a number in `tolerances.py` that does not describe the repository** | reclassified from 4a by the reviewer and accepted. Answered as R194 in §3 |
+| R193, R194, R195, R196, R197 | **blocking, four heads** | answered, §1–§3 |
+| R198 | **4a** | the same convergence literal at `test_corpus_configurations.py:1351`, measured inert across `1e-6 … 1e-12`. Mechanism, with R189 |
+| R199 | **4a, and taken anyway** | one sentence in the plan: the plateau is a property of the construction, not of the corpus. `3d91954` |
+| R181, R189, R170/R171 remainder, R172, R159, R162, R151, R152 | **4a** | endorsed by the twenty-first verdict, unchanged |
+| R129–R139, R101–R80, R6–R62 | **4a or later steps** | unchanged |
+
+## 5. What moved underneath, and what it did to the numbers
+
+The reviewer's corpus round is applied: **149 → 156 entries, 125 → 132 solved.**
+The figures and the golden file are regenerated at this commit, and the movement
+strengthens two shipped values rather than threatening them.
+
+```
+cmd    diff of docs/milestones/F2_figures.md
+out    calibration_ulp_histogram  0 ULP x118, 1 x3, 2 x4
+                               -> 0 ULP x121, 1 x3, 2 x8
+       boundary_margin_min_plateau  52 -> 57 bases
+       exempt_detected              49 -> 51
+       detection_edge, counter_defect_over_edge, counter_headroom_room,
+       boundary_margin_min/max/spread, every margin_*  -- UNCHANGED
+judge  the 2-ULP cell DOUBLED on entries none of which are mine.
+       `DELTA_CALIBRATION_ULP`'s basis is broader than when it was set.
+cmd    git diff on tests/regression/g22_exempt_pair_responses.json
+out    2 insertions, 0 deletions -- two pairs from one new entry, none removed,
+       none moved. The reason is a corpus round (CLAUDE.md § Testing).
+```
+
+## 6. Carried
+
+| item | status |
+|---|---|
+| R6 | **4a or later** - classified in section 4 |
+| R16 | **4a or later** - classified in section 4 |
+| R25 | **4a or later** - classified in section 4 |
+| R30 | **4a or later** - classified in section 4 |
+| R31 | **4a or later** - classified in section 4 |
+| R32 | **4a or later** - classified in section 4 |
+| R33 | **4a or later** - classified in section 4 |
+| R36 | **4a or later** - classified in section 4 |
+| R50 | **4a or later** - classified in section 4 |
+| R52 | **4a or later** - classified in section 4 |
+| R62 | **4a or later** - classified in section 4 |
+| R63 | **4a or later** - classified in section 4 |
+| R65 | **4a or later** - classified in section 4 |
+| R68 | **4a or later** - classified in section 4 |
+| R76 | **4a or later** - classified in section 4 |
+| R79 | **4a or later** - classified in section 4 |
+| R80 | **4a or later** - classified in section 4 |
+| R95 | **4a or later** - classified in section 4 |
+| R97 | **4a or later** - classified in section 4 |
+| R98 | **4a or later** - classified in section 4 |
+| R100 | **4a or later** - classified in section 4 |
+| R101 | **4a or later** - classified in section 4 |
+| R102 | **4a or later** - classified in section 4 |
+| R103 | **4a or later** - classified in section 4 |
+| R113 | **4a or later** - classified in section 4 |
+| R129 | **4a or later** - classified in section 4 |
+| R131 | **4a or later** - classified in section 4 |
+| R132 | **4a or later** - classified in section 4 |
+| R134 | **4a or later** - classified in section 4 |
+| R135 | **4a or later** - classified in section 4 |
+| R136 | **4a or later** - classified in section 4 |
+| R137 | **4a or later** - classified in section 4 |
+| R138 | **4a or later** - classified in section 4 |
+| R139 | **4a or later** - classified in section 4 |
+| R148 | **4a or later** - classified in section 4 |
+| R151 | **4a or later** - classified in section 4 |
+| R152 | **4a or later** - classified in section 4 |
+| R159 | **4a or later** - classified in section 4 |
+| R162 | **4a or later** - classified in section 4 |
+| R163 | **closed** long since; its body is a shipped negative control now |
+| R170 | **4a lock item**; the `--check` half closed in revision 20 |
+| R171 | **4a for the remainder**; the four site-guard holes are closed |
+| R172 | **4a lock item** — a kind-level count, not per-entry |
+| R173 | **closed** in revision 20; its body is a shipped negative control now |
+| R174 | **closed** in revision 20 |
+| R175 | **closed** in revision 20 |
+| R176 | **closed** in revision 20; its species recurred as R194 and is closed |
+| R177 | **closed** in revision 20 |
+| R179 | **closed** in revision 20 — whole-file `--check` |
+| R180 | **closed** in revision 21 — the counter injects through its gate |
+| R181 | **4a lock item** — the header's reach |
+| R182 | **closed** in revision 21; generalised into two cells in §1 |
+| R183 | **closed** in revision 21, verified by the reviewer |
+| R184 | **closed** in revision 21 |
+| R185 | **closed** in revision 21 |
+| R186 | **closed for real** — §2. It was recorded closed while byte-identical |
+| R187 | **closed** in revision 21; its constant's Reason is measured in §3 |
+| R188 | **closed** in revision 21 |
+| R189 | **4a lock item** — the declaration matcher is a substring test |
+| R190 | **4a lock item** — the figure-name parser's reach |
+| R191 | **closed** — §2/§4, the pointer names `calibration_ulp_worst` |
+| R192 | **closed as R194** — §3, reclassification accepted |
+| R193 | **closed** — §2, both lines rewritten and the boundary published |
+| R194 | **closed** — §3, the ratio is cited not retyped; §4 carries R190–R192 |
+| R195 | **closed** — §2, three sites, grep clean |
+| R196 | **closed** — §3, the sweep and the convergence point |
+| R197 | **closed** — §1, the second cell and three negative controls |
+| R198 | **4a lock item** — the convergence literal at `:1351`, measured inert |
+| R199 | **4a lock item, and taken anyway** — plan sentence, `3d91954` |
+| R6, R16, R25, R30, R31, R32, R33, R36, R50, R52, R62 | **4a or later steps** |
+
+### Sites named by findings and not touched
+
+Declared by exact site, and **each row says what the line is and why it stands** rather than the one phrase that made R193 possible. Two rows below sit inside a range a `Closed when` names; both say which line of that range was rewritten and where the hunk is, because half of an item is not the item.
+
+| site | status |
+|---|---|
+| `floatfea/tolerances.py:542` | **no change** -- the revision-21 declaration row R193 quotes back at me. R193's `Closed when` names `tolerances.py:557-558`; both lines are rewritten in `f1b226b`, old-side hunk `-555,5` |
+| `docs/milestones/F2_figures.md:32` | **no change to this row, though the file was regenerated** -- it is the figure R194 measures the tolerance record against. `counter_defect_over_edge` is `2.534e+07` before and after the corpus round |
+| `floatfea/tolerances.py:505` | **no change** -- the revision-21 declaration row R194 quotes. Its `Closed when` names `:507`, rewritten in `f1b226b`, old-side hunk `-507,2` |
+| `scripts/regen_figures.py` | **no change** -- R195 greps this file to show that nothing is seeded. It is the evidence for the finding, not a site in it |
+| `F2.md:666` | **no change** -- R196 greps it to show `boundary_margin_min_at` resolves nowhere. Evidence, not a site |
+| `floatfea/tolerances.py:511` | **no change** -- the entry's CLASS line, correct as it stands. R196's `Closed when` is about what the Reason says, and `:515-521` is rewritten in `f1b226b`, old-side hunk `-515,7` |
+| `floatfea/tolerances.py:512` | **no change** -- the second half of that CLASS line; see `:511` |
+| `floatfea/tolerances.py:513` | **no change** -- a blank comment line between the class and the Reason |
+| `floatfea/tolerances.py:514` | **no change** -- the first line of the Reason, which already said what the threshold is; everything R196 refuted is below it and is rewritten |
+| `test_corpus_configurations.py:1351` | **no change, and recorded 4a** -- the reviewer classified it there and I agree. Measured inert across `1e-6 .. 1e-12`; it moves with R189 at 4a's lock |
+| `docs/milestones/F2.md:660` | **no change to this line, answered beside it** -- the sentence R199 is about is TRUE, so it is not edited. The reading it invites is corrected by a paragraph inserted immediately below it in `3d91954`, old-side hunk `-671,0` |
+| `docs/milestones/F2.md:661` | **no change** -- see `docs/milestones/F2.md:660` |
+| `docs/milestones/F2.md:662` | **no change** -- see `docs/milestones/F2.md:660` |
+| `docs/milestones/F2.md:663` | **no change** -- see `docs/milestones/F2.md:660` |
+| `docs/milestones/F2.md:664` | **no change** -- see `docs/milestones/F2.md:660` |
+| `docs/milestones/F2.md:665` | **no change** -- see `docs/milestones/F2.md:660` |
+| `docs/milestones/F2.md:666` | **no change** -- see `docs/milestones/F2.md:660` |
+| `docs/milestones/F2.md:667` | **no change** -- see `docs/milestones/F2.md:660` |
+| `docs/milestones/F2.md:668` | **no change** -- see `docs/milestones/F2.md:660` |
+
+## 7. What I am asking for
+
+**A PASS with the 4a list**, or a **HOLD naming the item and the BU0 head it falls
+under.** The five items of the twenty-first verdict are answered at their named
+sites; the classification the twenty-first verdict endorsed is unchanged; R198
+and R199 are recorded, and R199 is done.
+
+## 8. Witness
+
+No git remote, so no PR and no `[witness …]` comment — an unavailable check, not
+a pass. On PASS the remote, PR and witness channel open (BA), then step 5: V1.1
+rigid-body modes on the AX3 shape — exactly six, spanned by the six analytic
+vectors, negative controls in both directions.
