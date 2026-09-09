@@ -952,3 +952,55 @@ id=cg_calib_2ulp_axis_aniso1p4e5_L0p24 section=circular_tube,D=0.0874089385,t=0.
 id=cg_plateau_D0p276_t0p077_axis section=circular_tube,D=0.276116,t=0.0773361 stations=56.9495 orient=axis extra=none runs_in_suite=no expect=hold
 id=cg_plateau_D6p75_t2p61_inplane section=circular_tube,D=6.74664,t=2.61384 stations=63.3491 orient=in_plane_y extra=none runs_in_suite=no expect=hold
 id=cg_edgeprobe_D0p037_L5490_skew_a6e4 section=circular_tube,D=0.0370137,t=0.00936507 stations=5489.88 orient=skew extra=I_y_over_I_z=63953.7 runs_in_suite=no expect=hold
+
+# --- TWENTY-SECOND VERDICT (2026-09-08, reviewed HEAD 9d70483) --------------
+#
+# Seven entries, none seen by the implementer. Every field below was measured at
+# `9d70483` BEFORE the line was written; nothing here is predicted.
+#
+# 1. THE DETECTION EDGE IS BEATABLE FROM OUTSIDE THE CORPUS, AND THIS IS THE
+#    ROUND'S ONE MEASUREMENT THAT MOVES A SHIPPED MARGIN. `detection_edge` has
+#    read `3.9459e-14 at aaa_band_edge_twin` for five rounds, and
+#    `PATCH_TEST_COUNTER_HEADROOM = 6.0e7` sits `2.368x` above the ratio it sets.
+#    I drew ~10,000 admissible bases. Random axis/skew/vertical/in_plane_y bases
+#    with no roll FLOOR at about 9.77e-14 -- a plateau, hit to four digits by
+#    shapes spanning D 0.03..4.5 m and L/D 3..1e4, so it is not a minimum over
+#    those bases either. The band below it is reached only by RAW DIRECTION
+#    VECTORS WITH A ROLL, which is what `aaa_band_edge_twin` carries. In that
+#    family I drove the edge to 3.642482e-14, BELOW the published corpus
+#    minimum: `counter_defect_over_edge` 2.534e+07 -> 2.7454e+07, and
+#    `counter_headroom_room` 2.368x -> 2.185x. THE HEADROOM STILL HOLDS -- it
+#    would take an edge below 1.6667e-14 to break `6.0e7`, and I could not get
+#    within a factor of two of that. What moves is the published room, by 8%,
+#    on entries nobody chose. The three `ch_edgemin_*` are the three lowest.
+#    `ch_edgefloor_D0p068_L387_skew` is the roll-free plateau, recorded so the
+#    9.77e-14 floor is not re-derived.
+#
+# 2. THE CALIBRATION MAXIMUM, PROBED AGAIN AND FROM A DIFFERENT SEED.
+#    `DELTA_CALIBRATION_ULP = 4.0` is twice an observed maximum of 2 ULP, and
+#    this round republishes "+2 passes, +3 fails" as the measured boundary --
+#    a statement whose cell is that the worst entry sits at 2. I measured 11,000
+#    further admissible holding configurations this round (2,000 broad:
+#    histogram {0: 1589, 1: 411}, max 1.0000; 9,000 targeted at the thick-wall /
+#    high-anisotropy / short-member region: {0: 6308, 1: 2680, 2: 12}, max
+#    2.0000). WITH LAST ROUND'S 2,596 THAT IS 13,596 CONFIGURATIONS AND NOTHING
+#    ABOVE 2.0000 ULP. The three `ch_calib_2ulp_*` are three of the twelve.
+#
+# 3. WHAT A PASSING SCAN MEANS FOR THESE. Each is `expect=hold`: measured at
+#    9d70483 the worst clean state is 0.0065x .. 0.0982x of PATCH_TEST_EXACTNESS.
+#    `ch_edgefloor_D0p068_L387_skew` classifies `dropped_flip`,
+#    `wrong_dof_index` and `dropped_shear_parameter` as `below resolution` -- it
+#    is an exempt entry, and whether BS2's golden file demands its responses is
+#    the coverage measurement for this round.
+#
+# 4. WHAT I COULD NOT BUILD. An edge below 1.6667e-14, which is what would break
+#    `PATCH_TEST_COUNTER_HEADROOM`; and a calibration deviation above 2 ULP.
+#    Both are recorded so the next round does not re-derive them, and neither is
+#    evidence that they do not exist.
+id=ch_edgemin_D0p0758_roll1p05_aniso9p4e5 section=circular_tube,D=0.07575202482061107,t=0.010059491013443764 stations=0.3574410389776616 orient=0.09214372968562036,-0.663907632069591,-0.7421160213601183 extra=roll=1.0524733622269515,I_y_over_I_z=939568.2 runs_in_suite=no expect=hold
+id=ch_edgemin_D0p391_rollm0p73_aniso1p4e5 section=circular_tube,D=0.39053655184073754,t=0.08670645978356842 stations=7.126214906693708 orient=0.2927725805013201,-0.7962575298299155,-0.5293941464502222 extra=roll=-0.729848064695652,I_y_over_I_z=139906.8 runs_in_suite=no expect=hold
+id=ch_edgemin_D0p306_roll1p32_aniso4p1e5 section=circular_tube,D=0.3062377764470961,t=0.08412048034317123 stations=8.836663487215224 orient=0.26673802556724846,-0.5307335855843444,-0.804470438766566 extra=roll=1.3208407593335503,I_y_over_I_z=411022.2 runs_in_suite=no expect=hold
+id=ch_edgefloor_D0p068_L387_skew section=circular_tube,D=0.06796040563617027,t=0.024232924115779212 stations=386.85539222427553 orient=skew extra=I_y_over_I_z=1.446452 runs_in_suite=no expect=hold
+id=ch_calib_2ulp_inplane_aniso1p7e5_L0p27 section=circular_tube,D=0.07569752951363877,t=0.030959970609799402 stations=0.27342116821252443 orient=in_plane_y extra=I_y_over_I_z=168322.7 runs_in_suite=no expect=hold
+id=ch_calib_2ulp_axis_aniso7p2e5_L0p078 section=circular_tube,D=0.020819261167442604,t=0.00999338417067694 stations=0.07777803180712858 orient=axis extra=I_y_over_I_z=719308.7 runs_in_suite=no expect=hold
+id=ch_calib_2ulp_inplane_aniso2p7e5_L8p39 section=circular_tube,D=1.5577406935201514,t=0.5362590791943861 stations=8.387137858945891 orient=in_plane_y extra=I_y_over_I_z=271407.6 runs_in_suite=no expect=hold
