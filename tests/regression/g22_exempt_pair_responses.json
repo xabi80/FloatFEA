@@ -26,6 +26,7 @@
  "ch_edgefloor_D0p068_L387_skew|dropped_flip": 4.2507735112210786e-07,
  "ch_edgefloor_D0p068_L387_skew|dropped_shear_parameter": 6.6835408926496e-15,
  "ch_edgefloor_D0p068_L387_skew|wrong_dof_index": 7.220532215978511e-08,
+ "ck_aniso_floor_exact|dropped_flip": 6.379174909289029e-08,
  "every_state_edge_iso_L85|dropped_shear_parameter": 1.478221811065684e-11,
  "every_state_edge_iso_L90|dropped_shear_parameter": 1.176102765356825e-11,
  "plan_headline_lam2885|dropped_shear_parameter": 8.697293774065568e-12,
