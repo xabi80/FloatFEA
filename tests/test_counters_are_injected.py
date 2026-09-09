@@ -58,6 +58,7 @@ sys.path.insert(0, str(ROOT / "tests" / "regression"))
 
 import test_corpus_configurations as CORPUS  # noqa: E402
 import test_exempt_pair_responses as GOLDEN  # noqa: E402
+import test_rigid_body_modes as RIGID  # noqa: E402
 
 # not-a-tolerance: how far past the counter's own declared injection the ceiling
 # cell widens. Nothing is accepted or rejected by comparison with it -- it is a
@@ -105,6 +106,24 @@ REGISTERED = [
      "PATCH_TEST_COUNTER_HEADROOM",
      WIDEN * CORPUS.RAISED_COUNTER_DEFECT_FACTOR
      * CORPUS.PATCH_TEST_COUNTER_HEADROOM),
+    # G2.1 / V1.1, both halves. These two counters inject ONE defect -- a
+    # diagonal stiffness resisting a rigid translation -- because that single
+    # defect must redden both halves of the gate: it lifts a zero eigenvalue and
+    # it takes that translation out of the computed span.
+    #
+    # Their widened ceilings are MEASURED rather than typed. The injection is a
+    # defect SIZE, not an offset in the ceiling's units, so how far it lifts the
+    # measured quantity is a property of the frame; `counter_response` returns it
+    # at this commit. A literal here would be stale the first time the frame
+    # moved, which is the species step 4 spent five rounds on.
+    ("rigid-body mode ratio",
+     lambda: RIGID.test_a_RIGID_BODY_MODE_that_carries_ENERGY_is_caught(_Capsys),
+     RIGID, "test_the_frame_has_SIX_zero_modes_by_ratio",
+     "RIGID_BODY_MODE_RATIO", WIDEN * RIGID.counter_response("ratio")),
+    ("rigid-body subspace loss",
+     lambda: RIGID.test_a_LOST_rigid_body_DIRECTION_is_caught(_Capsys),
+     RIGID, "test_the_analytic_rigid_body_vectors_are_SPANNED",
+     "RIGID_BODY_SUBSPACE_LOSS", WIDEN * RIGID.counter_response("loss")),
 ]
 
 
@@ -216,7 +235,7 @@ def test_there_is_something_to_check() -> None:
     """Meta-test: an empty registry makes this file a test of nothing, and a
     control set that exercises only one cell makes the other one vacuous."""
     assert REGISTERED, "no counter is registered; this file checks nothing"
-    assert len(REGISTERED) >= 3, (
+    assert len(REGISTERED) >= 5, (
         f"only {[r[0] for r in REGISTERED]} registered -- every counter with a "
         "callable gate belongs here, and an exemption is a hole in the guard "
         "written for exactly this"

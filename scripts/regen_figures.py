@@ -54,6 +54,22 @@ def _figures() -> list[tuple[str, str]]:
     ceil = PATCH_TEST_EXACTNESS
     rows: list[tuple[str, str]] = []
 
+    # G2.1 / V1.1 (D2 step 5). Both halves of the rigid-body gate, generated
+    # from the shipped frame so the plan and `tolerances.py` cite them by name
+    # instead of typing them -- R194's remedy, applied from this gate's first
+    # commit rather than five rounds into it.
+    import test_rigid_body_modes as RB
+
+    model, els = RB._frame()
+    k_rb = RB.assemble_dense(model, els)
+    rows.append(("rigid_body_mode_ratio", f"{RB.mode_ratio(k_rb):.4e}"))
+    rows.append(("rigid_body_subspace_loss",
+                 f"{RB.subspace_loss(k_rb, model):.4e}"))
+    rows.append(("rigid_body_counter_ratio",
+                 f"{RB.counter_response('ratio'):.4e}"))
+    rows.append(("rigid_body_counter_loss",
+                 f"{RB.counter_response('loss'):.4e}"))
+
     rows.append(("corpus_entries", f"{len(C.ENTRIES)}"))
     rows.append(("corpus_solved", f"{len(C.SOLVED)}"))
 

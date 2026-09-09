@@ -7,6 +7,10 @@ this file is not what a fresh run produces.
 
 | name | value |
 |---|---|
+| `rigid_body_mode_ratio` | 1.6009e-14 |
+| `rigid_body_subspace_loss` | 5.3061e-15 |
+| `rigid_body_counter_ratio` | 3.0612e-11 |
+| `rigid_body_counter_loss` | 7.4708e-12 |
 | `corpus_entries` | 187 |
 | `corpus_solved` | 158 |
 | `clean_worst_ratio` | 0.2765x |
