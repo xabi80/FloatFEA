@@ -4100,3 +4100,234 @@ re-solved by the run that publishes it.
 The remote exists and the branch is pushed. No `[witness ...]` comment yet —
 still an unavailable check rather than a pass, and the reason is now a missing
 pull request rather than a missing repository.
+
+---
+
+# Revision 24 — the direction is measured, the cause is not
+
+Answers: verdict 24 @ ee8ad0b
+
+**2026-09-08.** Two commits since the twenty-fourth verdict: `c6d6817` (plan,
+re-locked) and `703e7eb` (step).
+
+## 0. One item, and it is one line
+
+R207, R208 and R209 closed. **R211 is what was left inside the line R209's own
+closing condition told me to keep standing**, and the reviewer was right that
+"left deliberately" did not cover it. The line is not only a withdrawal. It is a
+withdrawal clause bolted to a positive causal claim, and the causal half is the
+one BG0 is about.
+
+## 1. R211 — a cause named where only a direction is measured
+
+```
+plan   "The reason for `6.0e7` is the improvement side only, and the sentence
+       claiming otherwise is withdrawn."
+plan   three lines below, written in the same commit: "tightened both by a
+       harder corpus entry and by any formulation change"
+judge  the lead and its own paragraph disagree, and the measurement that had
+       supported the lead -- "adding nine corpus entries moved the minimum by
+       0%" -- was deleted in the commit that wrote the contradiction.
+cell   the room across the reviewer's corpus rounds, formulation held
+out    2.37x -> 2.19x -> 2.18x, and it has never risen. Both falls were corpus
+       rounds; `git diff f1b226b..6eed45e -- floatfea/` with comment lines
+       removed is EMPTY, so the formulation was byte-identical across them.
+       Zero were sensitivity improvements.
+judge  the direction is measured. The cause is not, and the cause this sentence
+       named as "the reason" has never once been the cause.
+```
+
+The lead names the direction now. The withdrawal it carries is untouched, which
+is what R209's condition asked for.
+
+## 2. R213, R214, R212 — classified 4a, taken anyway
+
+The reviewer put these at 4a. I have taken all three, and the reason is the same
+in each case: **one line, and two of them were written by the commit immediately
+before this one.**
+
+**R213 — a count that counted nothing.** "One direction, three times" stood in
+the plan and in `tolerances.py`. The direction is right; the three is not a count
+of anything. What replaced it is not a better count — **no count of reviewer
+rounds is written in either place now**, because that number is stale the next
+time an entry is added, which is exactly how this one got here. What is written
+is the pair of falls and the fact that there has never been a rise.
+
+**R214 — one word.** The boundary is **bracketed**, not solved. A two-point
+bracket at `+/- 0.1%` locates the crossing to `0.2%`; it does not find it. That
+is four orders tighter than anything the paragraph decides and it regenerates
+every run, which is what the sentence needed. It is still not a search, and the
+sentence no longer says it is.
+
+**R212 — the round that fixed R208 typed a third figure into the paragraph it
+was fixing.** "The clean side alone moved to `10.2x`", already two corpus rounds
+behind when written; and the derivation dated `2026-09-05` against this entry's
+own footer of `2026-09-06`. Both gone. Recorded rather than quietly corrected,
+because the interesting part is that it happened inside the commit whose whole
+subject was not typing figures.
+
+**R215 stays at 4a** — `_Silent` is a hand-rolled `capsys` stand-in and
+`--check`'s stdout is interleaved with the invoked test's output. That is
+mechanism, it changes no published number, and the same shape already exists as
+`_Capsys` in the counter meta-test. Both want one home, at 4a's lock.
+
+## 3. The corpus round
+
+The reviewer's `45550a3` is applied: **170 → 177 entries, 145 → 149 solved.**
+
+```
+cmd    diff of docs/milestones/F2_figures.md against 3e225c5
+out    clean_worst_ratio 0.1142x -> 0.1261x, at
+         cj_cleanmax_D0p0499_rollm1p456_aniso206
+       calibration_ulp_histogram 0 x133, 1 x5, 2 x11
+       exempt_total 61 of 580 -> 61 of 596
+       detection_edge, detection_edge_at, counter_defect_over_edge,
+       counter_headroom_room, counter_defect_boundary, every boundary_margin_*
+       and every margin_* -- UNCHANGED
+judge  `PATCH_TEST_EXACTNESS = 5e-15` holds with `7.93x`. A new worst clean
+       entry came from outside the corpus for the third round running, from a
+       region the earlier rounds did not enter -- `I_y/I_z = 206` against the
+       incumbent's `9.6e5`. The ceiling is being pushed on by a reader who is
+       not me, and it has not moved.
+cmd    the golden file's diff
+out    (empty). None of the seven new entries produces an exempt-and-detected
+       pair, which the reviewer measured first and which reproduces.
+```
+
+## 4. Classified under BU0
+
+| item | class | reason |
+|---|---|---|
+| R211 | **blocking — the truth of a published sentence, and a causal claim (BG0)** | answered, §1 |
+| R212, R213, R214 | **4a by the reviewer, taken here** | one line each; two were written by the commit before this one, §2 |
+| R215 | **4a** | a `capsys` stand-in and interleaved stdout. Mechanism, no published number |
+| R210 | **4a** | a count in a commit message already made; the correct count is in revision 23 §3 |
+| R206 | **4a** | history, and true as history |
+| R200–R204 | **4a** | the reach paragraph, the composed-body bound, two cells of mine that understate, the factor's marker |
+| R198, R199, R181, R189, R190, R170/R171 remainder, R172, R159, R162, R151, R152 | **4a** | endorsed at the twenty-second verdict, unchanged |
+| R129–R148, R95–R113, R63–R80, R6–R62 | **4a or later steps** | unchanged |
+
+## 5. Carried
+
+| item | status |
+|---|---|
+| R6 | **4a or later** - classified in section 4 |
+| R16 | **4a or later** - classified in section 4 |
+| R25 | **4a or later** - classified in section 4 |
+| R30 | **4a or later** - classified in section 4 |
+| R31 | **4a or later** - classified in section 4 |
+| R32 | **4a or later** - classified in section 4 |
+| R33 | **4a or later** - classified in section 4 |
+| R36 | **4a or later** - classified in section 4 |
+| R50 | **4a or later** - classified in section 4 |
+| R52 | **4a or later** - classified in section 4 |
+| R62 | **4a or later** - classified in section 4 |
+| R63 | **4a or later** - classified in section 4 |
+| R65 | **4a or later** - classified in section 4 |
+| R68 | **4a or later** - classified in section 4 |
+| R76 | **4a or later** - classified in section 4 |
+| R79 | **4a or later** - classified in section 4 |
+| R80 | **4a or later** - classified in section 4 |
+| R95 | **4a or later** - classified in section 4 |
+| R97 | **4a or later** - classified in section 4 |
+| R98 | **4a or later** - classified in section 4 |
+| R100 | **4a or later** - classified in section 4 |
+| R101 | **4a or later** - classified in section 4 |
+| R102 | **4a or later** - classified in section 4 |
+| R103 | **4a or later** - classified in section 4 |
+| R113 | **4a or later** - classified in section 4 |
+| R124 | **4a or later** - classified in section 4 |
+| R129 | **4a or later** - classified in section 4 |
+| R131 | **4a or later** - classified in section 4 |
+| R132 | **4a or later** - classified in section 4 |
+| R134 | **4a or later** - classified in section 4 |
+| R135 | **4a or later** - classified in section 4 |
+| R136 | **4a or later** - classified in section 4 |
+| R137 | **4a or later** - classified in section 4 |
+| R138 | **4a or later** - classified in section 4 |
+| R139 | **4a or later** - classified in section 4 |
+| R148 | **4a or later** - classified in section 4 |
+| R151 | **4a or later** - classified in section 4 |
+| R152 | **4a or later** - classified in section 4 |
+| R159 | **4a or later** - classified in section 4 |
+| R162 | **4a or later** - classified in section 4 |
+| R170 | **4a or later** - classified in section 4 |
+| R171 | **4a or later** - classified in section 4 |
+| R172 | **4a lock item** — a kind-level count, not per-entry |
+| R181 | **4a lock item** — the header's reach |
+| R189 | **4a lock item** — the declaration matcher is a substring test |
+| R190 | **4a lock item** — the figure-name guard reads the plan only |
+| R198 | **4a lock item** — the convergence literal at `:1351` |
+| R199 | **4a**, and taken in `3d91954` |
+| R200 | **4a lock item** — the reach paragraph's direction |
+| R201 | **4a lock item** — the composed body, and its measured bound |
+| R202 | **4a lock item** — my `6 failed` cell, no `cmd`, gives 11 |
+| R203 | **4a lock item** — my grep counts contradict their command |
+| R204 | **4a lock item** — the factor's marker needs its boundary |
+| R205 | **closed** in `fc30b71`, covered by revision 23 |
+| R206 | **4a**, as the reviewer ruled — history, and true as history |
+| R207 | **closed** in revision 23 — five sites, the boundary generated |
+| R208 | **closed** in revision 23 — both sites, derivation as history |
+| R209 | **closed** in revision 23 — the one direction that exists |
+| R210 | **4a lock item** — a count in a commit message already made |
+| R211 | **closed** — §1, the lead names the direction and the withdrawal stands |
+| R212 | **closed** — §2, taken from 4a; the figure and the date are gone |
+| R213 | **closed** — §2, taken from 4a; and no count replaces it |
+| R214 | **closed** — §2, taken from 4a; bracketed, not solved |
+| R215 | **4a lock item** — a `capsys` stand-in and interleaved stdout |
+| R6, R16, R25, R30, R31, R32, R33, R36, R50, R52, R62 | **4a or later steps** |
+
+### Sites named by findings and not touched
+
+Declared by exact site, each row saying what the line is.
+
+| site | status |
+|---|---|
+| `F2.md:586` | **no change** -- R211's own site is `docs/milestones/F2.md:598-603`. `:598-600` and `:602-605` are rewritten in `c6d6817`; this line is quoted elsewhere in the finding as evidence |
+| `docs/milestones/F2.md:601` | **no change, left deliberately** -- the middle of the paragraph's argument, `a minimum over a growing set is monotone non-increasing`, which is correct and is what the finding itself relies on. The lead above it and the conclusion below it are both rewritten |
+| `tolerances.py:507` | **no change** -- R211's own site is `docs/milestones/F2.md:598-603`. `:598-600` and `:602-605` are rewritten in `c6d6817`; this line is quoted elsewhere in the finding as evidence |
+| `tolerances.py:508` | **no change** -- R211's own site is `docs/milestones/F2.md:598-603`. `:598-600` and `:602-605` are rewritten in `c6d6817`; this line is quoted elsewhere in the finding as evidence |
+| `tolerances.py:509` | **no change** -- R211's own site is `docs/milestones/F2.md:598-603`. `:598-600` and `:602-605` are rewritten in `c6d6817`; this line is quoted elsewhere in the finding as evidence |
+| `tolerances.py:510` | **no change** -- R211's own site is `docs/milestones/F2.md:598-603`. `:598-600` and `:602-605` are rewritten in `c6d6817`; this line is quoted elsewhere in the finding as evidence |
+| `tolerances.py:511` | **no change** -- R211's own site is `docs/milestones/F2.md:598-603`. `:598-600` and `:602-605` are rewritten in `c6d6817`; this line is quoted elsewhere in the finding as evidence |
+| `tolerances.py:512` | **no change** -- R211's own site is `docs/milestones/F2.md:598-603`. `:598-600` and `:602-605` are rewritten in `c6d6817`; this line is quoted elsewhere in the finding as evidence |
+| `tolerances.py:513` | **no change** -- R211's own site is `docs/milestones/F2.md:598-603`. `:598-600` and `:602-605` are rewritten in `c6d6817`; this line is quoted elsewhere in the finding as evidence |
+| `floatfea/tolerances.py:407` | **no change** -- the paragraph's heading and two lines of the derivation record, all three correct. The two things R212 names are the `10.2x` at `:411` and the date at `:408`, both rewritten in `703e7eb` |
+| `floatfea/tolerances.py:409` | **no change** -- the paragraph's heading and two lines of the derivation record, all three correct. The two things R212 names are the `10.2x` at `:411` and the date at `:408`, both rewritten in `703e7eb` |
+| `floatfea/tolerances.py:410` | **no change** -- the paragraph's heading and two lines of the derivation record, all three correct. The two things R212 names are the `10.2x` at `:411` and the date at `:408`, both rewritten in `703e7eb` |
+| `scripts/regen_figures.py:108` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:109` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:110` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:111` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:112` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:113` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:114` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:115` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:116` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:117` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:118` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:119` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:120` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:121` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:122` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:123` | **no change, and deliberately** -- R214's closing condition offers two branches: bisect to the flip, or say `bracketed at +/- 0.1%` instead of `SOLVED`. The plan-word branch is the one taken, so the code that brackets is left as it is and the sentence describing it is what moved |
+| `scripts/regen_figures.py:37` | **no change, and recorded 4a** -- the reviewer classified it there and I agree; it changes no published number and it shares a home with `_Capsys` at 4a's lock |
+| `scripts/regen_figures.py:38` | **no change, and recorded 4a** -- the reviewer classified it there and I agree; it changes no published number and it shares a home with `_Capsys` at 4a's lock |
+| `scripts/regen_figures.py:39` | **no change, and recorded 4a** -- the reviewer classified it there and I agree; it changes no published number and it shares a home with `_Capsys` at 4a's lock |
+| `scripts/regen_figures.py:40` | **no change, and recorded 4a** -- the reviewer classified it there and I agree; it changes no published number and it shares a home with `_Capsys` at 4a's lock |
+| `scripts/regen_figures.py:41` | **no change, and recorded 4a** -- the reviewer classified it there and I agree; it changes no published number and it shares a home with `_Capsys` at 4a's lock |
+| `scripts/regen_figures.py:42` | **no change, and recorded 4a** -- the reviewer classified it there and I agree; it changes no published number and it shares a home with `_Capsys` at 4a's lock |
+| `scripts/regen_figures.py:43` | **no change, and recorded 4a** -- the reviewer classified it there and I agree; it changes no published number and it shares a home with `_Capsys` at 4a's lock |
+| `scripts/regen_figures.py:44` | **no change, and recorded 4a** -- the reviewer classified it there and I agree; it changes no published number and it shares a home with `_Capsys` at 4a's lock |
+
+## 6. What I am asking for
+
+**A PASS with the 4a list**, or a **HOLD naming the item and the BU0 head it falls
+under.**
+
+## 7. Witness
+
+The remote `xabi80/FloatFEA` exists, private, and `master` is pushed. There is
+still no `[witness ...]` comment, and the blocker is now that the pushed branch
+is the only branch, so a pull request has no base. That is the technical
+supervisor's decision and it is with them.
