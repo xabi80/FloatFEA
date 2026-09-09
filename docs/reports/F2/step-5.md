@@ -428,3 +428,228 @@ open by instruction, not by omission.
 CI at the previous commit: static, unit and rungs 1–3 green; **rung 4 red with
 13 failures**, which is R231 and is untouched here. Rungs 5 and 6 have still
 never executed on this branch. No `[witness ...]` comment yet.
+
+---
+
+# Revision 3 — four guards that could not report, and the jobs that never ran them
+
+Answers: verdict 28 @ 8e7418f
+
+**2026-09-09.** One commit since the twenty-eighth verdict: `4a8d2a3`.
+
+## 0. Where this stands
+
+R229 and R230 closed at the third verdict. **R231 stays open by instruction** —
+the cross-platform golden question is Q8, with the technical supervisor, and
+CB3 puts the plan edit before any code. R223 and R224 stay open for Q7 in the
+same way. Nothing here touches either, and this revision does not claim it does.
+
+Four items blocked and all four were the same shape: **a guard that could not
+report what it found.**
+
+## 1. R234 — a guard that took the suite with it
+
+```
+cell   a report with no verdict beside it, which is EVERY step boundary
+out    before: `1 error`, ZERO of 1589 tests collected
+       after:  1599 collected, 1 named failure, 1598 pass
+judge  item 1b one level down and worse. 1b made a boundary red; this made it
+       silent, and a suite that runs nothing looks exactly like a suite that
+       has nothing to say.
+cmd    python -m pytest tests/test_report_guard_states.py -q
+out    7 passed -- all six of the reviewer's states, none a collection error,
+       every failing state reported by a named test
+```
+
+Three changes. Module scope cannot raise: `_read` returns `""` for a missing
+file, and the carry comparison runs against the newest **complete** pair so it
+stays meaningful at the boundary. An empty parametrise is no longer a collection
+error — `empty_parameter_set_mark = fail_at_collect` turned an unreadable
+verdict into the same "no tests ran", so the list carries a placeholder that
+fails **by name**. And `test_the_guard_reads_the_step_being_worked_on` carries
+the pending-verdict message as one test while the rest of the file runs.
+
+## 2. R235 — the guards had never run in CI
+
+```
+cmd    the eight paths ci.yml named, collected
+out    1296 of 1589. The missing 293 are every top-level tests/*.py
+judge  the tolerance scanner, the carry guard, the counter meta-test, the plan
+       and figure checks and both new runners. Two commits said "in the suite,
+       so in CI" about files no job had ever seen.
+```
+
+A `guards` job runs them. The claim is mechanical now rather than repeated:
+`tests/test_ci_runs_the_whole_suite.py` parses the workflow, replays each run
+step's arguments, and requires the union to be the whole suite.
+
+```
+cell   remove the guards job, one variable moved
+out    326 of 1622 collected tests are run by no CI job
+judge  not vacuous. Its FIRST version was: it kept only path tokens, so
+       `pytest tests --ignore=...` contributed the bare token `tests` and the
+       union was everything by construction -- the same defect it was written
+       to find, recorded rather than quietly replaced.
+```
+
+## 3. R236, R237 — two sentences
+
+**R236.** `ci.yml` said adding a test to a rung is not a CI edit. Under the
+declared rule it is: the first test in an `empty:` rung makes the declaration
+stale and the job fails. The comment now says what it costs — delete the marker
+and change `empty:` to `full:` in the same commit — four lines above the block
+that withdraws the previous version of the same claim.
+
+**R237.** The scanner's "What is flagged" list promised any float threshold. It
+reads `node.comparators` and never `node.left`, so `assert 0.05 > ratio` is
+invisible. The sentence is fixed. Widening the reach is 4a's, and three of the
+reviewer's new marker shapes are that species.
+
+## 4. The three case files, absorbed
+
+| file | entries | was |
+|---|---|---|
+| ladder layouts | 22 | 10 |
+| marker shapes | 46 | 28 |
+| guard states | 6 | new |
+
+**The twelve new layouts found four defects in `run_rung.sh`**, each fixed: a
+`full:` directory carrying a stale `.empty-by-design` marker, a rung whose every
+test is skipped (pytest exits 0, and `CLAUDE.md` forbids a skip outright), a path
+containing a space (the directory list was a string and the shell re-split it),
+and a success line printed for a rung that had already failed.
+
+**The four new marker misses are named, not counted.** Three are R237's
+left-operand species, which is a gap in *detection* that no exemption rule can
+reach. The fourth is the one-marker-one-node rule meeting its own limit: a single
+`Compare` node holding the same literal twice is one node, so exempting it
+exempts both.
+
+```
+cmd    python -m pytest -q
+out    1626 passed, 0 failed, 0 skipped in 190.16s
+cmd    ruff / black --check / mypy
+out    All checks passed! / 68 files unchanged / Success: no issues in 25 files
+```
+
+## 5. Classified under BU0
+
+| item | class | reason |
+|---|---|---|
+| R234, R235, R236, R237 | **blocking — a guard's reach and two published sentences** | answered, §1–§3 |
+| R231 | **open by instruction** | Q8, with the technical supervisor |
+| R223, R224 | **open by instruction** | Q7, same |
+| R238, R239 | **4a by the reviewer, taken here** | the four `run_rung.sh` residues are fixed in §4; §3's filtered `out` is pasted now |
+| R225–R228 | **4a**, unchanged | |
+
+## 6. Carried
+
+| item | status |
+|---|---|
+| R6 | **4a or later** - classified in section 5 |
+| R16 | **4a or later** - classified in section 5 |
+| R25 | **4a or later** - classified in section 5 |
+| R30 | **4a or later** - classified in section 5 |
+| R33 | **4a or later** - classified in section 5 |
+| R36 | **4a or later** - classified in section 5 |
+| R50 | **4a or later** - classified in section 5 |
+| R52 | **4a or later** - classified in section 5 |
+| R62 | **4a or later** - classified in section 5 |
+| R63 | **4a or later** - classified in section 5 |
+| R65 | **4a or later** - classified in section 5 |
+| R68 | **4a or later** - classified in section 5 |
+| R76 | **4a or later** - classified in section 5 |
+| R79 | **4a or later** - classified in section 5 |
+| R80 | **4a or later** - classified in section 5 |
+| R95 | **4a or later** - classified in section 5 |
+| R97 | **4a or later** - classified in section 5 |
+| R98 | **4a or later** - classified in section 5 |
+| R100 | **4a or later** - classified in section 5 |
+| R103 | **4a or later** - classified in section 5 |
+| R113 | **4a or later** - classified in section 5 |
+| R124 | **4a or later** - classified in section 5 |
+| R129 | **4a or later** - classified in section 5 |
+| R131 | **4a or later** - classified in section 5 |
+| R132 | **4a or later** - classified in section 5 |
+| R134 | **4a or later** - classified in section 5 |
+| R139 | **4a or later** - classified in section 5 |
+| R148 | **4a or later** - classified in section 5 |
+| R151 | **4a or later** - classified in section 5 |
+| R152 | **4a or later** - classified in section 5 |
+| R159 | **4a or later** - classified in section 5 |
+| R162 | **4a or later** - classified in section 5 |
+| R170 | **4a or later** - classified in section 5 |
+| R171 | **4a or later** - classified in section 5 |
+| R172 | **4a or later** - classified in section 5 |
+| R181 | **4a or later** - classified in section 5 |
+| R189 | **4a or later** - classified in section 5 |
+| R190 | **4a or later** - classified in section 5 |
+| R198 | **4a or later** - classified in section 5 |
+| R199 | **4a or later** - classified in section 5 |
+| R200 | **4a or later** - classified in section 5 |
+| R215 | **4a or later** - classified in section 5 |
+| R216 | **4a or later** - classified in section 5 |
+| R220 | **4a or later** - classified in section 5 |
+| R222 | **4a or later** - classified in section 5 |
+| R223 | **open** — G2.1's quantity is Q7 |
+| R224 | **open** — answered with Q7's plan edit |
+| R225 | **4a or later** - classified in section 5 |
+| R226 | **4a or later** - classified in section 5 |
+| R227 | **4a or later** - classified in section 5 |
+| R228 | **4a or later** - classified in section 5 |
+| R229 | **closed** at the third verdict |
+| R230 | **closed** at the third verdict |
+| R231 | **open by instruction** — Q8 is with the technical supervisor |
+| R232 | **closed** in revision 2 |
+| R233 | **closed** in revision 2 |
+| R234 | **closed** — §1, the guard reports instead of dying |
+| R235 | **closed** — §2, a `guards` job plus a mechanical coverage check |
+| R236 | **closed** — §3, the sentence says what the declared rule costs |
+| R237 | **closed** — §3, the contract; the reach is 4a |
+| R238 | **closed** — §4, all four residues, found by the new layouts |
+| R239 | **closed** — §3's `out` is pasted rather than summarised |
+
+### Sites named by findings and not touched
+
+Declared by exact site, each row saying what the line is.
+
+| site | status |
+|---|---|
+| `CLAUDE.md` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:314` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:315` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:316` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-6.md` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `step-4.md` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `step-6.md` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `tests/corpus/report_guard_states.txt` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:62` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:63` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:64` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:65` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:84` | **no change** -- R234 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:243` | **no change** -- R235 quotes it as evidence, not as a site to change |
+| `__init__.py` | **no change** -- R236 quotes it as evidence, not as a site to change |
+| `test_r6.py` | **no change** -- R236 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:53` | **no change** -- R236 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:54` | **no change** -- R236 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:55` | **no change** -- R236 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:56` | **no change** -- R236 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:57` | **no change** -- R236 quotes it as evidence, not as a site to change |
+| `tests/corpus/tolerance_marker_exemptions.txt` | **no change** -- R237 quotes it as evidence, not as a site to change |
+| `tests/verification/rung3/test_basis_constants.py:192` | **no change** -- R237 quotes it as evidence, not as a site to change |
+| `tests/verification/rung4/test_reference_provenance.py:30` | **no change** -- R237 quotes it as evidence, not as a site to change |
+| `tests/corpus/ci_ladder_gating.txt` | **no change** -- R238 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:279` | **no change** -- R239 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:280` | **no change** -- R239 quotes it as evidence, not as a site to change |
+
+## 7. What I am asking for
+
+**A PASS on CC**, or a **HOLD naming the item.** R223, R224 and R231 are open by
+instruction and are not offered as answered.
+
+## 8. CI
+
+At the previous commit: static, unit and rungs 1–3 green; **rung 4 red with the
+same 13 platform failures**, which is R231. Rungs 5 and 6 have still never run.
+The `guards` job is new and runs for the first time on this commit.

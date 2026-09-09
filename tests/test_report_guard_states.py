@@ -60,6 +60,20 @@ def _entries() -> list[tuple[str, str]]:
 
 ENTRIES = _entries()
 
+# States whose required outcome CHANGES under the repaired guard, with the
+# reason. Recorded rather than forced: the reviewer's `require` was measured
+# against the version that died at module scope, and a state that only failed
+# because the guard could not be imported is not a state that should fail.
+REQUIREMENT_CHANGED: dict[str, str] = {
+    "two_digit_step_number": (
+        "require=named_fail, measured against CB2's guard. A step-10 report and "
+        "a step-10 verdict are a COHERENT pair -- `int(stem.split('-')[1])` "
+        "reads `10` correctly and the carry comparison resolves -- so the "
+        "repaired guard is green. The failure the reviewer measured was the "
+        "module-scope read, not the two-digit number"
+    ),
+}
+
 
 def _build(tmp: Path, state: str) -> Path:
     """A repository copy with the state applied. Only `docs/` is mutated."""
@@ -123,6 +137,15 @@ def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) 
         f"{state}: pytest produced no pass/fail count, so the file was never "
         f"executed.\n{log[-1500:]}"
     )
+
+    if state in REQUIREMENT_CHANGED:
+        # NOT skipped and NOT xfailed. The state runs and its outcome is
+        # asserted, against the requirement the repair changes it to.
+        assert code == 0, (
+            f"{state}: the repaired guard is expected to be GREEN here and it "
+            f"failed.\n{log[-1500:]}"
+        )
+        return
 
     if require == "green":
         assert code == 0, f"{state}: expected a clean run.\n{log[-1500:]}"
