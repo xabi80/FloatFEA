@@ -34,6 +34,16 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests" / "verification" / "rung1"))
 
 
+class _Silent:
+    """The `capsys` fixture the shipped headroom test takes, without pytest."""
+
+    @staticmethod
+    def disabled():
+        import contextlib
+
+        return contextlib.nullcontext()
+
+
 def _figures() -> list[tuple[str, str]]:
     import test_corpus_configurations as C
     from floatfea.tolerances import (BOUNDARY_BISECTION_CONVERGENCE,
@@ -87,6 +97,32 @@ def _figures() -> list[tuple[str, str]]:
     rows.append(("counter_defect_over_edge", f"{CD / edge:.4g}x"))
     rows.append(("counter_headroom_room",
                  f"{PATCH_TEST_COUNTER_HEADROOM / (CD / edge):.2f}x"))
+
+    # THE BOUNDARY IS SOLVED HERE, NOT TYPED INTO THE PLAN (R207). The plan's
+    # justification for `PATCH_TEST_COUNTER_HEADROOM` carried `2.36e-6 passes
+    # and 2.38e-6 fails` in the present tense; two reviewer corpus rounds moved
+    # the edge and `2.36e-6` now FAILS -- the sentence declared a defect size
+    # admissible that the shipped test rejects, an 8% error in the unsafe
+    # direction. It was typed at `d920a8d`, before this file existed.
+    #
+    # SOLVED means the SHIPPED assertion is run either side of the boundary,
+    # with the counter-defect size moved and nothing else. The detection edge is
+    # cached by `_smallest_detection_edge`, so this costs one comparison.
+    boundary = PATCH_TEST_COUNTER_HEADROOM * edge
+    outcomes = []
+    original_cd = C.PATCH_TEST_EXACTNESS_COUNTER_DEFECT
+    for probe in (boundary * (1.0 - 1.0e-3), boundary * (1.0 + 1.0e-3)):
+        C.PATCH_TEST_EXACTNESS_COUNTER_DEFECT = probe
+        try:
+            C.test_the_counter_DEFECT_SIZE_cannot_be_raised(_Silent)
+            outcomes.append("passes")
+        except AssertionError:
+            outcomes.append("fails")
+        finally:
+            C.PATCH_TEST_EXACTNESS_COUNTER_DEFECT = original_cd
+    rows.append(("counter_defect_boundary",
+                 f"{boundary * (1.0 - 1.0e-3):.4g} {outcomes[0]}, "
+                 f"{boundary * (1.0 + 1.0e-3):.4g} {outcomes[1]}"))
 
     lo, hi, lo_at, hi_at, n, unbracketed, refused, lo_n = _boundary_margins(
         C, ceil, CD)

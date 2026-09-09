@@ -7,36 +7,37 @@ this file is not what a fresh run produces.
 
 | name | value |
 |---|---|
-| `corpus_entries` | 163 |
-| `corpus_solved` | 139 |
-| `clean_worst_ratio` | 0.0982x |
-| `clean_worst_entry` | ch_edgemin_D0p391_rollm0p73_aniso1p4e5 |
+| `corpus_entries` | 170 |
+| `corpus_solved` | 145 |
+| `clean_worst_ratio` | 0.1142x |
+| `clean_worst_entry` | ci_plateau_D0p0689_roll1p017_aniso9p6e5 |
 | `margin_dropped_flip` | 6.264e+05x |
 | `margin_dropped_flip_at` | shear_edge_L4000_aniso_weak (L/r_min 192370) |
-| `below_ceiling_dropped_flip` | 0 of 139 |
+| `below_ceiling_dropped_flip` | 0 of 145 |
 | `margin_wrong_dof_index` | 1486x |
 | `margin_wrong_dof_index_at` | bs_boundary_aniso1e6_L414590 (L/r_min 1993866) |
-| `below_ceiling_wrong_dof_index` | 0 of 139 |
+| `below_ceiling_wrong_dof_index` | 0 of 145 |
 | `margin_dropped_shear_parameter` | 0.0006932x |
 | `margin_dropped_shear_parameter_at` | shear_defect_live_thin_L1990 (L/r_min 114845) |
-| `below_ceiling_dropped_shear_parameter` | 7 of 139 |
+| `below_ceiling_dropped_shear_parameter` | 7 of 145 |
 | `margin_one_element_scaled` | 8.698e+06x |
 | `margin_one_element_scaled_at` | br2_floor_thick_iy1e6_L1000 (L/r_min 991) |
-| `below_ceiling_one_element_scaled` | 0 of 139 |
-| `exempt_total` | 61 of 556 |
+| `below_ceiling_one_element_scaled` | 0 of 145 |
+| `exempt_total` | 61 of 580 |
 | `exempt_by_defect` | dropped_flip 12, dropped_shear_parameter 32, wrong_dof_index 17 |
 | `exempt_detected` | 54 |
 | `calibration_ulp_worst` | 2.000 ULP |
-| `detection_edge` | 3.6425e-14 |
-| `detection_edge_at` | ch_edgemin_D0p0758_roll1p05_aniso9p4e5 |
-| `counter_defect_over_edge` | 2.745e+07x |
-| `counter_headroom_room` | 2.19x |
+| `detection_edge` | 3.6275e-14 |
+| `detection_edge_at` | ci_plateau_D0p0689_roll1p017_aniso9p6e5 |
+| `counter_defect_over_edge` | 2.757e+07x |
+| `counter_headroom_room` | 2.18x |
+| `counter_defect_boundary` | 2.174e-06 passes, 2.179e-06 fails |
 | `boundary_margin_min` | 7630.16x |
 | `boundary_margin_max` | 23918.6x |
 | `boundary_margin_spread` | 3.135x |
 | `boundary_margin_min_plateau` | 60 bases |
 | `boundary_margin_max_at` | band_edge_thickwall_free_dir |
-| `boundary_margin_bases` | 134 converged |
+| `boundary_margin_bases` | 140 converged |
 | `boundary_margin_unbracketed` | 0: none |
 | `boundary_margin_refused` | 5: all_three_extras_free_dir (DegenerateMemberOrientation), onode_and_aniso_together (DegenerateMemberOrientation), onode_just_outside (DegenerateMemberOrientation), vertical_onode (DegenerateMemberOrientation), vertical_onode_y (DegenerateMemberOrientation) |
-| `calibration_ulp_histogram` | 0 ULP x124, 1 ULP x4, 2 ULP x11 |
+| `calibration_ulp_histogram` | 0 ULP x129, 1 ULP x5, 2 ULP x11 |
