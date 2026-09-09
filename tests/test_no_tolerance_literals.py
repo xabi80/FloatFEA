@@ -34,6 +34,8 @@ Each must resolve to a `Name` imported from `floatfea.tolerances`, or be a call 
 from __future__ import annotations
 
 import ast
+import io
+import tokenize
 from pathlib import Path
 
 import pytest
@@ -50,6 +52,28 @@ APPROX_NAMES = {
 }
 SAFE_CALLS = {"assert_close", "assert_differs"}
 EXEMPT = "not-a-tolerance:"
+
+
+def _marker_lines(src: str) -> set[int]:
+    """Lines carrying the exemption marker IN A COMMENT, never in a string (CB0).
+
+    The marker used to be matched against raw text, so
+    `assert residual < 1e-9, "not-a-tolerance: for context"` exempted the
+    comparison -- in a file whose own docstring says message strings are not on
+    that path. Tokenising makes that docstring true: a COMMENT token is a
+    comment by the grammar, not by a substring search.
+    """
+    lines: set[int] = set()
+    try:
+        for tok in tokenize.generate_tokens(io.StringIO(src).readline):
+            if tok.type == tokenize.COMMENT and EXEMPT in tok.string:
+                lines.add(tok.start[0])
+    except (tokenize.TokenError, IndentationError, SyntaxError):
+        # A file that does not tokenise does not parse either, and `ast.parse`
+        # raises with a better message. NEVER fall back to the text scan: that
+        # is the hole this function closes.
+        return set()
+    return lines
 
 
 def _tolerance_names() -> set[str]:
@@ -89,7 +113,7 @@ def _call_name(node: ast.Call) -> str:
 def offending(path: Path) -> list[tuple[int, str]]:
     names = _tolerance_names()
     src = path.read_text(encoding="utf-8")
-    marked = {i for i, line in enumerate(src.splitlines(), 1) if EXEMPT in line}
+    marked = _marker_lines(src)
     tree = ast.parse(src)
 
     # THE MARKER ANNOTATES THE STATEMENT IT SITS IN (CA0). Keyed to a single line
@@ -99,27 +123,33 @@ def offending(path: Path) -> list[tuple[int, str]]:
     # been placed correctly. A guard whose exemptions depend on line breaks is a
     # guard that a formatter silently rewrites.
     #
-    # A COMPOUND STATEMENT GETS ONLY ITS HEADER, deliberately. `If`, `For` and
-    # `FunctionDef` are statements too and their spans cover their whole bodies,
-    # so one marker inside a long function would exempt every comparison in it --
-    # a far larger hole than the one being closed. The header is where a marker
-    # on a condition actually sits, and it ends at the first body statement.
-    exempt_lines = set(marked)
+    # A COMPOUND STATEMENT GETS ONLY ITS HEADER, and the header ends at the first
+    # DESCENDANT STATEMENT rather than at `body[0]` (CB0). `ast.Match` has no
+    # `body` attribute -- its blocks hang off `cases` -- so keying on `body`
+    # sent every `match` to the whole-statement branch and one marker anywhere
+    # in it exempted every comparison in every case. That is precisely the "far
+    # larger hole" this paragraph claimed to avoid, in the one compound
+    # statement it did not name. The minimum over descendant statements covers
+    # `Match`, `Try`, `If/else` and anything added later, by construction.
+    marker_span: dict[int, set[int]] = {}
     for stmt in ast.walk(tree):
         if not isinstance(stmt, ast.stmt):
             continue
-        body = getattr(stmt, "body", None)
-        if body:
-            span = range(stmt.lineno, body[0].lineno)
+        inner = [n.lineno for n in ast.walk(stmt) if isinstance(n, ast.stmt) and n is not stmt]
+        if inner:
+            span = range(stmt.lineno, min(inner))
         else:
             span = range(stmt.lineno, (stmt.end_lineno or stmt.lineno) + 1)
-        if any(line in marked for line in span):
-            exempt_lines.update(span)
-    out: list[tuple[int, str]] = []
+        for m in marked:
+            if m in span:
+                marker_span.setdefault(m, set()).update(span)
+    for m in marked:
+        marker_span.setdefault(m, {m})
+
+    candidates: list[tuple[int, int, str]] = []
 
     def flag(node: ast.AST, why: str) -> None:
-        if node.lineno not in exempt_lines:
-            out.append((node.lineno, why))
+        candidates.append((node.lineno, getattr(node, "col_offset", 0), why))
 
     for node in ast.walk(tree):
         if isinstance(node, ast.Call):
@@ -155,6 +185,25 @@ def offending(path: Path) -> list[tuple[int, str]]:
                     and abs(comp.value) not in (0.0, 1.0)
                 ):
                     flag(node, f"comparison against {comp.value!r}")
+
+    # ONE MARKER EXEMPTS AT MOST ONE NODE (CB0). The statement window let a
+    # single marker cover every flaggable node in its span, so a two-clause
+    # assertion with a marker on the first clause exempted the second as well --
+    # nineteen of the reviewer's twenty-eight shapes, every one of which the
+    # line-keyed window this replaced had caught. Exemptions are consumed in
+    # source order, so a marker annotates the node it sits nearest and every
+    # other flaggable node in the same statement is still reported.
+    used: set[int] = set()
+    out: list[tuple[int, str]] = []
+    for lineno, _col, why in sorted(set(candidates)):
+        claim = next(
+            (m for m in sorted(marker_span) if m not in used and lineno in marker_span[m]),
+            None,
+        )
+        if claim is None:
+            out.append((lineno, why))
+        else:
+            used.add(claim)
     return sorted(set(out))
 
 
