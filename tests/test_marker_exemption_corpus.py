@@ -47,7 +47,18 @@ from test_no_tolerance_literals import offending  # noqa: E402
 
 CORPUS = ROOT / "tests" / "corpus" / "tolerance_marker_exemptions.txt"
 
-# Entries the shipped rule still gets wrong, measured at CB0.
+# Entries the shipped rule still gets wrong, measured at CD2 over 66 shapes.
+# EVERY ONE IS A DETECTION GAP OR THE ONE-MARKER RULE'S OWN LIMIT, and CD2
+# bounds them: they go to 4a by name unless one exposes a false pass on a real
+# file in the tree. None does -- the scanner is clean over every file in
+# `tests/`, measured, not assumed.
+#
+# THE TWO THAT DID NOT GO TO 4a were the two clauses of `CLAUDE.md`
+# sec. Tolerances written out literally: `TOL = 1e-9; assert r < TOL` and
+# `def check(r, tol=1e-9)`. A guard that misses the rule it quotes is a hole in
+# the claim, not in the reach, and both are caught now.
+#
+# Entries the shipped rule still gets wrong, measured at CD2.
 # `test_the_known_misses_are_exactly_these` asserts this list IS the miss set,
 # so a change in either direction is a build failure.
 #
@@ -66,43 +77,42 @@ CORPUS = ROOT / "tests" / "corpus" / "tolerance_marker_exemptions.txt"
 # regression is not an improvement, and the reviewer measured this rule at four
 # with no false positive anywhere in the tree.
 KNOWN_MISSES: dict[str, str] = {
-    "marker_on_bare_comment_line_inside_call": (
-        "a bare comment line above the arguments; one flaggable node in the statement"
+    "chained_bounds_two_literals_one_marker": (
+        "one Compare node, two thresholds, one marker -- see same_literal_twice"
+    ),
+    "detect_dict_lookup_threshold": ("expression-valued threshold: a dict lookup"),
+    "detect_float_call_around_literal": (
+        "expression-valued threshold: float(...) around the literal"
+    ),
+    "detect_literal_times_scale": ("expression-valued threshold: literal times a scale"),
+    "detect_numpy_isclose_positional_rtol": ("a tolerance in a POSITIONAL slot, not a keyword"),
+    "detect_power_expression_threshold": ("expression-valued threshold: a power expression"),
+    "detect_round_to_decimals": ("expression-valued threshold: round(x, n)"),
+    "detect_tuple_unpacked_bounds": ("the threshold reaches the comparison through a tuple unpack"),
+    "detect_walrus_bound_threshold": ("the threshold is bound by a walrus and compared as a Name"),
+    "marker_in_lambda_default_same_stmt": (
+        "the marker annotates a different sub-expression of the same statement"
     ),
     "marker_in_multiline_dict_literal_same_stmt": (
-        "the marker annotates a dict entry; the only flaggable node is the atol"
-    ),
-    "marker_in_lambda_default_same_stmt": (
-        "the marker annotates a lambda default; the flaggable node is the "
-        "conditional's own comparison"
+        "the marker annotates a different sub-expression of the same statement"
     ),
     "marker_in_multiline_starred_call_args": (
-        "the marker annotates a starred argument, not the atol beside it"
+        "the marker annotates a different sub-expression of the same statement"
     ),
-    # --- the twenty-eighth verdict's additions ------------------------------
-    # THREE ARE THE LEFT-OPERAND SPECIES (R237), which is a gap in DETECTION and
-    # not in the exemption window: `offending()` reads `node.comparators` and
-    # never `node.left`, so `assert 0.05 > ratio` is invisible whatever any
-    # marker does. The docstring that claimed otherwise is fixed at CB; widening
-    # the reach is a change to what the guard flags and it is 4a's.
-    "yoda_left_literal_bare": (
-        "left-operand species (R237): the threshold is on the left of the "
-        "comparison and the scanner never reads it"
+    "marker_on_bare_comment_line_inside_call": (
+        "the marker annotates a different sub-expression of the same statement"
+    ),
+    "same_literal_twice_on_one_compare_node": (
+        "one Compare node holds both thresholds. Keying the exemption on the "
+        "VALUE catches this shape and reddens two correct, correctly-marked "
+        "live sites; keying it on the NODE keeps those clean and lets this "
+        "through. The trade is measured and the live sites won"
+    ),
+    "two_tolerance_kwargs_one_marked": (
+        "two tolerance keywords in one call node, same trade as above"
     ),
     "yoda_left_literal_with_marker_on_other_clause": (
-        "left-operand species (R237): invisible to detection, so no exemption "
-        "rule can change the verdict"
-    ),
-    "chained_bounds_two_literals_one_marker": (
-        "left-operand species (R237) in the middle of a chain: `a < x < b` puts "
-        "one threshold where the scanner does not look"
-    ),
-    # AND ONE THAT IS THE ONE-MARKER-ONE-NODE RULE MEETING ITS OWN LIMIT: a
-    # single `Compare` node carrying the same literal twice is ONE node, so one
-    # marker exempts it once and both occurrences go with it.
-    "same_literal_twice_on_one_compare_node": (
-        "one `Compare` node holds both literals, so exempting the node exempts "
-        "both -- the rule counts nodes and this shape hides two thresholds in one"
+        "both sides are read now, so this is the one-node trade rather than R237"
     ),
 }
 

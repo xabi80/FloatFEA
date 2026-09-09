@@ -28,6 +28,15 @@ set -eu
 
 STATUS=0
 RUN_COUNT=0
+
+# AT LEAST ONE ARGUMENT. With none the loop never runs and the script printed
+# `OK -- 0 director(y|ies) ran`: a job wired to nothing announced success.
+if [ "$#" -eq 0 ]; then
+    echo "run_rung: FAIL -- no arguments. A rung job that names no directory" >&2
+    echo "        runs nothing and must not report success." >&2
+    exit 1
+fi
+
 set -- "$@" --end--
 
 fail() {
@@ -43,6 +52,17 @@ while [ "$1" != "--end--" ]; do
     shift
     kind=${arg%%:*}
     dir=${arg#*:}
+
+    # THE PREFIX IS EXACT. `${arg%%:*}` returns the whole string when there is
+    # no colon, so a bare path ran as `full:` and a capitalised `Empty:` fell
+    # through the `empty` branch into `full` -- a declaration the script did not
+    # understand became the permissive one.
+    case "$kind" in
+        full|empty) ;;
+        *) fail "\`$arg\` has no \`full:\` or \`empty:\` prefix. An argument the
+        script does not understand must not default to the permissive reading."
+           continue ;;
+    esac
 
     if [ ! -d "$dir" ]; then
         fail "$dir is not a directory. A rung path that is renamed, removed, or
@@ -108,13 +128,21 @@ if [ "$RUN_COUNT" -gt 0 ]; then
     }
     echo "$out"
     # A RUNG WHOSE TESTS ARE ALL SKIPPED IS NOT A RUNG THAT PASSED. `CLAUDE.md`
-    # forbids a skip outright, and pytest exits 0 for a run that skipped
-    # everything -- so without this the ladder reports green on a rung that
-    # asserted nothing.
-    case "$out" in
-        *skipped*) fail "a test in $* was skipped. CLAUDE.md: never skip a test
-        to get a green build -- report the failure instead."
-                   exit 1 ;;
+    # forbids a skip and an xfail in the same sentence, and pytest exits 0 for a
+    # run that did either to everything -- so without this the ladder reports
+    # green on a rung that asserted nothing.
+    #
+    # READ FROM THE SUMMARY LINE ONLY. Grepping the whole output matched a
+    # PASSING test whose own diagnostic contained the word, and reddened a rung
+    # that had skipped nothing.
+    summary=$(printf '%s
+' "$out" | grep -E '[0-9]+ (passed|failed|skipped|xfailed)' | tail -1)
+    case "$summary" in
+        *skipped*|*xfailed*|*xpassed*)
+            fail "$summary -- a test in $* was skipped or xfailed. CLAUDE.md:
+        never skip a test or mark it xfail to get a green build. Report the
+        failure instead."
+            exit 1 ;;
     esac
 fi
 

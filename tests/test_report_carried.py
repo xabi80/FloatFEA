@@ -64,16 +64,25 @@ REPORTS = ROOT / "docs" / "reports" / "F2"
 
 
 def _steps(where: Path) -> set[int]:
-    """Step numbers with a file under `where`. Never raises: a directory that
-    cannot be read is a state this guard REPORTS, not one it dies on."""
+    """Step numbers with a file under `where`.
+
+    Does not raise for a directory that cannot be read, or for a filename this
+    does not recognise as a step. Both are states the guard REPORTS; neither is
+    one it dies on. The previous version said "never raises" and did, which is
+    R246 -- a docstring is not a guarantee, and this one now matches what the
+    two branches below actually cover.
+    """
+    # `[0-9]+`, NOT `str.isdigit()` (CC4). `isdigit()` admits a strictly larger
+    # set than `int()` accepts -- superscripts, Kharosthi numerals, a dozen other
+    # categories -- so `step-\N{SUPERSCRIPT ONE}.md` passed the filter, raised
+    # `ValueError` inside the comprehension, and took the whole suite down at
+    # collection: zero of 1656 tests. The repair before this one caught `OSError`
+    # because `OSError` was the failure it had already seen.
     try:
-        return {
-            int(q.stem.split("-")[1])
-            for q in where.glob("step-*.md")
-            if q.stem.split("-")[1].isdigit()
-        }
+        names = [q.stem for q in where.glob("step-*.md")]
     except OSError:
         return set()
+    return {int(m.group(1)) for m in (re.fullmatch(r"step-([0-9]+)", n) for n in names) if m}
 
 
 # THE NEWEST REPORT AND THE NEWEST COMPLETE PAIR ARE DIFFERENT NUMBERS, and
@@ -266,6 +275,89 @@ def test_the_report_carries_the_finding(finding: str) -> None:
     )
 
 
+# CC1: THE VOCABULARY. A report says what IT did; a verdict says where the item
+# stands. The two were the same word and a false status went unnoticed for a
+# round -- the report recorded an item closed at a verdict whose own text read
+# "MECHANISM VERIFIED, CLOSING CONDITION NOT MET. Carried, not closed."
+#
+# The guard below cannot check whether a status is TRUE -- its own docstring
+# says so, and that is still true. What it can do is make the strongest word
+# unavailable to the party that does not get to use it, so a report can no
+# longer make a ruling at all. `closed` is the verdict's, and only the verdict's.
+REPORT_WORDS = ("answered", "open", "withdrawn", "4a", "later", "carried")
+VERDICT_ONLY = ("closed",)
+
+_ROW = re.compile(r"^\|\s*(R\d+(?:[,\s/–—-]+R?\d+)*)[^|]*\|(.+)\|\s*$", re.MULTILINE)
+
+
+def _status_cells() -> list[tuple[str, str]]:
+    """`(items, status)` for every row of the newest revision's Carried table."""
+    out: list[tuple[str, str]] = []
+    for items, rest in _ROW.findall(CARRIED):
+        status = rest.rsplit("|", 1)[-1] if "|" in rest else rest
+        out.append((items.strip(), status.strip()))
+    return out
+
+
+def test_a_report_does_not_say_CLOSED(capsys) -> None:
+    """CC1. Only a verdict closes an item.
+
+    Not a style rule. The report that prompted this recorded an item closed
+    while the verdict it answered said the closing condition was not met, and
+    nothing could catch it: a status is prose, and the carry guard checks that a
+    status EXISTS, never that it is true. Taking the word away removes the
+    failure mode rather than detecting it.
+    """
+    cells = _status_cells()
+    assert cells, (
+        "no status cell parsed from the newest revision's Carried table. The "
+        "table format changed and every check below passes on anything."
+    )
+    guilty = [(i, st) for i, st in cells if any(w in st.lower() for w in VERDICT_ONLY)]
+    with capsys.disabled():
+        print(f"\n  {len(cells)} status cells parsed, {len(guilty)} say `closed`")
+    assert not guilty, (
+        f"{[g[0] for g in guilty]} are recorded with a word only a verdict may "
+        "use. A report says what it DID -- answered, open, withdrawn -- and the "
+        "verdict says where the item stands. The report that made this rule "
+        "recorded an item closed at a verdict reading 'Carried, not closed'."
+    )
+
+
+def test_every_carried_item_carries_one_of_the_report_words() -> None:
+    """The other half: a status that says nothing is not better than a wrong one."""
+    silent = [i for i, st in _status_cells() if not any(w in st.lower() for w in REPORT_WORDS)]
+    assert not silent, (
+        f"{silent} have a status that is none of {list(REPORT_WORDS)}. Banning "
+        "one word is not the point; saying which of the three applies is."
+    )
+
+
+def test_no_status_claims_more_than_the_verdict_allows() -> None:
+    """An item the verdict says is still carried cannot be reported as finished.
+
+    `withdrawn` is the one report word that claims finality -- it says the item
+    is gone, not that it was answered -- so it is the one that can contradict a
+    verdict. Where the verdict's own carry line says an item is NOT closed or is
+    still carried, the report may say `answered` or `open` and not `withdrawn`.
+    """
+    carried_open: set[str] = set()
+    for line in VERDICT_TEXT.splitlines():
+        low = line.lower()
+        if "not closed" in low or "still carried" in low or "still open" in low:
+            carried_open.update(_MENTION.findall(line))
+    contradicting = [
+        i
+        for i, st in _status_cells()
+        if "withdrawn" in st.lower() and set(_MENTION.findall(i)) & carried_open
+    ]
+    assert not contradicting, (
+        f"{contradicting} are reported as withdrawn while {VERDICT.name} says "
+        "they are still carried. A report cannot retire an item the verdict "
+        "kept."
+    )
+
+
 def _changed_lines() -> dict[str, set[int]]:
     """`{path: {old-side line numbers touched}}` since the reviewed commit.
 
@@ -278,8 +370,25 @@ def _changed_lines() -> dict[str, set[int]]:
     """
     reviewed = _reviewed_commit(VERDICT_TEXT)
     if not reviewed:
-        return {}
+        return {}, "the verdict states no `Reviewed commit:` line"
+    # THE RETURN CODE IS READ (CC3). It was not, so a `git diff` against a
+    # commit the clone does not contain returned an empty touched-set --
+    # indistinguishable from "the step changed nothing", and 23 site checks
+    # passed for that reason on every shallow checkout. One machine, one commit,
+    # one variable: full clone `122 passed`, `git clone --depth 1`
+    # `23 failed, 99 passed`. A guard cannot report what it cannot tell apart.
     out = subprocess.run(["git", "diff", "-U0", reviewed], cwd=ROOT, capture_output=True)
+    if out.returncode != 0:
+        # RETURNED, NOT RAISED (CD1). Raising here runs at module scope, which
+        # is R234 again: the import dies and nothing in the file is collected.
+        # The message travels to a named test instead.
+        return {}, (
+            f"`git diff -U0 {reviewed}` failed with {out.returncode}: "
+            f"{out.stderr.decode('utf-8', errors='replace').strip()}. The most "
+            "likely cause is a shallow clone that does not contain the reviewed "
+            "commit -- set `fetch-depth: 0`. An empty result here would be "
+            "read as 'the step touched nothing', which is why it is reported."
+        )
     text = out.stdout.decode("utf-8", errors="replace")
     touched: dict[str, set[int]] = {}
     path = ""
@@ -299,7 +408,7 @@ def _changed_lines() -> dict[str, set[int]]:
                 # closes it.
                 span = range(start, start + count) if count else (start, start + 1)
                 touched.setdefault(path, set()).update(span)
-    return touched
+    return touched, None
 
 
 def _sites_by_finding() -> list[tuple[str, str, int]]:
@@ -326,7 +435,22 @@ def _sites_by_finding() -> list[tuple[str, str, int]]:
 
 
 SITES = _sites_by_finding()
-TOUCHED = _changed_lines()
+TOUCHED, TOUCHED_ERROR = _changed_lines()
+
+
+def test_the_diff_the_site_check_needs_is_available() -> None:
+    """CD1. A guard that cannot see the diff must SAY so, not report nothing.
+
+    `git diff` against a commit the clone does not contain returns empty, which
+    reads exactly like "the step changed nothing" -- so every site check passed
+    for that reason on a shallow checkout. Measured on one machine, one commit,
+    one variable: full clone `122 passed`, `git clone --depth 1`
+    `23 failed, 99 passed`.
+
+    This is a named test rather than a raise because a raise at module scope is
+    R234: the import dies and none of the file is collected.
+    """
+    assert TOUCHED_ERROR is None, TOUCHED_ERROR
 
 
 _NO_SITE = ("(no site parsed)", "", 0)
@@ -352,6 +476,12 @@ def test_every_named_site_is_touched_or_declared(finding: str, path: str, line: 
             "the site pattern stopped matching; both make this check pass on "
             "anything."
         )
+    if TOUCHED_ERROR is not None:
+        # REPORTED ONCE, by `test_the_diff_the_site_check_needs_is_available`.
+        # Asserting it here too turned one diagnosis into ninety identical
+        # failures, which buries the sentence that says what actually happened.
+        # This is not a pass being hidden: that test fails, by name, loudly.
+        return
     hit = [p for p in TOUCHED if p.endswith(path)]
     if hit and (line == 0 or any(line in TOUCHED[p] for p in hit)):
         return

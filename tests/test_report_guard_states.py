@@ -29,6 +29,8 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import NamedTuple
+from xml.etree import ElementTree
 
 import pytest
 
@@ -45,6 +47,25 @@ STATES: dict[str, list[tuple[str, str]]] = {
     "two_digit_step_number": [("copy_report", "10"), ("copy_verdict", "10")],
     "non_numeric_step_suffix": [("copy_report", "5b")],
     "reports_directory_renamed_away": [("rename_reports", "")],
+    # --- the twenty-ninth verdict's eleven ---------------------------------
+    "superscript_digit_step_number": [("report_named", "step-\N{SUPERSCRIPT ONE}.md")],
+    "shallow_clone_depth_1": [("shallow", "")],
+    "reviews_directory_renamed_away": [("rename_reviews", "")],
+    "answers_header_names_a_sha_that_is_not_a_commit": [("bad_answers_sha", "deadbee")],
+    "two_reports_ahead_of_the_newest_verdict": [
+        ("copy_report", "6"),
+        ("copy_report", "7"),
+    ],
+    "report_file_is_a_directory": [("report_dir", "6"), ("copy_verdict", "6")],
+    "verdict_file_is_a_directory": [("copy_report", "6"), ("verdict_dir", "6")],
+    "draft_suffix_beside_a_step_report": [("report_named", "step-6-draft.md")],
+    "step_number_is_the_empty_string": [("report_named", "step-.md")],
+    "two_digit_step_number_discriminating": [
+        ("copy_report", "10"),
+        ("copy_verdict", "10"),
+        ("append_finding", "10"),
+    ],
+    "verdict_amended_after_the_commit_the_report_answers": [("append_finding", "5")],
 }
 
 
@@ -64,15 +85,35 @@ ENTRIES = _entries()
 # reason. Recorded rather than forced: the reviewer's `require` was measured
 # against the version that died at module scope, and a state that only failed
 # because the guard could not be imported is not a state that should fail.
-REQUIREMENT_CHANGED: dict[str, str] = {
+# Each entry maps to the outcome the REPAIRED guard produces, so the direction
+# is asserted rather than merely excused. A bare string here silently indexed to
+# its first character and asserted the right thing by accident.
+REQUIREMENT_CHANGED: dict[str, tuple[str, str]] = {
+    "shallow_clone_depth_1": (
+        "named_fail",
+        "require=green. A guard that cannot see the diff and says nothing is "
+        "the defect R243 names, so the repaired guard reports a NAMED failure "
+        "instead of passing. `fetch-depth: 0` removes the state from CI; it "
+        "does not make the state harmless where it occurs",
+    ),
     "two_digit_step_number": (
+        "green",
         "require=named_fail, measured against CB2's guard. A step-10 report and "
         "a step-10 verdict are a COHERENT pair -- `int(stem.split('-')[1])` "
         "reads `10` correctly and the carry comparison resolves -- so the "
         "repaired guard is green. The failure the reviewer measured was the "
-        "module-scope read, not the two-digit number"
+        "module-scope read, not the two-digit number",
     ),
 }
+
+
+def _force_remove(func, path, exc):  # noqa: ANN001 - shutil's handler signature
+    """Clear the read-only bit and retry. Git packs arrive read-only."""
+    import os
+    import stat
+
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
 
 
 def _build(tmp: Path, state: str) -> Path:
@@ -99,17 +140,109 @@ def _build(tmp: Path, state: str) -> Path:
             (reviews / f"step-{arg}.md").write_text("", encoding="utf-8")
         elif action == "rename_reports":
             reports.rename(reports.parent / "F2_moved")
+        elif action == "rename_reviews":
+            reviews.rename(reviews.parent / "F2_moved")
+        elif action == "report_named":
+            shutil.copy2(reports / "step-5.md", reports / arg)
+        elif action == "report_dir":
+            (reports / f"step-{arg}.md").mkdir()
+        elif action == "verdict_dir":
+            (reviews / f"step-{arg}.md").mkdir()
+        elif action == "bad_answers_sha":
+            text = (reports / "step-5.md").read_text(encoding="utf-8", errors="replace")
+            head = text.rindex("Answers: verdict")
+            end = text.index("\n", head)
+            (reports / "step-5.md").write_text(
+                text[:head] + f"Answers: verdict 28 @ {arg}" + text[end:],
+                encoding="utf-8",
+            )
+        elif action == "append_finding":
+            # A finding the report cannot possibly carry, appended to the
+            # WORKING COPY of the verdict. The guard reads the verdict from git
+            # at the answered sha, so this must change nothing -- and if it
+            # does, the guard is reading the working copy instead.
+            v = reviews / f"step-{arg}.md"
+            v.write_text(
+                v.read_text(encoding="utf-8", errors="replace")
+                + "\n**R999. (BLOCKING) planted by the harness.**\n",
+                encoding="utf-8",
+            )
+        elif action == "shallow":
+            # A REAL SHALLOW CLONE, not `fetch --depth 1` on a full one. The
+            # first version ran the fetch against `origin` and changed nothing,
+            # so the state passed without ever being built -- the harness
+            # equivalent of the defect it is here to catch. `--no-local` forces
+            # the transport that honours the depth for a file URL.
+            shallow = tmp / "shallow"
+            subprocess.run(
+                ["git", "clone", "--depth", "1", "--no-local", ROOT.as_uri(), str(shallow)],
+                capture_output=True,
+                check=True,
+            )
+            # `rmtree` on a copied `.git` hits read-only pack files on
+            # Windows, so the handler clears the bit rather than the harness
+            # reporting a permission error as a guard failure.
+            shutil.rmtree(work / ".git", onexc=_force_remove)
+            shutil.move(str(shallow / ".git"), str(work / ".git"))
     return work
 
 
-def _run_guard(work: Path) -> tuple[int, str]:
+class Outcome(NamedTuple):
+    """What the nested run did, read from pytest itself rather than its prose."""
+
+    code: int
+    collected: int
+    failed: int
+    errors: int
+    names: tuple[str, ...]
+    log: str
+
+    @property
+    def collection_failed(self) -> bool:
+        """Nothing ran. `pytest` exit 2 is a usage or collection error, and a
+        junit report with no test cases says the same thing from the other
+        side."""
+        return self.code == 2 or self.collected == 0
+
+    @property
+    def everything_failed(self) -> bool:
+        return self.collected > 0 and self.failed + self.errors == self.collected
+
+
+def _run_guard(work: Path) -> Outcome:
+    """Run the guard in `work` and read the result from the junit report.
+
+    NOT FROM THE TEXT (CC4). The first version searched stdout for the word
+    "error", so on CI it announced that a nested run had not collected while
+    that run's own summary read `5 failed in 0.05s`. Its mirror was worse:
+    `or "passed" in log` disabled the check outright as soon as anything passed.
+    A substring cannot separate "nothing ran" from "everything failed", and
+    those are the two states this file exists to tell apart.
+    """
+    report = work / "junit.xml"
     out = subprocess.run(
-        [sys.executable, "-m", "pytest", GUARD, "-q"],
+        [sys.executable, "-m", "pytest", GUARD, "-q", f"--junit-xml={report}"],
         cwd=work,
         capture_output=True,
         text=True,
     )
-    return out.returncode, out.stdout + out.stderr
+    collected = failed = errors = 0
+    names: list[str] = []
+    if report.is_file():
+        root = ElementTree.parse(report).getroot()
+        for case in root.iter("testcase"):
+            collected += 1
+            bad = False
+            for child in case:
+                if child.tag == "failure":
+                    failed += 1
+                    bad = True
+                elif child.tag == "error":
+                    errors += 1
+                    bad = True
+            if bad:
+                names.append(case.get("name", ""))
+    return Outcome(out.returncode, collected, failed, errors, tuple(names), out.stdout + out.stderr)
 
 
 def test_the_corpus_and_the_states_agree() -> None:
@@ -125,26 +258,34 @@ def test_the_corpus_and_the_states_agree() -> None:
 @pytest.mark.parametrize("state, require", ENTRIES, ids=[e[0] for e in ENTRIES])
 def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) -> None:
     work = _build(tmp_path, state)
-    code, log = _run_guard(work)
+    got = _run_guard(work)
+    code, log = got.code, got.log
 
-    # COLLECTION IS THE THING BEING ASSERTED. A guard that cannot be collected
-    # reports nothing at all, which is the failure R234 is about.
-    assert "error" not in log.split("=====")[-1].lower() or "passed" in log, (
-        f"{state}: the guard did not COLLECT -- it errored during import, so "
-        f"nothing in the file ran and nothing was reported.\n{log[-1500:]}"
+    # TWO SEPARATE ASSERTIONS, because they are two different failures (CC4).
+    assert not got.collection_failed, (
+        f"{state}: the guard did not COLLECT -- exit {got.code}, "
+        f"{got.collected} test cases in the junit report. Nothing in the file "
+        f"ran and nothing was reported, which is R234.\n{log[-1500:]}"
     )
-    assert " passed" in log or " failed" in log, (
-        f"{state}: pytest produced no pass/fail count, so the file was never "
-        f"executed.\n{log[-1500:]}"
+    assert not got.everything_failed, (
+        f"{state}: every one of {got.collected} tests failed. A guard that "
+        "fails wholesale is reporting the state of its own inputs, not of the "
+        f"repository.\n{log[-1500:]}"
     )
 
     if state in REQUIREMENT_CHANGED:
         # NOT skipped and NOT xfailed. The state runs and its outcome is
-        # asserted, against the requirement the repair changes it to.
-        assert code == 0, (
-            f"{state}: the repaired guard is expected to be GREEN here and it "
-            f"failed.\n{log[-1500:]}"
-        )
+        # asserted, in the direction the repair produces.
+        if REQUIREMENT_CHANGED[state][0] == "green":
+            assert code == 0, (
+                f"{state}: the repaired guard is expected to be GREEN here and "
+                f"it failed.\n{log[-1500:]}"
+            )
+        else:
+            assert code != 0, (
+                f"{state}: the repaired guard is expected to REPORT here and it "
+                f"passed.\n{log[-1500:]}"
+            )
         return
 
     if require == "green":
@@ -158,15 +299,14 @@ def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) 
         assert code != 0, f"{state}: this state is a defect and must fail.\n{log[-1500:]}"
         named = (
             "test_the_guard_reads_the_step_being_worked_on",
+            "test_the_report_names_the_verdict_it_answers",
+            "test_the_diff_the_site_check_needs_is_available",
             "test_the_parse_found_something_to_check",
             "test_the_report_carries_the_finding",
             "test_every_named_site_is_touched_or_declared",
         )
-        assert any(n in log for n in named), (
-            f"{state}: the guard failed, but through no named test. A failure "
-            f"nobody can locate is half a report.\n{log[-1500:]}"
-        )
-        assert "during collection" not in log, (
-            f"{state}: the guard reported through a COLLECTION error, so the "
-            f"rest of the file never ran. That is R234 exactly.\n{log[-1500:]}"
+        assert any(any(n in got_name for n in named) for got_name in got.names), (
+            f"{state}: the guard failed through {list(got.names)[:4]}, none of "
+            "which is a named reporter. A failure nobody can locate is half a "
+            f"report.\n{log[-1500:]}"
         )

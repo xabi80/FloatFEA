@@ -151,12 +151,49 @@ def offending(path: Path) -> list[tuple[int, str]]:
     for m in marked:
         marker_span.setdefault(m, {m})
 
-    candidates: list[tuple[int, int, str]] = []
+    candidates: list[tuple[int, int, str, int]] = []
 
     def flag(node: ast.AST, why: str) -> None:
-        candidates.append((node.lineno, getattr(node, "col_offset", 0), why))
+        # KEYED ON THE NODE, not on the value (CD2). A chained comparison
+        # `0.34 < x < 0.3536` is ONE `Compare` with a threshold on each side, so
+        # reading both sides made it two candidates -- and "one marker exempts
+        # one node" then left the second reported on two correctly-marked live
+        # sites. A marker annotates the comparison; a chain is one comparison.
+        candidates.append((node.lineno, getattr(node, "col_offset", 0), why, id(node)))
+
+    # CLAUDE.md sec. Tolerances names three things, and the scanner read one of
+    # them (CD2). "No exceptions, no local literals, NO DEFAULT ARGUMENTS
+    # CARRYING A TOLERANCE" -- both of the other two were written out verbatim
+    # by the reviewer and both scanned clean. A guard that misses the rule it
+    # quotes is the shape this milestone keeps finding.
+    #
+    # A module-level `NAME = <float>` used as a threshold is a local literal
+    # wearing a name; the indirection is the point of the clause.
+    local_floats: dict[str, float] = {}
+    for stmt in tree.body:
+        if (
+            isinstance(stmt, ast.Assign)
+            and isinstance(stmt.value, ast.Constant)
+            and isinstance(stmt.value.value, float)
+        ):
+            for tgt in stmt.targets:
+                if isinstance(tgt, ast.Name) and tgt.id not in names:
+                    local_floats[tgt.id] = stmt.value.value
 
     for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            args = node.args
+            for arg, default in zip(
+                args.args[len(args.args) - len(args.defaults) :],
+                args.defaults,
+                strict=True,
+            ):
+                if (
+                    arg.arg in TOL_KEYWORDS
+                    and _has_number(default)
+                    and not _declared(default, names)
+                ):
+                    flag(node, f"default argument {arg.arg}=<literal>")
         if isinstance(node, ast.Call):
             cname = _call_name(node)
             if cname in SAFE_CALLS:
@@ -179,7 +216,12 @@ def offending(path: Path) -> list[tuple[int, str]]:
                         "(rel=1e-6, abs=1e-12) are an undeclared tolerance",
                     )
         elif isinstance(node, ast.Compare):
-            for comp in node.comparators:
+            # BOTH SIDES (R237, closed at CD2). `node.left` was never read, so
+            # `assert 0.05 > ratio` was invisible while this file's own "What is
+            # flagged" list promised any float threshold. Six of seventeen known
+            # misses were that one omission, and the quarter-rule below is what
+            # made closing it the answer rather than listing them.
+            for comp in [node.left, *node.comparators]:
                 # Any FLOAT threshold, at any magnitude: `> 1e4` is as much a
                 # tolerance as `< 0.05`, and the first is what R13 named.
                 # Integers are counts and 0.0 / 1.0 are canonical structural
@@ -190,6 +232,26 @@ def offending(path: Path) -> list[tuple[int, str]]:
                     and abs(comp.value) not in (0.0, 1.0)
                 ):
                     flag(node, f"comparison against {comp.value!r}")
+                elif (
+                    isinstance(comp, ast.UnaryOp)
+                    and isinstance(comp.op, ast.USub)
+                    and isinstance(comp.operand, ast.Constant)
+                    and isinstance(comp.operand.value, float)
+                    and abs(comp.operand.value) not in (0.0, 1.0)
+                ):
+                    # A NEGATIVE LITERAL IS NOT A `Constant` NODE. `-1e-09`
+                    # parses as `UnaryOp(USub, Constant)`, so the flat branch
+                    # above never saw it. Narrow on purpose: scanning every
+                    # expression that merely CONTAINS a float reddened seven
+                    # correct files, and adding markers to seven correct files
+                    # is the growth CD1's bound exists to stop.
+                    flag(node, f"comparison against -{comp.operand.value!r}")
+                elif isinstance(comp, ast.Name) and comp.id in local_floats:
+                    flag(
+                        node,
+                        f"comparison against {comp.id}, a module-level "
+                        f"{local_floats[comp.id]!r} -- a local literal with a name",
+                    )
 
     # ONE MARKER EXEMPTS AT MOST ONE NODE (CB0). The statement window let a
     # single marker cover every flaggable node in its span, so a two-clause
@@ -199,8 +261,11 @@ def offending(path: Path) -> list[tuple[int, str]]:
     # source order, so a marker annotates the node it sits nearest and every
     # other flaggable node in the same statement is still reported.
     used: set[int] = set()
+    claimed: dict[int, bool] = {}
     out: list[tuple[int, str]] = []
-    for lineno, _col, why in sorted(set(candidates)):
+    for lineno, _col, why, node_id in sorted(set(candidates)):
+        if claimed.get(node_id):
+            continue
         claim = next(
             (m for m in sorted(marker_span) if m not in used and lineno in marker_span[m]),
             None,
@@ -209,6 +274,7 @@ def offending(path: Path) -> list[tuple[int, str]]:
             out.append((lineno, why))
         else:
             used.add(claim)
+            claimed[node_id] = True
     return sorted(set(out))
 
 

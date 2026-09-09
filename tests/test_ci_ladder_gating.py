@@ -75,6 +75,24 @@ PASSING = "def test_ok():\n    assert True\n"
 FAILING = "def test_bad():\n    assert 1 == 2\n"
 BROKEN = "import a_module_that_is_not_there\n\n\ndef test_ok():\n    assert True\n"
 NO_PREFIX = "def check_ok():\n    assert True\n"
+XFAILED = "\n".join(
+    [
+        "import pytest",
+        "",
+        "",
+        '@pytest.mark.xfail(reason="the rung asserts nothing")',
+        "def test_a():",
+        "    assert 1 == 2",
+        "",
+    ]
+)
+SAYS_SKIPPED = "\n".join(
+    [
+        "def test_a():",
+        '    assert True, "no case was skipped in this rung"',
+        "",
+    ]
+)
 SKIPPED = (
     "import pytest\n\n\n"
     '@pytest.mark.skip(reason="the rung asserts nothing")\n'
@@ -166,10 +184,41 @@ LAYOUTS: dict[str, dict[str, str | None]] = {
         "tests/verification/rung6/.empty-by-design": "marker",
         "tests/regression/keep.txt": "",
     },
+    # --- the twenty-ninth verdict's seven ------------------------------------
+    "ci_rung_full_every_test_is_xfail": {
+        "tests/verification/rung1/test_a.py": XFAILED,
+    },
+    "ci_run_rung_with_no_arguments_at_all": {
+        "tests/verification/rung1/test_a.py": PASSING,
+    },
+    "ci_argument_without_a_kind_prefix": {
+        "tests/verification/rung1/test_a.py": PASSING,
+    },
+    "ci_passing_rung_whose_output_contains_the_word_skipped": {
+        "tests/verification/rung1/test_a.py": SAYS_SKIPPED,
+    },
+    "ci_misspelled_kind_capital_Empty": {
+        "tests/verification/rung2/.empty-by-design": "marker",
+    },
+    "ci_full_rung_with_a_failing_test_prints_no_OK_line": {
+        "tests/verification/rung1/test_a.py": PASSING,
+        "tests/verification/rung1/test_b.py": FAILING,
+    },
+    "ci_empty_then_full_rung_fails_prints_no_OK_line": {
+        "tests/verification/rung2/.empty-by-design": "marker",
+        "tests/verification/rung1/test_a.py": FAILING,
+    },
 }
 
 # The two entries whose job arguments are not the default pair for their rung.
 SPECIAL_ARGS: dict[str, list[str]] = {
+    "ci_run_rung_with_no_arguments_at_all": [],
+    "ci_argument_without_a_kind_prefix": ["tests/verification/rung1"],
+    "ci_misspelled_kind_capital_Empty": ["Empty:tests/verification/rung2"],
+    "ci_empty_then_full_rung_fails_prints_no_OK_line": [
+        "empty:tests/verification/rung2",
+        "full:tests/verification/rung1",
+    ],
     "ci_rung_declared_empty_but_directory_absent": ["empty:tests/verification/rung5"],
     "ci_rung_path_contains_a_space": ["full:tests/ver ification/rung1"],
     "ci_rung2_stale_marker_rung_gains_a_failing_test": ["empty:tests/verification/rung2"],
