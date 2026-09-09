@@ -53,8 +53,18 @@ jobs:
   #
   # Each rung is wired now, while empty, so that adding a test to a rung is a
   # matter of dropping a file into tests/verification/rungN/ -- not a CI edit.
-  # An empty rung passes; `--strict-markers` and the conftest ordering keep the
-  # structure honest as tests arrive.
+  #
+  # "AN EMPTY RUNG PASSES" WAS WRITTEN HERE AND WAS FALSE (CA1). `pytest` exits
+  # 5 for "no tests ran", so rungs 2 and 5 failed the first time this workflow
+  # ever reached them -- which was today, because `lint and type-check` had
+  # always failed first and every ladder job is `needs:`-gated behind it. The
+  # claim had never been executed.
+  #
+  # Each rung now distinguishes the two cases that exit 5 conflates: a rung with
+  # NO test file is empty and passes, and a rung that HAS test files and
+  # collects none of them fails. The second is a real defect -- a renamed
+  # directory, a broken import, a collection error -- and blanket-accepting
+  # exit 5 would hide it.
   # ------------------------------------------------------------------
   rung1:
     name: "ladder 1 -- the solver is a solver"
@@ -65,7 +75,13 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/verification/rung1 -q
+      - name: "rung 1"
+        run: |
+          if ! ls tests/verification/rung1/test_*.py >/dev/null 2>&1; then
+            echo "no test file under tests/verification/rung1 -- empty rung, nothing to run"
+            exit 0
+          fi
+          pytest tests/verification/rung1 -q
 
   rung2:
     name: "ladder 2 -- the element is the element"
@@ -76,7 +92,13 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/verification/rung2 -q
+      - name: "rung 2"
+        run: |
+          if ! ls tests/verification/rung2/test_*.py >/dev/null 2>&1; then
+            echo "no test file under tests/verification/rung2 -- empty rung, nothing to run"
+            exit 0
+          fi
+          pytest tests/verification/rung2 -q
 
   rung3:
     name: "ladder 3 -- the model is the platform"
@@ -87,7 +109,13 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/verification/rung3 -q
+      - name: "rung 3"
+        run: |
+          if ! ls tests/verification/rung3/test_*.py >/dev/null 2>&1; then
+            echo "no test file under tests/verification/rung3 -- empty rung, nothing to run"
+            exit 0
+          fi
+          pytest tests/verification/rung3 -q
 
   rung4:
     name: "ladder 4 -- the loads are the loads"
@@ -98,7 +126,13 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/verification/rung4 -q
+      - name: "rung 4"
+        run: |
+          if ! ls tests/verification/rung4/test_*.py >/dev/null 2>&1; then
+            echo "no test file under tests/verification/rung4 -- empty rung, nothing to run"
+            exit 0
+          fi
+          pytest tests/verification/rung4 -q
 
   rung5:
     name: "ladder 5 -- independent confirmation"
@@ -109,7 +143,13 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/verification/rung5 -q
+      - name: "rung 5"
+        run: |
+          if ! ls tests/verification/rung5/test_*.py >/dev/null 2>&1; then
+            echo "no test file under tests/verification/rung5 -- empty rung, nothing to run"
+            exit 0
+          fi
+          pytest tests/verification/rung5 -q
 
   rung6:
     name: "ladder 6 -- it stays fixed"
@@ -120,4 +160,10 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/verification/rung6 tests/regression -q
+      - name: "rung 6"
+        run: |
+          if ! ls tests/verification/rung6/test_*.py tests/regression/test_*.py >/dev/null 2>&1; then
+            echo "no test file under tests/verification/rung6 tests/regression -- empty rung, nothing to run"
+            exit 0
+          fi
+          pytest tests/verification/rung6 tests/regression -q
