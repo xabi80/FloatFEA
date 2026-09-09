@@ -1,391 +1,394 @@
 # Review — F2 step 4
-Reviewed commit: 1bc652a837c906fe9a36d139bdf6b3f27f076518
+Reviewed commit: 45550a3cee7f52bfcd27eaf890e3627c87cedaf7
 Verdict: HOLD
-Tests: 1433 passed, 0 failed, 0 skipped   (my run at `fc30b71`, `python -m pytest -q`,
-131.64 s. With my twenty-third-round corpus applied: **1463 passed, 1 failed**.)
+Tests: 1518 passed, 0 failed, 0 skipped   (my run at `3e225c5`, `python -m pytest -q`,
+157.73 s. With my twenty-fourth-round corpus applied: **1540 passed, 1 failed**.)
 
-**Reviewed code commit: `fc30b71`.** The header stamp is `1bc652a`, my own corpus
+**Reviewed code commit: `3e225c5`.** The header stamp is `45550a3`, my own corpus
 commit, made immediately before this verdict and touching no code.
 
-Twenty-third pass, and a short one by design: range `eec7113..HEAD`, one commit,
-two generated artifacts. Three of the four things I was asked to check are clean.
-The fourth is not, and it is the one the round was about.
+Twenty-fourth pass. Range `dfcee3a..HEAD`, three commits. **All three blocking
+items are answered at their named sites and I verified each one by running it,
+not by reading it.** R207's new generated figure is the best piece of work in
+this round and I tried three ways to make it lie; it did not. R208 is closed at
+both sites. R209 is closed in `tolerances.py`.
+
+**And the paragraph R207 was about acquired a new defect in the commit that
+fixed it.** The bold sentence leading the withdrawal -- declared *left
+deliberately* -- is a causal claim about what consumes this tolerance's margin,
+its supporting measurement was deleted three lines below it in this same commit,
+and the replacement measurement points the other way. That is R211, and it is
+the one thing I hold on.
 
 ```
-cmd  git diff eec7113..HEAD -- .claude docs/SUPERVISOR.md
+cmd  git diff dfcee3a..HEAD -- .claude docs/SUPERVISOR.md
 out  (empty)  -- my instructions untouched. Nothing added, nothing deleted.
-cmd  git diff eec7113..HEAD -- floatfea/tolerances.py
-out  (empty)  -- not a comment, not a value. The file is byte-identical.
-cmd  git diff eec7113..HEAD -- floatfea/ tests/ --stat
-out  tests/regression/g22_exempt_pair_responses.json | 3 +++   AND NOTHING ELSE.
-     floatfea/ is untouched for an eighth consecutive round.
-cmd  git diff eec7113..HEAD --stat
-out  docs/milestones/F2_figures.md 36 (18 +, 18 -) ; the golden file 3 +
+cmd  git diff dfcee3a..HEAD -- floatfea/ --stat
+out  floatfea/tolerances.py | 35 +++++++++--------- AND NOTHING ELSE
+cmd  git diff dfcee3a..HEAD -- floatfea/tolerances.py, non-comment changed lines
+out  (empty)  -- every changed line is a comment. No value moved.
+cmd  git diff dfcee3a..HEAD -- tests/
+out  (empty)  -- no test, no golden file, no fixture
+cmd  git log --format='%h %s' dfcee3a..HEAD ; any commit touching docs/reviews/
+out  d89dfee plan / 6eed45e step / 3e225c5 report -- none touches docs/reviews/
+cmd  grep -n "^Answers:" docs/reports/F2/step-4.md | tail -1 ; newest verdict
+out  :3823 verdict 23 @ dfcee3a ; newest verdict IS 23 @ dfcee3a
+cmd  python -m pytest -q 2>&1 | tail -1
+out  1518 passed, 2 warnings in 157.73s
 cmd  python scripts/regen_figures.py --check
 out  regen_figures: up to date  -- exit 0
-cmd  python -m pytest -q tests/test_plan_figures.py
-out  31 passed
-cmd  grep -n "^Answers:" docs/reports/F2/step-4.md | tail -1 ; newest verdict
-out  :3523 verdict 21 @ ec09ea6 ; newest verdict is 22 @ eec7113
 ```
 
-**Item 1b, performed, and it does NOT trigger.** The report names verdict 21
-while the newest is verdict 22 -- but no report revision landed in this range, and
-verdict 22 is the PASS that judged the report *as it stands*. The report
-legitimately predates the newest verdict and makes no `Carried` claim against it.
-`tests/test_report_carried.py` is green at `fc30b71` and green under my corpus.
-Not a HOLD on 1b.
-
-**The ruling, first.** The regeneration itself is correct and I could not fault
-it. The figures file is what a fresh run produces, no tolerance moved, no code
-moved, and the golden change is three insertions with zero deletions and zero
-moves from one new entry -- a corpus round, not a regeneration to match new
-output. Every one of your four measurements reproduces at my run.
-
-**And the claim I was asked to refute is refuted.** "R194's fix replaced the
-retyped figures with names, so nothing went stale" is true of
-`floatfea/tolerances.py:495-513` and false of the repository. R194's fix covered
-one paragraph in one file. The locked plan carries a *different* paragraph, in
-present tense, that justifies the same constant and retypes five of the figures
-this commit moved -- including a **solved boundary that the shipped assertion now
-contradicts at this commit**. That blocks under BP0, which says in terms that a
-figure citing a rule that moved is regenerated or withdrawn *in the same commit*.
+**Item 1b, performed, and it does not trigger.** The report's header names verdict
+23 and verdict 23 is the newest. One comparison, made.
 
 ## Carried
 
-Every item from the twenty-second verdict (`PASS @ 9d70483`, committed
-`eec7113`), re-measured at `fc30b71`.
+Every item from the twenty-third verdict (`HOLD @ fc30b71`, committed `dfcee3a`),
+re-measured at `3e225c5`.
 
-- **R205 -- ANSWERED, and it is what this commit is.** The corpus round is
-  regenerated; `detection_edge` `3.9459e-14 -> 3.6425e-14` at
-  `ch_edgemin_D0p0758_roll1p05_aniso9p4e5`, `counter_defect_over_edge`
-  `2.534e+07x -> 2.745e+07x`, `counter_headroom_room` `2.37x -> 2.19x`. All three
-  reproduce at my run to the published digits. `PATCH_TEST_COUNTER_HEADROOM =
-  6.0e7` **holds**, and I re-solved rather than read it:
+- **R207 -- ANSWERED, at all five sites, and the fifth is better than what I asked
+  for.** I asked for four `{{fig:}}` references and a boundary sentence either
+  re-solved or rewritten so it does not quote a moving absolute. What landed is a
+  fifth generated figure that runs the shipped assertion.
 
   ```
-  cmd   the SHIPPED test_the_counter_DEFECT_SIZE_cannot_be_raised, CD varied,
-        one variable moved, at fc30b71
-  out   CD  2.00e-6 PASS  2.10e-6 PASS  2.18e-6 PASS  2.185e-6 PASS
-            2.19e-6 FAIL  2.20e-6 FAIL  2.36e-6 FAIL  2.3675e-6 FAIL
-  rule  ratio = CD / edge <= PATCH_TEST_COUNTER_HEADROOM
-  out   edge 3.6425e-14 at ch_edgemin_D0p0758_roll1p05_aniso9p4e5;
-        boundary = 6.0e7 x 3.6425e-14 = 2.185489e-06
+  cmd   sed -n '579,586p' docs/milestones/F2.md
+  out   {{fig:detection_edge}}, {{fig:detection_edge_at}},
+        {{fig:counter_defect_over_edge}}, {{fig:counter_headroom_room}},
+        {{fig:counter_defect_boundary}} -- five references, zero typed values
+  cmd   the three things I was asked to check, run rather than read:
+  out   (a) IT INVOKES THE SHIPPED TEST. scripts/regen_figures.py:113 calls
+            C.test_the_counter_DEFECT_SIZE_cannot_be_raised(_Silent) with
+            C.PATCH_TEST_EXACTNESS_COUNTER_DEFECT rebound. The test reads that
+            name out of its own module globals (:1379), which is the same route
+            the shipped counter meta-test uses at :1420, so the rebinding
+            reaches the assertion. The shipped test's own capsys line appears
+            in the script's output, which is how I know it ran.
+        (b) A WRONG VALUE REDDENS. test_the_generated_figures_are_not_stale
+            shells regen_figures.py --check and compares the whole table, so
+            any row that stops reproducing fails the suite. Measured on this row
+            specifically, two negative controls, one variable moved each:
+              headroom x10 in the module the test reads -> row becomes
+                "2.174e-06 passes, 2.179e-06 PASSES"     (differs -> red)
+              headroom /10                               -> row becomes
+                "2.174e-06 FAILS, 2.179e-06 fails"       (differs -> red)
+            So the two words are load-bearing, not decoration.
+        (c) THE 1e-3 OFFSETS DO NOTHING A READER WOULD NOT EXPECT. I solved the
+            flip rather than sampling it: CD = boundary x 1.0 PASSES and
+            x 1.0000001 FAILS. The predicate is exact at H x edge, so +/-0.1%
+            is a true bracket with 1e4 of slack, not a tuned pair.
+  cell  and the caching cannot mask a dependence, because there is none:
+        _detection_edge bisects on PATCH_TEST_EXACTNESS and never reads the
+        counter-defect size. With CD x 1e3 and _EDGE_CACHE cleared the edge
+        is bit-identical, 3.6275172611048466e-14. R124 holds by construction.
+  judge closed. The one nuance is R214 below, recorded at 4a and not a block.
   ```
+- **R208 -- ANSWERED, both sites, as the condition demanded.**
 
-  The constant holds with `2.19x` of room. The **plan sentence describing that
-  same boundary does not** -- see R207.
-- **R206 -- OPEN, and no longer only about a past tense.**
-  `floatfea/tolerances.py:511` still retypes `2.534e+07`; the live figure is now
-  `2.745e+07x`. Tensed as history, so still true as history, and I am not
-  re-raising it as blocking. It stays 4a with its closing condition unchanged.
-  But it is now the *third* retyped figure in this file, and R208 below is the
-  one that is not tensed as history.
-- **R200, R201, R202, R203, R204 -- OPEN at 4a, correctly.** Nothing in this
-  commit touches them and nothing was expected to.
+  ```
+  cmd   sed -n '400,422p' floatfea/tolerances.py
+  out   :405 now ends "4.47e-15 rounded up. It is a TIGHTENING by 200x." --
+        26.8x and 21.5x are gone from the present tense and appear in a
+        paragraph headed "THOSE ARE THE DERIVATION'S NUMBERS AND THEY ARE
+        HISTORY (R208)", dated.
+        :420-422 "The worst clean value over the corpus is clean_worst_ratio
+        there, and it is cited rather than typed" -- 0.0887x is gone.
+  cmd   the live condition the entry now points at, checked against the figures
+  out   clean_worst_ratio 0.1142x < 1; margin_dropped_flip 6.264e+05x,
+        margin_wrong_dof_index 1486x, margin_one_element_scaled 8.698e+06x, all
+        > 1. dropped_shear_parameter is 0.0006932x and is correctly NOT in
+        UNCONDITIONALLY_RED, so "the asserted defects" is the right qualifier.
+  judge closed. Both sites, not one.
+  ```
+- **R209 -- ANSWERED in `tolerances.py`, which is the branch the condition
+  offered.** `:507-515` now reads "THE MARGIN IS EATEN FROM ONE SIDE ONLY", names
+  the minimum-over-a-growing-set construction, and says a corpus round can only
+  tighten. The plan withdrawal stands. The two files no longer disagree -- except
+  in the lead sentence, which is R211.
+- **R210 -- ACCEPTED at 4a**, as I classed it. Unchanged.
+- **R206 -- 4a, unchanged.** `tolerances.py:511` still retypes `2.534e+07` as
+  history. R212 below is its sibling and lands the same way.
+- **R200, R201, R202, R203, R204 -- OPEN at 4a, correctly.** Untouched, as
+  expected.
 - **R198, R199 -- 4a, accepted, unchanged.**
 - **R181, R189, R190, the R170/R171 remainder, R172, R159, R162, R151, R152 --
   4a, unchanged from my endorsement.**
-- **R134, R135, R137 -- OPEN, UNTOUCHED**, eighteenth round.
+- **R205 -- CLOSED.** The report revision covering `fc30b71`'s golden-file change
+  landed (section 3), which is what I asked for at the end of the last verdict.
+- **R134, R135, R137 -- OPEN, UNTOUCHED**, nineteenth round.
 - **R129, R131, R132, R136, R138, R139, R148 -- as declared.**
 - **R113, R95, R97, R98, R100, R101, R102, R103 -- OPEN.**
 - **R63, R76, R79, R80 -- carried, unanswered, correctly declared open.**
 - **R65 -- WITHDRAWN by me at the tenth verdict.** Recorded as a disagreement.
 - **R6, R16, R25, R30, R31, R32, R33, R36, R50, R52, R62 -- still open**, 4a or
   later.
-- **R68 standard -- MET, seventh round.**
-- **The witness channel -- STILL UNAVAILABLE.** `git remote -v` is empty. Twenty-
-  three consecutive reviews by one reader. Unchanged, and still not a pass.
+- **R68 standard -- MET, eighth round.**
+- **The witness channel -- STILL UNAVAILABLE, and the blocker has changed.**
+  `git remote -v` now names `xabi80/FloatFEA` and `master` is pushed; what is
+  missing is a base branch to open the PR against. Twenty-four consecutive
+  reviews by one reader. Not a pass, and correctly not decided inside a step.
 
 ## Findings
 
-**R207. (BLOCKING) The locked plan retypes five figures this commit moved, in
-present tense, in the paragraph that justifies `PATCH_TEST_COUNTER_HEADROOM =
-6.0e7` -- and one of them is a SOLVED boundary that the shipped assertion now
-contradicts. `2.36e-6` is published as passing; measured at this commit it
-FAILS.** `docs/milestones/F2.md:579-591`.
+**R211. (BLOCKING) The sentence declared "left deliberately" is not only the
+withdrawal. It is a withdrawal clause bolted to a causal claim about what
+consumes `PATCH_TEST_COUNTER_HEADROOM`'s margin -- and this commit deleted that
+claim's supporting measurement and replaced it with one that points the other
+way.** `docs/milestones/F2.md:598-603`.
 
 ```
-code  :579-581 "Measured by the shipped runner: the smallest edge is `3.9459e-14`
-      at `band_edge_isotropic_bracing`, and the shipped `1e-6` sits `2.534e+07x`
-      above it. `PATCH_TEST_COUNTER_HEADROOM = 6.0e7`, so the shipped value has
-      `2.37x` of room."
-      :582-583 "The boundary is SOLVED rather than quoted: `2.36e-6` passes and
-      `2.38e-6` fails, against `6.0e7 x 3.9459e-14 = 2.3675e-6`."
-      :591 "`2.37x` is the room that leaves for one."
-cmd   python scripts/regen_figures.py --check ; the generated table at fc30b71
-out   detection_edge 3.6425e-14   detection_edge_at
-      ch_edgemin_D0p0758_roll1p05_aniso9p4e5   counter_defect_over_edge
-      2.745e+07x   counter_headroom_room 2.19x
-rule  the shipped assertion, run with CD varied one variable at a time
-out   2.36e-6 -> FAIL. The boundary is 2.185e-6 < CD <= 2.19e-6, i.e.
-      6.0e7 x 3.6425e-14 = 2.185489e-06, NOT 2.3675e-6.
-judge FIVE numbers in thirteen lines, every one of them false at this commit:
-      3.9459e-14 (twice), band_edge_isotropic_bracing, 2.534e+07x, 2.37x
-      (twice), and the solved pair 2.36e-6 / 2.3675e-6. The entry name is the
-      interesting one -- `detection_edge_at` has been `aaa_band_edge_twin` since
-      the figures file was created at ba4c21a and is `ch_edgemin_...` now; it has
-      NEVER been `band_edge_isotropic_bracing`, which is `clean_worst_entry`, a
-      different figure.
+code  :598-599 (UNTOUCHED, blame d920a8d) "**The reason for 6.0e7 is the
+      improvement side only, and the sentence claiming otherwise is withdrawn.**"
+code  :601-603 (WRITTEN THIS COMMIT, blame d89dfee) "So the guard is loosened by
+      nothing and tightened both by a harder corpus entry and by any formulation
+      change that improves sensitivity anywhere."
+code  DELETED THIS COMMIT, from the same paragraph: "adding nine corpus entries
+      moved the minimum by 0%" -- the measurement that supported "improvement
+      side only" when it was written, and the only one there ever was.
+cmd   counter_headroom_room over every commit that has touched the figures file
+out   ba4c21a 2.37x (133 entries) ... f1b226b 2.37x (156), fc30b71 2.19x (163),
+      6eed45e 2.18x (170)
+cell  what moved it, one variable at a time: git diff f1b226b..6eed45e --
+      floatfea/ with comment lines removed is EMPTY. Both tightenings happened
+      with the formulation byte-identical. Two of two were corpus rounds; zero of
+      two were sensitivity improvements.
+judge the paragraph now answers "what eats this margin?" twice, incompatibly, in
+      four lines. The answer it LEADS with is the one no measurement supports and
+      whose measurement this commit removed; the answer three lines below it is
+      the one all of the data supports. Under BG0 a Reason is a causal claim that
+      carries the cell that isolates it, and the cell here contradicts the lead.
 ```
 
-This is not a prose blemish. It is the derivation a reader consults when they ask
-why `6.0e7` is the right number; it is stated as a **solved** boundary, the one
-form this repository treats as stronger than a quoted one; and the solution
-published is wrong by 8% in the unsafe direction -- it claims `2.36e-6` is
-admissible when the shipped test rejects it.
+**Why this is not a reading quibble, and why it is not R209 re-litigated.** R209
+was about `tolerances.py` contradicting the plan, and that is genuinely closed --
+the code side now states one direction and states it correctly. R211 is the plan
+contradicting *itself*, in a hunk written this round. Whatever "the improvement
+side" is taken to name -- a cause or a direction -- the paragraph asserts "only"
+in one sentence and "both ... and" three lines later about the same quantity, and
+a reader consulting why `6.0e7` is the right number cannot tell which governs.
+The practical content is not decorative: a reader is told the room is reserved
+for a formulation improvement, when in fact it is being consumed by reviewer
+corpus rounds at 0.01x-0.18x each, with 2.18x left.
 
-**The mechanism, and it is the finding underneath the finding.** `git blame` puts
-these lines at `d920a8d` (BR), which is *before* BT0 created the generated
-figures at `ba4c21a`. BT0 converted the sections at `F2.md:507-556` and
-`:654-750` to `{{fig:...}}` -- 29 references -- and left this section retyped. Its
-own docstring says so: "SCOPE, and it is deliberately narrow: the figures that
-move, not the whole plan." The one section BT0 skipped is the one that justifies
-a shipped tolerance, and this commit is the second consecutive round in which a
-reviewer corpus moves every number in it.
+**And the declaration is the hatch, narrowly.** The site table at report
+`:4082-4086` declares `F2.md:586` (old numbering) untouched because "this is the
+plan's withdrawal sentence itself, and R209's closing condition is that it
+stands". That is true of the *second half* of the line and false of the first.
+R209's condition protects the withdrawal -- "a harder corpus entry raises the edge
+and loosens the guard" must stay withdrawn, and it does. It does not protect a
+separate positive claim that happens to share the line. This is R193's shape at
+reduced scale: a site declared untouched under a reason that covers part of what
+is on it. I am ruling on it as asked: **the declaration is honest in intent and
+incomplete in fact, and it is not a defence of the clause it does not mention.**
 
-**Closed when** `F2.md:579-591` cites `{{fig:detection_edge}}`,
-`{{fig:detection_edge_at}}`, `{{fig:counter_defect_over_edge}}` and
-`{{fig:counter_headroom_room}}` by name, and the solved-boundary sentence either
-carries the boundary re-solved at the current edge (`2.185e-6` passes, `2.19e-6`
-fails) or is rewritten so that it does not quote an absolute value that moves
-with the corpus. Half of this item is not the item: **all five sites**, or a
-statement of which was left and why.
+**Closed when** `F2.md:598-599` either drops "the improvement side only" or names
+the direction rather than the cause, so that it agrees with `:601-603` and with
+`tolerances.py:507-515`; **or** the lead is kept and the measurement that
+supports it is restored -- which would require a corpus round that moved the room
+by 0%, and the two most recent did not. One line. The withdrawal clause stays
+either way.
 
-**R208. (BLOCKING) `floatfea/tolerances.py` states the margin of
-`PATCH_TEST_EXACTNESS = 5e-15` twice in present tense, and both numbers are now
-wrong -- one of them by 2.6x.** `floatfea/tolerances.py:405` and `:413`.
-
-```
-code  :413 "Worst clean value over the corpus: 0.0887x of this ceiling."
-cmd   the generated table at fc30b71
-out   clean_worst_ratio 0.0982x  at ch_edgemin_D0p391_rollm0p73_aniso1p4e5
-judge stale as of THIS commit, and stale in the paragraph that says, two lines
-      earlier, that the figures are generated into docs/milestones/F2_figures.md.
-      `clean_worst_ratio` exists; it is not cited.
-
-code  :405 "5e-15 is the geometric centre of the band, 4.47e-15 rounded up:
-      26.8x above the worst clean corpus entry and 21.5x below the smallest
-      defect response."
-cmd   the shipped runner own printed line at fc30b71
-out   "CEILING 5.000e-15  worst clean 4.9119e-16 (2.21 eps,
-      ch_edgemin_D0p391_rollm0p73_aniso1p4e5) = 0.0982x"
-judge 5e-15 / 4.9119e-16 = 10.18x, not 26.8x. At the previously published
-      0.0887x it was 11.27x -- so 26.8x has not described this repository for
-      many rounds, and nothing re-took it. Present tense throughout.
-cell  and my corpus round moves it again, one variable moved (7 entries added,
-      no code): clean_worst_ratio 0.0982x -> 0.1142x at
-      ci_plateau_D0p0689_roll1p017_aniso9p6e5, i.e. 8.75x.
-```
-
-**The ceiling itself holds** -- 8.75x of margin is not a small number and I am not
-asking for `5e-15` to move. What is wrong is that a reader deciding whether
-`5e-15` is defensible is told the margin is `26.8x` when it is `10.2x` and
-falling, and told the worst entry sits at `0.0887x` when it sits at `0.0982x`.
-This blocks under the truth-of-a-published-figure clause and under the tolerance
-clause: it is the justification located for a shipped accuracy tolerance.
-
-**Closed when** `:413` cites `clean_worst_ratio` by name, as `:495-498` already
-does for the headroom entry, and `:405` either drops `26.8x` or states the margin
-as the generated figure at this commit with the derivation-time value marked as
-history. Both sites.
-
-**R209. (BLOCKING) The Reason paragraph for `PATCH_TEST_COUNTER_HEADROOM` ships a
-directional claim that the locked plan records as WITHDRAWN, that is impossible
-by the selection rule own construction, and that this round own data refutes in
-the opposite direction.** `floatfea/tolerances.py:498-501` against
-`docs/milestones/F2.md:586-590`.
+**R212. (recordable, 4a) The paragraph that stops retyping two figures types a
+third, and dates the derivation to the wrong day.** `floatfea/tolerances.py:407-411`
+against `:438`.
 
 ```
-code  tolerances.py:498-501 "The margin is eaten from BOTH sides -- a harder
-      corpus entry raises the minimum edge and loosens this, but a formulation
-      change that IMPROVES sensitivity anywhere lowers it and tightens it"
-code  F2.md:586-588 "**The reason for `6.0e7` is the improvement side only, and
-      the sentence claiming otherwise is withdrawn.** It read 'a harder corpus
-      entry raises the edge and loosens the guard'; under a MINIMUM selection
-      that cannot happen"
-cmd   git blame -L 496,502 floatfea/tolerances.py ; git blame -L 586,590 F2.md
-out   tolerances.py:499-501 = f1b226b (2026-09-08); F2.md:586-590 = d920a8d
-      (2026-09-07). The withdrawn sentence was RE-INTRODUCED into the tolerance
-      comment, with the word "minimum" added, the day after the plan withdrew it.
-code  the selection: `edges = sorted(...); smallest = edges[0][0]`
-      (test_corpus_configurations.py:1335-1336) -- a minimum over a growing set
-      is monotone non-increasing. "Raises" is impossible by construction.
-cell  and measured, one variable moved -- 7 corpus entries added at 5554f0d, no
-      code change (git diff eec7113..HEAD -- floatfea/ is empty):
-out   detection_edge 3.9459e-14 -> 3.6425e-14, counter_headroom_room 2.37x ->
-      2.19x. The corpus grew and the margin TIGHTENED.
-cell  repeated with my own 7 entries at 1bc652a, same control:
-out   3.6425e-14 -> 3.6275e-14, room 2.19x -> 2.18x. Tightened again.
-judge Two rounds, two corpus additions, two tightenings, zero loosenings, and a
-      construction that permits nothing else. "Eaten from BOTH sides" is a causal
-      claim about why 6.0e7 is the value it is (BG0), and the cell that isolates
-      it says one side.
+code  :408-411 "At the derivation, 2026-09-05, ... the clean side alone moved to
+      10.2x."
+cmd   git log --date=short -S on the 5e-15 assignment line in tolerances.py
+out   fdade28 2026-09-06 -- and the same entry's own footer at :438 says
+      "Quantity and value REPLACED 2026-09-06, F2". The entry dates itself twice,
+      one day apart.
+cmd   the generated table at this commit
+out   clean_worst_ratio 0.1142x, i.e. 8.76x -- so 10.2x is already two rounds
+      behind, and with my corpus applied it is three: 0.1261x, i.e. 7.93x.
+judge tensed as history and bounded ("within two corpus rounds"), so it is true
+      as history and I am NOT re-raising R208. It is the fourth typed figure in
+      this file and it went one round further from the present the day it was
+      written. The date is a plain miss.
 ```
 
-I flagged the phrase at the twenty-second verdict as something to re-read in step
-5 and did not measure it. This round is the measurement, and it goes the other
-way. It blocks because it is the Reason paragraph of a shipped tolerance, because
-CLAUDE.md is explicit that such a paragraph is a causal claim, and because the
-plan and `tolerances.py` now disagree in writing about the same constant.
+**Closed when** the date matches the entry's own footer, and `10.2x` either
+carries the commit it was measured at or goes, as `0.0887x` did.
 
-**Closed when** `tolerances.py:498-501` states the one direction that is
-measurable -- a corpus round can only lower the minimum edge and tighten this,
-and a sensitivity-improving formulation change does the same -- or the plan
-withdrawal at `F2.md:586-588` is itself reopened with a construction that permits
-the other direction. Not both sentences standing.
-
-**R210. (recordable, 4a) The commit message "Nine figures move" is not what its
-own pasted `cmd` prints: eighteen rows moved.** `fc30b71` commit body.
+**R213. (recordable, 4a) The plan and `tolerances.py` count the same three
+numbers as three rounds and as two, in the same commit -- and neither phrasing
+survives contact with the trajectory.** `F2.md:603-605` against
+`tolerances.py:512-513`.
 
 ```
-code  "Nine figures move; every tolerance comment that would once have gone stale
-      with them now cites them by name" / "cmd  diff of docs/milestones/
-      F2_figures.md"
-cmd   git diff eec7113..HEAD -- docs/milestones/F2_figures.md | grep -c "^-|"
-out   18
-judge The `out` block enumerates eight lines covering nine figures and omits nine
-      more that the named command prints: below_ceiling_dropped_flip,
-      below_ceiling_wrong_dof_index, below_ceiling_dropped_shear_parameter,
-      below_ceiling_one_element_scaled (all four denominators 132 -> 139),
-      exempt_total 58 of 528 -> 61 of 556, exempt_by_defect 11/31/16 ->
-      12/32/17, and boundary_margin_bases 127 -> 134. The count is inherited from
-      my own verdict 22, which said "reddens on nine rows" and was also counting
-      the interesting subset rather than the diff. UNDER-claimed, not
-      over-claimed, and the substance is right -- but the second half of the
-      sentence is the claim R207 and R208 refute, and it sits beside a count that
-      does not reproduce.
+code  F2.md "Measured across three consecutive reviewer rounds the room went
+      2.37x, 2.19x, 2.18x -- one direction, three times."
+code  tolerances.py "two consecutive reviewer rounds measured it: the room went
+      2.37x, 2.19x, 2.18x."
+cmd   counter_headroom_room at every figures-file commit, with corpus_entries
+out   133:2.37 139:2.37 145:2.37 149:2.37 156:2.37 163:2.19 170:2.18
+judge BOTH are defensible readings of the same three published values (three
+      rounds each publishing one; two rounds each moving one), which is why this
+      is not R211's species. What neither supports is "one direction, three
+      times": across SIX corpus rounds the room moved TWICE and held at 2.37x
+      four times. The direction claim is right; the count of occurrences is not.
 ```
 
-**Closed when** the count is what the named command prints, or the sentence says
-which subset it is counting.
+**Closed when** the two files state the same count, and the count is of
+something the trajectory shows -- two movements in six rounds, or three published
+values, but not three movements.
+
+**R214. (recordable, 4a) `counter_defect_boundary` brackets the boundary; it does
+not search for it, and the plan's word is "SOLVED".**
+`scripts/regen_figures.py:108-123`.
+
+```
+code  boundary = PATCH_TEST_COUNTER_HEADROOM * edge; probes at boundary*(1-1e-3)
+      and boundary*(1+1e-3)
+judge the probe centre is the assertion's own predicate rearranged, so the pair
+      CONFIRMS the boundary rather than locating it. That is still a real
+      measurement -- I showed both words flip under a 10x change of the effective
+      threshold -- but it cannot detect a discrepancy smaller than 0.1%, and it
+      cannot detect one that moves edge and the threshold together.
+cmd   the flip, solved: CD = boundary x 1.0 PASSES, x 1.0000001 FAILS
+judge a bisection to the flip costs the same one cached comparison per step and
+      would make the published pair a located boundary rather than a checked
+      guess. The gap between what the figure does and what "SOLVED" says is
+      small, and it is the kind of gap this milestone has spent six rounds on.
+```
+
+**Closed when** either the figure bisects to the flip, or the plan says
+"bracketed at plus or minus 0.1%" rather than "SOLVED".
+
+**R215. (recordable, 4a) `_Silent` is a hand-rolled stand-in for a pytest fixture,
+in a script the suite depends on, with nothing asserting the two agree.**
+`scripts/regen_figures.py:37-44`.
+
+```
+code  class _Silent, whose disabled() returns contextlib.nullcontext()
+judge if the shipped test's use of capsys ever grows past .disabled(), the
+      script raises AttributeError and --check reddens -- which is the safe
+      direction, and is why this is not a block. The unsafe direction is quieter:
+      the script now prints the shipped test's capsys line into --check's
+      stdout twice, so the one place a reader looks for "up to date" is
+      interleaved with test output. Cosmetic, and it belongs with 4a's apparatus.
+```
+
+**Closed when** the script suppresses the invoked test's output, or 4a records
+that it does not.
 
 ## Tolerances touched
 
-**None. The file is byte-identical.**
+**None. Every changed line in `floatfea/tolerances.py` is a comment.**
 
 ```
-cmd  git diff eec7113..HEAD -- floatfea/tolerances.py
-out  (empty)  -- not one line, comment or value
+cmd  the diff of floatfea/tolerances.py over the range, with comment lines and
+     diff headers removed
+out  (empty)  -- not one value, not one name, not one form
 ```
 
 | site | old | new | form | counter | justification located |
 |---|---|---|---|---|---|
-| `PATCH_TEST_COUNTER_HEADROOM` `:515` | `6.0e7` | `6.0e7` (unchanged) | ratio, dimensionless | the raised-defect counter, injected and registered in both cells | `tolerances.py:491-514` and `F2.md:561-599`. **HOLDS** -- I re-solved the boundary at the new edge: `2.185e-6` passes, `2.19e-6` fails, `2.19x` of room. The tolerances-file half is clean; the plan half is **R207** and the direction sentence is **R209**. |
-| `PATCH_TEST_EXACTNESS` `:430` | `5e-15` | `5e-15` (unchanged) | relative field error, dimensionless | `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`, injected | `tolerances.py:396-429`. **HOLDS** at `10.18x` above the worst clean entry, `8.75x` under my corpus. The two numbers stating that margin are **R208**. |
-| `DELTA_CALIBRATION_ULP` | `4.0` | `4.0` (unchanged) | ULP multiple, dimensionless | `DELTA_CALIBRATION_ULP_COUNTER = 5.0`, injected | `calibration_ulp_worst` is `2.000 ULP` at this commit and `2.000 ULP` under my corpus; the histogram gains three entries at 0/1/2 and nothing above. The `2x` headroom is not threatened. |
-| `EXEMPT_RESPONSE_DRIFT_ULP` `:626` | `4.0` | `4.0` (unchanged) | ULP multiple, dimensionless | `10.0`, injected | unchanged; the golden file grew by three keys and the drift gate is green on all 54. |
+| `PATCH_TEST_COUNTER_HEADROOM` `:521` | `6.0e7` | `6.0e7` (unchanged) | ratio, dimensionless | the raised-defect counter, injected via module globals and registered in both cells | `tolerances.py:497-520` and `F2.md:561-611`. **HOLDS**, and I re-solved rather than read it: the flip is exactly at `6.0e7 x 3.6275e-14 = 2.17651e-06` (PASS at `x1.0`, FAIL at `x1.0000001`), `2.18x` of room. Under my corpus round the edge does **not** move and the room stays `2.18x`. The tolerances-file half is clean; the plan's lead sentence is **R211**. |
+| `PATCH_TEST_EXACTNESS` `:439` | `5e-15` | `5e-15` (unchanged) | relative field error, dimensionless | `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`, injected | `tolerances.py:396-438`. **HOLDS** at `8.76x` above the worst clean entry, `7.93x` under my corpus. The two figures that misstated that margin are **closed (R208)**; the third typed one is **R212**. |
+| `DELTA_CALIBRATION_ULP` | `4.0` | `4.0` (unchanged) | ULP multiple, dimensionless | `DELTA_CALIBRATION_ULP_COUNTER = 5.0`, injected | `calibration_ulp_worst` is `2.000 ULP` at this commit and `2.000 ULP` under my corpus; my four new solved entries all land at 0 ULP (histogram `x129 -> x133`). The `2x` headroom is not threatened. |
+| `EXEMPT_RESPONSE_DRIFT_ULP` `:632` | `4.0` | `4.0` (unchanged) | ULP multiple, dimensionless | `10.0`, injected | unchanged; the golden file did not move this round and does not move under my corpus. |
 
 **The golden file, checked as its own question (CLAUDE.md, section Testing).**
-Three insertions, zero deletions, zero moved values -- I diffed it rather than
-reading the claim.
 
 ```
-cmd  git diff eec7113..HEAD -- tests/regression/g22_exempt_pair_responses.json
-out  +3 lines, all "ch_edgefloor_D0p068_L387_skew|{dropped_flip,
-     dropped_shear_parameter,wrong_dof_index}". No line removed, no value
-     changed.
-cmd  python -c "json.load(...)" -- key count and split
-out  54 keys; dropped_shear_parameter 25, wrong_dof_index 17, dropped_flip 12.
-     54 = `exempt_detected`; 12+25+17 reconciles against `exempt_by_defect`
-     12/32/17 with 7 of the 32 shear pairs exempt-and-undetected.
-judge a corpus round, not a regeneration to match new output. The written
-     explanation is in the commit body. It is NOT in a step report, because no
-     report revision landed in this range -- see "Next step opens when".
+cmd  git diff dfcee3a..HEAD -- tests/regression/g22_exempt_pair_responses.json
+out  (empty) -- and git diff dfcee3a..HEAD -- tests/ is empty entirely
+judge nothing to explain. The explanation owed for fc30b71's three insertions
+     landed in this report's section 3, which closes R205.
 ```
 
-**What held.** These reproduce at my run: `1433 passed, 0 failed, 0 skipped`;
-`regen_figures.py --check` exit 0; `tests/test_plan_figures.py` 31 passed;
-`floatfea/` byte-identical; `tolerances.py` byte-identical; my instructions
-byte-identical; the golden diff exactly as stated; all three figures named in the
-task, to the published digits; the counter-defect boundary re-solved at
-`2.185e-6`. These do **not**: the plan boundary sentence (R207), the two
-`PATCH_TEST_EXACTNESS` margin figures (R208), the both-sides direction claim
-(R209), the commit body figure count (R210).
+**What held.** These reproduce at my run: `1518 passed, 0 failed, 0 skipped`;
+`regen_figures.py --check` exit 0; `tests/test_plan_figures.py` green; `floatfea/`
+byte-identical outside comments; `tests/` byte-identical; my instructions
+byte-identical; the report's section 1 and section 3 figure movements to the
+published digits; the `139 -> 145` self-correction, which is right and which I
+checked (`corpus_solved` is 145). These do **not**: the plan's lead sentence
+(R211), the derivation date and the third typed figure (R212), the round count
+(R213).
 
 ## Next step opens when
 
-**Not now. Step 4 re-opens on R207, R208 and R209; step 5 does not begin.**
+**Not now. Step 4 re-opens on R211 alone; step 5 does not begin.**
 
-The BU0 head, named as asked: **R207 is the head**, and the reason it is not
-apparatus is one measurement. `docs/milestones/F2.md:582-583` publishes a
-**solved** boundary -- `2.36e-6` passes -- and the shipped assertion at this
-commit rejects `2.36e-6`. That is a claim measurement refutes, about the decision
-rule of a shipped tolerance, in the locked plan. It is not a parser reach and not
-a docstring precision about its own machinery. R208 and R209 attach to the same
-head: R208 because the margin of `PATCH_TEST_EXACTNESS` is misstated by 2.6x in
-the file that owns it, R209 because a Reason paragraph asserts a direction its own
-selection rule forbids and two consecutive corpus rounds have measured going the
-other way. R210 is apparatus and goes to 4a with the six already there.
+The BU0 head, named as asked: **R211 falls under the truth-of-a-published-sentence
+head**, and secondarily under the tolerance head, because the sentence is inside
+the located justification for a shipped tolerance. It is not apparatus: it is not
+a parser's reach, not a generator's plumbing, and not a docstring's precision
+about its own machinery. It is the paragraph a reader consults to decide whether
+`6.0e7` is defensible, and this commit left it stating two incompatible answers
+to the question the paragraph exists to answer, having deleted the measurement
+behind the one it leads with.
 
-**The three conditions, site by site.** `F2.md:579-591`: four `{{fig:}}`
-references and the boundary sentence re-solved or rewritten -- five sites, each
-listed with its hunk or stated as left and why. `tolerances.py:405` and `:413`:
-both, not one. `tolerances.py:498-501`: the direction reduced to what is
-measurable, or the plan withdrawal reopened.
+**The condition is one line.** `F2.md:598-599` agrees with `:601-603`, or the
+lead's measurement is restored. R212, R213, R214 and R215 are **recorded at 4a**
+with the ten already there; none of them needs to move for step 4 to close.
 
-**And the regeneration will have to happen again**, because my corpus round moves
-the same figures a third time: `detection_edge` `3.6425e-14 -> 3.6275e-14`,
-`clean_worst_ratio` `0.0982x -> 0.1142x`, `counter_headroom_room` `2.19x ->
-2.18x`, thirteen rows in all. **That is the argument for R207 stated as a schedule
-rather than as a principle.** These numbers have moved in each of the last two
-rounds and will move in the next; a paragraph that retypes them is wrong within
-one commit of being written, every time, and the mechanism that fixes it --
-`{{fig:}}` -- already exists, ships, is tested, and is used 29 times in the same
-file.
-
-**A process note, recorded and not blocking.** `fc30b71` changes a file under
-`tests/` and landed with no revision of `docs/reports/F2/step-4.md`; the written
-explanation the golden-file rule requires is in the commit body instead. I asked
-for the regeneration at R205 and called it "the next report's work", so the
-routing is on me as much as on the implementer. Doing it as a standalone commit
-with the triples in the message is defensible and I am not holding on it. When
-step 4 closes, the report revision answering R207-R209 should carry the
-golden-file explanation too, so that it is somewhere a reader looks.
+**I want to be explicit that this is a narrower hold than the last three.** The
+three named items are genuinely closed and I checked each by running it. R207's
+answer is better than the condition asked for: the boundary is now re-solved by
+the run that publishes it, and I could not make the figure lie in three attempts.
+What I will not do is pass a paragraph whose lead sentence this commit orphaned,
+in the round whose whole subject is sentences that outlive their measurements --
+and doing so would ratify the reasoning that a finding's protection of one clause
+makes the whole line untouchable.
 
 **Adversarial corpus (BE3): 7 new entries committed, all unseen by the
-implementer; every field measured at `fc30b71` before the line was written.**
-`tests/corpus/g22_model_configurations.txt`, now **170** entries, 145 solved,
-committed separately at `1bc652a` and touching no code. Full suite with the
-corpus applied: **1463 passed, 1 failed** --
-`test_the_generated_figures_are_not_stale`, and only that.
+implementer; every field measured at `3e225c5` before the line was written.**
+`tests/corpus/g22_model_configurations.txt`, now **177** entries, 149 solved,
+committed separately at `45550a3` and touching no code. Full suite with the
+corpus applied: **1540 passed, 1 failed** -- `test_the_generated_figures_are_not_stale`,
+and only that.
 
 The coverage measurement, stated plainly: **0 of my 7 new entries produce a new
-exempt-and-detected pair, so BS2 golden file is untouched and caught 0.** BT0
-reddens on thirteen rows. What the entries measure:
+exempt-and-detected pair, so BS2's golden file is untouched and caught 0 of 7.
+BT0's staleness check reddens on ten rows.** What the entries measure:
 
-* **The detection edge is a plateau, not a descent, and it is scale-free.** 1100
-  candidates over two independent seeds through the shipped `_detection_edge`:
-  500 broad reached `4.0721e-14`, 600 perturbed around the shipped minimum
-  reached `3.6275e-14` -- **0.4% below the published edge after 600 tries in the
-  region that produced it**. Four entries span `D` `0.069 m` to `0.787 m`, an 11x
-  range of diameter, inside a 12% band of edge.
-* **`PATCH_TEST_COUNTER_HEADROOM = 6.0e7` holds, second round running against a
-  reviewer trying to break it.** Breaking it needs an edge below `1.6667e-14`;
-  1100 candidates got to `3.6275e-14`, a factor of 2.2 short.
-* **A symmetry the model has and the residual does not.** For `I_y = I_z` a roll
-  about the member axis is a symmetry of the section. Measured: `roll=0`,
-  `roll=2pi`, `I_y/I_z=1` with no roll, and `extra=none` give a **bit-identical**
-  worst residual `8.051599e-17` and edge `1.013201e-13`; with `roll=1.05` and
-  `I_y/I_z=1` the worst residual is `1.207740e-16`, **1.50x**. A path difference
-  at `0.016x` vs `0.024x` of the ceiling, not a defect -- and it bounds any future
-  roll-invariance claim to a bound at 1.5x, never an identity. Two entries carry
-  both halves.
-* **The degeneracy guard refuses at every scale.** Directions `1e-9`, `1e-15` and
-  `1e-17` off global Z all raise `DegenerateMemberOrientation` against the `0.05`
-  rad floor; none falls through to a default construction. The `1e-17` case is
-  pinned, because it is the one an underflow in a normalisation turns into an
-  exact global-Z member.
+* **A new worst clean entry, from a region three rounds of search did not enter.**
+  `clean_worst_ratio` `0.1142x -> 0.1261x`; the margin on `PATCH_TEST_EXACTNESS`
+  falls `8.76x -> 7.93x`. The incumbent had `I_y/I_z = 9.6e5` and a wall 1.4% of
+  `D`; mine has `I_y/I_z = 206` and a wall **19.7%** of `D` -- 4700x less
+  anisotropic and 14x thicker. The ceiling **holds**. What is worth recording is
+  that this is the third consecutive round in which an outside search lowers it,
+  and none of the three found the region the previous one used.
+* **The clean ratio is NOT scale-invariant; the detection edge is.** The same
+  shape at `x1`, `x1e+4` and `x1e-4` -- identical member lambda to four figures --
+  gives `0.1261x / 0.0642x / 0.0442x`, a **2.85x** spread over eight orders,
+  while the edge gives `6.2171e-14 / 6.2978e-14 / 6.1796e-14`, a **1.9%** spread.
+  Sensitivity is scale-free here and the round-off floor is not. Any future
+  unit-invariance claim on this quantity is bounded at **2.9x**, never an
+  identity -- and the spread is entirely on the safe side, metre scale worst.
+* **`PATCH_TEST_COUNTER_HEADROOM = 6.0e7` holds, third round running against a
+  reviewer trying to break it.** Breaking it needs an edge below `1.6667e-14`.
+  1180 candidates over four searches -- thick-wall, thin-wall, mixed, and a
+  400-candidate refinement around the best -- reached `4.0274e-14`, 2.42x short,
+  and **above** the corpus minimum already published. Seven hand-chosen extremes
+  (near-solid wall, kilometre scale, micrometre scale, inverted anisotropy at the
+  range floor, a member one part in `1e7` above the admission limit) all landed
+  between `9.86e-14` and `1.0126e-13` -- within 2.7% of each other. The plateau is
+  near `1e-13` and the minimum is only reachable by search.
+* **The section constructor refuses a wall that is not thinner than the radius,
+  including the exact equality.** `t = D/2` (a solid rod, the limit of the tube
+  family) and `t = 0.6 D` both raise at construction. The equality case is the one
+  an inclusive comparison lets through, and the one that yields a zero bore with
+  no other symptom.
+* **The anisotropy range is closed at its top, measured rather than declared.**
+  `1e6 + 1e-6` is refused by the parser and `1000000.0` is accepted, so the two
+  bracket the edge.
 
-**Twenty-three consecutive rounds have found no element defect**, and the reading
+**Twenty-four consecutive rounds have found no element defect**, and the reading
 is unchanged: not yet contradicted, until V5.1 puts CalculiX on the other side.
-The element did not move under my input this round either. What moved, again, is
-prose about the element instruments.
+The element did not move under my input this round either -- 1180 candidates, and
+the worst thing I could do to it was raise a round-off floor from 11% of its
+ceiling to 13%. What moved, for the fifth round running, is prose about the
+element's instruments.
 
-**The standing question, sharpened.** Verdict 22 asked what deletes the sentences
-a round makes stale, and answered it by hand at four sites. This round the answer
-is mechanical and already in the repository: `{{fig:}}`, used 29 times in
-`F2.md`, absent from exactly the one section that justifies a tolerance. BT0 own
-docstring calls its scope "deliberately narrow" and hands the rest to the
-claim-carries-its-command rule -- which is a rule nothing runs. Two rounds in a
-row, the numbers it hands over have been the ones that moved.
+**The standing question, answered mechanically at last, and one line short.**
+Verdict 23 said the fix for stale figures already exists in the repository and is
+called `{{fig:}}`. It is now used in the section that justifies a tolerance, and
+the boundary is generated. The residue is what `{{fig:}}` cannot reach: a sentence
+with no number in it. `tests/test_plan_figures.py` checks that every reference
+resolves and that the table is fresh; nothing checks that the prose around a
+reference still says what the reference now means. R211 is that gap with a name.
