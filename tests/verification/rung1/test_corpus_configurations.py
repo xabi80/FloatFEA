@@ -1098,10 +1098,11 @@ def test_the_delta_measure_is_CALIBRATED() -> None:
         # "one ULP" while admitting **47.22**. Both records are withdrawn --
         # AND SO IS THE ONE THAT REPLACED THEM (R177/R178): "exactly 1.000 ULP
         # ... the ceiling is four times it" survived here after being withdrawn
-        # elsewhere, and it was one unseeded draw. The distribution is seeded and
-        # generated now -- `calibration_ulp_histogram` in
-        # docs/milestones/F2_figures.md -- and the observed maximum is 2 ULP, so
-        # the ceiling carries 2x of headroom.
+        # elsewhere, and it was one unseeded draw. The distribution is
+        # generated and EXACT now -- `calibration_ulp_histogram` in
+        # docs/milestones/F2_figures.md, one count per solved entry, no draw and
+        # no seed (R195) -- and its maximum is `calibration_ulp_worst`, which the
+        # ceiling carries twice over.
         ulp = abs(measured - PATCH_TEST_EXACTNESS_COUNTER_DEFECT) / math.ulp(
             PATCH_TEST_EXACTNESS_COUNTER_DEFECT)
         assert ulp <= DELTA_CALIBRATION_ULP, (
@@ -1221,9 +1222,15 @@ def test_a_LARGER_deviation_fails_the_calibration() -> None:
     certified nothing about the measurement.
 
     This perturbs what `injected_delta` returns, by the smallest whole number of
-    ULP above the ceiling, and requires the calibration to redden. Measured, 2
-    ULP passes and 5 ULP fails, so the counter sits at the first value that must
-    be caught.
+    ULP above the ceiling, and requires the calibration to redden.
+
+    THE BOUNDARY, MEASURED, IS NOT 5 (R193). `+0`, `+1` and `+2` ULP pass;
+    `+2.5`, `+3`, `+4` and `+5` fail -- the first whole number caught is 3,
+    because the worst entry already sits 2 ULP from the declared size and the
+    ceiling is 4. The clause "so the counter sits at the first value that must be
+    caught" stood here and in `tolerances.py` and was false in both. 5.0 is where
+    the next whole number above the ceiling falls, which is a definitional reason
+    and the only one this counter needs.
     """
     cd = PATCH_TEST_EXACTNESS_COUNTER_DEFECT
     entry = SOLVED[0]
@@ -1384,12 +1391,26 @@ def test_the_counter_DEFECT_SIZE_cannot_be_raised(capsys) -> None:
     )
 
 
+# not-a-tolerance: the SIZE of an injected defect, not a threshold. Nothing is
+# accepted or rejected by comparison with it -- it multiplies the shipped
+# counter-defect so that the headroom assertion below must redden, and any factor
+# large enough to clear the headroom exercises the counter. Three orders is used
+# because that is inside the range the suite tolerated before the guard existed.
+RAISED_COUNTER_DEFECT_FACTOR = 1.0e3
+
+
 def test_a_RAISED_counter_defect_breaks_that(capsys) -> None:
     """The guard's own counter, injected (BG1).
 
     A guard whose only evidence is that it has not fired is not evidence. The
-    shipped size is multiplied by `1e3` -- three orders, far inside the range the
-    suite tolerated before this test existed -- and the assertion above must fail.
+    shipped size is multiplied by `RAISED_COUNTER_DEFECT_FACTOR` -- three orders,
+    far inside the range the suite tolerated before this test existed -- and the
+    assertion above must fail.
+
+    THE FACTOR IS NAMED RATHER THAN INLINE (BX0) because the ceiling cell in
+    `tests/test_counters_are_injected.py` has to know how far this injection
+    lifts the measured ratio in order to widen the headroom past it. Two copies
+    of one literal in two files is the shape that goes stale.
     """
     # INJECTED INTO THE CONSTANT AND RUN THROUGH THE GATE (BW1). Computing the
     # raised ratio here and comparing it with the headroom was a third instance
@@ -1397,7 +1418,8 @@ def test_a_RAISED_counter_defect_breaks_that(capsys) -> None:
     # it was found by registering this pair in
     # `tests/test_counters_are_injected.py`, which is what that file is for.
     original = globals()["PATCH_TEST_EXACTNESS_COUNTER_DEFECT"]
-    globals()["PATCH_TEST_EXACTNESS_COUNTER_DEFECT"] = original * 1.0e3
+    globals()["PATCH_TEST_EXACTNESS_COUNTER_DEFECT"] = (
+        original * RAISED_COUNTER_DEFECT_FACTOR)
     try:
         with pytest.raises(AssertionError, match="declared headroom"):
             test_the_counter_DEFECT_SIZE_cannot_be_raised(capsys)

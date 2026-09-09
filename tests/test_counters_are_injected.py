@@ -1,4 +1,4 @@
-"""Every counter-case is INJECTED, proved by neutering the GATE it guards (BW1).
+"""Every counter-case is INJECTED, proved by TWO cells that must both fire (BX0).
 
 THE EIGHTH GUARD, MADE GENERIC. `RESULTANT_EXACTNESS` once shipped with
 `ceiling < counter` as its only guard -- two literals compared in
@@ -7,28 +7,46 @@ answered that case by injecting the defect. Twice since, a counter was written
 that asserts *itself* instead: R163 (`40 * ulp(CD) / ulp(CD) > 4`) and, one round
 later in the commit that fixed R163, R173 (`10 > 4`).
 
-**AND THE FIRST VERSION OF THIS FILE COULD NOT CATCH EITHER OF THEM (R182).** It
-neutered the ceiling CONSTANT, setting it to `inf`. A degenerate counter is
-precisely one shaped `assert value > CEILING` -- so raising the ceiling makes
-*that* comparison fail too, and the meta-test read the failure as injection:
+A counter has to have two properties, and each cell here tests exactly one:
 
-    counter body                    ceiling -> inf      gate -> no-op
-    R163's, as written              AssertionError      PASSES  <- defect
-    R173's, as written              AssertionError      PASSES  <- defect
-    the shipped calibration         Failed              Failed
-    the shipped exempt-drift        Failed              Failed
+    GATE CELL      it RUNS the assertion it defends -- replace that assertion
+                   with a no-op and the counter must fail;
+    CEILING CELL   it is SIZED BY the constant it defends -- widen the ceiling
+                   past the counter's declared injection and the counter must
+                   fail.
 
-Only the right-hand column discriminates. **This file replaces the GATE
-FUNCTION with a no-op** and requires the counter to fail: a counter that passes
-when the assertion it defends does nothing is measuring itself.
+**NEITHER CELL ALONE IS THE GUARD, and both mistakes are in this repository's
+history.** The first version of this file had only the ceiling cell, set to
+`inf` (R182): a degenerate counter is precisely one shaped `assert value >
+CEILING`, so raising the ceiling made *that* comparison fail too and the cell
+read the failure as injection -- R163's and R173's bodies were admitted. The
+second version had only the gate cell (R197): a counter that calls its gate but
+injects a 100% relative error where the constant says N ULP runs the gate
+faithfully and is sized by nothing, so it passed, and `DELTA_CALIBRATION_ULP`
+could be widened from `4.0` to `1e9` with it green.
 
-WHAT IT STILL CANNOT DO, said so it is not trusted past its reach: it replaces
-the gate by name in the gate's own module, so a counter that reimplements its
-gate's comparison inline rather than calling it would pass. That is a narrower
-hole than the one it closes, and it is visible in each registration.
+Conjoined, each defect is rejected by the cell the other admits, and that is not
+a claim here -- it is `CONTROLS` below, three defective bodies carried as
+negative controls, each asserted to be rejected by ITS cell and admitted by the
+other. Delete either cell and a control turns green.
+
+WHAT THE PAIR STILL DOES NOT COVER, said so it is not trusted past its reach:
+
+* the gate cell replaces the gate by name in the gate's own module, so a counter
+  that reimplements its gate's comparison inline rather than calling it would
+  pass that cell -- it is then the ceiling cell's job, and a body that does both
+  (reimplements the comparison AND is sized by the constant) is a correct
+  counter written the long way, not a defect;
+* the ceiling cell proves the counter's injection is above the ceiling and no
+  more than `WIDEN` times it. It does not prove the injection is the SMALLEST
+  such value; that is what each constant's own Reason paragraph states, with the
+  measured boundary beside it;
+* both cells are per-counter. A constant with no counter registered here is not
+  covered at all, which is what `test_there_is_something_to_check` is for.
 """
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
 
@@ -41,6 +59,12 @@ sys.path.insert(0, str(ROOT / "tests" / "regression"))
 import test_corpus_configurations as CORPUS  # noqa: E402
 import test_exempt_pair_responses as GOLDEN  # noqa: E402
 
+# not-a-tolerance: how far past the counter's own declared injection the ceiling
+# cell widens. Nothing is accepted or rejected by comparison with it -- it is a
+# deliberate over-widening, and any factor above one exercises the cell. Ten is
+# used so the widened ceiling is unmistakably clear of the injection.
+WIDEN = 10.0
+
 
 class _Capsys:
     """The one fixture the registered gates take, supplied without pytest."""
@@ -48,61 +72,226 @@ class _Capsys:
     @staticmethod
     def disabled():
         import contextlib
+
         return contextlib.nullcontext()
 
 
 REGISTERED = [
     ("calibration ULP",
      CORPUS.test_a_LARGER_deviation_fails_the_calibration,
-     CORPUS, "test_the_delta_measure_is_CALIBRATED"),
+     CORPUS, "test_the_delta_measure_is_CALIBRATED",
+     "DELTA_CALIBRATION_ULP",
+     WIDEN * CORPUS.DELTA_CALIBRATION_ULP_COUNTER),
     ("exempt-response drift",
      GOLDEN.test_a_MOVED_response_is_caught,
-     GOLDEN, "test_every_recorded_pair_is_still_detected"),
+     GOLDEN, "test_every_recorded_pair_is_still_detected",
+     "EXEMPT_RESPONSE_DRIFT_ULP",
+     WIDEN * GOLDEN.EXEMPT_RESPONSE_DRIFT_ULP_COUNTER),
     # `PATCH_TEST_EXACTNESS_COUNTER_DEFECT` -- THE EXEMPTION IS GONE (R183). It
     # was listed as unregisterable "because its gate compares inline across 296
     # parametrised cases", which named the wrong gate: this constant's gate is
     # the headroom assertion, a single test. Registering it found a THIRD
     # instance of R163's defect -- a counter comparing two constants -- which is
     # what this file exists to find.
+    #
+    # Its injection is a FACTOR on the measured ratio, not an offset in the
+    # ceiling's units, so the widened ceiling is that factor times the ceiling:
+    # the counter multiplies the shipped defect by `RAISED_COUNTER_DEFECT_FACTOR`
+    # and a headroom that many times wider absorbs the raised ratio whatever the
+    # clean ratio is.
     ("counter-defect size",
      lambda: CORPUS.test_a_RAISED_counter_defect_breaks_that(_Capsys),
-     CORPUS, "test_the_counter_DEFECT_SIZE_cannot_be_raised"),
+     CORPUS, "test_the_counter_DEFECT_SIZE_cannot_be_raised",
+     "PATCH_TEST_COUNTER_HEADROOM",
+     WIDEN * CORPUS.RAISED_COUNTER_DEFECT_FACTOR
+     * CORPUS.PATCH_TEST_COUNTER_HEADROOM),
 ]
 
 
+# --------------------------------------------------------------------------
+# THE NEGATIVE CONTROLS (BX0). Three defective counter bodies, carried so the
+# discrimination this file claims is measured rather than asserted. Two of them
+# shipped in this repository; the third is the one the twenty-first review built
+# against it. Each is rejected by exactly one of the two cells.
+# --------------------------------------------------------------------------
+
+
+def _control_R163() -> None:
+    """R163, as written: `40 * ulp(CD) / ulp(CD) > 4`, arithmetic on constants.
+
+    It reads the ceiling, so widening the ceiling makes this comparison fail and
+    the ceiling cell reads that failure as injection -- it admits it. It never
+    runs the calibration, so the gate cell rejects it.
+    """
+    cd = CORPUS.PATCH_TEST_EXACTNESS_COUNTER_DEFECT
+    ulp = (40.0 * math.ulp(cd)) / math.ulp(cd)
+    assert ulp > CORPUS.DELTA_CALIBRATION_ULP, "the injection is below the ceiling"
+
+
+def _control_R173() -> None:
+    """R173, as written: `10 > 4`, two constants, in the commit that fixed R163."""
+    assert (GOLDEN.EXEMPT_RESPONSE_DRIFT_ULP_COUNTER
+            > GOLDEN.EXEMPT_RESPONSE_DRIFT_ULP), "the injection is below the ceiling"
+
+
+def _control_wrong_quantity() -> None:
+    """R197's body: it CALLS its gate, and injects a quantity the ceiling does
+    not describe -- a 100% relative error where the constant says N ULP.
+
+    `DELTA_CALIBRATION_ULP` is absent from it: it is sized by nothing, and the
+    constant could move from `4.0` to `1e9` with this green. The gate cell
+    admits it, because it does run the gate. The ceiling cell rejects it,
+    because a 100% error survives a ceiling widened to `WIDEN` times 5 ULP.
+    """
+    original = CORPUS.injected_delta
+    CORPUS.injected_delta = (
+        lambda e, k, _o=original: _o(e, k) * 2.0
+        if k == "one_element_scaled" else _o(e, k))
+    try:
+        with pytest.raises(AssertionError, match="ULP"):
+            CORPUS.test_the_delta_measure_is_CALIBRATED()
+    finally:
+        CORPUS.injected_delta = original
+
+    CORPUS.test_the_delta_measure_is_CALIBRATED()
+
+
+CONTROLS = [
+    ("R163's body", _control_R163, "gate",
+     CORPUS, "test_the_delta_measure_is_CALIBRATED",
+     "DELTA_CALIBRATION_ULP", WIDEN * CORPUS.DELTA_CALIBRATION_ULP_COUNTER),
+    ("R173's body", _control_R173, "gate",
+     GOLDEN, "test_every_recorded_pair_is_still_detected",
+     "EXEMPT_RESPONSE_DRIFT_ULP",
+     WIDEN * GOLDEN.EXEMPT_RESPONSE_DRIFT_ULP_COUNTER),
+    ("R197's wrong-quantity body", _control_wrong_quantity, "ceiling",
+     CORPUS, "test_the_delta_measure_is_CALIBRATED",
+     "DELTA_CALIBRATION_ULP", WIDEN * CORPUS.DELTA_CALIBRATION_ULP_COUNTER),
+]
+
+
+def _fails(counter) -> bool:
+    """True if the counter fails.
+
+    ANY failure, not only `AssertionError`: a counter that runs its gate through
+    `pytest.raises` fails with pytest's own `Failed`, which is not an
+    `AssertionError` subclass.
+    """
+    try:
+        counter()
+    except BaseException:  # noqa: BLE001 -- the outcome IS the measurement
+        return True
+    return False
+
+
+def _gate_cell(counter, module, gate: str) -> bool:
+    """Replace the assertion the counter defends with a no-op.
+
+    A counter that measures the gate must fail; one that compares two constants
+    passes.
+    """
+    original = getattr(module, gate)
+    setattr(module, gate, lambda *a, **k: None)
+    try:
+        return _fails(counter)
+    finally:
+        setattr(module, gate, original)
+
+
+def _ceiling_cell(counter, module, ceiling: str, widened: float) -> bool:
+    """Widen the ceiling past the counter's declared injection.
+
+    A counter sized by that constant must fail; one sized by something else
+    passes.
+    """
+    original = getattr(module, ceiling)
+    setattr(module, ceiling, widened)
+    try:
+        return _fails(counter)
+    finally:
+        setattr(module, ceiling, original)
+
+
 def test_there_is_something_to_check() -> None:
-    """Meta-test: an empty registry makes this file a test of nothing."""
+    """Meta-test: an empty registry makes this file a test of nothing, and a
+    control set that exercises only one cell makes the other one vacuous."""
     assert REGISTERED, "no counter is registered; this file checks nothing"
     assert len(REGISTERED) >= 3, (
         f"only {[r[0] for r in REGISTERED]} registered -- every counter with a "
         "callable gate belongs here, and an exemption is a hole in the guard "
         "written for exactly this"
     )
+    rejecting = {c[2] for c in CONTROLS}
+    assert rejecting == {"gate", "ceiling"}, (
+        f"the controls exercise {sorted(rejecting)}. A cell with no control "
+        "that only it rejects is a cell nothing shows to be necessary."
+    )
 
 
-@pytest.mark.parametrize("label, counter, module, gate",
+@pytest.mark.parametrize("label, counter, module, gate, ceiling, widened",
                          REGISTERED, ids=[r[0] for r in REGISTERED])
 def test_the_counter_fails_when_its_gate_is_neutered(
-    label: str, counter, module, gate: str
+    label: str, counter, module, gate: str, ceiling: str, widened: float
 ) -> None:
-    """The counter must depend on the assertion it defends.
-
-    With the gate replaced by a no-op nothing it asserts can fail, so a counter
-    that measures the gate must fail. One that compares two constants passes --
-    which is exactly what R163 and R173 did, and what the ceiling-neutering
-    version of this test could not see.
-    """
+    """CELL ONE (R182). The counter must depend on the assertion it defends."""
     counter()  # unperturbed it passes: a failure below is the neutering
-
-    original = getattr(module, gate)
-    setattr(module, gate, lambda *a, **k: None)
-    try:
-        # ANY failure, not only `AssertionError`: a counter that runs its gate
-        # through `pytest.raises` fails with pytest's own `Failed`, which is not
-        # an `AssertionError` subclass.
-        with pytest.raises(BaseException):  # noqa: B017, PT011
-            counter()
-    finally:
-        setattr(module, gate, original)
-
+    assert _gate_cell(counter, module, gate), (
+        f"the {label} counter passes with `{gate}` replaced by a no-op. It is "
+        "not running the assertion it defends -- it is asserting itself, which "
+        "is R163 and R173."
+    )
     counter()  # and it passes again, so nothing here is left broken
+
+
+@pytest.mark.parametrize("label, counter, module, gate, ceiling, widened",
+                         REGISTERED, ids=[r[0] for r in REGISTERED])
+def test_the_counter_fails_when_its_ceiling_is_widened(
+    label: str, counter, module, gate: str, ceiling: str, widened: float
+) -> None:
+    """CELL TWO (R197). The counter must be SIZED BY the constant it defends.
+
+    Running the gate is not enough. R197's body ran the gate faithfully and
+    injected a 100% error where the constant says N ULP, so the constant could
+    be widened by nine orders with it green -- the original defect, alive inside
+    the guard written to stop it.
+    """
+    counter()  # unperturbed it passes: a failure below is the widening
+    assert _ceiling_cell(counter, module, ceiling, widened), (
+        f"the {label} counter passes with `{ceiling}` widened to {widened:g}, "
+        "past its own declared injection. Its injection is therefore not sized "
+        "by that constant, so the constant can move without this counter "
+        "noticing -- which is the whole failure this file exists for."
+    )
+    counter()  # and it passes again, so nothing here is left broken
+
+
+@pytest.mark.parametrize(
+    "label, body, rejected_by, module, gate, ceiling, widened",
+    CONTROLS, ids=[c[0] for c in CONTROLS])
+def test_a_DEFECTIVE_counter_is_rejected_by_its_cell_and_admitted_by_the_other(
+    label: str, body, rejected_by: str, module, gate: str,
+    ceiling: str, widened: float
+) -> None:
+    """The controls: both cells are necessary, measured rather than argued.
+
+    A defective body is REJECTED by a cell when it PASSES that cell's
+    perturbation -- the cell then reports it as self-asserting. It is ADMITTED
+    when it fails, which is what a genuine counter does. Each control is
+    asserted in BOTH directions, so deleting either cell turns a control green
+    and this test red.
+    """
+    body()  # every control passes on a clean tree -- that is what makes it a defect
+    outcome = {"gate": _gate_cell(body, module, gate),
+               "ceiling": _ceiling_cell(body, module, ceiling, widened)}
+    other = "ceiling" if rejected_by == "gate" else "gate"
+
+    assert outcome[rejected_by] is False, (
+        f"{label} FAILS the {rejected_by} cell, so that cell reads it as a "
+        "genuine counter. It is a defective body, and this file's "
+        "discrimination is not what its docstring says."
+    )
+    assert outcome[other] is True, (
+        f"{label} passes the {other} cell too, so the {rejected_by} cell is not "
+        f"shown to be necessary by this control. Find a body only the "
+        f"{rejected_by} cell rejects, or the pair is one cell wearing two names."
+    )
