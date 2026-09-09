@@ -1,527 +1,591 @@
 # Review — F2 step 5
-Reviewed commit: 1f389771f5f2af187b48ac169fa24a25c128906c
+Reviewed commit: f3540255ebc5f2e158af8404b2daba7dfa15f4d6
 Verdict: HOLD
 
-Tests: **1589 passed, 0 failed, 0 skipped** (my run at `5737fa6`, `python -m pytest -q`,
-154.66 s, Python 3.13 on Windows). This equals the count the report states. With my
-twenty-eighth-round corpus applied at `1f38977`: **9 additional failures**, which is the
-coverage measurement and is a change of kind -- last round none of my 38 entries was
-executed by anything in the suite; this round all of them are.
+Tests: **1655 passed, 0 failed, 0 skipped** (my run at `37799aa`, `python -m pytest -q`,
+189.54 s, Python 3.13 on Windows). The report states `1626 passed` at its own moment; the
+difference is the 29 corpus rows the report itself added, and the two counts do not
+disagree about anything. With my twenty-ninth-round corpus applied at `f354025`: **33
+additional failures** across the three harnesses.
 
-**Reviewed code commit: `5737fa6`.** The header stamp is `1f38977`, my own corpus
-commit, made immediately before this verdict and touching no code.
-
-**CI at the reviewed commit: RED (CA2).**
+**AND THE LOCAL NUMBER IS NOT THE NUMBER THAT DECIDES THIS STEP.** CI at the reviewed
+commit is red in the job this step created, with failures that are not R231's thirteen:
 
 ```
-cmd  gh run list -R xabi80/FloatFEA --commit 5737fa67c892648cff440784bb0f0ba608189ef7
-out  two runs (push 34382223222 + PR #1 34382227058), both "failure", both completed
-cmd  gh run view -R xabi80/FloatFEA 34382223222 --json jobs
-out  success  lint and type-check     success  ladder 2 (empty by design)
-     success  unit tests              success  ladder 3
-     success  ladder 1                FAILURE  ladder 4 -- 13 failed, 72 passed
-                                      skipped  ladder 5, ladder 6
-cmd  gh run view ... --log-failed | grep FAILED
-out  the same 13, the same magnitudes: 1.110e-16 .. 4.441e-16 on the twelve
-     kinematic channels, 3.469e-18 on rotation, plus joints/lam. Python 3.11.16.
-     NOT ONE NUMBER MOVED from the twenty-seventh verdict table.
+cmd  gh run list --commit 37799aa --json name,conclusion,workflowName
+out  CI  failure  (completed)  + one in_progress run
+cmd  gh run view 34388632233 --json jobs
+out  guards and meta-tests  FAILURE          <- new in this range
+     unit tests             success
+     lint and type-check    success
+     ladder 1 / 2 / 3       success
+     ladder 4               failure          <- R231, 13 failed 72 passed
+     ladder 5, ladder 6     skipped
+cmd  the guards job's own summary line, both commits in this range
+out  4a8d2a3   62 failed, 297 passed in 202.83s
+     37799aa   30 failed, 329 passed in 127.99s
 ```
 
-Third verdict on step 5. Range `8ffbd51..5737fa6`, two commits. **The two guards CB0 and
-CB1 asked for are real work and I rule for both of them on their merits.** What holds the
-step is one carried item that has not moved, one whose closing condition cannot yet be
-met, and three sentences this diff publishes that measurement refutes -- one of which
-stops `pytest` from collecting anything at the next step boundary.
+CA2 is not a preference: **a red CI is a HOLD regardless of what the local run says.**
+The job R235 asked for exists and runs 359 tests, which is real work and I record it as
+such. It is also red, and the report does not say so.
 
 ## Carried
 
-Step 5 is HOLD at `8ffbd51` (verdict 27). **Five items were listed under "Next step opens
-when". Two close, one is answered in mechanism but not in its stated condition, and two
-are untouched by declaration.**
+Step 5 is HOLD at `8e7418f` (verdict 28). **Seven items were listed under "Next step
+opens when". Two close. Two are answered in mechanism and refuted in their published
+form. Three are untouched by declaration.** Plus one item the report records as closed
+that the verdict it answers records as carried.
 
-- **R229 -- CLOSED, and I verified all three properties myself rather than reading
-  them.** `tests/test_no_tolerance_literals.py:57-76` (tokenised markers), `:134-147`
-  (header span), `:189-207` (one marker, one node).
-
-```
-cell  the three properties, each as the shape that must redden, through the
-      SHIPPED offending() at 5737fa6 (marker = `# not-a-tolerance: ...`):
-        assert residual < 1e-9, "not-a-tolerance: for context"
-                                     -> [(8, 'comparison against 1e-09')] CAUGHT
-                                        old line-keyed rule: exempt
-        assert residual < 1e-9, f"not-a-tolerance: {residual}"
-                                     -> CAUGHT.   old line-keyed rule: exempt
-        a docstring carrying the marker, above the assert
-                                     -> CAUGHT
-        match kind:  # not-a-tolerance: ...
-            case "a": assert residual < 1e-9
-            case _:   assert other < 0.05
-                                     -> BOTH caught, [(10,...), (12,...)]
-        assert x < 0.05 and y < 0.05  # not-a-tolerance: only x
-                                     -> CAUGHT.   old line-keyed rule: exempt
-      (i), (ii) and (iii) all hold. On every shape I tried the new window is
-      STRICTLY STRICTER than the line-keyed rule except where black had moved a
-      marker off its node, which is the case it was written for.
-cell  the corpus, measured through the shipped function, not read from the report:
-        28 entries, 24 expect=caught / 4 expect=exempt
-        misses 4 -- 19 at 3577930. All four are expect=caught.
-        all four expect=exempt entries return []   (the hatch stays usable)
-        measured miss set == KNOWN_MISSES: True
-        the whole tests/ tree scans clean -- no false positive anywhere
-cell  AND THE STATED REASON FOR STOPPING AT FOUR IS A CAUSAL CLAIM (BG0), so I ran
-      its ablation rather than accept it. test_marker_exemption_corpus.py:61-67
-      says the tightening that would close them is what CA0 abandoned. One
-      variable moved -- exemption keyed to the FLAGGED NODE own lineno..end_lineno
-      instead of the statement span, everything else held:
-        corpus misses     4 -> 5, and two of the new ones are expect=exempt
-                          entries that the variant falsely reddens
-        false positives   0 -> 14 sites across 8 real test files, none of which
-                          the shipped rule flags: test_cantilever_closed_form,
-                          test_transform_invariance, test_corpus_configurations,
-                          test_patch_test, test_basis_constants (5 sites),
-                          test_conventions_are_generated, test_live_dof,
-                          test_reference_provenance
-judge THE CELL REPRODUCES AND THE TRADE-OFF IS REAL. It closes one of the four and
-      opens two, at a cost of fourteen false positives. That sentence is now
-      measured rather than argued, and I record it as VERIFIED -- which is not
-      something the last three rounds have been able to say about a "because".
-judge KNOWN_MISSES IS NOT xfail WEARING A REASON, and I checked the domain rather
-      than the wording. `_misses()` runs ALL 28 entries including the four;
-      `test_the_known_misses_are_exactly_these` asserts set equality in BOTH
-      directions; the parametrised test excludes exactly those four. A miss that
-      gets fixed and a miss that appears are both build failures. The collection
-      the assertion inspects can contain the failure.
-```
-
-- **R230 -- MECHANISM VERIFIED, CLOSING CONDITION NOT MET. Carried, not closed, and it
-  closes when R231 does.** `scripts/run_rung.sh`, `.github/workflows/ci.yml:83-147`.
+- **R236 -- CLOSED.** `.github/workflows/ci.yml:71-80` now states what adding the first
+  test to an `empty:` rung costs.
 
 ```
-cell  the shipped script at the REAL repository layout, run by me:
-      cmd  sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression
-      out  run_rung: tests/verification/rung6 -- empty by design, nothing to run
-           4 passed in 2.62s        EXIT=0
-judge THE R230 DEFECT IS GONE. `tests/regression` executes; at 3577930 it could
-      not. `ls A B` is replaced by a declaration per directory, and a rung that is
-      renamed, emptied, or renamed off the test_ prefix now contradicts its
-      declaration instead of matching no glob.
-judge BUT THE CONDITION I WROTE WAS "shown by a CI log line carrying a non-zero
-      pass count from that path, NOT by reading the YAML". Ladder 6 is `skipped`
-      at 5737fa6 because ladder 4 is red. I am not going to quietly relax my own
-      condition to a local run -- that is the sentence CA2 exists to refuse. The
-      item is answered in substance and unmet in its stated form, and it becomes
-      satisfiable the moment R231 does.
+cmd  git diff 8e7418f..HEAD -- .github/workflows/ci.yml
+out  the sentence "adding a test to a rung is a matter of dropping a file into
+     tests/verification/rungN/ -- not a CI edit" is DELETED and replaced by
+     "the first test makes the declaration stale and the job FAILS. Delete the
+     marker and change empty: to full: in the same commit. That is a CI edit".
+cell my own layout, re-run at 37799aa in a scratch tree: rung2 declared empty:,
+     marker present, one passing test dropped in -> EXIT=1, "declared empty and
+     collects tests. The declaration is stale". The sentence now matches the rule.
 ```
 
-- **R231 -- STILL OPEN, BLOCKING, AND LEAVING IT UNTOUCHED WAS RIGHT. Both halves of
-  that, said separately.** `tests/verification/rung4/test_writer_round_trip.py:92-103`.
+- **R237 -- CLOSED, the sentence.** `tests/test_no_tolerance_literals.py:27-34` now says
+  "**The left operand is not read** (R237): `assert 0.05 > ratio` returns nothing", names
+  the two live sites, and routes the reach to 4a. That is one of the two branches I said
+  would close it, and it is the honest one. The reach stays 4a and I have widened the
+  corpus around it (R249).
+
+- **R238 -- CLOSED as written, and I re-measured two of the four rather than reading
+  them.** Three NEW residues in the same file are R248 below; the item as I wrote it is
+  answered.
 
 ```
-judge THE RULING ASKED FOR: leaving it open was correct, and I would have found
-      against the alternative. Both available fixes change what a gate F1 CLOSED
-      asserts, and CLAUDE.md routes that through the plan, not through a step
-      commit. Touching it inside step 5 would have been the finding. The report
-      site table declares all twelve lines :92--:103 as "no change, and
-      deliberately", which is the site-by-site form a naming condition needs.
-judge AND IT IS STILL A HOLD, which is not a contradiction. CA2 says a red CI is a
-      HOLD regardless of the local run, and I wrote that into my own reading order
-      two commits before this range. "1589 passed locally" is exactly the defence
-      CA2 refuses. Correct conduct and an open gate are different facts.
-judge WHY NOT STOP. Rungs 1, 2 and 3 are green on CI, so step 5 own rung is
-      interpretable. No product code is implicated: `git diff 8ffbd51..HEAD --
-      floatfea` is EMPTY across this whole range.
+cell shipped scripts/run_rung.sh at 37799aa, scratch tree:
+     (c) full:rung1 with one passing and one failing test
+           -> EXIT=1, last line is the pytest summary. NO "OK" line.       FIXED
+     (c) empty:rung2(marker) full:rung1(failing)
+           -> EXIT=1, no "OK" line.                                        FIXED
+     (a) full:rung1 whose only test is @pytest.mark.skip
+           -> EXIT=1, "a test in ... was skipped. CLAUDE.md: never skip".  FIXED
+     (b) full:rung1 populated AND carrying .empty-by-design
+           -> EXIT=1, "declared full and still carries .empty-by-design".  FIXED
 ```
 
-- **R232 -- CLOSED on substance.** The revision covers all five commits
-  (`docs/reports/F2/step-5.md:184-185`).
+- **R239 -- CLOSED.** Section 3's `out` fields are pasted.
 
-```
-cmd   grep -rn CA0/CA1/CB0/CB1/CB2 over docs/, excluding docs/reviews/
-out   4 hits, all in docs/reports/F2/step-5.md: CB0/CB1 at :185, CA0 at :229,
-      CB1 at :268, CB0-CB2 at :423. CA0 and CA1 are NAMED, but what they ASKED
-      FOR is still only in their commit bodies.
-judge The defect was three commits with no report. That is fixed. The residue --
-      a reader in docs/ cannot recover the text of CA0 and CA1 -- rolls into 4a
-      with R220 list, and I am not holding the step on it.
-```
+- **R234 -- NOT CLOSED. Answered for the six states I wrote and refuted by the seventh.**
+  The three changes are real and I verified each: `_read` returns `""` on `OSError`, the
+  carry comparison runs against `max(REPORTED & REVIEWED)`, and the empty parametrise is
+  a named placeholder rather than a collection error. Six of six states now collect and
+  report by name on this machine. **But the closing condition was "the guard inputs are
+  the states that actually occur", and two states that occur still do not report**: R246
+  (the module still raises at import on an input the docstring says it never raises on,
+  and the suite then runs zero tests) and R247 (the harness that certifies all of this is
+  red on CI, including its own baseline, and its collection detector fires on the wrong
+  condition). Condition (ii) -- "the same when `docs/reports/F2/` cannot be read" -- is
+  GREEN here and RED on CI.
 
-- **R233 -- STILL OPEN, 4a. Its condition had two halves and one is met.**
+- **R235 -- ANSWERED IN MECHANISM, REFUTED IN ITS PUBLISHED FORM.** The `guards` job
+  exists, it names every top-level `tests/*.py`, and `test_ci_runs_the_whole_suite.py` is
+  not vacuous in the way its first version was -- I checked that myself rather than
+  reading it (R250 records what I could and could not exhibit). The closing condition was
+  "shown by a CI log line with a pass count covering them". There is a log line and it
+  carries **30 failed, 329 passed**. A pass count that is also a fail count does not close
+  an item whose whole content was that a claim about CI had never been measured.
 
-```
-cmd   python -m ruff check floatfea tests --statistics, at e5f6deb~1   (mine)
-out   43 E501, 8 E702, 8 SIM300, 7 I001, 6 NPY002, 4 SIM117, 4 UP037, 3 F401,
-      2 B905, 2 E741, 2 F821, 1 B007, 1 F841, 1 SIM102, 1 UP035
-      -- Found 93 errors.
-judge REPRODUCES CHARACTER FOR CHARACTER against report section 3. The
-      enumeration is produced, not typed. That half CLOSES.
-cmd   grep -n NPY002 tests/verification/rung3/test_determinism_pins.py, at HEAD
-out   46 53 55 69 70 71 72 -- SEVEN lines. Report section 3 out field says
-      ":53 :55 :69 :70 :71 :72". Line 46 is the docstring sentence, not a
-      suppression.
-judge The six SUPPRESSION sites are right. The out field is a filtered result
-      presented as what the command prints -- the species R233 named, in the
-      paragraph answering R233. Recorded as R239, still 4a, not blocking.
-```
+- **R230 -- STILL CARRIED, AND THE REPORT RECORDS IT AS CLOSED.** This is R242 below.
 
-- **R223 -- STILL OPEN, BLOCKING, untouched and declared.** The five sites re-located at
-  `8ffbd51` are unmoved: `floatfea/tolerances.py:293`,
-  `tests/verification/rung1/test_rigid_body_modes.py:19` and `:175-177`,
-  `docs/milestones/F2.md:51` and `:1477`; `F2.md:1491-1492` still carries no operating
-  point. `git diff 8ffbd51..HEAD -- floatfea/tolerances.py` is EMPTY.
-- **R224 -- STILL OPEN, BLOCKING, untouched and declared.** `floatfea/tolerances.py`
-  `:295-297` and `:300-308`, both sites, unchanged.
-- **R225, R226, R227, R228 -- OPEN at 4a**, untouched.
-- **Everything at 4a from step 4** -- R216--R222, R200--R215, R198, R199, R181, R189,
-  R190, the R170/R171 remainder, R172, R159, R162, R151, R152, R134--R139, R148, R129,
-  R131, R132, R113, R95, R97, R98, R100--R103, R124, R63, R76, R79, R80, R6, R16, R25,
-  R30--R33, R36, R50, R52, R62 -- **unchanged and untouched.** R65 remains withdrawn by
-  me and recorded as a disagreement. R68 standard met.
-- **Item 1b -- SATISFIED.** The report newest revision header is
-  `Answers: verdict 27 @ 8ffbd51`, and `8ffbd51` is the latest verdict. One comparison,
-  and it passes.
-- **The witness -- STILL NO COMMENT.** PR #1 open, `refs/pull/1/head = 5737fa6`, no
-  `[witness F2 step 5]` comment. **Twenty-eighth consecutive review by one reader.**
-  An unavailable check, not a pass.
+- **R231 -- OPEN BY INSTRUCTION (Q8), and its number is now known to be an undercount.**
+  Thirteen was the ladder-4 count. R244 adds two more of the same species in the guards
+  job and one more masked behind a skipped ladder 6. Not offered as answered and not
+  treated as such; what I record is that "the same 13" no longer bounds the set.
+
+- **R223, R224 -- OPEN BY INSTRUCTION (Q7).** Site by site, unchanged in this range:
+  `floatfea/tolerances.py:293`, `tests/verification/rung1/test_rigid_body_modes.py:19` and
+  `:175-177`, `docs/milestones/F2.md:51`, `:1477`, `:1491-1492`; and
+  `floatfea/tolerances.py:295-297`, `:300-308`. Confirmed untouched:
+  `git diff 8e7418f..HEAD -- floatfea` is empty.
+
+- **R225-R228, the R232 residue, the remaining half of R233, and everything already at
+  4a** -- carried, unchanged, correctly classified in the report's section 5.
 
 ## Findings
 
-**Four block. Two are recorded at 4a.**
-
-**R234. (BLOCKS -- head 3, and it is the only finding here that stops the suite from
-running at all) The carry guard now reads a pair of files that `CLAUDE.md` guarantees
-will not both exist at every step boundary, and at that commit `python -m pytest -q`
-collects NOTHING.** `tests/test_report_carried.py:62-84` and `:149-151`, and the
-sentence at `docs/reports/F2/step-5.md:314-316`.
+**R240. (BLOCKS -- CA2) CI is RED at the reviewed commit, in the job this step added, and
+the failures are not R231's.** `.github/workflows/ci.yml:34-53`, run `34388632233`.
 
 ```
-code  :62-81  STEP = max step number with a report under docs/reports/F2/
-      :82-84  VERDICT = docs/reviews/F2/step-<STEP>.md; REPORT = same for reports
-      :149    REPORT_TEXT  = _read(REPORT)            <- MODULE SCOPE
-      :151    VERDICT_TEXT = _verdict_text_at(...) -> _read(VERDICT) on fallback
-judge THE DIAGNOSIS IS RIGHT AND I VERIFIED THE FIGURE IT RESTS ON. The guard did
-      name step-4.md in two places while step 5 was open.
-      cmd  worktree at 76c186a, tests/test_report_carried.py replaced by HEAD one
-      out  80 failed, 13 passed in 0.59s
-      EXACTLY the report number, reproduced independently. Every one of the 80 is
-      a step-5 finding the report did not carry. That is not what blocks.
-judge WHAT BLOCKS IS THE STATE THE FIX CANNOT SURVIVE. CLAUDE.md, Step gating,
-      step 1: "Write docs/reports/F<n>/step-<k>.md ... Commit." Step 2: "Invoke
-      the gating-supervisor subagent ... Commit the verdict SEPARATELY." So there
-      is a commit, at EVERY boundary, where the newest report has no verdict.
-cell  one variable moved -- the presence of docs/reports/F2/step-6.md -- in a
-      worktree at 5737fa6, nothing else changed:
-        WITHOUT it   pytest tests/test_report_carried.py -q
-                     -> 93 passed in 0.13s
-        WITH it      -> E FileNotFoundError: ...docs\reviews\F2\step-6.md
-                        ERROR collecting tests/test_report_carried.py
-                        Interrupted: 1 error during collection
-        WITH it      python -m pytest -q            (the WHOLE suite)
-                     -> 2 warnings, 1 error in 0.84s
-                        ZERO of 1589 tests execute.
-judge NOT "one test goes red". The module raises at IMPORT, pytest interrupts
-      collection, and the run reports nothing. The step report that must state
-      "the test counts from your own run" at that commit has no counts to state.
-judge AND THE PUBLISHED SENTENCE IS REFUTED. step-5.md:314-316 says "It follows
-      the newest report now, and `test_the_guard_reads_the_step_being_worked_on`
-      fails if the verdict beside it is missing."
-        cmd  pytest that node id, in exactly that state
-        out  ERROR collecting ... FileNotFoundError. 1 error in 0.13s.
-      It does not fail. It is never collected. The meta-test written for this
-      state is dominated by a module-scope read of the same file, so the one
-      assertion that would name the problem cannot fire in the only state it was
-      written for -- "a gate carries its own failure", inverted.
-judge THIS IS ITEM 1b, ONE LEVEL DOWN, AND THE REPOSITORY ALREADY PAID FOR IT. My
-      own instructions record that comparing against the newest verdict made the
-      boundary permanently red, pytest was `34 failed` BY CONSTRUCTION, and "green
-      stopped meaning anything exactly where it is needed". The `Answers:` header
-      fixed that for the verdict CONTENT. CB2 has reintroduced it for the verdict
-      FILE, and the new failure is worse: 34 failed still tells you 1555 passed.
-cell  AND R235 COMPOUNDS IT: this module is one of the 293 tests no CI job
-      collects, so CI would stay green through the whole event.
+out  guards and meta-tests: 30 failed, 329 passed in 127.99s at 37799aa
+     by file:  test_report_carried.py            25
+               test_report_guard_states.py        4  (including `baseline`)
+               test_counters_are_injected.py      2
+               test_plan_figures.py               1
+judge R231 is ladder 4 and it is 13 failed / 72 passed on this same run. None of
+      these 30 is one of those 13, and none of them is offered as open by
+      instruction anywhere in the report.
+judge THE JOB IS THE RIGHT WORK. 359 guard tests now execute on a machine neither
+      of us controls, for the first time in this milestone, and four separate
+      defects fell out of that on the first attempt. That is exactly what CA2
+      predicts and it is the strongest thing in this range. It is also why the
+      step cannot close on it: the measurement was taken and it came back red.
 ```
 
-**Closed when** the guard inputs are the states that actually occur, shown as
-measurements and not as a comment: (i) at a commit whose newest report has no verdict
-beside it, `python -m pytest -q` COLLECTS and reports a count, and a NAMED test carries
-the message; (ii) the same when `docs/reports/F2/` cannot be read; (iii)
-`test_the_guard_reads_the_step_being_worked_on` is shown firing in state (i) rather than
-asserted to. The six states are on disk at `tests/corpus/report_guard_states.txt`, each
-with what `pytest` did at `5737fa6`.
+**Closed when** the `guards` job is green at the reviewed commit, or every failure in it
+is routed by name -- to Q8, to 4a, or to a fix -- and the routing is in the report with
+the run id and the count beside it.
 
-**R235. (BLOCKS -- head 3) "in the suite, so in CI" is false. No CI job collects any
-top-level `tests/*.py`, so 293 of 1589 tests -- every process guard in this repository,
-including both guards this step added -- have never run on CI and cannot.**
-`docs/reports/F2/step-5.md:243`, and `.github/workflows/ci.yml:71-74`.
+**R241. (BLOCKS -- head 3) The report's CI section is not what CI says.**
+`docs/reports/F2/step-5.md:651-655`.
 
 ```
-code  report section 2, :243  "12 passed -- all ten of the reviewer layouts, in
-      the suite, so in CI"
-code  ci.yml:72-74   "`tests/test_ci_ladder_gating.py` runs it against all ten
-      layouts in this suite -- WHICH MEANS IN CI."
-cmd   grep -rn "pytest|run_rung" .github/workflows/          (the complete list)
-out   :43   pytest tests/unit -q
-      :92   run_rung.sh full:tests/verification/rung1
-      :103  run_rung.sh empty:tests/verification/rung2
-      :114  run_rung.sh full:tests/verification/rung3
-      :125  run_rung.sh full:tests/verification/rung4
-      :136  run_rung.sh empty:tests/verification/rung5
-      :147  run_rung.sh empty:tests/verification/rung6 full:tests/regression
-      -- and `ls .github/workflows/` is ci.yml alone. No job names tests/ itself.
-cmd   pytest --collect-only -q over exactly those eight paths
-out   1296 tests collected
-cmd   pytest --collect-only -q                        (the whole suite)
-out   1589 tests collected
-cmd   pytest --collect-only -q tests/test_*.py
-out   293 tests collected                     1296 + 293 = 1589, exactly.
-judge THE SENTENCE IS REFUTED BY MEASUREMENT and it is load-bearing, not
-      decorative. R230 whole content was that a claim about what CI catches had a
-      corpus of zero. The answer builds the corpus, runs it, and publishes that it
-      runs in CI -- and it does not. test_ci_ladder_gating, test_marker_exemption_
-      corpus, test_no_tolerance_literals, test_report_carried,
-      test_counters_are_injected, test_plan_figures, test_plan_matches_tolerances:
-      not one is reachable from any job. The tolerance-literal scanner -- the
-      guard that enforces the central rule of CLAUDE.md -- has never executed on a
-      machine neither the implementer nor I controls.
-judge AND IT IS THE SAME SPECIES AS R234, WHICH IS WHY I AM NOT SPLITTING THEM
-      APART: the machine that would have caught a suite that collects nothing is
-      the machine that does not run the file that stops it collecting.
+code :655  "The `guards` job is new and runs for the first time on this commit."
+cmd  gh run list --limit 10 --json headSha,conclusion,createdAt
+out  4a8d2a3  failure  2026-09-09T18:14:38Z   <- the guards job ran HERE
+     37799aa  failure  2026-09-09T18:22:48Z   <- the report commit
+cmd  the guards job's summary line in the 4a8d2a3 run
+out  62 failed, 297 passed in 202.83s; last log line at 18:18:24Z
+judge The job first ran on 4a8d2a3, which is "the previous commit" the same
+      paragraph reports rungs 1-4 for, and it finished RED four minutes before
+      the report was committed. The paragraph enumerates every other job's
+      outcome at that commit and omits the one this revision introduced.
+judge I am not ruling on intent and I do not need to. BF0: every sentence that
+      states a fact about the code carries the command that would refute it. One
+      `gh run view` refutes this one, and the fact it withholds is the fact the
+      step turns on.
 ```
 
-**Closed when** either every top-level `tests/*.py` is executed by a named CI job --
-shown by a CI log line with a pass count covering them, not by reading the YAML -- or
-both sentences are withdrawn and replaced by what is true, in the same commit (BP0). A
-count is the honest form: say how many of the 1589 CI runs.
+**Closed when** `:651-655` states the guards job's result at the commit the report is
+committed at, with the run id and the counts, or is withdrawn.
 
-**R236. (BLOCKS -- head 3 and BP0) `ci.yml:54-55` says adding a test to a rung is not a
-CI edit. Under the rule this same commit installs, adding a test to rung 2, 5 or 6
-reddens CI until `ci.yml` is edited -- and the implementer own `REQUIREMENT_CHANGED`
-entry says so.** `.github/workflows/ci.yml:54-55`, unchanged in this range.
+**R242. (BLOCKS -- head 3) The report records R230 as closed at the third verdict. The
+third verdict records it as carried, in the sentence that names it.**
+`docs/reports/F2/step-5.md:442` and `:601`; `docs/reviews/F2/step-5.md:95-96`.
 
 ```
-code  ci.yml:54-55  "Each rung is wired now, while empty, so that adding a test to
-      a rung is a matter of dropping a file into tests/verification/rungN/ -- NOT
-      A CI EDIT."
-code  tests/test_ci_ladder_gating.py:53-57  REQUIREMENT_CHANGED for
-      ci_rung6_both_populated: "Rung 6 own directory is declared `empty:`, so a
-      test appearing in it now FAILS as a stale declaration"
-cell  measured, not inferred, in a scratch tree with the shipped script:
-        rung6: .empty-by-design + __init__.py + a PASSING test_r6.py,
-               tests/regression populated, args exactly as ci.yml gives them
-        -> run_rung: FAIL -- ...rung6 is declared empty and collects tests.
-           EXIT=1
-        rung2: .empty-by-design + a FAILING test  -> EXIT=1, same message
-      Dropping a file into rung 2, 5 or 6 reddens the ladder. Recovering needs TWO
-      edits outside that directory: `empty:` -> `full:` in ci.yml, and deleting
-      the marker.
-cmd   git diff 8ffbd51..HEAD -- .github/workflows/ci.yml, grepped for the sentence
-out   (no hunk) -- the sentence is untouched while the rule under it moved.
-judge THIS IS BP0 EXACTLY: "when a decision rule changes, every figure citing the
-      old rule is regenerated or withdrawn IN THE SAME COMMIT. Not the next one,
-      and not when someone notices." The commit withdrew the "renamed directory"
-      sentence four lines below and left this one, in the same comment block.
-judge AND I RULE FOR THE RULE ITSELF, so this is a sentence finding and not a
-      design one. Both REQUIREMENT_CHANGED entries are stricter and both are
-      right, and they are mine to rule on, so: ci_rung_genuinely_empty --
-      ACCEPTED, rung 1 declares itself full and a rung 1 holding only __init__.py
-      must redden; my require=pass was written against a rule that could not tell
-      an emptied directory from an unwritten one. ci_rung6_both_populated --
-      ACCEPTED, a stale declaration should be loud. The cost of accepting them is
-      that :54-55 is now false, and the cost is cheap to pay in words.
+code report :442  "R229 and R230 closed at the third verdict."
+code report :601  "| R230 | **closed** at the third verdict |"
+cmd  grep -n "R230" docs/reviews/F2/step-5.md
+out  :95  "**R230 -- MECHANISM VERIFIED, CLOSING CONDITION NOT MET. Carried, not
+           closed, and it closes when R231 does.**"
+     :477 item 4 of "Next step opens when": "R230 -- tests/regression
+           demonstrably executed by ladder 6 on CI, a log line with a pass count
+           from that path."
+cmd  the ladder 6 job's conclusion on every CI run this branch has produced
+out  skipped, on all of them. `tests/regression` has never executed on CI.
+judge THE CONDITION IS UNMET AND THE FACT IS UNCHANGED SINCE I WROTE IT. What
+      moved is the record of it. This is the exact failure the arrangement exists
+      to prevent -- an open dependency recorded as discharged -- and it is the one
+      species running the suite cannot catch, because test_report_carried checks
+      that R230 is MENTIONED in Carried, never that the status beside it is true.
+      Its own docstring says so at :48-50.
 ```
 
-**Closed when** `ci.yml:54-55` states what the declared rule actually requires of
-someone adding the first test to an empty rung, or is withdrawn.
+**Closed when** the report's Carried row for R230 says carried-not-closed, and section 0
+stops saying it closed at the third verdict.
 
-**R237. (BLOCKS -- head 3, the sentence only) The scanner own "What is flagged" list says
-it flags a comparison against any float threshold other than 0.0 or 1.0. It never
-inspects the LEFT operand of a comparison, so `assert 0.05 > ratio` returns clean.**
-`tests/test_no_tolerance_literals.py:27-28`, and `:176-187`.
-
-```
-code  :176  for comp in node.comparators:     <- ast.Compare.left is never read
-code  :27-28 "a comparison against ANY float threshold other than 0.0 or 1.0"
-cell  through the shipped offending() at 5737fa6:
-        assert 0.05 > ratio                      -> []   CLEAN
-        assert 1e-9 > residual > 0.0             -> []   CLEAN
-        assert (0.34 < ratio < 0.3536)  # marker -> []   CLEAN
-      The old line-keyed rule missed all three too: this is NOT a CB0 regression.
-judge THE COLLECTION THE ASSERTION INSPECTS CANNOT CONTAIN THE FAULT -- assertion
-      domain blindness, verbatim. And it interacts with the property CB0 was built
-      to establish: "one marker exempts at most one node" is satisfied on
-      `0.34 < r < 0.3536` by ONE marker and ONE invisible literal, so the bound
-      holds by counting a candidate set that is short.
-cmd   AST scan of tests/ and floatfea/ for Compare nodes with a float left operand
-out   2 live sites: tests/verification/rung3/test_basis_constants.py:192
-      (0.34 < r/0.9 < 0.3536) and
-      tests/verification/rung4/test_reference_provenance.py:30 (0.3 < f < 0.7).
-      BOTH ARE LEGITIMATE fixture-range assertions and both already carry a marker
-      for their right operand, so NO undeclared tolerance is hiding in the tree
-      today. The cost of closing the reach is two extra markers.
-judge I AM SPLITTING THIS DELIBERATELY, per BU0. The REACH -- whether `left` joins
-      the candidate set -- is parser reach and is 4a, the example BU0 names. The
-      SENTENCE at :27-28 is head 3: it is the guard stated contract and it is
-      wrong. Either branch closes it, and I am not choosing for the implementer.
-```
-
-**Closed when** `:27-28` describes what the scanner does, or the scanner does what
-`:27-28` says. Four shapes are on disk at `tests/corpus/tolerance_marker_exemptions.txt`
-with `measured` taken at `5737fa6`.
-
-**R238. (recordable, 4a) Four residues in `scripts/run_rung.sh`, each measured.**
+**R243. (BLOCKS -- head 3, and it is the machinery R235 installed) The carry guard cannot
+run in the checkout CI gives it. 23 false accusations, and the cause is fetch depth, not
+platform.** `tests/test_report_carried.py:282` and `:186`.
 
 ```
-cell  layouts I built that the ten do not cover, shipped script, scratch tree:
-      (a) rung1 full, its only test is @pytest.mark.skip
-            -> EXIT=0, "1 skipped". A rung reports green having executed nothing.
-               CLAUDE.md forbids a skip taken to get a green build; the ladder
-               cannot presently tell that state from a real pass.
-      (b) rung1 declared `full:`, populated, AND carrying a stale
-          `.empty-by-design`   -> EXIT=0. The marker is read only in the `empty:`
-               branch, so the state left by a forgotten half of the
-               `empty:`->`full:` transition is silent.
-      (c) an `empty:` rung that collects tests -> EXIT=1, correct, but the run
-               still prints "run_rung: <dir> -- empty by design, nothing to run"
-               AFTER the FAIL line, because :65-68 fails without `continue`. A log
-               reader sees the reassuring sentence on the failing run.
-      (d) a rung path containing a space -> EXIT=4. `$RUN_DIRS` at :85 is unquoted
-               and word-splits. It fails loudly rather than silently, so it is
-               robustness, not a hole.
-      Correct on everything else I threw at it: symlinked rung directory (runs),
-      missing __init__.py (runs), conftest that raises (EXIT=1), rung path that is
-      a file (EXIT=1), declared-empty directory absent (EXIT=1), second `full:`
-      directory that collects nothing (EXIT=1).
+cell ONE MACHINE, ONE COMMIT, ONE INTERPRETER, one variable moved:
+       git clone           file://<repo> full     -> 122 passed
+       git clone --depth 1 file://<repo> shallow  -> 23 failed, 99 passed
+     `actions/checkout@v4` with no `fetch-depth:` is the shallow one.
+code :282  out = subprocess.run(["git","diff","-U0",reviewed], ...)
+           out.returncode is NEVER READ; on failure stdout is empty and
+           _changed_lines() returns {}, which is indistinguishable from "the step
+           touched nothing". Every named site then falls through to the
+           `no change` scan and fails.
+code :186  subprocess.run(["git","cat-file","-e",ANSWERED]) -> 128,
+           "fatal: Not a valid object name 8e7418f", so
+           test_the_report_names_the_verdict_it_answers accuses the report of
+           answering a verdict that is not a commit. It is a commit. The clone
+           does not have it.
+judge THIS IS HEAD 3 AND I AM NOT SPLITTING IT TO 4a. The guard's whole purpose is
+      to make the dependency re-read mechanical; R235's whole content was that it
+      had never run where it matters; and the answer put it somewhere it cannot
+      run. This repository has already recorded once what happens when `pytest` is
+      red by construction -- green stops meaning anything exactly where it is
+      needed -- and 23 of 122 is that, on the only machine neither of us controls.
+judge AND THE FAILURE DIRECTION IS SAFE, WHICH IS WHY IT IS CHEAP: an empty
+      touched-set makes the check STRICTER, never looser, so nothing is hidden.
+      What is broken is that the check cannot tell "git could not answer" from
+      "the answer is no", and one return-code test separates them.
 ```
 
-**Closed when** 4a rules on (a) and (b) -- both are declaration-versus-reality states,
-which is the distinction CB1 exists to make -- and (c) does not print a success line on a
-failed rung. The twelve layouts are at `tests/corpus/ci_ladder_gating.txt`.
+**Closed when** the guard either fetches the depth it needs, or detects that it cannot
+compute the diff and says so through a named test instead of through every site -- shown
+as a run in a `--depth 1` clone, not asserted. `tests/corpus/report_guard_states.txt`
+carries the state as `shallow_clone_depth_1`.
 
-**R239. (recordable, 4a) Report section 3 `out` field is a filtered result presented as
-what its command prints.** `docs/reports/F2/step-5.md:279-280`. Measured above under
-R233. Same species as R226 and R233 and the third recurrence; the substance is right
-each time and the `out` field is not what the `cmd` prints.
+**R244. (BLOCKS -- head 2, a tolerance and its form) `EXEMPT_RESPONSE_DRIFT_ULP = 4.0` is
+a bit-exactness ceiling on a quantity that is not bit-reproducible across platforms.**
+`floatfea/tolerances.py:713`, asserted at
+`tests/regression/test_exempt_pair_responses.py:109`.
 
-**Closed when** an `out` field is pasted rather than summarised, or the `cmd` includes
-the filter that produces it.
+```
+out  CI, guards job, 37799aa:
+     bt_boundary_rolled_aniso_below_L513p206|dropped_shear_parameter: the response
+     moved from 1.099531e-10 to 1.099531e-10, 2612174795.0 ULP of the recorded
+     ratio, above 4.
+     assert 2612174795.0 <= 4.0
+     -- twice: test_the_counter_fails_when_its_gate_is_neutered[exempt-response
+     drift] and ...its_ceiling_is_widened[exempt-response drift].
+judge THE RECORDED VALUE AND THE MEASURED ONE AGREE TO SEVEN DIGITS AND DISAGREE
+      IN THE LOW BITS. 2.6e9 ULP of a ratio near 1e-14/1e-14 is a relative move of
+      order 1e-7 -- ordinary cross-libm drift, and the reason written beside the
+      constant says the admissible move is round-off. On one platform. The form is
+      right (ULP, dimensionless, counter 10.0 at :720); what does not hold is that
+      the recorded measurements cover the machines the assertion runs on.
+judge AND THE GATE ITSELF IS MASKED. test_every_recorded_pair_is_still_detected
+      lives in tests/regression, ladder 6 is skipped on every CI run, so the gate
+      has never run on CI -- only the meta-test that calls it has, in the new job.
+      When R230 is finally satisfied this becomes a third failure at the same site.
+judge SAME SPECIES AS R231, DIFFERENT FILE, AND I NAME IT SEPARATELY ON PURPOSE.
+      R231 is scoped to ladder 4 thirteen failures and is with the technical
+      supervisor as Q8. Folded into "the same 13" it will be answered by a change
+      that does not reach it.
+```
+
+**Closed when** this is on Q8 list by name -- the constant, the site, and the fact that
+its gate is currently masked by a skipped ladder -- or the CI failure is gone. **Not by
+raising `4.0`** inside a step commit: that is the widening the rule forbids, and the
+counter ordering asserted at `tests/test_counters_are_injected.py:170` means it cannot be
+raised far without breaking the registry, which is that guard working.
+
+**R245. (BLOCKS -- head 3, a published figure) `docs/milestones/F2_figures.md` does not
+reproduce on CI. The generated file the locked plan cites by name is machine-specific.**
+`docs/milestones/F2_figures.md:34-38`, `scripts/regen_figures.py:113-147`,
+`tests/test_plan_figures.py:73`.
+
+```
+out  CI, guards job, 37799aa:
+     "regen_figures: F2_figures.md is not what this script produces at HEAD"
+     and the boundary probes it prints on the way:
+       detection edge 3.5380e-14 at ci_plateau_D0p0689_roll1p017_aniso9p6e5
+       shipped defect 2.12065e-06 is 5.994e+07x it  (passes)
+       shipped defect 2.12489e-06 is 6.006e+07x it  (fails)
+cmd  the committed file, this machine
+out  | detection_edge | 3.6275e-14 |
+     | counter_defect_over_edge | 2.757e+07x |
+     | counter_headroom_room | 2.18x |
+     | counter_defect_boundary | 2.174e-06 passes, 2.179e-06 fails |
+judge FOUR PUBLISHED FIGURES MOVE. The edge differs by 2.5% between the machines,
+      so counter_defect_over_edge becomes about 2.83e+07x, the room about 2.12x,
+      and the solved boundary moves to 2.121e-06 / 2.125e-06, both printed in the
+      CI log. All four are referenced from the plan as fig names, and the
+      justification entry for PATCH_TEST_COUNTER_HEADROOM cites three of them by
+      name precisely so they would not be typed.
+judge THE MECHANISM IS THE FINDING, NOT THE 2.5%. The premise of BT0 is that a
+      generated file is reproducible, and --check compares the whole file byte for
+      byte. A bisected detection edge over a 158-entry corpus is not a
+      bit-reproducible quantity, so test_the_generated_figures_are_not_stale is red
+      on Linux by construction, and the only reason nobody had seen it is that this
+      file had never run in CI. The answer to R235 is what exposed it.
+judge I RECORD THE DIRECTION AS WELL AS THE FACT, because the tolerance entry
+      claims one: the room fell 2.37x -> 2.19x -> 2.18x here and reads about 2.12x
+      there, so the monotone-tightening argument survives. The published NUMBER
+      does not describe the repository on the reference machine.
+```
+
+**Closed when** either the file contents are reproducible across the platforms CI runs, or
+--check compares what is actually invariant and the machine-dependent rows say which
+machine they were taken on -- with the four rows above regenerated or annotated in the
+same commit as the rule that changes (BP0).
+
+**R246. (BLOCKS -- head 3) `tests/test_report_carried.py:67-68` says `_steps` "Never
+raises". It raises, and the suite then runs zero tests.**
+
+```
+code :66-68  def _steps(where): docstring reads "Step numbers with a file under
+             `where`. Never raises: a directory that cannot be read is a state
+             this guard REPORTS, not one it dies on."
+code :69-76  try: {int(q.stem.split("-")[1]) ... if ....isdigit()}
+             except OSError: return set()
+cell one file added to a copy of the repository at 37799aa, nothing else changed:
+       docs/reports/F2/step-[U+00B9].md          (superscript one)
+       python -m pytest tests/test_report_carried.py -q
+       -> ERROR tests/test_report_carried.py - ValueError: invalid literal for
+          int() with base 10
+          Interrupted: 1 error during collection
+          1 error in 0.14s
+     ZERO tests execute. That is the failure mode of R234, at HEAD, after the
+     repair.
+judge THE MECHANISM IS GENERAL, NOT THE CHARACTER. str.isdigit() is true for a
+      strictly larger set than int() accepts -- superscripts, subscripts, circled
+      digits -- so the admission test and the parse disagree, and the repair caught
+      OSError because OSError was the exception it had seen.
+judge I RATE THIS AS THE SENTENCE, NOT THE STATE. A superscript step number is not
+      a state that occurs, and had the docstring said "never raises on a directory
+      it cannot read" I would have recorded it at 4a. It says "Never raises", full
+      stop, in a diff whose entire subject is a guard that took the suite down by
+      raising.
+```
+
+**Closed when** `:67-68` says what it does, or `_steps` catches what it can raise. One
+`except (OSError, ValueError)`, or one stricter admission test, closes it either way.
+
+**R247. (BLOCKS -- head 3, and it is the gate on R234) The collection detector in the
+R234 harness fires on the wrong condition, and its own `baseline` is red on CI.**
+`tests/test_report_guard_states.py:132-135` and `:78-91`.
+
+```
+code :132  assert "error" not in log.split("=====")[-1].lower() or "passed" in log,
+           with the message "the guard did not COLLECT -- it errored during import"
+out  CI, 37799aa, state reports_directory_renamed_away:
+     the nested run printed "FFFFF [100%]" and "5 failed in 0.05s" -- it COLLECTED
+     and it named five failures -- and the harness reported "the guard did not
+     COLLECT -- it errored during import, so nothing in the file ran and nothing
+     was reported."
+judge THE DETECTOR CANNOT DISTINGUISH A COLLECTION ERROR FROM A RUN IN WHICH EVERY
+      TEST FAILED. Any AssertionError in the short summary contains the substring
+      "error"; the escape hatch "or passed in log" is satisfied only if something
+      passed, and in an all-red run nothing does. So the one assertion in this file
+      that names the failure mode of R234 reports it on a state that is not it --
+      and the mirror is worse: that same disjunct DISABLES the collection check
+      entirely whenever any test in the nested run passes, which is most states.
+out  CI, same run: baseline FAILED -- "expected a clean run", carrying the 23
+     shallow-clone failures of R243 inside it. _build copies .git from the outer
+     checkout on purpose (:82-84), so the harness inherits the history of the outer
+     clone and its control cannot say whether the harness works there.
+judge FOUR OF SIX STATES RED ON CI, INCLUDING THE CONTROL. On this machine the file
+      is 7 passed, and section 1 of the report publishes that as the closure of
+      R234 -- "7 passed -- all six of the reviewer states, none a collection error,
+      every failing state reported by a named test". On the machine CA2 exists for
+      it is four failures, and one of them says the opposite.
+```
+
+**Closed when** the collection check asks pytest rather than the log -- an exit code of 2,
+or the word Interrupted, or a `--collect-only` probe -- and `baseline` is green wherever
+the harness runs, shown in a `--depth 1` clone.
+
+**R248. (recordable, 4a) Three new residues in `scripts/run_rung.sh`, each measured, and
+one of them is the rule the fix itself cites.**
+
+```
+cell shipped script at 37799aa, scratch tree, arguments as ci.yml gives them:
+     (a) full:rung1 whose only test is @pytest.mark.xfail
+           -> "1 xfailed", "run_rung: OK -- 1 director(y|ies) ran", EXIT=0.
+              The skip guard is a shell case on the substring "skipped", and
+              "xfailed" does not contain it. CLAUDE.md forbids xfail in the same
+              sentence as skip, and the comment above the guard cites that
+              sentence.
+     (b) no arguments at all
+           -> "run_rung: OK -- 0 director(y|ies) ran", EXIT=0. A ladder step whose
+              arguments are lost reports green.
+     (c) tests/verification/rung1 with no full: or empty: prefix
+           -> ran as full, EXIT=0. With no colon the kind becomes the whole path,
+              which is not "empty", so an argument that declares NOTHING defaults
+              instead of raising. The opening line of the script is "Run one rung
+              of the verification ladder, with its expectation DECLARED."
+     (d) a rung that skips nothing but whose PASSING test prints the word
+           -> EXIT=1, false skip alarm. Live shape, not a contrivance: rung 1
+              prints diagnostics through capsys.disabled() today.
+     Correct on: a capitalised Empty: (treated as full, marker contradiction,
+     EXIT=1), and both no-OK-line-after-failure cases from R238.
+```
+
+**Closed when** 4a rules on them. The seven layouts are at
+`tests/corpus/ci_ladder_gating.txt`.
+
+**R249. (recordable, 4a) The tolerance scanner misses 11 of 20 new shapes, and two of the
+misses are the two clauses of `CLAUDE.md` Tolerances written out.**
+
+```
+cell each shape written to a file and passed to the SHIPPED offending() at 37799aa:
+     CLEAN   TOL = 1e-9  ...  assert r < TOL          <- "no local literals"
+     CLEAN   def check(r, tol=1e-9): assert r < tol   <- "no default arguments
+                                                          carrying a tolerance"
+     CLEAN   assert r > -1e-09        (UnaryOp, not Constant)
+     CLEAN   float("1e-9") / 10**-9 / 1e-09 * scale / (t := 1e-09)
+     CLEAN   T = {"a": 1e-09}; assert r < T["a"]      and tuple unpacking
+     CLEAN   np.isclose(a, b, 1e-09)  (third POSITIONAL; only the second
+                                       positional of approx is read)
+     CLEAN   assert round(a - b, 9) == 0              (a tolerance as an integer)
+     CAUGHT  .05, 1_000.5, a generator expression, an if ... raise AssertionError
+             that never writes the word assert, a conditional expression, the right
+             half of a chain, assert_allclose(rtol=), approx(abs=), and a marker
+             parked on a neighbouring statement.
+judge 9 of 20. This is detection reach, which BU0 names as 4a and where R237
+      already routed it, so I am consistent and I do not block on it. I record it
+      here rather than only in the corpus because two of the eleven are not reach
+      at the margin: they are the sentence the guard exists to enforce.
+judge AND THE COVERAGE CLAIM IS STILL THE AUTHOR OWN LIST. Fifteen planted shapes
+      catch fifteen shapes their author thought of; 46 corpus entries before this
+      round and 66 after is the number that measures anything.
+```
+
+**Closed when** 4a rules on the candidate set. The 20 shapes are at
+`tests/corpus/tolerance_marker_exemptions.txt` with `measured` taken at `37799aa`.
+
+**R250. (recordable, 4a) `tests/test_ci_runs_the_whole_suite.py` is not vacuous in the way
+its first version was; its reference set is still unasserted.** `:91`.
+
+```
+cell I checked the fix rather than reading the note about it:
+     a passing test dropped into tests/verification/rung5 -- a directory the guards
+     job ignores and ladder 5 declares empty: --
+     -> FAILED test_every_test_in_the_suite_is_run_by_some_ci_job,
+        assert not ["tests/verification/rung5/test_uncovered.py::test_x"].
+     The gate carries its own failure. The --ignore flags are replayed, the
+     full:-only rule is right, and every mis-parse I could construct SHRINKS the
+     covered set, which is the strict direction.
+judge ONE HOLE REMAINS AND I COULD NOT EXHIBIT IT, WHICH I RECORD AS THAT AND NOT
+      AS A FINDING. everything = _collected(["tests"]) ignores the subprocess
+      return code, so if the reference collection ever returned empty, missing
+      would be empty and the assertion would pass on nothing. I tried two states to
+      empty it -- a module raising at import, and a conftest raising -- and the
+      first still collects 1656 while the second kills the outer run too. So:
+      reasoned, not measured. One line, assert everything, closes it for free.
+judge AND THE DOCSTRING IS HONEST ABOUT THE REST: it does not check that the jobs
+      RUN. That matters here, because ladders 5 and 6 are skipped on every run this
+      branch has produced, so the union-covers-the-suite property is true while
+      tests/regression has never executed. That is R230, not this file.
+```
+
+**Closed when** 4a rules on it.
+
+**R251. (recordable, 4a) `docs/reports/F2/step-6-draft.md` is read as a step-6 report.**
+`tests/test_report_carried.py:69-74`. Measured at 37799aa: the guard fails with "step 6
+has a report and no verdict yet". A draft is not a step. Corpus entry
+`draft_suffix_beside_a_step_report`.
+
+**R252. (recordable, 4a) `regen_figures.py --check` says the file is stale without saying
+which row moved.** `scripts/regen_figures.py:327-332`. On CI this produced a bare
+`AssertionError:` and the four moved rows had to be reconstructed from two unrelated
+diagnostic prints. A unified diff of the two renderings costs three lines.
 
 ## Tolerances touched
 
-**None. No value, no name, no form, no counter, no justification sentence.**
+**None by this diff. One is refuted by measurement.**
 
 ```
-cmd  git diff 8ffbd51..HEAD -- floatfea/tolerances.py
+cmd  git diff 8e7418f..HEAD -- floatfea/tolerances.py
 out  (empty)
-cmd  git diff --stat 8ffbd51..HEAD -- floatfea
-out  (empty) -- floatfea/ is UNTOUCHED across this entire range.
-cmd  git diff 8ffbd51..HEAD -- tests/regression/
+cmd  git diff --stat 8e7418f..HEAD -- floatfea
+out  (empty) -- floatfea/ is UNTOUCHED across this entire range, as it has been for
+     five consecutive rounds.
+cmd  git diff 8e7418f..HEAD -- tests/regression/
 out  (empty) -- no golden file moved.
 ```
 
-**What DID move is the ENFORCEMENT of the tolerance rule**, and it moved in the right
-direction: the `# not-a-tolerance:` window is narrower at `5737fa6` than at `3577930` on
-every shape I could construct, and narrower than the pre-CA0 line rule except where
-`black` had voided a correctly-placed marker. Fifteen of nineteen admitted violations are
-closed. Under the CLAUDE.md extension of the tolerance rule to "anything that functions as
-a tolerance under another name", that belongs in this section and it is the one thing in
-this range I would have been sorry to lose. R237 is a hole in the same guard DETECTION
-and predates CA0.
+**What IS a tolerance finding this round is R244**, and it is about a value nobody
+changed. `EXEMPT_RESPONSE_DRIFT_ULP = 4.0` at `floatfea/tolerances.py:713` is an exactness
+ceiling whose recorded measurements were taken on one machine, and the first CI run that
+ever reached it measured `2.6e9` ULP. Form: ULP, dimensionless, counter `10.0` at `:720`
+-- all correct. What does not hold is the record: the measurements the entry rests on do
+not cover the machines the assertion runs on. **It must not be raised in a step commit**,
+and the counter ordering at `tests/test_counters_are_injected.py:170` means it cannot be
+raised far without breaking the registry, which is that guard doing its job.
 
 **My own instructions (item 4b).**
 
 ```
-cmd  git diff 8ffbd51..HEAD -- .claude docs/SUPERVISOR.md
+cmd  git diff 8e7418f..HEAD -- .claude docs/SUPERVISOR.md
 out  (empty). Not one byte.
-cmd  git log --format=%h %s 8ffbd51..HEAD, with per-commit file lists
-out  76c186a  ci.yml, run_rung.sh, test_ci_ladder_gating.py,
+cmd  git log --format="%h %s" 8e7418f..HEAD with per-commit file lists
+out  4a8d2a3  ci.yml, check_carried.py, regen_figures.py, run_rung.sh,
+              test_ci_ladder_gating.py, test_ci_runs_the_whole_suite.py,
               test_marker_exemption_corpus.py, test_no_tolerance_literals.py,
-              three .empty-by-design markers          -- no docs/reviews/
-     5737fa6  docs/reports/F2/step-5.md, test_report_carried.py
-                                                      -- no docs/reviews/
+              test_report_carried.py, test_report_guard_states.py
+                                                     -- no docs/reviews/
+     37799aa  docs/reports/F2/step-5.md, test_report_guard_states.py
+                                                     -- no docs/reviews/
 judge No commit touches both code and docs/reviews/. No commit touches .claude/ or
-     docs/SUPERVISOR.md at all, so the STOP-class condition is not in play. CLEAN.
+      docs/SUPERVISOR.md at all, so the STOP-class condition is not in play. CLEAN.
+cmd  the report header, item 1b
+out  "Answers: verdict 28 @ 8e7418f", and 8e7418f is the third step-5 verdict,
+     which is the latest. CORRECT -- one comparison, and it passes.
 ```
 
-**What held**, reproduced at my run: `1589 passed, 0 failed, 0 skipped`, equal to the
-report figure; `80 failed, 13 passed` for the CB2 cell, reproduced independently in a
-worktree; the `ruff --statistics` table, character for character; `26 passed` and
-`12 passed` for the two new modules; the three R229 properties, each as a shape that
-reddens; the R229 ablation cell; `4 passed` from `tests/regression` through the shipped
-rung-6 arguments; `floatfea/` and `tolerances.py` untouched; `.claude/` untouched; no
-verdict committed with code. **These did not**: the carry guard at a step-opening commit
-(R234), "so in CI" (R235), `ci.yml:54-55` (R236), the scanner own flagging contract
-(R237), four ladder residues (R238), one `out` field (R239) -- and R223, R224 and R231,
-which are unchanged and which nobody claimed otherwise.
+**What held**, reproduced at my run rather than read: `1655 passed, 0 failed, 0 skipped`;
+ruff, black and mypy clean; the guards job existing and reaching 359 tests; the negative
+control on the coverage check; all four R238 residues fixed; `ci.yml:71-80` true against
+the rule it describes; the flagging contract of the scanner now honest about `node.left`;
+the six guard states green on this machine; and the two-digit ruling, which I accept and
+have given a discriminator. **These did not**: the CI result (R240), the CI sentence
+(R241), the status of R230 (R242), the carry guard in the checkout CI gives it (R243), an
+exactness ceiling on a platform-dependent quantity (R244), four generated figures (R245),
+"never raises" (R246), and the harness that certifies R234 (R247).
 
 ## Next step opens when
 
-**Step 5 stays OPEN. Step 6 does not begin.** Seven items. R234 is first because until it
-is fixed the next boundary has no test counts at all, and every item below it is measured
-by a suite that would not collect.
+**Step 5 stays OPEN. Step 6 does not begin.** Eight items. R240 is first and most of this
+list sits inside it: until the `guards` job is green or every failure in it is routed by
+name, the machine CA2 exists for is telling you something, and nothing below can be
+measured anywhere else.
 
-1. **R234 -- the carry guard survives the step-opening commit.** At a commit whose newest
-   report has no verdict beside it, `python -m pytest -q` COLLECTS and prints a count, and
-   a named test carries the message. Shown as a run in that state, not as a comment. The
-   six states are in `tests/corpus/report_guard_states.txt`; two of them currently
-   interrupt collection and one of the two is the state `CLAUDE.md` Step gating creates at
-   every boundary. **Do not close this by deleting
-   `test_the_guard_reads_the_step_being_worked_on` -- the diagnosis behind CB2 is correct
-   and the guard should keep following the newest step.**
-2. **R235 -- the 293.** Either a CI job runs the top-level `tests/*.py` and a log line
-   proves it, or both sentences (`step-5.md:243`, `ci.yml:72-74`) are withdrawn in the
-   same commit and replaced by the count. This is the machinery that decides whether any
-   later verdict means anything: it is the reason R230 existed.
-3. **R231 -- CI green through ladder 4**, or the finding routed as a plan change through
-   the gate-change route (Q8). Until ladders 5 and 6 run once they are an unavailable
-   check, never a pass. **Do not close this by widening `np.array_equal` into a tolerance
-   inside a step commit.**
-4. **R230 -- `tests/regression` demonstrably executed by ladder 6 on CI**, a log line with
-   a pass count from that path. The mechanism is verified and this is now waiting on
-   item 3.
-5. **R236 -- `ci.yml:54-55`**, true or withdrawn, in one commit with the rule it
-   describes.
-6. **R237 -- `tests/test_no_tolerance_literals.py:27-28`**, true or withdrawn. The reach
-   itself is 4a; the sentence is not.
-7. **R223 and R224 -- unchanged from the twenty-seventh verdict**, site by site. R223:
-   `floatfea/tolerances.py:293`, `tests/verification/rung1/test_rigid_body_modes.py:19`
-   and `:175-177`, `docs/milestones/F2.md:51`, `:1477`, and `:1491-1492` carrying its
-   operating point or withdrawn. R224: `floatfea/tolerances.py:295-297` and `:300-308`,
-   one branch each.
+1. **R240 -- the `guards` job at the reviewed commit.** Green, or every one of the 30
+   failures routed by name with the run id and the count beside it. A job that runs and is
+   red is not the closure of an item whose content was that a claim about CI had never
+   been run.
+2. **R243 -- the carry guard in a `--depth 1` clone.** Shown as a run in that state with a
+   count, not asserted. The failing direction is safe and the fix is one return-code test;
+   what must not happen is `fetch-depth: 0` being added while the return code stays
+   unread, because the next unavailable object is then silent again.
+3. **R247 -- the R234 harness.** `baseline` green wherever it runs, and the collection
+   check asking pytest instead of grepping the log for the substring "error". **Do not
+   close this by deleting the collection assertion** -- it is the only assertion in the
+   file about the failure the file exists for.
+4. **R241 and R242 -- two sentences, in the same commit as what they describe.** Section 8
+   stating the guards job result at the commit the report is committed at, with the run id
+   and the counts; and the Carried row plus section 0 saying R230 is carried, not closed.
+5. **R246 -- "never raises", true or withdrawn.**
+6. **R244 -- on the Q8 list by name**, with its site and the fact that its gate is masked
+   behind a skipped ladder 6. **Not by raising `4.0`** in a step commit.
+7. **R245 -- the reproducibility of the figure file.** Either it reproduces on the
+   platforms CI runs, or the rows that do not say so, with the four affected rows
+   regenerated or annotated in the same commit (BP0).
+8. **R231, R230, R223, R224 -- unchanged and open by instruction**, site by site as listed
+   in Carried. R230 now waits on R231 and on R244, since ladder 6 is where both land.
 
-**Not gates on step 5, into the next report Carried section:** R238, R239, the remaining
-half of R233, the R232 residue (CA0 and CA1 have no statement in `docs/` of what they
-asked for), R225--R228, and everything already at 4a.
+**Not gates on step 5, into the next report Carried section:** R248, R249, R250, R251,
+R252, R225-R228, the R232 residue, the remaining half of R233, and everything already at
+4a.
 
-**Adversarial corpus (BE3): 36 new entries committed at `1f38977`, across three files,
-one of them new, all unseen by the implementer; every `measured` field taken at `5737fa6`
-before the `expect`/`require` field beside it was written.**
+**Adversarial corpus (BE3): 38 new entries committed at `f354025`, across the three files,
+all unseen by the implementer; every `measured` field taken at `37799aa` before the
+`require` or `expect` beside it was written. One existing entry is RULED ON rather than
+added to.**
 
-**The coverage measurement, stated plainly: of my 36 new entries the shipped checks did
-what the entry requires on 27.**
+**The coverage measurement, stated plainly: of my 38 new entries the shipped checks did
+what the entry requires on 20.**
 
-* `tests/corpus/tolerance_marker_exemptions.txt` -- **+18 entries (28 -> 46), 14 correct,
-  4 misses.** Three of the four are the left-operand species (R237); the fourth is a
-  de-duplication collapse -- two identical literal comparators on one `Compare` node
-  reduce to one candidate, so one marker exempts both. The exemption window itself
-  survived everything else I aimed at it. This is a different region from the
-  twenty-seventh round on purpose: CB0 closed 15 of that round 19, so I moved from the
-  hatch to the candidate set behind it.
-* `tests/corpus/ci_ladder_gating.txt` -- **+12 entries (10 -> 22), 9 correct, 3 misses**
-  -- a rung whose every test is skipped, a stale `full:`-side marker, and a path with a
-  space. Measured by me through `sh scripts/run_rung.sh` directly; the shipped harness
-  cannot yet execute them, because `LAYOUTS` has no entry for a corpus line it has not
-  seen -- which is `test_the_corpus_and_the_layouts_agree` doing its job, and it fires.
-* `tests/corpus/report_guard_states.txt` -- **NEW, 6 entries, 4 correct, 2 misses.** Both
-  misses interrupt collection instead of failing a named test, and one of them is not
-  hypothetical: it is the commit the step-gating protocol produces at every boundary.
-* **`pytest` is no longer indifferent to this directory.** Last round all 38 entries sat
-  on disk and the suite was unchanged at 1578; this round the corpus is wired in and adds
-  9 failures. That is CB0 and CB1 delivering the thing BE3 asked for, and I record it as
-  the clearest single improvement in this range.
+* `tests/corpus/report_guard_states.txt` -- **+11 entries (6 -> 17), 8 correct, 3 misses.**
+  The three are `superscript_digit_step_number` (a collection error, R246),
+  `shallow_clone_depth_1` (23 false accusations, R243) and
+  `draft_suffix_beside_a_step_report`. Eight states that were untested last round now
+  report by name, which is the repair working.
+* `tests/corpus/ci_ladder_gating.txt` -- **+7 entries (22 -> 29), 3 correct, 4 misses** --
+  xfail, no arguments, an undeclared argument, and the substring skip alarm (R248).
+* `tests/corpus/tolerance_marker_exemptions.txt` -- **+20 entries (46 -> 66), 9 correct,
+  11 misses.** A different region again: the R237 sentence is closed, so this round
+  attacks the candidate set rather than the exemption window, and two of the eleven are
+  the two clauses of `CLAUDE.md` Tolerances verbatim.
+* **The corpus bites harder than last round: 33 additional failures at `f354025` against
+  9 last time.** That is what BE3 asks for -- the implementer own harnesses reporting on
+  data they have not seen.
 
-**Twenty-eight consecutive rounds have found no element defect, and this round does not
-either.** `git diff 8ffbd51..HEAD -- floatfea` is empty. What is under review now is
-entirely the apparatus, and this round it got materially better in two places and
-acquired one new way to report nothing at all. The pattern across R234, R235 and R236 is
-one thing said three ways: **a guard was strengthened, and the sentence describing where
-it runs was not re-measured against the change.** That is BP0, and it is the same finding
-the twenty-fifth verdict on step 4 turned on.
+**The ruling you asked for.** `two_digit_step_number`: **ACCEPTED**, and the `require`
+field is changed in the corpus rather than overridden in test code. But not on the
+argument. `green` is also exactly what a guard comparing step numbers as STRINGS would
+print, because 10 sorts below 5 lexically and such a guard would silently check step 5
+while reporting nothing; the two outcomes are indistinguishable on that state, which is
+why it was written `named_fail`. So the property was measured instead: with a step-10
+report and a step-10 verdict where the VERDICT carries `R999` and the report does not, the
+guard at `37799aa` goes **red naming R999**, so `int()` is parsing ten. The ruling stands
+because a cell says so, not because the reasoning was good, and the discriminator is
+committed as `two_digit_step_number_discriminating`.
+
+**Twenty-nine consecutive rounds have found no element defect, and this round does not
+either.** `git diff 8e7418f..HEAD -- floatfea` is empty. What changed this round is where
+the review is standing: for the first time in this milestone the guards ran on a machine
+neither of us controls, and four of them came back broken, one exactness ceiling came back
+unreproducible, and one generated figure file came back machine-specific. **Not one of
+those six was visible to a green local suite, and five of the six had been green here for
+rounds.** That is the argument for CA2, measured rather than asserted, and it is the best
+thing in this range -- which is exactly why the honest verdict is HOLD and not a PASS with
+a caveat. The step did the right work, and the right work found the problems.
