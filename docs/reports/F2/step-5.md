@@ -653,3 +653,241 @@ instruction and are not offered as answered.
 At the previous commit: static, unit and rungs 1–3 green; **rung 4 red with the
 same 13 platform failures**, which is R231. Rungs 5 and 6 have still never run.
 The `guards` job is new and runs for the first time on this commit.
+
+
+
+---
+
+# Revision 4 — status is the verdict's to give, and one was taken
+
+Answers: verdict 29 @ 476f909
+
+**2026-09-09.** Commits since the twenty-ninth verdict, listed in §6.
+
+## 0. The one that matters
+
+**I recorded an item as closed at a verdict whose own text said it was not.**
+The third verdict reads *"MECHANISM VERIFIED, CLOSING CONDITION NOT MET.
+Carried, not closed."* Revision 3 wrote `closed at the third verdict` twice.
+**R230 is reopened by name and is OPEN.**
+
+Nothing could have caught it. A status is prose, and the carry guard's own
+docstring says it never checks whether the status beside an item is true. So the
+fix is not a better checker.
+
+**CC1: the word is gone.** A report says what it DID — *answered*, *open*,
+*withdrawn*. Only a verdict says *closed*. Taking the strongest word away from
+the party that does not get to use it removes the failure mode instead of
+detecting it.
+
+```
+cmd    python -m pytest tests/test_report_carried.py -q, at revision 3
+out    62 status cells parsed, 10 say `closed`  -- FAILED
+rule   `test_a_report_does_not_say_CLOSED`, and its other half
+       `test_every_carried_item_carries_one_of_the_report_words`, so banning a
+       word cannot become saying nothing
+```
+
+## 1. CD1 — the guard states, bounded
+
+**R243, the shallow clone.** `_changed_lines()` never read git's return code, so
+a diff against a commit the clone does not contain returned empty — which reads
+exactly like *the step changed nothing*, and 23 site checks passed for that
+reason on every shallow checkout.
+
+```
+cell   one machine, one commit, one variable
+out    full clone `122 passed`; `git clone --depth 1` `23 failed, 99 passed`
+fix    `fetch-depth: 0` on all nine checkouts, and the git failure is REPORTED
+rule   reported by a NAMED test, not raised: a raise at module scope is R234
+       again -- the import dies and none of the file is collected
+```
+
+**R246, the step number.** `str.isdigit()` admits a strictly larger set than
+`int()` accepts, so a superscript one passed the filter and raised inside the
+comprehension, taking the suite down at collection.
+
+```
+cmd    a superscript-digit report file present, before and after
+out    before: `Interrupted: 1 error`, zero of 1656 tests
+       after:  `121 passed` -- the file is stepped over
+judge  the repair before this one caught `OSError` because `OSError` was the
+       failure it had already seen. The pattern is `[0-9]+` now, and the
+       docstring no longer says "never raises".
+```
+
+**R247, the detector.** The harness certifying R234 could not tell a collection
+error from an all-red run: it searched stdout for a word, and its mirror
+`or "passed" in log` disabled the check entirely as soon as anything passed. It
+reads pytest's junit report now, and *did not collect* and *everything failed*
+are two assertions.
+
+## 2. CD1's boundary, and what goes to 4a
+
+CD1 bounds this deliberately: the guard's job is to make a false status and a
+missing commit impossible, not to survive every shape written in a round. **A
+guard that grows a case per round never converges.**
+
+| state | class | reason |
+|---|---|---|
+| shallow clone | **blocking — the guard's claim** | answered, §1. Its corpus row requires `green`; the repaired guard reports a NAMED failure instead, because a guard that cannot see the diff and says nothing is the defect. Recorded as a requirement disagreement, the fourth |
+| verdict amended after the answered commit | **blocking — the guard's claim** | the guard reads the verdict from git at the answered sha, so a working-copy edit must change nothing |
+| superscript digit, empty step number, draft suffix, non-numeric suffix | **answered** | one pattern covers all four |
+| reports and reviews directories renamed away; report or verdict is a directory; two reports ahead of the verdict; a non-commit `Answers:` sha | **4a by name** | each is a distinct filesystem shape and none of them can produce a FALSE status or hide a missing commit, which is the bound CD1 sets |
+
+## 3. CD3 — what the 34 reds at the reviewed commit are
+
+**Neither golden growth nor product failures.** They are the reviewer's new
+cases arriving faster than the runners that read them: the corpus grew by 38
+entries and my `LAYOUTS`, `STATES` and `KNOWN_MISSES` covered the old set.
+
+```
+cmd    the reds at 476f909, by file
+out    12 marker shapes, 10 guard states, 9 ladder layouts, 1 site declaration
+judge  every one is a case the runner does not yet build, not a defect in what
+       the case tests. BY1 asks the reviewer to carry regeneration in the corpus
+       commit; there is nothing to regenerate here -- no golden and no figure
+       moves -- so BY1 is not engaged. What the round shows instead is that a
+       corpus commit lands red by construction, which is what BE3 intends.
+```
+
+## 4. CD2 — two shapes that are the rule itself
+
+Two of the reviewer's new scanner shapes are the two clauses of `CLAUDE.md`
+§ Tolerances written out literally, and both scanned clean. That is a hole in
+the claim rather than in the reach, and it is fixed; both are the scanner's
+negative controls now.
+
+## 5. Q8 — locked, and what it does not yet license
+
+**`5697b2a`, re-locked.** CI is canonical for the golden files, for every
+tolerance whose measured basis is platform-dependent, and for
+`docs/milestones/F2_figures.md`. Each canonical file carries its version stamp
+inside itself, so a mismatch is visible where the number is read; the stamp is
+what enforces the rule.
+
+**Two directives in the same turn disagreed about whether it was locked**, one
+recording it confirmed and the next asking for Xabier's word. I stopped and
+asked rather than choosing, because a plan edit under an ambiguous lock is the
+error this milestone exists to punish. The confirmation came and the edit is in.
+
+**What it does not license yet.** The sequence puts the measurements after this
+edit and after the guard findings: the drift tolerance measured at `2.6e9` ULP
+on the runner, and the four figure rows that do not reproduce there, stay
+unwritten until they are measured on CI under this Q&A. Nothing here writes a
+value.
+
+## 6. Carried
+
+| item | status |
+|---|---|
+| R223 | **open by instruction** — Q7 |
+| R224 | **open by instruction** — Q7 |
+| R225 | **open** - 4a or a later step |
+| R228 | **open** - 4a or a later step |
+| R230 | **open — REOPENED BY NAME.** Revision 3 gave it a status only a verdict may give, against that verdict's own words; §0 |
+| R231 | **open** — Q8 is locked; the measurement comes next |
+| R232 | **answered** in revision 2 |
+| R233 | **answered** in revision 2 |
+| R234 | **answered** — §1, the failure is a named test, not a dead import |
+| R235 | **answered** in the previous revision |
+| R236 | **answered** in the previous revision |
+| R237 | **answered** in the previous revision |
+| R238 | **answered** in the previous revision |
+| R239 | **answered** in the previous revision |
+| R240 | **open** — the `guards` job is red; the reds are §3 |
+| R241 | **withdrawn by me** — the sentence claimed a first run that had already happened and finished red |
+| R242 | **answered** — §0, and CC1 removes the word |
+| R243 | **answered** — §1, `fetch-depth: 0` and the return code read |
+| R244 | **open** — Q8 is locked; the drift tolerance is measured on CI under it before any value is written |
+| R245 | **open** — the four moving figures, same route |
+| R246 | **answered** — §1, `[0-9]+` and `int()` |
+| R247 | **answered** — §1, junit rather than substrings |
+| R248 | **open** - 4a or a later step |
+| R249 | **open** - 4a or a later step |
+| R250 | **open** - 4a or a later step |
+| R251 | **open** - 4a or a later step |
+| R252 | **open** - 4a or a later step |
+
+### Sites named by findings and not touched
+
+Declared by exact site, each row saying what the line is.
+
+| site | status |
+|---|---|
+| `test_counters_are_injected.py` | **no change** -- R240 quotes it as evidence, not as a site to change |
+| `test_plan_figures.py` | **no change** -- R240 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:651` | **no change** -- R241 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:652` | **no change** -- R241 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:653` | **no change** -- R241 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:654` | **no change** -- R241 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:442` | **no change** -- R242 quotes it as evidence, not as a site to change |
+| `tests/corpus/report_guard_states.txt` | **no change** -- R243 quotes it as evidence, not as a site to change |
+| `floatfea/tolerances.py:713` | **no change, and deliberately** -- the value is measured on CI under Q8 before it is written, and that measurement is next |
+| `tests/regression/test_exempt_pair_responses.py:109` | **no change, and deliberately** -- the value is measured on CI under Q8 before it is written, and that measurement is next |
+| `tests/test_counters_are_injected.py:170` | **no change, and deliberately** -- the value is measured on CI under Q8 before it is written, and that measurement is next |
+| `F2_figures.md` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `docs/milestones/F2_figures.md` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `docs/milestones/F2_figures.md:34` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `docs/milestones/F2_figures.md:35` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `docs/milestones/F2_figures.md:36` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `docs/milestones/F2_figures.md:37` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `docs/milestones/F2_figures.md:38` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:113` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:114` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:115` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:116` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:117` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:118` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:119` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:120` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:121` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:122` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:123` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:124` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:125` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:126` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:127` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:128` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:129` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:130` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:131` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:132` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:133` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:134` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:135` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:136` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:137` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:138` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:139` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:140` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:141` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:142` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:143` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:144` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:145` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:146` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `scripts/regen_figures.py:147` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `tests/test_plan_figures.py:73` | **no change, and deliberately** -- the four figures are regenerated on CI under Q8, same reason |
+| `tests/test_report_guard_states.py:135` | **no change** -- R247 quotes it as evidence, not as a site to change |
+| `CLAUDE.md` | **no change** -- R248 quotes it as evidence, not as a site to change |
+| `scripts/run_rung.sh` | **no change** -- R248 quotes it as evidence, not as a site to change |
+| `tests/corpus/ci_ladder_gating.txt` | **no change** -- R248 quotes it as evidence, not as a site to change |
+| `tests/corpus/tolerance_marker_exemptions.txt` | **no change** -- R249 quotes it as evidence, not as a site to change |
+| `tests/test_ci_runs_the_whole_suite.py` | **no change** -- R250 quotes it as evidence, not as a site to change |
+| `tests/verification/rung5/test_uncovered.py` | **no change** -- R250 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-6-draft.md` | **no change** -- R251 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:69` | **no change** -- R251 quotes it as evidence, not as a site to change |
+| `regen_figures.py` | **no change** -- R252 quotes it as evidence, not as a site to change |
+| `scripts/regen_figures.py:327` | **no change** -- R252 quotes it as evidence, not as a site to change |
+| `scripts/regen_figures.py:328` | **no change** -- R252 quotes it as evidence, not as a site to change |
+| `scripts/regen_figures.py:329` | **no change** -- R252 quotes it as evidence, not as a site to change |
+| `scripts/regen_figures.py:330` | **no change** -- R252 quotes it as evidence, not as a site to change |
+| `scripts/regen_figures.py:331` | **no change** -- R252 quotes it as evidence, not as a site to change |
+| `scripts/regen_figures.py:332` | **no change** -- R252 quotes it as evidence, not as a site to change |
+
+## 7. What I am asking for
+
+**A PASS on CD0–CD4**, or a **HOLD naming the item and the head.** R231, R244
+and R245 are open pending the CI measurements Q8 now licenses; R223 and R224 are
+open pending Q7; R230 is open by my own error.
