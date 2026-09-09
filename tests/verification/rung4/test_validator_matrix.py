@@ -24,7 +24,8 @@ Two further properties the matrix enforces:
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import pytest
@@ -96,21 +97,28 @@ def _write_good(path, meta: dict[str, Any] | None = None) -> None:
 
 # --- mutations, one per fault ---------------------------------------------
 
+
 def _m_schema(h):
     import json
-    m = _good_meta(); m["schema_version"] = "9.9"
+
+    m = _good_meta()
+    m["schema_version"] = "9.9"
     h.attrs["meta"] = json.dumps(m)
 
 
 def _m_units(h):
     import json
-    m = _good_meta(); m["units"].pop("force")
+
+    m = _good_meta()
+    m["units"].pop("force")
     h.attrs["meta"] = json.dumps(m)
 
 
 def _m_provenance(h):
     import json
-    m = _good_meta(); m["run_id"] = ""
+
+    m = _good_meta()
+    m["run_id"] = ""
     h.attrs["meta"] = json.dumps(m)
 
 
@@ -121,7 +129,9 @@ def _m_provenance(h):
 # down: covering a fault is not covering the conditions that raise it.
 def _m_provenance_sha(h):
     import json
-    m = _good_meta(); m["hsp_git_sha"] = ""
+
+    m = _good_meta()
+    m["hsp_git_sha"] = ""
     h.attrs["meta"] = json.dumps(m)
 
 
@@ -131,25 +141,33 @@ def _m_provenance_meta_absent(h):
 
 def _m_gravity(h):
     import json
-    m = _good_meta(); m["gravity"] = [0.0, 0.0, -9.80665]
+
+    m = _good_meta()
+    m["gravity"] = [0.0, 0.0, -9.80665]
     h.attrs["meta"] = json.dumps(m)
 
 
 def _m_integrator(h):
     import json
-    m = _good_meta(); m["integrator"].pop("alpha_m")
+
+    m = _good_meta()
+    m["integrator"].pop("alpha_m")
     h.attrs["meta"] = json.dumps(m)
 
 
 def _m_mu_treatment(h):
     import json
-    m = _good_meta(); m["integrator"]["mu_treatment"] = "blended"
+
+    m = _good_meta()
+    m["integrator"]["mu_treatment"] = "blended"
     h.attrs["meta"] = json.dumps(m)
 
 
 def _m_time_convention(h):
     import json
-    m = _good_meta(); m.pop("time_convention")
+
+    m = _good_meta()
+    m.pop("time_convention")
     h.attrs["meta"] = json.dumps(m)
 
 
@@ -176,7 +194,7 @@ def _m_bound_missing(h):
 
 def _m_bound_exceeded(h):
     d = h["kinematics/buoy1/rotation"][()]
-    d[5, :] = 0.2   # |theta| ~ 0.346 rad against a declared 0.1
+    d[5, :] = 0.2  # |theta| ~ 0.346 rad against a declared 0.1
     h["kinematics/buoy1/rotation"][...] = d
 
 
@@ -249,9 +267,8 @@ def test_each_fault_is_rejected_with_its_own_fault_tag(tmp_path, fault, mutate) 
     _write_good(path)
     with h5py.File(path, "a") as h:
         mutate(h)
-    with h5py.File(path, "r") as h:
-        with pytest.raises(FlrValidationError) as exc:
-            validate(h)
+    with h5py.File(path, "r") as h, pytest.raises(FlrValidationError) as exc:
+        validate(h)
     assert exc.value.fault is fault, (
         f"expected {fault.name}, got {exc.value.fault.name} — the fault tags are "
         "what make G1.2's 'specific message' requirement testable"

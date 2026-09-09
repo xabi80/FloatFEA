@@ -27,6 +27,7 @@ widening a tolerance. The file is produced by the classification and the corpus
 together, so it moves when either does -- and a corpus round that adds entries is
 a legitimate reason, stated per round.
 """
+
 from __future__ import annotations
 
 import json
@@ -34,19 +35,24 @@ import math
 import sys
 from pathlib import Path
 
-import numpy as np
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tests" / "verification" / "rung1"))
 
 from test_corpus_configurations import (  # noqa: E402
-    INJECTED_DEFECTS, SOLVED, STATES, _oob_with_injected, classify,
+    INJECTED_DEFECTS,
+    SOLVED,
+    STATES,
+    _oob_with_injected,
+    classify,
 )
 
-from floatfea.tolerances import (EXEMPT_RESPONSE_DRIFT_ULP,  # noqa: E402
-                                 EXEMPT_RESPONSE_DRIFT_ULP_COUNTER,
-                                 PATCH_TEST_EXACTNESS)
+from floatfea.tolerances import (  # noqa: E402
+    EXEMPT_RESPONSE_DRIFT_ULP,
+    EXEMPT_RESPONSE_DRIFT_ULP_COUNTER,
+    PATCH_TEST_EXACTNESS,
+)
 
 GOLDEN = Path(__file__).with_name("g22_exempt_pair_responses.json")
 
@@ -143,8 +149,9 @@ def test_a_MOVED_response_is_caught() -> None:
     def perturbed():
         out = dict(original())
         ratio = out[key] / PATCH_TEST_EXACTNESS
-        out[key] = (ratio + EXEMPT_RESPONSE_DRIFT_ULP_COUNTER
-                    * math.ulp(ratio)) * PATCH_TEST_EXACTNESS
+        out[key] = (
+            ratio + EXEMPT_RESPONSE_DRIFT_ULP_COUNTER * math.ulp(ratio)
+        ) * PATCH_TEST_EXACTNESS
         return out
 
     globals()["_recorded"] = perturbed

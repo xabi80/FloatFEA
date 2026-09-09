@@ -12,6 +12,7 @@ life estimating a conditioning-scaled floor for G2.2's ceiling. That floor was
 withdrawn after a STOP (sec. D7 item 6), which left the function with no caller,
 so it is gone: dead code with a test around it reads like coverage.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -176,10 +177,12 @@ def solve(
 
     applied_t = np.array([f[i::6][:].sum() for i in range(3)])
     react_t = np.array([reactions[i::6][:].sum() for i in range(3)])
-    scale = np.linalg.norm(applied_t)
-    imbalance = (
-        float(np.linalg.norm(react_t + applied_t) / scale) if scale > 0 else 0.0
+    scale = float(np.linalg.norm(applied_t))
+    imbalance = float(np.linalg.norm(react_t + applied_t) / scale) if scale > 0 else 0.0
+    return SolveResult(
+        u=u,
+        reactions=reactions,
+        residual=residual,
+        backward_error=backward_error,
+        reaction_imbalance=imbalance,
     )
-    return SolveResult(u=u, reactions=reactions, residual=residual,
-                       backward_error=backward_error,
-                       reaction_imbalance=imbalance)

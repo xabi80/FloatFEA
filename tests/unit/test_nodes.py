@@ -1,4 +1,5 @@
 """DOF numbering is structural, not remembered (D2 step 1)."""
+
 from __future__ import annotations
 
 import numpy as np

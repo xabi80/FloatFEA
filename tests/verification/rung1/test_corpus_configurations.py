@@ -57,43 +57,45 @@ to RAISE whatever its `expect` field says.
 limit, not a resolved question: this module reports which entries it overrode so
 the reviewer can adjudicate, and the corpus is not edited from here.
 """
+
 from __future__ import annotations
 
-from pathlib import Path
-
 import math
+import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from floatfea.assemble.system import (BeamElement, assemble,
-                                      element_length, solve)
+from floatfea.assemble.system import BeamElement, assemble, element_length, solve
 from floatfea.element.beam import local_stiffness
 from floatfea.element.transform import rotation_matrix
-from floatfea.model.admissibility import (assert_beam_admissible,
-                                          member_l_over_d)
+from floatfea.model.admissibility import assert_beam_admissible, member_l_over_d
 from floatfea.model.admissibility import member_lambda as _member_lambda
 from floatfea.model.material import S355, Section
-from floatfea.testing import assert_close
 from floatfea.model.nodes import Model, Node, node_dofs
-from floatfea.tolerances import (BEAM_ADMISSION_L_OVER_D,
-                                 DELTA_CALIBRATION_ULP,
-                                 DELTA_CALIBRATION_ULP_COUNTER,
-                                 PATCH_TEST_COUNTER_HEADROOM,
-                                 PATCH_TEST_EXACTNESS,
-                                 PATCH_TEST_EXACTNESS_COUNTER_DEFECT,
-                                 ROUNDOFF_IDENTITY)
-
-import sys
+from floatfea.testing import assert_close
+from floatfea.tolerances import (
+    BEAM_ADMISSION_L_OVER_D,
+    DELTA_CALIBRATION_ULP,
+    DELTA_CALIBRATION_ULP_COUNTER,
+    PATCH_TEST_COUNTER_HEADROOM,
+    PATCH_TEST_EXACTNESS,
+    PATCH_TEST_EXACTNESS_COUNTER_DEFECT,
+    ROUNDOFF_IDENTITY,
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_patch_test import (  # noqa: E402
-    STATES, STATIONS, _exact_local, _to_global, interior_out_of_balance,
+    STATES,
+    STATIONS,
+    _exact_local,
+    _to_global,
+    interior_out_of_balance,
     relative_error,
 )
 
-CORPUS = (Path(__file__).resolve().parents[2] / "corpus"
-          / "g22_model_configurations.txt")
+CORPUS = Path(__file__).resolve().parents[2] / "corpus" / "g22_model_configurations.txt"
 
 # Four NAMED directions, kept because the corpus already uses them and a name is
 # easier to read than three numbers. They are shorthand, not the vocabulary: the
@@ -122,14 +124,14 @@ def _finite(n: int, label: str, text: str) -> float:
     try:
         value = float(text)
     except ValueError:
-        raise CorpusError(
-            f"{CORPUS.name}:{n}: {label}={text!r} is not a number") from None
+        raise CorpusError(f"{CORPUS.name}:{n}: {label}={text!r} is not a number") from None
     if not math.isfinite(value):
         raise CorpusError(
             f"{CORPUS.name}:{n}: {label}={text!r} is not finite. NaN and inf "
             "propagate silently through assembly and the solve, and a NaN "
             "result compares False against every ceiling -- so this would have "
-            "been recorded as a pass.")
+            "been recorded as a pass."
+        )
     return value
 
 
@@ -147,7 +149,8 @@ def _validate_section(n: int, spec: str) -> None:
         raise CorpusError(
             f"{CORPUS.name}:{n}: section shape {shape!r} is not one of "
             f"{sorted(SECTION_SHAPES)}. It would have been built as a circular "
-            "tube.")
+            "tube."
+        )
     keys = set()
     for part in rest.split(","):
         k, sep, v = part.partition("=")
@@ -156,22 +159,21 @@ def _validate_section(n: int, spec: str) -> None:
                 f"{CORPUS.name}:{n}: section {k}={v!r} is not positive. "
                 "Refused HERE rather than at `Section(...)`, because this "
                 "module builds sections while collecting and a constructor "
-                "raising at import takes every other entry down with it (R89).")
+                "raising at import takes every other entry down with it (R89)."
+            )
         if not sep:
-            raise CorpusError(
-                f"{CORPUS.name}:{n}: section parameter {part!r} is not key=value")
+            raise CorpusError(f"{CORPUS.name}:{n}: section parameter {part!r} is not key=value")
         if k in keys:
-            raise CorpusError(
-                f"{CORPUS.name}:{n}: section parameter {k!r} appears twice")
+            raise CorpusError(f"{CORPUS.name}:{n}: section parameter {k!r} appears twice")
         keys.add(k)
     if keys != SECTION_SHAPES[shape]:
         raise CorpusError(
             f"{CORPUS.name}:{n}: shape {shape!r} takes exactly "
-            f"{sorted(SECTION_SHAPES[shape])}; got {sorted(keys)}")
+            f"{sorted(SECTION_SHAPES[shape])}; got {sorted(keys)}"
+        )
 
 
-FIELDS = {"id", "section", "stations", "orient", "extra", "runs_in_suite",
-          "expect"}
+FIELDS = {"id", "section", "stations", "orient", "extra", "runs_in_suite", "expect"}
 EXTRA_KEYS = ("orientation_node", "roll", "I_y_over_I_z")
 
 # THE SYNTHETIC ANISOTROPY ROUTE'S ADMISSIBLE RANGE (BP5/R119). `I_y_over_I_z`
@@ -232,15 +234,16 @@ def _direction(n: int, text: str) -> np.ndarray:
     if len(parts) != 3:
         raise CorpusError(
             f"{CORPUS.name}:{n}: orient={text!r} is neither one of "
-            f"{sorted(ORIENTATIONS)} nor three comma-separated numbers")
+            f"{sorted(ORIENTATIONS)} nor three comma-separated numbers"
+        )
     v = np.array([_finite(n, f"orient[{i}]", t) for i, t in enumerate(parts)])
     norm = float(np.linalg.norm(v))
     if norm == 0.0:
         raise CorpusError(
             f"{CORPUS.name}:{n}: orient={text!r} is the zero vector; there is no "
-            "direction to build a member along")
+            "direction to build a member along"
+        )
     return v / norm
-
 
 
 def _parse() -> list[dict[str, str]]:
@@ -287,8 +290,7 @@ def _field(line: str, key: str, default: str) -> str:
     taking the last; the value returned names the problem so the assertion that
     reads it reddens with something a reader can act on.
     """
-    found = [t.split("=", 1)[1] for t in line.split()
-             if t.startswith(key + "=")]
+    found = [t.split("=", 1)[1] for t in line.split() if t.startswith(key + "=")]
     if len(found) > 1:
         return "AMBIGUOUS(" + "|".join(found) + ")"
     return found[0] if found else default
@@ -346,19 +348,22 @@ def _extras(n: int, text: str) -> dict[str, list[str]]:
                 raise CorpusError(
                     f"{CORPUS.name}:{n}: extra key {name!r} is not one of "
                     f"{list(EXTRA_KEYS)}. A typo here used to produce the "
-                    "DEFAULT configuration and pass.")
+                    "DEFAULT configuration and pass."
+                )
             if name in out:
                 raise CorpusError(
                     f"{CORPUS.name}:{n}: extra key {name!r} appears twice. "
                     "Taking the last silently runs a configuration nobody "
-                    "wrote.")
+                    "wrote."
+                )
             key = name
             out[key] = [value]
         else:
             if key is None:
                 raise CorpusError(
                     f"{CORPUS.name}:{n}: extra={text!r} starts with {token!r}, "
-                    "which names no key")
+                    "which names no key"
+                )
             out[key].append(token)
 
     for name, parts in out.items():
@@ -385,51 +390,54 @@ def _extras(n: int, text: str) -> dict[str, list[str]]:
                     "builds one whose weakest-state response to a defect is "
                     "exactly 0.0, which is a control that certifies nothing. "
                     "`Section.__post_init__` is the only guard on any of this "
-                    "and the route this field uses bypasses it.")
+                    "and the route this field uses bypasses it."
+                )
         if len(parts) != want:
             raise CorpusError(
                 f"{CORPUS.name}:{n}: extra {name} takes {want} value(s); got "
-                f"{len(parts)} ({parts})")
+                f"{len(parts)} ({parts})"
+            )
         for i, part in enumerate(parts):
-            _finite(n, f"extra {name}[{i}]" if want > 1 else f"extra {name}",
-                    part)
+            _finite(n, f"extra {name}[{i}]" if want > 1 else f"extra {name}", part)
     return out
 
 
 def _parse_line(n: int, line: str) -> dict[str, str]:
-        row: dict[str, str] = {}
-        for field in line.split():
-            key, sep, value = field.partition("=")
-            if not sep:
-                raise CorpusError(
-                    f"{CORPUS.name}:{n}: field {field!r} is not key=value")
-            if key not in FIELDS:
-                raise CorpusError(
-                    f"{CORPUS.name}:{n}: unknown field {key!r}. Known fields are "
-                    f"{sorted(FIELDS)}. This module executes the corpus; a field "
-                    "it does not understand is not silently ignored.")
-            if key in row:
-                raise CorpusError(
-                    f"{CORPUS.name}:{n}: field {key!r} appears twice "
-                    f"({row[key]!r} then {value!r}). Taking the last silently "
-                    "runs a configuration nobody wrote.")
-            row[key] = value
+    row: dict[str, str] = {}
+    for field in line.split():
+        key, sep, value = field.partition("=")
+        if not sep:
+            raise CorpusError(f"{CORPUS.name}:{n}: field {field!r} is not key=value")
+        if key not in FIELDS:
+            raise CorpusError(
+                f"{CORPUS.name}:{n}: unknown field {key!r}. Known fields are "
+                f"{sorted(FIELDS)}. This module executes the corpus; a field "
+                "it does not understand is not silently ignored."
+            )
+        if key in row:
+            raise CorpusError(
+                f"{CORPUS.name}:{n}: field {key!r} appears twice "
+                f"({row[key]!r} then {value!r}). Taking the last silently "
+                "runs a configuration nobody wrote."
+            )
+        row[key] = value
 
-        missing = {"id", "section", "stations", "orient", "expect"} - row.keys()
-        if missing:
-            raise CorpusError(f"{CORPUS.name}:{n}: missing {sorted(missing)}")
-        if row["expect"] not in EXPECTS:
-            raise CorpusError(
-                f"{CORPUS.name}:{n}: expect={row['expect']!r} is not one of "
-                f"{sorted(EXPECTS)}")
-        _direction(n, row["orient"])
-        _validate_section(n, row["section"])
-        if _finite(n, "stations", row["stations"]) <= 0.0:
-            raise CorpusError(
-                f"{CORPUS.name}:{n}: stations={row['stations']!r} is not "
-                "positive; a member has a length or it is not a member")
-        _extras(n, row.get("extra", "none"))
-        return row
+    missing = {"id", "section", "stations", "orient", "expect"} - row.keys()
+    if missing:
+        raise CorpusError(f"{CORPUS.name}:{n}: missing {sorted(missing)}")
+    if row["expect"] not in EXPECTS:
+        raise CorpusError(
+            f"{CORPUS.name}:{n}: expect={row['expect']!r} is not one of " f"{sorted(EXPECTS)}"
+        )
+    _direction(n, row["orient"])
+    _validate_section(n, row["section"])
+    if _finite(n, "stations", row["stations"]) <= 0.0:
+        raise CorpusError(
+            f"{CORPUS.name}:{n}: stations={row['stations']!r} is not "
+            "positive; a member has a length or it is not a member"
+        )
+    _extras(n, row.get("extra", "none"))
+    return row
 
 
 ENTRIES = _parse()
@@ -471,18 +479,18 @@ def _build(entry: dict[str, str]):
     m = Model()
     for s in stations:
         m.nodes.add(Node(*(s * direction)))
-    els = [BeamElement(i, i + 1, sec, S355, orientation_node=onode, roll_rad=roll)
-           for i in range(len(stations) - 1)]
+    els = [
+        BeamElement(i, i + 1, sec, S355, orientation_node=onode, roll_rad=roll)
+        for i in range(len(stations) - 1)
+    ]
     # Reach the degeneracy guard HERE rather than at first use. The guard lives
     # in `rotation_matrix`, so a builder that only constructs nodes and elements
     # never touches it, and `expect=raise` would pass by not looking.
-    rotation_matrix(m.nodes[0].xyz, m.nodes[1].xyz,
-                    orientation_node=onode, roll_rad=roll)
+    rotation_matrix(m.nodes[0].xyz, m.nodes[1].xyz, orientation_node=onode, roll_rad=roll)
     return m, els, stations
 
 
-def _measure(entry, state: str,
-             defect_size: float = 0.0) -> tuple[float, float]:
+def _measure(entry, state: str, defect_size: float = 0.0) -> tuple[float, float]:
     """`(forward, oob)` for one state: the SOLVED nodal field error, and G2.2's
     quantity -- the interior out-of-balance of the EXACT field.
 
@@ -492,9 +500,9 @@ def _measure(entry, state: str,
     """
     m, els, stations = _build(entry)
     e0 = els[0]
-    r = rotation_matrix(m.nodes[0].xyz, m.nodes[1].xyz,
-                        orientation_node=e0.orientation_node,
-                        roll_rad=e0.roll_rad)
+    r = rotation_matrix(
+        m.nodes[0].xyz, m.nodes[1].xyz, orientation_node=e0.orientation_node, roll_rad=e0.roll_rad
+    )
     sec = e0.section
     u_ex_local = _exact_local(state, stations, 1.0)
     if state == "shear":
@@ -505,22 +513,25 @@ def _measure(entry, state: str,
         kga = sec.kappa(S355) * S355.G * sec.A
         p, ll = 1.0e5, stations[-1]
         u_ex_local = np.zeros((stations.size, 6))
-        u_ex_local[:, 1] = (p * (ll * stations**2 / 2.0 - stations**3 / 6.0) / ei
-                            + p * stations / kga)
+        u_ex_local[:, 1] = (
+            p * (ll * stations**2 / 2.0 - stations**3 / 6.0) / ei + p * stations / kga
+        )
         u_ex_local[:, 5] = p * (ll * stations - stations**2 / 2.0) / ei
     elif state == "shear_xz":
         ei = S355.E * sec.I_y
         kga = sec.kappa(S355) * S355.G * sec.A
         p, ll = 1.0e5, stations[-1]
         u_ex_local = np.zeros((stations.size, 6))
-        u_ex_local[:, 2] = (p * (ll * stations**2 / 2.0 - stations**3 / 6.0) / ei
-                            + p * stations / kga)
+        u_ex_local[:, 2] = (
+            p * (ll * stations**2 / 2.0 - stations**3 / 6.0) / ei + p * stations / kga
+        )
         u_ex_local[:, 4] = -p * (ll * stations - stations**2 / 2.0) / ei
 
     u_ex = _to_global(u_ex_local, r)
     k = assemble(m, els)
     if defect_size != 0.0:
         from floatfea.assemble.system import element_global_stiffness
+
         # THE DEFECT SIZE IS APPLIED DIRECTLY, not as `(1 + size) - 1` (BQ0).
         # That subtraction loses `eps/size ~ 2e-10` of relative precision to
         # cancellation, so a defect declared as `1e-6` was injected at
@@ -545,8 +556,7 @@ def _measure(entry, state: str,
     f[ends] = 0.0
     u = (solve(k, f, ends).u + up).reshape(n, 6)
 
-    oob = interior_out_of_balance(m, els, u_ex.reshape(-1),
-                                  float(stations[-1]), k=k)
+    oob = interior_out_of_balance(m, els, u_ex.reshape(-1), float(stations[-1]), k=k)
     return relative_error(u, u_ex, stations[-1]), oob
 
 
@@ -564,8 +574,7 @@ def _entry_section(entry) -> Section:
     sec = _section(entry["section"])
     extras = _extras(0, entry.get("extra", "none"))
     if "I_y_over_I_z" in extras:
-        object.__setattr__(sec, "I_y",
-                           sec.I_z * float(extras["I_y_over_I_z"][0]))
+        object.__setattr__(sec, "I_y", sec.I_z * float(extras["I_y_over_I_z"][0]))
     return sec
 
 
@@ -594,18 +603,19 @@ FREE_DIRECTIONS = [
     ("named", "skew", ORIENTATIONS["skew"]),
     ("unit vector", "0,0,1", np.array([0.0, 0.0, 1.0])),
     ("NOT a unit vector", "3,4,0", np.array([0.6, 0.8, 0.0])),
-    ("truncated, as a hand-written one is",
-     "-0.384196,-0.923213,0.008385",
-     np.array([-0.384196, -0.923213, 0.008385])
-     / np.linalg.norm([-0.384196, -0.923213, 0.008385])),
+    (
+        "truncated, as a hand-written one is",
+        "-0.384196,-0.923213,0.008385",
+        np.array([-0.384196, -0.923213, 0.008385])
+        / np.linalg.norm([-0.384196, -0.923213, 0.008385]),
+    ),
 ]
 
 
-@pytest.mark.parametrize("label, text, expected", FREE_DIRECTIONS,
-                         ids=[d[0] for d in FREE_DIRECTIONS])
-def test_orient_takes_any_direction_and_NORMALISES_it(
-    label: str, text: str, expected
-) -> None:
+@pytest.mark.parametrize(
+    "label, text, expected", FREE_DIRECTIONS, ids=[d[0] for d in FREE_DIRECTIONS]
+)
+def test_orient_takes_any_direction_and_NORMALISES_it(label: str, text: str, expected) -> None:
     """The reviewer writes a direction; this module makes it a unit vector.
 
     `3,4,0` is the case that matters: it is not a unit vector, and if it were
@@ -615,16 +625,24 @@ def test_orient_takes_any_direction_and_NORMALISES_it(
     whole sweep of numbers for a beam nobody was testing.
     """
     got = _direction(0, text)
-    assert_close(float(np.linalg.norm(got)), 1.0, ROUNDOFF_IDENTITY,
-                 floor=np.finfo(float).eps,
-                 what=f"|orient={text}| after normalisation")
+    assert_close(
+        float(np.linalg.norm(got)),
+        1.0,
+        ROUNDOFF_IDENTITY,
+        floor=np.finfo(float).eps,
+        what=f"|orient={text}| after normalisation",
+    )
     # THE DIRECTION, on an O(1) quantity (R38). `got . expected` is 1 exactly
     # when the two are parallel AND both unit, so this one comparison carries
     # both properties without ever comparing two numbers near zero -- which is
     # the comparison `assert_close` refuses to make, for the reason R38 records.
-    assert_close(float(got @ expected), 1.0, ROUNDOFF_IDENTITY,
-                 floor=np.finfo(float).eps,
-                 what=f"orient={text} against its normalised expectation")
+    assert_close(
+        float(got @ expected),
+        1.0,
+        ROUNDOFF_IDENTITY,
+        floor=np.finfo(float).eps,
+        what=f"orient={text} against its normalised expectation",
+    )
 
 
 BAD_DIRECTIONS = [
@@ -638,8 +656,7 @@ BAD_DIRECTIONS = [
 ]
 
 
-@pytest.mark.parametrize("label, text", BAD_DIRECTIONS,
-                         ids=[d[0] for d in BAD_DIRECTIONS])
+@pytest.mark.parametrize("label, text", BAD_DIRECTIONS, ids=[d[0] for d in BAD_DIRECTIONS])
 def test_a_direction_that_cannot_be_built_RAISES(label: str, text: str) -> None:
     """Never a silent default. A typo'd name used to be caught by the name check
     and everything else did not exist; opening the field up without opening the
@@ -671,8 +688,7 @@ def _inadmissible(entry) -> float | None:
     if "_error" in entry:
         return None
     try:
-        ratio = member_l_over_d(float(entry["stations"]),
-                                _section(entry["section"]))
+        ratio = member_l_over_d(float(entry["stations"]), _section(entry["section"]))
     except Exception:
         return None
     return ratio if ratio < BEAM_ADMISSION_L_OVER_D else None
@@ -687,9 +703,11 @@ def test_the_admission_limit_overrides_are_REPORTED(capsys) -> None:
         for e in ENTRIES:
             ratio = _inadmissible(e)
             if ratio is not None:
-                print(f"\n  OVERRIDE: {e['id']} has L/D = {ratio:.3f} < "
-                      f"{BEAM_ADMISSION_L_OVER_D:g}; corpus says "
-                      f"expect={e['expect']}, this module asserts it RAISES")
+                print(
+                    f"\n  OVERRIDE: {e['id']} has L/D = {ratio:.3f} < "
+                    f"{BEAM_ADMISSION_L_OVER_D:g}; corpus says "
+                    f"expect={e['expect']}, this module asserts it RAISES"
+                )
     assert True  # not-a-tolerance: this test reports, the assertions are below
 
 
@@ -754,9 +772,9 @@ def test_the_corpus_entry_behaves_as_the_reviewer_recorded(entry) -> None:
     )
 
 
-SOLVED = [e for e in ENTRIES
-          if e["expect"] != "raise" and "_error" not in e
-          and _inadmissible(e) is None]
+SOLVED = [
+    e for e in ENTRIES if e["expect"] != "raise" and "_error" not in e and _inadmissible(e) is None
+]
 
 
 # `no_op` is a NAMED control, not a defect: it returns the element unchanged, so
@@ -764,8 +782,7 @@ SOLVED = [e for e in ENTRIES
 # cannot say `no` classifies nothing (R126).
 ORIGINAL_LOCAL_STIFFNESS = local_stiffness
 
-DEFECT_BUILDERS = ("dropped_flip", "wrong_dof_index",
-                   "dropped_shear_parameter", "no_op")
+DEFECT_BUILDERS = ("dropped_flip", "wrong_dof_index", "dropped_shear_parameter", "no_op")
 
 
 def _defective_stiffness(kind: str):
@@ -789,16 +806,19 @@ def _defective_stiffness(kind: str):
         raise ValueError(
             f"no defect builder for {kind!r}; known builders are "
             f"{list(DEFECT_BUILDERS)}. Returning the clean matrix for an "
-            "unrecognised name would report the defect as changing nothing.")
+            "unrecognised name would report the defect as changing nothing."
+        )
 
     def build(section, material, ll):
         if kind == "no_op":
             return ORIGINAL_LOCAL_STIFFNESS(section, material, ll)
         k = np.zeros((12, 12))
         k[np.ix_([0, 6], [0, 6])] = (material.E * section.A / ll) * np.array(
-            [[1.0, -1.0], [-1.0, 1.0]])
+            [[1.0, -1.0], [-1.0, 1.0]]
+        )
         k[np.ix_([3, 9], [3, 9])] = (material.G * section.J / ll) * np.array(
-            [[1.0, -1.0], [-1.0, 1.0]])
+            [[1.0, -1.0], [-1.0, 1.0]]
+        )
 
         # `dropped_shear_parameter`: Timoshenko reduced to Euler-Bernoulli, `Phi`
         # forced to zero in both planes. Reinstated as a gate defect (BP3): the
@@ -872,8 +892,12 @@ def _oob_with_defect(entry, state: str, kind: str) -> float:
 # it is withdrawn: "undetectable on 22 of 63 entries" was measured against a
 # response floor deleted in the same round, and against the CEILING no corpus
 # entry was below it at that commit.
-INJECTED_DEFECTS = ("dropped_flip", "wrong_dof_index",
-                    "dropped_shear_parameter", "one_element_scaled")
+INJECTED_DEFECTS = (
+    "dropped_flip",
+    "wrong_dof_index",
+    "dropped_shear_parameter",
+    "one_element_scaled",
+)
 
 
 def _homogeneous(k: np.ndarray, ell: float) -> np.ndarray:
@@ -924,7 +948,6 @@ def injected_delta(entry, kind: str) -> float:
 
     `test_the_delta_measure_is_CALIBRATED` pins it in both directions.
     """
-    import floatfea.assemble.system as system
 
     m, els, stations = _build(entry)
     ell = float(stations[-1])
@@ -937,12 +960,10 @@ def injected_delta(entry, kind: str) -> float:
                 continue
             change = PATCH_TEST_EXACTNESS_COUNTER_DEFECT * clean
         else:
-            change = (_defective_stiffness(kind)(e.section, e.material, length)
-                      - clean)
+            change = _defective_stiffness(kind)(e.section, e.material, length) - clean
         denom = float(np.abs(_homogeneous(clean, ell)).max())
         if denom > 0.0:
-            worst = max(worst,
-                        float(np.abs(_homogeneous(change, ell)).max() / denom))
+            worst = max(worst, float(np.abs(_homogeneous(change, ell)).max() / denom))
     return worst
 
 
@@ -979,11 +1000,10 @@ def classify(entry, kind: str) -> str:
     # `max|CD k_hat| / max|k_hat|`, which lands an ULP below `CD` on some
     # entries, and a bare `>=` classified the gate's OWN counter-defect as below
     # its own resolution on one of them.
-    floor = (PATCH_TEST_EXACTNESS_COUNTER_DEFECT
-             - DELTA_CALIBRATION_ULP * math.ulp(
-                 PATCH_TEST_EXACTNESS_COUNTER_DEFECT))
-    return ("live" if injected_delta(entry, kind) >= floor
-            else "below resolution")
+    floor = PATCH_TEST_EXACTNESS_COUNTER_DEFECT - DELTA_CALIBRATION_ULP * math.ulp(
+        PATCH_TEST_EXACTNESS_COUNTER_DEFECT
+    )
+    return "live" if injected_delta(entry, kind) >= floor else "below resolution"
 
 
 # THE DEFECTS WHOSE REDNESS IS NOT SUBJECT TO CLASSIFICATION (BR3). These are
@@ -1013,23 +1033,21 @@ UNCONDITIONALLY_RED = ("dropped_flip", "wrong_dof_index", "one_element_scaled")
 
 def _oob_with_injected(entry, state: str, kind: str) -> float:
     if kind == "one_element_scaled":
-        return _oob_state(
-            entry, state,
-            defect_size=PATCH_TEST_EXACTNESS_COUNTER_DEFECT)
+        return _oob_state(entry, state, defect_size=PATCH_TEST_EXACTNESS_COUNTER_DEFECT)
     return _oob_with_defect(entry, state, kind)
 
 
 @pytest.mark.parametrize("kind", INJECTED_DEFECTS)
 @pytest.mark.parametrize(
     "entry",
-    [e for e in ENTRIES
-     if e["expect"] != "raise" and "_error" not in e
-     and _inadmissible(e) is None],
+    [
+        e
+        for e in ENTRIES
+        if e["expect"] != "raise" and "_error" not in e and _inadmissible(e) is None
+    ],
     ids=lambda e: e["id"],
 )
-def test_the_corpus_entry_goes_RED_under_every_injected_defect(
-    entry, kind: str
-) -> None:
+def test_the_corpus_entry_goes_RED_under_every_injected_defect(entry, kind: str) -> None:
     """THE COUNTER-CASE, in the only form that means anything (BO0).
 
     A counter-case is the DEFECT whose presence must make the gate red. The
@@ -1104,7 +1122,8 @@ def test_the_delta_measure_is_CALIBRATED() -> None:
         # no seed (R195) -- and its maximum is `calibration_ulp_worst`, which the
         # ceiling carries twice over.
         ulp = abs(measured - PATCH_TEST_EXACTNESS_COUNTER_DEFECT) / math.ulp(
-            PATCH_TEST_EXACTNESS_COUNTER_DEFECT)
+            PATCH_TEST_EXACTNESS_COUNTER_DEFECT
+        )
         assert ulp <= DELTA_CALIBRATION_ULP, (
             f"{entry['id']}: the counter-defect injection measures "
             f"{measured:.17g} under `injected_delta`, against its declared size "
@@ -1119,8 +1138,10 @@ def test_the_delta_measure_is_CALIBRATED() -> None:
     # from the matrix, not from a declaration.
     stub = min(SOLVED, key=member_lambda)
     slender = max(SOLVED, key=member_lambda)
-    ratios = [_bending_only_effective_size(e) / PATCH_TEST_EXACTNESS_COUNTER_DEFECT
-              for e in (stub, slender)]
+    ratios = [
+        _bending_only_effective_size(e) / PATCH_TEST_EXACTNESS_COUNTER_DEFECT
+        for e in (stub, slender)
+    ]
     assert ratios[0] > ratios[1], (
         f"the bending-block ratio does not fall with slenderness: "
         f"{stub['id']} (L/r_min {member_lambda(stub):.0f}) gives {ratios[0]:.3e} "
@@ -1147,14 +1168,12 @@ def _bending_only_effective_size(entry) -> float:
     clean = ORIGINAL_LOCAL_STIFFNESS(e.section, e.material, element_length(m, e))
     change = np.zeros_like(clean)
     idx = [1, 5, 7, 11]
-    change[np.ix_(idx, idx)] = (PATCH_TEST_EXACTNESS_COUNTER_DEFECT
-                                * clean[np.ix_(idx, idx)])
+    change[np.ix_(idx, idx)] = PATCH_TEST_EXACTNESS_COUNTER_DEFECT * clean[np.ix_(idx, idx)]
     denom = float(np.abs(_homogeneous(clean, ell)).max())
     return float(np.abs(_homogeneous(change, ell)).max() / denom)
 
 
-SAME_MEMBER_DIFFERENT_UNITS = ("unit_mm_similar", "posed_metre",
-                               "unit_km_similar")
+SAME_MEMBER_DIFFERENT_UNITS = ("unit_mm_similar", "posed_metre", "unit_km_similar")
 
 
 def _by_id(name: str):
@@ -1170,15 +1189,18 @@ def test_the_delta_measure_is_UNIT_INVARIANT() -> None:
     metres, six orders end to end.
     """
     for kind in INJECTED_DEFECTS:
-        values = [injected_delta(_by_id(n), kind)
-                  for n in SAME_MEMBER_DIFFERENT_UNITS]
-        for name, value in zip(SAME_MEMBER_DIFFERENT_UNITS[1:], values[1:]):
+        values = [injected_delta(_by_id(n), kind) for n in SAME_MEMBER_DIFFERENT_UNITS]
+        for name, value in zip(SAME_MEMBER_DIFFERENT_UNITS[1:], values[1:], strict=True):
             assert_close(
-                value, values[0], ROUNDOFF_IDENTITY,
+                value,
+                values[0],
+                ROUNDOFF_IDENTITY,
                 floor=np.finfo(float).eps * values[0],
-                what=(f"{kind}: measured {value:.9e} on {name} against "
-                      f"{values[0]:.9e} on {SAME_MEMBER_DIFFERENT_UNITS[0]} -- "
-                      "the same member in a different length unit"),
+                what=(
+                    f"{kind}: measured {value:.9e} on {name} against "
+                    f"{values[0]:.9e} on {SAME_MEMBER_DIFFERENT_UNITS[0]} -- "
+                    "the same member in a different length unit"
+                ),
             )
 
 
@@ -1200,13 +1222,14 @@ def test_a_CONSTANT_ell_breaks_unit_invariance() -> None:
     original = globals()["_homogeneous"]
     globals()["_homogeneous"] = lambda k, ell: original(k, 1.0)
     try:
-        broken = [injected_delta(_by_id(n), "dropped_flip")
-                  for n in SAME_MEMBER_DIFFERENT_UNITS]
+        broken = [injected_delta(_by_id(n), "dropped_flip") for n in SAME_MEMBER_DIFFERENT_UNITS]
     finally:
         globals()["_homogeneous"] = original
 
     spread = max(broken) / min(broken)
-    assert spread > 10.0, (  # not-a-tolerance: discrimination floor -- asserts a separation is LARGE
+    assert (
+        spread > 10.0
+    ), (  # not-a-tolerance: discrimination floor -- asserts a separation is LARGE
         f"with `ell` frozen at 1.0 the three unit systems still agree to "
         f"{spread:.4g}x ({broken}). The unit invariance asserted above does not "
         "depend on the scaling it is attributed to, so nothing is guarding it."
@@ -1233,12 +1256,10 @@ def test_a_LARGER_deviation_fails_the_calibration() -> None:
     and the only one this counter needs.
     """
     cd = PATCH_TEST_EXACTNESS_COUNTER_DEFECT
-    entry = SOLVED[0]
     original = globals()["injected_delta"]
-    globals()["injected_delta"] = (
-        lambda e, k, _o=original: _o(e, k)
-        + (DELTA_CALIBRATION_ULP_COUNTER * math.ulp(cd)
-           if k == "one_element_scaled" else 0.0))
+    globals()["injected_delta"] = lambda e, k, _o=original: _o(e, k) + (
+        DELTA_CALIBRATION_ULP_COUNTER * math.ulp(cd) if k == "one_element_scaled" else 0.0
+    )
     try:
         with pytest.raises(AssertionError, match="ULP"):
             test_the_delta_measure_is_CALIBRATED()
@@ -1294,8 +1315,7 @@ def test_every_entry_carries_at_least_one_LIVE_defect() -> None:
     dead: list[str] = []
     live = 0
     for entry in SOLVED:
-        alive = [k for k in INJECTED_DEFECTS
-                 if injected_delta(entry, k) > 0.0]
+        alive = [k for k in INJECTED_DEFECTS if injected_delta(entry, k) > 0.0]
         live += len(alive)
         if not alive:
             dead.append(entry["id"])
@@ -1350,12 +1370,13 @@ def _detection_edge(entry) -> float:
     lo, hi = 1e-20, 1e-1
     for _ in range(200):
         mid = (lo * hi) ** 0.5
-        if max(_oob_state(entry, st, defect_size=mid)
-               for st in STATES) > PATCH_TEST_EXACTNESS:
+        if max(_oob_state(entry, st, defect_size=mid) for st in STATES) > PATCH_TEST_EXACTNESS:
             hi = mid
         else:
             lo = mid
-        if hi / lo < 1.000001:  # not-a-tolerance: bisection convergence, not a comparison of results
+        if (
+            hi / lo < 1.000001
+        ):  # not-a-tolerance: bisection convergence, not a comparison of results
             break
     return hi
 
@@ -1378,10 +1399,12 @@ def test_the_counter_DEFECT_SIZE_cannot_be_raised(capsys) -> None:
     worst_id, edge = _smallest_detection_edge()
     ratio = PATCH_TEST_EXACTNESS_COUNTER_DEFECT / edge
     with capsys.disabled():
-        print(f"\n  detection edge {edge:.4e} at {worst_id}; shipped defect "
-              f"{PATCH_TEST_EXACTNESS_COUNTER_DEFECT:g} is {ratio:.4g}x it, "
-              f"against a headroom of {PATCH_TEST_COUNTER_HEADROOM:.3g} "
-              f"({PATCH_TEST_COUNTER_HEADROOM / ratio:.2f}x of room)")
+        print(
+            f"\n  detection edge {edge:.4e} at {worst_id}; shipped defect "
+            f"{PATCH_TEST_EXACTNESS_COUNTER_DEFECT:g} is {ratio:.4g}x it, "
+            f"against a headroom of {PATCH_TEST_COUNTER_HEADROOM:.3g} "
+            f"({PATCH_TEST_COUNTER_HEADROOM / ratio:.2f}x of room)"
+        )
     assert ratio <= PATCH_TEST_COUNTER_HEADROOM, (
         f"PATCH_TEST_EXACTNESS_COUNTER_DEFECT = "
         f"{PATCH_TEST_EXACTNESS_COUNTER_DEFECT:g} is {ratio:.4g}x the smallest "
@@ -1418,8 +1441,7 @@ def test_a_RAISED_counter_defect_breaks_that(capsys) -> None:
     # it was found by registering this pair in
     # `tests/test_counters_are_injected.py`, which is what that file is for.
     original = globals()["PATCH_TEST_EXACTNESS_COUNTER_DEFECT"]
-    globals()["PATCH_TEST_EXACTNESS_COUNTER_DEFECT"] = (
-        original * RAISED_COUNTER_DEFECT_FACTOR)
+    globals()["PATCH_TEST_EXACTNESS_COUNTER_DEFECT"] = original * RAISED_COUNTER_DEFECT_FACTOR
     try:
         with pytest.raises(AssertionError, match="declared headroom"):
             test_the_counter_DEFECT_SIZE_cannot_be_raised(capsys)
@@ -1445,15 +1467,21 @@ def test_the_recorded_breaches_are_REPORTED_for_re_recording(capsys) -> None:
     """
     breaches = [e for e in SOLVED if e["expect"] == "breach"]
     with capsys.disabled():
-        print(f"\n  RE-RECORD ({len(breaches)} entries marked expect=breach "
-              "against the retired quantity):")
-        print(f"  {'id':32} {'member lam':>10} {'forward':>12} "
-              f"{'out-of-balance':>15} {'x ceiling':>10}")
+        print(
+            f"\n  RE-RECORD ({len(breaches)} entries marked expect=breach "
+            "against the retired quantity):"
+        )
+        print(
+            f"  {'id':32} {'member lam':>10} {'forward':>12} "
+            f"{'out-of-balance':>15} {'x ceiling':>10}"
+        )
         for e in breaches:
             fwd = max(_measure(e, st)[0] for st in STATES)
             oob = max(_measure(e, st)[1] for st in STATES)
-            print(f"  {e['id']:32} {member_lambda(e):10.1f} {fwd:12.4e} "
-                  f"{oob:15.4e} {oob / PATCH_TEST_EXACTNESS:9.3f}x")
+            print(
+                f"  {e['id']:32} {member_lambda(e):10.1f} {fwd:12.4e} "
+                f"{oob:15.4e} {oob / PATCH_TEST_EXACTNESS:9.3f}x"
+            )
     assert True  # not-a-tolerance: this test reports, the assertions are above
 
 
@@ -1476,72 +1504,89 @@ def test_the_forward_error_is_REPORTED_and_the_floor_is_too(capsys) -> None:
         lam = member_lambda(e)
         fwd = max(_measure(e, st)[0] for st in STATES)
         oob = max(_measure(e, st)[1] for st in STATES)
-        form = {k: max(_oob_with_injected(e, st, k) for st in STATES)
-                for k in INJECTED_DEFECTS}
+        form = {k: max(_oob_with_injected(e, st, k) for st in STATES) for k in INJECTED_DEFECTS}
         # The WEAKEST state under the scaled element -- the quantity the recorded
         # curve describes. The margins above are the worst state, because the
         # gate fails if any state exceeds; the curve is about the state that
         # responds least, which is the one slenderness eats.
-        weak = min(_oob_with_injected(e, st, "one_element_scaled")
-                   for st in STATES)
+        weak = min(_oob_with_injected(e, st, "one_element_scaled") for st in STATES)
         rows.append((e["id"], lam, fwd, oob, form, weak))
 
     worst = max(rows, key=lambda r: r[3])
     with capsys.disabled():
-        print(f"\n  {'id':32} {'L/r_min':>9} {'forward':>11} {'out-of-bal':>11}"
-              + "".join(f"{k[:16]:>18}" for k in INJECTED_DEFECTS))
+        print(
+            f"\n  {'id':32} {'L/r_min':>9} {'forward':>11} {'out-of-bal':>11}"
+            + "".join(f"{k[:16]:>18}" for k in INJECTED_DEFECTS)
+        )
         for i, lam, fwd, oob, form, _w in sorted(rows, key=lambda r: r[1]):
-            print(f"  {i:32} {lam:9.1f} {fwd:11.3e} {oob:11.3e}"
-                  + "".join(f"{form[k] / PATCH_TEST_EXACTNESS:18.4g}"
-                            for k in INJECTED_DEFECTS))
+            print(
+                f"  {i:32} {lam:9.1f} {fwd:11.3e} {oob:11.3e}"
+                + "".join(f"{form[k] / PATCH_TEST_EXACTNESS:18.4g}" for k in INJECTED_DEFECTS)
+            )
 
         eps = float(np.finfo(float).eps)
-        print(f"\n  CEILING  {PATCH_TEST_EXACTNESS:.3e}   worst clean "
-              f"{worst[3]:.4e} ({worst[3] / eps:.2f} eps, {worst[0]}) "
-              f"= {worst[3] / PATCH_TEST_EXACTNESS:.4f}x")
+        print(
+            f"\n  CEILING  {PATCH_TEST_EXACTNESS:.3e}   worst clean "
+            f"{worst[3]:.4e} ({worst[3] / eps:.2f} eps, {worst[0]}) "
+            f"= {worst[3] / PATCH_TEST_EXACTNESS:.4f}x"
+        )
         exempt: dict[str, list[str]] = {}
         for e in SOLVED:
             for k in INJECTED_DEFECTS:
                 if classify(e, k) == "below resolution":
                     exempt.setdefault(k, []).append(e["id"])
         n_exempt = sum(len(v) for v in exempt.values())
-        print(f"  EXEMPT   {n_exempt} of {len(SOLVED) * len(INJECTED_DEFECTS)} "
-              f"(entry, defect) pairs are below the declared resolution. Only "
-              f"dropped_shear_parameter loses its red assertion there; the other "
-              f"three are in UNCONDITIONALLY_RED and are asserted regardless "
-              f"(R165). By defect: "
-              + ", ".join(f"{k} {len(v)}" for k, v in sorted(exempt.items())))
+        print(
+            f"  EXEMPT   {n_exempt} of {len(SOLVED) * len(INJECTED_DEFECTS)} "
+            f"(entry, defect) pairs are below the declared resolution. Only "
+            f"dropped_shear_parameter loses its red assertion there; the other "
+            f"three are in UNCONDITIONALLY_RED and are asserted regardless "
+            f"(R165). By defect: " + ", ".join(f"{k} {len(v)}" for k, v in sorted(exempt.items()))
+        )
         detected = sum(
-            1 for k, ids in exempt.items() for i in ids
-            if max(_oob_with_injected(next(e for e in SOLVED if e["id"] == i),
-                                      st, k) for st in STATES)
-            > PATCH_TEST_EXACTNESS)
-        print(f"           of those, {detected} ARE detected by the gate today; "
-              "their responses are golden values in "
-              "tests/regression/test_exempt_pair_responses.py, so a pair that is "
-              "caught now cannot stop being caught in silence (BS2)")
-        print("  MARGINS  response / ceiling, reported and asserted against no "
-              "constant (BO0):")
+            1
+            for k, ids in exempt.items()
+            for i in ids
+            if max(
+                _oob_with_injected(next(e for e in SOLVED if e["id"] == i), st, k) for st in STATES
+            )
+            > PATCH_TEST_EXACTNESS
+        )
+        print(
+            f"           of those, {detected} ARE detected by the gate today; "
+            "their responses are golden values in "
+            "tests/regression/test_exempt_pair_responses.py, so a pair that is "
+            "caught now cannot stop being caught in silence (BS2)"
+        )
+        print("  MARGINS  response / ceiling, reported and asserted against no " "constant (BO0):")
         # PER-STATE responses, a DIAGNOSTIC since BP2. The assertion that every
         # state detects was removed -- the gate decides on the worst state, and a
         # min-over-states universal with an edge inside the corpus is stronger
         # than the rule it guards. The numbers stay visible here.
-        weak = [(e["id"], member_lambda(e),
-                 min(_oob_with_injected(e, st, "one_element_scaled")
-                     for st in STATES) / PATCH_TEST_EXACTNESS)
-                for e in SOLVED]
+        weak = [
+            (
+                e["id"],
+                member_lambda(e),
+                min(_oob_with_injected(e, st, "one_element_scaled") for st in STATES)
+                / PATCH_TEST_EXACTNESS,
+            )
+            for e in SOLVED
+        ]
         lo_w = min(weak, key=lambda r: r[2])
         below = [w for w in weak if w[2] <= 1.0]
-        print(f"  PER-STATE  weakest state / ceiling: minimum {lo_w[2]:.3f}x at "
-              f"{lo_w[0]} (L/r_min {lo_w[1]:.1f}); {len(below)} of {len(weak)} "
-              "entries below 1.0 -- DIAGNOSTIC, asserted nowhere (BP2)")
+        print(
+            f"  PER-STATE  weakest state / ceiling: minimum {lo_w[2]:.3f}x at "
+            f"{lo_w[0]} (L/r_min {lo_w[1]:.1f}); {len(below)} of {len(weak)} "
+            "entries below 1.0 -- DIAGNOSTIC, asserted nowhere (BP2)"
+        )
         for k in INJECTED_DEFECTS:
             lo = min(rows, key=lambda r: r[4][k])
             n_ex = len(exempt.get(k, ()))
-            mark = ("" if not n_ex
-                    else f"   [{n_ex} EXEMPT: below the declared resolution]")
-            print(f"    {k:22} minimum {lo[4][k] / PATCH_TEST_EXACTNESS:12.4g}x"
-                  f"   at {lo[0]} (L/r_min {lo[1]:.1f}){mark}")
+            mark = "" if not n_ex else f"   [{n_ex} EXEMPT: below the declared resolution]"
+            print(
+                f"    {k:22} minimum {lo[4][k] / PATCH_TEST_EXACTNESS:12.4g}x"
+                f"   at {lo[0]} (L/r_min {lo[1]:.1f}){mark}"
+            )
         # The fitted curve is a DIAGNOSTIC and nothing asserts it (BO2). It is
         # regenerated here so the step report's statement of what the gate's
         # sensitivity IS comes from a run rather than from a scratch harness.
@@ -1549,12 +1594,16 @@ def test_the_forward_error_is_REPORTED_and_the_floor_is_too(capsys) -> None:
         sml = np.array([r[5] for r in rows])
         fit = np.polyfit(np.log(lam), np.log(sml), 1)
         resid = sml / np.exp(np.polyval(fit, np.log(lam)))
-        print(f"  CURVE    weakest-state response = {np.exp(fit[1]):.3e} * "
-              f"(L/r_min)^({fit[0]:.3f})   scatter {resid.min():.3f}x .. "
-              f"{resid.max():.3f}x   DIAGNOSTIC, asserted nowhere")
+        print(
+            f"  CURVE    weakest-state response = {np.exp(fit[1]):.3e} * "
+            f"(L/r_min)^({fit[0]:.3f})   scatter {resid.min():.3f}x .. "
+            f"{resid.max():.3f}x   DIAGNOSTIC, asserted nowhere"
+        )
         wk = min(rows, key=lambda r: r[5])
-        print(f"           weakest state anywhere {wk[5] / PATCH_TEST_EXACTNESS:.3f}x "
-              f"the ceiling, at {wk[0]} (L/r_min {wk[1]:.1f})")
+        print(
+            f"           weakest state anywhere {wk[5] / PATCH_TEST_EXACTNESS:.3f}x "
+            f"the ceiling, at {wk[0]} (L/r_min {wk[1]:.1f})"
+        )
     assert True  # not-a-tolerance: this test reports, the assertions are above
 
 
@@ -1563,8 +1612,10 @@ def test_the_corpus_coverage_is_reported(capsys) -> None:
     runs = len(ENTRIES)
     recorded = sum(1 for e in ENTRIES if e.get("runs_in_suite") == "yes")
     with capsys.disabled():
-        print(f"\n  corpus: {runs} entries executed by this module; "
-              f"{recorded} recorded as runs_in_suite=yes at the last review")
+        print(
+            f"\n  corpus: {runs} entries executed by this module; "
+            f"{recorded} recorded as runs_in_suite=yes at the last review"
+        )
     # TWO INDEPENDENT ROUTES TO THE SAME PARTITION, COMPARED (R77). One is the
     # branch the per-entry test actually takes; the other is the predicate that
     # decides which entries the DETECTION test is parametrised over. They are
@@ -1592,56 +1643,90 @@ def test_the_corpus_coverage_is_reported(capsys) -> None:
     solved = measured
     refused = {e["id"] for e in ENTRIES} - measured
     with capsys.disabled():
-        print("          branches: "
-              + ", ".join(f"{k} {v}" for k, v in sorted(tally.items())))
+        print("          branches: " + ", ".join(f"{k} {v}" for k, v in sorted(tally.items())))
     with capsys.disabled():
-        print(f"          {len(solved)} solved, {len(refused)} refused, "
-              f"{len(ENTRIES)} total")
+        print(f"          {len(solved)} solved, {len(refused)} refused, " f"{len(ENTRIES)} total")
 
 
 # ---------------------------------------------------------------------------
 # The parser's own tests (BH3/R57). Each shape RAISES; none is a skip.
 # ---------------------------------------------------------------------------
 MALFORMED = [
-    ("unknown top-level field", "id=x section=circular_tube,D=0.6,t=0.012 "
-     "stations=9.67 orient=skew expect=hold nonsense=1"),
-    ("unknown extra", "id=x section=circular_tube,D=0.6,t=0.012 stations=9.67 "
-     "orient=skew extra=roll_rad=1.0 expect=hold"),
-    ("misspelled extra key", "id=x section=circular_tube,D=0.6,t=0.012 "
-     "stations=9.67 orient=skew extra=nonsense=3.0 expect=hold"),
-    ("field with no '='", "id=x section=circular_tube,D=0.6,t=0.012 "
-     "stations=9.67 orient=skew bare expect=hold"),
-    ("unknown expect", "id=x section=circular_tube,D=0.6,t=0.012 stations=9.67 "
-     "orient=skew expect=maybe"),
-    ("unknown orient", "id=x section=circular_tube,D=0.6,t=0.012 stations=9.67 "
-     "orient=diagonal expect=hold"),
-    ("missing stations", "id=x section=circular_tube,D=0.6,t=0.012 orient=skew "
-     "expect=hold"),
-    ("unknown section shape", "id=x section=rectangle,D=0.6,t=0.012 "
-     "stations=9.67 orient=skew expect=hold"),
-    ("extra section parameter", "id=x section=circular_tube,D=0.6,t=0.012,b=0.3 "
-     "stations=9.67 orient=skew expect=hold"),
-    ("missing section parameter", "id=x section=circular_tube,D=0.6 "
-     "stations=9.67 orient=skew expect=hold"),
-    ("duplicate top-level field", "id=x section=circular_tube,D=0.6,t=0.012 "
-     "stations=9.67 orient=skew expect=hold orient=axis"),
+    (
+        "unknown top-level field",
+        "id=x section=circular_tube,D=0.6,t=0.012 "
+        "stations=9.67 orient=skew expect=hold nonsense=1",
+    ),
+    (
+        "unknown extra",
+        "id=x section=circular_tube,D=0.6,t=0.012 stations=9.67 "
+        "orient=skew extra=roll_rad=1.0 expect=hold",
+    ),
+    (
+        "misspelled extra key",
+        "id=x section=circular_tube,D=0.6,t=0.012 "
+        "stations=9.67 orient=skew extra=nonsense=3.0 expect=hold",
+    ),
+    (
+        "field with no '='",
+        "id=x section=circular_tube,D=0.6,t=0.012 " "stations=9.67 orient=skew bare expect=hold",
+    ),
+    (
+        "unknown expect",
+        "id=x section=circular_tube,D=0.6,t=0.012 stations=9.67 " "orient=skew expect=maybe",
+    ),
+    (
+        "unknown orient",
+        "id=x section=circular_tube,D=0.6,t=0.012 stations=9.67 " "orient=diagonal expect=hold",
+    ),
+    ("missing stations", "id=x section=circular_tube,D=0.6,t=0.012 orient=skew " "expect=hold"),
+    (
+        "unknown section shape",
+        "id=x section=rectangle,D=0.6,t=0.012 " "stations=9.67 orient=skew expect=hold",
+    ),
+    (
+        "extra section parameter",
+        "id=x section=circular_tube,D=0.6,t=0.012,b=0.3 " "stations=9.67 orient=skew expect=hold",
+    ),
+    (
+        "missing section parameter",
+        "id=x section=circular_tube,D=0.6 " "stations=9.67 orient=skew expect=hold",
+    ),
+    (
+        "duplicate top-level field",
+        "id=x section=circular_tube,D=0.6,t=0.012 "
+        "stations=9.67 orient=skew expect=hold orient=axis",
+    ),
     # THE TWO SHAPES THAT USED TO TAKE THE MODULE OUT AT COLLECTION (R89). Each
     # is a value, not a key, so every check above passed it and `Section(...)` or
     # `member_l_over_d` raised while `INADMISSIBLE` was being built at import --
     # taking every other entry's measurement with it. They were carried in the
     # corpus as comments for exactly that reason.
-    ("negative wall", "id=x section=circular_tube,D=0.600,t=-0.01200 "
-     "stations=9.67 orient=skew expect=raise"),
-    ("negative stations", "id=x section=circular_tube,D=0.6,t=0.012 "
-     "stations=-9.67 orient=skew expect=raise"),
-    ("zero diameter", "id=x section=circular_tube,D=0,t=0.012 "
-     "stations=9.67 orient=skew expect=raise"),
-    ("non-finite wall", "id=x section=circular_tube,D=0.6,t=inf "
-     "stations=9.67 orient=skew expect=raise"),
-    ("non-finite roll", "id=x section=circular_tube,D=0.6,t=0.012 "
-     "stations=9.67 orient=skew extra=roll=NaN expect=raise"),
-    ("free direction, zero vector", "id=x section=circular_tube,D=0.6,t=0.012 "
-     "stations=9.67 orient=0,0,0 expect=raise"),
+    (
+        "negative wall",
+        "id=x section=circular_tube,D=0.600,t=-0.01200 " "stations=9.67 orient=skew expect=raise",
+    ),
+    (
+        "negative stations",
+        "id=x section=circular_tube,D=0.6,t=0.012 " "stations=-9.67 orient=skew expect=raise",
+    ),
+    (
+        "zero diameter",
+        "id=x section=circular_tube,D=0,t=0.012 " "stations=9.67 orient=skew expect=raise",
+    ),
+    (
+        "non-finite wall",
+        "id=x section=circular_tube,D=0.6,t=inf " "stations=9.67 orient=skew expect=raise",
+    ),
+    (
+        "non-finite roll",
+        "id=x section=circular_tube,D=0.6,t=0.012 "
+        "stations=9.67 orient=skew extra=roll=NaN expect=raise",
+    ),
+    (
+        "free direction, zero vector",
+        "id=x section=circular_tube,D=0.6,t=0.012 " "stations=9.67 orient=0,0,0 expect=raise",
+    ),
 ]
 
 
@@ -1663,8 +1748,10 @@ def test_the_reviewers_EXPECT_survives_a_parse_failure() -> None:
     module cannot build read GREEN while measuring nothing -- on the one
     instrument in this repository the implementer does not write.
     """
-    line = ("id=probe_hold_unparseable section=circular_tube,D=0.6,t=0.012 "
-            "stations=9.67 orient=skew extra=nonsense=1 expect=hold")
+    line = (
+        "id=probe_hold_unparseable section=circular_tube,D=0.6,t=0.012 "
+        "stations=9.67 orient=skew extra=nonsense=1 expect=hold"
+    )
     with pytest.raises(CorpusError):
         _parse_line(1, line)
 
@@ -1681,8 +1768,7 @@ def test_the_reviewers_EXPECT_survives_a_parse_failure() -> None:
         test_the_corpus_entry_behaves_as_the_reviewer_recorded(row)
 
     # The meta-test: a line the reviewer DID record as raise still passes.
-    ok = _error_row(1, line.replace("expect=hold", "expect=raise"),
-                    CorpusError("x"))
+    ok = _error_row(1, line.replace("expect=hold", "expect=raise"), CorpusError("x"))
     assert ok["expect"] == "raise"
 
     # A line carrying no `expect` at all is not silently read as "raise" either.
@@ -1692,8 +1778,7 @@ def test_the_reviewers_EXPECT_survives_a_parse_failure() -> None:
     # R104: a REPEATED `expect` is not resolved by taking the first one.
     # `_parse_line` refuses duplicates, so `expect=raise expect=hold` reached the
     # per-entry test as "raise" and passed on a contradictory line.
-    dup = _error_row(1, line.replace("expect=hold", "expect=raise expect=hold"),
-                     CorpusError("x"))
+    dup = _error_row(1, line.replace("expect=hold", "expect=raise expect=hold"), CorpusError("x"))
     assert dup["expect"].startswith("AMBIGUOUS"), (
         f"a repeated expect came back as {dup['expect']!r}; taking the first is "
         "as arbitrary as taking the last"
@@ -1704,18 +1789,18 @@ def test_the_reviewers_EXPECT_survives_a_parse_failure() -> None:
 
 MULTI_EXTRAS = [
     ("one key", "roll=0.3", {"roll": ["0.3"]}),
-    ("two keys", "roll=0.3,I_y_over_I_z=0.5",
-     {"roll": ["0.3"], "I_y_over_I_z": ["0.5"]}),
-    ("a vector value", "orientation_node=1,0,0",
-     {"orientation_node": ["1", "0", "0"]}),
-    ("a vector and a scalar", "orientation_node=0,0,1,roll=-1.2",
-     {"orientation_node": ["0", "0", "1"], "roll": ["-1.2"]}),
+    ("two keys", "roll=0.3,I_y_over_I_z=0.5", {"roll": ["0.3"], "I_y_over_I_z": ["0.5"]}),
+    ("a vector value", "orientation_node=1,0,0", {"orientation_node": ["1", "0", "0"]}),
+    (
+        "a vector and a scalar",
+        "orientation_node=0,0,1,roll=-1.2",
+        {"orientation_node": ["0", "0", "1"], "roll": ["-1.2"]},
+    ),
     ("none", "none", {}),
 ]
 
 
-@pytest.mark.parametrize("label, text, expected", MULTI_EXTRAS,
-                         ids=[e[0] for e in MULTI_EXTRAS])
+@pytest.mark.parametrize("label, text, expected", MULTI_EXTRAS, ids=[e[0] for e in MULTI_EXTRAS])
 def test_extra_takes_MORE_THAN_ONE_key(label: str, text: str, expected) -> None:
     """R91's other half: the capability the reviewer asked for and could not write.
 
@@ -1738,8 +1823,7 @@ BAD_EXTRAS = [
 ]
 
 
-@pytest.mark.parametrize("label, text", BAD_EXTRAS,
-                         ids=[e[0] for e in BAD_EXTRAS])
+@pytest.mark.parametrize("label, text", BAD_EXTRAS, ids=[e[0] for e in BAD_EXTRAS])
 def test_an_extra_that_cannot_be_built_RAISES(label: str, text: str) -> None:
     """Opening the field up did not open a silent default with it."""
     with pytest.raises(CorpusError):
@@ -1758,12 +1842,21 @@ def test_a_REFUSING_entry_does_not_take_the_module_out_at_collection() -> None:
     `_inadmissible` -- the function that runs at import -- returns rather than
     raising on anything it cannot evaluate.
     """
-    for entry in ({"id": "x", "stations": "-9.67",
-                   "section": "circular_tube,D=0.6,t=0.012", "expect": "raise"},
-                  {"id": "x", "stations": "9.67",
-                   "section": "circular_tube,D=0.6,t=-0.012", "expect": "raise"},
-                  {"id": "x", "stations": "9.67",
-                   "section": "circular_tube,D=0.0,t=0.0", "expect": "raise"}):
+    for entry in (
+        {
+            "id": "x",
+            "stations": "-9.67",
+            "section": "circular_tube,D=0.6,t=0.012",
+            "expect": "raise",
+        },
+        {
+            "id": "x",
+            "stations": "9.67",
+            "section": "circular_tube,D=0.6,t=-0.012",
+            "expect": "raise",
+        },
+        {"id": "x", "stations": "9.67", "section": "circular_tube,D=0.0,t=0.0", "expect": "raise"},
+    ):
         assert _inadmissible(entry) is None, (
             f"{entry}: _inadmissible returned a value for a section it cannot "
             "build; it runs at import and must never raise or guess"
@@ -1775,5 +1868,6 @@ def test_a_WELL_FORMED_line_still_parses() -> None:
     row = _parse_line(
         1,
         "id=ok section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=skew "
-        "extra=roll=0.5 runs_in_suite=no expect=hold")
+        "extra=roll=0.5 runs_in_suite=no expect=hold",
+    )
     assert row["id"] == "ok" and row["extra"] == "roll=0.5"

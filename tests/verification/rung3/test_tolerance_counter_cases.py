@@ -23,6 +23,7 @@ fires by design — `MEMBER_ORIENTATION_DEGENERACY` fires on the platform's vert
 spars on purpose. Demanding a counter-case there would force an artificial number,
 and a rule applied where it does not fit gets weakened to accommodate.
 """
+
 from __future__ import annotations
 
 import re
@@ -60,21 +61,15 @@ def test_every_float_tolerance_declares_a_class() -> None:
     text = SOURCE.read_text(encoding="utf-8")
     body = text.split('"""', 2)[-1]
     declared = {
-        m.group(1)
-        for m in re.finditer(r"^([A-Z][A-Z0-9_]*)\s*:\s*Final\[float\]", body, re.M)
+        m.group(1) for m in re.finditer(r"^([A-Z][A-Z0-9_]*)\s*:\s*Final\[float\]", body, re.M)
     }
     classified = {n for _, n in _classified()}
     # A _COUNTER or _COUNTER_DEFECT is documented by the entry it belongs to.
-    missing = {
-        d for d in declared - classified
-        if not d.endswith(("_COUNTER", "_COUNTER_DEFECT"))
-    }
+    missing = {d for d in declared - classified if not d.endswith(("_COUNTER", "_COUNTER_DEFECT"))}
     assert not missing, f"tolerances without a CLASS declaration: {sorted(missing)}"
 
 
-@pytest.mark.parametrize(
-    "name", [n for c, n in _classified() if c == "ACCURACY"] or ["<none>"]
-)
+@pytest.mark.parametrize("name", [n for c, n in _classified() if c == "ACCURACY"] or ["<none>"])
 def test_accuracy_tolerances_have_a_counter_case(name: str) -> None:
     assert name != "<none>", "no ACCURACY entries found"
     if hasattr(tolerances, f"{name}_COUNTER_DEFECT"):
@@ -87,9 +82,7 @@ def test_accuracy_tolerances_have_a_counter_case(name: str) -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "name", [n for c, n in _classified() if c == "ACCURACY"] or ["<none>"]
-)
+@pytest.mark.parametrize("name", [n for c, n in _classified() if c == "ACCURACY"] or ["<none>"])
 def test_the_ceiling_sits_below_its_counter_case(name: str) -> None:
     """Property 3: widening the ceiling toward the counter-case breaks this."""
     assert name != "<none>", "no ACCURACY entries found"
@@ -107,9 +100,7 @@ def test_the_ceiling_sits_below_its_counter_case(name: str) -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "name", [n for c, n in _classified() if c == "STRUCTURAL"] or ["<none>"]
-)
+@pytest.mark.parametrize("name", [n for c, n in _classified() if c == "STRUCTURAL"] or ["<none>"])
 def test_structural_tolerances_do_NOT_carry_a_counter_case(name: str) -> None:
     """The rule must not spread to where it does not fit (AO2).
 
@@ -144,9 +135,7 @@ def test_no_entry_carries_a_hand_written_MEASURED_value() -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "name", [n for c, n in _classified() if c == "ACCURACY"] or ["<none>"]
-)
+@pytest.mark.parametrize("name", [n for c, n in _classified() if c == "ACCURACY"] or ["<none>"])
 def test_every_accuracy_entry_has_a_counter_that_something_INJECTS(name: str) -> None:
     """BG1: a counter that nothing injects is a number, not a check.
 
@@ -161,8 +150,7 @@ def test_every_accuracy_entry_has_a_counter_that_something_INJECTS(name: str) ->
     standing in for them.
     """
     assert name != "<none>", "no ACCURACY entries found"
-    counters = [c for c in (f"{name}_COUNTER", f"{name}_COUNTER_DEFECT")
-                if hasattr(tolerances, c)]
+    counters = [c for c in (f"{name}_COUNTER", f"{name}_COUNTER_DEFECT") if hasattr(tolerances, c)]
     assert counters, f"{name} has neither a _COUNTER nor a _COUNTER_DEFECT"
 
     root = Path(__file__).resolve().parents[3]

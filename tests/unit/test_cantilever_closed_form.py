@@ -29,6 +29,7 @@ end moment there is no shear force, and shear never contributes to rotation::
     end moment M   delta = M L^2 / (2 EI)
                    theta = M L / (EI)
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -46,7 +47,7 @@ CASES = [
     ("stubby", Section.circular_tube(0.8, 0.020), 2.4),
 ]
 LOAD = 1.0e6
-ULP = 1e-13          # provisional; V2.2's tolerance is measured at step 8
+ULP = 1e-13  # provisional; V2.2's tolerance is measured at step 8
 
 
 def _free_block(section: Section, length: float) -> np.ndarray:
@@ -68,24 +69,28 @@ def _constants(section: Section, length: float, plane: str):
     return ei, kga
 
 
-@pytest.mark.parametrize("label, section, length", CASES, ids=lambda c: c if isinstance(c, str) else "")
+@pytest.mark.parametrize(
+    "label, section, length", CASES, ids=lambda c: c if isinstance(c, str) else ""
+)
 def test_xy_plane_is_over_determined_by_closed_forms(
     label: str, section: Section, length: float
 ) -> None:
     """Four equations, three unknowns, in the x-y plane."""
     ei, kga = _constants(section, length, "xy")
-    l = length
+    ell = length
 
-    d = _solve(section, length, 1)          # end force in +y
-    assert d[1] == pytest.approx(LOAD * l**3 / (3 * ei) + LOAD * l / kga, rel=ULP)
-    assert d[5] == pytest.approx(LOAD * l**2 / (2 * ei), rel=ULP)
+    d = _solve(section, length, 1)  # end force in +y
+    assert d[1] == pytest.approx(LOAD * ell**3 / (3 * ei) + LOAD * ell / kga, rel=ULP)
+    assert d[5] == pytest.approx(LOAD * ell**2 / (2 * ei), rel=ULP)
 
-    d = _solve(section, length, 5)          # end moment about +z
-    assert d[1] == pytest.approx(LOAD * l**2 / (2 * ei), rel=ULP)
-    assert d[5] == pytest.approx(LOAD * l / ei, rel=ULP)
+    d = _solve(section, length, 5)  # end moment about +z
+    assert d[1] == pytest.approx(LOAD * ell**2 / (2 * ei), rel=ULP)
+    assert d[5] == pytest.approx(LOAD * ell / ei, rel=ULP)
 
 
-@pytest.mark.parametrize("label, section, length", CASES, ids=lambda c: c if isinstance(c, str) else "")
+@pytest.mark.parametrize(
+    "label, section, length", CASES, ids=lambda c: c if isinstance(c, str) else ""
+)
 def test_xz_plane_matches_its_own_closed_form_SIGNED(
     label: str, section: Section, length: float
 ) -> None:
@@ -100,15 +105,15 @@ def test_xz_plane_matches_its_own_closed_form_SIGNED(
     error survives.
     """
     ei, kga = _constants(section, length, "xz")
-    l = length
+    ell = length
 
-    d = _solve(section, length, 2)          # end force in +z
-    assert d[2] == pytest.approx(LOAD * l**3 / (3 * ei) + LOAD * l / kga, rel=ULP)
-    assert d[4] == pytest.approx(-LOAD * l**2 / (2 * ei), rel=ULP)
+    d = _solve(section, length, 2)  # end force in +z
+    assert d[2] == pytest.approx(LOAD * ell**3 / (3 * ei) + LOAD * ell / kga, rel=ULP)
+    assert d[4] == pytest.approx(-LOAD * ell**2 / (2 * ei), rel=ULP)
 
-    d = _solve(section, length, 4)          # end moment about +y
-    assert d[2] == pytest.approx(-LOAD * l**2 / (2 * ei), rel=ULP)
-    assert d[4] == pytest.approx(LOAD * l / ei, rel=ULP)
+    d = _solve(section, length, 4)  # end moment about +y
+    assert d[2] == pytest.approx(-LOAD * ell**2 / (2 * ei), rel=ULP)
+    assert d[4] == pytest.approx(LOAD * ell / ei, rel=ULP)
 
 
 def test_a_MAGNITUDE_only_check_would_MISS_a_wrong_flip() -> None:
@@ -125,7 +130,7 @@ def test_a_MAGNITUDE_only_check_would_MISS_a_wrong_flip() -> None:
     flip = np.diag([1.0, -1.0, 1.0, -1.0])
 
     correct = flip @ ky @ flip
-    wrong = ky                                    # flip omitted
+    wrong = ky  # flip omitted
 
     # Free block for (w_B, ry_B) is rows/cols 2,3 of the 4x4.
     def tip(block, dof):
@@ -141,7 +146,12 @@ def test_a_MAGNITUDE_only_check_would_MISS_a_wrong_flip() -> None:
     # But the rotation sign is reversed, and so is the deflection under moment.
     assert c_force[1] == pytest.approx(-w_force[1], rel=ROUNDOFF_IDENTITY)
     assert c_mom[0] == pytest.approx(-w_mom[0], rel=ROUNDOFF_IDENTITY)
-    assert c_force[1] != pytest.approx(w_force[1], rel=1e-6)  # not-a-tolerance: negative control -- asserts the two DIFFER, so loosening cannot hide a defect
+    assert c_force[1] != pytest.approx(
+        w_force[1],
+        rel=1e-6,
+        # not-a-tolerance: negative control -- asserts the two DIFFER, so loosening cannot hide a
+        # defect
+    )
 
 
 def test_the_stubby_case_has_a_shear_share_worth_detecting() -> None:
@@ -153,13 +163,30 @@ def test_the_stubby_case_has_a_shear_share_worth_detecting() -> None:
     section, length = CASES[1][1], CASES[1][2]
     phi = shear_parameter(section, S355, length, plane="xy")
     share = (phi / 4.0) / (1.0 + phi / 4.0)
-    assert phi == pytest.approx(0.7769, abs=5e-4)  # not-a-tolerance: reference pin, not a ceiling -- asserts a RECORDED measurement is unchanged
-    assert share > 0.15, f"shear share only {share:.1%}; V2.2 would not discriminate"  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
+    assert phi == pytest.approx(
+        0.7769,
+        abs=5e-4,
+        # not-a-tolerance: reference pin, not a ceiling -- asserts a RECORDED measurement is
+        # unchanged
+    )
+    assert (
+        share
+        > 0.15
+        # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is
+        # small
+    ), f"shear share only {share:.1%}; V2.2 would not discriminate"
 
 
 def test_the_slender_case_is_nearly_euler_bernoulli() -> None:
     """The other end of the pair: the two cases must actually differ."""
     section, length = CASES[0][1], CASES[0][2]
     phi = shear_parameter(section, S355, length, plane="xy")
-    assert phi == pytest.approx(0.0112, abs=5e-4)  # not-a-tolerance: reference pin, not a ceiling -- asserts a RECORDED measurement is unchanged
-    assert (phi / 4.0) / (1.0 + phi / 4.0) < 0.01  # not-a-tolerance: fixture property -- bounds an input, not a computed discrepancy
+    assert phi == pytest.approx(
+        0.0112,
+        abs=5e-4,
+        # not-a-tolerance: reference pin, not a ceiling -- asserts a RECORDED measurement is
+        # unchanged
+    )
+    assert (phi / 4.0) / (
+        1.0 + phi / 4.0
+    ) < 0.01  # not-a-tolerance: fixture property -- bounds an input, not a computed discrepancy

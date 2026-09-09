@@ -47,6 +47,7 @@ assembled into an extra scalar DOF instead of into the shared node's. That membe
 can then twist rigidly about its own axis at zero strain energy while nothing
 else moves, which is exactly one extra mode and is provable rather than measured.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -62,23 +63,30 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
 from floatfea import basis  # noqa: E402
-from floatfea.assemble.system import (BeamElement, assemble,  # noqa: E402
-                                      assemble_dense, element_global_stiffness)
+from floatfea.assemble.system import (  # noqa: E402
+    BeamElement,
+    assemble,
+    assemble_dense,
+    element_global_stiffness,
+)
 from floatfea.determinism import deterministic_v0  # noqa: E402
 from floatfea.model.material import Material, Section  # noqa: E402
 from floatfea.model.nodes import Model, Node, element_dofs  # noqa: E402
-from floatfea.tolerances import (RIGID_BODY_MODE_RATIO,  # noqa: E402
-                                 RIGID_BODY_MODE_RATIO_COUNTER_DEFECT,
-                                 RIGID_BODY_SUBSPACE_LOSS,
-                                 RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT)
+from floatfea.tolerances import (  # noqa: E402
+    RIGID_BODY_MODE_RATIO,
+    RIGID_BODY_MODE_RATIO_COUNTER_DEFECT,
+    RIGID_BODY_SUBSPACE_LOSS,
+    RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT,
+)
 
 RIGID = 6
 """not-a-tolerance: the dimension of the rigid-body space of a free body in three
 dimensions. Three translations and three rotations; a structural constant of the
 kinematics, not a threshold anything is compared against."""
 
-S355 = Material(E=basis.E_STEEL, nu=basis.NU_STEEL, rho=basis.RHO_STEEL,
-                fy=basis.FY_S355, name="S355")
+S355 = Material(
+    E=basis.E_STEEL, nu=basis.NU_STEEL, rho=basis.RHO_STEEL, fy=basis.FY_S355, name="S355"
+)
 SEC = Section.circular_tube(0.6, 0.012)
 
 
@@ -104,14 +112,18 @@ def _frame() -> tuple[Model, list[BeamElement]]:
     not exist. Measured, not reasoned about: see the control's own docstring.
     """
     m = Model()
-    for xyz in ((0.0, 0.0, 0.0),
-                (4.0, 0.0, 0.0),
-                (1.7, 3.3, 0.0),
-                (1.9, 1.1, 2.8),
-                (4.4, 1.1, 2.8)):
+    for xyz in (
+        (0.0, 0.0, 0.0),
+        (4.0, 0.0, 0.0),
+        (1.7, 3.3, 0.0),
+        (1.9, 1.1, 2.8),
+        (4.4, 1.1, 2.8),
+    ):
         m.nodes.add(Node(*xyz))
-    els = [BeamElement(a, b, SEC, S355) for a, b in
-           ((0, 1), (1, 2), (2, 0), (0, 3), (1, 3), (2, 3), (3, 4))]
+    els = [
+        BeamElement(a, b, SEC, S355)
+        for a, b in ((0, 1), (1, 2), (2, 0), (0, 3), (1, 3), (2, 3), (3, 4))
+    ]
     return m, els
 
 
@@ -129,14 +141,14 @@ def _analytic_rigid_body(model: Model) -> np.ndarray:
     n = model.nodes.n_dof
     modes = np.zeros((n, RIGID))
     for d in range(3):
-        modes[d::6, d] = 1.0                      # translation along d
-    for a in range(3):                            # rotation about axis a
+        modes[d::6, d] = 1.0  # translation along d
+    for a in range(3):  # rotation about axis a
         axis = np.zeros(3)
         axis[a] = 1.0
         modes[0::6, 3 + a] = np.cross(axis, r)[:, 0]
         modes[1::6, 3 + a] = np.cross(axis, r)[:, 1]
         modes[2::6, 3 + a] = np.cross(axis, r)[:, 2]
-        modes[3 + a::6, 3 + a] = 1.0
+        modes[3 + a :: 6, 3 + a] = 1.0
     return modes
 
 
@@ -199,8 +211,9 @@ def subspace_loss(k: np.ndarray, model: Model) -> float:
     return worst
 
 
-def _assemble_with_torsional_release(model: Model, els: list[BeamElement],
-                                     released: int) -> np.ndarray:
+def _assemble_with_torsional_release(
+    model: Model, els: list[BeamElement], released: int
+) -> np.ndarray:
     """The frame with one member's torsional continuity cut at its first node.
 
     One EXTRA scalar DOF is appended, and the released element's end rotation
@@ -218,7 +231,7 @@ def _assemble_with_torsional_release(model: Model, els: list[BeamElement],
     for i, e in enumerate(els):
         dofs = element_dofs(e.node_a, e.node_b).copy()
         if i == released:
-            dofs[3] = n            # local end-A rx -> the extra scalar DOF
+            dofs[3] = n  # local end-A rx -> the extra scalar DOF
         ke = element_global_stiffness(model, e)
         k[np.ix_(dofs, dofs)] += ke
     return k
@@ -235,8 +248,11 @@ def counter_response(which: str) -> float:
     """
     model, els = _frame()
     k = assemble_dense(model, els)
-    size = (RIGID_BODY_MODE_RATIO_COUNTER_DEFECT if which == "ratio"
-            else RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT)
+    size = (
+        RIGID_BODY_MODE_RATIO_COUNTER_DEFECT
+        if which == "ratio"
+        else RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT
+    )
     k[0, 0] += size * float(np.abs(k).max())
     return mode_ratio(k) if which == "ratio" else subspace_loss(k, model)
 
@@ -279,8 +295,10 @@ def test_the_frame_has_SIX_zero_modes_by_ratio(capsys) -> None:
     ratio = mode_ratio(k)
     with capsys.disabled():
         w = _spectrum(k)
-        print(f"\n  lambda_6 {w[RIGID - 1]:.4e}  lambda_7 {w[RIGID]:.4e}  "
-              f"ratio {ratio:.4e} against {RIGID_BODY_MODE_RATIO:g}")
+        print(
+            f"\n  lambda_6 {w[RIGID - 1]:.4e}  lambda_7 {w[RIGID]:.4e}  "
+            f"ratio {ratio:.4e} against {RIGID_BODY_MODE_RATIO:g}"
+        )
     assert ratio <= RIGID_BODY_MODE_RATIO, (
         f"the sixth eigenvalue is {ratio:.4e} of the seventh, above "
         f"{RIGID_BODY_MODE_RATIO:g}. Either a rigid-body mode carries strain "
@@ -295,8 +313,10 @@ def test_the_analytic_rigid_body_vectors_are_SPANNED(capsys) -> None:
     model, els = _frame()
     loss = subspace_loss(assembled(model, els), model)
     with capsys.disabled():
-        print(f"  worst analytic vector outside the computed span: {loss:.4e} "
-              f"against {RIGID_BODY_SUBSPACE_LOSS:g}")
+        print(
+            f"  worst analytic vector outside the computed span: {loss:.4e} "
+            f"against {RIGID_BODY_SUBSPACE_LOSS:g}"
+        )
     assert loss <= RIGID_BODY_SUBSPACE_LOSS, (
         f"an analytic rigid-body vector has {loss:.4e} of its norm outside the "
         f"computed nullspace, above {RIGID_BODY_SUBSPACE_LOSS:g}. The six "
@@ -326,8 +346,7 @@ def test_ONE_PINNED_DOF_leaves_FIVE(capsys) -> None:
         w = _spectrum(k[np.ix_(keep, keep)])
         counts.append(int(np.sum(np.abs(w) <= RIGID_BODY_MODE_RATIO * w[RIGID - 1])))
     with capsys.disabled():
-        print(f"  one DOF pinned, over all {n}: nullspace dimensions "
-              f"{sorted(set(counts))}")
+        print(f"  one DOF pinned, over all {n}: nullspace dimensions " f"{sorted(set(counts))}")
     assert set(counts) == {RIGID - 1}, (
         f"pinning one DOF gives nullspace dimensions {sorted(set(counts))}, not "
         f"{{{RIGID - 1}}}. A pinned DOF that leaves six means the gate above is "
@@ -369,8 +388,10 @@ def test_ONE_RELEASED_CONNECTION_gives_SEVEN(capsys) -> None:
     flexible = w[RIGID + 1]
     dim = int(np.sum(np.abs(w) <= RIGID_BODY_MODE_RATIO * flexible))
     with capsys.disabled():
-        print(f"  torsional release: lambda_7 {w[RIGID]:.4e}  lambda_8 "
-              f"{flexible:.4e}  nullspace {dim}")
+        print(
+            f"  torsional release: lambda_7 {w[RIGID]:.4e}  lambda_8 "
+            f"{flexible:.4e}  nullspace {dim}"
+        )
     assert dim == RIGID + 1, (
         f"releasing one member's torsional continuity gives a nullspace of "
         f"{dim}, not {RIGID + 1}. The mechanism is provable -- that member can "
@@ -393,9 +414,11 @@ def test_a_RIGID_BODY_MODE_that_carries_ENERGY_is_caught(capsys) -> None:
     gate neutered. `tests/test_counters_are_injected.py` registers this pair and
     runs both cells against it.
     """
-    with _defect(RIGID_BODY_MODE_RATIO_COUNTER_DEFECT, capsys):
-        with pytest.raises(AssertionError, match="of the seventh"):
-            test_the_frame_has_SIX_zero_modes_by_ratio(capsys)
+    with (
+        _defect(RIGID_BODY_MODE_RATIO_COUNTER_DEFECT, capsys),
+        pytest.raises(AssertionError, match="of the seventh"),
+    ):
+        test_the_frame_has_SIX_zero_modes_by_ratio(capsys)
 
     # And undefected it passes, so the failure above is the injection.
     test_the_frame_has_SIX_zero_modes_by_ratio(capsys)
@@ -408,9 +431,11 @@ def test_a_LOST_rigid_body_DIRECTION_is_caught(capsys) -> None:
     puts something else there, so the analytic vector for that translation is no
     longer spanned. Measured on the worst of the six, never on a mean.
     """
-    with _defect(RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT, capsys):
-        with pytest.raises(AssertionError, match="outside the computed"):
-            test_the_analytic_rigid_body_vectors_are_SPANNED(capsys)
+    with (
+        _defect(RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT, capsys),
+        pytest.raises(AssertionError, match="outside the computed"),
+    ):
+        test_the_analytic_rigid_body_vectors_are_SPANNED(capsys)
 
     # And undefected it passes, so the failure above is the injection.
     test_the_analytic_rigid_body_vectors_are_SPANNED(capsys)
@@ -433,17 +458,21 @@ def test_the_ARPACK_path_is_REPRODUCIBLE_under_its_pin(capsys) -> None:
     model, els = _frame()
     k = assemble(model, els).astype(np.float64)
     n = k.shape[0]
-    shift = -1.0e-3 * float(abs(k).max())   # not-a-tolerance: a shift off the
+    shift = -1.0e-3 * float(abs(k).max())  # not-a-tolerance: a shift off the
     # singular point, so shift-invert is factorisable. Any negative value works;
     # it moves every eigenvalue by a known constant and nothing is compared here
     # against a threshold.
-    first = spla.eigsh(k, k=RIGID + 2, sigma=shift, which="LM",
-                       v0=deterministic_v0(n), return_eigenvectors=False)
-    second = spla.eigsh(k, k=RIGID + 2, sigma=shift, which="LM",
-                        v0=deterministic_v0(n), return_eigenvectors=False)
+    first = spla.eigsh(
+        k, k=RIGID + 2, sigma=shift, which="LM", v0=deterministic_v0(n), return_eigenvectors=False
+    )
+    second = spla.eigsh(
+        k, k=RIGID + 2, sigma=shift, which="LM", v0=deterministic_v0(n), return_eigenvectors=False
+    )
     with capsys.disabled():
-        print(f"  ARPACK under the pin, two runs: max |difference| "
-              f"{np.max(np.abs(np.sort(first) - np.sort(second))):.3e}")
+        print(
+            f"  ARPACK under the pin, two runs: max |difference| "
+            f"{np.max(np.abs(np.sort(first) - np.sort(second))):.3e}"
+        )
     assert np.array_equal(np.sort(first), np.sort(second)), (
         "two ARPACK runs from the same pinned start vector gave different "
         "eigenvalues. The pin is the only thing making this path reproducible, "
@@ -463,13 +492,25 @@ def test_an_UNPINNED_arpack_start_would_NOT_be_reproducible(capsys) -> None:
     n = k.shape[0]
     shift = -1.0e-3 * float(abs(k).max())  # not-a-tolerance: see above
     rng = np.random.default_rng()
-    runs = [np.sort(spla.eigsh(k, k=RIGID + 2, sigma=shift, which="LM",
-                               v0=rng.standard_normal(n),
-                               return_eigenvectors=False)) for _ in range(2)]
+    runs = [
+        np.sort(
+            spla.eigsh(
+                k,
+                k=RIGID + 2,
+                sigma=shift,
+                which="LM",
+                v0=rng.standard_normal(n),
+                return_eigenvectors=False,
+            )
+        )
+        for _ in range(2)
+    ]
     differs = not np.array_equal(runs[0], runs[1])
     with capsys.disabled():
-        print(f"  two UNPINNED runs differ: {differs} "
-              f"(max |difference| {np.max(np.abs(runs[0] - runs[1])):.3e})")
+        print(
+            f"  two UNPINNED runs differ: {differs} "
+            f"(max |difference| {np.max(np.abs(runs[0] - runs[1])):.3e})"
+        )
     if not differs:
         pytest.fail(
             "two unpinned ARPACK runs gave bit-identical eigenvalues, so the "

@@ -12,6 +12,7 @@ which is why the physics forbids the field and not merely the duplication.
 `Section` therefore carries a **shape name**, and the shear coefficient is
 computed on demand from that shape and the material's `nu`.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -46,8 +47,11 @@ class Material:
 
 
 S355: Material = Material(
-    E=basis.E_STEEL, nu=basis.NU_STEEL, rho=basis.RHO_STEEL,
-    fy=basis.FY_S355, name="S355",
+    E=basis.E_STEEL,
+    nu=basis.NU_STEEL,
+    rho=basis.RHO_STEEL,
+    fy=basis.FY_S355,
+    name="S355",
 )
 
 
@@ -101,7 +105,7 @@ class Section:
                     "circular J for a section that is neither."
                 )
             expected = basis.torsion_constant(self.shape, self.I_y, self.I_z)
-            if self.J != expected:
+            if expected != self.J:
                 raise ValueError(
                     f"shape {self.shape!r} requires J = I_y + I_z = {expected}; "
                     f"got {self.J}. Supplying J directly bypasses "
@@ -117,7 +121,7 @@ class Section:
         return basis.kappa(self.shape, material.nu)
 
     @classmethod
-    def circular_tube(cls, d_outer: float, t: float) -> "Section":
+    def circular_tube(cls, d_outer: float, t: float) -> Section:
         """A circular hollow section, exact properties (not thin-wall).
 
         G3.3 asks for exact section properties, so the thin-wall forms
@@ -133,7 +137,7 @@ class Section:
         return cls(
             A=basis.tube_area(d_outer, t),
             I_y=i,
-            I_z=i,                 # circular: equal in both bending planes
+            I_z=i,  # circular: equal in both bending planes
             J=basis.torsion_constant("thin_tube", i, i),
             shape="thin_tube",
         )

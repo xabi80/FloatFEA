@@ -12,6 +12,7 @@ Three items, none negotiable:
   bit-exact**, built by a different code path so agreement is evidence rather
   than tautology.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -65,8 +66,7 @@ def test_sparse_and_dense_assembly_agree_BIT_EXACT() -> None:
     k_sp = assemble(m, els).toarray()
     k_de = assemble_dense(m, els)
     assert np.array_equal(k_sp, k_de), (
-        f"sparse and dense assembly differ; max |diff| = "
-        f"{np.abs(k_sp - k_de).max():.6e}"
+        f"sparse and dense assembly differ; max |diff| = " f"{np.abs(k_sp - k_de).max():.6e}"
     )
 
 
@@ -74,7 +74,12 @@ def test_the_two_assemblies_are_not_trivially_equal() -> None:
     """Meta-test: two zero matrices are also bit-equal."""
     m, els = _frame()
     k = assemble(m, els).toarray()
-    assert np.abs(k).max() > 0.0  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
+    assert (
+        np.abs(k).max()
+        > 0.0
+        # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is
+        # small
+    )
     assert (k != 0).sum() > 12 * 12, "assembly did not overlap any elements"
 
 
@@ -165,7 +170,9 @@ def test_reaction_equilibrium_CAN_FAIL() -> None:
     broken[node_dofs(0)[1]] = 0.0
     applied = np.array([f[i::6].sum() for i in range(3)])
     react = np.array([broken[i::6].sum() for i in range(3)])
-    assert not np.allclose(react + applied, 0.0, atol=1e-6 * abs(applied).max())  # not-a-tolerance: negative control -- asserts the BROKEN reaction FAILS equilibrium
+    assert not np.allclose(
+        react + applied, 0.0, atol=1e-6 * abs(applied).max()
+    )  # not-a-tolerance: negative control -- asserts the BROKEN reaction FAILS equilibrium
 
 
 def test_a_fully_fixed_model_is_refused() -> None:

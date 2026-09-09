@@ -30,6 +30,7 @@ What is flagged
 Each must resolve to a `Name` imported from `floatfea.tolerances`, or be a call to
 `floatfea.testing.assert_close` / `assert_differs`, which carry their own floor.
 """
+
 from __future__ import annotations
 
 import ast
@@ -40,8 +41,12 @@ import pytest
 TESTS = Path(__file__).resolve().parent
 TOL_KEYWORDS = {"tol", "atol", "rtol", "abs", "rel"}
 APPROX_NAMES = {
-    "approx", "assert_allclose", "allclose", "isclose",
-    "assert_array_almost_equal", "almost_equal",
+    "approx",
+    "assert_allclose",
+    "allclose",
+    "isclose",
+    "assert_array_almost_equal",
+    "almost_equal",
 }
 SAFE_CALLS = {"assert_close", "assert_differs"}
 EXEMPT = "not-a-tolerance:"
@@ -65,7 +70,8 @@ def _declared(node: ast.AST, names: set[str]) -> bool:
 
 def _has_number(node: ast.AST) -> bool:
     return any(
-        isinstance(s, ast.Constant) and isinstance(s.value, (int, float))
+        isinstance(s, ast.Constant)
+        and isinstance(s.value, (int, float))
         and not isinstance(s.value, bool)
         for s in ast.walk(node)
     )
@@ -83,10 +89,32 @@ def _call_name(node: ast.Call) -> str:
 def offending(path: Path) -> list[tuple[int, str]]:
     names = _tolerance_names()
     src = path.read_text(encoding="utf-8")
-    exempt_lines = {
-        i for i, line in enumerate(src.splitlines(), 1) if EXEMPT in line
-    }
+    marked = {i for i, line in enumerate(src.splitlines(), 1) if EXEMPT in line}
     tree = ast.parse(src)
+
+    # THE MARKER ANNOTATES THE STATEMENT IT SITS IN (CA0). Keyed to a single line
+    # number it was voided by any reformatting: `black` split single-line calls
+    # across lines, the trailing comment stayed at the end, the flagged node's
+    # `lineno` moved to the start, and nine files went red on markers that had
+    # been placed correctly. A guard whose exemptions depend on line breaks is a
+    # guard that a formatter silently rewrites.
+    #
+    # A COMPOUND STATEMENT GETS ONLY ITS HEADER, deliberately. `If`, `For` and
+    # `FunctionDef` are statements too and their spans cover their whole bodies,
+    # so one marker inside a long function would exempt every comparison in it --
+    # a far larger hole than the one being closed. The header is where a marker
+    # on a condition actually sits, and it ends at the first body statement.
+    exempt_lines = set(marked)
+    for stmt in ast.walk(tree):
+        if not isinstance(stmt, ast.stmt):
+            continue
+        body = getattr(stmt, "body", None)
+        if body:
+            span = range(stmt.lineno, body[0].lineno)
+        else:
+            span = range(stmt.lineno, (stmt.end_lineno or stmt.lineno) + 1)
+        if any(line in marked for line in span):
+            exempt_lines.update(span)
     out: list[tuple[int, str]] = []
 
     def flag(node: ast.AST, why: str) -> None:
@@ -103,25 +131,30 @@ def offending(path: Path) -> list[tuple[int, str]]:
                     # `rtol=0` DISABLES a tolerance rather than setting one --
                     # there is no value to declare, and flagging it would push
                     # callers toward a non-zero default they did not choose.
-                    zero = (isinstance(kw.value, ast.Constant)
-                            and kw.value.value == 0)
+                    zero = isinstance(kw.value, ast.Constant) and kw.value.value == 0
                     if not zero and not _declared(kw.value, names):
                         flag(node, f"{cname}({kw.arg}=<literal>)")
             if cname == "approx":
                 if len(node.args) > 1 and not _declared(node.args[1], names):
                     flag(node, "approx(_, <literal>)")
                 if not node.keywords and len(node.args) == 1:
-                    flag(node, "approx() with NO abs/rel -- its defaults "
-                               "(rel=1e-6, abs=1e-12) are an undeclared tolerance")
+                    flag(
+                        node,
+                        "approx() with NO abs/rel -- its defaults "
+                        "(rel=1e-6, abs=1e-12) are an undeclared tolerance",
+                    )
         elif isinstance(node, ast.Compare):
             for comp in node.comparators:
-                if isinstance(comp, ast.Constant) and isinstance(comp.value, float):
-                    # Any FLOAT threshold, at any magnitude: `> 1e4` is as much a
-                    # tolerance as `< 0.05`, and the first is what R13 named.
-                    # Integers are counts and 0.0 / 1.0 are canonical structural
-                    # bounds ("is this non-zero", "is this a ratio above unity").
-                    if abs(comp.value) not in (0.0, 1.0):
-                        flag(node, f"comparison against {comp.value!r}")
+                # Any FLOAT threshold, at any magnitude: `> 1e4` is as much a
+                # tolerance as `< 0.05`, and the first is what R13 named.
+                # Integers are counts and 0.0 / 1.0 are canonical structural
+                # bounds ("is this non-zero", "is this a ratio above unity").
+                if (
+                    isinstance(comp, ast.Constant)
+                    and isinstance(comp.value, float)
+                    and abs(comp.value) not in (0.0, 1.0)
+                ):
+                    flag(node, f"comparison against {comp.value!r}")
     return sorted(set(out))
 
 
@@ -169,9 +202,7 @@ def test_the_scanner_catches_every_planted_shape(tmp_path: Path) -> None:
         p.write_text(_HEADER + line + "\n", encoding="utf-8")
         if not offending(p):
             missed.append(line)
-    assert not missed, (
-        f"{len(missed)} of {len(PLANTED)} shapes missed:\n" + "\n".join(missed)
-    )
+    assert not missed, f"{len(missed)} of {len(PLANTED)} shapes missed:\n" + "\n".join(missed)
 
 
 def test_declared_usages_are_NOT_flagged(tmp_path: Path) -> None:

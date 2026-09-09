@@ -49,6 +49,7 @@ allowable basis, never the geometry.
 **Compute it with `basis.shear_geometric_bound()`; do not quote the number.** A
 bare constant in a comment stops being a bound the first time the basis moves.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -59,9 +60,7 @@ from floatfea.model.material import Material, Section
 DOF_PER_ELEMENT = 12
 
 
-def shear_parameter(
-    section: Section, material: Material, length: float, *, plane: str
-) -> float:
+def shear_parameter(section: Section, material: Material, length: float, *, plane: str) -> float:
     """``Phi = 12 E I / (kappa G A L^2)`` for one bending plane.
 
     ``Phi`` is the ratio of bending to shear flexibility. ``Phi -> 0`` recovers
@@ -125,9 +124,7 @@ def euler_bernoulli_bending_stiffness(ei: float, length: float) -> NDArray[np.fl
     )
 
 
-def local_stiffness(
-    section: Section, material: Material, length: float
-) -> NDArray[np.float64]:
+def local_stiffness(section: Section, material: Material, length: float) -> NDArray[np.float64]:
     """12x12 local stiffness: axial, torsion, and bending in both planes."""
     k = np.zeros((DOF_PER_ELEMENT, DOF_PER_ELEMENT), dtype=np.float64)
     ll = length

@@ -1,4 +1,5 @@
 """Containers hold no constants, and kappa is not a field (AS1)."""
+
 from __future__ import annotations
 
 import math
@@ -39,7 +40,7 @@ def test_kappa_moves_with_the_material() -> None:
 
 
 def test_G_is_derived_so_E_nu_G_cannot_drift() -> None:
-    assert S355.G == pytest.approx(S355.E / (2 * (1 + S355.nu)), rel=ROUNDOFF_IDENTITY)
+    assert pytest.approx(S355.E / (2 * (1 + S355.nu)), rel=ROUNDOFF_IDENTITY) == S355.G
     assert "G" not in {f.name for f in fields(Material)}
 
 
@@ -51,9 +52,9 @@ def test_sigma_allow_comes_from_the_project_basis() -> None:
 def test_tube_properties_are_exact_not_thin_walled() -> None:
     d, t = 0.6, 0.012
     s = Section.circular_tube(d, t)
-    assert s.A == pytest.approx(basis.tube_area(d, t), rel=ROUNDOFF_IDENTITY)
-    assert s.A < math.pi * d * t                  # thin-wall over-states
-    assert s.J == pytest.approx(s.I_y + s.I_z, rel=ROUNDOFF_IDENTITY)    # circular: exact
+    assert pytest.approx(basis.tube_area(d, t), rel=ROUNDOFF_IDENTITY) == s.A
+    assert math.pi * d * t > s.A  # thin-wall over-states
+    assert pytest.approx(s.I_y + s.I_z, rel=ROUNDOFF_IDENTITY) == s.J  # circular: exact
 
 
 def test_the_material_container_declares_no_values_of_its_own() -> None:
@@ -76,8 +77,12 @@ def test_J_RAISES_for_a_non_circular_shape(monkeypatch) -> None:
 
 
 def test_J_is_exact_for_the_shapes_it_does_accept() -> None:
-    assert basis.torsion_constant("thin_tube", 3.0, 4.0) == pytest.approx(7.0, rel=ROUNDOFF_IDENTITY)
-    assert basis.torsion_constant("solid_circular", 3.0, 4.0) == pytest.approx(7.0, rel=ROUNDOFF_IDENTITY)
+    assert basis.torsion_constant("thin_tube", 3.0, 4.0) == pytest.approx(
+        7.0, rel=ROUNDOFF_IDENTITY
+    )
+    assert basis.torsion_constant("solid_circular", 3.0, 4.0) == pytest.approx(
+        7.0, rel=ROUNDOFF_IDENTITY
+    )
 
 
 def test_a_non_circular_section_cannot_be_built_silently() -> None:
@@ -87,6 +92,10 @@ def test_a_non_circular_section_cannot_be_built_silently() -> None:
     anything noticed.
     """
     with pytest.raises(ValueError, match="no torsion constant"):
-        Section(A=1.0, I_y=1.0, I_z=1.0,
-                J=basis.torsion_constant("rectangular", 1.0, 1.0),
-                shape="rectangular")
+        Section(
+            A=1.0,
+            I_y=1.0,
+            I_z=1.0,
+            J=basis.torsion_constant("rectangular", 1.0, 1.0),
+            shape="rectangular",
+        )

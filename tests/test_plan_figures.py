@@ -15,6 +15,7 @@ A generated file that owns every number becomes a second source of truth nobody
 reads. The prose around these figures is still prose, and `CLAUDE.md`'s
 claim-carries-its-command rule is what covers it.
 """
+
 from __future__ import annotations
 
 import re
@@ -63,8 +64,12 @@ def test_every_referenced_figure_exists(name: str) -> None:
 
 def test_the_generated_figures_are_not_stale() -> None:
     """The file is what a fresh run produces, or the plan is quoting the past."""
-    out = subprocess.run([sys.executable, "scripts/regen_figures.py", "--check"],
-                         cwd=ROOT, capture_output=True, text=True)
+    out = subprocess.run(
+        [sys.executable, "scripts/regen_figures.py", "--check"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
     assert out.returncode == 0, (
         f"{out.stdout}{out.stderr}\ndocs/milestones/F2_figures.md is not what "
         "`scripts/regen_figures.py` produces at this commit. Regenerate it and "

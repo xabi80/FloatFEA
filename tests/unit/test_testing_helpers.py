@@ -1,4 +1,5 @@
 """`assert_close` refuses a vacuous comparison (BD0)."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -32,13 +33,17 @@ def test_the_refusal_boundary_is_where_it_says() -> None:
     assert_close(
         DEFAULT_FLOOR_FACTOR * floor * 1.01,
         DEFAULT_FLOOR_FACTOR * floor * 1.01,
-        tol=1e-9, floor=floor, what="just above",
+        tol=1e-9,
+        floor=floor,
+        what="just above",
     )
     with pytest.raises(AssertionError, match="VACUOUS"):
         assert_close(
             DEFAULT_FLOOR_FACTOR * floor * 0.99,
             DEFAULT_FLOOR_FACTOR * floor * 0.99,
-            tol=1e-9, floor=floor, what="just below",
+            tol=1e-9,
+            floor=floor,
+            what="just below",
         )
 
 

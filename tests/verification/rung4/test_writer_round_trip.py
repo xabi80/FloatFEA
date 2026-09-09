@@ -21,6 +21,7 @@ The channel values are recomputed here from the same closed forms the generator
 used, rather than shipped in a sidecar — so what is asserted is readable, and a
 reviewer can check the expectation without loading a binary.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -45,7 +46,7 @@ def _expected() -> dict[str, np.ndarray]:
     j = np.arange(NDOF)[None, :]
     rot = (np.arange(NDOF) % 6) >= 3
     xi = np.sin(1.7 * t[:, None] + 0.31 * j) * (1.0 + 0.05 * j)
-    xi[:, rot] *= 0.02          # rotations kept inside the declared validity bound
+    xi[:, rot] *= 0.02  # rotations kept inside the declared validity bound
     return {
         "t": t,
         "xi": xi,
@@ -144,9 +145,8 @@ def test_a_validation_error_SURVIVES_propagation() -> None:
     def _through():
         yield
 
-    with pytest.raises(FlrValidationError) as caught:
-        with _through():
-            raise FlrValidationError(Fault.MU_WARMUP, "propagation check")
+    with pytest.raises(FlrValidationError) as caught, _through():
+        raise FlrValidationError(Fault.MU_WARMUP, "propagation check")
     assert caught.value.fault is Fault.MU_WARMUP
     assert caught.value.__traceback__ is not None
 

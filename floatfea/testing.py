@@ -37,6 +37,7 @@ test (plus ten in its own unit test). **Banning the rest by presence is step 4a'
 (`docs/milestones/F2a.md` sec. 2A), not the state of the repository -- and a
 module a reader trusts does not carry a future tense as a present one.
 """
+
 from __future__ import annotations
 
 import numpy as np

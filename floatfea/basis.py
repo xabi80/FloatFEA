@@ -34,6 +34,7 @@ The rule, therefore: **anything that could reasonably be written down twice is
 written down here once**, and both the code and the verification reference consume
 it from here.
 """
+
 from __future__ import annotations
 
 import math
@@ -42,10 +43,10 @@ from typing import Final
 # ---------------------------------------------------------------------------
 # Material -- S355, the project standard (docs/milestones/F1.md sec. 8).
 # ---------------------------------------------------------------------------
-E_STEEL: Final[float] = 210e9        # Pa
+E_STEEL: Final[float] = 210e9  # Pa
 NU_STEEL: Final[float] = 0.3
-RHO_STEEL: Final[float] = 7850.0     # kg/m^3
-FY_S355: Final[float] = 355e6        # Pa
+RHO_STEEL: Final[float] = 7850.0  # kg/m^3
+FY_S355: Final[float] = 355e6  # Pa
 
 G_STEEL: Final[float] = E_STEEL / (2.0 * (1.0 + NU_STEEL))
 
@@ -60,7 +61,8 @@ G_STEEL: Final[float] = E_STEEL / (2.0 * (1.0 + NU_STEEL))
 # be substituted for it. F2's first brace sweep did exactly that.
 # ---------------------------------------------------------------------------
 ALLOWABLE_FACTOR: Final[float] = 0.6
-SIGMA_ALLOW_S355: Final[float] = ALLOWABLE_FACTOR * FY_S355   # 213.0 MPa
+SIGMA_ALLOW_S355: Final[float] = ALLOWABLE_FACTOR * FY_S355  # 213.0 MPa
+
 
 # ---------------------------------------------------------------------------
 # EN 1993-1-1 Table 5.2 -- circular hollow section class limits in compression,
@@ -192,8 +194,9 @@ def kappa(shape: str, nu: float = NU_STEEL) -> float:
 # material pair or the allowable basis that breaks it, NEVER the geometry -- which
 # is why the bound is computed from the basis rather than quoted as a constant.
 # ---------------------------------------------------------------------------
-def shear_geometric_bound(fy: float = FY_S355, nu: float = NU_STEEL,
-                          shape: str = "thin_tube") -> float:
+def shear_geometric_bound(
+    fy: float = FY_S355, nu: float = NU_STEEL, shape: str = "thin_tube"
+) -> float:
     """Upper bound on ``Phi * (P/P_E)`` for any member passing its strength check.
 
     Returns ``12 sigma_allow / (kappa G pi^2)``. This bounds the worth of a

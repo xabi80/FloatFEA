@@ -30,7 +30,6 @@ be a way to pass by having made no claim.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Final
 
@@ -46,9 +45,7 @@ from floatfea.io.frames import (
 
 SUPPORTED_SCHEMA: Final[str] = "1.2"
 
-_REQUIRED_UNITS: Final[frozenset[str]] = frozenset(
-    {"length", "mass", "time", "force", "angle"}
-)
+_REQUIRED_UNITS: Final[frozenset[str]] = frozenset({"length", "mass", "time", "force", "angle"})
 _REQUIRED_INTEGRATOR: Final[frozenset[str]] = frozenset(
     {"scheme", "rho_inf", "alpha_m", "alpha_f", "beta", "gamma", "dt", "mu_treatment"}
 )
@@ -119,7 +116,8 @@ def _meta(handle: Any) -> dict[str, Any]:
     raw = handle.attrs.get("meta")
     if raw is None:
         _reject(Fault.PROVENANCE_MISSING, "root attribute 'meta' is absent")
-    return json.loads(raw if isinstance(raw, str) else raw.decode())
+    meta: dict[str, Any] = json.loads(raw if isinstance(raw, str) else raw.decode())
+    return meta
 
 
 def validate(handle: Any) -> dict[str, Any]:
@@ -225,9 +223,7 @@ def _validate_bodies(handle: Any) -> None:
         if not np.allclose(inertia, inertia.T, rtol=1e-10, atol=0.0):
             _reject(Fault.INERTIA_NOT_SPD, f"body {name!r}: tensor is not symmetric")
         if np.any(np.linalg.eigvalsh(inertia) <= 0.0):
-            _reject(
-                Fault.INERTIA_NOT_SPD, f"body {name!r}: tensor is not positive definite"
-            )
+            _reject(Fault.INERTIA_NOT_SPD, f"body {name!r}: tensor is not positive definite")
 
 
 def _validate_kinematics(handle: Any) -> None:

@@ -41,8 +41,7 @@ BASELINE_CONDITIONS: Final[tuple[str, ...]] = (
     "OMP_NUM_THREADS=1, MKL_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1",
     "Hypothesis derandomized via HSP tests/conftest.py",
     ".hypothesis example database cleared before the run",
-    "capytaine 2.3.1, numpy 2.4.4, scipy 1.17.1, xarray 2026.7.0, "
-    "pandas 2.3.3, netCDF4 1.7.4",
+    "capytaine 2.3.1, numpy 2.4.4, scipy 1.17.1, xarray 2026.7.0, " "pandas 2.3.3, netCDF4 1.7.4",
 )
 
 # ---------------------------------------------------------------------------

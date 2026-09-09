@@ -19,6 +19,7 @@ The rotation is deliberately **not axis-aligned**: a 90 degree rotation about z
 permutes entries and passes with a sign error that a skew 37 degree rotation
 exposes.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -32,8 +33,8 @@ from floatfea.tolerances import (
     ROUNDOFF_IDENTITY_COUNTER,
     TRANSFORM_INVARIANCE,
     TRANSFORM_INVARIANCE_COUNTER,
-    TRANSFORM_SPECTRUM_INVARIANCE_COUNTER,
     TRANSFORM_SPECTRUM_INVARIANCE,
+    TRANSFORM_SPECTRUM_INVARIANCE_COUNTER,
 )
 
 SEC = Section.circular_tube(0.8, 0.020)
@@ -62,7 +63,12 @@ def _triad_from(rot: np.ndarray):
 def test_the_fixture_rotation_is_not_axis_aligned() -> None:
     """Meta-test: an axis-aligned rotation would only permute entries."""
     for col in SKEW.T:
-        assert np.abs(col).min() > 0.05, "rotation is too close to axis-aligned"  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
+        assert (
+            np.abs(col).min()
+            > 0.05
+            # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an
+            # error is small
+        ), "rotation is too close to axis-aligned"
     assert np.allclose(SKEW @ SKEW.T, np.eye(3), atol=ROUNDOFF_IDENTITY)
 
 
@@ -119,9 +125,7 @@ def test_spectrum_invariance_under_the_transform() -> None:
     ev_loc = np.sort(np.linalg.eigvalsh(k_loc))
     ev_glo = np.sort(np.linalg.eigvalsh(k_glo))
     scale = np.abs(ev_loc).max()
-    assert np.allclose(
-        ev_loc, ev_glo, rtol=0, atol=TRANSFORM_SPECTRUM_INVARIANCE * scale
-    )
+    assert np.allclose(ev_loc, ev_glo, rtol=0, atol=TRANSFORM_SPECTRUM_INVARIANCE * scale)
 
 
 def test_a_NON_orthogonal_transform_moves_the_spectrum() -> None:
@@ -132,10 +136,11 @@ def test_a_NON_orthogonal_transform_moves_the_spectrum() -> None:
     """
     k_loc = local_stiffness(SEC, S355, L)
     theta = np.array([0.05, -0.03, 0.02])
-    kx = np.array([[0, -theta[2], theta[1]], [theta[2], 0, -theta[0]],
-                   [-theta[1], theta[0], 0]])
-    first_order = np.eye(3) + kx                     # NOT orthogonal
-    assert not np.allclose(first_order @ first_order.T, np.eye(3), atol=1e-6)  # not-a-tolerance: negative control -- asserts the fixture rotation is NOT orthogonal
+    kx = np.array([[0, -theta[2], theta[1]], [theta[2], 0, -theta[0]], [-theta[1], theta[0], 0]])
+    first_order = np.eye(3) + kx  # NOT orthogonal
+    assert not np.allclose(
+        first_order @ first_order.T, np.eye(3), atol=1e-6
+    )  # not-a-tolerance: negative control -- asserts the fixture rotation is NOT orthogonal
 
     t = transformation(first_order)
     bad = t.T @ k_loc @ t
@@ -160,9 +165,7 @@ def test_roll_invariance_for_a_circular_section(roll_deg: float) -> None:
     """
     a = np.array([0.0, 0.0, 0.0])
     b = a + L * SKEW[0]
-    k_ref = to_global(
-        local_stiffness(SEC, S355, L), rotation_matrix(a, b, roll_rad=0.0)
-    )
+    k_ref = to_global(local_stiffness(SEC, S355, L), rotation_matrix(a, b, roll_rad=0.0))
     k_rolled = to_global(
         local_stiffness(SEC, S355, L),
         rotation_matrix(a, b, roll_rad=np.radians(roll_deg)),
@@ -196,7 +199,7 @@ def test_roll_invariance_would_FAIL_for_an_unequal_section() -> None:
     """
     from floatfea.element.beam import bending_stiffness
 
-    ei_z, ei_y = 3.0e9, 1.0e9          # deliberately unequal
+    ei_z, ei_y = 3.0e9, 1.0e9  # deliberately unequal
     k_loc = np.zeros((12, 12))
     kz = bending_stiffness(ei_z, L, 0.1)
     ky = bending_stiffness(ei_y, L, 0.1)
@@ -236,7 +239,7 @@ def test_an_incoherent_section_is_REFUSED_at_construction() -> None:
 def test_the_supported_section_still_constructs() -> None:
     """Meta-test: a guard that refuses everything would pass every test above."""
     s = Section.circular_tube(0.6, 0.012)
-    assert s.I_y == s.I_z and s.J == pytest.approx(s.I_y + s.I_z, rel=ROUNDOFF_IDENTITY)
+    assert s.I_y == s.I_z and pytest.approx(s.I_y + s.I_z, rel=ROUNDOFF_IDENTITY) == s.J
 
 
 def test_the_displacement_counter_case_is_reachable() -> None:
@@ -313,6 +316,6 @@ def test_the_ROUNDOFF_IDENTITY_counter_is_reachable() -> None:
         f"deviation of only {deviation:.3e}, below the declared counter-case "
         f"{ROUNDOFF_IDENTITY_COUNTER:.3e}"
     )
-    assert deviation > ROUNDOFF_IDENTITY, (
-        "the counter-case must exceed the ceiling it is the counter for"
-    )
+    assert (
+        deviation > ROUNDOFF_IDENTITY
+    ), "the counter-case must exceed the ceiling it is the counter for"

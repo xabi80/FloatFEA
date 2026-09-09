@@ -26,6 +26,7 @@ here: `CLAUDE.md` says the codebases meet only at the interchange file, so this
 suite must not require HSP to be present. The prefix makes that boundary explicit
 rather than silent — an unprefixed path is asserted to be FloatFEA-local.
 """
+
 from __future__ import annotations
 
 import re
@@ -33,7 +34,7 @@ from pathlib import Path
 
 import pytest
 
-REPO = Path(__file__).resolve().parents[3]   # tests/verification/rung3/<file>
+REPO = Path(__file__).resolve().parents[3]  # tests/verification/rung3/<file>
 CLOSURE = sorted((REPO / "docs" / "closure").glob("F*.md"))
 
 # Backticked paths that look like repository files.
@@ -57,10 +58,7 @@ def test_the_artifact_cites_evidence_at_all(doc: Path) -> None:
 
 @pytest.mark.parametrize("doc", CLOSURE, ids=lambda d: d.stem)
 def test_every_cited_local_file_exists(doc: Path) -> None:
-    missing = [
-        c for c in _cited(doc)
-        if not c.startswith("HSP:") and not (REPO / c).is_file()
-    ]
+    missing = [c for c in _cited(doc) if not c.startswith("HSP:") and not (REPO / c).is_file()]
     assert not missing, (
         f"{doc.name} cites evidence that DOES NOT EXIST: {missing}. "
         "This is the G1.1 failure: a gate recorded PASS against a phantom test."
@@ -89,13 +87,9 @@ def test_cross_repo_evidence_is_marked_as_such(doc: Path) -> None:
     otherwise report as missing, or worse, that a future reorganisation would
     make accidentally resolve.
     """
-    unmarked = [
-        c for c in _cited(doc)
-        if c.startswith("tests/unit/") and not (REPO / c).is_file()
-    ]
+    unmarked = [c for c in _cited(doc) if c.startswith("tests/unit/") and not (REPO / c).is_file()]
     assert not unmarked, (
-        f"{doc.name} cites what looks like HSP evidence without the 'HSP:' "
-        f"prefix: {unmarked}"
+        f"{doc.name} cites what looks like HSP evidence without the 'HSP:' " f"prefix: {unmarked}"
     )
 
 

@@ -2,6 +2,7 @@
 
 Both are structural guards for mistakes that have already happened here.
 """
+
 from __future__ import annotations
 
 import pytest

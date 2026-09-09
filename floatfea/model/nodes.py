@@ -9,8 +9,10 @@ fixed by construction rather than by convention: node ``i`` owns global DOF
 `floatfea/determinism.py` records why: `PYTHONHASHSEED` permutes set iteration, and
 an assembly ordering built by iterating a set silently permutes the matrix.
 """
+
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from typing import Final
 
@@ -71,7 +73,7 @@ class NodeSet:
     def __getitem__(self, i: int) -> Node:
         return self._nodes[i]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Node]:
         return iter(self._nodes)
 
     @property

@@ -32,6 +32,7 @@ or library builds. Those need a tolerance, not a seed, and the distinction matte
 pinning a seed makes a run *repeatable*, which is not the same as making it
 *correct*.
 """
+
 from __future__ import annotations
 
 import os
@@ -93,7 +94,7 @@ def pin_threads(n: int = 1) -> None:
         os.environ[var] = str(n)
 
 
-def deterministic_v0(n: int) -> "object":
+def deterministic_v0(n: int) -> object:
     """A fixed ARPACK starting vector of length ``n``.
 
     Seeded from a dedicated generator rather than the global numpy state, so a

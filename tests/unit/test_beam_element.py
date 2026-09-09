@@ -9,6 +9,7 @@ The negative control is not optional here. In a `1/(1+Phi)` formulation, setting
 comparing the two could pass while certifying nothing. `test_the_phi_zero_check_
 CAN_FAIL` perturbs one shear term and confirms the assertion goes red.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -47,7 +48,7 @@ def test_the_phi_zero_check_CAN_FAIL() -> None:
     """
     want = euler_bernoulli_bending_stiffness(EI, L)
     perturbed = bending_stiffness(EI, L, phi=0.0)
-    perturbed[1, 3] *= 1.0 + 1e-9          # one shear-coupling term, 1 part in 1e9
+    perturbed[1, 3] *= 1.0 + 1e-9  # one shear-coupling term, 1 part in 1e9
     assert not np.array_equal(perturbed, want), (
         "perturbing a shear term did not change the comparison -- the entry-wise "
         "assertion is not actually looking at that entry"
@@ -140,7 +141,7 @@ def test_the_local_element_is_BLOCK_DIAGONAL_with_exactly_zero_couplings() -> No
     """
     k = local_stiffness(SEC, S355, L)
     owner = np.full(12, -1, dtype=int)
-    for b, (name, idx) in enumerate(LOCAL_BLOCKS.items()):
+    for b, idx in enumerate(LOCAL_BLOCKS.values()):
         owner[list(idx)] = b
     assert (owner >= 0).all(), "the four blocks do not cover all 12 local DOF"
 
@@ -178,9 +179,9 @@ def test_reciprocity_maxwell_betti() -> None:
     k = local_stiffness(SEC, S355, L)
     free = [6, 7, 8, 9, 10, 11]
     flex = np.linalg.inv(k[np.ix_(free, free)])
-    assert np.allclose(flex, flex.T, rtol=0, atol=ROUNDOFF_IDENTITY * np.abs(flex).max()), (
-        "flexibility is not symmetric -- Maxwell-Betti reciprocity is violated"
-    )
+    assert np.allclose(
+        flex, flex.T, rtol=0, atol=ROUNDOFF_IDENTITY * np.abs(flex).max()
+    ), "flexibility is not symmetric -- Maxwell-Betti reciprocity is violated"
     # The specific pair the AV0 reconstruction used: uz per unit My == ry per unit Fz.
     assert flex[2, 4] == pytest.approx(flex[4, 2], rel=ROUNDOFF_IDENTITY)
     assert flex[2, 4] < 0.0, "sign lost: the x-z cross term must be negative"

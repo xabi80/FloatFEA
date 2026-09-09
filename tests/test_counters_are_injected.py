@@ -44,6 +44,7 @@ WHAT THE PAIR STILL DOES NOT COVER, said so it is not trusted past its reach:
 * both cells are per-counter. A constant with no counter registered here is not
   covered at all, which is what `test_there_is_something_to_check` is for.
 """
+
 from __future__ import annotations
 
 import math
@@ -78,16 +79,22 @@ class _Capsys:
 
 
 REGISTERED = [
-    ("calibration ULP",
-     CORPUS.test_a_LARGER_deviation_fails_the_calibration,
-     CORPUS, "test_the_delta_measure_is_CALIBRATED",
-     "DELTA_CALIBRATION_ULP",
-     WIDEN * CORPUS.DELTA_CALIBRATION_ULP_COUNTER),
-    ("exempt-response drift",
-     GOLDEN.test_a_MOVED_response_is_caught,
-     GOLDEN, "test_every_recorded_pair_is_still_detected",
-     "EXEMPT_RESPONSE_DRIFT_ULP",
-     WIDEN * GOLDEN.EXEMPT_RESPONSE_DRIFT_ULP_COUNTER),
+    (
+        "calibration ULP",
+        CORPUS.test_a_LARGER_deviation_fails_the_calibration,
+        CORPUS,
+        "test_the_delta_measure_is_CALIBRATED",
+        "DELTA_CALIBRATION_ULP",
+        WIDEN * CORPUS.DELTA_CALIBRATION_ULP_COUNTER,
+    ),
+    (
+        "exempt-response drift",
+        GOLDEN.test_a_MOVED_response_is_caught,
+        GOLDEN,
+        "test_every_recorded_pair_is_still_detected",
+        "EXEMPT_RESPONSE_DRIFT_ULP",
+        WIDEN * GOLDEN.EXEMPT_RESPONSE_DRIFT_ULP_COUNTER,
+    ),
     # `PATCH_TEST_EXACTNESS_COUNTER_DEFECT` -- THE EXEMPTION IS GONE (R183). It
     # was listed as unregisterable "because its gate compares inline across 296
     # parametrised cases", which named the wrong gate: this constant's gate is
@@ -100,12 +107,14 @@ REGISTERED = [
     # the counter multiplies the shipped defect by `RAISED_COUNTER_DEFECT_FACTOR`
     # and a headroom that many times wider absorbs the raised ratio whatever the
     # clean ratio is.
-    ("counter-defect size",
-     lambda: CORPUS.test_a_RAISED_counter_defect_breaks_that(_Capsys),
-     CORPUS, "test_the_counter_DEFECT_SIZE_cannot_be_raised",
-     "PATCH_TEST_COUNTER_HEADROOM",
-     WIDEN * CORPUS.RAISED_COUNTER_DEFECT_FACTOR
-     * CORPUS.PATCH_TEST_COUNTER_HEADROOM),
+    (
+        "counter-defect size",
+        lambda: CORPUS.test_a_RAISED_counter_defect_breaks_that(_Capsys),
+        CORPUS,
+        "test_the_counter_DEFECT_SIZE_cannot_be_raised",
+        "PATCH_TEST_COUNTER_HEADROOM",
+        WIDEN * CORPUS.RAISED_COUNTER_DEFECT_FACTOR * CORPUS.PATCH_TEST_COUNTER_HEADROOM,
+    ),
     # G2.1 / V1.1, both halves. These two counters inject ONE defect -- a
     # diagonal stiffness resisting a rigid translation -- because that single
     # defect must redden both halves of the gate: it lifts a zero eigenvalue and
@@ -116,14 +125,22 @@ REGISTERED = [
     # measured quantity is a property of the frame; `counter_response` returns it
     # at this commit. A literal here would be stale the first time the frame
     # moved, which is the species step 4 spent five rounds on.
-    ("rigid-body mode ratio",
-     lambda: RIGID.test_a_RIGID_BODY_MODE_that_carries_ENERGY_is_caught(_Capsys),
-     RIGID, "test_the_frame_has_SIX_zero_modes_by_ratio",
-     "RIGID_BODY_MODE_RATIO", WIDEN * RIGID.counter_response("ratio")),
-    ("rigid-body subspace loss",
-     lambda: RIGID.test_a_LOST_rigid_body_DIRECTION_is_caught(_Capsys),
-     RIGID, "test_the_analytic_rigid_body_vectors_are_SPANNED",
-     "RIGID_BODY_SUBSPACE_LOSS", WIDEN * RIGID.counter_response("loss")),
+    (
+        "rigid-body mode ratio",
+        lambda: RIGID.test_a_RIGID_BODY_MODE_that_carries_ENERGY_is_caught(_Capsys),
+        RIGID,
+        "test_the_frame_has_SIX_zero_modes_by_ratio",
+        "RIGID_BODY_MODE_RATIO",
+        WIDEN * RIGID.counter_response("ratio"),
+    ),
+    (
+        "rigid-body subspace loss",
+        lambda: RIGID.test_a_LOST_rigid_body_DIRECTION_is_caught(_Capsys),
+        RIGID,
+        "test_the_analytic_rigid_body_vectors_are_SPANNED",
+        "RIGID_BODY_SUBSPACE_LOSS",
+        WIDEN * RIGID.counter_response("loss"),
+    ),
 ]
 
 
@@ -149,8 +166,9 @@ def _control_R163() -> None:
 
 def _control_R173() -> None:
     """R173, as written: `10 > 4`, two constants, in the commit that fixed R163."""
-    assert (GOLDEN.EXEMPT_RESPONSE_DRIFT_ULP_COUNTER
-            > GOLDEN.EXEMPT_RESPONSE_DRIFT_ULP), "the injection is below the ceiling"
+    assert (
+        GOLDEN.EXEMPT_RESPONSE_DRIFT_ULP_COUNTER > GOLDEN.EXEMPT_RESPONSE_DRIFT_ULP
+    ), "the injection is below the ceiling"
 
 
 def _control_wrong_quantity() -> None:
@@ -163,9 +181,9 @@ def _control_wrong_quantity() -> None:
     because a 100% error survives a ceiling widened to `WIDEN` times 5 ULP.
     """
     original = CORPUS.injected_delta
-    CORPUS.injected_delta = (
-        lambda e, k, _o=original: _o(e, k) * 2.0
-        if k == "one_element_scaled" else _o(e, k))
+    CORPUS.injected_delta = lambda e, k, _o=original: (
+        _o(e, k) * 2.0 if k == "one_element_scaled" else _o(e, k)
+    )
     try:
         with pytest.raises(AssertionError, match="ULP"):
             CORPUS.test_the_delta_measure_is_CALIBRATED()
@@ -176,16 +194,33 @@ def _control_wrong_quantity() -> None:
 
 
 CONTROLS = [
-    ("R163's body", _control_R163, "gate",
-     CORPUS, "test_the_delta_measure_is_CALIBRATED",
-     "DELTA_CALIBRATION_ULP", WIDEN * CORPUS.DELTA_CALIBRATION_ULP_COUNTER),
-    ("R173's body", _control_R173, "gate",
-     GOLDEN, "test_every_recorded_pair_is_still_detected",
-     "EXEMPT_RESPONSE_DRIFT_ULP",
-     WIDEN * GOLDEN.EXEMPT_RESPONSE_DRIFT_ULP_COUNTER),
-    ("R197's wrong-quantity body", _control_wrong_quantity, "ceiling",
-     CORPUS, "test_the_delta_measure_is_CALIBRATED",
-     "DELTA_CALIBRATION_ULP", WIDEN * CORPUS.DELTA_CALIBRATION_ULP_COUNTER),
+    (
+        "R163's body",
+        _control_R163,
+        "gate",
+        CORPUS,
+        "test_the_delta_measure_is_CALIBRATED",
+        "DELTA_CALIBRATION_ULP",
+        WIDEN * CORPUS.DELTA_CALIBRATION_ULP_COUNTER,
+    ),
+    (
+        "R173's body",
+        _control_R173,
+        "gate",
+        GOLDEN,
+        "test_every_recorded_pair_is_still_detected",
+        "EXEMPT_RESPONSE_DRIFT_ULP",
+        WIDEN * GOLDEN.EXEMPT_RESPONSE_DRIFT_ULP_COUNTER,
+    ),
+    (
+        "R197's wrong-quantity body",
+        _control_wrong_quantity,
+        "ceiling",
+        CORPUS,
+        "test_the_delta_measure_is_CALIBRATED",
+        "DELTA_CALIBRATION_ULP",
+        WIDEN * CORPUS.DELTA_CALIBRATION_ULP_COUNTER,
+    ),
 ]
 
 
@@ -247,8 +282,9 @@ def test_there_is_something_to_check() -> None:
     )
 
 
-@pytest.mark.parametrize("label, counter, module, gate, ceiling, widened",
-                         REGISTERED, ids=[r[0] for r in REGISTERED])
+@pytest.mark.parametrize(
+    "label, counter, module, gate, ceiling, widened", REGISTERED, ids=[r[0] for r in REGISTERED]
+)
 def test_the_counter_fails_when_its_gate_is_neutered(
     label: str, counter, module, gate: str, ceiling: str, widened: float
 ) -> None:
@@ -262,8 +298,9 @@ def test_the_counter_fails_when_its_gate_is_neutered(
     counter()  # and it passes again, so nothing here is left broken
 
 
-@pytest.mark.parametrize("label, counter, module, gate, ceiling, widened",
-                         REGISTERED, ids=[r[0] for r in REGISTERED])
+@pytest.mark.parametrize(
+    "label, counter, module, gate, ceiling, widened", REGISTERED, ids=[r[0] for r in REGISTERED]
+)
 def test_the_counter_fails_when_its_ceiling_is_widened(
     label: str, counter, module, gate: str, ceiling: str, widened: float
 ) -> None:
@@ -286,10 +323,11 @@ def test_the_counter_fails_when_its_ceiling_is_widened(
 
 @pytest.mark.parametrize(
     "label, body, rejected_by, module, gate, ceiling, widened",
-    CONTROLS, ids=[c[0] for c in CONTROLS])
+    CONTROLS,
+    ids=[c[0] for c in CONTROLS],
+)
 def test_a_DEFECTIVE_counter_is_rejected_by_its_cell_and_admitted_by_the_other(
-    label: str, body, rejected_by: str, module, gate: str,
-    ceiling: str, widened: float
+    label: str, body, rejected_by: str, module, gate: str, ceiling: str, widened: float
 ) -> None:
     """The controls: both cells are necessary, measured rather than argued.
 
@@ -300,8 +338,10 @@ def test_a_DEFECTIVE_counter_is_rejected_by_its_cell_and_admitted_by_the_other(
     and this test red.
     """
     body()  # every control passes on a clean tree -- that is what makes it a defect
-    outcome = {"gate": _gate_cell(body, module, gate),
-               "ceiling": _ceiling_cell(body, module, ceiling, widened)}
+    outcome = {
+        "gate": _gate_cell(body, module, gate),
+        "ceiling": _ceiling_cell(body, module, ceiling, widened),
+    }
     other = "ceiling" if rejected_by == "gate" else "gate"
 
     assert outcome[rejected_by] is False, (

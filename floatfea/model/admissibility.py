@@ -4,7 +4,8 @@ The limit is **Q5 of `docs/milestones/F2.md` §5b**, answered by Xabier on
 2026-09-06; this is its enforcement. It is NOT yet in `docs/conventions.md`:
 that file is F0-locked and reaches a new section only through an F0 reopen
 commit, never an inline edit, and citing a section that does not exist there was
-R87. This module cites the answer that does exist. A member whose length is comparable to its cross-section depth
+R87. This module cites the answer that does exist. A member whose length is
+comparable to its cross-section depth
 is not described by any beam theory — Timoshenko included, since shear-flexible
 beam kinematics still assume plane sections and a length scale over which
 stresses redistribute. Below the limit the answer is not "less accurate", it is
@@ -23,6 +24,7 @@ arrive with F3's builder (`docs/milestones/F2.md` §5 Q3: subdivide, do not
 taper). So this function is the rule with a home and a test, called today by the
 corpus runner, and F3's builder calls it per member as a named dependency.
 """
+
 from __future__ import annotations
 
 from floatfea.model.material import Section
@@ -72,8 +74,7 @@ def _outer_diameter(section: Section) -> float:
         )
     import math
 
-    return 2.0 * math.sqrt(2.0 * section.I_z / section.A
-                           + section.A / (2.0 * math.pi))
+    return 2.0 * math.sqrt(2.0 * section.I_z / section.A + section.A / (2.0 * math.pi))
 
 
 def assert_beam_admissible(length: float, section: Section, what: str = "") -> None:
@@ -95,8 +96,7 @@ def assert_beam_admissible(length: float, section: Section, what: str = "") -> N
         )
 
 
-def member_lambda(length: float, section: Section,
-                  second_moment: float | None = None) -> float:
+def member_lambda(length: float, section: Section, second_moment: float | None = None) -> float:
     """`L / r` with `r = sqrt(I/A)` -- a REPORTED diagnostic axis, not a limit.
 
     `I` DEFAULTS TO THE WEAK AXIS, `min(I_y, I_z)`, and the caller may name one

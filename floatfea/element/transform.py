@@ -20,6 +20,7 @@ non-orthogonal `T` moves eigenvalues, and it is exactly the `I + [theta x]`
 first-order trap `docs/conventions.md` warns about arriving through a different
 door.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -53,9 +54,7 @@ def transformation(r: NDArray[np.floating]) -> NDArray[np.float64]:
     return t
 
 
-def to_global(
-    k_local: NDArray[np.floating], r: NDArray[np.floating]
-) -> NDArray[np.float64]:
+def to_global(k_local: NDArray[np.floating], r: NDArray[np.floating]) -> NDArray[np.float64]:
     """``T^T K_local T``."""
     t = transformation(r)
     return t.T @ np.asarray(k_local, dtype=np.float64) @ t

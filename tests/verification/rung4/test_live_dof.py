@@ -5,6 +5,7 @@ written to that rule: the fixture below is asserted to *contain* a dead DOF befo
 anything is asserted about excluding one, because a test that yaw is excluded
 passes trivially on a fixture where every DOF is live.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -18,9 +19,7 @@ DOF_NAME = ("surge", "sway", "heave", "roll", "pitch", "yaw")
 # The measured AG5 case: max |mu| per DOF on the 12-buoy platform, trapezoid
 # convolution, last 8 periods. Yaw is 1.2e-17 because a body of revolution has no
 # yaw radiation -- round-off, not a small physical quantity.
-MU_MEASURED = np.array(
-    [4.2485e-01, 3.1213e-02, 1.7728e-02, 2.8032e-02, 4.0844e-01, 1.1788e-17]
-)
+MU_MEASURED = np.array([4.2485e-01, 3.1213e-02, 1.7728e-02, 2.8032e-02, 4.0844e-01, 1.1788e-17])
 
 
 def test_fixture_actually_contains_a_dead_dof() -> None:
@@ -39,13 +38,11 @@ def test_fixture_actually_contains_a_dead_dof() -> None:
 
 def test_yaw_is_excluded_and_the_other_five_are_not() -> None:
     mask = live_dof(MU_MEASURED)
-    assert [n for n, m in zip(DOF_NAME, mask) if not m] == ["yaw"]
+    assert [n for n, m in zip(DOF_NAME, mask, strict=True) if not m] == ["yaw"]
     assert mask.sum() == 5
 
 
-K0_MEASURED = np.array(
-    [2.0389e02, 2.0455e02, 3.5363e-02, 2.6278e02, 2.6207e02, 1.2830e-30]
-)
+K0_MEASURED = np.array([2.0389e02, 2.0455e02, 3.5363e-02, 2.6278e02, 2.6207e02, 1.2830e-30])
 CHANGE_LIVE = [0.041, 0.016, 0.0024, 0.007, 0.044]
 
 
@@ -56,13 +53,11 @@ CHANGE_LIVE = [0.041, 0.016, 0.0024, 0.007, 0.044]
         # successive versions of the AG5 script, and corrupted it in OPPOSITE
         # directions -- which is the argument for excluding it structurally
         # rather than remembering to handle it.
-        (0.0, 0.6523),      # second version: yaw's nan mapped to zero
-        (0.041, 0.1246),    # first version: yaw's round-off read as a real -4.1%
+        (0.0, 0.6523),  # second version: yaw's nan mapped to zero
+        (0.041, 0.1246),  # first version: yaw's round-off read as a real -4.1%
     ],
 )
-def test_exclusion_changes_the_statistic_it_guards(
-    yaw_change: float, contaminated: float
-) -> None:
+def test_exclusion_changes_the_statistic_it_guards(yaw_change: float, contaminated: float) -> None:
     """The guard must be load-bearing, not decorative.
 
     The guarded value is the SAME for both handlings of the dead DOF; the naive
@@ -77,9 +72,21 @@ def test_exclusion_changes_the_statistic_it_guards(
         over_live(change, MU_MEASURED, what="d|mu|"),
     )[0, 1]
 
-    assert naive == pytest.approx(contaminated, abs=5e-3)  # not-a-tolerance: reference pin -- the recorded contaminated values
-    assert guarded == pytest.approx(0.5256, abs=5e-3)  # not-a-tolerance: reference pin, not a ceiling -- asserts a RECORDED measurement is unchanged
-    assert abs(naive - guarded) > 0.05, "the guard would be decorative on this data"  # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is small
+    assert naive == pytest.approx(
+        contaminated, abs=5e-3
+    )  # not-a-tolerance: reference pin -- the recorded contaminated values
+    assert guarded == pytest.approx(
+        0.5256,
+        abs=5e-3,
+        # not-a-tolerance: reference pin, not a ceiling -- asserts a RECORDED measurement is
+        # unchanged
+    )
+    assert (
+        abs(naive - guarded)
+        > 0.05
+        # not-a-tolerance: discrimination floor -- asserts a quantity is LARGE, not that an error is
+        # small
+    ), "the guard would be decorative on this data"
 
 
 def test_a_uniformly_dead_set_is_NOT_caught() -> None:

@@ -278,7 +278,6 @@ PANEL_RECONSTRUCTION_RESIDUAL: Final[float] = 1e-12
 PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 
 
-
 # ---------------------------------------------------------------------------
 # Rung 1 -- The solver is a solver
 # Rigid-body modes (G2.1/V1.1), patch test (G2.2/V1.2), unit scaling (G2.5/V1.3).
@@ -387,7 +386,6 @@ TRANSFORM_INVARIANCE: Final[float] = 1e-11
 TRANSFORM_INVARIANCE_COUNTER: Final[float] = 1.2e-7
 
 
-
 # CLASS: ACCURACY -- carries TRANSFORM_SPECTRUM_INVARIANCE_COUNTER below.
 # G2.5 / V2.4 -- relative agreement between eig(T^T K T) and eig(K), scaled by the
 # largest eigenvalue. A separate entry from TRANSFORM_INVARIANCE because it is a
@@ -405,7 +403,6 @@ TRANSFORM_SPECTRUM_INVARIANCE: Final[float] = 1e-11
 # rotation of a milliradian.
 # Set: 2026-09-02, F2
 TRANSFORM_SPECTRUM_INVARIANCE_COUNTER: Final[float] = 5.0e-7
-
 
 
 # CLASS: ACCURACY -- carries SUBDIVISION_INVARIANCE_COUNTER below.
@@ -434,7 +431,6 @@ SUBDIVISION_INVARIANCE: Final[float] = 1e-11
 # element -- three orders above the ceiling.
 # Set: 2026-09-02, F2
 SUBDIVISION_INVARIANCE_COUNTER: Final[float] = 4.8e-8
-
 
 
 # CLASS: ACCURACY -- carries PATCH_TEST_EXACTNESS_COUNTER_DEFECT below.
@@ -724,9 +720,6 @@ EXEMPT_RESPONSE_DRIFT_ULP: Final[float] = 4.0
 EXEMPT_RESPONSE_DRIFT_ULP_COUNTER: Final[float] = 10.0
 
 
-
-
-
 # CLASS: ACCURACY -- carries SOLVE_BACKWARD_ERROR_FACTOR_COUNTER_DEFECT below.
 # Rung 1 -- the solve's BACKWARD ERROR, in multiples of eps:
 #
@@ -887,7 +880,6 @@ MATRIX_SYMMETRY: Final[float] = 1e-9
 MATRIX_SYMMETRY_COUNTER: Final[float] = 1.0e-2
 
 
-
 # CLASS: ACCURACY -- carries ROUNDOFF_IDENTITY_COUNTER below.
 # Rung 1 -- relative agreement for a property that is EXACT in exact arithmetic
 # and is asserted at round-off: triad orthonormality, reciprocity of a
@@ -924,10 +916,6 @@ ROUNDOFF_IDENTITY: Final[float] = 1e-14
 # 5.7e-17, i.e. round-off. The value stands; the angle that produces it is 1e-4.
 # Set: 2026-09-03, F2; basis corrected 2026-09-04
 ROUNDOFF_IDENTITY_COUNTER: Final[float] = 1.0e-8
-
-
-
-
 
 
 # CLASS: ACCURACY -- carries DETECTION_THRESHOLD_BAND_COUNTER below.

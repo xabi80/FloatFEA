@@ -62,7 +62,9 @@ def test_gravity_is_floatsim_not_standard() -> None:
     downstream as an unexplained mass error and gets hunted in the wrong place.
     """
     assert GRAVITY_MAGNITUDE == 9.81  # not-a-tolerance: the declared value itself, exact equality
-    assert GRAVITY_MAGNITUDE != 9.80665  # not-a-tolerance: standard gravity, asserted NOT to be the value
+    assert (
+        GRAVITY_MAGNITUDE != 9.80665
+    )  # not-a-tolerance: standard gravity, asserted NOT to be the value
 
 
 def test_the_dof_arithmetic_closes() -> None:
@@ -82,7 +84,7 @@ def test_body_index_follows_the_deck_ordering() -> None:
     """Clusters occupy four slots as [3 buoys, 1 hub], so buoy k is at 4c + b."""
     assert buoy_body_index(0) == 0
     assert buoy_body_index(2) == 2
-    assert buoy_body_index(3) == 4   # first buoy of cluster 1, after hub 0
+    assert buoy_body_index(3) == 4  # first buoy of cluster 1, after hub 0
     assert buoy_body_index(11) == 14
 
 

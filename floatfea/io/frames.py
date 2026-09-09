@@ -34,6 +34,13 @@ from __future__ import annotations
 
 from typing import Any, Final
 
+# IMPORTED AT MODULE LEVEL BECAUSE THE ANNOTATIONS ALREADY NEEDED IT (CA0).
+# Three functions imported numpy inside their own bodies while two module-level
+# annotations referenced `np.ndarray`, so the name was undefined at the scope
+# that used it: the runtime worked, and a type checker resolving the annotation
+# could not. `ruff` had never run in CI, which is the only reason it stood.
+import numpy as np
+
 # ---------------------------------------------------------------------------
 # Units. FloatSim's gravity, NOT standard gravity -- cluster_common.py:26 sets
 # 9.81, and a mismatch surfaces downstream as an unexplained mass error hunted
@@ -112,8 +119,8 @@ JACOBIAN_EVALUATIONS: Final[tuple[str, ...]] = ("step_midpoint",)
 # ---------------------------------------------------------------------------
 N_BODIES: Final[int] = 17
 N_HYDRO_BODIES: Final[int] = 12
-N_DOF_TOTAL: Final[int] = N_BODIES * 6          # 102
-N_DOF_HYDRO: Final[int] = N_HYDRO_BODIES * 6    # 72
+N_DOF_TOTAL: Final[int] = N_BODIES * 6  # 102
+N_DOF_HYDRO: Final[int] = N_HYDRO_BODIES * 6  # 72
 N_JOINTS: Final[int] = 16
 JOINT_CONSTRAINT_ROWS: Final[int] = 4
 N_DOF_FREE: Final[int] = N_DOF_TOTAL - N_JOINTS * JOINT_CONSTRAINT_ROWS  # 38
@@ -218,7 +225,7 @@ def global_to_hydro(g: int) -> int:
         ) from None
 
 
-def live_dof(reference: Any) -> "np.ndarray":
+def live_dof(reference: Any) -> np.ndarray:
     """Mask of DOF carrying real signal, excluding structurally dead ones.
 
     Same treatment as the index-space helpers above, and for the same reason:
@@ -250,7 +257,6 @@ def live_dof(reference: Any) -> "np.ndarray":
     cannot know, and inventing one would be a fudge factor. The eighth guard
     applies to guards too -- say what the check cannot see.
     """
-    import numpy as np
 
     from floatfea.tolerances import DEAD_DOF_RELATIVE_FLOOR
 
@@ -264,10 +270,11 @@ def live_dof(reference: Any) -> "np.ndarray":
             "form a statistic over, and a statistic computed anyway would be "
             "meaningless rather than small."
         )
-    return ref / peak >= DEAD_DOF_RELATIVE_FLOOR
+    live: np.ndarray = ref / peak >= DEAD_DOF_RELATIVE_FLOOR
+    return live
 
 
-def over_live(values: Any, reference: Any, *, what: str) -> "np.ndarray":
+def over_live(values: Any, reference: Any, *, what: str) -> np.ndarray:
     """``values`` restricted to the DOF that carry signal.
 
     Use this wherever a correlation, norm or mean is formed across DOF. Going
@@ -275,7 +282,6 @@ def over_live(values: Any, reference: Any, *, what: str) -> "np.ndarray":
     the raise below is the part worth having -- a fully dead set is an error, not
     an empty aggregate that reduces to ``nan`` and gets read as a small number.
     """
-    import numpy as np
 
     v = np.asarray(values)
     mask = live_dof(reference)
@@ -289,7 +295,8 @@ def over_live(values: Any, reference: Any, *, what: str) -> "np.ndarray":
             f"{what}: every DOF is below the dead-DOF floor. A statistic over an "
             "empty set is not a small result, it is no result."
         )
-    return v[mask]
+    kept: np.ndarray = v[mask]
+    return kept
 
 
 class Reference:
@@ -335,31 +342,22 @@ class Reference:
         self.source = source
 
     def __repr__(self) -> str:  # pragma: no cover - diagnostic only
-        how = (
-            f"interpolated at {self.gap_fraction:.1%} of gap"
-            if self.interpolated
-            else "exact"
-        )
+        how = f"interpolated at {self.gap_fraction:.1%} of gap" if self.interpolated else "exact"
         return f"Reference({self.source}, omega={self.omega:.6f}, {how})"
 
 
-def interpolated_reference(
-    grid: Any, values: Any, omega: float, *, source: str
-) -> Reference:
+def interpolated_reference(grid: Any, values: Any, omega: float, *, source: str) -> Reference:
     """Linear interpolation of ``values`` along ``grid`` to ``omega``, flagged.
 
     Returns an *exact* reference when ``omega`` lands on a grid point, so a
     comparison at a solved frequency is not penalised for using this helper.
     """
-    import numpy as np
 
     g = np.asarray(grid, dtype=np.float64)
     v = np.asarray(values)
     hit = np.flatnonzero(np.isclose(g, omega, rtol=0.0, atol=1e-12))
     if hit.size:
-        return Reference(
-            v[..., int(hit[0])], omega=omega, interpolated=False, source=source
-        )
+        return Reference(v[..., int(hit[0])], omega=omega, interpolated=False, source=source)
     k = int(np.clip(np.searchsorted(g, omega), 1, g.size - 1))
     f = (omega - g[k - 1]) / (g[k] - g[k - 1])
     return Reference(
@@ -414,11 +412,7 @@ def assert_comparison_window_is_valid(
     c0, c1 = comparison
     if c1 <= c0:
         raise ValueError(f"comparison window is empty or reversed: {comparison}")
-    bad = {
-        name: win
-        for name, win in validity.items()
-        if not (win[0] <= c0 and c1 <= win[1])
-    }
+    bad = {name: win for name, win in validity.items() if not (win[0] <= c0 and c1 <= win[1])}
     if bad:
         detail = "; ".join(f"{n} valid over {w}" for n, w in sorted(bad.items()))
         raise ValueError(

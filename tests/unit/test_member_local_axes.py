@@ -86,9 +86,7 @@ def test_triad_is_right_handed_and_orthonormal() -> None:
 def test_collinear_orientation_node_is_refused() -> None:
     """An orientation node on the member axis is degenerate however it arrived."""
     with pytest.raises(DegenerateMemberOrientation):
-        member_local_axes(
-            _SPAR_BOTTOM, _SPAR_TOP, orientation_node=np.array([0.0, 0.0, -10.0])
-        )
+        member_local_axes(_SPAR_BOTTOM, _SPAR_TOP, orientation_node=np.array([0.0, 0.0, -10.0]))
 
 
 def test_roll_does_not_rescue_a_vertical_member() -> None:

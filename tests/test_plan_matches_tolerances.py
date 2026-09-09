@@ -20,6 +20,7 @@ numbers agree. A plan sentence can still describe a value correctly and reason
 about it wrongly -- `CLAUDE.md` § "Every claim carries its command" is what
 covers that, and this is the mechanical half.
 """
+
 from __future__ import annotations
 
 import re
@@ -35,14 +36,15 @@ PLAN = ROOT / "docs" / "milestones" / "F2.md"
 # `NAME = value` or `NAME` followed by `= value` inside a backticked span, which
 # is how the plan writes them. The name must be a declared tolerance, so prose
 # that merely mentions a constant without stating a value is not matched.
-_STATED = re.compile(
-    r"`?\b([A-Z][A-Z0-9_]{3,})\b`?\s*=\s*`?([-+0-9][0-9eE.+-]*)`?"
-)
+_STATED = re.compile(r"`?\b([A-Z][A-Z0-9_]{3,})\b`?\s*=\s*`?([-+0-9][0-9eE.+-]*)`?")
 
 
 def _declared() -> dict[str, float]:
-    return {n: getattr(tolerances, n) for n in dir(tolerances)
-            if n.isupper() and isinstance(getattr(tolerances, n), float)}
+    return {
+        n: getattr(tolerances, n)
+        for n in dir(tolerances)
+        if n.isupper() and isinstance(getattr(tolerances, n), float)
+    }
 
 
 def _stated_in_plan() -> list[tuple[int, str, str]]:
@@ -77,7 +79,8 @@ def test_the_plan_states_at_least_one_tolerance_value() -> None:
 
 
 @pytest.mark.parametrize(
-    "line, name, literal", _stated_in_plan(),
+    "line, name, literal",
+    _stated_in_plan(),
     ids=lambda v: str(v) if not isinstance(v, str) else v,
 )
 def test_the_plan_and_the_code_agree(line: int, name: str, literal: str) -> None:

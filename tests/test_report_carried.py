@@ -49,6 +49,7 @@ WHAT IS NOT CHECKED, stated so the guard is not trusted past its reach: whether
 the status written beside a carried item is TRUE, and whether a touched file was
 touched at the right line. Both are the reviewer's.
 """
+
 from __future__ import annotations
 
 import re
@@ -70,8 +71,7 @@ _MENTION = re.compile(r"\bR\d+\b")
 # The directory part is OPTIONAL, because findings name bare files too and
 # those were invisible to this pattern (R171). The optional `:line` and `:a-b`
 # suffixes are what take the guard to line resolution.
-_SITE = re.compile(
-    r"((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json))(?::(\d+)(?:-(\d+))?)?")
+_SITE = re.compile(r"((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json))(?::(\d+)(?:-(\d+))?)?")
 
 
 def _read(path: Path) -> str:
@@ -86,12 +86,12 @@ def _section(text: str, heading: str) -> str:
         return ""
     start = heads[-1].end()
     nxt = re.search(r"^##+ ", text[start:], re.MULTILINE)
-    return text[start:start + nxt.start()] if nxt else text[start:]
+    return text[start : start + nxt.start()] if nxt else text[start:]
 
 
 def _newest_revision(text: str) -> str:
     marks = [m.start() for m in re.finditer(r"^# Revision \d+", text, re.MULTILINE)]
-    return text[marks[-1]:] if marks else text
+    return text[marks[-1] :] if marks else text
 
 
 def _reviewed_commit(text: str) -> str:
@@ -106,8 +106,9 @@ def _answered_verdict(report_text: str) -> str:
     `test_the_report_names_the_verdict_it_answers` turns into a failure rather
     than a silent fall back to the newest verdict.
     """
-    m = re.search(r"^Answers:\s*verdict\s*\d+\s*@\s*(\S+)",
-                  _newest_revision(report_text), re.MULTILINE)
+    m = re.search(
+        r"^Answers:\s*verdict\s*\d+\s*@\s*(\S+)", _newest_revision(report_text), re.MULTILINE
+    )
     return m.group(1) if m else ""
 
 
@@ -116,8 +117,8 @@ def _verdict_text_at(sha: str) -> str:
     if not sha:
         return _read(VERDICT)
     out = subprocess.run(
-        ["git", "show", f"{sha}:docs/reviews/F2/step-4.md"],
-        cwd=ROOT, capture_output=True)
+        ["git", "show", f"{sha}:docs/reviews/F2/step-4.md"], cwd=ROOT, capture_output=True
+    )
     if out.returncode != 0:
         return _read(VERDICT)
     return out.stdout.decode("utf-8", errors="replace")
@@ -128,8 +129,7 @@ ANSWERED = _answered_verdict(REPORT_TEXT)
 VERDICT_TEXT = _verdict_text_at(ANSWERED)
 CARRIED = _section(_newest_revision(REPORT_TEXT), "Carried")
 EXPECTED = sorted(
-    set(_FINDING.findall(VERDICT_TEXT))
-    | set(_MENTION.findall(_section(VERDICT_TEXT, "Carried"))),
+    set(_FINDING.findall(VERDICT_TEXT)) | set(_MENTION.findall(_section(VERDICT_TEXT, "Carried"))),
     key=lambda r: int(r[1:]),
 )
 
@@ -145,14 +145,11 @@ def test_the_report_names_the_verdict_it_answers() -> None:
         "header. Without it there is no way to tell a report that predates a "
         "verdict from one that ignores it."
     )
-    out = subprocess.run(["git", "cat-file", "-e", ANSWERED], cwd=ROOT,
-                         capture_output=True)
+    out = subprocess.run(["git", "cat-file", "-e", ANSWERED], cwd=ROOT, capture_output=True)
     assert out.returncode == 0, (
-        f"the report answers verdict `{ANSWERED}`, which is not a commit in "
-        "this repository."
+        f"the report answers verdict `{ANSWERED}`, which is not a commit in " "this repository."
     )
-    assert len(re.findall(r"^Answers:", _newest_revision(REPORT_TEXT),
-                          re.MULTILINE)) == 1, (
+    assert len(re.findall(r"^Answers:", _newest_revision(REPORT_TEXT), re.MULTILINE)) == 1, (
         "the newest revision carries more than one `Answers:` header, so which "
         "verdict it claims to answer is ambiguous."
     )
@@ -165,8 +162,7 @@ def test_the_parse_found_something_to_check() -> None:
         "changed and every assertion below would pass on anything"
     )
     assert CARRIED.strip(), (
-        "the newest report revision has no Carried section, so there is nothing "
-        "to check against"
+        "the newest report revision has no Carried section, so there is nothing " "to check against"
     )
     assert len(EXPECTED) >= 5, (
         f"only {EXPECTED} expected; the verdict carries more than that and the "
@@ -198,8 +194,7 @@ def _changed_lines() -> dict[str, set[int]]:
     reviewed = _reviewed_commit(VERDICT_TEXT)
     if not reviewed:
         return {}
-    out = subprocess.run(["git", "diff", "-U0", reviewed], cwd=ROOT,
-                         capture_output=True)
+    out = subprocess.run(["git", "diff", "-U0", reviewed], cwd=ROOT, capture_output=True)
     text = out.stdout.decode("utf-8", errors="replace")
     touched: dict[str, set[int]] = {}
     path = ""
@@ -217,8 +212,7 @@ def _changed_lines() -> dict[str, set[int]]:
                 # A pure insertion has count 0 and sits AFTER `start`; count the
                 # neighbouring lines so an answer that ADDS lines at a named site
                 # closes it.
-                span = (range(start, start + count) if count
-                        else (start, start + 1))
+                span = range(start, start + count) if count else (start, start + 1)
                 touched.setdefault(path, set()).update(span)
     return touched
 
@@ -233,10 +227,10 @@ def _sites_by_finding() -> list[tuple[str, str, int]]:
     out: list[tuple[str, str, int]] = []
     for i, m in enumerate(blocks):
         end = blocks[i + 1].start() if i + 1 < len(blocks) else len(VERDICT_TEXT)
-        nxt = re.search(r"^##+ ", VERDICT_TEXT[m.end():end], re.MULTILINE)
+        nxt = re.search(r"^##+ ", VERDICT_TEXT[m.end() : end], re.MULTILINE)
         if nxt:
             end = m.end() + nxt.start()
-        for path, first, last in _SITE.findall(VERDICT_TEXT[m.start():end]):
+        for path, first, last in _SITE.findall(VERDICT_TEXT[m.start() : end]):
             if not first:
                 out.append((m.group(1), path, 0))
                 continue
@@ -251,11 +245,9 @@ TOUCHED = _changed_lines()
 
 
 @pytest.mark.parametrize(
-    "finding, path, line", SITES,
-    ids=[f"{f}-{p}" + (f":{n}" if n else "") for f, p, n in SITES])
-def test_every_named_site_is_touched_or_declared(
-    finding: str, path: str, line: int
-) -> None:
+    "finding, path, line", SITES, ids=[f"{f}-{p}" + (f":{n}" if n else "") for f, p, n in SITES]
+)
+def test_every_named_site_is_touched_or_declared(finding: str, path: str, line: int) -> None:
     """A finding that names lines is answered at all of them, or says which not.
 
     FIVE consecutive rounds closed a site-naming condition at some of its sites
