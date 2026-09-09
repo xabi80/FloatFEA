@@ -1,0 +1,56 @@
+# CORPUS: repository states the step-report carry guard must survive.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the twenty-eighth verdict on F2, the third
+# verdict on step 5 (HEAD 5737fa6).
+#
+# WHY THIS FILE EXISTS (BE3). At CB2 `tests/test_report_carried.py` stopped
+# naming `step-4.md` and started following the newest report:
+#
+#     STEP    = max(int(n) for docs/reports/F2/step-<n>.md)
+#     VERDICT = docs/reviews/F2/step-<STEP>.md
+#     REPORT  = docs/reports/F2/step-<STEP>.md
+#     REPORT_TEXT = _read(REPORT)        <- module scope
+#     VERDICT_TEXT = _verdict_text_at(_answered_verdict(REPORT_TEXT))  <- module scope
+#
+# That was the right diagnosis: pointed at step 4 while step 5 was open, the
+# guard was green about a step nobody was working on. But the two module-scope
+# reads make the guard's INPUT a pair of files that must both exist, and
+# `CLAUDE.md` § Step gating says they do not: the implementer writes the report
+# and COMMITS, and only then is the reviewer invoked to write the verdict. There
+# is a commit, at every step boundary, at which the newest report has no verdict
+# beside it. That commit is not a corner case; it is the step-opening commit.
+#
+# This is the same shape as the failure `.claude/agents/gating-supervisor.md`
+# item 1b records -- comparing the report against the NEWEST verdict made the
+# boundary permanently red, `pytest` was `34 failed` by construction, and green
+# stopped meaning anything. The `Answers:` header fixed it for the verdict
+# CONTENT. The FILE now reintroduces it, one level down.
+#
+# FORMAT
+#   id=<name> state=<what is on disk> require=<what a reader needs> measured=<what
+#   `python -m pytest tests/test_report_carried.py -q` did at 5737fa6>
+#
+#   require=green         the module collects and every assertion passes
+#   require=named_fail    the module COLLECTS and a NAMED test fails, so the
+#                         report can still state a count and the reader can see
+#                         which property broke
+#   require=ignored       the state is not the guard's business and it stays green
+#
+# WHAT A PASSING SCAN MEANS. For each entry, build the state in a checkout at
+# 5737fa6 and run `python -m pytest tests/test_report_carried.py -q`. A passing
+# scan means every entry agrees with `require`. A collection ERROR is never an
+# agreement with `named_fail`: an interrupted collection runs NOTHING -- at
+# 5737fa6, `python -m pytest -q` in state `newest_report_has_no_verdict_yet`
+# reports `1 error in 0.84s` and zero of the 1589 tests execute.
+#
+# MEASURED AT 5737fa6 by the reviewer, in a scratch worktree, one variable moved
+# per row against the `baseline` entry: 6 entries, 4 agree, 2 do not.
+
+id=baseline state=step5_report_and_step5_verdict_both_present require=green measured=green_93_passed
+id=newest_report_has_no_verdict_yet state=docs_reports_F2_step6_md_added_no_docs_reviews_F2_step6_md require=named_fail measured=COLLECTION_ERROR_FileNotFoundError_whole_suite_interrupted
+id=newest_verdict_file_present_but_empty state=step6_report_added_and_step6_verdict_is_a_zero_byte_file require=named_fail measured=collection_error_empty_parameter_set_at_test_the_report_carries_the_finding
+id=two_digit_step_number state=step10_report_and_step10_verdict_both_present require=named_fail measured=named_fail_82_failed_11_passed
+id=non_numeric_step_suffix state=step5b_md_added_beside_step5_md require=ignored measured=ignored_green_93_passed
+id=reports_directory_renamed_away state=docs_reports_F2_renamed_to_docs_reports_F2_moved require=named_fail measured=COLLECTION_ERROR_FileNotFoundError_step_0_md

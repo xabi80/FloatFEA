@@ -46,3 +46,39 @@ id=ci_rung_file_broken_import layout=rung1_has_test_a_py_importing_a_missing_mod
 id=ci_rung_files_renamed_off_the_test_prefix layout=rung1_has_check_a_py_containing_test_a require=fail measured=guard_fired_exit0_was_exit5_before_CA1
 id=ci_rung_has_a_failing_test layout=rung1_has_test_a_py_asserting_1_eq_2 require=fail measured=pytest_exit1
 id=ci_rung_tests_moved_into_a_subdirectory layout=rung1_sub_has_test_a_py_asserting_1_eq_2 require=fail measured=guard_fired_exit0_a_FAILING_test_reported_green
+
+# ---------------------------------------------------------------------------
+# TWENTY-EIGHTH VERDICT (third on step 5), added at HEAD 5737fa6.
+#
+# The first ten layouts were run against the INLINE glob guard and five were
+# wrong. CB1 replaced it with `scripts/run_rung.sh` and a DECLARED expectation,
+# and all ten now do what the entry requires (two of them under a requirement
+# CB1 deliberately changed, recorded in that file's REQUIREMENT_CHANGED).
+#
+# These twelve are layouts nobody has run against the DECLARED rule. They probe
+# the two things a declaration adds that a glob did not have: the declaration
+# can be STALE (it says empty and the rung has gained tests; it says full and
+# the marker is still there), and the declaration can be RIGHT while the run
+# underneath it is empty of meaning (every test skipped).
+#
+# `measured` is what `sh scripts/run_rung.sh <args>` did at 5737fa6, run in a
+# scratch tree, taken before the `require` field was written. The `full:`/
+# `empty:` argument used for each entry is the one the workflow gives that rung.
+# 12 entries: 9 agree, 3 do not.
+#
+#   require=run   the job must succeed AND execute the tests that are present
+#   require=pass  the job must succeed AND it is correct that nothing ran
+#   require=fail  the job must go red
+
+id=ci_rung6_stale_marker_rung_gains_a_passing_test layout=rung6_has_empty_by_design_AND_test_r6_py,tests_regression_populated require=fail measured=fail_exit1
+id=ci_rung2_stale_marker_rung_gains_a_failing_test layout=rung2_has_empty_by_design_AND_a_failing_test_py require=fail measured=fail_exit1
+id=ci_rung_full_without_an_init_py layout=rung1_has_test_a_py_and_NO___init__py require=run measured=run_1_passed_exit0
+id=ci_rung_conftest_raises_at_collection layout=rung1_has_test_a_py_and_a_conftest_py_importing_a_missing_module require=fail measured=fail_exit1_collect_exit4
+id=ci_rung_declared_empty_but_directory_absent layout=rung5_directory_does_not_exist_at_all require=fail measured=fail_exit1
+id=ci_rung_path_is_a_file_not_a_directory layout=tests_verification_rung1_is_a_zero_byte_FILE require=fail measured=fail_exit1
+id=ci_rung_directory_is_a_symlink layout=rung1_is_a_symlink_to_a_sibling_directory_holding_a_passing_test require=run measured=run_1_passed_exit0
+id=ci_rung_every_test_is_skipped layout=rung1_has_test_a_py_whose_only_test_is_pytest_mark_skip require=fail measured=pass_exit0_1_skipped
+id=ci_rung_full_carries_a_stale_empty_by_design_marker layout=rung1_declared_full_has_a_passing_test_AND_an_empty_by_design_marker require=fail measured=pass_exit0_marker_never_read
+id=ci_rung_path_contains_a_space layout=tests_ver_ification_rung1_with_a_space_in_the_path_declared_full require=run measured=fail_exit4_RUN_DIRS_word_split
+id=ci_rung6_second_dir_declared_full_collects_nothing layout=rung6_declared_full_and_populated,tests_regression_exists_but_empty require=fail measured=fail_exit1
+id=ci_rung6_regression_present_but_empty layout=rung6_empty_by_design,tests_regression_exists_and_holds_no_test_file require=fail measured=fail_exit1
