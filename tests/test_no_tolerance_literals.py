@@ -24,8 +24,13 @@ What is flagged
 * the second positional argument of ``approx`` -- its tolerance slot;
 * a bare ``pytest.approx(x)`` with no ``abs``/``rel``, itself an undeclared
   tolerance since it defaults to ``rel=1e-6, abs=1e-12``;
-* a comparison against any float threshold other than ``0.0`` or ``1.0``, which
-  are canonical structural bounds; integers are counts and are never flagged.
+* a float threshold on the RIGHT of a comparison, other than ``0.0`` or ``1.0``,
+  which are canonical structural bounds; integers are counts and are never
+  flagged. **The left operand is not read** (R237): ``assert 0.05 > ratio``
+  returns nothing, and this list said "any float threshold" while two live sites
+  sit on that side. Widening it to ``node.left`` is a change to the guard's
+  reach and belongs to step 4a; the sentence is what was false and it is fixed
+  here.
 
 Each must resolve to a `Name` imported from `floatfea.tolerances`, or be a call to
 `floatfea.testing.assert_close` / `assert_differs`, which carry their own floor.

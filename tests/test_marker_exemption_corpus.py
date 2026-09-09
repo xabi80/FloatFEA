@@ -79,6 +79,31 @@ KNOWN_MISSES: dict[str, str] = {
     "marker_in_multiline_starred_call_args": (
         "the marker annotates a starred argument, not the atol beside it"
     ),
+    # --- the twenty-eighth verdict's additions ------------------------------
+    # THREE ARE THE LEFT-OPERAND SPECIES (R237), which is a gap in DETECTION and
+    # not in the exemption window: `offending()` reads `node.comparators` and
+    # never `node.left`, so `assert 0.05 > ratio` is invisible whatever any
+    # marker does. The docstring that claimed otherwise is fixed at CB; widening
+    # the reach is a change to what the guard flags and it is 4a's.
+    "yoda_left_literal_bare": (
+        "left-operand species (R237): the threshold is on the left of the "
+        "comparison and the scanner never reads it"
+    ),
+    "yoda_left_literal_with_marker_on_other_clause": (
+        "left-operand species (R237): invisible to detection, so no exemption "
+        "rule can change the verdict"
+    ),
+    "chained_bounds_two_literals_one_marker": (
+        "left-operand species (R237) in the middle of a chain: `a < x < b` puts "
+        "one threshold where the scanner does not look"
+    ),
+    # AND ONE THAT IS THE ONE-MARKER-ONE-NODE RULE MEETING ITS OWN LIMIT: a
+    # single `Compare` node carrying the same literal twice is ONE node, so one
+    # marker exempts it once and both occurrences go with it.
+    "same_literal_twice_on_one_compare_node": (
+        "one `Compare` node holds both literals, so exempting the node exempts "
+        "both -- the rule counts nodes and this shape hides two thresholds in one"
+    ),
 }
 
 

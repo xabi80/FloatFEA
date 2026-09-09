@@ -63,24 +63,35 @@ REVIEWS = ROOT / "docs" / "reviews" / "F2"
 REPORTS = ROOT / "docs" / "reports" / "F2"
 
 
-def _newest_step() -> int:
-    """The highest step number that has a report.
-
-    HARDCODED TO STEP 4 UNTIL CB2. Step 5 opened, a report and two verdicts were
-    written for it, and this guard went on reading step 4's pair -- so every
-    assertion below stayed green about a step nobody was working on, which is
-    the most expensive way for a guard to pass. It follows the newest report
-    now.
-    """
-    steps = [
-        int(q.stem.split("-")[1])
-        for q in REPORTS.glob("step-*.md")
-        if q.stem.split("-")[1].isdigit()
-    ]
-    return max(steps) if steps else 0
+def _steps(where: Path) -> set[int]:
+    """Step numbers with a file under `where`. Never raises: a directory that
+    cannot be read is a state this guard REPORTS, not one it dies on."""
+    try:
+        return {
+            int(q.stem.split("-")[1])
+            for q in where.glob("step-*.md")
+            if q.stem.split("-")[1].isdigit()
+        }
+    except OSError:
+        return set()
 
 
-STEP = _newest_step()
+# THE NEWEST REPORT AND THE NEWEST COMPLETE PAIR ARE DIFFERENT NUMBERS, and
+# conflating them took the whole suite down (R234). CB2 made this module read
+# `step-<newest report>` at import; `CLAUDE.md` guarantees the verdict is
+# written AFTER the report is committed, so at every legitimate step boundary
+# the verdict file does not exist yet -- and `read_bytes` on it raised during
+# collection. `pytest -q` then reported `1 error` and ran ZERO of 1589 tests.
+# That is item 1b's failure one level down and worse: 1b made a boundary red,
+# this made it silent.
+#
+# The carry comparison runs against the newest COMPLETE pair, so it stays
+# meaningful at the boundary, and `test_the_guard_reads_the_step_being_worked_on`
+# is the one named test that carries the pending-verdict message.
+REPORTED = _steps(REPORTS)
+REVIEWED = _steps(REVIEWS)
+STEP_REPORT = max(REPORTED) if REPORTED else 0
+STEP = max(REPORTED & REVIEWED) if (REPORTED & REVIEWED) else 0
 VERDICT = REVIEWS / f"step-{STEP}.md"
 REPORT = REPORTS / f"step-{STEP}.md"
 
@@ -97,9 +108,14 @@ _SITE = re.compile(r"((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json))(?::(\d+)(?
 
 
 def _read(path: Path) -> str:
-    """Permissive: a verdict written with a Windows-1252 dash must not make a
-    guard raise, because a guard that raises is a guard that gets removed."""
-    return path.read_bytes().decode("utf-8", errors="replace")
+    """Permissive in BOTH directions: a verdict written with a Windows-1252 dash
+    must not make a guard raise, and neither must a file that is not there yet
+    (R234). A guard that raises during collection is a guard that takes the
+    suite with it -- and it did, at the one moment it was most needed."""
+    try:
+        return path.read_bytes().decode("utf-8", errors="replace")
+    except OSError:
+        return ""
 
 
 def _section(text: str, heading: str) -> str:
@@ -178,18 +194,35 @@ def test_the_report_names_the_verdict_it_answers() -> None:
 
 
 def test_the_guard_reads_the_step_being_worked_on() -> None:
-    """Meta-test for CB2: a guard pointed at the wrong step is green for free.
+    """Meta-test: a guard pointed at the wrong step is green for free, and a
+    guard that dies at a step boundary is worse than either.
 
-    It named step 4 while step 5 was open, so it checked a report that could not
-    change against a verdict that had already been answered. Both files have to
-    exist for the step this guard claims to cover.
+    It named step 4 while step 5 was open. CB2 made it follow the newest report
+    and that took the suite down whenever a report had no verdict yet, which is
+    every legitimate boundary. This is the one named test that carries both
+    states, and it is a test rather than a collection error precisely so the
+    other 1588 still run while it fires.
     """
-    assert STEP > 0, f"no step report found under {REPORTS}"
-    assert REPORT.is_file(), f"{REPORT} is the newest report and does not exist"
-    assert VERDICT.is_file(), (
-        f"{REPORT.name} is the newest step report and {VERDICT} does not exist. "
-        "A step with no verdict file is a step whose carry list this guard "
-        "cannot check at all."
+    assert REPORTED, (
+        f"no step report found under {REPORTS} -- the directory is missing, "
+        "unreadable, or the naming changed. Every assertion in this file is "
+        "about a report, so none of them means anything in this state."
+    )
+    assert STEP > 0, (
+        f"reports exist for steps {sorted(REPORTED)} and verdicts for "
+        f"{sorted(REVIEWED)}; no step has both. There is no carry list to check."
+    )
+    assert STEP_REPORT - STEP <= 1, (
+        f"the newest report is step {STEP_REPORT} and the newest step with a "
+        f"verdict is {STEP}. More than one step has been opened on top of an "
+        "unreviewed one, which `CLAUDE.md` § Step gating forbids."
+    )
+    assert STEP_REPORT == STEP, (
+        f"step {STEP_REPORT} has a report and no verdict yet. That is the "
+        "legitimate boundary -- the verdict is written after the report is "
+        f"committed -- and until it lands this guard checks step {STEP}, so "
+        f"step {STEP_REPORT}'s carry list is UNCHECKED. Invoke the "
+        "gating-supervisor."
     )
 
 
@@ -208,8 +241,22 @@ def test_the_parse_found_something_to_check() -> None:
     )
 
 
-@pytest.mark.parametrize("finding", EXPECTED)
+# A PARAMETRISED TEST WITH AN EMPTY LIST IS A COLLECTION ERROR, and this repo
+# sets `empty_parameter_set_mark = "fail_at_collect"` (R234). An empty or
+# unreadable verdict parses to no findings, and the whole file then failed to
+# collect -- the same "no tests ran" failure the module-scope read had. The
+# placeholder keeps collection alive so a NAMED test carries the message.
+_NOTHING = "(no finding parsed from the verdict)"
+
+
+@pytest.mark.parametrize("finding", EXPECTED or [_NOTHING])
 def test_the_report_carries_the_finding(finding: str) -> None:
+    if finding == _NOTHING:
+        pytest.fail(
+            f"{VERDICT} parsed to no `R<n>` finding at all -- it is empty, "
+            "unreadable, or its format changed. Every carry assertion in this "
+            "file is about that list, so none of them means anything here."
+        )
     assert finding in _MENTION.findall(CARRIED), (
         f"{finding} is in the newest verdict -- as a finding or as an item it "
         "carries forward -- and the newest report revision's Carried section "
@@ -282,8 +329,13 @@ SITES = _sites_by_finding()
 TOUCHED = _changed_lines()
 
 
+_NO_SITE = ("(no site parsed)", "", 0)
+
+
 @pytest.mark.parametrize(
-    "finding, path, line", SITES, ids=[f"{f}-{p}" + (f":{n}" if n else "") for f, p, n in SITES]
+    "finding, path, line",
+    SITES or [_NO_SITE],
+    ids=[f"{f}-{p}" + (f":{n}" if n else "") for f, p, n in (SITES or [_NO_SITE])],
 )
 def test_every_named_site_is_touched_or_declared(finding: str, path: str, line: int) -> None:
     """A finding that names lines is answered at all of them, or says which not.
@@ -294,6 +346,12 @@ def test_every_named_site_is_touched_or_declared(finding: str, path: str, line: 
     `no change` beside the exact site, which is a claim a reviewer can check,
     rather than an omission nobody sees.
     """
+    if (finding, path, line) == _NO_SITE:
+        pytest.fail(
+            f"{VERDICT} names no file site at all. Either it is unreadable or "
+            "the site pattern stopped matching; both make this check pass on "
+            "anything."
+        )
     hit = [p for p in TOUCHED if p.endswith(path)]
     if hit and (line == 0 or any(line in TOUCHED[p] for p in hit)):
         return

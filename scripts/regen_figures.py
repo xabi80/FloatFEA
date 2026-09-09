@@ -20,6 +20,7 @@ nobody reads, and the prose around these figures is still prose.
 
 Usage:  python scripts/regen_figures.py [--check]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -46,10 +47,12 @@ class _Silent:
 
 def _figures() -> list[tuple[str, str]]:
     import test_corpus_configurations as C
-    from floatfea.tolerances import (BOUNDARY_BISECTION_CONVERGENCE,
-                                     PATCH_TEST_COUNTER_HEADROOM,
-                                     PATCH_TEST_EXACTNESS,
-                                     PATCH_TEST_EXACTNESS_COUNTER_DEFECT as CD)
+    from floatfea.tolerances import (
+        BOUNDARY_BISECTION_CONVERGENCE,
+        PATCH_TEST_COUNTER_HEADROOM,
+        PATCH_TEST_EXACTNESS,
+        PATCH_TEST_EXACTNESS_COUNTER_DEFECT as CD,
+    )
 
     ceil = PATCH_TEST_EXACTNESS
     rows: list[tuple[str, str]] = []
@@ -63,24 +66,26 @@ def _figures() -> list[tuple[str, str]]:
     model, els = RB._frame()
     k_rb = RB.assemble_dense(model, els)
     rows.append(("rigid_body_mode_ratio", f"{RB.mode_ratio(k_rb):.4e}"))
-    rows.append(("rigid_body_subspace_loss",
-                 f"{RB.subspace_loss(k_rb, model):.4e}"))
-    rows.append(("rigid_body_counter_ratio",
-                 f"{RB.counter_response('ratio'):.4e}"))
-    rows.append(("rigid_body_counter_loss",
-                 f"{RB.counter_response('loss'):.4e}"))
+    rows.append(("rigid_body_subspace_loss", f"{RB.subspace_loss(k_rb, model):.4e}"))
+    rows.append(("rigid_body_counter_ratio", f"{RB.counter_response('ratio'):.4e}"))
+    rows.append(("rigid_body_counter_loss", f"{RB.counter_response('loss'):.4e}"))
 
     rows.append(("corpus_entries", f"{len(C.ENTRIES)}"))
     rows.append(("corpus_solved", f"{len(C.SOLVED)}"))
 
-    worst = max((max(C._oob_state(e, st) for st in C.STATES) / ceil, e["id"])
-                for e in C.SOLVED)
+    worst = max((max(C._oob_state(e, st) for st in C.STATES) / ceil, e["id"]) for e in C.SOLVED)
     rows.append(("clean_worst_ratio", f"{worst[0]:.4f}x"))
     rows.append(("clean_worst_entry", worst[1]))
 
     for kind in C.INJECTED_DEFECTS:
-        vals = [(max(C._oob_with_injected(e, st, kind) for st in C.STATES) / ceil,
-                 e["id"], C.member_lambda(e)) for e in C.SOLVED]
+        vals = [
+            (
+                max(C._oob_with_injected(e, st, kind) for st in C.STATES) / ceil,
+                e["id"],
+                C.member_lambda(e),
+            )
+            for e in C.SOLVED
+        ]
         lo = min(vals)
         rows.append((f"margin_{kind}", f"{lo[0]:.4g}x"))
         rows.append((f"margin_{kind}_at", f"{lo[1]} (L/r_min {lo[2]:.0f})"))
@@ -94,25 +99,22 @@ def _figures() -> list[tuple[str, str]]:
             if C.classify(e, kind) != "below resolution":
                 continue
             exempt[kind] = exempt.get(kind, 0) + 1
-            if max(C._oob_with_injected(e, st, kind)
-                   for st in C.STATES) > ceil:
+            if max(C._oob_with_injected(e, st, kind) for st in C.STATES) > ceil:
                 detected += 1
-    rows.append(("exempt_total", f"{sum(exempt.values())} of "
-                 f"{len(C.SOLVED) * len(C.INJECTED_DEFECTS)}"))
-    rows.append(("exempt_by_defect",
-                 ", ".join(f"{k} {v}" for k, v in sorted(exempt.items()))))
+    rows.append(
+        ("exempt_total", f"{sum(exempt.values())} of " f"{len(C.SOLVED) * len(C.INJECTED_DEFECTS)}")
+    )
+    rows.append(("exempt_by_defect", ", ".join(f"{k} {v}" for k, v in sorted(exempt.items()))))
     rows.append(("exempt_detected", f"{detected}"))
 
-    dev = [abs(C.injected_delta(e, "one_element_scaled") - CD) / math.ulp(CD)
-           for e in C.SOLVED]
+    dev = [abs(C.injected_delta(e, "one_element_scaled") - CD) / math.ulp(CD) for e in C.SOLVED]
     rows.append(("calibration_ulp_worst", f"{max(dev):.3f} ULP"))
 
     entry, edge = C._smallest_detection_edge()
     rows.append(("detection_edge", f"{edge:.4e}"))
     rows.append(("detection_edge_at", entry))
     rows.append(("counter_defect_over_edge", f"{CD / edge:.4g}x"))
-    rows.append(("counter_headroom_room",
-                 f"{PATCH_TEST_COUNTER_HEADROOM / (CD / edge):.2f}x"))
+    rows.append(("counter_headroom_room", f"{PATCH_TEST_COUNTER_HEADROOM / (CD / edge):.2f}x"))
 
     # THE BOUNDARY IS SOLVED HERE, NOT TYPED INTO THE PLAN (R207). The plan's
     # justification for `PATCH_TEST_COUNTER_HEADROOM` carried `2.36e-6 passes
@@ -136,12 +138,15 @@ def _figures() -> list[tuple[str, str]]:
             outcomes.append("fails")
         finally:
             C.PATCH_TEST_EXACTNESS_COUNTER_DEFECT = original_cd
-    rows.append(("counter_defect_boundary",
-                 f"{boundary * (1.0 - 1.0e-3):.4g} {outcomes[0]}, "
-                 f"{boundary * (1.0 + 1.0e-3):.4g} {outcomes[1]}"))
+    rows.append(
+        (
+            "counter_defect_boundary",
+            f"{boundary * (1.0 - 1.0e-3):.4g} {outcomes[0]}, "
+            f"{boundary * (1.0 + 1.0e-3):.4g} {outcomes[1]}",
+        )
+    )
 
-    lo, hi, lo_at, hi_at, n, unbracketed, refused, lo_n = _boundary_margins(
-        C, ceil, CD)
+    lo, hi, lo_at, hi_at, n, unbracketed, refused, lo_n = _boundary_margins(C, ceil, CD)
     rows.append(("boundary_margin_min", f"{lo:.6g}x"))
     rows.append(("boundary_margin_max", f"{hi:.6g}x"))
     rows.append(("boundary_margin_spread", f"{hi / lo:.3f}x"))
@@ -152,10 +157,10 @@ def _figures() -> list[tuple[str, str]]:
     rows.append(("boundary_margin_min_plateau", f"{lo_n} bases"))
     rows.append(("boundary_margin_max_at", hi_at))
     rows.append(("boundary_margin_bases", f"{n} converged"))
-    rows.append(("boundary_margin_unbracketed",
-                 f"{len(unbracketed)}: {', '.join(unbracketed) or 'none'}"))
-    rows.append(("boundary_margin_refused",
-                 f"{len(refused)}: {', '.join(refused) or 'none'}"))
+    rows.append(
+        ("boundary_margin_unbracketed", f"{len(unbracketed)}: {', '.join(unbracketed) or 'none'}")
+    )
+    rows.append(("boundary_margin_refused", f"{len(refused)}: {', '.join(refused) or 'none'}"))
     rows.append(("calibration_ulp_histogram", _ulp_histogram(C, CD)))
     return rows
 
@@ -173,8 +178,7 @@ def _ulp_histogram(C, CD: float) -> str:
     """
     counts: dict[int, int] = {}
     for entry in C.SOLVED:
-        k = int(round(abs(C.injected_delta(entry, "one_element_scaled") - CD)
-                      / math.ulp(CD)))
+        k = int(round(abs(C.injected_delta(entry, "one_element_scaled") - CD) / math.ulp(CD)))
         counts[k] = counts.get(k, 0) + 1
     return ", ".join(f"{k} ULP x{counts[k]}" for k in sorted(counts))
 
@@ -210,15 +214,14 @@ def _boundary_margins(C, ceil: float, CD: float):
         # sections, so `_build` raised and 80 of 110 bases were "refused" -- an
         # artefact of the probe, not a property of the base.
         from floatfea.model.admissibility import member_l_over_d
-        from floatfea.tolerances import (BEAM_ADMISSION_L_OVER_D,
-                                         BOUNDARY_BISECTION_CONVERGENCE)
+        from floatfea.tolerances import BEAM_ADMISSION_L_OVER_D, BOUNDARY_BISECTION_CONVERGENCE
+
         try:
             outer = 1.0 / member_l_over_d(1.0, C._entry_section(entry))
         except Exception as exc:
             refused.append(f"{entry['id']} ({type(exc).__name__})")
             continue
-        lo, hi = ((1.0 + BOUNDARY_BISECTION_CONVERGENCE)
-                  * BEAM_ADMISSION_L_OVER_D * outer), 1.0e9
+        lo, hi = ((1.0 + BOUNDARY_BISECTION_CONVERGENCE) * BEAM_ADMISSION_L_OVER_D * outer), 1.0e9
 
         # THE BRACKET IS CHECKED BEFORE IT IS TRUSTED (R175). Without this the
         # loop ran inside a fixed [1, 1e7] and never asked whether the crossing
@@ -258,8 +261,10 @@ def _boundary_margins(C, ceil: float, CD: float):
                     break
             base["stations"] = repr(lo)
             eff = C.injected_delta(base, "dropped_shear_parameter")
-            resp = max(C._oob_with_injected(base, st, "dropped_shear_parameter")
-                       for st in C.STATES) / ceil
+            resp = (
+                max(C._oob_with_injected(base, st, "dropped_shear_parameter") for st in C.STATES)
+                / ceil
+            )
         except Exception as exc:
             refused.append(f"{entry['id']} ({type(exc).__name__})")
             continue
@@ -268,12 +273,21 @@ def _boundary_margins(C, ceil: float, CD: float):
     if not out:
         raise RuntimeError(
             "no base bracketed the classification boundary; the range below "
-            "would be empty and the figures would publish nothing")
+            "would be empty and the figures would publish nothing"
+        )
     out.sort()
     # The plateau: how many bases share the minimum to the digits published.
     lo_n = sum(1 for v, _ in out if f"{v:.6g}" == f"{out[0][0]:.6g}")
-    return (out[0][0], out[-1][0], out[0][1], out[-1][1],
-            len(out), sorted(unbracketed), sorted(refused), lo_n)
+    return (
+        out[0][0],
+        out[-1][0],
+        out[0][1],
+        out[-1][1],
+        len(out),
+        sorted(unbracketed),
+        sorted(refused),
+        lo_n,
+    )
 
 
 def render() -> str:
@@ -311,8 +325,10 @@ def main(argv: list[str] | None = None) -> int:
         # was false at the commit that published it, which only a whole-file
         # comparison can catch.
         if current != text:
-            print("regen_figures: F2_figures.md is not what this script "
-                  "produces at HEAD", file=sys.stderr)
+            print(
+                "regen_figures: F2_figures.md is not what this script " "produces at HEAD",
+                file=sys.stderr,
+            )
             return 1
         print("regen_figures: up to date")
         return 0

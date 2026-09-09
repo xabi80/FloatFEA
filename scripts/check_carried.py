@@ -18,6 +18,7 @@ Exit status is 0 when every finding is carried, 1 otherwise. Usage:
 
     python scripts/check_carried.py [--verdict PATH] [--report PATH]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -47,15 +48,14 @@ def _read(path: Path) -> str:
 def _newest_report_carried(report: Path) -> tuple[str, set[str]]:
     """The `Carried` section of the LAST revision in the report file."""
     text = _read(report)
-    revisions = [m.start() for m in re.finditer(r"^# Revision \d+", text,
-                                                re.MULTILINE)]
-    body = text[revisions[-1]:] if revisions else text
+    revisions = [m.start() for m in re.finditer(r"^# Revision \d+", text, re.MULTILINE)]
+    body = text[revisions[-1] :] if revisions else text
     heads = [m for m in re.finditer(r"^##+ .*Carried.*$", body, re.MULTILINE)]
     if not heads:
         return body, set()
     start = heads[-1].end()
     nxt = re.search(r"^##+ ", body[start:], re.MULTILINE)
-    section = body[start:start + nxt.start()] if nxt else body[start:]
+    section = body[start : start + nxt.start()] if nxt else body[start:]
     return section, set(_MENTION.findall(section))
 
 
@@ -73,22 +73,29 @@ def main(argv: list[str] | None = None) -> int:
     findings = set(_FINDING.findall(_read(verdict)))
     if not findings:
         # A verdict with no findings parsed is a parse failure, not a clean bill.
-        print("check_carried: no findings parsed from the verdict -- the format "
-              "changed and this check would pass on anything", file=sys.stderr)
+        print(
+            "check_carried: no findings parsed from the verdict -- the format "
+            "changed and this check would pass on anything",
+            file=sys.stderr,
+        )
         return 1
 
     section, carried = _newest_report_carried(report)
     if not section.strip():
-        print("check_carried: the newest revision has no Carried section",
-              file=sys.stderr)
+        print("check_carried: the newest revision has no Carried section", file=sys.stderr)
         return 1
 
     missing = sorted(findings - carried, key=lambda r: int(r[1:]))
     if missing:
-        print("check_carried: the newest report's Carried section omits "
-              f"{', '.join(missing)}", file=sys.stderr)
-        print(f"  verdict declares {len(findings)} findings; "
-              f"{len(findings) - len(missing)} are carried", file=sys.stderr)
+        print(
+            "check_carried: the newest report's Carried section omits " f"{', '.join(missing)}",
+            file=sys.stderr,
+        )
+        print(
+            f"  verdict declares {len(findings)} findings; "
+            f"{len(findings) - len(missing)} are carried",
+            file=sys.stderr,
+        )
         return 1
 
     print(f"check_carried: all {len(findings)} findings carried")

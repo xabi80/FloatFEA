@@ -31,6 +31,26 @@ jobs:
       - name: mypy
         run: mypy floatfea
 
+  # THE GUARDS THEMSELVES, and they had never run here (R235). Every top-level
+  # `tests/test_*.py` -- the tolerance-literal scanner, the carry guard, the
+  # counter meta-test, the plan and figure checks, and the two corpora added at
+  # CB0/CB1 -- was collected by no job at all: 1296 of 1589. Two commits said
+  # "in the suite, so in CI" about files CI never saw.
+  #
+  # `tests/test_ci_runs_the_whole_suite.py` keeps this honest by parsing this
+  # file and requiring the union of what the jobs name to be the whole suite, so
+  # a test added where nothing runs it fails at that commit.
+  guards:
+    name: guards and meta-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+      - run: pytest tests --ignore=tests/unit --ignore=tests/verification --ignore=tests/regression -q
+
   unit:
     name: unit tests
     runs-on: ubuntu-latest
@@ -51,8 +71,13 @@ jobs:
   # rung 2 from running at all, so nobody can investigate a rung 5 discrepancy
   # while a rung 1 test is red.
   #
-  # Each rung is wired now, while empty, so that adding a test to a rung is a
-  # matter of dropping a file into tests/verification/rungN/ -- not a CI edit.
+  # Each rung is wired now, while empty. WHAT ADDING THE FIRST TEST TO AN EMPTY
+  # RUNG COSTS, stated accurately (R236): dropping the file in is not enough --
+  # the rung is declared `empty:` here and carries a `.empty-by-design` marker,
+  # so the first test makes the declaration stale and the job FAILS. Delete the
+  # marker and change `empty:` to `full:` in the same commit. That is a CI edit,
+  # and the sentence that stood here said it was not, four lines above the block
+  # that withdraws the previous version of the same claim.
   #
   # THIS COMMENT HAS BEEN WRONG TWICE, AND BOTH TIMES BECAUSE NOTHING RAN IT.
   #

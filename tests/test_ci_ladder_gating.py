@@ -75,6 +75,11 @@ PASSING = "def test_ok():\n    assert True\n"
 FAILING = "def test_bad():\n    assert 1 == 2\n"
 BROKEN = "import a_module_that_is_not_there\n\n\ndef test_ok():\n    assert True\n"
 NO_PREFIX = "def check_ok():\n    assert True\n"
+SKIPPED = (
+    "import pytest\n\n\n"
+    '@pytest.mark.skip(reason="the rung asserts nothing")\n'
+    "def test_a():\n    assert True\n"
+)
 
 # not-a-tolerance: the layout each entry names, built as files. This is a
 # translation of the corpus's `layout=` field into a directory tree, not a
@@ -116,6 +121,62 @@ LAYOUTS: dict[str, dict[str, str | None]] = {
     "ci_rung_tests_moved_into_a_subdirectory": {
         "tests/verification/rung1/sub/test_a.py": FAILING,
     },
+    # --- the twenty-eighth verdict's twelve ---------------------------------
+    "ci_rung6_stale_marker_rung_gains_a_passing_test": {
+        "tests/verification/rung6/.empty-by-design": "marker",
+        "tests/verification/rung6/test_r6.py": PASSING,
+        "tests/regression/test_golden.py": PASSING,
+    },
+    "ci_rung2_stale_marker_rung_gains_a_failing_test": {
+        "tests/verification/rung2/.empty-by-design": "marker",
+        "tests/verification/rung2/test_a.py": FAILING,
+    },
+    "ci_rung_full_without_an_init_py": {
+        "tests/verification/rung1/test_a.py": PASSING,
+    },
+    "ci_rung_conftest_raises_at_collection": {
+        "tests/verification/rung1/test_a.py": PASSING,
+        "tests/verification/rung1/conftest.py": BROKEN,
+    },
+    "ci_rung_declared_empty_but_directory_absent": {
+        "tests/verification/other/keep.txt": "",
+    },
+    "ci_rung_path_is_a_file_not_a_directory": {
+        "tests/verification/rung1": "",
+    },
+    "ci_rung_directory_is_a_symlink": {
+        "tests/verification/real_rung/test_a.py": PASSING,
+        "@symlink:tests/verification/rung1": "tests/verification/real_rung",
+    },
+    "ci_rung_every_test_is_skipped": {
+        "tests/verification/rung1/test_a.py": SKIPPED,
+    },
+    "ci_rung_full_carries_a_stale_empty_by_design_marker": {
+        "tests/verification/rung1/test_a.py": PASSING,
+        "tests/verification/rung1/.empty-by-design": "marker",
+    },
+    "ci_rung_path_contains_a_space": {
+        "tests/ver ification/rung1/test_a.py": PASSING,
+    },
+    "ci_rung6_second_dir_declared_full_collects_nothing": {
+        "tests/verification/rung6/test_r6.py": PASSING,
+        "tests/regression/keep.txt": "",
+    },
+    "ci_rung6_regression_present_but_empty": {
+        "tests/verification/rung6/.empty-by-design": "marker",
+        "tests/regression/keep.txt": "",
+    },
+}
+
+# The two entries whose job arguments are not the default pair for their rung.
+SPECIAL_ARGS: dict[str, list[str]] = {
+    "ci_rung_declared_empty_but_directory_absent": ["empty:tests/verification/rung5"],
+    "ci_rung_path_contains_a_space": ["full:tests/ver ification/rung1"],
+    "ci_rung2_stale_marker_rung_gains_a_failing_test": ["empty:tests/verification/rung2"],
+    "ci_rung6_second_dir_declared_full_collects_nothing": [
+        "full:tests/verification/rung6",
+        "full:tests/regression",
+    ],
 }
 
 ARGS: dict[str, list[str]] = {
@@ -124,12 +185,39 @@ ARGS: dict[str, list[str]] = {
 }
 
 
+def _link_directory(target: Path, link: Path) -> None:
+    """A directory link, by whichever mechanism this machine allows.
+
+    NOT A SKIP AND NOT A PLATFORM GUARD (`CLAUDE.md` forbids the first). Windows
+    refuses `os.symlink` without a privilege most developer accounts do not
+    have -- `WinError 1314` -- while a directory JUNCTION needs none and is what
+    `[ -d ]` and pytest both follow. CI runs this on Linux and takes the first
+    branch; a machine that can do neither raises, and the entry goes red rather
+    than quietly not being exercised.
+    """
+    try:
+        link.symlink_to(target, target_is_directory=True)
+    except OSError:
+        subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(link), str(target)],
+            capture_output=True,
+            check=True,
+        )
+
+
 def _job_for(entry: str) -> list[str]:
+    if entry in SPECIAL_ARGS:
+        return SPECIAL_ARGS[entry]
     return ARGS["rung6"] if entry.startswith("ci_rung6") else ARGS["rung1"]
 
 
 def _run(tmp: Path, entry: str) -> tuple[int, str]:
     for rel, body in LAYOUTS[entry].items():
+        if rel.startswith("@symlink:"):
+            link = tmp / rel.split(":", 1)[1]
+            link.parent.mkdir(parents=True, exist_ok=True)
+            _link_directory(tmp / str(body), link)
+            continue
         p = tmp / rel
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(body or "", encoding="utf-8")
