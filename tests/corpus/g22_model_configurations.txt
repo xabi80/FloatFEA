@@ -1004,3 +1004,64 @@ id=ch_edgefloor_D0p068_L387_skew section=circular_tube,D=0.06796040563617027,t=0
 id=ch_calib_2ulp_inplane_aniso1p7e5_L0p27 section=circular_tube,D=0.07569752951363877,t=0.030959970609799402 stations=0.27342116821252443 orient=in_plane_y extra=I_y_over_I_z=168322.7 runs_in_suite=no expect=hold
 id=ch_calib_2ulp_axis_aniso7p2e5_L0p078 section=circular_tube,D=0.020819261167442604,t=0.00999338417067694 stations=0.07777803180712858 orient=axis extra=I_y_over_I_z=719308.7 runs_in_suite=no expect=hold
 id=ch_calib_2ulp_inplane_aniso2p7e5_L8p39 section=circular_tube,D=1.5577406935201514,t=0.5362590791943861 stations=8.387137858945891 orient=in_plane_y extra=I_y_over_I_z=271407.6 runs_in_suite=no expect=hold
+
+# --- twenty-third verdict (follow-on on fc30b71, the regeneration commit) -----
+#
+# WHAT THIS ROUND WAS LOOKING FOR. The commit under review republished
+# `detection_edge` as 3.6425e-14 at an entry I planted last round, and the plan
+# and one tolerance comment still retype the PREVIOUS value in present tense.
+# The question these entries answer is whether that number is a floor or a
+# waypoint -- because a figure that moves every round cannot be carried in prose,
+# and 1100 further candidates from two independent seeds is the measurement that
+# says which it is.
+#
+# 1. THE EDGE IS A PLATEAU, NOT A DESCENT, AND IT IS SCALE-FREE. 500 broad
+#    candidates (D 0.01..5 m, t/D 0.06..0.49, L/D 3..100, random unit direction,
+#    roll -pi..pi, I_y/I_z 1e4..1e6) reached 4.0721e-14. 600 further candidates
+#    perturbed around the shipped minimum reached 3.6275e-14 -- 0.4% below the
+#    published edge after 600 tries in the region that produced it. Entries 1-4
+#    below span D 0.069 m to 0.787 m, an 11x range of diameter, and their edges
+#    span 3.63e-14 to 4.07e-14, a 12% band. The edge is a property of the
+#    six-state residual, not of the geometry that reaches it.
+#
+# 2. `PATCH_TEST_COUNTER_HEADROOM = 6.0e7` STILL HOLDS, second round running,
+#    against a reviewer trying to break it. Breaking it needs an edge below
+#    1.6667e-14; 1100 candidates and two seeds got to 3.6275e-14, a factor of
+#    2.2 short. What DOES move is the published room: 2.19x -> 2.177x.
+#
+# 3. WHAT MOVES BESIDES THE EDGE, AND IT IS NOT THE ONE I WAS HUNTING.
+#    `ci_plateau_D0p0689_roll1p017_aniso9p6e5` is also the worst CLEAN entry in
+#    the corpus at 0.1142x of `PATCH_TEST_EXACTNESS`, above the published
+#    `clean_worst_ratio` of 0.0982x. The 5e-15 ceiling then sits 8.75x above the
+#    worst clean entry, not the 10.18x it sat at before this file grew and not
+#    the `26.8x` `tolerances.py:405` says in the present tense. The ceiling
+#    HOLDS. The sentence describing its margin does not.
+#
+# 4. A SYMMETRY THE MODEL HAS AND THE RESIDUAL DOES NOT, MEASURED SO THAT NOBODY
+#    LATER MISTAKES IT FOR A DEFECT. For a circular tube with I_y = I_z a roll
+#    about the member axis is a symmetry of the section, so the answer must not
+#    depend on it. Measured on the posed skew geometry: roll=0, roll=2pi,
+#    I_y/I_z=1 with no roll, and `extra=none` all give a BIT-IDENTICAL worst
+#    residual of 8.051599e-17 and a bit-identical edge of 1.013201e-13. With
+#    roll=1.05 and I_y/I_z=1 the worst residual is 1.207740e-16 -- 1.50x, on a
+#    quantity whose ceiling is 5e-15. That is a floating-point path difference at
+#    0.016x vs 0.024x of the ceiling, and it BOUNDS the noise floor of any future
+#    roll-invariance claim: such a claim must be stated as a bound at 1.5x, never
+#    as an identity. Entries 5 and 6 carry both halves.
+#
+# 5. THE DEGENERACY GUARD REFUSES AT EVERY SCALE, not only at visible angles.
+#    A direction 1e-9, 1e-15 and 1e-17 off global Z all raise
+#    DegenerateMemberOrientation against the 0.05-rad floor; none of the three
+#    falls through to a default local-axis construction. Entry 7 pins the
+#    smallest of the three, which is the one an underflow in a normalisation
+#    would turn into an exact global-Z member.
+#
+# 6. WHAT I COULD NOT BUILD, AGAIN. An edge below 1.6667e-14. Recorded so the
+#    next round does not re-derive it, and still not evidence that none exists.
+id=ci_plateau_D0p0689_roll1p017_aniso9p6e5 section=circular_tube,D=0.0689193316670067,t=0.009638820844964471 stations=0.33349715441138167 orient=0.050223789427432407,-0.68867087345051836,-0.72333256461772077 extra=roll=1.0173921815186615,I_y_over_I_z=961631.10807004 runs_in_suite=no expect=hold
+id=ci_plateau_D0p0743_roll1p075_anisocap section=circular_tube,D=0.0743294776547113,t=0.010203743439414263 stations=0.33494351744419704 orient=0.10449357753807394,-0.65466154218547079,-0.74866505023049912 extra=roll=1.0749850873765605,I_y_over_I_z=1000000.0 runs_in_suite=no expect=hold
+id=ci_plateau_D0p0912_roll0p991_anisocap section=circular_tube,D=0.09121196792576501,t=0.01210935262055925 stations=0.39684172406194984 orient=0.050894130964404358,-0.63735306014169346,-0.76888937056080875 extra=roll=0.9910105990223858,I_y_over_I_z=1000000.0 runs_in_suite=no expect=hold
+id=ci_scalefree_D0p787_rollm0p674_aniso4e5 section=circular_tube,D=0.7871450722784015,t=0.05675084893318997 stations=4.831575251542422 orient=0.8287847450844651,-0.3812203381095566,0.4096179929237894 extra=roll=-0.673542236404209,I_y_over_I_z=396180.0575310132 runs_in_suite=no expect=hold
+id=ci_iso_roll_immaterial section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=roll=1.05,I_y_over_I_z=1.0 runs_in_suite=no expect=hold
+id=ci_roll_two_pi_wrap section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=roll=6.283185307179586 runs_in_suite=no expect=hold
+id=ci_orient_1e17_from_globalZ section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=1e-17,0,1 extra=none runs_in_suite=no expect=raise
