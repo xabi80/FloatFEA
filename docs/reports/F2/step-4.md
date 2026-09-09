@@ -3815,3 +3815,288 @@ No git remote, so no PR and no `[witness …]` comment — an unavailable check,
 a pass. On PASS the remote, PR and witness channel open (BA), then step 5: V1.1
 rigid-body modes on the AX3 shape — exactly six, spanned by the six analytic
 vectors, negative controls in both directions.
+
+---
+
+# Revision 23 — the retyped figures, and a withdrawal that came back
+
+Answers: verdict 23 @ dfcee3a
+
+**2026-09-08.** Two commits since the twenty-third verdict: `d89dfee` (plan,
+re-locked) and `6eed45e` (step).
+
+## 0. Where this stands
+
+The twenty-second verdict passed step 4. The twenty-third holds it again on three
+items, and **all three are the same species that has now appeared in four
+consecutive rounds: a number typed where a name would have kept it true.** R194
+answered that species inside `floatfea/tolerances.py`. It did not answer it in
+the locked plan or in the entry two hundred lines above, and the reviewer went
+looking in exactly the place my claim did not cover.
+
+That claim was mine, in the request for this review: "nothing went stale". It was
+scoped to `tolerances.py` and it was refuted outside it. **The refutation is the
+useful part** — one of the five retyped figures was a SOLVED boundary declaring a
+counter-defect size admissible that the shipped test rejects, 8% in the unsafe
+direction, in the plan.
+
+## 1. R207 — five figures, and the one that was a boundary
+
+The plan's justification for `PATCH_TEST_COUNTER_HEADROOM` typed five values.
+Every one of them is false at this commit:
+
+```
+plan   "the smallest edge is 3.9459e-14 at band_edge_isotropic_bracing, and the
+       shipped 1e-6 sits 2.534e+07x above it ... 2.37x of room. The boundary is
+       SOLVED rather than quoted: 2.36e-6 passes and 2.38e-6 fails"
+cmd    the generated figures at this commit
+out    detection_edge            3.6275e-14
+       detection_edge_at         ci_plateau_D0p0689_roll1p017_aniso9p6e5
+       counter_defect_over_edge  2.757e+07x
+       counter_headroom_room     2.18x
+       counter_defect_boundary   2.174e-06 passes, 2.179e-06 fails
+judge  five typed, five false. And `band_edge_isotropic_bracing` was never the
+       detection edge at all -- it is `clean_worst_entry`, a different figure.
+```
+
+**All five are references now**, and the fifth is the one that mattered: the
+boundary is **generated**, and generating it means re-solving it. `regen_figures.py`
+runs the shipped headroom assertion either side of
+`PATCH_TEST_COUNTER_HEADROOM x detection_edge` with the counter-defect size moved
+and nothing else. The detection edge is already cached, so it costs one
+comparison, and the sentence cannot be stale again without the suite going red.
+
+**The mechanism the reviewer found underneath it is the finding I would keep.**
+BT0 converted the plan's figures to generated references with the scope "the
+figures that move, not the whole plan". The one section it skipped is the section
+that justifies a shipped tolerance. A scope written in a docstring is not a
+scope anything enforces.
+
+## 2. R208, R209 — two sentences in `tolerances.py`
+
+**R208.** `PATCH_TEST_EXACTNESS` stated its own margin twice in the present
+tense.
+
+```
+code   :405  "26.8x above the worst clean corpus entry and 21.5x below the
+       smallest defect response"
+code   :413  "Worst clean value over the corpus: 0.0887x of this ceiling"
+cmd    the generated figures at this commit
+out    clean_worst_ratio  0.1142x   -- the clean side is 8.76x, not 26.8x
+judge  both were true at the derivation on 2026-09-05 and false two corpus
+       rounds later. They are marked as history at their date now, and what the
+       value must satisfy live is cited by name.
+```
+
+**R209, and this one is mine twice over.** The Reason paragraph shipped "a harder
+corpus entry raises the minimum edge and loosens this". The locked plan records
+that sentence as **withdrawn**. I re-introduced it at `f1b226b`, one day after
+the withdrawal, and added the word "minimum" — which is what turns it from
+unmeasured into impossible.
+
+```
+rule   the selection is a MINIMUM over the corpus. A minimum over a growing set
+       is monotone non-increasing.
+cmd    counter_headroom_room across three consecutive reviewer corpus rounds
+out    2.37x -> 2.19x -> 2.18x
+judge  one direction, three times, and the other direction cannot occur. The
+       entry states the one direction that exists. The plan's withdrawal and
+       the code no longer disagree in writing about the same constant.
+```
+
+A withdrawal recorded in the plan and enforced by nothing survived exactly one
+round. That is worth more than the sentence.
+
+## 3. The corpus round, and one number in my own commit message
+
+The reviewer's `1bc652a` is applied: **163 → 170 entries, 139 → 145 solved.**
+
+```
+cmd    diff of docs/milestones/F2_figures.md against fc30b71
+out    detection_edge 3.6425e-14 -> 3.6275e-14, at
+         ci_plateau_D0p0689_roll1p017_aniso9p6e5
+       counter_defect_over_edge 2.745e+07x -> 2.757e+07x
+       counter_headroom_room 2.19x -> 2.18x
+       clean_worst_ratio 0.0982x -> 0.1142x, at the same entry as the edge
+       calibration_ulp_histogram 0 x129, 1 x5, 2 x11
+       counter_defect_boundary -- NEW
+judge  `PATCH_TEST_COUNTER_HEADROOM = 6.0e7` holds; the room is published, not
+       typed, so nothing in the tolerance record moved with it.
+cmd    the golden file's diff
+out    (empty). None of the seven new entries produces an exempt-and-detected
+       pair -- the reviewer measured that before I did, and it reproduces.
+```
+
+**A correction to `6eed45e`'s own commit message.** It says `139 -> 146 solved`.
+It is **145**. I typed a number in a commit body four paragraphs after committing
+a change whose entire subject is not typing numbers.
+
+## 4. The process note, and the witness
+
+The reviewer recorded that `fc30b71` touched `tests/` with no report revision, so
+the golden-file explanation lived only in a commit body. **This revision covers
+both that commit and this one**, and the golden file's movement across the two
+rounds is in §3.
+
+**The witness channel is open as of this round.** There is a private GitHub
+remote now — `xabi80/FloatFEA` — and `master` is pushed. Twenty-three consecutive
+reviews by one reader is the standing finding; it stops being unavoidable here.
+What is still missing is a pull request to hang the `[witness ...]` comments on,
+because the pushed branch is the only branch: that needs a base, and it is the
+one part of BA I am not deciding alone.
+
+## 5. R210, and everything else
+
+| item | class | reason |
+|---|---|---|
+| R207, R208, R209 | **blocking — truth of a published figure and of a tolerance's Reason** | answered, §1–§2 |
+| R210 | **4a** | `fc30b71`'s message says "Nine figures move" where its own named command prints 18 rows. Under-claimed, substance right. Recorded |
+| R206 | **4a, as the reviewer ruled** | `tolerances.py:511` retypes `2.534e+07` inside the sentence that records R194. Tensed as history and true as history; removing the number would remove the record of what was wrong |
+| R200, R201 | **4a** | the meta-test's reach paragraph and the composed-body bound. Both are the reviewer's own adversarial results and both are mechanism |
+| R202, R203 | **4a** | two cells of mine that do not reproduce, both understating. Recorded, not argued |
+| R204 | **4a** | `RAISED_COUNTER_DEFECT_FACTOR`'s marker carries a "because" without the boundary that makes it invertible |
+| R198, R199, R181, R189, R190, R170/R171 remainder, R172, R159, R162, R151, R152 | **4a** | endorsed at the twenty-second verdict, unchanged |
+| R129–R148, R95–R113, R63–R80, R6–R62 | **4a or later steps** | unchanged |
+
+## 6. Carried
+
+| item | status |
+|---|---|
+| R6 | **4a or later** - classified in section 5 |
+| R16 | **4a or later** - classified in section 5 |
+| R25 | **4a or later** - classified in section 5 |
+| R30 | **4a or later** - classified in section 5 |
+| R31 | **4a or later** - classified in section 5 |
+| R32 | **4a or later** - classified in section 5 |
+| R33 | **4a or later** - classified in section 5 |
+| R36 | **4a or later** - classified in section 5 |
+| R50 | **4a or later** - classified in section 5 |
+| R52 | **4a or later** - classified in section 5 |
+| R62 | **4a or later** - classified in section 5 |
+| R63 | **4a or later** - classified in section 5 |
+| R65 | **4a or later** - classified in section 5 |
+| R68 | **4a or later** - classified in section 5 |
+| R76 | **4a or later** - classified in section 5 |
+| R79 | **4a or later** - classified in section 5 |
+| R80 | **4a or later** - classified in section 5 |
+| R95 | **4a or later** - classified in section 5 |
+| R97 | **4a or later** - classified in section 5 |
+| R98 | **4a or later** - classified in section 5 |
+| R100 | **4a or later** - classified in section 5 |
+| R101 | **4a or later** - classified in section 5 |
+| R102 | **4a or later** - classified in section 5 |
+| R103 | **4a or later** - classified in section 5 |
+| R113 | **4a or later** - classified in section 5 |
+| R129 | **4a or later** - classified in section 5 |
+| R131 | **4a or later** - classified in section 5 |
+| R132 | **4a or later** - classified in section 5 |
+| R134 | **4a or later** - classified in section 5 |
+| R135 | **4a or later** - classified in section 5 |
+| R136 | **4a or later** - classified in section 5 |
+| R137 | **4a or later** - classified in section 5 |
+| R138 | **4a or later** - classified in section 5 |
+| R139 | **4a or later** - classified in section 5 |
+| R148 | **4a or later** - classified in section 5 |
+| R151 | **4a or later** - classified in section 5 |
+| R152 | **4a or later** - classified in section 5 |
+| R159 | **4a or later** - classified in section 5 |
+| R162 | **4a or later** - classified in section 5 |
+| R170 | **4a lock item**; the `--check` half closed in revision 20 |
+| R171 | **4a for the remainder** |
+| R172 | **4a lock item** — a kind-level count, not per-entry |
+| R181 | **4a lock item** — the header's reach |
+| R189 | **4a lock item** — the declaration matcher is a substring test |
+| R190 | **4a lock item** — the figure-name guard reads the plan only |
+| R198 | **4a lock item** — the convergence literal at `:1351` |
+| R199 | **4a**, and taken in `3d91954` |
+| R200 | **4a lock item** — the reach paragraph's direction |
+| R201 | **4a lock item** — the composed body, and its measured bound |
+| R202 | **4a lock item** — my `6 failed` cell, no `cmd`, gives 11 |
+| R203 | **4a lock item** — my grep counts contradict their command |
+| R204 | **4a lock item** — the factor's marker needs its boundary |
+| R205 | **closed** in `fc30b71`, and this revision covers it (§4) |
+| R206 | **4a**, as the reviewer ruled — history, and true as history |
+| R207 | **closed** — §1, all five sites, and the boundary is generated |
+| R208 | **closed** — §2, both sites, derivation marked as history |
+| R209 | **closed** — §2, the one direction that exists |
+| R210 | **4a lock item** — a count in a commit message, under-claimed |
+| R6, R16, R25, R30, R31, R32, R33, R36, R50, R52, R62 | **4a or later steps** |
+
+### Sites named by findings and not touched
+
+Declared by exact site, each row saying what the line is rather than the one phrase that made R193 possible.
+
+| site | status |
+|---|---|
+| `F2.md:507` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:508` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:509` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:510` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:511` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:512` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:513` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:514` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:515` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:516` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:517` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:518` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:519` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:520` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:521` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:522` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:523` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:524` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:525` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:526` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:527` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:528` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:529` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:530` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:531` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:532` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:533` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:534` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:535` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:536` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:537` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:538` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:539` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:540` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:541` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:542` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:543` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:544` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:545` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:546` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:547` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:548` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:549` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:550` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:551` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:552` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:553` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:554` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:555` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:556` | **no change** -- R207 quotes it as evidence, not as a site to change |
+| `F2.md:585` | **no change, left deliberately -- it is a blank line** -- between the converted figure paragraph above it and the withdrawal below |
+| `F2.md:586` | **no change, left deliberately** -- this is the plan's withdrawal sentence itself, and R209's closing condition is that it stands while `tolerances.py` stops contradicting it. Reopening it is the alternative the finding offers and not the one taken |
+| `F2.md:587` | **no change, left deliberately** -- the second half of that withdrawal sentence; see `:586`. What follows it, from `:588`, is rewritten |
+| `docs/milestones/F2.md:585` | **no change, left deliberately -- it is a blank line** -- between the converted figure paragraph above it and the withdrawal below |
+| `docs/milestones/F2.md:586` | **no change, left deliberately** -- this is the plan's withdrawal sentence itself, and R209's closing condition is that it stands while `tolerances.py` stops contradicting it. Reopening it is the alternative the finding offers and not the one taken |
+| `docs/milestones/F2.md:587` | **no change, left deliberately** -- the second half of that withdrawal sentence; see `:586`. What follows it, from `:588`, is rewritten |
+| `CLAUDE.md` | **no change** -- R209 quotes it as evidence, not as a site to change |
+| `test_corpus_configurations.py:1335` | **no change** -- R209 quotes it as evidence, not as a site to change |
+| `test_corpus_configurations.py:1336` | **no change** -- R209 quotes it as evidence, not as a site to change |
+
+## 7. What I am asking for
+
+**A PASS with the 4a list**, or a **HOLD naming the item and the BU0 head it falls
+under.** Three items answered at their five, two and one named sites; the
+boundary that was the worst of them is generated rather than typed, so it is
+re-solved by the run that publishes it.
+
+## 8. Witness
+
+The remote exists and the branch is pushed. No `[witness ...]` comment yet —
+still an unavailable check rather than a pass, and the reason is now a missing
+pull request rather than a missing repository.
