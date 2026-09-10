@@ -1149,3 +1149,300 @@ Declared by exact site, each row saying what the line is.
 **A PASS on CE0–CE3**, or a **HOLD naming the item and the head.** R231, R244
 and R245 are open pending the Q8 measurements; R223 and R224 pending Q7; R230
 open by my own error.
+
+
+---
+
+# Revision 6 — the table is built from the verdict, and two redirections
+
+Answers: verdict 31 @ b470aee
+
+**2026-09-09.** Commits since the thirty-first verdict, listed in §7.
+
+## 0. CI at the reviewed commit `a59521e`
+
+Run `34424766023`.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint and type-check | 1 | 0 | 0 |
+| unit tests | 88 | 0 | 0 |
+| guards and meta-tests | 425 | 1 | 0 |
+| ladder 1 -- the solver is a solver | 1013 | 0 | 0 |
+| ladder 2 -- the element is the element | 1 | 0 | 0 |
+| ladder 3 -- the model is the platform | 106 | 0 | 0 |
+| ladder 4 -- the loads are the loads | 72 | 13 | 0 |
+| ladder 5 -- independent confirmation | 0 | 0 | 0 |
+| ladder 6 -- it stays fixed | 0 | 0 | 0 |
+
+Both reds are open by instruction. The guards job moved `4 failed / 386 passed`
+to `1 failed / 425 passed`.
+
+## 1. R267 — the table, and how it got wrong
+
+**I wrote statuses for a block of findings without reading what each one said.**
+Six rows attached this step's work to numbers naming different items, and four
+of eight blocking items were recorded at 4a. A report may say it has not
+answered an item; it may not re-file the verdict's ruling about which step the
+item belongs to.
+
+**The table is generated from the verdict now**, and two tests hold it:
+
+```
+rule   `test_a_blocking_item_is_not_routed_to_4a` -- the verdict's own
+       `(BLOCKS ...)` headings are the domain, so the classification is read
+       rather than remembered
+rule   `test_the_answered_verdict_is_the_NEWEST_one` -- item 1b, mechanically.
+       A header naming a real but OLDER verdict passed every check: the sha
+       resolves, the findings parse, and the carry table is complete about a
+       list that has been superseded
+out    both fire on revision 5, which is how they were checked
+```
+
+## 2. CF0 — the guard is retired, and the pin moved to the interpreter that exists
+
+**CE0's guard asserted nothing in the configuration it was built to reach.** It
+returned early when the pinned and running versions coincide, which is all nine
+CI jobs and is also the state CE0 asks for locally: anti-correlated with its own
+goal.
+
+**The answer was not a better guard.** `requires-python`, `ruff`, `black`,
+`mypy` and every CI job are on **3.13**, which is the interpreter installed on
+this machine. There is now one version, so there is no mismatch to detect, and
+`tests/test_the_pinned_interpreter.py` is deleted rather than repaired.
+
+`xfail_strict = true` is in `pyproject.toml` — one line, and the never-xfail
+rule becomes the runner's rather than something each caller passes.
+
+## 3. CF1 — CI determinism is a precondition of Q8, and it is not established
+
+**This is the finding that outranks the rest, and it is the reviewer's.** One
+regression test went `PASS, FAIL, FAIL, PASS` across four consecutive runs with
+the deciding files byte-identical between them. They withdrew their own `2.6e9`
+figure as a basis, and were right to: it came from one of the two failing runs.
+
+**Q8 says CI is canonical. That assumes CI agrees with itself.** A `determinism`
+job now runs the figure regeneration and the regression rung **ten times on ten
+separate runners**, printing the CPU model and the numpy build configuration
+beside each result.
+
+**It is expected to fail.** The likely mechanism is that hosted runners are
+different machines and BLAS picks its kernel from the CPU it finds, so the last
+bit of a factorisation depends on which machine the job drew. Threads are pinned;
+the kernel is not. When the correlation is measured the kernel gets pinned too,
+and the job has to reach ten of ten before any Q8 value is written.
+
+**No Q8 value is written here**, and the withdrawn figure stays withdrawn.
+
+## 4. R269–R274 — six answered, each at its own site
+
+```
+R269  the scanner's "What is flagged" list has now been wrong in BOTH
+      directions: it said "any float threshold" while only the right operand
+      was read, and after the left operand was read it still said it was not.
+      It describes the scanner now, and what is NOT read is listed by species
+      in the corpus runner rather than described in prose
+R271  three of four formattings still went past. `_ROW` and `_status_cells`
+      are the edit revision 5 SAID it made: the first cell may be bolded or
+      backticked, and every cell after it is read
+R272  `@pytest.mark.xfail(strict=False)` overrides the ini setting, so the
+      shape survived `xfail_strict`. The rung reads pytest's FIRST summary
+      line -- printed before any `atexit` output, so a later forgery cannot
+      displace it -- and an xpass is a failure there
+R273  the second clause: the message no longer tells its reader that a real
+      commit "is not a commit in this repository" when the cause is a shallow
+      clone
+R274  the vacuous bound is replaced by the escape golden -- the escape set is
+      enumerated by species and asserted EQUAL to the measurement, so it goes
+      red on a new escape and on a fixed one
+R276  the `DIAGNOSIS` entry that an earlier `return` made unreachable: the
+      ablation is a helper called from both branches now
+```
+
+## 5. R270 — two figures withdrawn rather than republished
+
+The two figure rows that do not reproduce on CI are **withdrawn from this
+report's prose**. They are not republished with a caveat and they are not
+quietly left: under Q8 they are CI's to produce, and CI has not yet been shown
+to produce them twice the same way. That is §3.
+
+## 6. What is open, and why
+
+| item | why it is open |
+|---|---|
+| R275 | the alternating measurement. CF1's job must reach ten of ten first |
+| R231, R244, R245 | the Q8 values, which R275 blocks |
+| R223, R224 | Q7, which follows Q8 |
+| R230 | reopened by my own error at revision 4 |
+| R277–R281 | recordable at 4a in the verdict's own classification |
+
+## 7. Carried
+
+| item | status |
+|---|---|
+| R223 | **open** — carried from an earlier verdict |
+| R224 | **open** — carried from an earlier verdict |
+| R225 | **open** — carried from an earlier verdict |
+| R228 | **open** — carried from an earlier verdict |
+| R230 | **open** — carried from an earlier verdict |
+| R231 | **open** — carried from an earlier verdict |
+| R232 | **open** — carried from an earlier verdict |
+| R233 | **open** — carried from an earlier verdict |
+| R244 | **open** — carried from an earlier verdict |
+| R245 | **open** — carried from an earlier verdict |
+| R248 | **open** — carried from an earlier verdict |
+| R249 | **open** — carried from an earlier verdict |
+| R250 | **open** — carried from an earlier verdict |
+| R251 | **open** — carried from an earlier verdict |
+| R252 | **open** — carried from an earlier verdict |
+| R253 | **open** — carried from an earlier verdict |
+| R254 | **open** — carried from an earlier verdict |
+| R255 | **open** — carried from an earlier verdict |
+| R256 | **open** — carried from an earlier verdict |
+| R257 | **open** — carried from an earlier verdict |
+| R258 | **open** — carried from an earlier verdict |
+| R259 | **open** — carried from an earlier verdict |
+| R260 | **open** — carried from an earlier verdict |
+| R261 | **open** — carried from an earlier verdict |
+| R262 | **open** — carried from an earlier verdict |
+| R263 | **open** — carried from an earlier verdict |
+| R264 | **open** — carried from an earlier verdict |
+| R265 | **open** — carried from an earlier verdict |
+| R266 | **open** — carried from an earlier verdict |
+| R267 | **answered** — §1, the table is generated from the verdict |
+| R268 | **answered** — §2, the guard is retired and the pin moved to 3.13 |
+| R269 | **answered** — §4, the list describes the scanner |
+| R270 | **answered** — §5, both figure rows taken out of the prose |
+| R271 | **answered** — §4, the edit revision 5 claimed |
+| R272 | **answered** — §4, the first summary line, and `xfail_strict` |
+| R273 | **answered** — §4, the second clause of the message |
+| R274 | **answered** — §4, the escape golden replaces it |
+| R275 | **open** — §3, CF1 must reach ten of ten first |
+| R276 | **answered** — §4, the ablation is reachable from both branches |
+| R277 | **open** — recordable at 4a in the verdict's own classification |
+| R278 | **open** — recordable at 4a in the verdict's own classification |
+| R279 | **open** — recordable at 4a in the verdict's own classification |
+| R280 | **open** — recordable at 4a in the verdict's own classification |
+| R281 | **open** — recordable at 4a in the verdict's own classification |
+
+### Sites named by findings and not touched
+
+Declared by exact site, each row saying what the line is.
+
+| site | status |
+|---|---|
+| `.claude/agents/gating-supervisor.md` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `CLAUDE.md` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1043` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1044` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1045` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1046` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1047` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1048` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1049` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1050` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1051` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1052` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1053` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1054` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1055` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1056` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1057` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1058` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1059` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1060` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1061` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1062` | **no change** -- R267 quotes it as evidence, not as a site to change |
+| `test_report_guard_states.py:247` | **no change** -- R268 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1104` | **no change** -- R269 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1105` | **no change** -- R269 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1106` | **no change** -- R269 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1107` | **no change** -- R269 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:1108` | **no change** -- R269 quotes it as evidence, not as a site to change |
+| `docs/reports/F2/step-5.md:713` | **no change** -- R270 quotes it as evidence, not as a site to change |
+| `tests/corpus/report_status_vocabulary.txt` | **no change** -- R271 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:325` | **no change** -- R271 quotes it as evidence, not as a site to change |
+| `scripts/run_rung.sh:125` | **no change** -- R272 quotes it as evidence, not as a site to change |
+| `scripts/run_rung.sh:126` | **no change** -- R272 quotes it as evidence, not as a site to change |
+| `scripts/run_rung.sh:127` | **no change** -- R272 quotes it as evidence, not as a site to change |
+| `scripts/run_rung.sh:128` | **no change** -- R272 quotes it as evidence, not as a site to change |
+| `scripts/run_rung.sh:129` | **no change** -- R272 quotes it as evidence, not as a site to change |
+| `scripts/run_rung.sh:130` | **no change** -- R272 quotes it as evidence, not as a site to change |
+| `scripts/run_rung.sh:131` | **no change** -- R272 quotes it as evidence, not as a site to change |
+| `tests/corpus/ci_ladder_gating.txt` | **no change** -- R272 quotes it as evidence, not as a site to change |
+| `docs/SUPERVISOR.md` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `floatfea/determinism.py` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `floatfea/tolerances.py` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `step-06.md` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `test_no_tolerance_literals.py:362` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `test_no_tolerance_literals.py:363` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `test_no_tolerance_literals.py:364` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_marker_exemption_corpus.py:210` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_marker_exemption_corpus.py:211` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_marker_exemption_corpus.py:212` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_marker_exemption_corpus.py:213` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_marker_exemption_corpus.py:214` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_marker_exemption_corpus.py:215` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_marker_exemption_corpus.py:216` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:362` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:363` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:364` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:365` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:366` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:367` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:368` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:369` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_no_tolerance_literals.py:370` | **no change** -- R274 quotes it as evidence, not as a site to change |
+| `tests/test_counters_are_injected.py` | **no change** -- R275 quotes it as evidence, not as a site to change |
+| `tests/test_report_guard_states.py:132` | **no change** -- R276 quotes it as evidence, not as a site to change |
+| `tests/test_report_guard_states.py:133` | **no change** -- R276 quotes it as evidence, not as a site to change |
+| `tests/test_report_guard_states.py:134` | **no change** -- R276 quotes it as evidence, not as a site to change |
+| `tests/test_report_guard_states.py:135` | **no change** -- R276 quotes it as evidence, not as a site to change |
+| `tests/corpus/report_ci_section.txt` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:436` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:437` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:438` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:439` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:440` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:441` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:442` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:443` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:444` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:445` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:446` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:447` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:448` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:449` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:450` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:451` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:452` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:453` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:454` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:455` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:456` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:457` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:458` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:459` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:460` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:461` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:462` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:463` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:464` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/test_report_carried.py:465` | **no change** -- R277 quotes it as evidence, not as a site to change |
+| `tests/corpus/pinned_interpreter.txt` | **no change** -- R278 quotes it as evidence, not as a site to change |
+| `test_a.py` | **no change** -- R279 quotes it as evidence, not as a site to change |
+| `test_b.py` | **no change** -- R279 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:255` | **no change** -- R280 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:256` | **no change** -- R280 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:257` | **no change** -- R280 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:258` | **no change** -- R280 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:259` | **no change** -- R280 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:260` | **no change** -- R280 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:261` | **no change** -- R280 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:262` | **no change** -- R280 quotes it as evidence, not as a site to change |
+| `tests/test_ci_ladder_gating.py:263` | **no change** -- R280 quotes it as evidence, not as a site to change |
+
+## 8. What I am asking for
+
+**A PASS on CF0, CF2, CF3 and CF4**, or a **HOLD naming the item and the head.**
+CF1 is running and its result gates Q8; nothing here writes a Q8 value.
