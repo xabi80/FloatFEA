@@ -93,6 +93,30 @@ SAYS_SKIPPED = "\n".join(
         "",
     ]
 )
+ATEXIT_NOISE = "\n".join(
+    [
+        "import atexit",
+        "",
+        "",
+        'atexit.register(lambda: print("1 skipped in 0.01s"))',
+        "",
+        "",
+        "def test_ok():",
+        "    assert True",
+        "",
+    ]
+)
+XPASSED = "\n".join(
+    [
+        "import pytest",
+        "",
+        "",
+        '@pytest.mark.xfail(reason="expected to fail and does not")',
+        "def test_a():",
+        "    assert True",
+        "",
+    ]
+)
 SKIPPED = (
     "import pytest\n\n\n"
     '@pytest.mark.skip(reason="the rung asserts nothing")\n'
@@ -204,6 +228,22 @@ LAYOUTS: dict[str, dict[str, str | None]] = {
         "tests/verification/rung1/test_a.py": PASSING,
         "tests/verification/rung1/test_b.py": FAILING,
     },
+    "ci_rung_full_prints_a_counter_line_AFTER_pytests_summary": {
+        "tests/verification/rung1/test_a.py": ATEXIT_NOISE,
+    },
+    "ci_rung_argument_path_carries_a_trailing_slash": {
+        "tests/verification/rung1/test_a.py": PASSING,
+    },
+    "ci_rung_full_every_test_is_xfail_and_PASSES": {
+        "tests/verification/rung1/test_a.py": XPASSED,
+    },
+    "ci_rung_declared_empty_with_its_marker_and_nothing_in_it": {
+        "tests/verification/rung2/.empty-by-design": "marker",
+    },
+    "ci_rung6_job_as_shipped_leaves_its_own_rung_undeclared": {
+        "tests/verification/rung6/test_r6.py": PASSING,
+        "tests/regression/test_golden.py": PASSING,
+    },
     "ci_empty_then_full_rung_fails_prints_no_OK_line": {
         "tests/verification/rung2/.empty-by-design": "marker",
         "tests/verification/rung1/test_a.py": FAILING,
@@ -212,6 +252,16 @@ LAYOUTS: dict[str, dict[str, str | None]] = {
 
 # The two entries whose job arguments are not the default pair for their rung.
 SPECIAL_ARGS: dict[str, list[str]] = {
+    "ci_rung_argument_path_carries_a_trailing_slash": ["full:tests/verification/rung1/"],
+    "ci_rung_declared_empty_with_its_marker_and_nothing_in_it": ["empty:tests/verification/rung2"],
+    # The arguments `ci.yml` carried at `fa3b070`, when rung 6's own directory
+    # had been dropped from the job. Restoring `empty:` there is what makes this
+    # entry fail: a test in rung 6 is now a stale declaration rather than a
+    # directory nothing runs.
+    "ci_rung6_job_as_shipped_leaves_its_own_rung_undeclared": [
+        "empty:tests/verification/rung6",
+        "full:tests/regression",
+    ],
     "ci_run_rung_with_no_arguments_at_all": [],
     "ci_argument_without_a_kind_prefix": ["tests/verification/rung1"],
     "ci_misspelled_kind_capital_Empty": ["Empty:tests/verification/rung2"],
@@ -323,9 +373,9 @@ def test_the_rung_job_gates_the_layout(
                 f"the rung-6 defect exactly: green, and nothing executed.\n{log}"
             )
         else:
-            assert "empty by design" in log, (
-                f"{entry}: the job passed but did not say it was an empty rung, "
-                f"so a silent pass is indistinguishable from a real run.\n{log}"
+            assert "run_rung: OK" in log, (
+                f"{entry}: the job passed without printing its success line, "
+                f"so a silent pass is indistinguishable from a crash.\n{log}"
             )
 
 

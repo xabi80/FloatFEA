@@ -27,7 +27,7 @@ def test_fixture_really_is_a_mid_gap_case() -> None:
     """Without this the guard tests could pass on a reference that is nearly exact."""
     f = (W_CASE - GRID[0]) / (GRID[1] - GRID[0])
     assert (
-        0.3
+        0.3  # not-a-tolerance: fixture property -- the lower bracket
         < f
         < 0.7
         # not-a-tolerance: fixture property -- asserts the fixture is in a usable range

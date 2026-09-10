@@ -260,12 +260,16 @@ def offending(path: Path) -> list[tuple[int, str]]:
     # line-keyed window this replaced had caught. Exemptions are consumed in
     # source order, so a marker annotates the node it sits nearest and every
     # other flaggable node in the same statement is still reported.
+    # ONE MARKER, ONE FLAGGED VALUE -- not one node (CE3, the reviewer's ruling).
+    # Node-keying was chosen here to keep two bracket assertions clean, and it
+    # reinstated CB0's own hole one level down: `assert 1e-09 < r < 0.05` with a
+    # marker saying only the lower bound is deliberate scanned clean, because one
+    # marker covered both thresholds of one `Compare`. The option set was wrong:
+    # value-keying plus ONE MORE marker comment in each of those two statements
+    # leaves both files clean, measured, at a cost of two comment lines.
     used: set[int] = set()
-    claimed: dict[int, bool] = {}
     out: list[tuple[int, str]] = []
-    for lineno, _col, why, node_id in sorted(set(candidates)):
-        if claimed.get(node_id):
-            continue
+    for lineno, _col, why, _node_id in sorted(set(candidates)):
         claim = next(
             (m for m in sorted(marker_span) if m not in used and lineno in marker_span[m]),
             None,
@@ -274,7 +278,6 @@ def offending(path: Path) -> list[tuple[int, str]]:
             out.append((lineno, why))
         else:
             used.add(claim)
-            claimed[node_id] = True
     return sorted(set(out))
 
 

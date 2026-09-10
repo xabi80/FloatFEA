@@ -1,0 +1,5 @@
+# Rung 6 has no test of its own yet; its job runs tests/regression.
+# The marker is read by scripts/run_rung.sh: a directory declared empty
+# must carry it, so a rung whose tests go missing is distinguishable from
+# one nobody has written. Removing it at CD left rung 6's own directory
+# undeclared -- a test appearing there would have been run by nothing.

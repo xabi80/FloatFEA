@@ -36,7 +36,11 @@ pinning a seed makes a run *repeatable*, which is not the same as making it
 from __future__ import annotations
 
 import os
-from typing import Final
+from typing import TYPE_CHECKING, Final
+
+if TYPE_CHECKING:  # numpy stays a deferred import at run time, per pin_threads
+    import numpy as np
+    from numpy.typing import NDArray
 
 # ---------------------------------------------------------------------------
 # 1. Threading. Reduction ORDER varies with thread count, so a floating-point
@@ -94,15 +98,21 @@ def pin_threads(n: int = 1) -> None:
         os.environ[var] = str(n)
 
 
-def deterministic_v0(n: int) -> object:
+def deterministic_v0(n: int) -> NDArray[np.float64]:
     """A fixed ARPACK starting vector of length ``n``.
 
     Seeded from a dedicated generator rather than the global numpy state, so a
     caller that seeds numpy elsewhere cannot change an eigenvalue result.
     """
+    # ANNOTATED, NOT `object` (CE0). The old return type made four numpy calls
+    # in `test_determinism_pins.py` unresolvable, and those four appeared under
+    # one interpreter and not the other -- indistinguishable, to the version
+    # guard, from a real use of a newer API. A vague annotation is noise a
+    # detector has to be tuned around.
     import numpy as np
 
-    return np.random.default_rng(ARPACK_V0_SEED).standard_normal(n)
+    out: NDArray[np.float64] = np.random.default_rng(ARPACK_V0_SEED).standard_normal(n)
+    return out
 
 
 def report() -> dict[str, object]:

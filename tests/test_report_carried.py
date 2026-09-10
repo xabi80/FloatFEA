@@ -82,7 +82,25 @@ def _steps(where: Path) -> set[int]:
         names = [q.stem for q in where.glob("step-*.md")]
     except OSError:
         return set()
-    return {int(m.group(1)) for m in (re.fullmatch(r"step-([0-9]+)", n) for n in names) if m}
+    # THE CANONICAL FORM ONLY. `[0-9]+` accepted `step-06.md` and read it as
+    # step 6, so a zero-padded file silently became a second name for a step
+    # that already had one -- and with both present one of them was invisible.
+    # A step number has one spelling.
+    return {int(m.group(1)) for m in (re.fullmatch(r"step-(0|[1-9][0-9]*)", n) for n in names) if m}
+
+
+def _step_files(where: Path) -> dict[int, list[str]]:
+    """`{step: [filenames]}`, so two spellings of one step can be reported."""
+    out: dict[int, list[str]] = {}
+    try:
+        names = [q.stem for q in where.glob("step-*.md")]
+    except OSError:
+        return out
+    for n in names:
+        m = re.fullmatch(r"step-0*([0-9]+)", n)
+        if m:
+            out.setdefault(int(m.group(1)), []).append(n)
+    return out
 
 
 # THE NEWEST REPORT AND THE NEWEST COMPLETE PAIR ARE DIFFERENT NUMBERS, and
@@ -226,6 +244,12 @@ def test_the_guard_reads_the_step_being_worked_on() -> None:
         f"verdict is {STEP}. More than one step has been opened on top of an "
         "unreviewed one, which `CLAUDE.md` § Step gating forbids."
     )
+    for step, spellings in sorted(_step_files(REPORTS).items()):
+        assert len(spellings) == 1, (
+            f"step {step} is spelled {sorted(spellings)} under {REPORTS}. Two "
+            "files for one step means the guard reads one of them and the "
+            "other is invisible; a step number has one spelling."
+        )
     assert STEP_REPORT == STEP, (
         f"step {STEP_REPORT} has a report and no verdict yet. That is the "
         "legitimate boundary -- the verdict is written after the report is "
@@ -285,7 +309,20 @@ def test_the_report_carries_the_finding(finding: str) -> None:
 # unavailable to the party that does not get to use it, so a report can no
 # longer make a ruling at all. `closed` is the verdict's, and only the verdict's.
 REPORT_WORDS = ("answered", "open", "withdrawn", "4a", "later", "carried")
-VERDICT_ONLY = ("closed",)
+
+# SYNONYMS ENUMERATED, because banning one spelling bans one spelling. The
+# reviewer got the word past the first version four ways out of five: a bolded
+# first cell, a backticked one (the adjacent table backticks every first cell,
+# seventy times over), a third column, and `**resolved**, nothing open`.
+VERDICT_ONLY = ("closed", "resolved", "settled", "complete", "finished")
+
+_MARKUP = re.compile(r"[`*_~]+")
+
+
+def _plain(cell: str) -> str:
+    """Cell text with markdown stripped, so a status cannot hide behind it."""
+    return _MARKUP.sub("", cell).lower()
+
 
 _ROW = re.compile(r"^\|\s*(R\d+(?:[,\s/–—-]+R?\d+)*)[^|]*\|(.+)\|\s*$", re.MULTILINE)
 
@@ -313,7 +350,7 @@ def test_a_report_does_not_say_CLOSED(capsys) -> None:
         "no status cell parsed from the newest revision's Carried table. The "
         "table format changed and every check below passes on anything."
     )
-    guilty = [(i, st) for i, st in cells if any(w in st.lower() for w in VERDICT_ONLY)]
+    guilty = [(i, st) for i, st in cells if any(w in _plain(st) for w in VERDICT_ONLY)]
     with capsys.disabled():
         print(f"\n  {len(cells)} status cells parsed, {len(guilty)} say `closed`")
     assert not guilty, (
@@ -326,7 +363,15 @@ def test_a_report_does_not_say_CLOSED(capsys) -> None:
 
 def test_every_carried_item_carries_one_of_the_report_words() -> None:
     """The other half: a status that says nothing is not better than a wrong one."""
-    silent = [i for i, st in _status_cells() if not any(w in st.lower() for w in REPORT_WORDS)]
+    by_item: dict[str, list[str]] = {}
+    for i, st in _status_cells():
+        by_item.setdefault(i, []).append(st)
+    # One ROW must carry a report word, not every cell of it.
+    silent = [
+        i
+        for i, cells in by_item.items()
+        if not any(w in _plain(c) for c in cells for w in REPORT_WORDS)
+    ]
     assert not silent, (
         f"{silent} have a status that is none of {list(REPORT_WORDS)}. Banning "
         "one word is not the point; saying which of the three applies is."
@@ -341,20 +386,80 @@ def test_no_status_claims_more_than_the_verdict_allows() -> None:
     verdict. Where the verdict's own carry line says an item is NOT closed or is
     still carried, the report may say `answered` or `open` and not `withdrawn`.
     """
-    carried_open: set[str] = set()
+    # THE DOMAIN IS EVERY FINDING THE VERDICT NAMES, not the handful of lines
+    # that happen to use a phrase. The first version built it from three of
+    # twenty-one and could not see the only `withdrawn` in the report.
+    closed_by_verdict: set[str] = set()
     for line in VERDICT_TEXT.splitlines():
-        low = line.lower()
-        if "not closed" in low or "still carried" in low or "still open" in low:
-            carried_open.update(_MENTION.findall(line))
+        if any(w in line.lower() for w in VERDICT_ONLY):
+            closed_by_verdict.update(_MENTION.findall(line))
+    carried_open = set(EXPECTED) - closed_by_verdict
     contradicting = [
         i
         for i, st in _status_cells()
-        if "withdrawn" in st.lower() and set(_MENTION.findall(i)) & carried_open
+        if "withdrawn" in _plain(st) and set(_MENTION.findall(i)) & carried_open
     ]
     assert not contradicting, (
         f"{contradicting} are reported as withdrawn while {VERDICT.name} says "
         "they are still carried. A report cannot retire an item the verdict "
         "kept."
+    )
+
+
+# CE1: THE REPORT CARRIES CI, PER JOB, FROM THE RUN ITSELF.
+#
+# CI was red at three consecutive reviewed commits and no revision mentioned it.
+# One of those reds was the report's own commit: the `guards` job had already
+# run and finished red four minutes before the report was pushed, and the
+# revision listed every other job and omitted the one it had just created.
+#
+# A reviewer reads CI because `docs/SUPERVISOR.md` item 3b tells them to. The
+# person writing the report had no such instruction that anything enforced, so
+# "the suite is green" meant the laptop.
+_CI_ROW = re.compile(
+    r"^\|\s*`?([\w .\-]+?)`?\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|",
+    re.MULTILINE,
+)
+
+
+def _ci_section() -> str:
+    return _section(_newest_revision(REPORT_TEXT), "CI")
+
+
+def _reported_ci() -> dict[str, tuple[int, int, int]]:
+    """`{job: (passed, failed, skipped)}` as the newest revision states them."""
+    return {
+        job.strip(): (int(p), int(f), int(sk)) for job, p, f, sk in _CI_ROW.findall(_ci_section())
+    }
+
+
+def test_the_report_carries_a_CI_SECTION() -> None:
+    """CE1. A red CI that no report mentions is a red CI nobody reads."""
+    body = _ci_section()
+    assert body.strip(), (
+        "the newest report revision has no `## ... CI ...` section. Three "
+        "consecutive reviewed commits were red on CI and no revision said so; "
+        "one of the reds was the report's own commit."
+    )
+    rows = _reported_ci()
+    assert rows, (
+        "the CI section states no per-job row. The required shape is a table of "
+        "`| job | passed | failed | skipped |`, taken from `gh run view` at the "
+        "commit the report is written on -- not a sentence about the laptop."
+    )
+    assert len(rows) >= 3, (
+        f"only {sorted(rows)} reported. Every job in the workflow has a row, "
+        "including the ones that did not run: a job that never ran is the "
+        "finding that hides best."
+    )
+
+
+def test_the_reported_CI_counts_are_not_all_zero() -> None:
+    """The other half: a table of zeros satisfies the shape and says nothing."""
+    rows = _reported_ci()
+    assert any(p or f for p, f, _ in rows.values()), (
+        f"every CI row in {REPORT.name} reports zero passed and zero failed. "
+        "That is the shape without the measurement."
     )
 
 

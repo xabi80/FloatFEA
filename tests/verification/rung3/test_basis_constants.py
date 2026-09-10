@@ -189,5 +189,5 @@ def test_radius_of_gyration_is_consistent_with_area_and_inertia() -> None:
     )
     # Thin tube: r -> D / (2 sqrt 2) = 0.3536 D. Exact is slightly below.
     assert (
-        0.34 < r / 0.9 < 0.3536
+        0.34 < r / 0.9 < 0.3536  # not-a-tolerance: fixture property -- the lower bracket
     )  # not-a-tolerance: fixture property -- asserts the fixture is in a usable range

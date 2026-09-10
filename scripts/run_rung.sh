@@ -122,7 +122,12 @@ shift  # drop --end--
 [ "$STATUS" -eq 0 ] || exit 1
 
 if [ "$RUN_COUNT" -gt 0 ]; then
-    out=$(python -m pytest "$@" -q 2>&1) || {
+    report=$(mktemp)
+    # `xfail_strict`: an XPASS is a failure here. A rung whose only test is
+    # marked xfail and then passes exits 0 by default, and the junit report
+    # records it as a pass -- so the rung reported success while asserting the
+    # opposite of what it says.
+    out=$(python -m pytest "$@" -q -o xfail_strict=true --junit-xml="$report" 2>&1) || {
         echo "$out"
         exit 1
     }
@@ -135,15 +140,18 @@ if [ "$RUN_COUNT" -gt 0 ]; then
     # READ FROM THE SUMMARY LINE ONLY. Grepping the whole output matched a
     # PASSING test whose own diagnostic contained the word, and reddened a rung
     # that had skipped nothing.
-    summary=$(printf '%s
-' "$out" | grep -E '[0-9]+ (passed|failed|skipped|xfailed)' | tail -1)
-    case "$summary" in
-        *skipped*|*xfailed*|*xpassed*)
-            fail "$summary -- a test in $* was skipped or xfailed. CLAUDE.md:
-        never skip a test or mark it xfail to get a green build. Report the
-        failure instead."
-            exit 1 ;;
-    esac
+    # READ FROM PYTEST'S OWN REPORT, not from the tail of stdout. Anything the
+    # process prints after the summary -- an `atexit` hook, a plugin, a
+    # subprocess -- became the line `tail -1` picked, so a rung that skipped
+    # nothing could be reddened by a string, and one that skipped everything
+    # could hide behind a later line.
+    if grep -qE '(skipped|xfail)="[1-9]' "$report" 2>/dev/null; then
+        fail "$(grep -oE '(skipped|xfail[a-z]*)=\"[0-9]+\"' "$report" | tr '
+' ' ')
+        -- a test in $* was skipped or xfailed. CLAUDE.md: never skip a test or
+        mark it xfail to get a green build. Report the failure instead."
+        exit 1
+    fi
 fi
 
 # PRINTED ONLY AFTER EVERY CHECK HAS PASSED, and only for what was actually

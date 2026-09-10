@@ -66,6 +66,15 @@ STATES: dict[str, list[tuple[str, str]]] = {
         ("append_finding", "10"),
     ],
     "verdict_amended_after_the_commit_the_report_answers": [("append_finding", "5")],
+    # --- the thirtieth verdict's four --------------------------------------
+    "shallow_clone_depth_1_reports_one_diagnosis_not_sixteen": [("shallow", "")],
+    "zero_padded_step_number": [("report_named", "step-06.md")],
+    "zero_padded_step_number_beside_the_unpadded_one": [
+        ("report_named", "step-06.md"),
+        ("copy_report", "6"),
+        ("copy_verdict", "6"),
+    ],
+    "answers_header_names_an_older_verdict_commit": [("older_answers_sha", "")],
 }
 
 
@@ -103,6 +112,36 @@ REQUIREMENT_CHANGED: dict[str, tuple[str, str]] = {
         "reads `10` correctly and the carry comparison resolves -- so the "
         "repaired guard is green. The failure the reviewer measured was the "
         "module-scope read, not the two-digit number",
+    ),
+}
+
+
+# CE2: AN ABLATION ASSERTS THE DIAGNOSIS, NOT THE FAILURE.
+#
+# `assert code != 0` was satisfied both by the repair and by its absence: with
+# the return-code branch removed, the shallow clone still exits non-zero -- with
+# SIXTEEN site failures instead of one named diagnosis. The test could not tell
+# the two apart, which was the whole content of R243.
+#
+# `{state: (must fail, must NOT fail)}`. The second half is what makes the
+# assertion an ablation: removing the branch turns the deferring tests red, and
+# that is a different set.
+DIAGNOSIS: dict[str, tuple[str, str]] = {
+    "shallow_clone_depth_1_reports_one_diagnosis_not_sixteen": (
+        "test_the_diff_the_site_check_needs_is_available",
+        "test_every_named_site_is_touched_or_declared",
+    ),
+    "shallow_clone_depth_1": (
+        "test_the_diff_the_site_check_needs_is_available",
+        "test_every_named_site_is_touched_or_declared",
+    ),
+    "newest_report_has_no_verdict_yet": (
+        "test_the_guard_reads_the_step_being_worked_on",
+        "test_the_report_names_the_verdict_it_answers",
+    ),
+    "answers_header_names_a_sha_that_is_not_a_commit": (
+        "test_the_report_names_the_verdict_it_answers",
+        "test_the_diff_the_site_check_needs_is_available",
     ),
 }
 
@@ -167,6 +206,23 @@ def _build(tmp: Path, state: str) -> Path:
                 + "\n**R999. (BLOCKING) planted by the harness.**\n",
                 encoding="utf-8",
             )
+        elif action == "older_answers_sha":
+            # A real commit, but not the newest verdict's. Item 1b is the
+            # reviewer's to check by eye; this asks whether the guard says
+            # anything at all when the header points backwards.
+            older = subprocess.run(
+                ["git", "-C", str(work), "rev-list", "-n", "1", "HEAD~4"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.strip()
+            text = (reports / "step-5.md").read_text(encoding="utf-8", errors="replace")
+            head = text.rindex("Answers: verdict")
+            end = text.index(chr(10), head)
+            (reports / "step-5.md").write_text(
+                text[:head] + f"Answers: verdict 28 @ {older}" + text[end:],
+                encoding="utf-8",
+            )
         elif action == "shallow":
             # A REAL SHALLOW CLONE, not `fetch --depth 1` on a full one. The
             # first version ran the fetch against `origin` and changed nothing,
@@ -182,7 +238,13 @@ def _build(tmp: Path, state: str) -> Path:
             # `rmtree` on a copied `.git` hits read-only pack files on
             # Windows, so the handler clears the bit rather than the harness
             # reporting a permission error as a guard failure.
-            shutil.rmtree(work / ".git", onexc=_force_remove)
+            #
+            # `onerror=`, NOT `onexc=` (CE0). `onexc` arrived in 3.12; the
+            # project pins 3.11 and the runner has it, so the one state that
+            # measures the shallow-clone repair was the one state that could not
+            # run where the shallow clone was found. The handler ignores its
+            # third argument, so it fits either signature.
+            shutil.rmtree(work / ".git", onerror=_force_remove)
             shutil.move(str(shallow / ".git"), str(work / ".git"))
     return work
 
@@ -305,6 +367,21 @@ def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) 
             "test_the_report_carries_the_finding",
             "test_every_named_site_is_touched_or_declared",
         )
+        if state in DIAGNOSIS:
+            must, must_not = DIAGNOSIS[state]
+            assert any(must in n for n in got.names), (
+                f"{state}: the guard failed, but `{must}` -- the test that "
+                f"carries the diagnosis -- is not among {list(got.names)[:6]}. "
+                "A failure that does not name its cause is not an ablation.\n" + log[-1200:]
+            )
+            assert not any(must_not in n for n in got.names), (
+                f"{state}: `{must_not}` failed too. That is the SHAPE the "
+                "repair removes -- one diagnosis rather than a cascade -- so "
+                "its presence means the branch under test is not doing the "
+                "work.\n" + log[-1200:]
+            )
+            return
+
         assert any(any(n in got_name for n in named) for got_name in got.names), (
             f"{state}: the guard failed through {list(got.names)[:4]}, none of "
             "which is a named reporter. A failure nobody can locate is half a "
