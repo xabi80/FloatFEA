@@ -50,6 +50,18 @@ not in the repo, that is a finding in itself.
    rather than skipped over.
 4. `git diff <prev-verdict-commit>..HEAD -- floatfea/tolerances.py` separately,
    because that file is where the cheapest wrong fix lands.
+4c. `git diff <prev-verdict-commit>..HEAD -- 'tests/**/conftest.py'`
+   separately (CH2), because **everything the ladder's gate reads is writable
+   from a rung's own conftest**. `scripts/run_rung.sh` reads pytest's junit
+   report and pytest's exit code; a `pytest_runtest_makereport` hookwrapper in
+   the rung's directory rewrites that report, and `pytest_ignore_collect` or
+   `pytest_collection_modifyitems` remove the failing test from the collection
+   before anything records it. Three of those were measured reaching
+   `run_rung: OK`, exit 0, on a rung whose only test asserts `False`.
+   No gate can close this: a gate that reads a record cannot outrank code that
+   writes the record. Review is the bound, and this line is the review. A new
+   or changed conftest under `tests/` is read line by line before its rung's
+   green is believed.
 4b. `git diff <prev-verdict-commit>..HEAD -- .claude docs/SUPERVISOR.md`
    separately, because that is **your own instructions** — what you read, what
    you must carry, what you may write. Any change here must sit in a standalone

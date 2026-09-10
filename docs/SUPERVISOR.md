@@ -81,6 +81,19 @@ recorded as unavailable, never skipped over.
    a `_COUNTER` in the assertion's own quantity, and a justification located in
    `docs/milestones/F<n>.md` or the closure artifact. Missing any one is a
    HOLD.
+4c. `git diff <prev>..<this> -- 'tests/**/conftest.py'` separately (CH2).
+   **Everything the ladder's gate reads is writable from a rung's own
+   conftest.** `scripts/run_rung.sh` reads pytest's junit report and pytest's
+   exit code, which is the right pair and is what killed four text channels --
+   and a `pytest_runtest_makereport` hookwrapper in the rung's directory turns a
+   failing report into a passing one, while `pytest_ignore_collect` and
+   `pytest_collection_modifyitems` delete the failing test before anything
+   records it. All three were measured reaching `run_rung: OK`, exit 0, on a
+   genuinely red rung.
+   No gate closes this, because a gate reading a record cannot outrank code that
+   writes the record. **Review is the bound**: a conftest under `tests/` changed
+   inside a step commit is inspected line by line, every step, exactly as
+   `tolerances.py` is.
 5. Open the *previous* inside review and the previous witness comment. List
    every item either marked as blocking. For each, find the answer in this
    step's diff or report. An unanswered blocking item is a HOLD on its own.
