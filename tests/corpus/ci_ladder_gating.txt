@@ -212,3 +212,29 @@ id=ci_rung_full_xpass_with_a_plain_strict_False_marker_and_no_free_text layout=r
 id=ci_rung_full_xpass_whose_xfail_REASON_string_carries_a_count_phrase layout=rung1_declared_full_its_only_test_is_pytest_mark_xfail_strict_False_reason_1_passed_on_the_reference_build_and_the_body_passes require=fail measured=pass_exit0_run_rung_OK_1_directory_ran_while_the_summary_reads_1_xpassed_because_the_ra_XPASS_line_matched_first
 id=ci_rung_full_xpass_whose_PARAMETRIZE_ID_carries_a_count_phrase layout=rung1_declared_full_its_only_test_is_parametrize_case_3_passed_plus_xfail_strict_False_and_the_body_passes require=fail measured=pass_exit0_run_rung_OK_1_directory_ran_while_the_summary_reads_1_xpassed_the_node_id_reached_the_grep_first
 id=ci_rung_full_xpass_with_a_conftest_pytest_report_header_carrying_a_count_phrase layout=rung1_declared_full_a_conftest_py_whose_pytest_report_header_returns_0_passed_on_the_reference_build_plus_a_bare_strict_False_xpass require=fail measured=fail_exit1_run_rung_FAIL_1_xpassed_named_CONTROL_the_q_flag_suppresses_the_header_so_this_channel_is_closed
+
+# ------------------------------------------------------------------------
+# THIRTY-THIRD VERDICT, eighth on step 5. `-rN --no-header` closed the two
+# channels the previous round measured -- an xfail `reason=` and a parametrize
+# id both redden now, and I re-measured both rather than reading about them.
+# THE CHANNEL IS NOT CLOSED. Two more streams print text the test tree controls
+# AHEAD of pytest's own count line, and neither is suppressed by `-rN` or by
+# `--no-header`: the WARNINGS SUMMARY, and a conftest `pytest_terminal_summary`.
+# The same channel produces the mirror-image fault this file's own comment
+# records as already fixed once -- a clean rung reddened by a string.
+#
+# AND THE FOUR LAYOUTS ADDED AT bcaad88 CANNOT FAIL. `_run` builds the layout in
+# a bare scratch tree with no `pyproject.toml`, so the project's `addopts = -ra`
+# -- the setting that makes the whole attack possible -- is absent. With
+# `-rN --no-header` deleted from `run_rung.sh` the four still give `4 passed`.
+# The fix is real; the shipped evidence for it is not.
+#
+# MEASURED AT a949709, Windows, Python 3.13.11,
+# `sh scripts/run_rung.sh full:tests/verification/rung1` in a scratch tree.
+# ------------------------------------------------------------------------
+
+id=ci_rung_full_xpass_whose_TEST_BODY_EMITS_A_WARNING_carrying_a_count_phrase layout=rung1_declared_full_its_only_test_is_xfail_strict_False_and_the_body_calls_warnings_warn_3_passed_in_0_01s_before_asserting_True require=fail measured=pass_exit0_run_rung_OK_1_directory_ran_with_1_xpassed_on_the_screen_the_warnings_summary_prints_BEFORE_the_count_line_and_neither_rN_nor_no_header_suppresses_it
+id=ci_rung_full_xpass_with_a_conftest_pytest_terminal_summary_writing_a_count_line layout=rung1_declared_full_a_conftest_py_whose_pytest_terminal_summary_calls_terminalreporter_write_line_5_passed_in_0_01s_plus_a_bare_strict_False_xpass require=fail measured=pass_exit0_run_rung_OK_1_directory_ran_the_hook_writes_ahead_of_pytests_own_count_line_and_no_header_does_not_reach_a_terminal_summary_hook
+id=ci_rung_full_CLEAN_rung_whose_warning_text_contains_the_word_xpassed layout=rung1_declared_full_one_ordinary_PASSING_test_whose_body_warns_1_xpassed_in_0_01s_and_nothing_at_all_is_skipped_or_xfailed require=pass measured=fail_exit1_run_rung_FAIL_quoting_the_UserWarning_line_a_rung_that_skipped_and_xfailed_NOTHING_is_reddened_by_a_string_which_is_the_FALSE_POSITIVE_this_files_own_comment_records_as_fixed_once_already
+id=ci_rung_full_xpass_with_a_MODULE_LEVEL_print_of_a_count_phrase_at_collection layout=rung1_declared_full_the_test_module_prints_2_passed_in_0_01s_to_stderr_at_import_time_plus_a_bare_strict_False_xpass require=fail measured=fail_exit1_CONTROL_collection_time_output_is_captured_and_never_reaches_the_terminal_so_this_channel_is_closed
+id=ci_rung_full_xpass_reason_count_phrase_WITH_the_projects_addopts_present_in_the_layout layout=the_existing_xfail_REASON_entry_plus_a_pyproject_toml_carrying_addopts_ra_strict_markers_strict_config_which_is_what_the_real_rung_runs_under require=fail measured=fail_exit1_at_a949709_AND_the_same_layout_WITHOUT_the_pyproject_is_fail_exit1_even_with_rN_no_header_DELETED_so_the_four_layouts_shipped_at_bcaad88_pass_identically_with_and_without_the_repair

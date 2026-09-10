@@ -54,3 +54,38 @@ id=determinism_two_shards_print_different_FIGURES_SHA256 state=any_two_of_the_te
 id=determinism_figures_disagree_with_CI_while_every_golden_agrees state=the_live_state_at_73cf6ce_all_ten_legs_report_4_passed_on_tests_regression_and_the_guards_job_reports_test_the_generated_figures_are_not_stale_FAILED_in_the_same_run require=fail measured=pass_run_34435454388_determinism_10_of_10_success_the_decoupling_is_not_hypothetical_it_is_the_state_of_HEAD
 id=determinism_OPENBLAS_CORETYPE_pin_deleted_from_the_workflow state=the_env_line_OPENBLAS_CORETYPE_Haswell_removed_from_github_workflows_ci_yml_and_nothing_else_changed require=fail measured=pass_482_passed_0_failed_over_the_whole_guards_job_body_nothing_in_the_repository_asserts_the_pin_exists_and_no_plan_records_it_as_a_condition
 id=determinism_a_regression_golden_that_genuinely_moves_on_one_vendor state=the_unpinned_state_at_291f096_three_INTEL_XEON_PLATINUM_8573C_legs_and_seven_AMD_EPYC_legs require=fail measured=fail_3_of_10_legs_failed_run_34434995901_tests_regression_2_failed_2_passed_on_each_Intel_leg_CONTROL_the_job_does_catch_a_golden_that_moves
+
+# ------------------------------------------------------------------------
+# THIRTY-THIRD VERDICT, eighth on step 5. The job COMPARES now: the committed
+# file is hashed before anything touches it and `regen_figures.py --check`
+# returns 1 on any difference. I re-ran the garbage and the delete against the
+# new body and both redden, so R284's repair is real and I say so.
+#
+# WHAT THE FIRST LIVE RUN OF THE NEW BODY SHOWED. At a949709, run 34440129351,
+# ALL TEN LEGS FAILED -- `regen_figures: F2_figures.md is not what this script
+# produces at HEAD` -- on four CPU models, with the kernel pinned. The committed
+# figures file is a LAPTOP render: CI's entry name is
+# `ch_edgemin_D0p0758_roll1p05_aniso9p4e5` at edge 3.6425e-14 where the committed
+# file and a local run give `ci_plateau_D0p0689_roll1p017_aniso9p6e5` at
+# 3.6275e-14. `F2.md` already says a figure "whose stamp is not CI's pinned
+# environment fails the build"; `F2_figures.md` carries no stamp.
+#
+# AND TWO MEASUREMENTS WERE LOST IN THE REPAIR. `--check` and the
+# `FIGURES-SHA256` print sit in ONE `run:` block, so a failing comparison
+# suppresses the render hash -- the only cross-runner quantity the job has --
+# on every leg; and the `pytest tests/regression` step is `needs`-ordered after
+# it and was SKIPPED on all ten. The goldens ran ten times on CI at 73cf6ce and
+# zero times at a949709.
+#
+# MEASURED AT a949709: the two shipped step bodies verbatim in a
+# `git clone --local`, Windows, Python 3.13.11; and run 34440129351 on CI.
+# ------------------------------------------------------------------------
+
+id=determinism_committed_figures_file_replaced_by_one_line_of_garbage_AT_a949709 state=docs_milestones_F2_figures_md_overwritten_with_GARBAGE_then_the_two_shipped_steps_run_verbatim require=fail measured=fail_regen_figures_F2_figures_md_is_not_what_this_script_produces_at_HEAD_exit_1_and_the_file_is_NOT_overwritten_CAUGHT_the_R284_repair_works
+id=determinism_committed_figures_file_deleted_outright_AT_a949709 state=docs_milestones_F2_figures_md_removed_then_the_two_shipped_steps_run_verbatim require=fail measured=fail_exit_1_and_the_file_is_NOT_recreated_CAUGHT
+id=determinism_OPENBLAS_CORETYPE_pin_deleted_from_the_workflow_AT_a949709 state=the_env_line_OPENBLAS_CORETYPE_Haswell_removed_from_github_workflows_ci_yml_and_nothing_else_changed require=fail measured=pass_463_passed_0_failed_over_the_whole_guards_job_body_and_grep_for_OPENBLAS_CORETYPE_or_Haswell_across_tests_floatfea_and_scripts_returns_NOTHING_the_plan_now_records_the_condition_and_no_machine_does
+id=determinism_a_vendor_split_in_the_RENDER_hiding_behind_a_stale_committed_file state=two_legs_render_different_bytes_AND_the_committed_file_matches_neither require=fail measured=INDISTINGUISHABLE_at_a949709_all_ten_legs_exit_1_with_one_message_and_FIGURES_SHA256_was_printed_on_0_of_10_legs_the_only_hash_the_job_publishes_is_COMMITTED_SHA256_545f74b6_which_is_identical_on_all_ten_by_construction_and_carries_no_information
+id=determinism_the_goldens_execute_on_no_CI_job_at_all state=at_a949709_the_pytest_tests_regression_step_is_SKIPPED_on_all_ten_legs_because_the_step_before_it_failed_and_ladder6_is_skipped_behind_a_red_ladder4 require=fail measured=pass_nothing_asserts_that_tests_regression_actually_EXECUTED_test_ci_runs_the_whole_suite_parses_the_workflow_file_and_is_green_the_goldens_ran_ten_times_at_73cf6ce_and_zero_times_here
+id=determinism_committed_figures_were_produced_on_a_NON_canonical_machine state=docs_milestones_F2_figures_md_as_committed_is_the_Windows_render_and_the_runner_renders_a_different_corpus_entry_name_and_a_different_detection_edge require=fail measured=fail_all_ten_legs_run_34440129351_CAUGHT_and_this_is_the_coupling_R284_asked_for_working_on_its_first_live_run
+id=determinism_a_generated_figure_file_carrying_no_environment_stamp state=docs_milestones_F2_figures_md_header_names_the_generator_and_says_nothing_about_the_interpreter_or_the_libraries_that_produced_it require=fail measured=pass_no_stamp_exists_so_nothing_can_read_one_while_F2_md_states_that_a_golden_or_figure_whose_stamp_is_not_CIs_pinned_environment_fails_the_build
+id=determinism_all_ten_legs_render_bytes_equal_to_the_committed_file state=the_state_the_job_is_NAMED_after_ten_runners_one_render_and_it_matches_what_is_in_git require=pass measured=NEVER_OBSERVED_no_leg_has_reached_this_state_at_any_commit_on_this_branch

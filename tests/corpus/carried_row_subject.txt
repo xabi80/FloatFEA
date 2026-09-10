@@ -1,0 +1,51 @@
+# CORPUS: `Carried` rows whose STATUS TEXT does not describe the finding the row
+# is numbered for.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the thirty-third verdict on F2, the eighth
+# verdict on step 5 (HEAD a949709).
+#
+# WHY THIS FILE EXISTS (BE3). Three consecutive rounds have found the same
+# defect in the same table and each repair has been aimed one level too low.
+# R267: six rows attached that round's work to numbers naming different items.
+# R287: twenty-nine rows carrying one string, four of them false against the
+# verdict the report's own header names. R296, this round: `scripts/carried_table.py`
+# is committed and correct about CLASS -- it reads each finding's `(BLOCKS ...)`
+# or `(recordable, 4a)` heading -- and the rows that matter are the hand-written
+# ones, which are shifted by one. Row R288 carries R287's subject, row R289
+# carries R288's, row R290 carries R289's, and verdict 32's R290 -- the rung-6
+# restoration, one sentence -- has now gone unwritten for a THIRD round while
+# its row reads `answered`.
+#
+# The existing guards check SHAPE: that every listed number appears, that the
+# word beside it is report vocabulary rather than verdict vocabulary, that a
+# blocking item is not filed at 4a. None of them reads what the row SAYS against
+# what the verdict said about that number, which is the whole of what a Carried
+# table is for.
+#
+# FORMAT
+#   id=<name> row=<what the committed row asserts> require=<pass|fail>
+#   measured=<what the shipped suite did at a949709>
+#
+#   require=fail  the row is false or unsupported and something must go red
+#   require=pass  the row is honest and nothing may redden
+#
+# WHAT A PASSING SCAN MEANS. For each entry, put the row in the newest revision's
+# `Carried` table and run the shipped guards -- `tests/test_report_carried.py`
+# and `tests/test_report_guard_states.py`. A passing scan means every entry's
+# outcome matches `require`. IT DOES NOT MEAN THE TABLE IS TRUE: a scan cannot
+# read a verdict's prose, and the load-bearing rows are the hand-written ones.
+#
+# MEASURED AT a949709 by the reviewer, Windows, Python 3.13.11: the committed
+# table as it stands, `python -m pytest -q` giving 1759 passed, 0 failed.
+
+id=carried_row_status_text_names_the_PREVIOUS_findings_subject row=the_live_table_rows_R288_R289_and_R290_carry_the_subjects_of_verdict_32s_R287_R288_and_R289_shifted_by_one require=fail measured=pass_1759_passed_0_failed_no_guard_compares_a_rows_text_with_what_the_verdict_said_about_that_number
+id=carried_row_marked_answered_while_the_artifact_it_names_does_not_exist row=R290_answered_section_4_the_vocabulary_corpus_runner_while_grep_for_report_status_vocabulary_across_py_yml_sh_and_toml_returns_nothing_outside_tests_corpus require=fail measured=pass_the_row_is_green_and_the_runner_has_never_existed
+id=carried_row_cites_a_report_section_that_never_mentions_the_item row=R290_answered_section_4_while_section_4_of_revision_7_contains_no_sentence_about_a_vocabulary_runner_and_none_about_rung_6 require=fail measured=pass_nothing_checks_that_a_cited_section_contains_the_thing_cited
+id=carried_row_answered_when_only_the_FIRST_of_two_clauses_is_met row=R285_answered_section_2_the_pin_and_its_measurement_are_in_the_plan_while_the_verdicts_condition_also_required_a_check_that_reddens_when_the_pin_is_removed require=fail measured=pass_and_the_ablation_confirms_the_gap_deleting_OPENBLAS_CORETYPE_from_ci_yml_leaves_the_guards_body_at_463_passed_0_failed
+id=carried_row_for_a_GATED_item_whose_subject_appears_nowhere_in_the_report row=R290_answered_while_grep_of_revision_7_for_rung_6_returns_nothing_and_the_substance_ci_yml_312_and_the_empty_by_design_marker_is_a_single_sentence_that_has_gone_unwritten_three_rounds_running require=fail measured=pass_this_is_the_third_consecutive_round_the_same_sentence_has_been_recorded_as_written_and_was_not
+id=carried_row_whose_published_generator_command_cannot_be_run_at_this_commit row=report_section_4_publishes_cmd_python_scripts_carried_table_py_docs_reviews_F2_step_5_md_answered_json_with_out_the_table_in_section_7_verbatim require=fail measured=pass_answered_json_is_not_committed_the_table_is_in_section_6_not_7_and_the_command_as_written_prints_11_rows_against_the_committed_49_because_the_order_argument_is_also_uncommitted
+id=carried_row_generator_that_no_job_and_no_test_ever_runs row=scripts_carried_table_py_is_committed_and_the_report_says_the_table_comes_from_it require=fail measured=pass_grep_for_carried_table_across_py_yml_and_sh_matches_only_the_scripts_own_docstring_so_the_committed_table_and_the_committed_generator_are_never_compared_by_any_machine
+id=carried_row_answered_and_the_change_IS_in_the_diff row=R284_answered_section_1_the_job_compares_against_the_committed_file_and_git_diff_49c8449_HEAD_github_workflows_ci_yml_carries_the_hunk require=pass measured=pass_CONTROL_this_row_is_honest_and_stays_green
+id=carried_row_using_the_generators_default_string_for_a_4a_item row=R291_and_R292_read_open_recordable_at_4a_in_the_verdicts_own_classification_which_is_exactly_what_scripts_carried_table_py_emits_for_a_recordable_4a_heading require=pass measured=pass_CONTROL_the_generated_half_of_the_table_is_correct_and_I_reproduced_it_by_running_the_script
