@@ -147,3 +147,19 @@ id=answers_header_names_an_older_verdict_commit state=newest_revision_Answers_he
 
 id=guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL state=answers_header_names_an_older_verdict_commit_declared_green_at_e3a3bd1_while_the_report_commit_is_newer_than_the_verdict_commit_so_test_the_answered_verdict_is_the_NEWEST_one_fires require=fail measured=fail_CONTROL_1_failed_1833_passed_on_my_run_at_e3a3bd1_and_1_failed_531_passed_in_the_guards_job_of_run_34486215228_the_declaration_was_true_while_the_report_file_was_older_than_the_verdict_and_false_from_the_moment_the_report_was_committed_which_is_the_very_commit_that_declared_it
 id=guard_state_a_report_commit_messaged_docs_that_also_edits_the_guards_measuring_it state=e3a3bd1_subject_docs_step_5_revision_9_also_touching_scripts_carried_table_py_scripts_ci_section_py_tests_test_report_carried_py_and_tests_test_report_guard_states_py require=fail measured=pass_nothing_refuses_it_the_PreToolUse_hook_protects_docs_reviews_and_tests_corpus_and_CLAUDE_md_protects_claude_and_docs_SUPERVISOR_md_a_step_report_commit_may_still_change_the_test_that_judges_the_step_report_and_at_this_commit_it_did_and_that_change_is_what_turned_the_suite_red
+
+# ------------------------------------------------------------------------
+# THIRTY-SIXTH VERDICT (HEAD bf00121). Two new checks landed in
+# `tests/test_report_carried.py`: the Carried pointer is resolved against the
+# report (R314/R311a), and the report must carry a whole-suite line (CI1/R309).
+# Both do what the finding asked -- I rotated three pointers and all three
+# reddened by name. These two entries are the shapes that satisfy each check
+# while defeating what it is for.
+#
+# Both `measured=` values were taken at bf00121, on a full clone, by mutating
+# only `docs/reports/F2/` and running `python -m pytest
+# tests/test_report_carried.py -q`, which is 165 tests at that commit.
+# ------------------------------------------------------------------------
+
+id=guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF state=every_answered_row_in_step_5_answers_json_has_where_set_to_section_9_which_is_the_Carried_section_and_the_table_is_regenerated_with_the_committed_script require=fail measured=pass_165_passed_the_pointer_resolution_asks_only_that_the_named_section_exists_and_mentions_the_item_and_the_Carried_section_is_a_table_that_mentions_every_item_so_a_pointer_at_the_table_resolves_for_all_of_them_and_the_check_becomes_vacuous_without_a_single_rotation
+id=guard_state_the_whole_suite_line_names_an_ANCESTOR_AT_WHICH_THE_SUITE_WAS_RED state=the_whole_suite_line_rewritten_to_Whole_suite_at_9cc7744_1833_passed_0_failed_0_skipped_which_is_the_previous_verdict_commit_the_last_rounds_count_and_a_commit_at_which_the_suite_was_actually_1_failed_1833_passed require=fail measured=pass_165_passed_the_three_shipped_assertions_are_the_line_exists_passed_is_over_100_and_the_sha_is_an_ancestor_of_HEAD_so_any_ancestor_with_any_count_and_a_typed_zero_in_the_failed_field_satisfies_all_three_and_the_RUN_IT_LAST_ordering_that_is_the_whole_content_of_R309_is_stated_in_the_script_docstring_and_asserted_nowhere

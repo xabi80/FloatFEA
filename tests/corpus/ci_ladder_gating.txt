@@ -318,3 +318,38 @@ id=ci_rung_full_ROOT_conftest_tests_conftest_py_drops_the_FAILING_item_for_every
 id=ci_rung_full_conftest_ONE_LEVEL_ABOVE_the_rung_directory_drops_the_FAILING_item layout=tests_verification_rung1_declared_full_with_test_ok_and_test_bad_plus_a_conftest_at_tests_verification_conftest_py_whose_pytest_collection_modifyitems_filters_bad_out_of_items require=fail measured=pass_exit0_1_collected_0_failed_the_channel_is_not_a_property_of_the_rung_directory_it_is_a_property_of_every_conftest_on_the_path_and_all_four_declarations_in_REQUIREMENT_CHANGED_name_the_rung_directory
 id=ci_rung_RED_prints_a_count_and_a_reason_and_NO_TEST_NAME layout=tests_verification_rung1_declared_full_with_one_passing_and_one_failing_test_run_through_the_repaired_script require=fail measured=pass_the_output_is_2_collected_1_failed_0_errored_0_skipped_and_run_rung_FAIL_rung1_is_red_with_no_test_name_anywhere_while_commit_1dc4d33_is_titled_a_red_rung_says_which_test_failed_and_run_rung_sh_181_183_says_what_was_lost_was_everything_that_says_WHICH_test_failed_measured_again_on_CI_at_the_reviewed_commit_where_ladder4_printed_85_collected_13_failed_and_named_none_of_the_thirteen
 id=ci_rung_full_two_tests_one_failing_and_NO_conftest_CONTROL layout=tests_verification_rung1_declared_full_with_one_passing_and_one_failing_test_and_no_conftest_anywhere_on_the_path require=fail measured=fail_exit1_CONTROL_2_collected_1_failed_run_rung_FAIL_rung1_is_red_the_junit_reader_runs_and_reports_which_is_what_the_set_e_repair_bought
+
+# ------------------------------------------------------------------------
+# THIRTY-SIXTH VERDICT (HEAD bf00121). CI0 landed a SECOND record of the run
+# -- `scripts/rung_no_xpass.py` tallies at `pytest_runtest_call` and
+# `scripts/run_rung.sh` requires that tally to agree with the junit XML -- and
+# three files now say what it buys: `docs/SUPERVISOR.md` item 4c and
+# `.claude/agents/gating-supervisor.md` item 4c ("forgery must be consistent
+# across two places rather than done in one"), `scripts/run_rung.sh:172-178`
+# ("a conftest that drops a failing item now has to defeat both records
+# consistently instead of one"), and the step report's section 1 ("two of the
+# four channels now redden ... the other two cannot be caught from inside the
+# session").
+#
+# The first four entries measure that sentence rather than the four channels
+# it was measured on. The tally is taken inside `pytest_runtest_call`, so a
+# conftest hookwrapper on the SAME hook, ordered INNERMOST, is upstream of the
+# tally as well as of every report: one hook, one file, both records agree.
+# The second entry is its control -- the identical body without `trylast` --
+# and the two differ by one keyword argument.
+#
+# Entries three and four are two more shapes of the "removed before any record
+# exists" class the report declares unreachable. They are here so the class is
+# a measured set rather than a pair.
+#
+# Every `measured=` below was taken at bf00121 by running `sh
+# scripts/run_rung.sh full:tests/verification/rung1` over a scratch tree
+# carrying the project's own pyproject.toml, one module holding test_ok and
+# test_bad, and one conftest -- at `tests/verification/rung1/conftest.py` and
+# again at `tests/conftest.py`. Both depths gave the same answer for all four.
+# ------------------------------------------------------------------------
+
+id=ci_rung_full_conftest_runtest_call_hookwrapper_TRYLAST_swallows_the_exception layout=tests_verification_rung1_declared_full_with_test_ok_and_test_bad_plus_a_conftest_whose_pytest_runtest_call_hookwrapper_declared_trylast_true_calls_outcome_force_result_None_when_excinfo_is_not_None require=fail measured=pass_exit0_run_rung_2_collected_0_failed_0_errored_0_skipped_then_run_rung_OK_both_depths_ONE_HOOK_IN_ONE_FILE_and_the_two_records_AGREE_because_the_tally_is_taken_inside_pytest_runtest_call_and_trylast_puts_the_attacker_INSIDE_it_so_the_claim_that_forgery_must_now_be_consistent_across_two_places_rather_than_done_in_one_is_refuted_by_one_keyword_argument
+id=ci_rung_full_conftest_runtest_call_hookwrapper_DEFAULT_ORDER_swallows_the_exception_CONTROL layout=the_same_conftest_body_with_no_trylast_so_the_plugin_wrapper_is_the_inner_one require=fail measured=fail_exit1_CONTROL_run_rung_FAIL_the_two_records_of_this_run_disagree_junit_says_2_0_0_and_the_plugin_tallied_2_1_0_the_cross_check_works_exactly_as_advertised_and_the_only_difference_between_this_entry_and_the_one_above_is_hookimpl_ordering
+id=ci_rung_full_conftest_pytest_runtest_protocol_returns_True_for_the_failing_item layout=tests_verification_rung1_declared_full_with_test_ok_and_test_bad_plus_a_conftest_whose_pytest_runtest_protocol_returns_True_for_any_item_whose_name_contains_bad_so_the_protocol_is_claimed_to_have_run_and_no_report_is_ever_produced require=fail measured=pass_exit0_1_collected_0_failed_run_rung_OK_both_depths_a_fifth_channel_in_the_same_class_as_the_two_declared_unreachable_and_not_in_the_four_the_layout_map_enumerates
+id=ci_rung_full_conftest_deselects_the_failing_item_through_pytest_deselected layout=tests_verification_rung1_declared_full_with_test_ok_and_test_bad_plus_a_conftest_whose_pytest_collection_modifyitems_reports_the_failing_item_to_config_hook_pytest_deselected_and_then_removes_it_from_items require=fail measured=pass_exit0_1_collected_0_failed_run_rung_OK_both_depths_deselection_is_the_legitimate_spelling_of_the_drop_and_leaves_a_junit_report_that_is_an_accurate_account_of_a_run_that_did_not_contain_the_failure
