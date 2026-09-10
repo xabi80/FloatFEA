@@ -162,3 +162,23 @@ id=ci_rung_declared_empty_with_its_marker_and_nothing_in_it layout=rung2_declare
 id=ci_rung6_job_as_shipped_leaves_its_own_rung_undeclared layout=rung6_holds_a_passing_test_and_tests_regression_holds_a_passing_test_run_with_the_arguments_ci_yml_ACTUALLY_carries_at_fa3b070_namely_full_tests_regression_alone require=fail measured=pass_exit0_OK_1_directory_ran_the_populated_rung6_is_named_by_nothing_and_no_declaration_contradicts_it
 id=ci_rung_full_prints_a_counter_line_AFTER_pytests_summary layout=rung1_declared_full_one_PASSING_test_whose_module_registers_an_atexit_hook_printing_1_skipped_in_0_01s require=run measured=fail_exit1_false_skip_alarm_the_tail_1_heuristic_takes_the_later_line
 id=ci_rung_argument_path_carries_a_trailing_slash layout=rung1_declared_full_one_passing_test_argument_written_full_tests_verification_rung1_slash require=run measured=run_exit0_1_passed_OK_1_directory_ran
+
+# MEASURED AT a59521e by the reviewer, `sh scripts/run_rung.sh` in a scratch
+# tree with the shipped script unchanged: 3 new entries, 1 agrees, 2 do not.
+#
+# Two of last round's five are now correct and I re-ran both rather than
+# reading about them: `ci_rung_full_every_test_is_xfail_and_PASSES` reddens
+# (`-o xfail_strict=true` turns the XPASS into a failure), and
+# `ci_rung_full_prints_a_counter_line_AFTER_pytests_summary` is green (the
+# skip count is read from the junit report, not from the tail of stdout).
+#
+# The first row below is the same shape as the xfail entry with one keyword
+# added. `strict=False` on the marker overrides `-o xfail_strict=true`, the
+# summary reads `1 xpassed`, the junit report records skipped="0", and the rung
+# exits 0 with `run_rung: OK`. R260's condition was that the script "reddens on
+# `1 xpassed` alone"; a summary line reading exactly `1 xpassed in 0.21s` is
+# still producible at exit 0.
+
+id=ci_rung_full_xfail_marker_carries_strict_False_and_the_body_PASSES layout=rung1_declared_full_its_only_test_is_pytest_mark_xfail_strict_False_whose_body_passes require=fail measured=pass_exit0_summary_1_xpassed_in_0_21s_run_rung_OK_1_directory_ran
+id=ci_rung_full_conftest_collect_ignore_silently_drops_a_test_file layout=rung1_declared_full_holding_a_FAILING_test_a_py_and_a_passing_test_b_py_with_a_conftest_py_setting_collect_ignore_to_test_a_py require=fail measured=pass_exit0_1_passed_run_rung_OK_1_directory_ran_the_dropped_file_is_reported_by_nothing
+id=ci_rung_full_module_level_pytest_skip_allow_module_level layout=rung1_declared_full_its_only_module_calls_pytest_skip_allow_module_level_True_at_import require=fail measured=fail_exit1_declared_full_and_collects_nothing_exit_5_is_a_failure_here

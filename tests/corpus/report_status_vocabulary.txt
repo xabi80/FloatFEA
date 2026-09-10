@@ -64,3 +64,34 @@ id=three_columns_status_in_the_middle expect=refused measured=allowed_only_the_L
 id=three_columns_note_carries_a_report_word expect=refused measured=allowed_only_the_LAST_column_is_read_as_the_status row=| R230 | closed | answered later |
 id=status_that_is_none_of_the_three_report_words expect=refused measured=allowed_the_substring_open_appears_inside_nothing_open row=| R230 | **resolved**, nothing open |
 id=withdrawn_on_an_item_the_verdict_heads_BLOCKS expect=refused measured=allowed_the_contradiction_domain_is_only_R230_R234_R242 row=| R241 | **withdrawn by me** |
+
+# ---------------------------------------------------------------------------
+# THIRTY-FIRST VERDICT, sixth on step 5. MEASURED AT a59521e by the reviewer,
+# each row appended to the newest revision's Carried table in a `git clone
+# --local` scratch tree and scanned with
+# `pytest tests/test_report_carried.py -k "CLOSED or report_words or
+# status_claims"`, the shipped tests unchanged: 10 new entries, 3 agree, 7 do
+# not.
+#
+# FIRST, THE THREE ROWS FROM LAST ROUND THAT ARE STILL ALLOWED, re-measured at
+# a59521e rather than carried across: `bolded_item_cell`,
+# `backticked_item_cell` and `three_columns_status_in_the_middle`. The
+# synonym row is now refused and the markdown strip is real -- but it is
+# applied to the STATUS cell only, and `_ROW` still anchors on `^\|\s*R\d`, so
+# a first cell wearing any markup is not parsed as a row at all; and
+# `_status_cells` at :328-334 still reads `rest.rsplit("|", 1)[-1]`, so a third
+# column still hides the second. One of the four named formattings is refused.
+#
+# The new rows below are the next layer: five more spellings of closure that
+# are not in VERDICT_ONLY, and two more ways to break the word itself.
+
+id=synonym_done expect=refused measured=allowed_done_is_not_in_VERDICT_ONLY row=| R230 | **done** -- nothing further |
+id=synonym_fixed expect=refused measured=allowed_fixed_is_not_in_VERDICT_ONLY row=| R230 | **fixed**, verified |
+id=no_longer_open_as_the_whole_status expect=refused measured=allowed_the_substring_open_satisfies_the_report_word_check_while_the_cell_claims_closure row=| R230 | **no longer open** |
+id=soft_hyphen_inside_the_word_closed expect=refused measured=allowed_U00AD_between_o_and_s_survives_the_markup_strip row=| R230 | **clo­sed** at the third verdict |
+id=html_comment_inside_the_word_closed expect=refused measured=allowed_an_empty_html_comment_splits_the_word_and_renders_as_closed row=| R230 | **clo<!---->sed** at the third verdict |
+id=html_entity_inside_the_word_closed expect=refused measured=allowed_clos_ampersand_hash_101_semicolon_d_renders_as_closed row=| R230 | **clos&#101;d** at the third verdict |
+id=item_cell_written_R_space_230 expect=refused measured=allowed_the_row_anchor_requires_R_immediately_followed_by_digits row=| R 230 | **closed** at the third verdict |
+id=closed_out_hyphenated_and_uppercase expect=refused measured=refused_the_substring_closed_is_found_after_lowercasing row=| R230 | **CLOSED-OUT** |
+id=struck_through_open_then_closed expect=refused measured=refused_the_markup_strip_leaves_openclosed_and_the_substring_is_found row=| R230 | ~~open~~ **closed** |
+id=two_spaces_before_the_item_number expect=allowed measured=allowed_the_row_parses_and_the_status_answered_is_a_legitimate_report_word row=|  R230 | **answered** in section 1 |
