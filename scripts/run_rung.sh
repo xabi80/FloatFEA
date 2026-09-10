@@ -145,6 +145,22 @@ if [ "$RUN_COUNT" -gt 0 ]; then
     # subprocess -- became the line `tail -1` picked, so a rung that skipped
     # nothing could be reddened by a string, and one that skipped everything
     # could hide behind a later line.
+    # AND FROM PYTEST'S OWN SUMMARY, taken as the FIRST count line rather than
+    # the last. junit records a skip but has no distinct field for an
+    # unexpected pass, and `xfail_strict` in the config is overridden by an
+    # explicit `@pytest.mark.xfail(strict=False)` -- so that shape exits 0 and
+    # the report shows nothing. Pytest prints its summary before any `atexit`
+    # output, so the first match is the real one and a later forgery cannot
+    # displace it.
+    first=$(printf '%s
+' "$out" | grep -E '[0-9]+ (passed|failed|skipped|xfailed|xpassed)' | head -1)
+    case "$first" in
+        *xpassed*)
+            fail "$first -- a test in $* passed while marked xfail. CLAUDE.md
+        names xfail in the same sentence as skip; an explicit strict=False does
+        not exempt a ladder rung."
+            exit 1 ;;
+    esac
     if grep -qE '(skipped|xfail)="[1-9]' "$report" 2>/dev/null; then
         fail "$(grep -oE '(skipped|xfail[a-z]*)=\"[0-9]+\"' "$report" | tr '
 ' ' ')

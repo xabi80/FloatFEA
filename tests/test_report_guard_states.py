@@ -307,6 +307,21 @@ def _run_guard(work: Path) -> Outcome:
     return Outcome(out.returncode, collected, failed, errors, tuple(names), out.stdout + out.stderr)
 
 
+def _assert_diagnosis(state: str, got: Outcome, log: str) -> None:
+    """The ablation: the named diagnosis fails and its dependants do not."""
+    must, must_not = DIAGNOSIS[state]
+    assert any(must in n for n in got.names), (
+        f"{state}: the guard failed, but `{must}` -- the test that carries the "
+        f"diagnosis -- is not among {list(got.names)[:6]}. A failure that does "
+        "not name its cause is not an ablation.\n" + log[-1200:]
+    )
+    assert not any(must_not in n for n in got.names), (
+        f"{state}: `{must_not}` failed too. That is the SHAPE the repair "
+        "removes -- one diagnosis rather than a cascade -- so its presence "
+        "means the branch under test is not doing the work.\n" + log[-1200:]
+    )
+
+
 def test_the_corpus_and_the_states_agree() -> None:
     """Meta-test: a state this file forgot to build is a state nothing runs."""
     assert ENTRIES, f"{CORPUS} parsed to no entries; the format changed"
@@ -368,19 +383,7 @@ def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) 
             "test_every_named_site_is_touched_or_declared",
         )
         if state in DIAGNOSIS:
-            must, must_not = DIAGNOSIS[state]
-            assert any(must in n for n in got.names), (
-                f"{state}: the guard failed, but `{must}` -- the test that "
-                f"carries the diagnosis -- is not among {list(got.names)[:6]}. "
-                "A failure that does not name its cause is not an ablation.\n" + log[-1200:]
-            )
-            assert not any(must_not in n for n in got.names), (
-                f"{state}: `{must_not}` failed too. That is the SHAPE the "
-                "repair removes -- one diagnosis rather than a cascade -- so "
-                "its presence means the branch under test is not doing the "
-                "work.\n" + log[-1200:]
-            )
-            return
+            _assert_diagnosis(state, got, log)
 
         assert any(any(n in got_name for n in named) for got_name in got.names), (
             f"{state}: the guard failed through {list(got.names)[:4]}, none of "

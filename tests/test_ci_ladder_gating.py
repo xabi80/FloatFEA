@@ -106,6 +106,30 @@ ATEXIT_NOISE = "\n".join(
         "",
     ]
 )
+STRICT_FALSE_XPASS = "\n".join(
+    [
+        "import pytest",
+        "",
+        "",
+        '@pytest.mark.xfail(strict=False, reason="explicitly non-strict")',
+        "def test_a():",
+        "    assert True",
+        "",
+    ]
+)
+MODULE_SKIP = "\n".join(
+    [
+        "import pytest",
+        "",
+        'pytest.skip("the whole module", allow_module_level=True)',
+        "",
+        "",
+        "def test_a():",
+        "    assert True",
+        "",
+    ]
+)
+COLLECT_IGNORE = 'collect_ignore = ["test_a.py"]\n'
 XPASSED = "\n".join(
     [
         "import pytest",
@@ -227,6 +251,16 @@ LAYOUTS: dict[str, dict[str, str | None]] = {
     "ci_full_rung_with_a_failing_test_prints_no_OK_line": {
         "tests/verification/rung1/test_a.py": PASSING,
         "tests/verification/rung1/test_b.py": FAILING,
+    },
+    "ci_rung_full_xfail_marker_carries_strict_False_and_the_body_PASSES": {
+        "tests/verification/rung1/test_a.py": STRICT_FALSE_XPASS,
+    },
+    "ci_rung_full_conftest_collect_ignore_silently_drops_a_test_file": {
+        "tests/verification/rung1/test_a.py": PASSING,
+        "tests/verification/rung1/conftest.py": COLLECT_IGNORE,
+    },
+    "ci_rung_full_module_level_pytest_skip_allow_module_level": {
+        "tests/verification/rung1/test_a.py": MODULE_SKIP,
     },
     "ci_rung_full_prints_a_counter_line_AFTER_pytests_summary": {
         "tests/verification/rung1/test_a.py": ATEXIT_NOISE,

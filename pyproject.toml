@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "floatfea"
 version = "0.1.0"
 description = "Structural finite element analysis of the FloatSim floating platform"
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "numpy>=1.26",
     "scipy>=1.11",
@@ -41,6 +41,14 @@ exclude = ["tests*", "docs*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers --strict-config"
+
+# CF4: AN UNEXPECTED PASS IS A FAILURE, everywhere, not only inside a ladder
+# rung. `CLAUDE.md` forbids `xfail` in the same sentence as `skip`, and pytest's
+# default lets a test marked `xfail(strict=False)` pass silently when it
+# succeeds -- so a rung whose only test was marked that way exited 0 and
+# reported OK. Setting it here makes the rule the runner's, one line, rather
+# than something each caller has to remember to pass.
+xfail_strict = true
 
 # AM5: an empty parameter set is an ERROR, not a skip.
 #
@@ -79,17 +87,17 @@ markers = [
 
 [tool.black]
 line-length = 100
-target-version = ["py311"]
+target-version = ["py313"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "NPY"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
 strict = true
 warn_unreachable = true
 disallow_untyped_defs = true

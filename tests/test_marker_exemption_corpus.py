@@ -206,6 +206,17 @@ def test_the_known_misses_are_exactly_these() -> None:
         "make KNOWN_MISSES the measurement again -- a list that is not the "
         "misses is worse than no list."
     )
+    # AND ITS REPLACEMENT WAS AN ABSENCE DESCRIBED AS A PRESENCE (CF3). "No
+    # false pass on a real file" pointed at a test that asserts `offending()`
+    # returns NOTHING -- and a false pass is precisely a file where that is
+    # satisfied. It could not go red on a miss, which is the one thing a bound
+    # has to be able to do.
+    #
+    # What bounds the list now is this table itself, used as a GOLDEN: the
+    # escape set is enumerated by name with species, and `measured == listed`
+    # above fails when a new shape escapes AND when a listed one stops escaping.
+    # That is the golden-file idiom, and it can go red in both directions.
+    #
     # THE RATIO RULE THAT STOOD HERE IS WITHDRAWN, and it was mine (CE3).
     #
     # It compared the miss count with the SIZE OF AN ADVERSARIAL CORPUS, and the
@@ -214,11 +225,9 @@ def test_the_known_misses_are_exactly_these() -> None:
     # and firing pushed me toward a broad fix that reddened seven correct files.
     # A metric that rewards leaving the corpus small is the wrong metric.
     #
-    # What replaces it is the thing that actually matters, and it is asserted
-    # elsewhere in this suite rather than restated here: NO FALSE PASS ON A REAL
-    # FILE. `test_no_undeclared_tolerance_reaches_a_comparison` runs the scanner
-    # over every file under `tests/` at every commit. What this file adds is that
-    # each miss is NAMED with its species, so the list cannot become a shrug.
+    # What replaces it is the escape golden above. Each miss is NAMED with its
+    # species, so the list cannot become a shrug, and the set is asserted equal
+    # to the measurement so it cannot drift in either direction.
     speciesless = [k for k, v in KNOWN_MISSES.items() if not v.strip()]
     assert not speciesless, (
         f"{speciesless} are listed as known misses with no species. A list of "

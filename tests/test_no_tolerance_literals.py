@@ -24,13 +24,19 @@ What is flagged
 * the second positional argument of ``approx`` -- its tolerance slot;
 * a bare ``pytest.approx(x)`` with no ``abs``/``rel``, itself an undeclared
   tolerance since it defaults to ``rel=1e-6, abs=1e-12``;
-* a float threshold on the RIGHT of a comparison, other than ``0.0`` or ``1.0``,
-  which are canonical structural bounds; integers are counts and are never
-  flagged. **The left operand is not read** (R237): ``assert 0.05 > ratio``
-  returns nothing, and this list said "any float threshold" while two live sites
-  sit on that side. Widening it to ``node.left`` is a change to the guard's
-  reach and belongs to step 4a; the sentence is what was false and it is fixed
-  here.
+* a float threshold on EITHER side of a comparison, other than ``0.0`` or
+  ``1.0``, which are canonical structural bounds; integers are counts and are
+  never flagged. A negated literal counts, since ``-1e-9`` is a ``UnaryOp`` and
+  not a ``Constant``;
+* a module-level name bound to a float literal and used as a threshold, and a
+  default argument named like a tolerance carrying one -- the two clauses of
+  ``CLAUDE.md`` § Tolerances that this list did not read;
+
+  This paragraph has been wrong twice in opposite directions (R255, R269). It
+  first said "any float threshold" while only the right operand was read; the
+  round that read the left operand left the sentence saying it did not. What is
+  NOT read is listed in ``tests/test_marker_exemption_corpus.py`` by species,
+  measured against the reviewer's shapes, rather than described here.
 
 Each must resolve to a `Name` imported from `floatfea.tolerances`, or be a call to
 `floatfea.testing.assert_close` / `assert_differs`, which carry their own floor.

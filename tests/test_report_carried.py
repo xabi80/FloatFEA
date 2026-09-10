@@ -212,11 +212,72 @@ def test_the_report_names_the_verdict_it_answers() -> None:
     )
     out = subprocess.run(["git", "cat-file", "-e", ANSWERED], cwd=ROOT, capture_output=True)
     assert out.returncode == 0, (
-        f"the report answers verdict `{ANSWERED}`, which is not a commit in " "this repository."
+        f"the report answers verdict `{ANSWERED}`, which `git cat-file -e` "
+        "cannot resolve. Either the sha is wrong, or the clone does not contain "
+        "it -- a shallow checkout resolves nothing older than its depth, and "
+        "that is a different fault from a typo (R273)."
     )
     assert len(re.findall(r"^Answers:", _newest_revision(REPORT_TEXT), re.MULTILINE)) == 1, (
         "the newest revision carries more than one `Answers:` header, so which "
         "verdict it claims to answer is ambiguous."
+    )
+
+
+def _blocking() -> set[str]:
+    """Findings the verdict marks as blocking, read from its own headings."""
+    out: set[str] = set()
+    for m in re.finditer(r"^\*\*(R\d+)\.?\s*\(([^)]*)\)", VERDICT_TEXT, re.MULTILINE):
+        if "block" in m.group(2).lower():
+            out.add(m.group(1))
+    return out
+
+
+def test_a_blocking_item_is_not_routed_to_4a() -> None:
+    """CF2. The verdict's classification of an item is authoritative.
+
+    Four of eight blocking items were recorded `open -- 4a` in one revision.
+    A report may say it has not answered an item; it may not re-file the
+    verdict's ruling about which step that item belongs to.
+    """
+    blocking = _blocking()
+    assert blocking, (
+        f"no blocking finding parsed from {VERDICT.name}. The heading format "
+        "changed and this check passes on anything."
+    )
+    misrouted = [
+        i for i, st in _status_cells() if "4a" in _plain(st) and set(_MENTION.findall(i)) & blocking
+    ]
+    assert not misrouted, (
+        f"{misrouted} are recorded at 4a and {VERDICT.name} marks them "
+        "blocking. Where they are answered is the verdict's call, not the "
+        "report's."
+    )
+
+
+def test_the_answered_verdict_is_the_NEWEST_one() -> None:
+    """Item 1b, mechanically. It was the reviewer's eye and nothing else.
+
+    A header naming a real but older verdict commit passed every check: the sha
+    resolves, the findings parse, and the carry table is complete about a list
+    that has been superseded.
+    """
+    newest = subprocess.run(
+        ["git", "log", "-1", "--format=%H", "--", str(VERDICT.relative_to(ROOT))],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert newest.returncode == 0, newest.stderr
+    head = newest.stdout.strip()
+    if not head or not ANSWERED:
+        return
+    same = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", head, ANSWERED], cwd=ROOT, capture_output=True
+    )
+    assert same.returncode == 0, (
+        f"the report answers verdict `{ANSWERED[:7]}` and the newest commit "
+        f"touching {VERDICT.name} is `{head[:7]}`. Every `Carried` claim is "
+        "then about a list that has been superseded."
     )
 
 
@@ -324,15 +385,24 @@ def _plain(cell: str) -> str:
     return _MARKUP.sub("", cell).lower()
 
 
-_ROW = re.compile(r"^\|\s*(R\d+(?:[,\s/–—-]+R?\d+)*)[^|]*\|(.+)\|\s*$", re.MULTILINE)
+# THE FIRST CELL MAY BE DECORATED AND THE STATUS MAY BE IN ANY CELL AFTER IT.
+# Three of the four formattings the reviewer tried went past the first version:
+# a bolded first cell, a backticked one -- the adjacent table backticks every
+# first cell, seventy times -- and a third column. Revision 5 said this edit had
+# been made and it had not, which is why the claim now carries the cell it is
+# checked by.
+_ROW = re.compile(r"^\|([^|]*R\d+[^|]*)\|(.+)\|\s*$", re.MULTILINE)
 
 
 def _status_cells() -> list[tuple[str, str]]:
-    """`(items, status)` for every row of the newest revision's Carried table."""
+    """`(items, status)` for EVERY cell after the first, per Carried row."""
     out: list[tuple[str, str]] = []
     for items, rest in _ROW.findall(CARRIED):
-        status = rest.rsplit("|", 1)[-1] if "|" in rest else rest
-        out.append((items.strip(), status.strip()))
+        if not _MENTION.findall(items):
+            continue
+        for cell in rest.split("|"):
+            if cell.strip():
+                out.append((items.strip(), cell.strip()))
     return out
 
 
@@ -423,7 +493,20 @@ _CI_ROW = re.compile(
 
 
 def _ci_section() -> str:
-    return _section(_newest_revision(REPORT_TEXT), "CI")
+    """The CI section: the one whose body actually holds the per-job table.
+
+    Matching the heading text alone took the LAST heading containing `CI`, and
+    a revision that also discusses CI in prose has several. The table is what
+    identifies the section, which is the thing being checked.
+    """
+    body = _newest_revision(REPORT_TEXT)
+    best = ""
+    for m in re.finditer(r"^##+ .*$", body, re.MULTILINE):
+        nxt = re.search(r"^##+ ", body[m.end() :], re.MULTILINE)
+        chunk = body[m.end() : m.end() + nxt.start()] if nxt else body[m.end() :]
+        if len(_CI_ROW.findall(chunk)) > len(_CI_ROW.findall(best)):
+            best = chunk
+    return best
 
 
 def _reported_ci() -> dict[str, tuple[int, int, int]]:
