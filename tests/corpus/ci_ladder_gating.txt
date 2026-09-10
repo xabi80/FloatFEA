@@ -238,3 +238,57 @@ id=ci_rung_full_xpass_with_a_conftest_pytest_terminal_summary_writing_a_count_li
 id=ci_rung_full_CLEAN_rung_whose_warning_text_contains_the_word_xpassed layout=rung1_declared_full_one_ordinary_PASSING_test_whose_body_warns_1_xpassed_in_0_01s_and_nothing_at_all_is_skipped_or_xfailed require=pass measured=fail_exit1_run_rung_FAIL_quoting_the_UserWarning_line_a_rung_that_skipped_and_xfailed_NOTHING_is_reddened_by_a_string_which_is_the_FALSE_POSITIVE_this_files_own_comment_records_as_fixed_once_already
 id=ci_rung_full_xpass_with_a_MODULE_LEVEL_print_of_a_count_phrase_at_collection layout=rung1_declared_full_the_test_module_prints_2_passed_in_0_01s_to_stderr_at_import_time_plus_a_bare_strict_False_xpass require=fail measured=fail_exit1_CONTROL_collection_time_output_is_captured_and_never_reaches_the_terminal_so_this_channel_is_closed
 id=ci_rung_full_xpass_reason_count_phrase_WITH_the_projects_addopts_present_in_the_layout layout=the_existing_xfail_REASON_entry_plus_a_pyproject_toml_carrying_addopts_ra_strict_markers_strict_config_which_is_what_the_real_rung_runs_under require=fail measured=fail_exit1_at_a949709_AND_the_same_layout_WITHOUT_the_pyproject_is_fail_exit1_even_with_rN_no_header_DELETED_so_the_four_layouts_shipped_at_bcaad88_pass_identically_with_and_without_the_repair
+
+# ------------------------------------------------------------------------
+# THIRTY-FOURTH VERDICT, ninth on step 5. MEASURED AT 55498f4 by the reviewer,
+# Windows, Python 3.13.11, `sh scripts/run_rung.sh full:rungX` in a scratch
+# tree carrying the project's own `pyproject.toml`: 7 new entries, 3 agree,
+# 4 do not.
+#
+# THE REPAIR OF THIS ROUND IS THE BIGGEST ONE THIS FILE HAS SEEN AND I
+# REPRODUCED ALL OF IT. The rung no longer reads stdout at all -- pytest's
+# output is sent to /dev/null and the outcome comes from `--junit-xml` and the
+# exit code. Both doors from the last round are shut and the ablation is
+# load-bearing: `-p rung_no_xpass` deleted, nothing else, gives `8 failed,
+# 1 passed` where the shipped script gives `9 passed`, and the one that stays
+# green is the false-positive control. The mirror fault is gone: a clean rung
+# whose test warns `1 xpassed` is green.
+#
+# WHAT THE MIGRATION DID NOT CHANGE. Every earlier round's attack forged the
+# TEXT the gate read. These four forge the RECORD the gate reads, and three of
+# the four are not in the reach the script states. A rung's own `conftest.py`
+# is the same kind of object as the `pytest_terminal_summary` conftest that
+# counted as a live attack last round; the reach sentence calls a conftest
+# "an edit to the harness" only for the one channel it enumerated.
+#
+#   * `pytest_runtest_makereport` as a conftest hookwrapper sets a failing
+#     call report to `passed` -- the same hook, in the same direction, that
+#     `scripts/rung_no_xpass.py` itself uses. The rung is genuinely red and
+#     the script prints `1 collected, 0 failed` and `run_rung: OK`, exit 0.
+#     `scripts/rung_no_xpass.py:21` says "A test cannot write another test's
+#     report element, so there is nothing to forge." A conftest can write
+#     EVERY test's report element, and that is how the repair works.
+#   * `pytest_ignore_collect` hides the failing test FILE. One passing test
+#     remains, `1 collected, 0 failed`, exit 0. Nothing anywhere records how
+#     many tests the rung is supposed to have, so a rung that loses a file
+#     is indistinguishable from one that never had it -- which is the
+#     `.empty-by-design` argument, one level down.
+#   * `pytest_collection_modifyitems` drops only the failing item. Same
+#     result. This is assertion domain blindness in its plainest form: the
+#     collection the gate inspects cannot contain the failure.
+#   * `pytest_sessionfinish` rewriting the XML is the one the script DOES
+#     name, and it works from a rung conftest rather than from a plugin.
+#
+# THE TWO CONTROLS SAY THE GATE IS NOT VACUOUS. A conftest that deselects
+# every item reddens on "collects nothing", and an `xfail` that genuinely
+# fails reddens on the junit `<skipped>` element. The gate carries its own
+# failure; what it does not carry is a rung tree it does not trust.
+# ------------------------------------------------------------------------
+
+id=ci_rung_full_conftest_makereport_wrapper_turns_a_FAILING_test_into_a_passing_report layout=rung1_declared_full_one_test_asserting_False_plus_a_conftest_py_with_a_pytest_runtest_makereport_hookwrapper_trylast_that_sets_rep_outcome_to_passed_and_rep_longrepr_to_None_when_rep_when_is_call_and_rep_failed require=fail measured=pass_exit0_run_rung_1_collected_0_failed_0_errored_0_skipped_then_run_rung_OK_the_rung_is_RED_and_the_gate_says_green_and_this_channel_is_the_one_rung_no_xpass_itself_uses
+id=ci_rung_full_conftest_makereport_wrapper_against_the_XPASS_case_CONTROL layout=rung1_declared_full_one_xfail_strict_False_test_that_passes_plus_the_same_conftest_makereport_wrapper require=fail measured=fail_exit1_CONTROL_the_plugin_wins_the_ordering_here_so_the_xpass_repair_is_not_defeated_by_the_same_wrapper_that_defeats_a_plain_failure
+id=ci_rung_full_conftest_pytest_ignore_collect_hides_the_FAILING_test_file layout=rung1_declared_full_test_ok_py_passing_and_test_bad_py_asserting_False_plus_a_conftest_pytest_ignore_collect_returning_True_for_test_bad_py require=fail measured=pass_exit0_1_collected_0_failed_a_whole_test_FILE_vanishes_and_nothing_records_how_many_the_rung_should_have_had
+id=ci_rung_full_conftest_collection_modifyitems_drops_only_the_FAILING_item layout=rung1_declared_full_one_module_with_test_ok_and_test_bad_plus_a_conftest_pytest_collection_modifyitems_filtering_bad_out_of_items require=fail measured=pass_exit0_1_collected_0_failed_the_collection_the_gate_inspects_cannot_contain_the_failure
+id=ci_rung_full_conftest_pytest_sessionfinish_rewrites_the_junit_xml layout=rung1_declared_full_one_test_asserting_False_plus_a_conftest_pytest_sessionfinish_trylast_that_parses_session_config_option_xmlpath_removes_every_failure_and_error_element_writes_it_back_and_sets_session_exitstatus_to_0 require=fail measured=pass_exit0_DECLARED_the_scripts_reach_comment_names_this_channel_but_names_it_as_a_plugin_and_it_works_from_a_rung_conftest
+id=ci_rung_full_conftest_deselects_EVERY_item_CONTROL layout=rung1_declared_full_one_failing_test_plus_a_conftest_pytest_collection_modifyitems_setting_items_to_the_empty_list require=fail measured=fail_exit1_CONTROL_run_rung_FAIL_rungX_is_declared_full_and_collects_nothing
+id=ci_rung_full_xfail_marked_test_that_genuinely_FAILS_CONTROL layout=rung1_declared_full_one_test_marked_pytest_mark_xfail_reason_known_whose_body_asserts_False require=fail measured=fail_exit1_CONTROL_1_collected_0_failed_1_skipped_the_junit_skipped_element_is_read_and_CLAUDE_md_forbids_xfail_for_a_green_build

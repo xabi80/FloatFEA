@@ -95,3 +95,47 @@ id=item_cell_written_R_space_230 expect=refused measured=allowed_the_row_anchor_
 id=closed_out_hyphenated_and_uppercase expect=refused measured=refused_the_substring_closed_is_found_after_lowercasing row=| R230 | **CLOSED-OUT** |
 id=struck_through_open_then_closed expect=refused measured=refused_the_markup_strip_leaves_openclosed_and_the_substring_is_found row=| R230 | ~~open~~ **closed** |
 id=two_spaces_before_the_item_number expect=allowed measured=allowed_the_row_parses_and_the_status_answered_is_a_legitimate_report_word row=|  R230 | **answered** in section 1 |
+
+# ---------------------------------------------------------------------------
+# THIRTY-FOURTH VERDICT, ninth on step 5. MEASURED AT 55498f4 by the reviewer,
+# Windows, Python 3.13.11, by rebinding the shipped guard's `CARRIED` to the
+# newest revision's Carried text with each row appended and running the three
+# shipped vocabulary tests in the order the runner uses: 9 new entries, 1
+# agrees, 8 do not.
+#
+# THE REPAIRS OF THIS ROUND ARE REAL AND I MEASURED THEM RATHER THAN READING
+# THEM. Reverting `_plain` to the markup-only strip reddens exactly the three
+# invisible-character entries; reverting `_ROW` to `^\|` reddens exactly the
+# indented row and `R 230`; deleting `no longer open` from VERDICT_ONLY reddens
+# exactly that entry. `tests/test_report_vocabulary_corpus.py` binds to the
+# repairs, `DISAGREEMENTS` is empty, and 22 of 22 entries agree. The report says
+# `23 of 23 entries`; there are 22 entries, and 23 is the pytest count with
+# `test_the_corpus_was_parsed` included.
+#
+# THESE NINE ARE THE NEXT LAYER, AND EIGHT OF THEM GET THROUGH. The pattern is
+# the one this file has shown at every round: the repair enumerates the
+# producers the author has just seen. `_INVISIBLE` lists five codepoints and an
+# HTML comment; there are more zero-width characters, an empty HTML TAG splits a
+# word as well as a comment does, and a Cyrillic homoglyph renders as the letter
+# without being it. `_ROW` gained indentation and `R 230`; it still requires a
+# TRAILING pipe, still requires the digits to touch the `R`, and still requires
+# a markdown pipe row rather than an HTML one -- and each of those three
+# produces NO status cell, which is the "banning a word became saying nothing"
+# half of the pair, measured at 57 cells parsed instead of 58.
+#
+# AND THE NEW WITHDRAWAL RULE HAS ITS OWN DOMAIN. The domain was removed and
+# replaced by "a verdict withdrew that item", read as any line of the review
+# file containing `withdraw` near an `R<n>`. Verdict 33's R283 block says a
+# REPORT SECTION was withdrawn; the rule reads that as a withdrawal of R283.
+# One item in the whole review file is licensed, and it is licensed by accident.
+# ---------------------------------------------------------------------------
+
+id=word_joiner_U2060_inside_the_word_closed expect=refused measured=allowed_U2060_is_not_in__INVISIBLE_which_lists_00AD_200B_200C_200D_FEFF row=| R230 | **clo⁠sed** at the third verdict |
+id=empty_html_TAG_splits_the_word_closed expect=refused measured=allowed__INVISIBLE_strips_html_COMMENTS_and_no_other_tag row=| R230 | **clo<b></b>sed** at the third verdict |
+id=cyrillic_es_homoglyph_in_closed expect=refused measured=allowed_U0441_renders_as_c_and_the_substring_closed_is_never_formed row=| R230 | **сlosed** at the third verdict |
+id=closure_word_in_the_ITEM_cell_report_word_in_the_status expect=refused measured=allowed_only_cells_AFTER_the_first_are_read_as_status_so_the_item_cell_may_say_anything row=| R230 closed | **answered** |
+id=row_with_no_trailing_pipe expect=refused measured=allowed_57_cells_parsed_instead_of_58__ROW_requires_a_closing_pipe_so_the_row_produces_no_status_cell_at_all row=| R230 | **closed** at the third verdict
+id=html_table_row_instead_of_a_markdown_pipe_row expect=refused measured=allowed_57_cells_parsed_the_row_is_not_a_pipe_row_and_neither_half_of_the_pair_can_see_it row=<tr><td>R230</td><td>closed</td></tr>
+id=item_number_with_a_non_breaking_hyphen expect=refused measured=allowed_57_cells_parsed_R_2011_230_renders_as_the_item_and__ROW_requires_optional_WHITESPACE_only_between_R_and_the_digits row=| R‑230 | **closed** at the third verdict |
+id=withdrawn_on_an_item_whose_verdict_line_withdraws_a_SECTION expect=refused measured=allowed_verdict_33s_R283_block_reads_Section_3_of_revision_6_was_withdrawn_and_the_rule_collects_every_R_number_on_any_line_containing_withdraw row=| R283 | **withdrawn** |
+id=withdrawn_on_an_item_no_verdict_mentions_withdrawing_CONTROL expect=refused measured=refused_by_test_no_status_claims_more_than_the_verdict_allows_which_is_the_R241_repair_working row=| R231 | **withdrawn** |

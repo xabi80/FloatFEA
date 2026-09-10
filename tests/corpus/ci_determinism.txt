@@ -89,3 +89,46 @@ id=determinism_the_goldens_execute_on_no_CI_job_at_all state=at_a949709_the_pyte
 id=determinism_committed_figures_were_produced_on_a_NON_canonical_machine state=docs_milestones_F2_figures_md_as_committed_is_the_Windows_render_and_the_runner_renders_a_different_corpus_entry_name_and_a_different_detection_edge require=fail measured=fail_all_ten_legs_run_34440129351_CAUGHT_and_this_is_the_coupling_R284_asked_for_working_on_its_first_live_run
 id=determinism_a_generated_figure_file_carrying_no_environment_stamp state=docs_milestones_F2_figures_md_header_names_the_generator_and_says_nothing_about_the_interpreter_or_the_libraries_that_produced_it require=fail measured=pass_no_stamp_exists_so_nothing_can_read_one_while_F2_md_states_that_a_golden_or_figure_whose_stamp_is_not_CIs_pinned_environment_fails_the_build
 id=determinism_all_ten_legs_render_bytes_equal_to_the_committed_file state=the_state_the_job_is_NAMED_after_ten_runners_one_render_and_it_matches_what_is_in_git require=pass measured=NEVER_OBSERVED_no_leg_has_reached_this_state_at_any_commit_on_this_branch
+
+# ------------------------------------------------------------------------
+# THIRTY-FOURTH VERDICT, ninth on step 5. MEASURED AT 55498f4 and against CI
+# runs 34459537327 (at 1be5606) and 34460382184 (at 05133c4) by the reviewer.
+# 6 new entries, 2 agree, 4 do not.
+#
+# THE JOB NOW MEASURES, AND I VERIFIED THE MEASUREMENT INDEPENDENTLY. Ten legs,
+# one hash `2af0f7cb`, `Haswell` on all ten, `4 collected, 0 failed` on all ten,
+# and `ten of ten identical` printed by a job that did not exist a commit ago.
+# At 05133c4 the ten legs drew SIX CPU models across two vendors -- AMD EPYC
+# 7763, 9V74 and 9V45, Intel 8573C, 8370C and 6973P-C -- which is a stronger
+# result than the three-model run the report publishes. `gh run download
+# 34460382184 -n determinism-leg-1` gives an `F2_figures.md` whose sha256 is
+# `2af0f7cb...`, equal to the leg's own `figures.sha256`, so CG2's artifact is
+# the file the legs agreed on. I checked it rather than assuming it, which is
+# the point of the next entry.
+#
+# AND THE COMMITTED FILE IS STILL NOT THAT FILE. `COMMITTED-MATCHES-CI no` on
+# 10 of 10, `test_the_generated_figures_are_not_stale` is the ONE remaining
+# failure in the `guards and meta-tests` job at the reviewed commit, and the
+# entry `determinism_all_ten_legs_render_bytes_equal_to_the_committed_file`
+# above is still NEVER OBSERVED at any commit on this branch.
+#
+# THE DELTA, LOCALISED, because the report classifies six of the nine differing
+# rows and the ninth is the one that matters. Nine lines of 47 differ, not
+# eleven. Three are last-bit at 1e-14 (`rigid_body_mode_ratio`,
+# `rigid_body_subspace_loss`, `rigid_body_counter_loss`). Five are the argmin
+# and its dependents: `detection_edge_at` names a different corpus entry,
+# and `detection_edge`, `counter_defect_over_edge`, `counter_headroom_room`
+# and `counter_defect_boundary` are all computed from that edge and all move
+# by 0.4 to 0.5 percent with it. The ninth is `clean_worst_ratio`, 0.2765x
+# against 0.2564x -- 7.3 percent -- AND `clean_worst_entry` IS BYTE-IDENTICAL
+# ON BOTH MACHINES. No argmax flipped. That row is the same extremum, over the
+# same winning entry, computed twice, and it is the headroom quantity the gate
+# is about. The report attributes it to a flip. It is not one.
+# ------------------------------------------------------------------------
+
+id=determinism_a_leg_whose_REGRESSION_RUNG_FAILS state=the_shipped_leg_step_run_verbatim_over_a_leg_regression_xml_recording_4_testcases_of_which_3_carry_a_failure_element require=fail measured=pass_exit0_the_step_writes_4_collected_3_failed_into_leg_regression_txt_and_exits_0_because_the_only_sys_exit_is_on_an_EMPTY_case_list_and_determinism_verdict_PRINTS_that_string_and_asserts_nothing_about_it_so_the_goldens_run_on_ten_CI_legs_and_their_failure_is_fatal_on_none_while_ladder6_is_skipped_behind_a_red_ladder4
+id=determinism_a_leg_uploading_an_F2_figures_md_that_is_not_the_file_its_hash_was_taken_over state=leg_F2_figures_md_replaced_after_leg_figures_sha256_is_written_and_before_the_upload require=fail measured=pass_determinism_verdict_reads_cpu_txt_coretype_txt_figures_sha256_and_regression_txt_and_never_re_hashes_the_uploaded_F2_figures_md_so_CG2s_claim_that_the_bytes_uploaded_are_the_bytes_ten_legs_agreed_on_is_held_by_nothing_I_downloaded_leg_1_at_34460382184_and_it_HELD_which_is_existence_not_provenance
+id=determinism_ten_legs_agreeing_on_a_render_nobody_compared_with_the_repository state=all_ten_hashes_equal_all_ten_core_types_Haswell_and_COMMITTED_MATCHES_CI_no_on_all_ten require=fail measured=pass_determinism_verdict_is_GREEN_in_exactly_this_state_at_both_34459537327_and_34460382184_because_the_comparison_step_is_continue_on_error_and_the_verdict_job_never_reads_its_result_the_split_that_would_be_caught_is_leg_against_leg_and_the_one_that_is_live_is_leg_against_git
+id=determinism_the_CI_rendered_artifact_also_carries_no_environment_stamp state=head_9_of_the_downloaded_leg_F2_figures_md_is_a_title_a_provenance_sentence_and_a_table_header_with_no_interpreter_or_library_version require=fail measured=pass_identical_to_the_committed_file_head_so_committing_the_artifact_today_would_land_a_canonical_file_that_says_nothing_about_where_it_came_from_while_F2_md_1040_1045_states_that_the_stamp_is_what_enforces_the_rule
+id=determinism_clean_worst_ratio_moves_7_3_percent_at_an_IDENTICAL_winning_entry state=CI_render_0_2564x_committed_render_0_2765x_and_clean_worst_entry_ck_cleanmax_D18p8_tw0p499_aniso1e6_on_BOTH require=fail measured=pass_nothing_compares_the_two_renders_row_by_row_and_the_reports_explanation_that_this_row_is_an_argmin_whose_winner_flips_is_refuted_by_the_adjacent_row_of_the_same_file_Q8s_declared_local_classes_are_exact_or_2_ULP_of_the_channels_amplitude_and_7_3_percent_is_neither
+id=determinism_ten_legs_across_SIX_cpu_models_agree_on_one_hash state=run_34460382184_AMD_EPYC_7763_9V74_9V45_and_Intel_8573C_8370C_6973P_C_all_reporting_2af0f7cb_and_Haswell require=pass measured=pass_CONTROL_this_is_CG1_working_and_it_is_the_first_time_this_branch_has_had_it_the_previous_ten_of_ten_was_a_job_hashing_what_it_had_just_written

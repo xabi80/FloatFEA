@@ -49,3 +49,43 @@ id=carried_row_whose_published_generator_command_cannot_be_run_at_this_commit ro
 id=carried_row_generator_that_no_job_and_no_test_ever_runs row=scripts_carried_table_py_is_committed_and_the_report_says_the_table_comes_from_it require=fail measured=pass_grep_for_carried_table_across_py_yml_and_sh_matches_only_the_scripts_own_docstring_so_the_committed_table_and_the_committed_generator_are_never_compared_by_any_machine
 id=carried_row_answered_and_the_change_IS_in_the_diff row=R284_answered_section_1_the_job_compares_against_the_committed_file_and_git_diff_49c8449_HEAD_github_workflows_ci_yml_carries_the_hunk require=pass measured=pass_CONTROL_this_row_is_honest_and_stays_green
 id=carried_row_using_the_generators_default_string_for_a_4a_item row=R291_and_R292_read_open_recordable_at_4a_in_the_verdicts_own_classification_which_is_exactly_what_scripts_carried_table_py_emits_for_a_recordable_4a_heading require=pass measured=pass_CONTROL_the_generated_half_of_the_table_is_correct_and_I_reproduced_it_by_running_the_script
+
+# ------------------------------------------------------------------------
+# THIRTY-FOURTH VERDICT, ninth on step 5. MEASURED AT 55498f4 by the reviewer
+# by importing `scripts/carried_table.py` and calling `table()` over
+# `docs/reviews/F2/step-5.md` and the committed
+# `docs/reports/F2/step-5-answers.json`: 4 new entries, 1 agrees, 3 do not.
+#
+# THE REPAIR IS REAL AND ITS REACH IS SMALLER THAN THE SENTENCE BESIDE IT. The
+# generator now refuses to print a table when an answered row declares a `site`
+# that its own finding's block does not name, `test_the_generator_would_catch_a
+# _row_under_the_wrong_number` runs that ablation, and
+# `test_the_Carried_table_is_what_the_generator_produces` executes the script
+# and compares -- so R301 is closed and the published command runs at this
+# commit. I reproduced the published table byte for byte: 59 lines, identical.
+#
+# THE MEASUREMENT THE SENTENCE NEEDED. The check discriminates only when the
+# declared site is UNIQUE to its block. Over this round's own answers file,
+# SEVEN OF EIGHT answered rows that have a block declare a site that at least
+# one other finding's block also names: R293, R295 and R298 all declare
+# `.github/workflows/ci.yml`; R296 and R301 both declare
+# `scripts/carried_table.py`; R299 declares `docs/reports/F2/step-5.md`, which
+# all seven others name too. Rotating the status text of R293, R295 and R298
+# among themselves -- the exact defect of R296, three rows attached to the
+# wrong subject -- prints the table without complaint, and the shipped
+# comparison test then passes because the report carries the rotated table.
+#
+# AND THE COUNTERFACTUAL PUBLISHED FOR IT IS UNMEASURED. The report says the
+# three shifted rows of last round "would have been caught by this, each of
+# them, because each cited a site from a different block."
+# `docs/reports/F2/step-5.md` is named inside verdict 32's R287, R288, R289 AND
+# R290 blocks, so a shifted row declaring that site -- a legal declaration, and
+# the one three of this round's rows use -- would have passed in all three
+# cases. Whether the shift was caught depends on which of its block's sites the
+# author happened to write down, and the author is the one who shifted them.
+# ------------------------------------------------------------------------
+
+id=carried_rows_ROTATED_among_findings_that_share_a_declared_site row=the_status_text_of_R293_R295_and_R298_rotated_among_themselves_with_each_rows_site_left_as_github_workflows_ci_yml require=fail measured=pass_scripts_carried_table_py_table_prints_all_57_rows_without_raising_because_check_sites_only_asks_whether_the_declared_site_appears_in_that_findings_block_and_ci_yml_appears_in_all_three
+id=carried_row_declaring_the_report_file_itself_as_its_site row=any_answered_row_declaring_site_docs_reports_F2_step_5_md_which_every_one_of_the_eight_findings_with_a_block_names require=fail measured=pass_a_site_that_is_named_by_every_block_discriminates_nothing_and_R299_declares_exactly_it_this_round
+id=carried_row_for_an_item_the_verdict_gives_no_block row=any_answered_row_for_an_item_carried_from_an_earlier_verdict_such_as_R223_R230_or_R275_with_any_site_at_all require=fail measured=pass_check_sites_continues_past_an_item_with_no_block_in_THIS_verdict_by_design_so_SIXTEEN_of_the_twenty_four_rows_in_the_answers_file_are_unchecked_and_the_shift_of_R267_which_was_across_carried_items_would_be_invisible
+id=carried_row_whose_site_is_unique_to_a_DIFFERENT_block_CONTROL row=an_answered_rows_site_replaced_with_floatfea_does_not_appear_py_which_no_block_names require=fail measured=fail_CONTROL_SystemExit_naming_that_row_and_the_table_is_not_printed_at_all_which_is_the_shipped_ablation_test_and_it_is_a_real_one
