@@ -553,7 +553,24 @@ def test_no_status_claims_more_than_the_verdict_allows() -> None:
 # NOTHING -- so the next revision's table was shifted by one in three rows
 # while a script that would not have shifted them sat in the repository. A
 # generator nothing executes is a comment.
-ANSWERS = REPORTS / f"step-{STEP}-answers.json"
+#
+# THE ANSWERS FILE IS THE ONE THE REPORT PUBLISHES, read out of the report's own
+# command rather than composed from the step number. Composing it made a
+# COPIED report -- the `two_digit_step_number` state, which copies step 5 to
+# step 10 and nothing else -- fail on a file that was never supposed to exist,
+# and BF0 is the better rule anyway: the claim is checked at the command the
+# report actually printed.
+_ANSWERS_PATH = re.compile(r"[\w./-]*step-[\w.-]*answers\.json")
+
+
+def _answers_path() -> Path:
+    found = _ANSWERS_PATH.findall(_newest_revision(REPORT_TEXT))
+    if found:
+        return ROOT / found[0].lstrip("./")
+    return REPORTS / f"step-{STEP}-answers.json"
+
+
+ANSWERS = _answers_path()
 
 
 def _generator():
@@ -576,7 +593,7 @@ def test_the_Carried_table_is_what_the_generator_produces() -> None:
     )
     gen = _generator()
     answers = json.loads(ANSWERS.read_text(encoding="utf-8"))
-    produced = gen.table(_read(VERDICT), answers)
+    produced = gen.table(VERDICT_TEXT, answers)
     body = "\n".join(line.rstrip() for line in CARRIED.splitlines())
     missing = [ln for ln in produced.splitlines() if ln.rstrip() not in body.splitlines()]
     assert not missing, (
@@ -598,10 +615,10 @@ def test_the_generator_would_catch_a_row_under_the_wrong_number() -> None:
     gen = _generator()
     answers = json.loads(ANSWERS.read_text(encoding="utf-8"))
     answered = dict(answers["answered"])
-    victim = next(i for i in answered if i in gen.blocks(_read(VERDICT)))
+    victim = next(i for i in answered if i in gen.blocks(VERDICT_TEXT))
     answered[victim] = dict(answered[victim], site="floatfea/does_not_appear.py")
     with pytest.raises(SystemExit) as caught:
-        gen.table(_read(VERDICT), {"answered": answered})
+        gen.table(VERDICT_TEXT, {"answered": answered})
     assert victim in str(caught.value)
 
 

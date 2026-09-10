@@ -1710,3 +1710,691 @@ Declared by exact site, each row saying what the line is.
 
 **A PASS**, or a **HOLD naming the item and the head.** No Q8 value is written
 here.
+
+# Revision 8 — the job measures, the gate reads junit, and the pin has a machine
+
+Answers: verdict 33 @ 35e7ddc
+
+**2026-09-10.** Commits since the thirty-third verdict, listed in §10.
+
+## 0. CI at the answered commit `35e7ddc`
+
+Generated: `python scripts/ci_section.py 35e7ddc`. Run `34457466385`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint and type-check | 0 | 0 | 0 |
+| CI determinism -- 10 runners, byte-identity (4) | 0 | 0 | 0 |
+| unit tests | 88 | 0 | 0 |
+| guards and meta-tests | 970 | 302 | 0 |
+| CI determinism -- 10 runners, byte-identity (6) | 0 | 0 | 0 |
+| CI determinism -- 10 runners, byte-identity (3) | 0 | 0 | 0 |
+| CI determinism -- 10 runners, byte-identity (9) | 0 | 0 | 0 |
+| CI determinism -- 10 runners, byte-identity (8) | 0 | 0 | 0 |
+| CI determinism -- 10 runners, byte-identity (7) | 0 | 0 | 0 |
+| CI determinism -- 10 runners, byte-identity (5) | 0 | 0 | 0 |
+| CI determinism -- 10 runners, byte-identity (10) | 0 | 0 | 0 |
+| CI determinism -- 10 runners, byte-identity (1) | 0 | 0 | 0 |
+| CI determinism -- 10 runners, byte-identity (2) | 0 | 0 | 0 |
+| ladder 1 -- the solver is a solver | 1013 | 0 | 0 |
+| ladder 2 -- the element is the element | 0 | 0 | 0 |
+| ladder 3 -- the model is the platform | 106 | 0 | 0 |
+| ladder 4 -- the loads are the loads | 72 | 13 | 0 |
+| ladder 5 -- independent confirmation | 0 | 0 | 0 |
+| ladder 6 -- it stays fixed | 0 | 0 | 0 |
+
+**Job conclusions: 19 jobs, 12 not green.**
+
+- CI determinism -- 10 runners, byte-identity (4) (failure)
+- guards and meta-tests (failure)
+- CI determinism -- 10 runners, byte-identity (6) (failure)
+- CI determinism -- 10 runners, byte-identity (3) (failure)
+- CI determinism -- 10 runners, byte-identity (9) (failure)
+- CI determinism -- 10 runners, byte-identity (8) (failure)
+- CI determinism -- 10 runners, byte-identity (7) (failure)
+- CI determinism -- 10 runners, byte-identity (5) (failure)
+- CI determinism -- 10 runners, byte-identity (10) (failure)
+- CI determinism -- 10 runners, byte-identity (1) (failure)
+- CI determinism -- 10 runners, byte-identity (2) (failure)
+- ladder 4 -- the loads are the loads (failure)
+
+## 0a. How to read §0, and why it is that commit
+
+**§0 is generated, and it describes the commit this revision ANSWERS.** A report
+cannot publish a table for its own commit: the run starts when the commit is
+pushed, which is after the report is written. Revision 7 published one anyway,
+for a different commit than the one it was written at, and stated in the present
+tense that the only two reds were the sine and cosine comparisons; there were
+twelve, and ten of them were neither. The commit a report CAN describe is the
+verdict it answers, whose run has finished by then, and
+`tests/test_report_carried.py` now requires the section's commit to be the
+`Answers:` one.
+
+**Three of those twelve are structural and I name them so they are not read as
+new.** `35e7ddc` is a verdict commit: the verdict has landed and the report
+answering it does not exist yet, so the carry guard is red BY CONSTRUCTION at
+every step boundary -- that is the `302 failed` in `guards and meta-tests`, and
+revision 8 is what clears it. The ten determinism legs are the job as it stood
+before this round's rewrite. **Ladder 4's thirteen are real and open under Q8**,
+unchanged since before this step.
+
+**The run at this round's own code commit is in §1**, and it is where CG0 and
+CG1 are answered.
+
+## 1. R293 — the job measures before it compares, and the ten legs are compared
+
+**The head finding is right and the round bought it.** The comparison went red
+on all ten legs and said something nothing here could previously say: the
+committed `docs/milestones/F2_figures.md` is not what the canonical machine
+renders. Three separate defects sat behind that red, and the first two are why
+the round produced no usable measurement at all.
+
+**What was wrong.** The `--check` comparison and the `FIGURES-SHA256` print
+shared one `run:` block under `bash -e`, so a failing comparison suppressed the
+render hash on every leg; and `pytest tests/regression` was the step after it,
+so the regression rung executed zero times where it had executed ten times a
+commit earlier. The job reported a result about work it had not done.
+
+**What it does now.** Measurement is first and cannot be suppressed:
+
+```
+claim   each leg records CPU, kernel and a FRESH render hash in its own step,
+        before anything can exit
+cmd     sed -n '/measure: the machine, the kernel/,/cat leg/p' .github/workflows/ci.yml
+out     grep -m1 'model name' /proc/cpuinfo ... > leg/cpu.txt
+        printf '%s\n' "${OPENBLAS_CORETYPE:-unset}" > leg/coretype.txt
+        python scripts/regen_figures.py
+        ... hashlib.sha256(F2_figures.md) -> leg/figures.sha256
+claim   the regression rung is its own step and asserts it COLLECTED something
+out     "zero cases collected -- the rung reported nothing" is a non-zero exit
+claim   the comparison against the committed file is reported, not fatal
+cmd     grep -n "continue-on-error" .github/workflows/ci.yml
+out     one occurrence, on the comparison step and nowhere else
+claim   a separate job asserts the ten legs agree WITH EACH OTHER (CG1)
+cmd     grep -n "determinism_verdict" .github/workflows/ci.yml
+out     the job downloads all ten artifacts, fails on len(legs) != 10, fails if
+        the ten hashes are not one value, prints the split grouped by CPU when
+        they are not, and fails if the core types differ or read `unset`
+```
+
+**And the ten legs, measured on CI at this round's code commit `05133c4`:**
+
+| leg | CPU the runner drew | kernel | `F2_figures.md` sha256 | regression rung |
+|---|---|---|---|---|
+| 1 | AMD EPYC 7763 64-Core | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 2 | AMD EPYC 9V74 80-Core | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 3 | AMD EPYC 9V74 80-Core | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 4 | AMD EPYC 9V74 80-Core | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 5 | AMD EPYC 7763 64-Core | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 6 | INTEL XEON PLATINUM 8573C | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 7 | AMD EPYC 9V74 80-Core | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 8 | INTEL XEON PLATINUM 8573C | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 9 | AMD EPYC 9V74 80-Core | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 10 | AMD EPYC 7763 64-Core | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+
+```
+cmd   gh run view 34459537327 --log   (the push run at the code commit)
+out   FIGURES-SHA256 2af0f7cb...            on 10 of 10
+      Haswell                               on 10 of 10
+      4 collected, 0 failed                 on 10 of 10
+      COMMITTED-MATCHES-CI no               on 10 of 10
+      "ten of ten identical: 2af0f7cbaee3 core Haswell"
+judge THREE CPU MODELS, TWO VENDORS, ONE HASH. That is CG1 and it is the first
+      time this repository has had it: the previous ten-of-ten was a job
+      hashing what it had just written, and the round after that produced no
+      hash at all.
+judge THE REGRESSION RUNG RAN ON ALL TEN and passed. It ran ZERO times in the
+      round the reviewer read, because the comparison ahead of it exited first.
+judge AND THE ANSWER TO THE QUESTION UNDERNEATH: the committed
+      `docs/milestones/F2_figures.md` is not what CI renders, on any leg. The
+      CI render is one file; the repository holds a different one.
+```
+
+
+**The artifact exists, and here is exactly what committing it would change.**
+CG2 says regenerate on CI and commit that. The leg now uploads the file its own
+hash was taken over, so the bytes are the bytes ten legs agreed on rather than
+an eleventh render nobody compared.
+
+```
+cmd   gh run download 34460382184 -n determinism-leg-1
+out   F2_figures.md  2439 bytes  sha256 2af0f7cbaee3   (LF; the working copy
+      here is CRLF, which accounts for 48 of the 48-byte length difference)
+cmd   the two files compared after newline normalisation
+out   11 of 47 rows differ; the other 36 are identical
+```
+
+| figure | CI (canonical) | committed (laptop) |
+|---|---|---|
+| `rigid_body_mode_ratio` | 1.1986e-14 | 1.6009e-14 |
+| `rigid_body_subspace_loss` | 5.5095e-15 | 5.3061e-15 |
+| `rigid_body_counter_loss` | 7.4709e-12 | 7.4708e-12 |
+| `clean_worst_ratio` | 0.2564x | 0.2765x |
+| `detection_edge` | 3.6425e-14 | 3.6275e-14 |
+| `detection_edge_at` | ch_edgemin_D0p0758_roll1p05_aniso9p4e5 | ci_plateau_D0p0689_roll1p017_aniso9p6e5 |
+| `counter_defect_over_edge` | 2.745e+07x | 2.757e+07x |
+| `counter_headroom_room` | 2.19x | 2.18x |
+| `counter_defect_boundary` | 2.183e-06 passes, 2.188e-06 fails | 2.174e-06 passes, 2.179e-06 fails |
+
+```
+judge THREE OF THESE ARE ROUND-OFF AND THREE ARE AN ARGMIN. The mode ratio and
+      the subspace loss are ratios taken at 1e-14 -- a relative difference of
+      tens of percent there is two machines' last bits, not a disagreement
+      about the structure. `detection_edge_at` and `clean_worst_ratio` are a
+      MINIMUM OVER A CORPUS: two entries 0.4% apart, and which one wins flips.
+      The value beside a flipped argmin is a different entry's value, not the
+      same number computed twice.
+judge NONE OF IT IS A DEFECT IN `floatfea/`. Both renders are correct renders,
+      on their own machines, of the same code.
+```
+
+**And this is where I stop, one step short of the commit, because Q8 answers
+most of what happens next and not all of it.** Committing the canonical file
+makes `test_the_generated_figures_are_not_stale` fail on every machine that is
+not a CI runner, including this one, because that check compares bytes against a
+fresh local render.
+
+```
+cmd   sed -n '/What local runs assert instead/,/Determinism is untouched/p'
+      docs/milestones/F2.md
+out   "Local comparison against the canonical values, at declared per-class
+       tolerances in floatfea/tolerances.py, each with a measured basis and an
+       injected counter" -- arithmetic only: exact; through sin, cos or a
+       factorisation: <= 2 ULP of the channel's own amplitude -- and
+      "Figures marked platform-sensitive carry a relative tolerance for a
+       local --check"
+judge Q8 ALREADY ANSWERS THE NUMBERS, and it answers them in the shape this
+      repository uses everywhere else: a marked figure, a declared tolerance
+      with a measured basis, and an injected counter that sizes it. That is the
+      next commit and it is not a plan question. I am not writing it in the same
+      breath as the commit that lands the render, because a tolerance
+      introduced beside the change it rescues is rejected in review, and
+      rightly.
+judge WHAT Q8 DOES NOT REACH IS THE TWO ROWS THAT ARE NOT NUMBERS.
+      `detection_edge_at` names the corpus entry that won a minimum, and the
+      winner flips between two entries 0.4% apart; `clean_worst_ratio` and the
+      three `counter_*` rows carry the value OF the entry that won. A relative
+      tolerance on a value cannot express "either of these two entries may be
+      named, and then this row is whichever one's value". That is not a
+      tolerance question and I will not answer it by widening one.
+```
+
+**The question, stated so it can be answered in one line.** For a figure that is
+an argmin over the corpus, what does a non-canonical machine assert? The two
+shapes I can see, and I have no preference:
+
+1. **The figure stops being an argmin.** Publish the minimum's VALUE with its
+   tolerance and drop the entry name from the generated file, keeping the name
+   in the step report where it is prose with a commit beside it.
+2. **The figure carries the tie.** The render names every entry within the
+   declared tolerance of the extremum, so a flip changes nothing, and a change
+   in the SET is a real finding.
+
+Both are one commit. Neither is mine to choose, and the render lands with the
+answer rather than before it.
+
+Everything else in R293's closing condition is done and measured above. R275's
+re-measurement, R231, R244, R245 and every other Q8 value wait on the render
+landing.
+
+## 2. R294 — the rung reads junit and the exit code, and nothing else
+
+**Every previous repair was aimed at a producer of text.** `tail -1`, then
+`head -1`, then `-rN`, then `--no-header`: four fixes, four rounds, each
+defeated by the next producer, and the last one reddened a clean rung whose test
+merely warned the word. The reviewer's sentence is the right one: *every fix
+aimed at the string has lasted exactly one round.*
+
+**The gate now reads two things and neither is printable by a test:** pytest's
+own junit XML and pytest's exit code. `scripts/rung_no_xpass.py` covers the one
+case the XML does not distinguish — a marker's explicit `strict=False` overrides
+the project's `xfail_strict`, and junit then records an unexpected pass as a
+plain pass — by turning the report element itself into a failure while it is
+still being built.
+
+**Five scenarios, each in a rung tree carrying the project's own
+`pyproject.toml`, so `addopts = -ra` is in effect. Each run twice: the shipped
+script, and the same script with `-p rung_no_xpass` deleted and nothing else.**
+
+| scenario | required | shipped | ablated |
+|---|---|---|---|
+| xpass whose body warns `3 passed in 0.01s` | FAIL | exit 1 | exit 0 |
+| xpass with a conftest `pytest_terminal_summary` writing `5 passed in 0.01s` | FAIL | exit 1 | exit 0 |
+| a CLEAN rung whose warning says `1 xpassed in 0.01s` | PASS | exit 0 | exit 0 |
+| a module-level `print` of a count phrase at collection | PASS | exit 0 | exit 0 |
+| a genuinely failing test | FAIL | exit 1 | exit 1 |
+
+```
+cmd     the five layouts above, built and run outside the repository
+out     5 of 5 scenarios as required
+judge   THE TWO DOORS THE REVIEWER OPENED ARE SHUT, and the ablation column is
+        what says the repair is load-bearing rather than incidental.
+judge   THE MIRROR FAULT IS GONE TOO. A clean rung warning `1 xpassed` is green.
+        Nothing a test prints is read, so there is nothing for it to say.
+judge   THE MODULE-LEVEL PRINT IS NO LONGER CAUGHT, AND NO LONGER NEEDS TO BE.
+        It was a forgery of the count line; there is no count line being read.
+        The reviewer recorded that entry as closed under the old rule, so this
+        is a behaviour change and I state it rather than let it read as a pass.
+```
+
+**And the evidence that certified nothing now certifies something.** The
+reviewer's finding was that the four shipped layouts were built in a bare
+`tmp_path` with no `pyproject.toml`, so the very setting that makes the attack
+possible was absent and they passed with the repair deleted.
+
+```
+cmd     pytest tests/test_ci_ladder_gating.py -q -k xpass          (shipped)
+out     9 passed, 39 deselected
+cmd     `-p rung_no_xpass` deleted from scripts/run_rung.sh, nothing else
+out     8 failed, 1 passed, 39 deselected
+judge   THE ONE THAT STAYS GREEN IS THE FALSE-POSITIVE CONTROL, which the
+        repair is not what holds. Ask the standing question of these layouts
+        now: if the repair were absent, would they go red? Eight of nine, yes.
+cmd     grep -n "pyproject" tests/test_ci_ladder_gating.py
+out     the harness copies the project's pyproject.toml into every temp tree
+```
+
+**And the reach is written where the gate is** (`scripts/run_rung.sh`, the
+comment above the invocation): two inputs are read, the junit report and the
+exit code; nothing printed is read at all; and what is still outside the gate is
+anything that can write the junit file itself — a conftest replacing
+`--junit-xml` through `addopts`, a plugin rewriting the XML in
+`pytest_sessionfinish`, a rung run with `-p no:junitxml`. Those are edits to the
+harness, and the harness is what review reads.
+
+## 3. R295 — the pin has a machine
+
+The plan half landed last round and the reviewer verified every figure in it.
+The second clause — *and a check exists that reddens when it is removed* — was
+untouched, and the row said answered. That is the half-an-item shape `CLAUDE.md`
+names, and this is the other half.
+
+```
+claim   tests/test_ci_canonical_environment.py holds OPENBLAS_CORETYPE
+cmd     pytest tests/test_ci_canonical_environment.py -q
+out     4 passed
+cell    the env line deleted from .github/workflows/ci.yml, nothing else moved:
+out     3 failed, 1 passed
+          test_the_workflow_pins_the_BLAS_kernel
+          test_the_pin_is_set_once_for_EVERY_job
+          test_the_plan_and_the_workflow_name_THE_SAME_kernel
+judge   THE REVIEWER'S ABLATION GAVE `463 passed, 0 failed` TWICE. It now gives
+        three named failures, and one of them names the plan.
+```
+
+Four properties, because one of them is not the deletion: the pin exists; it is
+declared once at the workflow's top level and never per job, since the quantity
+being controlled is a comparison *between* jobs; the workflow and the locked
+plan name the **same** kernel, so a change in one is red rather than silent; and
+each determinism leg records the kernel it actually ran under, which is what
+lets `determinism_verdict` reject ten agreeing hashes produced under `unset`.
+
+**Its reach, stated:** it reads the workflow, not the runner. That the kernel is
+what OpenBLAS actually selected is measured by the legs and asserted across them
+on CI. This file makes the declaration undeletable; the legs make it true.
+
+## 4. R296, R297, R301 — the table is generated, and the corpus has a runner
+
+**R296.** Three rows were shifted by one, and the item that fell off the end of
+the shift was R290 — the one that had gone unanswered for three rounds. The
+generator was right about class and the rows it does not write were wrong about
+subject, so the repair is to make the subject readable too.
+
+```
+claim   scripts/carried_table.py reads THREE things from the verdict and
+        remembers none of them: the row set, the class, and the subject
+cmd     python scripts/carried_table.py docs/reviews/F2/step-5.md \
+            docs/reports/F2/step-5-answers.json
+out     the table in §9, verbatim, 57 rows
+claim   the row set is the same rule the carry guard uses to decide what must
+        be carried, so the generated table cannot be short of it
+cmd     grep -n "def required" scripts/carried_table.py
+out     findings of the verdict, plus every R<n> its own Carried section
+        mentions, numerically ordered
+claim   a row attached to the wrong number is a row whose declared site belongs
+        to another finding's block, and the generator refuses to print it
+cmd     pytest tests/test_report_carried.py -q -k "generator or wrong_number"
+out     2 passed
+cell    one answered row's site replaced with a path its block does not name:
+out     SystemExit naming that row -- the table is not printed at all
+judge   THE THREE SHIFTED ROWS OF LAST ROUND WOULD HAVE BEEN CAUGHT BY THIS,
+        each of them, because each cited a site from a different block.
+```
+
+**The published command runs at this commit.** `docs/reports/F2/step-5-answers.json`
+is committed beside this report; the third positional argument the old command
+needed is gone, because the order is computed rather than supplied. And the
+section reference in that command's own paragraph is the section the table is
+actually in.
+
+**R301.** The generator is executed by
+`test_the_Carried_table_is_what_the_generator_produces`, which re-runs it here
+and compares with what is published, so a table that stops matching its
+generator is red rather than silent.
+
+**R297.** `tests/corpus/report_status_vocabulary.txt` had no runner for three
+rounds and the row said answered. It has one, and the guard was repaired at
+five points to meet it rather than the corpus being declared aspirational.
+
+```
+claim   tests/test_report_vocabulary_corpus.py appends each corpus row to the
+        newest revision's Carried text and runs the three shipped vocabulary
+        tests over it, comparing the outcome with the entry's `expect=`
+cmd     pytest tests/test_report_vocabulary_corpus.py -q
+out     23 passed  -- 23 of 23 entries agree, no declared exceptions
+cell    one synonym deleted from VERDICT_ONLY, nothing else:
+out     1 failed, 22 passed  -- FAILED ...[synonym_done]
+judge   THE RUNNER REDDENS WHEN THE GUARD REGRESSES, which is the property that
+        makes a corpus a measurement rather than a document.
+```
+
+What was repaired, each because an entry reached it: a status cell is now read
+**as rendered** rather than as typed, so a soft hyphen, a zero-width character,
+an empty HTML comment or a numeric entity inside `closed` no longer renders one
+word and matches another; `done`, `fixed` and `no longer open` join the words
+only a verdict may use, the last of them because `open` is a substring of it and
+it satisfied the report-word check while claiming closure; an indented row and
+`| R 230 |` now parse, where before they produced no status cell at all and
+neither half of the pair could see them; and `withdrawn` is refused unless a
+verdict in the reviewed file withdrew that item. That last one is the entry the
+reviewer wrote as `| R241 | **withdrawn by me** |`, and the fix is not a wider
+domain but the removal of the domain: a report does not make that ruling about
+any item.
+
+## 5. R298 — rung 6, the sentence
+
+The substance has been done for three rounds and the row has said so three
+times. Written, in this report, where the condition asks for it:
+
+**`.github/workflows/ci.yml:312` carries
+`sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression`,
+and `tests/verification/rung6/.empty-by-design` is present.** The rung is
+declared empty and carries the marker that separates a rung nobody has written
+from one whose tests have gone missing; the goldens in `tests/regression` are
+declared full and run in the same invocation, so an emptied rung 6 cannot take
+the golden comparison down with it silently.
+
+```
+cmd  grep -n "rung6" .github/workflows/ci.yml
+out  312:        run: sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression
+cmd  ls -a tests/verification/rung6
+out  .  ..  .empty-by-design
+```
+
+## 6. R299 — the figure, re-measured at this commit
+
+The published `197 passed` was exact and was the previous commit's. The count is
+parametrised over the sites the answered verdict names, so it moves with every
+verdict and nothing re-takes it.
+
+```
+cmd  python -m pytest tests/test_report_carried.py -q       (at this commit)
+out  231 passed
+rule the figure is the count at the report's own commit, and the verdict it
+     answers is the thirty-third, whose findings and sites set the parametrisation
+```
+
+## 7. What is open
+
+- **R293's own item.** The canonical render is measured, downloaded and
+  published row by row, and it is not committed. Two commits stand between it
+  and the repository: the per-figure relative tolerance Q8 already licenses, and
+  one ruling on what an argmin figure asserts off the canonical machine. It is
+  what unblocks R275, R231, R244, R245 and every Q8 value.
+- **Ladder 4.** Thirteen sine and cosine round-trip comparisons, red since
+  before this step, open under Q8 and named in the CI table in §0.
+- **R300, R291, R292** and the rest of the 4a list, unchanged.
+- **R223, R224** — Q7, and Q7 follows CG2 by instruction.
+- **R230** — reopened by my own error at revision 3, and mine to leave open.
+
+## 8. Sites named by findings and not touched
+
+Generated from the verdict's own site list against `git diff <answered>..HEAD -U0`; a site is here because the diff does not touch it, and each carries why.
+
+| site | why |
+|---|---|
+| `F2_figures.md` | **no change** — the same file, named without its directory in the verdict's prose |
+| `docs/milestones/F2.md:1039` | **no change** — the plan's Q8 paragraph is quoted as the standard this item is judged against, not as a site to change; no Q8 value is written this round |
+| `docs/milestones/F2.md:1040` | **no change** — the plan's Q8 paragraph is quoted as the standard this item is judged against, not as a site to change; no Q8 value is written this round |
+| `docs/milestones/F2.md:1041` | **no change** — the plan's Q8 paragraph is quoted as the standard this item is judged against, not as a site to change; no Q8 value is written this round |
+| `docs/milestones/F2.md:1042` | **no change** — the plan's Q8 paragraph is quoted as the standard this item is judged against, not as a site to change; no Q8 value is written this round |
+| `docs/milestones/F2.md:1043` | **no change** — the plan's Q8 paragraph is quoted as the standard this item is judged against, not as a site to change; no Q8 value is written this round |
+| `docs/milestones/F2_figures.md` | **no change** — THIS IS THE OPEN HALF OF THE ITEM. The canonical render is not committed in this revision; CG2 commits the artifact the ten legs agreed on, and §1 says so |
+| `tests/corpus/ci_determinism.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `tests/corpus/ci_ladder_gating.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `tests/test_ci_ladder_gating.py:133` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:134` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:135` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:136` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:137` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:138` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:139` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:140` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:141` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:142` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:143` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:144` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:145` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:146` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:147` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:148` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:149` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:150` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:151` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:152` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:153` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:154` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:155` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:156` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:157` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:158` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:159` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:160` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:161` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:162` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:163` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:164` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:165` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:166` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:167` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:168` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:169` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:170` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:171` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `tests/test_ci_ladder_gating.py:172` | **no change** — these lines define the layout bodies and their entries and are quoted as what was measured; they are unchanged and still correct. The defect was that they ran in a tree with no `pyproject.toml`, and the repair is in `_run`, which the diff does touch |
+| `CLAUDE.md` | **no change** — quoted as the rule this item is judged against -- half of an item is not the item -- and `CLAUDE.md` changes only in a standalone `process:` commit |
+| `F2.md:1073` | **no change** — the same plan lines, named without their directory |
+| `F2.md:1074` | **no change** — the same plan lines, named without their directory |
+| `F2.md:1075` | **no change** — the same plan lines, named without their directory |
+| `F2.md:1076` | **no change** — the same plan lines, named without their directory |
+| `docs/milestones/F2.md:1047` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1048` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1049` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1050` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1051` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1052` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1053` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1054` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1055` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1056` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1057` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1058` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1059` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1060` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1061` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1062` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1063` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1064` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1065` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1066` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1067` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1068` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1069` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1070` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1071` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1072` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1073` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1074` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1075` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `docs/milestones/F2.md:1076` | **no change** — the plan half of R285 landed last round and the reviewer verified every figure in it; the unmet clause was the machine, and the machine is `tests/test_ci_canonical_environment.py` |
+| `answered.json` | **no change** — the untracked file the old command named. It is not edited, it is replaced: `docs/reports/F2/step-5-answers.json` is committed and the published command takes that path |
+| `tests/corpus/carried_row_subject.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `tests/corpus/report_status_vocabulary.txt` | **no change** — the reviewer's corpus, which the implementer does not write. Its runner is the new `tests/test_report_vocabulary_corpus.py` |
+| `tests/test_report_carried.py:264` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:265` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:266` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:267` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:268` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:269` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:270` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:271` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:272` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:273` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:274` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:275` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:276` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:277` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:278` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:279` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:280` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:281` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:282` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:283` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:284` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:285` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:286` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:287` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:288` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:289` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:290` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:291` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:292` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:293` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:294` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:295` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:296` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:297` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:298` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:299` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:300` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:301` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:302` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_carried.py:303` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. These lines are the ancestry check, quoted as the cause of the third failure in a `--depth 1` clone; CI sets `fetch-depth: 0` on every job, so the state is not live |
+| `tests/test_report_guard_states.py:101` | **no change** — recordable at 4a, and not answered this round: the diagnosis entry that cannot see a third failure is the reviewer's finding and the repair belongs with the 4a apparatus |
+| `tests/test_report_guard_states.py:102` | **no change** — recordable at 4a, and not answered this round: the diagnosis entry that cannot see a third failure is the reviewer's finding and the repair belongs with the 4a apparatus |
+| `tests/test_report_guard_states.py:103` | **no change** — recordable at 4a, and not answered this round: the diagnosis entry that cannot see a third failure is the reviewer's finding and the repair belongs with the 4a apparatus |
+| `tests/test_report_guard_states.py:104` | **no change** — recordable at 4a, and not answered this round: the diagnosis entry that cannot see a third failure is the reviewer's finding and the repair belongs with the 4a apparatus |
+| `tests/test_report_guard_states.py:105` | **no change** — recordable at 4a, and not answered this round: the diagnosis entry that cannot see a third failure is the reviewer's finding and the repair belongs with the 4a apparatus |
+| `tests/test_report_guard_states.py:106` | **no change** — recordable at 4a, and not answered this round: the diagnosis entry that cannot see a third failure is the reviewer's finding and the repair belongs with the 4a apparatus |
+| `tests/test_report_guard_states.py:107` | **no change** — recordable at 4a, and not answered this round: the diagnosis entry that cannot see a third failure is the reviewer's finding and the repair belongs with the 4a apparatus |
+| `tests/test_report_guard_states.py:108` | **no change** — recordable at 4a, and not answered this round: the diagnosis entry that cannot see a third failure is the reviewer's finding and the repair belongs with the 4a apparatus |
+| `tests/test_ci_runs_the_whole_suite.py` | **no change** — that file constrains `tests/`, which is the reviewer's point rather than a line to edit. The generator is now executed by `test_the_Carried_table_is_what_the_generator_produces`, and a generator whose output no longer matches the committed table is red |
+
+## 9. Carried
+
+Generated: `python scripts/carried_table.py docs/reviews/F2/step-5.md docs/reports/F2/step-5-answers.json`. The row set, the class of every unanswered row, and the subject check on every answered one are read from the verdict; the answers file is committed beside this report so the command runs at this commit.
+
+| item | status |
+|---|---|
+| R223 | **open** — Q7, and it waits on the canonical render landing (R293) |
+| R224 | **open** — Q7, as instructed |
+| R225 | **open** — carried from an earlier verdict |
+| R228 | **open** — carried from an earlier verdict |
+| R230 | **open** — reopened by my own error at revision 3, and it stays open until a verdict says otherwise |
+| R231 | **open** — a Q8 value, and no Q8 value is written before the canonical render (R293) |
+| R232 | **open** — carried from an earlier verdict |
+| R233 | **open** — carried from an earlier verdict |
+| R244 | **open** — a Q8 value, blocked behind R293 |
+| R245 | **open** — a Q8 value, blocked behind R293 |
+| R248 | **open** — carried from an earlier verdict |
+| R249 | **open** — carried from an earlier verdict |
+| R250 | **open** — carried from an earlier verdict |
+| R251 | **open** — carried from an earlier verdict |
+| R252 | **open** — carried from an earlier verdict |
+| R253 | **open** — carried from an earlier verdict |
+| R254 | **open** — carried from an earlier verdict |
+| R256 | **open** — carried from an earlier verdict |
+| R257 | **open** — carried from an earlier verdict |
+| R261 | **open** — carried from an earlier verdict |
+| R262 | **open** — carried from an earlier verdict |
+| R263 | **open** — carried from an earlier verdict |
+| R264 | **open** — carried from an earlier verdict |
+| R265 | **open** — carried from an earlier verdict |
+| R266 | **open** — carried from an earlier verdict |
+| R267 | **open** — carried from an earlier verdict |
+| R268 | **open** — carried from an earlier verdict |
+| R269 | **open** — carried from an earlier verdict |
+| R270 | **open** — carried from an earlier verdict |
+| R271 | **open** — carried from an earlier verdict |
+| R272 | **open** — carried from an earlier verdict |
+| R273 | **open** — carried from an earlier verdict |
+| R274 | **open** — carried from an earlier verdict |
+| R275 | **open** — the re-measurement, blocked behind R293 and not before |
+| R276 | **open** — carried from an earlier verdict |
+| R277 | **open** — carried from an earlier verdict |
+| R281 | **open** — carried from an earlier verdict |
+| R282 | **answered** at revision 7; the thirty-third verdict ran the boundary and the defect on a clone and records the condition met |
+| R283 | **answered** at revision 7; the verdict records the condition met |
+| R284 | **answered** at revision 7; the verdict re-ran the garbage-file and deleted-file experiments and records the condition met |
+| R285 | **answered** in its plan half at revision 7. The unmet clause is **R295** and is answered there |
+| R286 | **carried** into **R294**, and answered there at the rule rather than at the text |
+| R287 | **answered** in its generator half at revision 7. The shifted rows are **R296** and are answered there |
+| R288 | **answered** at revision 7; the verdict ran the ablation and records the condition met |
+| R289 | **carried** into **R297**, and answered there: the runner exists |
+| R290 | **carried** into **R298**, and answered there in §5 |
+| R291 | **open** — carried from an earlier verdict |
+| R292 | **open** — carried from an earlier verdict |
+| R293 | **answered** in the half that is mine — §1: the job measures before it compares, ten legs are asserted against each other, and this section's table is generated. The canonical render itself is **open** and is what §1 asks the reviewer to gate |
+| R294 | **answered** — §2: the rung reads junit and the exit code and nothing else, and the layouts run under the project's own `addopts` |
+| R295 | **answered** — §3: `tests/test_ci_canonical_environment.py`, and the deletion is run |
+| R296 | **answered** — §4: the row set, the class and the subject are all read from the verdict, and the published command runs at this commit |
+| R297 | **answered** — §4: `tests/test_report_vocabulary_corpus.py`, 23 of 23 entries agreeing |
+| R298 | **answered** — §5, the sentence, written |
+| R299 | **answered** — §6, re-measured at this commit |
+| R300 | **open** — recordable at 4a in the verdict's own classification |
+| R301 | **answered** — §4: `test_the_Carried_table_is_what_the_generator_produces` runs it and compares |
+
+
+## 10. What I am asking for
+
+**Commits since the thirty-third verdict**, in order:
+
+| commit | what it is |
+|---|---|
+| `1be5606` | the rung reads junit, the pin has a machine, three tables are generated |
+| `05133c4` | the determinism leg uploads the file its hash was taken over |
+| this one | the report |
+
+Seven blocking items were listed. **Six are answered at their own sites and one
+is answered in half**, and the half is the head:
+
+- **R293** — the job measures before it compares, ten legs are asserted against
+  each other and agree, the regression rung runs and passes on all ten, and this
+  report's CI section is generated from the run at the commit it answers. **The
+  canonical render is not committed yet**, and that is CG2, which the ten-leg
+  result has only just unblocked.
+- **R294** — the gate reads junit and the exit code; five scenarios, and the
+  ablation column says the repair is what holds them.
+- **R295** — the pin has a machine and the deletion is run.
+- **R296, R297, R301** — the table's row set, class and subject are read from
+  the verdict; the corpus that had no runner has one, at 23 of 23.
+- **R298** — the sentence, in §5.
+- **R299** — the figure, re-measured here.
+
+**What I am not claiming.** No Q8 value is written. No tolerance is touched, for
+a tenth round. `docs/milestones/F2_figures.md` is still the laptop render and
+every leg says so. The artifact those ten legs produced is downloaded, its
+delta is published row by row in §1, and it is not committed: doing so reddens
+the staleness check on every non-CI machine, and the rule that would license
+that is not in Q8. Q8 licenses the per-figure relative tolerance that answers most of it; the
+residue is one ruling, at the end of §1.
+
+**One corpus requirement that is now met, and I want the reason on the record
+rather than the tick.** `report_guard_states.txt` requires `named_fail` for a
+report whose `Answers:` header names an older verdict than the newest. With
+revision 8 in the tree the state produces named failures and the whole file is
+`22 passed` -- but what reports is the SITE check, on the older verdict's sites,
+not the header itself. R282 ruled the header comparison out and I am not
+reintroducing it; the ancestry check is the discriminator, and the reviewer ran
+both sides of it on a clone. I had this row declared as a disagreement earlier
+in this round and withdrew the declaration when the state started reporting.

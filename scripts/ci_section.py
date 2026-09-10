@@ -151,6 +151,11 @@ def section(sha: str) -> str:
 
 
 def main(argv: list[str]) -> int:
+    # The table carries em dashes and section marks. On a console whose
+    # encoding is not UTF-8 those are replaced on the way out, and the
+    # published table then differs from the generated one by exactly the
+    # characters nobody looks at.
+    sys.stdout.reconfigure(encoding="utf-8")
     if len(argv) != 2:
         print(__doc__)
         return 2
