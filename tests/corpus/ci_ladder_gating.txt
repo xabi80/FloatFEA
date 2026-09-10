@@ -292,3 +292,29 @@ id=ci_rung_full_conftest_collection_modifyitems_drops_only_the_FAILING_item layo
 id=ci_rung_full_conftest_pytest_sessionfinish_rewrites_the_junit_xml layout=rung1_declared_full_one_test_asserting_False_plus_a_conftest_pytest_sessionfinish_trylast_that_parses_session_config_option_xmlpath_removes_every_failure_and_error_element_writes_it_back_and_sets_session_exitstatus_to_0 require=fail measured=pass_exit0_DECLARED_the_scripts_reach_comment_names_this_channel_but_names_it_as_a_plugin_and_it_works_from_a_rung_conftest
 id=ci_rung_full_conftest_deselects_EVERY_item_CONTROL layout=rung1_declared_full_one_failing_test_plus_a_conftest_pytest_collection_modifyitems_setting_items_to_the_empty_list require=fail measured=fail_exit1_CONTROL_run_rung_FAIL_rungX_is_declared_full_and_collects_nothing
 id=ci_rung_full_xfail_marked_test_that_genuinely_FAILS_CONTROL layout=rung1_declared_full_one_test_marked_pytest_mark_xfail_reason_known_whose_body_asserts_False require=fail measured=fail_exit1_CONTROL_1_collected_0_failed_1_skipped_the_junit_skipped_element_is_read_and_CLAUDE_md_forbids_xfail_for_a_green_build
+
+# ------------------------------------------------------------------------
+# ADDED AT THE THIRTY-FIFTH VERDICT ON F2, THE TENTH ON STEP 5 (HEAD e3a3bd1).
+#
+# R302 was answered the honest way: the two sentences claiming the junit record
+# cannot be forged are withdrawn, the property is stated, and the bound named is
+# REVIEW of `tests/**/conftest.py` -- written into the supervisor's own
+# instructions at 979933f and quoted back in scripts/run_rung.sh:172-176.
+#
+# THE BOUND IS A PATHSPEC AND THE PATHSPEC MATCHES NOTHING. At this commit
+# `git ls-files -- 'tests/**/conftest.py'` returns ZERO files, and the one
+# conftest this repository has -- `tests/conftest.py`, tracked since F0 -- is
+# not among them: git's default glob will not let `**` stand for zero
+# directories. That file ALREADY implements `pytest_collection_modifyitems`,
+# which is R302's third channel, for every rung at once.
+#
+# So the first two entries are the same channel one directory up and one
+# directory down from where the bound looks, measured through the shipped
+# script. The third is what a red rung actually prints. The fourth is the
+# control that says the harness can see red at all.
+# ------------------------------------------------------------------------
+
+id=ci_rung_full_ROOT_conftest_tests_conftest_py_drops_the_FAILING_item_for_every_rung layout=tests_verification_rung1_declared_full_with_one_module_holding_test_ok_and_test_bad_plus_a_conftest_at_tests_conftest_py_whose_pytest_collection_modifyitems_filters_bad_out_of_items require=fail measured=pass_exit0_run_rung_1_collected_0_failed_0_errored_0_skipped_then_run_rung_OK_and_this_file_is_OUTSIDE_the_pathspec_the_review_bound_declares_git_ls_files_tests_starstar_conftest_py_returns_zero_files_while_tests_conftest_py_is_tracked_and_already_implements_this_very_hook
+id=ci_rung_full_conftest_ONE_LEVEL_ABOVE_the_rung_directory_drops_the_FAILING_item layout=tests_verification_rung1_declared_full_with_test_ok_and_test_bad_plus_a_conftest_at_tests_verification_conftest_py_whose_pytest_collection_modifyitems_filters_bad_out_of_items require=fail measured=pass_exit0_1_collected_0_failed_the_channel_is_not_a_property_of_the_rung_directory_it_is_a_property_of_every_conftest_on_the_path_and_all_four_declarations_in_REQUIREMENT_CHANGED_name_the_rung_directory
+id=ci_rung_RED_prints_a_count_and_a_reason_and_NO_TEST_NAME layout=tests_verification_rung1_declared_full_with_one_passing_and_one_failing_test_run_through_the_repaired_script require=fail measured=pass_the_output_is_2_collected_1_failed_0_errored_0_skipped_and_run_rung_FAIL_rung1_is_red_with_no_test_name_anywhere_while_commit_1dc4d33_is_titled_a_red_rung_says_which_test_failed_and_run_rung_sh_181_183_says_what_was_lost_was_everything_that_says_WHICH_test_failed_measured_again_on_CI_at_the_reviewed_commit_where_ladder4_printed_85_collected_13_failed_and_named_none_of_the_thirteen
+id=ci_rung_full_two_tests_one_failing_and_NO_conftest_CONTROL layout=tests_verification_rung1_declared_full_with_one_passing_and_one_failing_test_and_no_conftest_anywhere_on_the_path require=fail measured=fail_exit1_CONTROL_2_collected_1_failed_run_rung_FAIL_rung1_is_red_the_junit_reader_runs_and_reports_which_is_what_the_set_e_repair_bought

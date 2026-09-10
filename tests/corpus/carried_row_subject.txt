@@ -89,3 +89,18 @@ id=carried_rows_ROTATED_among_findings_that_share_a_declared_site row=the_status
 id=carried_row_declaring_the_report_file_itself_as_its_site row=any_answered_row_declaring_site_docs_reports_F2_step_5_md_which_every_one_of_the_eight_findings_with_a_block_names require=fail measured=pass_a_site_that_is_named_by_every_block_discriminates_nothing_and_R299_declares_exactly_it_this_round
 id=carried_row_for_an_item_the_verdict_gives_no_block row=any_answered_row_for_an_item_carried_from_an_earlier_verdict_such_as_R223_R230_or_R275_with_any_site_at_all require=fail measured=pass_check_sites_continues_past_an_item_with_no_block_in_THIS_verdict_by_design_so_SIXTEEN_of_the_twenty_four_rows_in_the_answers_file_are_unchecked_and_the_shift_of_R267_which_was_across_carried_items_would_be_invisible
 id=carried_row_whose_site_is_unique_to_a_DIFFERENT_block_CONTROL row=an_answered_rows_site_replaced_with_floatfea_does_not_appear_py_which_no_block_names require=fail measured=fail_CONTROL_SystemExit_naming_that_row_and_the_table_is_not_printed_at_all_which_is_the_shipped_ablation_test_and_it_is_a_real_one
+
+# ------------------------------------------------------------------------
+# ADDED AT THE THIRTY-FIFTH VERDICT ON F2, THE TENTH ON STEP 5 (HEAD e3a3bd1).
+#
+# CH4 is a real repair: the SUBJECT column is read out of the verdict and keyed
+# by the number the row is written under, so the shift of R288/R289/R290 cannot
+# be typed. What is claimed beside it -- in scripts/carried_table.py's own
+# docstring and in report section 6 -- is that rotation "is not detected, it is
+# unwritable". The first three entries are rotations, written.
+# ------------------------------------------------------------------------
+
+id=carried_rows_STATE_and_POINTER_rotated_with_each_rows_OWN_site_left_correct row=the_state_and_where_fields_of_R302_R303_and_R304_rotated_among_themselves_while_each_rows_site_field_keeps_the_path_its_own_block_names require=fail measured=pass_the_generator_prints_all_fifty_nine_rows_with_R302_answered_at_section_4_R303_at_section_3_and_R304_at_section_1_check_sites_passes_because_every_site_is_still_the_right_one_and_check_states_passes_because_every_state_is_in_the_fixed_list_and_the_subject_column_is_correct_on_all_three_which_is_what_makes_the_wrong_pointer_hard_to_see
+id=carried_row_whose_pointer_names_a_report_section_that_does_not_exist row=an_answered_row_with_where_set_to_section_99_nowhere require=fail measured=pass_the_generator_prints_it_verbatim_nothing_resolves_a_pointer_against_the_report_it_points_into_and_the_forty_character_limit_that_keeps_prose_out_does_not_ask_whether_the_pointer_lands
+id=carried_row_declaring_a_BLOCKING_finding_withdrawn row=R303_given_state_withdrawn_which_is_one_of_the_five_spellings_in_STATES require=fail measured=pass_at_the_generator_the_row_prints_as_withdrawn_beside_the_verdicts_own_subject_for_R303_and_nothing_in_scripts_carried_table_py_asks_whether_the_VERDICT_withdrew_it_the_state_vocabulary_bounds_the_spelling_and_not_the_claim
+id=carried_row_state_outside_the_fixed_list_CONTROL row=an_answered_row_given_state_closed require=fail measured=fail_CONTROL_SystemExit_naming_the_row_and_the_table_is_not_printed_check_states_is_a_real_check_and_so_is_the_forty_character_where_limit_which_refuses_a_sixty_character_pointer

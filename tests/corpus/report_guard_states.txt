@@ -135,3 +135,15 @@ id=shallow_clone_depth_1_reports_one_diagnosis_not_sixteen state=repository_clon
 id=zero_padded_step_number state=docs_reports_F2_step_06_md_added_no_step_6_md_exists require=ignored measured=named_fail_1_failed_122_passed_the_guard_resolves_step_6_and_reads_docs_reports_F2_step_6_md_which_does_not_exist
 id=zero_padded_step_number_beside_the_unpadded_one state=docs_reports_F2_step_06_md_and_step_6_md_both_added_with_a_step_6_verdict require=named_fail measured=green_123_passed_two_report_files_map_to_one_step_number_and_the_guard_is_silent_about_the_one_it_does_not_read
 id=answers_header_names_an_older_verdict_commit state=newest_revision_Answers_header_changed_from_476f909_to_8ffbd51_which_is_a_real_earlier_step_5_verdict_commit require=named_fail measured=named_fail_67_failed_30_passed_through_the_site_checks_en_masse_not_through_one_reporter
+
+# ------------------------------------------------------------------------
+# ADDED AT THE THIRTY-FIFTH VERDICT ON F2, THE TENTH ON STEP 5 (HEAD e3a3bd1).
+#
+# The first is the live failure at the reviewed commit and it is a CONTROL: the
+# declared-direction machinery caught a declaration that went stale between the
+# commit it was measured at and the commit it shipped in. That is the mechanism
+# working, and it is why the suite is red.
+# ------------------------------------------------------------------------
+
+id=guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL state=answers_header_names_an_older_verdict_commit_declared_green_at_e3a3bd1_while_the_report_commit_is_newer_than_the_verdict_commit_so_test_the_answered_verdict_is_the_NEWEST_one_fires require=fail measured=fail_CONTROL_1_failed_1833_passed_on_my_run_at_e3a3bd1_and_1_failed_531_passed_in_the_guards_job_of_run_34486215228_the_declaration_was_true_while_the_report_file_was_older_than_the_verdict_and_false_from_the_moment_the_report_was_committed_which_is_the_very_commit_that_declared_it
+id=guard_state_a_report_commit_messaged_docs_that_also_edits_the_guards_measuring_it state=e3a3bd1_subject_docs_step_5_revision_9_also_touching_scripts_carried_table_py_scripts_ci_section_py_tests_test_report_carried_py_and_tests_test_report_guard_states_py require=fail measured=pass_nothing_refuses_it_the_PreToolUse_hook_protects_docs_reviews_and_tests_corpus_and_CLAUDE_md_protects_claude_and_docs_SUPERVISOR_md_a_step_report_commit_may_still_change_the_test_that_judges_the_step_report_and_at_this_commit_it_did_and_that_change_is_what_turned_the_suite_red
