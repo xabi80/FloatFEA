@@ -1,64 +1,60 @@
 {
   "_": [
     "POINTERS ONLY (CH4). A state from the generator's fixed list and a section",
-    "of this report. The sentence beside each item is read out of the verdict by",
-    "scripts/carried_table.py, keyed by the number the row is written under, so",
-    "a status attached to the wrong number sits beside that number's subject and",
-    "contradicts itself on the page. There is nowhere here to type prose.",
-    "`site` is optional and is the weaker second check: it discriminates only",
-    "where the declared path is unique to that finding's block."
+    "of this report. The subject beside each item is read out of the verdict by",
+    "scripts/carried_table.py, keyed by the number the row is written under.",
+    "Since CI3 the pointer is resolved too: tests/test_report_carried.py",
+    "requires the section named here to exist in the report and to mention the",
+    "item, so a rotation of pointers between rows is refused rather than",
+    "printed. `site` is optional and is the weaker second check."
   ],
   "answered": {
-    "R223": { "state": "open", "where": "§8 — Q7, and CH6 opens it" },
-    "R224": { "state": "open", "where": "§8 — Q7" },
-    "R230": { "state": "open", "where": "§8 — mine, reopened at revision 3" },
-    "R231": { "state": "open", "where": "§8 — unblocked, not written here" },
-    "R244": { "state": "open", "where": "§8 — unblocked, not written here" },
-    "R245": { "state": "open", "where": "§8 — unblocked, not written here" },
-    "R275": { "state": "open", "where": "§8 — unblocked, not written here" },
-    "R293": { "state": "answered", "where": "§2 — the render is committed" },
-    "R294": { "state": "carried", "where": "§7 — and see the `set -e` finding" },
-    "R295": { "state": "carried", "where": "§8" },
-    "R296": { "state": "carried", "where": "§6" },
-    "R297": { "state": "carried", "where": "§5" },
-    "R298": { "state": "carried", "where": "§5" },
-    "R299": { "state": "carried", "where": "§5" },
-    "R300": { "state": "open", "where": "§8 — 4a" },
-    "R301": { "state": "carried", "where": "§6" },
-    "R302": {
+    "R223": { "state": "open", "where": "§6" },
+    "R224": { "state": "open", "where": "§6" },
+    "R230": { "state": "open", "where": "§6" },
+    "R231": { "state": "open", "where": "§6" },
+    "R244": { "state": "open", "where": "§6" },
+    "R245": { "state": "open", "where": "§6" },
+    "R275": { "state": "open", "where": "§6" },
+    "R291": { "state": "open", "where": "§6" },
+    "R292": { "state": "open", "where": "§6" },
+    "R300": { "state": "open", "where": "§6" },
+    "R302": { "state": "answered", "where": "§1" },
+    "R303": { "state": "carried", "where": "§5" },
+    "R304": { "state": "carried", "where": "§5" },
+    "R305": { "state": "carried", "where": "§5" },
+    "R306": { "state": "carried", "where": "§5" },
+    "R307": { "state": "carried", "where": "§5" },
+    "R308": { "state": "carried", "where": "§5" },
+    "R309": {
       "state": "answered",
-      "where": "§3",
-      "site": "scripts/rung_no_xpass.py"
+      "where": "§2",
+      "site": "tests/test_report_guard_states.py"
     },
-    "R303": {
+    "R310": {
       "state": "answered",
       "where": "§1",
-      "site": "scripts/regen_figures.py"
+      "site": "docs/SUPERVISOR.md"
     },
-    "R304": {
+    "R311": {
       "state": "answered",
-      "where": "§4",
-      "site": ".github/workflows/ci.yml"
-    },
-    "R305": {
-      "state": "answered",
-      "where": "§5",
-      "site": "docs/reports/F2/step-5.md"
-    },
-    "R306": {
-      "state": "answered",
-      "where": "§6",
+      "where": "§3",
       "site": "scripts/carried_table.py"
     },
-    "R307": {
+    "R312": {
       "state": "answered",
       "where": "§4",
-      "site": ".github/workflows/ci.yml"
+      "site": "scripts/regen_figures.py"
     },
-    "R308": {
+    "R313": {
       "state": "answered",
-      "where": "§7",
-      "site": "tests/test_ci_canonical_environment.py"
+      "where": "§4",
+      "site": "scripts/regen_figures.py"
+    },
+    "R314": {
+      "state": "answered",
+      "where": "§4",
+      "site": "scripts/carried_table.py"
     }
   }
 }

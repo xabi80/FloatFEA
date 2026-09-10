@@ -2939,3 +2939,375 @@ the accident is gone and the disagreement is declared rather than banked.
 
 **Ladder 4 is the only red rung**, and it is thirteen sine and cosine
 round-trips routed under Q8 since before this step.
+
+# Revision 10 — the pathspec that matched nothing, and the count that could not hide it
+
+Answers: verdict 35 @ 9cc7744
+
+**2026-09-10.** Commits since the thirty-fifth verdict, listed in §10.
+
+## 0. CI at the reviewed commit `e3a3bd1`
+
+Generated: `python scripts/ci_section.py e3a3bd1`. Run `34486215228`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| guards and meta-tests | 531 | 1 | 0 |
+| unit tests | 88 | 0 | 0 |
+| CI determinism -- leg (9) | 4 | 0 | 0 |
+| CI determinism -- leg (2) | 4 | 0 | 0 |
+| lint and type-check | 0 | 0 | 0 |
+| CI determinism -- leg (6) | 4 | 0 | 0 |
+| CI determinism -- leg (1) | 4 | 0 | 0 |
+| CI determinism -- leg (5) | 4 | 0 | 0 |
+| CI determinism -- leg (4) | 4 | 0 | 0 |
+| CI determinism -- leg (3) | 4 | 0 | 0 |
+| CI determinism -- leg (10) | 4 | 0 | 0 |
+| CI determinism -- leg (8) | 4 | 0 | 0 |
+| CI determinism -- leg (7) | 4 | 0 | 0 |
+| ladder 1 -- the solver is a solver | 1013 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+| ladder 2 -- the element is the element | 0 | 0 | 0 |
+| ladder 3 -- the model is the platform | 112 | 0 | 0 |
+| ladder 6 -- it stays fixed | 4 | 0 | 0 |
+| ladder 4 -- the loads are the loads | 72 | 13 | 0 |
+| ladder 5 -- independent confirmation | 0 | 0 | 0 |
+
+**Job conclusions: 20 jobs, 2 not green.**
+
+- guards and meta-tests (failure)
+- ladder 4 -- the loads are the loads (failure)
+
+## 0a. How to read §0
+
+**§0 is generated and it is about the commit the verdict judged.** The report
+cannot publish a table for its own commit: the run starts when the commit is
+pushed. Two of that run's jobs were not green, and both are named in §6 and §2.
+
+**The guards row is the first one this generator has taken from the job's own
+summary rather than from every summary-shaped line in its log** — that is
+R311(e), and §3 has the measurement.
+
+## 1. R310 — the pathspec, the two records, and the honest rest
+
+**The bound named as the whole of R302's answer returned the empty set, and the
+channel it was meant to cover is live in this repository.** The reviewer is
+right and the finding is the sharpest kind: an instruction written as a command
+that matches nothing.
+
+```
+cmd  git ls-files -- 'tests/**/conftest.py'
+out  (nothing)
+cmd  git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out  tests/conftest.py
+judge GIT WILL NOT LET A DOUBLE STAR STAND FOR ZERO DIRECTORIES, so the
+      instruction meant "depth two or more" and the only conftest here is at
+      depth one -- where it applies to every rung at once, and where it
+      already implements `pytest_collection_modifyitems`.
+```
+
+**Both paths are listed now, in both instruction files, in a standalone
+`process:` commit** (`09b7db0`), each with the run beside it and each saying
+that an empty result there is a broken instruction rather than a clean step.
+
+**And the instruction has a negative control**, because an instruction is a
+command and a command that matches nothing is what happened:
+
+```
+claim tests/test_supervisor_conftest_pathspec.py runs the pathspec the
+      reviewer is told to run and requires it to name every tracked conftest
+cmd   python -m pytest tests/test_supervisor_conftest_pathspec.py -q
+out   4 passed
+cell  the old pattern alone, asserted still to miss the depth-one file
+out   `tests/**/conftest.py` matches nothing here, so the reason for listing
+      two paths is a property of git rather than a preference. When that
+      changes, the test reddens and the instruction can be simplified.
+```
+
+**R302's answer was too large by one clause and this is the smaller one.** A
+gate that reads a record cannot outrank code that writes the record. What a
+SECOND record buys is that one hook is no longer enough:
+
+```
+claim `-p rung_no_xpass` tallies the run at `pytest_runtest_call` -- upstream
+      of every report -- and `scripts/run_rung.sh` requires that tally to
+      agree with the junit XML on collected, failed and skipped
+cell  four channels, each from `tests/conftest.py` AND from the rung's own
+      conftest, on a rung whose test asserts False:
+out   makereport wrapper flipping the report     exit 1   CAUGHT, both depths
+      sessionfinish rewriting the XML            exit 1   CAUGHT, both depths
+      collection_modifyitems dropping the item   exit 0   missed, both depths
+      ignore_collect hiding the failing file     exit 0   missed, both depths
+      no conftest, two tests, one failing        exit 1   CONTROL
+judge TWO OF FOUR. The tally had to be taken at the CALL: taken from a report
+      it measured the same object the attack rewrites, and both records agreed
+      because they were one record.
+judge THE OTHER TWO CANNOT BE CAUGHT FROM INSIDE THE SESSION. The item is
+      removed before any record of it exists, so both records are accurate
+      accounts of a run that did not contain the failure. Catching that needs
+      to know how many tests the rung is SUPPOSED to hold, and nothing here
+      records that.
+judge SO THE SENTENCE IS: two of the four channels now redden, the other two
+      are declared in the layout map with that reason, and review -- of a
+      pathspec that now names the file -- is the LAST bound rather than the
+      whole answer.
+cmd   python -m pytest tests/test_ci_ladder_gating.py -q
+out   60 passed
+```
+
+## 2. R309 — the whole-suite line, and a declaration that was stale before it shipped
+
+**The declaration was true when it was measured and false when it shipped, and
+the report could not have shown it.** While the report predated the verdict the
+ancestry check returned early and the state was green; the commit that added
+the declaration is the commit that re-committed the report, so the state went
+red in the same breath.
+
+**The state is committed by the harness now, so its outcome does not flip at a
+step boundary.** A report is always committed before anyone reads it, which is
+what the real occurrence looks like — and the corpus's requirement is met
+deterministically rather than by accident.
+
+```
+cmd  python -m pytest tests/test_report_guard_states.py -q
+out  23 passed
+judge THE STATE IS NO LONGER A MEASUREMENT OF THE BOUNDARY. Left in the
+      working tree its answer depended on which of the report and the verdict
+      git had seen last, which is not a property of the guard.
+```
+
+**And the report carries a whole-suite line, generated last.** Seven correct
+subset counts could not see a failure in an eighth file; one line can.
+
+```
+claim scripts/suite_count.py runs the WHOLE suite and prints three numbers,
+      the commit it ran at, and the node id of everything that failed or was
+      skipped
+claim tests/test_report_carried.py fails a report without the line, one whose
+      sha is not an ancestor of HEAD, and one that reports failures it does
+      not name
+cmd   python -m pytest tests/test_report_carried.py -q -k WHOLE_SUITE
+out   1 passed
+rule  RUN IT LAST. The count describes the tree the report is committed from,
+      and an edit after it is an edit the number does not describe. That
+      ordering is the whole content of this item.
+```
+
+The line itself is §7.
+
+## 3. R311 — five sentences, each re-taken at this commit
+
+| # | what it said | what it is |
+|---|---|---|
+| (a) | a rotation is "impossible to write" | the SUBJECT cannot be attached to the wrong number; the state and the pointer were still rotatable, and the pointer is now resolved against the report |
+| (b) | "nine rows of forty-seven" | nine rows of the thirty-eight the two renders share; `forty-seven` was the old file's line count |
+| (c) | "the spread printed beside all nine" | eight; the `words` branch returned before reading a number, and now prints one |
+| (d) | "a red rung says which test failed" | it said the count and the reason; it names the tests now |
+| (e) | the generated guards row | the job's own summary, not the sum of every summary-shaped line in its log |
+
+```
+cmd  python -m pytest tests/test_report_carried.py -q -k points_at_a_section
+out  every Carried row's pointer resolves: the section exists and mentions the
+     item. A rotated pointer names a section that never mentions the number,
+     which is (a) closed by a machine rather than by a shorter sentence
+cell the `state` and `where` of three findings rotated, as the reviewer did:
+out  refused, by name, at the row whose section does not discuss it
+cmd  the two renders, rows parsed with the generator's own row pattern
+out  38 rows in common, 9 differ -- (b), corrected in `floatfea/tolerances.py`
+     and in the plan at `3dd94b8`
+cmd  python scripts/regen_figures.py --check
+out  nine floor-class rows, nine spreads, `counter_defect_boundary` among them
+cell the boundary row moved to `1e-99 passes, 1e+99 fails`
+out  REFUSED -- (c), and it exited 0 before
+cell a rung with one passing and one failing test
+out  run_rung: 2 collected, 1 failed, 0 errored, 0 skipped
+     run_rung:   failure  tests.verification.rung1.test_a::test_bad
+     -- (d), and the shipped test asserts the name and asserts the passing
+     test is NOT named
+cmd  gh run view 34486215228 --json jobs   against the generated §0 row
+out  the job reports `531 passed, 1 failed` and §0 publishes that. The version
+     that summed every line in the log published `4056 passed` for a job that
+     reported `604` -- (e)
+```
+
+## 4. R312, R313, R314 — the three recordable items, all three done
+
+**R312. Floor-class membership is marked where each row is built**, because the
+licence is a property of how a number is computed rather than of whether it
+happened to move.
+
+```
+claim `_floor(name, "below", "CEILING")` at the `rows.append` that produces it,
+      read back by `floor_class()`; a figure added without a mark is
+      exact-compared by default, which is the safe direction
+cmd   python -m pytest tests/test_figure_local_check.py -q
+out   20 passed
+judge THE HAND-WRITTEN MAP HAD NINE MEMBERS AND THE ROUND'S NINE MOVERS WERE A
+      DIFFERENT NINE. Nothing said so, because nothing derived one from the
+      other.
+```
+
+**R313. The decision-word comparator matches whole words.** Substituting over a
+character class that included `e` turned `passes` into `passs`.
+
+```
+cell the boundary row's words changed to `passees`
+out  REFUSED. It compared equal before, and the pair that matters -- `passes`
+     against `fails` -- survived the bug, which is why it was latent
+```
+
+**R314. A `Carried` pointer is resolved against the report it points into.**
+The length bound and the state vocabulary both refuse what they are for;
+neither asked whether the section exists or discusses the item. Both are asked
+now, and that is the same machine that closes R311(a).
+
+## 5. What the thirty-fifth verdict closed, carried here
+
+R303, R304, R305, R306, R307 and R308 were all recorded closed at their own
+sites in the previous round, and R302's analysis was accepted with the bound
+corrected in §1. Nothing in this round reopens any of them; they appear in the
+Carried table with the verdict's own subject beside each.
+
+## 6. What is open
+
+- **Ladder 4.** Sine and cosine round-trip comparisons, red since before this
+  step, routed under Q8, and the only red rung.
+- **R275, R231, R244, R245.** The re-measurement and the Q8 values. The
+  canonical render has now stood one round on its own, which is what the
+  previous verdict asked for.
+- **R223, R224 — Q7**, which the directive opens on the next verdict if CI is
+  green at the reviewed commit.
+- **R230**, reopened by my own error at revision 3, and mine to leave open.
+- **R300, R291, R292** and the rest of the 4a list.
+
+## 7. The whole suite, at this revision's own commit
+
+**Whole suite at `7254dfc`: 1889 passed, 0 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision.
+
+## 8. Sites named by findings and not touched
+
+Generated from the verdict's own site list against `git diff <reviewed>..HEAD -U0`; a site is here because the diff does not touch it, and each carries why.
+
+| site | why |
+|---|---|
+| `CLAUDE.md` | **no change** — quoted as the rule the finding is judged against; `CLAUDE.md` changes only in a standalone `process:` commit |
+| `tests/corpus/report_guard_states.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `conftest.py` | **no change** — quoted as evidence in the finding's own cell, not named as a site to change |
+| `tests/conftest.py` | **no change** — the file the pathspec missed, and it is UNCHANGED on purpose: its `pytest_collection_modifyitems` sorts, which is legitimate. What was wrong is that a change to it would not have been diffed, and that is repaired in the instruction files and asserted by `tests/test_supervisor_conftest_pathspec.py` |
+| `tests/corpus/ci_ladder_gating.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `tests/verification/conftest.py` | **no change** — a path the reviewer created for the measurement; it does not exist in this repository and is not created by this round |
+| `carried_table.py:38` | **no change** — the same lines, named without their directory |
+| `run_rung.sh:182` | **no change** — the same lines, named without their directory |
+| `scripts/carried_table.py:36` | **no change** — the sentence at `:36-40` is rewritten, and the diff touches it; the line numbers in the finding are the old ones and the block moved |
+| `scripts/carried_table.py:37` | **no change** — the sentence at `:36-40` is rewritten, and the diff touches it; the line numbers in the finding are the old ones and the block moved |
+| `scripts/carried_table.py:38` | **no change** — the sentence at `:36-40` is rewritten, and the diff touches it; the line numbers in the finding are the old ones and the block moved |
+| `scripts/carried_table.py:39` | **no change** — the sentence at `:36-40` is rewritten, and the diff touches it; the line numbers in the finding are the old ones and the block moved |
+| `scripts/carried_table.py:40` | **no change** — the sentence at `:36-40` is rewritten, and the diff touches it; the line numbers in the finding are the old ones and the block moved |
+| `scripts/run_rung.sh:181` | **no change** — `:181-183` is the comment about what the `set -e` repair restored, and the diff touches the reader beneath it to print the names it was claiming. The sentence itself is now true of the code |
+| `scripts/run_rung.sh:182` | **no change** — `:181-183` is the comment about what the `set -e` repair restored, and the diff touches the reader beneath it to print the names it was claiming. The sentence itself is now true of the code |
+| `scripts/carried_table.py:154` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+| `scripts/carried_table.py:155` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+| `scripts/carried_table.py:156` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+| `scripts/carried_table.py:157` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+| `scripts/carried_table.py:158` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+| `scripts/carried_table.py:159` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+| `scripts/carried_table.py:160` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+| `scripts/carried_table.py:161` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+| `scripts/carried_table.py:162` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+| `scripts/carried_table.py:163` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+| `scripts/carried_table.py:164` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+| `scripts/carried_table.py:165` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+| `scripts/carried_table.py:166` | **no change** — `:154-166` is the length and vocabulary bound, kept as it is: it refuses what it is for. The resolution the finding asks for needs the REPORT, which this script does not read, so it is in `tests/test_report_carried.py` instead |
+
+## 9. Carried
+
+Generated: `python scripts/carried_table.py docs/reviews/F2/step-5.md docs/reports/F2/step-5-answers.json`. The row set, the class, and the subject of every row are read from the verdict; the answers file carries a state and a section pointer, and the pointer is resolved against this report by `tests/test_report_carried.py`.
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R223 | **open** — §6 | OPEN by instruction, correctly listed. No Q8 value written. |
+| R224 | **open** — §6 | OPEN by instruction, correctly listed. No Q8 value written. |
+| R225 | **open** — carried from an earlier verdict | -- carried, and correctly present in the |
+| R228 | **open** — carried from an earlier verdict | -- carried, and correctly present in the |
+| R230 | **open** — §6 | OPEN by instruction, correctly listed. No Q8 value written. |
+| R231 | **open** — §6 | OPEN, and now UNBLOCKED for the first time. The report says |
+| R232 | **open** — carried from an earlier verdict | -- carried, and correctly present in the |
+| R233 | **open** — carried from an earlier verdict | -- carried, and correctly present in the |
+| R244 | **open** — §6 | OPEN, and now UNBLOCKED for the first time. The report says |
+| R245 | **open** — §6 | OPEN, and now UNBLOCKED for the first time. The report says |
+| R248 | **open** — carried from an earlier verdict | residues, R249-R252, |
+| R249 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262-R274, R276, R277, the two R248 residues, R249-R252, |
+| R252 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262-R274, R276, R277, the two R248 residues, R249-R252, |
+| R253 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R254 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R256 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R257 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R261 | **open** — carried from an earlier verdict | OPEN by instruction, correctly listed. No Q8 value written. |
+| R262 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R274 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R275 | **open** — §6 | OPEN, and now UNBLOCKED for the first time. The report says |
+| R276 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R277 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R281 | **open** — carried from an earlier verdict | OPEN. Of the eleven corpus files, six now have a runner that names my new |
+| R288 | **open** — carried from an earlier verdict | -- carried, and correctly present in the |
+| R289 | **open** — carried from an earlier verdict | -- carried, and correctly present in the |
+| R290 | **open** — carried from an earlier verdict | -- carried, and correctly present in the |
+| R291 | **open** — §6 | OPEN, recordable at 4a, correctly recorded. |
+| R292 | **open** — §6 | OPEN, recordable at 4a, correctly recorded. |
+| R293 | **open** — carried from an earlier verdict | CLOSED, and it is the largest thing in this step's history. I checked it |
+| R300 | **open** — §6 | OPEN, recordable at 4a, correctly recorded. |
+| R302 | **answered** — §1 | CLOSED, and it is the honest answer of the two I offered. Both sentences are |
+| R303 | **carried** — §5 | CLOSED at all three clauses, and I reproduced both columns of the table. |
+| R304 | **carried** — §5 | CLOSED, and the shape of the repair is right. The two gate bodies are |
+| R305 | **carried** — §5 | CLOSED ON FOUR OF FIVE. One re-taken figure is still wrong, and half of that |
+| R306 | **carried** — §5 | CLOSED at the condition, and the sentence that replaced it is the finding. |
+| R307 | **carried** — §5 | CLOSED. The verdict job opens F2_figures.md, hashes it, and compares against |
+| R308 | **carried** — §5 | CLOSED. tests/test_ci_canonical_environment.py is 4 passed and the third |
+| R309 | **answered** — §2 | The suite is red at the reviewed commit, on a declaration this round wrote in the commit that... |
+| R310 | **answered** — §1 | The conftest pathspec matches zero files in this repository. The one conftest that exists,... |
+| R311 | **answered** — §3 | Five published sentences and figures do not describe the repository. Each is refuted by one... |
+| R312 | **answered** — §4 | FLOOR_CLASS membership is hand-granted and nothing measures whether a member needs the licence.... |
+| R313 | **answered** — §4 | The decision-word comparator strips the letter e out of the words.... |
+| R314 | **answered** — §4 | A Carried pointer is not resolved against the report it points into.... |
+
+## 10. What I am asking for
+
+**Commits since the thirty-fifth verdict**, in order:
+
+| commit | what it is |
+|---|---|
+| `09b7db0` | process — the conftest pathspec names the files it means |
+| `3f648e0` | two records of one run, a whole-suite line, every number sourced |
+| `3dd94b8` | plan — the third class's denominator is rows, not lines. RE-LOCKED |
+| `7440b81` | the verdict's two new guard states, and the check the second needs |
+| `7254dfc` | the older-verdict state names the previous verdict, not a commit count |
+| this one | the report |
+
+**Three blocking items, all three answered at their own sites**, and the two
+that were one line each are one line each:
+
+- **R310** — the pathspec was wrong and the channel it covers is live. Both
+  paths are listed, in a standalone process commit, with a test that runs the
+  instruction's own command. The claim that review was the WHOLE answer is
+  replaced by the measured one: two of the four channels now redden through a
+  second record taken upstream of the first, and the other two cannot be
+  caught from inside the session.
+- **R309** — the state that went stale is committed by the harness, so it no
+  longer measures the boundary, and the report carries a whole-suite line
+  generated after every other edit. A red suite cannot be silent in a report
+  again.
+- **R311** — five sentences re-taken, and two of the five are now closed by a
+  machine rather than by a shorter sentence: the pointer resolution refuses the
+  rotation, and the job's own summary replaces the sum of its log.
+
+**And the three recordable items are done**, because each was two lines from
+something blocking: the floor class is derived from the generator's marks, the
+word comparator matches whole words, and the pointer is resolved.
+
+**What I am not claiming.** No Q8 value is written; no tolerance value moved.
+The canonical render has now stood a round on its own, which is what the
+previous verdict asked before the re-measurement, and that is the next round's
+work rather than this one's.
+
+**No declared disagreement with any corpus this round.** The one that stood
+last round is gone, because the state it was about is deterministic now.
