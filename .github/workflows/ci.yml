@@ -13,6 +13,18 @@ env:
   MKL_NUM_THREADS: "1"
   OPENBLAS_NUM_THREADS: "1"
   PYTHONHASHSEED: "0"
+  # THE BLAS KERNEL, PINNED (CF1). Thread count alone was not enough. Ten runs on
+  # ten hosted runners split exactly by CPU vendor: three Intel Xeon Platinum
+  # 8573C produced one `F2_figures.md` and failed the regression rung; seven AMD
+  # EPYC produced a DIFFERENT file and passed. OpenBLAS selects its kernel from
+  # the CPU it finds, so the last bit of a factorisation depended on which
+  # machine the job drew -- and `EXEMPT_RESPONSE_DRIFT_ULP`'s 2.6e9 breach exists
+  # on Intel and nowhere else.
+  #
+  # `Haswell` is a baseline every current runner implements, so the kernel is the
+  # same wherever the job lands. Q8 makes CI canonical, and a canonical machine
+  # that disagrees with itself by vendor is not canonical.
+  OPENBLAS_CORETYPE: "Haswell"
 
 jobs:
   static:
