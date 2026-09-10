@@ -292,10 +292,18 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 # scale with `E`, with the section and with the mesh, so a ceiling on them would
 # be a ceiling on the model. The ratio is invariant under all three.
 #
-# Reason for 1e-12: measured at the shipped frame, the clean ratio is `1.601e-14`
-# -- see `rigid_body_mode_ratio` in docs/milestones/F2_figures.md, which is the
-# number this entry is checked against and is not retyped here (R194). That
-# leaves about 62x of headroom.
+# Reason for 1e-12: measured at the shipped frame -- see `rigid_body_mode_ratio`
+# in docs/milestones/F2_figures.md, which is the number this entry is checked
+# against and is not retyped here (R194). That leaves about 83x of headroom ON
+# THE CANONICAL MACHINE.
+#
+# `62x` STOOD HERE AND IS WITHDRAWN (BP0). It was taken from a laptop render,
+# where the ratio is 1.34x larger; the same code on the machine Q8 makes
+# canonical gives 83x. Neither number is wrong about its own machine and the
+# ceiling is unaffected either way -- this is a ratio of two eigenvalues at
+# 1e-14, where the numerator is round-off, and Q8's third class exists because
+# figures of that shape disagree between machines by O(1) factors. The canonical
+# one is the one this entry means.
 #
 # WHAT IT CATCHES, measured rather than asserted. The response is linear in the
 # defect over eight decades: a diagonal stiffness resisting a rigid translation,
@@ -584,7 +592,15 @@ PATCH_TEST_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-6
 # `2.18x`, and has never risen. NO COUNT OF ROUNDS IS WRITTEN HERE (R213): "one
 # direction, three times" stood in this entry and in the plan, the direction was
 # right and the three counted nothing, and any such count goes stale the next
-# time the reviewer adds an entry. The published room is what absorbs that while
+# time the reviewer adds an entry.
+#
+# AND THE SECOND FALL IS NOT ONE (BP0, CH5). `2.37x -> 2.19x -> 2.18x` was three
+# laptop renders. The canonical machine gives `2.19x` for the same code, and the
+# measured cross-machine spread for this figure is `1.005x` -- which is the
+# whole of the `2.19 -> 2.18` step. The first fall is 8% and survives; the second
+# is the size of the platform difference and is withdrawn as a trend. What the
+# direction argument rests on is unchanged: both causes that exist tighten this,
+# and the room has never risen. The published room is what absorbs that while
 # still
 # catching every order-of-magnitude raise, and the demonstration that it catches
 # one is a shipped test.
