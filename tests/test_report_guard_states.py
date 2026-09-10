@@ -353,6 +353,14 @@ def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) 
     if state in REQUIREMENT_CHANGED:
         # NOT skipped and NOT xfailed. The state runs and its outcome is
         # asserted, in the direction the repair produces.
+        #
+        # AND THE ABLATION STILL RUNS (R276, twice). This branch returned before
+        # `DIAGNOSIS` was consulted, so `shallow_clone_depth_1` -- the one state
+        # in both maps -- passed under an ablation its twin caught. The previous
+        # round said this was fixed and the call site never landed; it is here
+        # now, and `_assert_diagnosis` has two call sites.
+        if state in DIAGNOSIS and REQUIREMENT_CHANGED[state][0] != "green":
+            _assert_diagnosis(state, got, log)
         if REQUIREMENT_CHANGED[state][0] == "green":
             assert code == 0, (
                 f"{state}: the repaired guard is expected to be GREEN here and "

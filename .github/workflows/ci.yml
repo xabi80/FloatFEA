@@ -90,9 +90,23 @@ jobs:
           except Exception as exc:  # pragma: no cover - reporting only
               print("config unavailable:", exc)
           PY
-      - name: "regenerate the canonical figures and hash them"
+      - name: "the COMMITTED figures, hashed before anything overwrites them"
         run: |
-          python scripts/regen_figures.py
+          python - <<'PY'
+          import hashlib, pathlib
+          p = pathlib.Path("docs/milestones/F2_figures.md")
+          print("COMMITTED-SHA256", hashlib.sha256(p.read_bytes()).hexdigest())
+          PY
+      - name: "regenerate, and compare against what was committed"
+        run: |
+          # `--check` COMPARES; the previous version ran the generator, which
+          # OVERWRITES the file, and then hashed what it had just written. It
+          # therefore agreed with itself on every runner and would have agreed
+          # with a committed file replaced by one line of garbage -- the
+          # reviewer ran exactly that and the job went green. Ten legs reported
+          # the rung passing while the guards job in the same run reported the
+          # figures stale, which is the decoupling stated as a symptom.
+          python scripts/regen_figures.py --check
           python - <<'PY'
           import hashlib, pathlib
           p = pathlib.Path("docs/milestones/F2_figures.md")

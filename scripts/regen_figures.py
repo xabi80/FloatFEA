@@ -25,7 +25,6 @@ from __future__ import annotations
 
 import argparse
 import math
-import subprocess
 import sys
 from pathlib import Path
 
@@ -47,10 +46,12 @@ class _Silent:
 
 def _figures() -> list[tuple[str, str]]:
     import test_corpus_configurations as C
+
     from floatfea.tolerances import (
-        BOUNDARY_BISECTION_CONVERGENCE,
         PATCH_TEST_COUNTER_HEADROOM,
         PATCH_TEST_EXACTNESS,
+    )
+    from floatfea.tolerances import (
         PATCH_TEST_EXACTNESS_COUNTER_DEFECT as CD,
     )
 

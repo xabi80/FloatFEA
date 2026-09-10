@@ -261,23 +261,46 @@ def test_the_answered_verdict_is_the_NEWEST_one() -> None:
     resolves, the findings parse, and the carry table is complete about a list
     that has been superseded.
     """
-    newest = subprocess.run(
-        ["git", "log", "-1", "--format=%H", "--", str(VERDICT.relative_to(ROOT))],
+
+    def _newest_commit_touching(path: Path) -> str:
+        out = subprocess.run(
+            ["git", "log", "-1", "--format=%H", "--", str(path.relative_to(ROOT))],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        return out.stdout.strip() if out.returncode == 0 else ""
+
+    head_verdict = _newest_commit_touching(VERDICT)
+    head_report = _newest_commit_touching(REPORT)
+    if not head_verdict or not head_report or not ANSWERED:
+        return
+
+    # THE LEGITIMATE BOUNDARY IS NOT A FAILURE, and the first version of this
+    # test made it one (R282). `CLAUDE.md` § Step gating writes the report
+    # first and the verdict after, so between them the report NECESSARILY names
+    # an older verdict than the newest -- which is exactly the state at every
+    # step boundary, and the state this file's own item 1b paragraph records as
+    # the reason a machine was not given this job.
+    #
+    # ANCESTRY IS THE DISCRIMINATOR. If the newest verdict commit descends from
+    # the newest report commit, the verdict landed AFTER the report and the
+    # report legitimately predates it. If the report is the later of the two, it
+    # was written with the newest verdict available and must name it.
+    verdict_is_newer = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", head_report, head_verdict],
         cwd=ROOT,
         capture_output=True,
-        text=True,
     )
-    assert newest.returncode == 0, newest.stderr
-    head = newest.stdout.strip()
-    if not head or not ANSWERED:
+    if verdict_is_newer.returncode == 0 and head_report != head_verdict:
         return
-    same = subprocess.run(
-        ["git", "merge-base", "--is-ancestor", head, ANSWERED], cwd=ROOT, capture_output=True
-    )
-    assert same.returncode == 0, (
-        f"the report answers verdict `{ANSWERED[:7]}` and the newest commit "
-        f"touching {VERDICT.name} is `{head[:7]}`. Every `Carried` claim is "
-        "then about a list that has been superseded."
+
+    assert ANSWERED.startswith(head_verdict[: len(ANSWERED)]) or head_verdict.startswith(
+        ANSWERED
+    ), (
+        f"the report at `{head_report[:7]}` is newer than the verdict at "
+        f"`{head_verdict[:7]}` and names `{ANSWERED[:7]}`. Written with the "
+        "newest verdict available, it must answer that one."
     )
 
 

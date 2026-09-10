@@ -130,6 +130,47 @@ MODULE_SKIP = "\n".join(
     ]
 )
 COLLECT_IGNORE = 'collect_ignore = ["test_a.py"]\n'
+XPASS_PLAIN = "\n".join(
+    [
+        "import pytest",
+        "",
+        "",
+        "@pytest.mark.xfail(strict=False)",
+        "def test_a():",
+        "    assert True",
+        "",
+    ]
+)
+XPASS_REASON = "\n".join(
+    [
+        "import pytest",
+        "",
+        "",
+        '@pytest.mark.xfail(strict=False, reason="1 passed on the reference build")',
+        "def test_a():",
+        "    assert True",
+        "",
+    ]
+)
+XPASS_PARAM_ID = "\n".join(
+    [
+        "import pytest",
+        "",
+        "",
+        '@pytest.mark.parametrize("case", [pytest.param(1, id="3 passed")])',
+        "@pytest.mark.xfail(strict=False)",
+        "def test_a(case):",
+        "    assert True",
+        "",
+    ]
+)
+XPASS_HEADER_CONFTEST = "\n".join(
+    [
+        "def pytest_report_header(config):",
+        '    return "7 passed in 0.01s"',
+        "",
+    ]
+)
 XPASSED = "\n".join(
     [
         "import pytest",
@@ -261,6 +302,19 @@ LAYOUTS: dict[str, dict[str, str | None]] = {
     },
     "ci_rung_full_module_level_pytest_skip_allow_module_level": {
         "tests/verification/rung1/test_a.py": MODULE_SKIP,
+    },
+    "ci_rung_full_xpass_with_a_plain_strict_False_marker_and_no_free_text": {
+        "tests/verification/rung1/test_a.py": XPASS_PLAIN,
+    },
+    "ci_rung_full_xpass_whose_xfail_REASON_string_carries_a_count_phrase": {
+        "tests/verification/rung1/test_a.py": XPASS_REASON,
+    },
+    "ci_rung_full_xpass_whose_PARAMETRIZE_ID_carries_a_count_phrase": {
+        "tests/verification/rung1/test_a.py": XPASS_PARAM_ID,
+    },
+    "ci_rung_full_xpass_with_a_conftest_pytest_report_header_carrying_a_count_phrase": {
+        "tests/verification/rung1/test_a.py": XPASS_PLAIN,
+        "tests/verification/rung1/conftest.py": XPASS_HEADER_CONFTEST,
     },
     "ci_rung_full_prints_a_counter_line_AFTER_pytests_summary": {
         "tests/verification/rung1/test_a.py": ATEXIT_NOISE,

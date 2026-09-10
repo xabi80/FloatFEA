@@ -127,7 +127,13 @@ if [ "$RUN_COUNT" -gt 0 ]; then
     # marked xfail and then passes exits 0 by default, and the junit report
     # records it as a pass -- so the rung reported success while asserting the
     # opposite of what it says.
-    out=$(python -m pytest "$@" -q -o xfail_strict=true --junit-xml="$report" 2>&1) || {
+    # `-rN` SUPPRESSES THE SHORT SUMMARY, and that is the point (R286). `-ra`
+    # sits in `addopts`, so pytest printed a per-test summary BEFORE its count
+    # line -- and that summary carries text the test file controls. A `reason=`
+    # of "1 passed on the reference build", or a parametrize id of "3 passed",
+    # put a forged count ahead of the real one. With the short summary off, the
+    # first count line is pytest's own.
+    out=$(python -m pytest "$@" -q -rN --no-header -o xfail_strict=true --junit-xml="$report" 2>&1) || {
         echo "$out"
         exit 1
     }
