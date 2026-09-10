@@ -1,642 +1,513 @@
 # Review — F2 step 5
-Reviewed commit: 8de404a8788f8801d0713304c0edc82085d942ca
+Reviewed commit: 0dcdc2055ac52ed58db64760f21d456a2267c713
 Verdict: HOLD
 
-**Reviewed commit: `55498f4`** (the verdict is stamped at my corpus commit `8de404a`,
+**Reviewed commit: `e3a3bd1`** (the verdict is stamped at my corpus commit `0dcdc20`,
 which touches `tests/corpus/` only).
 
-Tests: **1850 passed, 0 failed, 0 skipped** (my run at `55498f4`, `python -m pytest -q`,
-285.33 s, Python 3.13.11 on Windows). The report publishes no whole-suite figure this
-revision; the two subset figures its commit message carries both reproduce exactly --
-`tests/test_report_carried.py` **231 passed**, the guards job body **554 passed**. With my
-thirty-fourth-round corpus applied, `tests/test_ci_ladder_gating.py` gives **9 failed, 46
-passed** and the vocabulary runner gives **7 failed, 25 passed**; the two files without a
-runner induce zero failures.
+Tests: **1 failed, 1833 passed, 0 skipped** (my run at `e3a3bd1`, `python -m pytest -q`,
+339.98 s, Python 3.13.11 on Windows). The failure is
+`tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_an_older_verdict_commit]`,
+and it is the same one CI reports. **Every subset figure the report publishes reproduces
+exactly** -- `test_figure_local_check` 17, `test_ci_ladder_gating` 56, `test_ci_determinism_gate`
+13, `test_report_vocabulary_corpus` 32, the vocabulary corpus 31 entries, and rung 6 at
+`ci.yml` 433 and 449. **None of the seven contains the red file**, and the report publishes
+no whole-suite count.
 
-**Plan: untouched. Code: `1be5606`, `05133c4`. Report: `55498f4` (revision 8).**
+**Plan: `897c3a4`, `1443fe9`, `095c6e1`, all standalone and re-locked. Process: `979933f`,
+standalone. Code: `d713be4`, `1dc4d33`. Canonical file: `0def0dc`. Report: `e3a3bd1`
+(revision 9).**
 
-**Item 1b.** The newest revision's header reads `Answers: verdict 33 @ 35e7ddc` and
-`35e7ddc` is the thirty-third and latest verdict. **Passes.**
+**Item 1b.** The newest revision's header (line 2404) reads `Answers: verdict 34 @ e6054b5`
+and `e6054b5` is `review: F2 step 5 -- thirty-fourth verdict`, the latest. **Passes.**
 
-**CI, item 3b, at the reviewed commit. RED -- and it is one test, and it is the right
-one.**
+**CI, item 3b, at the reviewed commit. RED.**
 
 ```
-cmd  gh run list --commit 55498f4
-out  34461854122 (push) failure   34461858006 (pull_request) failure
-cmd  gh run view 34461854122 --json jobs
-out  lint / unit / ladder 1,2,3        success
-     CI determinism -- leg (1..10)     SUCCESS x10      <- ten of ten
-     CI determinism -- ten legs agree  SUCCESS          <- the job CG1 asked for
-     guards and meta-tests             FAILURE
-     ladder 4                          failure          <- 13, routed under Q8
-     ladder 5, ladder 6                skipped
-cmd  gh run view 34461854122 --log-failed | the guards job
-out  FAILED tests/test_plan_figures.py::test_the_generated_figures_are_not_stale
-     1 failed, 553 passed
-judge THE GUARDS JOB WENT FROM 302 FAILURES AT 35e7ddc TO 16 AT 05133c4 TO ONE
-      HERE, AND THE ONE IS R293'S OPEN HALF. That is the round working. It is
-      still a red CI, CA2 is not discretionary, and it coincides with the
-      implementer's own account: the canonical render is not committed.
-cmd  gh run list --commit 1be5606 ; --commit 05133c4
-out  34459537327 failure ; 34460382184 failure -- both ran, both with the same
-     two reds (guards, ladder 4) and ten green legs.
+cmd  gh run list --commit e3a3bd1
+out  []          <- the abbreviation matches nothing; the full sha is required,
+                    which the implementer's own ci_section.py docstring says
+cmd  gh run list --commit e3a3bd1d97e1e3bb1219ca24e2e95069a8b7ca37
+out  34486215228 (push) failure   34486220416 (pull_request) failure
+cmd  gh run view 34486215228 --json jobs
+out  lint / unit / ladder 1,2,3          success
+     CI determinism -- leg (1..10)       SUCCESS x10
+     CI determinism -- ten legs agree    SUCCESS
+     ladder 6 -- it stays fixed          SUCCESS   <- FIRST TIME ON THIS STEP
+     guards and meta-tests               FAILURE
+     ladder 4                            failure   (13, routed under Q8)
+     ladder 5                            skipped
+cmd  gh run view 34486215228 --log-failed
+out  FAILED tests/test_report_guard_states.py::test_the_guard_survives_the_state
+       [answers_header_names_an_older_verdict_commit]
+     1 failed, 531 passed
+     run_rung: 85 collected, 13 failed, 0 errored, 0 skipped     (ladder 4)
+judge THE GUARDS JOB WENT FROM ONE FAILURE TO ONE FAILURE AND IT IS A DIFFERENT
+      ONE. R293's open half is closed -- the figures test passes on the
+      canonical machine. What is red is a declaration this round added, at the
+      commit that added it. R309.
 ```
 
-`git diff 35e7ddc..HEAD -- floatfea` is empty, a **tenth** round. `-- floatfea/tolerances.py`
-empty. `-- tests/regression` empty. `-- docs/milestones/F2_figures.md` empty.
-`-- docs/milestones/F2.md` empty. No commit in the range touches `docs/reviews/`.
+`git diff e6054b5..e3a3bd1 -- floatfea` is **not** empty for the first time in ten rounds:
+it is `floatfea/tolerances.py` and nothing else. No element source moved.
 
-**PR #1 is open, `F2 -> master`, `gh pr view 1 --json comments` returns 0 comments.** Step
-5 still has no outside-witness comment. Recorded as an unavailable check, not as a pass.
+**PR #1 is open, `F2 -> master`, `gh pr view 1 --json comments` returns 0 comments.** Step 5
+still has no outside-witness comment. Recorded as an unavailable check, not as a pass.
+
+**My own instructions (item 4b), and the new item 4c.**
+
+```
+cmd  git diff e6054b5..e3a3bd1 -- .claude docs/SUPERVISOR.md
+out  979933f only: item 4c added to BOTH files, +12 and +13 lines, ADDITIVE.
+     Standalone `process:` commit, citing CH2 and R302, touching nothing else.
+     No guard removed -- I read both hunks line by line.
+judge CLEAN, and the mechanism worked exactly as CLAUDE.md describes it.
+cmd  git diff e6054b5..e3a3bd1 -- the conftest pathspec of my new item 4c
+out  (empty)
+cmd  git ls-files -- the same pathspec
+out  (empty -- ZERO FILES)
+cmd  git ls-files "*conftest.py"
+out  tests/conftest.py
+judge THE PATHSPEC I WAS GIVEN MATCHES NO FILE IN THIS REPOSITORY. R310.
+```
 
 ## Carried
 
-Verdict 33 listed seven blocking items plus two at 4a. **Five close outright. One closes
-in substance with its published command stale. One is half-closed by the implementer's own
-statement, and I agree with the half.**
+Verdict 34 listed five blocking items plus two at 4a. **All seven are answered at their own
+sites. Five close outright, two close and are replaced by a new claim in the same place.**
 
-- **R293 -- HALF CLOSED, and the half that closed is the biggest thing in the range.**
-  The job measures before it compares, the measurement cannot be suppressed, and a separate
-  job asserts the ten legs against each other. I verified every leg myself rather than
-  reading the table.
+- **R293 -- CLOSED, and it is the largest thing in this step's history.** I checked it
+  outside CI rather than reading the report.
 
 ```
-cmd  gh run view 34460382184 --log | the ten leg rows at 05133c4
-out  2af0f7cbaee3... and Haswell on 10 of 10; 4 collected, 0 failed on 10 of 10
-     AMD EPYC 7763 x4, 9V74 x1, 9V45 x1; INTEL 8573C x2, 8370C x1, 6973P-C x1
-     "ten of ten identical: 2af0f7cbaee3 core Haswell"
-judge SIX CPU MODELS ACROSS TWO VENDORS, ONE HASH. This is the first time this
-      branch has had CG1, and it is a STRONGER result than the report publishes
-      (R305). The regression rung ran on all ten and passed.
-cmd  gh run download 34460382184 -n determinism-leg-1 ; sha256sum F2_figures.md
-out  2af0f7cbaee3...  == the leg's own figures.sha256. CG2's artifact IS the
-     file the legs agreed on, checked rather than assumed.
-cmd  the downloaded render against the committed one, newline-normalised
-out  9 of 47 lines differ, 38 identical
-judge AND `COMMITTED-MATCHES-CI no` ON 10 OF 10. The corpus entry
-      `determinism_all_ten_legs_render_bytes_equal_to_the_committed_file` is
-      still NEVER OBSERVED at any commit on this branch.
+cmd  gh run download 34482015314 -n determinism-leg-1 ; sha256sum F2_figures.md
+out  40b8828fb3f57b64... == the leg's own figures.sha256
+cmd  cmp <the downloaded artifact> docs/milestones/F2_figures.md
+out  IDENTICAL, byte for byte
+cmd  gh run view 34486215228 --log | grep -c "COMMITTED-MATCHES-CI yes"
+out  10
+cmd  the same log, the verdict job
+out  ten of ten identical: 40b8828fb3f5 core Haswell
+     10 x "4 collected, 0 failed"    (the regression rung, on every leg)
+judge THE COMMITTED FILE IS THE CI ARTIFACT, HASH-VERIFIED, AND TEN LEGS AGREE
+      WITH IT. The corpus entry
+      `determinism_all_ten_legs_render_bytes_equal_to_the_committed_file` was
+      NEVER OBSERVED at any commit on this branch for four rounds. It is
+      observed. The stamp is inside the file, five rows, and it names the
+      kernel.
 ```
 
-  What remains of R293 is its own item, and the implementer says so plainly. My ruling on
-  the question it ends with is at the foot of R303.
-
-- **R294 -- CLOSED at all three clauses, and I ran every cell.** This is the first repair
-  in this file's history aimed at the rule rather than at a producer, and the ablation
-  column is honest.
+- **R303 -- CLOSED at all three clauses, and I reproduced both columns of the table.**
 
 ```
-cell the five scenarios of section 2, rebuilt from scratch outside the
-     repository, each tree carrying the project's own pyproject.toml, each run
-     twice (shipped, and `-p rung_no_xpass` deleted and nothing else):
-out  xpass whose body warns "3 passed in 0.01s"     1 / 0     as published
-     xpass + conftest pytest_terminal_summary       1 / 0     as published
-     CLEAN rung warning "1 xpassed in 0.01s"        0 / 0     as published
-     module-level print of a count phrase           0 / 0     as published
-     a genuinely failing test                       1 / 1     as published
-judge FIVE OF FIVE REPRODUCE. Both doors are shut and the mirror fault is gone.
-cmd  pytest tests/test_ci_ladder_gating.py -q -k xpass            (shipped)
-out  9 passed, 39 deselected
-cmd  the same with `-p rung_no_xpass` deleted from scripts/run_rung.sh
-out  8 failed, 1 passed, 39 deselected -- the one green is the false-positive
-     control, which the repair is not what holds
-judge THE EVIDENCE THAT CERTIFIED NOTHING NOW CERTIFIES SOMETHING. `_run`
-      copies the project's pyproject.toml into every tree, so `-ra` is in
-      effect and the layouts can produce the defect they were written for.
-judge AND THE REACH SENTENCE THAT CAME WITH IT IS FALSE. R302.
+cmd  python scripts/localise_clean_worst.py                       (this laptop)
+out  curvature_xz 1.38250081892969870e-15 <- wins ; ratio 0.2765x
+cmd  gh run download 34482015314 -n determinism-leg-1 ; cat clean_worst.txt
+out  curvature_xz 1.28195530482572000e-15 <- wins ; ratio 0.2564x
+judge SIX ROWS, BOTH MACHINES, EVERY DIGIT AS PUBLISHED. The same state wins on
+      both; there is no argmax anywhere in this figure that moved; the largest
+      per-state disagreement is 1.643x on `curvature`, which never surfaces
+      because it never wins; one state agrees to sixteen digits.
+judge AND THE CAUSE IS NOT CLAIMED. Four variables move between the two renders
+      and the report names none of them as the cause. That is BG0 applied
+      against the reporter's own interest, and it is the first time.
+judge THE TOLERANCE IS SIZED ABOVE THIS ROW. 1.078x here, 1.336x at
+      `rigid_body_mode_ratio`, bound 1.5. My condition said "sized against this
+      row rather than against the 0.4% ones" and it is sized against a larger
+      one still.
 ```
 
-- **R295 -- CLOSED, and the clause is met by a machine.** I ran the deletion rather than
-  reading the section.
+- **R304 -- CLOSED, and the shape of the repair is right.** The two gate bodies are
+  **lifted out of the workflow at import time**, not copied into the test.
 
 ```
-cmd  pytest tests/test_ci_canonical_environment.py -q
-out  4 passed
-cell the `OPENBLAS_CORETYPE: "Haswell"` line deleted from ci.yml, nothing else,
-     the guards job body run whole:
-out  3 failed, 551 passed
-       test_the_workflow_pins_the_BLAS_kernel
-       test_the_pin_is_set_once_for_EVERY_job
-       test_the_plan_and_the_workflow_name_THE_SAME_kernel
-judge MY OWN ABLATION GAVE `463 passed, 0 failed` TWICE. It now names three
-      failures and one of them names the plan. The condition said "something in
-      the suite goes red with OPENBLAS_CORETYPE removed -- shown as a run", and
-      that is the run. CLOSED.
-judge One residue, recordable: the third test raises `KeyError` at :92 rather
-      than asserting, because `_workflow()["env"]` is subscripted before the
-      key is known present. It fails, which is what matters; it fails without
-      its message. R308.
+cmd  python -m pytest tests/test_ci_determinism_gate.py -q
+out  13 passed
+code _body() reads the heredoc out of .github/workflows/ci.yml -- "a copy would
+     pass for ever while the workflow drifted"
+cell (4 cases, 3 failing) -> must_fail True ; (4, 0) -> must_fail False, control
+cell a leg lying about its own hash, and a leg with no artifact -> both refused
+cmd  gh run view 34486215228 --json jobs | ladder 6
+out  SUCCESS
+judge FIVE LEG CASES AND SIX VERDICT CASES, CONTROLS IN BOTH DIRECTIONS. The
+      goldens are gated on the machine that produces them, ladder 6 is off the
+      chain with a reason I accept, and the shipped test asserts both halves --
+      not rung4, not rung5, and not nothing.
 ```
 
-- **R296 -- CLOSED at all three clauses.**
+- **R305 -- CLOSED ON FOUR OF FIVE. One re-taken figure is still wrong, and half of that
+  is mine.**
 
 ```
-cmd  python scripts/carried_table.py docs/reviews/F2/step-5.md \
-         docs/reports/F2/step-5-answers.json | diff against the report's S9
-out  59 lines each, IDENTICAL. 57 rows. The command runs at this commit.
-code the three rows, against verdict 32's own headings:
-     R288 -> "answered at revision 7; the verdict ran the ablation" (R288's
-             subject, and verdict 33 ruled R288 CLOSED)              CORRECT
-     R289 -> "carried into R297" (R289's subject, ruled NOT CLOSED)  CORRECT
-     R290 -> "carried into R298" (R290's subject, ruled NOT CLOSED)  CORRECT
-cmd  the section reference in the paragraph beside the command
-out  "the table in S9, verbatim" and the table is S9                 CORRECT
-judge THE SHIFT IS GONE AND THE COMMAND IS RUNNABLE. Closed.
-judge THE SENTENCE PUBLISHED FOR THE MECHANISM IS NOT MEASURED. R306.
+cmd  python -m pytest tests/test_report_vocabulary_corpus.py -q ; count the corpus
+out  32 passed ; 31            -> "31 of 31 agree"                  CORRECT
+cmd  grep -n rung6 .github/workflows/ci.yml
+out  433: and 449:             -> the report says 433 and 449       CORRECT
+cmd  the ten-leg table, now generated by ci_section.py --legs from the run it
+     cites                     -> 10 legs, 6 CPU models, 1 hash     CORRECT
+code the module-level print row: withdrawn, with the reason         CORRECT
+cmd  the delta row: "9 of 47"
+out  THE FILE HAS 38 ROWS BEFORE AND 44 AFTER. 47 IS A LINE COUNT. R311(b).
+judge FOUR OF FIVE RE-TAKEN AND TWO OF THEM NOW GENERATED, WHICH IS THE POINT
+      OF THE ITEM. The fifth is a denominator that came out of my own verdict,
+      where I wrote "9 of 47 differ, 38 identical" about LINES and the report
+      read it as rows -- so I name it as a finding and name my share.
 ```
 
-- **R297 -- CLOSED, and the runner is a real detector. I ablated it three ways.**
+- **R306 -- CLOSED at the condition, and the sentence that replaced it is the finding.**
+  The condition was "section 4's claim states the measured reach ... or the check is
+  strengthened". Section 6 states it: *one row in eight*, with the counterfactual. **That
+  is met.** What is added beside it is not. R311(a).
 
-```
-cmd  pytest tests/test_report_vocabulary_corpus.py -q
-out  23 passed, DISAGREEMENTS empty -- 22 corpus entries, all 22 agreeing
-cell `_plain` reverted to the markup-only strip, nothing else:
-out  3 failed -- soft_hyphen, html_comment, html_entity. Exactly the three.
-cell `_ROW` reverted to the old anchor, nothing else:
-out  2 failed -- indented_row, item_cell_written_R_space_230. Exactly the two.
-cell "no longer open" deleted from VERDICT_ONLY, nothing else:
-out  1 failed -- no_longer_open_as_the_whole_status. Exactly the one.
-judge THE RUNNER BINDS TO THE REPAIRS, not to the fact that a file exists.
-      Three rounds of "answered" with no runner are over.
-judge THE COUNT BESIDE IT IS WRONG BY ONE. R305.
-```
+- **R307 -- CLOSED.** The verdict job opens `F2_figures.md`, hashes it, and compares against
+  the leg's own claim; a lying leg and a leg with no artifact are both refused in a run I
+  made. Provenance, not existence.
 
-- **R298 -- CLOSED IN SUBSTANCE, third round, and its published command is stale.**
-  The sentence is written, in the report, where the condition asked for it. The `cmd/out`
-  triple beside it prints something else at this commit, and part of that is my fault --
-  my condition named `:312`, which was the line before the workflow grew by 85 lines at
-  `1be5606`.
+- **R308 -- CLOSED.** `tests/test_ci_canonical_environment.py` is `4 passed` and the third
+  test asserts membership before subscripting.
 
-```
-code the report S5: "`.github/workflows/ci.yml:312` carries ..." and
-     cmd grep -n "rung6" .github/workflows/ci.yml
-     out 312:  run: sh scripts/run_rung.sh empty:...rung6 full:tests/regression
-cmd  grep -n "rung6" .github/workflows/ci.yml            (at 55498f4)
-out  381:  rung6:
-     397:      - run: sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression
-cmd  ls -a tests/verification/rung6
-out  .  ..  .empty-by-design  __init__.py      (the report's `out` omits the
-     fourth entry)
-judge THE SUBSTANCE IS RIGHT AND I HAVE NOW VERIFIED IT FOUR TIMES: the rung is
-      declared `empty:`, carries its marker, and `tests/regression` is declared
-      `full:` in the same invocation. The item is CLOSED.
-judge THE TRIPLE IS NOT A RUN. BF0 says the command carries the check; a
-      command whose published output is not what it prints is worse than no
-      command, because a reader stops there. Re-take it. R305.
-```
+- **R302 -- CLOSED, and it is the honest answer of the two I offered.** Both sentences are
+  withdrawn by name and replaced with the property: everything the gate reads is writable
+  from a rung's own `conftest.py`, no gate in this position changes that, and the bound is
+  review. The four channels are built as layouts and **declared with their direction**, so
+  the day one starts reddening the file says the declaration is stale rather than agreeing
+  with it. I ran the file: `56 passed`, all 53 corpus entries have a layout.
 
-- **R299 -- CLOSED.** `python -m pytest tests/test_report_carried.py -q` at `55498f4`
-  gives **231 passed**, which is what S6 publishes, measured at the report's own commit.
+  **The bound named is a pathspec that matches no file. R310.**
 
-- **R300 -- OPEN, correctly recorded at 4a**, and one of its named sites moved:
-  `tests/test_report_guard_states.py:105-108` lost the
-  `answers_header_names_an_older_verdict_commit` entry at `55498f4`, and the whole file is
-  `22 passed`. The removal is in the right direction -- the state now reports rather than
-  needing a declared exception -- but the diagnosis entry that cannot see a third failure
-  is untouched. Still 4a.
+- **R231, R244, R245, R275 -- OPEN, and now UNBLOCKED for the first time.** The report says
+  so and declines to write them in the commit that lands the render they would be measured
+  from. **That is the correct reading of CLAUDE.md and I endorse it.** They are the next
+  round's.
 
-- **R301 -- CLOSED.** `test_the_Carried_table_is_what_the_generator_produces` executes the
-  script and compares; `test_the_generator_would_catch_a_row_under_the_wrong_number` is a
-  real ablation and I ran it. The generator is no longer a comment.
+- **R230, R223, R224, R261 -- OPEN by instruction, correctly listed.** No Q8 value written.
 
-- **R231, R244, R245, R275, R230, R223, R224 -- OPEN by instruction, correctly listed.**
-  Site by site, confirmed untouched: `floatfea/tolerances.py:293`, `:295-297`, `:300-308`;
-  `tests/verification/rung1/test_rigid_body_modes.py`; `docs/milestones/F2.md`. **R275,
-  R231, R244 and R245 still wait on R293's open half**, which is the right dependency.
+- **R300, R291, R292 -- OPEN, recordable at 4a, correctly recorded.**
 
-- **R261 -- OPEN, correctly.** No Q8 value was written.
+- **R281 -- OPEN.** Of the eleven corpus files, six now have a runner that names my new
+  entries. `ci_determinism.txt` and `carried_row_subject.txt` still have none, and both
+  carry six and four new entries this round that nothing will read.
 
-- **R291, R292 -- OPEN, recordable at 4a, correctly recorded.**
-
-- **R281 -- OPEN and grown by two.** Of the eleven corpus files, five now have a runner
-  (`report_status_vocabulary.txt` gained one this round, which is R297).
-  `ci_determinism.txt` and `carried_row_subject.txt` still have none, and both carry
-  entries this round that nothing will read. I record that against myself as much as
-  anyone.
-
-- **R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271,
-  R272, R273, R274, R276, R277, the two R248 residues, R249, R250, R251, R252, R225-R228,
-  R232, R233** -- carried. R271's runner clause is now met (R297); R272's shape is met at
-  the rule (R294) and reopened one level down at R302.
+- **R253, R254, R256, R257, R262-R274, R276, R277, the two R248 residues, R249-R252,
+  R225-R228, R232, R233, R288, R289, R290** -- carried, and correctly present in the
+  generated table.
 
 ## Findings
 
-**R302. (BLOCKS -- the ladder's own gate) The gate reads pytest's record instead of
-pytest's output, which is right, and a rung's own `conftest.py` can write that record. A
-genuinely red rung reports `run_rung: OK`, exit 0, through the same hook the repair itself
-uses -- and three of the four channels are outside the reach the script states.**
-`scripts/rung_no_xpass.py:21-22`; `scripts/run_rung.sh:148-157`;
-`docs/reports/F2/step-5.md`, section 2.
+**R309. (BLOCKS -- CA2, and the truth of the report's own account) The suite is red at the
+reviewed commit, on a declaration this round wrote in the commit that publishes it, and no
+figure in the report would show it.** `tests/test_report_guard_states.py:108-121`;
+`docs/reports/F2/step-5.md`, section 11.
 
 ```
-code rung_no_xpass.py:21  "A test cannot write another test's report element,
-                           so there is nothing to forge."
-code run_rung.sh:152      "What is still outside the gate is anything that can
-                           write the junit file itself: a conftest replacing
-                           --junit-xml through addopts, a plugin implementing
-                           pytest_sessionfinish to rewrite the XML, or a rung
-                           run with -p no:junitxml. Those are edits to the
-                           harness rather than to a test."
-cell four rung trees, each with the project's pyproject.toml, the shipped
-     script, one conftest.py inside the rung directory, nothing else:
-out  pytest_runtest_makereport hookwrapper, rep.outcome = passed on a failing
-     call report; the rung's only test asserts False
-       -> run_rung: 1 collected, 0 failed, 0 errored, 0 skipped
-       -> run_rung: OK -- 1 director(y|ies) ran        EXIT 0    MISSED
-     pytest_ignore_collect returning True for test_bad.py, test_ok.py left
-       -> run_rung: 1 collected, 0 failed;  OK          EXIT 0    MISSED
-     pytest_collection_modifyitems dropping only the failing item
-       -> run_rung: 1 collected, 0 failed;  OK          EXIT 0    MISSED
-     pytest_sessionfinish parsing config.option.xmlpath, removing every
-     failure element, writing it back
-       -> run_rung: 1 collected, 0 failed;  OK          EXIT 0    MISSED,
-                                                        and DECLARED
-cell the two controls, same harness:
-out  a conftest deselecting EVERY item -> run_rung: FAIL, "collects nothing"
-     an xfail marker on a test that genuinely fails -> run_rung: FAIL,
-       "1 skipped ... never skip a test to get a green build"
+cmd  python -m pytest -q                                        (my run, e3a3bd1)
+out  1 failed, 1833 passed, 2 warnings in 339.98s
+     FAILED test_the_guard_survives_the_state[answers_header_names_an_older...]
+cmd  gh run view 34486215228 --log-failed                       (CI, same commit)
+out  1 failed, 531 passed -- THE SAME TEST. Two machines, one failure.
+code the failure text: "the repaired guard is expected to be GREEN here and it
+     failed" -> "the report at e3a3bd1 is newer than the verdict at e6054b5 and
+     names d713be4"
+code S11: "One declared disagreement with a corpus ... It is declared green in
+     tests/test_report_guard_states.py with the reason"
+judge THE DECLARATION WAS TRUE WHEN IT WAS MEASURED AND FALSE WHEN IT SHIPPED.
+      While `docs/reports/F2/step-5.md` was still at 55498f4 it was older than
+      the verdict, the guard returned early, and the state was green. The
+      commit that ADDED the declaration is the commit that re-committed the
+      report -- so the report became newer than the verdict in the same breath,
+      the guard fired, and the declaration was stale before it was pushed. This
+      is BP0 in its purest form, and the declared-direction machinery this
+      round built is what caught it.
+judge AND THE REPORT'S OWN EVIDENCE CANNOT SEE IT. Revision 9 publishes seven
+      subset counts and every one is correct. `tests/test_report_guard_states.py`
+      is in none of them, and no whole-suite figure is published, which
+      CLAUDE.md's step-gating list requires ("the test counts from your own
+      run"). Assertion domain blindness, applied to a report rather than to a
+      test: the collection the evidence inspects cannot contain the failure.
+cmd  tests/corpus/report_guard_states.txt, the CONTROL entry added at 0dcdc20
 ```
 
-```
-judge THE FIRST ONE IS THE FINDING. `rung_no_xpass.py` works by mutating a
-      report inside `pytest_runtest_makereport`; the sentence two lines above
-      it says a test cannot do that. A rung conftest can, to every report, in
-      the opposite direction, and the junit writer records what it is handed.
-judge THE SECOND AND THIRD ARE A DIFFERENT CLASS AND WORSE. They forge nothing.
-      They remove the failing test from the collection BEFORE anything records
-      it, and nothing in this repository states how many tests a rung is
-      supposed to contain -- which is the `.empty-by-design` argument, one
-      level down. Assertion domain blindness: the collection the gate inspects
-      cannot contain the failure.
-judge A CONFTEST IS NOT THE HARNESS BY THIS ROUND'S OWN STANDARD. Scenario 2 of
-      section 2 is a conftest `pytest_terminal_summary`, counted as a live
-      attack and shut. The reach sentence cannot classify a conftest as a test
-      when it is caught and as the harness when it is not.
-judge WHAT I AM NOT SAYING. The migration to junit is the right move and it is
-      the first repair here that survived my whole battery: four text channels
-      are dead and stay dead. This is not "the fix lasted one round again". It
-      is that the sentence written beside it enumerates producers instead of
-      stating the property, which is the fifth time in this file's history.
-cmd  tests/corpus/ci_ladder_gating.txt, the 7 entries added at 8de404a
-```
+**Closed when** the suite is green at the report's own commit -- either the declaration is
+corrected to the direction measured there, or the state is made green -- **and** the report
+publishes a whole-suite count from its own run. If the honest answer is that the state
+genuinely must redden and the corpus is right, say that and let the entry go back to
+`require=fail`.
 
-**Closed when** neither the `makereport` wrapper nor the two collection channels reaches
-exit 0 -- each shown as a run -- **or** the reach sentence at `run_rung.sh:148-157` and the
-sentence at `rung_no_xpass.py:21-22` are rewritten to what is true: that everything the
-gate reads is writable from a rung's own `conftest.py`, and that what protects a rung is
-review of its conftest rather than the gate. Either answer is acceptable; the present pair
-of sentences is not.
-
-**R303. (BLOCKS -- R293's open half, and the Q8 tolerance basis) One of the nine differing
-rows is not what the report says it is. `clean_worst_ratio` moves 7.3% between the two
-renders while `clean_worst_entry` is BYTE-IDENTICAL on both -- no argmax flipped, and it is
-the headroom quantity the gate is about.** `docs/reports/F2/step-5.md`, section 1;
-`scripts/regen_figures.py:77-79`.
+**R310. (BLOCKS -- the bound is the whole of R302's answer, and it inspects nothing) The
+conftest pathspec matches zero files in this repository. The one conftest that exists,
+`tests/conftest.py`, is outside it -- and that file already implements
+`pytest_collection_modifyitems`, which is R302's third channel, for every rung at once.**
+`docs/SUPERVISOR.md` item 4c; `.claude/agents/gating-supervisor.md` item 4c;
+`scripts/run_rung.sh:172-176`.
 
 ```
-code the report S1: "detection_edge_at and clean_worst_ratio are a MINIMUM OVER
-     A CORPUS: two entries 0.4% apart, and which one wins flips. The value
-     beside a flipped argmin is a different entry's value, not the same number
-     computed twice."
-cmd  the two renders, the clean_worst rows
-out  CI    | clean_worst_ratio | 0.2564x |
-           | clean_worst_entry | ck_cleanmax_D18p8_tw0p499_aniso1e6 |
-     repo  | clean_worst_ratio | 0.2765x |
-           | clean_worst_entry | ck_cleanmax_D18p8_tw0p499_aniso1e6 |
-judge SAME ENTRY. NO FLIP. 7.3%. It IS the same number computed twice, which is
-      the thing the sentence says it is not. BG0: a causal sentence carries the
-      cell that isolates it, and the cell is the adjacent line of the same file.
-cmd  the full localisation, which the report stops one row short of
-out  3 rows last-bit at 1e-14   rigid_body_mode_ratio, _subspace_loss,
-                                _counter_loss
-     1 row an argmin NAME       detection_edge_at
-     4 rows DOWNSTREAM of it    detection_edge and the three counter_* rows,
-                                all computed from that edge, all 0.4-0.5%
-     1 row UNEXPLAINED          clean_worst_ratio, 7.3%, same entry
-     every margin_* and boundary_* row IDENTICAL
-judge SO IT IS NOT SCATTER. Eight of nine rows have a mechanism and one does
-      not, and the one that does not is a MAXIMUM OVER STATES at a fixed entry
-      (regen_figures.py:77), which can move its winner without moving
-      clean_worst_entry. That is a one-loop cell and nobody ran it.
-judge AND THIS IS WHY IT BLOCKS RATHER THAN BEING TIDINESS. Q8's declared local
-      classes are "arithmetic only: exact" and "through sin, cos or a
-      factorisation: <= 2 ULP of the channel's own amplitude". 7.3% is neither,
-      and the row was classified out of the tolerance question by a sentence
-      instead of by a measurement. The per-figure relative tolerance the next
-      commit is supposed to write has to cover this row, and its basis is
-      currently a cause that measurement refutes.
-cmd  tests/corpus/ci_determinism.txt, entry
-     determinism_clean_worst_ratio_moves_7_3_percent_at_an_IDENTICAL_winning_entry
+cmd  git ls-files -- the pathspec as written in both instruction files
+out  (nothing)
+cmd  git ls-files with the same pattern under :(glob) magic ; git ls-files "*conftest.py"
+out  tests/conftest.py                                  ;   tests/conftest.py
+judge GIT'S DEFAULT PATHSPEC GLOB WILL NOT LET A DOUBLE STAR STAND FOR ZERO
+      DIRECTORIES. The instruction reads as "every conftest under tests/" and
+      means "every conftest at depth two or more under tests/". The repository
+      has exactly one conftest and it is at depth one.
+code tests/conftest.py:  def pytest_collection_modifyitems(items): ...
+                         items.sort(key=...)
+judge THAT IS THE HOOK. It sorts today. Replacing the sort with a filter is the
+      same line with a different body, it applies to EVERY rung rather than to
+      one, and the diff command that is supposed to surface it prints nothing.
+cell two rung trees, the shipped script, the project's pyproject.toml, one
+     conftest each, nothing else:
+out  conftest at tests/conftest.py, dropping the failing item
+       -> run_rung: 1 collected, 0 failed ; run_rung: OK          EXIT 0
+     conftest at tests/verification/conftest.py, the same body
+       -> run_rung: 1 collected, 0 failed ; run_rung: OK          EXIT 0
+     no conftest, same two tests                      CONTROL
+       -> run_rung: 2 collected, 1 failed ; FAIL                  EXIT 1
+judge SO THE CHANNEL IS NOT A PROPERTY OF THE RUNG DIRECTORY. It is a property
+      of every conftest on the collection path, and all four declarations in
+      `REQUIREMENT_CHANGED` name the rung's own directory.
+judge WHAT I AM NOT SAYING. The analysis behind R302's answer is right and the
+      answer is the one I would have chosen. A gate cannot outrank code that
+      writes the record it reads, and review IS the bound. This is that bound
+      written as a command that returns the empty set -- "an empty parameter
+      set is an error, not a skip", landed in my own instructions.
+cmd  tests/corpus/ci_ladder_gating.txt, the 4 entries added at 0dcdc20
 ```
 
-**Closed when** the 7.3% row is localised -- which state wins on each machine, or what else
-moves it -- and section 1's classification is rewritten from that measurement; and the
-per-figure tolerance that lands with the render is sized against this row rather than
-against the 0.4% ones.
+**Closed when** the pathspec in both instruction files names the files it means -- shown as
+a run of `git ls-files` over it printing `tests/conftest.py` -- and `scripts/run_rung.sh:172-176`
+quotes whatever it becomes. A standalone `process:` commit, per CLAUDE.md; and since it is
+my instruction, I will take the correction as written and diff it under 4b next round.
 
-**MY RULING ON THE QUESTION AT THE END OF SECTION 1, because you asked and because a
-reviewer who will not rule leaves the step stuck.**
-
-**The decision not to commit is a correct reading of Q8 and it is not an evasion.** Q8's
-Sequence line puts "the platform-dependent drift tolerance and the four moving figures
-measured on CI under this Q&A **before their values are written**" -- tolerance first and
-values after is the plan's own order, not a detour around it. Refusing to write the
-tolerance in the same commit as the render is `CLAUDE.md` applied correctly. And the argmin
-residue is real: I checked, `detection_edge_at` is a corpus entry NAME, and a relative
-tolerance on a value cannot express which name is admissible.
-
-**Of the two shapes you offer, take the second, and one of the two is not really a
-choice.** Shape 1 -- publish the value and drop the entry name -- destroys the location of
-an extremum, which is the recorded guard "a residual destroys information; report sign and
-location alongside a norm" applied to exactly this case. Shape 2 -- the render names every
-entry within the declared tolerance of the extremum -- keeps the location, is stable under
-a flip, and makes a change in the SET a loud finding rather than a silent one. Take it.
-
-**And the stop is one step further back than it needs to be.** Two things in section 1's
-own way are unblocked by the ruling and were not done. The environment stamp Q8 names as
-the enforcing mechanism -- "a golden or figure whose stamp is not CI's pinned environment
-fails the build, so no canonical file can be produced on a laptop again" -- is absent from
-the committed file **and from the CI artifact**: `head -9` of the downloaded
-`F2_figures.md` is a title, a provenance sentence and a table header, byte-identical to the
-repository's. Committing that artifact today would land a canonical file that says nothing
-about where it came from. And R303's row needs measuring whatever the ruling is. Neither
-waits on me.
-
-**R304. (BLOCKS -- R293's open half) The goldens now execute on ten CI legs and their
-failure is fatal on none of them. `bad` is computed, written into `regression.txt`,
-printed by the verdict job, and asserted nowhere -- while ladder 6, the job that does gate
-them, is skipped behind a red ladder 4.** `.github/workflows/ci.yml:119-140`, `:172-201`.
+**R311. (BLOCKS -- head 3) Five published sentences and figures do not describe the
+repository. Each is refuted by one command, and every one of them sits beside a repair that
+works.** `scripts/carried_table.py:36-40`; `floatfea/tolerances.py:1033`;
+`docs/milestones/F2.md:1129`; `scripts/regen_figures.py:344`; `scripts/run_rung.sh:181-183`;
+`docs/reports/F2/step-5.md`, sections 0, 2, 5 and 6.
 
 ```
-code ci.yml:124  pytest tests/regression -q --junit-xml=leg/regression.xml || true
-code ci.yml:133  bad = [c for c in cases if any(k.tag in ("failure","error") ...)]
-code ci.yml:138  if not cases: sys.exit("zero cases collected ...")
-judge THAT IS THE ONLY EXIT. A leg whose golden comparison fails is not one.
-cell the shipped step body verbatim, over a leg/regression.xml recording four
-     testcases of which three carry a failure element:
-out  "4 collected, 3 failed" written to leg/regression.txt
-     EXIT 0
-code ci.yml:186-189  determinism_verdict reads regression.txt into a row and
-     PRINTS it. It asserts on the hashes and on the core types. Not on this.
-judge SO THE ROW "4 collected, 3 failed" WOULD APPEAR IN A GREEN JOB'S LOG, ten
-      times, and the run would be green. The comparison against the committed
-      file is continue-on-error for a good reason and this is a different
-      value: how many goldens failed is not a report about staleness, it is the
-      golden gate.
-judge MY OWN CONDITION SAID "and tests/regression still executes", and it does
-      -- I wrote the weaker clause and this is me saying so. The purpose was
-      that the goldens be gated on the machine Q8 makes canonical for them, and
-      at this commit they are gated nowhere: ladder 6 is skipped behind ladder
-      4, which is red under Q8 and stays red until R293 lands.
-judge IT IS ONE LINE. `if bad: sys.exit(...)`, or one assertion in the verdict
-      job over the ten regression.txt rows.
-cmd  tests/corpus/ci_determinism.txt, entry
-     determinism_a_leg_whose_REGRESSION_RUNG_FAILS
+(a) code carried_table.py:38 and S6: "a rotation is not detected -- it is
+        impossible to write" / "ROTATION IS NOT DETECTED, IT IS UNWRITABLE"
+    cell the `state` and `where` fields of R302, R303 and R304 rotated among
+        themselves, each row's `site` LEFT CORRECT:
+    out THE GENERATOR PRINTS ALL FIFTY-NINE ROWS.
+        | R302 | answered - S4 | The gate reads pytest's record ... |
+        | R303 | answered - S3 | One of the nine differing rows ... |
+        | R304 | answered - S1 | The goldens now execute on ten CI legs ... |
+    judge THE SUBJECT IS UNROTATABLE AND THE STATUS IS NOT. What CH4 removed is
+        the prose; what is left to rotate is a state and a section number, and
+        `check_sites` passes because every site is still its own. The true
+        sentence is one word shorter: the SUBJECT cannot be attached to the
+        wrong number. Two further shapes print as well -- a pointer at `S99`,
+        which no section is, and `state: withdrawn` on a blocking finding.
+    judge AND THE CONTROLS ARE REAL: `state: closed` and a sixty-character
+        `where` are both refused by name, in runs I made. This is a good
+        repair with one word too many on it.
+
+(b) code tolerances.py:1033 "over the nine rows of forty-seven that move at
+        all"; F2.md:1129 and regen_figures.py:344 "Nine rows of forty-seven"
+    cmd the two renders, rows parsed with the script's own row pattern
+    out 38 rows before, 44 after, 38 in common, 9 of the 38 differ. `47` is the
+        old FILE's line count, including the title and the prose. My own
+        verdict wrote "9 of 47 differ, 38 identical" about lines, and this is
+        where it went.
+    judge THE 9 IS RIGHT AND THE DENOMINATOR IS A DIFFERENT QUANTITY. It is in
+        `tolerances.py` as the stated basis of a new constant, which is why it
+        is here rather than filed as tidiness.
+
+(c) code F2.md Q8 clause 3: "the local value is within FIGURE_FLOOR_CLASS_SPREAD
+        of the committed canonical one, and the spread is PRINTED BESIDE THE
+        VALUE either way"; S2: "with the spread printed beside all nine"
+    cmd python scripts/regen_figures.py --check                (this laptop)
+    out spreads printed beside EIGHT rows. `counter_defect_boundary` gets none:
+        the `words` branch continues before any number is read.
+    cell the committed row 2.183e-06/2.188e-06 against a local render reading
+        "1e-99 passes, 1e+99 fails"
+    out EXIT 0. Nine orders of magnitude, no spread, no complaint.
+    judge THE CODE'S OWN COMMENT DECLARES THIS ("words: the decision is the
+        pass/fail words, not the numbers") AND THE PLAN CONTRADICTS IT. One of
+        the two is wrong and the plan is the locked one. Nor is "all nine" the
+        set: the ninth mover is `detection_edge_at`, which is not floor-class.
+
+(d) code 1dc4d33 subject "a red rung says which test failed";
+        run_rung.sh:182 "what was lost was everything that says WHICH test
+        failed"
+    cmd gh run view 34486215228 --log | ladder 4              (the reviewed run)
+    out run_rung: 85 collected, 13 failed, 0 errored, 0 skipped
+        run_rung: FAIL -- tests/verification/rung4 is red.
+    judge THIRTEEN FAILURES AND NOT ONE NAME. The repair restored the COUNT and
+        the REASON, which is real and is what the shipped test asserts. It did
+        not restore a name, and the junit report it already parses carries
+        them.
+
+(e) code S0, the second table: guards and meta-tests | 4056 | 123 | 0
+    cmd gh run view 34483519085 --log-failed | the guards job summary
+    out 9 failed, 604 passed in 364.03s
+    judge `ci_section.py` sums EVERY pytest summary line in the log, and this
+        job's failures echo dozens of nested subprocess summaries inside their
+        assertion text. The row overstates the job by 13x. It errs loud rather
+        than quiet, and it is still a published measurement of CI that CI
+        refutes.
 ```
 
-**Closed when** a leg whose regression rung reports a non-zero failure count turns
-something red -- the leg, or `determinism_verdict` -- shown as a run of the injected XML.
+**Closed when** each of (a) to (e) is re-taken or withdrawn at the commit that publishes it.
+(a) may instead be closed by refusing a rotation, (d) by printing the names the junit report
+already holds, (e) by counting the job rather than the log -- but none of those is required;
+the sentence matching the code is.
 
-**R305. (BLOCKS -- head 3) Five published figures do not describe the repository. Each is
-refuted by one command and each is a one-line fix.** `docs/reports/F2/step-5.md`, sections
-1, 2, 4 and 5.
+**R312. (recordable, 4a) `FLOOR_CLASS` membership is hand-granted and nothing measures
+whether a member needs the licence.** `scripts/regen_figures.py:346-356`.
+`rigid_body_counter_ratio` reads `3.0612e-11` on both machines -- byte-identical -- and is
+in the class, so it may drift by up to `1.5x` on a non-canonical machine without a word.
+Conversely `detection_edge_at`, one of the nine rows that DID move, is not in the class at
+all, correctly, because it is a name. The class has nine members and the movers are nine,
+and they are not the same nine. Nothing asserts the membership against the measured set,
+which is the one thing this round has the data for.
 
-```
-code S1  "the ten legs, measured on CI at this round's code commit 05133c4"
-         and, three lines down, "cmd gh run view 34459537327 --log (the push
-         run at the code commit)"
-cmd  gh run view 34459537327 --json headSha
-out  1be5606. The published table -- AMD 9V74 on legs 2,3,4,7,9, three CPU
-     models -- is that run's. At 05133c4 (34460382184) the ten legs drew SIX
-     models: AMD 7763, 9V74, 9V45; Intel 8573C, 8370C, 6973P-C. The label and
-     the data name different commits, and the commit named has the STRONGER
-     result. CG3 is the rule this round added: "a table for another commit is a
-     measurement of another state."
+**R313. (recordable, 4a) The decision-word comparator strips the letter `e` out of the
+words.** `scripts/regen_figures.py:483-484`. The substitution over the character class
+`[-+0-9.eE]` turns `passes` into `passs`, so `passes` and `passees` compare equal. The pair
+that matters, `passes` against `fails`, survives it, and both sides get the same
+transformation -- so this is latent rather than live. It is in the only comparator in the
+file that decides on words.
 
-code S1  "11 of 47 rows differ; the other 36 are identical"
-cmd  the two files, newline-normalised, line by line
-out  9 of 47 differ, 38 identical. The published table has 9 rows and is
-     complete; the count above it is wrong by two, and the judge line's
-     "3 round-off and 3 argmin" accounts for 6 of 9.
-
-code S4  "23 passed -- 23 of 23 entries agree" and the Carried row "23 of 23
-         entries agreeing"
-cmd  the corpus, entries parsed
-out  22. `23` is the pytest count with test_the_corpus_was_parsed in it, and
-     that test exists so that a runner reading nothing cannot agree with
-     everything. The runner's own docstring says twenty-two.
-
-code S2  "THE MODULE-LEVEL PRINT IS NO LONGER CAUGHT ... The reviewer recorded
-         that entry as closed under the old rule, so this is a behaviour change
-         and I state it rather than let it read as a pass."
-cmd  pytest tests/test_ci_ladder_gating.py -q -k MODULE_LEVEL
-out  2 passed. The reviewer's entry is
-     ci_rung_full_xpass_with_a_MODULE_LEVEL_print...; its layout carries an
-     xpass as well as the print, so it still reddens, require=fail is still
-     met, and REQUIREMENT_CHANGED still has exactly two members, neither of
-     them this one. No behaviour change occurred on that entry. The report's
-     row describes a different layout under the same name.
-
-code S5  cmd grep -n "rung6" .github/workflows/ci.yml / out 312: ...
-     and  cmd ls -a tests/verification/rung6 / out . .. .empty-by-design
-cmd  both, at 55498f4
-out  381: and 397:, not 312: -- the workflow grew 85 lines at 1be5606, and my
-     own R298 condition named the stale number, so half of this one is mine
-     .  ..  .empty-by-design  __init__.py
-judge FIVE FIGURES, FIVE ONE-LINE FIXES, AND EVERY ONE WAS CORRECT WHEN IT WAS
-      TAKEN OR IN A NEIGHBOURING FILE. That is BP0's whole subject: this
-      repository re-takes nothing when the thing beneath it moves, and a green
-      suite never says so. Three of the five point at a BETTER result than the
-      one published, which is why they are worth a fix rather than an argument.
-```
-
-**Closed when** each of the five is re-taken at the report's own commit, or withdrawn.
-
-**R306. (BLOCKS -- head 3) The site check is real and its reach is a fraction of the
-sentence published for it. Seven of eight answered rows this round declare a site another
-finding's block also names, and rotating three statuses among them prints the table.**
-`scripts/carried_table.py:91-105`; `docs/reports/F2/step-5.md`, section 4.
-
-```
-code S4  "THE THREE SHIFTED ROWS OF LAST ROUND WOULD HAVE BEEN CAUGHT BY THIS,
-         each of them, because each cited a site from a different block."
-cmd  the sites verdict 32's four relevant blocks name
-out  R287 -> check_carried.py, docs/reports/F2/step-5.md, regen_figures.py,
-             run_rung.sh, write_verdict.py   (NOT carried_table.py -- the
-             verdict's own words were "a generator that does not exist")
-     R288 -> docs/reports/F2/step-5.md, tests/test_report_guard_states.py
-     R289 -> CLAUDE.md, docs/reports/F2/step-5.md,
-             tests/corpus/report_status_vocabulary.txt
-     R290 -> CLAUDE.md, ci.yml, docs/reports/F2/step-5.md
-judge docs/reports/F2/step-5.md IS IN ALL FOUR. A shifted row declaring it -- a
-      legal declaration, and the one this round's R230, R283 and R299 rows use
-      -- passes in all three cases. Whether the shift is caught depends on
-      which of its block's sites the author writes down, and the author is the
-      one who shifted them. The counterfactual is unmeasured.
-cmd  over this round's own answers file, for each answered row with a block,
-     how many OTHER blocks name its declared site
-out  R293 .github/workflows/ci.yml   also R295, R298
-     R295 .github/workflows/ci.yml   also R293, R298
-     R298 .github/workflows/ci.yml   also R293, R295
-     R296 scripts/carried_table.py   also R301
-     R301 scripts/carried_table.py   also R296
-     R294 scripts/run_rung.sh        also R298
-     R299 docs/reports/F2/step-5.md  also all seven others
-     R297 tests/corpus/report_status_vocabulary.txt   UNIQUE
-     7 of 8.
-cell the status text of R293, R295 and R298 rotated among themselves, each
-     row's site left alone -- the exact defect of R296:
-out  the generator PRINTS all 57 rows. No SystemExit.
-     | R293 | **answered** -- S3: tests/test_ci_canonical_environment.py ... |
-     | R295 | **answered** -- S5, the sentence, written |
-     | R298 | **answered** in the half that is mine -- S1: the job measures ...|
-judge AND THE COMPARISON TEST WOULD PASS TOO, because the report would carry
-      the rotated table and the generator produces it.
-judge SIXTEEN OF THE TWENTY-FOUR ROWS IN THE ANSWERS FILE ARE NOT CHECKED AT
-      ALL -- check_sites continues past any item the CURRENT verdict gives no
-      block, by design. R267's shift was across carried items. It would be
-      invisible here.
-judge NONE OF THIS MAKES THE CHECK BAD. It catches a real class, its ablation
-      test is genuine, and R296 is closed. It makes the SENTENCE wrong, and the
-      sentence is what a later reader will trust instead of re-measuring.
-cmd  tests/corpus/carried_row_subject.txt, the 4 entries added at 8de404a
-```
-
-**Closed when** section 4's claim states the measured reach -- that the check discriminates
-only where the declared site is unique to its block, with this round's 7 of 8 -- or the
-check is strengthened so a rotation among same-site findings is refused.
-
-**R307. (recordable, 4a) `determinism_verdict` never re-hashes the uploaded
-`F2_figures.md`.** `.github/workflows/ci.yml:112-117`, `:172-201`. CG2's stated claim is
-that "the bytes uploaded are the bytes ten legs agreed on"; the verdict job reads
-`cpu.txt`, `coretype.txt`, `figures.sha256` and `regression.txt`, and never opens
-`F2_figures.md`. I downloaded leg 1 of `34460382184` and the file does hash to
-`2af0f7cb...`, so the claim HELD when measured -- which is existence, not provenance, and
-provenance is what a file about to be committed as canonical needs. One line in the verdict
-job closes it.
-
-**R308. (recordable, 4a) `test_the_plan_and_the_workflow_name_THE_SAME_kernel` raises
-`KeyError` where it means to assert.** `tests/test_ci_canonical_environment.py:92`.
-`env = _workflow()["env"]` is subscripted before the key is known present, so with the
-whole `env:` block removed the test errors instead of reporting. It goes red either way and
-the first test carries the message, so this is cosmetic -- and it is the one place in that
-file where the reach is stated better than it is enforced.
+**R314. (recordable, 4a) A `Carried` pointer is not resolved against the report it points
+into.** `scripts/carried_table.py:154-166`. `where` is bounded at forty characters and the
+state at five spellings, both of which I ran and both of which refuse. Nothing asks whether
+`S99` is a section, or whether the section named discusses that item. That is the half of
+(a) above that a machine could take.
 
 ## Tolerances touched
 
-**None by this diff. A tenth round.**
+**Two constants added, both new, neither rescuing a failing test. I verified the basis of
+both against the live corpus rather than reading the plan.**
+
+| name | value | form | counter | basis located |
+|---|---|---|---|---|
+| `FIGURE_FLOOR_CLASS_SPREAD` | `1.5` | dimensionless factor, max over min of two renders | `1.6` | `F2.md` Q8 third-class table; asserted from two files by `test_figure_local_check.py` |
+| `FIGURE_ARGMIN_TIE_WINDOW` | `1.01` | dimensionless factor on an extremum | `1.0216` | `F2.md` Q8, and re-measured below |
 
 ```
-cmd  git diff 35e7ddc..55498f4 -- floatfea/tolerances.py
-out  (empty)
-cmd  git diff --stat 35e7ddc..55498f4 -- floatfea tests/regression
-     docs/milestones/F2_figures.md docs/milestones/F2.md
-out  (empty) -- not one line of floatfea/, no golden, no figure, no plan
-judge THE PATIENCE IS PAYING A THIRD TIME. EXEMPT_RESPONSE_DRIFT_ULP = 4.0 has
-      had a red CI in front of it for ten rounds. Widened at round one it would
-      have been widened to one vendor's number; at round eight, from a laptop
-      render; and this round we learn that one of the nine rows the canonical
-      render moves is 7.3% at a fixed entry with no mechanism attached to it.
-      The number to write is still not knowable.
+cmd  git show 1443fe9 --stat
+out  docs/milestones/F2.md, floatfea/tolerances.py -- STANDALONE, re-locked,
+     ahead of every reader. A grep for either name at that commit finds
+     tolerances.py and F2.md and nothing else.
+judge THE ORDER IS THE ONE CLAUDE.md ASKS FOR and it has not been used on this
+     branch before: the value is declared with its basis in a plan commit, and
+     the code that reads it lands afterwards.
+cell the tie window's basis, re-measured from the corpus rather than read:
+out  3.627517e-14  1.000000  ci_plateau_D0p0689_roll1p017_aniso9p6e5
+     3.642482e-14  1.004125  ch_edgemin_D0p0758_roll1p05_aniso9p4e5
+     3.705745e-14  1.021565  ci_plateau_D0p0743_roll1p075_anisocap
+judge 1.0041 < 1.01 < 1.0216, EXACTLY AS PUBLISHED, to the digits published.
+     The counter IS the third entry's position, so it is a detection threshold
+     and not one arbitrary perturbation. Bracketed on both sides by
+     measurements. This is the best-founded tolerance pair in this file.
+cell the spread bound's bracket, re-measured from the committed figures:
+out  floor-class margins 83.4, 18.2, 30.6, 74.7, 3.90, 2.19 -> min 2.19
+     largest measured spread 1.336 -> 1.336 < 1.5 < 2.19
+judge AND BOTH INEQUALITIES ARE ASSERTED FROM FILES, not restated in the test.
+     The shipped bracket test parses the plan's table and the committed
+     figures; when either side moves the bracket closes and the build reddens.
+     That is BI3's remedy applied properly.
+cell the two counters, run:
+out  a figure moved by 1.6x -> refused ; by 1.336x -> allowed ; by 3.0x ->
+     refused. An entry at 1.0216x -> not named in the tie set.
+judge THE COUNTERS ARE IN THE ASSERTION'S OWN QUANTITY. 1.6 fails through the
+     spread branch, not through the margin branch -- I checked which one fires.
 ```
 
-**The tolerance finding this round is R303**, and it is a basis rather than a value: the
-row that the per-figure relative tolerance will have to cover is the one the report
-classified out of the question with a cause that measurement refutes.
+**The `CLASS:` label moved from `PLATFORM` to `ACCURACY` at `1dc4d33`, in the same commit
+as a `scripts/run_rung.sh` change, and I am recording it rather than finding on it.** Rung 3
+requires a class from `{ACCURACY, STRUCTURAL}`; `PLATFORM` is not in that vocabulary; the
+`set -e` repair is what made the red visible. The choice taken was to conform the entry to
+the gate rather than to widen the gate's vocabulary, which is the direction CLAUDE.md
+requires, and the commit says so in as many words. **No value moved.** The hygiene note --
+the commit that exposed a red and the change that answers it are one commit -- is worth
+avoiding next time; both runs are pasted, so nothing is hidden.
 
-**My own instructions (item 4b).**
+**Two figures in `tolerances.py` comments were re-taken and one trend withdrawn (BP0),
+correctly, in the commit whose file made them stale.** `62x -> 83x` on
+`RIGID_BODY_MODE_RATIO`: `1e-12 / 1.1986e-14 = 83.4`, checked. The `2.37 -> 2.19 -> 2.18`
+series: the second step is `1.0046x` and this figure's measured cross-machine spread is
+`1.0046x`, so withdrawing it as a trend is what the measurement says. **The direction
+argument survives and is stated as surviving.** The plan's `~62x` and `~19x` cells moved to
+`~83x` and `~18x` in the standalone plan commit that follows -- `1e-13 / 5.5095e-15 = 18.15`,
+checked.
 
-```
-cmd  git diff 35e7ddc..55498f4 -- .claude docs/SUPERVISOR.md
-out  (empty). Not one byte.
-cmd  git log --format="%h %s" 35e7ddc..55498f4 with per-commit file lists
-out  1be5606  ci.yml, 4 scripts, 5 tests files  -- no docs/reviews/, no .claude/
-     05133c4  ci.yml                            -- the same
-     55498f4  the report, answers.json, 2 scripts, 2 tests -- the same
-judge No commit touches both code and docs/reviews/. No commit touches .claude/
-      or docs/SUPERVISOR.md at all, so the STOP-class condition is not in play.
-      CLEAN. One note, not a finding: 55498f4 is messaged `docs:` and also
-      changes tests/test_report_carried.py and removes a REQUIREMENT_CHANGED
-      entry from tests/test_report_guard_states.py. Both changes are correct
-      and both are declared in the message body; the subject line is not what
-      they are.
-```
+**What held**, reproduced at my run rather than read: the committed figures file against the
+CI artifact, downloaded, hashed and compared byte for byte; ten legs printing
+`COMMITTED-MATCHES-CI yes` at the reviewed commit; both columns of the `clean_worst_ratio`
+localisation, every digit; the tie window's three entries and the spread bound's two
+brackets, re-measured from the corpus and from the committed file; the two gate bodies
+lifted from the workflow and run against injected junit and injected legs, controls in both
+directions; six of the report's subset figures; `--check` on this laptop, exit 0 with nine
+floor rows listed; and no element source touched for a tenth round.
 
-**What held**, reproduced at my run rather than read: the ten legs leg by leg on two CI
-runs, including six CPU models at `05133c4`; the uploaded artifact hashing to the value the
-legs agreed on, downloaded and checked; the five rung scenarios rebuilt from scratch, five
-of five; the `-p rung_no_xpass` ablation at 9 versus 8-of-9; the kernel-pin deletion naming
-three failures where it named none twice; the vocabulary runner reddening under three
-separate repair ablations; the generated Carried table byte-identical to the published one
-over 59 lines; the generated CI section byte-identical to section 0; `231 passed` at this
-commit; the rung-6 declaration and its marker; and `floatfea/` untouched for a tenth round.
-
-**These did not**: the reach of the rung gate against a rung's own conftest (R302), the
-cause published for the 7.3% row (R303), the goldens' failure being fatal anywhere (R304),
-five published figures (R305), and the reach published for the site check (R306).
+**These did not**: the suite and CI at the reviewed commit (R309), the reach of the bound
+named for R302 (R310), and five published sentences (R311).
 
 ## Next step opens when
 
-**Step 5 stays OPEN. Step 6 does not begin.** Five blocking items, and none of them is a
-repeat of an unanswered gate -- **all seven of last round's blocking items were answered at
-their own sites, five of them outright.** That has not happened before on this step.
+**Step 5 stays OPEN. Step 6 does not begin.** This is the strongest round this step has had
+-- all five blocking items and both 4a items answered at their own sites, the first
+canonical file in the repository's history, and the first tolerance pair whose basis I could
+re-measure end to end and find exact. It is still a HOLD, and two of the three reasons are
+one line each.
 
-1. **R302 -- the rung gate, against the rung's own tree.** Either the three collection and
-   report channels stop reaching exit 0, shown as runs, or the two sentences that say they
-   cannot are rewritten to what is true. This is the only one that touches a gate's
-   assertion.
-2. **R303 -- the 7.3% row, and my ruling is written above.** Localise
-   `clean_worst_ratio`; rewrite section 1's classification from that measurement; take
-   shape 2 for the argmin figures; and the environment stamp waits on none of it.
-3. **R304 -- one line.** A leg whose regression rung fails turns something red.
-4. **R305, R306 -- six sentences.** Five figures re-taken at this commit, and the site
-   check's reach stated as measured.
-5. **R231, R244, R245, R275, R230, R223, R224 -- unchanged and open by instruction**,
-   still behind R293's open half.
+1. **R309 -- the suite is red at the reviewed commit.** CA2 is not discretionary, and this
+   is not a stale routing: it is a declaration written in the commit that falsifies it.
+   Correct it in the direction measured there, and publish a whole-suite count so that the
+   next one cannot hide between seven green subsets.
+2. **R310 -- the bound named for R302 matches no file.** The conftest pathspec returns the
+   empty set; `tests/conftest.py` is the only conftest and already runs the hook. A
+   standalone `process:` commit, in both instruction files, and the quote in
+   `run_rung.sh:172-176` with it.
+3. **R311 -- five sentences.** (a) rotation, (b) the denominator in `tolerances.py`, (c) the
+   spread that is not printed beside all nine, (d) the red rung that names no test, (e) the
+   generated guards row.
+4. **R231, R244, R245, R275 -- unblocked and correctly deferred.** The canonical render must
+   stand one round on its own; a Q8 value written in the commit that lands the render it is
+   measured from is the shape this file rejects. Next round, not this one.
 
-**Not gates on step 5, into the next report's Carried section:** R307, R308, R300, R291,
-R292, R281, the underlying gap in R276, R277, R262, R264, R266, the two R248 residues,
+**Not gates on step 5, into the next report's Carried section:** R312, R313, R314, R300,
+R291, R292, R281, the underlying gap in R276, R277, R262, R264, R266, the two R248 residues,
 R249-R252, R225-R228, R232, R233, and everything already at 4a.
 
-**Adversarial corpus (BE3): 26 new entries at `8de404a`, across four files, all unseen by
-the implementer; every `measured=` field taken at `55498f4` -- or against CI runs
-`34459537327` and `34460382184` -- before the `require=` beside it was written.**
+**Adversarial corpus (BE3): 16 new entries at `0dcdc20`, across four files, all unseen by the
+implementer; every `measured=` taken at `e3a3bd1` -- or against CI runs `34482015314` and
+`34486215228` -- before the `require=` beside it was written.**
 
-**The coverage measurement, stated plainly: of my 26 new entries the shipped checks do what
-the entry requires on 8.** Four of those eight are controls I wrote to prove the checks are
-not vacuous, and all four behaved.
+**The coverage measurement, stated plainly: of my 16 new entries the shipped checks do what
+the entry requires on 5, and four of the five are controls I wrote to show the checks are not
+vacuous.** All four behaved.
 
-* `tests/corpus/ci_ladder_gating.txt` -- **+7 (46 -> 53), 3 correct**, and all three are
-  controls. The four that get through are the conftest channels of R302. With the corpus
-  applied the file gives **9 failed, 46 passed**: the seven new entries have no layout yet
-  and `test_the_corpus_and_the_layouts_agree` names them, which is the runner working.
-* `tests/corpus/ci_determinism.txt` -- **+6 (14 -> 20), 2 correct.** One is the CG1 control
-  and it is the best result on this branch. Four are open: the fatal-nowhere regression
-  rung, the un-rehashed artifact, the missing stamp on the CI render, and the 7.3% row.
-  **This file still has no runner** and induces zero failures.
-* `tests/corpus/report_status_vocabulary.txt` -- **+9 (22 -> 31), 2 correct.** The file
-  finally has a runner and I ablated it three ways; seven new spellings get past the
-  repaired guard, four of them by producing no status cell at all, which is the half of the
-  pair that exists so that banning a word cannot become saying nothing.
-* `tests/corpus/carried_row_subject.txt` -- **+4 (9 -> 13), 1 correct**, the control being
-  the shipped ablation. **This file still has no runner.**
+* `tests/corpus/ci_ladder_gating.txt` -- **+4 (53 -> 57), 1 correct**, the control. The two
+  conftest-placement entries and the no-test-name entry get through. With the corpus applied
+  the file gives **6 failed, 54 passed** and names all four new entries as having no layout,
+  which is the runner working.
+* `tests/corpus/ci_determinism.txt` -- **+6 (20 -> 26), 2 correct.** One is the
+  COMMITTED-MATCHES-CI control and it is the best result this branch has produced. One is
+  the declared licence of Q8's third class, recorded so the dependency on the canonical
+  byte-comparison is on the page. **This file still has no runner.**
+* `tests/corpus/carried_row_subject.txt` -- **+4 (13 -> 17), 1 correct**, the control. The
+  three rotations print. **This file still has no runner.**
+* `tests/corpus/report_guard_states.txt` -- **+2 (21 -> 23), 1 correct**, the control, which
+  is the live failure. With the corpus applied the file gives **4 failed, 20 passed**.
 
-**Thirty-four consecutive rounds have found no element defect, and this round does not
-either.** `git diff 35e7ddc..55498f4 -- floatfea` is empty for the tenth time.
+**I am deliberately not adding to `g22_model_configurations.txt` or `g21_rigid_body_frames.txt`
+this round, and saying so rather than leaving a gap.** A corpus entry there changes
+`corpus_entries` and can change `detection_edge_at`, which makes the canonical render stale
+the moment it is committed -- and the canonical render can now only be produced on CI. The
+byte-identity claim has stood exactly one run. It gets one clean round to stand on its own;
+the next verdict adds to both files and the re-render is part of the answer.
 
-**What is different about this round, said plainly, because it has not been true before.**
-Every blocking item was answered where it was raised. The gate that had been repaired at
-the string four times was repaired at the rule, and the ablation column beside it is real
--- I deleted the plugin and eight of nine layouts went red. A corpus that had sat unread
-for three rounds got a runner that binds to the code rather than to the file's existence.
-And a determinism job that had produced no usable measurement in two attempts produced one:
-ten runners, six CPU models, two vendors, one hash, and an artifact I downloaded and hashed
-myself.
+**Thirty-five consecutive rounds have found no element defect, and this round does not
+either.** `git diff e6054b5..e3a3bd1 -- floatfea` is `tolerances.py` and nothing else.
 
-**And the thing that gate bought is a number nobody has explained.** The canonical machine
-and this one disagree by 7.3% on the worst clean entry's headroom, at the same entry, with
-every neighbouring row identical. The report has a sentence for it and the sentence is
-refuted by the line underneath it in the same file. That is not a criticism of the round --
-the row is only visible BECAUSE the artifact was finally downloaded and compared. It is the
-next measurement, and it is the one the tolerance will be written from.
+**What is different about this round.** The thing this step has been for since revision 1 is
+now true and checkable by a stranger: `docs/milestones/F2_figures.md` is the byte-for-byte
+artifact of a CI run, stamped with the environment that produced it, agreed on by ten runners
+across six CPU models and two vendors, and re-asserted by the next run. I downloaded it and
+compared it myself. And the round's own repair caught the round's own stale declaration,
+which is the first time a mechanism built here has fired on its author within one commit.
+Everything blocking above is a sentence or a pathspec.
