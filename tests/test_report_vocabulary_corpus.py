@@ -50,6 +50,8 @@ CORPUS = ROOT / "tests" / "corpus" / "report_status_vocabulary.txt"
 # report decides, and which one reported is part of the message.
 CHECKS = (
     "test_a_report_does_not_say_CLOSED",
+    "test_no_status_cell_carries_a_letter_that_is_not_ASCII",
+    "test_the_Carried_section_is_markdown_rows_and_not_HTML",
     "test_every_carried_item_carries_one_of_the_report_words",
     "test_no_status_claims_more_than_the_verdict_allows",
 )

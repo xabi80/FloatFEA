@@ -137,7 +137,30 @@ jobs:
           print(len(cases), "collected,", len(bad), "failed")
           if not cases:
               sys.exit("zero cases collected -- the rung reported nothing")
+          # R304: AND A LEG WHOSE GOLDENS FAIL IS A FAILING LEG. `bad` was
+          # computed, written and printed, and asserted nowhere: a leg
+          # reporting "4 collected, 3 failed" exited 0, ten times, in a green
+          # job -- while ladder 6, the rung that gates the goldens, was skipped
+          # behind a red ladder 4. The goldens ran on ten machines and were
+          # gated on none. How many goldens failed is not a report about
+          # staleness; it is the golden gate.
+          if bad:
+              sys.exit(
+                  f"{len(bad)} of {len(cases)} golden comparisons failed on this "
+                  "leg. CI is canonical for tests/regression under Q8, so this "
+                  "is the gate rather than a diagnostic."
+              )
           PY
+
+      # CH0: WHERE `clean_worst_ratio` COMES FROM, ON THIS MACHINE. The figure
+      # moved 7.3% between the canonical render and a laptop at a byte-
+      # identical winning entry, and the report explained it with a flip that
+      # had not happened. The inner argmax -- which STATE wins -- is what the
+      # single published number hides, so the canonical machine prints it and
+      # the two are compared row by row rather than at the summary.
+      - name: "measure: where clean_worst_ratio comes from"
+        run: |
+          python scripts/localise_clean_worst.py | tee leg/clean_worst.txt
 
       - name: "compare against the committed file (reported, not fatal here)"
         continue-on-error: true
@@ -172,12 +195,32 @@ jobs:
       - name: "all ten hashes equal, all ten core types equal"
         run: |
           python - <<'PY'
-          import collections, pathlib, sys
+          import collections, hashlib, pathlib, sys
           legs = sorted(pathlib.Path("legs").glob("determinism-leg-*"))
           if len(legs) != 10:
               sys.exit(f"{len(legs)} legs reported, expected 10")
+          # R307: RE-HASH THE FILE, do not read the leg's own claim about it.
+          # CG2's claim is that the bytes uploaded are the bytes the ten legs
+          # agreed on. The verdict job read `figures.sha256` -- a number the
+          # same leg wrote -- and never opened `F2_figures.md`. That is
+          # existence, not provenance, and provenance is what a file about to
+          # be committed as canonical needs.
+          def rehash(d):
+              f = d / "F2_figures.md"
+              if not f.is_file():
+                  sys.exit(f"{d.name} uploaded no F2_figures.md; there is no artifact to commit")
+              got = hashlib.sha256(f.read_bytes()).hexdigest()
+              claimed = (d / "figures.sha256").read_text().strip()
+              if got != claimed:
+                  sys.exit(
+                      f"{d.name}: the uploaded file hashes to {got[:12]} and the "
+                      f"leg claims {claimed[:12]}. The artifact is not what was measured."
+                  )
+              return got
+
           rows = []
           for d in legs:
+              rehash(d)
               rows.append((
                   d.name,
                   (d / "cpu.txt").read_text().strip(),
@@ -378,10 +421,19 @@ jobs:
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
       - run: sh scripts/run_rung.sh empty:tests/verification/rung5
 
+  # CH3: LADDER 6 IS NOT GATED BEHIND LADDER 4 ANY MORE, and the precondition
+  # that justified the chain is met. The ladder's ordering rule is that a
+  # failure at rung n makes rung n+1 UNINTERPRETABLE -- and it does, for a rung
+  # that reads the solver's answers. The goldens are a different question: they
+  # ask whether today's bytes equal yesterday's, and that question is
+  # interpretable whatever ladder 4 says. Ladder 4 has been red under Q8 for
+  # eleven rounds, so the chain meant the goldens were gated NOWHERE while
+  # running on ten determinism legs. It still needs rungs 1 to 3, which are
+  # what make a golden's inputs mean anything.
   rung6:
     name: "ladder 6 -- it stays fixed"
     runs-on: ubuntu-latest
-    needs: [rung5]
+    needs: [rung3]
     steps:
       - uses: actions/checkout@v4
         # FULL HISTORY (CC3). `tests/test_report_carried.py` diffs against the

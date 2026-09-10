@@ -28,11 +28,21 @@ THREE THINGS ARE READ AND NEVER REMEMBERED.
 
    An unanswered item is filed by its class, so it cannot be quietly re-filed.
 
-3. THE SUBJECT. Every answered row declares a `site` -- a path the verdict names
-   INSIDE that finding's own block -- and the generator refuses to print a table
-   whose row cites a site the finding does not name. That is the mechanical half
-   of the shift: a status written under the wrong number is a status whose site
-   belongs to a different block, and three of three would have been caught.
+3. THE SUBJECT, WRITTEN INTO EVERY ROW (CH4). Each row carries what the verdict
+   says that item IS, read out of the verdict and keyed by the number the row is
+   written under. A status attached to the wrong number then sits beside that
+   number's subject and contradicts itself on the page, so a rotation is not
+   detected -- it is impossible to write.
+
+   The `site` check stays as the second half and its reach is small: it
+   discriminates only where the declared site is unique to that finding's
+   block, which was ONE row in eight this round, because
+   `docs/reports/F2/step-5.md` is named in nearly every block. It was published
+   as though it caught the shift outright, and it would not have.
+
+   THE ANSWERS FILE IS POINTERS ONLY. A `state` from a fixed list and a `where`
+   short enough to be a section number. Prose beside a number is what shifted,
+   and there is nowhere left to write it.
 
 The answers file is committed beside the report, so the command above runs at
 the commit that publishes the table. `tests/test_report_carried.py` then re-runs
@@ -94,42 +104,131 @@ def check_sites(answered: dict[str, dict], by_block: dict[str, str]) -> list[str
     for item, entry in answered.items():
         site = entry.get("site", "")
         if not site:
-            wrong.append(f"{item}: no `site` declared")
+            # OPTIONAL SINCE CH4. The subject beside every row is read out of
+            # the verdict now, so a row cannot be attached to the wrong number
+            # without saying so on the page; a declared site is a second,
+            # weaker check and it is worth running when it is offered.
             continue
         block = by_block.get(item)
         if block is None:
             continue  # carried from an earlier verdict; it has no block here
         if site not in set(SITE.findall(block)):
             named = sorted(set(SITE.findall(block)))
-            wrong.append(f"{item}: declares `{site}`, which its block does not name. It names {named}")
+            wrong.append(
+                f"{item}: declares `{site}`, which its block does not name. It names {named}"
+            )
     return wrong
 
 
-def rows(order: list[str], classes: dict[str, str], answered: dict[str, dict]) -> list[str]:
-    out = ["| item | status |", "|---|---|"]
+# One newline, named, so this module's own source carries no escape
+# that a generator has to get right twice.
+NL = chr(10)
+
+SUBJECT_CHARS = 96
+
+
+def subject(item: str, verdict_text: str, by_block: dict[str, str]) -> str:
+    """What the VERDICT says this item is, in the verdict's own words (CH4).
+
+    This is the half that makes a rotation impossible rather than merely
+    detectable. Three rows were once shifted by one -- R288 carrying R287's
+    subject, R289 carrying R288's -- and the site check that followed
+    discriminated only where a declared site was unique to its block, which
+    was one row in eight. Here the subject is not declared at all: it is read
+    out of the verdict, keyed by the number the row is written under, so a
+    status attached to the wrong number carries that number's subject and
+    contradicts itself on the page.
+    """
+    block = by_block.get(item)
+    if block:
+        after = block.split(")", 1)[-1]
+    else:
+        line = next(
+            (
+                ln
+                for ln in _carried_section(verdict_text).splitlines()
+                if re.search(rf"\b{item}\b", ln)
+            ),
+            "",
+        )
+        after = re.sub(rf"^.*?\b{item}\b\s*(--|-|:)?\s*", "", line)
+        # A carry line often lists several numbers before saying anything --
+        # "R225-R228, R232, R233 -- carried". Drop the rest of the list so the
+        # subject starts where the sentence does.
+        after = re.sub(r"^(,?\s*R\d+(\s*-+\s*R\d+)?)+\s*(--|-|:)?\s*", "", after)
+    text = re.sub(r"[`*]", "", after).replace("\n", " ")
+    text = " ".join(text.split())
+    if not text:
+        return "carried, and the verdict says nothing further about it here"
+    if len(text) > SUBJECT_CHARS:
+        text = text[:SUBJECT_CHARS].rsplit(" ", 1)[0] + "..."
+    return text
+
+
+def rows(
+    order: list[str],
+    classes: dict[str, str],
+    answered: dict[str, dict],
+    verdict_text: str,
+    by_block: dict[str, str],
+) -> list[str]:
+    """One row per item: what this round DID, then what the verdict SAID.
+
+    The first half is a pointer the answers file supplies -- a section of the
+    report, at most. The second half is generated. Neither is prose typed
+    beside a number.
+    """
+    out = ["| item | status | the verdict's own subject |", "|---|---|---|"]
     for item in order:
         if item in answered:
-            status = answered[item]["status"]
+            where = answered[item].get("where", "")
+            state = answered[item].get("state", "answered")
+            status = f"**{state}** — {where}" if where else f"**{state}**"
         elif classes.get(item) == "4a":
             status = "**open** — recordable at 4a in the verdict's own classification"
         elif classes.get(item) == "blocking":
             status = "**open** — blocking, and not answered in this round"
         else:
             status = "**open** — carried from an earlier verdict"
-        out.append(f"| {item} | {status} |")
+        out.append(f"| {item} | {status} | {subject(item, verdict_text, by_block)} |")
     return out
+
+
+STATES = ("answered", "open", "withdrawn", "carried", "later")
+
+
+def check_states(answered: dict[str, dict]) -> list[str]:
+    """A pointer file may not carry prose, and may not carry a verdict's word.
+
+    The whole point of CH4 is that the sentence beside an item is generated. A
+    `state` outside this list, or a `where` long enough to be an argument, puts
+    the prose back and the rotation with it.
+    """
+    bad = []
+    for item, entry in answered.items():
+        state = entry.get("state", "answered")
+        if state not in STATES:
+            bad.append(f"{item}: state {state!r} is not one of {list(STATES)}")
+        where = entry.get("where", "")
+        if len(where) > 40:
+            bad.append(
+                f"{item}: `where` is {len(where)} characters. It is a pointer "
+                "-- a section of the report -- and not a place to write the "
+                "status that this script exists to generate."
+            )
+    return bad
 
 
 def table(verdict_text: str, answers: dict) -> str:
     answered = answers.get("answered", answers)
     classes = classify(verdict_text)
-    wrong = check_sites(answered, blocks(verdict_text))
+    by_block = blocks(verdict_text)
+    wrong = check_states(answered) + check_sites(answered, by_block)
     if wrong:
         raise SystemExit(
-            "the answers file attaches a row to a finding that does not name "
-            "its site:\n  " + "\n  ".join(wrong)
+            "the answers file cannot be used as written:" + NL + "  " + (NL + "  ").join(wrong)
         )
-    return "\n".join(rows(required(verdict_text), classes, answered))
+    return NL.join(rows(required(verdict_text), classes, answered, verdict_text, by_block))
 
 
 def main(argv: list[str]) -> int:

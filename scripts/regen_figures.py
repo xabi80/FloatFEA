@@ -25,6 +25,9 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
+import platform
+import re
 import sys
 from pathlib import Path
 
@@ -48,6 +51,7 @@ def _figures() -> list[tuple[str, str]]:
     import test_corpus_configurations as C
 
     from floatfea.tolerances import (
+        FIGURE_ARGMIN_TIE_WINDOW,
         PATCH_TEST_COUNTER_HEADROOM,
         PATCH_TEST_EXACTNESS,
     )
@@ -111,9 +115,18 @@ def _figures() -> list[tuple[str, str]]:
     dev = [abs(C.injected_delta(e, "one_element_scaled") - CD) / math.ulp(CD) for e in C.SOLVED]
     rows.append(("calibration_ulp_worst", f"{max(dev):.3f} ULP"))
 
-    entry, edge = C._smallest_detection_edge()
+    # THE EXTREMUM NAMES ITS TIE SET, NOT ITS WINNER (CH0). `detection_edge_at`
+    # is a NAME, and the winner flips between two entries on two machines --
+    # measured, 1.0041x apart. No tolerance on a value can say which name is
+    # admissible, and dropping the name destroys the location of an extremum.
+    # So every entry inside `FIGURE_ARGMIN_TIE_WINDOW` of the minimum is named,
+    # sorted, and a flip inside the set changes no byte.
+    edges = sorted((C._detection_edge(e), e["id"]) for e in C.SOLVED)
+    edge = edges[0][0]
+    tied = tie_set(edges, FIGURE_ARGMIN_TIE_WINDOW)
     rows.append(("detection_edge", f"{edge:.4e}"))
-    rows.append(("detection_edge_at", entry))
+    rows.append(("detection_edge_at", ", ".join(tied)))
+    rows.append(("detection_edge_tie_set", f"{len(tied)} within {FIGURE_ARGMIN_TIE_WINDOW}x"))
     rows.append(("counter_defect_over_edge", f"{CD / edge:.4g}x"))
     rows.append(("counter_headroom_room", f"{PATCH_TEST_COUNTER_HEADROOM / (CD / edge):.2f}x"))
 
@@ -291,6 +304,219 @@ def _boundary_margins(C, ceil: float, CD: float):
     )
 
 
+def tie_set(edges: list[tuple[float, str]], window: float) -> list[str]:
+    """Every entry within `window` of the extremum, sorted by name.
+
+    A free function so the window can be run against injected values --
+    including `FIGURE_ARGMIN_TIE_WINDOW_COUNTER_DEFECT`, the position of the
+    first entry the window has to exclude -- instead of only against whatever
+    the corpus happens to contain today.
+    """
+    smallest = min(v for v, _ in edges)
+    return sorted(name for value, name in edges if value <= smallest * window)
+
+
+# CH5: THE STAMP, AND WHAT COUNTS AS THE CANONICAL MACHINE.
+#
+# Q8: "a golden or figure whose stamp is not CI's pinned environment fails the
+# build, so no canonical file can be produced on a laptop again." The stamp
+# names the BLAS core type beside the three libraries because the kernel is
+# what the split turned out to be -- a stamp naming the other three would have
+# been identical across the two files the vendor split produced.
+#
+# `OPENBLAS_CORETYPE` is read from the environment rather than from OpenBLAS,
+# and that is the honest reading: it is the variable the workflow sets and the
+# one whose deletion `tests/test_ci_canonical_environment.py` reddens. What
+# kernel OpenBLAS then selected is measured on CI by the ten legs agreeing.
+CANONICAL_PYTHON = "3.13"
+CANONICAL_CORETYPE = "Haswell"
+
+# Q8's third local class. A figure whose value IS a round-off magnitude, with
+# the decision the gate makes about it:
+#
+#   below <ceiling>   a clean figure: it must stay under its ceiling
+#   above <ceiling>   a counter: it must stay over the ceiling it defends
+#   derived           no decision of its own; `counter_headroom_room` carries
+#                     the decision for the detection-edge family
+#   words             the decision is the pass/fail words, not the numbers
+#
+# Every other row in the file must match the canonical render EXACTLY, on any
+# machine. Nine rows of forty-seven move between two machines and all nine are
+# named here or are the tie set above.
+FLOOR_CLASS: dict[str, tuple[str, str | None]] = {
+    "rigid_body_mode_ratio": ("below", "RIGID_BODY_MODE_RATIO"),
+    "rigid_body_subspace_loss": ("below", "RIGID_BODY_SUBSPACE_LOSS"),
+    "rigid_body_counter_ratio": ("above", "RIGID_BODY_MODE_RATIO"),
+    "rigid_body_counter_loss": ("above", "RIGID_BODY_SUBSPACE_LOSS"),
+    "clean_worst_ratio": ("below", None),
+    "counter_headroom_room": ("above", None),
+    "detection_edge": ("derived", None),
+    "counter_defect_over_edge": ("derived", None),
+    "counter_defect_boundary": ("words", None),
+}
+
+_ROW = re.compile(r"^\| `([a-z0-9_]+)` \| (.+?) \|$", re.MULTILINE)
+
+
+def _stamp_rows() -> list[tuple[str, str]]:
+    import numpy
+    import scipy
+
+    return [
+        ("stamp_platform", sys.platform),
+        ("stamp_python", platform.python_version()),
+        ("stamp_numpy", numpy.__version__),
+        ("stamp_scipy", scipy.__version__),
+        ("stamp_openblas_coretype", os.environ.get("OPENBLAS_CORETYPE", "unset")),
+    ]
+
+
+def is_canonical() -> bool:
+    """Is THIS the machine Q8 makes canonical?
+
+    Not "is the CI environment variable set": a fork of the workflow, a local
+    container, or a future runner all count if they are the pinned
+    environment, and a GitHub job that lost the kernel pin does not.
+    """
+    return (
+        sys.platform.startswith("linux")
+        and platform.python_version().startswith(CANONICAL_PYTHON + ".")
+        and os.environ.get("OPENBLAS_CORETYPE") == CANONICAL_CORETYPE
+    )
+
+
+def _values(text: str) -> dict[str, str]:
+    return dict(_ROW.findall(text))
+
+
+def _number(value: str) -> float | None:
+    """The leading number of a figure cell, or None if it has none."""
+    m = re.match(r"\s*(-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)", value)
+    return float(m.group(1)) if m else None
+
+
+def _ceiling(name: str) -> float:
+    import floatfea.tolerances as T
+
+    kind, ceil_name = FLOOR_CLASS[name]
+    if ceil_name is None:
+        # `clean_worst_ratio` and `counter_headroom_room` are already
+        # normalised by the quantity they are compared with, so their ceiling
+        # is 1 by construction and there is no constant to name.
+        return 1.0
+    return float(getattr(T, ceil_name))
+
+
+def compare(committed: str, local: str) -> tuple[int, list[str]]:
+    """The non-canonical machine's three assertions (Q8's third class, CH0).
+
+    Returns `(exit code, lines to print)`. Split out from `main` so that
+    `tests/test_figure_local_check.py` can run it against injected pairs --
+    including the two counters -- rather than against whatever this machine
+    happens to render.
+    """
+    from floatfea.tolerances import FIGURE_FLOOR_CLASS_SPREAD
+
+    out: list[str] = []
+    bad = 0
+    have, mine = _values(committed), _values(local)
+
+    missing = sorted(set(mine) - set(have))
+    extra = sorted(set(have) - set(mine))
+    if missing or extra:
+        out.append(f"regen_figures: rows only in a fresh render: {missing or 'none'}")
+        out.append(f"regen_figures: rows only in the committed file: {extra or 'none'}")
+        return 1, out
+
+    stamp = {k: v for k, v in have.items() if k.startswith("stamp_")}
+    if not stamp:
+        out.append(
+            "regen_figures: the committed file carries NO environment stamp. "
+            "Q8 requires one inside every canonical file; without it a laptop "
+            "render and a canonical one are indistinguishable."
+        )
+        bad = 1
+    else:
+        if stamp.get("stamp_openblas_coretype") != CANONICAL_CORETYPE:
+            out.append(
+                f"regen_figures: the committed stamp says core type "
+                f"{stamp.get('stamp_openblas_coretype')!r}, and the canonical "
+                f"environment is {CANONICAL_CORETYPE!r}. This file was not "
+                "produced on the canonical machine."
+            )
+            bad = 1
+        if not str(stamp.get("stamp_python", "")).startswith(CANONICAL_PYTHON + "."):
+            out.append(
+                f"regen_figures: the committed stamp says Python "
+                f"{stamp.get('stamp_python')!r}, and the plan pins "
+                f"{CANONICAL_PYTHON}."
+            )
+            bad = 1
+
+    exact = [
+        n
+        for n in sorted(mine)
+        if n not in FLOOR_CLASS and not n.startswith("stamp_") and mine[n] != have[n]
+    ]
+    for n in exact:
+        out.append(f"regen_figures: {n} is {mine[n]!r} here and {have[n]!r} in the file.")
+        out.append(
+            "    Not a floor-class figure: Q8 requires these to agree EXACTLY "
+            "on every machine, so this is staleness rather than platform."
+        )
+        bad = 1
+
+    out.append("")
+    out.append("floor class -- the decision, and the spread beside it:")
+    out.append("  figure                          committed        here             spread")
+    for n in sorted(FLOOR_CLASS):
+        if n not in have or n not in mine:
+            # A floor-class name the file does not carry is not a silent pass:
+            # the row-set comparison above has already returned for any real
+            # difference, so reaching here means the caller is checking a
+            # SUBSET on purpose -- which is what the injected pairs in
+            # `tests/test_figure_local_check.py` are.
+            continue
+        kind, _ = FLOOR_CLASS[n]
+        a, b = _number(have[n]), _number(mine[n])
+        if kind == "words":
+            words_a = re.sub(r"[-+0-9.eE]+", "", have[n]).strip()
+            words_b = re.sub(r"[-+0-9.eE]+", "", mine[n]).strip()
+            mark = "" if words_a == words_b else "  <- THE DECISION MOVED"
+            bad |= words_a != words_b
+            out.append(f"  {n:<30}  {have[n]:<16} {mine[n]:<16} {mark}")
+            continue
+        if a is None or b is None or a <= 0 or b <= 0:
+            out.append(f"  {n:<30}  {have[n]:<16} {mine[n]:<16} (not a positive number)")
+            bad = 1
+            continue
+        spread = max(a, b) / min(a, b)
+        note = ""
+        if spread > FIGURE_FLOOR_CLASS_SPREAD:
+            note = f"  <- OVER {FIGURE_FLOOR_CLASS_SPREAD}x"
+            bad = 1
+        out.append(f"  {n:<30}  {have[n]:<16} {mine[n]:<16} {spread:.4f}x{note}")
+
+        if kind == "derived":
+            continue
+        ceil = _ceiling(n)
+        margin = ceil / b if kind == "below" else b / ceil
+        if margin < 1.0:
+            out.append(
+                f"    THE DECISION MOVED: {n} is {b:.6g} and must be "
+                f"{'below' if kind == 'below' else 'above'} {ceil:.6g}."
+            )
+            bad = 1
+        elif margin < FIGURE_FLOOR_CLASS_SPREAD:
+            out.append(
+                f"    margin {margin:.4g}x is under the declared spread "
+                f"{FIGURE_FLOOR_CLASS_SPREAD}x, so the platform alone could "
+                "carry this decision across its ceiling."
+            )
+            bad = 1
+    return (1 if bad else 0), out
+
+
 def render() -> str:
     # NO `Generated at <sha>` LINE (R179). It recorded the commit the file was
     # written at, which is never the commit it is committed in -- so it was false
@@ -300,7 +526,9 @@ def render() -> str:
     lines = [
         "# F2 figures — GENERATED, do not edit",
         "",
-        "Produced by `scripts/regen_figures.py` from the shipped runner.",
+        "Produced by `scripts/regen_figures.py` from the shipped runner, on the",
+        "machine named in the `stamp_*` rows. Q8 makes CI canonical for this",
+        "file; a stamp that is not CI's pinned environment fails the build.",
         "`docs/milestones/F2.md` references these by name as `{{fig:NAME}}`, and",
         "`tests/test_plan_figures.py` fails if a referenced name is missing or if",
         "this file is not what a fresh run produces.",
@@ -308,6 +536,7 @@ def render() -> str:
         "| name | value |",
         "|---|---|",
     ]
+    lines += [f"| `{n}` | {v} |" for n, v in _stamp_rows()]
     lines += [f"| `{n}` | {v} |" for n, v in _figures()]
     return "\n".join(lines).rstrip() + "\n"
 
@@ -325,13 +554,37 @@ def main(argv: list[str] | None = None) -> int:
         # sit there, and one was planted to prove it. And the commit line itself
         # was false at the commit that published it, which only a whole-file
         # comparison can catch.
-        if current != text:
+        if is_canonical():
+            # THE CANONICAL MACHINE COMPARES BYTES, and the stamp is part of
+            # them: a patch-version bump on the runner reddens here, which is
+            # what a version stamp is FOR. Regenerate and commit.
+            if current != text:
+                print(
+                    "regen_figures: F2_figures.md is not what this script "
+                    "produces on the canonical machine",
+                    file=sys.stderr,
+                )
+                return 1
+            print("regen_figures: up to date (canonical machine, byte-identical)")
+            return 0
+        # OFF THE CANONICAL MACHINE (Q8's third class, CH0). Every row that is
+        # not floor-class must still agree exactly, so staleness is caught here
+        # as it always was; the floor-class rows are checked at the DECISION and
+        # their spread is printed either way.
+        code, lines = compare(current, text)
+        for line in lines:
+            print(line, file=sys.stderr if code else sys.stdout)
+        if code:
             print(
-                "regen_figures: F2_figures.md is not what this script " "produces at HEAD",
+                "regen_figures: this is not the canonical machine, and the "
+                "differences above are not the ones Q8's third class allows",
                 file=sys.stderr,
             )
             return 1
-        print("regen_figures: up to date")
+        print(
+            "regen_figures: up to date (non-canonical machine: every exact row "
+            "agrees, every floor-class decision holds)"
+        )
         return 0
     OUT.write_text(text, encoding="utf-8")
     print(f"regen_figures: wrote {OUT.relative_to(ROOT)}")

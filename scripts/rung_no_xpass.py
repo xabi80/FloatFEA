@@ -18,8 +18,19 @@ word.
 This plugin turns the report itself. `wasxfail` is set by pytest on a report
 that carried an xfail marker; a report that carries it and passes is an
 unexpected pass, and here that is a failure -- recorded as one in the junit XML,
-which is what `scripts/run_rung.sh` reads. A test cannot write another test's
-report element, so there is nothing to forge.
+which is what `scripts/run_rung.sh` reads.
+
+WHAT THAT DOES AND DOES NOT BUY, because the sentence that stood here said "a
+test cannot write another test's report element, so there is nothing to forge"
+and it is false. A TEST cannot; a `conftest.py` in the rung's own directory can,
+through this very hook, in the opposite direction -- and `pytest_ignore_collect`
+and `pytest_collection_modifyitems` do better than forge a report, by removing
+the failing test before any report exists. What this plugin buys is that the
+four TEXT channels are dead and that an unexpected pass has a structured
+signal. What it cannot buy is protection from code that runs inside the same
+session, and nothing in this position can. `scripts/run_rung.sh` states the
+property and names the bound: review of `tests/**/conftest.py`, in the
+supervisor's per-step diff list.
 
 Loaded by the rung script as `-p rung_no_xpass` with `scripts/` on the path. It
 is deliberately NOT in the project's `addopts`: outside a ladder rung an

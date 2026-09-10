@@ -149,12 +149,31 @@ if [ "$RUN_COUNT" -gt 0 ]; then
     # others: the junit report and pytest's exit code. Nothing a test, a
     # conftest, a plugin or an `atexit` hook PRINTS is read at all -- which is
     # why a module-level `print("1 passed")` is no longer caught here and no
-    # longer needs to be: it is not a forgery of anything this reads. What is
-    # still outside the gate is anything that can write the junit file itself:
-    # a conftest replacing `--junit-xml` through `addopts`, a plugin
-    # implementing `pytest_sessionfinish` to rewrite the XML, or a rung run
-    # with a `-p no:junitxml`. Those are edits to the harness rather than to a
-    # test, and the harness is what review reads.
+    # longer needs to be: it is not a forgery of anything this reads.
+    #
+    # WHAT THIS GATE CANNOT DO, STATED AS A PROPERTY RATHER THAN AS A LIST.
+    # Everything it reads is writable from a rung's own `conftest.py`. The
+    # previous version of this comment enumerated three producers and called
+    # them "edits to the harness"; the reviewer measured four channels and
+    # three were unlisted:
+    #
+    #   pytest_runtest_makereport      a hookwrapper flipping a failing report
+    #                                  to passing -- the same hook the repair
+    #                                  in rung_no_xpass.py uses, in reverse
+    #   pytest_ignore_collect          the failing file never collected
+    #   pytest_collection_modifyitems  the failing item dropped from the run
+    #   pytest_sessionfinish           the XML rewritten after pytest wrote it
+    #
+    # The first three leave a green junit report that is an accurate record of
+    # a run that did not include the failure. NO GATE CLOSES THIS: a gate that
+    # reads a record cannot outrank code that writes the record, and the same
+    # is true of any replacement for this script.
+    #
+    # WHAT PROTECTS A RUNG IS REVIEW OF ITS CONFTEST. `docs/SUPERVISOR.md`
+    # item 4c and `.claude/agents/gating-supervisor.md` item 4c put
+    # `tests/**/conftest.py` in the per-step diff list beside
+    # `floatfea/tolerances.py`, so a conftest changed inside a step commit is
+    # read line by line before its rung's green is believed.
     PYTHONPATH="$(cd "$(dirname "$0")" && pwd)${PYTHONPATH:+:$PYTHONPATH}" \
         python -m pytest "$@" -q -p rung_no_xpass -o xfail_strict=true \
         --junit-xml="$report" >/dev/null 2>&1

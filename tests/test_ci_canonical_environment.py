@@ -89,7 +89,16 @@ def test_the_plan_and_the_workflow_name_THE_SAME_kernel() -> None:
     BP0 rule with a machine behind it: when the rule beneath a figure moves,
     the figure is regenerated or withdrawn -- and here the move is one word.
     """
-    env = _workflow()["env"]
+    # R308: `_workflow()["env"][PIN]` raised `KeyError` with the block removed,
+    # so the one test that names the plan failed without its message. It still
+    # went red -- the first test carries the sentence -- and a guard that
+    # reports the wrong thing is the shape this file exists to refuse.
+    env = _workflow().get("env") or {}
+    assert PIN in env, (
+        f"`{PIN}` is not in the workflow's top-level `env:`, so there is no "
+        "kernel for the plan to agree with. The first test in this file says "
+        "what that costs."
+    )
     kernel = str(env[PIN]).strip().strip("\"'")
     plan = PLAN.read_text(encoding="utf-8", errors="replace")
     assert PIN in plan, (

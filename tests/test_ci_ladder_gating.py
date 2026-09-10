@@ -45,16 +45,56 @@ SCRIPT = ROOT / "scripts" / "run_rung.sh"
 # one it is a pass only when the rung DECLARES itself empty and carries the
 # marker -- because an emptied rung and an unwritten one are opposite facts and
 # a glob cannot tell them apart. Recorded for the reviewer to rule on.
-REQUIREMENT_CHANGED: dict[str, str] = {
+# WHAT THE SHIPPED GATE DOES WHERE IT DOES NOT DO WHAT THE ENTRY REQUIRES,
+# and in WHICH DIRECTION. The first version held only strings and its branch
+# asserted `code != 0`, which was right for both entries it had and would have
+# silently asserted the opposite of the truth for the conftest channels below.
+# The declared outcome is written down and asserted.
+REQUIREMENT_CHANGED: dict[str, tuple[str, str]] = {
     "ci_rung_genuinely_empty": (
+        "fail",
         "require=pass under an inferred rule. Rung 1 is declared `full:` in the "
         "workflow, so a rung 1 holding only __init__.py now FAILS -- that is "
-        "the emptied-directory case CB1 asks to redden"
+        "the emptied-directory case CB1 asks to redden",
     ),
     "ci_rung6_both_populated": (
+        "fail",
         "require=run under an inferred rule. Rung 6's own directory is declared "
         "`empty:`, so a test appearing in it now FAILS as a stale declaration "
-        "rather than being run silently"
+        "rather than being run silently",
+    ),
+    # R302. THE GATE DOES NOT CLOSE THESE AND NO GATE IN THIS POSITION CAN.
+    # Everything `scripts/run_rung.sh` reads -- the junit report, the exit code
+    # -- is written by the session the rung runs in, so a `conftest.py` in the
+    # rung's own directory can write it. The first three leave a junit report
+    # that is an ACCURATE record of a run that did not contain the failure.
+    # The bound is review: `tests/**/conftest.py` is in the supervisor's
+    # per-step diff list (`docs/SUPERVISOR.md` item 4c). These entries are here
+    # so that the day one of them starts reddening, this file says so.
+    "ci_rung_full_conftest_makereport_wrapper_turns_a_FAILING_test_into_a_passing_report": (
+        "pass",
+        "require=fail. A conftest hookwrapper on `pytest_runtest_makereport` "
+        "flips the failing call report to `passed` before the junit writer "
+        "sees it -- the same hook `scripts/rung_no_xpass.py` uses, in the "
+        "opposite direction. The report the gate reads is green and honest "
+        "about what it was handed",
+    ),
+    "ci_rung_full_conftest_pytest_ignore_collect_hides_the_FAILING_test_file": (
+        "pass",
+        "require=fail. The failing FILE is never collected, so no report of it "
+        "exists to forge. Nothing in this repository records how many tests a "
+        "rung is supposed to hold, which is the `.empty-by-design` argument "
+        "one level down",
+    ),
+    "ci_rung_full_conftest_collection_modifyitems_drops_only_the_FAILING_item": (
+        "pass",
+        "require=fail. Assertion domain blindness in its plainest form: the "
+        "collection the gate inspects cannot contain the failure",
+    ),
+    "ci_rung_full_conftest_pytest_sessionfinish_rewrites_the_junit_xml": (
+        "pass",
+        "require=fail. The one channel the old reach comment named -- and it "
+        "named it as a plugin, when it works from a rung conftest",
     ),
 }
 
@@ -237,6 +277,82 @@ SKIPPED = (
 # not-a-tolerance: the layout each entry names, built as files. This is a
 # translation of the corpus's `layout=` field into a directory tree, not a
 # threshold -- nothing here is compared against anything.
+# ---------------------------------------------------------------------------
+# R302: FOUR CHANNELS FROM A RUNG'S OWN `conftest.py`, and three controls.
+#
+# The gate reads pytest's junit report and pytest's exit code. Both are written
+# by the same session the rung runs in, so a conftest in the rung's directory
+# can write either. These are the reviewer's four, built here so the claim
+# about them is a run rather than a sentence.
+CONFTEST_MAKEREPORT = "\n".join(
+    [
+        "import pytest",
+        "",
+        "",
+        "@pytest.hookimpl(hookwrapper=True, trylast=True)",
+        "def pytest_runtest_makereport(item, call):",
+        "    outcome = yield",
+        "    rep = outcome.get_result()",
+        "    if rep.when == 'call' and rep.failed:",
+        "        rep.outcome = 'passed'",
+        "        rep.longrepr = None",
+    ]
+)
+CONFTEST_IGNORE_COLLECT = "\n".join(
+    [
+        "def pytest_ignore_collect(collection_path, config):",
+        "    if collection_path.name == 'test_bad.py':",
+        "        return True",
+        "    return None",
+    ]
+)
+CONFTEST_MODIFYITEMS_DROP_BAD = "\n".join(
+    [
+        "def pytest_collection_modifyitems(session, config, items):",
+        "    items[:] = [i for i in items if 'bad' not in i.name]",
+    ]
+)
+CONFTEST_MODIFYITEMS_DROP_ALL = "\n".join(
+    [
+        "def pytest_collection_modifyitems(session, config, items):",
+        "    items[:] = []",
+    ]
+)
+CONFTEST_SESSIONFINISH = "\n".join(
+    [
+        "from xml.etree import ElementTree",
+        "",
+        "",
+        "def pytest_sessionfinish(session, exitstatus):",
+        "    path = getattr(session.config.option, 'xmlpath', None)",
+        "    if not path:",
+        "        return",
+        "    tree = ElementTree.parse(path)",
+        "    for case in tree.getroot().iter('testcase'):",
+        "        for kid in list(case):",
+        "            if kid.tag in ('failure', 'error'):",
+        "                case.remove(kid)",
+        "    tree.write(path)",
+        "    session.exitstatus = 0",
+    ]
+)
+FAILING_TEST = "\n".join(["def test_a():", "    assert False"])
+OK_AND_BAD = "\n".join(
+    ["def test_ok():", "    assert True", "", "", "def test_bad():", "    assert False"]
+)
+PASSING_TEST = "\n".join(["def test_ok():", "    assert True"])
+FAILING_TEST_BAD = "\n".join(["def test_bad():", "    assert False"])
+XFAIL_THAT_FAILS = "\n".join(
+    [
+        "import pytest",
+        "",
+        "",
+        "@pytest.mark.xfail(reason='known')",
+        "def test_a():",
+        "    assert False",
+    ]
+)
+
 LAYOUTS: dict[str, dict[str, str | None]] = {
     "ci_rung6_live": {
         "tests/verification/rung6/__init__.py": "",
@@ -398,6 +514,34 @@ LAYOUTS: dict[str, dict[str, str | None]] = {
         "tests/verification/rung2/.empty-by-design": "marker",
         "tests/verification/rung1/test_a.py": FAILING,
     },
+    "ci_rung_full_conftest_makereport_wrapper_turns_a_FAILING_test_into_a_passing_report": {
+        "tests/verification/rung1/test_a.py": FAILING_TEST,
+        "tests/verification/rung1/conftest.py": CONFTEST_MAKEREPORT,
+    },
+    "ci_rung_full_conftest_makereport_wrapper_against_the_XPASS_case_CONTROL": {
+        "tests/verification/rung1/test_a.py": XPASS_PLAIN,
+        "tests/verification/rung1/conftest.py": CONFTEST_MAKEREPORT,
+    },
+    "ci_rung_full_conftest_pytest_ignore_collect_hides_the_FAILING_test_file": {
+        "tests/verification/rung1/test_ok.py": PASSING_TEST,
+        "tests/verification/rung1/test_bad.py": FAILING_TEST_BAD,
+        "tests/verification/rung1/conftest.py": CONFTEST_IGNORE_COLLECT,
+    },
+    "ci_rung_full_conftest_collection_modifyitems_drops_only_the_FAILING_item": {
+        "tests/verification/rung1/test_a.py": OK_AND_BAD,
+        "tests/verification/rung1/conftest.py": CONFTEST_MODIFYITEMS_DROP_BAD,
+    },
+    "ci_rung_full_conftest_pytest_sessionfinish_rewrites_the_junit_xml": {
+        "tests/verification/rung1/test_a.py": FAILING_TEST,
+        "tests/verification/rung1/conftest.py": CONFTEST_SESSIONFINISH,
+    },
+    "ci_rung_full_conftest_deselects_EVERY_item_CONTROL": {
+        "tests/verification/rung1/test_a.py": FAILING_TEST,
+        "tests/verification/rung1/conftest.py": CONFTEST_MODIFYITEMS_DROP_ALL,
+    },
+    "ci_rung_full_xfail_marked_test_that_genuinely_FAILS_CONTROL": {
+        "tests/verification/rung1/test_a.py": XFAIL_THAT_FAILS,
+    },
 }
 
 # The two entries whose job arguments are not the default pair for their rung.
@@ -514,12 +658,18 @@ def test_the_rung_job_gates_the_layout(
 
     if entry in REQUIREMENT_CHANGED:
         # NOT SKIPPED AND NOT xfailed (`CLAUDE.md` forbids both). The entry runs
-        # and its outcome is asserted -- against the requirement this rule
-        # changes it to, with the change itself declared above.
-        assert code != 0, (
-            f"{entry}: the declared-expectation rule is supposed to make this "
-            f"FAIL and it returned 0.\n{log}"
-        )
+        # and its outcome is asserted -- in the DIRECTION declared above, which
+        # is not always the reverse of the corpus: two of these six are cases
+        # the rule made stricter, and four are cases no gate here can reach.
+        declared, why = REQUIREMENT_CHANGED[entry]
+        if declared == "fail":
+            assert code != 0, f"{entry}: declared to FAIL and it returned 0.\n  {why}\n{log}"
+        else:
+            assert code == 0, (
+                f"{entry}: declared to PASS -- the gate cannot reach this "
+                f"channel -- and it FAILED, so something closed it and this "
+                f"declaration is stale.\n  {why}\n{log}"
+            )
         return
 
     if require == "fail":
