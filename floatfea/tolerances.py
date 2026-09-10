@@ -986,6 +986,81 @@ DETECTION_THRESHOLD_BAND_COUNTER: Final[float] = 0.25
 
 
 # ---------------------------------------------------------------------------
+# Canonical files -- cross-platform agreement (Q8, third class)
+#
+# Q8 makes CI canonical for the goldens, for every platform-dependent tolerance
+# and for `docs/milestones/F2_figures.md`. These two govern what a NON-canonical
+# machine asserts about a canonical file. They are not physics and they do not
+# enter a solve; they bound the disagreement between two renders of the same
+# code on two machines.
+# ---------------------------------------------------------------------------
+
+# CLASS: PLATFORM -- carries FIGURE_FLOOR_CLASS_SPREAD_COUNTER_DEFECT below.
+# A dimensionless FACTOR between two renders of the same figure: max/min, so
+# 1.0 is agreement and the value is invariant under the figure's units and
+# under which machine is called canonical.
+#
+# WHICH FIGURES IT APPLIES TO. Q8's third local class: figures whose value is
+# itself a round-off magnitude -- an out-of-balance of a field that is exact in
+# exact arithmetic, or a ratio of two near-zero eigenvalues. The numerator is
+# round-off, and two BLAS kernels differ in their last bits by O(1) factors.
+# The other two classes -- exact for arithmetic-only, 2 ULP through a
+# transcendental -- were written for physical channels and do not reach these.
+#
+# Reason for 1.5: the measured spread between the canonical CI render and a
+# laptop render of the same commit, over the nine rows of forty-seven that move
+# at all. The largest is `rigid_body_mode_ratio` at 1.336x; the rest are 1.078x
+# and below. The table is in docs/milestones/F2.md, Q8, and is not retyped here
+# (BI3/R194).
+#
+# WHAT MAKES 1.5 THE RIGHT SIDE OF THE MEASUREMENT rather than a round number
+# above it: the smallest margin any floor-class figure has to its own ceiling is
+# `counter_headroom_room` at 2.19x. 1.336 < 1.5 < 2.19, so a spread inside this
+# bound cannot carry a decision across a ceiling, and a spread outside it is a
+# finding before it is a rounding difference. Both inequalities are asserted by
+# `tests/test_figure_local_check.py`, so the gap closing is a red build rather
+# than a comment nobody re-reads.
+# Set: 2026-09-10, F2
+FIGURE_FLOOR_CLASS_SPREAD: Final[float] = 1.5
+
+# COUNTER-CASE, INJECTED as a figure moved between the committed render and the
+# local one, run through the shipped `--check`.
+# Reason for 1.6: the smallest spread above the ceiling that is not on it. A
+# counter sitting exactly at 1.5 tests the comparison operator; this tests the
+# gate. It is 1.2x the largest spread ever measured.
+# Set: 2026-09-10, F2
+FIGURE_FLOOR_CLASS_SPREAD_COUNTER_DEFECT: Final[float] = 1.6
+
+# CLASS: PLATFORM -- carries FIGURE_ARGMIN_TIE_WINDOW_COUNTER_DEFECT below.
+# A dimensionless FACTOR on an extremum over the corpus: an entry is named in a
+# figure's tie set when its own value is within this factor of the extremum.
+#
+# WHY A SET AND NOT A WINNER. `detection_edge_at` is a NAME, not a number, and
+# the winner flips between two entries on two machines. No tolerance on a value
+# can express which name is admissible, and dropping the name destroys the
+# location of an extremum -- which the recorded rule "a residual destroys
+# information; report sign and location alongside a norm" forbids. So the
+# render names every entry inside the window, sorted, and a flip inside the set
+# changes no byte.
+#
+# Reason for 1.01: the two entries that swap are 1.0041x apart
+# (`ci_plateau_D0p0689_roll1p017_aniso9p6e5` and
+# `ch_edgemin_D0p0758_roll1p05_aniso9p4e5`), and the next entry up is 1.0216x.
+# The window sits above the measured flip and below the next candidate, with
+# room on both sides -- it is bracketed by measurements rather than chosen.
+# At 1.5x the set would be sixteen entries and the figure would say nothing.
+# Set: 2026-09-10, F2
+FIGURE_ARGMIN_TIE_WINDOW: Final[float] = 1.01
+
+# COUNTER-CASE: an entry at the next candidate's distance must NOT be named.
+# Reason for 1.0216: the measured position of the third entry, which is the
+# first one the window has to exclude. A counter further out would pass a
+# window twice this size.
+# Set: 2026-09-10, F2
+FIGURE_ARGMIN_TIE_WINDOW_COUNTER_DEFECT: Final[float] = 1.0216
+
+
+# ---------------------------------------------------------------------------
 # Rung 5 -- Independent confirmation
 # CalculiX global cross-check (G7.1/V5.1), stress recovery (G6.2/V5.2), code
 # check hand calculations (G6.1/V5.3).
