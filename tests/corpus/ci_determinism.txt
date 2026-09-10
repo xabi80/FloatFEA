@@ -1,0 +1,56 @@
+# CORPUS: states the `determinism` job must gate on, and the ones it must
+# stay green through (CF1).
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. Written at the thirty-second verdict on F2, the
+# seventh verdict on step 5 (HEAD 73cf6ce).
+#
+# WHY THIS FILE EXISTS (BE3). CF1 built the right measurement: ten runners at
+# one commit, and the outcome split exactly by CPU vendor -- three INTEL(R)
+# XEON(R) PLATINUM 8573C produced `F2_figures.md` sha256 b0dc947f... and failed
+# the regression rung; seven AMD EPYC produced 2af0f7cb... and passed. With
+# `OPENBLAS_CORETYPE: Haswell` pinned the re-run gave one hash on all ten. The
+# diagnosis is real, it is measured rather than argued, and it retired the
+# reviewer's own 2.6e9 figure. None of that is in question here.
+#
+# WHAT IS IN QUESTION IS THE JOB AS A GATE. Its name is "10 runners,
+# byte-identity" and its body is three steps: print `/proc/cpuinfo`, run
+# `regen_figures.py` and print a sha256, run `pytest tests/regression -q`.
+# NOTHING IN IT READS ANOTHER SHARD'S OUTPUT. The byte-identity in the name is
+# established by a human reading ten log lines, which is a measurement that
+# happened once and an assertion that exists nowhere. The one artifact the job
+# can go red about is `tests/regression`, and `tests/regression` does not read
+# `docs/milestones/F2_figures.md` -- which is one of the three things Q8 makes
+# CI canonical for.
+#
+# AND THE CONDITION THE WHOLE ARRANGEMENT NOW RESTS ON IS ONE UNASSERTED LINE.
+# Q8 names "Linux, with Python, numpy and scipy pinned in a lockfile" as what
+# makes CI canonical. The measurement says that is not sufficient: the kernel
+# OpenBLAS dispatches to is chosen at run time from the CPU, and a lockfile
+# does not pin it. `OPENBLAS_CORETYPE` is the load-bearing condition, it is in
+# `ci.yml` and in no plan, and deleting it leaves the guards suite green.
+#
+# FORMAT
+#   id=<name> state=<what is true of the tree or the runners> require=<pass|fail>
+#   measured=<what the shipped job body or the shipped suite did at 73cf6ce>
+#
+#   require=fail  the arrangement must go red -- some job, some assertion
+#   require=pass  the state is legitimate and nothing may redden
+#
+# WHAT A PASSING SCAN MEANS. For each entry, put the tree in the state and run
+# the shipped `determinism` job body verbatim -- `python scripts/regen_figures.py`,
+# the sha256 print, `pytest tests/regression -q` -- plus, for the states that
+# concern the workflow file, the guards job body. A passing scan means every
+# entry's outcome matches `require`. IT DOES NOT MEAN CI IS CANONICAL: a scan
+# cannot sample a runner allocation, and the discriminating part -- the INTEL
+# 8573C -- was drawn once in the pinned run and three times in the unpinned one.
+#
+# MEASURED AT 73cf6ce by the reviewer, Windows, Python 3.13.11, in a
+# `git clone --local`, one state at a time.
+
+id=determinism_committed_figures_file_replaced_by_one_line_of_garbage state=docs_milestones_F2_figures_md_overwritten_with_THE_COMMITTED_FIGURES_ARE_NOW_GARBAGE_then_the_job_body_run_verbatim require=fail measured=pass_regen_exit0_FIGURES_SHA256_be6555af_unchanged_tests_regression_4_passed_the_regen_step_OVERWRITES_the_file_before_hashing_it_so_the_printed_hash_says_nothing_about_the_repository
+id=determinism_committed_figures_file_deleted_outright state=docs_milestones_F2_figures_md_removed_then_the_job_body_run_verbatim require=fail measured=pass_regen_exit0_file_recreated_2487_bytes_tests_regression_4_passed_git_status_clean_afterwards
+id=determinism_two_shards_print_different_FIGURES_SHA256 state=any_two_of_the_ten_matrix_legs_produce_different_hashes_while_both_pass_tests_regression require=fail measured=NO_ASSERTION_EXISTS_the_job_body_is_checkout_setup_python_pip_install_cpuinfo_regen_and_hash_and_pytest_tests_regression_and_no_step_reads_another_legs_output_no_artifact_is_uploaded_and_there_is_no_needs_gathering_leg
+id=determinism_figures_disagree_with_CI_while_every_golden_agrees state=the_live_state_at_73cf6ce_all_ten_legs_report_4_passed_on_tests_regression_and_the_guards_job_reports_test_the_generated_figures_are_not_stale_FAILED_in_the_same_run require=fail measured=pass_run_34435454388_determinism_10_of_10_success_the_decoupling_is_not_hypothetical_it_is_the_state_of_HEAD
+id=determinism_OPENBLAS_CORETYPE_pin_deleted_from_the_workflow state=the_env_line_OPENBLAS_CORETYPE_Haswell_removed_from_github_workflows_ci_yml_and_nothing_else_changed require=fail measured=pass_482_passed_0_failed_over_the_whole_guards_job_body_nothing_in_the_repository_asserts_the_pin_exists_and_no_plan_records_it_as_a_condition
+id=determinism_a_regression_golden_that_genuinely_moves_on_one_vendor state=the_unpinned_state_at_291f096_three_INTEL_XEON_PLATINUM_8573C_legs_and_seven_AMD_EPYC_legs require=fail measured=fail_3_of_10_legs_failed_run_34434995901_tests_regression_2_failed_2_passed_on_each_Intel_leg_CONTROL_the_job_does_catch_a_golden_that_moves

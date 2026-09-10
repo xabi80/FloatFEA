@@ -182,3 +182,33 @@ id=ci_rung_argument_path_carries_a_trailing_slash layout=rung1_declared_full_one
 id=ci_rung_full_xfail_marker_carries_strict_False_and_the_body_PASSES layout=rung1_declared_full_its_only_test_is_pytest_mark_xfail_strict_False_whose_body_passes require=fail measured=pass_exit0_summary_1_xpassed_in_0_21s_run_rung_OK_1_directory_ran
 id=ci_rung_full_conftest_collect_ignore_silently_drops_a_test_file layout=rung1_declared_full_holding_a_FAILING_test_a_py_and_a_passing_test_b_py_with_a_conftest_py_setting_collect_ignore_to_test_a_py require=fail measured=pass_exit0_1_passed_run_rung_OK_1_directory_ran_the_dropped_file_is_reported_by_nothing
 id=ci_rung_full_module_level_pytest_skip_allow_module_level layout=rung1_declared_full_its_only_module_calls_pytest_skip_allow_module_level_True_at_import require=fail measured=fail_exit1_declared_full_and_collects_nothing_exit_5_is_a_failure_here
+
+# ------------------------------------------------------------------------
+# ADDED AT THE THIRTY-SECOND VERDICT ON F2, the seventh on step 5 (HEAD
+# 73cf6ce). CF4 closed the shape verdict 31 named: `run_rung.sh` now reads
+# pytest's FIRST count line and reddens on `xpassed`. The comment beside it
+# says "Pytest prints its summary before any `atexit` output, so the first
+# match is the real one and A LATER FORGERY CANNOT DISPLACE IT."
+#
+# The forgery does not have to be later. `-ra` is in the project's own
+# `addopts`, so pytest prints a `short test summary info` block BEFORE the
+# count line, and every line in that block carries text the TEST FILE
+# controls: the xfail reason, and the parametrize id. Neither is under the
+# guard's control and both sort ahead of the summary.
+#
+# This is the third recurrence of one species in this one file, and its own
+# comments record the first two: "Grepping the whole output matched a PASSING
+# test whose own diagnostic contained the word" and "anything the process
+# prints after the summary ... became the line `tail -1` picked". First-line
+# and last-line are the same mistake facing opposite directions; what the
+# guard needs is pytest's own machine-readable count, not a line of prose
+# that happens to look like one.
+#
+# MEASURED at 73cf6ce, `sh run_rung.sh full:tests/verification/rung1` in a
+# scratch tree carrying the shipped script and the project's `addopts`.
+# ------------------------------------------------------------------------
+
+id=ci_rung_full_xpass_with_a_plain_strict_False_marker_and_no_free_text layout=rung1_declared_full_its_only_test_carries_pytest_mark_xfail_strict_False_with_no_reason_and_the_body_passes require=fail measured=fail_exit1_run_rung_FAIL_1_xpassed_named_CONTROL_CF4_works_on_the_bare_shape
+id=ci_rung_full_xpass_whose_xfail_REASON_string_carries_a_count_phrase layout=rung1_declared_full_its_only_test_is_pytest_mark_xfail_strict_False_reason_1_passed_on_the_reference_build_and_the_body_passes require=fail measured=pass_exit0_run_rung_OK_1_directory_ran_while_the_summary_reads_1_xpassed_because_the_ra_XPASS_line_matched_first
+id=ci_rung_full_xpass_whose_PARAMETRIZE_ID_carries_a_count_phrase layout=rung1_declared_full_its_only_test_is_parametrize_case_3_passed_plus_xfail_strict_False_and_the_body_passes require=fail measured=pass_exit0_run_rung_OK_1_directory_ran_while_the_summary_reads_1_xpassed_the_node_id_reached_the_grep_first
+id=ci_rung_full_xpass_with_a_conftest_pytest_report_header_carrying_a_count_phrase layout=rung1_declared_full_a_conftest_py_whose_pytest_report_header_returns_0_passed_on_the_reference_build_plus_a_bare_strict_False_xpass require=fail measured=fail_exit1_run_rung_FAIL_1_xpassed_named_CONTROL_the_q_flag_suppresses_the_header_so_this_channel_is_closed
