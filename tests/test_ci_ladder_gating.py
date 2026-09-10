@@ -690,6 +690,43 @@ def test_the_rung_job_gates_the_layout(
             )
 
 
+def test_a_RED_rung_prints_its_count_and_its_reason(tmp_path: Path) -> None:
+    """Exit 1 is not a report, and for two commits that is all there was.
+
+    `set -e` was in force around the pytest invocation, so a failing run killed
+    the script before `code=$?`: the junit reader never ran, and a red rung
+    exited 1 having printed nothing at all -- no count, no reason, no name. It
+    still went red, which is why nothing noticed. CI showed `Process completed
+    with exit code 1` under a rung whose failure was one assertion in one file.
+
+    Every scenario measured through that path -- the five in the step report,
+    the layouts here -- was reading the shell's exit rather than the reader's,
+    so this asserts the OUTPUT, not the code.
+    """
+    rung = tmp_path / "tests" / "verification" / "rung1"
+    rung.mkdir(parents=True)
+    (tmp_path / "pyproject.toml").write_text(
+        (ROOT / "pyproject.toml").read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    (rung / "test_a.py").write_text(
+        "def test_ok():\n    assert True\n\n\ndef test_bad():\n    assert False\n",
+        encoding="utf-8",
+    )
+    out = subprocess.run(
+        ["sh", str(SCRIPT), "full:tests/verification/rung1"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    log = out.stdout + out.stderr
+    assert out.returncode != 0, f"a rung with a failing test passed.\n{log}"
+    assert "2 collected, 1 failed" in log, (
+        "the rung went red without saying what it ran. The junit reader's "
+        f"count line is the only thing that says the gate looked.\n{log}"
+    )
+    assert "is red" in log, f"no reason printed beside the exit code.\n{log}"
+
+
 def test_the_changed_requirements_are_exactly_these(tmp_path: Path) -> None:
     """The rule's disagreement with the corpus, asserted rather than assumed.
 

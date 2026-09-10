@@ -174,6 +174,14 @@ if [ "$RUN_COUNT" -gt 0 ]; then
     # `tests/**/conftest.py` in the per-step diff list beside
     # `floatfea/tolerances.py`, so a conftest changed inside a step commit is
     # read line by line before its rung's green is believed.
+    # `set +e` AROUND THE RUN. With `set -e` in force a failing pytest
+    # killed the script on the spot: `code=$?` never ran, the junit reader
+    # below never ran, and a red rung exited 1 having printed NOTHING --
+    # no count, no reason, no name. It still went red, so it looked like a
+    # working gate; what was lost was everything that says WHICH test
+    # failed, and every `exit 1` measured through this path was measuring
+    # the shell rather than the reader it was supposed to be measuring.
+    set +e
     PYTHONPATH="$(cd "$(dirname "$0")" && pwd)${PYTHONPATH:+:$PYTHONPATH}" \
         python -m pytest "$@" -q -p rung_no_xpass -o xfail_strict=true \
         --junit-xml="$report" >/dev/null 2>&1
@@ -213,7 +221,9 @@ if code != 0:
              "unexpected pass under `xfail_strict` lands here, and so does a "
              "usage error; either way the rung did not pass.")
 PY
-    [ $? -eq 0 ] || exit 1
+    verdict=$?
+    set -e
+    [ "$verdict" -eq 0 ] || exit 1
 fi
 
 # PRINTED ONLY AFTER EVERY CHECK HAS PASSED, and only for what was actually

@@ -995,7 +995,13 @@ DETECTION_THRESHOLD_BAND_COUNTER: Final[float] = 0.25
 # code on two machines.
 # ---------------------------------------------------------------------------
 
-# CLASS: PLATFORM -- carries FIGURE_FLOOR_CLASS_SPREAD_COUNTER_DEFECT below.
+# CLASS: ACCURACY -- carries FIGURE_FLOOR_CLASS_SPREAD_COUNTER_DEFECT below.
+# It bounds agreement between two machines rather than agreement with a
+# reference solution, which is why `PLATFORM` reads better -- and the class
+# vocabulary is ACCURACY or STRUCTURAL, checked at rung 3, and the rule that
+# matters attaches to ACCURACY: it carries a counter. Inventing a third
+# class name to describe the same obligation would be a gate edit made to
+# suit a label.
 # A dimensionless FACTOR between two renders of the same figure: max/min, so
 # 1.0 is agreement and the value is invariant under the figure's units and
 # under which machine is called canonical.
@@ -1031,7 +1037,7 @@ FIGURE_FLOOR_CLASS_SPREAD: Final[float] = 1.5
 # Set: 2026-09-10, F2
 FIGURE_FLOOR_CLASS_SPREAD_COUNTER_DEFECT: Final[float] = 1.6
 
-# CLASS: PLATFORM -- carries FIGURE_ARGMIN_TIE_WINDOW_COUNTER_DEFECT below.
+# CLASS: ACCURACY -- carries FIGURE_ARGMIN_TIE_WINDOW_COUNTER_DEFECT below.
 # A dimensionless FACTOR on an extremum over the corpus: an entry is named in a
 # figure's tie set when its own value is within this factor of the extremum.
 #
