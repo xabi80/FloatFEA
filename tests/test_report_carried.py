@@ -717,6 +717,70 @@ def test_the_generator_would_catch_a_row_under_the_wrong_number() -> None:
     assert victim in str(caught.value)
 
 
+# R314 / R311(a): THE POINTER IS RESOLVED, WHICH IS WHAT REFUSES A ROTATION.
+#
+# CH4 made the SUBJECT unrotatable by reading it out of the verdict. What was
+# left rotatable is the pair the answers file supplies -- a state and a section
+# number -- and the reviewer rotated three of them and printed all fifty-nine
+# rows. `carried_table.py` bounds the pointer's length and the state's
+# spelling and both refuse; neither asks whether the section exists or
+# discusses the item.
+#
+# Here it does. A row that points at §4 must find a section 4 in this
+# revision, and that section must mention the item. Rotating R302's pointer
+# onto R304 then names a section that never mentions R304.
+_POINTER = re.compile(r"§\s*(\d+[a-z]?)")
+
+
+def _section_bodies() -> dict[str, str]:
+    """`{"4": body}` for every `## 4. ...` heading in the newest revision."""
+    body = _newest_revision(REPORT_TEXT)
+    out: dict[str, str] = {}
+    marks = list(re.finditer(r"^##+\s*(\d+[a-z]?)\.", body, re.MULTILINE))
+    for i, m in enumerate(marks):
+        end = marks[i + 1].start() if i + 1 < len(marks) else len(body)
+        out[m.group(1)] = body[m.start() : end]
+    return out
+
+
+def _pointing_rows() -> list[tuple[str, str]]:
+    """`(item, section)` for every Carried row whose status names one."""
+    out: list[tuple[str, str]] = []
+    for item, status in _status_cells():
+        ids = _MENTION.findall(item)
+        for sec in _POINTER.findall(status):
+            for one in ids:
+                out.append((one, sec))
+    return out
+
+
+def test_there_are_pointers_to_resolve() -> None:
+    """A revision whose rows point nowhere makes the next test vacuous."""
+    assert _pointing_rows(), (
+        "no Carried row names a section. The answers file's `where` is the "
+        "pointer, and a table of rows with no pointers is a table that says "
+        "only open or answered."
+    )
+
+
+@pytest.mark.parametrize(
+    "item, section",
+    _pointing_rows() or [("R0", "0")],
+    ids=[f"{i}->{s}" for i, s in _pointing_rows()] or ["(none)"],
+)
+def test_a_carried_row_points_at_a_section_that_discusses_it(item: str, section: str) -> None:
+    bodies = _section_bodies()
+    assert section in bodies, (
+        f"{item} points at §{section} and this revision has no section "
+        f"{section}. Sections present: {sorted(bodies)}."
+    )
+    assert re.search(rf"\b{item}\b", bodies[section]), (
+        f"{item} points at §{section} and that section never mentions it. "
+        "Either the pointer is wrong or the section is, and a rotation of "
+        "pointers between rows looks exactly like this."
+    )
+
+
 # CE1: THE REPORT CARRIES CI, PER JOB, FROM THE RUN ITSELF.
 #
 # CI was red at three consecutive reviewed commits and no revision mentioned it.
@@ -826,6 +890,84 @@ def test_the_CI_section_is_about_the_REVIEWED_commit() -> None:
         f"`{judged[:7]}`. A table for another commit is a measurement of "
         "another state; regenerate it with `python scripts/ci_section.py "
         f"{judged[:7]}`."
+    )
+
+
+# CI1: THE WHOLE SUITE, FROM THE REPORT'S OWN RUN (R309).
+#
+# Revision 9 published seven subset counts, every one correct, while the suite
+# was red on a test in none of the seven -- and the failing declaration was
+# written by the commit that published the report, so it was true when it was
+# measured and false when it shipped. Subsets cannot see that. One line can.
+_SUITE = re.compile(
+    r"Whole suite at `([0-9a-f]{7,40})`:\s*(\d+) passed, (\d+) failed, (\d+) skipped"
+)
+
+
+def _suite_line() -> tuple[str, int, int, int] | None:
+    m = _SUITE.search(_newest_revision(REPORT_TEXT))
+    return (m.group(1), int(m.group(2)), int(m.group(3)), int(m.group(4))) if m else None
+
+
+def test_the_report_carries_a_WHOLE_SUITE_count() -> None:
+    """`CLAUDE.md` asks for "the test counts from your own run"."""
+    found = _suite_line()
+    assert found is not None, (
+        "the newest revision carries no whole-suite line. Seven correct "
+        "subset counts cannot show a failure in an eighth file, and that is "
+        "exactly what happened at the last commit. Generate it with "
+        "`python scripts/suite_count.py`, run AFTER every other edit."
+    )
+    sha, passed, failed, skipped = found
+    assert passed > 100, (
+        f"the whole-suite line reports {passed} passed. This suite is an "
+        "order of magnitude larger than that, so the run behind the line was "
+        "not the whole suite."
+    )
+
+
+def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
+    """A count stamped with a sha nobody can check is a count.
+
+    Not the report's own commit -- that sha does not exist while the report is
+    being written -- but an ancestor of it, which is what "run before the
+    report commit" means and is checkable afterwards.
+    """
+    found = _suite_line()
+    if found is None:
+        pytest.skip("reported by test_the_report_carries_a_WHOLE_SUITE_count")
+    sha = found[0]
+    seen = subprocess.run(
+        ["git", "-C", str(ROOT), "merge-base", "--is-ancestor", sha, "HEAD"],
+        capture_output=True,
+    )
+    assert seen.returncode == 0, (
+        f"the whole-suite line names `{sha}`, which is not an ancestor of "
+        "HEAD. Either the count was taken on another branch or the sha was "
+        "typed."
+    )
+
+
+def test_a_RED_suite_is_named_in_the_report() -> None:
+    """A red suite is never silent, at any commit (CI1).
+
+    The line may report failures -- a report that says so is doing its job --
+    but it may not report a number without saying which tests. The failure
+    this rule exists for was a single test that no published figure could
+    have shown.
+    """
+    found = _suite_line()
+    if found is None:
+        pytest.skip("reported by test_the_report_carries_a_WHOLE_SUITE_count")
+    _, _, failed, _ = found
+    if not failed:
+        return
+    body = _newest_revision(REPORT_TEXT)
+    named = re.findall(r"\*\*failed\*\*\s*`([^`]+)`", body)
+    assert len(named) >= failed, (
+        f"the whole-suite line reports {failed} failing tests and the report "
+        f"names {len(named)}. Every one is named, with its node id, or the "
+        "count is a number nobody can act on."
     )
 
 

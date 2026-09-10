@@ -39,9 +39,12 @@ explicit `strict=False` is the author's decision to make.
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import pytest
+
+_SEEN: dict[str, set[str]] = {"ran": set(), "raised": set(), "skipped": set()}
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -63,6 +66,11 @@ def pytest_runtest_makereport(item: Any, call: Any) -> Any:
         # wrong cause printed, which is its own kind of wrong answer.
         del report.wasxfail
         report.outcome = "failed"
+        # AND INTO THE TALLY. This is a failure this plugin creates rather
+        # than one the call raised, so the cross-check below would otherwise
+        # see junit say `1 failed` against a tally of none and redden the rung
+        # for a disagreement of its own making.
+        _SEEN["raised"].add(report.nodeid)
         report.longrepr = (
             f"{report.nodeid}: marked xfail and PASSED. A ladder rung fails on "
             "an unexpected pass whatever the marker's `strict` says -- "
@@ -70,3 +78,71 @@ def pytest_runtest_makereport(item: Any, call: Any) -> Any:
             "while declaring it will not is asserting the opposite of what it "
             "says."
         )
+
+
+# CI0: A SECOND RECORD OF THE SAME RUN.
+#
+# `scripts/run_rung.sh` reads pytest's junit XML. A `conftest.py` anywhere on
+# the collection path can write that XML -- through `pytest_sessionfinish`, or
+# by removing items before anything records them -- and the reviewer measured
+# both, from `tests/conftest.py` and from a rung's own directory. No gate
+# closes that; a gate reading a record cannot outrank code that writes it.
+#
+# What a second record buys is that one hook is no longer enough: this plugin
+# tallies the same run independently and the script requires the two to agree
+# on collected, failed and skipped. A conftest that drops a failing item must
+# now also defeat this tally, in a file the supervisor's item 4c diffs.
+# It is a cost, not a wall, and `run_rung.sh` says so where it says the reach.
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_call(item: Any) -> Any:
+    """The tally is taken from the CALL, not from the report.
+
+    Taking it from `pytest_runtest_logreport` measured the same object the
+    attack rewrites: a conftest hookwrapper on `makereport` flips the report
+    to `passed`, every listener sees the flipped one, and the two records
+    agree because they are one record. The exception raised by the test body
+    is upstream of every report, and a conftest that swallows it there has
+    changed what the test DID rather than what was written about it.
+
+    THE CLASSIFICATION MIRRORS JUNIT'S, because the comparison is against
+    junit: a `Skipped` raised by `pytest.skip()` is a skip, a test carrying an
+    `xfail` marker that raises is recorded by the junit writer as `<skipped>`
+    whatever it raised, and everything else is a failure. Getting either wrong
+    would redden clean rungs for a disagreement this file invented.
+    """
+    _SEEN["ran"].add(item.nodeid)
+    outcome = yield
+    info = getattr(outcome, "excinfo", None)
+    if info is None:
+        return
+    kind = info[0]
+    skipped = kind is not None and kind.__name__ == "Skipped"
+    if skipped or item.get_closest_marker("xfail") is not None:
+        _SEEN["skipped"].add(item.nodeid)
+    else:
+        _SEEN["raised"].add(item.nodeid)
+
+
+def pytest_runtest_logreport(report: Any) -> None:
+    """Setup and teardown are not `call`, and a rung can fail in either."""
+    if report.when == "setup":
+        _SEEN["ran"].add(report.nodeid)
+        if report.failed:
+            _SEEN["raised"].add(report.nodeid)
+        elif report.skipped and not hasattr(report, "wasxfail"):
+            _SEEN["skipped"].add(report.nodeid)
+    elif report.when == "teardown" and report.failed:
+        _SEEN["raised"].add(report.nodeid)
+
+
+def pytest_sessionfinish(session: Any, exitstatus: int) -> None:
+    path = os.environ.get("RUNG_TALLY")
+    if not path:
+        return
+    collected = _SEEN["ran"] | _SEEN["raised"] | _SEEN["skipped"]
+    failed = _SEEN["raised"]
+    skipped = _SEEN["skipped"] - failed
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(f"{len(collected)} {len(failed)} {len(skipped)}" + chr(10))

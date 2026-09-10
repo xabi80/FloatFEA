@@ -30,9 +30,15 @@ THREE THINGS ARE READ AND NEVER REMEMBERED.
 
 3. THE SUBJECT, WRITTEN INTO EVERY ROW (CH4). Each row carries what the verdict
    says that item IS, read out of the verdict and keyed by the number the row is
-   written under. A status attached to the wrong number then sits beside that
-   number's subject and contradicts itself on the page, so a rotation is not
-   detected -- it is impossible to write.
+   written under. **THE SUBJECT CANNOT BE ATTACHED TO THE WRONG NUMBER** -- and
+   that is the whole of the claim. The previous sentence said a rotation was
+   impossible to write, and the reviewer rotated the `state` and `where` fields
+   of three findings and printed all fifty-nine rows: what CH4 removed is the
+   PROSE, and a state and a section number are still rotatable here.
+
+   What catches that is one level up, in `tests/test_report_carried.py`: the
+   section a row points at must exist in the report and must discuss that item.
+   A rotated pointer then names a section that never mentions the number.
 
    The `site` check stays as the second half and its reach is small: it
    discriminates only where the declared site is unique to that finding's

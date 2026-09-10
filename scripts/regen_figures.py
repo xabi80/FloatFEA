@@ -70,16 +70,36 @@ def _figures() -> list[tuple[str, str]]:
 
     model, els = RB._frame()
     k_rb = RB.assemble_dense(model, els)
-    rows.append(("rigid_body_mode_ratio", f"{RB.mode_ratio(k_rb):.4e}"))
-    rows.append(("rigid_body_subspace_loss", f"{RB.subspace_loss(k_rb, model):.4e}"))
-    rows.append(("rigid_body_counter_ratio", f"{RB.counter_response('ratio'):.4e}"))
-    rows.append(("rigid_body_counter_loss", f"{RB.counter_response('loss'):.4e}"))
+    rows.append(
+        (
+            _floor("rigid_body_mode_ratio", "below", "RIGID_BODY_MODE_RATIO"),
+            f"{RB.mode_ratio(k_rb):.4e}",
+        )
+    )
+    rows.append(
+        (
+            _floor("rigid_body_subspace_loss", "below", "RIGID_BODY_SUBSPACE_LOSS"),
+            f"{RB.subspace_loss(k_rb, model):.4e}",
+        )
+    )
+    rows.append(
+        (
+            _floor("rigid_body_counter_ratio", "above", "RIGID_BODY_MODE_RATIO"),
+            f"{RB.counter_response('ratio'):.4e}",
+        )
+    )
+    rows.append(
+        (
+            _floor("rigid_body_counter_loss", "above", "RIGID_BODY_SUBSPACE_LOSS"),
+            f"{RB.counter_response('loss'):.4e}",
+        )
+    )
 
     rows.append(("corpus_entries", f"{len(C.ENTRIES)}"))
     rows.append(("corpus_solved", f"{len(C.SOLVED)}"))
 
     worst = max((max(C._oob_state(e, st) for st in C.STATES) / ceil, e["id"]) for e in C.SOLVED)
-    rows.append(("clean_worst_ratio", f"{worst[0]:.4f}x"))
+    rows.append((_floor("clean_worst_ratio", "below"), f"{worst[0]:.4f}x"))
     rows.append(("clean_worst_entry", worst[1]))
 
     for kind in C.INJECTED_DEFECTS:
@@ -124,11 +144,16 @@ def _figures() -> list[tuple[str, str]]:
     edges = sorted((C._detection_edge(e), e["id"]) for e in C.SOLVED)
     edge = edges[0][0]
     tied = tie_set(edges, FIGURE_ARGMIN_TIE_WINDOW)
-    rows.append(("detection_edge", f"{edge:.4e}"))
+    rows.append((_floor("detection_edge", "derived"), f"{edge:.4e}"))
     rows.append(("detection_edge_at", ", ".join(tied)))
     rows.append(("detection_edge_tie_set", f"{len(tied)} within {FIGURE_ARGMIN_TIE_WINDOW}x"))
-    rows.append(("counter_defect_over_edge", f"{CD / edge:.4g}x"))
-    rows.append(("counter_headroom_room", f"{PATCH_TEST_COUNTER_HEADROOM / (CD / edge):.2f}x"))
+    rows.append((_floor("counter_defect_over_edge", "derived"), f"{CD / edge:.4g}x"))
+    rows.append(
+        (
+            _floor("counter_headroom_room", "above"),
+            f"{PATCH_TEST_COUNTER_HEADROOM / (CD / edge):.2f}x",
+        )
+    )
 
     # THE BOUNDARY IS SOLVED HERE, NOT TYPED INTO THE PLAN (R207). The plan's
     # justification for `PATCH_TEST_COUNTER_HEADROOM` carried `2.36e-6 passes
@@ -154,7 +179,7 @@ def _figures() -> list[tuple[str, str]]:
             C.PATCH_TEST_EXACTNESS_COUNTER_DEFECT = original_cd
     rows.append(
         (
-            "counter_defect_boundary",
+            _floor("counter_defect_boundary", "words"),
             f"{boundary * (1.0 - 1.0e-3):.4g} {outcomes[0]}, "
             f"{boundary * (1.0 + 1.0e-3):.4g} {outcomes[1]}",
         )
@@ -331,29 +356,43 @@ def tie_set(edges: list[tuple[float, str]], window: float) -> list[str]:
 CANONICAL_PYTHON = "3.13"
 CANONICAL_CORETYPE = "Haswell"
 
-# Q8's third local class. A figure whose value IS a round-off magnitude, with
-# the decision the gate makes about it:
+# Q8's third local class, DERIVED FROM THE GENERATOR RATHER THAN GRANTED BY A
+# LIST (CI3, R312). A figure is floor-class when the code that produces it says
+# so, at the line that produces it -- `_floor(name, "below", "CEILING")` beside
+# the `rows.append` -- because the licence is a property of HOW the number is
+# computed and not of whether it happened to move between two machines. The
+# hand-written map this replaces had nine members and the round's nine movers
+# were a different nine, and nothing said so.
 #
 #   below <ceiling>   a clean figure: it must stay under its ceiling
 #   above <ceiling>   a counter: it must stay over the ceiling it defends
 #   derived           no decision of its own; `counter_headroom_room` carries
 #                     the decision for the detection-edge family
-#   words             the decision is the pass/fail words, not the numbers
+#   words             the decision is the pass/fail words; the numbers beside
+#                     them are still compared for spread
 #
-# Every other row in the file must match the canonical render EXACTLY, on any
-# machine. Nine rows of forty-seven move between two machines and all nine are
-# named here or are the tie set above.
-FLOOR_CLASS: dict[str, tuple[str, str | None]] = {
-    "rigid_body_mode_ratio": ("below", "RIGID_BODY_MODE_RATIO"),
-    "rigid_body_subspace_loss": ("below", "RIGID_BODY_SUBSPACE_LOSS"),
-    "rigid_body_counter_ratio": ("above", "RIGID_BODY_MODE_RATIO"),
-    "rigid_body_counter_loss": ("above", "RIGID_BODY_SUBSPACE_LOSS"),
-    "clean_worst_ratio": ("below", None),
-    "counter_headroom_room": ("above", None),
-    "detection_edge": ("derived", None),
-    "counter_defect_over_edge": ("derived", None),
-    "counter_defect_boundary": ("words", None),
-}
+# Every row NOT marked here must match the canonical render exactly, on any
+# machine, so staleness is caught off the canonical runner as it always was.
+_MARKS: dict[str, tuple[str, str | None]] = {}
+
+
+def _floor(name: str, kind: str, ceiling: str | None = None) -> str:
+    """Mark `name` floor-class and return it, so the call sites read as one."""
+    assert kind in ("below", "above", "derived", "words"), kind
+    _MARKS[name] = (kind, ceiling)
+    return name
+
+
+def floor_class() -> dict[str, tuple[str, str | None]]:
+    """The marks, from a render if one has not happened yet.
+
+    A render is what executes the marks, so this triggers one when the caller
+    has not. `--check` renders first and pays nothing.
+    """
+    if not _MARKS:
+        _figures()
+    return dict(_MARKS)
+
 
 _ROW = re.compile(r"^\| `([a-z0-9_]+)` \| (.+?) \|$", re.MULTILINE)
 
@@ -398,7 +437,7 @@ def _number(value: str) -> float | None:
 def _ceiling(name: str) -> float:
     import floatfea.tolerances as T
 
-    kind, ceil_name = FLOOR_CLASS[name]
+    kind, ceil_name = floor_class()[name]
     if ceil_name is None:
         # `clean_worst_ratio` and `counter_headroom_room` are already
         # normalised by the quantity they are compared with, so their ceiling
@@ -456,7 +495,7 @@ def compare(committed: str, local: str) -> tuple[int, list[str]]:
     exact = [
         n
         for n in sorted(mine)
-        if n not in FLOOR_CLASS and not n.startswith("stamp_") and mine[n] != have[n]
+        if n not in floor_class() and not n.startswith("stamp_") and mine[n] != have[n]
     ]
     for n in exact:
         out.append(f"regen_figures: {n} is {mine[n]!r} here and {have[n]!r} in the file.")
@@ -469,7 +508,8 @@ def compare(committed: str, local: str) -> tuple[int, list[str]]:
     out.append("")
     out.append("floor class -- the decision, and the spread beside it:")
     out.append("  figure                          committed        here             spread")
-    for n in sorted(FLOOR_CLASS):
+    marks = floor_class()
+    for n in sorted(marks):
         if n not in have or n not in mine:
             # A floor-class name the file does not carry is not a silent pass:
             # the row-set comparison above has already returned for any real
@@ -477,14 +517,38 @@ def compare(committed: str, local: str) -> tuple[int, list[str]]:
             # SUBSET on purpose -- which is what the injected pairs in
             # `tests/test_figure_local_check.py` are.
             continue
-        kind, _ = FLOOR_CLASS[n]
+        kind, _ = marks[n]
         a, b = _number(have[n]), _number(mine[n])
         if kind == "words":
-            words_a = re.sub(r"[-+0-9.eE]+", "", have[n]).strip()
-            words_b = re.sub(r"[-+0-9.eE]+", "", mine[n]).strip()
-            mark = "" if words_a == words_b else "  <- THE DECISION MOVED"
-            bad |= words_a != words_b
-            out.append(f"  {n:<30}  {have[n]:<16} {mine[n]:<16} {mark}")
+            # WHOLE WORDS (R313). Substituting over the character class
+            # `[-+0-9.eE]` deleted the `e` out of `passes`, so `passes` and
+            # `passees` compared equal. It was latent -- `passes` against
+            # `fails` survives it -- and it was the only comparator in this
+            # file that decides on words.
+            words_a = re.findall(r"[A-Za-z]+", have[n])
+            words_b = re.findall(r"[A-Za-z]+", mine[n])
+            moved = words_a != words_b
+            bad |= moved
+            # AND THE NUMBERS BESIDE THEM GET THEIR SPREAD (R311c). The plan
+            # says the spread is printed beside the value either way, and this
+            # branch returned before any number was read: a row moving nine
+            # orders of magnitude printed nothing and exited 0.
+            nums_a = [float(x) for x in re.findall(r"-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?", have[n])]
+            nums_b = [float(x) for x in re.findall(r"-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?", mine[n])]
+            spreads = [
+                max(a, b) / min(a, b)
+                for a, b in zip(nums_a, nums_b, strict=False)
+                if a > 0 and b > 0
+            ]
+            worst = max(spreads, default=1.0)
+            note = "  <- THE DECISION MOVED" if moved else ""
+            if worst > FIGURE_FLOOR_CLASS_SPREAD:
+                note += f"  <- OVER {FIGURE_FLOOR_CLASS_SPREAD}x"
+                bad = 1
+            if len(nums_a) != len(nums_b):
+                note += "  <- a different number of values"
+                bad = 1
+            out.append(f"  {n:<30}  {have[n]:<32} {mine[n]:<32} {worst:.4f}x{note}")
             continue
         if a is None or b is None or a <= 0 or b <= 0:
             out.append(f"  {n:<30}  {have[n]:<16} {mine[n]:<16} (not a positive number)")

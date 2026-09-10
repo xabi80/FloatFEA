@@ -71,14 +71,6 @@ REQUIREMENT_CHANGED: dict[str, tuple[str, str]] = {
     # The bound is review: `tests/**/conftest.py` is in the supervisor's
     # per-step diff list (`docs/SUPERVISOR.md` item 4c). These entries are here
     # so that the day one of them starts reddening, this file says so.
-    "ci_rung_full_conftest_makereport_wrapper_turns_a_FAILING_test_into_a_passing_report": (
-        "pass",
-        "require=fail. A conftest hookwrapper on `pytest_runtest_makereport` "
-        "flips the failing call report to `passed` before the junit writer "
-        "sees it -- the same hook `scripts/rung_no_xpass.py` uses, in the "
-        "opposite direction. The report the gate reads is green and honest "
-        "about what it was handed",
-    ),
     "ci_rung_full_conftest_pytest_ignore_collect_hides_the_FAILING_test_file": (
         "pass",
         "require=fail. The failing FILE is never collected, so no report of it "
@@ -91,10 +83,24 @@ REQUIREMENT_CHANGED: dict[str, tuple[str, str]] = {
         "require=fail. Assertion domain blindness in its plainest form: the "
         "collection the gate inspects cannot contain the failure",
     ),
-    "ci_rung_full_conftest_pytest_sessionfinish_rewrites_the_junit_xml": (
+    # CI0 MEASURED THIS AGAIN AT TWO MORE DEPTHS, and the placement makes no
+    # difference: the hook applies to every conftest on the collection path,
+    # not to the rung's own directory. `tests/conftest.py` is the one that
+    # exists in this repository and it already implements this hook.
+    "ci_rung_full_ROOT_conftest_tests_conftest_py_drops_the_FAILING_item_for_every_rung": (
         "pass",
-        "require=fail. The one channel the old reach comment named -- and it "
-        "named it as a plugin, when it works from a rung conftest",
+        "require=fail. The item is removed before any record of it exists, so "
+        "the junit XML and the plugin's tally agree -- they are both accurate "
+        "accounts of a run that did not contain the failure. The cross-check "
+        "cannot reach this and nothing inside the session can: it would need "
+        "to know how many tests the rung is SUPPOSED to hold",
+    ),
+    "ci_rung_full_conftest_ONE_LEVEL_ABOVE_the_rung_directory_drops_the_FAILING_item": (
+        "pass",
+        "require=fail, and the same channel from the intermediate directory. "
+        "Recorded separately because all four earlier declarations named the "
+        "rung's own conftest, and the reviewer's point is that the channel is "
+        "a property of the whole collection path",
     ),
 }
 
@@ -542,6 +548,23 @@ LAYOUTS: dict[str, dict[str, str | None]] = {
     "ci_rung_full_xfail_marked_test_that_genuinely_FAILS_CONTROL": {
         "tests/verification/rung1/test_a.py": XFAIL_THAT_FAILS,
     },
+    # The thirty-fifth verdict's four: the same collection hook from two
+    # depths ABOVE the rung, a red rung read for the names it prints, and the
+    # control for both.
+    "ci_rung_full_ROOT_conftest_tests_conftest_py_drops_the_FAILING_item_for_every_rung": {
+        "tests/verification/rung1/test_a.py": OK_AND_BAD,
+        "tests/conftest.py": CONFTEST_MODIFYITEMS_DROP_BAD,
+    },
+    "ci_rung_full_conftest_ONE_LEVEL_ABOVE_the_rung_directory_drops_the_FAILING_item": {
+        "tests/verification/rung1/test_a.py": OK_AND_BAD,
+        "tests/verification/conftest.py": CONFTEST_MODIFYITEMS_DROP_BAD,
+    },
+    "ci_rung_RED_prints_a_count_and_a_reason_and_NO_TEST_NAME": {
+        "tests/verification/rung1/test_a.py": OK_AND_BAD,
+    },
+    "ci_rung_full_two_tests_one_failing_and_NO_conftest_CONTROL": {
+        "tests/verification/rung1/test_a.py": OK_AND_BAD,
+    },
 }
 
 # The two entries whose job arguments are not the default pair for their rung.
@@ -725,6 +748,17 @@ def test_a_RED_rung_prints_its_count_and_its_reason(tmp_path: Path) -> None:
         f"count line is the only thing that says the gate looked.\n{log}"
     )
     assert "is red" in log, f"no reason printed beside the exit code.\n{log}"
+    # AND THE NAME (R311d). `1dc4d33` was titled "a red rung says which test
+    # failed" and it restored the count and the reason and not a name; the
+    # junit report it already parses carries them, and on CI ladder 4 printed
+    # thirteen failures and named none of them.
+    assert "test_bad" in log, (
+        "the rung named no failing test. The junit report holds the names and "
+        f"the reader prints them, so a reader is not sent back to the log.\n{log}"
+    )
+    assert "test_ok" not in log.split("run_rung: 2 collected")[-1], (
+        "the PASSING test is named too, so the list is a dump rather than the " f"failures.\n{log}"
+    )
 
 
 def test_the_changed_requirements_are_exactly_these(tmp_path: Path) -> None:

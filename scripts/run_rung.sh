@@ -169,11 +169,22 @@ if [ "$RUN_COUNT" -gt 0 ]; then
     # reads a record cannot outrank code that writes the record, and the same
     # is true of any replacement for this script.
     #
-    # WHAT PROTECTS A RUNG IS REVIEW OF ITS CONFTEST. `docs/SUPERVISOR.md`
-    # item 4c and `.claude/agents/gating-supervisor.md` item 4c put
-    # `tests/**/conftest.py` in the per-step diff list beside
-    # `floatfea/tolerances.py`, so a conftest changed inside a step commit is
-    # read line by line before its rung's green is believed.
+    # TWO RECORDS OF ONE RUN, AND THEY MUST AGREE (CI0). `-p rung_no_xpass`
+    # tallies the session independently and writes `$RUNG_TALLY`; the reader
+    # below compares that tally with the junit XML on collected, failed and
+    # skipped, and a disagreement reddens the rung. A conftest that drops a
+    # failing item now has to defeat both records consistently instead of one.
+    # THAT IS A COST, NOT A WALL: both are written inside the same session and
+    # a conftest can reach both.
+    #
+    # WHAT PROTECTS A RUNG IS THEN REVIEW OF ITS CONFTEST -- the LAST bound,
+    # not the whole of the answer. `docs/SUPERVISOR.md` item 4c and
+    # `.claude/agents/gating-supervisor.md` item 4c diff
+    # `tests/conftest.py 'tests/**/conftest.py'` at every step, beside
+    # `floatfea/tolerances.py`. BOTH PATHS, because the double star alone
+    # matches nothing: git will not let it stand for zero directories, and the
+    # only conftest in this repository is at depth one -- where it applies to
+    # every rung at once.
     # `set +e` AROUND THE RUN. With `set -e` in force a failing pytest
     # killed the script on the spot: `code=$?` never ran, the junit reader
     # below never ran, and a red rung exited 1 having printed NOTHING --
@@ -181,16 +192,19 @@ if [ "$RUN_COUNT" -gt 0 ]; then
     # working gate; what was lost was everything that says WHICH test
     # failed, and every `exit 1` measured through this path was measuring
     # the shell rather than the reader it was supposed to be measuring.
+    tally=$(mktemp)
     set +e
+    RUNG_TALLY="$tally" \
     PYTHONPATH="$(cd "$(dirname "$0")" && pwd)${PYTHONPATH:+:$PYTHONPATH}" \
         python -m pytest "$@" -q -p rung_no_xpass -o xfail_strict=true \
         --junit-xml="$report" >/dev/null 2>&1
     code=$?
-    python - "$report" "$code" "$*" <<'PY'
+    python - "$report" "$code" "$*" "$tally" <<'PY'
 import sys
 from xml.etree import ElementTree
 
 report, code, where = sys.argv[1], int(sys.argv[2]), sys.argv[3]
+tally = sys.argv[4] if len(sys.argv) > 4 else ""
 try:
     root = ElementTree.parse(report).getroot()
 except Exception as exc:
@@ -210,6 +224,36 @@ for case in cases:
 
 print(f"run_rung: {len(cases)} collected, "
       f"{bad['failure']} failed, {bad['error']} errored, {bad['skipped']} skipped")
+
+# THE NAMES, FROM THE REPORT THAT ALREADY HOLDS THEM (R311d). The repair that
+# restored the count and the reason did not restore a name, and a rung that
+# says "13 failed" sends the reader to the log the gate exists to replace.
+for case in cases:
+    for child in case:
+        if child.tag in ("failure", "error", "skipped"):
+            who = f"{case.get('classname', '')}::{case.get('name', '')}".strip(":")
+            print(f"run_rung:   {child.tag}  {who}")
+
+# TWO RECORDS, CROSS-CHECKED (CI0). The junit XML and the plugin's own tally
+# are written by the same session, so a conftest can reach both -- but it has
+# to reach both CONSISTENTLY, and one rewritten hook now reddens here.
+if tally:
+    try:
+        seen = open(tally, encoding="utf-8").read().split()
+    except OSError:
+        seen = []
+    if len(seen) != 3:
+        sys.exit(f"run_rung: FAIL -- {where}: the plugin wrote no tally. "
+                 "`-p rung_no_xpass` did not load, or something unloaded it, "
+                 "and the cross-check that makes one forged record insufficient "
+                 "is not running.")
+    mine = (len(cases), bad["failure"] + bad["error"], bad["skipped"])
+    theirs = tuple(int(x) for x in seen)
+    if mine != theirs:
+        sys.exit(f"run_rung: FAIL -- {where}: the two records of this run "
+                 f"disagree. junit says {mine} (collected, failed, skipped) and "
+                 f"the plugin tallied {theirs}. One of them was written by "
+                 "something other than the run.")
 
 if bad["skipped"]:
     sys.exit(f"run_rung: FAIL -- {bad['skipped']} skipped in {where}. CLAUDE.md: "

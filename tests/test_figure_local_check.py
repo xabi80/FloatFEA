@@ -202,6 +202,58 @@ def test_the_pass_fail_words_are_the_decision_for_the_boundary_row() -> None:
     assert code != 0, "\n".join(lines)
 
 
+def test_the_numbers_beside_the_words_get_their_spread_too() -> None:
+    """R311(c). The plan says the spread is printed beside the value either way.
+
+    The `words` branch returned before any number was read, so
+    `counter_defect_boundary` -- two probe sizes and two words -- was the one
+    floor-class row with no spread beside it, and a row nine orders of
+    magnitude out passed with no complaint.
+    """
+    moved = _with(counter_defect_boundary="1e-99 passes, 1e+99 fails")
+    code, lines = R.compare(_file(CANON), moved)
+    assert code != 0, "\n".join(lines)
+    row = next(ln for ln in lines if "counter_defect_boundary" in ln)
+    assert (
+        "x" in row.split()[-1] or "OVER" in row
+    ), f"no spread printed beside the boundary row: {row!r}"
+
+
+def test_the_decision_words_are_compared_whole() -> None:
+    """R313. `re.sub` over `[-+0-9.eE]` deleted the `e` out of `passes`."""
+    code, lines = R.compare(
+        _file(CANON), _with(counter_defect_boundary="2.183e-06 passees, 2.188e-06 fails")
+    )
+    assert code != 0, (
+        "`passees` compared equal to `passes`, which is the character class "
+        "eating the letter rather than the words being read.\n" + "\n".join(lines)
+    )
+
+
+def test_the_floor_class_is_what_the_GENERATOR_marks() -> None:
+    """CI3/R312. Membership is a property of how a figure is computed.
+
+    The hand-written map had nine members while the round's nine movers were a
+    different nine, and nothing said so. The marks are now made at the line
+    that builds each row, so a figure added without a mark is exact-compared
+    by default -- the safe direction -- and one that is marked says so where
+    it is produced.
+    """
+    marks = R.floor_class()
+    assert marks, "the generator marked no figure floor-class at all"
+    assert "clean_worst_ratio" in marks and "detection_edge_at" not in marks, (
+        "the class is upside down: `clean_worst_ratio` is a round-off "
+        "magnitude and `detection_edge_at` is a NAME, which no tolerance on a "
+        "value can bound."
+    )
+    for name, (kind, ceiling) in marks.items():
+        assert kind in ("below", "above", "derived", "words"), (name, kind)
+        if kind in ("below", "above") and ceiling is not None:
+            assert hasattr(__import__("floatfea.tolerances", fromlist=["x"]), ceiling), (
+                f"{name} is marked against `{ceiling}`, which is not a " "declared tolerance."
+            )
+
+
 # ------------------------------------------------------------- the tie window
 
 
@@ -268,7 +320,7 @@ def test_the_spread_bound_is_bracketed_by_its_own_measurements() -> None:
     )
     figures = R._values(FIGURES.read_text(encoding="utf-8", errors="replace"))
     margins = []
-    for name, (kind, _) in R.FLOOR_CLASS.items():
+    for name, (kind, _) in R.floor_class().items():
         if kind in ("derived", "words") or name not in figures:
             continue
         value = R._number(figures[name])

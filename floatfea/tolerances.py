@@ -1030,8 +1030,11 @@ DETECTION_THRESHOLD_BAND_COUNTER: Final[float] = 0.25
 # transcendental -- were written for physical channels and do not reach these.
 #
 # Reason for 1.5: the measured spread between the canonical CI render and a
-# laptop render of the same commit, over the nine rows of forty-seven that move
-# at all. The largest is `rigid_body_mode_ratio` at 1.336x; the rest are 1.078x
+# laptop render of the same commit, over the nine rows that move at all. The
+# two renders share thirty-eight rows and nine of the thirty-eight differ;
+# `forty-seven` stood here and is the old FILE's line count, title and prose
+# included, which is a different quantity (R311). The largest is
+# `rigid_body_mode_ratio` at 1.336x; the rest are 1.078x
 # and below. The table is in docs/milestones/F2.md, Q8, and is not retyped here
 # (BI3/R194).
 #

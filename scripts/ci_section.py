@@ -91,6 +91,7 @@ def counts(run_id: int) -> dict[str, tuple[int, int, int]]:
     """`{job: (passed, failed, skipped)}` read from the run's log."""
     log = _gh("run", "view", str(run_id), "--log")
     out: dict[str, list[int]] = {}
+    last: dict[str, tuple[int, int, int]] = {}
     for line in log.splitlines():
         parts = line.split("\t")
         if len(parts) < 3:
@@ -113,9 +114,18 @@ def counts(run_id: int) -> dict[str, tuple[int, int, int]]:
                 if key in found:
                     found[key] += int(n)
             if hit:
-                acc[0] += found["passed"]
-                acc[1] += found["failed"]
-                acc[2] += found["skipped"]
+                # THE LAST SUMMARY, NOT THE SUM OF THEM (R311e). Summing every
+                # line that looks like a pytest summary counted the summaries
+                # this suite's own subprocess tests print INSIDE their
+                # assertion text: the guards job was published as
+                # `4056 | 123` where the job's own line reads `9 failed, 604
+                # passed`, a 13x overstatement of a measurement of CI.
+                last[job] = (found["passed"], found["failed"], found["skipped"])
+    for job, summary in last.items():
+        acc = out.setdefault(job, [0, 0, 0])
+        acc[0] += summary[0]
+        acc[1] += summary[1]
+        acc[2] += summary[2]
     return {k: (v[0], v[1], v[2]) for k, v in out.items()}
 
 

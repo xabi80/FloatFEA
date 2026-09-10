@@ -105,22 +105,6 @@ REQUIREMENT_CHANGED: dict[str, tuple[str, str]] = {
         "instead of passing. `fetch-depth: 0` removes the state from CI; it "
         "does not make the state harmless where it occurs",
     ),
-    "answers_header_names_an_older_verdict_commit": (
-        "green",
-        "require=named_fail, and R282 ruled the check that would produce it "
-        "OUT. `CLAUDE.md` writes the report first and the verdict after, so a "
-        "report NORMALLY names a verdict older than the newest one -- that is "
-        "what every legitimate step boundary looks like from inside the tree, "
-        "and nothing distinguishes this state from one. The discriminator "
-        "R282 accepted is ANCESTRY, and this is its tolerated side: a report "
-        "committed before the verdict legitimately predates it. The other "
-        "side -- a report committed AFTER a verdict and still naming an older "
-        "one -- is caught, and the reviewer ran both sides on a clone. It "
-        "reported by accident for one round, through the CI-section check "
-        "keyed on the `Answers:` sha; that key was wrong for its own reasons "
-        "and moved to the commit the verdict judged, so the accident is gone "
-        "and the disagreement is declared instead of banked",
-    ),
     "two_digit_step_number": (
         "green",
         "require=named_fail, measured against CB2's guard. A step-10 report and "
@@ -239,6 +223,27 @@ def _build(tmp: Path, state: str) -> Path:
                 text[:head] + f"Answers: verdict 28 @ {older}" + text[end:],
                 encoding="utf-8",
             )
+            # AND COMMITTED (R309). Left in the working tree, this state's
+            # outcome depended on which of the report and the verdict git saw
+            # last: while the report predated the verdict the ancestry check
+            # returned early and the state was GREEN, and the moment the
+            # report was re-committed it went red. A state that flips at every
+            # step boundary is not a state; it is the boundary. A report is
+            # always committed before anyone reads it, so committing it here
+            # is also what the real occurrence looks like.
+            for args in (
+                ["add", "docs/reports/F2/step-5.md"],
+                [
+                    "-c",
+                    "user.name=harness",
+                    "-c",
+                    "user.email=harness@localhost",
+                    "commit",
+                    "-m",
+                    "harness: the report, re-committed with an older Answers sha",
+                ],
+            ):
+                subprocess.run(["git", "-C", str(work), *args], capture_output=True, check=True)
         elif action == "shallow":
             # A REAL SHALLOW CLONE, not `fetch --depth 1` on a full one. The
             # first version ran the fetch against `origin` and changed nothing,
