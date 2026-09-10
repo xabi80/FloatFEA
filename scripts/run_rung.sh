@@ -123,57 +123,78 @@ shift  # drop --end--
 
 if [ "$RUN_COUNT" -gt 0 ]; then
     report=$(mktemp)
-    # `xfail_strict`: an XPASS is a failure here. A rung whose only test is
-    # marked xfail and then passes exits 0 by default, and the junit report
-    # records it as a pass -- so the rung reported success while asserting the
-    # opposite of what it says.
-    # `-rN` SUPPRESSES THE SHORT SUMMARY, and that is the point (R286). `-ra`
-    # sits in `addopts`, so pytest printed a per-test summary BEFORE its count
-    # line -- and that summary carries text the test file controls. A `reason=`
-    # of "1 passed on the reference build", or a parametrize id of "3 passed",
-    # put a forged count ahead of the real one. With the short summary off, the
-    # first count line is pytest's own.
-    out=$(python -m pytest "$@" -q -rN --no-header -o xfail_strict=true --junit-xml="$report" 2>&1) || {
-        echo "$out"
-        exit 1
-    }
-    echo "$out"
-    # A RUNG WHOSE TESTS ARE ALL SKIPPED IS NOT A RUNG THAT PASSED. `CLAUDE.md`
-    # forbids a skip and an xfail in the same sentence, and pytest exits 0 for a
-    # run that did either to everything -- so without this the ladder reports
-    # green on a rung that asserted nothing.
+
+    # THE OUTCOME IS READ FROM THE JUNIT REPORT AND THE EXIT CODE, NEVER FROM
+    # STDOUT (CG4). Every version that parsed the terminal output was defeated
+    # by text some other part of the process controls, and each fix moved the
+    # forgery one step earlier:
     #
-    # READ FROM THE SUMMARY LINE ONLY. Grepping the whole output matched a
-    # PASSING test whose own diagnostic contained the word, and reddened a rung
-    # that had skipped nothing.
-    # READ FROM PYTEST'S OWN REPORT, not from the tail of stdout. Anything the
-    # process prints after the summary -- an `atexit` hook, a plugin, a
-    # subprocess -- became the line `tail -1` picked, so a rung that skipped
-    # nothing could be reddened by a string, and one that skipped everything
-    # could hide behind a later line.
-    # AND FROM PYTEST'S OWN SUMMARY, taken as the FIRST count line rather than
-    # the last. junit records a skip but has no distinct field for an
-    # unexpected pass, and `xfail_strict` in the config is overridden by an
-    # explicit `@pytest.mark.xfail(strict=False)` -- so that shape exits 0 and
-    # the report shows nothing. Pytest prints its summary before any `atexit`
-    # output, so the first match is the real one and a later forgery cannot
-    # displace it.
-    first=$(printf '%s
-' "$out" | grep -E '[0-9]+ (passed|failed|skipped|xfailed|xpassed)' | head -1)
-    case "$first" in
-        *xpassed*)
-            fail "$first -- a test in $* passed while marked xfail. CLAUDE.md
-        names xfail in the same sentence as skip; an explicit strict=False does
-        not exempt a ladder rung."
-            exit 1 ;;
-    esac
-    if grep -qE '(skipped|xfail)="[1-9]' "$report" 2>/dev/null; then
-        fail "$(grep -oE '(skipped|xfail[a-z]*)=\"[0-9]+\"' "$report" | tr '
-' ' ')
-        -- a test in $* was skipped or xfailed. CLAUDE.md: never skip a test or
-        mark it xfail to get a green build. Report the failure instead."
-        exit 1
-    fi
+    #   tail -1        an `atexit` hook printing after the summary
+    #   head -1        `-ra`'s short summary, carrying an xfail `reason=` or a
+    #                  parametrize id, printed BEFORE the count line
+    #   --no-header    a conftest `pytest_report_header`
+    #   and still:     `warnings.warn("3 passed in 0.01s")`, and a conftest
+    #                  `pytest_terminal_summary`
+    #
+    # There is no last position in that list. A clean rung whose test merely
+    # WARNS the word was reddened by the same rule, which is the mirror defect.
+    # `--junit-xml` is pytest's own structured account of what it did, and a
+    # test cannot write another test's element.
+    # `-p rung_no_xpass` turns an unexpected pass into a FAILING report entry,
+    # which is the only structured signal for it: a marker's explicit
+    # `strict=False` overrides the project's `xfail_strict`, and pytest's junit
+    # records such a case as a plain pass. See `scripts/rung_no_xpass.py`.
+    #
+    # THE REACH, so the gate is not trusted past it. Two inputs are read and no
+    # others: the junit report and pytest's exit code. Nothing a test, a
+    # conftest, a plugin or an `atexit` hook PRINTS is read at all -- which is
+    # why a module-level `print("1 passed")` is no longer caught here and no
+    # longer needs to be: it is not a forgery of anything this reads. What is
+    # still outside the gate is anything that can write the junit file itself:
+    # a conftest replacing `--junit-xml` through `addopts`, a plugin
+    # implementing `pytest_sessionfinish` to rewrite the XML, or a rung run
+    # with a `-p no:junitxml`. Those are edits to the harness rather than to a
+    # test, and the harness is what review reads.
+    PYTHONPATH="$(cd "$(dirname "$0")" && pwd)${PYTHONPATH:+:$PYTHONPATH}" \
+        python -m pytest "$@" -q -p rung_no_xpass -o xfail_strict=true \
+        --junit-xml="$report" >/dev/null 2>&1
+    code=$?
+    python - "$report" "$code" "$*" <<'PY'
+import sys
+from xml.etree import ElementTree
+
+report, code, where = sys.argv[1], int(sys.argv[2]), sys.argv[3]
+try:
+    root = ElementTree.parse(report).getroot()
+except Exception as exc:
+    sys.exit(f"run_rung: FAIL -- {where} produced no readable junit report ({exc}); "
+             f"pytest exited {code} and nothing describes what it did.")
+
+cases = list(root.iter("testcase"))
+if not cases:
+    sys.exit(f"run_rung: FAIL -- {where} collected nothing. Exit {code}. A rung "
+             "that reports a result about no tests is the failure this reads for.")
+
+bad = {"failure": 0, "error": 0, "skipped": 0}
+for case in cases:
+    for child in case:
+        if child.tag in bad:
+            bad[child.tag] += 1
+
+print(f"run_rung: {len(cases)} collected, "
+      f"{bad['failure']} failed, {bad['error']} errored, {bad['skipped']} skipped")
+
+if bad["skipped"]:
+    sys.exit(f"run_rung: FAIL -- {bad['skipped']} skipped in {where}. CLAUDE.md: "
+             "never skip a test to get a green build. Report the failure instead.")
+if bad["failure"] or bad["error"]:
+    sys.exit(f"run_rung: FAIL -- {where} is red.")
+if code != 0:
+    sys.exit(f"run_rung: FAIL -- pytest exited {code} with no failing case. An "
+             "unexpected pass under `xfail_strict` lands here, and so does a "
+             "usage error; either way the rung did not pass.")
+PY
+    [ $? -eq 0 ] || exit 1
 fi
 
 # PRINTED ONLY AFTER EVERY CHECK HAS PASSED, and only for what was actually

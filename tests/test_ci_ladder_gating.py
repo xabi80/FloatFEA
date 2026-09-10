@@ -25,6 +25,7 @@ declared-expectation rule deliberately changes, and they are listed in
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -171,6 +172,51 @@ XPASS_HEADER_CONFTEST = "\n".join(
         "",
     ]
 )
+XPASS_WARNING = "\n".join(
+    [
+        "import warnings",
+        "",
+        "import pytest",
+        "",
+        "",
+        "@pytest.mark.xfail(strict=False)",
+        "def test_a():",
+        '    warnings.warn("3 passed in 0.01s")',
+        "    assert True",
+        "",
+    ]
+)
+CLEAN_WARNS_XPASSED = "\n".join(
+    [
+        "import warnings",
+        "",
+        "",
+        "def test_a():",
+        '    warnings.warn("1 xpassed in 0.01s")',
+        "    assert True",
+        "",
+    ]
+)
+XPASS_MODULE_PRINT = "\n".join(
+    [
+        "import pytest",
+        "",
+        'print("9 passed in 0.01s")',
+        "",
+        "",
+        "@pytest.mark.xfail(strict=False)",
+        "def test_a():",
+        "    assert True",
+        "",
+    ]
+)
+TERMINAL_SUMMARY_CONFTEST = "\n".join(
+    [
+        "def pytest_terminal_summary(terminalreporter):",
+        '    terminalreporter.write_line("5 passed in 0.01s")',
+        "",
+    ]
+)
 XPASSED = "\n".join(
     [
         "import pytest",
@@ -303,6 +349,22 @@ LAYOUTS: dict[str, dict[str, str | None]] = {
     "ci_rung_full_module_level_pytest_skip_allow_module_level": {
         "tests/verification/rung1/test_a.py": MODULE_SKIP,
     },
+    "ci_rung_full_xpass_whose_TEST_BODY_EMITS_A_WARNING_carrying_a_count_phrase": {
+        "tests/verification/rung1/test_a.py": XPASS_WARNING,
+    },
+    "ci_rung_full_xpass_with_a_conftest_pytest_terminal_summary_writing_a_count_line": {
+        "tests/verification/rung1/test_a.py": XPASS_PLAIN,
+        "tests/verification/rung1/conftest.py": TERMINAL_SUMMARY_CONFTEST,
+    },
+    "ci_rung_full_CLEAN_rung_whose_warning_text_contains_the_word_xpassed": {
+        "tests/verification/rung1/test_a.py": CLEAN_WARNS_XPASSED,
+    },
+    "ci_rung_full_xpass_with_a_MODULE_LEVEL_print_of_a_count_phrase_at_collection": {
+        "tests/verification/rung1/test_a.py": XPASS_MODULE_PRINT,
+    },
+    "ci_rung_full_xpass_reason_count_phrase_WITH_the_projects_addopts_present_in_the_layout": {
+        "tests/verification/rung1/test_a.py": XPASS_REASON,
+    },
     "ci_rung_full_xpass_with_a_plain_strict_False_marker_and_no_free_text": {
         "tests/verification/rung1/test_a.py": XPASS_PLAIN,
     },
@@ -399,6 +461,15 @@ def _job_for(entry: str) -> list[str]:
 
 
 def _run(tmp: Path, entry: str) -> tuple[int, str]:
+    # THE PROJECT'S PYTEST CONFIGURATION TRAVELS WITH THE LAYOUT (CG4). Without
+    # it these trees had no `addopts`, so `-ra` was never in effect and the
+    # flags added to counter it were untestable here: deleting them left all
+    # four forged-summary layouts passing unchanged. A harness that cannot see
+    # the setting under test measures nothing about it.
+    tmp.mkdir(parents=True, exist_ok=True)
+    (tmp / "pyproject.toml").write_text(
+        (ROOT / "pyproject.toml").read_text(encoding="utf-8"), encoding="utf-8"
+    )
     for rel, body in LAYOUTS[entry].items():
         if rel.startswith("@symlink:"):
             link = tmp / rel.split(":", 1)[1]
@@ -456,9 +527,11 @@ def test_the_rung_job_gates_the_layout(
     else:
         assert code == 0, f"{entry}: the job failed on a layout that must pass.\n{log}"
         if require == "run":
-            assert "passed" in log, (
+            assert re.search(r"run_rung: [1-9]\d* collected", log), (
                 f"{entry}: the job returned 0 without running any test. That is "
-                f"the rung-6 defect exactly: green, and nothing executed.\n{log}"
+                f"the rung-6 defect exactly: green, and nothing executed. The "
+                f"count comes from the script's own line, because pytest's "
+                f"summary is no longer echoed -- reading it was R294.\n{log}"
             )
         else:
             assert "run_rung: OK" in log, (

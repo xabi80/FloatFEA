@@ -64,13 +64,30 @@ jobs:
   # the CPU and the OpenBLAS core type beside each result. It is EXPECTED TO FAIL
   # until the kernel is pinned, and its result gates Q8 -- no canonical value is
   # written from a measurement this job has not shown to reproduce.
+  # CF1/CG0/CG1: DOES CI AGREE WITH ITSELF? Q8 makes CI canonical and that
+  # assumes it. The question is whether TEN CI LEGS AGREE WITH EACH OTHER --
+  # not whether any of them matches the file in the repository, which is a
+  # laptop render and a different question.
+  #
+  # THE FIRST VERSION MEASURED NEITHER. It regenerated the figures and hashed
+  # what it had just written, so it agreed with itself everywhere. The second
+  # compared against the committed file -- all ten legs failed, correctly, and
+  # the hash step never ran because it shared a shell block with the comparison
+  # that exited first. The regression rung then never ran either, so the job
+  # reported a result about work it had not done.
+  #
+  # MEASUREMENT COMES FIRST AND CANNOT BE SUPPRESSED. Each leg records its CPU,
+  # its core type and the hash of a FRESH render in its own step, uploads them,
+  # and a final job asserts the ten agree. The comparison against the committed
+  # file is a separate step marked `continue-on-error`, so a mismatch there is
+  # reported without hiding the measurement.
   determinism:
-    name: "CI determinism -- 10 runners, byte-identity"
+    name: "CI determinism -- leg"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        run: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        leg: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
@@ -78,42 +95,100 @@ jobs:
         with:
           python-version: "3.13"
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - name: "the machine this run drew"
+
+      - name: "measure: the machine, the kernel, and a fresh render"
         run: |
-          grep -m1 'model name' /proc/cpuinfo || true
-          python - <<'PY'
-          import numpy as np
-          print("numpy", np.__version__)
-          try:
-              import numpy.__config__ as c
-              print(c.show())
-          except Exception as exc:  # pragma: no cover - reporting only
-              print("config unavailable:", exc)
-          PY
-      - name: "the COMMITTED figures, hashed before anything overwrites them"
-        run: |
+          mkdir -p leg
+          grep -m1 'model name' /proc/cpuinfo | sed 's/.*: //' > leg/cpu.txt || echo unknown > leg/cpu.txt
+          printf '%s\n' "${OPENBLAS_CORETYPE:-unset}" > leg/coretype.txt
+          python scripts/regen_figures.py
           python - <<'PY'
           import hashlib, pathlib
-          p = pathlib.Path("docs/milestones/F2_figures.md")
-          print("COMMITTED-SHA256", hashlib.sha256(p.read_bytes()).hexdigest())
+          h = hashlib.sha256(pathlib.Path("docs/milestones/F2_figures.md").read_bytes())
+          pathlib.Path("leg/figures.sha256").write_text(h.hexdigest() + "\n")
+          print("FIGURES-SHA256", h.hexdigest())
           PY
-      - name: "regenerate, and compare against what was committed"
+          cat leg/cpu.txt leg/coretype.txt leg/figures.sha256
+
+      - name: "measure: the regression rung, and that it RAN"
         run: |
-          # `--check` COMPARES; the previous version ran the generator, which
-          # OVERWRITES the file, and then hashed what it had just written. It
-          # therefore agreed with itself on every runner and would have agreed
-          # with a committed file replaced by one line of garbage -- the
-          # reviewer ran exactly that and the job went green. Ten legs reported
-          # the rung passing while the guards job in the same run reported the
-          # figures stale, which is the decoupling stated as a symptom.
-          python scripts/regen_figures.py --check
+          # A job that reports a result about work it did not do is the finding
+          # this step exists to prevent (R293). `--junit-xml` records how many
+          # cases were collected, and zero is a failure here.
+          pytest tests/regression -q --junit-xml=leg/regression.xml || true
           python - <<'PY'
-          import hashlib, pathlib
-          p = pathlib.Path("docs/milestones/F2_figures.md")
-          print("FIGURES-SHA256", hashlib.sha256(p.read_bytes()).hexdigest())
+          import pathlib, sys
+          from xml.etree import ElementTree
+          r = pathlib.Path("leg/regression.xml")
+          if not r.is_file():
+              sys.exit("the regression rung produced no report; it did not run")
+          root = ElementTree.parse(r).getroot()
+          cases = list(root.iter("testcase"))
+          bad = [c for c in cases if any(k.tag in ("failure", "error") for k in c)]
+          pathlib.Path("leg/regression.txt").write_text(
+              f"{len(cases)} collected, {len(bad)} failed\n"
+          )
+          print(len(cases), "collected,", len(bad), "failed")
+          if not cases:
+              sys.exit("zero cases collected -- the rung reported nothing")
           PY
-      - name: "the regression rung, which is the test that alternates"
-        run: pytest tests/regression -q
+
+      - name: "compare against the committed file (reported, not fatal here)"
+        continue-on-error: true
+        run: |
+          git diff --exit-code -- docs/milestones/F2_figures.md \
+            && echo "COMMITTED-MATCHES-CI yes" \
+            || echo "COMMITTED-MATCHES-CI no -- the committed file is not what this runner renders"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: determinism-leg-${{ matrix.leg }}
+          path: leg/
+
+  # CG1: THE TEN LEGS AGAINST EACH OTHER. This is the assertion CF1 asked for
+  # and no earlier version made: all ten hashes equal, all ten core types equal.
+  # If the hashes split, the split itself is the measurement and this job prints
+  # it grouped by CPU.
+  determinism_verdict:
+    name: "CI determinism -- ten legs agree"
+    runs-on: ubuntu-latest
+    needs: [determinism]
+    if: always()
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: determinism-leg-*
+          path: legs
+      - name: "all ten hashes equal, all ten core types equal"
+        run: |
+          python - <<'PY'
+          import collections, pathlib, sys
+          legs = sorted(pathlib.Path("legs").glob("determinism-leg-*"))
+          if len(legs) != 10:
+              sys.exit(f"{len(legs)} legs reported, expected 10")
+          rows = []
+          for d in legs:
+              rows.append((
+                  d.name,
+                  (d / "cpu.txt").read_text().strip(),
+                  (d / "coretype.txt").read_text().strip(),
+                  (d / "figures.sha256").read_text().strip(),
+                  (d / "regression.txt").read_text().strip(),
+              ))
+          for r in rows:
+              print(" | ".join(r))
+          by_hash = collections.defaultdict(list)
+          for _, cpu, _, h, _ in rows:
+              by_hash[h].append(cpu)
+          if len(by_hash) != 1:
+              for h, cpus in by_hash.items():
+                  print("HASH", h[:12], "on", sorted(set(cpus)))
+              sys.exit("the ten legs do not agree: CI is not deterministic")
+          cores = {r[2] for r in rows}
+          if len(cores) != 1 or cores == {"unset"}:
+              sys.exit(f"core types across legs: {sorted(cores)} -- the kernel is not pinned")
+          print("ten of ten identical:", next(iter(by_hash))[:12], "core", next(iter(cores)))
+          PY
 
   # THE GUARDS THEMSELVES, and they had never run here (R235). Every top-level
   # `tests/test_*.py` -- the tolerance-literal scanner, the carry guard, the

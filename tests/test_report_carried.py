@@ -52,6 +52,9 @@ touched at the right line. Both are the reviewer's.
 
 from __future__ import annotations
 
+import html
+import importlib.util
+import json
 import re
 import subprocess
 from pathlib import Path
@@ -398,14 +401,45 @@ REPORT_WORDS = ("answered", "open", "withdrawn", "4a", "later", "carried")
 # reviewer got the word past the first version four ways out of five: a bolded
 # first cell, a backticked one (the adjacent table backticks every first cell,
 # seventy times over), a third column, and `**resolved**, nothing open`.
-VERDICT_ONLY = ("closed", "resolved", "settled", "complete", "finished")
+VERDICT_ONLY = (
+    "closed",
+    "resolved",
+    "settled",
+    "complete",
+    "finished",
+    # R297's corpus, third layer: five spellings of closure that were not in
+    # the tuple. `done` and `fixed` say the same thing the banned word says,
+    # and `no longer open` said it while SATISFYING the report-word check,
+    # because `open` is a substring of it.
+    "done",
+    "fixed",
+    "no longer open",
+)
 
 _MARKUP = re.compile(r"[`*_~]+")
+# Renderings of a word that are not spellings of it. A soft hyphen, an empty
+# HTML comment and a numeric entity all render as `closed` in the published
+# report and none of them contains the letters in order. Measured by the
+# reviewer, three entries, all three got the word past the strip.
+_INVISIBLE = re.compile(
+    # soft hyphen, zero-width space, ZWNJ, ZWJ, BOM -- then an HTML
+    # comment, which renders as nothing and can split a word in two.
+    "[\u00ad\u200b\u200c\u200d\ufeff]"
+    "|<!--.*?-->"
+)
 
 
 def _plain(cell: str) -> str:
-    """Cell text with markdown stripped, so a status cannot hide behind it."""
-    return _MARKUP.sub("", cell).lower()
+    """Cell text AS RENDERED, lowercased -- not as typed.
+
+    A status cell is read by a person looking at rendered markdown, so the
+    check has to see what they see. Stripping markup was one third of that;
+    the other two are characters that render as nothing and entities that
+    render as a letter.
+    """
+    text = _INVISIBLE.sub("", cell)
+    text = html.unescape(text)
+    return _MARKUP.sub("", text).lower()
 
 
 # THE FIRST CELL MAY BE DECORATED AND THE STATUS MAY BE IN ANY CELL AFTER IT.
@@ -414,14 +448,21 @@ def _plain(cell: str) -> str:
 # first cell, seventy times -- and a third column. Revision 5 said this edit had
 # been made and it had not, which is why the claim now carries the cell it is
 # checked by.
-_ROW = re.compile(r"^\|([^|]*R\d+[^|]*)\|(.+)\|\s*$", re.MULTILINE)
+#
+# AND THE ROW MAY BE INDENTED, AND THE NUMBER MAY BE SPACED. Two more of the
+# reviewer's spellings: `  | R230 | ... |` did not anchor, and `| R 230 |`
+# renders as the item and matches neither `_ROW` nor `_MENTION`. Both produced
+# no status cell at all, which is the failure mode this pair of tests exists to
+# prevent -- banning a word must not become saying nothing.
+_ROW = re.compile(r"^[ \t]*\|([^|]*R\s*\d+[^|]*)\|(.+)\|\s*$", re.MULTILINE)
+_LOOSE_MENTION = re.compile(r"\bR\s*\d+\b")
 
 
 def _status_cells() -> list[tuple[str, str]]:
     """`(items, status)` for EVERY cell after the first, per Carried row."""
     out: list[tuple[str, str]] = []
     for items, rest in _ROW.findall(CARRIED):
-        if not _MENTION.findall(items):
+        if not _LOOSE_MENTION.findall(items):
             continue
         for cell in rest.split("|"):
             if cell.strip():
@@ -472,31 +513,96 @@ def test_every_carried_item_carries_one_of_the_report_words() -> None:
 
 
 def test_no_status_claims_more_than_the_verdict_allows() -> None:
-    """An item the verdict says is still carried cannot be reported as finished.
+    """`withdrawn` is a ruling, and a report does not make rulings.
 
-    `withdrawn` is the one report word that claims finality -- it says the item
-    is gone, not that it was answered -- so it is the one that can contradict a
-    verdict. Where the verdict's own carry line says an item is NOT closed or is
-    still carried, the report may say `answered` or `open` and not `withdrawn`.
+    It is the one report word that claims finality -- it says the item is gone,
+    not that it was answered -- so it is the one that can contradict a verdict.
+
+    THE DOMAIN IS EVERY ROW THAT SAYS IT. Two earlier versions built a domain
+    and the word escaped both: three lines of twenty-one findings the first
+    time, and every finding of the ANSWERED verdict the second -- which left an
+    item from an older round outside the domain entirely, so a report could
+    retire R241 by writing `withdrawn by me` and nothing looked. The reviewer
+    measured exactly that. There is no domain to get wrong here: a row may say
+    `withdrawn` when a verdict withdrew that item, and otherwise it may not.
     """
-    # THE DOMAIN IS EVERY FINDING THE VERDICT NAMES, not the handful of lines
-    # that happen to use a phrase. The first version built it from three of
-    # twenty-one and could not see the only `withdrawn` in the report.
-    closed_by_verdict: set[str] = set()
-    for line in VERDICT_TEXT.splitlines():
-        if any(w in line.lower() for w in VERDICT_ONLY):
-            closed_by_verdict.update(_MENTION.findall(line))
-    carried_open = set(EXPECTED) - closed_by_verdict
-    contradicting = [
-        i
+    # The WHOLE review file, every round of it, because a withdrawal ruled two
+    # verdicts ago is still a withdrawal -- and the item is still carried.
+    ruled: set[str] = set()
+    for line in _read(VERDICT).splitlines():
+        if "withdraw" in line.lower():
+            ruled.update(_MENTION.findall(line))
+    claiming = [
+        (i, st)
         for i, st in _status_cells()
-        if "withdrawn" in _plain(st) and set(_MENTION.findall(i)) & carried_open
+        if "withdrawn" in _plain(st) and not (set(_MENTION.findall(i)) & ruled)
     ]
-    assert not contradicting, (
-        f"{contradicting} are reported as withdrawn while {VERDICT.name} says "
-        "they are still carried. A report cannot retire an item the verdict "
-        "kept."
+    assert not claiming, (
+        f"{[c[0] for c in claiming]} are reported as withdrawn and no verdict "
+        f"in {VERDICT.name} withdraws them. A report says what it DID; whether "
+        "an item is gone is the verdict's to say. If the withdrawal is of the "
+        "report's own claim rather than of the finding, say `answered` and "
+        "state what was withdrawn."
     )
+
+
+# R296 / R301: THE TABLE IS THE GENERATOR'S OUTPUT, OR IT IS NOT THE TABLE.
+#
+# `scripts/carried_table.py` was written because two revisions in a row wrote
+# statuses under the wrong numbers. It was then committed, correct, and run by
+# NOTHING -- so the next revision's table was shifted by one in three rows
+# while a script that would not have shifted them sat in the repository. A
+# generator nothing executes is a comment.
+ANSWERS = REPORTS / f"step-{STEP}-answers.json"
+
+
+def _generator():
+    """`scripts/carried_table.py` as a module, without a `scripts` package."""
+    spec = importlib.util.spec_from_file_location(
+        "carried_table", ROOT / "scripts" / "carried_table.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_the_Carried_table_is_what_the_generator_produces() -> None:
+    """The published command, run here, against what was published."""
+    assert ANSWERS.is_file(), (
+        f"{ANSWERS.name} is not committed. The report publishes the command "
+        "that builds its own table; a command whose input is untracked cannot "
+        "be run by the person reading it, which is R296."
+    )
+    gen = _generator()
+    answers = json.loads(ANSWERS.read_text(encoding="utf-8"))
+    produced = gen.table(_read(VERDICT), answers)
+    body = "\n".join(line.rstrip() for line in CARRIED.splitlines())
+    missing = [ln for ln in produced.splitlines() if ln.rstrip() not in body.splitlines()]
+    assert not missing, (
+        f"{len(missing)} generated rows are not in the report's Carried "
+        f"section, the first being:\n  {missing[0]}\n"
+        f"Regenerate with:\n  python scripts/carried_table.py {VERDICT} "
+        f"{ANSWERS}"
+    )
+
+
+def test_the_generator_would_catch_a_row_under_the_wrong_number() -> None:
+    """The check that makes the generator worth running (R296).
+
+    A status written under the wrong number is a status whose declared site
+    belongs to a different finding's block. This is the ablation: move one
+    row's site to a path its own block does not name, and the generator must
+    refuse to print the table at all.
+    """
+    gen = _generator()
+    answers = json.loads(ANSWERS.read_text(encoding="utf-8"))
+    answered = dict(answers["answered"])
+    victim = next(i for i in answered if i in gen.blocks(_read(VERDICT)))
+    answered[victim] = dict(answered[victim], site="floatfea/does_not_appear.py")
+    with pytest.raises(SystemExit) as caught:
+        gen.table(_read(VERDICT), {"answered": answered})
+    assert victim in str(caught.value)
 
 
 # CE1: THE REPORT CARRIES CI, PER JOB, FROM THE RUN ITSELF.
@@ -557,6 +663,38 @@ def test_the_report_carries_a_CI_SECTION() -> None:
         f"only {sorted(rows)} reported. Every job in the workflow has a row, "
         "including the ones that did not run: a job that never ran is the "
         "finding that hides best."
+    )
+
+
+_SHA_IN_SECTION = re.compile(r"\b[0-9a-f]{7,40}\b")
+
+
+def test_the_CI_section_is_about_the_ANSWERED_commit() -> None:
+    """CG3. A CI table is a measurement of one commit, and it says which.
+
+    Revision 7 published a table for `73cf6ce` in a revision written at
+    `a949709` and stated in the present tense that the only two reds were the
+    sine and cosine comparisons. At the commit it was written on there were
+    twelve red jobs and ten of them were neither. The report could not have
+    known -- the run started after it was pushed -- which is exactly why the
+    table must name the commit it describes.
+
+    The commit it can describe is the one it ANSWERS: the verdict is pushed
+    before the report is written, so its run has finished. `Answers:` already
+    names that commit, so the two are checked against each other and a table
+    carried forward from a previous revision is red.
+    """
+    body = _ci_section()
+    found = _SHA_IN_SECTION.findall(body)
+    assert found, (
+        "the CI section names no commit. `python scripts/ci_section.py "
+        f"{ANSWERED[:7]}` generates the section, header included."
+    )
+    assert found[0].startswith(ANSWERED[:7]) or ANSWERED.startswith(found[0]), (
+        f"the CI section's first commit is `{found[0]}` and the report answers "
+        f"`{ANSWERED[:7]}`. A table for another commit is a measurement of "
+        "another state; regenerate it with `python scripts/ci_section.py "
+        f"{ANSWERED[:7]}`."
     )
 
 
