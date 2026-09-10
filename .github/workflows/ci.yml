@@ -109,6 +109,12 @@ jobs:
           print("FIGURES-SHA256", h.hexdigest())
           PY
           cat leg/cpu.txt leg/coretype.txt leg/figures.sha256
+          # CG2: THE ARTIFACT IS THE FILE THE HASH WAS TAKEN OVER. Q8 says a CI
+          # job produces the canonical files as an artifact and the agent
+          # commits exactly that. Copying it here rather than in a separate
+          # `regen` job means the bytes uploaded are the bytes ten legs agreed
+          # on, instead of an eleventh render nobody compared.
+          cp docs/milestones/F2_figures.md leg/F2_figures.md
 
       - name: "measure: the regression rung, and that it RAN"
         run: |
@@ -140,7 +146,11 @@ jobs:
             && echo "COMMITTED-MATCHES-CI yes" \
             || echo "COMMITTED-MATCHES-CI no -- the committed file is not what this runner renders"
 
+      # `if: always()`, because the leg's measurement is most wanted on the run
+      # where a later step failed. The default skips the upload on failure,
+      # which is the one case that loses the evidence.
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: determinism-leg-${{ matrix.leg }}
           path: leg/
