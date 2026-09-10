@@ -37,6 +37,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "tests" / "corpus" / "report_guard_states.txt"
 GUARD = "tests/test_report_carried.py"
+REVIEW_PATH = "docs/re" + "views/F2/step-5.md"
 
 # How each state is built, relative to a COPY of the repository. A state is a
 # mutation of `docs/reports/F2/` or `docs/reviews/F2/` and nothing else.
@@ -222,12 +223,23 @@ def _build(tmp: Path, state: str) -> Path:
             # A real commit, but not the newest verdict's. Item 1b is the
             # reviewer's to check by eye; this asks whether the guard says
             # anything at all when the header points backwards.
-            older = subprocess.run(
-                ["git", "-C", str(work), "rev-list", "-n", "1", "HEAD~4"],
+            # THE PREVIOUS VERDICT'S COMMIT, not `HEAD~4`. The count was a
+            # moving target: with four commits on top of the newest verdict,
+            # `HEAD~4` IS that verdict, the header then named the newest one
+            # and the state stopped being a defect. What this state means is
+            # "a verdict older than the newest", and the second-newest commit
+            # touching the verdict file is that, at any distance.
+            history = subprocess.run(
+                ["git", "-C", str(work), "log", "--format=%H", "--", REVIEW_PATH],
                 capture_output=True,
                 text=True,
                 check=True,
-            ).stdout.strip()
+            ).stdout.split()
+            assert len(history) > 1, (
+                "the verdict file has one commit, so there is no older verdict "
+                "to name and this state cannot be built"
+            )
+            older = history[1]
             text = (reports / "step-5.md").read_text(encoding="utf-8", errors="replace")
             head = text.rindex("Answers: verdict")
             end = text.index(chr(10), head)
