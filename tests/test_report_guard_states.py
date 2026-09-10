@@ -75,6 +75,18 @@ STATES: dict[str, list[tuple[str, str]]] = {
         ("copy_verdict", "6"),
     ],
     "answers_header_names_an_older_verdict_commit": [("older_answers_sha", "")],
+    # --- the thirty-fifth verdict's two ------------------------------------
+    # The control is the same build as the state above, under its own name:
+    # the entry asks whether a state that REDDENS is reported when someone
+    # has declared it green, and the answer has to be a run rather than a
+    # reading of the branch. It is not in `REQUIREMENT_CHANGED`, which is the
+    # whole point -- a declaration is what would hide it.
+    "guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL": [
+        ("older_answers_sha", "")
+    ],
+    "guard_state_a_report_commit_messaged_docs_that_also_edits_the_guards_measuring_it": [
+        ("docs_commit_touching_guards", "")
+    ],
 }
 
 
@@ -244,6 +256,42 @@ def _build(tmp: Path, state: str) -> Path:
                 ],
             ):
                 subprocess.run(["git", "-C", str(work), *args], capture_output=True, check=True)
+        elif action == "docs_commit_touching_guards":
+            # A commit messaged `docs:` that also edits the test judging the
+            # report. Nothing refused it: the `PreToolUse` hook protects
+            # `docs/reviews/` and `tests/corpus/`, and `CLAUDE.md` protects
+            # `.claude/` and `docs/SUPERVISOR.md`. A step report's own commit
+            # could still change the guard that measures it, and at `e3a3bd1`
+            # it did -- and that change is what turned the suite red.
+            guard = work / "tests" / "test_report_carried.py"
+            guard.write_text(
+                guard.read_text(encoding="utf-8", errors="replace")
+                + chr(10)
+                + "# harness: a guard edit smuggled into a docs commit"
+                + chr(10),
+                encoding="utf-8",
+            )
+            report = reports / "step-5.md"
+            report.write_text(
+                report.read_text(encoding="utf-8", errors="replace")
+                + chr(10)
+                + "A line appended by the harness."
+                + chr(10),
+                encoding="utf-8",
+            )
+            for args in (
+                ["add", "tests/test_report_carried.py", "docs/reports/F2/step-5.md"],
+                [
+                    "-c",
+                    "user.name=harness",
+                    "-c",
+                    "user.email=harness@localhost",
+                    "commit",
+                    "-m",
+                    "docs: step-5 revision 99 -- and the guard that judges it",
+                ],
+            ):
+                subprocess.run(["git", "-C", str(work), *args], capture_output=True, check=True)
         elif action == "shallow":
             # A REAL SHALLOW CLONE, not `fetch --depth 1` on a full one. The
             # first version ran the fetch against `origin` and changed nothing,
@@ -410,6 +458,13 @@ def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) 
             "test_the_parse_found_something_to_check",
             "test_the_report_carries_the_finding",
             "test_every_named_site_is_touched_or_declared",
+            # CI1: the two this round adds. A state whose only reporter is
+            # not in this list fails for "nobody can locate it", which is the
+            # right answer for an anonymous collapse and the wrong one for a
+            # test that names the commit and the file.
+            "test_a_docs_commit_does_not_also_edit_the_guard_that_judges_it",
+            "test_the_report_carries_a_WHOLE_SUITE_count",
+            "test_a_carried_row_points_at_a_section_that_discusses_it",
         )
         if state in DIAGNOSIS:
             _assert_diagnosis(state, got, log)

@@ -893,6 +893,62 @@ def test_the_CI_section_is_about_the_REVIEWED_commit() -> None:
     )
 
 
+# A REPORT COMMIT DOES NOT EDIT THE GUARD THAT JUDGES IT.
+#
+# The `PreToolUse` hook protects `docs/reviews/` and `tests/corpus/`, and
+# `CLAUDE.md` protects `.claude/` and `docs/SUPERVISOR.md`. Nothing stopped a
+# commit messaged `docs: step-5 revision 9` from also changing
+# `tests/test_report_carried.py` -- and at `e3a3bd1` one did, and that change
+# is what turned the suite red while every published figure stayed correct.
+#
+# The rule is not "never change the guard": it is that a change to the machine
+# that measures a report is not part of the report. It goes in the step commit,
+# where the reviewer diffs it against the work, not in the commit whose subject
+# says it is prose.
+_GUARD_FILES = re.compile(r"^tests/test_report_[a-z_]+\.py$")
+
+
+def _commits_since_the_answered_verdict() -> list[tuple[str, str, list[str]]]:
+    """`(sha, subject, files)` for each commit after the answered verdict."""
+    out = subprocess.run(
+        ["git", "-C", str(ROOT), "log", "--format=%h%x00%s", "--name-only", f"{ANSWERED}..HEAD"],
+        capture_output=True,
+        text=True,
+    )
+    if out.returncode != 0:
+        return []
+    commits: list[tuple[str, str, list[str]]] = []
+    sha = subject = ""
+    files: list[str] = []
+    for line in out.stdout.splitlines():
+        if "\0" in line:
+            if sha:
+                commits.append((sha, subject, files))
+            sha, subject = line.split("\0", 1)
+            files = []
+        elif line.strip():
+            files.append(line.strip())
+    if sha:
+        commits.append((sha, subject, files))
+    return commits
+
+
+def test_a_docs_commit_does_not_also_edit_the_guard_that_judges_it() -> None:
+    guilty = [
+        (sha, subject, [f for f in files if _GUARD_FILES.match(f)])
+        for sha, subject, files in _commits_since_the_answered_verdict()
+        if subject.lower().startswith("docs:") and any(_GUARD_FILES.match(f) for f in files)
+    ]
+    assert not guilty, (
+        "a commit messaged `docs:` also changes the guard that measures the "
+        f"report: {[(g[0], g[2]) for g in guilty]}. Put the guard change in "
+        "the step commit, where it is diffed against the work it belongs to. "
+        "The last time this happened the change was correct and it falsified "
+        "a declaration in the same breath, and no figure in the report could "
+        "have shown it."
+    )
+
+
 # CI1: THE WHOLE SUITE, FROM THE REPORT'S OWN RUN (R309).
 #
 # Revision 9 published seven subset counts, every one correct, while the suite
