@@ -50,8 +50,8 @@ not in the repo, that is a finding in itself.
    rather than skipped over.
 4. `git diff <prev-verdict-commit>..HEAD -- floatfea/tolerances.py` separately,
    because that file is where the cheapest wrong fix lands.
-4c. `git diff <prev-verdict-commit>..HEAD -- 'tests/**/conftest.py'`
-   separately (CH2), because **everything the ladder's gate reads is writable
+4c. `git diff <prev-verdict-commit>..HEAD -- tests/conftest.py 'tests/**/conftest.py'`
+   separately (CH2, corrected by CI0), because **everything the ladder's gate reads is writable
    from a rung's own conftest**. `scripts/run_rung.sh` reads pytest's junit
    report and pytest's exit code; a `pytest_runtest_makereport` hookwrapper in
    the rung's directory rewrites that report, and `pytest_ignore_collect` or
@@ -59,9 +59,21 @@ not in the repo, that is a finding in itself.
    before anything records it. Three of those were measured reaching
    `run_rung: OK`, exit 0, on a rung whose only test asserts `False`.
    No gate can close this: a gate that reads a record cannot outrank code that
-   writes the record. Review is the bound, and this line is the review. A new
-   or changed conftest under `tests/` is read line by line before its rung's
-   green is believed.
+   writes the record. Review is the LAST bound rather than the whole of it --
+   the rung script cross-checks two independent records of the same run, so
+   one rewritten hook reddens -- and this line is the review. A new or changed
+   conftest under `tests/` is read line by line before its rung's green is
+   believed.
+
+   **BOTH PATHS ARE LISTED AND THE FIRST IS THE ONE THAT EXISTS.**
+   `tests/**/conftest.py` alone matches nothing: git's default glob will not
+   let a double star stand for zero directories, and the repository's only
+   conftest is `tests/conftest.py` at depth one. Run it and expect a file:
+
+       $ git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+       tests/conftest.py
+
+   An empty result here is a broken instruction, not a clean step.
 4b. `git diff <prev-verdict-commit>..HEAD -- .claude docs/SUPERVISOR.md`
    separately, because that is **your own instructions** — what you read, what
    you must carry, what you may write. Any change here must sit in a standalone

@@ -81,7 +81,24 @@ recorded as unavailable, never skipped over.
    a `_COUNTER` in the assertion's own quantity, and a justification located in
    `docs/milestones/F<n>.md` or the closure artifact. Missing any one is a
    HOLD.
-4c. `git diff <prev>..<this> -- 'tests/**/conftest.py'` separately (CH2).
+4c. `git diff <prev>..<this> -- tests/conftest.py 'tests/**/conftest.py'`
+   separately (CH2, corrected by CI0).
+
+   **BOTH PATHS, AND THE FIRST ONE IS THE FILE THAT EXISTS.** The pattern
+   `tests/**/conftest.py` alone matched NOTHING in this repository: git's
+   default pathspec glob will not let a double star stand for zero
+   directories, so it means "depth two or more", and the only conftest here is
+   `tests/conftest.py` at depth one. The instruction read as "every conftest
+   under tests/" and returned the empty set for a full round while that file
+   implemented `pytest_collection_modifyitems` -- one of the channels this
+   item exists for -- for every rung at once.
+
+       $ git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+       tests/conftest.py
+
+   `tests/test_supervisor_conftest_pathspec.py` asserts that the pathspec in
+   this file matches every conftest in the repository, and reddens when one
+   appears outside it.
    **Everything the ladder's gate reads is writable from a rung's own
    conftest.** `scripts/run_rung.sh` reads pytest's junit report and pytest's
    exit code, which is the right pair and is what killed four text channels --
@@ -90,9 +107,14 @@ recorded as unavailable, never skipped over.
    `pytest_collection_modifyitems` delete the failing test before anything
    records it. All three were measured reaching `run_rung: OK`, exit 0, on a
    genuinely red rung.
-   No gate closes this, because a gate reading a record cannot outrank code that
-   writes the record. **Review is the bound**: a conftest under `tests/` changed
-   inside a step commit is inspected line by line, every step, exactly as
+   No gate closes this, because a gate reading a record cannot outrank code
+   that writes the record. **Review is the LAST bound, not the whole of it**
+   (CI0): `scripts/run_rung.sh` now cross-checks two independent records of the
+   same run -- the plugin's count and pytest's junit XML -- so a single hook
+   that rewrites one of them reddens the rung. Both are still writable from a
+   conftest, so what that buys is that forgery must be consistent across two
+   places rather than done in one. A conftest under `tests/` changed inside a
+   step commit is then inspected line by line, every step, exactly as
    `tolerances.py` is.
 5. Open the *previous* inside review and the previous witness comment. List
    every item either marked as blocking. For each, find the answer in this
