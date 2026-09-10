@@ -12,8 +12,11 @@ written at, and stated "both reds are the sine and cosine round-trip
 comparisons" while twelve jobs were red and ten of them were neither.
 
 The report cannot know about a run that starts after it is pushed. It can know
-about the run at the commit it ANSWERS -- the verdict commit named in its
-`Answers:` header -- and that is the sha this takes. `tests/test_report_carried.py`
+about the run at the commit the verdict JUDGED -- the previous report, which was
+pushed to get the run the verdict quotes -- and that is the sha this takes. Not
+the verdict's own commit: a verdict is committed on top of the branch and
+pushed with whatever comes next, so it is a head only by accident and usually
+has no run at all. `tests/test_report_carried.py`
 requires the section's sha to be that one, so a table copied forward from an
 earlier revision is red rather than merely wrong.
 
@@ -181,7 +184,7 @@ def section(sha: str) -> str:
     measured = counts(run["databaseId"])
 
     lines = [
-        f"## 0. CI at the answered commit `{sha[:7]}`",
+        f"## 0. CI at the reviewed commit `{sha[:7]}`",
         "",
         f"Generated: `python scripts/ci_section.py {sha[:7]}`. Run "
         f"`{run['databaseId']}`, event `{run['event']}`, conclusion "

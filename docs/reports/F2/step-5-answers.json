@@ -1,109 +1,64 @@
 {
   "_": [
-    "The rows scripts/carried_table.py cannot generate: what this round DID",
-    "about an item. Every other row is generated from the verdict's own",
-    "heading class, and every row here declares a `site` the verdict names",
-    "inside that finding's own block -- which is what catches a status",
-    "written under the wrong number (R296).",
-    "Committed beside the report so the published command runs at the commit",
-    "that publishes the table."
+    "POINTERS ONLY (CH4). A state from the generator's fixed list and a section",
+    "of this report. The sentence beside each item is read out of the verdict by",
+    "scripts/carried_table.py, keyed by the number the row is written under, so",
+    "a status attached to the wrong number sits beside that number's subject and",
+    "contradicts itself on the page. There is nowhere here to type prose.",
+    "`site` is optional and is the weaker second check: it discriminates only",
+    "where the declared path is unique to that finding's block."
   ],
   "answered": {
-    "R223": {
-      "site": "docs/milestones/F2.md",
-      "status": "**open** — Q7, and it waits on the canonical render landing (R293)"
+    "R223": { "state": "open", "where": "§8 — Q7, and CH6 opens it" },
+    "R224": { "state": "open", "where": "§8 — Q7" },
+    "R230": { "state": "open", "where": "§8 — mine, reopened at revision 3" },
+    "R231": { "state": "open", "where": "§8 — unblocked, not written here" },
+    "R244": { "state": "open", "where": "§8 — unblocked, not written here" },
+    "R245": { "state": "open", "where": "§8 — unblocked, not written here" },
+    "R275": { "state": "open", "where": "§8 — unblocked, not written here" },
+    "R293": { "state": "answered", "where": "§2 — the render is committed" },
+    "R294": { "state": "carried", "where": "§7 — and see the `set -e` finding" },
+    "R295": { "state": "carried", "where": "§8" },
+    "R296": { "state": "carried", "where": "§6" },
+    "R297": { "state": "carried", "where": "§5" },
+    "R298": { "state": "carried", "where": "§5" },
+    "R299": { "state": "carried", "where": "§5" },
+    "R300": { "state": "open", "where": "§8 — 4a" },
+    "R301": { "state": "carried", "where": "§6" },
+    "R302": {
+      "state": "answered",
+      "where": "§3",
+      "site": "scripts/rung_no_xpass.py"
     },
-    "R224": {
-      "site": "docs/milestones/F2.md",
-      "status": "**open** — Q7, as instructed"
+    "R303": {
+      "state": "answered",
+      "where": "§1",
+      "site": "scripts/regen_figures.py"
     },
-    "R230": {
-      "site": "docs/reports/F2/step-5.md",
-      "status": "**open** — reopened by my own error at revision 3, and it stays open until a verdict says otherwise"
+    "R304": {
+      "state": "answered",
+      "where": "§4",
+      "site": ".github/workflows/ci.yml"
     },
-    "R231": {
-      "site": "floatfea/tolerances.py",
-      "status": "**open** — a Q8 value, and no Q8 value is written before the canonical render (R293)"
+    "R305": {
+      "state": "answered",
+      "where": "§5",
+      "site": "docs/reports/F2/step-5.md"
     },
-    "R244": {
-      "site": "floatfea/tolerances.py",
-      "status": "**open** — a Q8 value, blocked behind R293"
+    "R306": {
+      "state": "answered",
+      "where": "§6",
+      "site": "scripts/carried_table.py"
     },
-    "R245": {
-      "site": "floatfea/tolerances.py",
-      "status": "**open** — a Q8 value, blocked behind R293"
+    "R307": {
+      "state": "answered",
+      "where": "§4",
+      "site": ".github/workflows/ci.yml"
     },
-    "R275": {
-      "site": "floatfea/tolerances.py",
-      "status": "**open** — the re-measurement, blocked behind R293 and not before"
-    },
-    "R282": {
-      "site": "tests/test_report_carried.py",
-      "status": "**answered** at revision 7; the thirty-third verdict ran the boundary and the defect on a clone and records the condition met"
-    },
-    "R283": {
-      "site": "docs/reports/F2/step-5.md",
-      "status": "**answered** at revision 7; the verdict records the condition met"
-    },
-    "R284": {
-      "site": ".github/workflows/ci.yml",
-      "status": "**answered** at revision 7; the verdict re-ran the garbage-file and deleted-file experiments and records the condition met"
-    },
-    "R285": {
-      "site": "docs/milestones/F2.md",
-      "status": "**answered** in its plan half at revision 7. The unmet clause is **R295** and is answered there"
-    },
-    "R286": {
-      "site": "scripts/run_rung.sh",
-      "status": "**carried** into **R294**, and answered there at the rule rather than at the text"
-    },
-    "R287": {
-      "site": "scripts/carried_table.py",
-      "status": "**answered** in its generator half at revision 7. The shifted rows are **R296** and are answered there"
-    },
-    "R288": {
-      "site": "tests/test_report_guard_states.py",
-      "status": "**answered** at revision 7; the verdict ran the ablation and records the condition met"
-    },
-    "R289": {
-      "site": "tests/corpus/report_status_vocabulary.txt",
-      "status": "**carried** into **R297**, and answered there: the runner exists"
-    },
-    "R290": {
-      "site": ".github/workflows/ci.yml",
-      "status": "**carried** into **R298**, and answered there in §5"
-    },
-    "R293": {
-      "site": ".github/workflows/ci.yml",
-      "status": "**answered** in the half that is mine — §1: the job measures before it compares, ten legs are asserted against each other, and this section's table is generated. The canonical render itself is **open** and is what §1 asks the reviewer to gate"
-    },
-    "R294": {
-      "site": "scripts/run_rung.sh",
-      "status": "**answered** — §2: the rung reads junit and the exit code and nothing else, and the layouts run under the project's own `addopts`"
-    },
-    "R295": {
-      "site": ".github/workflows/ci.yml",
-      "status": "**answered** — §3: `tests/test_ci_canonical_environment.py`, and the deletion is run"
-    },
-    "R296": {
-      "site": "scripts/carried_table.py",
-      "status": "**answered** — §4: the row set, the class and the subject are all read from the verdict, and the published command runs at this commit"
-    },
-    "R297": {
-      "site": "tests/corpus/report_status_vocabulary.txt",
-      "status": "**answered** — §4: `tests/test_report_vocabulary_corpus.py`, 23 of 23 entries agreeing"
-    },
-    "R298": {
-      "site": ".github/workflows/ci.yml",
-      "status": "**answered** — §5, the sentence, written"
-    },
-    "R299": {
-      "site": "docs/reports/F2/step-5.md",
-      "status": "**answered** — §6, re-measured at this commit"
-    },
-    "R301": {
-      "site": "scripts/carried_table.py",
-      "status": "**answered** — §4: `test_the_Carried_table_is_what_the_generator_produces` runs it and compares"
+    "R308": {
+      "state": "answered",
+      "where": "§7",
+      "site": "tests/test_ci_canonical_environment.py"
     }
   }
 }

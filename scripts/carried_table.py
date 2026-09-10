@@ -156,6 +156,12 @@ def subject(item: str, verdict_text: str, by_block: dict[str, str]) -> str:
         # "R225-R228, R232, R233 -- carried". Drop the rest of the list so the
         # subject starts where the sentence does.
         after = re.sub(r"^(,?\s*R\d+(\s*-+\s*R\d+)?)+\s*(--|-|:)?\s*", "", after)
+    if not block and len(after.strip(" ,-:")) < 8:
+        # THE STRIP ATE THE SENTENCE. A carry line that is mostly a list
+        # of numbers leaves nothing after the last of them, and a row
+        # whose subject is a comma says less than no subject at all.
+        # These lines put their one clause after the final dash.
+        after = line.rsplit("--", 1)[-1] if "--" in line else line
     text = re.sub(r"[`*]", "", after).replace("\n", " ")
     text = " ".join(text.split())
     if not text:

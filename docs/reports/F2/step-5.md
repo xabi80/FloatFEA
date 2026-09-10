@@ -2398,3 +2398,544 @@ not the header itself. R282 ruled the header comparison out and I am not
 reintroducing it; the ancestry check is the discriminator, and the reviewer ran
 both sides of it on a clone. I had this row declared as a disagreement earlier
 in this round and withdrew the declaration when the state started reporting.
+
+# Revision 9 — the third class, the goldens gated, and the first canonical file
+
+Answers: verdict 34 @ e6054b5
+
+**2026-09-10.** Commits since the thirty-fourth verdict, listed in §11.
+
+## 0. CI at the reviewed commit `55498f4`
+
+Generated: `python scripts/ci_section.py 55498f4`. Run `34461854122`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| unit tests | 88 | 0 | 0 |
+| guards and meta-tests | 553 | 1 | 0 |
+| CI determinism -- leg (4) | 4 | 0 | 0 |
+| lint and type-check | 0 | 0 | 0 |
+| CI determinism -- leg (3) | 4 | 0 | 0 |
+| CI determinism -- leg (7) | 4 | 0 | 0 |
+| CI determinism -- leg (1) | 4 | 0 | 0 |
+| CI determinism -- leg (2) | 4 | 0 | 0 |
+| CI determinism -- leg (10) | 4 | 0 | 0 |
+| CI determinism -- leg (9) | 4 | 0 | 0 |
+| CI determinism -- leg (6) | 4 | 0 | 0 |
+| CI determinism -- leg (8) | 4 | 0 | 0 |
+| CI determinism -- leg (5) | 4 | 0 | 0 |
+| ladder 1 -- the solver is a solver | 1013 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+| ladder 2 -- the element is the element | 0 | 0 | 0 |
+| ladder 3 -- the model is the platform | 106 | 0 | 0 |
+| ladder 4 -- the loads are the loads | 0 | 0 | 0 |
+| ladder 5 -- independent confirmation | 0 | 0 | 0 |
+| ladder 6 -- it stays fixed | 0 | 0 | 0 |
+
+**Job conclusions: 20 jobs, 2 not green.**
+
+- guards and meta-tests (failure)
+- ladder 4 -- the loads are the loads (failure)
+
+### and the run at this round's head, `095c6e1`
+
+Generated: `python scripts/ci_section.py 095c6e1`. Run `34483519085`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| unit tests | 88 | 0 | 0 |
+| CI determinism -- leg (5) | 4 | 0 | 0 |
+| lint and type-check | 0 | 0 | 0 |
+| guards and meta-tests | 4056 | 123 | 0 |
+| CI determinism -- leg (7) | 4 | 0 | 0 |
+| CI determinism -- leg (4) | 4 | 0 | 0 |
+| CI determinism -- leg (6) | 4 | 0 | 0 |
+| CI determinism -- leg (3) | 4 | 0 | 0 |
+| CI determinism -- leg (9) | 4 | 0 | 0 |
+| CI determinism -- leg (2) | 4 | 0 | 0 |
+| CI determinism -- leg (10) | 4 | 0 | 0 |
+| CI determinism -- leg (8) | 4 | 0 | 0 |
+| CI determinism -- leg (1) | 4 | 0 | 0 |
+| ladder 1 -- the solver is a solver | 1013 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+| ladder 2 -- the element is the element | 0 | 0 | 0 |
+| ladder 3 -- the model is the platform | 112 | 0 | 0 |
+| ladder 4 -- the loads are the loads | 72 | 13 | 0 |
+| ladder 6 -- it stays fixed | 4 | 0 | 0 |
+| ladder 5 -- independent confirmation | 0 | 0 | 0 |
+
+**Job conclusions: 20 jobs, 2 not green.**
+
+- guards and meta-tests (failure)
+- ladder 4 -- the loads are the loads (failure)
+
+## 0a. How to read §0, and the two commits in it
+
+**§0 is generated and it is about the commit the verdict JUDGED**, `55498f4`.
+Revision 8 keyed it on the `Answers:` sha instead, which is the verdict's own
+commit — and a verdict is committed on top of the branch and pushed with
+whatever comes next, so it is a head only by accident and `e6054b5` has no CI
+run at all. The commit that always has one is the report the verdict read. The
+guard now compares the section against the verdict's own
+`**Reviewed commit:**` line.
+
+**Two of that run's twenty jobs were not green**, and one of them is the item
+this round closes: the guards job failed on exactly one test,
+`test_the_generated_figures_are_not_stale`, which is R293's open half. The
+other is ladder 4, thirteen sine and cosine round-trips, routed under Q8 since
+before this step.
+
+**Ladder 4's row reads `0 | 0 | 0` and that is not a parse failure — it is the
+defect §7 is about.** At `55498f4` a red rung printed nothing at all, so there
+were no counts to read.
+
+**The second table is this round's head**, and it is what the round bought:
+ladder 6 green for the first time, the goldens gated on the machine that
+produces them, and the figures test passing because the committed file is now
+what CI renders.
+
+## 1. R303 — the 7.3% row, localised rather than explained
+
+**The reviewer was right and the refutation was one line of the same file.**
+Revision 8 said the move was an argmin flip; `clean_worst_entry` is
+byte-identical on both machines, so nothing flipped. The sentence was a cause
+with no cell behind it, which is BG0 exactly.
+
+**Measured now, on both machines, by a committed instrument.**
+`scripts/localise_clean_worst.py` prints the winning entry's out-of-balance for
+every state, and it runs on every canonical leg, so this is not a one-off:
+
+| state | laptop | CI (canonical) | ratio |
+|---|---|---|---|
+| `axial` | 3.89951803920619363e-19 | 3.94887902704424501e-19 | 1.013 |
+| `curvature` | 4.37501646773751289e-16 | 2.66305350210109337e-16 | **1.643** |
+| `twist` | 4.43450971544156825e-16 | 4.26395164946304525e-16 | 1.040 |
+| `shear` | 4.69996858568986220e-16 | 3.52497643926739542e-16 | 1.333 |
+| `curvature_xz` | 1.38250081892969870e-15 | 1.28195530482572000e-15 | 1.078 ← wins on both |
+| `shear_xz` | 1.32821640121413238e-19 | 1.32821640121413189e-19 | 1.0000000000000004 |
+
+```
+cmd   python scripts/localise_clean_worst.py                    (this laptop)
+cmd   gh run download 34482015314 -n determinism-leg-1 ; clean_worst.txt   (CI)
+judge THE SAME STATE WINS ON BOTH, so there is no argmax anywhere in this
+      figure that moved. The published number is that state's own
+      out-of-balance and it differs by 7.8%.
+judge AND IT IS NOT THE LARGEST DISAGREEMENT IN THE COLUMN. `curvature` differs
+      by 1.643x and `shear` by 1.333x; neither shows in the figure because
+      neither wins. One state agrees to sixteen digits.
+judge THESE ARE RESIDUALS OF A FIELD THAT IS EXACT IN EXACT ARITHMETIC, at
+      1e-16 against a ceiling of 5e-15. The numerator is round-off, so the
+      quantity has no correct digits to agree on -- which is what makes it a
+      third class rather than a wide tolerance on the first two.
+```
+
+**What I am NOT saying, because nothing isolates it.** The two renders differ in
+more than one variable at once: `linux` against `win32`, `numpy 2.5.3` against
+`2.4.0`, `scipy 1.18.1` against an older build, and a pinned `Haswell` kernel
+against whatever OpenBLAS selects here. The stamp now records all four. Naming
+the kernel as the cause would be the same species of sentence the reviewer just
+refuted. **What is measured and sufficient for Q8** is that the ten CI legs
+agree with each other across six CPU models under one stamp.
+
+**The decision did not move, and it moved the safe way.** The worst clean
+entry's margin is `1/0.2564 = 3.90x` canonical against `1/0.2765 = 3.62x` here.
+
+## 2. CH0/CH5 — the third class, the stamp, and the first canonical file
+
+**Q8 gained a third local class** (`897c3a4`, re-locked) and its two constants
+(`1443fe9`, re-locked, standalone, before anything reads them).
+
+```
+claim  a floor-class figure is one whose value IS a round-off magnitude, and
+       what has to agree across platforms is its DECISION
+cmd    python -m pytest tests/test_figure_local_check.py -q
+out    17 passed
+rule   FIGURE_FLOOR_CLASS_SPREAD = 1.5, bracketed by two measurements:
+       largest measured spread 1.336x < 1.5 < 2.19x, the smallest margin any
+       floor-class figure has to its own ceiling
+cell   a figure moved by FIGURE_FLOOR_CLASS_SPREAD_COUNTER_DEFECT = 1.6
+out    refused, by name
+cell   an entry at FIGURE_ARGMIN_TIE_WINDOW_COUNTER_DEFECT = 1.0216
+out    not named in the tie set -- the window is 1.01x, the two entries that
+       swap are 1.0041x apart, and the next candidate is the counter
+judge  BOTH INEQUALITIES ARE ASSERTED FROM FILES, not from this report: the
+       spreads out of the plan's own table, the margin out of the committed
+       figures. When either side moves the bracket closes and the build goes
+       red, which is what the tolerance comment claims and previously did not
+       have.
+```
+
+**The argmin figure names its tie set** (the reviewer's shape 2, ruled at the
+foot of R303). `detection_edge_at` now reads
+`ch_edgemin_D0p0758_roll1p05_aniso9p4e5, ci_plateau_D0p0689_roll1p017_aniso9p6e5`
+on **both** machines, sorted, so the flip that used to move the row moves
+nothing — and a change in the SET is a byte change.
+
+**And the file is committed** (`0def0dc`): the artifact of run `34482015314`,
+leg 1, downloaded and committed byte for byte, with the stamp inside it.
+
+```
+| `stamp_platform` | linux |            | `stamp_scipy` | 1.18.1 |
+| `stamp_python` | 3.13.15 |            | `stamp_openblas_coretype` | Haswell |
+| `stamp_numpy` | 2.5.3 |
+cmd   python scripts/regen_figures.py --check          (on this laptop)
+out   "up to date (non-canonical machine: every exact row agrees, every
+       floor-class decision holds)", with the spread printed beside all nine
+cmd   the guards job at 095c6e1
+out   test_the_generated_figures_are_not_stale PASSES -- the canonical machine
+      compares BYTES, stamp included, and they are identical
+judge THE COMMITTED FILE IS NOW WHAT CI PRODUCES, for the first time in this
+      milestone, and the next run asserts it again.
+```
+
+**Nine rows moved and the golden-file rule's written explanation is in
+`0def0dc`'s message**, row by row, with the localisation above. Two figures in
+`floatfea/tolerances.py` comments were re-taken in that same commit (BP0), and
+the plan's three hand-typed cells in the commit after it (`095c6e1`,
+standalone) — including one that had to be withdrawn: the `2.19x → 2.18x` step
+in the headroom series is exactly the size of that figure's cross-machine
+spread, so it is not a fall.
+
+## 3. R302 — the reach, rewritten, and the bound named
+
+**The reviewer is right: the sentence was false.** `rung_no_xpass.py` works by
+mutating a report inside `pytest_runtest_makereport`, and the line two above it
+said a test cannot do that. A rung's `conftest.py` can, to every report, in the
+opposite direction — and two of the four channels do better than forge a
+report, by removing the failing test before one exists.
+
+**No gate closes this and I am not going to pretend otherwise.** A gate that
+reads a record cannot outrank code that writes the record, and that is true of
+any replacement for this script. Both sentences are rewritten to say the
+property rather than to enumerate producers, and the bound is review:
+
+```
+cmd  git show 979933f --stat
+out  docs/SUPERVISOR.md, .claude/agents/gating-supervisor.md -- standalone,
+     `process:`, citing CH2, no code
+code item 4c: `git diff <prev>..<this> -- 'tests/**/conftest.py'`, beside
+     `floatfea/tolerances.py`, every step
+cmd  python -m pytest tests/test_ci_ladder_gating.py -q
+out  56 passed -- all 53 corpus entries have a layout, including the reviewer's
+     four conftest channels, and each of the four is DECLARED with the outcome
+     the shipped gate gives and the reason no gate gives another
+judge THE DECLARATION IS THE POINT. If one of those four ever starts reddening,
+     this file says the declaration is stale rather than quietly agreeing.
+```
+
+## 4. R304 — the goldens are gated on the machine that produces them
+
+**One line, and the reviewer said so.** A leg whose regression rung reports a
+non-zero failure count now exits non-zero, and `determinism_verdict` re-hashes
+the uploaded artifact instead of trusting the number the same leg wrote (R307,
+which was recordable and is done here because it is two lines from R304).
+
+**And ladder 6 is off the chain** (CH3). It was `needs: rung5`, so it sat
+skipped behind a ladder 4 that has been red under Q8 for eleven rounds: the
+goldens ran on ten determinism legs and were gated on none of them. The
+ordering rule is about interpretability, and *do today's bytes equal
+yesterday's* stays interpretable whatever ladder 4 says. It still needs rungs 1
+to 3, which are what make a golden's inputs mean anything.
+
+```
+cmd  python -m pytest tests/test_ci_determinism_gate.py -q
+out  13 passed
+cell the shipped leg step body, lifted out of the workflow, over a junit report
+     recording four cases of which three carry a failure element:
+out  before: "4 collected, 3 failed" written, printed, EXIT 0
+     after:  exit non-zero, naming the count
+cell the verdict job body over ten legs, one of which uploads bytes that do not
+     hash to its own claim:
+out  refused by name (R307); and refused when a leg uploads no file at all
+cmd  gh run view 34483525993 --json jobs   (this round's head)
+out  ladder 6 -- it stays fixed   SUCCESS, for the first time in this step
+```
+
+## 5. R305 — five figures, re-taken at this commit
+
+| the figure | what it said | what it is |
+|---|---|---|
+| the ten-leg table | three CPU models, labelled `05133c4`, taken from the run at `1be5606` | generated now: **10 legs, 6 CPU models, 1 hash, 1 kernel** at `05133c4` |
+| the delta | "11 of 47 rows differ" | **9 of 47** |
+| the vocabulary corpus | "23 of 23 entries agree" | 23 was the pytest count; the corpus held **22** entries then and **31** now, and **31 of 31** agree |
+| the module-level print | "no longer caught ... a behaviour change" | **withdrawn.** The reviewer's entry carries an xpass as well as the print, so it still reddens; no behaviour change occurred on it |
+| `ci.yml:312`, rung 6 | line 312 | `ci.yml:449`, and the directory holds `.empty-by-design` **and** `__init__.py` |
+
+```
+cmd  python scripts/ci_section.py 05133c4 --legs
+out  the table above, generated -- CH1, so the label and the data cannot name
+     different runs again
+cmd  python -m pytest tests/test_report_vocabulary_corpus.py -q
+out  32 passed = 31 corpus entries + the meta-test that says the corpus parsed
+cmd  grep -c "^id=" the vocabulary corpus ; grep -n rung6 .github/workflows/ci.yml
+out  31 ; 433: and 449:
+judge THREE OF THE FIVE POINTED AT A BETTER RESULT THAN THE ONE PUBLISHED, and
+      the tenth-round lesson is the same one: nothing here re-takes a figure
+      when the thing beneath it moves unless something regenerates it. Two of
+      the five are now generated.
+```
+
+## 6. R306 / CH4 — the subject is generated, and the site check's reach is stated
+
+**The measured reach first, since that was the finding.** The site check
+discriminates only where the declared site is unique to that finding's block.
+Over revision 8's own answers file that was **one row in eight**: seven declared
+a path another block also names, and rotating three statuses among themselves
+printed all fifty-seven rows without complaint. The sentence published for it
+was wrong and is withdrawn.
+
+**And the repair is not a better site check.** Every row now carries what the
+verdict says that item IS, read out of the verdict and keyed by the number the
+row is written under. A status attached to the wrong number sits beside that
+number's subject and contradicts itself on the page.
+
+```
+claim  the answers file is POINTERS ONLY -- a state from a fixed list and a
+       section reference, refused above forty characters
+cmd    python scripts/carried_table.py <the verdict> docs/reports/F2/step-5-answers.json
+out    the table in §10, verbatim, three columns
+judge  ROTATION IS NOT DETECTED, IT IS UNWRITABLE. There is nowhere left to
+       type a sentence beside a number.
+judge  THE SITE CHECK STAYS, as the weaker half, with its reach written into
+       the script's own docstring instead of into a claim.
+```
+
+## 7. What this round found on its own — `set -e`
+
+**CI went red on ladder 3 with no output whatsoever**: `Process completed with
+exit code 1`, two seconds, nothing else. `set -eu` is in force at the top of
+`scripts/run_rung.sh`, so a failing `python -m pytest` terminated the script at
+that line: `code=$?` never ran, the junit reader never ran, and a red rung
+exited 1 having printed no count, no reason and no test name.
+
+```
+cmd  sh scripts/run_rung.sh full:tests/verification/rung3        (before)
+out  exit=1, and nothing on either stream
+cmd  the same, after
+out  run_rung: 106 collected, 1 failed, 0 errored, 0 skipped
+     run_rung: FAIL -- tests/verification/rung3 is red.
+judge THIS BEARS ON MY OWN EVIDENCE AND I AM SAYING SO. Every "shipped exit 1"
+      in revision 8's five-scenario table came through this path, so what it
+      measured was the shell's exit rather than the reader's. The verdicts do
+      not change -- a red rung is red either way, and the ablation column
+      compared 0 against 1 -- but the claim "the gate reads junit and the exit
+      code" was true of the code and not of what ran.
+judge AND IT IS THE FOURTH TIME A GATE HAS BEEN GREEN FOR THE WRONG REASON in
+      this file's history, which is why the repair is a test on the OUTPUT:
+      `test_a_RED_rung_prints_its_count_and_its_reason`.
+cmd  the failure it was hiding: rung 3 requires every float tolerance to
+     declare a CLASS, and the vocabulary is ACCURACY or STRUCTURAL
+out  the two new constants were labelled `PLATFORM`, which reads better and is
+     not in the vocabulary. They are ACCURACY -- the rule that attaches to that
+     class is "carries a counter", and both do. Inventing a third class name
+     would have been a rung-3 gate edit made to suit a label.
+```
+
+**R308, the same species and two lines.** The third kernel-pin test subscripted
+`_workflow()["env"]` before the key was known present, so with the whole block
+removed it raised `KeyError` where it meant to report. It went red either way
+and the first test in that file carries the sentence, which is why it was
+recordable rather than blocking. It asserts now.
+
+## 8. What is open
+
+- **Ladder 4.** Thirteen sine and cosine round-trip comparisons, red since
+  before this step, routed under Q8 and now the only red rung.
+- **R275, R231, R244, R245.** The re-measurement and the Q8 values. **These are
+  unblocked as of this round** — the canonical render exists and byte-identity
+  holds — and they are not written here: a tolerance introduced in the commit
+  that lands the render it is measured from is the shape review rejects.
+- **R223, R224 — Q7**, which CH6 opens on the canonical render.
+- **R230**, reopened by my own error at revision 3, and mine to leave open.
+- **R300, R291, R292** and the rest of the 4a list.
+
+## 9. The ten legs, generated
+
+| leg | CPU the runner drew | kernel | `F2_figures.md` sha256 | regression rung |
+|---|---|---|---|---|
+| 1 | AMD EPYC 7763 64-Core Processor | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 2 | AMD EPYC 7763 64-Core Processor | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 3 | AMD EPYC 9V45 96-Core Processor | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 4 | AMD EPYC 7763 64-Core Processor | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 5 | INTEL(R) XEON(R) PLATINUM 8573C | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 6 | INTEL(R) XEON(R) PLATINUM 8573C | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 7 | Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 8 | AMD EPYC 7763 64-Core Processor | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 9 | Intel(R) Xeon(R) 6973P-C | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+| 10 | AMD EPYC 9V74 80-Core Processor | Haswell | `2af0f7cbaee3` | 4 collected, 0 failed |
+
+**10 legs, 6 CPU models, 1 hash, 1 kernel.** Run `34460382184` at `05133c4`, generated by `python scripts/ci_section.py 05133c4 --legs`.
+
+## 10. Sites named by findings and not touched
+
+Generated from the verdict's own site list against `git diff <reviewed>..HEAD -U0`; a site is here because the diff does not touch it, and each carries why.
+
+| site | why |
+|---|---|
+| `conftest.py` | **no change** — quoted as evidence in the finding's own cell, not named as a site to change |
+| `run_rung.sh:148` | **no change** — the same lines, named without their directory |
+| `run_rung.sh:149` | **no change** — the same lines, named without their directory |
+| `run_rung.sh:150` | **no change** — the same lines, named without their directory |
+| `run_rung.sh:151` | **no change** — the same lines, named without their directory |
+| `scripts/run_rung.sh:148` | **no change** — the first four lines of that comment are TRUE and are unchanged: two inputs are read and nothing printed is read. The sentence that was false begins at the next line and is replaced -- the diff touches :152-157 and this is the part of the block that did not need to move |
+| `scripts/run_rung.sh:149` | **no change** — the first four lines of that comment are TRUE and are unchanged: two inputs are read and nothing printed is read. The sentence that was false begins at the next line and is replaced -- the diff touches :152-157 and this is the part of the block that did not need to move |
+| `scripts/run_rung.sh:150` | **no change** — the first four lines of that comment are TRUE and are unchanged: two inputs are read and nothing printed is read. The sentence that was false begins at the next line and is replaced -- the diff touches :152-157 and this is the part of the block that did not need to move |
+| `scripts/run_rung.sh:151` | **no change** — the first four lines of that comment are TRUE and are unchanged: two inputs are read and nothing printed is read. The sentence that was false begins at the next line and is replaced -- the diff touches :152-157 and this is the part of the block that did not need to move |
+| `test_bad.py` | **no change** — quoted as evidence in the finding's own cell, not named as a site to change |
+| `test_ok.py` | **no change** — quoted as evidence in the finding's own cell, not named as a site to change |
+| `tests/corpus/ci_ladder_gating.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `CLAUDE.md` | **no change** — quoted as the rule the finding is judged against (BG0); `CLAUDE.md` changes only in a standalone `process:` commit |
+| `regen_figures.py:77` | **no change** — the same lines, named without their directory |
+| `scripts/regen_figures.py:77` | **no change** — `:77-79` is the two-argmax expression the finding points at, and it is CORRECT -- the localisation shows the same state winning on both machines, so there is nothing to repair there. What changed is the check that reads its output, and the instrument that measures it |
+| `scripts/regen_figures.py:78` | **no change** — `:77-79` is the two-argmax expression the finding points at, and it is CORRECT -- the localisation shows the same state winning on both machines, so there is nothing to repair there. What changed is the check that reads its output, and the instrument that measures it |
+| `scripts/regen_figures.py:79` | **no change** — `:77-79` is the two-argmax expression the finding points at, and it is CORRECT -- the localisation shows the same state winning on both machines, so there is nothing to repair there. What changed is the check that reads its output, and the instrument that measures it |
+| `tests/corpus/ci_determinism.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `leg/regression.txt` | **no change** — quoted as evidence in the finding's own cell, not named as a site to change |
+| `regression.txt` | **no change** — quoted as evidence in the finding's own cell, not named as a site to change |
+| `__init__.py` | **no change** — named in the re-taken figure itself: the rung-6 directory holds it beside `.empty-by-design`, which is what the corrected line says |
+| `check_carried.py` | **no change** — quoted as evidence in the finding's own cell, not named as a site to change |
+| `scripts/carried_table.py:91` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `scripts/carried_table.py:92` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `scripts/carried_table.py:93` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `scripts/carried_table.py:94` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `scripts/carried_table.py:95` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `scripts/carried_table.py:96` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `scripts/carried_table.py:98` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `scripts/carried_table.py:99` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `scripts/carried_table.py:100` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `scripts/carried_table.py:101` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `scripts/carried_table.py:102` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `scripts/carried_table.py:103` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `scripts/carried_table.py:105` | **no change** — `:91-105` is `check_sites`, and it is kept rather than repaired: its reach is one row in eight and that is now written into the script's own docstring. The repair is the generated subject column, which is new code above it |
+| `tests/corpus/carried_row_subject.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `tests/corpus/report_status_vocabulary.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `tests/test_report_guard_states.py` | **no change** — quoted as evidence in the finding's own cell, not named as a site to change |
+| `write_verdict.py` | **no change** — quoted as evidence in the finding's own cell, not named as a site to change |
+| `coretype.txt` | **no change** — quoted as evidence in the finding's own cell, not named as a site to change |
+| `cpu.txt` | **no change** — quoted as evidence in the finding's own cell, not named as a site to change |
+| `figures.sh` | **no change** — `figures.sha256`, truncated by the site pattern's extension list. quoted as evidence in the finding's own cell, not named as a site to change |
+
+## 10a. Carried
+
+Generated: `python scripts/carried_table.py docs/reviews/F2/step-5.md docs/reports/F2/step-5-answers.json`. The row set, the class of every unanswered row, AND THE SUBJECT OF EVERY ROW are read from the verdict (CH4); the answers file beside this report carries pointers only.
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R223 | **open** — §8 — Q7, and CH6 opens it | OPEN by instruction, correctly listed. |
+| R224 | **open** — §8 — Q7 | OPEN by instruction, correctly listed. |
+| R225 | **open** — carried from an earlier verdict | R272, R273, R274, R276, R277, the two R248 residues, R249, R250, R251, R252, R225-R228, |
+| R228 | **open** — carried from an earlier verdict | R272, R273, R274, R276, R277, the two R248 residues, R249, R250, R251, R252, R225-R228, |
+| R230 | **open** — §8 — mine, reopened at revision 3 | OPEN by instruction, correctly listed. |
+| R231 | **open** — §8 — unblocked, not written here | OPEN by instruction, correctly listed. |
+| R232 | **open** — carried from an earlier verdict | -- carried. R271's runner clause is now met (R297); R272's shape is met at |
+| R233 | **open** — carried from an earlier verdict | -- carried. R271's runner clause is now met (R297); R272's shape is met at |
+| R244 | **open** — §8 — unblocked, not written here | OPEN by instruction, correctly listed. |
+| R245 | **open** — §8 — unblocked, not written here | OPEN by instruction, correctly listed. |
+| R248 | **open** — carried from an earlier verdict | residues, R249, R250, R251, R252, R225-R228, |
+| R249 | **open** — carried from an earlier verdict | R272, R273, R274, R276, R277, the two R248 residues, R249, R250, R251, R252, R225-R228, |
+| R250 | **open** — carried from an earlier verdict | R272, R273, R274, R276, R277, the two R248 residues, R249, R250, R251, R252, R225-R228, |
+| R251 | **open** — carried from an earlier verdict | R272, R273, R274, R276, R277, the two R248 residues, R249, R250, R251, R252, R225-R228, |
+| R252 | **open** — carried from an earlier verdict | R272, R273, R274, R276, R277, the two R248 residues, R249, R250, R251, R252, R225-R228, |
+| R253 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R254 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R256 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R257 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R261 | **open** — carried from an earlier verdict | OPEN, correctly. No Q8 value was written. |
+| R262 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R263 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R264 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R265 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R266 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R267 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R268 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R269 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R270 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R271 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262, R263, R264, R265, R266, R267, R268, R269, R270, R271, |
+| R272 | **open** — carried from an earlier verdict | , the two R248 residues, R249, R250, R251, R252, R225-R228, |
+| R273 | **open** — carried from an earlier verdict | , the two R248 residues, R249, R250, R251, R252, R225-R228, |
+| R274 | **open** — carried from an earlier verdict | , the two R248 residues, R249, R250, R251, R252, R225-R228, |
+| R275 | **open** — §8 — unblocked, not written here | OPEN by instruction, correctly listed. |
+| R276 | **open** — carried from an earlier verdict | , the two R248 residues, R249, R250, R251, R252, R225-R228, |
+| R277 | **open** — carried from an earlier verdict | , the two R248 residues, R249, R250, R251, R252, R225-R228, |
+| R281 | **open** — carried from an earlier verdict | OPEN and grown by two. Of the eleven corpus files, five now have a runner |
+| R288 | **open** — carried from an earlier verdict | > "answered at revision 7; the verdict ran the ablation" (R288's |
+| R289 | **open** — carried from an earlier verdict | > "carried into R297" (R289's subject, ruled NOT CLOSED) CORRECT |
+| R290 | **open** — carried from an earlier verdict | > "carried into R298" (R290's subject, ruled NOT CLOSED) CORRECT |
+| R291 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly recorded. |
+| R292 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly recorded. |
+| R293 | **answered** — §2 — the render is committed | HALF CLOSED, and the half that closed is the biggest thing in the range. |
+| R294 | **carried** — §7 — and see the `set -e` finding | CLOSED at all three clauses, and I ran every cell. This is the first repair |
+| R295 | **carried** — §8 | CLOSED, and the clause is met by a machine. I ran the deletion rather than |
+| R296 | **carried** — §6 | CLOSED at all three clauses. |
+| R297 | **carried** — §5 | " (R289's subject, ruled NOT CLOSED) CORRECT |
+| R298 | **carried** — §5 | " (R290's subject, ruled NOT CLOSED) CORRECT |
+| R299 | **carried** — §5 | CLOSED. python -m pytest tests/test_report_carried.py -q at 55498f4 |
+| R300 | **open** — §8 — 4a | OPEN, correctly recorded at 4a, and one of its named sites moved: |
+| R301 | **carried** — §6 | CLOSED. test_the_Carried_table_is_what_the_generator_produces executes the |
+| R302 | **answered** — §3 | The gate reads pytest's record instead of pytest's output, which is right, and a rung's own... |
+| R303 | **answered** — §1 | One of the nine differing rows is not what the report says it is. clean_worst_ratio moves 7.3%... |
+| R304 | **answered** — §4 | The goldens now execute on ten CI legs and their failure is fatal on none of them. bad is... |
+| R305 | **answered** — §5 | Five published figures do not describe the repository. Each is refuted by one command and each... |
+| R306 | **answered** — §6 | The site check is real and its reach is a fraction of the sentence published for it. Seven of... |
+| R307 | **answered** — §4 | determinism_verdict never re-hashes the uploaded F2_figures.md.... |
+| R308 | **answered** — §7 | test_the_plan_and_the_workflow_name_THE_SAME_kernel raises KeyError where it means to assert.... |
+
+## 11. What I am asking for
+
+**Commits since the thirty-fourth verdict**, in order, and three of the seven
+touch no code:
+
+| commit | what it is |
+|---|---|
+| `897c3a4` | plan — Q8's third local class, the tie set, the kernel in the stamp. RE-LOCKED |
+| `979933f` | process — `tests/**/conftest.py` joins the supervisor's item-4 diff list |
+| `1443fe9` | plan — the two constants, with basis and counters, before anything reads them. RE-LOCKED |
+| `d713be4` | the third class in the generator, the goldens gated, four spellings at the rule |
+| `1dc4d33` | fix — a red rung says which test failed |
+| `0def0dc` | the canonical `F2_figures.md`, and why nine numbers moved |
+| `095c6e1` | plan — three figures re-taken, one trend withdrawn. RE-LOCKED |
+| this one | the report |
+
+**Five blocking items were listed and all five are answered at their own
+sites**, and R293's open half — the one the last four rounds were about — is
+closed:
+
+- **R303** — localised on both machines by a committed instrument that runs on
+  every canonical leg. The same state wins on both; the figure is that state's
+  own out-of-balance; the cause is not isolated to one variable and I do not
+  name one.
+- **R302** — both sentences rewritten to the property, and the bound named in
+  the supervisor's own instructions rather than claimed for a gate.
+- **R304** — a leg whose goldens fail is a failing leg, the verdict job
+  re-hashes the artifact, and ladder 6 is green for the first time.
+- **R305** — five figures re-taken; two of the five are now generated so they
+  cannot go stale again.
+- **R306** — the reach stated as measured, one row in eight, and the repair is
+  that the subject is read out of the verdict rather than typed beside a number.
+- **R307, R308** — both recordable, both done, because each was two lines from
+  something blocking.
+
+**And the thing the whole arrangement was for.** `docs/milestones/F2_figures.md`
+is the artifact of a CI run, committed byte for byte, stamped with the
+environment that produced it, and the next run asserts byte-identity against
+it. Ten legs, six CPU models, two vendors, one hash.
+
+**What I am not claiming.** No Q8 value is written and no tolerance value moved
+in this round — the two constants added are new, declared in a standalone
+re-locked plan commit ahead of the code that reads them, and neither rescues a
+failing test. R275's re-measurement is unblocked and is the next round's, not
+this one's: a tolerance introduced in the commit that lands the render it is
+measured from is exactly the shape review rejects.
+
+**One declared disagreement with a corpus, and it is the same one as last
+round.** `report_guard_states.txt` requires `named_fail` for a report whose
+`Answers:` header names an older verdict than the newest. It is declared green
+in `tests/test_report_guard_states.py` with the reason: R282 ruled that check
+out, `CLAUDE.md` writes the report before the verdict, and nothing in the tree
+distinguishes this state from every legitimate step boundary. Revision 8 met
+the requirement by accident -- through the CI-section check keyed on the
+`Answers:` sha -- and that key was wrong for its own reasons and has moved, so
+the accident is gone and the disagreement is declared rather than banked.
+
+**Ladder 4 is the only red rung**, and it is thirteen sine and cosine
+round-trips routed under Q8 since before this step.

@@ -779,9 +779,19 @@ def test_the_report_carries_a_CI_SECTION() -> None:
 
 
 _SHA_IN_SECTION = re.compile(r"\b[0-9a-f]{7,40}\b")
+# The verdict names the commit it judged, in bold, in its own header. The plain
+# `Reviewed commit:` line at the top is the DIFF BASE -- the reviewer's corpus
+# commit -- and those are different commits with different properties: only the
+# judged one was ever a pushed head, so only it has a CI run.
+_JUDGED = re.compile(r"\*\*Reviewed commit:\s*`([0-9a-f]{7,40})`")
 
 
-def test_the_CI_section_is_about_the_ANSWERED_commit() -> None:
+def _judged_commit() -> str:
+    m = _JUDGED.search(VERDICT_TEXT)
+    return m.group(1) if m else _reviewed_commit(VERDICT_TEXT)
+
+
+def test_the_CI_section_is_about_the_REVIEWED_commit() -> None:
     """CG3. A CI table is a measurement of one commit, and it says which.
 
     Revision 7 published a table for `73cf6ce` in a revision written at
@@ -791,22 +801,31 @@ def test_the_CI_section_is_about_the_ANSWERED_commit() -> None:
     known -- the run started after it was pushed -- which is exactly why the
     table must name the commit it describes.
 
-    The commit it can describe is the one it ANSWERS: the verdict is pushed
-    before the report is written, so its run has finished. `Answers:` already
-    names that commit, so the two are checked against each other and a table
-    carried forward from a previous revision is red.
+    WHICH COMMIT THAT IS, and revision 8 chose the wrong one. It used the
+    `Answers:` sha, which is the verdict's own commit; a verdict is committed
+    on top of the branch and pushed with whatever comes next, so it is a head
+    only by accident and usually has no run at all. The commit that always has
+    one is the commit the verdict JUDGED -- the report it read, which was
+    pushed to get the run the verdict quotes. That is the state under review,
+    and it is what the section is about.
     """
     body = _ci_section()
+    judged = _judged_commit()
+    assert judged, (
+        f"{VERDICT.name} does not name the commit it judged, so there is no "
+        "commit for the CI section to be about. The verdict's header carries "
+        "`**Reviewed commit: `<sha>`**`."
+    )
     found = _SHA_IN_SECTION.findall(body)
     assert found, (
         "the CI section names no commit. `python scripts/ci_section.py "
-        f"{ANSWERED[:7]}` generates the section, header included."
+        f"{judged[:7]}` generates the section, header included."
     )
-    assert found[0].startswith(ANSWERED[:7]) or ANSWERED.startswith(found[0]), (
-        f"the CI section's first commit is `{found[0]}` and the report answers "
-        f"`{ANSWERED[:7]}`. A table for another commit is a measurement of "
+    assert found[0].startswith(judged[:7]) or judged.startswith(found[0]), (
+        f"the CI section's first commit is `{found[0]}` and the verdict judged "
+        f"`{judged[:7]}`. A table for another commit is a measurement of "
         "another state; regenerate it with `python scripts/ci_section.py "
-        f"{ANSWERED[:7]}`."
+        f"{judged[:7]}`."
     )
 
 

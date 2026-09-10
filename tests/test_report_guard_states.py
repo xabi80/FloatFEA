@@ -105,6 +105,22 @@ REQUIREMENT_CHANGED: dict[str, tuple[str, str]] = {
         "instead of passing. `fetch-depth: 0` removes the state from CI; it "
         "does not make the state harmless where it occurs",
     ),
+    "answers_header_names_an_older_verdict_commit": (
+        "green",
+        "require=named_fail, and R282 ruled the check that would produce it "
+        "OUT. `CLAUDE.md` writes the report first and the verdict after, so a "
+        "report NORMALLY names a verdict older than the newest one -- that is "
+        "what every legitimate step boundary looks like from inside the tree, "
+        "and nothing distinguishes this state from one. The discriminator "
+        "R282 accepted is ANCESTRY, and this is its tolerated side: a report "
+        "committed before the verdict legitimately predates it. The other "
+        "side -- a report committed AFTER a verdict and still naming an older "
+        "one -- is caught, and the reviewer ran both sides on a clone. It "
+        "reported by accident for one round, through the CI-section check "
+        "keyed on the `Answers:` sha; that key was wrong for its own reasons "
+        "and moved to the commit the verdict judged, so the accident is gone "
+        "and the disagreement is declared instead of banked",
+    ),
     "two_digit_step_number": (
         "green",
         "require=named_fail, measured against CB2's guard. A step-10 report and "
