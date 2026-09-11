@@ -8,31 +8,31 @@
   "answered": {
     "R223": {
       "state": "open",
-      "where": "§6"
+      "where": "§5"
     },
     "R224": {
       "state": "open",
-      "where": "§6"
+      "where": "§5"
     },
     "R230": {
       "state": "open",
-      "where": "§6"
+      "where": "§5"
     },
     "R231": {
       "state": "open",
-      "where": "§6"
+      "where": "§5"
     },
     "R244": {
       "state": "open",
-      "where": "§6"
+      "where": "§5"
     },
     "R245": {
       "state": "open",
-      "where": "§6"
+      "where": "§5"
     },
     "R275": {
       "state": "open",
-      "where": "§6"
+      "where": "§5"
     },
     "R323": {
       "state": "carried"
@@ -45,15 +45,15 @@
     },
     "R330": {
       "state": "open",
-      "where": "§6"
+      "where": "§5"
     },
     "R331": {
       "state": "open",
-      "where": "§6"
+      "where": "§5"
     },
     "R332": {
       "state": "open",
-      "where": "§6"
+      "where": "§5"
     },
     "R333": {
       "state": "carried"
@@ -80,47 +80,74 @@
       "state": "carried"
     },
     "R341": {
+      "state": "carried"
+    },
+    "R342": {
+      "state": "carried"
+    },
+    "R343": {
+      "state": "carried"
+    },
+    "R344": {
+      "state": "carried"
+    },
+    "R345": {
+      "state": "carried"
+    },
+    "R346": {
+      "state": "carried"
+    },
+    "R347": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R348": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R349": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R350": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R351": {
       "state": "answered",
       "where": "§1",
       "site": "tests/test_marker_exemption_corpus.py"
     },
-    "R342": {
+    "R352": {
       "state": "answered",
       "where": "§2",
-      "site": "tests/test_ci_workflow_is_wellformed.py"
+      "site": "scripts/ci_section.py"
     },
-    "R343": {
+    "R353": {
       "state": "answered",
       "where": "§3",
-      "site": ".github/workflows/ci.yml"
+      "site": "tests/test_marker_exemption_corpus.py"
     },
-    "R344": {
-      "state": "answered",
-      "where": "§3"
-    },
-    "R345": {
-      "state": "answered",
-      "where": "§3"
-    },
-    "R346": {
-      "state": "answered",
-      "where": "§4"
-    },
-    "R347": {
+    "R354": {
       "state": "open",
-      "where": "§6"
-    },
-    "R348": {
-      "state": "open",
-      "where": "§6"
-    },
-    "R349": {
-      "state": "open",
-      "where": "§6"
-    },
-    "R350": {
-      "state": "carried",
       "where": "§5"
+    },
+    "R355": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R356": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R357": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R358": {
+      "state": "answered",
+      "where": "§4",
+      "site": "tests/test_report_carried.py"
     }
   }
 }

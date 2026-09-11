@@ -5127,3 +5127,416 @@ one already written.
 
 **CI is `unavailable — allowance exhausted`**, which CK2 makes a state rather
 than a red build. Every figure in this revision is local and says so.
+
+---
+
+# Revision 15 — a check whose domain was its own
+
+Answers: verdict 40 @ 8ee69b7
+
+**2026-09-11.** Commits since the fortieth verdict, listed in §10.
+
+## 0. CI at `a93d505`, the commit verdict 40 judged — **unavailable, allowance exhausted**
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 40 at `a93d505` through the report's own `Answers:` line. Run `34630780377`, event `push`, conclusion **failure** — and not one of its 4 jobs started.
+
+```
+cmd  gh api repos/.../actions/runs/34630780377/jobs
+out  every job: runner_name "", steps [], a two-second duration,
+     and the annotation "The job was not started because recent
+     account payments have failed or your spending limit needs to
+     be increased"
+judge NOTHING WAS MEASURED at this commit. 2 jobs are marked failed
+     and none of them ran a step. Per CK2 this is a state of its own --
+     `unavailable -- allowance exhausted` -- and it is neither red nor green.
+```
+
+## 0a. How to read §0
+
+**§0 is generated, nothing here restates it, and the sha is no longer typed
+anywhere** (R352, §2). The heading names the verdict whose judged commit it
+is, because "the reviewed commit" beside an earlier sha is false at the
+moment a reader reads it.
+
+**The one thing §0 cannot know.** The last run that executed is
+`34546580003` at `8942cdc`, and the tree has moved a long way since, so that
+run does not describe this one. Every figure below was measured on this
+machine and says so.
+
+## 1. R351 — the classification was derived and the domain was mine
+
+**The reviewer filed a real regression as nothing at all, without touching
+their own file.** Two edits, both in files I own: a plausible one-line
+tightening of the scanner, which produces genuine regressions, and one line
+of housekeeping in the parser that reads the corpus.
+
+```
+cell the reviewer's own two edits, re-run at this commit, restored after
+out  CLEAN                  57 passed
+     (a) scanner narrowed   3 failed -- the mechanism works, two shapes
+                            named, each blamed to the commit that planted it
+     (a) and (b) the drop   3 failed, and one of them is
+                            test_every_entry_reaches_the_assertions
+     RESTORED               57 passed
+judge BEFORE CO0 THE SAME PAIR LEFT THE SUITE GREEN. The dropped line
+     removed the shape from the parametrisation, from `PLANTED_ESCAPES`,
+     from `_measured_misses()` and from the regression test, all at once,
+     and the pass count fell by exactly one with nothing looking at it.
+```
+
+**What R341 fixed and what it did not.** The CLASSIFICATION — growth or
+regression — is derived from a field only the reviewer writes, and that
+holds; the reviewer confirmed it this round with twenty-two shapes I have
+never read. What was still mine is the DOMAIN: which entries get classified
+at all. `_entries()` decided both what the corpus says and how much of it is
+looked at, which is the same species as R28 and R56.
+
+```
+claim the domain is compared to a reader that is not the parser
+rule  `_headers_in_the_file()` shares nothing with `_entries()` but the file:
+      bytes, one regex, no field splitting, no filtering, no dict. Its only
+      job is to disagree.
+rule  and the two derived sets must PARTITION the entries, so a shape in
+      neither is loud as well.
+cmd   python -m pytest tests/test_marker_exemption_corpus.py -q
+out   57 passed
+judge THE FLOOR THAT WAS THERE IS DELETED. `len(ENTRIES) >= 28` against a
+      file of a hundred and twenty-five defended against losing seventy-eight
+      per cent of the corpus and nothing else. A count is a fact about a file
+      I do not write and it was compared to nothing.
+```
+
+**Three sentences withdrawn, all three mine, all three claiming this door was
+shut.** Two were in the guard and went with the commit that opened the
+comparison: the module docstring's "a regression has no field to hide in",
+and the regression test's "there is nothing to declare and nowhere to declare
+it". Each says what the code does now and names the door.
+
+**The third is in this report, at revision 14 §1, and it is withdrawn here:**
+"THE ONLY WAY TO FILE A REGRESSION AS GROWTH IS TO EDIT THE REVIEWER'S FILE,
+and the hook refuses that to me in a shell command as well as in an edit."
+The hook does refuse that, and the second clause is true. The first is false
+and the reviewer had already shown it false when I wrote it: dropping an
+entry from the parser is the other way, it needs no corpus edit, and it left
+nothing red.
+
+## 2. R352 — the heading had a second source of truth
+
+```
+claim `scripts/ci_section.py` takes no sha and cannot be given one
+cmd   python scripts/ci_section.py
+out   the heading in §0, with the sha it derived
+rule  ONE CHAIN, NO FALLBACK. This report's newest revision names the verdict
+      in its `Answers:` line; the verdict's own header names the commit it
+      judged; that commit is the one with a run. Each step raises with the
+      line it could not find rather than guessing.
+rule  a sha argument is REFUSED rather than ignored, so no caller can believe
+      they chose the commit.
+judge FOUR VERDICTS FOUND THE SAME HEADING because the number was typed once
+      at the top of a round and the round moved under it. A generator with a
+      second source is a generator that can disagree with the report it is
+      pasted into -- and this one did, four times, while being right about
+      the run each time.
+```
+
+**And the label stops being false.** A report cannot describe the run its own
+push creates, so the commit §0 can describe is always an earlier one. Calling
+that earlier commit "the reviewed commit" is wrong at the moment it is read.
+Two assertions hold the repair:
+
+```
+cmd   the CI section's first sha against the verdict's judged commit
+rule  BYTE-IDENTICAL, not `startswith` in both directions -- which accepted
+      an abbreviation of a different commit, and accepted the shape that
+      actually happened: a heading carried forward from the last revision.
+cell  `test_no_sha_is_called_the_reviewed_commit_unless_it_is_HEAD`
+out   at the commit that added it   1 failed, naming revision 14's own
+                                    heading, which is the finding
+      at this commit                passes, because §0 is regenerated
+judge SCOPED TO §0 ON PURPOSE. Prose elsewhere quotes the phrase -- this very
+      section does -- and a check that cannot tell a label from a quotation
+      would forbid writing about the finding. All four occurrences were in §0.
+```
+
+## 3. R353 — a rule moved and the numbers under it did not
+
+```
+claim `:363` uses the same decode as the rest of the file
+out   `declared = sum(... if _planted_caught(expect, measured))`
+judge IT WAS THE BARE `measured == expect` THAT `7ba1e9d` REPLACED, left
+      standing in the one test that certifies the replacement, and it
+      disagreed about exactly the entry the decode was written to rescue.
+      Nothing failed, because it is a non-emptiness check. It was the wrong
+      rule under the right sentence.
+```
+
+**The two counts are out of the comments.** They were written at `2f21b54`
+and `7ba1e9d` moved an entry across the boundary they count one commit later.
+Both were true when written; neither was re-taken. That is BP0, and it is the
+same species as R341's second half, in the same file, in the round that
+repaired it.
+
+```
+cmd   python scripts/corpus_figures.py
+out   entry headers in the corpus file     147
+      entries that reached the assertions  147
+      asserted -- the regression domain     51
+      recorded escapes -- allowed growth    96
+      of those, caught now -- improvement   30
+rule  the script runs after every other edit to a revision, like
+      `suite_count.py`, and the figures are published here, where the rule
+      regenerates them. Nothing regenerates a comment.
+judge THE FIRST TWO ROWS ARE THE R351 COMPARISON, and they are in this table
+      rather than in prose because they are the pair whose agreement is the
+      check.
+```
+
+## 4. R358 — the process was contradicting itself, and the rule moved
+
+**This is the reviewer's own finding against their own commits, and it stood
+for at least two rounds because the commits where it is red are the commits
+where nobody runs anything.**
+
+```
+cell one variable, the distance rule, applied to the file each commit
+     shipped and nothing else
+out  40667c6  this round's corpus commit    9 failed -> 233 passed
+     8ee69b7  this round's verdict commit   9 failed -> 1 failed
+     2b6435d  last round's verdict commit   red -> green
+     9848630  last round's corpus commit    red -> green
+     a93d505  the report commit             green -> green
+rule a reviewer commit carries no code and changes nothing a suite count
+     describes, so the count stays true across it. What still fails is an
+     implementer commit after the measurement, which is what R319 exists for.
+rule unreadable history returns 99 and the assertion FAILS. "I could not
+     tell" is not "it was the reviewer's".
+judge THE ONE RESIDUAL IS NOT THIS RULE. At the verdict commit,
+     `two_digit_step_number` replays the guard against a synthetic step-10
+     report that does not answer verdict 40's own site list -- and R358 names
+     eleven lines of `tests/test_report_carried.py`, which §8 answers here.
+```
+
+**And one correction to how I measured it first.** My first cell copied the
+whole guard from HEAD into a `git worktree` at each commit. That carried §2's
+new assertion in with it and reddened every state for an unrelated reason,
+and the shallow-clone states failed because a worktree's `.git` is a file
+rather than a directory. It measured twelve against twelve and I would have
+reported that the fix changed nothing. The numbers above are from a real
+clone with only the CO3 hunk applied.
+
+**The corpus tree joins `paths-ignore`.** A push carrying only the corpus has
+no code in it and, until this round, ran the whole workflow and went red on
+this same rule — directly in front of Q7, which opens on green CI at a
+reviewed commit.
+
+## 5. What is open
+
+- **The Actions allowance.** Q8's remaining values, the counter's canonical
+  confirmation, the two pending re-renders and Q7 all sit behind it. Nothing
+  in this round did.
+- **R354** — the cheap-first comment prices a lint red in seconds, and steps
+  stop at the first failure, so a line-length complaint costs the whole guards
+  run. The cell is in the repository at `d2bbcdd`, where the red was exactly
+  that and rung 4 was green in the same run; at 4a.
+- **R355** — the sign-flip test's NAME promises orders and its body asserts
+  greater-than. The docstring is right that a threshold would re-introduce
+  R326's literal; the name is the residue; at 4a.
+- **R356** — the same domain hole as R351 in four more corpus readers. R351
+  is the one instance where it could be shown doing damage, and the fix is
+  the same line in each; at 4a.
+- **R357** — `untouched_sites.py` matches a site by path suffix, so a verdict
+  naming a bare filename would match a longer path ending in it; at 4a.
+- **R350's second half**, R330, R331, R332, R347, R348, R349 and the rest of
+  the 4a list.
+- **R275, R231, R244, R245** — the remaining Q8 values, behind the render.
+- **R223, R224 — Q7**, which opens on green CI at a reviewed commit.
+- **R230**, reopened by my own error at revision 3, and mine to leave open.
+
+## 6. What this round did not touch
+
+```
+cmd  git diff 8ee69b7..HEAD --stat -- floatfea/
+out  (empty)
+judge NO EXECUTABLE LINE IN `floatfea/` HAS CHANGED SINCE `839b56b`, and the
+     only edit to that tree in thirteen rounds is the comment at `80e8bab`.
+     The narrower sentence is the one revision 14 corrected itself to.
+```
+
+## 7. The whole suite, at the commit this revision is committed on top of
+
+**Whole suite at `52e956f`: 1812 passed, 2 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit, excluding 261 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py) -- which the supervisor runs at the commit that carries it. R339: the count of what is excluded is part of the line, so a reader can size it without running anything.
+
+- **failed** `tests.regression.test_exempt_pair_responses::test_the_recorded_set_is_the_measured_set`
+- **failed** `tests.test_plan_figures::test_the_generated_figures_are_not_stale`
+
+## 8. Sites named by findings and not touched
+
+Generated: `python scripts/untouched_sites.py`. The rows are the guard's own
+`SITES` and `TOUCHED`, imported rather than re-derived, so the table cannot
+enumerate a different set than the check does. The reason column is mine and
+carries the literal `no change`, which is the string the guard looks for.
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R351 | `tests/test_marker_exemption_corpus.py:103` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:104` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:105` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:106` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:107` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:108` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:109` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:110` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:111` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:112` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:113` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:114` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:115` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:116` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:117` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:118` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:119` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:120` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:121` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:122` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:123` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:124` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:125` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:126` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R351 | `tests/test_marker_exemption_corpus.py:127` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The parser and the second reader that has to agree with it are in §1; `grep -n _headers_in_the_file tests/test_marker_exemption_corpus.py` finds it |
+| R355 | `tests/verification/rung4/test_writer_round_trip.py:311` | the file is untouched | **no change** — 4a. The name promises orders and the body asserts greater-than; the docstring is right that a threshold would re-introduce R326's literal, so the residue is the name and renaming a rung-4 test is not a thing to do in passing |
+| R356 | `tests/test_ci_ladder_gating.py:133` | the file is untouched | **no change** — 4a, and it is R351's species in a fourth reader. The fix is one line each and they go together, not one at a time in whichever round notices |
+| R356 | `tests/test_report_guard_states.py:105` | the file is untouched | **no change** — 4a, as above |
+| R356 | `tests/test_report_vocabulary_corpus.py:117` | the file is untouched | **no change** — 4a, as above |
+| R356 | `tests/verification/rung1/test_corpus_configurations.py:671` | the file is untouched | **no change** — 4a, as above |
+| R357 | `golden.py` | the file is untouched | **no change** — this is the finding's own EXAMPLE of what a suffix match would wrongly hit, not a file in the tree. It is quoted here because the generator reads the verdict literally, which is the behaviour R357 describes |
+| R357 | `scripts/untouched_sites.py:59` | the file is untouched | **no change** — 4a. The suffix match is real; the file is unchanged this round because the import of the guard's own list is what R349 asked for and it landed |
+| R357 | `tests/test_collected_set_golden.py` | the file is untouched | **no change** — 4a, named by the finding as the path a bare `golden.py` would collide with |
+| R358 | `scripts/suite_count.py` | the file is untouched | **no change** — the exclusion it makes is unrelated and correct, and the finding names it only to explain why nobody saw the red. The repair is the rule, in §4 |
+| R358 | `test_report_guard_states.py` | the file is untouched | **no change** — the replay inherits the direct failure rather than adding one. Nine of its states clear with the rule change and no edit here, measured in §4 |
+| R358 | `tests/test_report_carried.py:1043` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+| R358 | `tests/test_report_carried.py:1044` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+| R358 | `tests/test_report_carried.py:1045` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+| R358 | `tests/test_report_carried.py:1046` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+| R358 | `tests/test_report_carried.py:1047` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+| R358 | `tests/test_report_carried.py:1048` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+| R358 | `tests/test_report_carried.py:1049` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+| R358 | `tests/test_report_carried.py:1050` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+| R358 | `tests/test_report_carried.py:1051` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+| R358 | `tests/test_report_carried.py:1052` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+| R358 | `tests/test_report_carried.py:1053` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+| R358 | `tests/test_report_carried.py:1054` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+| R358 | `tests/test_report_carried.py:1061` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The distance rule and its helper are in the `process:` commit `52e956f` |
+
+## 9. Carried
+
+Generated: `python scripts/carried_table.py <verdict> docs/reports/F2/step-5-answers.json`. The row set, the class and the subject of every row are read from the verdict; the answers file carries a state and a section pointer, and the pointer is resolved against this report by `tests/test_report_carried.py`.
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R223 | **open** — §5 | OPEN by instruction, correctly listed. |
+| R224 | **open** — §5 | OPEN by instruction, correctly listed. |
+| R225 | **open** — carried from an earlier verdict | carried, and |
+| R228 | **open** — carried from an earlier verdict | carried, and |
+| R230 | **open** — §5 | OPEN by instruction, correctly listed. |
+| R231 | **open** — §5 | OPEN, still correctly declared blocked on the |
+| R232 | **open** — carried from an earlier verdict | carried, and |
+| R233 | **open** — carried from an earlier verdict | carried, and |
+| R244 | **open** — §5 | OPEN, still correctly declared blocked on the |
+| R245 | **open** — §5 | OPEN, still correctly declared blocked on the |
+| R248 | **open** — carried from an earlier verdict | residues, |
+| R249 | **open** — carried from an earlier verdict | carried, and |
+| R252 | **open** — carried from an earlier verdict | carried, and |
+| R253 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R254 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R256 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R257 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R261 | **open** — carried from an earlier verdict | OPEN by instruction, correctly listed. |
+| R262 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R274 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R275 | **open** — §5 | OPEN, still correctly declared blocked on the |
+| R276 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R277 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R281 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R288 | **open** — carried from an earlier verdict | carried, and |
+| R289 | **open** — carried from an earlier verdict | carried, and |
+| R290 | **open** — carried from an earlier verdict | carried, and |
+| R291 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R292 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R293 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R300 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R302 | **open** — carried from an earlier verdict | accepted at verdict 37, not reopened. |
+| R303 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R308 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R315 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R320 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R321 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R322 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R323 | **carried** | closed in earlier verdicts, |
+| R326 | **open** — carried from an earlier verdict | removed. |
+| R329 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R330 | **open** — §5 | OPEN at 4a, correctly listed. R332 stands and I |
+| R331 | **open** — §5 | OPEN at 4a, correctly listed. R332 stands and I |
+| R332 | **open** — §5 | OPEN at 4a, correctly listed. R332 stands and I |
+| R341 | **carried** | Verdict 39 listed six blocking items. Five close (R341, R342, R343, R344, |
+| R342 | **carried** | Verdict 39 listed six blocking items. Five close (R341, R342, R343, R344, |
+| R343 | **carried** | Verdict 39 listed six blocking items. Five close (R341, R342, R343, R344, |
+| R344 | **carried** | Verdict 39 listed six blocking items. Five close (R341, R342, R343, R344, |
+| R345 | **carried** | ). One does not (R346), and it is the same sentence, wrong in the same |
+| R346 | **carried** | ), and it is the same sentence, wrong in the same |
+| R347 | **open** — §5 | second half -- OPEN at 4a, correctly listed in |
+| R348 | **open** — §5 | second half -- OPEN at 4a, correctly listed in |
+| R349 | **open** — §5 | second half -- OPEN at 4a, correctly listed in |
+| R350 | **open** — §5 | second half -- OPEN at 4a, correctly listed in |
+| R351 | **answered** — §1 | A regression can still be filed as growth, without touching my file. The growth rule... |
+| R352 | **answered** — §2 | Section 0 heading names a commit that is not the reviewed commit and calls it the reviewed... |
+| R353 | **answered** — §3 | 7ba1e9d moved one entry across the boundary and did not re-take the two numbers that count it,... |
+| R354 | **open** — §5 | The cheap-first comment prices a lint red in seconds and not in evidence.... |
+| R355 | **open** — §5 | test_a_swapped_sign_is_orders_away_from_the_band asserts greater-than, not orders.... |
+| R356 | **open** — §5 | Every reviewer-owned corpus is read by a parser the implementer owns, and none of the five... |
+| R357 | **open** — §5 | scripts/untouched_sites.py:59 matches sites by path suffix. The expression is a list... |
+| R358 | **answered** — §4 | A shipped guard is RED BY CONSTRUCTION at every corpus commit and every verdict commit on this... |
+
+## 10. What I am asking for
+
+**Commits since the fortieth verdict**, in order:
+
+```
+cmd  git log --oneline 8ee69b7..HEAD
+out  ca57d8a CO0: the domain comes from a second reader, not from the parser 
+     11e2606 CO2: the decode where the equality was, and the figures out of t
+     0a6a608 CO1: the CI heading has one source of truth, and the label stops
+     52e956f process: the distance rule counts implementer commits only (CO3,
+     (this revision's own commit follows)
+```
+
+| commit | what it is |
+|---|---|
+| `ca57d8a` | CO0: the domain comes from a second reader, not the parser it checks |
+| `11e2606` | CO2: the decode where the equality was, and the figures out of the comments |
+| `0a6a608` | CO1: the CI heading has one source, and the label stops being false |
+| `52e956f` | `process:` CO3 — the distance rule counts implementer commits only |
+| this one | the report |
+
+**Three blocking items, all three answered**, and each of the three is a
+sentence of mine that was more confident than the code under it.
+
+- **R351** — the classification was derived and the domain was not. A second
+  reader of the corpus now has to agree with the parser, the floor is
+  deleted, and three published sentences are withdrawn rather than defended.
+- **R352** — the generator has one source of truth and no argument, and no
+  sha is called the reviewed commit unless it is HEAD.
+- **R353** — the superseded equality is gone from the test that certifies its
+  replacement, and the two counts are published where something regenerates
+  them.
+
+**R358 is answered as a rule change, not a tree change**, per CO3. The
+whole-suite distance rule now counts implementer commits only, so the corpus
+commit the process REQUIRES cannot violate the process. Nine reds clear at
+the reviewer's own commit with that one hunk and nothing else.
+
+**What is not claimed.** Nothing executable in `floatfea/` has moved. The two
+corpus reds still need the canonical machine. No Q8 value beyond the one
+already written, and Q7 is not opened here.
+
+**CI is `unavailable — allowance exhausted`**, which CK2 makes a state rather
+than a red build. Every figure in this revision is local and says so.
