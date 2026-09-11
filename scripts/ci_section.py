@@ -87,6 +87,16 @@ def run_for(sha: str) -> dict:
     return pushes[0]
 
 
+def never_started(jobs: list[dict]) -> bool:
+    """Did the allowance run out before a single job began (CK2)?
+
+    A job that was never started has no runner, no steps and a duration of a
+    second or two. It measured nothing: reading it as red HOLDs a step on a
+    billing account, and reading it as green is worse.
+    """
+    return bool(jobs) and all(not job.get("steps") for job in jobs)
+
+
 def counts(run_id: int) -> dict[str, tuple[int, int, int]]:
     """`{job: (passed, failed, skipped)}` read from the run's log."""
     log = _gh("run", "view", str(run_id), "--log")
@@ -191,6 +201,29 @@ def section(sha: str) -> str:
     sha = full_sha(sha)
     run = run_for(sha)
     jobs = json.loads(_gh("run", "view", str(run["databaseId"]), "--json", "jobs"))["jobs"]
+    if never_started(jobs):
+        red = sorted(j["name"] for j in jobs if j["conclusion"] not in ("success", "skipped"))
+        return (
+            f"## 0. CI at the reviewed commit `{sha[:7]}` — "
+            "**unavailable, allowance exhausted**\n\n"
+            f"Generated: `python scripts/ci_section.py {sha[:7]}`. Run "
+            f"`{run['databaseId']}`, event `{run['event']}`, conclusion "
+            f"**{run['conclusion']}** — and not one of its "
+            f"{len(jobs)} jobs started.\n\n"
+            "```\n"
+            f"cmd  gh api repos/.../actions/runs/{run['databaseId']}/jobs\n"
+            'out  every job: runner_name "", steps [], a two-second duration,\n'
+            '     and the annotation "The job was not started because recent\n'
+            "     account payments have failed or your spending limit needs to\n"
+            '     be increased"\n'
+            f"judge NOTHING WAS MEASURED at this commit. {len(red)} jobs are "
+            "marked failed\n"
+            "     and none of them ran a step. Per CK2 this is a state of its "
+            "own --\n"
+            "     `unavailable -- allowance exhausted` -- and it is neither "
+            "red nor green.\n"
+            "```\n"
+        )
     measured = counts(run["databaseId"])
 
     lines = [

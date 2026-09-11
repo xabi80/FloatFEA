@@ -130,8 +130,8 @@ REPORT = REPORTS / f"step-{STEP}.md"
 _FINDING = re.compile(r"^\*\*(R\d+)[.\s]", re.MULTILINE)
 _MENTION = re.compile(r"\bR\d+\b")
 # `path/to/file.py:123` or `:123-145`, as the verdicts write them.
-# The leading dot of `.claude/...` is part of the path; `` before it would
-# cut it off and the file would never match the diff.
+# The leading dot of `.claude/...` is part of the path; a word boundary before
+# it would cut it off and the file would never match the diff.
 # The directory part is OPTIONAL, because findings name bare files too and
 # those were invisible to this pattern (R171). The optional `:line` and `:a-b`
 # suffixes are what take the guard to line resolution.
@@ -819,12 +819,27 @@ def _ci_section() -> str:
     """
     body = _newest_revision(REPORT_TEXT)
     best = ""
+    unavailable = ""
     for m in re.finditer(r"^##+ .*$", body, re.MULTILINE):
         nxt = re.search(r"^##+ ", body[m.end() :], re.MULTILINE)
-        chunk = body[m.end() : m.end() + nxt.start()] if nxt else body[m.end() :]
+        chunk = m.group(0) + (body[m.end() : m.end() + nxt.start()] if nxt else body[m.end() :])
         if len(_CI_ROW.findall(chunk)) > len(_CI_ROW.findall(best)):
             best = chunk
-    return best
+        # CK2: THE THIRD STATE HAS NO TABLE, and a section is still there.
+        # When no job started there is nothing to tabulate, and identifying
+        # the CI section by its table would find none at all -- which reads
+        # as "the report has no CI section", the one thing CE1 forbids.
+        if (
+            "allowance exhausted" in chunk.lower()
+            and re.match(r"^##+ .*\bCI\b", chunk)
+            and not unavailable
+        ):
+            # THE SECTION, NOT EVERY MENTION OF IT. The closing section says
+            # the same words about the same state, and taking the last match
+            # found that one -- a section with no evidence in it, because the
+            # evidence belongs in §0.
+            unavailable = chunk
+    return best or unavailable
 
 
 def _reported_ci() -> dict[str, tuple[int, int, int]]:
@@ -842,6 +857,21 @@ def test_the_report_carries_a_CI_SECTION() -> None:
         "consecutive reviewed commits were red on CI and no revision said so; "
         "one of the reds was the report's own commit."
     )
+    if "allowance exhausted" in body.lower():
+        # CK2. A run whose jobs never started measured nothing, and a table of
+        # zeros would be a measurement-shaped object with no measurement in
+        # it. What the section must carry instead is the evidence that this is
+        # the state: the run it names, and the annotation that says why.
+        assert re.search(r"runner_name", body), (
+            "the section declares the allowance exhausted and does not show "
+            "the evidence. `gh api .../actions/runs/<id>/jobs` prints "
+            "`runner_name` empty, no steps, and the annotation about payments."
+        )
+        assert re.search(r"\b\d{6,}\b", body), (
+            "the section declares the allowance exhausted and names no run. "
+            "The state is about a specific run at a specific commit."
+        )
+        return
     rows = _reported_ci()
     assert rows, (
         "the CI section states no per-job row. The required shape is a table of "
@@ -1059,6 +1089,8 @@ def test_a_RED_suite_is_named_in_the_report() -> None:
 
 def test_the_reported_CI_counts_are_not_all_zero() -> None:
     """The other half: a table of zeros satisfies the shape and says nothing."""
+    if "allowance exhausted" in _ci_section().lower():
+        return
     rows = _reported_ci()
     assert any(p or f for p, f, _ in rows.values()), (
         f"every CI row in {REPORT.name} reports zero passed and zero failed. "
