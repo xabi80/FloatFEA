@@ -30,13 +30,21 @@ replaced it was a hand-written map of names, and R341 showed that a map is a
 convention rather than a check: a provenance string anyone can type clears a
 genuine regression, and the reviewer demonstrated exactly that. What is here
 now reads the corpus's own `measured=` field, which records what the shipped
-scanner did at plant time and which only the reviewer can write. The set of
-allowed escapes is therefore DERIVED, and a regression has no field to hide
-in. The rule is set out above `_entries()`.
+scanner did at plant time and which only the reviewer can write.
+
+WHAT THAT BUYS AND WHAT IT DOES NOT, because the first version of this
+paragraph claimed the second. The CLASSIFICATION of an entry -- growth or
+regression -- is derived from a field the implementer cannot write, and that
+holds. The DOMAIN, which entries get classified at all, is decided by
+`_entries()`, which is mine; the reviewer removed one shape there and filed a
+real regression as nothing at all (R351). A count is a fact about their file,
+so it is compared to a second reader of it, and the two must agree. The rule
+is set out above `_entries()`.
 """
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -125,6 +133,31 @@ def _entries() -> list[tuple[str, str, str, str]]:
 
 
 ENTRIES = _entries()
+
+
+def _headers_in_the_file() -> int:
+    """A SECOND READER, counting entry headers and understanding nothing else.
+
+    R351, and it is the same species as R28 and R56: a check whose DOMAIN is
+    supplied by the thing it checks. `_entries()` decides both what the corpus
+    says and which of it is looked at, so one line in it --
+
+        if "raised_to_a_literal" in line:  # shape superseded
+            continue
+
+    -- removes a shape from the parametrisation, from `PLANTED_ESCAPES`, from
+    `_measured_misses()` and from the regression test, all at once. The
+    reviewer planted a real regression, added that line, and the whole suite
+    came back green with the corpus untouched. The hook protects the DATA; it
+    cannot make anyone read it.
+
+    This function shares nothing with `_entries()` but the file: bytes, one
+    regex, no field splitting, no filtering, no dict. Its only job is to
+    disagree. Anything that drops an entry on the way to the assertions makes
+    the two numbers differ, and `test_every_entry_reaches_the_assertions`
+    fails by name.
+    """
+    return len(re.findall(rb"(?m)^id=", CORPUS.read_bytes()))
 
 
 # THE FIELD IS DECODED, NOT COMPARED FOR EQUALITY (R350, and CN0 is what makes
@@ -220,15 +253,46 @@ def _misses() -> set[str]:
 def test_the_corpus_is_not_empty() -> None:
     """Meta-test: an unreadable corpus makes every case below vacuous."""
     assert ENTRIES, f"{CORPUS} parsed to no entries; the format changed"
-    assert len(ENTRIES) >= 28, (
-        f"only {len(ENTRIES)} entries parsed. The reviewer wrote 28 and a "
-        "parser that silently drops most of them is the failure this guards."
-    )
     kinds = {expect for _, expect, _, _ in ENTRIES}
     assert kinds == {"caught", "exempt"}, (
         f"the corpus asks for {sorted(kinds)}. A corpus with no `exempt` entry "
         "cannot show the hatch still works; one with no `caught` entry cannot "
         "show it is bounded."
+    )
+
+
+def test_every_entry_reaches_the_assertions() -> None:
+    """The domain comes from a reader that is not the parser (CO0, R351).
+
+    WHAT THE FLOOR HERE USED TO BE. `assert len(ENTRIES) >= 28`, with a
+    message about a parser that silently drops most of them, against a file
+    of a hundred and twenty-five. It defended against losing three quarters
+    of the corpus and nothing else, and the reviewer walked through it by
+    dropping one entry.
+
+    A COUNT IS A FACT ABOUT A FILE I DO NOT WRITE, and it was compared to
+    nothing. It is compared to `_headers_in_the_file()` now, which is the
+    point: not that the number is large, but that two readers of the same
+    file agree about how much of it there is.
+    """
+    parsed, on_file = len(ENTRIES), _headers_in_the_file()
+    assert parsed == on_file, (
+        f"{on_file} entry header(s) in {CORPUS.name} and {parsed} reached the "
+        "assertions. Something between the file and `ENTRIES` is dropping "
+        "entries, and every assertion in this file loses them together -- the "
+        "parametrisation, `PLANTED_ESCAPES`, `_measured_misses()` and the "
+        "regression test. A shape that is not read cannot regress."
+    )
+
+    # AND THE TWO DERIVED SETS PARTITION IT. A shape that is in neither is a
+    # shape no assertion in this file can fail on, which is the same hole one
+    # level down from the parser.
+    names = {name for name, _e, _m, _s in ENTRIES}
+    covered = {name for name, _e, _s in ASSERTED} | PLANTED_ESCAPES
+    assert covered == names, (
+        f"{len(names - covered)} entr(y|ies) are in neither the asserted set "
+        "nor the recorded escapes, so nothing decides anything about them: "
+        f"{sorted(names - covered)}"
     )
 
 
@@ -275,11 +339,16 @@ def _measured_misses() -> set[str]:
 def test_no_shape_that_was_CAUGHT_when_planted_escapes_now() -> None:
     """A regression, and no string can file it as growth (CN0, R341).
 
-    The domain is every entry the reviewer recorded as `measured == expect`:
-    the scanner did the right thing when the shape arrived. If one of them
-    does the wrong thing now, the scanner moved under it. There is nothing to
-    declare and nowhere to declare it -- the field that decides is in a file
-    the implementer does not write.
+    The domain is every entry the reviewer recorded as doing what it should
+    at plant time: the scanner was right about the shape when it arrived. If
+    one of them does the wrong thing now, the scanner moved under it.
+
+    NOTHING CAN BE DECLARED TO CLEAR ONE. The field that decides is in a file
+    the implementer does not write, and there is no string in this file that
+    excuses a name. What CAN still remove a shape from this test is dropping
+    it from `ENTRIES`, which is why `test_every_entry_reaches_the_assertions`
+    counts the file a second way (R351). The previous version of this
+    paragraph said there was nowhere at all, and that was wrong.
     """
     regressions = sorted(_measured_misses() - PLANTED_ESCAPES)
     assert not regressions, (
