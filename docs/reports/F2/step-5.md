@@ -3792,3 +3792,448 @@ commit this revision answers had ladder 4 red.
 **No declared disagreement with any corpus this round.** Three of the
 reviewer's new entries are declared out of scope under the plan's threat model,
 which is a different thing and is recorded as such.
+
+# Revision 12 — seven items, none of them waiting on a runner
+
+Answers: verdict 37 @ 2e6276c
+
+**2026-09-11.** Commits since the thirty-seventh verdict, listed in §12.
+
+## 0. CI at the reviewed commit `d384e41` — **unavailable, allowance exhausted**
+
+Generated: `python scripts/ci_section.py d384e41`. Run `34549514338`, event `push`, conclusion **failure** — and not one of its 20 jobs started.
+
+```
+cmd  gh api repos/.../actions/runs/34549514338/jobs
+out  every job: runner_name "", steps [], a two-second duration,
+     and the annotation "The job was not started because recent
+     account payments have failed or your spending limit needs to
+     be increased"
+judge NOTHING WAS MEASURED at this commit. 14 jobs are marked failed
+     and none of them ran a step. Per CK2 this is a state of its own --
+     `unavailable -- allowance exhausted` -- and it is neither red nor green.
+```
+
+## 0a. How to read §0, and what is not waiting on it
+
+**§0 is generated and it says the third state** (CK2): the run at the reviewed
+commit exists and not one of its jobs started. Nothing was measured there, so
+it is neither red nor green, and the instruction files now carry that state
+with the command that identifies it.
+
+**Nothing in this round waited on it.** All seven blocking items are local
+work, and the two that need the canonical machine are named in §7 with the
+non-canonical value beside them. **The last run that executed** is `34546580003`
+at `8942cdc`, where every ladder job is green including 4 and 5.
+
+## 1. R324 — the counter measures itself now
+
+**The counter's margin was the drift the band exists to admit, and the
+reviewer solved the inversion rather than reporting the symptom.** Injecting an
+absolute three ULP into a value the canonical machine already holds one ULP
+below the reference measures two against a band of two.
+
+```
+cell the shipped helper, the site forced to -1, 0 and +1 ULP of the amplitude
+out  OLD  site +0.0 -> measured 3.0000  OK
+     OLD  site -1.0 -> measured 2.0000  FAILS, and `assert 2.0 > 2.0` is the
+                                        assertion that would have reddened
+                                        ladder 4 on the canonical machine
+     NEW  site +0.0 -> measured 3.0000  OK
+     NEW  site -1.0 -> measured 4.0000  OK
+     NEW  site +1.0 -> measured 4.0000  OK
+cmd  python scripts/measure_channel_drift.py     (the operating point, here)
+out  the clean deviation at that site is 0.0000 ULP on this machine; the
+     canonical machine puts up to 1.0000 ULP on that channel
+rule the injection is measured FROM the clean deviation at the site and added
+     BEYOND it, so the delta reaching the comparison is the same on every
+     machine and the margin is one ULP by construction
+judge AND THE TEST NOW ASSERTS THAT TOO: the measured drift must equal the
+     clean deviation plus the injection, so a counter that measures something
+     other than itself is a failure rather than a coincidence.
+```
+
+## 2. R323 — the whole-suite line names the tree it measured
+
+**Two numbers, one label.** The count was taken in the working tree, which
+holds the commit plus the report being written, and stamped with the commit.
+The report's own guards are parametrised over the report, so they grow with it.
+
+```
+rule the count runs in a clean `git worktree` at the commit it names
+rule the guards parametrised over this report are excluded, and the LINE SAYS
+     SO -- they are the supervisor's to run, at the commit that carries them
+cmd  python scripts/suite_count.py
+out  the line in §9, and it is reproducible by anyone at that sha
+judge THE HARNESS THAT RUNS THE CARRY GUARD IS EXCLUDED WITH IT, found by
+     running the counter: every state it builds runs the carry guard over the
+     report, so before the revision lands it reports the boundary.
+```
+
+## 3. R325 — one story about where the band's two came from
+
+**It came from measurement, and the sentence denying that is withdrawn.** Q8
+fixed the class at two ULP on the basis of thirteen CI-versus-local pairs, and
+that clause and its basis entered in the same commit. So the number is derived
+from the disagreements it now admits, which is legitimate at twice the worst
+and is said that way.
+
+```
+cmd  gh run download 34545832426 -n determinism-leg-N, for N = 1..10
+out  1.0000 ULP on every leg. THREE CPU models: AMD EPYC 7763 on legs 1, 4
+     and 8; AMD EPYC 9V74 on 3, 5, 7, 9 and 10; Intel Xeon 6973P-C on 2 and 6
+judge `six models` was published and is wrong; `legs 4, 7 and 10 -- three
+     models` is two. Both re-taken from the run, in the plan, the tolerance
+     entry and the test docstring.
+judge WHAT THIS ROUND'S MEASUREMENT IS, then: an INDEPENDENT re-measurement of
+     the same quantity on the canonical machine, agreeing with the thirteen
+     pairs rather than replacing them.
+```
+
+## 4. R326 — the escalation the repository wrote for itself
+
+**A literal reached a comparison inside an expression and the scanner could
+not see it.** The known-miss bound said those stay at 4a "unless one exposes a
+false pass on a real file in the tree". One did, and it was mine.
+
+```
+cell walking the WHOLE comparator, which is the obvious rule
+out  41 correct files reddened -- a scale, a physical constant, index
+     arithmetic. The narrow branch's own recorded warning predicted exactly
+     that, and it was measured again before the rule was narrowed.
+rule what makes a literal a THRESHOLD is standing where a declared tolerance
+     stands: in the same `BinOp` as a declared name, among `min`/`max`
+     candidates, or in an inline table the comparator subscripts
+cell the same rule against `pytest.approx(0.6 * fy, rel=DECLARED)`
+out  not flagged -- a physical factor and a declared tolerance on one line are
+     two unrelated numbers, which is why the rule is one expression rather
+     than one line
+cmd  python -m pytest tests/test_no_tolerance_literals.py tests/test_marker_exemption_corpus.py -q
+out  109 passed -- all nine shapes caught, no false positive
+```
+
+**And the assertion that carried the literal has no threshold in it.** A sign
+flip moves a value by exactly twice its magnitude, so the control asserts the
+measured drift EQUALS that prediction. What it does not read is now written
+down: it builds its comparison from the reference, so it cannot fail for any
+defect in the repository.
+
+## 5. R327, R328, R329 — a site, a title, and a default
+
+**R327.** `scripts/run_rung.sh` was R315's fourth site and still said "the LAST
+bound" twenty lines under the paragraph withdrawing it. It says what the other
+three say, and its channel list is the measured six with the two the
+cross-check catches marked as such.
+
+**R328.** The module is titled for what it asserts. The sidecar the generator
+already writes is recorded with the reason it was not committed: it would make
+the comparison bit-exact everywhere, and it would also move the expectation
+out of the file a reviewer reads and into a blob only the generator explains,
+which is how a writer and a validator come to encode one misreading twice.
+
+**R329.** An amplitude of zero raises and names the channel.
+
+```
+code  ampl = float(np.max(np.abs(want))) or 1.0
+cell  an all-zero reference against a `got` of 4e-16
+out   1.8 ULP -- INSIDE the band, with zero of the nine values agreeing
+judge A DEFAULT INVENTED A SCALE for a dimensional quantity inside a test
+      file, and an all-zero channel is the shape a writer that forgot a
+      channel produces. The recorded rule is that an unsupported case raises.
+```
+
+**And three carried items close with them.** The thirty-seventh verdict
+recorded **R315** closed at three of four sites and the fourth is above;
+**R316** and **R317** it recorded closed outright, and nothing in this round
+reopens either. They appear in §11 with the verdict's own subject beside each.
+
+## 6. CK0 — the minutes, measured before anything else ran
+
+```
+cmd  gh api repos/.../actions/runs/34546580003/jobs, wall clock summed
+out  2811 s over 20 jobs for ONE push, and every push ran twice because an
+     open pull request duplicates it
+judge MOST OF IT WAS NOT MEASUREMENT. Nine installs of numpy and scipy, and
+     ten determinism legs answering a question no test moves.
+```
+
+The pull-request trigger is dropped, because every commit in the PR is also a
+push. Report, review and plan paths are ignored. A superseded run is cancelled.
+The determinism legs are `workflow_dispatch` only. Lint, unit and guards become
+one job; six ladder jobs become one job of six steps; both cache their wheels.
+
+**The two ordering properties are kept and asserted rather than assumed.**
+Steps stop at the first failure, so the ladder's rule is the step order — and
+rung 6 runs BEFORE rung 4, so the goldens are not behind a rung that has been
+red under Q8 for eleven rounds. The guard that asserted the `needs:` graph now
+asserts the step position.
+
+**What this costs per push cannot be measured until minutes return**, and this
+report does not predict it.
+
+## 7. CL3 — nine of the eleven corpus reds answered, two pending the canonical machine
+
+The reviewer's corpus reddened the suite. Nine are answered above: the nine
+marker shapes are one repair, in §4.
+
+**Two need a re-render on the canonical machine and are named rather than
+worked around:**
+
+```
+cmd  python -m pytest tests -q                                (this tree)
+out  tests/regression/test_exempt_pair_responses.py::test_the_recorded_set_is_the_measured_set
+     tests/test_plan_figures.py::test_the_generated_figures_are_not_stale
+cmd  python scripts/regen_figures.py --check                  (NON-CANONICAL)
+out  below_ceiling_dropped_flip            '0 of 164' here, '0 of 158' committed
+     below_ceiling_dropped_shear_parameter '8 of 164' here, '7 of 158' committed
+     below_ceiling_one_element_scaled      '0 of 164' here, '0 of 158' committed
+     and two exempt-and-detected pairs are new:
+     ck_length_thousand_km|dropped_flip and ck_length_thousand_km|wrong_dof_index
+judge THE CORPUS GREW AND THE COUNTS FOLLOWED IT. These are not floor-class
+     rows: Q8 requires them to agree exactly on every machine, so the file has
+     to be regenerated ON the canonical machine and committed from there --
+     which is the route Q8 fixes and which the billing block prevents.
+judge EVERY VALUE ABOVE IS THIS LAPTOP'S AND IS LABELLED NON-CANONICAL. It is
+     recorded so the size of the move is known, not so it can be committed.
+```
+
+## 8. What is open
+
+- **The canonical re-render**, and with it the two reds in §7. First
+  `workflow_dispatch` run when minutes return.
+- **R275, R231, R244, R245.** The remaining Q8 values, behind the same render.
+- **R223, R224 — Q7**, which opens on green CI at a reviewed commit.
+- **R230**, reopened by my own error at revision 3, and mine to leave open.
+- **R330** and the rest of the 4a list, including the six forgery channels,
+  which the plan now records as out of scope rather than as items.
+
+## 9. The whole suite, at the commit this revision is committed on top of
+
+**Whole suite at `db219a6`: 1733 passed, 2 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit, excluding the guards parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py) -- which the supervisor runs at the commit that carries it.
+
+- **failed** `tests.regression.test_exempt_pair_responses::test_the_recorded_set_is_the_measured_set`
+- **failed** `tests.test_plan_figures::test_the_generated_figures_are_not_stale`
+
+## 10. Sites named by findings and not touched
+
+Generated from the verdict's own site list against `git diff <reviewed>..HEAD -U0`; a site is here because the diff does not touch it, and each carries why.
+
+| site | why |
+|---|---|
+| `docs/reports/F2/step-5.md:3502` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:168` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:169` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:170` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:171` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:172` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:173` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:174` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:175` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:176` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:177` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:178` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:179` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:180` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:181` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:182` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:183` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `F2.md:1101` | **no change** — the same plan lines, named without their directory |
+| `F2.md:1133` | **no change** — the same plan lines, named without their directory |
+| `docs/milestones/F2.md:1101` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `docs/milestones/F2.md:1102` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `docs/milestones/F2.md:1103` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `floatfea/tolerances.py:1022` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `floatfea/tolerances.py:1023` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `floatfea/tolerances.py:1031` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:124` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:125` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:126` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `CLAUDE.md` | **no change** — quoted as the rule the finding is judged against; `CLAUDE.md` changes only in a standalone `process:` commit |
+| `tests/test_marker_exemption_corpus.py:51` | **no change** — the known-miss bound, UNCHANGED and now true: it said those misses stay at 4a unless one exposes a false pass on a real file, and the answer to a fired condition is to close the miss, which is done in the scanner rather than by editing the bound |
+| `tests/test_marker_exemption_corpus.py:52` | **no change** — the known-miss bound, UNCHANGED and now true: it said those misses stay at 4a unless one exposes a false pass on a real file, and the answer to a fired condition is to close the miss, which is done in the scanner rather than by editing the bound |
+| `tests/test_marker_exemption_corpus.py:53` | **no change** — the known-miss bound, UNCHANGED and now true: it said those misses stay at 4a unless one exposes a false pass on a real file, and the answer to a fired condition is to close the miss, which is done in the scanner rather than by editing the bound |
+| `tests/test_marker_exemption_corpus.py:54` | **no change** — the known-miss bound, UNCHANGED and now true: it said those misses stay at 4a unless one exposes a false pass on a real file, and the answer to a fired condition is to close the miss, which is done in the scanner rather than by editing the bound |
+| `tests/test_no_tolerance_literals.py:224` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:225` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:226` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:227` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:228` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:231` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:232` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:233` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:234` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:235` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:236` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:237` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:238` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:239` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:240` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:241` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:242` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:243` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:244` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:245` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:246` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:247` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:248` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:249` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:254` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:256` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:257` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:258` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:259` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:260` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:195` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:200` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:201` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:202` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:203` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:208` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `./scripts/run_rung.sh:186` | **no change** — the same file, as the grep printed it |
+| `run_rung.sh:159` | **no change** — the same file, named without its directory |
+| `run_rung.sh:160` | **no change** — the same file, named without its directory |
+| `rung_no_xpass.py` | **no change** — named in the finding's own grep output as one of the files carrying the withdrawn sentence; it was corrected at `0cada85` and is unchanged here |
+| `scripts/run_rung.sh:159` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `scripts/run_rung.sh:160` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `scripts/run_rung.sh:166` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `artifacts/make_fixture_flr.py` | **no change** — the generator that WRITES the sidecar, unchanged on purpose: the round records why the sidecar was not committed and does not change how it is produced |
+| `artifacts/make_fixture_flr.py:61` | **no change** — the generator that WRITES the sidecar, unchanged on purpose: the round records why the sidecar was not committed and does not change how it is produced |
+| `artifacts/make_fixture_flr.py:62` | **no change** — the generator that WRITES the sidecar, unchanged on purpose: the round records why the sidecar was not committed and does not change how it is produced |
+| `artifacts/make_fixture_flr.py:63` | **no change** — the generator that WRITES the sidecar, unchanged on purpose: the round records why the sidecar was not committed and does not change how it is produced |
+| `tests/verification/rung4/test_writer_round_trip.py:2` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:3` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:4` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:5` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:6` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:7` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:8` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:9` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:10` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:11` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:12` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:13` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:14` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:15` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:16` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:17` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:18` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:19` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:20` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/verification/rung4/test_writer_round_trip.py:21` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `scripts/measure_channel_drift.py:93` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_report_numbers_are_sourced.py:135` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round |
+| `tests/test_report_numbers_are_sourced.py:136` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round |
+| `tests/test_report_numbers_are_sourced.py:137` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round |
+| `tests/test_report_numbers_are_sourced.py:138` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round |
+| `tests/test_report_numbers_are_sourced.py:139` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round |
+| `tests/test_report_numbers_are_sourced.py:140` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round |
+| `tests/test_report_numbers_are_sourced.py:141` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round |
+| `tests/test_report_carried.py:781` | **no change** — recordable at 4a in the verdict's own classification, and not answered this round. The commit message's count and the unrecorded lint red are recorded in this report's own §8 list rather than rewritten into a message that is already published |
+| `carried_item_routing.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `carried_row_subject.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `ci_determinism.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `pinned_interpreter.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `report_ci_section.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+| `report_numbers_sourced.txt` | **no change** — the reviewer's corpus, which the implementer does not write |
+
+## 11. Carried
+
+Generated: `python scripts/carried_table.py docs/reviews/F2/step-5.md docs/reports/F2/step-5-answers.json`. The row set, the class, and the subject of every row are read from the verdict; the answers file carries a state and a section pointer, and the pointer is resolved against this report by `tests/test_report_carried.py`.
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R223 | **open** — §8 | OPEN by instruction, correctly listed. |
+| R224 | **open** — §8 | OPEN by instruction, correctly listed. |
+| R225 | **open** — carried from an earlier verdict | carried, and correctly present in the |
+| R228 | **open** — carried from an earlier verdict | carried, and correctly present in the |
+| R230 | **open** — §8 | OPEN by instruction, correctly listed. |
+| R231 | **open** — §8 | OPEN. I said last round these were due. One adjacent |
+| R232 | **open** — carried from an earlier verdict | carried, and correctly present in the |
+| R233 | **open** — carried from an earlier verdict | carried, and correctly present in the |
+| R244 | **open** — §8 | OPEN. I said last round these were due. One adjacent |
+| R245 | **open** — §8 | OPEN. I said last round these were due. One adjacent |
+| R248 | **open** — carried from an earlier verdict | residues, R249-R252, |
+| R249 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262-R274, R276, R277, the two R248 residues, R249-R252, |
+| R252 | **open** — carried from an earlier verdict | - R253, R254, R256, R257, R262-R274, R276, R277, the two R248 residues, R249-R252, |
+| R253 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R254 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R256 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R257 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R261 | **open** — carried from an earlier verdict | OPEN by instruction, correctly listed. |
+| R262 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R274 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R275 | **open** — §8 | OPEN. I said last round these were due. One adjacent |
+| R276 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R277 | **open** — carried from an earlier verdict | , the two R248 residues, R249-R252, |
+| R281 | **open** — carried from an earlier verdict | OPEN, and my own count of it was wrong. See R332: seven corpus files |
+| R288 | **open** — carried from an earlier verdict | carried, and correctly present in the |
+| R289 | **open** — carried from an earlier verdict | carried, and correctly present in the |
+| R290 | **open** — carried from an earlier verdict | carried, and correctly present in the |
+| R291 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly recorded. |
+| R292 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly recorded. |
+| R293 | **open** — carried from an earlier verdict | closed in verdict 35, correctly carried and not reopened. |
+| R300 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly recorded. |
+| R302 | **open** — carried from an earlier verdict | answered by the boundary rather than by the mechanism claimed for it, |
+| R303 | **open** — carried from an earlier verdict | closed in verdict 35, correctly carried and not reopened. |
+| R308 | **open** — carried from an earlier verdict | closed in verdict 35, correctly carried and not reopened. |
+| R315 | **carried** — §5 | CLOSED AT THREE OF FOUR NAMED SITES, AND THE FOURTH IS STILL THERE. |
+| R316 | **carried** — §5 | CLOSED, and I re-measured the replacement rather than reading it. The |
+| R317 | **carried** — §5 | CLOSED on all four, each re-run by me at this commit. |
+| R318 | **open** — carried from an earlier verdict | CLOSED. tests/test_report_carried.py:777-787 refuses a pointer at |
+| R319 | **open** — carried from an earlier verdict | CLOSED as specified, and the specification is now the finding. |
+| R320 | **open** — carried from an earlier verdict | CLOSED. The window is gone; _inside_an_exempt_span() requires the |
+| R321 | **open** — carried from an earlier verdict | OPEN, correctly declared "recorded, not done" at §5 and §8, with |
+| R322 | **open** — carried from an earlier verdict | OPEN, correctly declared "recorded, not done" at §5 and §8, with |
+| R323 | **answered** — §2 | Two provenance claims each name a commit that is not the one measured. Each is one command.... |
+| R324 | **answered** — §1 | The counter's margin against the band is exactly the drift the band exists to admit, so the... |
+| R325 | **answered** — §3 | The basis contradicts itself inside one locked file, and two of its numbers are refuted by the... |
+| R326 | **answered** — §4 | 1e12 reaches a comparison in a shipped test, the scanner cannot see it, and the figure... |
+| R327 | **answered** — §5 | scripts/run_rung.sh:186 still carries the withdrawn sentence, and the channel list eighteen... |
+| R328 | **answered** — §5 | The module's title and its stated reason for shipping no sidecar both describe the assertion... |
+| R329 | **answered** — §5 | A channel with no amplitude defaults to a scale of 1.0 instead of raising.... |
+| R330 | **open** — §8 | R320's repair added a whole-line exemption on a weaker predicate than the one it replaced.... |
+| R331 | **open** — recordable at 4a in the verdict's own classification | A commit message's count, and an unrecorded CI red inside the range. 265b32f's subject says... |
+| R332 | **open** — recordable at 4a in the verdict's own classification | R281 is seven files, not three, and the largest is the corpus for this step's own gate. cmd... |
+
+## 12. What I am asking for
+
+**Commits since the thirty-seventh verdict**, in order:
+
+| commit | what it is |
+|---|---|
+| `83bffc1` | ci — nine jobs and a duplicate run become two, on the pushes that matter |
+| `0b78244` | plan — one story about where the band's two came from. RE-LOCKED |
+| `be534a8` | the counter measures itself, the scanner sees the expression, the count names its tree |
+| `36052b8` | process — CI has three states, and a job that never started is not a red one |
+| `361adce` | the harness that runs the report guard is excluded with it |
+| `db219a6` | the CI section generates the third state, and the guard knows it |
+| this one | the report |
+
+**Seven blocking items, all seven answered locally**, and none of them waited
+on the billing block:
+
+- **R324** — the injection is measured from the site's clean deviation. The
+  old form fails at a minus-one-ULP site and the new one does not, both shown
+  as runs. This is the one that would have reddened ladder 4 on the canonical
+  machine.
+- **R323** — the count runs in a clean worktree at the commit it names, and
+  the line states what it excludes and why.
+- **R325** — the plan and the tolerance entry tell one story, and the CPU
+  counts are the ones the run prints.
+- **R326** — the miss is closed rather than re-listed, because the escalation
+  condition the repository wrote for itself had fired. The rule that closes it
+  is narrow on purpose, and the wide version's forty-one false positives are
+  measured rather than argued.
+- **R327, R328, R329** — the fourth site, the title, and a default that raises.
+
+**And CK0 before anything else ran.** The measurement that justified it is in
+§6; the measurement that confirms it cannot be taken until minutes return, and
+this report does not predict it.
+
+**What is not claimed.** No Q8 value beyond the one already written. Nothing in
+`floatfea/` has moved for twelve rounds. Two corpus reds are open by name in
+§7, both needing the canonical machine, both with this laptop's value recorded
+and labelled non-canonical.
+
+**The state of CI is `unavailable — allowance exhausted`**, generated into §0
+from the run's own jobs, and CK2 makes that a state rather than a red build.

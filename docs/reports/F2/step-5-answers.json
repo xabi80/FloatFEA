@@ -1,47 +1,89 @@
 {
   "_": [
     "POINTERS ONLY (CH4). A state from the generator's fixed list and a section",
-    "of this report. The subject beside each item is read out of the verdict.",
-    "The pointer is resolved against the report: the section must exist, must",
-    "mention the item, and since R318 may not be the Carried section itself."
+    "of this report. The subject beside each item is read out of the verdict,",
+    "and the pointer is resolved against the report: the section must exist,",
+    "must mention the item, and may not be the Carried section itself."
   ],
   "answered": {
-    "R223": { "state": "open", "where": "§6" },
-    "R224": { "state": "open", "where": "§6" },
-    "R230": { "state": "open", "where": "§6" },
-    "R231": { "state": "open", "where": "§6" },
-    "R244": { "state": "open", "where": "§6" },
-    "R245": { "state": "open", "where": "§6" },
-    "R275": { "state": "open", "where": "§6" },
-    "R291": { "state": "open", "where": "§6" },
-    "R292": { "state": "open", "where": "§6" },
-    "R300": { "state": "open", "where": "§6" },
-    "R302": { "state": "answered", "where": "§1" },
-    "R309": { "state": "carried", "where": "§5" },
-    "R310": { "state": "carried", "where": "§5" },
-    "R311": { "state": "carried", "where": "§5" },
-    "R312": { "state": "carried", "where": "§5" },
-    "R313": { "state": "carried", "where": "§5" },
-    "R314": { "state": "carried", "where": "§5" },
+    "R223": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R224": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R230": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R231": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R244": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R245": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R275": {
+      "state": "open",
+      "where": "§8"
+    },
     "R315": {
-      "state": "answered",
-      "where": "§1",
-      "site": "scripts/rung_no_xpass.py"
+      "state": "carried",
+      "where": "§5"
     },
     "R316": {
-      "state": "answered",
-      "where": "§2",
-      "site": "floatfea/tolerances.py"
+      "state": "carried",
+      "where": "§5"
     },
     "R317": {
+      "state": "carried",
+      "where": "§5"
+    },
+    "R323": {
+      "state": "answered",
+      "where": "§2",
+      "site": "scripts/suite_count.py"
+    },
+    "R324": {
+      "state": "answered",
+      "where": "§1",
+      "site": "tests/verification/rung4/test_writer_round_trip.py"
+    },
+    "R325": {
       "state": "answered",
       "where": "§3",
-      "site": "docs/reports/F2/step-5.md"
+      "site": "floatfea/tolerances.py"
     },
-    "R318": { "state": "answered", "where": "§5" },
-    "R319": { "state": "answered", "where": "§5" },
-    "R320": { "state": "answered", "where": "§5" },
-    "R321": { "state": "open", "where": "§5" },
-    "R322": { "state": "open", "where": "§5" }
+    "R326": {
+      "state": "answered",
+      "where": "§4",
+      "site": "tests/test_no_tolerance_literals.py"
+    },
+    "R327": {
+      "state": "answered",
+      "where": "§5",
+      "site": "scripts/run_rung.sh"
+    },
+    "R328": {
+      "state": "answered",
+      "where": "§5",
+      "site": "artifacts/make_fixture_flr.py"
+    },
+    "R329": {
+      "state": "answered",
+      "where": "§5",
+      "site": "scripts/measure_channel_drift.py"
+    },
+    "R330": {
+      "state": "open",
+      "where": "§8"
+    }
   }
 }
