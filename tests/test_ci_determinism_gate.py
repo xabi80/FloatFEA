@@ -172,22 +172,36 @@ def test_the_verdict_job_rules_on_the_ten_legs(
 
 
 def test_ladder_6_is_not_gated_behind_a_rung_that_is_red_under_Q8() -> None:
-    """CH3. The goldens are gated on the machine that produces them.
+    """CH3, re-expressed for the collapsed ladder (CK0).
 
     Ladder 4 has been red under Q8 for eleven rounds; while ladder 6 was
-    `needs:`-chained behind it the goldens ran on ten determinism legs and were
-    gated on none of them. The ladder's ordering rule is about
-    interpretability, and 'do today's bytes equal yesterday's' stays
+    `needs:`-chained behind it the goldens ran on ten determinism legs and
+    were gated on none of them. The ladder's ordering rule is about
+    interpretability, and "do today's bytes equal yesterday's" stays
     interpretable whatever ladder 4 says.
-    """
-    import yaml
 
-    jobs = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))["jobs"]
-    needs = jobs["rung6"]["needs"]
-    assert "rung4" not in needs and "rung5" not in needs, (
-        f"ladder 6 needs {needs}. Chained behind ladder 4 it does not run, and "
-        "the goldens are then gated nowhere."
+    THE SHAPE CHANGED AND THE PROPERTY DID NOT. Six jobs became six steps of
+    one job, and steps stop at the first failure -- so the chain is now the
+    ORDER, and rung 6 is not behind rung 4 exactly when its step comes first.
+    It still comes after rungs 1 to 3, which are what make a golden's inputs
+    mean anything.
+    """
+    text = WORKFLOW.read_text(encoding="utf-8")
+    ladder = text[text.index("  ladder:") :]
+    order = [
+        line.split("run_rung.sh", 1)[1].strip()
+        for line in ladder.splitlines()
+        if "run_rung.sh" in line
+    ]
+    assert len(order) >= 6, f"the ladder job runs {len(order)} rungs: {order}"
+    where = {n: i for i, step in enumerate(order) for n in ("rung3", "rung4", "rung6") if n in step}
+    assert {"rung3", "rung4", "rung6"} <= set(where), f"rungs missing from {order}"
+    assert where["rung6"] < where["rung4"], (
+        "the goldens run after ladder 4, so a red ladder 4 stops them -- which "
+        "is where they were for eleven rounds, gated nowhere while running on "
+        "ten determinism legs."
     )
-    assert (
-        needs
-    ), "ladder 6 needs nothing: rungs 1 to 3 are what make a golden's inputs mean anything."
+    assert where["rung3"] < where["rung6"], (
+        "the goldens run before rung 3, whose tests are what make a golden's "
+        "inputs mean anything."
+    )

@@ -46,7 +46,12 @@ def _invocations() -> list[list[str]]:
     """
     text = WORKFLOW.read_text(encoding="utf-8")
     out: list[list[str]] = []
-    for step in re.findall(r"^\s*- run: (.+)$", text, re.MULTILINE):
+    # BOTH STEP FORMS. CK0 collapsed nine jobs into two and gave every step a
+    # `name:`, so the command moved from `- run:` to a bare `run:` on the next
+    # line. A parser that reads one form finds five steps where there are
+    # eleven, and the union it compares is then a union of what it happened to
+    # match -- the exact shape of the defect this file exists to catch.
+    for step in re.findall(r"^\s*-? ?run: (.+)$", text, re.MULTILINE):
         tokens = step.split()
         if tokens[:2] == ["sh", "scripts/run_rung.sh"]:
             # Only `full:` directories are executed; `empty:` ones are asserted
