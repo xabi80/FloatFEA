@@ -32,14 +32,19 @@ genuine regression, and the reviewer demonstrated exactly that. What is here
 now reads the corpus's own `measured=` field, which records what the shipped
 scanner did at plant time and which only the reviewer can write.
 
-WHAT THAT BUYS AND WHAT IT DOES NOT, because the first version of this
-paragraph claimed the second. The CLASSIFICATION of an entry -- growth or
-regression -- is derived from a field the implementer cannot write, and that
-holds. The DOMAIN, which entries get classified at all, is decided by
-`_entries()`, which is mine; the reviewer removed one shape there and filed a
-real regression as nothing at all (R351). A count is a fact about their file,
-so it is compared to a second reader of it, and the two must agree. The rule
-is set out above `_entries()`.
+WHAT THAT BUYS, STATED AT THE THIRD ATTEMPT, because the first two versions
+of this paragraph each claimed more than the code did. The fields that decide
+-- `expect` and `measured` -- are the reviewer's to write. They reach the
+decision through `_entries()`, which is mine, and `_entries()` can drop an
+entry (R351) or rewrite a field on the way through (R359); both were
+demonstrated, and both left the suite green with a real regression planted.
+
+So the file is read TWICE, by readers that share nothing but the path, and
+every field the decision reads is compared: the ids, the `expect` and the
+`measured`. What that buys is that an edit in the parser has to be made
+identically in two places to stay invisible, and one of them exists for no
+other purpose. It is not a proof that no such edit is possible. The rule is
+set out above `_entries()`.
 """
 
 from __future__ import annotations
@@ -135,28 +140,45 @@ def _entries() -> list[tuple[str, str, str, str]]:
 ENTRIES = _entries()
 
 
+# A SECOND READER OF THE CORPUS, sharing nothing with `_entries()` but the
+# file itself: bytes, one regex, no `split(None, 3)`, no dict, no decode, no
+# filtering. Its only job is to disagree.
+#
+# R351 WAS THE FIRST LEAF OF THE DOOR. `_entries()` decided both what the
+# corpus says and how much of it is looked at, so one line in it --
+#
+#     if "raised_to_a_literal" in line:  # shape superseded
+#         continue
+#
+# -- removed a shape from the parametrisation, from `PLANTED_ESCAPES`, from
+# `_measured_misses()` and from the regression test at once, and the suite
+# came back green with a real regression planted and the corpus untouched.
+#
+# R359 WAS THE SECOND, AND IT IS WHY THIS READS FIELDS RATHER THAN COUNTING.
+# The first repair compared COUNTS, and the decision does not rest on a count:
+# `_planted_caught(expect, measured)` reads two fields and `_entries()`
+# supplied both of them. Three lines --
+#
+#     if "raised_to_a_literal" in got["id"]:  # re-scoped
+#         got["expect"] = "exempt"
+#
+# -- moved a planted-CAUGHT shape into the allowed escapes with the count
+# still agreeing at 147 == 147, and the whole suite green again. A check has
+# to read every input its decision reads, or the inputs it does not read are
+# where the edit goes.
+_TRIPLE = re.compile(rb"(?m)^id=(?P<id>\S+)\s+expect=(?P<expect>\S+)\s+measured=(?P<measured>\S+)")
+
+
+def _triples_in_the_file() -> set[tuple[str, str, str]]:
+    """`{(id, expect, measured)}` straight from the bytes of the corpus."""
+    return {
+        (m["id"].decode(), m["expect"].decode(), m["measured"].decode())
+        for m in _TRIPLE.finditer(CORPUS.read_bytes())
+    }
+
+
 def _headers_in_the_file() -> int:
-    """A SECOND READER, counting entry headers and understanding nothing else.
-
-    R351, and it is the same species as R28 and R56: a check whose DOMAIN is
-    supplied by the thing it checks. `_entries()` decides both what the corpus
-    says and which of it is looked at, so one line in it --
-
-        if "raised_to_a_literal" in line:  # shape superseded
-            continue
-
-    -- removes a shape from the parametrisation, from `PLANTED_ESCAPES`, from
-    `_measured_misses()` and from the regression test, all at once. The
-    reviewer planted a real regression, added that line, and the whole suite
-    came back green with the corpus untouched. The hook protects the DATA; it
-    cannot make anyone read it.
-
-    This function shares nothing with `_entries()` but the file: bytes, one
-    regex, no field splitting, no filtering, no dict. Its only job is to
-    disagree. Anything that drops an entry on the way to the assertions makes
-    the two numbers differ, and `test_every_entry_reaches_the_assertions`
-    fails by name.
-    """
+    """How many entry headers the file has, by the same second reader."""
     return len(re.findall(rb"(?m)^id=", CORPUS.read_bytes()))
 
 
@@ -282,6 +304,22 @@ def test_every_entry_reaches_the_assertions() -> None:
         "entries, and every assertion in this file loses them together -- the "
         "parametrisation, `PLANTED_ESCAPES`, `_measured_misses()` and the "
         "regression test. A shape that is not read cannot regress."
+    )
+
+    # AND THE FIELDS, NOT ONLY THE COUNT (R359). The classification reads
+    # `expect` and `measured`; comparing counts alone left both of them
+    # writable on the way through, and rewriting one entry's `expect` moved a
+    # planted-CAUGHT shape into the allowed escapes with the counts still
+    # agreeing. Every field the decision reads is read twice, or the ones that
+    # are not are where the edit goes.
+    got = {(name, expect, measured) for name, expect, measured, _src in ENTRIES}
+    want = _triples_in_the_file()
+    assert got == want, (
+        "the parsed entries do not match the file, field for field.\n"
+        f"  changed or missing on the way through: {sorted(want - got)}\n"
+        f"  present in `ENTRIES` and not in the file: {sorted(got - want)}\n"
+        "`expect` and `measured` are what decide whether an escape is growth "
+        "or a regression, and they are the reviewer's to write."
     )
 
     # AND THE TWO DERIVED SETS PARTITION IT. A shape that is in neither is a
