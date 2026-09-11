@@ -169,13 +169,19 @@ if [ "$RUN_COUNT" -gt 0 ]; then
     # reads a record cannot outrank code that writes the record, and the same
     # is true of any replacement for this script.
     #
-    # TWO RECORDS OF ONE RUN, AND THEY MUST AGREE (CI0). `-p rung_no_xpass`
-    # tallies the session independently and writes `$RUNG_TALLY`; the reader
-    # below compares that tally with the junit XML on collected, failed and
-    # skipped, and a disagreement reddens the rung. A conftest that drops a
-    # failing item now has to defeat both records consistently instead of one.
-    # THAT IS A COST, NOT A WALL: both are written inside the same session and
-    # a conftest can reach both.
+    # TWO RECORDS OF ONE RUN, AND THEY MUST AGREE -- AS A CONSISTENCY GUARD
+    # AGAINST ACCIDENT (CJ0). `-p rung_no_xpass` tallies the session and writes
+    # `$RUNG_TALLY`; the reader below compares that tally with the junit XML on
+    # collected, failed and skipped. It catches a plugin that stopped loading,
+    # a junit writer that changed what it records, a report mutated by
+    # something nobody intended.
+    #
+    # IT IS NOT AN ANTI-FORGERY MECHANISM, and the sentence that said a forgery
+    # must now be consistent across two places is withdrawn. Six channels have
+    # been measured from a conftest; this closes two. The sixth is a
+    # `pytest_runtest_call` wrapper with `trylast=True` calling
+    # `outcome.force_result(None)` -- the tally is taken inside the hook it
+    # wraps, so both records agree and both are wrong.
     #
     # WHAT PROTECTS A RUNG IS THEN REVIEW OF ITS CONFTEST -- the LAST bound,
     # not the whole of the answer. `docs/SUPERVISOR.md` item 4c and

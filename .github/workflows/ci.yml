@@ -162,6 +162,16 @@ jobs:
         run: |
           python scripts/localise_clean_worst.py | tee leg/clean_worst.txt
 
+      # CJ1: THE INTERCHANGE CHANNELS AGAINST THE COMMITTED FIXTURE. Ladder 4
+      # asserts a bit-exact round-trip of a golden the writer produced, and on
+      # this machine thirteen pairs fail: `sin` and `cos` are not correctly
+      # rounded and no two libm implementations are obliged to agree in the
+      # last bit. This is the measurement Q8's second local class is declared
+      # from, taken on the canonical machine and on every leg.
+      - name: "measure: the interchange channels against the fixture"
+        run: |
+          python scripts/measure_channel_drift.py | tee leg/channel_drift.txt
+
       - name: "compare against the committed file (reported, not fatal here)"
         continue-on-error: true
         run: |

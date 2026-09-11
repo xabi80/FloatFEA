@@ -88,11 +88,16 @@ def pytest_runtest_makereport(item: Any, call: Any) -> Any:
 # both, from `tests/conftest.py` and from a rung's own directory. No gate
 # closes that; a gate reading a record cannot outrank code that writes it.
 #
-# What a second record buys is that one hook is no longer enough: this plugin
-# tallies the same run independently and the script requires the two to agree
-# on collected, failed and skipped. A conftest that drops a failing item must
-# now also defeat this tally, in a file the supervisor's item 4c diffs.
-# It is a cost, not a wall, and `run_rung.sh` says so where it says the reach.
+# What a second record buys is CONSISTENCY, not resistance (CJ0). The two
+# records catch each other when one of them stops describing the run by
+# accident -- a plugin that fails to load, a junit writer that changes what it
+# records. It does not make forgery harder in any way worth claiming: a
+# `pytest_runtest_call` wrapper with `trylast=True` calling
+# `outcome.force_result(None)` defeats both at once, because this tally is
+# taken inside the hook such a wrapper wraps.
+#
+# The boundary is in the plan: in-tree code is trusted under review, and the
+# defence is the supervisor's per-step diff of every conftest and plugin path.
 
 
 @pytest.hookimpl(hookwrapper=True)
