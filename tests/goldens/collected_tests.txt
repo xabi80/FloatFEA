@@ -9,7 +9,7 @@
 # reviewer's corpora and with the report being written. A FUNCTION
 # disappearing is what this file exists to catch.
 
-[tests] 305
+[tests] 307
 tests/regression/test_exempt_pair_responses.py::test_a_MOVED_response_is_caught
 tests/regression/test_exempt_pair_responses.py::test_every_recorded_pair_is_still_detected
 tests/regression/test_exempt_pair_responses.py::test_the_golden_file_is_not_empty
@@ -60,9 +60,11 @@ tests/test_figure_local_check.py::test_the_pass_fail_words_are_the_decision_for_
 tests/test_figure_local_check.py::test_the_spread_bound_is_bracketed_by_its_own_measurements
 tests/test_figure_local_check.py::test_the_tie_set_is_stable_under_a_flip
 tests/test_figure_local_check.py::test_the_tie_window_names_the_entries_that_swap_and_excludes_the_next
+tests/test_marker_exemption_corpus.py::test_improvement_is_visible_and_needs_no_ceremony
+tests/test_marker_exemption_corpus.py::test_no_shape_that_was_CAUGHT_when_planted_escapes_now
 tests/test_marker_exemption_corpus.py::test_the_corpus_is_not_empty
 tests/test_marker_exemption_corpus.py::test_the_exemption_window_gives_the_required_verdict
-tests/test_marker_exemption_corpus.py::test_the_known_misses_are_exactly_these
+tests/test_marker_exemption_corpus.py::test_the_growth_rule_reads_a_field_the_implementer_cannot_write
 tests/test_no_tolerance_literals.py::test_declared_usages_are_NOT_flagged
 tests/test_no_tolerance_literals.py::test_no_undeclared_tolerance_reaches_a_comparison
 tests/test_no_tolerance_literals.py::test_the_annotation_exempts_a_line
