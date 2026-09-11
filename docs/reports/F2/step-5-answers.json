@@ -35,58 +35,92 @@
       "where": "§6"
     },
     "R323": {
-      "state": "carried",
-      "where": "§5"
+      "state": "carried"
     },
     "R324": {
-      "state": "carried",
-      "where": "§5"
+      "state": "carried"
     },
     "R325": {
-      "state": "carried",
-      "where": "§5"
+      "state": "carried"
     },
     "R330": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R331": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R332": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R333": {
-      "state": "answered",
-      "where": "§1",
-      "site": "tests/verification/rung4/test_writer_round_trip.py"
+      "state": "carried"
     },
     "R334": {
-      "state": "answered",
-      "where": "§2",
-      "site": ".github/workflows/ci.yml"
+      "state": "carried"
     },
     "R335": {
+      "state": "carried"
+    },
+    "R336": {
+      "state": "carried"
+    },
+    "R337": {
+      "state": "carried"
+    },
+    "R338": {
+      "state": "carried"
+    },
+    "R339": {
+      "state": "carried"
+    },
+    "R340": {
+      "state": "carried"
+    },
+    "R341": {
+      "state": "answered",
+      "where": "§1",
+      "site": "tests/test_marker_exemption_corpus.py"
+    },
+    "R342": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/test_ci_workflow_is_wellformed.py"
+    },
+    "R343": {
       "state": "answered",
       "where": "§3",
       "site": ".github/workflows/ci.yml"
     },
-    "R336": {
+    "R344": {
       "state": "answered",
-      "where": "§4",
-      "site": "tests/verification/rung4/test_writer_round_trip.py"
+      "where": "§3"
     },
-    "R337": {
+    "R345": {
       "state": "answered",
-      "where": "§4",
-      "site": "tests/verification/rung4/test_writer_round_trip.py"
+      "where": "§3"
     },
-    "R338": {
+    "R346": {
       "state": "answered",
-      "where": "§4",
-      "site": "scripts/measure_channel_drift.py"
+      "where": "§4"
+    },
+    "R347": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R348": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R349": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R350": {
+      "state": "carried",
+      "where": "§5"
     }
   }
 }

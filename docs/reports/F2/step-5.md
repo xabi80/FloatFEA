@@ -4644,3 +4644,486 @@ one already written.
 **CI is `unavailable — allowance exhausted`** and CK2 makes that a state rather
 than a red build. The last run that executed no longer describes this tree, so
 the ladder result in §0a is a local measurement and says so.
+
+---
+
+# Revision 14 — the growth rule reads a field I cannot write
+
+Answers: verdict 39 @ 2b6435d
+
+**2026-09-11.** Commits since the thirty-ninth verdict, listed in §10.
+
+## 0. CI at the reviewed commit `389d416` — **unavailable, allowance exhausted**
+
+Generated: `python scripts/ci_section.py 389d416`. Run `34614405577`, event `push`, conclusion **failure** — and not one of its 4 jobs started.
+
+```
+cmd  gh api repos/.../actions/runs/34614405577/jobs
+out  every job: runner_name "", steps [], a two-second duration,
+     and the annotation "The job was not started because recent
+     account payments have failed or your spending limit needs to
+     be increased"
+judge NOTHING WAS MEASURED at this commit. 2 jobs are marked failed
+     and none of them ran a step. Per CK2 this is a state of its own --
+     `unavailable -- allowance exhausted` -- and it is neither red nor green.
+```
+
+## 0a. How to read §0
+
+**§0 is generated and nothing here restates it (R346).** The previous revision
+wrote a second account of CI in prose beside the generated one, named
+`cbde0e4` as the reviewed commit when the reviewed commit was `389d416`, and
+published the wrong one of CK2's two unavailable shapes. The generator had
+both right. What is above is what CI says, and there is no second version of
+it on this page to disagree with.
+
+**The one thing §0 cannot know**, and the only reason this section exists: the
+last run that executed is `34546580003` at `8942cdc`, and the tree has moved a
+long way since. Every figure below was measured on this machine and says so.
+
+## 1. R341 — the asymmetry stops being a convention
+
+**The reviewer proved the convention was a convention, in one cell.** They
+narrowed the scanner by a line, produced three genuine regressions, typed a
+provenance string naming a commit that had not planted them, and the suite
+went green. One of the three carried `measured=caught` on its own corpus line.
+A field anyone can type is not a check.
+
+**The field that decides was in the corpus and the runner threw it away.**
+
+```
+claim the escape set is DERIVED from `tests/corpus/tolerance_marker_exemptions.txt`
+      and `KNOWN_MISSES` no longer exists
+cmd   grep -n "KNOWN_MISSES" tests/test_marker_exemption_corpus.py
+out   (nothing)
+rule  the scanner DID what the entry requires  -> PLANTED CAUGHT. Escaping
+                             now is a regression and it fails. There is no
+                             string to write, so there is none to get wrong.
+      it did not                              -> PLANTED ESCAPING. Allowed
+                             growth, derived rather than declared.
+      `measured=` is decoded rather than compared for equality, and §5 says
+      why that distinction is not pedantry.
+rule  provenance comes from `git blame` on the corpus line and is printed in
+      the failure message, so a false provenance is a thing nobody can write
+      rather than a thing somebody must not.
+cell  the reviewer's own ablation, restored afterwards:
+      `if not isinstance(inner, ast.BinOp) or True`
+out   ABLATED   1 failed -- "2 shape(s) the scanner CAUGHT when planted now
+                escape", each named with the commit that planted it
+      RESTORED  1 passed
+cmd   python -m pytest tests/test_marker_exemption_corpus.py -q
+out   52 passed
+judge THE THREE LINES THAT CLEARED IT LAST ROUND NOW CLEAR NOTHING. The only
+      way to file a regression as growth is to edit the reviewer's file, and
+      the hook refuses that to me in a shell command as well as in an edit.
+```
+
+**One thing I had to unlearn, measured before it shipped.** My first version
+also required a planted escape to still escape. It reddened on thirty-one
+shapes -- every one a rule this milestone tightened. `measured=` is a record
+of what happened at plant time, not a claim about today, and requiring it to
+stay true forbids the scanner from improving. What replaced it requires
+improvement to be visible and countable, which is the direction that was
+actually missing.
+
+**And the header above the map went with the map**, which is the second half
+of R341 and was a separate failure of the same kind:
+
+```
+claim no sentence in that file names a deleted object or carries a stale count
+cmd   grep -n "KNOWN_MISSES\|are_exactly_these\|66 shapes\|ALL FOUR" tests/test_marker_exemption_corpus.py
+out   (nothing)
+rule  BP0 -- regenerated or WITHDRAWN in the same commit. These are withdrawn:
+      "measured at CD2 over 66 shapes" above a corpus of 105, "ALL FOUR ARE
+      ONE SPECIES" above 33 entries in at least two, and a rule "measured at
+      four" two rounds after it moved. Counts live in this report, which is
+      regenerated by rule; what stays in the file is the part with no number
+      in it.
+judge THE MODULE DOCSTRING WAS WORSE THAN THE COMMENTS and the verdict did not
+      have to find it: it named `test_the_known_misses_are_exactly_these` and
+      `KNOWN_MISSES` as the mechanism, three commits after both were deleted.
+```
+
+**CN3: the fifteen new escapes are recorded and not chased.** They probe name
+bindings the scanner never reads -- a class attribute, a `ClassVar`, a
+dataclass default, an `Enum` member, a `parametrize` argument, a `getattr`
+default, a `**kwargs` dict, a `try/except` fallback -- and constructions with
+no `Compare` node at all. Chasing each one is how a scanner grows until it
+reddens correct files, which was measured at forty-one files at revision 11.
+The escalation clause stands: a recorded escape stays recorded unless it
+exposes a false pass on a real file in the tree.
+
+## 2. R342 — the assertion said the opposite, and the thing it was about
+
+```
+claim the assertion now fails on the hole and passes on the fix
+cell  the assertion run against both ignore lists, one variable moved
+out   shipped, `docs/milestones/**` NOT ignored    1 passed
+      the tree ignored wholesale                   1 failed
+      restored                                     1 passed
+judge `all(... not in ...)` PASSED ON THE HOLE AND REDDENED ON THE FIX. It was
+      the one assertion in that file that could not fail for the reason it
+      exists, and the round that wrote it published it as a guard.
+```
+
+**And the workflow now says what the assertion is about.** `docs/milestones/**`
+is not ignored, deliberately: that tree holds the canonical render, Q8 makes
+CI the only machine that may produce one, and a commit landing `F2_figures.md`
+has to run or the byte-identity comparison the next run makes never happens.
+Plan text in the same tree costs a run it does not need. That is the cheaper
+of the two mistakes and it is the one taken.
+
+**The sentence in revision 13's §8 saying the ignore list had moved is
+withdrawn.** The diff of `paths-ignore` was empty when it was written. It has
+moved now, in this round, which is a different statement and is made as one.
+
+## 3. R343, R344, R345 — three sentences, each with its measurement
+
+**R343 — the cheap-first ordering, re-measured at this commit rather than
+re-asserted.** The figures in the workflow comment were taken a round ago and
+BP0 does not let them stand unregenerated:
+
+```
+cmd   time: ruff check . ; black --check . ; mypy floatfea   (caches cleared)
+out   4.0 s
+cmd   time: python -m pytest tests/unit -q
+out   0.9 s
+cmd   pytest tests --ignore=tests/unit --ignore=tests/verification
+      --ignore=tests/regression -q      (the guards step, as the job runs it)
+out   374.25 s -- 10 failed, 716 passed. Nine of the ten are the report
+      guards, parametrised over a revision that did not exist when this was
+      timed; the tenth is `tests/test_plan_figures.py`, which needs the
+      canonical render. The timing is what this cell is about and the
+      failures are named so the number is not read as a green one.
+judge SO A FAILURE IN THE FIRST FIVE SECONDS COSTS FIVE SECONDS. That is the
+      whole claim. Whether a lint failure PREDICTS a test failure is not
+      measured here and is not asserted -- which is what the "because" this
+      replaces was quietly claiming.
+```
+
+**R344 — the sign-flip control names the band it exists to talk about.**
+
+```
+claim the control asserts a distance to `INTERCHANGE_CHANNEL_DRIFT_ULP`
+cmd   grep -n "R344" -A 8 tests/verification/rung4/test_writer_round_trip.py
+out   assert drift > INTERCHANGE_CHANNEL_DRIFT_ULP, with the measured value
+      and the band both in the message
+judge A SCALE MEASURED IN ISOLATION CERTIFIED NOTHING ABOUT THE BAND, and the
+      band being unalarming is the only reason the test is in the file. The
+      equality against the arithmetic prediction stays: it says the
+      instrument measures what it claims.
+```
+
+**R345 — the all-zero check gets the control it was missing.**
+
+```
+cell  the helper's own source, executed with `if ampl == 0.0:` removed
+out   the old defaulting behaviour returns and the control REQUIRES it, so an
+      edit that neuters the raise cannot pass
+judge WHICH IS EXACTLY WHAT `if False:` DID LAST ROUND -- the message stayed,
+      nothing exercised the branch, and the suite was green.
+rule  the docstring now says which half is EXERCISED and which is READ. The
+      script half is a source search, it is weaker than running it, and
+      saying so is the point: the previous docstring claimed to import the
+      script and did not.
+cmd   sh scripts/run_rung.sh full:tests/verification/rung4
+out   89 collected, 0 failed
+```
+
+## 4. R346 — §0 is written once
+
+The generator classified the run correctly and the prose beside it did not:
+revision 13 named the wrong commit and the wrong unavailable shape while
+`scripts/ci_section.py` had both right. §0a above says only what §0 cannot
+know -- which run last executed, and whether the tree has moved since -- and
+carries no second account of the run under review. The script is unchanged;
+nothing was wrong with it.
+
+## 5. R350's first half, which CN0 turned into a hole
+
+**The verdict recorded this against itself as a 4a item, and CN0 made it load
+bearing the same round.** Eight corpus entries carry `measured=clean`, outside
+the two-word vocabulary the file's own header declares, and a ninth carries a
+sentence.
+
+```
+claim one shape the scanner CAUGHT was filed by my own rule as an allowed escape
+out   `caught_but_the_message_names_1e-09_while_the_value_at_the_comparison_is_3`
+      before  in PLANTED_ESCAPES -- a regression on it would have been growth
+      after   asserted like every other caught shape, and it passes
+rule  `_did_catch()` decodes the field to the one thing it can mean -- did
+      `offending()` return something -- and RAISES on anything it cannot read.
+cell  `measured=caugth`
+out   ValueError naming the value. Before: silently allowed growth.
+cmd   python -m pytest tests/test_marker_exemption_corpus.py -q
+out   52 passed -- 50 before, one more asserted shape and one new test
+judge EVERY UNREADABLE VALUE LANDED ON THE PERMISSIVE SIDE, which is the wrong
+      side for the field that decides whether a regression is allowed. A typo
+      would have done the same thing and nothing would have said so.
+```
+
+**R350's second half is left at 4a**, where the verdict put it:
+the integer floor on the collected golden's own size is a vacuity backstop
+and should say so rather than read as a threshold. The site is named in §8.
+
+## 6. What is open
+
+- **The Actions allowance.** Q8's remaining values, the counter's canonical
+  confirmation, the two pending re-renders and Q7 all sit behind it, and
+  nothing in this round did.
+- **R275, R231, R244, R245** — the remaining Q8 values, behind that render.
+- **R223, R224 — Q7**, which opens on green CI at a reviewed commit.
+- **R230**, reopened by my own error at revision 3, and mine to leave open.
+- **R347** — the collected golden records functions, so a parametrised corpus
+  can collapse under it. The verdict found the guard that does catch it and
+  naming that guard in the docstring is the fix; at 4a.
+- **R348** — the dispatch assertion is a substring test and a negated
+  condition passes it; at 4a.
+- **R349** — narrowed, not closed. §8 is produced by a committed script that
+  imports the guard's own site list, so the table and the check cannot
+  enumerate different sets. Telling a MOVED block from an untouched file
+  still needs the hunk, and that half stays at 4a.
+- **R350's second half**, R330, R331, R332, and the rest of the 4a list.
+
+## 7. The whole suite, at the commit this revision is committed on top of
+
+**Whole suite at `c92f3b3`: 1807 passed, 2 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit, excluding 266 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py) -- which the supervisor runs at the commit that carries it. R339: the count of what is excluded is part of the line, so a reader can size it without running anything.
+
+- **failed** `tests.regression.test_exempt_pair_responses::test_the_recorded_set_is_the_measured_set`
+- **failed** `tests.test_plan_figures::test_the_generated_figures_are_not_stale`
+
+## 8. Sites named by findings and not touched
+
+Generated: `python scripts/untouched_sites.py`. The rows are not a second
+opinion about the sites -- the script IMPORTS `tests/test_report_carried.py`
+and prints its `SITES` and `TOUCHED`, so the table cannot enumerate a
+different set than the check does. The reason column is mine.
+
+```
+cell the same verdict and the same diff, through two enumerations
+out  the first version of this script, with its own regex   68 rows
+     the guard's own SITES, which is what decides           87 rows
+judge A SECOND IMPLEMENTATION OF THE THING BEING SATISFIED DRIFTS, and a
+     table that enumerates fewer sites than the check reads complete while
+     leaving sites unanswered. The import is the fix.
+```
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R341 | `tests/test_no_tolerance_literals.py` | the file is untouched | **no change** — the scanner is correct and unchanged. R341 is about the RUNNER's growth rule; widening the scanner to chase the recorded escapes is the forty-one-file regression measured at revision 11 |
+| R342 | `docs/milestones/F2_figures.md` | the file is untouched | **no change** — Q8 makes CI the only machine that may produce this file and CI is unavailable. It moves on the first dispatch run when minutes return, which is why the tree holding it is not ignored |
+| R344 | `CLAUDE.md` | the file is untouched | **no change** — the finding quotes the BP0 rule from this file; the rule is what the repair obeys, not a site to edit |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:289` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:290` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:291` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:292` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:293` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:294` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:295` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:296` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:297` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:298` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:299` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:300` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:301` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:302` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:303` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:304` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:305` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:306` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:307` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:308` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:309` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:310` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:311` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:312` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:313` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:314` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:315` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:316` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:317` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:318` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:319` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:320` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:321` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:322` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:323` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:324` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:325` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R344 | `tests/verification/rung4/test_writer_round_trip.py:326` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. `grep -n R344 tests/verification/rung4/test_writer_round_trip.py` finds the band assertion at 350, inside the function the finding names |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:109` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:110` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:111` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:112` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:113` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:117` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:118` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:119` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:120` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:121` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:122` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:125` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:126` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:127` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:128` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:129` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:130` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:131` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:132` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:133` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:134` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:135` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:136` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:137` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:138` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:139` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:140` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:141` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:142` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R345 | `tests/verification/rung4/test_writer_round_trip.py:143` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The disable-it control and the corrected docstring are in the all-zero test |
+| R346 | `scripts/ci_section.py` | the file is untouched | **no change**, and none is owed. The generator had the commit and the shape right and the prose beside it did not; R346 closes in the report, at §0a |
+| R347 | `responses.py` | the file is untouched | **no change** — this is `tests/regression/test_exempt_pair_responses.py`, wrapped across a line in the verdict. It is the guard the finding names as the one that DOES catch a collapsed corpus, and it is unchanged and green |
+| R347 | `tests/corpus/g22_model_configurations.txt` | the file is untouched | **no change** — the reviewer's corpus, refused to me, and used by the finding only as the ablation's subject |
+| R347 | `tests/test_collected_set_golden.py` | the file is untouched | **no change** — 4a. The fix is one sentence in the docstring naming `test_every_recorded_pair_is_still_detected` as what covers a collapsed parametrisation |
+| R347 | `tests/test_collected_set_golden.py:144` | the file is untouched | **no change** — 4a. The fix is one sentence in the docstring naming `test_every_recorded_pair_is_still_detected` as what covers a collapsed parametrisation |
+| R347 | `tests/test_collected_set_golden.py:145` | the file is untouched | **no change** — 4a. The fix is one sentence in the docstring naming `test_every_recorded_pair_is_still_detected` as what covers a collapsed parametrisation |
+| R347 | `tests/test_collected_set_golden.py:146` | the file is untouched | **no change** — 4a. The fix is one sentence in the docstring naming `test_every_recorded_pair_is_still_detected` as what covers a collapsed parametrisation |
+| R347 | `tests/test_collected_set_golden.py:147` | the file is untouched | **no change** — 4a. The fix is one sentence in the docstring naming `test_every_recorded_pair_is_still_detected` as what covers a collapsed parametrisation |
+| R347 | `tests/test_collected_set_golden.py:148` | the file is untouched | **no change** — 4a. The fix is one sentence in the docstring naming `test_every_recorded_pair_is_still_detected` as what covers a collapsed parametrisation |
+| R347 | `tests/test_collected_set_golden.py:149` | the file is untouched | **no change** — 4a. The fix is one sentence in the docstring naming `test_every_recorded_pair_is_still_detected` as what covers a collapsed parametrisation |
+| R347 | `tests/test_collected_set_golden.py:150` | the file is untouched | **no change** — 4a. The fix is one sentence in the docstring naming `test_every_recorded_pair_is_still_detected` as what covers a collapsed parametrisation |
+| R347 | `tests/test_collected_set_golden.py:151` | the file is untouched | **no change** — 4a. The fix is one sentence in the docstring naming `test_every_recorded_pair_is_still_detected` as what covers a collapsed parametrisation |
+| R347 | `tests/test_collected_set_golden.py:152` | the file is untouched | **no change** — 4a. The fix is one sentence in the docstring naming `test_every_recorded_pair_is_still_detected` as what covers a collapsed parametrisation |
+| R348 | `tests/test_ci_workflow_is_wellformed.py:78` | the file is touched and this line number is the old one | **no change** at this line — the file is touched by R342's repair and the substring assertion is not. Parsing the condition rather than searching it is 4a |
+| R349 | `scripts/measure_channel_drift.py` | the file is untouched | **no change** — 4a, and narrowed rather than left: §8 is generated now, and by importing the guard's own site list rather than re-deriving it |
+| R350 | `tests/corpus/tolerance_marker_exemptions.txt:215` | the file is touched and this line number is the old one | **no change** — the reviewer's file and refused to me. What I could do is §5: the field is decoded rather than compared, so `measured=clean` reads as the synonym it is and an unreadable value raises |
+| R350 | `tests/test_collected_set_golden.py:68` | the file is untouched | **no change** — 4a. The integer floor is a vacuity backstop and should say so rather than read as a threshold |
+
+## 9. Carried
+
+Generated: `python scripts/carried_table.py <verdict> docs/reports/F2/step-5-answers.json`. The row set, the class and the subject of every row are read from the verdict; the answers file carries a state and a section pointer, and the pointer is resolved against this report by `tests/test_report_carried.py`.
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R223 | **open** — §6 | OPEN by instruction, correctly listed. |
+| R224 | **open** — §6 | OPEN by instruction, correctly listed. |
+| R225 | **open** — carried from an earlier verdict | carried, and |
+| R228 | **open** — carried from an earlier verdict | carried, and |
+| R230 | **open** — §6 | OPEN by instruction, correctly listed. |
+| R231 | **open** — §6 | OPEN, and still correctly declared blocked on |
+| R232 | **open** — carried from an earlier verdict | carried, and |
+| R233 | **open** — carried from an earlier verdict | carried, and |
+| R244 | **open** — §6 | OPEN, and still correctly declared blocked on |
+| R245 | **open** — §6 | OPEN, and still correctly declared blocked on |
+| R248 | **open** — carried from an earlier verdict | residues, |
+| R249 | **open** — carried from an earlier verdict | carried, and |
+| R252 | **open** — carried from an earlier verdict | carried, and |
+| R253 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R254 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R256 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R257 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R261 | **open** — carried from an earlier verdict | OPEN by instruction, correctly listed. |
+| R262 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R274 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R275 | **open** — §6 | OPEN, and still correctly declared blocked on |
+| R276 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R277 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R281 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R288 | **open** — carried from an earlier verdict | carried, and |
+| R289 | **open** — carried from an earlier verdict | carried, and |
+| R290 | **open** — carried from an earlier verdict | carried, and |
+| R291 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R292 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R293 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R300 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R302 | **open** — carried from an earlier verdict | accepted at verdict 37, not reopened. |
+| R303 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R308 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R315 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R318 | **open** — carried from an earlier verdict | disagreement already at 4a; it has grown by four rows and stays |
+| R320 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R321 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R322 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R323 | **carried** | closed in earlier verdicts, |
+| R326 | **open** — carried from an earlier verdict | carried. The §9 table status column reads open for R326-R329, |
+| R327 | **open** — carried from an earlier verdict | , which verdict 38 closed outright. Same species as the |
+| R329 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R330 | **open** — §6 | OPEN at 4a, correctly listed in §5 and §6. R332 |
+| R331 | **open** — §6 | OPEN at 4a, correctly listed in §5 and §6. R332 |
+| R332 | **open** — §6 | OPEN at 4a, correctly listed in §5 and §6. R332 |
+| R333 | **carried** | /R340). Four close at some of the sites their conditions |
+| R334 | **carried** | ). No item is untouched, and |
+| R335 | **carried** | ). No item is untouched, and |
+| R336 | **carried** | /R340). Four close at some of the sites their conditions |
+| R337 | **carried** | ). No item is untouched, and |
+| R338 | **carried** | ). No item is untouched, and |
+| R339 | **carried** | /R340). Four close at some of the sites their conditions |
+| R340 | **carried** | ). Four close at some of the sites their conditions |
+| R341 | **answered** — §1 | The escape golden cannot tell a regression from growth. Three genuine regressions, one of them... |
+| R342 | **answered** — §2 | The paths-ignore assertion is inverted: docs/milestones/ is still ignored, the canonical render... |
+| R343 | **answered** — §3 | The needs: edge is gone and the cheap-first justification is not.... |
+| R344 | **answered** — §3 | The test still claims a property nothing in its body asserts.... |
+| R345 | **answered** — §3 | "A test reddens when the raise is removed" is a grep over the script source, and the docstring... |
+| R346 | **answered** — §4 | §0 calls cbde0e4 "the reviewed commit" and publishes the wrong one of CK2 two shapes for the... |
+| R347 | **open** — §6 | The collected golden records functions, not cases, so a parametrisation can collapse under it... |
+| R348 | **open** — §6 | The dispatch assertion is a substring test. tests/test_ci_workflow_is_wellformed.py:78 asserts... |
+| R349 | **open** — §6 | The §8 generator still reasons at file granularity. No row is false this round -- I checked... |
+| R350 | **carried** — §5 | Two small things, one of them mine. tests/corpus/tolerance_marker_exemptions.txt:215 carries... |
+
+## 10. What I am asking for
+
+**Commits since the thirty-ninth verdict**, in order:
+
+| commit | what it is |
+|---|---|
+| `2f21b54` | the growth rule reads the corpus's own `measured=`, not a string I type |
+| `d08a3e4` | the inverted assertion, the carve-out it was about, and three sentences |
+| `c6cf348` | the collected golden, after one test was renamed — CM1's own route |
+| `b8941b6` | R341's other half: the header made false by the commit publishing it |
+| `7ba1e9d` | R350's first half, which CN0 made load-bearing |
+| `8beb0e4` | the §8 list is generated, and it says which granularity it decided at |
+| `ff6b61a` | R343's figures re-taken at the commit that publishes them |
+| `c92f3b3` | §8 reads the guard's own site list instead of re-deriving it |
+| this one | the report |
+
+**Six blocking items, all six answered**, and two of them are mine twice over:
+R341's mechanism was a convention I wrote and published as a check, and R346
+was a paragraph of mine contradicting a generator that was right.
+
+- **R341** — the escape set is derived from a field only the reviewer writes,
+  the provenance comes from `git blame`, and the stale header is withdrawn
+  rather than restated.
+- **R342** — the assertion failed on the fix and passed on the hole; it is
+  measured both ways now, and the carve-out it was written to require is in
+  the workflow.
+- **R343, R344, R345** — a because replaced by three timings, a control that
+  names its band, and a disable-it control that `if False:` would not survive.
+- **R346** — §0 is generated and not restated.
+
+**One thing found while answering, not asked for.** R350's vocabulary item was
+4a until CN0 made that field decide whether an escape is growth; an entry the
+scanner catches was being filed as an allowed escape by my own rule. It is
+decoded now and an unreadable value raises.
+
+**What is not claimed, and one sentence of my own withdrawn with it.**
+Revision 13 said "nothing in `floatfea/` has moved for thirteen rounds" in the
+same revision that shipped `80e8bab`, which edits `floatfea/tolerances.py`. It
+was a comment and no value moved, but the sentence as written was false and
+the correct one is narrower:
+
+```
+claim no executable line in `floatfea/` has changed since `839b56b`
+cmd   git log --oneline -1 -- $(git ls-files 'floatfea/*.py' | grep -v tolerances.py)
+out   839b56b, twelve rounds back
+cmd   git show 80e8bab -- floatfea/tolerances.py
+out   two lines, both comment: "the margin is one ULP" became "AT LEAST one
+      ULP ... and one is its floor"
+judge THE LOOSE VERSION WAS FALSE IN THE REVISION THAT SHIPPED THE COMMIT IT
+      WAS FALSE ABOUT, which is the shape this whole section exists to catch.
+```
+
+The two corpus reds still need the canonical machine. No Q8 value beyond the
+one already written.
+
+**CI is `unavailable — allowance exhausted`**, which CK2 makes a state rather
+than a red build. Every figure in this revision is local and says so.
