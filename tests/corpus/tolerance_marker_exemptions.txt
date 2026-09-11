@@ -243,3 +243,56 @@ id=detect_tuple_subscript_threshold expect=caught measured=exempt src=import num
 id=detect_min_builtin_threshold expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < min(1e-09, scale)\n
 id=detect_negated_literal_times_declared expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r > -1e12 * ROUNDOFF_IDENTITY\n
 id=declared_name_alone_is_clean_CONTROL expect=exempt measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < ROUNDOFF_IDENTITY\n
+
+# ---------------------------------------------------------------------------
+# ADDED AT THE THIRTY-EIGHTH VERDICT (HEAD cbde0e4), 20 entries, all unseen by
+# the implementer. These probe the NARROW rule that landed at `be534a8` to
+# close R326: a float literal is a threshold when it shares a `BinOp` with a
+# declared tolerance name, is a `min`/`max` candidate, or is an element of an
+# inline tuple or list that the comparator subscripts.
+#
+# WHY THESE SHAPES. The nine entries added at the thirty-seventh verdict were
+# all one species -- a literal travelling attached to a DECLARED name -- and
+# the new rule is keyed on exactly that species. A scanner measured only
+# against the shapes that motivated it is measured against itself. These
+# twenty move off that axis: literals that never meet a declared name at all,
+# literals reached through a call, a walrus, a conditional expression, a numpy
+# reduction, and a local variable.
+#
+# THE FIRST ENTRY IS IN THE TREE AT THIS COMMIT.
+# `tests/verification/rung4/test_writer_round_trip.py:239` reads
+# `assert drift >= expected_drift - 1e-09`, three lines below where the `1e12`
+# was removed, and `offending()` over that file returns `[]`.
+#
+# MEASURED AT cbde0e4 against the shipped `offending()`:
+#   20 entries, 7 get the required verdict, 13 do NOT.
+#   Both expect=exempt controls pass -- the guard is still usable.
+#   Of the 18 expect=caught entries, 5 are caught.
+#
+# ONE ENTRY CONTESTS THE DOCUMENTED REACH RATHER THAN REPORTING A MISS:
+# `detect_integer_iteration_threshold` is an int, and the scanner says in as
+# many words that it looks for FLOAT thresholds. `CLAUDE.md` sec. Tolerances
+# names convergence thresholds and an iteration cap is one, so the entry is
+# recorded as expect=caught and the disagreement is the point of recording it.
+# ---------------------------------------------------------------------------
+
+id=detect_literal_beside_a_LOCAL_name expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert drift >= expected_drift - 1e-09\n
+id=detect_product_of_two_literals expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < 2.0 * 1e-09\n
+id=detect_literal_divided_by_literal expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < 1e-06 / 1000.0\n
+id=detect_unary_PLUS_literal expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < +1e-09\n
+id=detect_numpy_minimum_candidate expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < np.minimum(1e-09, scale)\n
+id=detect_sorted_subscript_threshold expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < sorted([1e-09, scale])[0]\n
+id=detect_inline_dict_subscript_threshold expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < {'tight': 1e-09}['tight']\n
+id=detect_ifexp_literal_branch expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < (ROUNDOFF_IDENTITY if flag else 1e-09)\n
+id=detect_literal_in_abs_call expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < abs(-1e-09)\n
+id=detect_literal_in_float_call_AGAIN expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < float(1e-09)\n
+id=detect_walrus_threshold expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < (eps := 1e-09)\n
+id=detect_literal_via_isclose_kwarg expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    import math\n    assert math.isclose(r, 0.0, abs_tol=1e-09)\n
+id=detect_integer_iteration_threshold expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert n_iter < 500\n
+id=detect_parenthesised_literal expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < (1e-09)\n
+id=detect_declared_raised_to_a_literal expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < ROUNDOFF_IDENTITY ** 2.0\n
+id=detect_chained_comparison_literal expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert 0.0 < r < 1e-09\n
+id=detect_literal_in_nested_binop_with_declared expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < (1e12 * (2.0 * ROUNDOFF_IDENTITY))\n
+id=detect_list_subscript_negative_index expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < [1e-08, 1e-09][-1]\n
+id=control_declared_times_ONE_is_the_declared_value expect=exempt measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < 1.0 * ROUNDOFF_IDENTITY\n
+id=control_declared_name_inside_min_is_clean expect=exempt measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < min(ROUNDOFF_IDENTITY, scale)\n
