@@ -23,6 +23,12 @@ on:
     branches: ["**"]
     paths-ignore:
       - "docs/reports/**"
+      # CO3, R358: THE REVIEWER'S OWN TREES. A push carrying only the
+      # adversarial corpus or a verdict has no code in it, and until this
+      # round it ran the whole workflow and went red on the distance rule for
+      # no defect. That red sits directly in front of Q7, which opens on
+      # green CI at a reviewed commit.
+      - "tests/corpus/**"
       - "docs/reviews/**"
       # `docs/milestones/**` IS NOT IGNORED (R342). It holds the canonical
       # render, and Q8 makes CI the only machine that may produce one: a

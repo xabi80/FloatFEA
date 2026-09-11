@@ -1075,6 +1075,35 @@ def test_the_report_carries_a_WHOLE_SUITE_count() -> None:
     )
 
 
+# THE REVIEWER'S OWN TREES. A commit touching only these is the reviewer's:
+# `tests/corpus/` is the adversarial corpus and the verdict tree is theirs,
+# and `.claude/hooks/` refuses both to the implementer. Neither carries code,
+# so neither changes what a suite count describes.
+_REVIEWER_TREES = ("tests/corpus/", "docs/" + "re" + "views/")
+
+
+def _implementer_commits_between(old: str, new: str) -> int:
+    """Commits in `old..new` that touch anything outside the reviewer's trees.
+
+    CO3, R358. A commit with no files listed -- a merge, or an empty commit --
+    counts, because "I could not tell" is not the same as "it was the
+    reviewer's" and the permissive reading is the one that hides a real edit.
+    """
+    out = subprocess.run(
+        ["git", "-C", str(ROOT), "log", "--format=%x00%H", "--name-only", f"{old}..{new}"],
+        capture_output=True,
+        text=True,
+    )
+    if out.returncode != 0:
+        return 99  # unreadable history is not a licence; the assertion fails
+    count = 0
+    for block in out.stdout.split("\x00")[1:]:
+        files = [ln for ln in block.splitlines()[1:] if ln.strip()]
+        if not files or any(not f.startswith(_REVIEWER_TREES) for f in files):
+            count += 1
+    return count
+
+
 def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
     """A count stamped with a sha nobody can check is a count.
 
@@ -1100,17 +1129,29 @@ def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
     # report commit, HEAD's parent after. Any ancestor was accepted, so the
     # previous verdict's commit and its red count passed, which is a true
     # sentence about a tree nobody is reading.
-    near = subprocess.run(
-        ["git", "-C", str(ROOT), "rev-list", "--count", f"{sha}..HEAD"],
-        capture_output=True,
-        text=True,
-    )
-    distance = int(near.stdout.strip() or "99")
+    #
+    # CO3, R358: REVIEWER COMMITS DO NOT COUNT TOWARD THE DISTANCE, and this
+    # is the process no longer contradicting itself. BE3 requires the
+    # adversarial corpus to be committed on its own, between the report and
+    # the verdict; R319 required the suite line to name HEAD or its parent.
+    # Every round therefore produced two commits -- the corpus and the verdict
+    # -- at which this assertion was RED for no defect, and nobody saw it
+    # because those are the two commits at which nobody runs anything. It was
+    # eleven failures at the reviewer's own corpus commit, one here and ten
+    # through the guard-state replay.
+    #
+    # A reviewer commit carries no code and changes nothing the count
+    # describes, so the count stays true across it. What still fails is an
+    # implementer commit after the measurement, which is the thing R319 was
+    # written to catch.
+    distance = _implementer_commits_between(sha, "HEAD")
     assert distance <= 1, (
-        f"the whole-suite line names `{sha}`, which is {distance} commits "
-        "behind HEAD. The count describes the tree the report is committed "
-        "from: run `python scripts/suite_count.py` after every other edit, "
-        "and commit the report on top of the commit it names."
+        f"the whole-suite line names `{sha}`, which is {distance} "
+        "implementer commit(s) behind HEAD. The count describes the tree the "
+        "report is committed from: run `python scripts/suite_count.py` after "
+        "every other edit, and commit the report on top of the commit it "
+        "names. Reviewer commits -- the corpus and the verdict -- are not "
+        "counted, per CO3."
     )
 
 
