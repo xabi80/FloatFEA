@@ -1,511 +1,576 @@
 # Review — F2 step 5
-Reviewed commit: 30de97a053d29ae9f58d07ed90fe01c170165230
+Reviewed commit: 23cfd7a150a4baf4cce98860c5626d78202e9a76
 Verdict: HOLD
 
-**Reviewed commit: `b1cfceb`.** Report revision 15, `Answers: verdict 40 @ 8ee69b7`.
+**Reviewed commit: `9cec13e`.** Report revision 16, `Answers: verdict 41 @ f04e3c5`.
+**The `Reviewed commit:` line stamped above this one by `scripts/write_verdict.py`
+is HEAD at the moment of writing -- my corpus commit `23cfd7a` -- not the commit
+judged.** That is R373 below; read `9cec13e`.
 
-Tests: **2030 passed, 2 failed, 0 skipped** (my run at `b1cfceb` on a clean
-tree, `python -m pytest -q`, 490.90 s, Python 3.13.15 on Windows).
-`pytest --collect-only` gives **2032**, so nothing is skipped and nothing
-silently uncollected. The two failures are the two section 7 names, both
-behind the canonical re-render, both mine from earlier corpus rounds.
+Tests: **2045 passed, 0 failed, 0 skipped** (my run at `9cec13e` on a clean
+tree, `python -m pytest -q`, 502.51 s, Python 3.13.15 on Windows).
+`pytest --collect-only -q` gives **2045**, so nothing is skipped and nothing
+silently uncollected. **Both standing reds are genuinely gone** -- the first
+zero-failure whole-suite run of this milestone, reproduced rather than
+accepted. Rung 1 is **1053 passed**.
 
-**Commits: code `ca57d8a`, `11e2606`, `0a6a608`; `process:` `52e956f`.
-Report `b1cfceb`.**
+**Commits: `46cf887`, `059cf5b`, `ea657dc`, `502e0de`; `process:` `8830041`.
+Report `9cec13e`.**
 
-**Item 1b.** The newest revision's header at line 5135 reads
-`Answers: verdict 40 @ 8ee69b7`; the last commit touching the verdict file is
-`8ee69b7e8b08fb89febb7db593b5e7336ce3090a`. It is the latest. **Passes.**
+**Item 1b.** Revision 16's header at line 5548 reads `Answers: verdict 41 @
+f04e3c5`; the last commit touching the verdict file is
+`f04e3c561cc783ae95d508a7a5a2a141f9f8a584`. It is the latest. **Passes.**
 
-**CI, item 3b, AT THE COMMIT I AM REVIEWING -- `b1cfceb`, NOT `a93d505`:
-`unavailable -- allowance exhausted`, the CK2 third state.**
+## CI, item 3b -- AND IT IS GREEN, AT THE COMMIT I AM REVIEWING
+
+**The constraint is gone and I did not take that on report. I dispatched a run
+at `9cec13e` myself and waited for it.**
 
 ```
-cmd  gh run list --limit 10 --json headSha,conclusion,event,databaseId
-out  34643760694  push  failure  @ b1cfceb   -- and no pull_request twin
-cmd  gh api repos/.../actions/runs/34643760694/jobs
-out  4 jobs. "lint, unit and guards" and "the verification ladder":
-     conclusion failure, runner_name "", steps 0, started 20:21:15 and
-     completed 20:21:17 -- two seconds.
-     "CI determinism -- leg" and "-- ten legs agree": SKIPPED.
-cmd  gh api .../check-runs/<id>/annotations  for both failures
-out  "The job was not started because recent account payments have failed or
-     your spending limit needs to be increased" -- both of them
-judge CK2 THIRD STATE. Neither red nor green; nothing claimed from it in
-     either direction, and it does not HOLD by itself.
-cmd  gh api .../runs/34546580003/jobs   (the last run that EXECUTED, @ 8942cdc)
-out  6 of 6 ladder jobs success; "guards and meta-tests" FAILURE
-cmd  git diff --stat 8942cdc..b1cfceb -- tests/verification scripts .github
-out  NOT empty. SO THAT RUN DOES NOT DESCRIBE THIS TREE. Recorded as
-     unavailable.
+cmd  gh run list --commit 9cec13e --json name,conclusion,workflowName
+out  []       -- no run existed. `docs/reports/**` is in paths-ignore, so the
+     report commit creates none, and the implementer's two runs are at
+     `f04e3c5` and `502e0de`. Under CA2 that is an UNAVAILABLE check.
+cmd  gh workflow run ci.yml --ref F2      (origin/F2 was at 9cec13e)
+out  run 34658132995, workflow_dispatch, head_sha 9cec13e
+cmd  gh api .../runs/34658132995 and .../jobs
+out  conclusion SUCCESS. 13 of 13 jobs success: "the verification ladder",
+     ten "CI determinism -- leg", "CI determinism -- ten legs agree",
+     "lint, unit and guards".
+     ladder 4  89 collected, 0 failed     ladder 6  4 collected, 0 failed
+     unit tests 88 passed        guards and meta-tests 696 passed (445 s)
+     ladder 5  "OK -- 0 director(y|ies) ran" -- the declared-empty rung; V5.1
+               against CalculiX still has not run, and "not yet contradicted"
+               still binds.
+judge THE FIRST GREEN CI OF THIS MILESTONE, ON LINUX, AT THE REVIEWED COMMIT.
+     Nothing in the local run and nothing in CI disagree. This is not why the
+     step holds.
+```
+
+**And the ten-legs job is a gate now, which I checked by reading its output
+rather than its status.**
+
+```
+cmd  gh run view --job <ten legs agree> --log      (run 34658132995)
+out  ten rows, THREE DIFFERENT CPU MODELS -- AMD EPYC 7763, AMD EPYC 9V74,
+     Intel Xeon 8370C -- core type Haswell on all ten, hash
+     0415d1196b56a92ac63ba52ada55dcfbc53fbdd512c450548bf071db6560d9fe on all
+     ten, and "4 collected, 0 failed" on all ten.
+     "ten of ten identical: 0415d1196b56 core Haswell"
+judge THE REGRESSION LINE IS READ NOW. `502e0de` is a real repair of a real
+     hole the implementer found in their own gate by reading a run instead of
+     the code, and it is the best piece of work in this round.
+```
+
+**The run the report calls "this round's head" is not this round's head, and
+it is red.**
+
+```
+cmd  gh api .../runs/34655464372   -- the run section 4 describes twice
+out  head_sha 502e0deff437..., the report's PARENT. HEAD is 9cec13e.
+     "lint, unit and guards" FAILURE: guards and meta-tests, 12 failed,
+     678 passed -- every failure a report-site guard (R358, R363) at a commit
+     where revision 16 did not yet exist.
+judge THE DIAGNOSIS IN SECTION 4 IS RIGHT AND THE LABEL IS WRONG. Nothing
+     turns on it now because I ran the real head. R372.
+cmd  gh api .../runs/34643760694/jobs         (at b1cfceb, verdict 41's commit)
+out  unchanged: 4 jobs, runner_name "", steps [], the billing annotation.
+     Still CK2 `unavailable -- allowance exhausted`, as section 0a says.
 cmd  gh pr view 1 --json comments
 out  0 -- no outside-witness comment. Recorded as an unavailable check.
 ```
 
-**AND paths-ignore BEHAVES AS CO3 CLAIMS, measured rather than read.**
+## My own instructions (4b), the conftest pathspec (4c), tolerances (4)
 
 ```
-cmd  gh api ".../actions/runs?head_sha=<40667c6>" --jq .total_count
-out  0      -- my corpus commit created no run
-cmd  the same for 2b6435d, last round's verdict commit
-out  0
-judge THE ONE THAT LOOKS LIKE A COUNTEREXAMPLE IS NOT ONE. `8ee69b7` touches
-     only the verdict tree and DOES have a run (34635327297), because a push
-     is evaluated over every commit it carries and that push carried
-     `40667c6` too, at a commit where `tests/corpus/**` was not yet ignored.
-     With CO3 in, the same push would be ignored entirely.
-```
-
-**My own instructions (4b) and the conftest pathspec (4c).**
-
-```
-cmd  git diff 8ee69b7..b1cfceb -- .claude docs/SUPERVISOR.md
-out  (empty) -- no commit in this range touches either. Nothing to read.
-cmd  git ls-files -- tests/conftest.py and the double-star form
-out  tests/conftest.py
-cmd  git diff 8ee69b7..b1cfceb -- the same two pathspecs
-out  (empty -- no conftest changed this round)
+cmd  git diff f04e3c5..HEAD -- .claude docs/SUPERVISOR.md
+out  (empty) -- nothing in this range touches either. No STOP-class finding.
+cmd  git ls-files -- tests/conftest.py "tests/**/conftest.py"
+out  tests/conftest.py                     -- the instruction's own expectation
+cmd  git diff f04e3c5..HEAD -- the same two pathspecs
+out  (empty)
 cmd  git ls-files "*conftest.py"
 out  tests/conftest.py    -- still the whole set, and no plugin was added
-cmd  git diff 8ee69b7..b1cfceb -- floatfea/tolerances.py
+cmd  git diff f04e3c5..HEAD -- floatfea/tolerances.py
 out  (empty)
-cmd  git diff --stat 8ee69b7..b1cfceb -- floatfea
-out  (empty) -- sixteen rounds now
+cmd  git diff --stat f04e3c5..HEAD -- floatfea
+out  (empty) -- seventeen rounds
+cmd  git show --stat on each of the six commits
+out  `8830041` is standalone and cites R361 in its subject; it touches
+     `.github/workflows/ci.yml` and `tests/test_report_carried.py` and nothing
+     else. No commit mixes process with code.
 ```
-
-**What held, reproduced at my run**: `ruff check floatfea tests scripts`
-clean; `black --check` clean over 88 files; `mypy floatfea` clean over 25
-source files; `pytest -q tests/verification/rung1` is **1053 passed**;
-`python scripts/corpus_figures.py` prints `147 147 51 96 30`, the report's
-section 3 table to the digit; the three report guards collect **218** at
-`b1cfceb` and **261** at `52e956f`, and 1812 + 2 + 218 = 2032 = my collection
-exactly, so section 7's pair is my pair.
 
 ## Carried
 
-Verdict 40 listed three blocking items. **All three close at the words of
-their conditions, and I checked each by running it rather than reading it.**
-Two of the three repairs then produced new findings of their own -- one
-because the door it shut has a second leaf, one because the sentence that
-justifies it is refuted by a four-line measurement. That is R359 and R361
-below, and neither is a reopening.
+Verdict 41 held on R359, R360 and R361. **One closes. One closes at its
+load-bearing half and republishes four figures I cannot reproduce. One closes
+at one of its two named sites and the replacement opens a hole of its own.** I
+ran every closing condition rather than reading it.
 
-- **R351 -- CLOSED at every clause of its condition.** The comparison exists,
-  it is a second reader, the floor is gone, and the three sentences are
-  withdrawn. I reproduced the closing cell in a clean clone.
-
-```
-cmd  clean clone at b1cfceb, pytest tests/test_marker_exemption_corpus.py
-out  57 passed
-cell (a) the scanner narrowed -- ast.walk(inner) to ast.walk(inner.right)
-out  2 failed, 55 passed. `detect_declared_raised_to_a_literal` named, and
-     the regression test names it with its blame commit.
-cell (a) PLUS (b), the drop line the finding used verbatim
-out  1 failed, 55 passed -- and it is `test_every_entry_reaches_the_
-     assertions`, `assert 146 == 147`. LAST ROUND THIS PAIR LEFT THE WHOLE
-     SUITE GREEN. It does not now.
-cmd  grep -n "len(ENTRIES) >= 28" tests/test_marker_exemption_corpus.py
-out  (nothing) -- the floor is deleted, not widened
-judge AND THE PARTITION CLAUSE IS NOT CEREMONY, WHICH I CHECKED BY BREAKING
-     IT: a filter added to `ASSERTED` -- the obvious next place to drop a
-     shape from -- gives `1 failed` at the same assertion. It cannot fail for
-     any state of the CORPUS, which is worth knowing and is not a defect: it
-     is a guard against the edit one level down, and it fires on that edit.
-judge THE THREE SENTENCES ARE WITHDRAWN RATHER THAN DEFENDED, which is the
-     better half of the repair. The fourth sentence that replaced two of
-     them is R359.
-```
-
-- **R352 -- CLOSED at both halves, after four rounds.** The generator and the
-  label, and I attacked the generator rather than reading it.
+- **R359 -- ANSWERED at the words of its condition, and the mechanism works.**
+  `_triples_in_the_file()` exists, it is one regex over the bytes, and the
+  parsed set is compared field for field. My targeted re-scope from verdict 41
+  now fails by name, reproduced in a clean clone:
 
 ```
-cmd  python scripts/ci_section.py deadbeef
-out  the docstring, exit 2 -- a sha is REFUSED, not ignored
-cmd  python scripts/ci_section.py, diffed against the published section 0
-out  identical, line for line, including the heading and the `Generated:`
-     line. Section 0 IS generated.
-cmd  every line of revision 15 containing "reviewed commit", with its shas
-out  six lines, and not one of them carries a sha. Two are withdrawals, one
-     is the Q7 sentence, one is the Carried table quoting verdict 40's own
-     subject, one is the new test's name.
-judge THE HEADING IS TRUE WHENEVER IT IS READ: "CI at `a93d505`, the commit
-     verdict 40 judged", and `a93d505` is the commit verdict 40 judged. The
-     condition asked for one line either way; the third form chosen is
-     better than either I offered.
-judge AND THE BYTE-IDENTITY CHANGE IS THE LOAD-BEARING HALF. `startswith` in
-     both directions accepted a carried-forward heading, which is the shape
-     that actually happened four times.
+cell reviewer's ablation (a) `ast.walk(inner)` -> `ast.walk(inner.right)`,
+     then each parser edit in turn, clean clone, restored between rows
+out  at 9cec13e:  CLEAN 64 passed / (a) 2 failed 62 passed /
+     (a)+R351 drop 1 failed / (a)+R359 re-scope 1 failed / RESTORED 64 passed
+     at ca57d8a:  CLEAN 57 / (a) 2 failed 55 / (a)+drop 1 failed 55 /
+     (a)+re-scope 56 PASSED  -- green before the repair, red after it
+judge EVERY ROW OF SECTION 1 REPRODUCES TO THE DIGIT, at both commits. The
+     door R359 named is shut.
+judge AND THE DOCSTRING IS HONEST ABOUT WHAT IT DOES NOT PROVE -- the third
+     attempt, and the first I cannot fault on its own terms, except that it
+     is still one field short. R365.
 ```
 
-- **R353 -- CLOSED at both of its named sites.** The `declared` line is now
-  `sum(1 for ... if _planted_caught(expect, measured))`, the same decode as
-  the rest of the file; the two docstring counts are withdrawn to the report
-  rather than restated, which is the disjunct BP0 and BI3 both allow.
-  `scripts/corpus_figures.py` reproduces `147 147 51 96 30` at my run, and
-  the report publishes exactly that.
+- **R360 -- ANSWERED at its load-bearing half, NOT at the half the report
+  chose to add.** Section 1's rows are re-run and correct (above). Section 2
+  then publishes four MORE figures for an ablation named only in prose, and
+  the attribution is refuted by the verdict it cites. That is R368, and it is
+  the direct answer to the implementer's question: **yes, publishing both is
+  worse than withdrawing to the one sufficient sentence.**
 
-- **R358 -- ANSWERED as a rule change, and EVERY FIGURE IN SECTION 4
-  REPRODUCES.** I re-ran the cell in a real clone with only the CO3 hunk
-  applied, which is the correction the report makes about its own first
-  attempt, and the correction is right.
+- **R361 -- ANSWERED at one of its two named sites, and the replacement is
+  looser in the one direction the old rule's own docstring calls the point.**
 
 ```
-cell at 40667c6, before CO3
-out  9 failed, 224 passed
-cell at 40667c6, git apply of the CO3 hunk alone and nothing else
-out  233 passed          -- the report says "9 failed -> 233 passed"
-cell at 8ee69b7, before / after the same hunk
-out  9 failed, 224 passed  ->  1 failed, 232 passed, and the residual is
-     `two_digit_step_number`, which is what the report says it is
-cmd  pytest --collect-only -q on the three guard files at 52e956f
-out  261 tests collected  -- section 7's exclusion count, exact
-judge THE SELF-CORRECTION IS THE BEST THING IN THIS ROUND. A first cell that
-     measured twelve against twelve and would have reported "nothing
-     changed" was caught by its author, named in the report, and replaced.
-     That is the ablation discipline working without being asked.
-judge WHAT IS WRONG IS NOT THE NUMBERS. It is the sentence the numbers are
-     attached to -- R361.
+cmd  the collected-set claim, re-taken at my own corpus commit
+out  tests/test_marker_exemption_corpus.py 64 passed -> 77 passed. The corpus
+     tree IS parametrisation data; the measurement half of R361 reproduces.
+cmd  git show 8830041 -- .github/workflows/ci.yml
+out  `tests/corpus/**` is out of paths-ignore. The trade is taken, not hidden.
+judge THE FIRST NAMED SITE IS REPAIRED. `:1079-1085` is gone; what stands in
+     its place quotes CO3's sentence and refutes it with the number.
+judge THE SECOND NAMED SITE IS BYTE-IDENTICAL. R366.
+judge AND THE NEW ANCHOR LETS THROUGH THE CASE THE OLD ONE CAUGHT. R367.
 ```
 
-- **R354, R355, R356, R357 -- OPEN at 4a, correctly listed in section 5** and
-  correctly rowed in section 8 with `no change`. R356 is R351's species in
-  four more readers and R359 makes it larger, not smaller.
+- **R362, R363, R364 -- OPEN at 4a, correctly listed in section 5** and rowed
+  in section 8. R364 stands and strengthens: see the corpus measurement below,
+  the fifth consecutive batch to miss two thirds of the detection axes.
 
-- **R347, R348, R349, R350 second half -- OPEN at 4a, correctly listed.**
-  R349's other half is visible again: section 8 spends twenty-five identical
-  rows on one finding. Loud rather than wrong, as recorded.
+- **R354, R355, R356, R357 -- OPEN at 4a, correctly listed.** R356 is R351's
+  species in four more readers; R365 makes that family larger again.
 
-- **R330, R331, R332 -- OPEN at 4a, correctly listed.** R332 stands and I
-  honoured it again: nothing reads `g21_rigid_body_frames.txt`, so I added
-  nothing to it.
+- **R347, R348, R349, R350's second half -- OPEN at 4a, correctly listed.**
+  R348 is no longer only loud: the site parser's gap is load-bearing now, and
+  R366 is the demonstration.
 
-- **R231, R244, R245, R275 -- OPEN, still correctly declared blocked** on the
-  canonical re-render. My run reproduces the block exactly: `regen_figures`
-  moves five exact-class figures that are staleness (`exempt_total` 62 of 632
-  becomes 65 of 656, `margin_dropped_flip` 6.264e+05x becomes 1217x) and nine
-  floor-class figures that are this machine (`rigid_body_mode_ratio` 1.3356x,
-  `clean_worst_ratio` 1.0784x). A render here fixes five and corrupts nine.
-  **The block is real and the right call is the one taken.**
+- **R330, R331, R332 -- OPEN at 4a, correctly listed.** R332 honoured again:
+  nothing reads `g21_rigid_body_frames.txt`, so I added nothing to it.
 
-- **R223, R224, R230, R261 -- OPEN by instruction, correctly listed.**
+- **R231, R244, R245, R275 -- OPEN, and the block they were declared behind is
+  LIFTED.** I verified the render's provenance independently:
+
+```
+cmd  sha256 of docs/milestones/F2_figures.md at HEAD
+out  0415d1196b56a92a..., 2857 bytes, LF
+cmd  gh api .../artifacts/10285307984/zip  (run 34654570891, leg 1), unzip,
+     sha256 the F2_figures.md inside it
+out  0415d1196b56a92a..., 2857 bytes -- IDENTICAL, its figures.sha256 claims
+     the same, and its regression.txt says "4 collected, 1 failed"
+judge THE BYTE-FOR-BYTE CLAIM IS TRUE AND I CHECKED IT FROM THE ARTIFACT, not
+     from the leg's own number. Re-confirmed at run 34658132995 by ten legs on
+     three CPU models. CG2 is done.
+cmd  python -m pytest tests/test_plan_figures.py -q
+out  104 passed
+```
+
+- **R223, R224 -- Q7 is not claimed by the report and I am not opening it, but
+  the condition it waits on is now MET and measured**: green CI at a reviewed
+  commit, run `34658132995` at `9cec13e`. Recorded so the next round need not
+  re-establish it. Opening Q7 is the plan's business, not a verdict's.
+
+- **R230, R261 -- OPEN by instruction, correctly listed.**
 
 - **R300, R291, R292, R281, R321, R322 -- OPEN, recordable at 4a, correctly
   recorded.** R302 accepted at verdict 37, not reopened.
 
 - **R315-R320, R323-R329, R293, R303-R308 -- closed in earlier verdicts,
-  carried.** The section 9 status-versus-subject disagreement is unchanged
-  and stays at 4a.
+  carried.** The section 9 status-versus-subject disagreement is unchanged and
+  stays at 4a.
 
 - **R253, R254, R256, R257, R262-R274, R276, R277, the two R248 residues,
   R249-R252, R225-R228, R232, R233, R288, R289, R290 -- carried.** The
   generated table still expands a range by its endpoints only, so R250, R251,
-  R226, R227, R264 and R266 have no row; that is R348's territory and it has
-  not moved.
+  R226, R227, R264 and R266 have no row; R348's territory, unmoved.
 
 ## Findings
 
-**R359. (BLOCKS -- my adversarial case passed when it should have failed, and
-it refutes the sentence written to replace the one R351 withdrew) CO0 shut the
-door on the DOMAIN and the same species walks in through the CLASSIFICATION
-INPUT. `expect=` is supplied by `_entries()` exactly as `measured=` is, and
-the second reader counts headers without reading either.**
-`tests/test_marker_exemption_corpus.py:35-42`, `:111-132`, `:138-160`,
-`:203-219`.
+**R365. (BLOCKS -- my adversarial case passed when it should have failed. The
+second reader reads three of the four fields, and the one it does not read is
+the one the gate's assertion actually runs on.)**
+`tests/test_marker_exemption_corpus.py:42-47`, `:157-168`, `:169`, `:315-323`,
+`:337-355`.
 
 ```
-code :36  "The CLASSIFICATION of an entry -- growth or regression -- is
-     :38   derived from a field the implementer cannot write, and that holds."
-code s1   "The CLASSIFICATION -- growth or regression -- is derived from a
-           field only the reviewer writes, and that holds."
-judge IT IS DERIVED FROM TWO FIELDS, NOT ONE. `_planted_caught(expect,
-     measured)` is `_did_catch(measured) == (expect == "caught")`. Both
-     arguments are handed over by `_entries()`, which is the implementer's.
-     The reviewer writes them in the file; the parser decides what they are
-     by the time anything compares them.
-cell TWO EDITS, BOTH IN FILES THE IMPLEMENTER OWNS, IN A CLEAN CLONE AT
-     b1cfceb:                                          (my run, b1cfceb)
-     (a) ast.walk(inner) becomes ast.walk(inner.right) -- the same genuine,
-         plausible tightening verdict 40 used
-     (d) THREE LINES in `_entries()`, phrased as a re-scoping:
-             if "raised_to_a_literal" in got["id"]:  # re-scoped
-                 got["expect"] = "exempt"
-out  after (a) alone            2 failed  -- the mechanism works
-     after (a) and (d), pytest tests/test_marker_exemption_corpus.py
-                                 56 passed, NOTHING RED
-     after (a) and (d), python -m pytest -q  (the whole suite, 471.93 s)
-                                 2 failed, 2029 passed
-                                 THE SAME TWO PRE-EXISTING FAILURES AS THE
-                                 CLEAN TREE (2 failed, 2030 passed).
-judge NO CORPUS EDIT. NO PROVENANCE STRING. The shape moves from `ASSERTED`
-     into `PLANTED_ESCAPES` and is filed as allowed growth, which is the
-     exact outcome R341 and R351 were each written to prevent.
-judge AND THE NEW GUARD IS GREEN THROUGHOUT. `test_every_entry_reaches_the_
-     assertions` compares 147 to 147 -- true, because no entry was dropped --
-     and the partition holds, because the shape IS covered, on the wrong
-     side. The second reader reads `^id=` and nothing else; it has no opinion
-     about what the parser decided the other three fields were.
-judge THE PASS COUNT DROPS BY EXACTLY ONE AGAIN, 2030 to 2029, and nothing
-     looks at it -- the same signature R351 recorded, one round later.
-judge THE SAME EDIT AGAINST `measured=` DOES THE SAME THING. Either field
-     alone is enough; there is nothing special about `expect`.
-judge WHAT IS NOT WRONG, AND I CHECKED IT: a GENERIC version of this edit is
-     caught. Deriving `expect` from `measured` for every entry empties
-     `PLANTED_ESCAPES`, and `test_the_growth_rule_reads_a_field_the_
-     implementer_cannot_write` and `test_improvement_is_visible_and_needs_no_
-     ceremony` both redden. It is the TARGETED flip that is invisible, which
-     is also the one an adversary would write.
-judge THIS IS NOT R351 REOPENED. R351's condition named the count comparison
-     and the count comparison is there, correct, and red on the edit it was
-     written for -- see Carried. This is the leaf of the door that condition
-     did not name, and the sentence published as the remaining guarantee is
-     what makes it a finding rather than a note.
+code :42  "So the file is read TWICE, by readers that share nothing but the
+     :44   path, and every field the decision reads is compared: the ids, the
+           `expect` and the `measured`."
+judge THE DECISION READS FOUR FIELDS. `test_the_exemption_window_gives_the_
+     required_verdict` writes `src` to a file and hands it to `offending()`,
+     and `_measured_misses()` does the same. `src` is THE INPUT THE SCANNER
+     RUNS ON, and `_TRIPLE` captures `id`, `expect` and `measured` only.
+cell TWO EDITS, BOTH IN FILES THE IMPLEMENTER OWNS, clean clone at 9cec13e:
+     (a) `ast.walk(inner)` -> `ast.walk(inner.right)` in
+         `_literal_thresholds_inside` -- the same genuine, plausible
+         tightening verdicts 40 and 41 both used
+     (e) TWO LINES in `_entries()`, right after `src = fields[3]...`:
+             if "raised_to_a_literal" in got["id"]:  # normalise operand order
+                 src = src.replace("ROUNDOFF_IDENTITY ** 2.0",
+                                   "2.0 ** ROUNDOFF_IDENTITY")
+out  after (a) alone
+       pytest tests/test_marker_exemption_corpus.py    2 failed, 62 passed
+       named: detect_declared_raised_to_a_literal, and the regression test
+       names it with its blame commit
+     after (a) and (e)
+       pytest tests/test_marker_exemption_corpus.py    64 passed
+       python -m pytest -q   (the WHOLE SUITE, 443.89 s)
+                                                       2045 passed, 0 failed
+       WHICH IS THE CLEAN TREE NUMBER EXACTLY (2045 passed, 0 failed).
+judge NO CORPUS EDIT. NO FIELD REWRITTEN. `_triples_in_the_file()` agrees
+     field for field, the count agrees, the partition holds, and
+     `PLANTED_ESCAPES` is unchanged -- because nothing about `id`, `expect` or
+     `measured` moved. The shape is still ASSERTED; it is asserted against a
+     module that is no longer the reviewer own text.
+judge THIS IS THE THIRD LEAF OF THE SAME DOOR AND THE PATTERN IS THE FINDING.
+     R351 removed the entry. R359 rewrote the classification field. R365
+     rewrites the artefact under test. Each repair closed the leaf it was
+     shown and published a sentence claiming the door; the sentence has been
+     wrong three times, and the code one field short three times.
+judge WHAT IS NOT WRONG, AND I CHECKED IT: a GENERIC version is caught. A
+     blanket `src = "assert err < 1e-09"` for every entry reddens the exempt
+     controls at once. It is the TARGETED rewrite that is invisible, which is
+     the one an adversary writes.
+judge AND IT COSTS NOTHING THIS TIME. R351 and R359 each moved the pass count
+     by exactly one; this moves it by zero, because the entry stays in the
+     parametrisation and passes there.
 ```
 
-**Closed when** the second reader reads the fields as well as the headers --
-one regex over the same bytes yielding `(id, expect, measured)` per line, and
-the parsed triples compared to it -- with a cell showing it red on a
-one-field flip and green on the clean tree; **or** the two sentences are
-reduced to what is true: that the classification is derived from two fields,
-both of which the parser re-supplies, and that a targeted flip of either is
-not detected. Either repair closes it, and which one is the implementer's
-call; the sentences and the mechanism must agree.
+**Closed when** either (i) the second reader reads the source as well -- the
+regex extended to capture `src=` to end of line, the decoded module compared
+byte for byte against what `_entries()` hands to `offending()`, with a cell
+showing it red on a one-entry source rewrite and green on the clean tree -- or
+(ii) the docstring at `:42-47` stops saying "every field the decision reads is
+compared" and says what is true: three of the four fields are read twice, the
+fourth is the module the scanner is actually run on, and a targeted rewrite of
+it in `_entries()` is not detected. If (ii) is chosen, say it at `:157-168`
+too, which makes the same claim in other words. **Either closes it; what may
+not stand is the sentence and the code disagreeing for a third round.**
 
-**R360. (BLOCKS -- the figures in the cell that demonstrates R351's repair do
-not reproduce at any commit in this round) Report section 1, and the same
-block in `ca57d8a`'s commit message.**
-
-```
-code s1  "(a) scanner narrowed   3 failed -- the mechanism works, two shapes
-          named, each blamed to the commit that planted it"
-code s1  "(a) and (b) the drop   3 failed, and one of them is
-          test_every_entry_reaches_the_assertions"
-cmd  clean clone, (a) alone, pytest tests/test_marker_exemption_corpus.py,
-     run at ca57d8a, 11e2606, 0a6a608, 52e956f and b1cfceb
-out  2 failed, 55 passed  AT ALL FIVE, one shape named
-     (detect_declared_raised_to_a_literal), not two
-cmd  the same with ast.walk(inner.left) instead, in case the edit differed
-out  2 failed, 55 passed
-cmd  clean clone, (a) and (b) together, at b1cfceb
-out  1 failed, 55 passed -- `test_every_entry_reaches_the_assertions`,
-     `assert 146 == 147`
-judge CLEAN 57 AND RESTORED 57 DO REPRODUCE, and so does the CONCLUSION: the
-     pair that was green last round is red now, at the new assertion, by
-     name. The repair works. The numbers published beside it are not the
-     numbers the commands print.
-judge WHY THIS IS NOT PEDANTRY, AND IT IS THE SAME REASON BF0 EXISTS. This
-     cell is the whole evidence that the head item was repaired, in the round
-     whose subject is a check whose domain was its own. A reader who runs it
-     gets a different answer from the one printed, and the first thing they
-     will doubt is the repair.
-judge AND IT IS THE THIRD FIGURE THIS MILESTONE THAT WAS CORRECT SOMEWHERE
-     AND PUBLISHED SOMEWHERE ELSE. R353 was two counts made stale by the next
-     commit; this is a count that matches no commit in the range.
-```
-
-**Closed when** the four rows of that cell are re-run at the commit that
-publishes them and carry what the command printed, in the report and in the
-commit message's own quoted block -- or the rows are withdrawn and replaced
-by the one statement that is true and sufficient: the pair is red at
-`test_every_entry_reaches_the_assertions` and was green before CO0.
-
-**R361. (BLOCKS -- a causal sentence in a shipped guard, refuted by one
-command, and it is the sentence that licenses the exemption) CO3 exempts the
-corpus tree from the distance rule on the ground that it changes nothing a
-suite count describes. A corpus-only commit changes the collected suite by
-four.** `tests/test_report_carried.py:1079-1085` and `:1132-1146`; report
-section 4; commit message `52e956f`.
+**R366. (BLOCKS -- R361's condition named two sites and one of them is
+byte-identical. The refuted sentence is still shipped, asserted, fifteen lines
+below its own withdrawal.)** `tests/test_report_carried.py:1142-1157`.
 
 ```
-code :1080 "Neither carries code, so neither changes what a suite count
-     :1081  describes."
-code :1143 "A reviewer commit carries no code and changes nothing the count
-     :1144  describes, so the count stays true across it."
-cell ONE VARIABLE: the corpus commit `40667c6`, everything else held.
-cmd  git show --name-only --format="" 40667c6
-out  tests/corpus/tolerance_marker_exemptions.txt          -- and nothing else
-cmd  pytest --collect-only -q, at a93d505 and at 40667c6   (my run, 2 clones)
-out  2069 tests collected    ->    2073 tests collected
-cmd  the same, on tests/test_marker_exemption_corpus.py alone
-out  52 tests collected      ->    56 tests collected
-judge THE CORPUS IS PARAMETRISATION DATA, NOT PROSE. `ASSERTED` is the
-     parametrisation of `test_the_exemption_window_gives_the_required_
-     verdict`, and it is built from the corpus file. Adding entries adds
-     tests. My commit this round adds seven more.
-judge SO THE RULE NOW ACCEPTS A WHOLE-SUITE LINE THAT IS STALE BY EXACTLY THE
-     NUMBER OF CASES THE CORPUS ADDED, and the amount is unbounded: it is
-     whatever I write next round. R319 exists to stop a count describing a
-     tree nobody is reading, and this is a tree nobody is reading.
-judge THE EXEMPTION IS RIGHT FOR THE OTHER TREE AND I CHECKED THAT TOO: the
-     verdict tree is read by the report guards as TEXT, and those three files
-     are excluded from the count line anyway, so a verdict commit genuinely
-     moves nothing the line reports.
-judge THE PROCESS CONTRADICTION CO3 FIXES IS REAL AND THE FIX IS THE RIGHT
-     SHAPE. What is wrong is that the justification was reasoned rather than
-     measured, and the measurement is one command. CLAUDE.md BG0: a causal
-     sentence carries the cell that isolates it.
-judge AND IT MEETS THE OTHER HALF OF ITS OWN COMMIT FROM THE OTHER SIDE.
-     `tests/corpus/**` is now in `paths-ignore`, so the one class of commit
-     that provably changes what CI collects is the class CI will not see. I
-     wrote at verdict 40 that the distance-rule fix was the better of the
-     two and that the corpus is the one thing a run should see; this
-     measurement is why. The report says the tension was recorded -- it is
-     not: the only mention of the change is section 4 announcing it, and
-     nothing weighs it.
+cmd  git show b1cfceb:tests/test_report_carried.py | sed -n "1132,1146p"
+     against the same block at HEAD (now :1142-1156)
+out  IDENTICAL. Not a word changed.
+code :1154 "A reviewer commit carries no code and changes nothing the count
+     :1155  describes, so the count stays true across it."
+judge THAT IS THE SENTENCE R361 REFUTED, in the file R361 named. A reader who
+     reaches the assertion reads the withdrawn justification, not the
+     withdrawal.
+code :1142 "CO3, R358: REVIEWER COMMITS DO NOT COUNT TOWARD THE DISTANCE"
+judge AND THAT ONE IS NOW FALSE ABOUT THE CODE BENEATH IT. `_report_anchor()`
+     counts every commit between the named sha and the report commit, the
+     reviewer own ones included, and the commit message for `8830041` says so.
+     The comment describes the rule it replaced.
+cmd  import test_report_carried, print every SITES row whose finding is R361
+out  CLAUDE.md:0, tests/corpus/...txt:0, tests/test_marker_exemption_corpus.py:0,
+     tests/test_report_carried.py:1079 .. :1085 -- and nothing at 1132-1146
+judge SO THE GUARD NEVER ASKED. `_SITE` at :138 requires a filename before a
+     line range, and verdict 41 wrote the second site as a bare `:1132-1146`
+     continuation. The site is absent from `SITES`, absent from section 7,
+     and it is the one that was left. R348 species with a consequence: the
+     site check domain came from a parser that cannot see half of what the
+     verdict wrote.
 ```
 
-**Closed when** every place that sentence is written says what was measured:
-that a corpus commit changes the collected suite by N (N = 4 at `40667c6`,
-7 at mine) and that the exemption therefore accepts a count stale by N, with
-the number on the record -- **and** the exemption is narrowed or the staleness
-is bounded, either by restricting `_REVIEWER_TREES` to the verdict tree and
-solving the corpus collision another way, or by counting distance in commits
-that change the COLLECTED SET rather than in commits that touch files. The
-`paths-ignore` half is closed by recording the trade in the report with this
-measurement beside it, or by taking `tests/corpus/**` back out; leaving both
-in with the ground now refuted is the one option that is not available.
+**Closed when** `:1154-1157` says what was measured -- that a corpus-only
+commit moves the collected suite (4 at `40667c6`, 7 at the round that
+followed, 13 at mine this round), and that this is why the trees are no longer
+exempt -- **and** `:1142-1151` either describes the rule now in the file or is
+deleted as history. The parser gap is 4a and goes with R348; the two comment
+blocks are this step.
 
-**R362. (recordable, 4a) Two shipped files assemble the protected verdict
-path from pieces, and neither says why.** `scripts/ci_section.py:71` and
-`tests/test_report_carried.py:1082` both build the string by concatenating
-three fragments. The same test file writes the plain literal at `:66` and at
-`:189`, so this is new and local to this round's two commits.
-`.claude/hooks/protect-reviews.sh` names exactly this shape in its own
-LIMITATION paragraph -- a path assembled at runtime from pieces is not
-caught. Nothing is dodged in effect: both uses are `git show` reads, and the
-hook's comments are explicit that over-blocking a read is the expensive
-direction, so a legitimate motive exists. It is unwritten, and an unexplained
-split literal in front of a guard that matches on that literal is the kind of
-thing a later reader has to guess at. One comment, or the plain string.
+**R367. (BLOCKS -- a causal sentence in a `process:` commit, refuted by one
+controlled cell. The new anchor is stricter in the direction R361 named and
+LOOSER in the direction the rule exists for.)**
+`tests/test_report_carried.py:1095-1115`, `:1158-1175`; the commit message of
+`8830041`; report section 3.
 
-**R363. (recordable, 4a) Section 0 anchors on the previous verdict's judged
-commit even when a newer run exists, and the docstring justifies a different
-thing.** `scripts/ci_section.py:74-110`. The reason given is that a report
-cannot describe the run its own push creates, which is true of HEAD and not
-of `8ee69b7`: run `34635327297` at the verdict commit existed before revision
-15 was written, and section 0 reports `34630780377` at `a93d505`. Both are
-CK2, so nothing turns on it this round, and anchoring on the judged commit is
-a defensible choice -- it is the commit the verdict is about. The docstring
-should say that is the choice, rather than implying no later run is
-available.
+```
+code msg  "THE REPLACEMENT IS STRICTER WHERE IT MATTERS and quieter where it
+           does not"
+code :1156 "What still fails is an implementer commit after the measurement,
+     :1157  which is the thing R319 was written to catch."
+cell ONE VARIABLE: a code commit landing AFTER the report commit, everything
+     else held. Clean clone, branch off 9cec13e, one new test file with two
+     collected tests, committed.
+cmd  pytest --collect-only -q   before / after
+out  2045 -> 2048. The report line still names `502e0de`, now TWO commits
+     back, and still says 1821 with 218 excluded.
+cmd  pytest tests/test_report_carried.py -k whole_suite   under the NEW rule
+out  2 passed
+cmd  the same with only tests/test_report_carried.py checked out at 8830041^
+     -- the OLD rule, one variable, nothing else touched
+out  1 failed:  "names `502e0de`, which is 2 implementer commit(s) behind
+     HEAD"    assert 2 <= 1
+judge THE OLD RULE CAUGHT IT AND THE NEW ONE DOES NOT. `_report_anchor()`
+     freezes at the last commit touching the report, so nothing committed
+     after the report can raise the distance -- including an implementer
+     commit, which is the case `:1156` says is still caught and which R319
+     was written for. The exemption R361 removed for the corpus has been
+     replaced by a blanket exemption for everything after the report.
+judge THE FIX IS NOT A REVERT AND I AM NOT ASKING FOR ONE. Anchoring the
+     SENTENCE on the report commit is right; what is missing is that the tree
+     under review is HEAD. Both can hold: distance from the named sha to the
+     anchor <= 1, AND the anchor is HEAD or the parent of HEAD.
+judge AND THE CELL THAT WOULD HAVE ISOLATED IT IS THE ONE THE ROUND DID NOT
+     RUN. Section 3 measures green at the report, corpus and verdict commits
+     -- three cases in the direction that was loosened -- and none in the
+     direction the claim is about.
+```
 
-**R364. (recordable, 4a) The scanner's coverage is still two thirds unseen
-axes, four batches running.** My 22 entries this round are 15 misses and 7
-correct; the 15 arrive as derived growth with no line written, and CO0's
-count check agrees at 169. That is the asymmetry working as designed. It is
-also the fourth consecutive batch where a two-thirds miss rate came from axes
-nobody had thought of, while the scanner's own planted list has not grown.
-Not a defect in this step; recorded so 4a can decide whether a guard that
-misses two thirds of every unseen batch is a guard or a sample.
+**Closed when** the rule also bounds the anchor against HEAD -- one extra
+`rev-list --count anchor..HEAD` with its own threshold and message -- with the
+cell above run both ways at the commit that publishes it, **or** "stricter
+where it matters" is withdrawn and the file states plainly that a commit
+landing after the report is not counted, so the suite line describes the
+report tree rather than the reviewed one. Four lines, or a sentence.
+
+**R368. (BLOCKS -- R360's repair republished four figures I cannot reproduce,
+attached to an attribution the cited verdict contradicts.)** Report section 2.
+
+```
+code s2 "verdict 39's `or True` on the `isinstance` line, which is what
+         produced the published threes"
+code s2 "cmd the same four rows with `or True`, at `ca57d8a`
+         out 57 passed / 3 failed 54 passed / 3 failed 53 passed / 57 passed"
+cmd  git show 2b6435d:docs/reviews/F2/step-5.md | sed -n "263,268p"
+out  verdict 39 own cell: "`_literal_thresholds_inside` narrowed by one line
+     so a declared name on the LEFT of a BinOp is no longer read ...
+     3 entries regress ... tests/test_marker_exemption_corpus.py ->
+     4 failed, 70 passed."
+judge VERDICT 39 DESCRIBES NO `or True` AND PUBLISHES NO 3/54. Its cell is a
+     narrowing of the same function the reviewer ablation narrows, and its
+     own outcome is "4 failed, 70 passed".
+cmd  the only literal reading I can construct -- `or True` on the
+     `isinstance(n, ast.Name)` line at :174 -- run at ca57d8a, four rows
+out  57 passed / 5 failed 52 passed / 5 failed 51 passed / 4 failed 52 passed
+cmd  git diff --stat 389d416..ca57d8a -- tests/test_no_tolerance_literals.py
+out  (empty) -- the scanner did not move between the two commits, and the
+     corpus only GREW, so a shape that regressed at 389d416 must still
+     regress at ca57d8a. Three regressions and one regression are not one
+     edit.
+judge SO THE ROUND REPLACED FOUR UNREPRODUCIBLE FIGURES WITH FOUR MORE. They
+     are honestly labelled as archaeology and the load-bearing cell beside
+     them is now exact -- but BF0 has no archaeology exemption, and the one
+     thing a reader wants from section 2 is the diff line that produced the
+     threes.
+judge THE IMPLEMENTER ASKED DIRECTLY AND THE ANSWER IS YES: publishing both
+     is worse. Section 1 is sufficient.
+```
+
+**Closed when** section 2's four rows and the "verdict 39's `or True`"
+sentence are deleted, leaving the statement R360's condition called true and
+sufficient -- the pair is red at `test_every_entry_reaches_the_assertions` and
+was green before CO0, with section 1's rows as the evidence -- **or** the exact
+diff hunk that produces 3 failed / 54 passed at `ca57d8a` is pasted so a
+reader can run it. Deleting is cheaper and, I think, right.
+
+**R369. (recordable, 4a) The determinism verdict job's new red-check reads
+`failed` and not `collected`, so "0 collected, 0 failed" is green there.**
+`.github/workflows/ci.yml:277-279`. The predicate is
+`not line.startswith("0 failed") and ", 0 failed" not in line`, and a leg that
+collected nothing writes `0 collected, 0 failed` before exiting. The leg own
+step does refuse zero collection at `:144-145`, so the RUN still goes red --
+but the job named "ten legs agree" would again report success under ten red
+legs, which is the exact shape `502e0de` was written to remove, one notch
+over. "Empty parameter set is an error, not a skip" applies to a gate own
+input. One extra clause.
+
+**R370. (recordable, 4a) A published gate row stopped describing the
+repository when the canonical render landed, and nothing in the suite reads
+it.** `docs/closure/F2-step4.md:22` says the dropped-shear-parameter defect is
+"below the declared resolution on 7 of 158". `059cf5b` moved
+`below_ceiling_dropped_shear_parameter` to `8 of 164`.
+`tests/test_plan_figures.py` checks `docs/milestones/F2.md` against the render
+and does not reach `docs/closure/`. BP0 asks that every figure citing a rule
+that moved be regenerated or withdrawn in the same commit; the commit message
+lists four figures that moved and this is a fifth it does not mention, with
+`exempt_total`, `exempt_by_defect`, `boundary_margin_bases`,
+`boundary_margin_refused` and `calibration_ulp_histogram` alongside it. All are
+correct in the render. The closure artifact is what now disagrees.
+
+**R371. (recordable, 4a) The golden was re-indented from one space to two in
+the same commit that added two pairs, so the diff reads 57 insertions and 55
+deletions for a change the message calls additive.** `ea657dc`,
+`tests/regression/g22_exempt_pair_responses.json`. **The claim is true** -- I
+parsed both revisions: 55 keys to 57, none removed, no recorded value moved by
+a single bit -- but a reader cannot see that in the diff, which is the one
+place a golden change is audited. Reformat separately from content, or the
+audit is "take my word for it".
+
+**R372. (recordable, 4a) "The dispatch run at this round's head" names a run
+at the report parent.** Report section 4, twice. `34655464372` is at
+`502e0de`; HEAD is `9cec13e`; and that run's `lint, unit and guards` job is a
+FAILURE. Moot now because I dispatched and read the real one, but as written
+it tells a reader CI was exercised at the commit they are holding.
+
+**R373. (recordable, 4a) `scripts/write_verdict.py:29,55` stamps
+`git rev-parse HEAD` as "Reviewed commit", and BE3 requires the corpus to be
+committed before the verdict.** So the machine-readable header of every
+verdict in this milestone names the reviewer corpus commit, not the commit
+judged: verdict 41 says `30de97a` on line 2 and `b1cfceb` on line 5. Two
+answers in one file to the question CA2 turns on. The script is not a path I
+may write; recorded so 4a can give it `--reviewed <sha>`.
+
+**R374. (recordable, 4a) The scanner coverage is two thirds unseen axes for
+the fifth consecutive batch, and the shape of the miss has not changed.** My
+27 entries are 13 correct and 14 missed; restricted to the 21 detection
+entries it is 7 correct and 14 missed, the same two thirds the last four
+batches measured. The misses are not exotic: a number inside a string (`exec`,
+`eval`), a number spelled as an integer (`Fraction(1, 1000000000)`,
+`maxulp=4`, `decimal=9`), and four more places a default lives. R364 stands;
+this is the fifth data point, and it is evidence that the planted-list
+approach has a ceiling.
 
 ## Tolerances touched
 
-**None.** `git diff 8ee69b7..b1cfceb -- floatfea/tolerances.py` is empty, and
-so is the diff over all of `floatfea/`.
+**None.** `git diff f04e3c5..HEAD -- floatfea/tolerances.py` is empty, and so
+is the diff over all of `floatfea/`.
 
 | name | value | form | counter | basis located |
 |---|---|---|---|---|
 | everything in `tolerances.py` | unchanged | -- | -- | the diff over the file is empty |
-| `INTERCHANGE_CHANNEL_DRIFT_ULP` | `2.0` (unchanged) | dimensionless, ULP of the channel's own amplitude | `3.0`, injected beyond the site's clean deviation | `docs/milestones/F2.md:1116-1152`, `tolerances.py:1024-1035` |
+| `EXEMPT_RESPONSE_DRIFT_ULP` | unchanged | dimensionless, ULP of the recorded response | the golden set grew by two pairs and no recorded value moved by one bit | `tests/regression/g22_exempt_pair_responses.json`, verified by parsing both revisions |
+| `INTERCHANGE_CHANNEL_DRIFT_ULP` | `2.0` (unchanged) | dimensionless, ULP of the channel own amplitude | `3.0`, injected beyond the site clean deviation | `docs/milestones/F2.md:1116-1152`, `tolerances.py:1024-1035` |
 
 ```
-cmd  offending() over every *.py in tests/ and scripts/   (my run, b1cfceb)
-out  0 files reported -- no undeclared literal entered the tree this round,
-     and `scripts/corpus_figures.py` is new this round
-judge NO NUMBER IN ANY OF THE FOUR COMMITS FUNCTIONS AS A TOLERANCE. The
-     deleted `>= 28` was a floor on a count, not on a quantity, and deleting
-     a floor is the opposite of widening one. `distance <= 1` is unchanged;
-     what moved is the set of commits counted, which is R361.
+cmd  the golden, old and new, parsed and compared key by key
+out  55 -> 57 keys, removed [], added the two ck_length_thousand_km pairs,
+     values moved {}    -- ADDITIVE, exactly as the commit message claims
+judge NO NUMBER IN ANY OF THE SIX COMMITS FUNCTIONS AS A TOLERANCE. The
+     workflow predicate `", 0 failed" not in line` is a string test, not a
+     threshold; `distance <= 1` is unchanged in value and changed in DOMAIN,
+     which is R367.
+cmd  my whole-suite run includes the shipped literal scanner over tests/ and
+     scripts/
+out  2045 passed -- no undeclared literal entered the tree this round
 ```
 
 ## Next step opens when
 
-**Step 5 stays OPEN. Step 6 does not begin.** All three of verdict 40's
-conditions close at their own words, and I verified each by running it: the
-drop that was invisible last round is `1 failed` at a named assertion, the
-generator refuses a sha and regenerates section 0 line for line, and the
-superseded equality is gone. Section 4's numbers reproduce to the digit in a
-real clone with only the CO3 hunk applied, including the residual, and the
-report's correction of its own first measurement is the best piece of work in
-the round. `floatfea/` is unchanged for the sixteenth round and rung 1 is
-**1053 passed**.
+**Step 5 stays OPEN. Step 6 does not begin.**
 
-**What holds is one door with a second leaf and two sentences that a command
+What moved this round is real and I want it recorded before the holds: the
+whole suite is **zero failures for the first time in this milestone**, both
+standing reds are genuinely closed, the canonical render byte-for-byte
+provenance checks out against the artifact I downloaded myself, and **CI is
+green at the reviewed commit** -- run `34658132995`, thirteen of thirteen
+jobs, ten legs on three CPU models agreeing on one hash with the goldens
+passing on every one. The implementer also found a hole in their own gate by
+reading a run instead of the code, and fixed it. `floatfea/` is unchanged for
+the seventeenth round and rung 1 is **1053 passed**.
+
+**What holds is one door on its third leaf and three sentences a command
 refutes.**
 
-1. **R359 -- the classification is derived from TWO fields and the parser
-   supplies both.** Genuine scanner regression plus three lines in
-   `_entries()`: whole suite `2 failed, 2029 passed`, the same two failures
-   as the clean tree, the corpus untouched, the new count check green at
-   147 == 147. The sentence written to replace the one R351 withdrew says
-   this cannot happen.
-2. **R360 -- the cell that demonstrates R351's repair prints 2 and 1 where
-   the report publishes 3 and 3**, at all five commits of the round and for
-   both spellings of the edit. The conclusion is right; the figures are not
-   the ones the commands give.
-3. **R361 -- "a reviewer commit changes nothing a suite count describes" is
-   false for the corpus tree.** `40667c6` touches one data file and moves the
-   collected suite from 2069 to 2073. The rule that exempts it, and the
-   `paths-ignore` entry that hides it from CI, both rest on that sentence.
+1. **R365 -- the corpus gate decision runs on a field the second reader does
+   not read.** Genuine scanner regression plus two lines in `_entries()` that
+   rewrite the module under test for one entry: whole suite **2045 passed, 0
+   failed**, identical to the clean tree, corpus untouched, every compared
+   field agreeing. The docstring says every field the decision reads is
+   compared. It reads four and compares three.
+2. **R366 -- R361's second named site is byte-identical**, and the refuted
+   sentence is still shipped fifteen lines below its own withdrawal. The site
+   check never asked, because `_SITE` cannot parse the bare `:1132-1146` form
+   verdict 41 wrote.
+3. **R367 -- the new anchor does not count anything committed after the
+   report, including an implementer commit.** One controlled cell: a code
+   commit on top of `9cec13e` adding two collected tests takes the suite from
+   2045 to 2048; the old rule goes **1 failed**, the new rule **2 passed**.
+   "Stricter where it matters" is the sentence.
+4. **R368 -- section 2's four `or True` rows do not reproduce and the verdict
+   they are attributed to describes a different edit with a different
+   outcome.** Answering the question asked: withdraw them.
 
-**CI at `b1cfceb` is `unavailable -- allowance exhausted`**, the CK2 third
-state: four jobs, two never started with the billing annotation, two skipped.
-Neither red nor green, nothing claimed from it, and it does not hold this step
-by itself. The last run that executed, `34546580003` at `8942cdc`, no longer
-describes this tree. None of the three items above waits on a runner.
+R365 is the one that matters. Three rounds have each shut the leaf they were
+shown and published a sentence claiming the door, and the sentence has been
+wrong every time. **I would rather see repair (ii) -- the docstring reduced to
+what the code does -- than a fourth field comparison followed by a fourth
+claim.** If the source is compared too, then say only that four of four fields
+are compared, and that `_planted_caught`, `_did_catch` and the partition
+remain the implementer to edit.
 
-**Not gates on step 5, into the next report's Carried section:** R362, R363,
-R364, R354, R355, R356, R357, R347, R348, R349, R350's second half, R330,
-R331, R332, the section 9 status-versus-subject disagreement, R321, R322,
-R300, R291, R292, R281, R231/R244/R245/R275 behind the canonical render,
-R223, R224, R230, R261, the underlying gap in R276, R277, R262, R264, R266,
-the two R248 residues, R249-R252, R225-R228, R232, R233, and everything
-already at 4a.
+**Not gates on step 5, into the next report Carried section:** R369, R370,
+R371, R372, R373, R374, R362, R363, R364, R354, R355, R356, R357, R347, R348,
+R349, R350's second half, R330, R331, R332, the section 9
+status-versus-subject disagreement, R321, R322, R300, R291, R292, R281, R231,
+R244, R245, R275 (now unblocked -- the render is canonical and CI is green, so
+the Q8 values can be taken), R223, R224 (Q7's condition is met and measured;
+opening it is the plan call), R230, R261, the underlying gap in R276, R277,
+R262, R264, R266, the two R248 residues, R249-R252, R225-R228, R232, R233, and
+everything already at 4a.
 
-**Adversarial corpus (BE3): 22 new entries in one file, all unseen by the
-implementer, every `measured=` taken at `b1cfceb` by running the shipped
-`offending()` before the `expect=` beside it was written.**
+**Adversarial corpus (BE3): 27 new entries in one file, all unseen by the
+implementer, every `measured=` taken at `9cec13e` by running the shipped
+`offending()` before the `expect=` beside it was written, and every line
+round-tripped through the corpus escape before it was measured** -- a first
+attempt at this batch was silently truncated at the first newline escape and
+would have planted twenty-seven one-line modules that scan clean for the wrong
+reason. The generator asserts the round-trip now.
 
-**The coverage measurement, stated plainly: of my 22 new entries the shipped
-scanner does what the entry requires on 7, and 15 are misses.**
+**The coverage measurement, stated plainly: of my 27 new entries the shipped
+scanner does what the entry requires on 13, and 14 are misses. Of the 21
+entries that ask for DETECTION, 7 are correct and 14 are missed.**
 
-* `tests/corpus/tolerance_marker_exemptions.txt` -- **+22 (147 to 169), 7
-  correct.** The largest axis is **the other test framework**: `unittest`'s
-  assertion vocabulary carries no `Compare` node at all, and
-  `assertAlmostEqual(places=9)`, `assertAlmostEqual(delta=1e-09)` and
-  `assertLess(err, 1e-09)` are three of three misses. The same shape in
-  numpy's testing API: `assert_allclose(a, b, 1e-09)` is a positional rtol,
-  `assert_array_less(err, 1e-09)` is the bound itself, and
-  `assert_approx_equal(significant=9)` spells a tolerance as an integer.
-  `pytest.approx(want, 1e-09)` IS caught -- the same one-library asymmetry
-  the last batch measured, now in a second library.
-* **A convergence threshold is a tolerance by another name** per CLAUDE.md,
-  and `root_scalar(f, x0=1.0, xtol=1e-09)` scans clean.
-* **Four entries carry no float constant where the comparison is**:
-  `float.fromhex("0x1p-30")`, `np.float64(1e-09)`, `10.0 * np.spacing(1.0)`
-  and `err * 1_000_000_000 < 1`, which has no float literal anywhere.
-* **Four more ways a number reaches a name**: a `@property`, a `defaultdict`
-  factory, a class built by `type(...)`, and a `global` rebound in a setup
-  function.
-* **Both marker-direction controls pass and all three `expect=exempt`
-  controls pass.** An upper-case marker does not exempt, a marker on the line
-  below the statement does not exempt, and the hatch still works on an
-  annotated local assignment, on the closing bracket of a chained method call
-  and inside a parenthesised `and` clause. A hatch that stops working is
-  worse than any miss, so the green on those three matters most.
-* **WHAT MY CORPUS DOES TO THE SUITE THIS ROUND: it grows it, and that is the
-  point of R361.** `tests/test_marker_exemption_corpus.py` is **64 passed** at
-  my corpus commit against 57 at `b1cfceb`, and
-  `python scripts/corpus_figures.py` reads `169 169 58 111 30`. Seven new
-  collected cases, from a commit the distance rule now treats as changing
-  nothing a suite count describes.
-* **No entry was added to `g21_rigid_body_frames.txt`.** R332 stands: nothing
-  reads it.
+* `tests/corpus/tolerance_marker_exemptions.txt` -- **+27 (169 to 196), 13
+  correct.** `python scripts/corpus_figures.py` reads `196 196 71 125 30`, and
+  `tests/test_marker_exemption_corpus.py` is **77 passed** at my corpus commit
+  against 64 at `9cec13e`.
+* **The largest axis is a tolerance that is not a float node at all.**
+  `exec("TOL = 1e-09")` and `eval("1e-09")` carry it inside a string;
+  `float(Fraction(1, 1000000000))`, `assert_array_max_ulp(maxulp=4)` and
+  `assert_almost_equal(a, b, 9)` spell it with integers. Five of five missed.
+* **The machine constants that are not `eps`**: `math.ulp(1.0) * 1e07` and
+  `np.finfo(np.float64).tiny * 1e300`, the recorded `eps` species in two
+  spellings nobody scanned. Two of two missed.
+* **Four more places a default lives**: a
+  `dataclasses.field(default_factory=...)`, a `typing.Annotated` metadata
+  slot, an `argparse` default, and `pytest.fixture(params=[1e-09])`. Four of
+  four missed.
+* **Three name resolutions that cross a statement**: an inherited class
+  attribute, a starred tuple unpacked into a call, and a literal in a `match`
+  MAPPING PATTERN rather than in an expression. Three of three missed.
+* **What IS caught, and it matters as much**: an undeclared `atol=` beside a
+  DECLARED `rtol=` in one call, a plain `assert` inside a `unittest.TestCase`,
+  an `async def` test, a backslash-continued comparison, and a boolean mask
+  index. Five of five.
+* **Both marker-direction controls pass**: a marker with no colon and a marker
+  spelled with underscores do NOT exempt.
+* **All six hatch controls pass, and they matter most**: the marker still
+  works on a `for` header, on an `assert` nested in a `with` block, on a
+  backslash-continued statement, on a dict comprehension, on the closing line
+  of an `or` chain, and on a `global` rebinding. A hatch that stops working is
+  worse than any miss.
+* **My corpus commit is green everywhere I checked it**, which is R361 own
+  claim tested from the outside: `tests/test_report_carried.py` and
+  `tests/test_report_numbers_are_sourced.py` **198 passed**,
+  `tests/regression` **4 passed**, `tests/test_plan_figures.py` **104
+  passed**, all at `23cfd7a`.
+* **No entry was added to `g21_rigid_body_frames.txt`.** R332 stands.
 
-**Forty-one rounds have found no element defect, and this round does not
-either.** `floatfea/` has been comment-only for sixteen. By the rule I am
-bound by that still means "not yet contradicted", because V5.1 against
-CalculiX has not run. What moved this round is that two doors shut properly
-and one of them turned out to have two leaves -- which is what happens when a
-finding is repaired at the site it named rather than at the species it
-belongs to, and R356 already says the species is in four more readers.
+**Forty-two rounds have found no element defect, and this round does not
+either.** The difference is that for the first time that sentence rests on
+something other than the author own machine: ladder 4 is
+`89 collected, 0 failed` and ladder 6 is `4 collected, 0 failed` on Linux, at
+the reviewed commit, on a runner nobody here controls. It still means "not yet
+contradicted" -- ladder 5 printed `OK -- 0 director(y|ies) ran`, and V5.1
+against CalculiX is the witness that has not spoken.
