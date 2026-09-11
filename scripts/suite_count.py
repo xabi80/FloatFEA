@@ -51,6 +51,11 @@ def _sha() -> str:
 REPORT_PARAMETRISED = (
     "tests/test_report_carried.py",
     "tests/test_report_numbers_are_sourced.py",
+    # AND THE HARNESS THAT RUNS THE FIRST ONE IN COPIES. Every state it builds
+    # is the carry guard over the report, so at a commit where the report has
+    # not yet been revised it reports the boundary rather than the tree -- the
+    # same reason as the two above, one level of indirection out.
+    "tests/test_report_guard_states.py",
 )
 
 
