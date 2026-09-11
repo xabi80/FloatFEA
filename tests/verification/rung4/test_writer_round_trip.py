@@ -24,6 +24,7 @@ reviewer can check the expectation without loading a binary.
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 import numpy as np
@@ -32,6 +33,10 @@ import pytest
 h5py = pytest.importorskip("h5py")
 
 from floatfea.io.reader import validate  # noqa: E402
+from floatfea.tolerances import (  # noqa: E402
+    INTERCHANGE_CHANNEL_DRIFT_ULP,
+    INTERCHANGE_CHANNEL_DRIFT_ULP_COUNTER,
+)
 
 FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "writer_output.flr"
 N, NB, DT, NLAG = 24, 2, 0.05, 8
@@ -54,6 +59,19 @@ def _expected() -> dict[str, np.ndarray]:
         "xi_ddot": np.sin(3.1 * t[:, None] + 0.09 * j) * (3.0 - 0.02 * j),
         "lam": np.cos(1.1 * t[:, None] + 0.5 * np.arange(4)[None, :]),
     }
+
+
+def _drift_ulp(got: np.ndarray, want: np.ndarray) -> tuple[float, int]:
+    """`(largest difference in ULP of the channel's amplitude, values exact)`.
+
+    OF THE CHANNEL'S OWN AMPLITUDE, which is the plan's wording and is what
+    lets one number cover channels two orders apart: `rotation` peaks at
+    2.5e-02 and `acceleration` at 3.0e+00, and at one ULP of each they are
+    four orders apart in absolute difference and identical here.
+    """
+    ampl = float(np.max(np.abs(want))) or 1.0
+    diff = float(np.max(np.abs(got - want)))
+    return diff / math.ulp(ampl), int(np.count_nonzero(got == want))
 
 
 def test_the_fixture_exists_and_is_writer_produced() -> None:
@@ -89,28 +107,105 @@ def test_the_validator_ACCEPTS_real_writer_output() -> None:
         ("angular_acceleration", "xi_ddot", 3),
     ],
 )
-def test_every_kinematic_channel_round_trips_BIT_EXACT(
+def test_every_kinematic_channel_round_trips_WITHIN_ITS_CLASS(
     body: str, k: int, dataset: str, channel: str, offset: int
 ) -> None:
+    """Q8's second local class, measured (CJ1).
+
+    THIS ASSERTED BIT-EXACTNESS AND THAT WAS WRONG, for a reason the container
+    is not to blame for: HDF5 float64 is lossless, so the round trip through
+    the file is exact, and the comparison is not against the file alone. It is
+    against `np.sin` and `np.cos` re-evaluated HERE. Those are not correctly
+    rounded and the standard does not require them to be, so a committed
+    fixture produced on one machine cannot round-trip bit-exactly on another --
+    and thirteen of these pairs were red on CI for eleven rounds, every one of
+    them in the last bit.
+
+    The band is `INTERCHANGE_CHANNEL_DRIFT_ULP`, in ULP of the channel's own
+    amplitude, declared in the plan from the canonical measurement: worst
+    `1.0` there, `0.0` on the machine that produced the fixture, `1.0` on every
+    determinism leg across six CPU models.
+
+    WHAT IS NOT RELAXED. `time/t` goes through no transcendental and is still
+    asserted bit-exact below; the channels are still each other's controls
+    (`test_channels_are_not_interchangeable`); and the band is two ULP of an
+    amplitude, which for `rotation` is `5e-18` in absolute terms.
+    """
     want = _expected()[channel][:, 6 * k + offset : 6 * k + offset + 3]
     with h5py.File(FIXTURE, "r") as f:
         got = f[f"kinematics/{body}/{dataset}"][...]
-    # Bit-exact, not approximate: HDF5 float64 is a lossless container, so any
-    # difference at all is a defect rather than a rounding artifact.
-    assert np.array_equal(got, want), (
-        f"{body}/{dataset} differs from the generator's closed form; "
-        f"max |diff| = {np.abs(got - want).max():.3e}"
+    drift, exact = _drift_ulp(got, want)
+    assert drift <= INTERCHANGE_CHANNEL_DRIFT_ULP, (
+        f"{body}/{dataset} is {drift:.4f} ULP of its own amplitude from the "
+        f"generator's closed form, and the band is "
+        f"{INTERCHANGE_CHANNEL_DRIFT_ULP}. {exact} of {want.size} values agree "
+        "bit for bit. A drift this size is not the last bit of a libm; "
+        "regenerate nothing until it is understood."
     )
 
 
 def test_time_round_trips_bit_exact() -> None:
+    """ARITHMETIC ONLY, SO EXACT (Q8's first class). `arange(N+1) * DT` has no
+    transcendental in it, and it agrees bit for bit on both machines -- 25 of
+    25 values on the canonical one. It is deliberately outside the band: a band
+    that covered this channel would be fitted to the loosest one."""
     with h5py.File(FIXTURE, "r") as f:
         assert np.array_equal(f["time/t"][...], _expected()["t"])
 
 
-def test_joint_multipliers_round_trip_bit_exact() -> None:
+def test_joint_multipliers_round_trip_within_their_class() -> None:
+    """`cos` again, so the same band and for the same reason."""
+    want = _expected()["lam"]
     with h5py.File(FIXTURE, "r") as f:
-        assert np.array_equal(f["joints/lam"][...], _expected()["lam"])
+        got = f["joints/lam"][...]
+    drift, exact = _drift_ulp(got, want)
+    assert drift <= INTERCHANGE_CHANNEL_DRIFT_ULP, (
+        f"joints/lam is {drift:.4f} ULP of its amplitude from the closed form, "
+        f"band {INTERCHANGE_CHANNEL_DRIFT_ULP}; {exact} of {want.size} exact."
+    )
+
+
+@pytest.mark.parametrize(
+    "dataset, channel, offset",
+    [("position", "xi", 0), ("acceleration", "xi_ddot", 0)],
+)
+def test_a_drift_PAST_the_band_is_refused(dataset: str, channel: str, offset: int) -> None:
+    """The counter, injected into the value the comparison reads (V2).
+
+    `INTERCHANGE_CHANNEL_DRIFT_ULP_COUNTER` is one ULP past the band: the
+    smallest injection unambiguously outside it. A counter AT the band would
+    test the comparison operator, and one an order out would pass a band ten
+    times too wide.
+    """
+    want = _expected()[channel][:, offset : offset + 3]
+    with h5py.File(FIXTURE, "r") as f:
+        got = np.array(f[f"kinematics/bodyA/{dataset}"][...])
+    ampl = float(np.max(np.abs(want)))
+    got[0, 0] += INTERCHANGE_CHANNEL_DRIFT_ULP_COUNTER * math.ulp(ampl)
+    drift, _ = _drift_ulp(got, want)
+    assert drift > INTERCHANGE_CHANNEL_DRIFT_ULP, (
+        f"a {INTERCHANGE_CHANNEL_DRIFT_ULP_COUNTER} ULP injection measured as "
+        f"{drift:.4f} ULP and the band is {INTERCHANGE_CHANNEL_DRIFT_ULP}. The "
+        "band does not catch the defect it is sized against."
+    )
+
+
+def test_the_band_is_not_wide_enough_to_hide_a_swapped_sign() -> None:
+    """A band is a licence and this says how small a licence it is.
+
+    Two ULP of an amplitude is the last bit of a double. Negating one value of
+    the smallest-amplitude channel -- `rotation`, at 2.5e-02 -- is refused by
+    fourteen orders of magnitude, which is the distance between "the libm
+    disagreed" and "the channel is wrong".
+    """
+    want = _expected()["xi"][:, 3:6]
+    got = np.array(want)
+    got[0, 0] = -got[0, 0]
+    drift, _ = _drift_ulp(got, want)
+    assert drift > 1e12 * INTERCHANGE_CHANNEL_DRIFT_ULP, (
+        f"a sign flip measured {drift:.3e} ULP, which is not the order this "
+        "band is meant to be far from."
+    )
 
 
 def test_channels_are_not_interchangeable() -> None:
