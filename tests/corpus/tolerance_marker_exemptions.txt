@@ -463,3 +463,69 @@ id=detect_marker_on_the_line_below_the_statement  expect=caught  measured=caught
 id=exempt_marker_on_annotated_local_assignment  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    tol: float = 1e-09  # not-a-tolerance: 1e-09 is the doc example\n    assert err < tol\n
 id=exempt_marker_on_chained_method_call_last_line  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (\n        np.abs(d)\n        .max()\n        < 1e-09\n    )  # not-a-tolerance: 1e-09 is the doc example\n
 id=exempt_marker_in_parenthesised_and_clause_single_flag  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (\n        ok\n        and err < 1e-09  # not-a-tolerance: 1e-09 is the doc example\n    )\n
+
+# BATCH, forty-second verdict on F2 (step 5, revision 16 @ 9cec13e). 27 new
+# entries, 13 agree with `expect`, 14 do not. `measured=` is what the SHIPPED
+# `offending()` returned at 9cec13e, taken BEFORE the `expect=` beside it was
+# written, and every line here round-trips through the corpus escape before
+# it was measured. Axes the first 169 did not reach:
+#
+#   1. A TOLERANCE THAT IS NOT A FLOAT NODE AT ALL. exec and eval put the
+#      number inside a string; Fraction(1, 1000000000),
+#      assert_array_max_ulp(maxulp=4) and assert_almost_equal(a, b, 9) spell
+#      one with integers. Five entries, five misses.
+#   2. THE MACHINE CONSTANTS THAT ARE NOT eps. math.ulp(1.0) * 1e07 and
+#      np.finfo(np.float64).tiny * 1e300 are the species already recorded for
+#      eps, in two spellings nobody scanned. Two misses.
+#   3. FOUR MORE PLACES A DEFAULT LIVES: a dataclasses.field factory, a
+#      typing.Annotated metadata slot, an argparse default, and a
+#      pytest.fixture(params=...) list. Four misses.
+#   4. NAME RESOLUTION THAT CROSSES A STATEMENT: a base class the test class
+#      inherits from, a starred tuple unpacked into a call, and a literal in
+#      a match mapping PATTERN rather than in an expression. Three misses.
+#   5. WHAT IS CAUGHT, AND IT MATTERS AS MUCH: an undeclared atol= beside a
+#      DECLARED rtol= in one call, a plain assert inside a unittest.TestCase,
+#      an async def test, a backslash-continued comparison, and a boolean
+#      mask index. Five entries, five correct.
+#   6. BOTH MARKER-DIRECTION CONTROLS PASS. A marker with no colon and a
+#      marker spelled with underscores do NOT exempt. That direction must
+#      stay closed or the hatch means nothing.
+#   7. SIX HATCH CONTROLS, ALL GREEN, and these matter most: a marker on a
+#      for header, on an assert nested in a with block, on a
+#      backslash-continued statement, on a dict comprehension, on the closing
+#      line of an or chain, and on a global rebinding. A hatch that stops
+#      working is worse than any miss.
+#
+# WHAT A PASSING SCAN OVER THIS BATCH MEANS: every expect=caught entry makes
+# offending() return something, and every expect=exempt entry makes it return
+# nothing. Where measured= differs from expect=, the entry records what the
+# shipped scanner did at plant time; the difference is the measurement, and
+# it is not a licence to leave it.
+
+id=detect_exec_string_assigns_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nexec("TOL = 1e-09")\ndef test_x():\n    assert err < TOL\n
+id=detect_eval_string_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < eval("1e-09")\n
+id=detect_fraction_converted_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nfrom fractions import Fraction\ndef test_x():\n    assert err < float(Fraction(1, 1000000000))\n
+id=detect_math_ulp_scaled_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nimport math\ndef test_x():\n    assert err < math.ulp(1.0) * 1e07\n
+id=detect_finfo_tiny_scaled_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < np.finfo(np.float64).tiny * 1e300\n
+id=detect_dataclass_default_factory_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nimport dataclasses\n@dataclasses.dataclass\nclass C:\n    tol: float = dataclasses.field(default_factory=lambda: 1e-09)\ndef test_x():\n    assert err < C().tol\n
+id=detect_typing_annotated_metadata_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nfrom typing import Annotated\nTol = Annotated[float, 1e-09]\ndef test_x():\n    assert err < Tol.__metadata__[0]\n
+id=detect_argparse_default_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nimport argparse\np = argparse.ArgumentParser()\np.add_argument("--tol", type=float, default=1e-09)\ndef test_x():\n    assert err < p.parse_args([]).tol\n
+id=detect_fixture_params_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\n@pytest.fixture(params=[1e-09])\ndef tol(request):\n    return request.param\ndef test_x(tol):\n    assert err < tol\n
+id=detect_assert_array_max_ulp_maxulp_kw  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    np.testing.assert_array_max_ulp(a, b, maxulp=4)\n
+id=detect_assert_almost_equal_positional_decimal  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    np.testing.assert_almost_equal(a, b, 9)\n
+id=detect_tolerance_from_class_inherited_attribute  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nclass Base:\n    TOL = 1e-09\nclass T(Base):\n    pass\ndef test_x():\n    assert err < T.TOL\n
+id=detect_starred_tuple_call_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nARGS = (1e-05, 1e-09)\ndef test_x():\n    assert np.allclose(a, b, *ARGS)\n
+id=detect_match_mapping_pattern_threshold  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x(cfg):\n    match cfg:\n        case {"tol": 1e-09}:\n            assert err < cfg["tol"]\n
+id=detect_declared_rtol_beside_undeclared_atol  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    np.testing.assert_allclose(a, b, rtol=ROUNDOFF_IDENTITY, atol=1e-09)\n
+id=detect_unittest_testcase_plain_assert  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nimport unittest\nclass T(unittest.TestCase):\n    def test_x(self):\n        assert err < 1e-09\n
+id=detect_async_test_plain_assert  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nasync def test_x():\n    assert err < 1e-09\n
+id=detect_backslash_continued_comparison  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < \\\n        1e-09\n
+id=detect_boolean_mask_index_threshold  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert not len(arr[arr > 1e-09])\n
+id=detect_marker_without_the_colon_does_not_exempt  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < 1e-09  # not-a-tolerance the doc example\n
+id=detect_marker_with_underscores_does_not_exempt  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < 1e-09  # not_a_tolerance: the doc example\n
+id=exempt_marker_on_for_header_holding_the_literal  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    for t in (1e-09,):  # not-a-tolerance: 1e-09 is the doc example\n        assert err < t\n
+id=exempt_marker_on_assert_inside_a_with_block  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nimport contextlib\ndef test_x():\n    with contextlib.suppress(Exception):\n        assert err < 1e-09  # not-a-tolerance: 1e-09 is the doc example\n
+id=exempt_marker_on_backslash_continued_statement  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < \\\n        1e-09  # not-a-tolerance: 1e-09 is the doc example\n
+id=exempt_marker_on_dict_comprehension_line  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    d = {k: 1e-09 for k in "ab"}  # not-a-tolerance: 1e-09 is the doc example\n    assert err < d["a"]\n
+id=exempt_marker_on_last_line_of_an_or_chain  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (\n        ok\n        or err < 1e-09\n    )  # not-a-tolerance: 1e-09 is the doc example\n
+id=exempt_marker_on_global_rebinding_assignment  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nTOL = ROUNDOFF_IDENTITY\ndef setup_module():\n    global TOL\n    TOL = 1e-09  # not-a-tolerance: 1e-09 is the doc example\ndef test_x():\n    assert err < TOL\n
