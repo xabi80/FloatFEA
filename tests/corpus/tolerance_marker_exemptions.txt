@@ -296,3 +296,58 @@ id=detect_literal_in_nested_binop_with_declared expect=caught measured=caught sr
 id=detect_list_subscript_negative_index expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < [1e-08, 1e-09][-1]\n
 id=control_declared_times_ONE_is_the_declared_value expect=exempt measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < 1.0 * ROUNDOFF_IDENTITY\n
 id=control_declared_name_inside_min_is_clean expect=exempt measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < min(ROUNDOFF_IDENTITY, scale)\n
+
+# ---------------------------------------------------------------------------
+# ADDED AT THE THIRTY-NINTH VERDICT (HEAD 389d416), 20 entries, all unseen by
+# the implementer. They probe a different question from the last two rounds.
+#
+# WHY THESE SHAPES. The thirty-eighth round's twenty asked whether a literal
+# still reaches a comparison when it is not beside a declared name. These ask
+# whether a tolerance reaches the comparison through a NAME BINDING the
+# scanner never reads -- a class attribute, an annotated ClassVar, a
+# dataclass field default, an `Enum` member, a `parametrize` argument, a loop
+# variable drawn from a literal list, a `getattr` default, a `**kwargs` dict,
+# a `types.SimpleNamespace` attribute, a `try/except` fallback -- and through
+# constructions where there is no `Compare` node at all: `operator.lt`,
+# `np.clip`, `float("1e-09")`, `decimal.Decimal("1e-09")`, `np.array([...])`.
+#
+# Every one of these is `CLAUDE.md` sec. Tolerances verbatim: a numerical
+# tolerance living outside `floatfea/tolerances.py`. None is an exotic
+# construction; each is how a tolerance is ordinarily written when someone is
+# not trying to hide one.
+#
+# MEASURED AT 389d416 against the shipped `offending()`, before the
+# `expect=` beside each entry was written:
+#   20 entries, 5 get the required verdict, 15 do NOT.
+#   Both expect=exempt controls pass -- the guard is still usable.
+#   Of the 18 expect=caught entries, 3 are caught: `functools.partial` with an
+#   `atol=` keyword, a bare `while err > 1e-09` convergence loop, and a
+#   `match`/`case` guard.
+#
+# WHAT THE FIFTEEN MEAN FOR CM4 rather than for the scanner. The scanner's
+# reach is a 4a item and these do not change that. What they measure is the
+# ESCAPE GOLDEN written this round: fifteen new names arrive in the measured
+# set, `test_the_known_misses_are_exactly_these` goes red, and the only way to
+# make it green is to write fifteen lines each carrying a provenance string
+# that nothing checks. That is the same keystroke a genuine regression needs.
+# ---------------------------------------------------------------------------
+id=detect_class_attribute_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nclass Band:\n    VALUE = 1e-09\ndef test_x():\n    assert r < Band.VALUE\n
+id=detect_annotated_class_var_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nclass Band:\n    VALUE: float = 1e-09\ndef test_x():\n    assert r < Band.VALUE\n
+id=detect_parametrize_supplied_threshold  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\n@pytest.mark.parametrize("tol", [1e-09])\ndef test_x(tol):\n    assert r < tol\n
+id=detect_dataclass_field_default_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nimport dataclasses\n@dataclasses.dataclass\nclass Cfg:\n    band: float = 1e-09\ndef test_x():\n    assert r < Cfg().band\n
+id=detect_enum_member_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nimport enum\nclass Band(float, enum.Enum):\n    TIGHT = 1e-09\ndef test_x():\n    assert r < Band.TIGHT\n
+id=detect_functools_partial_tolerance  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nimport functools\ncheck = functools.partial(np.isclose, atol=1e-12)\ndef test_x():\n    assert check(a, b)\n
+id=detect_operator_lt_no_compare_node  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nimport operator\ndef test_x():\n    assert operator.lt(err, 1e-09)\n
+id=detect_np_clip_upper_bound  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err == np.clip(err, 0.0, 1e-09)\n
+id=detect_while_convergence_threshold  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    err = 1.0\n    while err > 1e-09:\n        err = err / 2.0\n
+id=detect_float_parsed_from_string  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert r < float("1e-09")\n
+id=detect_getattr_default_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert r < getattr(cfg, "band", 1e-09)\n
+id=detect_match_case_guard_threshold  expect=caught  measured=caught  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    match state:\n        case _ if err < 1e-09:\n            pass\n
+id=detect_kwargs_dict_unpacked_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nKW = {"atol": 1e-12}\ndef test_x():\n    assert np.allclose(a, b, **KW)\n
+id=detect_loop_variable_from_literal_list  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    for tol in [1e-09]:\n        assert r < tol\n
+id=detect_numpy_array_bound  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert (err < np.array([1e-09])).all()\n
+id=detect_decimal_string_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nimport decimal\ndef test_x():\n    assert r < float(decimal.Decimal("1e-09"))\n
+id=detect_setattr_module_tolerance  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\nimport types\nCFG = types.SimpleNamespace()\nCFG.band = 1e-09\ndef test_x():\n    assert r < CFG.band\n
+id=detect_try_except_fallback_threshold  expect=caught  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    try:\n        tol = ROUNDOFF_IDENTITY\n    except NameError:\n        tol = 1e-09\n    assert r < tol\n
+id=exempt_marker_on_while_header_single_flag  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    while q > 0.15:  # not-a-tolerance: an input coordinate, not a comparison\n        break\n
+id=exempt_marker_on_match_case_guard_single_flag  expect=exempt  measured=exempt  src=import numpy as np\nimport pytest\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    match state:\n        case _ if q > 0.15:  # not-a-tolerance: an input coordinate, not a comparison\n            pass\n
