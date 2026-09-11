@@ -1,12 +1,9 @@
 {
   "_": [
     "POINTERS ONLY (CH4). A state from the generator's fixed list and a section",
-    "of this report. The subject beside each item is read out of the verdict by",
-    "scripts/carried_table.py, keyed by the number the row is written under.",
-    "Since CI3 the pointer is resolved too: tests/test_report_carried.py",
-    "requires the section named here to exist in the report and to mention the",
-    "item, so a rotation of pointers between rows is refused rather than",
-    "printed. `site` is optional and is the weaker second check."
+    "of this report. The subject beside each item is read out of the verdict.",
+    "The pointer is resolved against the report: the section must exist, must",
+    "mention the item, and since R318 may not be the Carried section itself."
   ],
   "answered": {
     "R223": { "state": "open", "where": "§6" },
@@ -20,41 +17,31 @@
     "R292": { "state": "open", "where": "§6" },
     "R300": { "state": "open", "where": "§6" },
     "R302": { "state": "answered", "where": "§1" },
-    "R303": { "state": "carried", "where": "§5" },
-    "R304": { "state": "carried", "where": "§5" },
-    "R305": { "state": "carried", "where": "§5" },
-    "R306": { "state": "carried", "where": "§5" },
-    "R307": { "state": "carried", "where": "§5" },
-    "R308": { "state": "carried", "where": "§5" },
-    "R309": {
-      "state": "answered",
-      "where": "§2",
-      "site": "tests/test_report_guard_states.py"
-    },
-    "R310": {
+    "R309": { "state": "carried", "where": "§5" },
+    "R310": { "state": "carried", "where": "§5" },
+    "R311": { "state": "carried", "where": "§5" },
+    "R312": { "state": "carried", "where": "§5" },
+    "R313": { "state": "carried", "where": "§5" },
+    "R314": { "state": "carried", "where": "§5" },
+    "R315": {
       "state": "answered",
       "where": "§1",
-      "site": "docs/SUPERVISOR.md"
+      "site": "scripts/rung_no_xpass.py"
     },
-    "R311": {
+    "R316": {
+      "state": "answered",
+      "where": "§2",
+      "site": "floatfea/tolerances.py"
+    },
+    "R317": {
       "state": "answered",
       "where": "§3",
-      "site": "scripts/carried_table.py"
+      "site": "docs/reports/F2/step-5.md"
     },
-    "R312": {
-      "state": "answered",
-      "where": "§4",
-      "site": "scripts/regen_figures.py"
-    },
-    "R313": {
-      "state": "answered",
-      "where": "§4",
-      "site": "scripts/regen_figures.py"
-    },
-    "R314": {
-      "state": "answered",
-      "where": "§4",
-      "site": "scripts/carried_table.py"
-    }
+    "R318": { "state": "answered", "where": "§5" },
+    "R319": { "state": "answered", "where": "§5" },
+    "R320": { "state": "answered", "where": "§5" },
+    "R321": { "state": "open", "where": "§5" },
+    "R322": { "state": "open", "where": "§5" }
   }
 }
