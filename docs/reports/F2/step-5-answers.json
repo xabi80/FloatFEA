@@ -8,82 +8,85 @@
   "answered": {
     "R223": {
       "state": "open",
-      "where": "§8"
+      "where": "§6"
     },
     "R224": {
       "state": "open",
-      "where": "§8"
+      "where": "§6"
     },
     "R230": {
       "state": "open",
-      "where": "§8"
+      "where": "§6"
     },
     "R231": {
       "state": "open",
-      "where": "§8"
+      "where": "§6"
     },
     "R244": {
       "state": "open",
-      "where": "§8"
+      "where": "§6"
     },
     "R245": {
       "state": "open",
-      "where": "§8"
+      "where": "§6"
     },
     "R275": {
       "state": "open",
-      "where": "§8"
-    },
-    "R315": {
-      "state": "carried",
-      "where": "§5"
-    },
-    "R316": {
-      "state": "carried",
-      "where": "§5"
-    },
-    "R317": {
-      "state": "carried",
-      "where": "§5"
+      "where": "§6"
     },
     "R323": {
-      "state": "answered",
-      "where": "§2",
-      "site": "scripts/suite_count.py"
+      "state": "carried",
+      "where": "§5"
     },
     "R324": {
+      "state": "carried",
+      "where": "§5"
+    },
+    "R325": {
+      "state": "carried",
+      "where": "§5"
+    },
+    "R330": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R331": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R332": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R333": {
       "state": "answered",
       "where": "§1",
       "site": "tests/verification/rung4/test_writer_round_trip.py"
     },
-    "R325": {
+    "R334": {
+      "state": "answered",
+      "where": "§2",
+      "site": ".github/workflows/ci.yml"
+    },
+    "R335": {
       "state": "answered",
       "where": "§3",
-      "site": "floatfea/tolerances.py"
+      "site": ".github/workflows/ci.yml"
     },
-    "R326": {
+    "R336": {
       "state": "answered",
       "where": "§4",
-      "site": "tests/test_no_tolerance_literals.py"
+      "site": "tests/verification/rung4/test_writer_round_trip.py"
     },
-    "R327": {
+    "R337": {
       "state": "answered",
-      "where": "§5",
-      "site": "scripts/run_rung.sh"
+      "where": "§4",
+      "site": "tests/verification/rung4/test_writer_round_trip.py"
     },
-    "R328": {
+    "R338": {
       "state": "answered",
-      "where": "§5",
-      "site": "artifacts/make_fixture_flr.py"
-    },
-    "R329": {
-      "state": "answered",
-      "where": "§5",
+      "where": "§4",
       "site": "scripts/measure_channel_drift.py"
-    },
-    "R330": {
-      "state": "open",
-      "where": "§8"
     }
   }
 }

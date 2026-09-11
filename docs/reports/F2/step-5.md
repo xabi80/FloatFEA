@@ -4237,3 +4237,410 @@ and labelled non-canonical.
 
 **The state of CI is `unavailable — allowance exhausted`**, generated into §0
 from the run's own jobs, and CK2 makes that a state rather than a red build.
+
+# Revision 13 — the tests are back, and a deletion cannot be silent again
+
+Answers: verdict 38 @ 334f345
+
+**2026-09-11.** Commits since the thirty-eighth verdict, listed in §10.
+
+## 0. CI at the reviewed commit `cbde0e4` — **unavailable, no jobs created**
+
+Generated: `python scripts/ci_section.py cbde0e4`. Run `34567325589`, event `push`, conclusion **failure**.
+
+```
+cmd  gh api repos/.../actions/runs/34567325589/jobs
+out  jobs: []   -- the run exists and expanded into nothing, so
+     there is not even a job to carry the payment annotation
+     the three runs before it carried.
+judge NOTHING WAS MEASURED. Per CK2 this is `unavailable`,
+     which is neither red nor green.
+```
+
+## 0a. How to read §0
+
+**§0 is generated and it says the third state** (CK2): the run at the reviewed
+commit exists and not one of its jobs started. Nothing was measured there.
+**The last run that executed** is `34546580003` at `8942cdc`, and
+`git diff 8942cdc..HEAD -- tests/verification scripts .github` is not empty any
+more, so that run no longer describes this tree. The ladder is green here and
+that is a local measurement, stated as one.
+
+## 1. R333 — three tests were deleted, and now a deletion fails the build
+
+**This is the worst thing I have done in this milestone and the reviewer found
+it by counting.** A rewrite spliced from one function to the end of a module
+and took three green tests with it: the channel interchangeability control, the
+validation-propagation test, and the one asserting a channel is not all zero.
+Every remaining test passed. The same module went on citing one of the deleted
+tests, eighty lines above, as the justification for a change made in that
+commit.
+
+```
+cmd  sh scripts/run_rung.sh full:tests/verification/rung4
+out  at the reviewed commit  85 collected, 0 failed
+     restored               89 collected, 0 failed
+rule restored VERBATIM from `0b78244`, the commit before the rewrite -- not
+     rewritten, not replaced by something that looks equivalent
+judge AND THE BAND MAKES IT WORSE, which is why it is the head. The round
+     before relaxed twelve comparisons to a libm's last bit. The
+     interchangeability control is what says the channel being compared is
+     the right one. Losing it in the round after is strictly weaker than
+     either change alone.
+```
+
+**CM1, and it should have existed from step 1.** `CLAUDE.md` has said since it
+was written that a test is never deleted to get a green build, and the only
+thing enforcing it was a reviewer comparing counts by hand.
+
+```
+claim `tests/goldens/collected_tests.txt` records `module::function` per
+      collection root, and a recorded name that stops being collected is a
+      failing build
+cmd   python scripts/regen_collected_golden.py
+out   305, 73, 50, 46, 37 and 4 names across the six roots
+cmd   python -m pytest tests/test_collected_set_golden.py -q
+out   11 passed
+cell  the golden asked for a name the suite does not collect
+out   reported by name, not raised at collection -- R234's lesson applied to
+      the newest guard rather than re-learned on it
+rule  ONE-DIRECTIONAL. Adding a test needs nothing; removing one means
+      regenerating the golden in its own commit with the reason in the
+      closure artifact, and a rename is a removal plus an addition.
+judge WHAT IT DOES NOT CATCH, and it is worth saying: a body emptied to
+      `pass` still collects under its own name. That is the reviewer's.
+judge AND PARAMETRISED IDS ARE NOT RECORDED, deliberately -- they move with
+      the corpora and with the report, and a golden that churns every round
+      is one nobody reads.
+```
+
+## 2. R334 — two `if:` keys, and the gate that was silently discarded
+
+```
+cmd  the workflow loaded with a duplicate-rejecting loader
+out  DUPLICATE KEY: 'if' at line 196
+judge YAML KEEPS THE LAST ONE AND REPORTS NOTHING. `yaml.safe_load` -- the
+     tool the guard used -- is the one that hid it. So CK0's
+     `workflow_dispatch` gate was discarded, ten determinism legs kept
+     running on every push, and the run at the commit that shipped it
+     produced no jobs at all.
+rule the two conditions are one expression: `always() && github.event_name ==
+     'workflow_dispatch'`. `always()` is what lets the verdict job see a leg
+     that FAILED rather than being skipped with it, so both are needed.
+cmd  python -m pytest tests/test_ci_workflow_is_wellformed.py -q
+out  8 passed -- and it caught a SECOND duplicate key while being written,
+     from a blanket edit that added a cache line to two blocks that had one
+judge CK0 MADE SEVEN CLAIMS AND NO TEST READ ANY OF THEM. Five are assertions
+     now: the dispatch gate, the dropped pull-request trigger, the ignored
+     documentation paths, cancel-in-progress, and the wheel cache on every
+     job that installs. `actionlint` runs in CI for the wider class.
+```
+
+## 3. R335 — the ladder is independent evidence, and the proof is this step's own
+
+```
+cmd  gh api repos/.../actions/runs/34546580003/jobs
+out  guards and meta-tests  FAILURE
+     all six ladder jobs    SUCCESS
+judge CHAINED BEHIND THE CHECKS JOB, THE LADDER WOULD HAVE BEEN SKIPPED --
+     and the sentence this step has been working towards for twelve rounds,
+     ladder 4 green on the canonical machine, could not have been produced.
+     A line-length error would have hidden every rung the same way.
+rule the `needs:` is removed. The ladder's own ordering is internal to it and
+     is the step order; what `needs:` bought was a shared failure.
+```
+
+## 4. R336, R337, R338 — a literal, a figure, and a second site
+
+**R336.** An undeclared literal was reaching a comparison three lines below
+the one this round removed, which is the species answering the species.
+
+```
+cell two channels, the site forced to -2, -1, -0.5, 0, +0.5, +1 and +2 ULP
+out  the measured drift equals the arithmetic in all fourteen cells, exactly
+judge BOTH SIDES ARE THE SAME TWO SUBTRACTIONS IN THE SAME ORDER, so equality
+     is the honest predicate and the slack was a guess dressed as a tolerance.
+```
+
+**R337.** The docstring said the scale figure was "a published figure in the
+step report" and the report published no such figure. Here it is, with the
+command that takes it:
+
+```
+cmd  the sign flip on `xi[:, 3:6]`, the smallest-amplitude channel, measured
+     through the shipped helper
+out  1.062836e+16 ULP of that channel's amplitude
+     band 2.0, ratio 5.3142e+15, which is 15.73 ORDERS
+     74 of 75 values still exact, so the flip moved the one value it was
+     applied to and nothing else
+judge `fourteen orders` was published and is wrong in the safe direction.
+     What the control certifies is that the band is nowhere near the scale of
+     a wrong channel -- and it reads no fixture, so it cannot fail for any
+     defect in the repository, which the docstring now says.
+```
+
+**R338.** The all-zero amplitude raised in the test helper and still defaulted
+in `scripts/measure_channel_drift.py`, which is the instrument the plan's own
+basis is measured with. Both raise, and one test asserts both by reading the
+script rather than trusting the pair to stay together.
+
+## 5. CM4 — the escape golden carries provenance
+
+**Twenty new shapes, thirteen escaping, and they are recorded rather than
+chased.** The rule is asymmetric on purpose: a reviewer-planted shape that
+escapes is added with their commit named, which is allowed growth; a shape
+previously caught that starts escaping arrives as a name the map does not
+carry and cannot be filed as growth, because there is nowhere to write a
+provenance for it.
+
+```
+cmd  python -m pytest tests/test_marker_exemption_corpus.py -q
+out  74 passed
+judge THE THIRTEEN ARE OFF THE AXIS the narrow rule is keyed on -- a literal
+     beside a LOCAL name, a product of two literals, `np.minimum`, a sorted
+     subscript, an inline dict, a walrus, an `isclose` kwarg, a unary plus.
+     Chasing them is how a scanner grows until it reddens correct files, and
+     that number was measured at forty-one this round.
+judge THE ESCALATION CLAUSE STANDS AND HAS FIRED ONCE. A miss stays recorded
+     unless it exposes a false pass on a real file, and when one did the
+     species was closed in the scanner rather than re-listed.
+```
+
+**R330, R331 and R332 stay at 4a**, recorded and not done: the whole-line
+exemption, the commit-message count with the unrecorded lint red inside the
+range, and R281's corrected figure of seven unread corpus files.
+
+**And three carried items close with them.** The thirty-eighth verdict recorded
+**R323**, **R324** and **R325** closed -- the whole-suite line, the counter's
+margin over fourteen cells, and the band's basis re-measured leg by leg.
+Nothing here reopens any of them; they appear in §9 with the verdict's own
+subject beside each.
+
+## 6. What is open
+
+- **The canonical re-render**, and the two reds it would clear. First
+  `workflow_dispatch` run when minutes return.
+- **R275, R231, R244, R245.** The remaining Q8 values, behind that render.
+- **R223, R224 — Q7**, which opens on green CI at a reviewed commit.
+- **R230**, reopened by my own error at revision 3, and mine to leave open.
+- **R330, R331, R332** and the rest of the 4a list.
+
+## 7. The whole suite, at the commit this revision is committed on top of
+
+**Whole suite at `80e8bab`: 1829 passed, 2 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit, excluding 325 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py) -- which the supervisor runs at the commit that carries it. R339: the count of what is excluded is part of the line, so a reader can size it without running anything.
+
+- **failed** `tests.regression.test_exempt_pair_responses::test_the_recorded_set_is_the_measured_set`
+- **failed** `tests.test_plan_figures::test_the_generated_figures_are_not_stale`
+
+## 8. Sites named by findings and not touched
+
+Generated from the verdict's own site list against `git diff <reviewed>..HEAD -U0`; a site is here because the diff does not touch it, and each carries why.
+
+| site | why |
+|---|---|
+| `scripts/run_rung.sh` | **no change** — quoted for the collected count it printed, which is the measurement that found the deletion; the script itself is correct and unchanged |
+| `tests/.../test_writer_round_trip.py` | **no change** — the same file, elided in the verdict's prose |
+| `tests/verification/rung4/test_writer_round_trip.py:99` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `F2_figures.md` | **no change** — the same file, named without its directory |
+| `docs/milestones/F2_figures.md` | **no change** — named in the finding's note that `paths-ignore` must not hide the canonical render. The render is UNCHANGED -- it is produced on the canonical machine -- and the ignore list is what moved |
+| `test_ci_determinism_gate.py` | **no change** — named as a file that mentions none of CK0's claims. It mentions one now -- the ladder's step order -- and the other five are asserted in the new `tests/test_ci_workflow_is_wellformed.py` |
+| `test_ci_runs_the_whole_suite.py` | **no change** — the same sentence, same answer: the claims are asserted in the new file rather than spread across the two that read the workflow for other reasons |
+| `CLAUDE.md` | **no change** — quoted as the rule the finding is judged against; `CLAUDE.md` changes only in a standalone `process:` commit |
+| `test_marker_exemption_corpus.py:51` | **no change** — the same file, named without its directory |
+| `test_marker_exemption_corpus.py:52` | **no change** — the same file, named without its directory |
+| `test_marker_exemption_corpus.py:53` | **no change** — the same file, named without its directory |
+| `test_marker_exemption_corpus.py:54` | **no change** — the same file, named without its directory |
+| `tests/test_marker_exemption_corpus.py:51` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_marker_exemption_corpus.py:52` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_marker_exemption_corpus.py:53` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_marker_exemption_corpus.py:54` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_no_tolerance_literals.py:124` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:125` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:126` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:127` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:128` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:129` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:130` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:131` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:132` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:133` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:134` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:135` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:136` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:137` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:138` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:139` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:140` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:141` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:142` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:143` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:144` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:145` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:146` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:147` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:148` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:149` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:150` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:151` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:152` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:153` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:154` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:155` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:156` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:157` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:158` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:159` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:160` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:161` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:162` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:163` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:164` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:165` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:166` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:167` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:168` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:169` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:170` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:171` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:172` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:173` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:174` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:175` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:176` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:177` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:178` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:179` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:180` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:181` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:182` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:183` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:184` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:185` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:186` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:187` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:188` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:189` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:190` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:191` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:192` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:193` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:194` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:195` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:196` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `tests/test_no_tolerance_literals.py:197` | **no change** — the scanner is UNCHANGED and correct: the literal was in the test that carried it, not in the rule. Widening the rule to see a local name is the thirteen escapes, recorded at 4a under CM4 |
+| `scripts/suite_count.py:51` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `scripts/suite_count.py:52` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `scripts/suite_count.py:53` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `scripts/suite_count.py:54` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `scripts/suite_count.py:55` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `scripts/suite_count.py:56` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `scripts/suite_count.py:57` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `scripts/suite_count.py:58` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `scripts/suite_count.py:59` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+| `tests/test_report_guard_states.py` | **no change** — named as one of the three excluded files. It is excluded and unchanged; what changed is that the line now states how many tests the exclusion removes |
+| `floatfea/tolerances.py:1055` | **no change** — the diff touches this file and the block moved; the finding's line numbers are the old ones |
+
+## 9. Carried
+
+Generated: `python scripts/carried_table.py docs/reviews/F2/step-5.md docs/reports/F2/step-5-answers.json`. The row set, the class, and the subject of every row are read from the verdict; the answers file carries a state and a section pointer, and the pointer is resolved against this report by `tests/test_report_carried.py`.
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R223 | **open** — §6 | OPEN by instruction, correctly listed. |
+| R224 | **open** — §6 | OPEN by instruction, correctly listed. |
+| R225 | **open** — carried from an earlier verdict | carried, and correctly |
+| R228 | **open** — carried from an earlier verdict | carried, and correctly |
+| R230 | **open** — §6 | OPEN by instruction, correctly listed. |
+| R231 | **open** — §6 | OPEN, and correctly declared blocked on the |
+| R232 | **open** — carried from an earlier verdict | carried, and correctly |
+| R233 | **open** — carried from an earlier verdict | carried, and correctly |
+| R244 | **open** — §6 | OPEN, and correctly declared blocked on the |
+| R245 | **open** — §6 | OPEN, and correctly declared blocked on the |
+| R248 | **open** — carried from an earlier verdict | residues, |
+| R249 | **open** — carried from an earlier verdict | carried, and correctly |
+| R252 | **open** — carried from an earlier verdict | carried, and correctly |
+| R253 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R254 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R256 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R257 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R261 | **open** — carried from an earlier verdict | OPEN by instruction, correctly listed. |
+| R262 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R274 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R275 | **open** — §6 | OPEN, and correctly declared blocked on the |
+| R276 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R277 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R281 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R288 | **open** — carried from an earlier verdict | carried, and correctly |
+| R289 | **open** — carried from an earlier verdict | carried, and correctly |
+| R290 | **open** — carried from an earlier verdict | carried, and correctly |
+| R291 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R292 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R293 | **open** — carried from an earlier verdict | closed in verdict 35, correctly carried. |
+| R300 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R302 | **open** — carried from an earlier verdict | accepted at verdict 37, not reopened. |
+| R303 | **open** — carried from an earlier verdict | closed in verdict 35, correctly carried. |
+| R308 | **open** — carried from an earlier verdict | closed in verdict 35, correctly carried. |
+| R315 | **open** — carried from an earlier verdict | closed in verdict 37, correctly carried, not reopened. |
+| R316 | **open** — carried from an earlier verdict | closed in verdict 37, correctly carried, not reopened. |
+| R317 | **open** — carried from an earlier verdict | closed in verdict 37, correctly carried, not reopened. |
+| R318 | **open** — carried from an earlier verdict | closed in verdict 37, carried with status open while |
+| R319 | **open** — carried from an earlier verdict | closed in verdict 37, carried with status open while |
+| R320 | **open** — carried from an earlier verdict | closed in verdict 37, carried with status open while |
+| R321 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R322 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R323 | **carried** — §5 | ). One closes at its mechanism and not at its published figure |
+| R324 | **carried** — §5 | 's repair is right and |
+| R325 | **carried** — §5 | ). One closes at its mechanism and not at its published figure |
+| R326 | **open** — carried from an earlier verdict | ). One closes at one of two named sites (R329). R324's repair is right and |
+| R327 | **open** — carried from an earlier verdict | ). One closes at its mechanism and not at its published figure |
+| R328 | **open** — carried from an earlier verdict | is answered in prose and contradicted |
+| R329 | **open** — carried from an earlier verdict | ). R324's repair is right and |
+| R330 | **open** — §5 | OPEN at 4a, correctly listed in §8 and §11. R330's |
+| R331 | **open** — §5 | OPEN at 4a, correctly listed in §8 and §11. R330's |
+| R332 | **open** — §5 | OPEN at 4a, correctly listed in §8 and §11. R330's |
+| R333 | **answered** — §1 | Three green tests were deleted from tests/verification/rung4/test_writer_round_trip.py in... |
+| R334 | **answered** — §2 | 83bffc1 leaves a duplicate if: key in one job, so CK0's central change is discarded by the... |
+| R335 | **answered** — §3 | CK0 puts the whole ladder behind the guards job, and the one CI run this milestone relies on is... |
+| R336 | **answered** — §4 | R326's repair reintroduces the species it closed, three lines below where the 1e12 was removed,... |
+| R337 | **answered** — §4 | The "fourteen orders" figure was deleted rather than regenerated, and the docstring that... |
+| R338 | **answered** — §4 | scripts/measure_channel_drift.py:93 still defaults a zero amplitude to 1.0, and §10 says the... |
+| R339 | **open** — recordable at 4a in the verdict's own classification | CL1's exclusion is legitimate in mechanism, and the line does not let a reader size it.... |
+| R340 | **open** — recordable at 4a in the verdict's own classification | One word in a tolerance entry. floatfea/tolerances.py:1055 says "the margin is one ULP by... |
+
+## 10. What I am asking for
+
+**Commits since the thirty-eighth verdict**, in order:
+
+| commit | what it is |
+|---|---|
+| `fe321ee` | the three deleted tests restored, and a deletion is a build failure now |
+| `d043f7a` | the duplicate key, the ladder's independence, and the workflow linted |
+| `5ff0e14` | the escape golden carries provenance, and figure references are checked everywhere |
+| `999b1e6` | the unavailable state has two shapes, and three smaller items |
+| `80e8bab` | R340, a noun in a tolerance comment |
+| this one | the report |
+
+**Six blocking items, all six answered**, and the head one is mine twice over:
+I deleted the tests, and the thing that caught it was a reviewer counting.
+
+- **R333** — restored verbatim, and `tests/goldens/collected_tests.txt` makes
+  the next one a failing build. That guard should have existed from step 1 and
+  its absence is the finding, not my splice.
+- **R334** — the duplicate key, with five of CK0's seven claims turned into
+  assertions and `actionlint` added for the rest of the class.
+- **R335** — the ladder is not chained behind the guards, and the run that
+  proves why is this step's own.
+- **R336, R337, R338** — the literal, the figure that is now published with
+  its command, and the second site of an already-answered item.
+
+**CM4** records the thirteen escapes with the commit that planted them, and
+does not chase them. The asymmetry is the point: growth is allowed and named,
+a regression cannot be filed as growth.
+
+**What is not claimed.** Nothing in `floatfea/` has moved for thirteen rounds.
+The two corpus reds still need the canonical machine. No Q8 value beyond the
+one already written.
+
+**CI is `unavailable — allowance exhausted`** and CK2 makes that a state rather
+than a red build. The last run that executed no longer describes this tree, so
+the ladder result in §0a is a local measurement and says so.
