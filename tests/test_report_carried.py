@@ -927,14 +927,62 @@ def test_the_CI_section_is_about_the_REVIEWED_commit() -> None:
     )
     found = _SHA_IN_SECTION.findall(body)
     assert found, (
-        "the CI section names no commit. `python scripts/ci_section.py "
-        f"{judged[:7]}` generates the section, header included."
+        "the CI section names no commit. `python scripts/ci_section.py` "
+        "generates the section, header included."
     )
-    assert found[0].startswith(judged[:7]) or judged.startswith(found[0]), (
+    # BYTE-IDENTICAL, NOT A PREFIX EITHER WAY (CO1, R352). `startswith` in
+    # both directions accepts a seven-character abbreviation of a DIFFERENT
+    # commit whenever the first seven agree, and more to the point it accepted
+    # the shape that actually happened four rounds running: a heading carried
+    # forward from the previous revision. The generator prints `sha[:7]` and
+    # nothing else, so the check is equality on those seven characters.
+    assert found[0] == judged[:7], (
         f"the CI section's first commit is `{found[0]}` and the verdict judged "
         f"`{judged[:7]}`. A table for another commit is a measurement of "
-        "another state; regenerate it with `python scripts/ci_section.py "
-        f"{judged[:7]}`."
+        "another state; regenerate it with `python scripts/ci_section.py`, "
+        "which takes no sha and reads this report's own `Answers:` line."
+    )
+
+
+def test_no_sha_is_called_the_reviewed_commit_unless_it_is_HEAD() -> None:
+    """R352's closing condition, as an assertion rather than a habit.
+
+    Four verdicts in a row found §0 naming a commit and calling it "the
+    reviewed commit" when the commit under review was a later one. The label
+    is the defect: the report cannot describe the run its own push creates,
+    so the sha it CAN describe is always an earlier one, and calling that
+    earlier one "the reviewed commit" is false at the moment a reader reads
+    it. The generator names the verdict whose judged commit it is instead,
+    which stays true.
+
+    SCOPED TO THE CI SECTION, and deliberately. Prose elsewhere in the report
+    QUOTES this phrase -- withdrawing it, or carrying the verdict's own words
+    into the Carried table -- and a check that cannot tell a label from a
+    quotation would forbid writing about the finding at all. All four
+    occurrences of the defect were in §0, which is the section whose whole job
+    is to say what a machine did to one commit.
+
+    Scoped to the newest revision. Earlier revisions are a record of what was
+    published and are not edited to make a later rule hold.
+    """
+    head = subprocess.run(
+        ["git", "-C", str(ROOT), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    offenders = []
+    for line in _ci_section().splitlines():
+        if "reviewed commit" not in line.lower():
+            continue
+        for sha in _SHA_IN_SECTION.findall(line):
+            if not head.startswith(sha):
+                offenders.append(f"`{sha}` on: {line.strip()[:96]}")
+    assert not offenders, (
+        "a sha is called the reviewed commit and it is not HEAD:\n  "
+        + "\n  ".join(offenders)
+        + "\nThe report describes a run at an EARLIER commit than the one "
+        "being reviewed, always -- the run its own push creates does not "
+        "exist yet. Name the verdict whose judged commit it is."
     )
 
 

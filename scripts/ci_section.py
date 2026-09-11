@@ -1,8 +1,24 @@
 #!/usr/bin/env python
 """Generate a step report's CI section from the run itself (CG3).
 
-    python scripts/ci_section.py <sha> > section.md
-    python scripts/ci_section.py <sha> --legs > legs.md
+    python scripts/ci_section.py > section.md
+    python scripts/ci_section.py --legs > legs.md
+
+THE SHA IS NOT AN ARGUMENT (CO1, R352). It took one, labelled whatever it was
+handed "the reviewed commit", and four consecutive verdicts found a heading
+naming a commit that was not the one under review -- each time because the
+number was typed at the top of a round and the round moved. A generator with
+a second source of truth is a generator that can disagree with the report it
+is pasted into.
+
+There is one source now and it is the report: the newest revision's
+`Answers: verdict N @ <sha>` names the verdict, the verdict's own header names
+the commit it judged, and that is the commit with a run. `_anchor()` walks
+exactly that chain and there is no way to override it.
+
+AND THE LABEL SAYS WHAT THE SHA IS. "The reviewed commit" beside a sha that is
+not `HEAD` is false at the moment a reader reads it; the heading names the
+verdict whose judged commit it is, which is true whenever it is read.
 
 WHY IT IS GENERATED. CE1 made a CI section mandatory because CI had been red at
 three consecutive reviewed commits and no revision said so. The section then
@@ -38,8 +54,10 @@ import json
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 NEWLINE = chr(10)
+ROOT = Path(__file__).resolve().parents[1]
 
 # pytest's own summary line, and the ladder rung's structured one. The rung
 # hides pytest's stdout on purpose (CG4), so these are two different shapes and
@@ -47,6 +65,64 @@ NEWLINE = chr(10)
 _RUNG = re.compile(r"run_rung: (\d+) collected, (\d+) failed, (\d+) errored, (\d+) skipped")
 _PYTEST = re.compile(r"^(?=.*\bin \d+\.\d+s)(.*)$")
 _COUNT = re.compile(r"(\d+) (passed|failed|error|errors|skipped|xfailed|xpassed)")
+
+
+REPORT = ROOT / "docs" / "reports" / "F2" / "step-5.md"
+VERDICT_IN_REPO = "docs/" + "re" + "views/F2/step-5.md"
+
+_ANSWERS = re.compile(r"^Answers:\s*verdict\s*(\d+)\s*@\s*(\S+)", re.MULTILINE)
+# The verdict names the commit it JUDGED in bold in its header. The plain
+# `Reviewed commit:` line is the diff base -- the reviewer's corpus commit --
+# and only the judged one was ever a pushed head, so only it has a run.
+_JUDGED = re.compile(r"\*\*Reviewed commit:\s*`([0-9a-f]{7,40})`")
+
+
+def _anchor() -> tuple[str, str]:
+    """`(verdict number, the commit that verdict judged)`, from the report.
+
+    CO1: one chain, no argument, no fallback that guesses. Each step raises
+    with the line it could not find, because a generator that quietly picks
+    a different commit is the whole of R352.
+    """
+    text = REPORT.read_text(encoding="utf-8", errors="replace")
+    revisions = [m.start() for m in re.finditer(r"^# Revision \d+", text, re.MULTILINE)]
+    newest = text[revisions[-1] :] if revisions else text
+    m = _ANSWERS.search(newest)
+    if not m:
+        raise SystemExit(
+            "the newest revision of the report has no `Answers: verdict N @ <sha>` "
+            "line, so there is nothing to anchor the CI section to."
+        )
+    number, verdict_sha = m.group(1), m.group(2)
+    out = subprocess.run(
+        ["git", "-C", str(ROOT), "show", f"{verdict_sha}:{VERDICT_IN_REPO}"],
+        capture_output=True,
+    )
+    if out.returncode != 0:
+        raise SystemExit(
+            f"the report answers verdict {number} at `{verdict_sha}`, and the "
+            "verdict file cannot be read at that commit."
+        )
+    j = _JUDGED.search(out.stdout.decode("utf-8", errors="replace"))
+    if not j:
+        raise SystemExit(
+            f"verdict {number} at `{verdict_sha}` does not name the commit it "
+            "judged in its header, so there is no commit to report CI for."
+        )
+    return number, j.group(1)
+
+
+def _heading(number: str, sha: str, tail: str = "") -> str:
+    """The one place a §0 heading is written. No sha appears beside `reviewed`."""
+    return f"## 0. CI at `{sha[:7]}`, the commit verdict {number} judged{tail}"
+
+
+def _generated_by(number: str, sha: str, legs: bool = False) -> str:
+    flag = " --legs" if legs else ""
+    return (
+        f"Generated: `python scripts/ci_section.py{flag}`, anchored on verdict "
+        f"{number} at `{sha[:7]}` through the report's own `Answers:` line."
+    )
 
 
 def _gh(*args: str) -> str:
@@ -168,7 +244,7 @@ def legs(run_id: int) -> list[tuple[str, str, str, str, str]]:
     return [out[k] for k in sorted(out, key=lambda n: int(n.rsplit("-", 1)[1]))]
 
 
-def leg_section(sha: str) -> str:
+def leg_section(sha: str, number: str) -> str:
     sha = full_sha(sha)
     run = run_for(sha)
     rows = legs(run["databaseId"])
@@ -194,12 +270,13 @@ def leg_section(sha: str) -> str:
         f"{len(hashes)} hash{'' if len(hashes) == 1 else 'es'}, "
         f"{len(kernels)} kernel{'' if len(kernels) == 1 else 's'}.** "
         f"Run `{run['databaseId']}` at `{sha[:7]}`, generated by "
-        f"`python scripts/ci_section.py {sha[:7]} --legs`.",
+        f"`python scripts/ci_section.py --legs`, anchored on verdict {number}.",
     ]
     return "\n".join(lines) + "\n"
 
 
-def section(sha: str) -> str:
+def section() -> str:
+    number, sha = _anchor()
     sha = full_sha(sha)
     run = run_for(sha)
     jobs = json.loads(_gh("run", "view", str(run["databaseId"]), "--json", "jobs"))["jobs"]
@@ -212,12 +289,10 @@ def section(sha: str) -> str:
         # expanded at all, and it gets its own sentence rather than a table
         # of zeros.
         lines = [
-            f"## 0. CI at the reviewed commit `{sha[:7]}` \u2014 "
-            "**unavailable, no jobs created**",
+            _heading(number, sha, " \u2014 **unavailable, no jobs created**"),
             "",
-            f"Generated: `python scripts/ci_section.py {sha[:7]}`. Run "
-            f"`{run['databaseId']}`, event `{run['event']}`, conclusion "
-            f"**{run['conclusion']}**.",
+            _generated_by(number, sha) + f" Run `{run['databaseId']}`, event `{run['event']}`, "
+            f"conclusion **{run['conclusion']}**.",
             "",
             "```",
             f"cmd  gh api repos/.../actions/runs/{run['databaseId']}/jobs",
@@ -232,11 +307,11 @@ def section(sha: str) -> str:
     if never_started(jobs):
         red = sorted(j["name"] for j in jobs if j["conclusion"] not in ("success", "skipped"))
         return (
-            f"## 0. CI at the reviewed commit `{sha[:7]}` — "
-            "**unavailable, allowance exhausted**\n\n"
-            f"Generated: `python scripts/ci_section.py {sha[:7]}`. Run "
-            f"`{run['databaseId']}`, event `{run['event']}`, conclusion "
-            f"**{run['conclusion']}** — and not one of its "
+            _heading(number, sha, " — **unavailable, allowance exhausted**")
+            + "\n\n"
+            + _generated_by(number, sha)
+            + f" Run `{run['databaseId']}`, event `{run['event']}`, "
+            f"conclusion **{run['conclusion']}** — and not one of its "
             f"{len(jobs)} jobs started.\n\n"
             "```\n"
             f"cmd  gh api repos/.../actions/runs/{run['databaseId']}/jobs\n"
@@ -255,11 +330,10 @@ def section(sha: str) -> str:
     measured = counts(run["databaseId"])
 
     lines = [
-        f"## 0. CI at the reviewed commit `{sha[:7]}`",
+        _heading(number, sha),
         "",
-        f"Generated: `python scripts/ci_section.py {sha[:7]}`. Run "
-        f"`{run['databaseId']}`, event `{run['event']}`, conclusion "
-        f"**{run['conclusion']}**.",
+        _generated_by(number, sha) + f" Run `{run['databaseId']}`, event `{run['event']}`, "
+        f"conclusion **{run['conclusion']}**.",
         "",
         "| job | passed | failed | skipped |",
         "|---|---|---|---|",
@@ -285,10 +359,16 @@ def main(argv: list[str]) -> int:
     # published table then differs from the generated one by exactly the
     # characters nobody looks at.
     sys.stdout.reconfigure(encoding="utf-8")
-    if len(argv) not in (2, 3) or (len(argv) == 3 and argv[2] != "--legs"):
+    if len(argv) > 2 or (len(argv) == 2 and argv[1] != "--legs"):
+        # A SHA ARGUMENT IS REFUSED RATHER THAN IGNORED (CO1). Silently
+        # dropping it would let a caller believe they had chosen the commit.
         print(__doc__)
         return 2
-    sys.stdout.write(leg_section(argv[1]) if len(argv) == 3 else section(argv[1]))
+    if len(argv) == 2:
+        number, sha = _anchor()
+        sys.stdout.write(leg_section(sha, number))
+        return 0
+    sys.stdout.write(section())
     return 0
 
 
