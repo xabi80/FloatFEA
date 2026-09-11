@@ -96,9 +96,23 @@ def test_a_documentation_commit_runs_no_job() -> None:
     ignored = on["push"].get("paths-ignore") or []
     for path in ("docs/reports/**", "docs/reviews/**"):
         assert path in ignored, f"{path} is not ignored; a report revision runs the suite"
-    assert "docs/milestones/**" not in ignored or all(
-        "F2_figures" not in x for x in ignored
-    ), "the canonical render lives under docs/milestones and must not be ignored blindly"
+    # R342: THIS SAID THE OPPOSITE OF WHAT IT MEANT. `all(... not in ...)`
+    # passes on the shipped list -- where nothing mentions the render -- and
+    # REDDENS on the carve-out it was written to require. Measured both ways
+    # below rather than re-read.
+    #
+    # What is meant: `docs/milestones/**` holds the canonical render, and Q8
+    # makes CI the only machine that may produce it. Ignoring that tree
+    # wholesale means a commit that lands a render runs no job, so the
+    # byte-identity assertion the next run is supposed to make never happens.
+    # Either the tree is not ignored, or the render is carved back in.
+    if "docs/milestones/**" in ignored:
+        assert any("F2_figures" in x for x in ignored), (
+            "`docs/milestones/**` is ignored and nothing carves the canonical "
+            "render back in, so the commit that lands a render runs no job "
+            "and the byte-identity check never fires. Add a `!` carve-out for "
+            "`docs/milestones/F2_figures.md`."
+        )
 
 
 def test_a_superseded_run_is_cancelled() -> None:

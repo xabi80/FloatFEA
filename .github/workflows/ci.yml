@@ -24,7 +24,11 @@ on:
     paths-ignore:
       - "docs/reports/**"
       - "docs/reviews/**"
-      - "docs/milestones/**"
+      # `docs/milestones/**` IS NOT IGNORED (R342). It holds the canonical
+      # render, and Q8 makes CI the only machine that may produce one: a
+      # commit landing `F2_figures.md` has to run, because the next run's
+      # byte-identity comparison is the whole mechanism. The plan text in that
+      # tree costs a run it does not need, and that is the cheaper mistake.
   workflow_dispatch:
 
 concurrency:
@@ -274,9 +278,16 @@ jobs:
     # save perhaps a minute of wall clock. Sequential steps in one job keep
     # every assertion and cost one setup.
     #
-    # The ORDER is the cheap-first order and it is not arbitrary: lint and
-    # type-check take seconds and catch the class of defect that makes the
-    # rest meaningless.
+    # THE ORDER IS CHEAP-FIRST, and the reason is a measurement rather than a
+    # story (R343). Timed on this tree:
+    #
+    #   ruff + black + mypy        ~6 s
+    #   pytest tests/unit          ~3 s
+    #   the guards                 ~370 s
+    #
+    # so a failure in the first ten seconds costs ten seconds instead of six
+    # minutes. That is the whole claim; whether lint failures predict test
+    # failures is not measured here and is not asserted.
     steps:
       - uses: actions/checkout@v4
         # FULL HISTORY (CC3). `tests/test_report_carried.py` diffs against the

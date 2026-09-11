@@ -111,15 +111,37 @@ def test_an_all_zero_reference_RAISES_in_both_places(tmp_path: Path) -> None:
 
     The helper here and `scripts/measure_channel_drift.py` both divided by an
     amplitude and both defaulted it to `1.0` when the channel was identically
-    zero. The first was repaired and the second was not, and no test noticed
-    -- which is why this one asserts BOTH, by importing the script rather
-    than by reading it.
+    zero. The first was repaired and the second was not, and no test noticed.
+
+    HOW EACH HALF IS CHECKED, and the previous docstring got this wrong
+    (R345). The helper is EXERCISED -- an all-zero reference is passed to it
+    and the raise is caught. The script is READ: its source is searched for
+    the default and for the raise, because running it needs the fixture and
+    an h5py file, and what is being asserted is that the pair did not come
+    apart again. Reading is weaker and saying so is the point.
     """
     import importlib.util
 
     zero = np.zeros((3, 3))
     with pytest.raises(ValueError, match="identically zero"):
         _drift_ulp(zero + 4e-16, zero)
+
+    # THE DISABLE-IT CONTROL (R345). `if ampl == 0.0:` turned into `if False:`
+    # left the suite green, because nothing exercised the branch with the
+    # branch gone. This runs the helper's own source with the guard removed
+    # and requires the old defaulting behaviour to come back -- so a future
+    # edit that neuters the check cannot pass.
+    source = Path(__file__).read_text(encoding="utf-8")
+    start = source.index("def _drift_ulp")
+    end = source.index("def ", start + 1)
+    neutered = source[start:end].replace("if ampl == 0.0:", "if False:")
+    namespace: dict[str, object] = {"np": np, "math": math}
+    exec(compile(neutered, "<neutered>", "exec"), namespace)  # noqa: S102
+    drift, exact = namespace["_drift_ulp"](zero + 4e-16, zero)  # type: ignore[operator]
+    assert drift > 0 and exact == 0, (
+        "with the zero-amplitude guard removed the helper did not fall back "
+        "to a default scale, so this control is measuring nothing."
+    )
 
     spec = importlib.util.spec_from_file_location(
         "measure_channel_drift",
@@ -324,6 +346,16 @@ def test_a_swapped_sign_is_orders_away_from_the_band() -> None:
     assert exact == want.size - 1, (
         "the flip moved more than the one value it was applied to, so the "
         "comparison is not per-element."
+    )
+    # AND IT NAMES THE BAND IT IS ABOUT (R344). The previous version measured
+    # a scale and never mentioned `INTERCHANGE_CHANNEL_DRIFT_ULP`, so what it
+    # certified was a number in isolation. The point is the DISTANCE between
+    # the two: a wrong channel is fifteen orders from a libm's last bit, and
+    # that is what makes the band's width unalarming.
+    assert drift > INTERCHANGE_CHANNEL_DRIFT_ULP, (
+        f"a sign flip measures {drift:.6e} ULP and the band is "
+        f"{INTERCHANGE_CHANNEL_DRIFT_ULP}. If those are ever comparable the "
+        "band has stopped meaning what this file says it means."
     )
 
 
