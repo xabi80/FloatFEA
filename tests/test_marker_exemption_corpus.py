@@ -76,47 +76,165 @@ CORPUS = ROOT / "tests" / "corpus" / "tolerance_marker_exemptions.txt"
 # markers were voided in the first place. Trading nineteen misses for that
 # regression is not an improvement, and the reviewer measured this rule at four
 # with no false positive anywhere in the tree.
-KNOWN_MISSES: dict[str, str] = {
+# THE ESCAPE GOLDEN, KEYED BY SHAPE, WITH PROVENANCE (CM4).
+#
+# `{id: (planted by, what the shipped rule does with it)}`. The rule is
+# asymmetric on purpose, and the asymmetry is the whole point:
+#
+#   A REVIEWER-PLANTED SHAPE THAT ESCAPES IS ADDED, with their commit named.
+#   That is allowed growth: an adversary who finds a new axis has told us
+#   something, and recording it is how the reach stays measured instead of
+#   assumed. Chasing every one of them is how a scanner grows until it
+#   reddens correct files -- measured at forty-one of them, once.
+#
+#   A SHAPE PREVIOUSLY CAUGHT THAT STARTS ESCAPING IS A REGRESSION and fails.
+#   It arrives as a name in the measured set that this map does not carry,
+#   and there is no way to record it without naming who planted it and when.
+#
+#   A SHAPE THAT STARTS BEING CAUGHT also fails, so the map cannot quietly
+#   outlive what it describes -- but the fix there is one deletion and a
+#   sentence, not work.
+#
+# The escalation clause stands and has fired once: a miss stays here unless
+# one of them exposes a false pass on a real file in the tree. At the
+# thirty-sixth verdict one did -- `1e12 * DECLARED`, shipped in
+# `tests/verification/rung4` -- and that species was closed in the scanner
+# rather than re-listed.
+KNOWN_MISSES: dict[str, tuple[str, str]] = {
     "detect_annotated_module_float_threshold": (
-        "module-level named float, but an AnnAssign rather than an Assign"
+        "CD2, the reviewer's corpus at that round",
+        "module-level named float, but an AnnAssign rather than an Assign",
     ),
-    "detect_dict_lookup_threshold": ("expression-valued threshold: a dict lookup"),
+    "detect_dict_lookup_threshold": (
+        "CD2, the reviewer's corpus at that round",
+        "expression-valued threshold: a dict lookup",
+    ),
     "detect_float_call_around_literal": (
-        "expression-valued threshold: float(...) around the literal"
+        "CD2, the reviewer's corpus at that round",
+        "expression-valued threshold: float(...) around the literal",
     ),
     "detect_function_local_float_threshold": (
-        "a named float bound inside a function, not at module scope"
+        "CD2, the reviewer's corpus at that round",
+        "a named float bound inside a function, not at module scope",
     ),
     "detect_keyword_only_default_tolerance": (
-        "a keyword-only parameter default; only positional defaults are read"
+        "CD2, the reviewer's corpus at that round",
+        "a keyword-only parameter default; only positional defaults are read",
     ),
-    "detect_lambda_default_tolerance": ("a lambda's default, not a FunctionDef's"),
-    "detect_literal_times_scale": ("expression-valued threshold: literal times a scale"),
+    "detect_lambda_default_tolerance": (
+        "CD2, the reviewer's corpus at that round",
+        "a lambda's default, not a FunctionDef's",
+    ),
+    "detect_literal_times_scale": (
+        "CD2, the reviewer's corpus at that round",
+        "expression-valued threshold: literal times a scale",
+    ),
     "detect_module_float_built_by_arithmetic": (
-        "a module-level name bound to an EXPRESSION rather than a literal"
+        "CD2, the reviewer's corpus at that round",
+        "a module-level name bound to an EXPRESSION rather than a literal",
     ),
-    "detect_negative_module_float_threshold": ("a module-level name bound to a negated literal"),
-    "detect_numpy_isclose_positional_rtol": ("a tolerance in a POSITIONAL slot, not a keyword"),
-    "detect_power_expression_threshold": ("expression-valued threshold: a power expression"),
-    "detect_round_to_decimals": ("expression-valued threshold: round(x, n)"),
-    "detect_tuple_unpacked_bounds": ("the threshold reaches the comparison through a tuple unpack"),
-    "detect_walrus_bound_threshold": ("the threshold is bound by a walrus and compared as a Name"),
+    "detect_negative_module_float_threshold": (
+        "CD2, the reviewer's corpus at that round",
+        "a module-level name bound to a negated literal",
+    ),
+    "detect_numpy_isclose_positional_rtol": (
+        "CD2, the reviewer's corpus at that round",
+        "a tolerance in a POSITIONAL slot, not a keyword",
+    ),
+    "detect_power_expression_threshold": (
+        "CD2, the reviewer's corpus at that round",
+        "expression-valued threshold: a power expression",
+    ),
+    "detect_round_to_decimals": (
+        "CD2, the reviewer's corpus at that round",
+        "expression-valued threshold: round(x, n)",
+    ),
+    "detect_tuple_unpacked_bounds": (
+        "CD2, the reviewer's corpus at that round",
+        "the threshold reaches the comparison through a tuple unpack",
+    ),
+    "detect_walrus_bound_threshold": (
+        "CD2, the reviewer's corpus at that round",
+        "the threshold is bound by a walrus and compared as a Name",
+    ),
     "marker_in_lambda_default_same_stmt": (
-        "the marker annotates a different sub-expression of the same statement"
+        "CD2, the reviewer's corpus at that round",
+        "the marker annotates a different sub-expression of the same statement",
     ),
     "marker_in_multiline_dict_literal_same_stmt": (
-        "the marker annotates a different sub-expression of the same statement"
+        "CD2, the reviewer's corpus at that round",
+        "the marker annotates a different sub-expression of the same statement",
     ),
     "marker_in_multiline_starred_call_args": (
-        "the marker annotates a different sub-expression of the same statement"
+        "CD2, the reviewer's corpus at that round",
+        "the marker annotates a different sub-expression of the same statement",
     ),
     "marker_on_bare_comment_line_inside_call": (
-        "the marker annotates a different sub-expression of the same statement"
+        "CD2, the reviewer's corpus at that round",
+        "the marker annotates a different sub-expression of the same statement",
     ),
     "same_literal_twice_on_one_compare_node": (
-        "one Compare node, two identical literals, one marker"
+        "CD2, the reviewer's corpus at that round",
+        "one Compare node, two identical literals, one marker",
     ),
-    "yoda_left_literal_with_marker_on_other_clause": ("one Compare node, two literals, one marker"),
+    "yoda_left_literal_with_marker_on_other_clause": (
+        "CD2, the reviewer's corpus at that round",
+        "one Compare node, two literals, one marker",
+    ),
+    # --- planted at `34bce16`, the thirty-eighth round: twenty shapes off
+    # the axis the narrow rule is keyed on, thirteen of them escaping.
+    "detect_ifexp_literal_branch": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
+    "detect_inline_dict_subscript_threshold": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
+    "detect_integer_iteration_threshold": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
+    "detect_literal_beside_a_LOCAL_name": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
+    "detect_literal_divided_by_literal": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
+    "detect_literal_in_abs_call": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
+    "detect_literal_in_float_call_AGAIN": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
+    "detect_literal_via_isclose_kwarg": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
+    "detect_numpy_minimum_candidate": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
+    "detect_product_of_two_literals": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
+    "detect_sorted_subscript_threshold": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
+    "detect_unary_PLUS_literal": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
+    "detect_walrus_threshold": (
+        "34bce16, the thirty-eighth round",
+        "off the axis the narrow BinOp rule is keyed on",
+    ),
 }
 
 
@@ -188,48 +306,54 @@ def test_the_exemption_window_gives_the_required_verdict(
         )
 
 
-def test_the_known_misses_are_exactly_these() -> None:
-    """The reach of the escape hatch, asserted as the measurement it is.
+def _measured_misses() -> set[str]:
+    """Every corpus entry the shipped scanner does NOT do what it asks.
 
-    Both directions matter and neither is cosmetic. An entry that starts
-    getting the required verdict means the rule changed and nobody said so; a
-    NEW miss means the rule got looser and nothing else would report it. This is
-    the golden-file idiom -- record the response, a move fails the build --
-    applied to a guard's coverage instead of to a number.
+    Measured here rather than read off the map: the map is the record, the
+    scanner is the fact, and this is the one function that compares them.
     """
-    measured = _misses()
-    listed = set(KNOWN_MISSES)
-    assert measured == listed, (
-        f"newly missed: {sorted(measured - listed)}; "
-        f"no longer missed: {sorted(listed - measured)}. The exemption window's "
-        "reach moved. Say in the step report which rule changed and why, and "
-        "make KNOWN_MISSES the measurement again -- a list that is not the "
-        "misses is worse than no list."
+    import tempfile
+
+    missed: set[str] = set()
+    with tempfile.TemporaryDirectory(prefix="misses-") as tmp:
+        for name, expect, src in ENTRIES:
+            f = Path(tmp) / f"test_{name}.py"
+            f.write_text(src, encoding="utf-8")
+            found = bool(offending(f))
+            if (expect == "caught") != found:
+                missed.add(name)
+    return missed
+
+
+def test_the_known_misses_are_exactly_these() -> None:
+    """The escape golden, in both directions and with different meanings (CM4).
+
+    A NEW ESCAPE is a name the scanner misses that this map does not carry.
+    It may be allowed growth -- a reviewer planting a shape on a new axis --
+    but it is never silent: adding it requires naming who planted it, which
+    is the record that makes "the reach is measured" a true sentence.
+
+    A SHAPE THAT STARTS BEING CAUGHT is the other direction, and it fails so
+    the map cannot outlive what it describes.
+    """
+    missing = sorted(set(_measured_misses()) - set(KNOWN_MISSES))
+    stale = sorted(set(KNOWN_MISSES) - set(_measured_misses()))
+    assert not missing, (
+        f"{len(missing)} shape(s) escape the scanner and are not recorded:\n  "
+        + "\n  ".join(missing)
+        + "\nIf a reviewer planted them, add each with their commit as its "
+        "provenance -- growth is allowed and silence is not. If one of them "
+        "was CAUGHT before, it is a regression and the scanner is what moves."
     )
-    # AND ITS REPLACEMENT WAS AN ABSENCE DESCRIBED AS A PRESENCE (CF3). "No
-    # false pass on a real file" pointed at a test that asserts `offending()`
-    # returns NOTHING -- and a false pass is precisely a file where that is
-    # satisfied. It could not go red on a miss, which is the one thing a bound
-    # has to be able to do.
-    #
-    # What bounds the list now is this table itself, used as a GOLDEN: the
-    # escape set is enumerated by name with species, and `measured == listed`
-    # above fails when a new shape escapes AND when a listed one stops escaping.
-    # That is the golden-file idiom, and it can go red in both directions.
-    #
-    # THE RATIO RULE THAT STOOD HERE IS WITHDRAWN, and it was mine (CE3).
-    #
-    # It compared the miss count with the SIZE OF AN ADVERSARIAL CORPUS, and the
-    # reviewer writes that corpus. Each round it grew faster than the fixes, so
-    # the rule fired on the reviewer's effort rather than on the guard's reach --
-    # and firing pushed me toward a broad fix that reddened seven correct files.
-    # A metric that rewards leaving the corpus small is the wrong metric.
-    #
-    # What replaces it is the escape golden above. Each miss is NAMED with its
-    # species, so the list cannot become a shrug, and the set is asserted equal
-    # to the measurement so it cannot drift in either direction.
-    speciesless = [k for k, v in KNOWN_MISSES.items() if not v.strip()]
-    assert not speciesless, (
-        f"{speciesless} are listed as known misses with no species. A list of "
-        "names is a shrug; a list of species is a plan."
+    assert not stale, (
+        f"{len(stale)} recorded miss(es) are now caught:\n  "
+        + "\n  ".join(stale)
+        + "\nDelete them from KNOWN_MISSES with a sentence saying what closed "
+        "them; a golden that outlives its measurement is the shape this file "
+        "exists to refuse."
     )
+    for name, entry in KNOWN_MISSES.items():
+        assert (
+            isinstance(entry, tuple) and len(entry) == 2
+        ), f"{name} carries {entry!r}; every entry is (provenance, reason)"
+        assert entry[0].strip(), f"{name} names no commit or round that planted it"

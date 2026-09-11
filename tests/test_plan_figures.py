@@ -41,6 +41,46 @@ def _referenced() -> list[str]:
     return sorted(set(_REF.findall(PLAN.read_text(encoding="utf-8"))))
 
 
+def _every_reference() -> list[tuple[str, str]]:
+    """`(file, name)` for every `{{fig:NAME}}` anywhere in the repository.
+
+    CM3/R337: a dangling figure name in a docstring is the same defect as one
+    in the plan, and until now only the plan was read. A comment that cites a
+    figure the generator does not produce is a claim with nothing behind it,
+    and it is harder to notice than a stale number because it looks like a
+    reference.
+    """
+    out: list[tuple[str, str]] = []
+    for where in ("floatfea", "tests", "scripts", "docs"):
+        for path in (ROOT / where).rglob("*"):
+            if path.suffix not in (".py", ".md", ".sh") or "__pycache__" in str(path):
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for name in _REF.findall(text):
+                out.append((str(path.relative_to(ROOT)).replace("\\", "/"), name))
+    return out
+
+
+REFERENCES = _every_reference()
+
+
+@pytest.mark.parametrize(
+    "where, name",
+    REFERENCES or [("(none)", "(none)")],
+    ids=[f"{w}:{n}" for w, n in REFERENCES] or ["(none)"],
+)
+def test_every_figure_reference_anywhere_resolves(where: str, name: str) -> None:
+    """Wherever it is written, the name has to exist."""
+    if where == "(none)":
+        pytest.fail("no `{{fig:...}}` reference found anywhere; the pattern broke")
+    defined = _defined()
+    assert name in defined, (
+        f"{where} cites `{{{{fig:{name}}}}}` and the generated file defines "
+        f"{sorted(defined)[:4]}... A reference in a docstring is a claim like "
+        "any other."
+    )
+
+
 def test_the_plan_references_generated_figures_at_all() -> None:
     """Meta-test: zero references makes every check below vacuous."""
     refs = _referenced()
