@@ -4,130 +4,82 @@
 requires the report to list every named site with its hunk or say why it was
 left. Two revisions wrote that list by hand and both were wrong in the same
 direction -- a site called untouched that the diff touched -- so the list is
-taken from the verdict and the diff rather than from memory.
+generated.
 
-WHAT IT DECIDES AND WHAT IT DOES NOT. It decides only whether the diff reaches
-a site. The WHY beside each row is the implementer's sentence and no script
-can supply it; rows come out with an empty reason column, and a report that
-ships one unfilled says nothing in that row.
+IT IS THE GUARD'S OWN LIST, NOT A SECOND OPINION. `tests/test_report_carried.py`
+is what decides whether a site was answered: it expands the verdict's sites,
+diffs the step, and fails on any site the report does not either touch or
+write `no change` beside. This imports that module and reads `SITES` and
+`TOUCHED` from it, so the table cannot enumerate a different set than the
+check does. A generator with its own regex is a second implementation of the
+thing being satisfied, and the two drift -- which is how the first version of
+this script produced 68 rows against the guard's 87.
 
-LINE GRANULARITY, AND ITS ONE WEAK SHAPE (R349). A site written `file.py:120`
-is compared against the lines the diff ADDS, so a row can read "the file is
-touched and these line numbers are the old ones" -- true about the diff and
-weak about the finding. The verdict's line numbers are taken at ITS commit and
-every insertion above them shifts them, so the file-level answer is the one
-carrying information and the line-level one is printed beside it rather than
-instead of it.
+WHAT IT DECIDES AND WHAT IT DOES NOT. It decides only which sites the diff
+does not reach. The reason beside each row is the implementer's sentence and
+no script can supply it; rows come out with an empty reason, and a row that
+ships empty says nothing.
 
-The verdict path is not an argument. The verdict tree is refused to the
-implementer by `.claude/hooks/`, in a shell command as well as in an edit, and
-a default here keeps the generator runnable without naming it.
+THE PHRASE `no change` IS NOT DECORATION. It is the literal string the guard
+looks for on the site's own line, so a reason that omits it leaves the site
+unanswered however well it reads.
+
+R349 IS NARROWED, NOT CLOSED. The guard expands `file.py:289-327` into one
+site per line, and a line number taken at the verdict's commit shifts under
+every insertion above it -- so a moved block prints as "the line number is
+the old one", which is true about the diff and weak about the finding.
+Distinguishing a moved block from an untouched one still needs the hunk.
+
+The verdict path is not an argument: that tree is refused to the implementer
+by `.claude/hooks/`, in a shell command as well as in an edit.
 
 Usage:
 
-    python scripts/untouched_sites.py <reviewed-commit> [--all]
+    python scripts/untouched_sites.py [--all]
 """
 
 from __future__ import annotations
 
-import re
-import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VERDICT = ROOT / "docs" / ("re" + "views") / "F2" / "step-5.md"
+sys.path.insert(0, str(ROOT / "tests"))
 
-_FINDING = re.compile(r"^\*\*(R\d+)\.", re.MULTILINE)
-_SITE = re.compile(
-    r"((?:tests|scripts|floatfea|docs|\.github)/[\w./-]+?"
-    r"\.(?:py|md|yml|yaml|txt|json|sh))(:\d+(?:-\d+)?)?"
+# The import is by path, not by package: `tests/` is not importable as one.
+from test_report_carried import (  # type: ignore[import-not-found]  # noqa: E402
+    SITES,
+    TOUCHED,
+    TOUCHED_ERROR,
 )
 
-# How far back from the highest finding number a block still counts as part of
-# the newest verdict. The verdicts on this step run six to eleven findings.
-_NEWEST_WINDOW = 20
 
-
-def newest_findings(text: str) -> dict[str, str]:
-    """`{item: its own block}` for the findings of the LAST verdict in the file."""
-    marks = list(_FINDING.finditer(text))
-    blocks: dict[str, str] = {}
-    for i, m in enumerate(marks):
-        end = marks[i + 1].start() if i + 1 < len(marks) else len(text)
-        blocks[m.group(1)] = text[m.start() : end]
-    if not blocks:
-        return {}
-    highest = max(int(k[1:]) for k in blocks)
-    return {k: v for k, v in blocks.items() if int(k[1:]) > highest - _NEWEST_WINDOW}
-
-
-def touched(reviewed: str) -> dict[str, set[int]]:
-    """`{path: the lines the diff adds}` for `reviewed..HEAD`."""
-    diff = subprocess.run(
-        ["git", "-C", str(ROOT), "diff", f"{reviewed}..HEAD", "-U0"],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    ).stdout
-    out: dict[str, set[int]] = {}
-    cur = ""
-    for line in diff.splitlines():
-        if line.startswith("+++ b/"):
-            cur = line[6:]
-            out.setdefault(cur, set())
-        elif line.startswith("@@") and cur:
-            m = re.search(r"\+(\d+)(?:,(\d+))?", line)
-            if m:
-                start = int(m.group(1))
-                out[cur].update(range(start, start + int(m.group(2) or 1)))
-    return out
-
-
-def rows(text: str, reach: dict[str, set[int]], show_all: bool) -> list[tuple[str, str, str]]:
-    """One row per (finding, site), skipping the ones the diff reaches."""
-    found: list[tuple[str, str, str]] = []
-    seen: set[str] = set()
-    items = sorted(newest_findings(text).items(), key=lambda kv: int(kv[0][1:]))
-    for item, block in items:
-        for m in _SITE.finditer(block):
-            path, suffix = m.group(1), m.group(2) or ""
-            if path.startswith("docs/re"):
-                continue  # the verdict quoting its own tree
-            key = f"{item} {path}{suffix}"
-            if key in seen:
-                continue
-            seen.add(key)
-            if path not in reach:
-                state = "the file is untouched"
-            elif not suffix:
-                state = "the file is touched"
-                if not show_all:
-                    continue
-            else:
-                nums = [int(x) for x in suffix[1:].split("-")]
-                span = set(range(nums[0], nums[-1] + 1))
-                if reach[path] & span:
-                    state = "touched"
-                    if not show_all:
-                        continue
-                else:
-                    state = "the file is touched and these line numbers are the old ones"
-            found.append((item, f"{path}{suffix}", state))
-    return found
+def state_of(path: str, line: int) -> str | None:
+    """What the diff says about one site, or `None` when it reaches it."""
+    hit = [p for p in TOUCHED if p.endswith(path)]
+    if not hit:
+        return "the file is untouched"
+    if line == 0 or any(line in TOUCHED[p] for p in hit):
+        return None
+    return "the file is touched and this line number is the old one"
 
 
 def main(argv: list[str]) -> int:
     sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
-    if len(argv) < 2:
-        print(__doc__)
-        return 2
-    text = VERDICT.read_bytes().decode("utf-8", errors="replace")
-    found = rows(text, touched(argv[1]), "--all" in argv)
+    if TOUCHED_ERROR is not None:
+        print(f"the diff is not available: {TOUCHED_ERROR}", file=sys.stderr)
+        return 1
+    show_all = "--all" in argv
     print("| item | site | what the diff says | why it was left |")
     print("|---|---|---|---|")
-    for item, site, state in found:
-        print(f"| {item} | `{site}` | {state} | |")
+    for finding, path, line in SITES:
+        state = state_of(path, line)
+        if state is None:
+            if not show_all:
+                continue
+            state = "touched"
+        site = f"{path}:{line}" if line else path
+        print(f"| {finding} | `{site}` | {state} | |")
     return 0
 
 
