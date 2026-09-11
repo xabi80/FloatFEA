@@ -511,6 +511,7 @@ def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) 
             "test_a_docs_commit_does_not_also_edit_the_guard_that_judges_it",
             "test_the_report_carries_a_WHOLE_SUITE_count",
             "test_a_carried_row_points_at_a_section_that_discusses_it",
+            "test_the_whole_suite_line_is_about_a_commit_that_exists",
         )
         if state in DIAGNOSIS:
             _assert_diagnosis(state, got, log)

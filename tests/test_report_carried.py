@@ -778,7 +778,9 @@ def test_a_carried_row_points_at_a_section_that_discusses_it(item: str, section:
     # Carried table by construction, so a pointer at that section resolves for
     # every item and the check says nothing. The reviewer set all of them to
     # it and the whole file stayed green.
-    carried_heading = re.search(r"^##+\s*(\d+[a-z]?)\.\s*Carried", _newest_revision(REPORT_TEXT), re.MULTILINE)
+    carried_heading = re.search(
+        r"^##+\s*(\d+[a-z]?)\.\s*Carried", _newest_revision(REPORT_TEXT), re.MULTILINE
+    )
     if carried_heading:
         assert section != carried_heading.group(1), (
             f"{item} points at §{section}, which is the Carried section. Every "

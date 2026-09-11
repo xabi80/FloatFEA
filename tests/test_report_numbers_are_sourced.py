@@ -57,7 +57,10 @@ TEXT = REPORT.read_text(encoding="utf-8", errors="replace")
 BODY = TEXT[TEXT.rindex("# Revision ") :] if "# Revision " in TEXT else TEXT
 
 # A number, at its widest: digits with separators and an optional exponent.
-_NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?(?:[eE][-+]?\d+)?")
+# A number, at its widest, ENDING IN A DIGIT. Allowing a trailing comma made
+# `R321,` match as `321,`, which no exempt span contains, so a list of item
+# numbers read as a list of unsourced figures.
+_NUMBER = re.compile(r"\d(?:[\d,]*\d)?(?:\.\d+)?(?:[eE][-+]?\d+)?")
 # Forms that are not figures. A token is exempt when it is PART OF one of
 # these, never when one merely sits near it (R320).
 _EXEMPT_CONTEXT = (
@@ -74,6 +77,9 @@ _EXEMPT_CONTEXT = (
     re.compile(r"\bpython[ -]?3\.\d+\b", re.IGNORECASE),
     re.compile(r"\brung ?\d\b|\bladder ?\d\b|\bstep ?\d\b", re.IGNORECASE),
     re.compile(r"\bitem ?\d[a-z]?\b", re.IGNORECASE),
+    # A GATE OR A VERIFICATION ITEM: G1.5, V1.1, G2.2. A name, not a
+    # measurement, and the numbering is the plan's.
+    re.compile(r"\b[GV]\d+\.\d+\b"),
 )
 
 
@@ -188,7 +194,16 @@ def test_every_number_in_prose_is_sourced_in_its_own_section(
 def test_a_table_of_numbers_shows_where_it_came_from(heading: str, lines: list[str]) -> None:
     """A table is an output; the section says what produced it."""
     fenced, table, prose = _split(lines)
-    if not any(_NUMBER.search(row) for row in table):
+    # A TABLE WHOSE ONLY NUMBERS ARE EXEMPT FORMS IS NOT A TABLE OF NUMBERS.
+    # The commit list in the closing section is shas and prose; requiring a
+    # `cmd` beside it would be requiring the form rather than the content.
+    figures = [
+        row
+        for row in table
+        for m in _NUMBER.finditer(row)
+        if not _inside_an_exempt_span(row, m.start(), m.end())
+    ]
+    if not figures:
         return
     blob = "\n".join(fenced + prose)
     assert re.search(r"^\s*cmd\b", "\n".join(fenced), re.MULTILINE) or re.search(
