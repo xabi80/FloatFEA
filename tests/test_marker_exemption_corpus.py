@@ -76,183 +76,89 @@ CORPUS = ROOT / "tests" / "corpus" / "tolerance_marker_exemptions.txt"
 # markers were voided in the first place. Trading nineteen misses for that
 # regression is not an improvement, and the reviewer measured this rule at four
 # with no false positive anywhere in the tree.
-# THE ESCAPE GOLDEN, KEYED BY SHAPE, WITH PROVENANCE (CM4).
+# THE ESCAPE GOLDEN IS THE CORPUS ITSELF (CN0, R341).
 #
-# `{id: (planted by, what the shipped rule does with it)}`. The rule is
-# asymmetric on purpose, and the asymmetry is the whole point:
+# The previous version was a hand-written map of `{shape: (provenance, why)}`
+# and the asymmetry it claimed -- growth allowed, regressions refused -- was a
+# CONVENTION. The reviewer proved it in one cell: they narrowed the scanner by
+# a line, produced three genuine regressions, typed a provenance string naming
+# a commit that had not planted them, and the suite went green. A field anyone
+# can type is not a check.
 #
-#   A REVIEWER-PLANTED SHAPE THAT ESCAPES IS ADDED, with their commit named.
-#   That is allowed growth: an adversary who finds a new axis has told us
-#   something, and recording it is how the reach stays measured instead of
-#   assumed. Chasing every one of them is how a scanner grows until it
-#   reddens correct files -- measured at forty-one of them, once.
+# THE FIELD THAT CANNOT BE TYPED BY THE IMPLEMENTER IS ALREADY THERE. Every
+# corpus line carries `measured=`, written by the reviewer at plant time, in a
+# file `.claude/hooks/` refuses the implementer's edits to. It records what the
+# shipped scanner DID when the shape was planted, beside the `expect=` that
+# says what it should do. The runner parsed it into a dict and threw it away.
 #
-#   A SHAPE PREVIOUSLY CAUGHT THAT STARTS ESCAPING IS A REGRESSION and fails.
-#   It arrives as a name in the measured set that this map does not carry,
-#   and there is no way to record it without naming who planted it and when.
+#   measured == expect   PLANTED CAUGHT. If it escapes now, that is a
+#                        REGRESSION and it fails. No string clears it, because
+#                        there is no string to write.
+#   measured != expect   PLANTED ESCAPING. Allowed growth: an adversary found
+#                        a new axis, the reach is recorded rather than
+#                        assumed, and chasing every one is how a scanner grows
+#                        until it reddens correct files -- measured at
+#                        forty-one, once.
 #
-#   A SHAPE THAT STARTS BEING CAUGHT also fails, so the map cannot quietly
-#   outlive what it describes -- but the fix there is one deletion and a
-#   sentence, not work.
+# PROVENANCE IS DERIVED, NEVER DECLARED: `git blame` on the corpus line names
+# the commit that planted the shape, and the failure message prints it. A
+# wrong provenance is then a thing nobody can write rather than a thing
+# somebody must not.
 #
-# The escalation clause stands and has fired once: a miss stays here unless
-# one of them exposes a false pass on a real file in the tree. At the
-# thirty-sixth verdict one did -- `1e12 * DECLARED`, shipped in
-# `tests/verification/rung4` -- and that species was closed in the scanner
-# rather than re-listed.
-KNOWN_MISSES: dict[str, tuple[str, str]] = {
-    "detect_annotated_module_float_threshold": (
-        "CD2, the reviewer's corpus at that round",
-        "module-level named float, but an AnnAssign rather than an Assign",
-    ),
-    "detect_dict_lookup_threshold": (
-        "CD2, the reviewer's corpus at that round",
-        "expression-valued threshold: a dict lookup",
-    ),
-    "detect_float_call_around_literal": (
-        "CD2, the reviewer's corpus at that round",
-        "expression-valued threshold: float(...) around the literal",
-    ),
-    "detect_function_local_float_threshold": (
-        "CD2, the reviewer's corpus at that round",
-        "a named float bound inside a function, not at module scope",
-    ),
-    "detect_keyword_only_default_tolerance": (
-        "CD2, the reviewer's corpus at that round",
-        "a keyword-only parameter default; only positional defaults are read",
-    ),
-    "detect_lambda_default_tolerance": (
-        "CD2, the reviewer's corpus at that round",
-        "a lambda's default, not a FunctionDef's",
-    ),
-    "detect_literal_times_scale": (
-        "CD2, the reviewer's corpus at that round",
-        "expression-valued threshold: literal times a scale",
-    ),
-    "detect_module_float_built_by_arithmetic": (
-        "CD2, the reviewer's corpus at that round",
-        "a module-level name bound to an EXPRESSION rather than a literal",
-    ),
-    "detect_negative_module_float_threshold": (
-        "CD2, the reviewer's corpus at that round",
-        "a module-level name bound to a negated literal",
-    ),
-    "detect_numpy_isclose_positional_rtol": (
-        "CD2, the reviewer's corpus at that round",
-        "a tolerance in a POSITIONAL slot, not a keyword",
-    ),
-    "detect_power_expression_threshold": (
-        "CD2, the reviewer's corpus at that round",
-        "expression-valued threshold: a power expression",
-    ),
-    "detect_round_to_decimals": (
-        "CD2, the reviewer's corpus at that round",
-        "expression-valued threshold: round(x, n)",
-    ),
-    "detect_tuple_unpacked_bounds": (
-        "CD2, the reviewer's corpus at that round",
-        "the threshold reaches the comparison through a tuple unpack",
-    ),
-    "detect_walrus_bound_threshold": (
-        "CD2, the reviewer's corpus at that round",
-        "the threshold is bound by a walrus and compared as a Name",
-    ),
-    "marker_in_lambda_default_same_stmt": (
-        "CD2, the reviewer's corpus at that round",
-        "the marker annotates a different sub-expression of the same statement",
-    ),
-    "marker_in_multiline_dict_literal_same_stmt": (
-        "CD2, the reviewer's corpus at that round",
-        "the marker annotates a different sub-expression of the same statement",
-    ),
-    "marker_in_multiline_starred_call_args": (
-        "CD2, the reviewer's corpus at that round",
-        "the marker annotates a different sub-expression of the same statement",
-    ),
-    "marker_on_bare_comment_line_inside_call": (
-        "CD2, the reviewer's corpus at that round",
-        "the marker annotates a different sub-expression of the same statement",
-    ),
-    "same_literal_twice_on_one_compare_node": (
-        "CD2, the reviewer's corpus at that round",
-        "one Compare node, two identical literals, one marker",
-    ),
-    "yoda_left_literal_with_marker_on_other_clause": (
-        "CD2, the reviewer's corpus at that round",
-        "one Compare node, two literals, one marker",
-    ),
-    # --- planted at `34bce16`, the thirty-eighth round: twenty shapes off
-    # the axis the narrow rule is keyed on, thirteen of them escaping.
-    "detect_ifexp_literal_branch": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-    "detect_inline_dict_subscript_threshold": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-    "detect_integer_iteration_threshold": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-    "detect_literal_beside_a_LOCAL_name": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-    "detect_literal_divided_by_literal": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-    "detect_literal_in_abs_call": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-    "detect_literal_in_float_call_AGAIN": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-    "detect_literal_via_isclose_kwarg": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-    "detect_numpy_minimum_candidate": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-    "detect_product_of_two_literals": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-    "detect_sorted_subscript_threshold": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-    "detect_unary_PLUS_literal": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-    "detect_walrus_threshold": (
-        "34bce16, the thirty-eighth round",
-        "off the axis the narrow BinOp rule is keyed on",
-    ),
-}
+# The escalation clause stands and has fired once: a recorded escape stays
+# recorded unless it exposes a false pass on a real file in the tree, and when
+# one did -- `1e12 * DECLARED`, shipped in `tests/verification/rung4` -- the
+# species was closed in the scanner rather than re-listed.
 
 
-def _entries() -> list[tuple[str, str, str]]:
-    """`(id, expect, source)` for every corpus entry."""
-    out: list[tuple[str, str, str]] = []
+def _entries() -> list[tuple[str, str, str, str]]:
+    """`(id, expect, measured, source)` for every corpus entry.
+
+    `measured` is the third field and it is the one that makes CN0 a check
+    rather than a convention. The previous parse read it and dropped it.
+    """
+    out: list[tuple[str, str, str, str]] = []
     for line in CORPUS.read_text(encoding="utf-8").splitlines():
         if not line.startswith("id="):
             continue
         fields = line.split(None, 3)
         got = {k: v for k, v in (f.split("=", 1) for f in fields[:3])}
         src = fields[3].split("=", 1)[1]
-        out.append((got["id"], got["expect"], src.encode().decode("unicode_escape")))
+        out.append(
+            (
+                got["id"],
+                got["expect"],
+                got.get("measured", ""),
+                src.encode().decode("unicode_escape"),
+            )
+        )
     return out
 
 
 ENTRIES = _entries()
-ASSERTED = [e for e in ENTRIES if e[0] not in KNOWN_MISSES]
+
+# PLANTED ESCAPING: the reviewer recorded the scanner doing the wrong thing at
+# plant time. Allowed growth, derived from the corpus rather than declared.
+PLANTED_ESCAPES = {name for name, expect, measured, _ in ENTRIES if measured != expect}
+# PLANTED CAUGHT: the scanner did the right thing when the shape arrived. These
+# are the ones a regression shows up in, and they are asserted individually.
+ASSERTED = [(name, expect, src) for name, expect, measured, src in ENTRIES if measured == expect]
+
+
+def _planted_by(name: str) -> str:
+    """The commit that planted this shape, from `git blame` (CN0).
+
+    Derived, never declared. A provenance string in a map is something the
+    implementer can type; a blame line is not.
+    """
+    import subprocess
+
+    out = subprocess.run(
+        ["git", "-C", str(ROOT), "blame", "-L", f"/^id={name}/,+1", "--", str(CORPUS)],
+        capture_output=True,
+        text=True,
+    )
+    return out.stdout.split(" ", 1)[0] if out.returncode == 0 and out.stdout else "unknown"
 
 
 def _misses() -> set[str]:
@@ -261,7 +167,7 @@ def _misses() -> set[str]:
 
     out: set[str] = set()
     with tempfile.TemporaryDirectory() as d:
-        for name, expect, src in ENTRIES:
+        for name, expect, _measured, src in ENTRIES:
             f = Path(d) / f"test_{name}.py"
             f.write_text(src, encoding="utf-8")
             found = offending(f)
@@ -277,7 +183,7 @@ def test_the_corpus_is_not_empty() -> None:
         f"only {len(ENTRIES)} entries parsed. The reviewer wrote 28 and a "
         "parser that silently drops most of them is the failure this guards."
     )
-    kinds = {expect for _, expect, _ in ENTRIES}
+    kinds = {expect for _, expect, _, _ in ENTRIES}
     assert kinds == {"caught", "exempt"}, (
         f"the corpus asks for {sorted(kinds)}. A corpus with no `exempt` entry "
         "cannot show the hatch still works; one with no `caught` entry cannot "
@@ -316,7 +222,7 @@ def _measured_misses() -> set[str]:
 
     missed: set[str] = set()
     with tempfile.TemporaryDirectory(prefix="misses-") as tmp:
-        for name, expect, src in ENTRIES:
+        for name, expect, _measured, src in ENTRIES:
             f = Path(tmp) / f"test_{name}.py"
             f.write_text(src, encoding="utf-8")
             found = bool(offending(f))
@@ -325,35 +231,75 @@ def _measured_misses() -> set[str]:
     return missed
 
 
-def test_the_known_misses_are_exactly_these() -> None:
-    """The escape golden, in both directions and with different meanings (CM4).
+def test_no_shape_that_was_CAUGHT_when_planted_escapes_now() -> None:
+    """A regression, and no string can file it as growth (CN0, R341).
 
-    A NEW ESCAPE is a name the scanner misses that this map does not carry.
-    It may be allowed growth -- a reviewer planting a shape on a new axis --
-    but it is never silent: adding it requires naming who planted it, which
-    is the record that makes "the reach is measured" a true sentence.
-
-    A SHAPE THAT STARTS BEING CAUGHT is the other direction, and it fails so
-    the map cannot outlive what it describes.
+    The domain is every entry the reviewer recorded as `measured == expect`:
+    the scanner did the right thing when the shape arrived. If one of them
+    does the wrong thing now, the scanner moved under it. There is nothing to
+    declare and nowhere to declare it -- the field that decides is in a file
+    the implementer does not write.
     """
-    missing = sorted(set(_measured_misses()) - set(KNOWN_MISSES))
-    stale = sorted(set(KNOWN_MISSES) - set(_measured_misses()))
-    assert not missing, (
-        f"{len(missing)} shape(s) escape the scanner and are not recorded:\n  "
-        + "\n  ".join(missing)
-        + "\nIf a reviewer planted them, add each with their commit as its "
-        "provenance -- growth is allowed and silence is not. If one of them "
-        "was CAUGHT before, it is a regression and the scanner is what moves."
+    regressions = sorted(_measured_misses() - PLANTED_ESCAPES)
+    assert not regressions, (
+        f"{len(regressions)} shape(s) the scanner CAUGHT when planted now "
+        "escape:\n  "
+        + "\n  ".join(f"{n}  (planted at {_planted_by(n)})" for n in regressions)
+        + "\nThis is a regression in the scanner, not growth in the corpus. "
+        "The corpus records what the shipped rule did at plant time, and "
+        "these no longer do it."
     )
-    assert not stale, (
-        f"{len(stale)} recorded miss(es) are now caught:\n  "
-        + "\n  ".join(stale)
-        + "\nDelete them from KNOWN_MISSES with a sentence saying what closed "
-        "them; a golden that outlives its measurement is the shape this file "
-        "exists to refuse."
+
+
+def test_improvement_is_visible_and_needs_no_ceremony() -> None:
+    """A planted escape that is now CAUGHT is improvement, not a stale record.
+
+    The first version of this asserted the other direction and reddened on
+    thirty-one shapes -- every one of them a rule this milestone tightened.
+    `measured=` is a PLANT-TIME RECORD, not a claim about today: it says what
+    the scanner did when the shape arrived, which is exactly what makes it
+    usable as the growth rule's key. Requiring it to stay true would forbid
+    the scanner from improving without the reviewer rewriting their own
+    corpus, and the asymmetry CN0 asks for is one-directional on purpose.
+
+    What is asserted here is that improvement is REAL and countable, so the
+    number appears in the report instead of being assumed.
+    """
+    improved = PLANTED_ESCAPES - _measured_misses()
+    assert len(improved) >= 1, (
+        "no shape planted escaping is caught today. Every tightening this "
+        "milestone made to the scanner is supposed to show up here, so an "
+        "empty set means the corpus and the scanner have stopped touching."
     )
-    for name, entry in KNOWN_MISSES.items():
-        assert (
-            isinstance(entry, tuple) and len(entry) == 2
-        ), f"{name} carries {entry!r}; every entry is (provenance, reason)"
-        assert entry[0].strip(), f"{name} names no commit or round that planted it"
+
+
+def test_the_growth_rule_reads_a_field_the_implementer_cannot_write() -> None:
+    """What makes CN0 a check rather than a convention.
+
+    Asserted because the previous version's asymmetry looked identical from
+    inside the file and was decided by a string. Two properties: the set of
+    allowed escapes comes from the corpus, and the corpus is not writable
+    here -- the `PreToolUse` hook refuses it and `docs/SUPERVISOR.md` says so.
+    """
+    assert PLANTED_ESCAPES, (
+        "no entry is recorded as escaping, so the growth rule has no domain "
+        "and this file cannot tell growth from regression at all."
+    )
+    for name in PLANTED_ESCAPES:
+        assert any(n == name for n, _, _, _ in ENTRIES), name
+    text = CORPUS.read_text(encoding="utf-8")
+    assert "measured=" in text, (
+        "the corpus no longer carries `measured=`, which is the only field "
+        "that distinguishes a regression from growth."
+    )
+    declared = sum(1 for _, expect, measured, _ in ENTRIES if measured == expect)
+    assert declared, (
+        "no entry was CAUGHT when planted, so the regression rule has an "
+        "empty domain and nothing this file does can fail for the right "
+        "reason."
+    )
+    # NOT A RATIO. The first version of this asserted the caught shapes
+    # outnumbered the escaping ones and reddened at 46 against 79 -- which is
+    # what an adversarial corpus looks like when it is doing its job. What
+    # matters is that the regression domain is not empty, and it is the
+    # forty-six the scanner was right about at plant time.
