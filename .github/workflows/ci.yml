@@ -279,15 +279,22 @@ jobs:
     # every assertion and cost one setup.
     #
     # THE ORDER IS CHEAP-FIRST, and the reason is a measurement rather than a
-    # story (R343). Timed on this tree:
+    # story (R343). Re-taken at the commit that publishes them, on this
+    # machine, with the ruff and mypy caches cleared first:
     #
-    #   ruff + black + mypy        ~6 s
-    #   pytest tests/unit          ~3 s
-    #   the guards                 ~370 s
+    #   ruff + black + mypy        4.0 s
+    #   pytest tests/unit          0.9 s
+    #   the guards step below      374 s
     #
-    # so a failure in the first ten seconds costs ten seconds instead of six
-    # minutes. That is the whole claim; whether lint failures predict test
-    # failures is not measured here and is not asserted.
+    # so a failure in the first five seconds costs five seconds instead of six
+    # minutes. That is the whole claim; whether a lint failure PREDICTS a test
+    # failure is not measured here and is not asserted.
+    #
+    # These are local wall-clock numbers and the runner's will differ -- what
+    # they are about is the RATIO, which is two orders and is not a close
+    # call. The figures moved when they were re-taken (6 s and 3 s a round
+    # ago) because a warm cache and a cold one are different measurements,
+    # which is the reason BP0 says re-take rather than carry.
     steps:
       - uses: actions/checkout@v4
         # FULL HISTORY (CC3). `tests/test_report_carried.py` diffs against the
