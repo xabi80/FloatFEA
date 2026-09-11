@@ -774,6 +774,17 @@ def test_a_carried_row_points_at_a_section_that_discusses_it(item: str, section:
         f"{item} points at §{section} and this revision has no section "
         f"{section}. Sections present: {sorted(bodies)}."
     )
+    # R318: NOT THE CARRIED SECTION ITSELF. Every row's item appears in the
+    # Carried table by construction, so a pointer at that section resolves for
+    # every item and the check says nothing. The reviewer set all of them to
+    # it and the whole file stayed green.
+    carried_heading = re.search(r"^##+\s*(\d+[a-z]?)\.\s*Carried", _newest_revision(REPORT_TEXT), re.MULTILINE)
+    if carried_heading:
+        assert section != carried_heading.group(1), (
+            f"{item} points at §{section}, which is the Carried section. Every "
+            "item is in that table by construction, so the pointer resolves "
+            "whatever it says. Point at the section that does the work."
+        )
     assert re.search(rf"\b{item}\b", bodies[section]), (
         f"{item} points at §{section} and that section never mentions it. "
         "Either the pointer is wrong or the section is, and a rotation of "
@@ -1001,6 +1012,23 @@ def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
         f"the whole-suite line names `{sha}`, which is not an ancestor of "
         "HEAD. Either the count was taken on another branch or the sha was "
         "typed."
+    )
+    # R319: AND NOT ANY ANCESTOR. "Run it last" means the commit it ran at is
+    # the one this report is committed on top of -- HEAD itself before the
+    # report commit, HEAD's parent after. Any ancestor was accepted, so the
+    # previous verdict's commit and its red count passed, which is a true
+    # sentence about a tree nobody is reading.
+    near = subprocess.run(
+        ["git", "-C", str(ROOT), "rev-list", "--count", f"{sha}..HEAD"],
+        capture_output=True,
+        text=True,
+    )
+    distance = int(near.stdout.strip() or "99")
+    assert distance <= 1, (
+        f"the whole-suite line names `{sha}`, which is {distance} commits "
+        "behind HEAD. The count describes the tree the report is committed "
+        "from: run `python scripts/suite_count.py` after every other edit, "
+        "and commit the report on top of the commit it names."
     )
 
 

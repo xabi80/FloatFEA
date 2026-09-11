@@ -25,6 +25,7 @@ DATA and the implementer does not edit it.
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 import sys
@@ -87,6 +88,13 @@ STATES: dict[str, list[tuple[str, str]]] = {
     ],
     "guard_state_a_report_commit_messaged_docs_that_also_edits_the_guards_measuring_it": [
         ("docs_commit_touching_guards", "")
+    ],
+    # --- the thirty-sixth verdict's two ------------------------------------
+    "guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF": [
+        ("pointers_all_at_carried", "")
+    ],
+    "guard_state_the_whole_suite_line_names_an_ANCESTOR_AT_WHICH_THE_SUITE_WAS_RED": [
+        ("suite_line_at_an_older_ancestor", "")
     ],
 }
 
@@ -304,6 +312,32 @@ def _build(tmp: Path, state: str) -> Path:
                 ],
             ):
                 subprocess.run(["git", "-C", str(work), *args], capture_output=True, check=True)
+        elif action == "pointers_all_at_carried":
+            # Every pointer moved to the Carried section, which contains every
+            # item by construction. The reviewer did exactly this and the file
+            # stayed green: the resolution resolved and said nothing.
+            report = reports / "step-5.md"
+            text = report.read_text(encoding="utf-8", errors="replace")
+            head = text.rindex("# Revision ")
+            body = re.sub(r"\u00a7\s*\d+[a-z]?", "\u00a79", text[head:])
+            report.write_text(text[:head] + body, encoding="utf-8")
+        elif action == "suite_line_at_an_older_ancestor":
+            # A true sentence about a tree nobody is reading: the previous
+            # verdict's commit, and the count the suite had there.
+            older = subprocess.run(
+                ["git", "-C", str(work), "log", "--format=%h", "--", REVIEW_PATH],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.split()[1]
+            report = reports / "step-5.md"
+            text = report.read_text(encoding="utf-8", errors="replace")
+            text = re.sub(
+                r"Whole suite at `[0-9a-f]+`: \d+ passed, \d+ failed, \d+ skipped",
+                f"Whole suite at `{older}`: 1833 passed, 0 failed, 0 skipped",
+                text,
+            )
+            report.write_text(text, encoding="utf-8")
         elif action == "shallow":
             # A REAL SHALLOW CLONE, not `fetch --depth 1` on a full one. The
             # first version ran the fetch against `origin` and changed nothing,

@@ -102,6 +102,27 @@ REQUIREMENT_CHANGED: dict[str, tuple[str, str]] = {
         "rung's own conftest, and the reviewer's point is that the channel is "
         "a property of the whole collection path",
     ),
+    # CJ0: OUT OF SCOPE, NOT UNANSWERED. In-tree code is trusted under review
+    # and resistance to forgery by it is not a property F2 pursues -- the plan
+    # says so and the supervisor's item 4c is the defence. These are declared
+    # so that a change in what the gate reaches is visible, not because a gate
+    # is coming for them.
+    "ci_rung_full_conftest_runtest_call_hookwrapper_TRYLAST_swallows_the_exception": (
+        "pass",
+        "require=fail. The wrapper is INNER to the plugin's, so the tally is "
+        "taken inside it and both records agree. Moving the tally moves the "
+        "wrapper; this is the channel that refuted the two-places sentence",
+    ),
+    "ci_rung_full_conftest_pytest_runtest_protocol_returns_True_for_the_failing_item": (
+        "pass",
+        "require=fail. The item is never run, so no record of it exists in "
+        "either place -- the same shape as the two collection channels",
+    ),
+    "ci_rung_full_conftest_deselects_the_failing_item_through_pytest_deselected": (
+        "pass",
+        "require=fail. Deselection with the hook called, so pytest's own "
+        "accounting agrees it was never meant to run",
+    ),
 }
 
 
@@ -359,6 +380,53 @@ XFAIL_THAT_FAILS = "\n".join(
     ]
 )
 
+# R315's three further channels, and the control that separates the keyword
+# from the hook. All four are OUT OF SCOPE under CJ0 -- in-tree code is
+# trusted under review -- and they are built here so the day one of them
+# starts reddening, this file says the declaration is stale.
+CONFTEST_CALL_TRYLAST = "\n".join(
+    [
+        "import pytest",
+        "",
+        "",
+        "@pytest.hookimpl(hookwrapper=True, trylast=True)",
+        "def pytest_runtest_call(item):",
+        "    outcome = yield",
+        "    if outcome.excinfo is not None:",
+        "        outcome.force_result(None)",
+    ]
+)
+CONFTEST_CALL_DEFAULT = "\n".join(
+    [
+        "import pytest",
+        "",
+        "",
+        "@pytest.hookimpl(hookwrapper=True)",
+        "def pytest_runtest_call(item):",
+        "    outcome = yield",
+        "    if outcome.excinfo is not None:",
+        "        outcome.force_result(None)",
+    ]
+)
+CONFTEST_PROTOCOL = "\n".join(
+    [
+        "def pytest_runtest_protocol(item, nextitem):",
+        "    if 'bad' in item.name:",
+        "        return True",
+        "    return None",
+    ]
+)
+CONFTEST_DESELECT = "\n".join(
+    [
+        "def pytest_collection_modifyitems(session, config, items):",
+        "    bad = [i for i in items if 'bad' in i.name]",
+        "    items[:] = [i for i in items if 'bad' not in i.name]",
+        "    if bad:",
+        "        config.hook.pytest_deselected(items=bad)",
+    ]
+)
+
+
 LAYOUTS: dict[str, dict[str, str | None]] = {
     "ci_rung6_live": {
         "tests/verification/rung6/__init__.py": "",
@@ -564,6 +632,22 @@ LAYOUTS: dict[str, dict[str, str | None]] = {
     },
     "ci_rung_full_two_tests_one_failing_and_NO_conftest_CONTROL": {
         "tests/verification/rung1/test_a.py": OK_AND_BAD,
+    },
+    "ci_rung_full_conftest_runtest_call_hookwrapper_TRYLAST_swallows_the_exception": {
+        "tests/verification/rung1/test_a.py": OK_AND_BAD,
+        "tests/verification/rung1/conftest.py": CONFTEST_CALL_TRYLAST,
+    },
+    "ci_rung_full_conftest_runtest_call_hookwrapper_DEFAULT_ORDER_swallows_the_exception_CONTROL": {
+        "tests/verification/rung1/test_a.py": OK_AND_BAD,
+        "tests/verification/rung1/conftest.py": CONFTEST_CALL_DEFAULT,
+    },
+    "ci_rung_full_conftest_pytest_runtest_protocol_returns_True_for_the_failing_item": {
+        "tests/verification/rung1/test_a.py": OK_AND_BAD,
+        "tests/verification/rung1/conftest.py": CONFTEST_PROTOCOL,
+    },
+    "ci_rung_full_conftest_deselects_the_failing_item_through_pytest_deselected": {
+        "tests/verification/rung1/test_a.py": OK_AND_BAD,
+        "tests/verification/rung1/conftest.py": CONFTEST_DESELECT,
     },
 }
 
