@@ -67,6 +67,23 @@ machine neither reviewer controls. A run that has not finished is not a pass, an
 a workflow that did not run on the reviewed commit is an unavailable check --
 recorded as unavailable, never skipped over.
 
+**THREE STATES, NOT TWO (CK2).** `red`, `green`, and **`unavailable --
+allowance exhausted`**, which is neither and does not HOLD on its own:
+
+```
+cmd  gh api repos/<owner>/<repo>/actions/runs/<id>/jobs
+out  every job: runner_name "", steps [], a two-second duration, and the
+     annotation "The job was not started because recent account payments have
+     failed or your spending limit needs to be increased"
+```
+
+A job that was never started measured nothing. Reading it as red would HOLD a
+step on a billing account, and reading it as green would be worse. Record the
+state, name the last run that DID execute, and say whether the code has moved
+since -- `git diff <that run's commit>..HEAD -- tests/verification scripts
+.github` empty means the ladder result still describes the tree. Then judge the
+step on everything else.
+
 1. Identify the newest `docs/reports/F<n>/step-<k>.md` on the branch and the
    newest `[witness ...]` comment. Every step report newer than the last
    witness comment is unreviewed by the witness. Review them oldest first.

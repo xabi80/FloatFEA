@@ -48,6 +48,15 @@ not in the repo, that is a finding in itself.
    A run that has not finished is not a pass. A workflow that did not run on the
    reviewed commit is an unavailable check, and it is recorded as unavailable
    rather than skipped over.
+
+   **AND THERE IS A THIRD STATE (CK2): `unavailable -- allowance exhausted`.**
+   Jobs with `runner_name: ""`, no steps, a two-second duration and the
+   annotation about payments or a spending limit were never started. That is
+   not a red build and it does not HOLD by itself. Record it as that state,
+   name the last run that executed, and check whether the code has moved since
+   -- an empty `git diff <that commit>..HEAD -- tests/verification scripts
+   .github` means its result still describes the tree under review. Then judge
+   the step on everything else.
 4. `git diff <prev-verdict-commit>..HEAD -- floatfea/tolerances.py` separately,
    because that file is where the cheapest wrong fix lands.
 4c. `git diff <prev-verdict-commit>..HEAD -- tests/conftest.py 'tests/**/conftest.py'`
