@@ -1051,7 +1051,8 @@ INTERCHANGE_CHANNEL_DRIFT_ULP: Final[float] = 2.0
 # counter then fails on the machine the band was measured on -- the margin was
 # decided by which way a libm's last bit fell. Measured from the site and added
 # beyond it, the delta that reaches the comparison is 3 ULP on every machine
-# and the margin is one ULP by construction. The operating point is recorded
+# and the margin is AT LEAST one ULP by construction -- it is |clean| + 1,
+# and one is its floor (R340). The operating point is recorded
 # with it: the clean deviation is 0.0 ULP at that site here and up to 1.0 ULP
 # on the canonical machine.
 # Set: 2026-09-10, F2
