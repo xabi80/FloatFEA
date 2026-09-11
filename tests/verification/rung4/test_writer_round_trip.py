@@ -106,6 +106,42 @@ def _drift_ulp(got: np.ndarray, want: np.ndarray) -> tuple[float, int]:
     return diff / math.ulp(ampl), int(np.count_nonzero(got == want))
 
 
+def test_an_all_zero_reference_RAISES_in_both_places(tmp_path: Path) -> None:
+    """R329/R338, and nothing reddened when the first repair was half done.
+
+    The helper here and `scripts/measure_channel_drift.py` both divided by an
+    amplitude and both defaulted it to `1.0` when the channel was identically
+    zero. The first was repaired and the second was not, and no test noticed
+    -- which is why this one asserts BOTH, by importing the script rather
+    than by reading it.
+    """
+    import importlib.util
+
+    zero = np.zeros((3, 3))
+    with pytest.raises(ValueError, match="identically zero"):
+        _drift_ulp(zero + 4e-16, zero)
+
+    spec = importlib.util.spec_from_file_location(
+        "measure_channel_drift",
+        Path(__file__).resolve().parents[3] / "scripts" / "measure_channel_drift.py",
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    source = (
+        Path(__file__).resolve().parents[3] / "scripts" / "measure_channel_drift.py"
+    ).read_text(encoding="utf-8")
+    assert "or 1.0" not in source, (
+        "the instrument still defaults an all-zero amplitude to 1.0. It is "
+        "the script the plan's own basis is measured with, so a scale "
+        "invented there reaches the tolerance."
+    )
+    assert "identically zero" in source, (
+        "the instrument does not raise on an all-zero channel; the two places "
+        "have to agree or the repair is half done again."
+    )
+
+
 def test_the_fixture_exists_and_is_writer_produced() -> None:
     """Meta-test. Every assertion below is vacuous on a missing or empty file."""
     assert FIXTURE.is_file(), (
@@ -236,8 +272,15 @@ def test_a_drift_PAST_the_band_is_refused(dataset: str, channel: str, offset: in
         f"band is {INTERCHANGE_CHANNEL_DRIFT_ULP}. The band does not catch the "
         "defect it is sized against."
     )
-    assert drift >= expected_drift - 1e-9, (
-        f"the injection measured {drift:.4f} ULP where {expected_drift:.4f} was "
+    # EXACTLY, WITH NO SLACK (R336). `- 1e-9` was an undeclared literal
+    # reaching a comparison three lines below the one this round removed, and
+    # it protected against nothing: over fourteen cells -- two channels, the
+    # site forced to -2, -1, -0.5, 0, +0.5, +1 and +2 ULP -- the measured
+    # drift equals the arithmetic to the bit. Both sides are the same two
+    # subtractions in the same order, so equality is the honest predicate and
+    # slack was a guess dressed as a tolerance.
+    assert drift == expected_drift, (
+        f"the injection measured {drift!r} ULP where {expected_drift!r} was "
         "put in. The delta is not what reached the comparison, so the counter "
         "is measuring something other than itself."
     )
@@ -255,9 +298,14 @@ def test_a_swapped_sign_is_orders_away_from_the_band() -> None:
     There is no threshold here now. A sign flip on a value `v` moves it by
     exactly `2|v|`, so the drift it produces is `2|v| / ulp(amplitude)` and
     that is a PREDICTION, not a bound. Asserting the measurement equals the
-    prediction says the instrument measures what it claims to; the ORDERS
-    between it and the band are then a published figure in the step report,
-    where a figure belongs, rather than a number chosen in a test.
+    prediction says the instrument measures what it claims to.
+
+    THE ORDERS BETWEEN IT AND THE BAND ARE A FIGURE, and a figure is
+    published where something regenerates it: `docs/reports/F2/step-5.md`,
+    the section answering R337, states it with the command that takes it.
+    The previous version of this docstring pointed at a report figure that
+    did not exist, which is the same defect as the literal it replaced -- a
+    claim with nothing behind it.
 
     IT READS NO FIXTURE, and the previous docstring did not say so: `got` is
     built from `want`, so this cannot fail for any defect in the repository.
@@ -277,3 +325,70 @@ def test_a_swapped_sign_is_orders_away_from_the_band() -> None:
         "the flip moved more than the one value it was applied to, so the "
         "comparison is not per-element."
     )
+
+
+# RESTORED VERBATIM (CM0, R333). The three tests below were deleted by the
+# commit that introduced the band -- not argued away, not replaced: a rewrite
+# spliced from one function to the end of the file and took them with it. They
+# were green, they assert properties nothing else asserts, and one of them is
+# cited eighty lines above as the reason the `_drift_ulp` helper raises on an
+# all-zero channel.
+#
+# Losing the interchangeability control in the round that relaxed twelve
+# comparisons to a band is strictly weaker than either change alone: the band
+# admits a libm's last bit, and this is what says the channel being compared
+# is the right one.
+#
+# `tests/test_collected_set_golden.py` now makes a disappearance a build
+# failure rather than something a reviewer has to notice by comparing counts.
+
+
+def test_channels_are_not_interchangeable() -> None:
+    """Guards the round-trip against passing on a swapped channel.
+
+    The generator gives every channel and every DOF a different closed form for
+    this reason: if position and velocity were both, say, sin(t), the assertions
+    above would pass with the two swapped.
+    """
+    e = _expected()
+    with h5py.File(FIXTURE, "r") as f:
+        pos = f["kinematics/bodyA/position"][...]
+    assert not np.allclose(pos, e["xi_dot"][:, 0:3]), "position matches velocity"
+    assert not np.allclose(pos, e["xi_ddot"][:, 0:3]), "position matches acceleration"
+    assert not np.allclose(pos, e["xi"][:, 3:6]), "position matches rotation"
+
+
+def test_a_validation_error_SURVIVES_propagation() -> None:
+    """`FlrValidationError` must carry a traceback out through a context manager.
+
+    It was a frozen dataclass, which forbids Python's `__traceback__` assignment,
+    so a real rejection arrived as `FrozenInstanceError: cannot assign to field
+    '__traceback__'` -- the named fault replaced by an unrelated error exactly
+    when it was needed. The rejection matrix never saw it because it catches at
+    the point of raise. This asserts the propagation path the matrix does not.
+    """
+    from contextlib import contextmanager
+
+    from floatfea.io.reader import Fault, FlrValidationError
+
+    @contextmanager
+    def _through():
+        yield
+
+    with pytest.raises(FlrValidationError) as caught, _through():
+        raise FlrValidationError(Fault.MU_WARMUP, "propagation check")
+    assert caught.value.fault is Fault.MU_WARMUP
+    assert caught.value.__traceback__ is not None
+
+
+def test_mu_is_present_and_not_all_zero() -> None:
+    """`mu` at a run start has `mu[0] = 0` by convention; the rest must not be.
+
+    An all-zero `mu` is what a writer that forgot the radiation channel produces,
+    and it would satisfy any test that only checked the dataset's presence.
+    """
+    with h5py.File(FIXTURE, "r") as f:
+        mu = f["loads/bodyA/radiation/mu"][...]
+    assert mu.shape == (N + 1, 6)
+    assert np.array_equal(mu[0], np.zeros(6)), "mu[0] must be zero at a run start"
+    assert np.abs(mu[1:]).max() > 0.0, "mu is identically zero -- channel not written"

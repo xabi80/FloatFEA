@@ -90,7 +90,18 @@ def main() -> int:
                     ref = want[channel][:, 6 * k + offset : 6 * k + offset + 3]
                     rows.append((name, got, ref))
         for name, got, ref in rows:
-            ampl = float(np.max(np.abs(ref))) or 1.0
+            ampl = float(np.max(np.abs(ref)))
+            if ampl == 0.0:
+                # R329/R338: THE SECOND SITE. The test helper was repaired and
+                # this one was not, so the same invented scale survived in the
+                # instrument the plan's basis is measured with -- which is the
+                # worse of the two places for it.
+                raise ValueError(
+                    f"{name} is identically zero in the reference, so there is "
+                    "no amplitude to measure ULP against. A channel that "
+                    "should be zero and is not is a defect, not a rounding "
+                    "question."
+                )
             diff = float(np.max(np.abs(got - ref)))
             ulp = diff / math.ulp(ampl)
             exact = int(np.count_nonzero(got == ref))
