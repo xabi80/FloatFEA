@@ -265,6 +265,28 @@ jobs:
           cores = {r[2] for r in rows}
           if len(cores) != 1 or cores == {"unset"}:
               sys.exit(f"core types across legs: {sorted(cores)} -- the kernel is not pinned")
+          # AND THE REGRESSION LINE IS READ RATHER THAN PRINTED. Measured on
+          # the first run after the allowance returned: all ten legs FAILED
+          # at the regression rung, all ten uploaded an identical render, and
+          # this job reported SUCCESS under the name "ten legs agree". The
+          # renders did agree, so nothing here was false -- but a green job
+          # named that, sitting under ten red ones, is the shape a reader
+          # takes for a working gate. `regression.txt` was collected into
+          # `rows`, printed, and compared to nothing.
+          #
+          # Q8 makes CI canonical for `tests/regression`, so this is the gate
+          # and not a diagnostic; the legs' own step says exactly that.
+          red = [(name, line) for name, _cpu, _core, _h, line in rows
+                 if not line.startswith("0 failed") and ", 0 failed" not in line]
+          if red:
+              for name, line in red:
+                  print("RED", name, line)
+              sys.exit(
+                  f"{len(red)} of {len(rows)} legs report a red regression rung. "
+                  "The renders agreeing says the machine is deterministic; it "
+                  "does not say the goldens hold, and this job is the gate for "
+                  "both."
+              )
           print("ten of ten identical:", next(iter(by_hash))[:12], "core", next(iter(cores)))
           PY
 
