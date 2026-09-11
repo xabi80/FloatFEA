@@ -5540,3 +5540,409 @@ already written, and Q7 is not opened here.
 
 **CI is `unavailable — allowance exhausted`**, which CK2 makes a state rather
 than a red build. Every figure in this revision is local and says so.
+
+---
+
+# Revision 16 — the machine came back, and it had something to say
+
+Answers: verdict 41 @ f04e3c5
+
+**2026-09-11.** Commits since the forty-first verdict, listed in §9.
+
+## 0. CI at `b1cfceb`, the commit verdict 41 judged — **unavailable, allowance exhausted**
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 41 at `b1cfceb` through the report's own `Answers:` line. Run `34643760694`, event `push`, conclusion **failure** — and not one of its 4 jobs started.
+
+```
+cmd  gh api repos/.../actions/runs/34643760694/jobs
+out  every job: runner_name "", steps [], a two-second duration,
+     and the annotation "The job was not started because recent
+     account payments have failed or your spending limit needs to
+     be increased"
+judge NOTHING WAS MEASURED at this commit. 2 jobs are marked failed
+     and none of them ran a step. Per CK2 this is a state of its own --
+     `unavailable -- allowance exhausted` -- and it is neither red nor green.
+```
+
+## 0a. How to read §0
+
+**§0 is generated and describes the commit verdict 41 judged.** That run
+predates the change that matters more than anything in this round: **the
+repository is public, the allowance is gone as a constraint, and CI has run
+twice since.** §4 is about those two runs, which §0 cannot see because they
+are newer than the commit it anchors on.
+
+## 1. R359 — the second reader reads the fields, not the count
+
+**The first repair compared counts and the decision does not rest on a
+count.** `_planted_caught(expect, measured)` reads two fields; `_entries()`
+supplied both; so the edit that gets past a count check is the one that keeps
+the row and rewrites the field.
+
+```
+cell the reviewer's ablation, `ast.walk(inner)` -> `ast.walk(inner.right)`,
+     then each parser edit in turn. Both edits are in files I own, neither
+     touches the corpus, everything restored afterwards.
+out  at `ca57d8a`, before this round:
+       CLEAN                     57 passed
+       (a) the scanner narrowed   2 failed
+       (a) + R351's drop          1 failed
+       (a) + R359's re-scope     56 passed   <- GREEN. A real regression
+                                                filed as growth, counts
+                                                agreeing, corpus untouched.
+     at this commit:
+       CLEAN                     64 passed
+       (a) the scanner narrowed   2 failed, 62 passed
+       (a) + R351's drop          1 failed  test_every_entry_reaches_the_assertions
+       (a) + R359's re-scope      1 failed  test_every_entry_reaches_the_assertions
+       RESTORED                  64 passed
+     (the clean count is 64 rather than 57 because the reviewer's corpus
+     round added twenty-two shapes between the two measurements)
+rule `_triples_in_the_file()` reads `(id, expect, measured)` straight from
+     the bytes with one regex, and the parsed set must equal it. Every field
+     the decision reads is read twice, by readers sharing nothing but the
+     path.
+judge WHAT THE REPAIR BUYS, AND THE DOCSTRING NOW SAYS ONLY THIS: an edit in
+     the parser has to be made identically in two places to stay invisible,
+     and one of those places exists for no other purpose. It is not a proof
+     that no such edit exists. Two previous versions of that paragraph
+     claimed more than the code did and each was refuted by the next round;
+     this is the third attempt and it claims less.
+```
+
+## 2. R360 — the cell's rows, re-run, and the variable named
+
+**The rows did not reproduce because the report did not say which ablation
+it ran.** Revision 15 wrote "a plausible one-line tightening of the scanner".
+Two different tightenings were in play across the two rounds: verdict 39's
+`or True` on the `isinstance` line, which is what produced the published
+threes, and verdict 40's `ast.walk(inner)` to `ast.walk(inner.right)`, which
+is what the reviewer ran and which produces twos. Both are real; the report
+published one and described neither.
+
+```
+cmd   the same four rows with `or True`, at `ca57d8a`
+out   57 passed / 3 failed 54 passed / 3 failed 53 passed / 57 passed
+cmd   the same four rows with `ast.walk(inner.right)`, at `ca57d8a`
+out   57 passed / 2 failed 55 passed / 1 failed 55 passed / 56 passed
+judge SO THE PUBLISHED NUMBERS WERE FROM A REAL RUN OF A DIFFERENT CELL, and
+      a reader reproducing the verdict's cell gets the second row and doubts
+      the repair. The figures in §1 above are the reviewer's ablation, named
+      in the cell, which is the one the verdict is about.
+judge THE CONCLUSION NEVER MOVED and it is worth separating from the numbers:
+      the pair that was green before CO0 is red now, at
+      `test_every_entry_reaches_the_assertions`, by name. That is the
+      sentence R360's closing condition calls true and sufficient.
+```
+
+**The block in `ca57d8a`'s commit message carries the same wrong rows and a
+commit message cannot be amended.** It is withdrawn here, and `46cf887`'s
+message carries the re-run rows for the reviewer's ablation.
+
+## 3. R361 — the sentence that licensed the exemption was false
+
+```
+cmd   pytest tests --collect-only -q, at the report commit and at the corpus
+      commit that follows it
+out   b1cfceb  2032 tests collected
+      30de97a  2039 tests collected
+judge THE CORPUS IS PARAMETRISATION DATA. `ASSERTED` is the parametrisation
+      of the exemption test and it is built from the corpus file, so a
+      corpus-only commit adds tests. CO3's exemption therefore let R319
+      accept a count stale by exactly that many, which is the opposite of
+      what R319 is for. Half of CO3 was right and the wrong half was mine
+      to have justified.
+```
+
+**The collision was never about whose commit it is.** The suite line is a
+sentence about the tree the report was committed from, and nothing committed
+afterwards can make it false. The anchor is the report's own commit — HEAD
+while a revision is being written, that commit once it is in — and every
+commit is counted again, the reviewer's included.
+
+```
+cell  a count taken BEFORE a corpus commit, published in a report committed
+      AFTER it, built on a scratch branch in a clone
+out   CO3's exemption          1 passed   -- stale by the corpus's own cases
+      anchored on the report   1 failed
+judge STRICTER WHERE IT MATTERS AND QUIET WHERE IT DOES NOT: green at the
+      report commit, the corpus commit and the verdict commit, which is the
+      collision R358 named, and red on the case R361 found.
+```
+
+**And the corpus tree leaves `paths-ignore`.** It is the last thing a run
+should skip: it is the parametrisation of the exemption guard, and the commit
+that prompted the exemption is exactly the one whose collected set moved.
+
+## 4. CI came back, and three things follow from it
+
+**The repository is public.** That is the answer to the question fourteen
+rounds have been waiting on, and it was Xabier's to give.
+
+```
+cmd   gh workflow run ci.yml --ref F2, then the artifacts of run 34654570891
+out   ten legs, real runners, real steps -- the first measurement since 8942cdc
+      every leg: figures.sha256 0415d1196b56
+      every leg: regression "4 collected, 1 failed"
+judge THE MACHINE IS DETERMINISTIC AND THE GOLDENS WERE RED, at the same
+      time, and only one of those two facts reached the run's status. See
+      the third item below.
+```
+
+**The canonical render is committed, from the artifact, byte for byte.**
+
+```
+cmd   sha256 of `docs/milestones/F2_figures.md` after the commit
+out   0415d1196b56 -- the artifact, the leg's own claim, and ten legs agreeing
+cmd   python -m pytest tests/test_plan_figures.py -q
+out   104 passed   (1 failed, for fourteen rounds, before it)
+rule  Q8: CI is canonical for this file, and the stamp inside it is CI's
+      pinned environment -- linux, 3.13.15, numpy 2.5.3, scipy 1.18.1,
+      OpenBLAS Haswell.
+judge WHAT MOVED IS NOT ONLY THE CORPUS GROWING. `corpus_entries` 187 -> 203,
+      `corpus_solved` 158 -> 164, and with them the worst case:
+        margin_dropped_flip        6.264e+05x -> 1217x
+        margin_wrong_dof_index          1486x -> 299.1x
+        both now at `ck_length_thousand_km`, L/r_min 4.8e+06
+      and the decision is unchanged: `below_ceiling` is 0 of 164 on both. A
+      five-hundred-fold fall in headroom with three orders still in hand,
+      because a corpus round found a much harsher entry. That is BP0 working.
+```
+
+**The exempt-pair golden grew by two, and the reason is the corpus round.**
+
+```
+cmd   the regenerator, which refuses if any recorded pair is no longer measured
+out   recorded 55, measured 57, gone []
+      ck_length_thousand_km|dropped_flip      6.086783e-12
+      ck_length_thousand_km|wrong_dof_index   1.495510e-12
+rule  ADDITIVE. Every recorded pair keeps the value it was recorded with, so
+      `test_every_recorded_pair_is_still_detected` is untouched; what grew is
+      the SET, which is the other test and the reason it exists. `CLAUDE.md`
+      § Testing wants the explanation written down and the guard's own
+      message names a corpus round as a legitimate one.
+cmd   python -m pytest tests/regression -q
+out   4 passed   (1 failed before it)
+judge THIS ONE RED WAS BLOCKING THE MACHINE. All ten legs failed at their
+      regression rung on this single assertion, so nothing else CI measured
+      could be read as a gate while it stood.
+judge THE VALUES ARE LOCAL AND CI IS CANONICAL FOR `tests/regression`. The
+      dispatch run at this round's head is what confirms them; if they move
+      by more than `EXEMPT_RESPONSE_DRIFT_ULP` it says so by name.
+cmd   the dispatch run at this round's head, 34655464372, and its artifacts
+out   ten legs SUCCESS, "4 collected, 0 failed" on every one
+      figures.sha256 0415d1196b56 on every one, coretype Haswell on every one
+      "CI determinism -- ten legs agree"   SUCCESS
+      "the verification ladder"            SUCCESS
+      "lint, unit and guards"              FAILURE -- the report-site guards,
+                                           which this revision's section 7 is
+                                           what answers
+judge SO CI CONFIRMS THE VALUES, and it is the first run in this milestone
+      where the ladder and all ten legs are green together. What is red is
+      the guard that reads this report, at a commit where this report does
+      not exist yet.
+```
+
+**And a hole in the gate, mine, found by reading the run rather than the
+code.**
+
+```
+cmd   gh api .../runs/34654570891/jobs
+out   ten legs FAILURE; "CI determinism -- ten legs agree" SUCCESS
+judge A GREEN JOB CALLED "TEN LEGS AGREE" UNDER TEN RED LEGS. Nothing it
+      printed was false -- the ten renders do hash identically -- but
+      `regression.txt` was collected into `rows`, printed, and compared to
+      nothing. The one line in each artifact that says whether the goldens
+      held was decoration.
+rule  Q8 makes CI canonical for `tests/regression`, so that job is the gate
+      for the goldens as well as for the hash. It now fails, naming each leg
+      and its line, when any leg reports a red regression rung.
+```
+
+## 5. What is open
+
+- **R354, R355, R356, R357, R362, R363, R364** — this round's and last
+  round's 4a items, untouched and recorded. R356 and R362 are each "the same
+  line in several files" and they go together rather than one per round,
+  which is the reviewer's own argument for recording them.
+- **R330, R331, R332, R347, R348, R349, R350's second half** and the rest of
+  the 4a list.
+- **R275, R231, R244, R245** — the remaining Q8 values. The machine that
+  measures them is available now for the first time.
+- **R223, R224 — Q7**, which opens on green CI at a reviewed commit. Not
+  claimed here: the run at this round's head is the first that could be
+  green, and the verdict is what reads it.
+- **R230**, reopened by my own error at revision 3, and mine to leave open.
+
+## 6. The whole suite, at the commit this revision is committed on top of
+
+**Whole suite at `502e0de`: 1821 passed, 0 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit, excluding 218 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py) -- which the supervisor runs at the commit that carries it. R339: the count of what is excluded is part of the line, so a reader can size it without running anything.
+
+**Zero failures, and that is the first time this milestone.** The two that stood for fourteen rounds are §4's two: the canonical render, which needed the machine, and the exempt-pair golden, which was blocking the machine.
+
+## 7. Sites named by findings and not touched
+
+Generated: `python scripts/untouched_sites.py`. The rows are the guard's own
+`SITES` and `TOUCHED`, imported rather than re-derived, so the table cannot
+enumerate a different set than the check does. The reason column is mine and
+carries the literal `no change`, which is the string the guard looks for.
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R361 | `CLAUDE.md` | the file is untouched | **no change** — the finding quotes the golden-file and tolerance rules from this file. They are what the repair obeys, not a site to edit |
+| R361 | `tests/corpus/tolerance_marker_exemptions.txt` | the file is untouched | **no change** — the reviewer's file and refused to me. It is named as the thing whose growth moves the collected count, which is the measurement in §3 |
+| R362 | `.claude/hooks/protect-reviews.sh` | the file is untouched | **no change** — 4a, and it is the hook's own documented limitation rather than a defect in it. Changing anything under `.claude/` is a standalone `process:` commit citing a directive, which this round has none for |
+| R362 | `scripts/ci_section.py:71` | the file is untouched | **no change** — 4a. The split path literal and the missing comment go with R356's four readers: the same line in several files, done together rather than one per round, which is the reviewer's own argument |
+| R363 | `scripts/ci_section.py:74` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:75` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:76` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:77` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:78` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:79` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:80` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:81` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:82` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:83` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:84` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:85` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:86` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:87` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:88` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:89` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:90` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:91` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:92` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:93` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:94` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:95` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:96` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:97` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:98` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:99` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:100` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:101` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:102` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:103` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:104` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:105` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:106` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:107` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:108` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:109` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+| R363 | `scripts/ci_section.py:110` | the file is untouched | **no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and it goes with R362 in the same file |
+
+## 8. Carried
+
+Generated: `python scripts/carried_table.py <verdict> docs/reports/F2/step-5-answers.json`. The row set, the class and the subject of every row are read from the verdict; the answers file carries a state and a section pointer, and the pointer is resolved against this report by `tests/test_report_carried.py`.
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R223 | **open** — §5 | OPEN by instruction, correctly listed. |
+| R224 | **open** — §5 | OPEN by instruction, correctly listed. |
+| R225 | **open** — carried from an earlier verdict | carried. The |
+| R226 | **open** — carried from an earlier verdict | and R266 have no row; that is R348's territory and it has |
+| R227 | **open** — carried from an earlier verdict | and R266 have no row; that is R348's territory and it has |
+| R228 | **open** — carried from an earlier verdict | carried. The |
+| R230 | **open** — §5 | OPEN by instruction, correctly listed. |
+| R231 | **open** — §5 | OPEN, still correctly declared blocked on the |
+| R232 | **open** — carried from an earlier verdict | carried. The |
+| R233 | **open** — carried from an earlier verdict | carried. The |
+| R244 | **open** — §5 | OPEN, still correctly declared blocked on the |
+| R245 | **open** — §5 | OPEN, still correctly declared blocked on the |
+| R248 | **open** — carried from an earlier verdict | residues, |
+| R249 | **open** — carried from an earlier verdict | carried. The |
+| R250 | **open** — carried from an earlier verdict | generated table still expands a range by its endpoints only, so R250, R251, |
+| R251 | **open** — carried from an earlier verdict | generated table still expands a range by its endpoints only, so R250, R251, |
+| R252 | **open** — carried from an earlier verdict | carried. The |
+| R253 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R254 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R256 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R257 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R261 | **open** — carried from an earlier verdict | OPEN by instruction, correctly listed. |
+| R262 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R264 | **open** — carried from an earlier verdict | and R266 have no row; that is R348's territory and it has |
+| R266 | **open** — carried from an earlier verdict | have no row; that is R348's territory and it has |
+| R274 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R275 | **open** — §5 | OPEN, still correctly declared blocked on the |
+| R276 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R277 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R281 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R288 | **open** — carried from an earlier verdict | carried. The |
+| R289 | **open** — carried from an earlier verdict | carried. The |
+| R290 | **open** — carried from an earlier verdict | carried. The |
+| R291 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R292 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R293 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R300 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R302 | **open** — carried from an earlier verdict | accepted at verdict 37, not reopened. |
+| R303 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R308 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R315 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R320 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R321 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R322 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R323 | **carried** | closed in earlier verdicts, |
+| R329 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R330 | **open** — §5 | OPEN at 4a, correctly listed. R332 stands and I |
+| R331 | **open** — §5 | OPEN at 4a, correctly listed. R332 stands and I |
+| R332 | **open** — §5 | OPEN at 4a, correctly listed. R332 stands and I |
+| R347 | **open** — §5 | second half -- OPEN at 4a, correctly listed. |
+| R348 | **open** — §5 | second half -- OPEN at 4a, correctly listed. |
+| R349 | **open** — §5 | second half -- OPEN at 4a, correctly listed. |
+| R350 | **open** — §5 | second half -- OPEN at 4a, correctly listed. |
+| R351 | **carried** | CLOSED at every clause of its condition. The comparison exists, |
+| R352 | **carried** | CLOSED at both halves, after four rounds. The generator and the |
+| R353 | **carried** | CLOSED at both of its named sites. The declared line is now |
+| R354 | **open** — §5 | OPEN at 4a, correctly listed in section 5 and |
+| R355 | **open** — §5 | OPEN at 4a, correctly listed in section 5 and |
+| R356 | **open** — §5 | OPEN at 4a, correctly listed in section 5 and |
+| R357 | **open** — §5 | OPEN at 4a, correctly listed in section 5 and |
+| R358 | **carried** | ANSWERED as a rule change, and EVERY FIGURE IN SECTION 4 |
+| R359 | **answered** — §1 | CO0 shut the door on the DOMAIN and the same species walks in through the CLASSIFICATION INPUT.... |
+| R360 | **answered** — §2 | Report section 1, and the same block in ca57d8a's commit message. code s1 "(a) scanner narrowed... |
+| R361 | **answered** — §3 | CO3 exempts the corpus tree from the distance rule on the ground that it changes nothing a... |
+| R362 | **open** — §5 | Two shipped files assemble the protected verdict path from pieces, and neither says why.... |
+| R363 | **open** — §5 | Section 0 anchors on the previous verdict's judged commit even when a newer run exists, and the... |
+| R364 | **open** — §5 | The scanner's coverage is still two thirds unseen axes, four batches running. My 22 entries... |
+
+## 9. What I am asking for
+
+**Commits since the forty-first verdict**, in order:
+
+```
+cmd  git log --oneline f04e3c5..HEAD
+out  46cf887 R359: the second reader reads the fields the decision reads
+     8830041 process: the suite line is anchored on the report's own commit (R3
+     059cf5b CG2: the canonical render, from the machine that is finally allowe
+     ea657dc golden: two pairs a corpus round added, and why the set grew
+     502e0de The determinism verdict read the regression line and asserted noth
+     (this revision's own commit follows)
+```
+
+| commit | what it is |
+|---|---|
+| `46cf887` | R359: the second reader reads the fields the decision reads |
+| `8830041` | `process:` R361 — the suite line is anchored on the report's own commit |
+| `059cf5b` | CG2: the canonical render, from the machine that is finally allowed to run |
+| `ea657dc` | the exempt-pair golden, two pairs a corpus round added, and why |
+| `502e0de` | the determinism verdict reads the regression line instead of printing it |
+| this one | the report |
+
+**Three blocking items, all three answered.**
+
+- **R359** — the fields the decision reads are read twice. The edit that was
+  green is red, by name.
+- **R360** — the rows are re-run and the ablation is named. The published
+  numbers were a real run of a cell the report did not identify.
+- **R361** — the causal sentence was false and the exemption it licensed is
+  gone. The rule is anchored on the report's own commit, which is what the
+  line was always a statement about.
+
+**And the thing that was not in anyone's gift until today.** The repository
+is public, CI runs, and the first two runs produced the canonical render,
+found the one golden that was blocking every determinism leg, and exposed a
+verdict job that reported success under ten failures. None of that was
+available to the last fourteen rounds.
+
+**What is not claimed.** Q7 is not opened here. No Q8 value is written here.
+Nothing executable in `floatfea/` has moved.

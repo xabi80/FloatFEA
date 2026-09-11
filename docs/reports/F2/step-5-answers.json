@@ -114,19 +114,13 @@
       "where": "§5"
     },
     "R351": {
-      "state": "answered",
-      "where": "§1",
-      "site": "tests/test_marker_exemption_corpus.py"
+      "state": "carried"
     },
     "R352": {
-      "state": "answered",
-      "where": "§2",
-      "site": "scripts/ci_section.py"
+      "state": "carried"
     },
     "R353": {
-      "state": "answered",
-      "where": "§3",
-      "site": "tests/test_marker_exemption_corpus.py"
+      "state": "carried"
     },
     "R354": {
       "state": "open",
@@ -145,9 +139,33 @@
       "where": "§5"
     },
     "R358": {
+      "state": "carried"
+    },
+    "R359": {
       "state": "answered",
-      "where": "§4",
+      "where": "§1",
+      "site": "tests/test_marker_exemption_corpus.py"
+    },
+    "R360": {
+      "state": "answered",
+      "where": "§2"
+    },
+    "R361": {
+      "state": "answered",
+      "where": "§3",
       "site": "tests/test_report_carried.py"
+    },
+    "R362": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R363": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R364": {
+      "state": "open",
+      "where": "§5"
     }
   }
 }
