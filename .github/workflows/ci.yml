@@ -87,6 +87,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+          # CK0: the wheel cache, on every job that installs.
+          cache: pip
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
 
       - name: "measure: the machine, the kernel, and a fresh render"
@@ -188,12 +190,17 @@ jobs:
   determinism_verdict:
     name: "CI determinism -- ten legs agree"
     runs-on: ubuntu-latest
-    # CK0: BY HAND ONLY. Ten legs are twenty-two minutes of the ninety
-    # this workflow was costing, and they answer a question that moves with
-    # the render, the kernel pin and the environment rather than with a test.
-    if: github.event_name == 'workflow_dispatch'
+    # CK0: BY HAND ONLY, AND ONLY WHEN EVERY LEG HAS REPORTED. These were
+    # two `if:` keys on one job (R334): YAML keeps the last, so the
+    # `workflow_dispatch` gate was silently discarded and the ten legs kept
+    # running on every push -- the opposite of what the commit claimed, and
+    # the reason the run at `cbde0e4` produced no jobs at all.
+    #
+    # `always()` is what makes the verdict job see a leg that FAILED rather
+    # than being skipped with it, so both conditions are needed and they are
+    # one expression now.
+    if: always() && github.event_name == 'workflow_dispatch'
     needs: [determinism]
-    if: always()
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -282,10 +289,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-          # CK0: the wheel cache. `pip install -e ".[dev]"` pulls numpy, scipy
-          # and h5py on every job, and it was doing that nine times a push.
+          # CK0: the wheel cache, on every job that installs.
           cache: pip
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+      # CM2: THE WORKFLOW IS LINTED BEFORE IT IS TRUSTED. A duplicate `if:`
+      # key silently discarded a gate and nothing in this repository noticed
+      # -- `yaml.safe_load` keeps the last key and reports nothing, which is
+      # how the claim and the file came apart. `actionlint` is a build
+      # failure on that shape, and `tests/test_ci_workflow_is_wellformed.py`
+      # asserts the same thing in the suite, where it runs without a binary.
+      - name: actionlint
+        uses: raven-actions/actionlint@v2
       - name: ruff
         run: ruff check floatfea tests
       - name: black --check
@@ -343,7 +357,17 @@ jobs:
   ladder:
     name: "the verification ladder"
     runs-on: ubuntu-latest
-    needs: [checks]
+    # NO `needs:` (R335, CM2). Chaining the ladder behind the checks job
+    # would have destroyed this step's own evidence: at run 34546580003 the
+    # guards job FAILED and all six ladder jobs passed, and the sentence
+    # "ladder 4 and 5 are green on the canonical machine" -- the result this
+    # step has been working towards for twelve rounds -- could not have been
+    # produced. A `ruff` line-length error would have hidden the whole ladder
+    # in the same way.
+    #
+    # The ladder and the guards are INDEPENDENT EVIDENCE about different
+    # things. The ladder's own ordering is internal to it and is the step
+    # order below; `needs:` here bought nothing but a shared failure.
     # CK0: SIX JOBS IN ONE, AND THE TWO ORDERING PROPERTIES ARE KEPT RATHER
     # THAN ASSUMED. Steps in a job stop at the first failure, so the ladder's
     # rule -- a failure at rung n makes rung n+1 uninterpretable -- is the
@@ -368,8 +392,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-          # CK0: the wheel cache. `pip install -e ".[dev]"` pulls numpy, scipy
-          # and h5py on every job, and it was doing that nine times a push.
+          # CK0: the wheel cache, on every job that installs.
           cache: pip
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
       - name: "ladder 1 -- the solver is a solver"
