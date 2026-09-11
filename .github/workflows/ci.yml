@@ -23,12 +23,13 @@ on:
     branches: ["**"]
     paths-ignore:
       - "docs/reports/**"
-      # CO3, R358: THE REVIEWER'S OWN TREES. A push carrying only the
-      # adversarial corpus or a verdict has no code in it, and until this
-      # round it ran the whole workflow and went red on the distance rule for
-      # no defect. That red sits directly in front of Q7, which opens on
-      # green CI at a reviewed commit.
-      - "tests/corpus/**"
+      # `tests/corpus/**` IS NOT IGNORED, and it was for one round (R361).
+      # CO3 put it here because a corpus push went red on the whole-suite
+      # distance rule for no defect. The rule was the defect and it is fixed
+      # at its own site; the corpus is the LAST thing a run should skip,
+      # because it is the parametrisation of the exemption guard -- the
+      # commit that prompted all this moved the collected count from 2069 to
+      # 2073, which is precisely what a run needs to see.
       - "docs/reviews/**"
       # `docs/milestones/**` IS NOT IGNORED (R342). It holds the canonical
       # render, and Q8 makes CI the only machine that may produce one: a

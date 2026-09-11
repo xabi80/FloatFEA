@@ -1075,33 +1075,44 @@ def test_the_report_carries_a_WHOLE_SUITE_count() -> None:
     )
 
 
-# THE REVIEWER'S OWN TREES. A commit touching only these is the reviewer's:
-# `tests/corpus/` is the adversarial corpus and the verdict tree is theirs,
-# and `.claude/hooks/` refuses both to the implementer. Neither carries code,
-# so neither changes what a suite count describes.
-_REVIEWER_TREES = ("tests/corpus/", "docs/" + "re" + "views/")
+# WHAT THE SUITE LINE IS A STATEMENT ABOUT, which is the thing CO3 got wrong
+# and R361 refuted with one command.
+#
+# CO3 exempted the reviewer's trees from the distance on the grounds that "a
+# reviewer commit carries no code and changes nothing a suite count
+# describes". That is false for `tests/corpus/`: the corpus IS the
+# parametrisation of `tests/test_marker_exemption_corpus.py`, and the commit
+# that prompted the exemption moved `pytest --collect-only` from 2069 to 2073.
+# Exempting it made R319 accept a count stale by exactly that much.
+#
+# THE COLLISION WAS NEVER ABOUT WHOSE COMMIT IT IS. BE3 requires the corpus
+# between the report and the verdict; R319 required the line to name HEAD or
+# its parent; so the rule went red at commits made after the report, for no
+# defect. But the line is a sentence about the tree the REPORT was committed
+# from, and nothing committed afterwards -- by anyone, reviewer or not -- can
+# make that sentence false. The anchor is the report's own commit, and the
+# rule is unchanged in what it catches: a count taken before an implementer
+# commit that the same report then sits on top of.
+def _report_anchor() -> str:
+    """The commit the newest revision is committed from, or HEAD while writing.
 
-
-def _implementer_commits_between(old: str, new: str) -> int:
-    """Commits in `old..new` that touch anything outside the reviewer's trees.
-
-    CO3, R358. A commit with no files listed -- a merge, or an empty commit --
-    counts, because "I could not tell" is not the same as "it was the
-    reviewer's" and the permissive reading is the one that hides a real edit.
+    While a revision is being written the report is dirty and HEAD is what it
+    will sit on; once it is committed, that commit is the anchor, and later
+    commits -- the corpus, the verdict, anything -- do not move it.
     """
-    out = subprocess.run(
-        ["git", "-C", str(ROOT), "log", "--format=%x00%H", "--name-only", f"{old}..{new}"],
+    dirty = subprocess.run(
+        ["git", "-C", str(ROOT), "status", "--porcelain", "--", str(REPORT)],
         capture_output=True,
         text=True,
     )
-    if out.returncode != 0:
-        return 99  # unreadable history is not a licence; the assertion fails
-    count = 0
-    for block in out.stdout.split("\x00")[1:]:
-        files = [ln for ln in block.splitlines()[1:] if ln.strip()]
-        if not files or any(not f.startswith(_REVIEWER_TREES) for f in files):
-            count += 1
-    return count
+    if dirty.returncode != 0 or dirty.stdout.strip():
+        return "HEAD"
+    last = subprocess.run(
+        ["git", "-C", str(ROOT), "log", "-1", "--format=%H", "--", str(REPORT)],
+        capture_output=True,
+        text=True,
+    )
+    return last.stdout.strip() or "HEAD"
 
 
 def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
@@ -1144,14 +1155,20 @@ def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
     # describes, so the count stays true across it. What still fails is an
     # implementer commit after the measurement, which is the thing R319 was
     # written to catch.
-    distance = _implementer_commits_between(sha, "HEAD")
+    anchor = _report_anchor()
+    near = subprocess.run(
+        ["git", "-C", str(ROOT), "rev-list", "--count", f"{sha}..{anchor}"],
+        capture_output=True,
+        text=True,
+    )
+    distance = int(near.stdout.strip() or "99")
     assert distance <= 1, (
-        f"the whole-suite line names `{sha}`, which is {distance} "
-        "implementer commit(s) behind HEAD. The count describes the tree the "
-        "report is committed from: run `python scripts/suite_count.py` after "
-        "every other edit, and commit the report on top of the commit it "
-        "names. Reviewer commits -- the corpus and the verdict -- are not "
-        "counted, per CO3."
+        f"the whole-suite line names `{sha}`, which is {distance} commit(s) "
+        f"behind `{anchor[:7]}`, the commit this revision is committed from. "
+        "The count describes that tree: run `python scripts/suite_count.py` "
+        "after every other edit, and commit the report on top of the commit "
+        "it names. Commits made AFTER the report -- the corpus, the verdict --"
+        " do not move the anchor and are not counted, per R361."
     )
 
 
