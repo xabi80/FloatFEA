@@ -39,6 +39,8 @@ import re
 import subprocess
 import sys
 
+NEWLINE = chr(10)
+
 # pytest's own summary line, and the ladder rung's structured one. The rung
 # hides pytest's stdout on purpose (CG4), so these are two different shapes and
 # both have to be read.
@@ -201,6 +203,32 @@ def section(sha: str) -> str:
     sha = full_sha(sha)
     run = run_for(sha)
     jobs = json.loads(_gh("run", "view", str(run["databaseId"]), "--json", "jobs"))["jobs"]
+    if not jobs:
+        # A RUN WITH NO JOBS AT ALL. `never_started()` reads "every job has
+        # no steps" and is deliberately false for the empty list -- a
+        # generator that classified nothing as the third state would say
+        # "unavailable" about a run it merely failed to read. This is the
+        # other shape the allowance produces, once the workflow stops being
+        # expanded at all, and it gets its own sentence rather than a table
+        # of zeros.
+        lines = [
+            f"## 0. CI at the reviewed commit `{sha[:7]}` \u2014 "
+            "**unavailable, no jobs created**",
+            "",
+            f"Generated: `python scripts/ci_section.py {sha[:7]}`. Run "
+            f"`{run['databaseId']}`, event `{run['event']}`, conclusion "
+            f"**{run['conclusion']}**.",
+            "",
+            "```",
+            f"cmd  gh api repos/.../actions/runs/{run['databaseId']}/jobs",
+            "out  jobs: []   -- the run exists and expanded into nothing, so",
+            "     there is not even a job to carry the payment annotation",
+            "     the three runs before it carried.",
+            "judge NOTHING WAS MEASURED. Per CK2 this is `unavailable`,",
+            "     which is neither red nor green.",
+            "```",
+        ]
+        return NEWLINE.join(lines) + NEWLINE
     if never_started(jobs):
         red = sorted(j["name"] for j in jobs if j["conclusion"] not in ("success", "skipped"))
         return (
