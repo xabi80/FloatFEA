@@ -108,14 +108,18 @@ recorded as unavailable, never skipped over.
    records it. All three were measured reaching `run_rung: OK`, exit 0, on a
    genuinely red rung.
    No gate closes this, because a gate reading a record cannot outrank code
-   that writes the record. **Review is the LAST bound, not the whole of it**
-   (CI0): `scripts/run_rung.sh` now cross-checks two independent records of the
-   same run -- the plugin's count and pytest's junit XML -- so a single hook
-   that rewrites one of them reddens the rung. Both are still writable from a
-   conftest, so what that buys is that forgery must be consistent across two
-   places rather than done in one. A conftest under `tests/` changed inside a
-   step commit is then inspected line by line, every step, exactly as
-   `tolerances.py` is.
+   that writes the record. **REVIEW IS THE BOUND** (CJ0). The claim that a
+   forgery must now be consistent across two places is WITHDRAWN: the
+   cross-check in `scripts/run_rung.sh` closes two of the six channels that
+   have been measured, and the sixth defeats it with one keyword argument --
+   a `pytest_runtest_call` wrapper with `trylast=True` calling
+   `outcome.force_result(None)`, which the tally cannot see because the tally
+   is taken inside the hook it wraps.
+   The plan states the boundary: in-tree code is trusted under review, and
+   resistance to forgery BY in-tree code is out of scope for F2. The
+   cross-check stays as a consistency guard against ACCIDENT. What you are
+   reading this diff for is the intent of a change to code that runs inside
+   the measurement -- line by line, every step, exactly as `tolerances.py`.
 5. Open the *previous* inside review and the previous witness comment. List
    every item either marked as blocking. For each, find the answer in this
    step's diff or report. An unanswered blocking item is a HOLD on its own.

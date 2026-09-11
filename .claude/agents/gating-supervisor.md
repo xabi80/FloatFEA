@@ -59,11 +59,13 @@ not in the repo, that is a finding in itself.
    before anything records it. Three of those were measured reaching
    `run_rung: OK`, exit 0, on a rung whose only test asserts `False`.
    No gate can close this: a gate that reads a record cannot outrank code that
-   writes the record. Review is the LAST bound rather than the whole of it --
-   the rung script cross-checks two independent records of the same run, so
-   one rewritten hook reddens -- and this line is the review. A new or changed
-   conftest under `tests/` is read line by line before its rung's green is
-   believed.
+   writes the record. **Review is the bound** (CJ0), and this line is the
+   review. The claim that the rung script's cross-check made a forgery need
+   two consistent places is WITHDRAWN -- it closes two of six measured
+   channels and one keyword argument walks past it. A new or changed conftest
+   under `tests/`, or any plugin the rung loads, is read line by line before
+   its rung's green is believed; that is the whole defence and the plan says
+   so.
 
    **BOTH PATHS ARE LISTED AND THE FIRST IS THE ONE THAT EXISTS.**
    `tests/**/conftest.py` alone matches nothing: git's default glob will not
