@@ -215,3 +215,31 @@ id=exempt_chain_one_marker_two_distinct_literals expect=caught measured=clean sr
 id=exempt_two_tolerance_kwargs_one_marker expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    np.testing.assert_allclose(a, b, rtol=2e-08, atol=1e-12)  # not-a-tolerance: rtol only\n
 id=exempt_marker_only_inside_a_string_not_a_comment expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < 1e-09, "not-a-tolerance: this is a message, not a comment"\n
 id=detect_module_float_shadowed_by_a_later_int expect=caught measured=caught_but_the_message_names_1e-09_while_the_value_at_the_comparison_is_3 src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\nTOL = 1e-09\nTOL = 3\ndef test_x():\n    assert r < TOL\n
+
+# --- thirty-seventh verdict on F2, twelfth on step 5 (HEAD d384e41) --------
+# A LITERAL THAT TRAVELS WITH A DECLARED NAME. `_declared()` walks the whole
+# argument subtree and returns True if ANY `Name` in it is a tolerance, and the
+# `Compare` branch only reads a comparator that IS a `Constant`. So a literal
+# multiplying, dividing or offsetting a declared tolerance reaches the
+# comparison and the scanner returns clean -- and the expression LOOKS
+# compliant to a reader, which the bare literal does not.
+#
+# THIS IS NO LONGER HYPOTHETICAL. `tests/test_marker_exemption_corpus.py` bounds
+# the known misses with "they go to 4a by name unless one exposes a false pass
+# on a real file in the tree. None does". At d384e41 one does:
+# `tests/verification/rung4/test_writer_round_trip.py:205` reads
+# `assert drift > 1e12 * INTERCHANGE_CHANNEL_DRIFT_ULP`, and `offending()` on
+# that file returns `[]` -- measured, this HEAD.
+#
+# MEASURED AT d384e41 against the shipped `offending()`: 9 entries, 1 gets the
+# required verdict and it is the control. The other 8 are all one species.
+
+id=detect_literal_times_DECLARED_tolerance expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert drift > 1e12 * ROUNDOFF_IDENTITY\n
+id=detect_literal_times_declared_on_the_LEFT expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert 1e12 * ROUNDOFF_IDENTITY < drift\n
+id=detect_declared_divided_by_literal expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < ROUNDOFF_IDENTITY / 100.0\n
+id=detect_literal_added_to_declared expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < ROUNDOFF_IDENTITY + 1e-09\n
+id=detect_literal_scaling_a_declared_kwarg expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert a == pytest.approx(b, rel=0.99 * ROUNDOFF_IDENTITY)\n
+id=detect_tuple_subscript_threshold expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < (1e-09, 1e-08)[0]\n
+id=detect_min_builtin_threshold expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < min(1e-09, scale)\n
+id=detect_negated_literal_times_declared expect=caught measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r > -1e12 * ROUNDOFF_IDENTITY\n
+id=declared_name_alone_is_clean_CONTROL expect=exempt measured=exempt src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import (MATRIX_SYMMETRY, PATCH_TEST_EXACTNESS,\n                                 ROUNDOFF_IDENTITY)\ndef test_x():\n    assert r < ROUNDOFF_IDENTITY\n

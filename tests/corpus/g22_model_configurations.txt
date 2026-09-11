@@ -1202,3 +1202,27 @@ id=ck_aniso_one_ulp_under_floor section=circular_tube,D=0.6,t=0.012 stations=9.6
 id=ck_aniso_floor_exact section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=skew extra=I_y_over_I_z=1e-06 runs_in_suite=no expect=hold
 id=ck_roll_one_million_radians section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=skew extra=roll=1000000.0 runs_in_suite=no expect=hold
 id=ck_roll_two_pi section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=skew extra=roll=6.283185307179586 runs_in_suite=no expect=hold
+
+# --- thirty-seventh verdict: the DOWNWARD vertical, and roll at half a turn --
+# Probe only; `expect` is set from the run below, not before it.
+id=ck_vertical_down_no_onode section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=0,0,-1 extra=none runs_in_suite=no expect=raise
+id=ck_vertical_down_onode section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=0,0,-1 extra=orientation_node=5,0,0 runs_in_suite=no expect=hold
+id=ck_near_vertical_down_1em17 section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=-1e-17,0,-1 extra=none runs_in_suite=no expect=raise
+id=ck_roll_pi section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=skew extra=roll=3.141592653589793 runs_in_suite=no expect=hold
+id=ck_roll_minus_pi section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=skew extra=roll=-3.141592653589793 runs_in_suite=no expect=hold
+id=ck_roll_negative_zero section=circular_tube,D=0.6,t=0.012 stations=9.67 orient=skew extra=roll=-0.0 runs_in_suite=no expect=hold
+
+# --- thirty-seventh verdict: the orientation reference, the wall, and the two
+# --- ends of the length axis. Measured at d384e41 with the shipped runner
+# --- before `expect` was written; two of the ten I first wrote as `hold` and
+# --- re-recorded as `raise` after the run, and in both the code is right.
+id=ck_onode_on_the_member_axis section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=axis extra=orientation_node=5,0,0 runs_in_suite=no expect=raise
+id=ck_onode_coincident_with_node1 section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=orientation_node=0,0,0 runs_in_suite=no expect=raise
+id=ck_t_equals_half_D section=circular_tube,D=0.600,t=0.30000 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise
+id=ck_t_greater_than_half_D section=circular_tube,D=0.600,t=0.40000 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise
+id=ck_aniso_exactly_one section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=skew extra=I_y_over_I_z=1.0 runs_in_suite=no expect=hold
+id=ck_zero_length_member section=circular_tube,D=0.600,t=0.01200 stations=0.0 orient=skew extra=none runs_in_suite=no expect=raise
+id=ck_length_one_micron section=circular_tube,D=0.600,t=0.01200 stations=1e-06 orient=skew extra=none runs_in_suite=no expect=raise
+id=ck_length_thousand_km section=circular_tube,D=0.600,t=0.01200 stations=1000000.0 orient=skew extra=none runs_in_suite=no expect=hold
+id=ck_orient_subnormal_component section=circular_tube,D=0.600,t=0.01200 stations=9.67 orient=1e-320,0,1 extra=none runs_in_suite=no expect=raise
+id=ck_section_D_equals_t section=circular_tube,D=0.012,t=0.01200 stations=9.67 orient=skew extra=none runs_in_suite=no expect=raise

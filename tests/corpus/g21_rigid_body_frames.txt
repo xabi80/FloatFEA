@@ -86,3 +86,37 @@ id=rb_tip_off_axis_first_version section=circular_tube,D=0.6,t=0.012 subdiv=1 un
 # --- two effects together, to show they compose -----------------------------
 id=rb_brace_subdiv4 section=circular_tube,D=0.1,t=0.001 subdiv=4 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=3.5113e-12 loss=1.0044e-12 energy=7.865e-18 runs_in_suite=no expect=breach
 id=rb_brace_centimetre section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=100 stretch=1 tip=4.4,1.1,2.8 ratio=2.2175e-11 loss=8.5598e-12 energy=2.650e-19 runs_in_suite=no expect=breach
+
+# --- thirty-seventh verdict: BOUNDARY-LOCATING FRAMES, AND THEY ARE ---------
+# --- PROVISIONAL, WHICH IS THE POINT --------------------------------------
+# NOTHING IN THE REPOSITORY READS THIS FILE. `grep -rn rigid_body_frames
+# --include=*.py .` returns nothing at d384e41: there is no runner, so the
+# twenty entries above are recorded and unexecuted, and this is the largest
+# item on R281's list rather than the three files the thirty-sixth verdict
+# named.
+#
+# The rows below were measured with a SCRATCH instrument, outside the tree,
+# because there is nothing in the tree to measure them with. THAT INSTRUMENT
+# FAILS ITS OWN CONTROL: on `rb_shipped_frame` it gives ratio 2.0906e-14 and
+# loss 7.2695e-15 against the 1.6009e-14 and 5.3061e-15 recorded above and
+# rendered in F2_figures.md -- 1.31x and 1.37x. The numbers below are
+# therefore marked `provisional=yes`: they are the instrument's, not the
+# repository's, and the first runner for this file re-measures them.
+#
+# WHAT IS NOT PROVISIONAL is where the boundaries sit. The file already had
+# unit=10 holding and unit=100 breaching, stretch=1 holding and stretch=10
+# breaching; these bracket both, and `rb_unit_20` breaches by 3.7x of the loss
+# ceiling, which a 1.37x instrument error does not move.
+#
+# `rb_span_x5` IS INSIDE THE INSTRUMENT'S OWN ERROR -- loss 1.3551e-13 against
+# a ceiling of 1e-13, a margin of 1.36x against a control that is off by 1.37x.
+# It is the first row to re-measure and its `expect` is the least trustworthy
+# line in this file.
+id=rb_unit_20 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=20 stretch=1 tip=4.4,1.1,2.8 ratio=9.9067e-13 loss=3.6659e-13 energy=6.177e-20 provisional=yes runs_in_suite=no expect=breach
+id=rb_unit_32 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=31.6227766 stretch=1 tip=4.4,1.1,2.8 ratio=1.9337e-12 loss=4.3406e-13 energy=3.869e-20 provisional=yes runs_in_suite=no expect=breach
+id=rb_unit_50 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=50 stretch=1 tip=4.4,1.1,2.8 ratio=1.4153e-12 loss=1.7700e-12 energy=2.087e-20 provisional=yes runs_in_suite=no expect=breach
+id=rb_span_x3 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=3 tip=4.4,1.1,2.8 ratio=8.1704e-14 loss=2.4706e-14 energy=6.612e-18 provisional=yes runs_in_suite=no expect=hold
+id=rb_span_x5 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=5 tip=4.4,1.1,2.8 ratio=5.6667e-13 loss=1.3551e-13 energy=2.572e-17 provisional=yes runs_in_suite=no expect=breach
+id=rb_brace_D0p3_t0p006 section=circular_tube,D=0.3,t=0.006 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=1.0745e-13 loss=1.6329e-14 energy=3.648e-17 provisional=yes runs_in_suite=no expect=hold
+id=rb_tip_mirrored_z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,-2.8 ratio=3.9803e-14 loss=4.3607e-14 energy=2.157e-17 provisional=yes runs_in_suite=no expect=hold
+id=rb_tip_far_x section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=40.0,1.1,2.8 ratio=8.3155e-13 loss=3.6314e-13 energy=2.371e-17 provisional=yes runs_in_suite=no expect=breach
