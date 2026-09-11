@@ -152,22 +152,30 @@ if [ "$RUN_COUNT" -gt 0 ]; then
     # longer needs to be: it is not a forgery of anything this reads.
     #
     # WHAT THIS GATE CANNOT DO, STATED AS A PROPERTY RATHER THAN AS A LIST.
-    # Everything it reads is writable from a rung's own `conftest.py`. The
-    # previous version of this comment enumerated three producers and called
-    # them "edits to the harness"; the reviewer measured four channels and
-    # three were unlisted:
+    # Everything it reads is writable from a conftest ANYWHERE on the
+    # collection path -- the rung's own directory, `tests/verification/`, or
+    # `tests/conftest.py`, which applies to every rung at once. SIX channels
+    # have been measured and the cross-check below closes two:
     #
     #   pytest_runtest_makereport      a hookwrapper flipping a failing report
-    #                                  to passing -- the same hook the repair
-    #                                  in rung_no_xpass.py uses, in reverse
-    #   pytest_ignore_collect          the failing file never collected
-    #   pytest_collection_modifyitems  the failing item dropped from the run
-    #   pytest_sessionfinish           the XML rewritten after pytest wrote it
+    #                                  to passing                     CAUGHT
+    #   pytest_sessionfinish           the XML rewritten after pytest
+    #                                  wrote it                       CAUGHT
+    #   pytest_collection_modifyitems  the failing item dropped       walks past
+    #   pytest_ignore_collect          the failing file never
+    #                                  collected                      walks past
+    #   pytest_runtest_call            a hookwrapper with `trylast=True`
+    #                                  calling `outcome.force_result(None)`,
+    #                                  which is INNER to the tally's own
+    #                                  wrapper                        walks past
+    #   pytest_runtest_protocol True,
+    #   and pytest_deselected          the item never runs            walks past
     #
-    # The first three leave a green junit report that is an accurate record of
-    # a run that did not include the failure. NO GATE CLOSES THIS: a gate that
-    # reads a record cannot outrank code that writes the record, and the same
-    # is true of any replacement for this script.
+    # The four that walk past leave records that are ACCURATE accounts of a run
+    # that did not contain the failure, which is why no second record reaches
+    # them. NO GATE CLOSES THIS: a gate that reads a record cannot outrank code
+    # that writes the record, and the same is true of any replacement for this
+    # script.
     #
     # TWO RECORDS OF ONE RUN, AND THEY MUST AGREE -- AS A CONSISTENCY GUARD
     # AGAINST ACCIDENT (CJ0). `-p rung_no_xpass` tallies the session and writes
@@ -183,8 +191,10 @@ if [ "$RUN_COUNT" -gt 0 ]; then
     # `outcome.force_result(None)` -- the tally is taken inside the hook it
     # wraps, so both records agree and both are wrong.
     #
-    # WHAT PROTECTS A RUNG IS THEN REVIEW OF ITS CONFTEST -- the LAST bound,
-    # not the whole of the answer. `docs/SUPERVISOR.md` item 4c and
+    # WHAT PROTECTS A RUNG IS REVIEW OF ITS CONFTEST (CJ0). That is the
+    # bound, not the last of several: the plan states that in-tree code is
+    # trusted under review and that resistance to forgery BY it is out of
+    # scope for F2. `docs/SUPERVISOR.md` item 4c and
     # `.claude/agents/gating-supervisor.md` item 4c diff
     # `tests/conftest.py 'tests/**/conftest.py'` at every step, beside
     # `floatfea/tolerances.py`. BOTH PATHS, because the double star alone

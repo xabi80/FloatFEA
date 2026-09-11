@@ -121,6 +121,81 @@ def _call_name(node: ast.Call) -> str:
     return ""
 
 
+def _floats_in(node: ast.AST) -> list[float]:
+    """Every float literal in an expression, signed."""
+    out: list[float] = []
+    for inner in ast.walk(node):
+        if isinstance(inner, ast.UnaryOp) and isinstance(inner.op, ast.USub):
+            if isinstance(inner.operand, ast.Constant) and isinstance(inner.operand.value, float):
+                out.append(-inner.operand.value)
+        elif (
+            isinstance(inner, ast.Constant)
+            and isinstance(inner.value, float)
+            and not any(isinstance(u, ast.UnaryOp) and u.operand is inner for u in ast.walk(node))
+        ):
+            out.append(inner.value)
+    return [v for v in out if abs(v) not in (0.0, 1.0)]
+
+
+def _literal_thresholds_inside(comp: ast.AST, names: set[str]) -> list[str]:
+    """Float literals inside a comparator that ARE thresholds (R326).
+
+    NOT EVERY FLOAT IN AN EXPRESSION. Walking the whole comparator flags 41
+    correct files in this repository -- a scale, a physical constant, an index
+    arithmetic -- and adding markers to 41 correct files is the growth CD1's
+    bound exists to stop. The recorded warning on the narrow branch above said
+    exactly that, and it was measured again here before this rule was written.
+
+    What makes a literal a THRESHOLD rather than a number is that it stands in
+    the place a declared tolerance stands in:
+
+      * it MODIFIES a declared tolerance -- `1e12 * BAND`, `BAND / 4.0`,
+        `BAND + 0.5`, and the same with the declared name on either side. The
+        product is the bound the comparison uses, and it is not the declared
+        one;
+      * it is a candidate inside `min(...)` or `max(...)`, where the smallest
+        or largest wins and a literal among the candidates can be the bound;
+      * it is an element of a tuple or list that the comparator subscripts,
+        which is a table of bounds written inline.
+
+    These are the nine shapes the reviewer's corpus names, and the escalation
+    condition the repository wrote for itself -- "unless one exposes a false
+    pass on a real file in the tree" -- fired on the first of them.
+    """
+    out: list[str] = []
+    # THE SAME ARITHMETIC EXPRESSION, not merely the same comparator. Reading
+    # the whole comparator flagged `pytest.approx(0.6 * fy, rel=DECLARED)` --
+    # a physical factor in the value and a declared tolerance in `rel`, two
+    # unrelated numbers sharing a line. The shape that matters is a literal
+    # and a declared name inside ONE `BinOp`, where the product is the bound.
+    for inner in ast.walk(comp):
+        if not isinstance(inner, ast.BinOp):
+            continue
+        declared = {n.id for n in ast.walk(inner) if isinstance(n, ast.Name) and n.id in names}
+        if not declared:
+            continue
+        for value in _floats_in(inner):
+            out.append(
+                f"comparison against {value!r} combined with "
+                f"{sorted(declared)[0]} -- the bound is the product, not the "
+                "declared value"
+            )
+    if out:
+        return out
+    for inner in ast.walk(comp):
+        if (
+            isinstance(inner, ast.Call)
+            and isinstance(inner.func, ast.Name)
+            and inner.func.id in ("min", "max")
+        ):
+            for value in _floats_in(inner):
+                out.append(f"comparison against {inner.func.id}(... {value!r} ...)")
+        if isinstance(inner, ast.Subscript) and isinstance(inner.value, (ast.Tuple, ast.List)):
+            for value in _floats_in(inner.value):
+                out.append(f"comparison against an inline table holding {value!r}")
+    return out
+
+
 def offending(path: Path) -> list[tuple[int, str]]:
     names = _tolerance_names()
     src = path.read_text(encoding="utf-8")
@@ -227,6 +302,24 @@ def offending(path: Path) -> list[tuple[int, str]]:
             # flagged" list promised any float threshold. Six of seventeen known
             # misses were that one omission, and the quarter-rule below is what
             # made closing it the answer rather than listing them.
+            #
+            # AND INSIDE THE EXPRESSION, NOT ONLY AT ITS ROOT (R326). A
+            # comparator is an expression: `1e12 * DECLARED`, `DECLARED / 4.0`,
+            # `min(x, 0.05)`, `bounds[1]`. Reading only a bare `Constant` and a
+            # negated one left every arithmetic form invisible, and the bound in
+            # `tests/test_marker_exemption_corpus.py` that filed those as known
+            # misses said they stayed 4a "unless one exposes a false pass on a
+            # real file in the tree". One did: `assert drift > 1e12 * BAND`
+            # shipped in `tests/verification/rung4`. The condition the
+            # repository wrote for itself fired, so the misses are closed here
+            # rather than re-listed.
+            #
+            # THE WALK IS OVER THE WHOLE COMPARATOR and it stops at a call's
+            # arguments only to the extent that a call IS an expression: a
+            # threshold handed to `min` is a threshold. What it still does not
+            # see is a threshold that never appears as a literal at all -- a
+            # value read from a file, or computed -- and that is stated in the
+            # reach below rather than implied away.
             for comp in [node.left, *node.comparators]:
                 # Any FLOAT threshold, at any magnitude: `> 1e4` is as much a
                 # tolerance as `< 0.05`, and the first is what R13 named.
@@ -247,12 +340,12 @@ def offending(path: Path) -> list[tuple[int, str]]:
                 ):
                     # A NEGATIVE LITERAL IS NOT A `Constant` NODE. `-1e-09`
                     # parses as `UnaryOp(USub, Constant)`, so the flat branch
-                    # above never saw it. Narrow on purpose: scanning every
-                    # expression that merely CONTAINS a float reddened seven
-                    # correct files, and adding markers to seven correct files
-                    # is the growth CD1's bound exists to stop.
+                    # above never saw it.
                     flag(node, f"comparison against -{comp.operand.value!r}")
-                elif isinstance(comp, ast.Name) and comp.id in local_floats:
+                else:
+                    for reason in _literal_thresholds_inside(comp, names):
+                        flag(node, reason)
+                if isinstance(comp, ast.Name) and comp.id in local_floats:
                     flag(
                         node,
                         f"comparison against {comp.id}, a module-level "
