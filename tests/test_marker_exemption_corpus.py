@@ -126,12 +126,64 @@ def _entries() -> list[tuple[str, str, str, str]]:
 
 ENTRIES = _entries()
 
+
+# THE FIELD IS DECODED, NOT COMPARED FOR EQUALITY (R350, and CN0 is what makes
+# it matter). The verdict recorded against itself that eight entries carry
+# `measured=clean`, outside the two-value vocabulary the corpus header
+# declares, and a ninth carries a whole sentence:
+# `caught_but_the_message_names_1e-09_while_the_value_at_the_comparison_is_3`.
+# Under a bare `measured != expect` the sentence one -- a shape the scanner
+# CAUGHT -- was filed as an allowed escape, which is the exact hole CN0 exists
+# to close, inside CN0. A typo would have done the same thing silently.
+#
+# So the value is decoded to the only thing it can mean: whether `offending()
+# RETURNED SOMETHING` when the reviewer planted the shape.
+_MEASURED_RETURNED_SOMETHING = {
+    "caught": True,
+    "exempt": False,
+    "clean": False,  # the reviewer's synonym for `exempt`; R350's first half
+}
+
+
+def _did_catch(measured: str) -> bool:
+    """Did the shipped scanner return something when this shape was planted?
+
+    An unrecognised value RAISES. It does not default, and it does not fall
+    through to "escaping" -- that is how `measured=caugth` becomes allowed
+    growth without anyone seeing it, and the whole point of reading this field
+    is that nothing about it is typed by the side being checked.
+    """
+    if measured in _MEASURED_RETURNED_SOMETHING:
+        return _MEASURED_RETURNED_SOMETHING[measured]
+    if measured.startswith("caught"):
+        # `caught_but_<what was wrong with the message>`: the scanner returned
+        # something, and the qualifier is about the message, not the verdict.
+        return True
+    raise ValueError(
+        f"corpus `measured={measured}` is outside the vocabulary this file can "
+        f"decode ({sorted(_MEASURED_RETURNED_SOMETHING)} or a `caught...` "
+        "qualifier). The field decides whether an escape is growth or a "
+        "regression, so a value nobody can read is not a thing to guess at."
+    )
+
+
+def _planted_caught(expect: str, measured: str) -> bool:
+    """Did the scanner do what the entry requires, at plant time?"""
+    return _did_catch(measured) == (expect == "caught")
+
+
 # PLANTED ESCAPING: the reviewer recorded the scanner doing the wrong thing at
 # plant time. Allowed growth, derived from the corpus rather than declared.
-PLANTED_ESCAPES = {name for name, expect, measured, _ in ENTRIES if measured != expect}
+PLANTED_ESCAPES = {
+    name for name, expect, measured, _ in ENTRIES if not _planted_caught(expect, measured)
+}
 # PLANTED CAUGHT: the scanner did the right thing when the shape arrived. These
 # are the ones a regression shows up in, and they are asserted individually.
-ASSERTED = [(name, expect, src) for name, expect, measured, src in ENTRIES if measured == expect]
+ASSERTED = [
+    (name, expect, src)
+    for name, expect, measured, src in ENTRIES
+    if _planted_caught(expect, measured)
+]
 
 
 def _planted_by(name: str) -> str:
@@ -260,6 +312,33 @@ def test_improvement_is_visible_and_needs_no_ceremony() -> None:
         "milestone made to the scanner is supposed to show up here, so an "
         "empty set means the corpus and the scanner have stopped touching."
     )
+
+
+def test_an_undecodable_measured_field_RAISES_rather_than_counting_as_growth() -> None:
+    """R350's first half, which CN0 turned from tidiness into a hole.
+
+    `measured != expect` filed a CAUGHT shape as an allowed escape because the
+    reviewer's value was a sentence rather than a word. The same shape of
+    mistake -- a typo, a new synonym, a value from a later vocabulary -- lands
+    on the permissive side every time, which is the wrong side for a field
+    that decides whether a regression is allowed.
+    """
+    assert _did_catch("caught") is True
+    assert _did_catch("exempt") is False
+    assert _did_catch("clean") is False
+    assert _did_catch("caught_but_the_message_is_wrong") is True
+    with pytest.raises(ValueError, match="outside the vocabulary"):
+        _did_catch("caugth")
+    with pytest.raises(ValueError, match="outside the vocabulary"):
+        _did_catch("")
+
+    # AND THE ENTRY THAT PROMPTED IT IS ON THE RIGHT SIDE NOW.
+    sentence = [name for name, _e, measured, _s in ENTRIES if measured.startswith("caught_but")]
+    for name in sentence:
+        assert name not in PLANTED_ESCAPES, (
+            f"{name} was CAUGHT when planted and is still filed as an allowed "
+            "escape, so the decode did not reach the derivation."
+        )
 
 
 def test_the_growth_rule_reads_a_field_the_implementer_cannot_write() -> None:
