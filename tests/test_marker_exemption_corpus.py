@@ -40,11 +40,16 @@ entry (R351) or rewrite a field on the way through (R359); both were
 demonstrated, and both left the suite green with a real regression planted.
 
 So the file is read TWICE, by readers that share nothing but the path, and
-every field the decision reads is compared: the ids, the `expect` and the
-`measured`. What that buys is that an edit in the parser has to be made
-identically in two places to stay invisible, and one of them exists for no
-other purpose. It is not a proof that no such edit is possible. The rule is
-set out above `_entries()`.
+the parser's output is put back into the file's own form and compared to the
+bytes. NOT a list of the fields that matter: that list was wrong twice, and
+each time the next edit went into something it did not mention -- the row
+itself, then the source module the scanner runs on. A round trip has nothing
+to leave out, and a field added later is covered the day it is added.
+
+What it buys is that an edit in the parser has to be made identically in two
+places to stay invisible, and one of those places exists for no other
+purpose. It is not a proof that no such edit is possible. The rule is set out
+above `_entries()`.
 """
 
 from __future__ import annotations
@@ -166,15 +171,28 @@ ENTRIES = _entries()
 # still agreeing at 147 == 147, and the whole suite green again. A check has
 # to read every input its decision reads, or the inputs it does not read are
 # where the edit goes.
-_TRIPLE = re.compile(rb"(?m)^id=(?P<id>\S+)\s+expect=(?P<expect>\S+)\s+measured=(?P<measured>\S+)")
+_ENTRY = re.compile(
+    rb"(?m)^id=(?P<id>\S+)[ \t]+expect=(?P<expect>\S+)[ \t]+"
+    rb"measured=(?P<measured>\S+)[ \t]+src=(?P<src>.*)$"
+)
 
 
-def _triples_in_the_file() -> set[tuple[str, str, str]]:
-    """`{(id, expect, measured)}` straight from the bytes of the corpus."""
-    return {
-        (m["id"].decode(), m["expect"].decode(), m["measured"].decode())
-        for m in _TRIPLE.finditer(CORPUS.read_bytes())
-    }
+def _entries_in_the_file() -> list[tuple[str, str, str, str]]:
+    """Every entry as the FILE spells it, in file order, nothing decoded.
+
+    The `src` field is left ESCAPED, exactly as the bytes have it. Decoding it
+    is the parser's job and this reader does not have one: its whole purpose
+    is to be somewhere the parser's behaviour cannot reach.
+    """
+    return [
+        (
+            m["id"].decode(),
+            m["expect"].decode(),
+            m["measured"].decode(),
+            m["src"].decode().rstrip("\r"),
+        )
+        for m in _ENTRY.finditer(CORPUS.read_bytes())
+    ]
 
 
 def _headers_in_the_file() -> int:
@@ -306,21 +324,34 @@ def test_every_entry_reaches_the_assertions() -> None:
         "regression test. A shape that is not read cannot regress."
     )
 
-    # AND THE FIELDS, NOT ONLY THE COUNT (R359). The classification reads
-    # `expect` and `measured`; comparing counts alone left both of them
-    # writable on the way through, and rewriting one entry's `expect` moved a
-    # planted-CAUGHT shape into the allowed escapes with the counts still
-    # agreeing. Every field the decision reads is read twice, or the ones that
-    # are not are where the edit goes.
-    got = {(name, expect, measured) for name, expect, measured, _src in ENTRIES}
-    want = _triples_in_the_file()
-    assert got == want, (
-        "the parsed entries do not match the file, field for field.\n"
-        f"  changed or missing on the way through: {sorted(want - got)}\n"
-        f"  present in `ENTRIES` and not in the file: {sorted(got - want)}\n"
-        "`expect` and `measured` are what decide whether an escape is growth "
-        "or a regression, and they are the reviewer's to write."
-    )
+    # AND EVERY ENTRY ROUND-TRIPS, WHICH IS NOT THE SAME AS COMPARING FIELDS
+    # (CP0, R365). Two previous versions of this check enumerated what the
+    # decision reads and compared those: first the count, then three of the
+    # four fields. Both times the next thing the reviewer rewrote was
+    # something the enumeration had left out -- the row itself, then the
+    # `src` module the scanner is actually run on, which a count and a triple
+    # both ignore.
+    #
+    # An enumeration is a list of what someone thought of. A round trip is
+    # not: the parser's own output is put back into the form the file uses
+    # and compared to the bytes, so ANY rewrite on the way through fails,
+    # including in a field nobody has added yet.
+    on_file = _entries_in_the_file()
+    assert len(ENTRIES) == len(
+        on_file
+    ), f"{len(on_file)} entries in the file and {len(ENTRIES)} parsed"
+    for parsed, raw in zip(ENTRIES, on_file, strict=True):
+        name, expect, measured, src = parsed
+        back = (name, expect, measured, src.encode("unicode_escape").decode("ascii"))
+        assert back == raw, (
+            f"the entry `{raw[0]}` does not survive the round trip. The parser "
+            "produced something the file does not say:\n"
+            + "\n".join(
+                f"  {field}:\n    file  : {r[:200]!r}\n    parsed: {b[:200]!r}"
+                for field, r, b in zip(("id", "expect", "measured", "src"), raw, back, strict=True)
+                if r != b
+            )
+        )
 
     # AND THE TWO DERIVED SETS PARTITION IT. A shape that is in neither is a
     # shape no assertion in this file can fail on, which is the same hole one
