@@ -805,8 +805,13 @@ def test_a_carried_row_points_at_a_section_that_discusses_it(item: str, section:
 # A reviewer reads CI because `docs/SUPERVISOR.md` item 3b tells them to. The
 # person writing the report had no such instruction that anything enforced, so
 # "the suite is green" meant the laptop.
+# THE JOB NAME IS WHATEVER THE WORKFLOW CALLS IT. The character class here was
+# `[\w .\-]`, which reads "the verification ladder" and stops at the first
+# comma or bracket -- so of the thirteen rows the first green run produced it
+# saw two, and `test_the_report_carries_a_CI_SECTION` then failed a complete
+# table for being incomplete. Nothing but a pipe can end a cell.
 _CI_ROW = re.compile(
-    r"^\|\s*`?([\w .\-]+?)`?\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|",
+    r"^\|\s*`?([^|`]+?)`?\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|",
     re.MULTILINE,
 )
 
