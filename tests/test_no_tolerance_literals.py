@@ -137,6 +137,96 @@ def _floats_in(node: ast.AST) -> list[float]:
     return [v for v in out if abs(v) not in (0.0, 1.0)]
 
 
+_ARITH = (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Pow)
+
+
+def _folds_to_a_small_constant(node: ast.AST) -> float | None:
+    """The value of a wholly-constant arithmetic expression, if it is under 1.
+
+    CP4, first species. `assert r < 1/1000000` has no float node in it at all:
+    two integers and a `Div`, and `_floats_in` looks for `Constant` floats. The
+    scanner's own docstring says "any FLOAT threshold, at any magnitude", and
+    integers are excused as counts -- which is right for `2` and wrong for a
+    quotient of two of them that is a millionth.
+
+    UNDER ONE, AND NOT ZERO, is the bound and it is not arbitrary: a constant
+    expression that folds to something smaller than unity is standing where a
+    tolerance stands. Above one it is a scale or a count and this says nothing
+    about it, which keeps the rule off the 41 correct files the wide version
+    reddened.
+    """
+    # ONLY AN ARITHMETIC EXPRESSION, never a bare constant. A `Constant` is
+    # what every rule above this one already reads, and folding one here
+    # reported `0.0`, `1.0` and every integer count in the tree -- measured at
+    # 38 failures in the corpus before this line was written.
+    sign = 1.0
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+        node, sign = node.operand, -1.0
+    if not isinstance(node, ast.BinOp) or not isinstance(node.op, _ARITH):
+        return None
+    inner = _folds_to_a_small_constant_raw(node)
+    value = None if inner is None else sign * inner
+    if value is None or value == 0.0 or abs(value) >= 1.0:
+        return None
+    return value
+
+
+def _folds_to_a_small_constant_raw(node: ast.AST) -> float | None:
+    """The arithmetic value of `node`, or `None` if anything in it is not a
+    numeric constant. No names, no calls, no subscripts: a name could be a
+    declared tolerance and folding it away is how a declared value gets read
+    as a literal."""
+    if isinstance(node, ast.Constant):
+        if isinstance(node.value, bool) or not isinstance(node.value, (int, float)):
+            return None
+        return float(node.value)
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+        inner = _folds_to_a_small_constant_raw(node.operand)
+        return None if inner is None else -inner
+    if isinstance(node, ast.BinOp) and isinstance(node.op, _ARITH):
+        left = _folds_to_a_small_constant_raw(node.left)
+        right = _folds_to_a_small_constant_raw(node.right)
+        if left is None or right is None:
+            return None
+        try:
+            if isinstance(node.op, ast.Add):
+                return left + right
+            if isinstance(node.op, ast.Sub):
+                return left - right
+            if isinstance(node.op, ast.Mult):
+                return left * right
+            if isinstance(node.op, ast.Div):
+                return left / right
+            if isinstance(node.op, ast.FloorDiv):
+                return float(left // right)
+            return float(left**right)
+        except (ZeroDivisionError, OverflowError, ValueError):
+            return None
+    return None
+
+
+def _float_of_a_string(node: ast.AST) -> float | None:
+    """The value of `float("...")` with a literal string, if it is a tolerance.
+
+    CP4, second species. The number is inside a string, so no `Constant` float
+    exists anywhere in the tree and every rule above it looks past. `0.0` and
+    `1.0` are excused here for the same reason they are excused everywhere in
+    this file: they are structural bounds rather than tolerances.
+    """
+    if not isinstance(node, ast.Call) or _call_name(node) != "float":
+        return None
+    if len(node.args) != 1 or node.keywords:
+        return None
+    arg = node.args[0]
+    if not isinstance(arg, ast.Constant) or not isinstance(arg.value, str):
+        return None
+    try:
+        value = float(arg.value)
+    except ValueError:
+        return None
+    return None if abs(value) in (0.0, 1.0) else value
+
+
 def _literal_thresholds_inside(comp: ast.AST, names: set[str]) -> list[str]:
     """Float literals inside a comparator that ARE thresholds (R326).
 
@@ -179,6 +269,24 @@ def _literal_thresholds_inside(comp: ast.AST, names: set[str]) -> list[str]:
                 f"comparison against {value!r} combined with "
                 f"{sorted(declared)[0]} -- the bound is the product, not the "
                 "declared value"
+            )
+    if out:
+        return out
+    # CP4: THE TWO SPECIES THAT ARE NOT FLOAT NODES. Everything above looks
+    # for a `Constant` float somewhere; these two put a tolerance in a
+    # comparison without one existing in the tree.
+    for inner in ast.walk(comp):
+        folded = _folds_to_a_small_constant(inner)
+        if folded is not None:
+            out.append(
+                f"comparison against a constant expression folding to "
+                f"{folded!r} -- a tolerance with no float literal in it"
+            )
+        as_string = _float_of_a_string(inner)
+        if as_string is not None:
+            out.append(
+                f"comparison against float(<string>) = {as_string!r} -- the "
+                "number is inside a string and no rule above sees it"
             )
     if out:
         return out
