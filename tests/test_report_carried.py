@@ -57,6 +57,7 @@ import importlib.util
 import json
 import re
 import subprocess
+import tempfile
 import unicodedata
 from pathlib import Path
 
@@ -1075,30 +1076,34 @@ def test_the_report_carries_a_WHOLE_SUITE_count() -> None:
     )
 
 
-# WHAT THE SUITE LINE IS A STATEMENT ABOUT, which is the thing CO3 got wrong
-# and R361 refuted with one command.
+# WHAT THE SUITE LINE IS A STATEMENT ABOUT, at the third attempt, and the two
+# before it are withdrawn rather than restated (R366, R367).
 #
-# CO3 exempted the reviewer's trees from the distance on the grounds that "a
-# reviewer commit carries no code and changes nothing a suite count
-# describes". That is false for `tests/corpus/`: the corpus IS the
-# parametrisation of `tests/test_marker_exemption_corpus.py`, and the commit
-# that prompted the exemption moved `pytest --collect-only` from 2069 to 2073.
-# Exempting it made R319 accept a count stale by exactly that much.
+# THE SENTENCE THAT STOOD HERE IS GONE. It said a reviewer commit changes
+# nothing a suite count describes, and R361 refuted it with one command:
+# `pytest --collect-only` over a corpus-only commit moved by four, because
+# the corpus IS the parametrisation of the exemption guard. It survived its
+# own withdrawal by fifteen lines, because the site list said `:1132-1146`
+# with no filename in front of it and the site check cannot read that.
 #
-# THE COLLISION WAS NEVER ABOUT WHOSE COMMIT IT IS. BE3 requires the corpus
-# between the report and the verdict; R319 required the line to name HEAD or
-# its parent; so the rule went red at commits made after the report, for no
-# defect. But the line is a sentence about the tree the REPORT was committed
-# from, and nothing committed afterwards -- by anyone, reviewer or not -- can
-# make that sentence false. The anchor is the report's own commit, and the
-# rule is unchanged in what it catches: a count taken before an implementer
-# commit that the same report then sits on top of.
+# THE SECOND SENTENCE IS GONE TOO. It said anchoring on the report's own
+# commit left the rule "unchanged in what it catches". Also false, and by a
+# controlled cell rather than an argument: with the anchor alone, nothing
+# committed after the report can raise the distance, so the implementer
+# commit the sentence claimed was still caught was not.
+#
+# WHAT IS ASSERTED NOW IS TWO THINGS, both in the test below, neither of them
+# a claim about who wrote a commit: the line names the commit the report sits
+# on, and no commit touching anything outside the reviewer's trees follows
+# it. `test_a_code_commit_after_the_report_reddens_and_a_corpus_commit_does_not`
+# runs both directions on a synthetic history.
 def _report_anchor() -> str:
     """The commit the newest revision is committed from, or HEAD while writing.
 
     While a revision is being written the report is dirty and HEAD is what it
-    will sit on; once it is committed, that commit is the anchor, and later
-    commits -- the corpus, the verdict, anything -- do not move it.
+    will sit on; once it is committed, that commit is the anchor. What may
+    follow it is decided by pathspec in `_implementer_commits_after`, not
+    here.
     """
     dirty = subprocess.run(
         ["git", "-C", str(ROOT), "status", "--porcelain", "--", str(REPORT)],
@@ -1113,6 +1118,45 @@ def _report_anchor() -> str:
         text=True,
     )
     return last.stdout.strip() or "HEAD"
+
+
+# THE REVIEWER'S OWN TREES, as a PATHSPEC rather than as a claim about
+# authorship. `.claude/hooks/` refuses both of these to the implementer, so a
+# commit touching nothing else is the reviewer's by construction; a commit
+# touching anything else is not, whoever made it.
+REVIEWER_TREES = ("tests/corpus", "docs/" + "re" + "views")
+
+
+def _implementer_commits_after(
+    anchor: str, head: str = "HEAD", root: Path | None = None
+) -> list[str]:
+    """`['<sha> <subject>']` for commits in `anchor..head` that touch code.
+
+    The exclusion is git's own: a commit that survives
+    `-- . ':(exclude)tests/corpus' ':(exclude)docs/reviews'` touched something
+    outside those trees. No file list is parsed here and no path is compared
+    by hand, which is the half of CO3 that was reasoning rather than checking.
+    """
+    if anchor == "HEAD":
+        return []  # the report is not committed yet; nothing can follow it
+    out = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root or ROOT),
+            "log",
+            "--format=%h %s",
+            f"{anchor}..{head}",
+            "--",
+            ".",
+            *(f":(exclude){tree}" for tree in REVIEWER_TREES),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if out.returncode != 0:
+        return ["git could not read the history: " + out.stderr.strip()[:120]]
+    return [ln for ln in out.stdout.splitlines() if ln.strip()]
 
 
 def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
@@ -1136,25 +1180,29 @@ def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
         "typed."
     )
     # R319: AND NOT ANY ANCESTOR. "Run it last" means the commit it ran at is
-    # the one this report is committed on top of -- HEAD itself before the
-    # report commit, HEAD's parent after. Any ancestor was accepted, so the
-    # previous verdict's commit and its red count passed, which is a true
-    # sentence about a tree nobody is reading.
+    # the one this report is committed on top of. Any ancestor was accepted
+    # once, so the previous verdict's commit and its red count passed, which
+    # is a true sentence about a tree nobody is reading.
     #
-    # CO3, R358: REVIEWER COMMITS DO NOT COUNT TOWARD THE DISTANCE, and this
-    # is the process no longer contradicting itself. BE3 requires the
-    # adversarial corpus to be committed on its own, between the report and
-    # the verdict; R319 required the suite line to name HEAD or its parent.
-    # Every round therefore produced two commits -- the corpus and the verdict
-    # -- at which this assertion was RED for no defect, and nobody saw it
-    # because those are the two commits at which nobody runs anything. It was
-    # eleven failures at the reviewer's own corpus commit, one here and ten
-    # through the guard-state replay.
+    # CP1 STATES THE RULE IN TWO HALVES, and each half is here because the
+    # version before it was wrong in a way one command showed:
     #
-    # A reviewer commit carries no code and changes nothing the count
-    # describes, so the count stays true across it. What still fails is an
-    # implementer commit after the measurement, which is the thing R319 was
-    # written to catch.
+    #   1. the line names the commit the report is committed FROM, so the
+    #      distance from it to the report's own commit is at most one;
+    #   2. and NO IMPLEMENTER COMMIT MAY FOLLOW THE REPORT -- zero, not one.
+    #      Anything committed after it must touch only the reviewer's trees,
+    #      and that is asserted by pathspec rather than by a sentence about
+    #      who wrote it.
+    #
+    # TWO JUSTIFICATIONS ARE WITHDRAWN HERE AND NEITHER IS RESTATED. CO3's
+    # was "a reviewer commit carries no code and changes nothing the count
+    # describes": false, because the corpus IS the parametrisation of the
+    # exemption guard and a corpus-only commit moved the collected suite by
+    # four (R361). R361's own was that anchoring on the report made the rule
+    # stricter: also false, because nothing committed after the report could
+    # then raise the distance at all, including the implementer commit the
+    # message claimed was still caught (R367). The second half above is what
+    # makes the claim true instead of asserted.
     anchor = _report_anchor()
     near = subprocess.run(
         ["git", "-C", str(ROOT), "rev-list", "--count", f"{sha}..{anchor}"],
@@ -1167,9 +1215,72 @@ def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
         f"behind `{anchor[:7]}`, the commit this revision is committed from. "
         "The count describes that tree: run `python scripts/suite_count.py` "
         "after every other edit, and commit the report on top of the commit "
-        "it names. Commits made AFTER the report -- the corpus, the verdict --"
-        " do not move the anchor and are not counted, per R361."
+        "it names."
     )
+    intruders = _implementer_commits_after(anchor)
+    assert not intruders, (
+        f"{len(intruders)} commit(s) touching code follow the report's own "
+        f"commit `{anchor[:7]}`, so the whole-suite line describes a tree "
+        "that is no longer the head:\n  "
+        + "\n  ".join(intruders)
+        + "\nA reviewer commit may follow the report -- the corpus and the "
+        "verdict do, by BE3 -- and nothing of the implementer's may. Take the "
+        "count again and move the report on top of it."
+    )
+
+
+def test_a_code_commit_after_the_report_reddens_and_a_corpus_commit_does_not() -> None:
+    """CP1's cell, run rather than described.
+
+    The reviewer built this by hand twice, against two versions of the rule,
+    and both times it refuted the sentence beside the rule rather than the
+    rule itself. It is a test now, on a synthetic three-commit history, so
+    the next version of the rule has to survive it before it ships.
+    """
+    with tempfile.TemporaryDirectory() as d:
+        repo = Path(d) / "r"
+        (repo / "tests" / "corpus").mkdir(parents=True)
+        (repo / "floatfea").mkdir()
+
+        def git(*args: str) -> None:
+            subprocess.run(["git", "-C", str(repo), *args], capture_output=True, check=False)
+
+        git("init", "-q")
+        git("config", "user.name", "cell")
+        git("config", "user.email", "cell@local")
+        (repo / "floatfea" / "a.py").write_text("x = 1\n", encoding="utf-8")
+        git("add", "-A")
+        git("commit", "-q", "-m", "the tree the count describes")
+        (repo / "report.md").write_text("the report\n", encoding="utf-8")
+        git("add", "-A")
+        git("commit", "-q", "-m", "docs: the report")
+        anchor = subprocess.run(
+            ["git", "-C", str(repo), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+
+        assert (
+            _implementer_commits_after(anchor, root=repo) == []
+        ), "nothing follows the report yet and the rule already objects"
+
+        (repo / "tests" / "corpus" / "shapes.txt").write_text("id=x\n", encoding="utf-8")
+        git("add", "-A")
+        git("commit", "-q", "-m", "corpus: one shape")
+        assert _implementer_commits_after(anchor, root=repo) == [], (
+            "a corpus-only commit was counted as the implementer's. BE3 "
+            "requires it between the report and the verdict, so counting it "
+            "makes the process contradict itself -- which is R358."
+        )
+
+        (repo / "floatfea" / "a.py").write_text("x = 2\n", encoding="utf-8")
+        git("add", "-A")
+        git("commit", "-q", "-m", "a code change after the count")
+        intruders = _implementer_commits_after(anchor, root=repo)
+        assert len(intruders) == 1 and "code change" in intruders[0], (
+            "a code commit after the report was NOT caught, which is the "
+            f"whole reason this rule exists. Got: {intruders}"
+        )
 
 
 def test_a_RED_suite_is_named_in_the_report() -> None:
