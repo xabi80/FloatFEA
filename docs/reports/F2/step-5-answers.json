@@ -8,31 +8,31 @@
   "answered": {
     "R223": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R224": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R230": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R231": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R244": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R245": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R275": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R323": {
       "state": "carried"
@@ -45,15 +45,15 @@
     },
     "R330": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R331": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R332": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R333": {
       "state": "carried"
@@ -99,19 +99,19 @@
     },
     "R347": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R348": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R349": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R350": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R351": {
       "state": "carried"
@@ -124,48 +124,87 @@
     },
     "R354": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R355": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R356": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R357": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
     },
     "R358": {
       "state": "carried"
     },
     "R359": {
+      "state": "carried"
+    },
+    "R360": {
+      "state": "carried"
+    },
+    "R361": {
+      "state": "carried"
+    },
+    "R362": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R363": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R364": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R365": {
       "state": "answered",
       "where": "§1",
       "site": "tests/test_marker_exemption_corpus.py"
     },
-    "R360": {
+    "R366": {
       "state": "answered",
-      "where": "§2"
-    },
-    "R361": {
-      "state": "answered",
-      "where": "§3",
+      "where": "§2",
       "site": "tests/test_report_carried.py"
     },
-    "R362": {
-      "state": "open",
-      "where": "§5"
+    "R367": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/test_report_carried.py"
     },
-    "R363": {
-      "state": "open",
-      "where": "§5"
+    "R368": {
+      "state": "answered",
+      "where": "§3"
     },
-    "R364": {
+    "R369": {
+      "state": "answered",
+      "where": "§4",
+      "site": ".github/workflows/ci.yml"
+    },
+    "R370": {
       "state": "open",
-      "where": "§5"
+      "where": "§6"
+    },
+    "R371": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R372": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R373": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R374": {
+      "state": "open",
+      "where": "§6"
     }
   }
 }
