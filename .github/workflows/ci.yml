@@ -220,7 +220,7 @@ jobs:
       - name: "all ten hashes equal, all ten core types equal"
         run: |
           python - <<'PY'
-          import collections, hashlib, pathlib, sys
+          import collections, hashlib, pathlib, re, sys
           legs = sorted(pathlib.Path("legs").glob("determinism-leg-*"))
           if len(legs) != 10:
               sys.exit(f"{len(legs)} legs reported, expected 10")
@@ -276,16 +276,36 @@ jobs:
           #
           # Q8 makes CI canonical for `tests/regression`, so this is the gate
           # and not a diagnostic; the legs' own step says exactly that.
-          red = [(name, line) for name, _cpu, _core, _h, line in rows
-                 if not line.startswith("0 failed") and ", 0 failed" not in line]
+          #
+          # AND ZERO COLLECTED IS A FAILED LEG (CP3, R369). The first version
+          # of this check read `failed` and not `collected`, so a leg writing
+          # "0 collected, 0 failed" was green HERE -- one notch over from the
+          # shape `502e0de` was written to remove, and in the same job. The
+          # leg's own step refuses zero collection, so the RUN went red
+          # either way; what would have gone green is the job whose name is
+          # the claim. "An empty parameter set is an error, not a skip"
+          # applies to a gate's own input.
+          def leg_is_red(line):
+              got = {k: int(n) for n, k in re.findall(r"(\d+) (collected|failed)", line)}
+              if "collected" not in got or "failed" not in got:
+                  return "unreadable: " + line
+              if got["collected"] == 0:
+                  return "collected nothing: " + line
+              if got["failed"] != 0:
+                  return line
+              return ""
+
+          red = [(name, why) for name, _cpu, _core, _h, line in rows
+                 if (why := leg_is_red(line))]
           if red:
-              for name, line in red:
-                  print("RED", name, line)
+              for name, why in red:
+                  print("RED", name, why)
               sys.exit(
-                  f"{len(red)} of {len(rows)} legs report a red regression rung. "
-                  "The renders agreeing says the machine is deterministic; it "
-                  "does not say the goldens hold, and this job is the gate for "
-                  "both."
+                  f"{len(red)} of {len(rows)} legs do not report a green "
+                  "regression rung over a non-empty set. The renders agreeing "
+                  "says the machine is deterministic; it does not say the "
+                  "goldens held, or that there were any, and this job is the "
+                  "gate for all three."
               )
           print("ten of ten identical:", next(iter(by_hash))[:12], "core", next(iter(cores)))
           PY
