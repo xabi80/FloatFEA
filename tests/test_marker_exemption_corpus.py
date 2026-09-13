@@ -39,17 +39,30 @@ decision through `_entries()`, which is mine, and `_entries()` can drop an
 entry (R351) or rewrite a field on the way through (R359); both were
 demonstrated, and both left the suite green with a real regression planted.
 
-So the file is read TWICE, by readers that share nothing but the path, and
-the parser's output is put back into the file's own form and compared to the
-bytes. NOT a list of the fields that matter: that list was wrong twice, and
-each time the next edit went into something it did not mention -- the row
-itself, then the source module the scanner runs on. A round trip has nothing
-to leave out, and a field added later is covered the day it is added.
+WHAT IS CLOSED, BY NAME, AND NOTHING BEYOND THE LIST. Five ways of filing a
+regression as growth have been found, each by the reviewer, each after a
+previous paragraph here claimed the door was shut. The claim is now an
+enumeration and each item names the test that closes it:
 
-What it buys is that an edit in the parser has to be made identically in two
-places to stay invisible, and one of those places exists for no other
-purpose. It is not a proof that no such edit is possible. The rule is set out
-above `_entries()`.
+  1. drop the row on the way through
+         `test_every_entry_reaches_the_assertions` -- the header count
+  2. rewrite `expect` or `measured`
+         the same test -- the round trip, field for field
+  3. rewrite `src`, the module the scanner is run on
+         the same test -- `src` is a field of the round trip
+  4. repoint `CORPUS` at a doctored copy, so both readers read it
+         `test_the_corpus_path_is_the_repository_file` -- the path is
+         reconstructed inside the test and the bytes compared
+  5. special-case the partition in `_planted_caught`
+         `test_the_partition_is_recomputed_from_the_file` -- the split is
+         recomputed from the file-side fields by the documented rule
+
+WHERE THE REACH ENDS, stated because the reviewer asked for the sentence
+rather than a sixth mechanism. Everything downstream of those four fields is
+implementer code that no second reader checks: `_did_catch`'s vocabulary, the
+scanner the entries are run through, and this file's own assertions. A round
+trip pins what the file says. It does not pin what is done with it, and no
+paragraph here should be read as saying otherwise.
 """
 
 from __future__ import annotations
@@ -453,6 +466,72 @@ def test_improvement_is_visible_and_needs_no_ceremony() -> None:
         "no shape planted escaping is caught today. Every tightening this "
         "milestone made to the scanner is supposed to show up here, so an "
         "empty set means the corpus and the scanner have stopped touching."
+    )
+
+
+def test_the_corpus_path_is_the_repository_file() -> None:
+    """Leaf four: the readers share the path, and a path is one place (R375).
+
+    Both readers were built to share nothing but `CORPUS`, and `CORPUS` is a
+    module constant. Thirteen lines below it, under a comment about CRLF
+    normalisation, it can be repointed at a copy with one entry rewritten --
+    and then both readers agree, byte for byte, about a file that is not the
+    corpus. The reviewer ran it: the whole suite came back at 2073 passed, 0
+    failed, the clean tree's number exactly, with a genuine regression
+    planted.
+
+    The path is rebuilt HERE, from `__file__`, and the bytes are compared. A
+    repointed constant disagrees with a literal one.
+    """
+    here = Path(__file__).resolve().parents[1] / "tests" / "corpus"
+    expected = here / "tolerance_marker_exemptions.txt"
+    assert CORPUS.resolve() == expected.resolve(), (
+        f"the corpus constant points at {CORPUS}, and the repository's corpus "
+        f"is {expected}. Every reader in this file follows that constant, so "
+        "a substitution moves all of them together and nothing else notices."
+    )
+    assert CORPUS.read_bytes() == expected.read_bytes(), (
+        "the corpus constant resolves to the right path and does not read the "
+        "same bytes, which should be impossible unless something is reading "
+        "through a copy."
+    )
+
+
+def test_the_partition_is_recomputed_from_the_file() -> None:
+    """Leaf five: the split was made by one function, so it agreed with itself.
+
+    `_planted_caught()` decides both sides of the partition, and
+    `test_every_entry_reaches_the_assertions` compares the two sides against
+    each other -- so a three-line special case that moves one id from the
+    asserted set into the escapes was invisible: the round trip passed, the
+    partition agreed, and the entry simply stopped being asserted (R376).
+
+    Here the split is recomputed from the FILE's own fields by the rule this
+    module documents -- the scanner did what the entry requires -- and
+    compared to what shipped. A special case inside `_planted_caught`
+    disagrees with it.
+    """
+    on_file = _entries_in_the_file()
+    want_asserted = {
+        name
+        for name, expect, measured, _src in on_file
+        if _did_catch(measured) == (expect == "caught")
+    }
+    want_escaping = {name for name, _e, _m, _s in on_file} - want_asserted
+    got_asserted = {name for name, _expect, _src in ASSERTED}
+
+    assert got_asserted == want_asserted, (
+        "the asserted set is not what the corpus's own fields say it should "
+        "be.\n"
+        f"  asserted here but not by the file: {sorted(got_asserted - want_asserted)}\n"
+        f"  required by the file and not asserted: {sorted(want_asserted - got_asserted)}\n"
+        "An entry that stops being asserted stops being able to fail, and "
+        "nothing else in this file reads the count."
+    )
+    assert want_escaping == PLANTED_ESCAPES, (
+        "the recorded escapes are not what the corpus's own fields say.\n"
+        f"  recorded here and not by the file: {sorted(PLANTED_ESCAPES - want_escaping)}\n"
+        f"  required by the file and not recorded: {sorted(want_escaping - PLANTED_ESCAPES)}"
     )
 
 
