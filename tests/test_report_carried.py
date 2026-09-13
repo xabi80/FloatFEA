@@ -1103,26 +1103,54 @@ def test_the_report_carries_a_WHOLE_SUITE_count() -> None:
 # it. `test_a_code_commit_after_the_report_reddens_and_a_corpus_commit_does_not`
 # runs both directions on a synthetic history.
 def _report_anchor() -> str:
-    """The commit the newest revision is committed from, or HEAD while writing.
+    """Where this revision sits in history, as one of THREE states (R377).
 
-    While a revision is being written the report is dirty and HEAD is what it
-    will sit on; once it is committed, that commit is the anchor. What may
-    follow it is decided by pathspec in `_implementer_commits_after`, not
-    here.
+        "HEAD"      the report is tracked and MODIFIED -- a revision is being
+                    written, and HEAD is the commit it will sit on
+        <sha>       the report is tracked and clean -- that commit is where
+                    it sits, and what may follow is decided by pathspec
+        ""          the report path has NO HISTORY. Not the same thing as
+                    "not committed yet", and conflating the two is the whole
+                    of R377: any state where `git log -1 -- REPORT` comes
+                    back empty took the HEAD branch, which is the pre-CP1
+                    rule R361 refuted, and switched rule 2 off with it.
+
+    The third state is not hypothetical. `tests/test_report_guard_states.py`
+    constructs it every round -- a step-10 report copied into a tree, never
+    committed -- and the guard went red there on a REVIEWER commit, which is
+    a commit the process requires. It was red in CI at `c85511b` and revision
+    17 did not name it.
     """
     dirty = subprocess.run(
         ["git", "-C", str(ROOT), "status", "--porcelain", "--", str(REPORT)],
         capture_output=True,
         text=True,
     )
-    if dirty.returncode != 0 or dirty.stdout.strip():
+    if dirty.returncode != 0:
+        return ""
+    tracked = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files", "--error-unmatch", "--", str(REPORT)],
+        capture_output=True,
+    )
+    if tracked.returncode != 0:
+        # UNTRACKED: a copy, not a committed report. The newest commit that
+        # touched the reports TREE is still the commit a report was last
+        # published from in this tree, and it is what the rule is about; only
+        # when nothing under `docs/reports/` has any history is there no
+        # anchor at all.
+        return _last_commit_touching(REPORTS)
+    if dirty.stdout.strip():
         return "HEAD"
-    last = subprocess.run(
-        ["git", "-C", str(ROOT), "log", "-1", "--format=%H", "--", str(REPORT)],
+    return _last_commit_touching(REPORT)
+
+
+def _last_commit_touching(path: Path) -> str:
+    out = subprocess.run(
+        ["git", "-C", str(ROOT), "log", "-1", "--format=%H", "--", str(path)],
         capture_output=True,
         text=True,
     )
-    return last.stdout.strip() or "HEAD"
+    return out.stdout.strip() if out.returncode == 0 else ""
 
 
 # THE REVIEWER'S OWN TREES, as a PATHSPEC rather than as a claim about
@@ -1209,6 +1237,21 @@ def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
     # message claimed was still caught (R367). The second half above is what
     # makes the claim true instead of asserted.
     anchor = _report_anchor()
+    if not anchor:
+        # NO HISTORY FOR THIS REPORT PATH (R377). There is no commit to
+        # measure a distance to, so rule 1 has nothing to say and saying it
+        # anyway is what made this red at every reviewer commit. Rule 2 still
+        # applies and is the half that carries the claim: whatever this tree
+        # is, no commit touching code may sit between the measurement and the
+        # head. `test_the_report_this_guard_measures_HAS_history` is what
+        # stops this branch from ever being taken in this repository.
+        intruders = _implementer_commits_after(sha)
+        assert not intruders, (
+            f"{len(intruders)} commit(s) touching code follow `{sha}`, the "
+            "commit the whole-suite line names, and this report path has no "
+            "history to anchor a distance to:\n  " + "\n  ".join(intruders)
+        )
+        return
     near = subprocess.run(
         ["git", "-C", str(ROOT), "rev-list", "--count", f"{sha}..{anchor}"],
         capture_output=True,
@@ -1286,6 +1329,40 @@ def test_a_code_commit_after_the_report_reddens_and_a_corpus_commit_does_not() -
             "a code commit after the report was NOT caught, which is the "
             f"whole reason this rule exists. Got: {intruders}"
         )
+
+
+def test_the_anchor_fallback_cannot_be_taken_in_this_repository() -> None:
+    """The third anchor state is for the harness, never for a real report.
+
+    R377's repair gives `_report_anchor()` a branch for a report path with no
+    history. In `tests/test_report_guard_states.py` that is a copied step-10
+    report and the branch is correct; here it would mean the step report was
+    never committed, and a rule that quietly stops measuring is the shape
+    every finding in this milestone has had.
+
+    TWO ASSERTIONS, AND THE FIRST HOLDS EVERYWHERE. The reports TREE always
+    has history -- in the harness copy too, because `step-5.md` is committed
+    there -- so the fallback always has something to anchor on. The second is
+    the real invariant for a report that is tracked at all: it has history.
+    A copied report is untracked and asserts nothing, which is the same
+    three-state distinction the anchor itself draws.
+    """
+    tree = _last_commit_touching(REPORTS)
+    assert tree, (
+        f"nothing under {REPORTS.name} has any commit history, so the anchor "
+        "fallback has nothing to anchor on and the distance rule measures "
+        "nothing at all."
+    )
+    tracked = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files", "--error-unmatch", "--", str(REPORT)],
+        capture_output=True,
+    )
+    if tracked.returncode != 0:
+        return  # a copied report: untracked by construction, nothing to assert
+    assert _last_commit_touching(REPORT), (
+        f"{REPORT.name} is tracked and has no commit history, which should be "
+        "impossible. The distance rule is not measuring anything here."
+    )
 
 
 def test_a_RED_suite_is_named_in_the_report() -> None:
