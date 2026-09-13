@@ -5612,6 +5612,15 @@ judge WHAT THE REPAIR BUYS, AND THE DOCSTRING NOW SAYS ONLY THIS: an edit in
 
 ## 2. R360 — the cell's rows, re-run, and the variable named
 
+> **WITHDRAWN IN REVISION 18 (R368, R380).** Every figure in this section is
+> withdrawn and none of it should be read as a measurement. The attribution
+> below is wrong twice over: verdict 39's own cell describes a narrowing of
+> `_literal_thresholds_inside` reporting "4 failed, 70 passed", not an
+> `or True`. Revision 17 said the table was "gone" and it was not — one
+> `grep` finds it — which is why the mark is here rather than only there.
+> What survives is revision 17 §1: the pair that was green before CO0 is red
+> now, at `test_every_entry_reaches_the_assertions`, by name.
+
 **The rows did not reproduce because the report did not say which ablation
 it ran.** Revision 15 wrote "a plausible one-line tightening of the scanner".
 Two different tightenings were in play across the two rounds: verdict 39's
@@ -6311,3 +6320,11 @@ move, and the whole tree still reports nothing.
 **What is not claimed.** Q7 is not opened here; CP5 opens it on the next
 verdict without gate items. No Q8 value is written. Nothing in `floatfea/`
 has been touched, including the two literals §5 reports.
+
+---
+
+# Revision 18 — the red test first, and a rule that reaches the package
+
+Answers: verdict 43 @ 7fd7155
+
+(placeholder)

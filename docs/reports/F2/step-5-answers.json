@@ -163,28 +163,19 @@
       "where": "§6"
     },
     "R365": {
-      "state": "answered",
-      "where": "§1",
-      "site": "tests/test_marker_exemption_corpus.py"
+      "state": "carried"
     },
     "R366": {
-      "state": "answered",
-      "where": "§2",
-      "site": "tests/test_report_carried.py"
+      "state": "carried"
     },
     "R367": {
-      "state": "answered",
-      "where": "§2",
-      "site": "tests/test_report_carried.py"
+      "state": "carried"
     },
     "R368": {
-      "state": "answered",
-      "where": "§3"
+      "state": "carried"
     },
     "R369": {
-      "state": "answered",
-      "where": "§4",
-      "site": ".github/workflows/ci.yml"
+      "state": "carried"
     },
     "R370": {
       "state": "open",
@@ -205,6 +196,34 @@
     "R374": {
       "state": "open",
       "where": "§6"
+    },
+    "R375": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/test_marker_exemption_corpus.py"
+    },
+    "R376": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/test_marker_exemption_corpus.py"
+    },
+    "R377": {
+      "state": "answered",
+      "where": "§1",
+      "site": "tests/test_report_carried.py"
+    },
+    "R378": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R379": {
+      "state": "answered",
+      "where": "§3",
+      "site": "tests/test_no_tolerance_literals.py"
+    },
+    "R380": {
+      "state": "answered",
+      "where": "§4"
     }
   }
 }

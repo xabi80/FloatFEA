@@ -5,6 +5,17 @@
 undeclared `rtol=1e-10` (AW2), then `rel=1e-6` and `> 1e4` two commits after AW2
 closed (R13), then a regex scanner that missed 13 of 15 planted shapes.
 
+AND IT IS BROKEN RIGHT NOW, IN THE TREE THIS FILE PROTECTS (R379). The
+paragraph above cited `rtol=1e-10` as a CLOSED breach; one stands undeclared at
+`floatfea/io/reader.py:223` on the inertia-symmetry check, beside `rtol=1e-9`
+at `:206`, `atol=1e-9` at `:155` and `atol=1e-12` at `floatfea/io/frames.py:358`.
+All four have been there since F1 and THIS GUARD HAS NEVER LOOKED: its domain
+is `TESTS.rglob("test_*.py")`, so the package it exists to protect has been
+outside its reach throughout. Three of the four decide whether a record is
+REJECTED. They are declared under `docs/milestones/F2.md` §D5a, at their
+identical values, and the domain widens there -- in that order, because
+widening it first reddens the build for work that has not happened yet.
+
 Why the regex failed, and why this walks the AST instead
 --------------------------------------------------------
 The regex cleared a whole LINE if a tolerance name appeared anywhere on it --
@@ -46,6 +57,7 @@ from __future__ import annotations
 
 import ast
 import io
+import math
 import tokenize
 from pathlib import Path
 
@@ -223,6 +235,12 @@ def _float_of_a_string(node: ast.AST) -> float | None:
     try:
         value = float(arg.value)
     except ValueError:
+        return None
+    # INFINITY AND NaN ARE NOT TOLERANCES (R381). `float("inf")` is the
+    # absence of a bound, and it is the one spelling here with no bare-literal
+    # form for the older rules to be consistent with -- so this rule would
+    # report it and every other rule in the file would not.
+    if not math.isfinite(value):
         return None
     return None if abs(value) in (0.0, 1.0) else value
 
