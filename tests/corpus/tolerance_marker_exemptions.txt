@@ -617,3 +617,64 @@ id=clean_name_divided_by_a_count expect=exempt measured=clean src=import numpy a
 id=clean_float_of_the_string_infinity expect=exempt measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert cost < float("inf")\n
 id=fold_threshold_inside_a_tuple_the_test_subscripts expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    bounds = (1 / 1000000, 1 / 1000)\n    assert err < bounds[0]\n
 id=string_float_inside_a_list_the_test_subscripts expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    bounds = [float("1e-09")]\n    assert err < bounds[0]\n
+
+# ---------------------------------------------------------------------------
+# FORTY-FOURTH VERDICT (nineteenth on step 5), added at HEAD d273acf.
+#
+# CQ3 shipped a new rule this round: a literal BESIDE A DECLARED NAME is a new
+# bound, integers included, "excused only when it is the IDENTITY FOR ITS OWN
+# OPERATOR" and reading "THIS BINOP'S OWN OPERANDS, never the whole subtree".
+# This batch measures that rule from outside, on two axes its author did not
+# write, plus controls on both sides of each boundary.
+#
+#   (a) THE IDENTITY TABLE HAS NO SIDE. `1.0` is Div's identity on the RIGHT.
+#       On the left it is a reciprocal, and `1 / DECLARED` is a bound fifteen
+#       orders of magnitude from the declared one. Same for `//`, `**` and
+#       `0 - DECLARED`.
+#   (b) AN OPERAND THAT IS ITSELF AN EXPRESSION IS NOT A NUMBER. `_as_number`
+#       returns None for a BinOp or a Call, and the nested BinOp is skipped by
+#       the caller because it holds no declared name -- so `DECLARED * (1 + 1)`
+#       and `DECLARED * 2 ** 10` reach nothing.
+#
+# The hatch controls matter most: a new rule the `# not-a-tolerance:` marker
+# cannot reach makes a correct file unfixable, which is worse than any miss.
+# Both pass.
+#
+# `measured` is what the SHIPPED `offending()` returned at d273acf, taken
+# BEFORE the `expect` beside it was written. 35 entries: 17 do what the entry
+# requires, 18 do not. Of the 25 that ask for DETECTION, 7 are correct.
+id=cq3_one_divided_by_the_declared_name expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert cond < 1 / ROUNDOFF_IDENTITY\n
+id=cq3_one_point_zero_divided_by_the_declared expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert cond < 1.0 / ROUNDOFF_IDENTITY\n
+id=cq3_one_floordiv_the_declared_name expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert cond < 1 // ROUNDOFF_IDENTITY\n
+id=cq3_one_raised_to_the_declared_name expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < 1 ** ROUNDOFF_IDENTITY\n
+id=cq3_zero_minus_the_declared_name expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < 0 - ROUNDOFF_IDENTITY\n
+id=cq3_scaled_by_a_parenthesised_sum expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY * (1 + 1)\n
+id=cq3_scaled_by_a_parenthesised_difference expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY * (10 - 8)\n
+id=cq3_scaled_by_a_power_expression expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY * 2 ** 10\n
+id=cq3_compound_scale_on_the_left expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < (1 + 1) * ROUNDOFF_IDENTITY\n
+id=cq3_divided_by_a_parenthesised_product expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY / (2 * 5)\n
+id=cq3_scaled_by_float_of_a_literal expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY * float(2)\n
+id=cq3_scaled_by_int_of_a_literal expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY * int(2)\n
+id=cq3_scaled_by_abs_of_a_literal expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY * abs(-2)\n
+id=cq3_scaled_by_numpy_float64_of_a_literal expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY * np.float64(2)\n
+id=cq3_control_times_one_is_the_identity expect=exempt measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY * 1\n
+id=cq3_control_over_one_is_the_identity expect=exempt measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY / 1\n
+id=cq3_control_plus_zero_is_the_identity expect=exempt measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY + 0\n
+id=cq3_control_raised_to_one_is_the_identity expect=exempt measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY ** 1\n
+id=cq3_control_shifted_by_zero_is_the_identity expect=exempt measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY << 0\n
+id=cq3_shifted_by_one_is_a_doubling expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY << 1\n
+id=cq3_scaled_by_an_underscored_integer expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY * 1_000\n
+id=cq3_scaled_by_a_hexadecimal_integer expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY * 0x10\n
+id=cq3_scaled_name_as_an_approx_keyword expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert a == pytest.approx(b, rel=ROUNDOFF_IDENTITY * 10)\n
+id=cq3_scaled_name_as_an_isclose_keyword expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert np.isclose(a, b, atol=ROUNDOFF_IDENTITY * 10)\n
+id=cq3_scaled_name_in_a_chained_compare expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert 0 < err < ROUNDOFF_IDENTITY * 10\n
+id=cq3_scaled_name_through_a_max_candidate expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < max(ROUNDOFF_IDENTITY * 10, 0.0)\n
+id=cq3_scaled_name_bound_to_a_name_first expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    tol = ROUNDOFF_IDENTITY * 10\n    assert err < tol\n
+id=cq3_scaled_name_inside_a_while_header expect=caught measured=caught src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    while err > ROUNDOFF_IDENTITY * 10:\n        err = err / 2\n
+id=hatch_marker_reaches_the_new_cq3_species expect=exempt measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < ROUNDOFF_IDENTITY * 10  # not-a-tolerance: ten stations, a count\n
+id=hatch_marker_on_cq3_split_across_lines expect=exempt measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert np.isclose(\n        a,\n        b,\n        atol=ROUNDOFF_IDENTITY * 10,\n    )  # not-a-tolerance: ten stations, a count\n
+id=r381_control_float_of_the_string_nan expect=exempt measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert cost < float("nan")\n
+id=r381_control_negated_float_of_string_infinity expect=exempt measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert cost < -float("inf")\n
+id=r381_control_float_of_a_string_that_overflows expect=exempt measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < float("1e400")\n
+id=r381_float_of_a_string_that_underflows_to_zero expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < float("1e-400")\n
+id=cq3_bound_chosen_by_a_conditional_expression expect=caught measured=clean src=import numpy as np\nimport pytest\nfrom floatfea.testing import assert_close\nfrom floatfea.tolerances import ROUNDOFF_IDENTITY\ndef test_x():\n    assert err < (ROUNDOFF_IDENTITY if strict else 1e-09)\n
