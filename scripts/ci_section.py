@@ -175,6 +175,52 @@ def never_started(jobs: list[dict]) -> bool:
     return bool(jobs) and all(not job.get("steps") for job in jobs)
 
 
+# A FAILING TEST'S OWN LINE, as pytest and as the ladder rung print it.
+# `FAILED tests/x.py::test_y - AssertionError: ...` and the rung's
+# `run_rung:   failure  tests.x::test_y`.
+_FAILED = re.compile(r"(?:^|\s)FAILED (\S+?)(?:\s+-\s|\s*$)")
+_RUNG_FAILURE = re.compile(r"run_rung:\s+(?:failure|error)\s+(\S+)")
+
+
+def failing_names(run_id: int) -> dict[str, list[str]]:
+    """`{job: [test ids that failed]}` read from the run's log (CQ0).
+
+    A COUNT IS NOT A LIST, and this exists because I read one as the other. A
+    run at `c85511b` reported "1 failed, 708 passed" in its guards job; the
+    report that mined that same run for something else published neither the
+    count nor the name, and the single red test went unnamed for a round.
+    `CLAUDE.md` § Non-negotiables puts reporting a failure first, and a
+    section that can only say how many is a section a reader skims.
+    """
+    log = _gh("run", "view", str(run_id), "--log")
+    out: dict[str, list[str]] = {}
+    for line in log.splitlines():
+        parts = line.split("\t")
+        if len(parts) < 3:
+            continue
+        job, body = parts[0].strip(), parts[-1]
+        # EVERY LOG LINE CARRIES AN ISO TIMESTAMP FIRST. The first version of
+        # this reader tested `body.startswith("FAILED ")` against a line that
+        # begins `2026-09-11T22:39:42.4973890Z`, so it found nothing on two
+        # real runs -- which is how a reader that names nothing looks exactly
+        # like a run with nothing to name.
+        text = re.sub(r"^\S+Z\s*", "", body)
+        for m in (_FAILED.search(text), _RUNG_FAILURE.search(text)):
+            if not m:
+                continue
+            name = m.group(1).strip()
+            # THE ASSERTION TEXT OF THIS SUITE'S OWN SUBPROCESS TESTS contains
+            # `FAILED ...` lines describing a sandbox, not this run. They are
+            # indented inside a traceback; a real summary line starts at the
+            # margin.
+            if m.re is _FAILED and not text.startswith("FAILED "):
+                continue
+            names = out.setdefault(job, [])
+            if name not in names:
+                names.append(name)
+    return out
+
+
 def counts(run_id: int) -> dict[str, tuple[int, int, int]]:
     """`{job: (passed, failed, skipped)}` read from the run's log."""
     log = _gh("run", "view", str(run_id), "--log")
@@ -350,6 +396,18 @@ def section() -> str:
         lines.append("")
         for r in red:
             lines.append(f"- {r}")
+    # THE NAMES, ALWAYS, AND EVEN WHEN EVERY JOB IS GREEN (CQ0). A job can
+    # report a failing test and still be green -- `continue-on-error`, a step
+    # whose exit code is swallowed, a rung that reports and carries on -- so
+    # this reads the log rather than the conclusions.
+    named = failing_names(run["databaseId"])
+    total = sum(len(v) for v in named.values())
+    lines += ["", f"**Failing tests named in the log: {total}.**"]
+    if named:
+        lines.append("")
+        for job in sorted(named):
+            for name in named[job]:
+                lines.append(f"- `{name}` ({job})")
     return "\n".join(lines) + "\n"
 
 
