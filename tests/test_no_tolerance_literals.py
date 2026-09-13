@@ -227,6 +227,66 @@ def _float_of_a_string(node: ast.AST) -> float | None:
     return None if abs(value) in (0.0, 1.0) else value
 
 
+# WHAT LEAVES A DECLARED VALUE ALONE, per operator. `* 1` and `/ 1` are
+# identities; `+ 1` is not, and excusing magnitude 1 everywhere -- which is
+# what every other rule in this file does, correctly, for a bare literal --
+# let `DECLARED + 1` through while catching `DECLARED * 10`. Measured before
+# this table replaced it.
+_IDENTITY = {
+    ast.Add: 0.0,
+    ast.Sub: 0.0,
+    ast.Mult: 1.0,
+    ast.Div: 1.0,
+    ast.FloorDiv: 1.0,
+    ast.Pow: 1.0,
+    ast.LShift: 0.0,
+    ast.RShift: 0.0,
+    ast.Mod: None,
+}
+
+
+def _as_number(node: ast.AST) -> float | None:
+    """A numeric literal, signed, or `None`. Booleans are not numbers here."""
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+        inner = _as_number(node.operand)
+        return None if inner is None else -inner
+    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+        return None if isinstance(node.value, bool) else float(node.value)
+    return None
+
+
+def _numbers_beside_a_declared_name(node: ast.AST) -> list[float]:
+    """Literals that CHANGE a declared tolerance, integers included (CQ3).
+
+    `_floats_in` excuses integers, and rightly: an integer on its own in a
+    comparison is a count. Beside a DECLARED tolerance it is not a count --
+    `DECLARED * 10` and `DECLARED + 1` are new bounds, and the bound the
+    comparison uses is not the declared one. Measured before this was
+    written: all four of the reviewer's integer spellings scanned clean while
+    `DECLARED * 2.0` was caught, the same defect distinguished only by a
+    decimal point.
+
+    A literal is excused only when it is the IDENTITY FOR ITS OWN OPERATOR,
+    and only its own operands are read.
+
+    THIS BINOP'S OWN OPERANDS, never the whole subtree. Walking it flagged
+    `RIGID_BODY_MODE_RATIO * w[RIGID - 1]` on the `1` of an index -- a count
+    inside a subscript, two levels down, with nothing to do with the bound.
+    Every nested BinOp is visited by the caller's own loop, so a literal that
+    really does modify the declared value is reached as somebody's operand.
+    """
+    if not isinstance(node, ast.BinOp):
+        return []
+    identity = _IDENTITY.get(type(node.op))
+    out: list[float] = []
+    for side in (node.left, node.right):
+        value = _as_number(side)
+        if value is None or (identity is not None and value == identity):
+            continue
+        out.append(value)
+    return out
+
+
 def _literal_thresholds_inside(comp: ast.AST, names: set[str]) -> list[str]:
     """Float literals inside a comparator that ARE thresholds (R326).
 
@@ -264,7 +324,10 @@ def _literal_thresholds_inside(comp: ast.AST, names: set[str]) -> list[str]:
         declared = {n.id for n in ast.walk(inner) if isinstance(n, ast.Name) and n.id in names}
         if not declared:
             continue
-        for value in _floats_in(inner):
+        # CQ3: INTEGERS COUNT HERE. Everywhere else in this file an integer is
+        # a count and is excused; beside a declared tolerance it is a scale,
+        # and `DECLARED * 10` is as much a new bound as `DECLARED * 2.0`.
+        for value in _numbers_beside_a_declared_name(inner):
             out.append(
                 f"comparison against {value!r} combined with "
                 f"{sorted(declared)[0]} -- the bound is the product, not the "

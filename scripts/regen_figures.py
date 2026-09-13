@@ -296,7 +296,13 @@ def _boundary_margins(C, ceil: float, CD: float):
                     hi = mid
                 else:
                     lo = mid
-                if hi / lo < 1.0 + BOUNDARY_BISECTION_CONVERGENCE:
+                # The 1.0 below is UNITY, the reference the ratio hi/lo is
+                # compared to; the bound is the declared name beside it.
+                # Marked because CQ3 flags a literal beside a declared
+                # name, and for `+` the identity is 0, not 1.
+                if (
+                    hi / lo < 1.0 + BOUNDARY_BISECTION_CONVERGENCE
+                ):  # not-a-tolerance: 1.0 is unity, the ratio's reference
                     break
             base["stations"] = repr(lo)
             eff = C.injected_delta(base, "dropped_shear_parameter")
