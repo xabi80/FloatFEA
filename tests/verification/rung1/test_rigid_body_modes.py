@@ -51,6 +51,7 @@ else moves, which is exactly one extra mode and is provable rather than measured
 from __future__ import annotations
 
 import contextlib
+import math
 import sys
 from pathlib import Path
 
@@ -77,6 +78,10 @@ from floatfea.tolerances import (  # noqa: E402
     RIGID_BODY_MODE_RATIO_COUNTER_DEFECT,
     RIGID_BODY_SUBSPACE_LOSS,
     RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT,
+    RIGID_MODE_EXACTNESS,
+    RIGID_MODE_EXACTNESS_COUNTER_DEFECT,
+    RIGID_MODE_GAP,
+    RIGID_MODE_GAP_COUNTER_DEFECT,
 )
 
 RIGID = 6
@@ -188,6 +193,74 @@ def mode_ratio(k: np.ndarray) -> float:
     return float(abs(w[RIGID - 1]) / flexible)
 
 
+EPS = float(np.finfo(np.float64).eps)
+"""not-a-tolerance: the machine's own unit round-off, used to homogenise a
+spectrum so two frames can be compared. It is a property of the float format
+and nothing is compared against it."""
+
+
+def residual_exactness(k: np.ndarray, model: Model) -> float:
+    """G2.1's first quantity in the RESIDUAL form (Q7).
+
+    The worst over the six analytic rigid-body vectors of
+
+        ||K v|| / (max|K| * ||v||)
+
+    -- how far an exact rigid-body motion is from the nullspace of the
+    assembled matrix. Dimensionless: the numerator carries `K`'s units and the
+    denominator carries them too, so the quantity is invariant under `E`, the
+    section and the length unit in the way `mode_ratio` only claimed to be.
+
+    WHAT IT DOES NOT USE, and that is the point: no eigenvalues and no
+    eigenvectors. `subspace_loss` projects onto the first six COMPUTED
+    eigenvectors, so what it measures includes the eigensolver; this reads `K`
+    and the analytic vectors and nothing else. There is no iterative solve
+    here, so there is no starting vector to pin -- `deterministic_v0` is
+    pinned where a solve does happen, in the sparse cross-check below.
+
+    ASSERTED ON THE WORST OF THE SIX, never a mean, per `CLAUDE.md`.
+    """
+    scale = float(np.max(np.abs(k)))
+    analytic = _analytic_rigid_body(model)
+    worst = 0.0
+    for j in range(analytic.shape[1]):
+        v = analytic[:, j]
+        worst = max(worst, float(np.linalg.norm(k @ v) / (scale * np.linalg.norm(v))))
+    return worst
+
+
+def homogenised_spectrum(k: np.ndarray) -> np.ndarray:
+    """`|lambda|` in units of the matrix's own round-off floor, `eps * max|lambda|`.
+
+    Below one means "indistinguishable from zero for this matrix". That is
+    what makes two frames comparable: the six rigid modes of the shipped frame
+    and of its kilometre re-expression both land under one, while their raw
+    eigenvalues differ by twelve orders.
+    """
+    w = np.sort(sla.eigh(k, eigvals_only=True))
+    floor = EPS * float(np.max(np.abs(w)))
+    return np.abs(w) / floor
+
+
+def zero_modes_by_gap(k: np.ndarray) -> tuple[int, float]:
+    """`(how many modes sit below the largest gap, that gap's ratio)` (Q7).
+
+    THE COUNT COMES FROM THE SPECTRUM'S OWN SHAPE, not from a threshold. A
+    threshold on an eigenvalue is a statement about the model's units and
+    stiffness; the largest gap is where the nullspace ends, and it is what a
+    reader of a nullspace dimension relies on anyway.
+
+    Everything below the round-off floor is clamped TO the floor before the
+    ratios are taken: the six zero modes differ from each other only by
+    round-off, and dividing two round-off numbers would put the largest gap
+    inside the nullspace rather than at its edge.
+    """
+    h = np.maximum(homogenised_spectrum(k), 1.0)
+    ratios = h[1:] / h[:-1]
+    i = int(np.argmax(ratios))
+    return i + 1, float(ratios[i])
+
+
 def subspace_loss(k: np.ndarray, model: Model) -> float:
     """The largest fraction of an analytic rigid-body vector outside the span.
 
@@ -288,23 +361,82 @@ def _defect(size: float, capsys):
 # --------------------------------------------------------------------------
 
 
-def test_the_frame_has_SIX_zero_modes_by_ratio(capsys) -> None:
-    """G2.1, first half. Six eigenvalues at zero, measured as a ratio."""
+def test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys) -> None:
+    """G2.1's first half, in the form Q7 settles on.
+
+    The six analytic rigid-body motions are in the nullspace of the assembled
+    matrix, measured as a residual and not through an eigensolver.
+    """
+    model, els = _frame()
+    k = assembled(model, els)
+    worst = residual_exactness(k, model)
+    with capsys.disabled():
+        print(f"\n  worst rigid-body residual {worst:.4e} against " f"{RIGID_MODE_EXACTNESS:g}")
+    assert worst <= RIGID_MODE_EXACTNESS, (
+        f"an exact rigid-body motion leaves {worst:.4e} of residual behind, "
+        f"above {RIGID_MODE_EXACTNESS:g}. A rigid motion that `K` resists is "
+        "an element or transformation defect: the stiffness is doing work on "
+        "a displacement that strains nothing."
+    )
+
+
+def test_the_ZERO_MODES_NUMBER_SIX_by_the_spectral_gap(capsys) -> None:
+    """G2.1's second half: how many, from the spectrum's own shape.
+
+    The count and the gap are two claims and both are asserted. The count is
+    what G2.1 is about; the gap is whether the count is worth reading, and a
+    count taken across a narrow gap is a coin toss dressed as a measurement.
+    """
+    model, els = _frame()
+    k = assembled(model, els)
+    count, gap = zero_modes_by_gap(k)
+    with capsys.disabled():
+        h = homogenised_spectrum(k)
+        print(
+            f"  {count} modes below a gap of {gap:.4e} against "
+            f"{RIGID_MODE_GAP:g}; homogenised lambda_6 {h[RIGID - 1]:.4e}, "
+            f"lambda_7 {h[RIGID]:.4e}"
+        )
+    assert count == RIGID, (
+        f"the largest gap in the homogenised spectrum puts {count} modes below "
+        f"it and G2.1 requires {RIGID}. Fewer means a rigid motion is being "
+        "resisted; more means the model has a mechanism in it."
+    )
+    assert gap >= RIGID_MODE_GAP, (
+        f"the gap separating the nullspace from the first flexible mode is "
+        f"{gap:.4e}, under {RIGID_MODE_GAP:g}. The count above is then being "
+        "read across a boundary that is not there."
+    )
+
+
+def test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate(capsys) -> None:
+    """`lambda_6 / lambda_7`, RETIRED to a diagnostic by Q7.
+
+    IT WAS THE GATE AND THE REVIEWER'S CORPUS REFUTED IT. Sixteen of the
+    twenty-eight frames in `tests/corpus/g21_rigid_body_frames.txt` exceed its
+    ceiling with a defect-free element, because the quantity moves with the
+    frame's conditioning -- bracing sections, mesh subdivision, span, and above
+    all the length unit. A ceiling that a defect-free element fails at the
+    centimetre re-expression of a frame it passes at the metre is a ceiling on
+    the frame, and G2.1 is not a statement about the frame.
+
+    It is printed because it is informative about conditioning and it is the
+    number three earlier revisions published. Nothing is asserted against it
+    and `RIGID_BODY_MODE_RATIO` is now referenced only here.
+    """
     model, els = _frame()
     k = assembled(model, els)
     ratio = mode_ratio(k)
+    w = _spectrum(k)
     with capsys.disabled():
-        w = _spectrum(k)
         print(
-            f"\n  lambda_6 {w[RIGID - 1]:.4e}  lambda_7 {w[RIGID]:.4e}  "
-            f"ratio {ratio:.4e} against {RIGID_BODY_MODE_RATIO:g}"
+            f"  DIAGNOSTIC lambda_6 {w[RIGID - 1]:.4e}  lambda_7 {w[RIGID]:.4e}"
+            f"  ratio {ratio:.4e}; the retired ceiling was "
+            f"{RIGID_BODY_MODE_RATIO:g}"
         )
-    assert ratio <= RIGID_BODY_MODE_RATIO, (
-        f"the sixth eigenvalue is {ratio:.4e} of the seventh, above "
-        f"{RIGID_BODY_MODE_RATIO:g}. Either a rigid-body mode carries strain "
-        "energy -- which is an element or transformation defect -- or the "
-        "seventh mode has collapsed toward zero, which is a mechanism in the "
-        "model. The two are distinguished by the nullspace dimension below."
+    assert math.isfinite(ratio), (
+        "the diagnostic ratio is not finite, which means the seventh "
+        "eigenvalue is zero and the model has more freedom than G2.1 assumes."
     )
 
 
@@ -416,12 +548,76 @@ def test_a_RIGID_BODY_MODE_that_carries_ENERGY_is_caught(capsys) -> None:
     """
     with (
         _defect(RIGID_BODY_MODE_RATIO_COUNTER_DEFECT, capsys),
-        pytest.raises(AssertionError, match="of the seventh"),
+        pytest.raises(AssertionError, match="leaves"),
     ):
-        test_the_frame_has_SIX_zero_modes_by_ratio(capsys)
+        test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys)
 
     # And undefected it passes, so the failure above is the injection.
-    test_the_frame_has_SIX_zero_modes_by_ratio(capsys)
+    test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys)
+
+
+@contextlib.contextmanager
+def _foundation(size: float, capsys):
+    """Patch `assembled` with a UNIFORM elastic foundation of relative `size`.
+
+    `size * max|K|` on every diagonal entry: every mode is lifted by the same
+    amount, so the six rigid ones rise together and the gap between them and
+    the seventh closes without the COUNT changing. That is what makes it the
+    gap's counter rather than the count's.
+
+    IT REDDENS THE RESIDUAL TOO, necessarily: anything that lifts a zero mode
+    makes that motion carry energy. Said rather than hidden -- what makes this
+    the gap's counter is that it is sized on the gap, and the count's own
+    controls are the release and the pin, which move the answer instead.
+    """
+    original = globals()["assembled"]
+
+    def defective(model, els):
+        k = original(model, els)
+        return k + size * float(np.abs(k).max()) * np.eye(k.shape[0])
+
+    globals()["assembled"] = defective
+    try:
+        with capsys.disabled():
+            print(f"\n  injected a uniform foundation of {size:g} of max|K|")
+        yield
+    finally:
+        globals()["assembled"] = original
+
+
+def test_a_RESISTED_rigid_motion_reddens_the_RESIDUAL(capsys) -> None:
+    """`RIGID_MODE_EXACTNESS`'s counter, INJECTED into the assembled matrix.
+
+    The same defect shape as the ratio's: a diagonal stiffness on one
+    translational DOF, which is a stiffness resisting a rigid translation. It
+    is run through the SHIPPED gate, which recomputes the residual on the
+    defective matrix and decides on it (BV1/BX0).
+    """
+    with (
+        _defect(RIGID_MODE_EXACTNESS_COUNTER_DEFECT, capsys),
+        pytest.raises(AssertionError, match="leaves"),
+    ):
+        test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys)
+
+    # And undefected it passes, so the failure above is the injection.
+    test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys)
+
+
+def test_a_CLOSED_GAP_reddens_the_COUNT_assertion(capsys) -> None:
+    """`RIGID_MODE_GAP`'s counter, INJECTED into the assembled matrix.
+
+    A uniform foundation lifts all six rigid modes together, so the count
+    stays at six and the GAP is what degrades. The gate must redden on the
+    gap, which is the half of that test this counter is declared against.
+    """
+    with (
+        _foundation(RIGID_MODE_GAP_COUNTER_DEFECT, capsys),
+        pytest.raises(AssertionError, match="separating the nullspace"),
+    ):
+        test_the_ZERO_MODES_NUMBER_SIX_by_the_spectral_gap(capsys)
+
+    # And undefected it passes, so the failure above is the injection.
+    test_the_ZERO_MODES_NUMBER_SIX_by_the_spectral_gap(capsys)
 
 
 def test_a_LOST_rigid_body_DIRECTION_is_caught(capsys) -> None:

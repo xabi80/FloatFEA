@@ -82,6 +82,57 @@ def _figures() -> list[tuple[str, str]]:
             f"{RB.subspace_loss(k_rb, model):.4e}",
         )
     )
+    # Q7's two quantities, which are what G2.1 is asserted with now. The ratio
+    # and the subspace loss above are kept as diagnostics and are still
+    # generated, because the report cites the contrast between the two forms
+    # and a withdrawn figure that nothing regenerates is how a contrast goes
+    # stale.
+    rows.append(
+        (
+            _floor("rigid_mode_residual", "below", "RIGID_MODE_EXACTNESS"),
+            f"{RB.residual_exactness(k_rb, model):.4e}",
+        )
+    )
+    _count, _gap = RB.zero_modes_by_gap(k_rb)
+    rows.append(
+        (
+            _floor("rigid_mode_gap", "above", "RIGID_MODE_GAP"),
+            f"{_gap:.4e}",
+        )
+    )
+    rows.append(("rigid_mode_count", f"{_count}"))
+
+    # The corpus, which is the evidence Q7 rests on: the same defect-free
+    # element at each of the reviewer's frames.
+    import test_rigid_body_corpus as RBC
+
+    worst_residual, smallest_gap, counts = 0.0, float("inf"), set()
+    ratio_over = 0
+    for entry in RBC.ENTRIES:
+        m_c, els_c = RBC._build(entry)
+        k_c = RB.assemble_dense(m_c, els_c)
+        worst_residual = max(worst_residual, RB.residual_exactness(k_c, m_c))
+        n_c, g_c = RB.zero_modes_by_gap(k_c)
+        smallest_gap = min(smallest_gap, g_c)
+        counts.add(n_c)
+        if RB.mode_ratio(k_c) > RB.RIGID_BODY_MODE_RATIO:
+            ratio_over += 1
+    rows.append(
+        (
+            _floor("rigid_mode_residual_worst_over_corpus", "below", "RIGID_MODE_EXACTNESS"),
+            f"{worst_residual:.4e}",
+        )
+    )
+    rows.append(
+        (
+            _floor("rigid_mode_gap_smallest_over_corpus", "above", "RIGID_MODE_GAP"),
+            f"{smallest_gap:.4e}",
+        )
+    )
+    rows.append(("rigid_mode_corpus_frames", f"{len(RBC.ENTRIES)}"))
+    rows.append(("rigid_mode_corpus_counts", ", ".join(str(c) for c in sorted(counts))))
+    rows.append(("retired_ratio_over_ceiling_on_corpus", f"{ratio_over} of {len(RBC.ENTRIES)}"))
+
     rows.append(
         (
             _floor("rigid_body_counter_ratio", "above", "RIGID_BODY_MODE_RATIO"),
