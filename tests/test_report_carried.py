@@ -1109,11 +1109,19 @@ def _report_anchor() -> str:
                     written, and HEAD is the commit it will sit on
         <sha>       the report is tracked and clean -- that commit is where
                     it sits, and what may follow is decided by pathspec
-        ""          the report path has NO HISTORY. Not the same thing as
-                    "not committed yet", and conflating the two is the whole
-                    of R377: any state where `git log -1 -- REPORT` comes
-                    back empty took the HEAD branch, which is the pre-CP1
-                    rule R361 refuted, and switched rule 2 off with it.
+        <sha>       the report path is UNTRACKED -- a copy, not a committed
+                    report -- and the anchor is the newest commit touching
+                    the reports TREE instead. R388: the first version of this
+                    table said this state returns `""`, and it does not; the
+                    commit message had it right and the docstring did not.
+        ""          nothing under `docs/reports/` has any history at all. Only
+                    then does rule 1 stand down and rule 2 carry the claim
+                    alone.
+
+    Conflating the untracked state with "not committed yet" is the whole of
+    R377: any state where `git log -1 -- REPORT` came back empty took the
+    HEAD branch, which is the pre-CP1 rule R361 refuted, and switched rule 2
+    off with it.
 
     The third state is not hypothetical. `tests/test_report_guard_states.py`
     constructs it every round -- a step-10 report copied into a tree, never
@@ -1251,7 +1259,8 @@ def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
         # anyway is what made this red at every reviewer commit. Rule 2 still
         # applies and is the half that carries the claim: whatever this tree
         # is, no commit touching code may sit between the measurement and the
-        # head. `test_the_report_this_guard_measures_HAS_history` is what
+        # head. `test_the_anchor_fallback_cannot_be_taken_in_this_repository`
+        # is what
         # stops this branch from ever being taken in this repository.
         intruders = _implementer_commits_after(sha)
         assert not intruders, (

@@ -33,7 +33,9 @@ and the corpora are what measure it.
 
 from __future__ import annotations
 
+import ast
 import importlib.util
+import re
 from pathlib import Path
 
 import pytest
@@ -150,3 +152,118 @@ def test_parametrised_ids_are_NOT_recorded() -> None:
     """
     with_params = [n for names in RECORDED.values() for n in names if "[" in n]
     assert not with_params, f"{with_params[:3]} carry parameter ids. The golden records functions."
+
+
+# A TEST NAME CITED IN PROSE IS A REFERENCE, AND A REFERENCE IS A CLAIM (CR2).
+#
+# `tests/test_plan_figures.py` already says this about `{{fig:NAME}}`: a
+# dangling figure name in a docstring is the same defect as one in the plan,
+# and it is harder to notice than a stale number because it looks like a
+# reference. R387 is that defect with a test name in it -- a comment in
+# `tests/test_report_carried.py` cited a test whose name ended in
+# HAS_history, which had been renamed before it shipped and existed nowhere.
+# The dead name is deliberately NOT written here in backticks: this rule would
+# then flag its own explanation, which is the placeholder problem one level
+# up.
+#
+# WHAT IS SCANNED: comments and docstrings in `tests/` and `scripts/`. Code is
+# not, because a name in code either resolves or raises. Names inside string
+# DATA are not exempt and do not need to be: the corpus files are `.txt`.
+# ONLY INSIDE BACKTICKS, which is this repository's own way of writing
+# "this names a real object". A bare placeholder in prose is not a
+# placeholder -- `scripts/ci_section.py` has one inside a quoted pytest
+# line -- and a rule that cannot tell a placeholder from a pointer
+# forbids writing an example.
+#
+# AND A BACKTICK SPAN IS UNWRAPPED FIRST. One name in `tests/unit/` is
+# broken across two lines inside a single pair of backticks, and reading
+# the first line alone invents a name that exists nowhere -- which is the
+# defect this rule is for, manufactured by the rule itself.
+_SPAN = re.compile(r"`([^`]+)`", re.S)
+_CITED = re.compile(r"^(test_[A-Za-z0-9_]+(?:\\.py)?)$")
+
+
+def _prose_of(path: Path) -> str:
+    """Comment text and docstrings, with code removed."""
+    lines = []
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            lines.append(stripped)
+    tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            doc = ast.get_docstring(node)
+            if doc:
+                lines.append(doc)
+    return "\n".join(lines)
+
+
+def _citations() -> list[tuple[str, str]]:
+    """`(file, name)` for every `test_*` named in prose under tests/ and scripts/."""
+    out: list[tuple[str, str]] = []
+    for where in ("tests", "scripts"):
+        for path in sorted((ROOT / where).rglob("*.py")):
+            if "__pycache__" in str(path):
+                continue
+            rel = str(path.relative_to(ROOT)).replace("\\", "/")
+            names: set[str] = set()
+            for span in _SPAN.findall(_prose_of(path)):
+                hit = _CITED.match("".join(span.split()))
+                if hit:
+                    names.add(hit.group(1))
+            for name in sorted(names):
+                out.append((rel, name))
+    return out
+
+
+CITATIONS = _citations()
+
+
+@pytest.mark.parametrize(
+    "where, name",
+    CITATIONS or [("(none)", "(none)")],
+    ids=[f"{w}:{n}" for w, n in CITATIONS] or ["(none)"],
+)
+def test_every_test_name_cited_in_prose_exists(where: str, name: str) -> None:
+    """R387: a comment that names a test the tree does not have.
+
+    The name is satisfied by a collected test, by a function defined anywhere
+    under `tests/`, or by a module -- `test_rigid_body_modes.py` is a file and
+    reads like one. What fails is a name that is none of those, which is what
+    a rename leaves behind.
+    """
+    if where == "(none)":
+        pytest.fail("no test name cited anywhere in prose; the pattern broke")
+    recorded = {n.split("::")[-1] for names in RECORDED.values() for n in names}
+    known = recorded | _defined_functions() | _module_names()
+    assert name in known, (
+        f"{where} cites `{name}` in prose and nothing by that name exists. A "
+        "reference is a claim like any other, and a renamed test leaves one "
+        "behind that looks exactly like a working pointer."
+    )
+
+
+def _defined_functions() -> set[str]:
+    """Every `def test_*` under `tests/`, collected or not."""
+    out: set[str] = set()
+    for path in (ROOT / "tests").rglob("*.py"):
+        if "__pycache__" in str(path):
+            continue
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                out.add(node.name)
+    return out
+
+
+def _module_names() -> set[str]:
+    """Module stems and file names both, so either spelling resolves."""
+    out: set[str] = set()
+    for path in (ROOT / "tests").rglob("test_*.py"):
+        out.add(path.stem)
+        out.add(path.name)
+    return out
