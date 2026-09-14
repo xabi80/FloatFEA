@@ -6726,3 +6726,425 @@ out  6d5f41a CQ0: the anchor tells three states apart, and the red test goes fi
 
 **What is not claimed.** No value in `floatfea/` moves and no code there is
 touched. Q7 is not opened here. No Q8 value is written.
+
+---
+
+# Revision 19 — Q7, and a gate that measures the element
+
+Answers: verdict 44 @ ab3b50c
+
+**2026-09-13.** Commits since the forty-fourth verdict, listed in §9.
+
+## 0. CI at `d273acf`, the commit verdict 44 judged
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 44 at `d273acf` through the report's own `Answers:` line. Run `34774429589`, event `push`, conclusion **success**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint, unit and guards | 765 | 0 | 0 |
+| the verification ladder | 1261 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 0 not green.**
+
+**Failing tests named in the log: 0.**
+
+## 0a. How to read §0
+
+**§0 describes the commit verdict 44 judged and it is green.** Q7's own run is
+`34809090965` at `fa96dcc`, dispatched after the work landed, and §4 is about
+that one: ten determinism legs green, the verdict job green, **the verification
+ladder green with the new gate in it**.
+
+## 1. R389 — the scaled-tolerance rule gets a side and reads compound operands
+
+**Both rules CQ3 stated were refuted by one-line inputs**, and the commit that
+shipped them claimed the species while fourteen spellings of it were clean.
+
+```
+cell  each shape through the shipped `offending()`, twenty in all, seven of
+      them negative controls that must not move
+out   CAUGHT  1 / DECLARED          CAUGHT  1.0 / DECLARED
+      CAUGHT  1 // DECLARED         CAUGHT  1 ** DECLARED
+      CAUGHT  0 - DECLARED          CAUGHT  DECLARED * (1 + 1)
+      CAUGHT  DECLARED * (10 - 8)   CAUGHT  DECLARED * 2 ** 10
+      CAUGHT  (1 + 1) * DECLARED    CAUGHT  DECLARED / (2 * 5)
+      CAUGHT  DECLARED * float(2)   CAUGHT  DECLARED * np.float64(2)
+      CAUGHT  DECLARED * 1000       -- the control that already worked
+      clean   DECLARED              clean   DECLARED * 1
+      clean   DECLARED + 0          clean   DECLARED - 0
+      clean   DECLARED ** 1         clean   DECLARED * w[3 - 1]
+      clean   len(xs) < 2
+      mismatches: 0
+rule  THE IDENTITY TABLE HAS A SIDE, because four of its eight operators are
+      not commutative. One is Div's identity on the RIGHT; on the left it is a
+      reciprocal, and a conditioning ceiling spelled that way is fifteen
+      orders from the declared value.
+rule  A CONSTANT IS FOLDED RECURSIVELY, through brackets, powers and the
+      numeric calls. The previous docstring said every nested expression was
+      reached "as somebody's operand"; a bracketed sum holds no declared name,
+      so the caller skipped it and the outer operand was something nothing
+      read. A declared tolerance DOUBLED reached the comparison unseen.
+rule  AND THE OTHER SIDE MUST CARRY THE NAME, so a tolerance scaled by DATA --
+      the relative-tolerance idiom -- is not a new bound. That is the last
+      control and it was a real red in rung 1 once.
+```
+
+## 2. R387 and R388 — a citation is a claim, and a table that described the wrong state
+
+```
+cell  the surviving citation renamed in prose only, restored after
+out   CLEAN                            29 passed
+      the test renamed in prose only    1 failed, naming the file and the
+                                        dead name
+      RESTORED                         29 passed
+rule  ONLY INSIDE BACKTICKS, which is this repository's way of writing "this
+      names a real object", and a backtick span is UNWRAPPED first -- one name
+      in `tests/unit/` is broken across two lines inside one pair, and reading
+      the first line alone invents a name that exists nowhere. That is the
+      defect the rule is for, manufactured by the rule itself.
+judge THE FIGURE-REFERENCE RULE ALREADY SAID THIS about `{{fig:NAME}}`: a
+      dangling name in a docstring is the same defect as one in the plan and
+      is harder to notice, because it looks like a reference.
+```
+
+**R388: the three-state table described the third state wrongly.** It said an
+untracked report path returns the empty string. Measured in exactly that state
+it returns a commit, because the anchor falls back to the newest commit
+touching the reports tree. The commit message had it right and the docstring
+did not, so the docstring now carries the commit message's wording.
+
+## 3. R385 and R386 — the plan row, restated
+
+**R386 is the one that matters and the correction is the reviewer's.** §D5a's
+gate asked for the literals to move at their identical values and then gated on
+decision-invariance. A float bound to a name is the same float, so every record
+keeps its verdict and its fault NECESSARILY: the check passed before the step
+was written.
+
+**What step R1 declares now, per value:** the value, identical; its
+**provenance**, meaning which F1 measurement or decision set it, cited; and an
+**injected counter** that reddens the reader's decision on a named record. The
+decision-invariance comparison stays as a regression check and is labelled as
+one — worth having, and not evidence.
+
+**And R2 solves the boundary instead of sampling it.** Converting an absolute
+tolerance on `|g|` to relative form MOVES the accept boundary, so "every record
+keeps its verdict" passes vacuously if no record sits near it. R2 solves for
+the magnitude where accept flips to reject, sets the relative form to preserve
+that boundary at the F1 record's scale, publishes it as a named figure, and has
+V1.3 assert it is unit-invariant — which is the property the absolute form does
+not have and the whole reason to convert.
+
+```
+claim the domain CQ1 named was half vacuous
+cmd   git ls-files -- floatsim
+out   0 -- HSP is not vendored here; `docs/hsp-coupling.md` puts it in a
+      separate worktree at a pinned tag, scanned under its own gating
+rule  the domain is `floatfea/` and `scripts/`. A tolerance in a generator is
+      a tolerance, and one script already carries a marked literal found while
+      writing CQ3.
+```
+
+## 4. Q7 (R223, R224) — G2.1 measures the element now
+
+**The corpus the reviewer wrote eighteen rounds ago is what settled it.**
+Twenty-eight frames: bracing sections, mesh subdivisions, spans, and the same
+physical structure re-expressed in decimetres, centimetres, millimetres and
+kilometres. Nothing read it until this round.
+
+```
+cmd   both retired quantities over every corpus frame, defect-free element
+out   the ratio exceeds its ceiling at 10 of 28 frames
+      the subspace loss exceeds its ceiling at 17 of 28
+      the corpus's own `expect` field marks 18
+judge A CEILING A DEFECT-FREE ELEMENT FAILS AT THE CENTIMETRE RE-EXPRESSION OF
+      A FRAME IT PASSES AT THE METRE IS A CEILING ON THE FRAME. G2.1 is a
+      statement about the element and the transformation, so its measure has
+      to be one. The corpus's own header said this in the round it was
+      written; it took eighteen more for anything to read it.
+```
+
+**What G2.1 asserts now**, both measured on the canonical machine and published
+by name:
+
+```
+cmd   the figures in the canonical render, from run 34809090965
+out   rigid_mode_residual                    7.8658e-17  ceiling 1e-15
+      rigid_mode_gap                         2.4027e+13  floor   1e+06
+      rigid_mode_count                       6
+      rigid_mode_residual_worst_over_corpus  9.2375e-17
+      rigid_mode_gap_smallest_over_corpus    6.0131e+07
+      rigid_mode_corpus_frames               28
+      rigid_mode_corpus_counts               6
+      retired_ratio_over_ceiling_on_corpus   10 of 28
+rule  the residual is `max_j ||K v_j|| / (max|K| * ||v_j||)` over the six
+      analytic rigid-body vectors -- no eigenvalues and no eigenvectors, so
+      there is no starting vector in it to pin. `deterministic_v0` stays
+      pinned where a solve happens, in the sparse cross-check.
+rule  the count is how many modes sit below the LARGEST gap in the spectrum
+      homogenised by the matrix's own round-off floor. A threshold on an
+      eigenvalue is a statement about units and stiffness; the gap is a
+      statement about the spectrum's shape, which is what a reader of a
+      nullspace dimension relies on anyway.
+judge EVERY Q7 FIGURE IS IDENTICAL BETWEEN THIS LAPTOP AND THE RUNNER, to
+      every published digit. The retired ratio is the figure that needed Q8's
+      third comparison class because it disagrees between machines by O(1).
+      A quantity that reads `K` and nothing else does not.
+```
+
+**Both counters are injected through `assembled`**, so the shipped gate
+computes the defective quantity and decides on it. The gap's counter is a
+uniform elastic foundation: it lifts all six rigid modes together, so the count
+does not move and the gap is what degrades. **It reddens the residual too**,
+necessarily, because anything that lifts a zero mode makes that motion carry
+energy. That is stated in the entry rather than hidden; what makes it the gap's
+counter is that it is sized on the gap.
+
+**The ratio is retired to a diagnostic**: printed, asserted against nothing,
+and kept because a reader is owed the evidence for why a gate changed shape.
+
+```
+cmd   the dispatch run at `fa96dcc`
+out   ten determinism legs         success, "4 collected, 0 failed" on each
+      ten legs agree               success, one hash b10881093d89
+      the verification ladder      SUCCESS -- the new gate, on CI
+      lint, unit and guards        failure: the render was stale at that
+                                   commit by construction, and the report
+                                   guards read a revision that did not exist
+cmd   python -m pytest tests/verification/rung1 -q
+out   1087 passed
+```
+
+## 5. What this round did not do
+
+**Nothing in `floatfea/` changed except `tolerances.py`**, which gains four
+entries and no value moves anywhere else. The four F1 reader literals are
+untouched: they are step R's, and step R has not run.
+
+## 6. What is open
+
+- **R390, R391, R392, R393** — this round's 4a items, including a keyword
+  form the scaled-tolerance rule does not reach.
+- **R381, R382, R383, R384** and the rest of the 4a list: R354, R355, R356,
+  R357, R362, R363, R364, R370, R371, R372, R373, R374, R330, R331, R332,
+  R347, R348, R349, R350.
+- **Step R** — the four F1 reader tolerances, planned and not executed. It is
+  its own step and its own commits.
+- **R231, R244, R245, R275** — the remaining Q8 values.
+- **R230**, reopened by my own error at revision 3, and mine to leave open.
+
+## 7. The whole suite, at the commit this revision is committed on top of
+
+**Whole suite at `ea4731b`: 1968 passed, 0 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit, excluding 260 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py) -- which the supervisor runs at the commit that carries it. R339: the count of what is excluded is part of the line, so a reader can size it without running anything.
+
+**Four reds found by this line and fixed before the report, all Q7's own.** Two were the collected golden catching a rename, which is CM1's route and it took it. Two were `tests/test_counters_are_injected.py` noticing that a counter had lost the assertion it defended, before any reader did. Both are in §4.
+
+## 8. Sites named by findings and not touched
+
+Generated: `python scripts/untouched_sites.py`. The rows are the guard's own
+`SITES` and `TOUCHED`, imported rather than re-derived, so the table cannot
+enumerate a different set than the check does. The reason column is mine and
+carries the literal `no change`, which is the string the guard looks for.
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R385 | `CLAUDE.md` | the file is untouched | **no change** — the finding is about a plan row and the row is rewritten in §3; this file is quoted as evidence that the named tree is not in this repository |
+| R385 | `docs/findings/G1.0-floatsim-output-audit.md:24` | the file is untouched | **no change** — the finding is about a plan row and the row is rewritten in §3; this file is quoted as evidence that the named tree is not in this repository |
+| R385 | `docs/hsp-coupling.md:45` | the file is untouched | **no change** — the finding is about a plan row and the row is rewritten in §3; this file is quoted as evidence that the named tree is not in this repository |
+| R385 | `docs/milestones/F1.md:38` | the file is untouched | **no change** — the finding is about a plan row and the row is rewritten in §3; this file is quoted as evidence that the named tree is not in this repository |
+| R385 | `scripts/regen_figures.py:299` | the file is touched and this line number is the old one | **no change** at this line number — the file is touched and the block moved. It is in the scanner's domain now, and the marked literal in it is the reason `scripts/` is named where CQ1 named a tree that does not exist |
+| R385 | `scripts/regen_figures.py:300` | the file is touched and this line number is the old one | **no change** at this line number — the file is touched and the block moved. It is in the scanner's domain now, and the marked literal in it is the reason `scripts/` is named where CQ1 named a tree that does not exist |
+| R385 | `scripts/regen_figures.py:301` | the file is touched and this line number is the old one | **no change** at this line number — the file is touched and the block moved. It is in the scanner's domain now, and the marked literal in it is the reason `scripts/` is named where CQ1 named a tree that does not exist |
+| R385 | `scripts/regen_figures.py:302` | the file is touched and this line number is the old one | **no change** at this line number — the file is touched and the block moved. It is in the scanner's domain now, and the marked literal in it is the reason `scripts/` is named where CQ1 named a tree that does not exist |
+| R385 | `scripts/regen_figures.py:303` | the file is touched and this line number is the old one | **no change** at this line number — the file is touched and the block moved. It is in the scanner's domain now, and the marked literal in it is the reason `scripts/` is named where CQ1 named a tree that does not exist |
+| R385 | `scripts/regen_figures.py:304` | the file is touched and this line number is the old one | **no change** at this line number — the file is touched and the block moved. It is in the scanner's domain now, and the marked literal in it is the reason `scripts/` is named where CQ1 named a tree that does not exist |
+| R385 | `scripts/regen_figures.py:305` | the file is touched and this line number is the old one | **no change** at this line number — the file is touched and the block moved. It is in the scanner's domain now, and the marked literal in it is the reason `scripts/` is named where CQ1 named a tree that does not exist |
+| R388 | `step-10.md` | the file is untouched | **no change** — the harness's synthetic report, built and discarded inside the guard-state replay, not a path in the tree |
+| R388 | `tests/test_report_carried.py:1108` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The corrected three-state table is in §2 |
+| R388 | `tests/test_report_carried.py:1109` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The corrected three-state table is in §2 |
+| R388 | `tests/test_report_carried.py:1110` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The corrected three-state table is in §2 |
+| R388 | `tests/test_report_carried.py:1111` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The corrected three-state table is in §2 |
+| R388 | `tests/test_report_carried.py:1117` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The corrected three-state table is in §2 |
+| R389 | `tests/corpus/tolerance_marker_exemptions.txt` | the file is untouched | **no change** — the reviewer's corpus, refused to me, and the source of the twenty shapes §1 measures |
+| R389 | `tests/test_no_tolerance_literals.py:248` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The side-aware identity table and the recursive fold are in §1 |
+| R389 | `tests/test_no_tolerance_literals.py:249` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The side-aware identity table and the recursive fold are in §1 |
+| R389 | `tests/test_no_tolerance_literals.py:250` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The side-aware identity table and the recursive fold are in §1 |
+| R389 | `tests/test_no_tolerance_literals.py:251` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The side-aware identity table and the recursive fold are in §1 |
+| R389 | `tests/test_no_tolerance_literals.py:252` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The side-aware identity table and the recursive fold are in §1 |
+| R392 | `scripts/ci_section.py:178` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:179` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:180` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:181` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:182` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:183` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:184` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:185` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:186` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:187` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:188` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:189` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:190` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:191` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:192` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:193` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:194` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:195` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:196` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:197` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:198` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:199` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:200` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:201` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:202` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:203` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:204` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:205` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:206` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:207` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:208` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:209` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:210` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:211` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:212` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:213` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:214` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:215` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:216` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:217` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:218` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:219` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:220` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:221` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:222` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:223` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:224` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:225` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R392 | `scripts/ci_section.py:226` | the file is untouched | **no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R393 | `docs/reports/F2/step-6.md` | the file is untouched | **no change** — step 6 has not opened and the file does not exist. The finding is about what this log will need when it does |
+
+## 9. Carried
+
+Generated: `python scripts/carried_table.py <verdict> docs/reports/F2/step-5-answers.json`. The row set, the class and the subject of every row are read from the verdict; the answers file carries a state and a section pointer, and the pointer is resolved against this report by `tests/test_report_carried.py`.
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R223 | **answered** — §4 | Q7 does not open. CQ4 asks me to open it on a verdict |
+| R224 | **answered** — §4 | Q7 does not open. CQ4 asks me to open it on a verdict |
+| R225 | **open** — carried from an earlier verdict | carried. The |
+| R226 | **open** — carried from an earlier verdict | and R266 have no row; R348 territory, unmoved. |
+| R227 | **open** — carried from an earlier verdict | and R266 have no row; R348 territory, unmoved. |
+| R228 | **open** — carried from an earlier verdict | carried. The |
+| R230 | **open** — §6 | OPEN by instruction, correctly listed. |
+| R231 | **open** — §6 | OPEN, unblocked, and the report correctly does |
+| R232 | **open** — carried from an earlier verdict | carried. The |
+| R233 | **open** — carried from an earlier verdict | carried. The |
+| R244 | **open** — §6 | OPEN, unblocked, and the report correctly does |
+| R245 | **open** — §6 | OPEN, unblocked, and the report correctly does |
+| R248 | **open** — carried from an earlier verdict | residues, |
+| R249 | **open** — carried from an earlier verdict | carried. The |
+| R250 | **open** — carried from an earlier verdict | generated table still expands a range by its endpoints only, so R250, R251, |
+| R251 | **open** — carried from an earlier verdict | generated table still expands a range by its endpoints only, so R250, R251, |
+| R252 | **open** — carried from an earlier verdict | carried. The |
+| R253 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R254 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R256 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R257 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R261 | **open** — carried from an earlier verdict | OPEN by instruction, correctly listed. |
+| R262 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R264 | **open** — carried from an earlier verdict | and R266 have no row; R348 territory, unmoved. |
+| R266 | **open** — carried from an earlier verdict | have no row; R348 territory, unmoved. |
+| R274 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R275 | **open** — §6 | OPEN, unblocked, and the report correctly does |
+| R276 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R277 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R281 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R288 | **open** — carried from an earlier verdict | carried. The |
+| R289 | **open** — carried from an earlier verdict | carried. The |
+| R290 | **open** — carried from an earlier verdict | carried. The |
+| R291 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R292 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R293 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R300 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R302 | **open** — carried from an earlier verdict | accepted at verdict 37, not reopened. |
+| R303 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R308 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R315 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R320 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R321 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R322 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R323 | **carried** | closed in earlier verdicts, |
+| R329 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R330 | **open** — §6 | OPEN at 4a, correctly listed. R332 honoured |
+| R331 | **open** — §6 | OPEN at 4a, correctly listed. R332 honoured |
+| R332 | **open** — §6 | OPEN at 4a, correctly listed. R332 honoured |
+| R347 | **open** — §6 | 's second |
+| R348 | **open** — §6 | 's second |
+| R349 | **open** — §6 | 's second |
+| R350 | **open** — §6 | 's second |
+| R354 | **open** — §6 | 's second |
+| R355 | **open** — §6 | 's second |
+| R356 | **open** — §6 | 's second |
+| R357 | **open** — §6 | 's second |
+| R362 | **open** — §6 | 's second |
+| R363 | **open** — §6 | 's second |
+| R364 | **open** — §6 | 's second |
+| R365 | **carried** | correctly moved from answered to |
+| R366 | **carried** | earned, applied where it was |
+| R367 | **carried** | correctly moved from answered to |
+| R368 | **carried** | correctly moved from answered to |
+| R369 | **carried** | correctly moved from answered to |
+| R370 | **open** — §6 | OPEN at 4a, correctly listed in section |
+| R371 | **open** — §6 | OPEN at 4a, correctly listed in section |
+| R372 | **open** — §6 | OPEN at 4a, correctly listed in section |
+| R373 | **open** — §6 | OPEN at 4a, correctly listed in section |
+| R374 | **open** — §6 | OPEN at 4a, correctly listed in section |
+| R375 | **carried** | and R380. All six are |
+| R376 | **carried** | and R380. All six are |
+| R377 | **carried** | and R380. All six are |
+| R378 | **carried** | and R380. All six are |
+| R379 | **carried** | and R380. All six are |
+| R380 | **carried** | . All six are |
+| R381 | **open** — §6 | and R384 -- CLOSED, and I measured it on my own data rather than on |
+| R382 | **open** — §6 | DONE rather than carried, and the sentence is the right one. |
+| R383 | **open** — §6 | OPEN at 4a, correctly listed. The determinism jobs were SKIPPED |
+| R384 | **open** — §6 | CLOSED, and I measured it on my own data rather than on |
+| R385 | **answered** — §3 | docs/milestones/F2.md:1951, in e642b12. code :1951 "tests/test_no_tolerance_literals.py scans... |
+| R386 | **answered** — §3 | docs/milestones/F2.md section D5a, "Step R1 -- the four move, and the decisions do not". code... |
+| R387 | **answered** — §2 | tests/test_report_carried.py:1254. code :1253 "test_the_report_this_guard_measures_HAS_history... |
+| R388 | **answered** — §2 | tests/test_report_carried.py:1108-1117, :1249-1252. code :1112 '"" the report path has NO... |
+| R389 | **answered** — §1 | tests/test_no_tolerance_literals.py:248-260, :290-295. code :248 "# WHAT LEAVES A DECLARED... |
+| R390 | **open** — §6 | The CQ3 species does not reach a tolerance keyword. assert np.isclose(a, b,... |
+| R391 | **open** — §6 | Section 10's out is still not the command's output. git log --oneline 7fd7155..4e79873 prints... |
+| R392 | **open** — §6 | failing_names() has no shipped test, and nothing in the suite reads the line it produces.... |
+| R393 | **open** — §6 | Rule 2's message names the wrong commit while a new report is being drafted. Cell: clean clone... |
+
+## 10. What I am asking for
+
+**Commits since the forty-fourth verdict**, in order:
+
+```
+cmd  git log --oneline ab3b50c..HEAD
+out  6215afb CR1: the scaled-tolerance rule gets a side, and reads compound ope
+     477f324 CR2: a test name cited in prose is a reference, and a reference is
+     ac20398 plan: D5a's gate replaced -- provenance and a counter, not invaria
+     79c885d Q7: G2.1 asserted in the residual form, counted by the spectral ga
+     fa96dcc plan: G2.1's residual form recorded, and the retired pair kept; RE
+     d045bff CG2: the canonical render, with Q7's figures in it
+     (this revision's own commit follows)
+```
+
+**Five blocking items answered, and Q7 executed.**
+
+- **R389** — both axes closed, with seven controls that must not move.
+- **R387, R388** — a cited test name is a claim now, and the anchor's table
+  describes the state it is actually in.
+- **R385, R386** — the plan row restated: provenance and a counter, a solved
+  boundary, and a domain this repository contains.
+- **Q7 (R223, R224)** — G2.1 is asserted on a residual and a spectral gap,
+  over the reviewer's twenty-eight frames rather than the one the gate posed,
+  and the ladder is green with it on CI.
+
+**What is not claimed.** Step R has not run and the four reader literals are
+untouched. No Q8 value beyond those already written.

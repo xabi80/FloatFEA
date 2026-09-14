@@ -7,12 +7,12 @@
   ],
   "answered": {
     "R223": {
-      "state": "open",
-      "where": "§6"
+      "state": "answered",
+      "where": "§4"
     },
     "R224": {
-      "state": "open",
-      "where": "§6"
+      "state": "answered",
+      "where": "§4"
     },
     "R230": {
       "state": "open",
@@ -198,32 +198,77 @@
       "where": "§6"
     },
     "R375": {
-      "state": "answered",
-      "where": "§2",
-      "site": "tests/test_marker_exemption_corpus.py"
+      "state": "carried"
     },
     "R376": {
-      "state": "answered",
-      "where": "§2",
-      "site": "tests/test_marker_exemption_corpus.py"
+      "state": "carried"
     },
     "R377": {
-      "state": "answered",
-      "where": "§1",
-      "site": "tests/test_report_carried.py"
+      "state": "carried"
     },
     "R378": {
-      "state": "answered",
-      "where": "§4"
+      "state": "carried"
     },
     "R379": {
-      "state": "answered",
-      "where": "§3",
-      "site": "tests/test_no_tolerance_literals.py"
+      "state": "carried"
     },
     "R380": {
+      "state": "carried"
+    },
+    "R381": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R382": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R383": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R384": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R385": {
       "state": "answered",
-      "where": "§4"
+      "where": "§3"
+    },
+    "R386": {
+      "state": "answered",
+      "where": "§3"
+    },
+    "R387": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/test_report_carried.py"
+    },
+    "R388": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/test_report_carried.py"
+    },
+    "R389": {
+      "state": "answered",
+      "where": "§1",
+      "site": "tests/test_no_tolerance_literals.py"
+    },
+    "R390": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R391": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R392": {
+      "state": "open",
+      "where": "§6"
+    },
+    "R393": {
+      "state": "open",
+      "where": "§6"
     }
   }
 }
