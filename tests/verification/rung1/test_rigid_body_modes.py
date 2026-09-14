@@ -606,30 +606,6 @@ def test_ONE_RELEASED_CONNECTION_gives_SEVEN(capsys) -> None:
     )
 
 
-def test_a_RIGID_BODY_MODE_that_carries_ENERGY_is_caught(capsys) -> None:
-    """`RIGID_BODY_MODE_RATIO`'s counter, INJECTED into the assembled matrix.
-
-    A defect of relative size `RIGID_BODY_MODE_RATIO_COUNTER_DEFECT` is added to
-    the diagonal of one translational DOF. That is the shape of a real defect --
-    a stiffness that resists a rigid translation -- and it lifts the sixth
-    eigenvalue off zero. The gate above must redden.
-
-    INJECTED INTO THE MEASURED QUANTITY AND RUN THROUGH THE GATE (BV1/BX0), not
-    compared with the constant: a counter that computes a ratio and checks it
-    against the ceiling asserts arithmetic on two constants and passes with the
-    gate neutered. `tests/test_counters_are_injected.py` registers this pair and
-    runs both cells against it.
-    """
-    with (
-        _defect(RIGID_BODY_MODE_RATIO_COUNTER_DEFECT, capsys),
-        pytest.raises(AssertionError, match="leaves"),
-    ):
-        test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys)
-
-    # And undefected it passes, so the failure above is the injection.
-    test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys)
-
-
 @contextlib.contextmanager
 def _nearly_released(size: float, capsys):
     """Patch `assembled` with a connection that is NEARLY released.

@@ -9,7 +9,7 @@
 # reviewer's corpora and with the report being written. A FUNCTION
 # disappearing is what this file exists to catch.
 
-[tests] 325
+[tests] 324
 tests/regression/test_exempt_pair_responses.py::test_a_MOVED_response_is_caught
 tests/regression/test_exempt_pair_responses.py::test_every_recorded_pair_is_still_detected
 tests/regression/test_exempt_pair_responses.py::test_the_golden_file_is_not_empty
@@ -246,7 +246,6 @@ tests/verification/rung1/test_rigid_body_modes.py::test_ONE_RELEASED_CONNECTION_
 tests/verification/rung1/test_rigid_body_modes.py::test_a_LIFTED_rigid_mode_reddens_the_COUNT
 tests/verification/rung1/test_rigid_body_modes.py::test_a_NARROW_GAP_reddens_the_VALIDITY_assertion
 tests/verification/rung1/test_rigid_body_modes.py::test_a_RESISTED_rigid_motion_reddens_the_RESIDUAL
-tests/verification/rung1/test_rigid_body_modes.py::test_a_RIGID_BODY_MODE_that_carries_ENERGY_is_caught
 tests/verification/rung1/test_rigid_body_modes.py::test_an_UNPINNED_arpack_start_would_NOT_be_reproducible
 tests/verification/rung1/test_rigid_body_modes.py::test_the_ARPACK_path_is_REPRODUCIBLE_under_its_pin
 tests/verification/rung1/test_rigid_body_modes.py::test_the_ZERO_MODES_NUMBER_SIX_below_the_floor
@@ -411,7 +410,7 @@ tests/unit/test_transform_invariance.py::test_the_fixture_rotation_is_not_axis_a
 tests/unit/test_transform_invariance.py::test_the_member_triad_equals_the_intended_rotation
 tests/unit/test_transform_invariance.py::test_the_supported_section_still_constructs
 
-[tests/verification/rung1] 60
+[tests/verification/rung1] 59
 tests/verification/rung1/test_corpus_configurations.py::test_a_CONSTANT_ell_breaks_unit_invariance
 tests/verification/rung1/test_corpus_configurations.py::test_a_LARGER_deviation_fails_the_calibration
 tests/verification/rung1/test_corpus_configurations.py::test_a_NO_OP_defect_classifies_below_resolution
@@ -466,7 +465,6 @@ tests/verification/rung1/test_rigid_body_modes.py::test_ONE_RELEASED_CONNECTION_
 tests/verification/rung1/test_rigid_body_modes.py::test_a_LIFTED_rigid_mode_reddens_the_COUNT
 tests/verification/rung1/test_rigid_body_modes.py::test_a_NARROW_GAP_reddens_the_VALIDITY_assertion
 tests/verification/rung1/test_rigid_body_modes.py::test_a_RESISTED_rigid_motion_reddens_the_RESIDUAL
-tests/verification/rung1/test_rigid_body_modes.py::test_a_RIGID_BODY_MODE_that_carries_ENERGY_is_caught
 tests/verification/rung1/test_rigid_body_modes.py::test_an_UNPINNED_arpack_start_would_NOT_be_reproducible
 tests/verification/rung1/test_rigid_body_modes.py::test_the_ARPACK_path_is_REPRODUCIBLE_under_its_pin
 tests/verification/rung1/test_rigid_body_modes.py::test_the_ZERO_MODES_NUMBER_SIX_below_the_floor

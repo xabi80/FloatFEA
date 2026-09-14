@@ -7148,3 +7148,11 @@ out  6215afb CR1: the scaled-tolerance rule gets a side, and reads compound ope
 
 **What is not claimed.** Step R has not run and the four reader literals are
 untouched. No Q8 value beyond those already written.
+
+---
+
+# Revision 20 — the count is below a floor, and the gap says whether to believe it
+
+Answers: verdict 45 @ f19eef5
+
+(placeholder)

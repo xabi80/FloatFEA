@@ -407,7 +407,20 @@ RIGID_MODE_GAP: Final[float] = 1.3
 # Set: 2026-09-14, F2
 RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 8.318e-15
 
-# CLASS: ACCURACY -- carries RIGID_BODY_MODE_RATIO_COUNTER_DEFECT below.
+# CLASS: RETIRED (Q7/CS2). NOT A GATE, and nothing asserts against it.
+#
+# EVERYTHING BELOW IS THE RECORD OF WHAT IT WAS, kept because the step report
+# cites the contrast and because a value deleted outright takes its own history
+# with it. Read "headroom", "ceiling crossed" and "run through the gate" in the
+# past tense: there is no ceiling to have headroom against any more (R399).
+# The quantity is computed and printed by
+# `test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate`, and its counter
+# constant is referenced by nothing.
+#
+# WHY IT WAS RETIRED, in one line: it exceeds this ceiling on a large minority
+# of the reviewer's fifty-six frames with a DEFECT-FREE element, because the
+# quantity moves with the frame's conditioning rather than with the element.
+# `{{fig:retired_ratio_over_ceiling_on_corpus}}` carries the count.
 # G2.1 / V1.1 -- the sixth eigenvalue of an unconstrained stiffness matrix,
 # divided by the seventh. Dimensionless BY CONSTRUCTION, and that is the gate's
 # own wording rather than a convenience: the eigenvalues of `K` carry units and
@@ -448,7 +461,15 @@ RIGID_BODY_MODE_RATIO: Final[float] = 1e-12
 # Set: 2026-09-09, F2
 RIGID_BODY_MODE_RATIO_COUNTER_DEFECT: Final[float] = 1.0e-12
 
-# CLASS: ACCURACY -- carries RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT below.
+# CLASS: RETIRED (CS2). NOT A GATE, and nothing asserts against it.
+#
+# Retired for the STRONGER of the two reasons: it breached at more of the
+# reviewer's clean frames than the ratio did, so the quantity that had been
+# kept was the one the evidence indicted harder. Its own count is not even
+# machine-stable -- it reads differently on the laptop and on the runner,
+# because it is computed from eigenvectors and one frame sits on this ceiling.
+#
+# Everything below is the record of what it was. Read it in the past tense.
 # G2.1 / V1.1 -- the largest fraction of an analytic rigid-body vector left
 # outside the span of the six computed zero-energy modes. A fraction in [0, 1],
 # so dimensionless, and invariant under scaling either the analytic vector or the
