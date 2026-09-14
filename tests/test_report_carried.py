@@ -1254,7 +1254,12 @@ def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
     # makes the claim true instead of asserted.
     anchor = _report_anchor()
     if not anchor:
-        # NO HISTORY FOR THIS REPORT PATH (R377). There is no commit to
+        # NOTHING UNDER `docs/reports/` HAS ANY HISTORY (R377, and R388's
+        # second site). This is NOT 'the report path has no history': an
+        # untracked report falls back to the reports TREE and gets a sha,
+        # which is the second state and is handled above. This branch is
+        # the third and last -- no commit anywhere touched a report -- so
+        # there is no commit to
         # measure a distance to, so rule 1 has nothing to say and saying it
         # anyway is what made this red at every reviewer commit. Rule 2 still
         # applies and is the half that carries the claim: whatever this tree
@@ -1265,8 +1270,8 @@ def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
         intruders = _implementer_commits_after(sha)
         assert not intruders, (
             f"{len(intruders)} commit(s) touching code follow `{sha}`, the "
-            "commit the whole-suite line names, and this report path has no "
-            "history to anchor a distance to:\n  " + "\n  ".join(intruders)
+            "commit the whole-suite line names, and nothing under the reports "
+            "tree has any history to anchor a distance to:\n  " + "\n  ".join(intruders)
         )
         return
     near = subprocess.run(
