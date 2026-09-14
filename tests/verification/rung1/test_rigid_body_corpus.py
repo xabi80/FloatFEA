@@ -45,16 +45,22 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from test_rigid_body_modes import (  # noqa: E402
     RIGID,
+    _assemble_with_torsional_release,
+    _frame,
     mode_ratio,
     residual_exactness,
-    zero_modes_by_gap,
+    subspace_loss,
+    zero_modes_below_floor,
 )
 
 from floatfea import basis  # noqa: E402
 from floatfea.assemble.system import BeamElement, assemble_dense  # noqa: E402
 from floatfea.model.material import Material, Section  # noqa: E402
 from floatfea.model.nodes import Model, Node  # noqa: E402
-from floatfea.tolerances import RIGID_MODE_EXACTNESS, RIGID_MODE_GAP  # noqa: E402
+from floatfea.tolerances import (  # noqa: E402
+    RIGID_MODE_EXACTNESS,
+    RIGID_MODE_GAP,
+)
 
 CORPUS = ROOT / "tests" / "corpus" / "g21_rigid_body_frames.txt"
 
@@ -146,9 +152,14 @@ def test_the_corpus_is_read_at_all() -> None:
 def test_G2_1_holds_at_every_frame_in_the_corpus(entry: dict[str, str]) -> None:
     """The residual form and the spectral gap, at each of the reviewer's frames.
 
-    Asserted on EVERY entry, including the sixteen the retired ratio breaches.
-    That is the whole claim: the new form measures the element, so a frame that
-    is merely badly conditioned does not move it.
+    Asserted on EVERY entry, including the ones the retired pair breaches.
+    HOW MANY IS NOT WRITTEN HERE -- `sixteen` was, and the same round's own
+    canonical render said ten (R395). `{{fig:retired_ratio_over_ceiling_on_corpus}}`
+    carries it, and `test_the_RETIRED_ratio_is_why_the_form_changed` prints
+    both counts at the commit it runs at.
+
+    That is the whole claim: the new form measures the element, so a frame
+    that is merely badly conditioned does not move it.
     """
     model, els = _build(entry)
     k = assemble_dense(model, els)
@@ -161,14 +172,15 @@ def test_G2_1_holds_at_every_frame_in_the_corpus(entry: dict[str, str]) -> None:
         "ceiling does not cover -- or the element is wrong."
     )
 
-    count, gap = zero_modes_by_gap(k)
+    count, gap = zero_modes_below_floor(k)
     assert count == RIGID, (
-        f"{entry['id']}: the largest gap puts {count} modes below it, not "
-        f"{RIGID}. The frame is connected and unconstrained, so it has six."
+        f"{entry['id']}: {count} eigenvalues are below tau, not {RIGID}. "
+        "The frame is connected and unconstrained, so it has six."
     )
     assert gap >= RIGID_MODE_GAP, (
-        f"{entry['id']}: the gap is {gap:.4e}, under {RIGID_MODE_GAP:g}, so "
-        "the count above is read across a boundary that is not there."
+        f"{entry['id']}: the count is UNTRUSTWORTHY here -- the separation "
+        f"after the last mode below tau is {gap:.3f} orders, under "
+        f"{RIGID_MODE_GAP:g}."
     )
 
 
@@ -179,18 +191,22 @@ def test_the_RETIRED_ratio_is_why_the_form_changed(capsys) -> None:
     not asserted against anything -- that is what "retired" means -- and it is
     kept because a reader is owed the evidence for why a gate changed shape.
     """
-    from floatfea.tolerances import RIGID_BODY_MODE_RATIO
+    from floatfea.tolerances import RIGID_BODY_MODE_RATIO, RIGID_BODY_SUBSPACE_LOSS
 
-    over = []
+    over, loss_over = [], 0
     for entry in ENTRIES:
         model, els = _build(entry)
-        ratio = mode_ratio(assemble_dense(model, els))
+        k = assemble_dense(model, els)
+        ratio = mode_ratio(k)
         if ratio > RIGID_BODY_MODE_RATIO:
             over.append((entry["id"], ratio))
+        if subspace_loss(k, model) > RIGID_BODY_SUBSPACE_LOSS:
+            loss_over += 1
     with capsys.disabled():
         print(
             f"\n  the retired ratio exceeds its ceiling at {len(over)} of "
-            f"{len(ENTRIES)} frames, every one a defect-free element"
+            f"{len(ENTRIES)} frames and the retired subspace loss at "
+            f"{loss_over}, every one a defect-free element"
         )
         for name, ratio in over[:4]:
             print(f"    {name}: {ratio:.4e} against {RIGID_BODY_MODE_RATIO:g}")
@@ -199,3 +215,99 @@ def test_the_RETIRED_ratio_is_why_the_form_changed(capsys) -> None:
         "failure, but it removes the evidence this file cites for retiring "
         "it, and the report says the opposite. Re-read both."
     )
+
+
+# --------------------------------------------------------------------------
+# The four controls CS1 names, each deciding by the shipped rule
+# --------------------------------------------------------------------------
+
+
+def test_a_PINNED_DOF_leaves_FIVE_below_the_floor(capsys) -> None:
+    """Downward, at every DOF, by the rule the gate uses (CS1)."""
+    model, els = _frame()
+    k = assemble_dense(model, els)
+    n = k.shape[0]
+    seen = set()
+    narrowest = float("inf")
+    for d in range(n):
+        keep = np.setdiff1d(np.arange(n), [d])
+        count, gap = zero_modes_below_floor(k[np.ix_(keep, keep)])
+        seen.add(count)
+        narrowest = min(narrowest, gap)
+    with capsys.disabled():
+        print(
+            f"\n  one DOF pinned, over all {n}: counts {sorted(seen)}, "
+            f"narrowest gap {narrowest:.3f} orders"
+        )
+    assert seen == {RIGID - 1}, f"pinning one DOF gives {sorted(seen)}, not {RIGID - 1}"
+    assert narrowest >= RIGID_MODE_GAP, (
+        f"the narrowest gap under a pin is {narrowest:.3f} orders, under "
+        f"{RIGID_MODE_GAP:g}, so this control is reading a count it cannot trust."
+    )
+
+
+def test_a_RELEASED_CONNECTION_leaves_SEVEN_below_the_floor(capsys) -> None:
+    """Upward, by the same rule (CS1)."""
+    model, els = _frame()
+    count, gap = zero_modes_below_floor(_assemble_with_torsional_release(model, els, released=6))
+    with capsys.disabled():
+        print(f"  one released connection: {count} below tau, gap {gap:.3f} orders")
+    assert count == RIGID + 1, f"a released twist gives {count}, not {RIGID + 1}"
+    assert (
+        gap >= RIGID_MODE_GAP
+    ), f"the released frame's gap is {gap:.3f} orders, under {RIGID_MODE_GAP:g}."
+
+
+def test_the_COMPOSED_ill_conditioned_frame_is_still_six(capsys) -> None:
+    """The reviewer's composed case: a bracing section AND a kilometre unit.
+
+    Under the retired rule the two effects together put the gap under its
+    floor (R397). Under CS0's rule the count is six and the separation holds,
+    because `tau` is a property of the homogenised matrix rather than of the
+    spectrum's shape.
+    """
+    entry = {
+        "id": "composed_brace_kilometre",
+        "section": "circular_tube,D=0.1,t=0.001",
+        "subdiv": "1",
+        "unit": "1000.0",
+        "stretch": "1.0",
+        "tip": "4.4,1.1,2.8",
+    }
+    model, els = _build(entry)
+    count, gap = zero_modes_below_floor(assemble_dense(model, els))
+    with capsys.disabled():
+        print(f"  brace at a kilometre unit: {count} below tau, gap {gap:.3f} orders")
+    assert count == RIGID, f"the composed frame gives {count}, not {RIGID}"
+    assert (
+        gap >= RIGID_MODE_GAP
+    ), f"the composed frame's gap is {gap:.3f} orders, under {RIGID_MODE_GAP:g}."
+
+
+def test_a_FINER_UNIT_than_the_corpus_is_still_six(capsys) -> None:
+    """The configuration that returned EIGHTEEN under the retired rule (R397).
+
+    One decade finer than the corpus's kilometre entry. The largest gap in
+    that spectrum sits after the eighteenth mode, which is why counting below
+    the largest gap returned eighteen with nothing warning. Counting below
+    `tau` returns six.
+    """
+    entry = {
+        "id": "finer_than_the_corpus",
+        "section": "circular_tube,D=0.6,t=0.012",
+        "subdiv": "1",
+        "unit": "1e-4",
+        "stretch": "1.0",
+        "tip": "4.4,1.1,2.8",
+    }
+    model, els = _build(entry)
+    count, gap = zero_modes_below_floor(assemble_dense(model, els))
+    with capsys.disabled():
+        print(f"  unit 1e-4: {count} below tau, gap {gap:.3f} orders")
+    assert count == RIGID, (
+        f"the finer-unit frame gives {count}, not {RIGID}. This is R397's own "
+        "configuration and it is the reason the rule counts below a threshold."
+    )
+    assert (
+        gap >= RIGID_MODE_GAP
+    ), f"the finer-unit frame's gap is {gap:.3f} orders, under {RIGID_MODE_GAP:g}."

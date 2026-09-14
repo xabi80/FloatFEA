@@ -80,6 +80,8 @@ from floatfea.tolerances import (  # noqa: E402
     RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT,
     RIGID_MODE_EXACTNESS,
     RIGID_MODE_EXACTNESS_COUNTER_DEFECT,
+    RIGID_MODE_FLOOR,
+    RIGID_MODE_FLOOR_COUNTER_DEFECT,
     RIGID_MODE_GAP,
     RIGID_MODE_GAP_COUNTER_DEFECT,
 )
@@ -229,36 +231,52 @@ def residual_exactness(k: np.ndarray, model: Model) -> float:
     return worst
 
 
-def homogenised_spectrum(k: np.ndarray) -> np.ndarray:
-    """`|lambda|` in units of the matrix's own round-off floor, `eps * max|lambda|`.
+def homogenised(k: np.ndarray) -> np.ndarray:
+    """`K_hat = K / max|K|` -- the same homogenisation `residual_exactness` uses.
 
-    Below one means "indistinguishable from zero for this matrix". That is
-    what makes two frames comparable: the six rigid modes of the shipped frame
-    and of its kilometre re-expression both land under one, while their raw
-    eigenvalues differ by twelve orders.
+    Its entries are O(1) whatever the model's units, stiffness or section, so
+    the round-off floor of `K_hat` is a property of the arithmetic rather than
+    of the structure. Everything CS0 measures is measured on this.
     """
-    w = np.sort(sla.eigh(k, eigvals_only=True))
-    floor = EPS * float(np.max(np.abs(w)))
-    return np.abs(w) / floor
+    return k / float(np.max(np.abs(k)))
 
 
-def zero_modes_by_gap(k: np.ndarray) -> tuple[int, float]:
-    """`(how many modes sit below the largest gap, that gap's ratio)` (Q7).
+def zero_mode_threshold(k: np.ndarray) -> float:
+    """`tau = RIGID_MODE_FLOOR * ||K_hat|| * eps` -- numerically zero, below here."""
+    kh = homogenised(k)
+    norm = float(np.max(np.abs(sla.eigh(kh, eigvals_only=True))))
+    return RIGID_MODE_FLOOR * norm * EPS
 
-    THE COUNT COMES FROM THE SPECTRUM'S OWN SHAPE, not from a threshold. A
-    threshold on an eigenvalue is a statement about the model's units and
-    stiffness; the largest gap is where the nullspace ends, and it is what a
-    reader of a nullspace dimension relies on anyway.
 
-    Everything below the round-off floor is clamped TO the floor before the
-    ratios are taken: the six zero modes differ from each other only by
-    round-off, and dividing two round-off numbers would put the largest gap
-    inside the nullspace rather than at its edge.
+def zero_modes_below_floor(k: np.ndarray) -> tuple[int, float]:
+    """`(how many eigenvalues are below tau, the gap after them in ORDERS)`.
+
+    THE COUNT IS BELOW A THRESHOLD AND NOT BELOW THE LARGEST GAP, which is
+    what the first version of this did and what R397 refuted. The largest gap
+    in a spectrum can sit anywhere: at a length unit one decade finer than the
+    corpus's kilometre entry it sat after the eighteenth mode, so the rule
+    returned eighteen -- with a gap eighteen times above its own floor, so the
+    validity condition said nothing was wrong. A count has to be below a
+    threshold. The gap is the validity condition ON that count and it is
+    asserted separately, so an untrustworthy count fails loudly instead of
+    returning a wrong number.
+
+    The gap is in ORDERS OF MAGNITUDE -- `log10(first_above / last_below)` --
+    because that is the scale the separation lives on and a ratio of `1e13`
+    reads as thirteen.
+
+    `inf` where there is no gap to measure: nothing below `tau`, or nothing
+    above it. Both are caught by the count assertion before the gap is read.
     """
-    h = np.maximum(homogenised_spectrum(k), 1.0)
-    ratios = h[1:] / h[:-1]
-    i = int(np.argmax(ratios))
-    return i + 1, float(ratios[i])
+    w = np.sort(np.abs(sla.eigh(homogenised(k), eigvals_only=True)))
+    tau = zero_mode_threshold(k)
+    count = int(np.sum(w < tau))
+    if count == 0 or count == w.size:
+        return count, float("inf")
+    below, above = w[count - 1], w[count]
+    if below <= 0.0:
+        return count, float("inf")
+    return count, float(np.log10(above / below))
 
 
 def subspace_loss(k: np.ndarray, model: Model) -> float:
@@ -327,20 +345,44 @@ def counter_response(which: str) -> float:
     # than by scaling one diagonal entry: a uniform foundation lifts all six
     # rigid modes together, which is what degrades the gap without moving the
     # count.
+    # THE GAP'S COUNTER IS A DIFFERENT INJECTION and is built here rather than
+    # by scaling one diagonal entry: a connection that is NEARLY released
+    # leaves the seventh mode just above `tau`, which narrows the separation
+    # without moving the count.
     if which == "gap":
-        k = k + RIGID_MODE_GAP_COUNTER_DEFECT * scale * np.eye(k.shape[0])
-        return zero_modes_by_gap(k)[1]
+        kr = _assemble_with_torsional_release(model, els, released=6)
+        kr[-1, -1] += RIGID_MODE_GAP_COUNTER_DEFECT * float(np.abs(kr).max())
+        return zero_modes_below_floor(kr)[1]
 
     size = {
         "ratio": RIGID_BODY_MODE_RATIO_COUNTER_DEFECT,
         "loss": RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT,
         "residual": RIGID_MODE_EXACTNESS_COUNTER_DEFECT,
+        "floor": RIGID_MODE_FLOOR_COUNTER_DEFECT,
     }[which]
     k[0, 0] += size * scale
     if which == "ratio":
         return mode_ratio(k)
     if which == "residual":
         return residual_exactness(k, model)
+    if which == "floor":
+        # THE COUNT IS AN INTEGER AND THE MOVED "CEILING" IS ITS FLOOR: what
+        # the meta-test widens is the value the gate compares against, and for
+        # this entry that is `RIGID_MODE_FLOOR` itself. Returning the count
+        # would be returning the wrong quantity, so this returns the floor at
+        # which the defect stops being detected -- solved, not typed.
+        lo, hi = 1.0, 1e12
+        for _ in range(60):
+            mid = (lo * hi) ** 0.5
+            tau_floor = mid
+            kh = homogenised(k)
+            w = np.sort(np.abs(sla.eigh(kh, eigvals_only=True)))
+            tau = tau_floor * float(np.max(np.abs(w))) * EPS
+            if int(np.sum(w < tau)) == RIGID:
+                hi = mid
+            else:
+                lo = mid
+        return float(hi)
     return subspace_loss(k, model)
 
 
@@ -394,32 +436,37 @@ def test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys) -> None:
     )
 
 
-def test_the_ZERO_MODES_NUMBER_SIX_by_the_spectral_gap(capsys) -> None:
-    """G2.1's second half: how many, from the spectrum's own shape.
+def test_the_ZERO_MODES_NUMBER_SIX_below_the_floor(capsys) -> None:
+    """G2.1's second half: how many eigenvalues are numerically zero.
 
-    The count and the gap are two claims and both are asserted. The count is
-    what G2.1 is about; the gap is whether the count is worth reading, and a
-    count taken across a narrow gap is a coin toss dressed as a measurement.
+    TWO ASSERTIONS AND THEY ARE DIFFERENT CLAIMS. The count is what G2.1 is
+    about. The gap is whether the count can be believed at this configuration,
+    and it is asserted separately so an untrustworthy count fails LOUDLY
+    rather than returning a wrong number -- which is what the first version of
+    this did (R397).
     """
     model, els = _frame()
     k = assembled(model, els)
-    count, gap = zero_modes_by_gap(k)
+    count, gap = zero_modes_below_floor(k)
     with capsys.disabled():
-        h = homogenised_spectrum(k)
+        w = np.sort(np.abs(sla.eigh(homogenised(k), eigvals_only=True)))
+        tau = zero_mode_threshold(k)
         print(
-            f"  {count} modes below a gap of {gap:.4e} against "
-            f"{RIGID_MODE_GAP:g}; homogenised lambda_6 {h[RIGID - 1]:.4e}, "
-            f"lambda_7 {h[RIGID]:.4e}"
+            f"  {count} eigenvalues below tau {tau:.4e}; the gap after them is "
+            f"{gap:.3f} orders against {RIGID_MODE_GAP:g}; "
+            f"lambda_6 {w[RIGID - 1]:.4e}, lambda_7 {w[RIGID]:.4e}"
         )
     assert count == RIGID, (
-        f"the largest gap in the homogenised spectrum puts {count} modes below "
-        f"it and G2.1 requires {RIGID}. Fewer means a rigid motion is being "
-        "resisted; more means the model has a mechanism in it."
+        f"{count} eigenvalues of the homogenised matrix are below tau and "
+        f"G2.1 requires {RIGID}. Fewer means a rigid motion is being resisted; "
+        "more means the model has a mechanism in it."
     )
     assert gap >= RIGID_MODE_GAP, (
-        f"the gap separating the nullspace from the first flexible mode is "
-        f"{gap:.4e}, under {RIGID_MODE_GAP:g}. The count above is then being "
-        "read across a boundary that is not there."
+        f"the count above is UNTRUSTWORTHY at this configuration: the "
+        f"separation between the last eigenvalue below tau and the first above "
+        f"it is {gap:.3f} orders, under {RIGID_MODE_GAP:g}. The answer may be "
+        "six and the spectrum does not say so, which is not something to "
+        "report as a number."
     )
 
 
@@ -435,39 +482,29 @@ def test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate(capsys) -> None:
     the frame, and G2.1 is not a statement about the frame.
 
     It is printed because it is informative about conditioning and it is the
-    number three earlier revisions published. Nothing is asserted against it
-    and `RIGID_BODY_MODE_RATIO` is now referenced only here.
+    number three earlier revisions published. Nothing is asserted against it.
+
+    `RIGID_BODY_SUBSPACE_LOSS` IS RETIRED WITH IT (CS2), for the stronger
+    reason: it breached at seventeen of the reviewer's first twenty-eight
+    clean frames against the ratio's ten, so the quantity that had been kept
+    was the one the evidence indicted harder. Both are reported here and
+    neither is asserted anywhere.
     """
     model, els = _frame()
     k = assembled(model, els)
     ratio = mode_ratio(k)
+    loss = subspace_loss(k, model)
     w = _spectrum(k)
     with capsys.disabled():
         print(
             f"  DIAGNOSTIC lambda_6 {w[RIGID - 1]:.4e}  lambda_7 {w[RIGID]:.4e}"
-            f"  ratio {ratio:.4e}; the retired ceiling was "
-            f"{RIGID_BODY_MODE_RATIO:g}"
+            f"  ratio {ratio:.4e} (retired ceiling {RIGID_BODY_MODE_RATIO:g})"
+            f"  subspace loss {loss:.4e} (retired ceiling "
+            f"{RIGID_BODY_SUBSPACE_LOSS:g})"
         )
     assert math.isfinite(ratio), (
         "the diagnostic ratio is not finite, which means the seventh "
         "eigenvalue is zero and the model has more freedom than G2.1 assumes."
-    )
-
-
-def test_the_analytic_rigid_body_vectors_are_SPANNED(capsys) -> None:
-    """G2.1, second half, and the one AP3 says is the real content."""
-    model, els = _frame()
-    loss = subspace_loss(assembled(model, els), model)
-    with capsys.disabled():
-        print(
-            f"  worst analytic vector outside the computed span: {loss:.4e} "
-            f"against {RIGID_BODY_SUBSPACE_LOSS:g}"
-        )
-    assert loss <= RIGID_BODY_SUBSPACE_LOSS, (
-        f"an analytic rigid-body vector has {loss:.4e} of its norm outside the "
-        f"computed nullspace, above {RIGID_BODY_SUBSPACE_LOSS:g}. The six "
-        "computed modes are at zero energy but they do not span the rigid-body "
-        "space, so something else is at zero energy in place of a rigid motion."
     )
 
 
@@ -482,17 +519,33 @@ def test_ONE_PINNED_DOF_leaves_FIVE(capsys) -> None:
     Without this, a gate that counted six could be counting six of anything. It
     is run at every single DOF rather than at a chosen one, because a DOF that
     happens to be uncoupled would pass a one-sample version silently.
+
+    IT DECIDES BY THE SHIPPED RULE (CS1). It used to count eigenvalues under
+    `RIGID_BODY_MODE_RATIO * lambda_6`, which is the retired threshold: the
+    control for a gate was deciding by a quantity the gate no longer uses, so
+    nothing in the repository could make `count == RIGID` fail (R398). The
+    gap is checked at every pin too -- a control that reads an untrustworthy
+    count is not a control.
     """
     model, els = _frame()
     k = assemble_dense(model, els)
     n = k.shape[0]
-    counts = []
+    counts, gaps = [], []
     for d in range(n):
         keep = np.setdiff1d(np.arange(n), [d])
-        w = _spectrum(k[np.ix_(keep, keep)])
-        counts.append(int(np.sum(np.abs(w) <= RIGID_BODY_MODE_RATIO * w[RIGID - 1])))
+        count, gap = zero_modes_below_floor(k[np.ix_(keep, keep)])
+        counts.append(count)
+        gaps.append(gap)
     with capsys.disabled():
-        print(f"  one DOF pinned, over all {n}: nullspace dimensions " f"{sorted(set(counts))}")
+        print(
+            f"  one DOF pinned, over all {n}: nullspace dimensions "
+            f"{sorted(set(counts))}, narrowest gap {min(gaps):.3f} orders"
+        )
+    assert min(gaps) >= RIGID_MODE_GAP, (
+        f"pinning a DOF leaves a gap of {min(gaps):.3f} orders, under "
+        f"{RIGID_MODE_GAP:g}, so the count this control reads is not "
+        "trustworthy and the control decides nothing."
+    )
     assert set(counts) == {RIGID - 1}, (
         f"pinning one DOF gives nullspace dimensions {sorted(set(counts))}, not "
         f"{{{RIGID - 1}}}. A pinned DOF that leaves six means the gate above is "
@@ -530,9 +583,16 @@ def test_ONE_RELEASED_CONNECTION_gives_SEVEN(capsys) -> None:
         "not be one."
     )
     k = _assemble_with_torsional_release(model, els, released)
+    count, gap = zero_modes_below_floor(k)
     w = _spectrum(k)
     flexible = w[RIGID + 1]
-    dim = int(np.sum(np.abs(w) <= RIGID_BODY_MODE_RATIO * flexible))
+    # BY THE SHIPPED RULE (CS1), not by the retired threshold. See the pin.
+    dim = count
+    assert gap >= RIGID_MODE_GAP, (
+        f"the released frame leaves a gap of {gap:.3f} orders, under "
+        f"{RIGID_MODE_GAP:g}, so the seven this control reads is not "
+        "trustworthy and the control decides nothing."
+    )
     with capsys.disabled():
         print(
             f"  torsional release: lambda_7 {w[RIGID]:.4e}  lambda_8 "
@@ -571,29 +631,32 @@ def test_a_RIGID_BODY_MODE_that_carries_ENERGY_is_caught(capsys) -> None:
 
 
 @contextlib.contextmanager
-def _foundation(size: float, capsys):
-    """Patch `assembled` with a UNIFORM elastic foundation of relative `size`.
+def _nearly_released(size: float, capsys):
+    """Patch `assembled` with a connection that is NEARLY released.
 
-    `size * max|K|` on every diagonal entry: every mode is lifted by the same
-    amount, so the six rigid ones rise together and the gap between them and
-    the seventh closes without the COUNT changing. That is what makes it the
-    gap's counter rather than the count's.
+    The torsional continuity of the axis-parallel member is cut -- which alone
+    gives SEVEN modes below `tau` -- and then given back a stiffness of
+    relative `size`. That leaves the seventh just above `tau`: the count reads
+    six, which is the right answer, and the separation collapses. It is the
+    state the gap exists to refuse.
 
-    IT REDDENS THE RESIDUAL TOO, necessarily: anything that lifts a zero mode
-    makes that motion carry energy. Said rather than hidden -- what makes this
-    the gap's counter is that it is sized on the gap, and the count's own
-    controls are the release and the pin, which move the answer instead.
+    A UNIFORM FOUNDATION WAS THE FIRST ATTEMPT AND IT DOES NOT WORK UNDER
+    CS0's RULE. It lifts all six rigid modes together, so nothing is left
+    below `tau` and the COUNT fails instead of the gap -- measured at every
+    size from `1e-12` to `1e-7`. No defect narrows this gap without touching
+    the count except one that leaves a mode just above the floor.
     """
     original = globals()["assembled"]
 
     def defective(model, els):
-        k = original(model, els)
-        return k + size * float(np.abs(k).max()) * np.eye(k.shape[0])
+        k = _assemble_with_torsional_release(model, els, released=6)
+        k[-1, -1] += size * float(np.abs(k).max())
+        return k
 
     globals()["assembled"] = defective
     try:
         with capsys.disabled():
-            print(f"\n  injected a uniform foundation of {size:g} of max|K|")
+            print(f"\n  released one twist and gave back {size:g} of max|K|")
         yield
     finally:
         globals()["assembled"] = original
@@ -617,38 +680,39 @@ def test_a_RESISTED_rigid_motion_reddens_the_RESIDUAL(capsys) -> None:
     test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys)
 
 
-def test_a_CLOSED_GAP_reddens_the_COUNT_assertion(capsys) -> None:
+def test_a_LIFTED_rigid_mode_reddens_the_COUNT(capsys) -> None:
+    """`RIGID_MODE_FLOOR`'s counter, INJECTED into the assembled matrix.
+
+    A diagonal stiffness resisting one rigid translation, large enough to lift
+    that mode above `tau`. The count then reads five and the gate reddens on
+    the count itself, which is the assertion this entry defends.
+    """
+    with (
+        _defect(RIGID_MODE_FLOOR_COUNTER_DEFECT, capsys),
+        pytest.raises(AssertionError, match="below tau and G2.1 requires"),
+    ):
+        test_the_ZERO_MODES_NUMBER_SIX_below_the_floor(capsys)
+
+    # And undefected it passes, so the failure above is the injection.
+    test_the_ZERO_MODES_NUMBER_SIX_below_the_floor(capsys)
+
+
+def test_a_NARROW_GAP_reddens_the_VALIDITY_assertion(capsys) -> None:
     """`RIGID_MODE_GAP`'s counter, INJECTED into the assembled matrix.
 
-    A uniform foundation lifts all six rigid modes together, so the count
-    stays at six and the GAP is what degrades. The gate must redden on the
-    gap, which is the half of that test this counter is declared against.
+    The count is SIX here and six is right. What fails is the separation: the
+    seventh mode sits just above `tau`, so nothing in the spectrum says where
+    the nullspace ends. The gate reports the count as untrustworthy rather
+    than reporting it.
     """
     with (
-        _foundation(RIGID_MODE_GAP_COUNTER_DEFECT, capsys),
-        pytest.raises(AssertionError, match="separating the nullspace"),
+        _nearly_released(RIGID_MODE_GAP_COUNTER_DEFECT, capsys),
+        pytest.raises(AssertionError, match="UNTRUSTWORTHY"),
     ):
-        test_the_ZERO_MODES_NUMBER_SIX_by_the_spectral_gap(capsys)
+        test_the_ZERO_MODES_NUMBER_SIX_below_the_floor(capsys)
 
     # And undefected it passes, so the failure above is the injection.
-    test_the_ZERO_MODES_NUMBER_SIX_by_the_spectral_gap(capsys)
-
-
-def test_a_LOST_rigid_body_DIRECTION_is_caught(capsys) -> None:
-    """`RIGID_BODY_SUBSPACE_LOSS`'s counter, INJECTED into the same matrix.
-
-    The same defect removes a rigid translation from the zero-energy space and
-    puts something else there, so the analytic vector for that translation is no
-    longer spanned. Measured on the worst of the six, never on a mean.
-    """
-    with (
-        _defect(RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT, capsys),
-        pytest.raises(AssertionError, match="outside the computed"),
-    ):
-        test_the_analytic_rigid_body_vectors_are_SPANNED(capsys)
-
-    # And undefected it passes, so the failure above is the injection.
-    test_the_analytic_rigid_body_vectors_are_SPANNED(capsys)
+    test_the_ZERO_MODES_NUMBER_SIX_below_the_floor(capsys)
 
 
 # --------------------------------------------------------------------------

@@ -140,21 +140,27 @@ REGISTERED = [
         WIDEN * RIGID.counter_response("residual"),
     ),
     (
-        "rigid-body spectral gap",
-        lambda: RIGID.test_a_CLOSED_GAP_reddens_the_COUNT_assertion(_Capsys),
+        "rigid-body zero-mode floor",
+        lambda: RIGID.test_a_LIFTED_rigid_mode_reddens_the_COUNT(_Capsys),
         RIGID,
-        "test_the_ZERO_MODES_NUMBER_SIX_by_the_spectral_gap",
+        "test_the_ZERO_MODES_NUMBER_SIX_below_the_floor",
+        "RIGID_MODE_FLOOR",
+        RIGID.counter_response("floor"),
+    ),
+    (
+        "rigid-body gap validity",
+        lambda: RIGID.test_a_NARROW_GAP_reddens_the_VALIDITY_assertion(_Capsys),
+        RIGID,
+        "test_the_ZERO_MODES_NUMBER_SIX_below_the_floor",
         "RIGID_MODE_GAP",
         RIGID.counter_response("gap") / WIDEN,
     ),
-    (
-        "rigid-body subspace loss",
-        lambda: RIGID.test_a_LOST_rigid_body_DIRECTION_is_caught(_Capsys),
-        RIGID,
-        "test_the_analytic_rigid_body_vectors_are_SPANNED",
-        "RIGID_BODY_SUBSPACE_LOSS",
-        WIDEN * RIGID.counter_response("loss"),
-    ),
+    # AND THE SUBSPACE LOSS LEAVES WITH THE RATIO (CS2). Its gate is a
+    # diagnostic now, for the stronger reason of the two: it breached at more
+    # of the reviewer's clean frames than the quantity already retired. A
+    # counter registered against a gate that does not assert cannot redden it,
+    # and both cells here failed at the commit that retired it -- which is
+    # this meta-test doing its job for the second round running.
 ]
 
 

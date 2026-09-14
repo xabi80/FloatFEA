@@ -93,11 +93,11 @@ def _figures() -> list[tuple[str, str]]:
             f"{RB.residual_exactness(k_rb, model):.4e}",
         )
     )
-    _count, _gap = RB.zero_modes_by_gap(k_rb)
+    _count, _gap = RB.zero_modes_below_floor(k_rb)
     rows.append(
         (
-            _floor("rigid_mode_gap", "above", "RIGID_MODE_GAP"),
-            f"{_gap:.4e}",
+            _floor("rigid_mode_gap_orders", "above", "RIGID_MODE_GAP"),
+            f"{_gap:.3f}",
         )
     )
     rows.append(("rigid_mode_count", f"{_count}"))
@@ -107,16 +107,18 @@ def _figures() -> list[tuple[str, str]]:
     import test_rigid_body_corpus as RBC
 
     worst_residual, smallest_gap, counts = 0.0, float("inf"), set()
-    ratio_over = 0
+    ratio_over = loss_over = 0
     for entry in RBC.ENTRIES:
         m_c, els_c = RBC._build(entry)
         k_c = RB.assemble_dense(m_c, els_c)
         worst_residual = max(worst_residual, RB.residual_exactness(k_c, m_c))
-        n_c, g_c = RB.zero_modes_by_gap(k_c)
+        n_c, g_c = RB.zero_modes_below_floor(k_c)
         smallest_gap = min(smallest_gap, g_c)
         counts.add(n_c)
         if RB.mode_ratio(k_c) > RB.RIGID_BODY_MODE_RATIO:
             ratio_over += 1
+        if RB.subspace_loss(k_c, m_c) > RB.RIGID_BODY_SUBSPACE_LOSS:
+            loss_over += 1
     rows.append(
         (
             _floor("rigid_mode_residual_worst_over_corpus", "below", "RIGID_MODE_EXACTNESS"),
@@ -125,13 +127,14 @@ def _figures() -> list[tuple[str, str]]:
     )
     rows.append(
         (
-            _floor("rigid_mode_gap_smallest_over_corpus", "above", "RIGID_MODE_GAP"),
-            f"{smallest_gap:.4e}",
+            _floor("rigid_mode_gap_orders_smallest_over_corpus", "above", "RIGID_MODE_GAP"),
+            f"{smallest_gap:.3f}",
         )
     )
     rows.append(("rigid_mode_corpus_frames", f"{len(RBC.ENTRIES)}"))
     rows.append(("rigid_mode_corpus_counts", ", ".join(str(c) for c in sorted(counts))))
     rows.append(("retired_ratio_over_ceiling_on_corpus", f"{ratio_over} of {len(RBC.ENTRIES)}"))
+    rows.append(("retired_loss_over_ceiling_on_corpus", f"{loss_over} of {len(RBC.ENTRIES)}"))
 
     rows.append(
         (
