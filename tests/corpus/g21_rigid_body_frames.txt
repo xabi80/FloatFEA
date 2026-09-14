@@ -120,3 +120,106 @@ id=rb_span_x5 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=5 tip=
 id=rb_brace_D0p3_t0p006 section=circular_tube,D=0.3,t=0.006 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 ratio=1.0745e-13 loss=1.6329e-14 energy=3.648e-17 provisional=yes runs_in_suite=no expect=hold
 id=rb_tip_mirrored_z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,-2.8 ratio=3.9803e-14 loss=4.3607e-14 energy=2.157e-17 provisional=yes runs_in_suite=no expect=hold
 id=rb_tip_far_x section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=40.0,1.1,2.8 ratio=8.3155e-13 loss=3.6314e-13 energy=2.371e-17 provisional=yes runs_in_suite=no expect=breach
+
+# ===========================================================================
+# FORTY-FIFTH VERDICT: THE FIRST ROUND ANYTHING READ THIS FILE, AND THE FIRST
+# ROUND IT IS MEASURING THE NEW FORM RATHER THAN THE RETIRED ONE.
+#
+# Q7 replaced G2.1's gate. `tests/verification/rung1/test_rigid_body_corpus.py`
+# now assembles every line below and asserts, on EVERY entry whatever its
+# `expect` field says:
+#
+#     residual_exactness(K, model) <= RIGID_MODE_EXACTNESS   (1e-15)
+#     zero_modes_by_gap(K) == (6, gap) with gap >= RIGID_MODE_GAP  (1e+06)
+#
+# WHAT A PASSING SCAN MEANS FROM THIS BLOCK ON. Every entry in this file is the
+# SAME DEFECT-FREE ELEMENT. A passing scan is therefore every entry holding --
+# not every `new_form=hold` entry holding. `new_form=breach` records that the
+# shipped gate does NOT hold there, measured at the commit named below, and
+# each one is a place the gate is a statement about the frame rather than about
+# the element. That is the same criticism that retired the eigenvalue ratio.
+#
+# MEASURED AT `2337624` on branch F2, by importing the shipped
+# `residual_exactness`, `zero_modes_by_gap` and `mode_ratio` from
+# `tests/verification/rung1/test_rigid_body_modes.py` and building each frame
+# with the shipped `_build` recipe. Every `residual`, `count` and `gap` field
+# below round-trips: parsing the line and re-running the shipped functions
+# reproduces the four published fields on all twenty-eight, with zero
+# mismatches. The `expect` field keeps its old meaning (the RETIRED ratio or
+# loss ceiling is exceeded) so nothing that already read it changes.
+#
+# NEW FIELDS
+#   residual   measured max_j ||K v_j|| / (max|K| * ||v_j||)   (ceiling 1e-15)
+#   count      measured modes below the largest homogenised gap (must be 6)
+#   gap        measured ratio at that gap                       (floor 1e+06)
+#   new_form   hold | breach -- does the SHIPPED Q7 gate hold at this frame
+#
+# THE RESIDUAL HALF HOLDS AT ALL TWENTY-EIGHT. Its worst here is 9.7420e-17 at
+# `rb_span_x100000`, an order below its ceiling, over ten decades of length
+# unit. It is the count and the gap that move.
+#
+# WHAT THE THREE NEW AXES ARE FOR
+#
+#   1. THE UNIT AXIS, ONE DECADE PAST WHERE THE FILE STOPPED. The file already
+#      had metre, decimetre, centimetre, millimetre and kilometre. `unit=1e-4`
+#      is ten kilometres and the count reads EIGHTEEN -- twelve rotational
+#      modes sink below `eps*max|lambda|` because the translational and
+#      rotational blocks of K scale as 1/u and u. The gap at that frame is
+#      1.8203e+07, EIGHTEEN TIMES ABOVE ITS FLOOR, so the gate certifies the
+#      wrong count as worth reading. The gap does not warn.
+#
+#      THE BOUNDARY IS SOLVED AND PINNED FROM BOTH SIDES rather than sampled:
+#      by bisection on `unit` the count leaves 6 at u = 2.3456e-04 and at
+#      u = 1.1736e+04, and `rb_unit_count_hold_small` / `rb_unit_count_edge_small`
+#      and `rb_unit_0p1mm` / `rb_unit_count_edge_large` bracket those two.
+#      The window is about 7.7 decades wide. It is a window, not an invariance.
+#
+#   2. TWO EFFECTS ALREADY IN THIS FILE, COMPOSED. `rb_brace_D0p05_t0p0005`
+#      holds and `rb_unit_kilometre` holds; `rb_brace_kilometre` is the two
+#      together and its gap is 4.3408e+05, UNDER the 1e+06 floor, with the
+#      count still 6. `rb_brace_D0p0759_kilometre` is the solved crossing in D
+#      at kilometre units (gap 9.9999e+05). `rb_subdiv8_kilometre` holds at
+#      1.1045e+06 -- 1.10x of the floor. The floor was set from the minimum
+#      over the twenty-eight frames that were in this file; a composition of
+#      two of them goes under it.
+#
+#   3. CONTROLS THAT MUST NOT MOVE, and they do not. Thick and thin walls at
+#      D=3 m, a 10 mm hairline, subdiv 16 and 24, a tip member one centimetre,
+#      one millimetre and one micrometre long: all seventeen `new_form=hold`
+#      entries hold on both halves. A corpus in which everything breached would
+#      measure nothing.
+#
+# NOT A LINE, BECAUSE THE BUILDER RAISES AND THAT IS CORRECT. `tip=4.4,1.1,280`
+# puts the tip member 0.517 deg from global Z and
+# `floatfea.model.local_axes.member_local_axes` raises
+# DegenerateMemberOrientation rather than picking a reference silently. Recorded
+# here so a later reader knows it was tried.
+# ===========================================================================
+id=rb_unit_10km section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=0.0001 stretch=1.0 tip=4.4,1.1,2.8 residual=3.7337e-17 count=18 gap=1.8203e+07 new_form=breach ratio=1.5654e-07 loss=1.0228e-07 runs_in_suite=yes expect=breach
+id=rb_unit_100km section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e-05 stretch=1.0 tip=4.4,1.1,2.8 residual=6.3343e-17 count=18 gap=1.8203e+09 new_form=breach ratio=4.5177e-05 loss=9.9807e-06 runs_in_suite=yes expect=breach
+id=rb_unit_1000km section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e-06 stretch=1.0 tip=4.4,1.1,2.8 residual=1.1328e-17 count=18 gap=1.8204e+11 new_form=breach ratio=5.1266e-03 loss=1.4925e-03 runs_in_suite=yes expect=breach
+id=rb_unit_count_edge_small section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=0.00023 stretch=1.0 tip=4.4,1.1,2.8 residual=4.6415e-17 count=18 gap=3.4409e+06 new_form=breach ratio=1.1874e-07 loss=1.6705e-08 runs_in_suite=yes expect=breach
+id=rb_unit_count_hold_small section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=0.00024 stretch=1.0 tip=4.4,1.1,2.8 residual=5.7777e-17 count=6 gap=3.4635e+06 new_form=hold ratio=9.8502e-08 loss=4.2060e-08 runs_in_suite=yes expect=breach
+id=rb_unit_0p1mm section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=10000.0 stretch=1.0 tip=4.4,1.1,2.8 residual=7.4110e-21 count=6 gap=2.0496e+06 new_form=hold ratio=1.6490e-07 loss=8.7988e-08 runs_in_suite=yes expect=breach
+id=rb_unit_count_edge_large section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=12000.0 stretch=1.0 tip=4.4,1.1,2.8 residual=4.7277e-21 count=15 gap=1.5556e+06 new_form=breach ratio=8.3496e-08 loss=1.2707e-07 runs_in_suite=yes expect=breach
+id=rb_unit_10um section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=100000.0 stretch=1.0 tip=4.4,1.1,2.8 residual=4.4915e-22 count=15 gap=1.0803e+08 new_form=breach ratio=2.1450e-05 loss=5.5975e-06 runs_in_suite=yes expect=breach
+id=rb_span_x1000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1.0 stretch=1000.0 tip=4.4,1.1,2.8 residual=8.8343e-17 count=6 gap=3.8123e+07 new_form=hold ratio=1.9514e-08 loss=4.7552e-09 runs_in_suite=yes expect=breach
+id=rb_span_x10000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1.0 stretch=10000.0 tip=4.4,1.1,2.8 residual=9.7420e-17 count=8 gap=1.2610e+08 new_form=breach ratio=9.3175e-07 loss=2.6470e-07 runs_in_suite=yes expect=breach
+id=rb_span_x100000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1.0 stretch=100000.0 tip=4.4,1.1,2.8 residual=9.4583e-17 count=8 gap=1.2610e+10 new_form=breach ratio=9.8152e-05 loss=3.0115e-05 runs_in_suite=yes expect=breach
+id=rb_brace_kilometre section=circular_tube,D=0.05,t=0.0005 subdiv=1 unit=0.001 stretch=1.0 tip=4.4,1.1,2.8 residual=4.7538e-17 count=6 gap=4.3408e+05 new_form=breach ratio=2.5772e-07 loss=1.1668e-07 runs_in_suite=yes expect=breach
+id=rb_brace_10km section=circular_tube,D=0.05,t=0.0005 subdiv=1 unit=0.0001 stretch=1.0 tip=4.4,1.1,2.8 residual=4.2948e-17 count=18 gap=2.0678e+07 new_form=breach ratio=6.2685e-05 loss=2.0498e-05 runs_in_suite=yes expect=breach
+id=rb_brace_D0p0759_kilometre section=circular_tube,D=0.075898,t=0.00075898 subdiv=1 unit=0.001 stretch=1.0 tip=4.4,1.1,2.8 residual=2.3547e-17 count=6 gap=9.9999e+05 new_form=breach ratio=1.4935e-07 loss=1.7779e-07 runs_in_suite=yes expect=breach
+id=rb_brace_D0p2_kilometre section=circular_tube,D=0.2,t=0.002 subdiv=1 unit=0.001 stretch=1.0 tip=4.4,1.1,2.8 residual=6.5433e-17 count=6 gap=6.9291e+06 new_form=hold ratio=3.8845e-08 loss=1.3644e-08 runs_in_suite=yes expect=breach
+id=rb_subdiv8_kilometre section=circular_tube,D=0.6,t=0.012 subdiv=8 unit=0.001 stretch=1.0 tip=4.4,1.1,2.8 residual=1.3934e-17 count=6 gap=1.1045e+06 new_form=hold ratio=6.5045e-08 loss=6.8942e-08 runs_in_suite=yes expect=breach
+id=rb_span_x100_centimetre section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=100.0 stretch=100.0 tip=4.4,1.1,2.8 residual=3.2931e-20 count=6 gap=1.8774e+06 new_form=hold ratio=1.2538e-07 loss=7.1866e-08 runs_in_suite=yes expect=breach
+id=rb_span_x100_kilometre section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=0.001 stretch=100.0 tip=4.4,1.1,2.8 residual=7.9514e-17 count=6 gap=6.0867e+07 new_form=hold ratio=4.9662e-09 loss=1.9586e-09 runs_in_suite=yes expect=breach
+id=rb_heavy_kilometre section=circular_tube,D=2.0,t=0.2 subdiv=1 unit=0.001 stretch=1.0 tip=4.4,1.1,2.8 residual=4.7386e-17 count=6 gap=5.3392e+08 new_form=hold ratio=1.1688e-09 loss=1.9266e-10 runs_in_suite=yes expect=breach
+id=rb_hairline_D0p01 section=circular_tube,D=0.01,t=0.0001 subdiv=1 unit=1.0 stretch=1.0 tip=4.4,1.1,2.8 residual=7.4759e-17 count=6 gap=7.2463e+09 new_form=hold ratio=9.9453e-11 loss=1.2139e-11 runs_in_suite=yes expect=breach
+id=rb_thickwall_D3_t1p4 section=circular_tube,D=3.0,t=1.4 subdiv=1 unit=1.0 stretch=1.0 tip=4.4,1.1,2.8 residual=5.7957e-17 count=6 gap=1.6530e+14 new_form=hold ratio=3.9808e-15 loss=1.7351e-15 runs_in_suite=yes expect=hold
+id=rb_thinwall_D3_t0p001 section=circular_tube,D=3.0,t=0.001 subdiv=1 unit=1.0 stretch=1.0 tip=4.4,1.1,2.8 residual=6.0088e-17 count=6 gap=1.4268e+14 new_form=hold ratio=2.5413e-15 loss=1.8545e-15 runs_in_suite=yes expect=hold
+id=rb_subdiv16 section=circular_tube,D=0.6,t=0.012 subdiv=16 unit=1.0 stretch=1.0 tip=4.4,1.1,2.8 residual=3.1763e-17 count=6 gap=1.3019e+11 new_form=hold ratio=3.2437e-13 loss=4.0677e-13 runs_in_suite=yes expect=breach
+id=rb_subdiv24 section=circular_tube,D=0.6,t=0.012 subdiv=24 unit=1.0 stretch=1.0 tip=4.4,1.1,2.8 residual=5.2259e-17 count=6 gap=5.8596e+10 new_form=hold ratio=1.7657e-12 loss=6.6941e-13 runs_in_suite=yes expect=breach
+id=rb_subdiv12_brace section=circular_tube,D=0.1,t=0.001 subdiv=12 unit=1.0 stretch=1.0 tip=4.4,1.1,2.8 residual=5.3862e-17 count=6 gap=6.8652e+09 new_form=hold ratio=2.0120e-11 loss=6.1005e-12 runs_in_suite=yes expect=breach
+id=rb_tip_short_member_1cm section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1.0 stretch=1.0 tip=1.91,1.1,2.8 residual=1.4631e-17 count=6 gap=6.9852e+11 new_form=hold ratio=2.6239e-13 loss=5.3504e-14 runs_in_suite=yes expect=hold
+id=rb_tip_short_member_1mm section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1.0 stretch=1.0 tip=1.901,1.1,2.8 residual=4.4293e-17 count=6 gap=7.0068e+10 new_form=hold ratio=1.2972e-12 loss=1.3488e-12 runs_in_suite=yes expect=breach
+id=rb_tip_short_member_1um section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1.0 stretch=1.0 tip=1.900001,1.1,2.8 residual=4.5320e-17 count=6 gap=7.0092e+07 new_form=hold ratio=2.7909e-09 loss=7.0179e-10 runs_in_suite=yes expect=breach
