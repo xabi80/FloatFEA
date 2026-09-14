@@ -250,56 +250,113 @@ def _float_of_a_string(node: ast.AST) -> float | None:
 # what every other rule in this file does, correctly, for a bare literal --
 # let `DECLARED + 1` through while catching `DECLARED * 10`. Measured before
 # this table replaced it.
-_IDENTITY = {
-    ast.Add: 0.0,
-    ast.Sub: 0.0,
-    ast.Mult: 1.0,
-    ast.Div: 1.0,
-    ast.FloorDiv: 1.0,
-    ast.Pow: 1.0,
-    ast.LShift: 0.0,
-    ast.RShift: 0.0,
-    ast.Mod: None,
+# WHAT LEAVES A DECLARED VALUE ALONE, PER OPERATOR AND PER SIDE (CR1, R389).
+# The first version of this table had no side and four of its eight operators
+# are not commutative, so it read `1 / DECLARED` as an identity. That is a
+# RECIPROCAL -- a conditioning ceiling fifteen orders from the declared value,
+# and not an exotic line in this repository. `1 ** DECLARED` is the constant
+# one with the name decorative; `0 - DECLARED` is a sign flip.
+#
+#   (left identity, right identity), `None` where no constant leaves it alone
+_IDENTITY: dict[type, tuple[float | None, float | None]] = {
+    ast.Add: (0.0, 0.0),
+    ast.Sub: (None, 0.0),
+    ast.Mult: (1.0, 1.0),
+    ast.Div: (None, 1.0),
+    ast.FloorDiv: (None, 1.0),
+    ast.Pow: (None, 1.0),
+    ast.LShift: (None, 0.0),
+    ast.RShift: (None, 0.0),
+    ast.Mod: (None, None),
+    ast.BitXor: (None, None),
+    ast.BitOr: (None, None),
+    ast.BitAnd: (None, None),
+    ast.MatMult: (None, None),
 }
 
+# Calls that return the number handed to them, so `DECLARED * float(2)` is
+# `DECLARED * 2`. `np.float64(...)` arrives as an Attribute call.
+_NUMERIC_CALLS = ("float", "int", "abs", "float64", "float32", "double")
 
-def _as_number(node: ast.AST) -> float | None:
-    """A numeric literal, signed, or `None`. Booleans are not numbers here."""
-    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
-        inner = _as_number(node.operand)
-        return None if inner is None else -inner
-    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
-        return None if isinstance(node.value, bool) else float(node.value)
+
+def _const_value(node: ast.AST) -> float | None:
+    """The value of a wholly constant expression, or `None` (CR1).
+
+    RECURSIVE, which is the half of R389 the previous version got wrong by
+    assertion: its docstring said "every nested BinOp is visited ... reached
+    as somebody's operand", and `(1 + 1)` holds no declared name, so the
+    caller skipped it and the outer operand was a BinOp that nothing read.
+    A declared tolerance DOUBLED by `* (1 + 1)` reached the comparison with
+    nothing looking at it.
+
+    Names are never constant here. A name could BE the declared tolerance,
+    and folding it away would read a declared value as a literal.
+    """
+    if isinstance(node, ast.Constant):
+        if isinstance(node.value, bool) or not isinstance(node.value, (int, float)):
+            return None
+        return float(node.value)
+    if isinstance(node, ast.UnaryOp):
+        inner = _const_value(node.operand)
+        if inner is None:
+            return None
+        if isinstance(node.op, ast.USub):
+            return -inner
+        if isinstance(node.op, ast.UAdd):
+            return inner
+        return None
+    if isinstance(node, ast.Call) and _call_name(node) in _NUMERIC_CALLS:
+        if len(node.args) != 1 or node.keywords:
+            return None
+        return _const_value(node.args[0])
+    if isinstance(node, ast.BinOp):
+        left, right = _const_value(node.left), _const_value(node.right)
+        if left is None or right is None:
+            return None
+        try:
+            if isinstance(node.op, ast.Add):
+                return left + right
+            if isinstance(node.op, ast.Sub):
+                return left - right
+            if isinstance(node.op, ast.Mult):
+                return left * right
+            if isinstance(node.op, ast.Div):
+                return left / right
+            if isinstance(node.op, ast.FloorDiv):
+                return float(left // right)
+            if isinstance(node.op, ast.Pow):
+                return float(left**right)
+            if isinstance(node.op, ast.Mod):
+                return float(left % right)
+        except (ZeroDivisionError, OverflowError, ValueError):
+            return None
     return None
 
 
-def _numbers_beside_a_declared_name(node: ast.AST) -> list[float]:
-    """Literals that CHANGE a declared tolerance, integers included (CQ3).
+def _numbers_beside_a_declared_name(node: ast.AST, names: set[str]) -> list[float]:
+    """Constants that CHANGE a declared tolerance, on either side (CR1).
 
-    `_floats_in` excuses integers, and rightly: an integer on its own in a
-    comparison is a count. Beside a DECLARED tolerance it is not a count --
-    `DECLARED * 10` and `DECLARED + 1` are new bounds, and the bound the
-    comparison uses is not the declared one. Measured before this was
-    written: all four of the reviewer's integer spellings scanned clean while
-    `DECLARED * 2.0` was caught, the same defect distinguished only by a
-    decimal point.
+    An integer alone in a comparison is a count and is excused everywhere
+    else in this file. Beside a DECLARED tolerance it is a scale, and so is a
+    compound expression that folds to one: `DECLARED * (1 + 1)` doubles it.
 
-    A literal is excused only when it is the IDENTITY FOR ITS OWN OPERATOR,
-    and only its own operands are read.
-
-    THIS BINOP'S OWN OPERANDS, never the whole subtree. Walking it flagged
-    `RIGID_BODY_MODE_RATIO * w[RIGID - 1]` on the `1` of an index -- a count
-    inside a subscript, two levels down, with nothing to do with the bound.
-    Every nested BinOp is visited by the caller's own loop, so a literal that
-    really does modify the declared value is reached as somebody's operand.
+    THE OTHER SIDE MUST CARRY THE DECLARED NAME. `RIGID_BODY_MODE_RATIO *
+    w[RIGID - 1]` is a tolerance scaled by DATA, which is the relative-
+    tolerance idiom and is not a new bound; the `1` inside that subscript is
+    an index. So a constant is only read when the name is opposite it.
     """
     if not isinstance(node, ast.BinOp):
         return []
-    identity = _IDENTITY.get(type(node.op))
+    left_id, right_id = _IDENTITY.get(type(node.op), (None, None))
     out: list[float] = []
-    for side in (node.left, node.right):
-        value = _as_number(side)
+    for side, other, identity in (
+        (node.left, node.right, left_id),
+        (node.right, node.left, right_id),
+    ):
+        value = _const_value(side)
         if value is None or (identity is not None and value == identity):
+            continue
+        if not any(isinstance(n, ast.Name) and n.id in names for n in ast.walk(other)):
             continue
         out.append(value)
     return out
@@ -345,7 +402,7 @@ def _literal_thresholds_inside(comp: ast.AST, names: set[str]) -> list[str]:
         # CQ3: INTEGERS COUNT HERE. Everywhere else in this file an integer is
         # a count and is excused; beside a declared tolerance it is a scale,
         # and `DECLARED * 10` is as much a new bound as `DECLARED * 2.0`.
-        for value in _numbers_beside_a_declared_name(inner):
+        for value in _numbers_beside_a_declared_name(inner, names):
             out.append(
                 f"comparison against {value!r} combined with "
                 f"{sorted(declared)[0]} -- the bound is the product, not the "
