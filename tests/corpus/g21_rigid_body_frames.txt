@@ -223,3 +223,78 @@ id=rb_subdiv12_brace section=circular_tube,D=0.1,t=0.001 subdiv=12 unit=1.0 stre
 id=rb_tip_short_member_1cm section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1.0 stretch=1.0 tip=1.91,1.1,2.8 residual=1.4631e-17 count=6 gap=6.9852e+11 new_form=hold ratio=2.6239e-13 loss=5.3504e-14 runs_in_suite=yes expect=hold
 id=rb_tip_short_member_1mm section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1.0 stretch=1.0 tip=1.901,1.1,2.8 residual=4.4293e-17 count=6 gap=7.0068e+10 new_form=hold ratio=1.2972e-12 loss=1.3488e-12 runs_in_suite=yes expect=breach
 id=rb_tip_short_member_1um section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1.0 stretch=1.0 tip=1.900001,1.1,2.8 residual=4.5320e-17 count=6 gap=7.0092e+07 new_form=hold ratio=2.7909e-09 loss=7.0179e-10 runs_in_suite=yes expect=breach
+
+# ===========================================================================
+# ADDED AT THE FORTY-SIXTH VERDICT (BE3). Twenty-six entries, none of them
+# seen by the implementer, against the COUNT rule introduced at `7a5445a`:
+#
+#     tau   = RIGID_MODE_FLOOR * ||K_hat|| * eps,  K_hat = K / max|K|
+#     count = #{ eigenvalues of K_hat below tau },  asserted == 6
+#     gap   = log10(first_above / last_below),      asserted >= RIGID_MODE_GAP
+#
+# WHAT A PASSING SCAN OF THIS BLOCK MEANS. Every entry is the SAME defect-free
+# element and every one is a connected, unconstrained space frame, so every one
+# has exactly six rigid-body modes as a matter of kinematics. A passing scan
+# means the shipped rule returns six at all twenty-six and the gap holds at all
+# twenty-six. The residual half already does: its worst over this block is
+# 1.0589e-16 against a ceiling of 1e-15, so nothing here is a statement about
+# the element.
+#
+# WHY THIS BLOCK EXISTS. `tolerances.py`, the RE-LOCKED plan and
+# `zero_modes_below_floor`'s own docstring all say the gap is the VALIDITY
+# CONDITION on the count -- that an untrustworthy count "fails loudly instead
+# of returning a wrong number". These entries were chosen to test that sentence
+# and not the element. The composition technique is the one the forty-fifth
+# verdict used on the retired rule: take two effects already in this file, each
+# of which holds on its own, and pose them together.
+#
+# NEW FIELDS
+#   gap_orders   log10(first_above / last_below) -- the NEW quantity. The older
+#                `gap=` fields above this block are the retired largest-gap
+#                RATIO and are not comparable with it.
+#   kind         hold                    count 6 and the gap over its floor
+#                count_wrong_gap_wide    count != 6 AND the gap over its floor:
+#                                        a wrong count certified as trustworthy
+#                count_wrong_gap_warns   count != 6 and the gap under its floor
+#                count_right_gap_red     count 6 and the gap under its floor:
+#                                        a false red on a correct count
+#   new_form     hold | breach, by the shipped rule as a whole
+# ===========================================================================
+
+# --- COMPOSED: two effects already in this file, each holding alone. The
+#     count is WRONG and the gap certifies it. ------------------------------
+id=rb_mm_span_x4400 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1000 stretch=4400.0 tip=4.4,1.1,2.8 residual=3.8341e-22 count=8 gap_orders=8.648 new_form=breach kind=count_wrong_gap_wide ratio=6.0655e-02 loss=4.4416e-02 runs_in_suite=yes expect=breach
+id=rb_mm_span_x10000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1000 stretch=10000.0 tip=4.4,1.1,2.8 residual=2.6077e-22 count=8 gap_orders=9.359 new_form=breach kind=count_wrong_gap_wide ratio=9.4780e-02 loss=3.6514e-01 runs_in_suite=yes expect=breach
+id=rb_0p1mm_span_x1000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=10000.0 stretch=1000.0 tip=4.4,1.1,2.8 residual=7.9613e-24 count=8 gap_orders=7.366 new_form=breach kind=count_wrong_gap_wide ratio=1.0610e-01 loss=4.6523e-01 runs_in_suite=yes expect=breach
+id=rb_10um_span_x100000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=100000.0 stretch=100000.0 tip=4.4,1.1,2.8 residual=2.6478e-26 count=8 gap_orders=5.962 new_form=breach kind=count_wrong_gap_wide ratio=1.1297e-05 loss=6.8123e-01 runs_in_suite=yes expect=breach
+id=rb_heavy_mm_span_x10000 section=circular_tube,D=2.0,t=0.2 subdiv=1 unit=1000 stretch=10000.0 tip=4.4,1.1,2.8 residual=3.4051e-23 count=8 gap_orders=8.367 new_form=breach kind=count_wrong_gap_wide ratio=1.7696e-01 loss=3.6045e-01 runs_in_suite=yes expect=breach
+id=rb_span_x10000000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1.0 stretch=10000000.0 tip=4.4,1.1,2.8 residual=1.0589e-16 count=8 gap_orders=13.607 new_form=breach kind=count_wrong_gap_wide ratio=7.5596e-01 loss=6.5273e-01 runs_in_suite=yes expect=breach
+id=rb_unit_0p1um section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e7 stretch=1.0 tip=4.4,1.1,2.8 residual=5.5507e-24 count=8 gap_orders=1.423 new_form=breach kind=count_wrong_gap_wide ratio=4.0866e-02 loss=2.9484e-01 runs_in_suite=yes expect=breach
+id=rb_unit_10nm section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e8 stretch=1.0 tip=4.4,1.1,2.8 residual=8.1344e-25 count=15 gap_orders=14.025 new_form=breach kind=count_wrong_gap_wide ratio=3.5647e-01 loss=7.9414e-01 runs_in_suite=yes expect=breach
+
+# --- the count is WRONG and the gap DOES warn. The gap detects being AT a
+#     transition, not being past one. --------------------------------------
+id=rb_mm_span_x4340 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1000 stretch=4340.0 tip=4.4,1.1,2.8 residual=1.8267e-22 count=7 gap_orders=0.017 new_form=breach kind=count_wrong_gap_warns ratio=3.0071e-02 loss=2.3858e-02 runs_in_suite=yes expect=breach
+id=rb_subdiv8_span_x1000000 section=circular_tube,D=0.6,t=0.012 subdiv=8 unit=1.0 stretch=1000000.0 tip=4.4,1.1,2.8 residual=3.0799e-17 count=12 gap_orders=0.123 new_form=breach kind=count_wrong_gap_warns ratio=1.4801e-01 loss=6.9202e-02 runs_in_suite=yes expect=breach
+id=rb_subdiv16_span_x1000000 section=circular_tube,D=0.6,t=0.012 subdiv=16 unit=1.0 stretch=1000000.0 tip=4.4,1.1,2.8 residual=2.0121e-17 count=20 gap_orders=0.331 new_form=breach kind=count_wrong_gap_warns ratio=1.3950e-01 loss=6.8312e-01 runs_in_suite=yes expect=breach
+
+# --- the count is RIGHT and the gap goes red: a FALSE RED on a defect-free
+#     element, at millimetre units. ----------------------------------------
+id=rb_mm_span_x3600 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1000 stretch=3600.0 tip=4.4,1.1,2.8 residual=2.5834e-22 count=6 gap_orders=1.270 new_form=breach kind=count_right_gap_red ratio=8.3152e-03 loss=3.2425e-02 runs_in_suite=yes expect=breach
+id=rb_mm_span_x4000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1000 stretch=4000.0 tip=4.4,1.1,2.8 residual=2.4322e-22 count=6 gap_orders=1.061 new_form=breach kind=count_right_gap_red ratio=4.0521e-02 loss=6.2581e-02 runs_in_suite=yes expect=breach
+
+# --- CONTROLS THAT MUST NOT MOVE. A corpus in which everything breached
+#     would measure nothing. -----------------------------------------------
+id=rb_cm_span_x1000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=100 stretch=1000.0 tip=4.4,1.1,2.8 residual=3.5146e-20 count=6 gap_orders=4.623 new_form=hold kind=hold ratio=1.2736e-05 loss=6.5348e-06 runs_in_suite=yes expect=breach
+id=rb_cm_span_x10000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=100 stretch=10000.0 tip=4.4,1.1,2.8 residual=3.4356e-20 count=6 gap_orders=2.713 new_form=hold kind=hold ratio=3.7792e-03 loss=1.5066e-03 runs_in_suite=yes expect=breach
+id=rb_mm_span_x100 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1000 stretch=100.0 tip=4.4,1.1,2.8 residual=5.2675e-22 count=6 gap_orders=4.651 new_form=hold kind=hold ratio=4.1355e-05 loss=1.3689e-05 runs_in_suite=yes expect=breach
+id=rb_mm_span_x1000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1000 stretch=1000.0 tip=4.4,1.1,2.8 residual=2.7779e-22 count=6 gap_orders=2.489 new_form=hold kind=hold ratio=4.7416e-04 loss=5.8403e-04 runs_in_suite=yes expect=breach
+id=rb_unit_1um section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1000000.0 stretch=1.0 tip=4.4,1.1,2.8 residual=6.5022e-23 count=6 gap_orders=2.701 new_form=hold kind=hold ratio=2.0302e-03 loss=6.7851e-04 runs_in_suite=yes expect=breach
+id=rb_span_x1000000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1.0 stretch=1000000.0 tip=4.4,1.1,2.8 residual=1.0561e-16 count=6 gap_orders=1.825 new_form=hold kind=hold ratio=6.9050e-03 loss=2.0264e-02 runs_in_suite=yes expect=breach
+id=rb_subdiv8_span_x100000 section=circular_tube,D=0.6,t=0.012 subdiv=8 unit=1.0 stretch=100000.0 tip=4.4,1.1,2.8 residual=4.2230e-17 count=6 gap_orders=2.862 new_form=hold kind=hold ratio=9.9821e-04 loss=5.1457e-04 runs_in_suite=yes expect=breach
+id=rb_subdiv4_mm_span_x1000 section=circular_tube,D=0.6,t=0.012 subdiv=4 unit=1000 stretch=1000.0 tip=4.4,1.1,2.8 residual=1.4308e-22 count=6 gap_orders=1.856 new_form=hold kind=hold ratio=6.6919e-03 loss=3.6097e-03 runs_in_suite=yes expect=breach
+id=rb_subdiv16_unit_10um section=circular_tube,D=0.6,t=0.012 subdiv=16 unit=100000.0 stretch=1.0 tip=4.4,1.1,2.8 residual=3.4908e-22 count=6 gap_orders=3.747 new_form=hold kind=hold ratio=1.1957e-04 loss=1.0221e-04 runs_in_suite=yes expect=breach
+id=rb_subdiv24_unit_0p1mm section=circular_tube,D=0.6,t=0.012 subdiv=24 unit=10000.0 stretch=1.0 tip=4.4,1.1,2.8 residual=4.2477e-21 count=6 gap_orders=5.278 new_form=hold kind=hold ratio=2.1718e-06 loss=1.9166e-06 runs_in_suite=yes expect=breach
+id=rb_brace_unit_1um section=circular_tube,D=0.05,t=0.0005 subdiv=1 unit=1000000.0 stretch=1.0 tip=4.4,1.1,2.8 residual=7.9904e-23 count=6 gap_orders=2.533 new_form=hold kind=hold ratio=1.1431e-03 loss=6.4968e-04 runs_in_suite=yes expect=breach
+id=rb_brace_mm_span_x1000 section=circular_tube,D=0.05,t=0.0005 subdiv=1 unit=1000 stretch=1000.0 tip=4.4,1.1,2.8 residual=4.0651e-20 count=6 gap_orders=2.497 new_form=hold kind=hold ratio=1.3727e-03 loss=1.5149e-03 runs_in_suite=yes expect=breach
+id=rb_heavy_unit_1um section=circular_tube,D=2.0,t=0.2 subdiv=1 unit=1000000.0 stretch=1.0 tip=4.4,1.1,2.8 residual=6.6155e-23 count=6 gap_orders=2.996 new_form=hold kind=hold ratio=1.3323e-03 loss=3.6658e-04 runs_in_suite=yes expect=breach
