@@ -407,7 +407,11 @@ RIGID_MODE_GAP: Final[float] = 1.3
 # Set: 2026-09-14, F2
 RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 8.318e-15
 
-# CLASS: RETIRED (Q7/CS2). NOT A GATE, and nothing asserts against it.
+# CLASS: ACCURACY -- and RETIRED at Q7/CS2. NOT A GATE: nothing asserts
+# against it, and the class is kept only because `tests/verification/rung3`
+# requires every declared float to carry one from its own vocabulary. A
+# retired value is still a float in this file, so it still needs a class;
+# what it no longer has is an assertion.
 #
 # EVERYTHING BELOW IS THE RECORD OF WHAT IT WAS, kept because the step report
 # cites the contrast and because a value deleted outright takes its own history
@@ -461,7 +465,8 @@ RIGID_BODY_MODE_RATIO: Final[float] = 1e-12
 # Set: 2026-09-09, F2
 RIGID_BODY_MODE_RATIO_COUNTER_DEFECT: Final[float] = 1.0e-12
 
-# CLASS: RETIRED (CS2). NOT A GATE, and nothing asserts against it.
+# CLASS: ACCURACY -- and RETIRED at CS2. NOT A GATE: nothing asserts
+# against it, and the class is kept for the reason given above.
 #
 # Retired for the STRONGER of the two reasons: it breached at more of the
 # reviewer's clean frames than the ratio did, so the quantity that had been
