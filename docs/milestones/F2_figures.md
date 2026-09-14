@@ -16,6 +16,14 @@ this file is not what a fresh run produces.
 | `stamp_openblas_coretype` | Haswell |
 | `rigid_body_mode_ratio` | 1.1986e-14 |
 | `rigid_body_subspace_loss` | 5.5095e-15 |
+| `rigid_mode_residual` | 7.8658e-17 |
+| `rigid_mode_gap` | 2.4027e+13 |
+| `rigid_mode_count` | 6 |
+| `rigid_mode_residual_worst_over_corpus` | 9.2375e-17 |
+| `rigid_mode_gap_smallest_over_corpus` | 6.0131e+07 |
+| `rigid_mode_corpus_frames` | 28 |
+| `rigid_mode_corpus_counts` | 6 |
+| `retired_ratio_over_ceiling_on_corpus` | 10 of 28 |
 | `rigid_body_counter_ratio` | 3.0612e-11 |
 | `rigid_body_counter_loss` | 7.4709e-12 |
 | `corpus_entries` | 203 |
