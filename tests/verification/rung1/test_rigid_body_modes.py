@@ -321,13 +321,27 @@ def counter_response(which: str) -> float:
     """
     model, els = _frame()
     k = assemble_dense(model, els)
-    size = (
-        RIGID_BODY_MODE_RATIO_COUNTER_DEFECT
-        if which == "ratio"
-        else RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT
-    )
-    k[0, 0] += size * float(np.abs(k).max())
-    return mode_ratio(k) if which == "ratio" else subspace_loss(k, model)
+    scale = float(np.abs(k).max())
+
+    # THE GAP'S COUNTER IS A DIFFERENT INJECTION, so it is built here rather
+    # than by scaling one diagonal entry: a uniform foundation lifts all six
+    # rigid modes together, which is what degrades the gap without moving the
+    # count.
+    if which == "gap":
+        k = k + RIGID_MODE_GAP_COUNTER_DEFECT * scale * np.eye(k.shape[0])
+        return zero_modes_by_gap(k)[1]
+
+    size = {
+        "ratio": RIGID_BODY_MODE_RATIO_COUNTER_DEFECT,
+        "loss": RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT,
+        "residual": RIGID_MODE_EXACTNESS_COUNTER_DEFECT,
+    }[which]
+    k[0, 0] += size * scale
+    if which == "ratio":
+        return mode_ratio(k)
+    if which == "residual":
+        return residual_exactness(k, model)
+    return subspace_loss(k, model)
 
 
 @contextlib.contextmanager

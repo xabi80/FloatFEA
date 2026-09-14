@@ -125,13 +125,27 @@ REGISTERED = [
     # measured quantity is a property of the frame; `counter_response` returns it
     # at this commit. A literal here would be stale the first time the frame
     # moved, which is the species step 4 spent five rounds on.
+    # THE RATIO PAIR IS GONE FROM THIS REGISTRY (Q7). Its gate is a diagnostic
+    # now -- printed, asserted against nothing -- and a counter registered
+    # against a gate that does not assert cannot redden it. Both cells here
+    # failed at the commit that retired it, which is this meta-test doing
+    # exactly its job: it noticed that a counter had lost the assertion it
+    # defended before any reader did.
     (
-        "rigid-body mode ratio",
-        lambda: RIGID.test_a_RIGID_BODY_MODE_that_carries_ENERGY_is_caught(_Capsys),
+        "rigid-body residual exactness",
+        lambda: RIGID.test_a_RESISTED_rigid_motion_reddens_the_RESIDUAL(_Capsys),
         RIGID,
-        "test_the_frame_has_SIX_zero_modes_by_ratio",
-        "RIGID_BODY_MODE_RATIO",
-        WIDEN * RIGID.counter_response("ratio"),
+        "test_the_rigid_body_vectors_are_EXACT_in_the_residual",
+        "RIGID_MODE_EXACTNESS",
+        WIDEN * RIGID.counter_response("residual"),
+    ),
+    (
+        "rigid-body spectral gap",
+        lambda: RIGID.test_a_CLOSED_GAP_reddens_the_COUNT_assertion(_Capsys),
+        RIGID,
+        "test_the_ZERO_MODES_NUMBER_SIX_by_the_spectral_gap",
+        "RIGID_MODE_GAP",
+        RIGID.counter_response("gap") / WIDEN,
     ),
     (
         "rigid-body subspace loss",
