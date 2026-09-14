@@ -369,29 +369,43 @@ RIGID_MODE_FLOOR_COUNTER_DEFECT: Final[float] = 1.0e-12
 # the test says the count is UNTRUSTWORTHY at this configuration and goes red.
 # It never returns a number it does not believe.
 #
-# Reason for 1.5 orders: the smallest separation over the fifty-six corpus
-# frames is `2.069` orders, at the thousand-kilometre re-expression, which is
-# the harshest conditioning in the file -- `0.57` orders of room, a factor of
-# `3.7` in the ratio itself. The counter below reaches `1.21` orders, `0.29`
-# below this floor and a factor of `1.95` past it.
+# Reason for 1.3 orders, and this value is BRACKETED ON BOTH SIDES by
+# measurement rather than chosen for room:
 #
-# THAT IS THE TIGHTEST BRACKET OF ANY ENTRY IN THIS FILE and the reason is
-# physical rather than careless: the quantity is a logarithm, and the narrowest
-# separation this frame can be made to produce with the count still at six is
-# what bounds the counter. Both margins are published by name in the step
-# report rather than described as comfortable.
+#   above  the smallest separation over the fifty-six corpus frames is
+#          `2.071` orders on the canonical machine, at the thousand-kilometre
+#          re-expression. Q8's floor class requires a floor-class decision to
+#          survive the declared platform spread of `1.5x`, and `2.071 / 1.3`
+#          is `1.59x`. At `1.5` it was `1.38x` and `--check` refused it --
+#          correctly, since the platform alone could then carry the decision.
+#   below  the narrowest separation this frame can be made to produce WITH THE
+#          COUNT STILL AT SIX is `1.125` orders, measured by scanning the
+#          counter's own parameter. Below `tau` the mode joins the nullspace
+#          and the COUNT moves instead, which is a different assertion.
+#
+# So the window is `(1.125, 1.381)` and this sits inside it. THAT IS THE
+# TIGHTEST BRACKET OF ANY ENTRY IN THIS FILE, and the reason is physical: the
+# separation cannot be squeezed below the distance from the sixth eigenvalue
+# up to `tau`, and `tau` is fixed by `RIGID_MODE_FLOOR`, which the corpus
+# fixes. Both margins are published by name in the step report.
 # Set: 2026-09-14, F2
-RIGID_MODE_GAP: Final[float] = 1.5
+RIGID_MODE_GAP: Final[float] = 1.3
 
 # COUNTER-CASE, INJECTED into the assembled matrix and run through the gate.
-# Reason for 8.5e-15: a connection that is NEARLY released. The torsional
+# Reason for 8.318e-15: a connection that is NEARLY released. The torsional
 # continuity of one member is cut and then given back a stiffness of this size
 # relative to the largest entry, which puts the seventh mode just above `tau`:
-# the count still reads six and the separation collapses to `1.21` orders. That
-# is precisely the state this entry exists to refuse -- six is the right answer
-# and nothing in the spectrum says so.
+# the count still reads six -- the right answer -- and the separation collapses
+# to `1.125` orders, a factor of `1.50` narrower than the floor allows. That is
+# precisely the state this entry exists to refuse.
+#
+# IT IS NEAR ITS OWN EDGE AND THAT IS NOT CARELESSNESS. The value is the
+# minimum of a scan over the injection's own parameter: no size produces a
+# narrower separation at count six, because below `tau` the mode joins the
+# nullspace and the COUNT moves instead. A counter cannot be placed further
+# from an edge than the quantity can reach.
 # Set: 2026-09-14, F2
-RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 8.5e-15
+RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 8.318e-15
 
 # CLASS: ACCURACY -- carries RIGID_BODY_MODE_RATIO_COUNTER_DEFECT below.
 # G2.1 / V1.1 -- the sixth eigenvalue of an unconstrained stiffness matrix,
