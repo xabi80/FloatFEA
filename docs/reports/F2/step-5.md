@@ -7155,4 +7155,375 @@ untouched. No Q8 value beyond those already written.
 
 Answers: verdict 45 @ f19eef5
 
-(placeholder)
+**2026-09-14.** Commits since the forty-fifth verdict, listed in §8.
+
+## 0. CI at `2337624`, the commit verdict 45 judged
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 45 at `2337624` through the report's own `Answers:` line. Run `34811100727`, event `push`, conclusion **success**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 1301 | 0 | 0 |
+| lint, unit and guards | 876 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 0 not green.**
+
+**Failing tests named in the log: 0.**
+
+## 0a. How to read §0
+
+**§0 describes the commit verdict 45 judged and it is green.** This round's own
+dispatch is `34852760507` at `1b87e03`: ten determinism legs green, the verdict
+job green, the ladder green with the rewritten count in it.
+
+## 1. R397 and R398 — the count is below a threshold now, and every control decides by it
+
+**"Modes below the largest gap" is not a count, and the reviewer's frame
+proved it.** The largest gap in a spectrum can sit anywhere; at a length unit
+one decade finer than the corpus's kilometre entry it sat after the eighteenth
+mode, so the rule returned eighteen — with a gap eighteen times above its own
+floor, so the validity condition said nothing was wrong.
+
+```
+rule  tau = RIGID_MODE_FLOOR * ||K_hat|| * eps, on `K_hat = K / max|K|`, the
+      same homogenisation the residual uses. The count is how many eigenvalues
+      fall below tau, asserted equal to six. The gap after them, IN ORDERS, is
+      asserted separately, and when it fails the test reports the count as
+      UNTRUSTWORTHY and goes red rather than returning a number.
+cmd   the rule over all fifty-six corpus frames
+out   count six at every one; smallest gap 2.071 orders on the canonical
+      machine, against a floor of 1.3
+cmd   the four controls CS1 names, each deciding by the shipped rule
+out   a pinned DOF, at all thirty       5 below tau, narrowest gap 12.641
+      a released connection             7 below tau, gap 13.627
+      a brace AT a kilometre unit       6 below tau, gap 8.548
+      unit 1e-4, R397's own frame       6 below tau, gap 6.379
+judge THE LAST TWO ARE THE CASES THAT BROKE THE OLD RULE and neither moves
+      this one. R398 found that no control decided by the shipped rule at all
+      -- both counters held the count at six by construction and the five- and
+      seven-mode controls read the RETIRED threshold -- so nothing in the
+      repository could make `count == RIGID` fail. All four decide by it now,
+      and each checks the gap too: a control that reads an untrustworthy count
+      is not a control.
+```
+
+**Both counters are injected through `assembled`.**
+
+```
+out   FLOOR  a diagonal stiffness lifting one rigid mode above tau -> count 5
+      GAP    a connection NEARLY released: the twist cut and given back
+             8.318e-15 of max|K|, leaving the seventh mode just above tau ->
+             count six, and the separation collapses to 1.125 orders
+judge A UNIFORM FOUNDATION WAS THE FIRST ATTEMPT AND DOES NOT WORK under this
+      rule: it lifts all six together, so nothing is left below tau and the
+      COUNT fails instead of the gap. Measured at every size from 1e-12 to
+      1e-7 before the counter was rewritten.
+```
+
+## 2. R396 — the sentence about the retired pair, and the pair itself
+
+**The plan said both retired quantities were asserted against nothing and one
+of them was still a gate.** The subspace loss is retired here, for the stronger
+of the two reasons: it breached at more of the reviewer's clean frames than the
+ratio did, so the quantity that had been kept was the one the evidence indicted
+harder.
+
+```
+cmd   both retired quantities over the fifty-six frames, defect-free element
+out   the ratio exceeds its retired ceiling at 34 of 56
+      the loss exceeds its retired ceiling at 41 of 56 on the canonical
+      machine and 42 here
+judge THE LOSS'S OWN COUNT IS NOT MACHINE-STABLE, which is one more reason it
+      is not a gate: it is computed from EIGENVECTORS and one frame sits on
+      the ceiling, so which side that frame lands is a property of the
+      eigensolver. The ratio's count agrees on both machines because the ratio
+      reads eigenvalues. The loss's count is therefore not published at all --
+      see §3.
+```
+
+**And R399 with it.** Both entries are `CLASS: RETIRED` now and say to read
+"headroom", "ceiling crossed" and "run through the gate" in the past tense.
+The ratio's counter constant was still being injected by a test whose docstring
+called it the ratio's counter and which then ran a different assertion in a
+different quantity; that test is deleted, and the residual's own counter was
+already there.
+
+## 3. R394 and R395 — three figures
+
+```
+cmd   the shipped `counter_response("residual")`, and its edge by bisection
+out   4.4841e-15 against a ceiling of 1e-15; edge 2.2038e-15; 4.54x past it
+judge `about 5e-14` STOOD IN THAT ENTRY AND WAS WRONG BY A DECADE (R394). It
+      was the response to a defect ten times larger, written from a sweep row
+      rather than from the shipped function, and the same entry claimed the
+      counter was clear of its edge without the edge ever being solved.
+cmd   grep for "sixteen" in the entry and in the corpus test
+out   both replaced by `{{fig:retired_ratio_over_ceiling_on_corpus}}`, which
+      reads 34 of 56 over the whole corpus (R395). The same round's own
+      canonical render had already said ten of twenty-eight when the word was
+      written.
+```
+
+**A third figure was removed rather than corrected.**
+
+```
+cmd   python scripts/regen_figures.py --check, against the canonical render
+out   "retired_loss_over_ceiling_on_corpus is '42 of 56' here and '41 of 56'
+      in the file. Not a floor-class figure: Q8 requires these to agree
+      EXACTLY on every machine, so this is staleness rather than platform."
+judge AN EXACT ROW THAT DISAGREES BETWEEN MACHINES IS STALENESS by Q8's rule,
+      and a count is not a measurement against a tolerance, so it cannot be
+      floor-class either. It is not published, and the disagreement is
+      recorded as one more reason the loss is not a gate.
+```
+
+**And `--check` refused my first gap floor, correctly.**
+
+```
+out   "rigid_mode_gap_orders_smallest_over_corpus: margin 1.379x is under the
+      declared spread 1.5x, so the platform alone could carry this decision
+      across its ceiling."
+judge A FLOOR-CLASS DECISION HAS TO SURVIVE THE PLATFORM SPREAD and at a floor
+      of 1.5 orders against a corpus minimum of 2.071 it did not. I had chosen
+      that value by looking only at the counter.
+rule  the window is bracketed on both sides by measurement: at most 1.381,
+      from the corpus minimum and the declared spread; at least 1.125, the
+      narrowest separation this frame can be made to produce WITH THE COUNT
+      STILL AT SIX. `RIGID_MODE_GAP = 1.3` sits inside it.
+judge THE COUNTER IS NEAR ITS OWN EDGE AND THAT IS NOT CARELESSNESS. Below tau
+      the mode joins the nullspace and the COUNT moves instead, so no
+      injection reaches a narrower separation at six. A counter cannot be
+      placed further from an edge than the quantity can reach, and the entry
+      says so rather than implying room it does not have.
+```
+
+## 4. R388's second site
+
+The docstring table was corrected last round and its closing condition named a
+second site the answer did not reach. The comment and the message inside the
+fallback branch still said "no history for this report path", which describes
+the state above it: an untracked report falls back to the reports tree and gets
+a commit. The branch is the third state — nothing under the reports tree has
+any history at all — and it says that now.
+
+## 5. What is open
+
+- **R400, R401, R402** — this round's 4a items, including a regex in the
+  citation rule that skips a cited test FILE.
+- **R390, R391, R392, R393, R381, R382, R383, R384** and the rest of the 4a
+  list: R354, R355, R356, R357, R362, R363, R364, R370, R371, R372, R373,
+  R374, R330, R331, R332, R347, R348, R349, R350.
+- **Step R** — the four F1 reader tolerances, planned and not executed.
+- **R231, R244, R245, R275** — the remaining Q8 values.
+- **R230**, reopened by my own error at revision 3, and mine to leave open.
+
+## 6. The whole suite, at the commit this revision is committed on top of
+
+**Whole suite at `2ffb4b9`: 2010 passed, 0 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit, excluding 271 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py) -- which the supervisor runs at the commit that carries it. R339: the count of what is excluded is part of the line, so a reader can size it without running anything.
+
+**One red found by this line and fixed before the report**, the fourth this round that a guard caught before a reader did: `CLASS: RETIRED` is not in the vocabulary rung 3 declares, and a retired value is still a float in that file. It carries its class and says why.
+
+## 7. Sites named by findings and not touched
+
+Generated: `python scripts/untouched_sites.py`. The rows are the guard's own
+`SITES` and `TOUCHED`, imported rather than re-derived, so the table cannot
+enumerate a different set than the check does. The reason column is mine and
+carries the literal `no change`, which is the string the guard looks for.
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R395 | `floatfea/tolerances.py:294` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R395 | `test_rigid_body_modes.py:429` | the file is touched and this line number is the old one | **no change** — the verdict's short spelling of the same file as the row above |
+| R395 | `tests/verification/rung1/test_rigid_body_modes.py:430` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R395 | `tolerances.py:293` | the file is touched and this line number is the old one | **no change** — the verdict's short spelling of `floatfea/tolerances.py` |
+| R396 | `test_rigid_body_corpus.py:188` | the file is touched and this line number is the old one | **no change** at this line number — the file is touched and the block moved. The retired pair is reported together there now |
+| R397 | `floatfea/tolerances.py:338` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R397 | `floatfea/tolerances.py:339` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R397 | `tests/verification/rung1/test_rigid_body_modes.py:243` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R397 | `tests/verification/rung1/test_rigid_body_modes.py:244` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R397 | `tests/verification/rung1/test_rigid_body_modes.py:247` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R397 | `tests/verification/rung1/test_rigid_body_modes.py:252` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R398 | `tests/verification/rung1/test_rigid_body_modes.py:414` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `CLAUDE.md` | the file is untouched | **no change** — the finding quotes the rules the repair obeys, not a site to edit |
+| R399 | `floatfea/tolerances.py:351` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:352` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:353` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:354` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:355` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:356` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:357` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:358` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:359` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:360` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:361` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:362` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:363` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:364` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:365` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:366` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:367` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:368` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:369` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:370` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:371` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:372` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:373` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:374` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:375` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:376` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:377` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:378` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:379` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:380` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:381` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:382` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:383` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:384` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:385` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:386` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:387` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:388` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `floatfea/tolerances.py:389` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R399 | `scripts/regen_figures.py:138` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R400 | `tests/verification/rung1/test_rigid_body_corpus.py:73` | the file is touched and this line number is the old one | **no change** — 4a. The corpus reader raising before its own meta-test can speak is R234's species and goes with the other readers that share it |
+| R400 | `tests/verification/rung1/test_rigid_body_corpus.py:74` | the file is touched and this line number is the old one | **no change** — 4a. The corpus reader raising before its own meta-test can speak is R234's species and goes with the other readers that share it |
+| R400 | `tests/verification/rung1/test_rigid_body_corpus.py:75` | the file is touched and this line number is the old one | **no change** — 4a. The corpus reader raising before its own meta-test can speak is R234's species and goes with the other readers that share it |
+| R400 | `tests/verification/rung1/test_rigid_body_corpus.py:76` | the file is touched and this line number is the old one | **no change** — 4a. The corpus reader raising before its own meta-test can speak is R234's species and goes with the other readers that share it |
+| R400 | `tests/verification/rung1/test_rigid_body_corpus.py:77` | the file is touched and this line number is the old one | **no change** — 4a. The corpus reader raising before its own meta-test can speak is R234's species and goes with the other readers that share it |
+| R400 | `tests/verification/rung1/test_rigid_body_corpus.py:78` | the file is touched and this line number is the old one | **no change** — 4a. The corpus reader raising before its own meta-test can speak is R234's species and goes with the other readers that share it |
+| R401 | `test_foo.py` | the file is untouched | **no change** — the finding's own example of a file name, not a path in the tree |
+| R401 | `tests/test_collected_set_golden.py` | the file is untouched | **no change** — 4a. The escaped dot in the citation regex skips a cited test FILE; one character, and it goes with the other 4a items in that file |
+| R402 | `CLAUDE.md` | the file is untouched | **no change** — the finding quotes the rule about what section 10's output block must be; the omission it names is in the report and is fixed there |
+
+## 8. Carried
+
+Generated: `python scripts/carried_table.py <verdict> docs/reports/F2/step-5-answers.json`. The row set, the class and the subject of every row are read from the verdict; the answers file carries a state and a section pointer, and the pointer is resolved against this report by `tests/test_report_carried.py`.
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R1 | **open** — carried from an earlier verdict | 's gate is |
+| R2 | **open** — carried from an earlier verdict | now solves for the |g| at which accept flips, sets the |
+| R223 | **carried** | ANSWERED. Q7 is executed. See the findings below. |
+| R224 | **carried** | ANSWERED. Q7 is executed. See the findings below. |
+| R225 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R226 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R227 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R228 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R230 | **open** — §5 | OPEN by instruction, correctly listed. |
+| R231 | **open** — §5 | OPEN, unblocked, and the report correctly does |
+| R232 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R233 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R244 | **open** — §5 | OPEN, unblocked, and the report correctly does |
+| R245 | **open** — §5 | OPEN, unblocked, and the report correctly does |
+| R248 | **open** — carried from an earlier verdict | residues, |
+| R249 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R250 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R251 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R252 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R253 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R254 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R256 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R257 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R261 | **open** — carried from an earlier verdict | OPEN by instruction, correctly listed. |
+| R262 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R264 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R266 | **open** — carried from an earlier verdict | still have no row; R348 territory, unmoved. |
+| R274 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R275 | **open** — §5 | OPEN, unblocked, and the report correctly does |
+| R276 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R277 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R281 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R288 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R289 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R290 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R291 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R292 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R293 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R300 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R302 | **open** — carried from an earlier verdict | accepted at verdict 37, not reopened. |
+| R303 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R308 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R315 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R320 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R321 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R322 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R323 | **carried** | closed in earlier verdicts, |
+| R329 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R330 | **open** — §5 | OPEN at 4a, correctly listed. |
+| R331 | **open** — §5 | OPEN at 4a, correctly listed. |
+| R332 | **open** — §5 | ANSWERED BY EVENTS, and I want it recorded. It was "nothing reads |
+| R347 | **open** — §5 | 's second |
+| R348 | **open** — §5 | 's second |
+| R349 | **open** — §5 | 's second |
+| R350 | **open** — §5 | 's second |
+| R354 | **open** — §5 | 's second |
+| R355 | **open** — §5 | 's second |
+| R356 | **open** — §5 | 's second |
+| R357 | **open** — §5 | 's second |
+| R362 | **open** — §5 | 's second |
+| R363 | **open** — §5 | 's second |
+| R364 | **open** — §5 | 's second |
+| R365 | **carried** | carried in |
+| R366 | **carried** | carried in |
+| R367 | **carried** | carried in |
+| R368 | **carried** | carried in |
+| R369 | **carried** | carried in |
+| R370 | **open** — §5 | OPEN at 4a, correctly listed. R373 bites |
+| R371 | **open** — §5 | OPEN at 4a, correctly listed. R373 bites |
+| R372 | **open** — §5 | OPEN at 4a, correctly listed. R373 bites |
+| R373 | **open** — §5 | OPEN at 4a, correctly listed. R373 bites |
+| R374 | **open** — §5 | OPEN at 4a, correctly listed. R373 bites |
+| R375 | **carried** | carried in |
+| R377 | **carried** | ). There is no commit to |
+| R382 | **open** — §5 | carried in |
+| R383 | **open** — §5 | ADVANCED, NOT CLOSED. See the CI block: the ten legs executed at |
+| R384 | **open** — §5 | carried in |
+| R385 | **carried** | and R389. Four are answered; R388 |
+| R386 | **carried** | and R389. Four are answered; R388 |
+| R387 | **carried** | and R389. Four are answered; R388 |
+| R388 | **answered** — §4 | and R389. Four are answered; R388 |
+| R389 | **carried** | . Four are answered; R388 |
+| R390 | **open** — §5 | OPEN at 4a, correctly listed in sec.6. R391 |
+| R391 | **open** — §5 | OPEN at 4a, correctly listed in sec.6. R391 |
+| R392 | **open** — §5 | OPEN at 4a, correctly listed in sec.6. R391 |
+| R393 | **open** — §5 | OPEN at 4a, correctly listed in sec.6. R391 |
+| R394 | **answered** — §3 | floatfea/tolerances.py:311-315, in 79c885d. code :312 "a diagonal stiffness resisting a rigid... |
+| R395 | **answered** — §3 | floatfea/tolerances.py:294 and tests/verification/rung1/test_rigid_body_modes.py:430. code... |
+| R396 | **answered** — §2 | docs/milestones/F2.md, section "G2.1 in the residual form", in fa96dcc;... |
+| R397 | **answered** — §1 | tests/verification/rung1/test_rigid_body_modes.py:243-256 zero_modes_by_gap;... |
+| R398 | **answered** — §1 | tests/verification/rung1/test_rigid_body_modes.py:414, :479, :504, :620. code :414 assert count... |
+| R399 | **open** — blocking, and not answered in this round | floatfea/tolerances.py:350-389; tests/verification/rung1/test_rigid_body_modes.py:549-568. code... |
+| R400 | **open** — §5 | The corpus reader in the new rung-1 file raises before its own meta-test can speak.... |
+| R401 | **open** — §5 | CR2's citation rule cannot see a cited test FILE. In tests/test_collected_set_golden.py, _CITED... |
+| R402 | **open** — §5 | Section 10's out block omits two commits, one of them the golden. git log --oneline... |
+
+## 9. What I am asking for
+
+**Commits since the forty-fifth verdict**, in order:
+
+```
+cmd  git log --oneline f19eef5..HEAD
+out  7a5445a CS0-CS3: the count is below a floor, and the gap says whether to b
+     2698e5c plan: G2.1's count stated precisely -- below a floor, validity by 
+     45ab8ca A published count that disagrees between machines is not published
+     1b87e03 The gap's floor is bracketed on both sides, and `--check` set the 
+     12223c2 R399: the retired entries say they are retired, and the orphan cou
+     c149c3e R388's second site: the branch says which of the three states it i
+     (this revision's own commit follows)
+```
+
+**Six blocking items answered.**
+
+- **R397, R398** — the count is below a threshold, the gap is the validity
+  condition on it and is asserted separately, and all four controls decide by
+  the shipped rule. R397's two frames both give six.
+- **R394, R395** — the counter's response and its edge are the shipped
+  function's, and "sixteen" is a figure name.
+- **R396, R399** — the subspace loss is retired with the ratio, both entries
+  say they are retired, and the orphaned counter is gone.
+- **R388** — the second site its condition named.
+
+**What is not claimed.** Step R has not run and the four reader literals are
+untouched. No Q8 value beyond those already written.
