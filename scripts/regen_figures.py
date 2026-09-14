@@ -134,7 +134,14 @@ def _figures() -> list[tuple[str, str]]:
     rows.append(("rigid_mode_corpus_frames", f"{len(RBC.ENTRIES)}"))
     rows.append(("rigid_mode_corpus_counts", ", ".join(str(c) for c in sorted(counts))))
     rows.append(("retired_ratio_over_ceiling_on_corpus", f"{ratio_over} of {len(RBC.ENTRIES)}"))
-    rows.append(("retired_loss_over_ceiling_on_corpus", f"{loss_over} of {len(RBC.ENTRIES)}"))
+    # THE LOSS'S COUNT IS NOT MACHINE-STABLE AND IS NOT PUBLISHED. It read
+    # `42 of 56` on the implementer's laptop and `41 of 56` on the canonical
+    # runner, because the subspace loss is computed from EIGENVECTORS and one
+    # frame sits on its retired ceiling. An exact row that disagrees between
+    # machines is staleness by Q8's rule, and it is not floor-class either --
+    # a count is not a measurement against a tolerance. It is left out, and
+    # the disagreement is itself one more reason the loss is not a gate.
+    _ = loss_over
 
     rows.append(
         (
