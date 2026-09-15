@@ -298,3 +298,107 @@ id=rb_subdiv24_unit_0p1mm section=circular_tube,D=0.6,t=0.012 subdiv=24 unit=100
 id=rb_brace_unit_1um section=circular_tube,D=0.05,t=0.0005 subdiv=1 unit=1000000.0 stretch=1.0 tip=4.4,1.1,2.8 residual=7.9904e-23 count=6 gap_orders=2.533 new_form=hold kind=hold ratio=1.1431e-03 loss=6.4968e-04 runs_in_suite=yes expect=breach
 id=rb_brace_mm_span_x1000 section=circular_tube,D=0.05,t=0.0005 subdiv=1 unit=1000 stretch=1000.0 tip=4.4,1.1,2.8 residual=4.0651e-20 count=6 gap_orders=2.497 new_form=hold kind=hold ratio=1.3727e-03 loss=1.5149e-03 runs_in_suite=yes expect=breach
 id=rb_heavy_unit_1um section=circular_tube,D=2.0,t=0.2 subdiv=1 unit=1000000.0 stretch=1.0 tip=4.4,1.1,2.8 residual=6.6155e-23 count=6 gap_orders=2.996 new_form=hold kind=hold ratio=1.3323e-03 loss=3.6658e-04 runs_in_suite=yes expect=breach
+
+# ===========================================================================
+# BLOCK ADDED AT THE FORTY-SEVENTH VERDICT (BE3). THIRTY-TWO ENTRIES, none of
+# them read by the implementer before this commit.
+#
+# WHAT THIS BLOCK IS A CORPUS OF: configurations for the rule CT0 ships --
+#
+#     residual   max_j ||K v_j|| / (max|K| * ||v_j||) <= RIGID_MODE_EXACTNESS
+#     no seventh log10(lambda_7(K_hat) / tau) >= RIGID_MODE_GAP,
+#                tau = RIGID_MODE_FLOOR * ||K_hat|| * eps
+#
+# -- and NOT for the count rule the block above it was written against. The
+# `count=` and `gap_orders=` fields above were measured under two rules that
+# are now deleted; `seventh_orders=` and `below_tau=` here are not comparable
+# with them.
+#
+# WHAT A PASSING SCAN MEANS, and it is narrower than the older block's:
+#
+#   * `residual=` is the shipped quantity and it is ASSERTED at every entry,
+#     decided or refused. Every value here is at or below 1.1410e-16 against a
+#     ceiling of 1e-15, on the same defect-free element as every other entry.
+#     A residual above the ceiling at any of these is an element finding.
+#   * `outcome=` is what the shipped bound answers: `decided` means the gate
+#     certifies there is no seventh zero mode, `refused` means it declines --
+#     UNDECIDABLE, which is a red and not a skip. A `refused` entry is NOT a
+#     defect and NOT a failure of the element; it is the domain boundary.
+#   * `below_tau=` is the number of eigenvalues of `K_hat` under `tau`. It is
+#     carried as the CONTROL on the bound rather than as a claim of the gate:
+#     the whole of CT0's argument is that `decided` implies this is six. THE
+#     THING TO WATCH FOR IS AN ENTRY WITH `outcome=decided` AND
+#     `below_tau` NOT 6. There is none in this block, none in the eighty-two
+#     entries above it, and none at 440 further (unit, stretch) points swept
+#     between them; the six-to-seven transition was solved on one parameter
+#     and it lands where the margin crosses ZERO, 1.3 orders under the bound.
+#     An entry of that shape appearing later is the gate being wrong, not the
+#     frame being awkward.
+#
+# `ratio=` and `loss=` are the two RETIRED quantities, carried so the contrast
+# stays measurable and so `expect=` keeps the meaning it has above: hold means
+# both retired ceilings hold, breach means at least one does not. Nothing
+# asserts against either.
+#
+# --- TIP GEOMETRY. The `tip` field exists in this format and NO entry in the
+#     eighty-two above it ever moved it: every one is 4.4,1.1,2.8. The shipped
+#     release control asserts that member is parallel to global x, so the one
+#     piece of geometry the gate depends on is the one the corpus never varied.
+#     ---------------------------------------------------------------------
+id=rb_tip_skew_xyz section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=4.4,1.6,3.4 residual=9.6085e-17 seventh_orders=12.367 below_tau=6 outcome=decided ratio=3.3684e-14 loss=4.8070e-15 runs_in_suite=no expect=hold
+id=rb_tip_skew_short section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.3,1.4,3.6 residual=3.5210e-17 seventh_orders=12.568 below_tau=6 outcome=decided ratio=1.0390e-14 loss=2.2164e-15 runs_in_suite=no expect=hold
+id=rb_tip_nearly_on_node section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=1.9001,1.1,2.8 residual=1.8763e-17 seventh_orders=8.846 below_tau=6 outcome=decided ratio=2.1496e-12 loss=8.9381e-12 runs_in_suite=no expect=breach
+id=rb_tip_far_out section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=41.9,1.1,2.8 residual=4.6578e-17 seventh_orders=10.794 below_tau=6 outcome=decided ratio=2.8142e-13 loss=4.4489e-13 runs_in_suite=no expect=breach
+id=rb_tip_negative section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=-3.1,-2.2,-1.4 residual=9.3844e-17 seventh_orders=11.551 below_tau=6 outcome=decided ratio=1.5885e-13 loss=1.1629e-13 runs_in_suite=no expect=breach
+id=rb_tip_skew_mm section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1000 stretch=1 tip=4.4,1.6,3.4 residual=5.6573e-20 seventh_orders=7.314 below_tau=6 outcome=decided ratio=2.2383e-09 loss=4.4094e-10 runs_in_suite=no expect=breach
+id=rb_tip_far_out_mm_x100 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1000 stretch=100 tip=41.9,1.1,2.8 residual=5.5422e-22 seventh_orders=1.691 below_tau=6 outcome=decided ratio=7.1628e-04 loss=2.3065e-04 runs_in_suite=no expect=breach
+id=rb_tip_nearly_on_node_span_x1000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1000 tip=1.9001,1.1,2.8 residual=8.0309e-17 seventh_orders=8.831 below_tau=6 outcome=decided ratio=5.3557e-11 loss=6.4462e-12 runs_in_suite=no expect=breach
+
+# --- SECTION EXTREMES. Near-solid, a wall one hundredth of a millimetre, and
+#     sections four and thirteen times the shipped diameter -- members stubby
+#     enough that shear dominates, and members that are essentially wire.
+#     ---------------------------------------------------------------------
+id=rb_solid_D0p6_t0p2999 section=circular_tube,D=0.6,t=0.2999 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 residual=7.3925e-17 seventh_orders=12.110 below_tau=6 outcome=decided ratio=1.1283e-14 loss=1.1116e-14 runs_in_suite=no expect=hold
+id=rb_hairwall_D0p6_t1e-5 section=circular_tube,D=0.6,t=1e-05 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 residual=9.4852e-17 seventh_orders=12.397 below_tau=6 outcome=decided ratio=3.7240e-14 loss=6.4892e-15 runs_in_suite=no expect=hold
+id=rb_hairwall_D0p6_t1e-6 section=circular_tube,D=0.6,t=1e-06 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 residual=7.2611e-17 seventh_orders=12.397 below_tau=6 outcome=decided ratio=4.3173e-14 loss=8.1478e-15 runs_in_suite=no expect=hold
+id=rb_fat_D4p0_t0p4 section=circular_tube,D=4.0,t=0.4 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 residual=5.5947e-17 seventh_orders=13.070 below_tau=6 outcome=decided ratio=5.0118e-15 loss=2.3943e-15 runs_in_suite=no expect=hold
+id=rb_fat_D8p0_t0p8 section=circular_tube,D=8.0,t=0.8 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 residual=4.4690e-17 seventh_orders=12.610 below_tau=6 outcome=decided ratio=1.1458e-14 loss=3.3281e-15 runs_in_suite=no expect=hold
+id=rb_fat_D8p0_span_x0p01 section=circular_tube,D=8.0,t=0.8 subdiv=1 unit=1 stretch=0.01 tip=4.4,1.1,2.8 residual=1.1039e-16 seventh_orders=12.561 below_tau=6 outcome=decided ratio=1.9785e-14 loss=4.3163e-15 runs_in_suite=no expect=hold
+id=rb_hairwall_mm section=circular_tube,D=0.6,t=1e-05 subdiv=1 unit=1000 stretch=1 tip=4.4,1.1,2.8 residual=6.6640e-20 seventh_orders=7.313 below_tau=6 outcome=decided ratio=8.3483e-10 loss=5.9018e-10 runs_in_suite=no expect=breach
+id=rb_solid_span_x100000 section=circular_tube,D=0.6,t=0.2999 subdiv=1 unit=1 stretch=100000 tip=4.4,1.1,2.8 residual=8.7590e-17 seventh_orders=2.298 below_tau=6 outcome=decided ratio=1.4905e-04 loss=8.1274e-05 runs_in_suite=no expect=breach
+
+# --- SHRINKING THE FRAME. Every composed entry above stretches it; `stretch`
+#     below one has never been posed.
+#     ---------------------------------------------------------------------
+id=rb_span_x0p001 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=0.001 tip=4.4,1.1,2.8 residual=6.7496e-17 seventh_orders=12.721 below_tau=6 outcome=decided ratio=9.9417e-15 loss=2.1963e-15 runs_in_suite=no expect=hold
+id=rb_span_x1e-6 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1e-06 tip=4.4,1.1,2.8 residual=6.8722e-17 seventh_orders=12.721 below_tau=6 outcome=decided ratio=5.0586e-15 loss=3.4525e-15 runs_in_suite=no expect=hold
+id=rb_span_x1e-6_km section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=0.001 stretch=1e-06 tip=4.4,1.1,2.8 residual=4.9473e-17 seventh_orders=6.721 below_tau=6 outcome=decided ratio=2.1223e-08 loss=1.6877e-09 runs_in_suite=no expect=breach
+
+# --- THE DECISION BOUNDARY, LADDERED ON ONE PARAMETER at metre units, so the
+#     margin crosses RIGID_MODE_GAP with nothing else moving. Solved finely
+#     between 1.0e6 and 2.2e6: the margin falls monotonically through the
+#     bound at ~1.15e6 and reaches ZERO at ~1.95e6, which is exactly where
+#     below_tau leaves six. The gate's threshold sits 1.3 orders on the safe
+#     side of the transition it exists to catch.
+#     ---------------------------------------------------------------------
+id=rb_boundary_span_2p0e6 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=2.0e6 tip=4.4,1.1,2.8 residual=1.0205e-16 seventh_orders=-0.024 below_tau=8 outcome=refused ratio=8.2415e-02 loss=2.0042e-02 runs_in_suite=no expect=breach
+id=rb_boundary_span_3p0e6 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=3.0e6 tip=4.4,1.1,2.8 residual=1.1410e-16 seventh_orders=-0.375 below_tau=8 outcome=refused ratio=1.1417e-01 loss=5.8273e-02 runs_in_suite=no expect=breach
+id=rb_boundary_span_4p0e6 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=4.0e6 tip=4.4,1.1,2.8 residual=9.0358e-17 seventh_orders=-0.616 below_tau=8 outcome=refused ratio=3.4334e-01 loss=2.9856e-01 runs_in_suite=no expect=breach
+id=rb_boundary_span_5p0e6 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=5.0e6 tip=4.4,1.1,2.8 residual=7.4212e-17 seventh_orders=-0.819 below_tau=8 outcome=refused ratio=3.1955e-01 loss=2.9306e-01 runs_in_suite=no expect=breach
+id=rb_boundary_span_6p0e6 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=6.0e6 tip=4.4,1.1,2.8 residual=7.9094e-17 seventh_orders=-0.977 below_tau=8 outcome=refused ratio=7.3776e-01 loss=6.3493e-01 runs_in_suite=no expect=breach
+id=rb_boundary_span_8p0e6 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=8.0e6 tip=4.4,1.1,2.8 residual=8.6309e-17 seventh_orders=-1.226 below_tau=8 outcome=refused ratio=7.7831e-01 loss=6.1116e-01 runs_in_suite=no expect=breach
+
+# --- SUBDIVISION past the file's sixteen.
+#     ---------------------------------------------------------------------
+id=rb_subdiv32 section=circular_tube,D=0.6,t=0.012 subdiv=32 unit=1 stretch=1 tip=4.4,1.1,2.8 residual=2.8042e-17 seventh_orders=9.521 below_tau=6 outcome=decided ratio=2.0320e-12 loss=6.2287e-13 runs_in_suite=no expect=breach
+id=rb_subdiv48 section=circular_tube,D=0.6,t=0.012 subdiv=48 unit=1 stretch=1 tip=4.4,1.1,2.8 residual=6.1523e-17 seventh_orders=9.172 below_tau=6 outcome=decided ratio=6.6350e-12 loss=2.1810e-12 runs_in_suite=no expect=breach
+id=rb_subdiv32_mm section=circular_tube,D=0.6,t=0.012 subdiv=32 unit=1000 stretch=1 tip=4.4,1.1,2.8 residual=4.2835e-20 seventh_orders=5.099 below_tau=6 outcome=decided ratio=6.9599e-08 loss=3.2535e-08 runs_in_suite=no expect=breach
+id=rb_subdiv48_span_x10000 section=circular_tube,D=0.6,t=0.012 subdiv=48 unit=1 stretch=10000 tip=4.4,1.1,2.8 residual=6.6194e-17 seventh_orders=1.467 below_tau=6 outcome=decided ratio=2.0608e-04 loss=5.3217e-05 runs_in_suite=no expect=breach
+
+# --- UNIT AND SPAN PULLING IN OPPOSITE DIRECTIONS. Every composed entry above
+#     pushes both the same way, which is the easier case for a homogenised
+#     matrix.
+#     ---------------------------------------------------------------------
+id=rb_km_span_x1e6 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=0.001 stretch=1e6 tip=4.4,1.1,2.8 residual=8.7983e-17 seventh_orders=0.581 below_tau=6 outcome=refused ratio=3.5747e-02 loss=6.5820e-03 runs_in_suite=no expect=breach
+id=rb_um_span_x0p001 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e6 stretch=0.001 tip=4.4,1.1,2.8 residual=3.7573e-20 seventh_orders=2.845 below_tau=6 outcome=decided ratio=6.7578e-05 loss=1.5193e-05 runs_in_suite=no expect=breach
+id=rb_km_unit_span_x1e9 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=0.001 stretch=1e9 tip=4.4,1.1,2.8 residual=7.2615e-17 seventh_orders=-1.465 below_tau=8 outcome=refused ratio=9.1405e-01 loss=7.9177e-01 runs_in_suite=no expect=breach
