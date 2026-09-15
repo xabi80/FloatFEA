@@ -93,28 +93,29 @@ def _figures() -> list[tuple[str, str]]:
             f"{RB.residual_exactness(k_rb, model):.4e}",
         )
     )
-    _count, _gap = RB.zero_modes_below_floor(k_rb)
     rows.append(
         (
-            _floor("rigid_mode_gap_orders", "above", "RIGID_MODE_GAP"),
-            f"{_gap:.3f}",
+            _floor("rigid_mode_seventh_orders", "above", "RIGID_MODE_GAP"),
+            f"{RB.seventh_over_threshold(k_rb):.3f}",
         )
     )
-    rows.append(("rigid_mode_count", f"{_count}"))
 
     # The corpus, which is the evidence Q7 rests on: the same defect-free
     # element at each of the reviewer's frames.
     import test_rigid_body_corpus as RBC
 
-    worst_residual, smallest_gap, counts = 0.0, float("inf"), set()
+    worst_residual, smallest_decided = 0.0, float("inf")
+    refused = 0
     ratio_over = loss_over = 0
     for entry in RBC.ENTRIES:
         m_c, els_c = RBC._build(entry)
         k_c = RB.assemble_dense(m_c, els_c)
         worst_residual = max(worst_residual, RB.residual_exactness(k_c, m_c))
-        n_c, g_c = RB.zero_modes_below_floor(k_c)
-        smallest_gap = min(smallest_gap, g_c)
-        counts.add(n_c)
+        margin_c = RB.seventh_over_threshold(k_c)
+        if margin_c >= RB.RIGID_MODE_GAP:
+            smallest_decided = min(smallest_decided, margin_c)
+        else:
+            refused += 1
         if RB.mode_ratio(k_c) > RB.RIGID_BODY_MODE_RATIO:
             ratio_over += 1
         if RB.subspace_loss(k_c, m_c) > RB.RIGID_BODY_SUBSPACE_LOSS:
@@ -127,12 +128,17 @@ def _figures() -> list[tuple[str, str]]:
     )
     rows.append(
         (
-            _floor("rigid_mode_gap_orders_smallest_over_corpus", "above", "RIGID_MODE_GAP"),
-            f"{smallest_gap:.3f}",
+            # NOT FLOOR-CLASS, deliberately. This figure IS the domain
+            # boundary: the smallest margin the gate accepts sits just above
+            # the floor by construction, so asking it to clear the floor by
+            # the platform spread would be asking the boundary to be far from
+            # itself. What it reports is where the domain ends.
+            "rigid_mode_seventh_orders_smallest_decided",
+            f"{smallest_decided:.3f}",
         )
     )
     rows.append(("rigid_mode_corpus_frames", f"{len(RBC.ENTRIES)}"))
-    rows.append(("rigid_mode_corpus_counts", ", ".join(str(c) for c in sorted(counts))))
+    rows.append(("rigid_mode_corpus_refused", f"{refused} of {len(RBC.ENTRIES)}"))
     rows.append(("retired_ratio_over_ceiling_on_corpus", f"{ratio_over} of {len(RBC.ENTRIES)}"))
     # THE LOSS'S COUNT IS NOT MACHINE-STABLE AND IS NOT PUBLISHED. It read
     # `42 of 56` on the implementer's laptop and `41 of 56` on the canonical
@@ -621,7 +627,15 @@ def compare(committed: str, local: str) -> tuple[int, list[str]]:
             out.append(f"  {n:<30}  {have[n]:<16} {mine[n]:<16} (not a positive number)")
             bad = 1
             continue
-        spread = max(a, b) / min(a, b)
+        # A LOG-VALUED FIGURE IS COMPARED AS A RATIO (CT3, R404). A figure
+        # named `*_orders` carries `log10` of a ratio, and
+        # `FIGURE_FLOOR_CLASS_SPREAD` is declared on ratios -- its own entry
+        # says the value "is invariant under the figure's units", and `log10`
+        # is not a unit change. Dividing two logarithms compared a quantity
+        # the spread was never about, and it refused a floor with more room
+        # than the one it forced.
+        as_ratio = n.endswith("_orders")
+        spread = 10 ** abs(a - b) if as_ratio else max(a, b) / min(a, b)
         note = ""
         if spread > FIGURE_FLOOR_CLASS_SPREAD:
             note = f"  <- OVER {FIGURE_FLOOR_CLASS_SPREAD}x"
@@ -631,7 +645,10 @@ def compare(committed: str, local: str) -> tuple[int, list[str]]:
         if kind == "derived":
             continue
         ceil = _ceiling(n)
-        margin = ceil / b if kind == "below" else b / ceil
+        if as_ratio:
+            margin = 10 ** (ceil - b) if kind == "below" else 10 ** (b - ceil)
+        else:
+            margin = ceil / b if kind == "below" else b / ceil
         if margin < 1.0:
             out.append(
                 f"    THE DECISION MOVED: {n} is {b:.6g} and must be "
