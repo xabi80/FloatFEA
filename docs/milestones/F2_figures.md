@@ -17,13 +17,12 @@ this file is not what a fresh run produces.
 | `rigid_body_mode_ratio` | 1.1986e-14 |
 | `rigid_body_subspace_loss` | 5.5095e-15 |
 | `rigid_mode_residual` | 7.8658e-17 |
-| `rigid_mode_gap_orders` | 13.655 |
-| `rigid_mode_count` | 6 |
-| `rigid_mode_residual_worst_over_corpus` | 9.7420e-17 |
-| `rigid_mode_gap_orders_smallest_over_corpus` | 2.071 |
-| `rigid_mode_corpus_frames` | 56 |
-| `rigid_mode_corpus_counts` | 6 |
-| `retired_ratio_over_ceiling_on_corpus` | 34 of 56 |
+| `rigid_mode_seventh_orders` | 12.381 |
+| `rigid_mode_residual_worst_over_corpus` | 1.0589e-16 |
+| `rigid_mode_seventh_orders_smallest_decided` | 1.312 |
+| `rigid_mode_corpus_frames` | 82 |
+| `rigid_mode_corpus_refused` | 21 of 82 |
+| `retired_ratio_over_ceiling_on_corpus` | 60 of 82 |
 | `rigid_body_counter_ratio` | 3.0612e-11 |
 | `rigid_body_counter_loss` | 7.4709e-12 |
 | `corpus_entries` | 203 |
