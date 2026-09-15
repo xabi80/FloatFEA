@@ -184,7 +184,7 @@ def test_G2_1_holds_at_every_frame_in_the_corpus(entry: dict[str, str]) -> None:
     # entry is the RESIDUAL, above, which holds at every frame in the corpus
     # including every refused one: the element is under test everywhere. The
     # spectral question is the one the gate declines, and which frames it
-    # declines is asserted in `test_the_gate_REFUSES_rather_than_guesses`,
+    # declines is asserted in `test_the_gate_REFUSES_rather_than_guesses_and_says_how_often`,
     # from the same measurement.
     margin = seventh_over_threshold(k)
     assert np.isfinite(margin), (

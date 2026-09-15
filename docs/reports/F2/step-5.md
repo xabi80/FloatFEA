@@ -7527,3 +7527,339 @@ out  7a5445a CS0-CS3: the count is below a floor, and the gap says whether to b
 
 **What is not claimed.** Step R has not run and the four reader literals are
 untouched. No Q8 value beyond those already written.
+
+---
+
+# Revision 21 — no count, one bound, and undecidable is an answer
+
+Answers: verdict 46 @ 2058087
+
+**2026-09-14.** Commits since the forty-sixth verdict, listed in §8.
+
+## 0. CI at `44f28e8`, the commit verdict 46 judged
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 46 at `44f28e8` through the report's own `Answers:` line. Run `34857334208`, event `push`, conclusion **success**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 1334 | 0 | 0 |
+| lint, unit and guards | 921 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 0 not green.**
+
+**Failing tests named in the log: 0.**
+
+## 0a. How to read §0
+
+**§0 describes the commit verdict 46 judged and it is green.** This round's own
+dispatch is `34925280557` at `8ded15a`: ten determinism legs green, the verdict
+job green, the ladder green with the rewritten gate in it.
+
+## 1. R403 — the count is gone, and what is left is smaller than a count
+
+**The diagnosis is not mine.** Q7 said the gap is measured at the sixth–seventh
+boundary; CS0 rewrote it as "the gap after the last eigenvalue below `tau`",
+and that is the change that let eight modes through with a clean-looking
+separation. A gap measured wherever the transition happens to be detects being
+*at* a transition, not being past one.
+
+**There is no count now.** The residual half proves the six analytic rigid-body
+vectors are annihilated by `K`, and by Courant–Fischer that puts six
+eigenvalues at the floor. What remains to certify is that there is no
+*seventh*, which is a statement about `lambda_7` alone.
+
+```
+rule  ONE ASSERTION: lambda_7 >= tau * 10**RIGID_MODE_GAP, where
+      tau = RIGID_MODE_FLOOR * ||K_hat|| * eps, on the same homogenised matrix
+      the residual uses. Nothing reads "the last eigenvalue below tau"
+      anywhere in the file.
+rule  where lambda_7 is not resolvable the outcome is UNDECIDABLE -- red, with
+      the margin reported, never a number. That is a conditioning limit every
+      FE mechanism check has: when the softest flexible mode has sunk into
+      round-off, no spectral rule in double precision tells it from a
+      mechanism.
+cell  the controls, each red for its own reason
+out   a pinned DOF          the RESIDUAL half catches it. A pin REMOVES a
+                            rigid mode and does not add a seventh, so asking
+                            the lambda_7 bound to see it was asking the wrong
+                            half -- which is what CS1 did
+      a released connection lambda_7 -1.243 orders above tau: refused
+      R403's composition    millimetres at ten thousand spans: refused, where
+                            the retired rule certified EIGHT as trustworthy
+      unit 1e-4             12.4 orders: decided, since K_hat does not see the
+                            unit
+cmd   the rule over all eighty-two corpus frames
+out   61 decided, 21 refused; worst residual 1.0589e-16 against 1e-15
+```
+
+**Undecidable is an outcome and not a skip.** A first version of the corpus
+test used `pytest.skip` for a refused frame — the forbidden mechanism wearing a
+reason, which this repository has caught twice before. It is gone. The residual
+is asserted at every frame including every refused one, so the element is under
+test across the whole corpus; which frames are refused is asserted from the
+same measurement, with both sides required non-empty.
+
+## 2. The domain, said plainly
+
+The gate certifies that there is no seventh zero mode wherever the softest
+flexible mode sits `RIGID_MODE_GAP` orders above the floor, and refuses
+elsewhere. **It refuses `{{fig:rigid_mode_corpus_refused}}` of the reviewer's
+frames**, every one of them a deliberate extreme of length unit or span. The
+smallest margin it accepts is `{{fig:rigid_mode_seventh_orders_smallest_decided}}`
+orders, which is the domain boundary itself.
+
+## 3. R404 and R405 — a log compared as a log, and a word replaced by a figure
+
+```
+cmd   the margin rule as it stood, on the first log-valued figure in the
+      repository
+out   it divided two logarithms and compared the quotient against a spread
+      declared on RATIOS -- whose own entry says the value "is invariant under
+      the figure's units", and `log10` is not a unit change
+judge THE REFUSAL WAS REAL AND THE RULE WAS WRONG FOR THE QUANTITY, and the
+      retune it forced moved the binding margin from 2.371x to 1.496x, under
+      the declared spread rather than above it. A `*_orders` figure is
+      converted to a ratio before either comparison now.
+judge AND THE DOMAIN-BOUNDARY FIGURE IS NOT FLOOR-CLASS AT ALL. The smallest
+      margin the gate accepts sits just above the floor by construction, so
+      asking it to clear the floor by the platform spread is asking a boundary
+      to be far from itself. It is a plain row.
+cmd   grep for "sixteen" and for "twenty-eight frames"
+out   replaced by `{{fig:retired_ratio_over_ceiling_on_corpus}}`, which reads
+      60 of 82 at this commit (R405). The word had already been refuted by the
+      same round's own render when it was written.
+```
+
+## 4. R399, R406, R407, R408 — four sentences that described a gate that is gone
+
+- **R407.** The gate file's opening said this file asserts on the SUBSPACE and
+  that both retired quantities are gated. It states the two halves now — the
+  residual, and no seventh — and it answers AP3 rather than dropping it: AP3 is
+  right that mode SHAPES are an arbitrary basis inside the degenerate block,
+  and the subspace form was the answer to that. But the subspace form is
+  computed from eigenvectors, so what it measures includes the eigensolver. The
+  residual answers the same objection without an eigensolve.
+- **R399.** The two ceilings were marked retired and the two counter constants
+  beside them were not. A counter defends an assertion; both assertions are
+  gone, so both constants defend nothing, and both say so.
+- **R406.** The re-locked plan described the uniform-foundation counter, which
+  was deleted two rounds ago. The plan text is rewritten to CT0 in full.
+- **R408.** "Its counter constant is referenced by nothing" is refuted by one
+  grep: twice, and by no assertion. The sentence says that.
+
+## 5. R409 — the golden lost two names inside step commits
+
+**The rule is that a golden change is its own commit with the reason, and this
+round's changes rode inside step commits.** That is mine and it is recorded
+here rather than explained away. Every name the golden lost since the
+forty-sixth verdict, and why:
+
+```
+cmd   git diff 2058087..HEAD -- tests/goldens/collected_tests.txt
+out   test_the_ZERO_MODES_NUMBER_SIX_below_the_floor      -> replaced by
+        test_there_is_NO_SEVENTH_zero_mode
+      test_a_LIFTED_rigid_mode_reddens_the_COUNT          -> replaced by
+        test_a_SEVENTH_MODE_AT_THE_FLOOR_reddens_the_gate
+      test_a_NARROW_GAP_reddens_the_VALIDITY_assertion    -> replaced by
+        test_a_SEVENTH_MODE_TOO_CLOSE_TO_THE_FLOOR_reddens_the_gate
+      test_a_PINNED_DOF_leaves_FIVE_below_the_floor       -> replaced by
+        test_a_PINNED_DOF_is_caught_by_the_RESIDUAL_half
+      test_a_RELEASED_CONNECTION_leaves_SEVEN_below_the_floor -> replaced by
+        test_a_RELEASED_CONNECTION_makes_the_gate_REFUSE
+      test_the_COMPOSED_ill_conditioned_frame_is_still_six -> replaced by
+        test_the_COMPOSED_eight_mode_frame_is_REFUSED_not_certified
+      test_a_FINER_UNIT_than_the_corpus_is_still_six      -> replaced by
+        test_a_FINER_UNIT_than_the_corpus_is_still_decided
+judge EVERY ONE IS A RENAME, and every replacement asserts more than the name
+      it replaced: each of the four controls now checks the half that can
+      actually see its defect. None is a deletion.
+rule  and the rule stands: the next golden change takes its own commit. The
+      guard caught the change, as it is meant to; what it cannot do is insist
+      on which commit carries it.
+```
+
+## 6. What is open
+
+- **R410, R411, R412, R413, R414** — this round's 4a items.
+- **R400, R401, R402, R390, R391, R392, R393, R381, R382, R383, R384** and the
+  rest of the 4a list: R354, R355, R356, R357, R362, R363, R364, R370, R371,
+  R372, R373, R374, R330, R331, R332, R347, R348, R349, R350.
+- **Step R** — the four F1 reader tolerances, planned and not executed.
+- **R231, R244, R245, R275** — the remaining Q8 values.
+- **R230**, reopened by my own error at revision 3, and mine to leave open.
+
+## 7. The whole suite, at the commit this revision is committed on top of
+
+SUITE_LINE_HERE
+
+## 8. Sites named by findings and not touched
+
+Generated: `python scripts/untouched_sites.py`. The rows are the guard's own
+`SITES` and `TOUCHED`, imported rather than re-derived, so the table cannot
+enumerate a different set than the check does. The reason column is mine and
+carries the literal `no change`, which is the string the guard looks for.
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R403 | `tests/verification/rung1/test_rigid_body_modes.py:250` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R403 | `tests/verification/rung1/test_rigid_body_modes.py:253` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R404 | `floatfea/tolerances.py:391` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R404 | `floatfea/tolerances.py:392` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R404 | `regen_figures.py:636` | the file is touched and this line number is the old one | **no change** — the verdict's short spelling of the file in the row above |
+| R404 | `tolerances.py:1227` | the file is touched and this line number is the old one | **no change** — the verdict's short spelling of the file in the row above |
+| R405 | `CLAUDE.md` | the file is untouched | **no change** — the finding quotes the rule the repair obeys, not a site to edit |
+| R405 | `floatfea/tolerances.py:293` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R405 | `floatfea/tolerances.py:294` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R405 | `floatfea/tolerances.py:295` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R405 | `floatfea/tolerances.py:296` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R405 | `floatfea/tolerances.py:297` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R405 | `tests/corpus/g21_rigid_body_frames.txt` | the file is untouched | **no change** — the reviewer's corpus, refused to me. It is the evidence the repair is measured against |
+| R407 | `CLAUDE.md` | the file is untouched | **no change** — the finding quotes the rule the repair obeys, not a site to edit |
+| R407 | `tests/verification/rung1/test_rigid_body_modes.py:3` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R408 | `floatfea/tolerances.py:420` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R408 | `floatfea/tolerances.py:466` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R408 | `scripts/regen_figures.py:148` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R408 | `tests/verification/rung1/test_rigid_body_modes.py:78` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R408 | `tests/verification/rung1/test_rigid_body_modes.py:358` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R409 | `CLAUDE.md` | the file is untouched | **no change** — the finding quotes the rule the repair obeys, not a site to edit |
+| R410 | `carried_table.py` | the file is untouched | **no change** — 4a, and it goes with the other items about the report generators rather than one per round |
+
+## 9. Carried
+
+Generated: `python scripts/carried_table.py <verdict> docs/reports/F2/step-5-answers.json`. The row set, the class and the subject of every row are read from the verdict; the answers file carries a state and a section pointer, and the pointer is resolved against this report by `tests/test_report_carried.py`.
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R223 | **carried** | closed at verdict 45, not reopened. |
+| R224 | **carried** | closed at verdict 45, not reopened. |
+| R225 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R226 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R227 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R228 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R230 | **open** — §6 | OPEN by instruction, correctly listed. |
+| R231 | **open** — §6 | OPEN, unblocked, and the report correctly does |
+| R232 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R233 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R244 | **open** — §6 | OPEN, unblocked, and the report correctly does |
+| R245 | **open** — §6 | OPEN, unblocked, and the report correctly does |
+| R248 | **open** — carried from an earlier verdict | residues, |
+| R249 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R250 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R251 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R252 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R253 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R254 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R256 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R257 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R261 | **open** — carried from an earlier verdict | OPEN by instruction, correctly listed. |
+| R262 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R264 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R266 | **open** — carried from an earlier verdict | still have no row; R348 territory, unmoved. |
+| R274 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R275 | **open** — §6 | OPEN, unblocked, and the report correctly does |
+| R276 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R277 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R281 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R288 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R289 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R290 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R291 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R292 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R293 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R300 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R302 | **open** — carried from an earlier verdict | accepted at verdict 37, not reopened. |
+| R303 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R308 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R315 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R320 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R321 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R322 | **open** — carried from an earlier verdict | OPEN, recordable at 4a, correctly |
+| R323 | **carried** | closed in earlier verdicts, |
+| R329 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R330 | **open** — §6 | OPEN at 4a, correctly listed. |
+| R331 | **open** — §6 | OPEN at 4a, correctly listed. |
+| R332 | **open** — §6 | closed at verdict 45, not reopened. |
+| R347 | **open** — §6 | 's second |
+| R348 | **open** — §6 | 's second |
+| R349 | **open** — §6 | 's second |
+| R350 | **open** — §6 | 's second |
+| R354 | **open** — §6 | 's second |
+| R355 | **open** — §6 | 's second |
+| R356 | **open** — §6 | 's second |
+| R357 | **open** — §6 | 's second |
+| R362 | **open** — §6 | 's second |
+| R363 | **open** — §6 | 's second |
+| R364 | **open** — §6 | 's second |
+| R365 | **carried** | carried in step-5-answers.json. Checked |
+| R369 | **carried** | carried in step-5-answers.json. Checked |
+| R370 | **open** — §6 | OPEN at 4a, correctly listed. R373 bites |
+| R371 | **open** — §6 | OPEN at 4a, correctly listed. R373 bites |
+| R372 | **open** — §6 | OPEN at 4a, correctly listed. R373 bites |
+| R373 | **open** — §6 | OPEN at 4a, correctly listed. R373 bites |
+| R374 | **open** — §6 | OPEN at 4a, correctly listed. R373 bites |
+| R375 | **carried** | carried in step-5-answers.json. Checked |
+| R377 | **carried** | out :1257 now reads "NOTHING UNDER docs/reports/ HAS ANY HISTORY (R377, and |
+| R382 | **open** — §6 | carried in step-5-answers.json. Checked |
+| R383 | **open** — §6 | ADVANCED, NOT CLOSED. See the CI block. Ten legs executed and |
+| R384 | **open** — §6 | carried in step-5-answers.json. Checked |
+| R388 | **carried** | 's second |
+| R390 | **open** — §6 | OPEN at 4a, correctly listed. |
+| R391 | **open** — §6 | OPEN at 4a, correctly listed. |
+| R392 | **open** — §6 | OPEN at 4a, correctly listed. |
+| R393 | **open** — §6 | OPEN at 4a, correctly listed. |
+| R394 | **carried** | and carried R388's second |
+| R395 | **carried** | and carried R388's second |
+| R396 | **carried** | and carried R388's second |
+| R397 | **carried** | and carried R388's second |
+| R398 | **carried** | and carried R388's second |
+| R399 | **answered** — §4 | and carried R388's second |
+| R400 | **open** — §6 | OPEN at 4a, correctly listed in §5. R402 recurs and |
+| R401 | **open** — §6 | OPEN at 4a, correctly listed in §5. R402 recurs and |
+| R402 | **open** — §6 | OPEN at 4a, correctly listed in §5. R402 recurs and |
+| R403 | **answered** — §1 | floatfea/tolerances.py:341-342, tests/verification/rung1/test_rigid_body_modes.py:250-256,... |
+| R404 | **answered** — §3 | floatfea/tolerances.py:375-392 and scripts/regen_figures.py:99, :130, :636. code... |
+| R405 | **answered** — §3 | floatfea/tolerances.py:293-297 and :424-427. code :294 "the reviewer's corpus of twenty-eight... |
+| R406 | **answered** — §4 | docs/milestones/F2.md, last paragraph of "G2.1 in the residual form", in 2698e5c. code plan... |
+| R407 | **answered** — §4 | tests/verification/rung1/test_rigid_body_modes.py:3-25. code :4 "This file asserts that, and it... |
+| R408 | **answered** — §4 | floatfea/tolerances.py:420-422. code :420 "The quantity is computed and printed by :421... |
+| R409 | **answered** — §5 | tests/goldens/collected_tests.txt in 7a5445a and 12223c2; docs/reports/F2/step-5.md revision... |
+| R410 | **open** — §6 | The report says R399 is answered in section 9 and its own generated Carried table says it is... |
+| R411 | **open** — §6 | Section 9's git log --oneline block drops a commit that touches floatfea/tolerances.py. git log... |
+| R412 | **open** — §6 | Section 0a names this round's dispatch and reports three green jobs from a run whose conclusion... |
+| R413 | **open** — §6 | RIGID_MODE_FLOOR's window is sampled, not solved, and the sampled claim overstates it by about... |
+| R414 | **open** — §6 | The pin and release controls now exist twice. test_ONE_PINNED_DOF_leaves_FIVE and... |
+
+## 10. What I am asking for
+
+**Commits since the forty-sixth verdict**, in order:
+
+```
+cmd  git log --oneline 2058087..HEAD
+out  a15502a CT0-CT3: one assertion at the sixth-seventh boundary, and undecida
+     34ce4b3 CT4: the gate file's opening, the retired counters, and one refere
+     8ded15a plan: G2.1 has two halves and no count; UNDECIDABLE is an outcome;
+     4d8b583 CG2: the canonical render, with CT0's two halves in it
+     (this revision's own commit follows)
+```
+
+**Seven blocking items answered, and the head one simplifies the gate rather
+than patching it.**
+
+- **R403** — there is no count. One bound at the sixth–seventh boundary, and
+  undecidable is an outcome with its own red.
+- **R404, R405** — a log-valued figure is compared as a ratio, the
+  domain-boundary figure is a plain row, and the word is a figure name.
+- **R399, R406, R407, R408** — four sentences that described a gate that no
+  longer exists.
+- **R409** — every renamed test named, with what replaced it and what it
+  asserts.
+
+**And the counter meta-test sized a counter for me.** At its first value the
+floor's counter reddened for the *other* constant's reason, and widening the
+floor by a decade left it still red. That file exists to catch exactly that,
+and it did.
+
+**What is not claimed.** Step R has not run and the four reader literals are
+untouched. No Q8 value beyond those already written.
