@@ -1,28 +1,31 @@
 """V1.1 — rigid-body modes, gate G2.1 (D2 step 5).
 
 An unconstrained assembly has exactly **six** zero-energy modes: three
-translations and three rotations. This file asserts that, and it asserts it on
-the SUBSPACE rather than on the mode shapes, per the lock's AP3.
+translations and three rotations. This file asserts that in TWO HALVES, and
+neither of them reads an eigenvector (CT0).
 
-WHY THE SUBSPACE AND NOT THE MODES. Within the six-fold degenerate zero
-eigenvalue the eigenvectors are an arbitrary basis of the rigid-body space --
-non-unique *in principle*, not merely non-reproducible. Any orthogonal mixture of
-the six is an equally valid answer, so a test asserting particular shapes asserts
-a property the mathematics does not confer, and would pass only because the
-solver happened to produce that basis. What is invariant under every basis choice
-inside the degenerate block is that the six ANALYTIC rigid-body vectors lie in
-the computed span, and that is what is asserted.
+1. THE RESIDUAL. `max_j ||K_hat v_j|| / ||v_j||` over the six ANALYTIC
+   rigid-body vectors, on `K_hat = K / max|K|`, against `RIGID_MODE_EXACTNESS`.
+   The six exact rigid motions are annihilated by `K`. Dimensionless, and it
+   uses no eigensolve at all.
+2. THERE IS NO SEVENTH. `lambda_7 >= tau * 10**RIGID_MODE_GAP`, where
+   `tau = RIGID_MODE_FLOOR * ||K_hat|| * eps`. The first half puts six
+   eigenvalues at the floor by Courant-Fischer; this certifies that nothing
+   else is down there. Where `lambda_7` is not resolvable the outcome is
+   UNDECIDABLE -- red, with the margin reported -- because at that
+   conditioning no spectral rule in double precision separates a soft flexible
+   mode from a mechanism.
 
-TWO QUANTITIES, BOTH DIMENSIONLESS, BOTH GATED
-
-1. `RIGID_BODY_MODE_RATIO` -- the sixth eigenvalue of `K` divided by the seventh.
-   A RATIO, per G2.1, so the assertion is mesh- and unit-independent: the
-   absolute eigenvalues of a stiffness matrix carry units and scale with `E`,
-   with the section, and with the mesh, and a ceiling on them would be a ceiling
-   on the model rather than on the element.
-2. `RIGID_BODY_SUBSPACE_LOSS` -- the largest fraction of any analytic rigid-body
-   vector left outside the computed six-dimensional span. Zero if the span
-   contains them all.
+WHY NOT THE SUBSPACE, WHICH IS WHAT THIS FILE USED TO ASSERT. `AP3` is right
+that mode SHAPES are an arbitrary basis inside the degenerate block, and the
+subspace form was the answer to that. But the subspace form is computed from
+the first six eigenVECTORS, so what it measures includes the eigensolver -- and
+the reviewer's corpus found it exceeding its ceiling on a large minority of
+frames with a defect-free element, worse than the ratio it was preferred to.
+Both are retired (CS2) and both are reported by
+`test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate`. The residual
+answers AP3's objection without an eigensolve: the analytic vectors are
+annihilated or they are not, whatever basis anything computes.
 
 THE EIGENSOLVER, AND WHERE THE `v0` PIN LIVES. The gate uses a DENSE symmetric
 eigensolve (`scipy.linalg.eigh`), which is deterministic by construction: it has

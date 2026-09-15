@@ -429,8 +429,11 @@ RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 1.0e-13
 # with it. Read "headroom", "ceiling crossed" and "run through the gate" in the
 # past tense: there is no ceiling to have headroom against any more (R399).
 # The quantity is computed and printed by
-# `test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate`, and its counter
-# constant is referenced by nothing.
+# `test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate`. Its counter
+# constant is referenced twice -- by `counter_response`, which still reports
+# what the retired defect would have done, and by the import that feeds it --
+# and by no assertion. `its counter constant is referenced by nothing` stood
+# here and was refuted by one grep (R408).
 #
 # WHY IT WAS RETIRED, in one line: it exceeds this ceiling on a large minority
 # of the reviewer's fifty-six frames with a DEFECT-FREE element, because the
@@ -467,13 +470,16 @@ RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 1.0e-13
 # Set: 2026-09-09, F2
 RIGID_BODY_MODE_RATIO: Final[float] = 1e-12
 
-# COUNTER-CASE, INJECTED into the assembled matrix and run through the gate.
+# RETIRED WITH ITS CEILING (R399). A counter defends an assertion, and the
+# assertion this one defended is gone, so this constant defends nothing. It is
+# kept for the same reason the ceiling above is: the step report cites the
+# contrast. Everything below is the record of what it was; read it in the past
+# tense.
+#
 # Reason for 1.0e-12: a defect one decade above the crossing measured above,
-# which takes the ratio to `3.06e-11` -- about 31x past the ceiling. It is
-# deliberately NOT the smallest size that reddens: a counter sitting on its own
-# detection edge tests the edge rather than the gate, and the edge is published
-# in the step report where it can be re-measured.
-# Set: 2026-09-09, F2
+# which took the ratio to `3.06e-11` -- about 31x past the ceiling. It was
+# deliberately NOT the smallest size that reddened.
+# Set: 2026-09-09, F2; retired 2026-09-14
 RIGID_BODY_MODE_RATIO_COUNTER_DEFECT: Final[float] = 1.0e-12
 
 # CLASS: ACCURACY -- and RETIRED at CS2. NOT A GATE: nothing asserts
@@ -510,9 +516,12 @@ RIGID_BODY_MODE_RATIO_COUNTER_DEFECT: Final[float] = 1.0e-12
 # Set: 2026-09-09, F2
 RIGID_BODY_SUBSPACE_LOSS: Final[float] = 1e-13
 
-# COUNTER-CASE, INJECTED into the assembled matrix and run through the gate.
-# Reason for 1.0e-12: the same injected defect as the ratio's counter, which is
-# the point -- one defect must redden both halves of G2.1, because a stiffness
+# RETIRED WITH ITS CEILING (R399). A counter defends an assertion and the
+# assertion this one defended is gone. Kept as the record; read the rest in the
+# past tense.
+#
+# Reason for 1.0e-12: the same injected defect as the ratio's counter, which was
+# the point -- one defect reddened both halves of G2.1, because a stiffness
 # that resists a rigid translation both lifts a zero eigenvalue and removes that
 # translation from the span. It takes the loss to `7.47e-12`, about 75x past the
 # ceiling.
