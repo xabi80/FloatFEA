@@ -1,9 +1,46 @@
 name: CI
 
+# CK0: WHAT RUNS, AND WHEN. The account's Actions allowance is exhausted, and
+# the measurement that matters is wall-clock across jobs: 2811 s over 20 jobs
+# for one push at `8942cdc`, and every push ran TWICE because an open pull
+# request duplicates it. Roughly ninety minutes a push, most of it spent
+# installing numpy and scipy nine times and running ten determinism legs that
+# answer a question nothing in the commit changed.
+#
+#   pull_request        DROPPED. Every commit in the PR is also a push to the
+#                       branch, so the second run measured the same tree twice.
+#   paths-ignore        a report revision, a verdict and a plan edit change no
+#                       code; the guards that read them run on the next code
+#                       push and locally, every time.
+#   concurrency         a superseded run is cancelled rather than finished.
+#   determinism         workflow_dispatch only. It answers "does CI agree with
+#                       itself", which moves when the render, the kernel pin or
+#                       the environment moves -- not when a test does. Run it
+#                       by hand at those commits, and the canonical-render
+#                       route (Q8) says when.
 on:
   push:
     branches: ["**"]
-  pull_request:
+    paths-ignore:
+      - "docs/reports/**"
+      # `tests/corpus/**` IS NOT IGNORED, and it was for one round (R361).
+      # CO3 put it here because a corpus push went red on the whole-suite
+      # distance rule for no defect. The rule was the defect and it is fixed
+      # at its own site; the corpus is the LAST thing a run should skip,
+      # because it is the parametrisation of the exemption guard -- the
+      # commit that prompted all this moved the collected count from 2069 to
+      # 2073, which is precisely what a run needs to see.
+      - "docs/reviews/**"
+      # `docs/milestones/**` IS NOT IGNORED (R342). It holds the canonical
+      # render, and Q8 makes CI the only machine that may produce one: a
+      # commit landing `F2_figures.md` has to run, because the next run's
+      # byte-identity comparison is the whole mechanism. The plan text in that
+      # tree costs a run it does not need, and that is the cheaper mistake.
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 # Determinism is part of the gate, not a nicety. Reduction order in BLAS depends
 # on thread count, so an unpinned thread count changes the last bits of a sum and
@@ -13,34 +50,333 @@ env:
   MKL_NUM_THREADS: "1"
   OPENBLAS_NUM_THREADS: "1"
   PYTHONHASHSEED: "0"
+  # THE BLAS KERNEL, PINNED (CF1). Thread count alone was not enough. Ten runs on
+  # ten hosted runners split exactly by CPU vendor: three Intel Xeon Platinum
+  # 8573C produced one `F2_figures.md` and failed the regression rung; seven AMD
+  # EPYC produced a DIFFERENT file and passed. OpenBLAS selects its kernel from
+  # the CPU it finds, so the last bit of a factorisation depended on which
+  # machine the job drew -- and `EXEMPT_RESPONSE_DRIFT_ULP`'s 2.6e9 breach exists
+  # on Intel and nowhere else.
+  #
+  # `Haswell` is a baseline every current runner implements, so the kernel is the
+  # same wherever the job lands. Q8 makes CI canonical, and a canonical machine
+  # that disagrees with itself by vendor is not canonical.
+  OPENBLAS_CORETYPE: "Haswell"
 
 jobs:
-  static:
-    name: lint and type-check
+  # CF1/CG0/CG1: DOES CI AGREE WITH ITSELF? Q8 makes CI canonical and that
+  # assumes it. The question is whether TEN CI LEGS AGREE WITH EACH OTHER --
+  # not whether any of them matches the file in the repository, which is a
+  # laptop render and a different question.
+  #
+  # THE FIRST VERSION MEASURED NEITHER. It regenerated the figures and hashed
+  # what it had just written, so it agreed with itself everywhere. The second
+  # compared against the committed file -- all ten legs failed, correctly, and
+  # the hash step never ran because it shared a shell block with the comparison
+  # that exited first. The regression rung then never ran either, so the job
+  # reported a result about work it had not done.
+  #
+  # MEASUREMENT COMES FIRST AND CANNOT BE SUPPRESSED. Each leg records its CPU,
+  # its core type and the hash of a FRESH render in its own step, uploads them,
+  # and a final job asserts the ten agree. The comparison against the committed
+  # file is a separate step marked `continue-on-error`, so a mismatch there is
+  # reported without hiding the measurement.
+  determinism:
+    name: "CI determinism -- leg"
     runs-on: ubuntu-latest
+    # CK0: BY HAND ONLY. Ten legs are twenty-two minutes of the ninety
+    # this workflow was costing, and they answer a question that moves with
+    # the render, the kernel pin and the environment rather than with a test.
+    if: github.event_name == 'workflow_dispatch'
+    strategy:
+      fail-fast: false
+      matrix:
+        leg: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     steps:
       - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
+          # CK0: the wheel cache, on every job that installs.
+          cache: pip
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+
+      - name: "measure: the machine, the kernel, and a fresh render"
+        run: |
+          mkdir -p leg
+          grep -m1 'model name' /proc/cpuinfo | sed 's/.*: //' > leg/cpu.txt || echo unknown > leg/cpu.txt
+          printf '%s\n' "${OPENBLAS_CORETYPE:-unset}" > leg/coretype.txt
+          python scripts/regen_figures.py
+          python - <<'PY'
+          import hashlib, pathlib
+          h = hashlib.sha256(pathlib.Path("docs/milestones/F2_figures.md").read_bytes())
+          pathlib.Path("leg/figures.sha256").write_text(h.hexdigest() + "\n")
+          print("FIGURES-SHA256", h.hexdigest())
+          PY
+          cat leg/cpu.txt leg/coretype.txt leg/figures.sha256
+          # CG2: THE ARTIFACT IS THE FILE THE HASH WAS TAKEN OVER. Q8 says a CI
+          # job produces the canonical files as an artifact and the agent
+          # commits exactly that. Copying it here rather than in a separate
+          # `regen` job means the bytes uploaded are the bytes ten legs agreed
+          # on, instead of an eleventh render nobody compared.
+          cp docs/milestones/F2_figures.md leg/F2_figures.md
+
+      - name: "measure: the regression rung, and that it RAN"
+        run: |
+          # A job that reports a result about work it did not do is the finding
+          # this step exists to prevent (R293). `--junit-xml` records how many
+          # cases were collected, and zero is a failure here.
+          pytest tests/regression -q --junit-xml=leg/regression.xml || true
+          python - <<'PY'
+          import pathlib, sys
+          from xml.etree import ElementTree
+          r = pathlib.Path("leg/regression.xml")
+          if not r.is_file():
+              sys.exit("the regression rung produced no report; it did not run")
+          root = ElementTree.parse(r).getroot()
+          cases = list(root.iter("testcase"))
+          bad = [c for c in cases if any(k.tag in ("failure", "error") for k in c)]
+          pathlib.Path("leg/regression.txt").write_text(
+              f"{len(cases)} collected, {len(bad)} failed\n"
+          )
+          print(len(cases), "collected,", len(bad), "failed")
+          if not cases:
+              sys.exit("zero cases collected -- the rung reported nothing")
+          # R304: AND A LEG WHOSE GOLDENS FAIL IS A FAILING LEG. `bad` was
+          # computed, written and printed, and asserted nowhere: a leg
+          # reporting "4 collected, 3 failed" exited 0, ten times, in a green
+          # job -- while ladder 6, the rung that gates the goldens, was skipped
+          # behind a red ladder 4. The goldens ran on ten machines and were
+          # gated on none. How many goldens failed is not a report about
+          # staleness; it is the golden gate.
+          if bad:
+              sys.exit(
+                  f"{len(bad)} of {len(cases)} golden comparisons failed on this "
+                  "leg. CI is canonical for tests/regression under Q8, so this "
+                  "is the gate rather than a diagnostic."
+              )
+          PY
+
+      # CH0: WHERE `clean_worst_ratio` COMES FROM, ON THIS MACHINE. The figure
+      # moved 7.3% between the canonical render and a laptop at a byte-
+      # identical winning entry, and the report explained it with a flip that
+      # had not happened. The inner argmax -- which STATE wins -- is what the
+      # single published number hides, so the canonical machine prints it and
+      # the two are compared row by row rather than at the summary.
+      - name: "measure: where clean_worst_ratio comes from"
+        run: |
+          python scripts/localise_clean_worst.py | tee leg/clean_worst.txt
+
+      # CJ1: THE INTERCHANGE CHANNELS AGAINST THE COMMITTED FIXTURE. Ladder 4
+      # asserts a bit-exact round-trip of a golden the writer produced, and on
+      # this machine thirteen pairs fail: `sin` and `cos` are not correctly
+      # rounded and no two libm implementations are obliged to agree in the
+      # last bit. This is the measurement Q8's second local class is declared
+      # from, taken on the canonical machine and on every leg.
+      - name: "measure: the interchange channels against the fixture"
+        run: |
+          python scripts/measure_channel_drift.py | tee leg/channel_drift.txt
+
+      - name: "compare against the committed file (reported, not fatal here)"
+        continue-on-error: true
+        run: |
+          git diff --exit-code -- docs/milestones/F2_figures.md \
+            && echo "COMMITTED-MATCHES-CI yes" \
+            || echo "COMMITTED-MATCHES-CI no -- the committed file is not what this runner renders"
+
+      # `if: always()`, because the leg's measurement is most wanted on the run
+      # where a later step failed. The default skips the upload on failure,
+      # which is the one case that loses the evidence.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: determinism-leg-${{ matrix.leg }}
+          path: leg/
+
+  # CG1: THE TEN LEGS AGAINST EACH OTHER. This is the assertion CF1 asked for
+  # and no earlier version made: all ten hashes equal, all ten core types equal.
+  # If the hashes split, the split itself is the measurement and this job prints
+  # it grouped by CPU.
+  determinism_verdict:
+    name: "CI determinism -- ten legs agree"
+    runs-on: ubuntu-latest
+    # CK0: BY HAND ONLY, AND ONLY WHEN EVERY LEG HAS REPORTED. These were
+    # two `if:` keys on one job (R334): YAML keeps the last, so the
+    # `workflow_dispatch` gate was silently discarded and the ten legs kept
+    # running on every push -- the opposite of what the commit claimed, and
+    # the reason the run at `cbde0e4` produced no jobs at all.
+    #
+    # `always()` is what makes the verdict job see a leg that FAILED rather
+    # than being skipped with it, so both conditions are needed and they are
+    # one expression now.
+    if: always() && github.event_name == 'workflow_dispatch'
+    needs: [determinism]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: determinism-leg-*
+          path: legs
+      - name: "all ten hashes equal, all ten core types equal"
+        run: |
+          python - <<'PY'
+          import collections, hashlib, pathlib, re, sys
+          legs = sorted(pathlib.Path("legs").glob("determinism-leg-*"))
+          if len(legs) != 10:
+              sys.exit(f"{len(legs)} legs reported, expected 10")
+          # R307: RE-HASH THE FILE, do not read the leg's own claim about it.
+          # CG2's claim is that the bytes uploaded are the bytes the ten legs
+          # agreed on. The verdict job read `figures.sha256` -- a number the
+          # same leg wrote -- and never opened `F2_figures.md`. That is
+          # existence, not provenance, and provenance is what a file about to
+          # be committed as canonical needs.
+          def rehash(d):
+              f = d / "F2_figures.md"
+              if not f.is_file():
+                  sys.exit(f"{d.name} uploaded no F2_figures.md; there is no artifact to commit")
+              got = hashlib.sha256(f.read_bytes()).hexdigest()
+              claimed = (d / "figures.sha256").read_text().strip()
+              if got != claimed:
+                  sys.exit(
+                      f"{d.name}: the uploaded file hashes to {got[:12]} and the "
+                      f"leg claims {claimed[:12]}. The artifact is not what was measured."
+                  )
+              return got
+
+          rows = []
+          for d in legs:
+              rehash(d)
+              rows.append((
+                  d.name,
+                  (d / "cpu.txt").read_text().strip(),
+                  (d / "coretype.txt").read_text().strip(),
+                  (d / "figures.sha256").read_text().strip(),
+                  (d / "regression.txt").read_text().strip(),
+              ))
+          for r in rows:
+              print(" | ".join(r))
+          by_hash = collections.defaultdict(list)
+          for _, cpu, _, h, _ in rows:
+              by_hash[h].append(cpu)
+          if len(by_hash) != 1:
+              for h, cpus in by_hash.items():
+                  print("HASH", h[:12], "on", sorted(set(cpus)))
+              sys.exit("the ten legs do not agree: CI is not deterministic")
+          cores = {r[2] for r in rows}
+          if len(cores) != 1 or cores == {"unset"}:
+              sys.exit(f"core types across legs: {sorted(cores)} -- the kernel is not pinned")
+          # AND THE REGRESSION LINE IS READ RATHER THAN PRINTED. Measured on
+          # the first run after the allowance returned: all ten legs FAILED
+          # at the regression rung, all ten uploaded an identical render, and
+          # this job reported SUCCESS under the name "ten legs agree". The
+          # renders did agree, so nothing here was false -- but a green job
+          # named that, sitting under ten red ones, is the shape a reader
+          # takes for a working gate. `regression.txt` was collected into
+          # `rows`, printed, and compared to nothing.
+          #
+          # Q8 makes CI canonical for `tests/regression`, so this is the gate
+          # and not a diagnostic; the legs' own step says exactly that.
+          #
+          # AND ZERO COLLECTED IS A FAILED LEG (CP3, R369). The first version
+          # of this check read `failed` and not `collected`, so a leg writing
+          # "0 collected, 0 failed" was green HERE -- one notch over from the
+          # shape `502e0de` was written to remove, and in the same job. The
+          # leg's own step refuses zero collection, so the RUN went red
+          # either way; what would have gone green is the job whose name is
+          # the claim. "An empty parameter set is an error, not a skip"
+          # applies to a gate's own input.
+          def leg_is_red(line):
+              got = {k: int(n) for n, k in re.findall(r"(\d+) (collected|failed)", line)}
+              if "collected" not in got or "failed" not in got:
+                  return "unreadable: " + line
+              if got["collected"] == 0:
+                  return "collected nothing: " + line
+              if got["failed"] != 0:
+                  return line
+              return ""
+
+          red = [(name, why) for name, _cpu, _core, _h, line in rows
+                 if (why := leg_is_red(line))]
+          if red:
+              for name, why in red:
+                  print("RED", name, why)
+              sys.exit(
+                  f"{len(red)} of {len(rows)} legs do not report a green "
+                  "regression rung over a non-empty set. The renders agreeing "
+                  "says the machine is deterministic; it does not say the "
+                  "goldens held, or that there were any, and this job is the "
+                  "gate for all three."
+              )
+          print("ten of ten identical:", next(iter(by_hash))[:12], "core", next(iter(cores)))
+          PY
+
+  # THE GUARDS THEMSELVES, and they had never run here (R235). Every top-level
+  # `tests/test_*.py` -- the tolerance-literal scanner, the carry guard, the
+  # counter meta-test, the plan and figure checks, and the two corpora added at
+  # CB0/CB1 -- was collected by no job at all: 1296 of 1589. Two commits said
+  # "in the suite, so in CI" about files CI never saw.
+  #
+  # `tests/test_ci_runs_the_whole_suite.py` keeps this honest by parsing this
+  # file and requiring the union of what the jobs name to be the whole suite, so
+  # a test added where nothing runs it fails at that commit.
+  checks:
+    name: "lint, unit and guards"
+    runs-on: ubuntu-latest
+    # CK0: THREE JOBS IN ONE, IN ORDER, STOPPING AT THE FIRST FAILURE. They
+    # were three parallel jobs paying three checkouts and three installs to
+    # save perhaps a minute of wall clock. Sequential steps in one job keep
+    # every assertion and cost one setup.
+    #
+    # THE ORDER IS CHEAP-FIRST, and the reason is a measurement rather than a
+    # story (R343). Re-taken at the commit that publishes them, on this
+    # machine, with the ruff and mypy caches cleared first:
+    #
+    #   ruff + black + mypy        4.0 s
+    #   pytest tests/unit          0.9 s
+    #   the guards step below      374 s
+    #
+    # so a failure in the first five seconds costs five seconds instead of six
+    # minutes. That is the whole claim; whether a lint failure PREDICTS a test
+    # failure is not measured here and is not asserted.
+    #
+    # These are local wall-clock numbers and the runner's will differ -- what
+    # they are about is the RATIO, which is two orders and is not a close
+    # call. The figures moved when they were re-taken (6 s and 3 s a round
+    # ago) because a warm cache and a cold one are different measurements,
+    # which is the reason BP0 says re-take rather than carry.
+    steps:
+      - uses: actions/checkout@v4
+        # FULL HISTORY (CC3). `tests/test_report_carried.py` diffs against the
+        # reviewed commit, and the default depth of 1 does not contain it -- so
+        # `git diff` failed, the touched-set came back empty, and 23 site checks
+        # passed as though the step had changed nothing. One machine, one
+        # commit, one variable: full clone `122 passed`, `--depth 1`
+        # `23 failed, 99 passed`.
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          # CK0: the wheel cache, on every job that installs.
+          cache: pip
+      - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+      # CM2: THE WORKFLOW IS LINTED BEFORE IT IS TRUSTED. A duplicate `if:`
+      # key silently discarded a gate and nothing in this repository noticed
+      # -- `yaml.safe_load` keeps the last key and reports nothing, which is
+      # how the claim and the file came apart. `actionlint` is a build
+      # failure on that shape, and `tests/test_ci_workflow_is_wellformed.py`
+      # asserts the same thing in the suite, where it runs without a binary.
+      - name: actionlint
+        uses: raven-actions/actionlint@v2
       - name: ruff
         run: ruff check floatfea tests
       - name: black --check
         run: black --check floatfea tests
       - name: mypy
         run: mypy floatfea
-
-  unit:
-    name: unit tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/unit -q
+      - name: unit tests
+        run: pytest tests/unit -q
+      - name: guards and meta-tests
+        run: pytest tests --ignore=tests/unit --ignore=tests/verification --ignore=tests/regression -q
 
   # ------------------------------------------------------------------
   # The verification ladder.
@@ -51,73 +387,90 @@ jobs:
   # rung 2 from running at all, so nobody can investigate a rung 5 discrepancy
   # while a rung 1 test is red.
   #
-  # Each rung is wired now, while empty, so that adding a test to a rung is a
-  # matter of dropping a file into tests/verification/rungN/ -- not a CI edit.
-  # An empty rung passes; `--strict-markers` and the conftest ordering keep the
-  # structure honest as tests arrive.
+  # Each rung is wired now, while empty. WHAT ADDING THE FIRST TEST TO AN EMPTY
+  # RUNG COSTS, stated accurately (R236): dropping the file in is not enough --
+  # the rung is declared `empty:` here and carries a `.empty-by-design` marker,
+  # so the first test makes the declaration stale and the job FAILS. Delete the
+  # marker and change `empty:` to `full:` in the same commit. That is a CI edit,
+  # and the sentence that stood here said it was not, four lines above the block
+  # that withdraws the previous version of the same claim.
+  #
+  # THIS COMMENT HAS BEEN WRONG TWICE, AND BOTH TIMES BECAUSE NOTHING RAN IT.
+  #
+  # It first said "an empty rung passes". `pytest` exits 5 for "no tests ran",
+  # so rungs 2 and 5 failed the first time this workflow reached them -- which
+  # was only after `lint and type-check` went green, because every ladder job is
+  # `needs:`-gated behind it.
+  #
+  # The replacement inferred empty-versus-populated from a shell glob and named
+  # "a renamed directory" as a defect it caught. THAT SENTENCE IS WITHDRAWN: the
+  # reviewer built ten layouts and five were wrong. `ls A B` exits non-zero when
+  # EITHER glob fails, so rung 6 -- whose own directory is empty by design --
+  # never ran `tests/regression` and reported green; a renamed rung went from
+  # exit 4 to exit 0; and a failing test one directory down passed silently.
+  #
+  # The logic is `scripts/run_rung.sh` now, so it can be executed off GitHub,
+  # and `tests/test_ci_ladder_gating.py` runs it against all ten layouts in this
+  # suite -- which means in CI. The expectation is DECLARED per directory rather
+  # than inferred, because an emptied directory and one nobody has written yet
+  # are opposite facts that no glob can tell apart. What each rung asserts:
+  #
+  #   full:<dir>   the directory exists and collects at least one test, and the
+  #                run then stands on its own exit code. Exit 5 is a FAILURE.
+  #   empty:<dir>  the directory exists, carries a `.empty-by-design` marker,
+  #                and collects nothing. A test appearing there is a stale
+  #                declaration and fails.
   # ------------------------------------------------------------------
-  rung1:
-    name: "ladder 1 -- the solver is a solver"
+  ladder:
+    name: "the verification ladder"
     runs-on: ubuntu-latest
-    needs: [static, unit]
+    # NO `needs:` (R335, CM2). Chaining the ladder behind the checks job
+    # would have destroyed this step's own evidence: at run 34546580003 the
+    # guards job FAILED and all six ladder jobs passed, and the sentence
+    # "ladder 4 and 5 are green on the canonical machine" -- the result this
+    # step has been working towards for twelve rounds -- could not have been
+    # produced. A `ruff` line-length error would have hidden the whole ladder
+    # in the same way.
+    #
+    # The ladder and the guards are INDEPENDENT EVIDENCE about different
+    # things. The ladder's own ordering is internal to it and is the step
+    # order below; `needs:` here bought nothing but a shared failure.
+    # CK0: SIX JOBS IN ONE, AND THE TWO ORDERING PROPERTIES ARE KEPT RATHER
+    # THAN ASSUMED. Steps in a job stop at the first failure, so the ladder's
+    # rule -- a failure at rung n makes rung n+1 uninterpretable -- is the
+    # step order itself, exactly as `needs:` expressed it.
+    #
+    # AND RUNG 6 RUNS BEFORE RUNG 4 (CH3). The goldens ask whether today's
+    # bytes equal yesterday's, which stays interpretable whatever ladder 4
+    # says; chained behind it they were skipped for eleven rounds while
+    # running on ten determinism legs and being gated nowhere. Putting them
+    # third keeps them behind rungs 1 to 3, which are what make a golden's
+    # inputs mean anything, and out from behind rung 4.
+    # `tests/test_ci_determinism_gate.py` asserts that position.
     steps:
       - uses: actions/checkout@v4
+        # FULL HISTORY (CC3). `tests/test_report_carried.py` diffs against the
+        # reviewed commit, and the default depth of 1 does not contain it -- so
+        # `git diff` failed, the touched-set came back empty, and 23 site checks
+        # passed as though the step had changed nothing. One machine, one
+        # commit, one variable: full clone `122 passed`, `--depth 1`
+        # `23 failed, 99 passed`.
+        with: {fetch-depth: 0}
       - uses: actions/setup-python@v5
-        with: {python-version: "3.11"}
+        with:
+          python-version: "3.13"
+          # CK0: the wheel cache, on every job that installs.
+          cache: pip
       - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/verification/rung1 -q
-
-  rung2:
-    name: "ladder 2 -- the element is the element"
-    runs-on: ubuntu-latest
-    needs: [rung1]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.11"}
-      - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/verification/rung2 -q
-
-  rung3:
-    name: "ladder 3 -- the model is the platform"
-    runs-on: ubuntu-latest
-    needs: [rung2]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.11"}
-      - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/verification/rung3 -q
-
-  rung4:
-    name: "ladder 4 -- the loads are the loads"
-    runs-on: ubuntu-latest
-    needs: [rung3]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.11"}
-      - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/verification/rung4 -q
-
-  rung5:
-    name: "ladder 5 -- independent confirmation"
-    runs-on: ubuntu-latest
-    needs: [rung4]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.11"}
-      - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/verification/rung5 -q
-
-  rung6:
-    name: "ladder 6 -- it stays fixed"
-    runs-on: ubuntu-latest
-    needs: [rung5]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.11"}
-      - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
-      - run: pytest tests/verification/rung6 tests/regression -q
+      - name: "ladder 1 -- the solver is a solver"
+        run: sh scripts/run_rung.sh full:tests/verification/rung1
+      - name: "ladder 2 -- the element is the element"
+        run: sh scripts/run_rung.sh empty:tests/verification/rung2
+      - name: "ladder 3 -- the model is the platform"
+        run: sh scripts/run_rung.sh full:tests/verification/rung3
+      - name: "ladder 6 -- it stays fixed"
+        run: sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression
+      - name: "ladder 4 -- the loads are the loads"
+        run: sh scripts/run_rung.sh full:tests/verification/rung4
+      - name: "ladder 5 -- independent confirmation"
+        run: sh scripts/run_rung.sh empty:tests/verification/rung5

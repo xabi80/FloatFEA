@@ -1,0 +1,163 @@
+#!/usr/bin/env python
+"""The whole-suite count a step report must carry (CI1, R309).
+
+    python scripts/suite_count.py >> the report
+
+A report published seven subset counts, every one of them correct, while the
+suite was red on a test in none of the seven -- and the failing declaration had
+been written by the commit that published the report, so it was true when it
+was measured and false when it shipped. `CLAUDE.md` § Step gating asks for "the
+test counts from your own run"; seven subsets are not that, because the
+collection the evidence inspects cannot contain the failure.
+
+This runs the WHOLE suite, once, and prints one line with the three numbers and
+the commit it ran at, plus a named list of anything that failed or was skipped.
+`tests/test_report_carried.py` fails a report that does not carry the line, and
+fails one that carries a non-zero failure count without naming a test.
+
+RUN IT LAST. Every other edit to the report goes in first: the count is a
+measurement of the tree the report is committed from, and an edit after it is
+an edit the number does not describe. That ordering is the whole content of
+R309 -- the declaration it missed was added in the same commit as the report.
+"""
+
+from __future__ import annotations
+
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+from xml.etree import ElementTree
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _sha() -> str:
+    out = subprocess.run(
+        ["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True
+    )
+    return out.stdout.strip() or "unknown"
+
+
+# CL1: THE GUARDS THAT ARE PARAMETRISED OVER THE REPORT ARE EXCLUDED, and the
+# line says so. They grow with the revision being written -- one parameter per
+# carried row, per named site, per pointer -- so counting them in a number
+# stamped with the commit BEFORE the report is a count of one tree labelled
+# with another. R323: `2067` was published against `265b32f`, where the suite
+# is 1907; 2067 is the tree with this revision in it.
+#
+# They are not unmeasured: they are the supervisor's to run, at the commit that
+# carries the report, which is where they mean anything.
+REPORT_PARAMETRISED = (
+    "tests/test_report_carried.py",
+    "tests/test_report_numbers_are_sourced.py",
+    # AND THE HARNESS THAT RUNS THE FIRST ONE IN COPIES. Every state it builds
+    # is the carry guard over the report, so at a commit where the report has
+    # not yet been revised it reports the boundary rather than the tree -- the
+    # same reason as the two above, one level of indirection out.
+    "tests/test_report_guard_states.py",
+)
+
+
+def _excluded_count(tree: Path) -> int:
+    """How many tests the exclusion removes, so the line can say it (R339)."""
+    out = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            *REPORT_PARAMETRISED,
+            "-q",
+            "--collect-only",
+            "--no-header",
+            "-p",
+            "no:randomly",
+        ],
+        cwd=tree,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    return sum(1 for line in out.stdout.splitlines() if "::" in line)
+
+
+def run(report: Path, tree: Path) -> tuple[int, int, int, list[str], list[str]]:
+    """`(passed, failed, skipped, failing ids, skipped ids)` from junit."""
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "-p",
+            "no:randomly",
+            *[f"--ignore={x}" for x in REPORT_PARAMETRISED],
+            f"--junit-xml={report}",
+        ],
+        cwd=tree,
+        capture_output=True,
+        text=True,
+    )
+    root = ElementTree.parse(report).getroot()
+    failed: list[str] = []
+    skipped: list[str] = []
+    total = 0
+    for case in root.iter("testcase"):
+        total += 1
+        name = f"{case.get('classname', '')}::{case.get('name', '')}".strip(":")
+        kinds = {kid.tag for kid in case}
+        if kinds & {"failure", "error"}:
+            failed.append(name)
+        elif "skipped" in kinds:
+            skipped.append(name)
+    return total - len(failed) - len(skipped), len(failed), len(skipped), failed, skipped
+
+
+def main(argv: list[str]) -> int:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sha = _sha()
+    # A CLEAN WORKTREE AT THE COMMIT THE LINE NAMES (CL1). Run in place, the
+    # count describes the working tree -- the commit PLUS whatever is being
+    # written -- and the line then names a commit at which that count is not
+    # reproducible. `git worktree add --detach` gives the commit itself, and
+    # the number is checkable by anyone at that sha.
+    with tempfile.TemporaryDirectory(prefix="suite-count-") as tmp:
+        tree = Path(tmp) / "tree"
+        made = subprocess.run(
+            ["git", "-C", str(ROOT), "worktree", "add", "--detach", str(tree), sha],
+            capture_output=True,
+            text=True,
+        )
+        if made.returncode != 0:
+            raise SystemExit(f"could not build a clean worktree at {sha}: {made.stderr.strip()}")
+        try:
+            out = tree / ".suite.xml"
+            passed, failed, skipped, failing, skips = run(out, tree)
+            excluded = _excluded_count(tree)
+        finally:
+            subprocess.run(
+                ["git", "-C", str(ROOT), "worktree", "remove", "--force", str(tree)],
+                capture_output=True,
+            )
+    print(
+        f"**Whole suite at `{sha}`: {passed} passed, {failed} failed, "
+        f"{skipped} skipped.** Generated by `python scripts/suite_count.py`, "
+        "run after every other edit to this revision, in a clean worktree at "
+        f"that commit, excluding {excluded} tests in "
+        f"{len(REPORT_PARAMETRISED)} files parametrised over this report "
+        f"({', '.join(REPORT_PARAMETRISED)}) -- which the supervisor runs at "
+        "the commit that carries it. R339: the count of what is excluded is "
+        "part of the line, so a reader can size it without running anything."
+    )
+    if failing or skips:
+        print()
+        for name in failing:
+            print(f"- **failed** `{name}`")
+        for name in skips:
+            print(f"- **skipped** `{name}`")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv))

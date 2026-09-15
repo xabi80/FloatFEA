@@ -1,0 +1,41 @@
+# CORPUS: CI sections the report guard (CE1) must rule on.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. Written at the thirty-first verdict on F2, the
+# sixth verdict on step 5 (HEAD a59521e).
+#
+# WHY THIS FILE EXISTS (BE3). CE1 exists because CI was red at three
+# consecutive reviewed commits and no report revision said so. The answer is
+# two tests in `tests/test_report_carried.py`:
+# `test_the_report_carries_a_CI_SECTION` and
+# `test_the_reported_CI_counts_are_not_all_zero`. Their own docstring says the
+# required shape is
+#
+#   "a table of `| job | passed | failed | skipped |`, taken from `gh run view`
+#    at the commit the report is written on -- not a sentence about the laptop"
+#
+# Everything after the comma in that sentence is asserted by nothing. The two
+# tests check that SOME table with three numeric rows and one nonzero entry
+# exists under a heading containing `CI`. An ABSENT record is caught. A FALSE
+# one is not, and a false CI record is the same failure as an absent one with a
+# reassurance attached.
+#
+# FORMAT
+#   id=<name> state=<what the newest revision's CI section says>
+#   expect=<refused|allowed> measured=<what the shipped tests did at a59521e>
+#
+# WHAT A PASSING SCAN MEANS. Apply the state to `docs/reports/F2/step-5.md` in
+# a scratch clone, run `pytest tests/test_report_carried.py -k "CI_SECTION or
+# CI_counts"`, compare with `expect`. It does not mean the guard is complete.
+#
+# MEASURED AT a59521e by the reviewer, in a `git clone --local` scratch tree
+# with the shipped tests unchanged: 4 entries, 1 agrees, 3 do not.
+#
+# The ground truth for these rows is run 34408014924, which finished
+# `guards and meta-tests` at 386 passed / 4 failed and `ladder 4` at
+# 72 passed / 13 failed.
+
+id=the_shipped_section_0_table_unmodified state=the_nine_job_rows_as_revision_5_publishes_them expect=allowed measured=allowed_2_passed
+id=a_red_run_reported_as_all_green state=guards_row_rewritten_390_0_0_and_ladder4_row_rewritten_85_0_0_contradicting_run_34408014924_on_both expect=refused measured=allowed_2_passed_nothing_compares_the_table_with_the_run
+id=no_run_id_and_an_invented_green_table state=the_line_naming_run_34408014924_deleted_and_every_row_reported_green expect=refused measured=allowed_2_passed_the_run_id_is_prose_and_is_read_by_nothing
+id=three_rows_of_a_table_about_something_else state=the_job_table_replaced_by_a_table_headed_thing_a_b_c_with_rows_alpha_1_0_0_beta_2_0_0_gamma_3_0_0 expect=refused measured=allowed_2_passed_the_row_regex_reads_any_name_followed_by_three_integers

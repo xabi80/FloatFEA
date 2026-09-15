@@ -1,0 +1,355 @@
+# CORPUS: repository-layout shapes the verification-ladder CI jobs must gate on.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the twenty-seventh verdict on F2, the second
+# verdict on step 5 (HEAD 3577930).
+#
+# WHY THIS FILE EXISTS (BE3). At CA1 each ladder job in .github/workflows/ci.yml
+# gained a guard that decides, from a shell glob, whether a rung is EMPTY (pass
+# quietly) or POPULATED (run pytest and let its exit code stand). The comment
+# above those jobs states which defects the arrangement catches. That claim has
+# a corpus of zero: it was reasoned, not run, which is the same failure the
+# commit itself was written to correct ("an empty rung passes" was written in
+# this file and had never been executed). These are layouts nobody ran.
+#
+# FORMAT
+#   id=<name> layout=<what is on disk> require=<pass|fail|run> measured=<what
+#   the shipped step did at 3577930>
+#
+#   require=pass  the job must succeed AND it is correct that nothing ran
+#   require=run   the job must actually EXECUTE the tests that are present
+#   require=fail  the job must go red
+#
+# WHAT A PASSING SCAN MEANS. For each entry, build the layout in a scratch tree,
+# run the shipped step body for that rung verbatim, and compare the outcome with
+# `require`. A passing scan means every entry agrees. IT DOES NOT MEAN CI EXERCISES
+# THE ENTRY: rungs 5 and 6 have not executed once on this branch, because rung 4
+# is red and every rung is `needs:`-gated behind the one below it.
+#
+# MEASURED AT 3577930 by the reviewer, bash + pytest, the step body copied from
+# ci.yml unchanged: 10 entries, 5 agree, 5 do not. `ci_rung6_live` is not a
+# hypothetical -- it is the repository as it stands.
+#
+# THE MECHANISM BEHIND THE FIVE. `ls A B` exits non-zero when EITHER glob fails
+# to match, so a two-glob guard runs its rung only when BOTH halves are
+# populated; and a glob that matches nothing is indistinguishable, to this
+# guard, from a directory that is not there.
+
+id=ci_rung6_live layout=rung6_has_only___init__py,tests_regression_has_test_exempt_pair_responses_py require=run measured=guard_fired_exit0_regression_never_ran
+id=ci_rung6_regression_removed layout=rung6_has_test_r6_py,tests_regression_absent require=fail measured=guard_fired_exit0
+id=ci_rung6_both_populated layout=rung6_has_test_r6_py,tests_regression_has_test_golden_py require=run measured=ran_2_passed_exit0
+id=ci_rung_directory_renamed layout=tests_verification_rung1_renamed_to_rung_one_with_a_passing_test require=fail measured=guard_fired_exit0_was_exit4_before_CA1
+id=ci_rung_genuinely_empty layout=rung1_has_only___init__py require=pass measured=guard_fired_exit0
+id=ci_rung_file_collects_nothing layout=rung1_has_test_a_py_whose_functions_are_named_check_ require=fail measured=pytest_exit5
+id=ci_rung_file_broken_import layout=rung1_has_test_a_py_importing_a_missing_module require=fail measured=pytest_exit2
+id=ci_rung_files_renamed_off_the_test_prefix layout=rung1_has_check_a_py_containing_test_a require=fail measured=guard_fired_exit0_was_exit5_before_CA1
+id=ci_rung_has_a_failing_test layout=rung1_has_test_a_py_asserting_1_eq_2 require=fail measured=pytest_exit1
+id=ci_rung_tests_moved_into_a_subdirectory layout=rung1_sub_has_test_a_py_asserting_1_eq_2 require=fail measured=guard_fired_exit0_a_FAILING_test_reported_green
+
+# ---------------------------------------------------------------------------
+# TWENTY-EIGHTH VERDICT (third on step 5), added at HEAD 5737fa6.
+#
+# The first ten layouts were run against the INLINE glob guard and five were
+# wrong. CB1 replaced it with `scripts/run_rung.sh` and a DECLARED expectation,
+# and all ten now do what the entry requires (two of them under a requirement
+# CB1 deliberately changed, recorded in that file's REQUIREMENT_CHANGED).
+#
+# These twelve are layouts nobody has run against the DECLARED rule. They probe
+# the two things a declaration adds that a glob did not have: the declaration
+# can be STALE (it says empty and the rung has gained tests; it says full and
+# the marker is still there), and the declaration can be RIGHT while the run
+# underneath it is empty of meaning (every test skipped).
+#
+# `measured` is what `sh scripts/run_rung.sh <args>` did at 5737fa6, run in a
+# scratch tree, taken before the `require` field was written. The `full:`/
+# `empty:` argument used for each entry is the one the workflow gives that rung.
+# 12 entries: 9 agree, 3 do not.
+#
+#   require=run   the job must succeed AND execute the tests that are present
+#   require=pass  the job must succeed AND it is correct that nothing ran
+#   require=fail  the job must go red
+
+id=ci_rung6_stale_marker_rung_gains_a_passing_test layout=rung6_has_empty_by_design_AND_test_r6_py,tests_regression_populated require=fail measured=fail_exit1
+id=ci_rung2_stale_marker_rung_gains_a_failing_test layout=rung2_has_empty_by_design_AND_a_failing_test_py require=fail measured=fail_exit1
+id=ci_rung_full_without_an_init_py layout=rung1_has_test_a_py_and_NO___init__py require=run measured=run_1_passed_exit0
+id=ci_rung_conftest_raises_at_collection layout=rung1_has_test_a_py_and_a_conftest_py_importing_a_missing_module require=fail measured=fail_exit1_collect_exit4
+id=ci_rung_declared_empty_but_directory_absent layout=rung5_directory_does_not_exist_at_all require=fail measured=fail_exit1
+id=ci_rung_path_is_a_file_not_a_directory layout=tests_verification_rung1_is_a_zero_byte_FILE require=fail measured=fail_exit1
+id=ci_rung_directory_is_a_symlink layout=rung1_is_a_symlink_to_a_sibling_directory_holding_a_passing_test require=run measured=run_1_passed_exit0
+id=ci_rung_every_test_is_skipped layout=rung1_has_test_a_py_whose_only_test_is_pytest_mark_skip require=fail measured=pass_exit0_1_skipped
+id=ci_rung_full_carries_a_stale_empty_by_design_marker layout=rung1_declared_full_has_a_passing_test_AND_an_empty_by_design_marker require=fail measured=pass_exit0_marker_never_read
+id=ci_rung_path_contains_a_space layout=tests_ver_ification_rung1_with_a_space_in_the_path_declared_full require=run measured=fail_exit4_RUN_DIRS_word_split
+id=ci_rung6_second_dir_declared_full_collects_nothing layout=rung6_declared_full_and_populated,tests_regression_exists_but_empty require=fail measured=fail_exit1
+id=ci_rung6_regression_present_but_empty layout=rung6_empty_by_design,tests_regression_exists_and_holds_no_test_file require=fail measured=fail_exit1
+
+# ---------------------------------------------------------------------------
+# TWENTY-NINTH VERDICT, the fourth on step 5 (HEAD 37799aa). 7 new layouts.
+#
+# The four residues the twenty-eighth round found are FIXED, and I re-measured
+# two of them here rather than reading it: a failing rung no longer prints the
+# success line, alone or after a declared-empty one. These seven are elsewhere.
+#
+# THE SKIP GUARD IS A SUBSTRING TEST OVER THE WHOLE PYTEST OUTPUT
+# -- case $out in *skipped* -- and it is wrong in both directions at once:
+#   - xfailed does not contain skipped, so a rung whose only test is
+#     @pytest.mark.xfail exits 0 and prints OK. CLAUDE.md forbids xfail to get a
+#     green build in the same sentence as skip; the repair stopped one word
+#     short of the rule it cites.
+#   - a rung that skips NOTHING reddens if any test own diagnostic contains the
+#     word. This repository prints diagnostics through capsys.disabled() in rung
+#     1 today, so it is a live shape and not a contrivance.
+#
+# AND THE DECLARATION IS NOT REQUIRED. The kind is taken as everything before
+# the first colon; with no colon in the argument the kind becomes the whole
+# path, which is not empty, so the directory runs as full. An argument that
+# declares nothing DEFAULTS instead of raising -- and the opening line of the
+# script is: Run one rung of the verification ladder, with its expectation
+# DECLARED. With no arguments at all the script prints OK -- 0 directories ran
+# and exits 0.
+#
+# MEASURED AT 37799aa by the reviewer, sh scripts/run_rung.sh in a scratch tree
+# with the shipped script unchanged: 7 new entries, 3 agree, 4 do not.
+
+id=ci_rung_full_every_test_is_xfail layout=rung1_declared_full_its_only_test_is_pytest_mark_xfail require=fail measured=pass_exit0_1_xfailed_OK_printed
+id=ci_run_rung_with_no_arguments_at_all layout=script_invoked_with_zero_arguments require=fail measured=pass_exit0_OK_0_directories_ran
+id=ci_argument_without_a_kind_prefix layout=argument_is_tests_verification_rung1_with_no_full_or_empty_prefix require=fail measured=pass_exit0_silently_treated_as_full_and_run
+id=ci_passing_rung_whose_output_contains_the_word_skipped layout=rung1_declared_full_one_PASSING_test_printing_no_case_was_skipped_in_this_rung require=run measured=fail_exit1_false_skip_alarm
+id=ci_misspelled_kind_capital_Empty layout=rung2_declared_Empty_capitalised_carrying_empty_by_design_and_no_tests require=fail measured=fail_exit1_treated_as_full_marker_contradiction
+id=ci_full_rung_with_a_failing_test_prints_no_OK_line layout=rung1_declared_full_one_passing_and_one_failing_test require=fail measured=fail_exit1_no_OK_line
+id=ci_empty_then_full_rung_fails_prints_no_OK_line layout=empty_rung2_with_marker_then_full_rung1_holding_a_failing_test require=fail measured=fail_exit1_no_OK_line
+
+# ---------------------------------------------------------------------------
+# THE THIRTIETH VERDICT'S FIVE (fifth verdict on step 5, HEAD fa3b070).
+#
+# CD1 fixed five defects the twenty-ninth round's seven layouts found, and I
+# verified all five. These five sit one step along from three of them.
+#
+# THE xfail GUARD NAMES A STATE ITS OWN PRODUCER CANNOT EMIT. The new code is
+#
+#     summary=$(printf '%s\n' "$out" | grep -E '[0-9]+ (passed|failed|skipped|xfailed)' | tail -1)
+#     case "$summary" in *skipped*|*xfailed*|*xpassed*) ...
+#
+# and `xpassed` is in the case arm but not in the alternation that BUILDS the
+# line. A rung whose only test is `@pytest.mark.xfail` and PASSES prints
+# `1 xpassed in 0.22s`, no counter on that line matches, `$summary` is empty,
+# and the arm never fires. Measured, one machine, one variable:
+#
+#     only test is xfail-marked and FAILS   -> `1 xfailed`            exit 1  caught
+#     only test is xfail-marked and PASSES  -> `1 xpassed`            exit 0  MISSED
+#     xfail-marked passes + one plain pass  -> `1 xpassed, 1 passed`  exit 1  caught
+#
+# The detection depends on whether an unrelated test happens to share the line.
+#
+# AND THE `require=pass` BRANCH OF THE RUNNER IS UNREACHABLE. The one entry that
+# uses it is in `REQUIREMENT_CHANGED` and returns early, so nothing runs
+# `assert "empty by design" in log` -- and `scripts/run_rung.sh` never prints
+# that phrase, so it would fail if anything reached it. The shape below is not a
+# contrivance: it is what `ci.yml` runs for rung 2 and rung 5 on every push.
+#
+# THE RUNG-6 ENTRY IS ABOUT THIS COMMIT. `82a4b33` deleted
+# `tests/verification/rung6/.empty-by-design` and dropped
+# `empty:tests/verification/rung6` from the rung-6 job, unmentioned in the commit
+# message and in the report. `tests/verification/rung6/` is still tracked and is
+# now named by no CI job. Run the SHIPPED rung-6 arguments, not the ones in
+# `ARGS["rung6"]`, which no longer match the workflow.
+#
+# MEASURED AT fa3b070 by the reviewer, sh scripts/run_rung.sh in a scratch tree
+# with the shipped script unchanged: 5 new entries, 1 agrees, 4 do not.
+
+id=ci_rung_full_every_test_is_xfail_and_PASSES layout=rung1_declared_full_its_only_test_is_pytest_mark_xfail_whose_body_passes require=fail measured=pass_exit0_1_xpassed_run_rung_OK_1_directory_ran
+id=ci_rung_declared_empty_with_its_marker_and_nothing_in_it layout=rung2_declared_empty_carrying_empty_by_design_and_no_tests_the_live_rung2_and_rung5_shape require=pass measured=pass_exit0_OK_0_directories_ran_and_the_log_never_contains_the_phrase_empty_by_design
+id=ci_rung6_job_as_shipped_leaves_its_own_rung_undeclared layout=rung6_holds_a_passing_test_and_tests_regression_holds_a_passing_test_run_with_the_arguments_ci_yml_ACTUALLY_carries_at_fa3b070_namely_full_tests_regression_alone require=fail measured=pass_exit0_OK_1_directory_ran_the_populated_rung6_is_named_by_nothing_and_no_declaration_contradicts_it
+id=ci_rung_full_prints_a_counter_line_AFTER_pytests_summary layout=rung1_declared_full_one_PASSING_test_whose_module_registers_an_atexit_hook_printing_1_skipped_in_0_01s require=run measured=fail_exit1_false_skip_alarm_the_tail_1_heuristic_takes_the_later_line
+id=ci_rung_argument_path_carries_a_trailing_slash layout=rung1_declared_full_one_passing_test_argument_written_full_tests_verification_rung1_slash require=run measured=run_exit0_1_passed_OK_1_directory_ran
+
+# MEASURED AT a59521e by the reviewer, `sh scripts/run_rung.sh` in a scratch
+# tree with the shipped script unchanged: 3 new entries, 1 agrees, 2 do not.
+#
+# Two of last round's five are now correct and I re-ran both rather than
+# reading about them: `ci_rung_full_every_test_is_xfail_and_PASSES` reddens
+# (`-o xfail_strict=true` turns the XPASS into a failure), and
+# `ci_rung_full_prints_a_counter_line_AFTER_pytests_summary` is green (the
+# skip count is read from the junit report, not from the tail of stdout).
+#
+# The first row below is the same shape as the xfail entry with one keyword
+# added. `strict=False` on the marker overrides `-o xfail_strict=true`, the
+# summary reads `1 xpassed`, the junit report records skipped="0", and the rung
+# exits 0 with `run_rung: OK`. R260's condition was that the script "reddens on
+# `1 xpassed` alone"; a summary line reading exactly `1 xpassed in 0.21s` is
+# still producible at exit 0.
+
+id=ci_rung_full_xfail_marker_carries_strict_False_and_the_body_PASSES layout=rung1_declared_full_its_only_test_is_pytest_mark_xfail_strict_False_whose_body_passes require=fail measured=pass_exit0_summary_1_xpassed_in_0_21s_run_rung_OK_1_directory_ran
+id=ci_rung_full_conftest_collect_ignore_silently_drops_a_test_file layout=rung1_declared_full_holding_a_FAILING_test_a_py_and_a_passing_test_b_py_with_a_conftest_py_setting_collect_ignore_to_test_a_py require=fail measured=pass_exit0_1_passed_run_rung_OK_1_directory_ran_the_dropped_file_is_reported_by_nothing
+id=ci_rung_full_module_level_pytest_skip_allow_module_level layout=rung1_declared_full_its_only_module_calls_pytest_skip_allow_module_level_True_at_import require=fail measured=fail_exit1_declared_full_and_collects_nothing_exit_5_is_a_failure_here
+
+# ------------------------------------------------------------------------
+# ADDED AT THE THIRTY-SECOND VERDICT ON F2, the seventh on step 5 (HEAD
+# 73cf6ce). CF4 closed the shape verdict 31 named: `run_rung.sh` now reads
+# pytest's FIRST count line and reddens on `xpassed`. The comment beside it
+# says "Pytest prints its summary before any `atexit` output, so the first
+# match is the real one and A LATER FORGERY CANNOT DISPLACE IT."
+#
+# The forgery does not have to be later. `-ra` is in the project's own
+# `addopts`, so pytest prints a `short test summary info` block BEFORE the
+# count line, and every line in that block carries text the TEST FILE
+# controls: the xfail reason, and the parametrize id. Neither is under the
+# guard's control and both sort ahead of the summary.
+#
+# This is the third recurrence of one species in this one file, and its own
+# comments record the first two: "Grepping the whole output matched a PASSING
+# test whose own diagnostic contained the word" and "anything the process
+# prints after the summary ... became the line `tail -1` picked". First-line
+# and last-line are the same mistake facing opposite directions; what the
+# guard needs is pytest's own machine-readable count, not a line of prose
+# that happens to look like one.
+#
+# MEASURED at 73cf6ce, `sh run_rung.sh full:tests/verification/rung1` in a
+# scratch tree carrying the shipped script and the project's `addopts`.
+# ------------------------------------------------------------------------
+
+id=ci_rung_full_xpass_with_a_plain_strict_False_marker_and_no_free_text layout=rung1_declared_full_its_only_test_carries_pytest_mark_xfail_strict_False_with_no_reason_and_the_body_passes require=fail measured=fail_exit1_run_rung_FAIL_1_xpassed_named_CONTROL_CF4_works_on_the_bare_shape
+id=ci_rung_full_xpass_whose_xfail_REASON_string_carries_a_count_phrase layout=rung1_declared_full_its_only_test_is_pytest_mark_xfail_strict_False_reason_1_passed_on_the_reference_build_and_the_body_passes require=fail measured=pass_exit0_run_rung_OK_1_directory_ran_while_the_summary_reads_1_xpassed_because_the_ra_XPASS_line_matched_first
+id=ci_rung_full_xpass_whose_PARAMETRIZE_ID_carries_a_count_phrase layout=rung1_declared_full_its_only_test_is_parametrize_case_3_passed_plus_xfail_strict_False_and_the_body_passes require=fail measured=pass_exit0_run_rung_OK_1_directory_ran_while_the_summary_reads_1_xpassed_the_node_id_reached_the_grep_first
+id=ci_rung_full_xpass_with_a_conftest_pytest_report_header_carrying_a_count_phrase layout=rung1_declared_full_a_conftest_py_whose_pytest_report_header_returns_0_passed_on_the_reference_build_plus_a_bare_strict_False_xpass require=fail measured=fail_exit1_run_rung_FAIL_1_xpassed_named_CONTROL_the_q_flag_suppresses_the_header_so_this_channel_is_closed
+
+# ------------------------------------------------------------------------
+# THIRTY-THIRD VERDICT, eighth on step 5. `-rN --no-header` closed the two
+# channels the previous round measured -- an xfail `reason=` and a parametrize
+# id both redden now, and I re-measured both rather than reading about them.
+# THE CHANNEL IS NOT CLOSED. Two more streams print text the test tree controls
+# AHEAD of pytest's own count line, and neither is suppressed by `-rN` or by
+# `--no-header`: the WARNINGS SUMMARY, and a conftest `pytest_terminal_summary`.
+# The same channel produces the mirror-image fault this file's own comment
+# records as already fixed once -- a clean rung reddened by a string.
+#
+# AND THE FOUR LAYOUTS ADDED AT bcaad88 CANNOT FAIL. `_run` builds the layout in
+# a bare scratch tree with no `pyproject.toml`, so the project's `addopts = -ra`
+# -- the setting that makes the whole attack possible -- is absent. With
+# `-rN --no-header` deleted from `run_rung.sh` the four still give `4 passed`.
+# The fix is real; the shipped evidence for it is not.
+#
+# MEASURED AT a949709, Windows, Python 3.13.11,
+# `sh scripts/run_rung.sh full:tests/verification/rung1` in a scratch tree.
+# ------------------------------------------------------------------------
+
+id=ci_rung_full_xpass_whose_TEST_BODY_EMITS_A_WARNING_carrying_a_count_phrase layout=rung1_declared_full_its_only_test_is_xfail_strict_False_and_the_body_calls_warnings_warn_3_passed_in_0_01s_before_asserting_True require=fail measured=pass_exit0_run_rung_OK_1_directory_ran_with_1_xpassed_on_the_screen_the_warnings_summary_prints_BEFORE_the_count_line_and_neither_rN_nor_no_header_suppresses_it
+id=ci_rung_full_xpass_with_a_conftest_pytest_terminal_summary_writing_a_count_line layout=rung1_declared_full_a_conftest_py_whose_pytest_terminal_summary_calls_terminalreporter_write_line_5_passed_in_0_01s_plus_a_bare_strict_False_xpass require=fail measured=pass_exit0_run_rung_OK_1_directory_ran_the_hook_writes_ahead_of_pytests_own_count_line_and_no_header_does_not_reach_a_terminal_summary_hook
+id=ci_rung_full_CLEAN_rung_whose_warning_text_contains_the_word_xpassed layout=rung1_declared_full_one_ordinary_PASSING_test_whose_body_warns_1_xpassed_in_0_01s_and_nothing_at_all_is_skipped_or_xfailed require=pass measured=fail_exit1_run_rung_FAIL_quoting_the_UserWarning_line_a_rung_that_skipped_and_xfailed_NOTHING_is_reddened_by_a_string_which_is_the_FALSE_POSITIVE_this_files_own_comment_records_as_fixed_once_already
+id=ci_rung_full_xpass_with_a_MODULE_LEVEL_print_of_a_count_phrase_at_collection layout=rung1_declared_full_the_test_module_prints_2_passed_in_0_01s_to_stderr_at_import_time_plus_a_bare_strict_False_xpass require=fail measured=fail_exit1_CONTROL_collection_time_output_is_captured_and_never_reaches_the_terminal_so_this_channel_is_closed
+id=ci_rung_full_xpass_reason_count_phrase_WITH_the_projects_addopts_present_in_the_layout layout=the_existing_xfail_REASON_entry_plus_a_pyproject_toml_carrying_addopts_ra_strict_markers_strict_config_which_is_what_the_real_rung_runs_under require=fail measured=fail_exit1_at_a949709_AND_the_same_layout_WITHOUT_the_pyproject_is_fail_exit1_even_with_rN_no_header_DELETED_so_the_four_layouts_shipped_at_bcaad88_pass_identically_with_and_without_the_repair
+
+# ------------------------------------------------------------------------
+# THIRTY-FOURTH VERDICT, ninth on step 5. MEASURED AT 55498f4 by the reviewer,
+# Windows, Python 3.13.11, `sh scripts/run_rung.sh full:rungX` in a scratch
+# tree carrying the project's own `pyproject.toml`: 7 new entries, 3 agree,
+# 4 do not.
+#
+# THE REPAIR OF THIS ROUND IS THE BIGGEST ONE THIS FILE HAS SEEN AND I
+# REPRODUCED ALL OF IT. The rung no longer reads stdout at all -- pytest's
+# output is sent to /dev/null and the outcome comes from `--junit-xml` and the
+# exit code. Both doors from the last round are shut and the ablation is
+# load-bearing: `-p rung_no_xpass` deleted, nothing else, gives `8 failed,
+# 1 passed` where the shipped script gives `9 passed`, and the one that stays
+# green is the false-positive control. The mirror fault is gone: a clean rung
+# whose test warns `1 xpassed` is green.
+#
+# WHAT THE MIGRATION DID NOT CHANGE. Every earlier round's attack forged the
+# TEXT the gate read. These four forge the RECORD the gate reads, and three of
+# the four are not in the reach the script states. A rung's own `conftest.py`
+# is the same kind of object as the `pytest_terminal_summary` conftest that
+# counted as a live attack last round; the reach sentence calls a conftest
+# "an edit to the harness" only for the one channel it enumerated.
+#
+#   * `pytest_runtest_makereport` as a conftest hookwrapper sets a failing
+#     call report to `passed` -- the same hook, in the same direction, that
+#     `scripts/rung_no_xpass.py` itself uses. The rung is genuinely red and
+#     the script prints `1 collected, 0 failed` and `run_rung: OK`, exit 0.
+#     `scripts/rung_no_xpass.py:21` says "A test cannot write another test's
+#     report element, so there is nothing to forge." A conftest can write
+#     EVERY test's report element, and that is how the repair works.
+#   * `pytest_ignore_collect` hides the failing test FILE. One passing test
+#     remains, `1 collected, 0 failed`, exit 0. Nothing anywhere records how
+#     many tests the rung is supposed to have, so a rung that loses a file
+#     is indistinguishable from one that never had it -- which is the
+#     `.empty-by-design` argument, one level down.
+#   * `pytest_collection_modifyitems` drops only the failing item. Same
+#     result. This is assertion domain blindness in its plainest form: the
+#     collection the gate inspects cannot contain the failure.
+#   * `pytest_sessionfinish` rewriting the XML is the one the script DOES
+#     name, and it works from a rung conftest rather than from a plugin.
+#
+# THE TWO CONTROLS SAY THE GATE IS NOT VACUOUS. A conftest that deselects
+# every item reddens on "collects nothing", and an `xfail` that genuinely
+# fails reddens on the junit `<skipped>` element. The gate carries its own
+# failure; what it does not carry is a rung tree it does not trust.
+# ------------------------------------------------------------------------
+
+id=ci_rung_full_conftest_makereport_wrapper_turns_a_FAILING_test_into_a_passing_report layout=rung1_declared_full_one_test_asserting_False_plus_a_conftest_py_with_a_pytest_runtest_makereport_hookwrapper_trylast_that_sets_rep_outcome_to_passed_and_rep_longrepr_to_None_when_rep_when_is_call_and_rep_failed require=fail measured=pass_exit0_run_rung_1_collected_0_failed_0_errored_0_skipped_then_run_rung_OK_the_rung_is_RED_and_the_gate_says_green_and_this_channel_is_the_one_rung_no_xpass_itself_uses
+id=ci_rung_full_conftest_makereport_wrapper_against_the_XPASS_case_CONTROL layout=rung1_declared_full_one_xfail_strict_False_test_that_passes_plus_the_same_conftest_makereport_wrapper require=fail measured=fail_exit1_CONTROL_the_plugin_wins_the_ordering_here_so_the_xpass_repair_is_not_defeated_by_the_same_wrapper_that_defeats_a_plain_failure
+id=ci_rung_full_conftest_pytest_ignore_collect_hides_the_FAILING_test_file layout=rung1_declared_full_test_ok_py_passing_and_test_bad_py_asserting_False_plus_a_conftest_pytest_ignore_collect_returning_True_for_test_bad_py require=fail measured=pass_exit0_1_collected_0_failed_a_whole_test_FILE_vanishes_and_nothing_records_how_many_the_rung_should_have_had
+id=ci_rung_full_conftest_collection_modifyitems_drops_only_the_FAILING_item layout=rung1_declared_full_one_module_with_test_ok_and_test_bad_plus_a_conftest_pytest_collection_modifyitems_filtering_bad_out_of_items require=fail measured=pass_exit0_1_collected_0_failed_the_collection_the_gate_inspects_cannot_contain_the_failure
+id=ci_rung_full_conftest_pytest_sessionfinish_rewrites_the_junit_xml layout=rung1_declared_full_one_test_asserting_False_plus_a_conftest_pytest_sessionfinish_trylast_that_parses_session_config_option_xmlpath_removes_every_failure_and_error_element_writes_it_back_and_sets_session_exitstatus_to_0 require=fail measured=pass_exit0_DECLARED_the_scripts_reach_comment_names_this_channel_but_names_it_as_a_plugin_and_it_works_from_a_rung_conftest
+id=ci_rung_full_conftest_deselects_EVERY_item_CONTROL layout=rung1_declared_full_one_failing_test_plus_a_conftest_pytest_collection_modifyitems_setting_items_to_the_empty_list require=fail measured=fail_exit1_CONTROL_run_rung_FAIL_rungX_is_declared_full_and_collects_nothing
+id=ci_rung_full_xfail_marked_test_that_genuinely_FAILS_CONTROL layout=rung1_declared_full_one_test_marked_pytest_mark_xfail_reason_known_whose_body_asserts_False require=fail measured=fail_exit1_CONTROL_1_collected_0_failed_1_skipped_the_junit_skipped_element_is_read_and_CLAUDE_md_forbids_xfail_for_a_green_build
+
+# ------------------------------------------------------------------------
+# ADDED AT THE THIRTY-FIFTH VERDICT ON F2, THE TENTH ON STEP 5 (HEAD e3a3bd1).
+#
+# R302 was answered the honest way: the two sentences claiming the junit record
+# cannot be forged are withdrawn, the property is stated, and the bound named is
+# REVIEW of `tests/**/conftest.py` -- written into the supervisor's own
+# instructions at 979933f and quoted back in scripts/run_rung.sh:172-176.
+#
+# THE BOUND IS A PATHSPEC AND THE PATHSPEC MATCHES NOTHING. At this commit
+# `git ls-files -- 'tests/**/conftest.py'` returns ZERO files, and the one
+# conftest this repository has -- `tests/conftest.py`, tracked since F0 -- is
+# not among them: git's default glob will not let `**` stand for zero
+# directories. That file ALREADY implements `pytest_collection_modifyitems`,
+# which is R302's third channel, for every rung at once.
+#
+# So the first two entries are the same channel one directory up and one
+# directory down from where the bound looks, measured through the shipped
+# script. The third is what a red rung actually prints. The fourth is the
+# control that says the harness can see red at all.
+# ------------------------------------------------------------------------
+
+id=ci_rung_full_ROOT_conftest_tests_conftest_py_drops_the_FAILING_item_for_every_rung layout=tests_verification_rung1_declared_full_with_one_module_holding_test_ok_and_test_bad_plus_a_conftest_at_tests_conftest_py_whose_pytest_collection_modifyitems_filters_bad_out_of_items require=fail measured=pass_exit0_run_rung_1_collected_0_failed_0_errored_0_skipped_then_run_rung_OK_and_this_file_is_OUTSIDE_the_pathspec_the_review_bound_declares_git_ls_files_tests_starstar_conftest_py_returns_zero_files_while_tests_conftest_py_is_tracked_and_already_implements_this_very_hook
+id=ci_rung_full_conftest_ONE_LEVEL_ABOVE_the_rung_directory_drops_the_FAILING_item layout=tests_verification_rung1_declared_full_with_test_ok_and_test_bad_plus_a_conftest_at_tests_verification_conftest_py_whose_pytest_collection_modifyitems_filters_bad_out_of_items require=fail measured=pass_exit0_1_collected_0_failed_the_channel_is_not_a_property_of_the_rung_directory_it_is_a_property_of_every_conftest_on_the_path_and_all_four_declarations_in_REQUIREMENT_CHANGED_name_the_rung_directory
+id=ci_rung_RED_prints_a_count_and_a_reason_and_NO_TEST_NAME layout=tests_verification_rung1_declared_full_with_one_passing_and_one_failing_test_run_through_the_repaired_script require=fail measured=pass_the_output_is_2_collected_1_failed_0_errored_0_skipped_and_run_rung_FAIL_rung1_is_red_with_no_test_name_anywhere_while_commit_1dc4d33_is_titled_a_red_rung_says_which_test_failed_and_run_rung_sh_181_183_says_what_was_lost_was_everything_that_says_WHICH_test_failed_measured_again_on_CI_at_the_reviewed_commit_where_ladder4_printed_85_collected_13_failed_and_named_none_of_the_thirteen
+id=ci_rung_full_two_tests_one_failing_and_NO_conftest_CONTROL layout=tests_verification_rung1_declared_full_with_one_passing_and_one_failing_test_and_no_conftest_anywhere_on_the_path require=fail measured=fail_exit1_CONTROL_2_collected_1_failed_run_rung_FAIL_rung1_is_red_the_junit_reader_runs_and_reports_which_is_what_the_set_e_repair_bought
+
+# ------------------------------------------------------------------------
+# THIRTY-SIXTH VERDICT (HEAD bf00121). CI0 landed a SECOND record of the run
+# -- `scripts/rung_no_xpass.py` tallies at `pytest_runtest_call` and
+# `scripts/run_rung.sh` requires that tally to agree with the junit XML -- and
+# three files now say what it buys: `docs/SUPERVISOR.md` item 4c and
+# `.claude/agents/gating-supervisor.md` item 4c ("forgery must be consistent
+# across two places rather than done in one"), `scripts/run_rung.sh:172-178`
+# ("a conftest that drops a failing item now has to defeat both records
+# consistently instead of one"), and the step report's section 1 ("two of the
+# four channels now redden ... the other two cannot be caught from inside the
+# session").
+#
+# The first four entries measure that sentence rather than the four channels
+# it was measured on. The tally is taken inside `pytest_runtest_call`, so a
+# conftest hookwrapper on the SAME hook, ordered INNERMOST, is upstream of the
+# tally as well as of every report: one hook, one file, both records agree.
+# The second entry is its control -- the identical body without `trylast` --
+# and the two differ by one keyword argument.
+#
+# Entries three and four are two more shapes of the "removed before any record
+# exists" class the report declares unreachable. They are here so the class is
+# a measured set rather than a pair.
+#
+# Every `measured=` below was taken at bf00121 by running `sh
+# scripts/run_rung.sh full:tests/verification/rung1` over a scratch tree
+# carrying the project's own pyproject.toml, one module holding test_ok and
+# test_bad, and one conftest -- at `tests/verification/rung1/conftest.py` and
+# again at `tests/conftest.py`. Both depths gave the same answer for all four.
+# ------------------------------------------------------------------------
+
+id=ci_rung_full_conftest_runtest_call_hookwrapper_TRYLAST_swallows_the_exception layout=tests_verification_rung1_declared_full_with_test_ok_and_test_bad_plus_a_conftest_whose_pytest_runtest_call_hookwrapper_declared_trylast_true_calls_outcome_force_result_None_when_excinfo_is_not_None require=fail measured=pass_exit0_run_rung_2_collected_0_failed_0_errored_0_skipped_then_run_rung_OK_both_depths_ONE_HOOK_IN_ONE_FILE_and_the_two_records_AGREE_because_the_tally_is_taken_inside_pytest_runtest_call_and_trylast_puts_the_attacker_INSIDE_it_so_the_claim_that_forgery_must_now_be_consistent_across_two_places_rather_than_done_in_one_is_refuted_by_one_keyword_argument
+id=ci_rung_full_conftest_runtest_call_hookwrapper_DEFAULT_ORDER_swallows_the_exception_CONTROL layout=the_same_conftest_body_with_no_trylast_so_the_plugin_wrapper_is_the_inner_one require=fail measured=fail_exit1_CONTROL_run_rung_FAIL_the_two_records_of_this_run_disagree_junit_says_2_0_0_and_the_plugin_tallied_2_1_0_the_cross_check_works_exactly_as_advertised_and_the_only_difference_between_this_entry_and_the_one_above_is_hookimpl_ordering
+id=ci_rung_full_conftest_pytest_runtest_protocol_returns_True_for_the_failing_item layout=tests_verification_rung1_declared_full_with_test_ok_and_test_bad_plus_a_conftest_whose_pytest_runtest_protocol_returns_True_for_any_item_whose_name_contains_bad_so_the_protocol_is_claimed_to_have_run_and_no_report_is_ever_produced require=fail measured=pass_exit0_1_collected_0_failed_run_rung_OK_both_depths_a_fifth_channel_in_the_same_class_as_the_two_declared_unreachable_and_not_in_the_four_the_layout_map_enumerates
+id=ci_rung_full_conftest_deselects_the_failing_item_through_pytest_deselected layout=tests_verification_rung1_declared_full_with_test_ok_and_test_bad_plus_a_conftest_whose_pytest_collection_modifyitems_reports_the_failing_item_to_config_hook_pytest_deselected_and_then_removes_it_from_items require=fail measured=pass_exit0_1_collected_0_failed_run_rung_OK_both_depths_deselection_is_the_legitimate_spelling_of_the_drop_and_leaves_a_junit_report_that_is_an_accurate_account_of_a_run_that_did_not_contain_the_failure

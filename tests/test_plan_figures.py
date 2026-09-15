@@ -1,0 +1,118 @@
+"""The plan's moving numbers are generated, and are not stale (BT0).
+
+Hand-typed figures in `docs/milestones/F2.md` moved **eight times** across this
+milestone, and three review rounds running found one describing the repository as
+it was a commit earlier. The plan is a locked artifact; a number inside it that
+nothing regenerates is a claim with no owner.
+
+So the numbers that move are produced by `scripts/regen_figures.py` into
+`docs/milestones/F2_figures.md` and referenced from the plan as `{{fig:NAME}}`.
+This asserts both halves: every referenced name exists, and the generated file is
+what a fresh run produces.
+
+SCOPE, and it is deliberately narrow: the figures that move, not the whole plan.
+A generated file that owns every number becomes a second source of truth nobody
+reads. The prose around these figures is still prose, and `CLAUDE.md`'s
+claim-carries-its-command rule is what covers it.
+"""
+
+from __future__ import annotations
+
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+PLAN = ROOT / "docs" / "milestones" / "F2.md"
+FIGURES = ROOT / "docs" / "milestones" / "F2_figures.md"
+
+_REF = re.compile(r"\{\{fig:([a-z0-9_]+)\}\}")
+_ROW = re.compile(r"^\| `([a-z0-9_]+)` \| (.+?) \|$", re.MULTILINE)
+
+
+def _defined() -> dict[str, str]:
+    return dict(_ROW.findall(FIGURES.read_text(encoding="utf-8")))
+
+
+def _referenced() -> list[str]:
+    return sorted(set(_REF.findall(PLAN.read_text(encoding="utf-8"))))
+
+
+def _every_reference() -> list[tuple[str, str]]:
+    """`(file, name)` for every `{{fig:NAME}}` anywhere in the repository.
+
+    CM3/R337: a dangling figure name in a docstring is the same defect as one
+    in the plan, and until now only the plan was read. A comment that cites a
+    figure the generator does not produce is a claim with nothing behind it,
+    and it is harder to notice than a stale number because it looks like a
+    reference.
+    """
+    out: list[tuple[str, str]] = []
+    for where in ("floatfea", "tests", "scripts", "docs"):
+        for path in (ROOT / where).rglob("*"):
+            if path.suffix not in (".py", ".md", ".sh") or "__pycache__" in str(path):
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for name in _REF.findall(text):
+                out.append((str(path.relative_to(ROOT)).replace("\\", "/"), name))
+    return out
+
+
+REFERENCES = _every_reference()
+
+
+@pytest.mark.parametrize(
+    "where, name",
+    REFERENCES or [("(none)", "(none)")],
+    ids=[f"{w}:{n}" for w, n in REFERENCES] or ["(none)"],
+)
+def test_every_figure_reference_anywhere_resolves(where: str, name: str) -> None:
+    """Wherever it is written, the name has to exist."""
+    if where == "(none)":
+        pytest.fail("no `{{fig:...}}` reference found anywhere; the pattern broke")
+    defined = _defined()
+    assert name in defined, (
+        f"{where} cites `{{{{fig:{name}}}}}` and the generated file defines "
+        f"{sorted(defined)[:4]}... A reference in a docstring is a claim like "
+        "any other."
+    )
+
+
+def test_the_plan_references_generated_figures_at_all() -> None:
+    """Meta-test: zero references makes every check below vacuous."""
+    refs = _referenced()
+    assert refs, (
+        "the plan references no generated figure. Either the references were "
+        "removed or the pattern stopped matching, and both make this file a "
+        "test of nothing."
+    )
+    assert len(refs) >= 5, f"only {refs} referenced; the set is larger than that"
+
+
+@pytest.mark.parametrize("name", _referenced())
+def test_every_referenced_figure_exists(name: str) -> None:
+    defined = _defined()
+    assert name in defined, (
+        f"the plan references {{{{fig:{name}}}}} and "
+        f"docs/milestones/F2_figures.md does not define it. Run "
+        "`python scripts/regen_figures.py`."
+    )
+
+
+def test_the_generated_figures_are_not_stale() -> None:
+    """The file is what a fresh run produces, or the plan is quoting the past."""
+    out = subprocess.run(
+        [sys.executable, "scripts/regen_figures.py", "--check"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert out.returncode == 0, (
+        f"{out.stdout}{out.stderr}\ndocs/milestones/F2_figures.md is not what "
+        "`scripts/regen_figures.py` produces at this commit. Regenerate it and "
+        "say in the step report which figures moved and why -- that is the "
+        "whole point of generating them."
+    )

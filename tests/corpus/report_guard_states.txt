@@ -1,0 +1,165 @@
+# CORPUS: repository states the step-report carry guard must survive.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the twenty-eighth verdict on F2, the third
+# verdict on step 5 (HEAD 5737fa6).
+#
+# WHY THIS FILE EXISTS (BE3). At CB2 `tests/test_report_carried.py` stopped
+# naming `step-4.md` and started following the newest report:
+#
+#     STEP    = max(int(n) for docs/reports/F2/step-<n>.md)
+#     VERDICT = docs/reviews/F2/step-<STEP>.md
+#     REPORT  = docs/reports/F2/step-<STEP>.md
+#     REPORT_TEXT = _read(REPORT)        <- module scope
+#     VERDICT_TEXT = _verdict_text_at(_answered_verdict(REPORT_TEXT))  <- module scope
+#
+# That was the right diagnosis: pointed at step 4 while step 5 was open, the
+# guard was green about a step nobody was working on. But the two module-scope
+# reads make the guard's INPUT a pair of files that must both exist, and
+# `CLAUDE.md` § Step gating says they do not: the implementer writes the report
+# and COMMITS, and only then is the reviewer invoked to write the verdict. There
+# is a commit, at every step boundary, at which the newest report has no verdict
+# beside it. That commit is not a corner case; it is the step-opening commit.
+#
+# This is the same shape as the failure `.claude/agents/gating-supervisor.md`
+# item 1b records -- comparing the report against the NEWEST verdict made the
+# boundary permanently red, `pytest` was `34 failed` by construction, and green
+# stopped meaning anything. The `Answers:` header fixed it for the verdict
+# CONTENT. The FILE now reintroduces it, one level down.
+#
+# FORMAT
+#   id=<name> state=<what is on disk> require=<what a reader needs> measured=<what
+#   `python -m pytest tests/test_report_carried.py -q` did at 5737fa6>
+#
+#   require=green         the module collects and every assertion passes
+#   require=named_fail    the module COLLECTS and a NAMED test fails, so the
+#                         report can still state a count and the reader can see
+#                         which property broke
+#   require=ignored       the state is not the guard's business and it stays green
+#
+# WHAT A PASSING SCAN MEANS. For each entry, build the state in a checkout at
+# 5737fa6 and run `python -m pytest tests/test_report_carried.py -q`. A passing
+# scan means every entry agrees with `require`. A collection ERROR is never an
+# agreement with `named_fail`: an interrupted collection runs NOTHING -- at
+# 5737fa6, `python -m pytest -q` in state `newest_report_has_no_verdict_yet`
+# reports `1 error in 0.84s` and zero of the 1589 tests execute.
+#
+# MEASURED AT 5737fa6 by the reviewer, in a scratch worktree, one variable moved
+# per row against the `baseline` entry: 6 entries, 4 agree, 2 do not.
+
+id=baseline state=step5_report_and_step5_verdict_both_present require=green measured=green_93_passed
+id=newest_report_has_no_verdict_yet state=docs_reports_F2_step6_md_added_no_docs_reviews_F2_step6_md require=named_fail measured=COLLECTION_ERROR_FileNotFoundError_whole_suite_interrupted
+id=newest_verdict_file_present_but_empty state=step6_report_added_and_step6_verdict_is_a_zero_byte_file require=named_fail measured=collection_error_empty_parameter_set_at_test_the_report_carries_the_finding
+id=two_digit_step_number state=step10_report_and_step10_verdict_both_present require=green measured=named_fail_82_failed_11_passed_at_5737fa6,green_122_passed_at_37799aa
+id=non_numeric_step_suffix state=step5b_md_added_beside_step5_md require=ignored measured=ignored_green_93_passed
+id=reports_directory_renamed_away state=docs_reports_F2_renamed_to_docs_reports_F2_moved require=named_fail measured=COLLECTION_ERROR_FileNotFoundError_step_0_md
+
+# ---------------------------------------------------------------------------
+# TWENTY-NINTH VERDICT, the fourth on step 5 (HEAD 37799aa). 11 new entries and
+# ONE RULING ON AN EXISTING ONE.
+#
+# THE RULING. two_digit_step_number carried require=named_fail. The
+# implementer REQUIREMENT_CHANGED entry argues that a step-10 report and a
+# step-10 verdict are a COHERENT pair, so the repaired guard is green and the
+# 82 failures measured at 5737fa6 were the module-scope read. ACCEPTED, and the
+# require field is changed here rather than overridden in test code -- BUT NOT
+# ON THE ARGUMENT. green is also what a guard comparing step numbers as STRINGS
+# would print, because 10 sorts below 5 lexically and such a guard would
+# silently check step 5 while reporting nothing. The two outcomes are
+# indistinguishable on that state, which is why it was written named_fail.
+# So the property was measured instead: entry
+# two_digit_step_number_discriminating puts a finding in the step-10 VERDICT
+# that the step-10 report does not carry. At 37799aa the guard goes red naming
+# it, so int() is parsing ten. The ruling stands and the discriminator is what
+# keeps it honest.
+#
+# THE STATE THAT MATTERS MOST HERE IS shallow_clone_depth_1, and it is not
+# hypothetical: it is what actions/checkout@v4 produces by default, which is
+# what the guards job added at 4a8d2a3 runs on. Measured as a controlled pair
+# on ONE machine, one variable moved:
+#     git clone           file://<repo> full     -> 122 passed
+#     git clone --depth 1 file://<repo> shallow  -> 23 failed, 99 passed
+# Same commit, same interpreter, same libm. The 23 are not a platform
+# difference. _changed_lines() runs git diff -U0 <reviewed> and never checks the
+# return code, so a commit the clone does not have gives an empty touched set,
+# which is indistinguishable from -- the step changed nothing.
+#
+# superscript_digit_step_number is R234 failure mode still reachable at
+# 37799aa: str.isdigit() is true for a strictly larger set than int() accepts,
+# _steps() catches only OSError, and the module dies at import. pytest prints
+# 1 error and zero of 1656 tests run.
+#
+# MEASURED AT 37799aa by the reviewer, in scratch copies of the repository:
+# 11 new entries, 8 agree with require, 3 do not.
+
+id=superscript_digit_step_number state=docs_reports_F2_step_U00B9_md_added_superscript_one require=ignored measured=COLLECTION_ERROR_ValueError_invalid_literal_for_int_whole_suite_interrupted
+id=shallow_clone_depth_1 state=repository_cloned_with_actions_checkout_v4_default_fetch_depth_1_nothing_else_changed require=green measured=23_failed_99_passed_every_named_site_falsely_unanswered
+id=reviews_directory_renamed_away state=docs_reviews_F2_renamed_to_docs_reviews_F2_moved require=named_fail measured=named_fail_5_failed_no_collection_error
+id=answers_header_names_a_sha_that_is_not_a_commit state=newest_report_revision_Answers_header_reads_deadbee require=named_fail measured=named_fail_1_failed_121_passed
+id=two_reports_ahead_of_the_newest_verdict state=step6_and_step7_reports_added_verdicts_stop_at_step5 require=named_fail measured=named_fail_1_failed_121_passed_STEP_REPORT_minus_STEP_is_2
+id=report_file_is_a_directory state=docs_reports_F2_step6_md_is_a_DIRECTORY_and_a_step6_verdict_exists require=named_fail measured=named_fail_91_failed_31_passed
+id=verdict_file_is_a_directory state=step6_report_added_and_docs_reviews_F2_step6_md_is_a_DIRECTORY require=named_fail measured=named_fail_3_failed_2_passed
+id=draft_suffix_beside_a_step_report state=docs_reports_F2_step6_draft_md_added_beside_step5_md require=ignored measured=named_fail_read_as_a_step6_report_with_no_verdict
+id=step_number_is_the_empty_string state=docs_reports_F2_step_dash_md_added require=ignored measured=ignored_green_122_passed
+id=two_digit_step_number_discriminating state=step10_report_and_step10_verdict_where_the_verdict_carries_R999_and_the_report_does_not require=named_fail measured=named_fail_2_failed_122_passed_names_R999
+id=verdict_amended_after_the_commit_the_report_answers state=R999_appended_to_the_working_copy_of_step5_verdict_after_8e7418f require=green measured=green_122_passed_the_guard_reads_git_show_at_the_answered_sha
+
+# ---------------------------------------------------------------------------
+# THE THIRTIETH VERDICT'S FOUR (fifth verdict on step 5, HEAD fa3b070).
+#
+# R243 was answered at CD1 with `fetch-depth: 0` on all nine checkouts and a
+# named test carrying git's return code. I ran the state myself: at fa3b070 a
+# `git clone --depth 1 --no-local` gives 2 failed, 121 passed, and both failures
+# are named tests. That is the right behaviour and the `require=green` I wrote
+# last round is withdrawn -- a guard that cannot see the diff must SAY so.
+#
+# BUT THE OUTCOME CLASS DOES NOT MEASURE IT. Ablation cell, one machine, one
+# commit, one variable -- the return-code branch in `_changed_lines` removed and
+# nothing else:
+#
+#     shipped   `--depth 1` clone -> 2 failed, 121 passed, exit 1
+#     ablated   `--depth 1` clone -> 16 failed, 107 passed, exit 1
+#
+# `assert code != 0` passes on both, so the harness certifies R243's answer and
+# would certify its absence. The named-reporter list does not separate them
+# either: `test_every_named_site_is_touched_or_declared` is IN that list, and it
+# is what the sixteen are. The requirement below is written so the two sides are
+# distinguishable -- one diagnosis, not sixteen -- and the field that carries it
+# is `forbid=`.
+#
+# MEASURED AT fa3b070 by the reviewer, in scratch clones and copies of the
+# repository: 4 new entries, 1 agrees with require, 3 do not.
+
+id=shallow_clone_depth_1_reports_one_diagnosis_not_sixteen state=repository_cloned_with_git_clone_depth_1_no_local_at_fa3b070_nothing_else_changed require=named_fail forbid=any_test_every_named_site_is_touched_or_declared_parametrisation_may_not_fail measured=named_fail_2_failed_121_passed_shipped_and_named_fail_16_failed_107_passed_with_the_return_code_branch_ablated_both_satisfy_code_ne_0
+id=zero_padded_step_number state=docs_reports_F2_step_06_md_added_no_step_6_md_exists require=ignored measured=named_fail_1_failed_122_passed_the_guard_resolves_step_6_and_reads_docs_reports_F2_step_6_md_which_does_not_exist
+id=zero_padded_step_number_beside_the_unpadded_one state=docs_reports_F2_step_06_md_and_step_6_md_both_added_with_a_step_6_verdict require=named_fail measured=green_123_passed_two_report_files_map_to_one_step_number_and_the_guard_is_silent_about_the_one_it_does_not_read
+id=answers_header_names_an_older_verdict_commit state=newest_revision_Answers_header_changed_from_476f909_to_8ffbd51_which_is_a_real_earlier_step_5_verdict_commit require=named_fail measured=named_fail_67_failed_30_passed_through_the_site_checks_en_masse_not_through_one_reporter
+
+# ------------------------------------------------------------------------
+# ADDED AT THE THIRTY-FIFTH VERDICT ON F2, THE TENTH ON STEP 5 (HEAD e3a3bd1).
+#
+# The first is the live failure at the reviewed commit and it is a CONTROL: the
+# declared-direction machinery caught a declaration that went stale between the
+# commit it was measured at and the commit it shipped in. That is the mechanism
+# working, and it is why the suite is red.
+# ------------------------------------------------------------------------
+
+id=guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL state=answers_header_names_an_older_verdict_commit_declared_green_at_e3a3bd1_while_the_report_commit_is_newer_than_the_verdict_commit_so_test_the_answered_verdict_is_the_NEWEST_one_fires require=fail measured=fail_CONTROL_1_failed_1833_passed_on_my_run_at_e3a3bd1_and_1_failed_531_passed_in_the_guards_job_of_run_34486215228_the_declaration_was_true_while_the_report_file_was_older_than_the_verdict_and_false_from_the_moment_the_report_was_committed_which_is_the_very_commit_that_declared_it
+id=guard_state_a_report_commit_messaged_docs_that_also_edits_the_guards_measuring_it state=e3a3bd1_subject_docs_step_5_revision_9_also_touching_scripts_carried_table_py_scripts_ci_section_py_tests_test_report_carried_py_and_tests_test_report_guard_states_py require=fail measured=pass_nothing_refuses_it_the_PreToolUse_hook_protects_docs_reviews_and_tests_corpus_and_CLAUDE_md_protects_claude_and_docs_SUPERVISOR_md_a_step_report_commit_may_still_change_the_test_that_judges_the_step_report_and_at_this_commit_it_did_and_that_change_is_what_turned_the_suite_red
+
+# ------------------------------------------------------------------------
+# THIRTY-SIXTH VERDICT (HEAD bf00121). Two new checks landed in
+# `tests/test_report_carried.py`: the Carried pointer is resolved against the
+# report (R314/R311a), and the report must carry a whole-suite line (CI1/R309).
+# Both do what the finding asked -- I rotated three pointers and all three
+# reddened by name. These two entries are the shapes that satisfy each check
+# while defeating what it is for.
+#
+# Both `measured=` values were taken at bf00121, on a full clone, by mutating
+# only `docs/reports/F2/` and running `python -m pytest
+# tests/test_report_carried.py -q`, which is 165 tests at that commit.
+# ------------------------------------------------------------------------
+
+id=guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF state=every_answered_row_in_step_5_answers_json_has_where_set_to_section_9_which_is_the_Carried_section_and_the_table_is_regenerated_with_the_committed_script require=fail measured=pass_165_passed_the_pointer_resolution_asks_only_that_the_named_section_exists_and_mentions_the_item_and_the_Carried_section_is_a_table_that_mentions_every_item_so_a_pointer_at_the_table_resolves_for_all_of_them_and_the_check_becomes_vacuous_without_a_single_rotation
+id=guard_state_the_whole_suite_line_names_an_ANCESTOR_AT_WHICH_THE_SUITE_WAS_RED state=the_whole_suite_line_rewritten_to_Whole_suite_at_9cc7744_1833_passed_0_failed_0_skipped_which_is_the_previous_verdict_commit_the_last_rounds_count_and_a_commit_at_which_the_suite_was_actually_1_failed_1833_passed require=fail measured=pass_165_passed_the_three_shipped_assertions_are_the_line_exists_passed_is_over_100_and_the_sha_is_an_ancestor_of_HEAD_so_any_ancestor_with_any_count_and_a_typed_zero_in_the_failed_field_satisfies_all_three_and_the_RUN_IT_LAST_ordering_that_is_the_whole_content_of_R309_is_stated_in_the_script_docstring_and_asserted_nowhere
