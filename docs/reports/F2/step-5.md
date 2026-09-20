@@ -7865,3 +7865,513 @@ and it did.
 
 **What is not claimed.** Step R has not run and the four reader literals are
 untouched. No Q8 value beyond those already written.
+
+---
+
+# Revision 22 — one constant, and a window with one side that was not a side
+
+Answers: verdict 47 @ b375cd0
+
+**2026-09-19.** Commits since the forty-seventh verdict, listed in §10.
+
+## 0. CI at `681c380`, the commit verdict 47 judged — conclusion **SUCCESS**
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 47 at `681c380` through the report's own `Answers:` line. Run `34927650922`, event `push`, conclusion **success**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 1361 | 0 | 0 |
+| lint, unit and guards | 901 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 0 not green.**
+
+**Failing tests named in the log: 0.**
+
+## 0a. The other runs, and the omission that is R412
+
+**FOUR RUNS, FOUR CONCLUSIONS.** §0 above is the first; this round's dispatch
+and push are the second and third; the run revision 21 named without one is the
+fourth. Three of the four concluded `failure` and not one of those failures is
+in `floatfea/` or on the ladder.
+
+```
+claim §0 above is the run at the commit verdict 47 judged. THIS round has two
+      more runs and each one is named with what it concluded
+cmd   gh run view 35479925335 --json conclusion,jobs  -- this round's dispatch
+out   conclusion **FAILURE**, event workflow_dispatch, head 0a9d54d
+      ten "CI determinism -- leg (n)"  success
+      "CI determinism -- ten legs agree" success
+      "the verification ladder"         success
+      "lint, unit and guards"           FAILURE
+cmd   gh run view 35479925335 --log-failed | grep -Eo "FAILED [^ ]+" | sort -u
+out   test_the_generated_figures_are_not_stale, four
+      test_every_named_site_is_touched_or_declared rows for R419,
+      test_every_CI_RUN_the_report_names_carries_its_conclusion,
+      test_the_whole_suite_line_is_about_a_commit_that_exists, and the eight
+      test_report_guard_states rows that re-run the same guard. Every one is
+      this report not yet being written; nothing in `floatfea/`, nothing in
+      rung 1, and the ladder is green in the same run.
+cmd   gh run view 35479506950 --json conclusion  -- this round's push
+out   conclusion **FAILURE**, same reason, ladder green
+judge THE LEGS ARE THE MEASUREMENT AND THE CONCLUSION IS THE HEADLINE. Ten
+      legs agreed on the render this round's canonical commit carries, and
+      the run they ran in concluded `failure`. Both facts, in that order.
+```
+
+```
+claim §0a of revision 21 named run 34925280557 under "ten determinism legs
+      green, the verdict job green, the ladder green" and did not say what the
+      run concluded
+cmd   gh run view 34925280557 --json conclusion,event
+out   conclusion **FAILURE**, event workflow_dispatch
+cmd   gh run view 34925280557 --log-failed | grep -Eo "FAILED [^ ]+" | sort -u
+out   22 rows, every one a report-or-figure staleness guard; nothing in
+      floatfea/ and nothing in rung 1
+judge EVERY SENTENCE IN THAT PARAGRAPH WAS TRUE AND THE PARAGRAPH WAS WRONG.
+      A run can conclude `failure` with every job a sentence names green,
+      because the failing job is a fourth one the sentence does not reach.
+      That is R412, second round, and §4 makes it a build failure rather than
+      a habit.
+```
+
+## 1. R415 — two constants were one threshold, and now there is one constant
+
+**The finding is right and it follows from CT0 exactly.** Deleting the count
+left nothing reading `RIGID_MODE_FLOOR` except the product, so the pair had one
+degree of freedom and no measurement here could tell them apart.
+
+```
+rule  lambda_7(K_hat) >= RIGID_MODE_BOUND * ||K_hat|| * eps
+out   RIGID_MODE_BOUND = 199.526231496888, which is 10.0 * 10**1.3 unchanged.
+      RIGID_MODE_FLOOR and RIGID_MODE_GAP retire with their entries marked,
+      and so do both of their counters.
+cmd   grep -rn "RIGID_MODE_FLOOR\|RIGID_MODE_GAP" --include=*.py floatfea tests
+out   five hits, all of them the retired entries and the two retired counter
+      sizes that `counter_response` still reports. No assertion reads either.
+cell  the reviewer's own compensated pair, re-run against the single constant
+out   there is nothing to compensate: one constant cannot be moved against
+      itself, and moving it moves the decision.
+```
+
+**The quantity is a plain RATIO now, not a logarithm.** That is not cosmetic:
+it is what makes R404 and R418 stop recurring on this row, since the spread is
+declared on ratios and there is nothing left to convert.
+
+## 2. The window, and the side of it CU0 asked for that is not a side
+
+**CU0 named the corpus minimum above and the transition at `stretch ~ 1.95e6`
+below. The second one does not bracket the bound, and this is the one place I
+depart from the directive.**
+
+```
+claim under one constant, `below_bound == 6` carries no information the
+      assertion does not already carry
+cmd   over all 114 corpus frames, compare `below_bound == 6` with
+      `lambda_7 > bound AND rigid_max < bound`
+out   they disagree on ZERO frames
+cmd   bisect the stretch ladder for where the count leaves six
+out   stretch 4.3707e+05, where lambda_7 is 199.5625 units of ||K_hat||*eps
+judge THE TRANSITION IS THE THRESHOLD. `below_tau` was a count against `tau`,
+      and with `tau` gone the count is against the bound -- so "the stretch
+      where the count leaves six" is "the stretch where lambda_7 crosses the
+      bound", which restates the value instead of bracketing it. The
+      reviewer's 1.95e6 was measured against the RETIRED floor of 10 and was
+      a real bracket for THAT constant.
+```
+
+**What is left when the tautology is removed is two measurements, and both are
+in the entry.**
+
+```
+rule  below: the bound must exceed lambda_7 at any configuration that really
+      HAS a seventh zero mode, and must exceed the six themselves
+cell  one torsional release -- a provable seventh mode -- re-expressed over 7
+      unit systems from 1e-6 to 1e6 crossed with 5 spans, nothing else moved
+out   35 of 35 refused. The highest `lambda_7` any of them reaches is `1.375`
+      units of ||K_hat||*eps ON THIS MACHINE; it is not a published figure
+      and the entry no longer types it, for the reason two paragraphs down.
+out   the largest of the six numerically-zero eigenvalues over the corpus is
+      `{{fig:rigid_mode_largest_rigid_eigenvalue}}` units -- the binding side,
+      since Courant-Fischer's six have to be under the bound for the argument
+      to hold. It is floor-class AGAINST THIS CONSTANT, so its clearance is
+      recomputed by `--check` on every machine instead of written down once.
+rule  above: raising the bound declines frames that decide today
+out   the smallest lambda_7 the gate accepts is
+      `{{fig:rigid_mode_smallest_decided}}` units and the largest it refuses is
+      `{{fig:rigid_mode_largest_refused}}`
+judge AND THE UPPER SIDE IS INSIDE THE PLATFORM SPREAD: those two straddle the
+      bound by less than `FIGURE_FLOOR_CLASS_SPREAD`, so which side those two
+      frames fall on is a property of the machine. Refusal is a declared
+      outcome, so that is a domain-membership question and not a breach -- but
+      the PUBLISHED COUNT of refusals is not platform-stable, and CI is
+      canonical for it. Said in the entry and in the plan rather than left to
+      be found.
+```
+
+**`below_bound` stays printed and nothing asserts it**, which is what CU0 asked
+for and now has a reason written beside it rather than an instruction.
+
+**And the canonical render caught me typing the window.**
+
+```
+claim the entry carried `1.4614` units and `136.5x`, measured here
+cmd   the canonical render, determinism leg 1 of run 35479925335, conclusion
+      FAILURE on the guards job with all ten legs and the ladder green
+out   rigid_mode_largest_rigid_eigenvalue is `1.2727` there, and
+      rigid_mode_smallest_decided `2.0502e+02` against `2.0494e+02` here
+judge SO THE ENTRY CITES THE FIGURES AND TYPES NEITHER. And the two new
+      boundary rows had to become `derived` rather than plain: Q8 requires a
+      row that is not floor-class to agree EXACTLY everywhere, and an
+      eigenvalue does not. `derived` is the generator's own spelling for a
+      row that carries no decision, which is what R404's judge said a
+      domain-boundary figure is.
+```
+
+## 3. R416, R417, R418 — the three prose items
+
+```
+cmd   the cross cell the verdict ran, reproduced
+out   floor counter fails under EITHER widening; gap counter likewise. The
+      clause "sized by this constant and not by the other one" is withdrawn,
+      and the meta-test's docstring already said both cells are per-counter.
+cmd   RIGID_MODE_GAP_COUNTER_DEFECT / RIGID_MODE_FLOOR_COUNTER_DEFECT
+out   1.0e-13 / 2.0e-14 = 5.0, which is 0.699 of a decade. "One and a half
+      decades stiffer" is corrected in the retired entry; the test docstring
+      that carried the same sentence went with the counter it described.
+code  as_ratio = floor_class().get(n, ("", None, False))[2]
+judge THE CLASS CARRIES IT, NOT THE NAME (R418). `_floor(name, kind, ceiling,
+      log=True)` declares it where the number is produced. A rename cannot
+      move a figure between rules any more, which was the mechanism rather
+      than the row.
+```
+
+**And the flag is not dead code.** `rigid_mode_seventh_orders` is still
+generated — revision 21 cites it by name and a reference that stops resolving
+turns a record into a dangling pointer — so the repository has one log-valued
+row and it declares itself. Two tests: an injected log-valued row whose name
+ends in nothing in particular, and the shipped set of marked rows.
+
+## 4. R412 as a rule, and R405 and R406/R409 at their sites
+
+```
+code the §0 heading now ends `-- conclusion **SUCCESS**`, and the leg table's
+     first line names its own run, event and conclusion
+code test_every_CI_RUN_the_report_names_carries_its_conclusion -- every
+     paragraph naming a run id must name a conclusion
+code test_a_GREEN_JOB_TABLE_does_not_stand_under_a_FAILED_run -- a section
+     whose conclusion is not success and whose "N jobs, M not green" line
+     reads M = 0 must carry the literal `GREEN JOBS UNDER A FAILED RUN`
+cmd  python -m pytest tests/test_report_carried.py -q -k CI_RUN, at b83d776
+out  1 failed, on revision 21's own §0a -- the paragraph the rule was written
+     about. This revision's §0a is what makes it green.
+```
+
+- **R405, five sites.** All five carry `{{fig:rigid_mode_corpus_frames}}` and
+  `{{fig:retired_ratio_over_ceiling_on_corpus}}` instead of a typed count, and
+  the one site whose quantity is the subspace loss carries no count at all —
+  that count is not machine-stable, which is why no figure publishes it, and a
+  quantifier nobody can check is what R405 is about. Two of the five were
+  written last round six lines from the R407 repair.
+- **R406.** The section is headed **THE RETIRED FORM** with a block quote
+  saying every present tense in it is a past tense; the headroom table is
+  relabelled *headroom it HAD*; and "Both are registered in
+  `tests/test_counters_are_injected.py` and pass its two cells" is replaced by
+  what that file says, which is that the pair is gone from the registry.
+- **R409's other half**, which revision 21 did not touch: the D5 case row for
+  V1.1, the "V1.1 asserts on the subspace" paragraph, and "six numbers near
+  zero with nothing said about what they are modes of" — withdrawn by name.
+
+## 5. R420 taken, R419 left, and the golden in its own commit
+
+**R420 is 4a and I took it anyway**, because it was inside the control I was
+rewriting: `dim = RIGID + 1 if margin < GAP else RIGID` five lines after
+`assert margin < GAP` cannot fail while the first assertion passes. It counts
+the spectrum now, which is a different measurement.
+
+**R419 is left at 4a and I am not claiming it.** The per-entry spectral
+assertion moved with the quantity and is stronger than it was, but the domain
+is still asserted only as "both sides non-empty". The reviewer's new block
+carries `outcome=` for every entry and that is what an assertion should read;
+it is not in this round's directive and I have not built it.
+
+```
+code the per-entry assertion, before and after
+out  `assert np.isfinite(margin)` -> `assert over > 0.0`, which is the
+     condition the old return value of `-inf` encoded. It still says only
+     that lambda_7 exists, which is R419's point.
+```
+
+**The golden is its own commit with the reason (R409's rule, going forward).**
+
+```
+cmd   git show --stat 78970b7
+out   one file, tests/goldens/collected_tests.txt
+out   ONE DELETION -- test_a_SEVENTH_MODE_AT_THE_FLOOR_reddens_the_gate, whose
+      constant is retired, and which against a single constant sits 1.248x
+      over the widened bound, under the 1.5x platform spread
+out   ONE RENAME -- ..._TOO_CLOSE_TO_THE_FLOOR_... to
+      ..._UNDER_THE_BOUND_..., same injection, same size, same assertion
+out   FOUR ADDITIONS, all guards: two for R418, two for R412
+judge THE COMMIT BEFORE IT IS RED ON THIS GUARD and that is what the rule
+      produces -- a golden cannot be correct for the code on both sides of
+      the change. Naming it is the point; hiding it inside a step commit was
+      R409.
+```
+
+## 6. Two ruff errors I pushed
+
+```
+cmd   ruff check floatfea tests, which is what the workflow runs
+out   I did not run it before pushing. I001 on the two new imports and E501 at
+      126 columns, both in the gate file, both from the CU0 commit, both fixed
+      at 0a9d54d with the run that caught them named in the message.
+judge NOT A NEW SPECIES and not dressed up as one: the local loop is pytest
+      and the workflow's first step is ruff. It cost one commit and it is
+      recorded because a clean round is not the same as a round with nothing
+      to report.
+```
+
+## 7. What is open
+
+- **R419** — the corpus file's spectral half, and the `outcome=` field.
+- **R410, R411, R412's 4a residue, R413, R414** and the rest of the 4a list:
+  R400, R401, R402, R390, R391, R392, R393, R381, R382, R383, R384, R354,
+  R355, R356, R357, R362, R363, R364, R370, R371, R372, R373, R374, R330,
+  R331, R332, R347, R348, R349, R350.
+- **Step R** — the four F1 reader tolerances, planned and not executed.
+- **R231, R244, R245, R275** — the remaining Q8 values.
+- **R230**, reopened by my own error at revision 3, and mine to leave open.
+
+## 8. The whole suite, at the commit this revision is committed on top of
+
+**Whole suite at `fd56d97`: 2107 passed, 0 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit, excluding 309 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py) -- which the supervisor runs at the commit that carries it. R339: the count of what is excluded is part of the line, so a reader can size it without running anything.
+
+## 9. Sites named by findings and not touched
+
+Generated: `python scripts/untouched_sites.py`. The rows are the guard's own
+`SITES` and `TOUCHED`, imported rather than re-derived, so the table cannot
+enumerate a different set than the check does. The reason column is mine and
+carries the literal `no change`, which is the string the guard looks for.
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R415 | `floatfea/tolerances.py:330` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `floatfea/tolerances.py:336` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `floatfea/tolerances.py:337` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `floatfea/tolerances.py:338` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `floatfea/tolerances.py:341` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `floatfea/tolerances.py:342` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `floatfea/tolerances.py:343` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `floatfea/tolerances.py:344` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `floatfea/tolerances.py:345` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:249` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:252` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:253` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:257` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:258` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:259` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:260` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:261` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:262` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:263` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:264` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:265` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:266` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:267` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:268` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:269` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:270` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:271` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:272` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:273` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:274` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:275` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:276` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:278` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:279` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:282` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R415 | `tests/verification/rung1/test_rigid_body_modes.py:284` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:192` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:193` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:194` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:196` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:197` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:198` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:199` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:200` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:201` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:202` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:203` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:204` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:205` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:206` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:207` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:208` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:209` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:210` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:211` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:212` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:213` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:214` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:217` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:218` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:219` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:220` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:221` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:222` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:225` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:226` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:227` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:228` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:229` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+| R419 | `tests/verification/rung1/test_rigid_body_corpus.py:230` | the file is touched and this line number is the old one | **no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still asserted only as both sides non-empty and I am not claiming otherwise |
+
+## 10. Carried
+
+Generated: `python scripts/carried_table.py <verdict> docs/reports/F2/step-5-answers.json`. The row set, the class and the subject of every row are read from the verdict; the answers file carries a state and a section pointer, and the pointer is resolved against this report by `tests/test_report_carried.py`.
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R223 | **carried** | closed earlier, not |
+| R224 | **carried** | closed earlier, not |
+| R225 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R226 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R227 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R228 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R230 | **open** — §7 | OPEN by instruction, correctly listed. |
+| R231 | **open** — §7 | OPEN, unblocked, and the report correctly does |
+| R232 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R233 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R244 | **open** — §7 | OPEN, unblocked, and the report correctly does |
+| R245 | **open** — §7 | OPEN, unblocked, and the report correctly does |
+| R248 | **open** — carried from an earlier verdict | residues, |
+| R249 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R250 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R251 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R252 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R253 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R254 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R256 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R257 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R261 | **open** — carried from an earlier verdict | OPEN by instruction, correctly listed. |
+| R262 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R264 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R266 | **open** — carried from an earlier verdict | still have no row; R348 territory, unmoved. |
+| R274 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R275 | **open** — §7 | OPEN, unblocked, and the report correctly does |
+| R276 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R277 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R281 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. R302 |
+| R288 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R289 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R290 | **open** — carried from an earlier verdict | carried. R250, R251, |
+| R291 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. R302 |
+| R292 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. R302 |
+| R293 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R300 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. R302 |
+| R302 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. R302 |
+| R303 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R308 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R315 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R320 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R321 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. R302 |
+| R322 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. R302 |
+| R323 | **carried** | closed in earlier verdicts, |
+| R329 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R330 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R331 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R332 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R347 | **open** — §7 | 's second |
+| R348 | **open** — §7 | 's second |
+| R349 | **open** — §7 | 's second |
+| R350 | **open** — §7 | 's second |
+| R354 | **open** — §7 | 's second |
+| R355 | **open** — §7 | 's second |
+| R356 | **open** — §7 | 's second |
+| R357 | **open** — §7 | 's second |
+| R362 | **open** — §7 | 's second |
+| R363 | **open** — §7 | 's second |
+| R364 | **open** — §7 | 's second |
+| R365 | **carried** | carried in step-5-answers.json. |
+| R369 | **carried** | carried in step-5-answers.json. |
+| R370 | **open** — §7 | OPEN at 4a. R373 bites again in this |
+| R371 | **open** — §7 | OPEN at 4a. R373 bites again in this |
+| R372 | **open** — §7 | OPEN at 4a. R373 bites again in this |
+| R373 | **open** — §7 | OPEN at 4a. R373 bites again in this |
+| R374 | **open** — §7 | OPEN at 4a. R373 bites again in this |
+| R375 | **carried** | carried in step-5-answers.json. |
+| R382 | **open** — §7 | carried in step-5-answers.json. |
+| R383 | **open** — §7 | ADVANCED, NOT CLOSED. Ten legs executed and agreed at 8ded15a; |
+| R384 | **open** — §7 | carried in step-5-answers.json. |
+| R388 | **carried** | closed earlier, not |
+| R390 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R391 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R392 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R393 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R394 | **carried** | closed earlier, not |
+| R395 | **carried** | closed earlier, not |
+| R396 | **carried** | closed earlier, not |
+| R397 | **carried** | closed earlier, not |
+| R398 | **carried** | closed earlier, not |
+| R399 | **carried** | Verdict 46 held on R403, R404, R405, R406, R407, R408, R409 and carried R399. |
+| R400 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R401 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R402 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R403 | **carried** | and carried R399. |
+| R404 | **carried** | and carried R399. |
+| R405 | **answered** — §4 | and carried R399. |
+| R406 | **answered** — §4 | and carried R399. |
+| R407 | **carried** | and carried R399. |
+| R408 | **carried** | and carried R399. |
+| R409 | **answered** — §4 | and carried R399. |
+| R410 | **open** — §7 | DOES NOT RECUR IN ITS OWN SHAPE. The generated table and the |
+| R411 | **open** — §7 | OPEN, AND THE POINTER IS NOW BROKEN. Revision 21's second line |
+| R412 | **answered** — §4 | OPEN, second round, same shape. See the CI block. |
+| R413 | **carried** | is answered without being |
+| R414 | **open** — §7 | OPEN. test_ONE_PINNED_DOF_leaves_FIVE and |
+| R415 | **answered** — §1 | floatfea/tolerances.py:327-363 and :388-411,... |
+| R416 | **answered** — §3 | floatfea/tolerances.py:372-379. code :372 "SIZED BY THIS CONSTANT AND NOT BY THE OTHER ONE,... |
+| R417 | **answered** — §3 | floatfea/tolerances.py:413-414 and tests/verification/rung1/test_rigid_body_modes.py:679. code... |
+| R418 | **answered** — §3 | scripts/regen_figures.py:636. code as_ratio = n.endswith("_orders") cmd the figure names this... |
+| R419 | **open** — §5 | The corpus test's spectral half asserts almost nothing per entry, and the domain can drift... |
+| R420 | **answered** — §5 | test_ONE_RELEASED_CONNECTION_gives_SEVEN computes its own answer from the thing it is testing.... |
+
+## 11. What I am asking for
+
+**Commits since the forty-seventh verdict**, in order:
+
+```
+cmd  git log --oneline b375cd0..HEAD
+out  b83d776 CU0-CU3: one constant, one bound; the log rule by class; a run car
+     78970b7 golden: two spectral counters become one, and four guards are adde
+     d2a4666 figures: regenerated for CU0's constant and the reviewer's 114 fra
+     fb5a5cf plan: G2.1 has ONE constant; the retired section says it is retire
+     0a9d54d CU0: two ruff errors in the previous commit, caught by CI and not 
+     0fe6f83 CU0: the window cites published figures, and two boundary rows are
+     e1340dc CG2: the canonical render, with one constant and 114 frames in it
+     fd56d97 CU3: the run-id pattern caught its own author on its first report
+     (this revision's own commit follows)
+```
+
+**Six blocking items answered, and the head one removes a constant rather than
+justifying it.**
+
+- **R415** — one constant at the product, both old ones retired, the window
+  measured on the two sides that are sides.
+- **R416, R417, R418** — a withdrawn clause, an arithmetic correction, and a
+  dispatch moved from the name to the declared class.
+- **R405** — five sites carrying rendered figures, and one carrying no count
+  because no count there is machine-stable.
+- **R406, R409** — the retired section says so at its head, and R409's second
+  half is answered at the three sites it named.
+
+**One departure from the directive, stated as one.** CU0 asked for the
+transition the reviewer solved as the bound's lower side. Under a single
+constant that transition is where `lambda_7` crosses the bound itself, so it
+restates the value; §2 gives the stretch, the crossing, and the two
+measurements that do bracket it.
+
+**What is not claimed.** Step R has not run and the four reader literals are
+untouched. R419 is not built. No Q8 value beyond those already written.
