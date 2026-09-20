@@ -370,12 +370,16 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 #              re-expressed over every unit system and span the corpus uses,
 #              refused at all of them, reaching
 #              `{{fig:rigid_mode_mechanism_ceiling}}` units at the highest.
-#          The two sit within `FIGURE_FLOOR_CLASS_SPREAD` of each other and
-#          their ORDER REVERSES between the canonical runner and a laptop, so
-#          no sentence here says which binds. Both are floor-class rows
-#          against THIS constant, so both clearances are recomputed by
-#          `scripts/regen_figures.py --check` wherever it runs, and the gate
-#          is held to the tighter of the two whichever that is on the day.
+#          The two sit within `FIGURE_FLOOR_CLASS_SPREAD` of each other, so
+#          ONE RENDER CANNOT SETTLE WHICH BINDS and no sentence here says.
+#          On both machines rendered so far the six bind; the reversal the
+#          forty-eighth verdict saw came from comparing the canonical runner's
+#          figure with a cell measured on a laptop, which is the defect
+#          rendering them together removes. Both are floor-class rows against
+#          THIS constant, so both clearances are recomputed by
+#          `scripts/regen_figures.py --check` wherever it runs and the gate is
+#          held to whichever is tighter there -- which is why the question
+#          does not have to be settled.
 #   above  the smallest `lambda_7` the gate accepts over the corpus is
 #          `{{fig:rigid_mode_smallest_decided}}` units and the largest it
 #          refuses is `{{fig:rigid_mode_largest_refused}}`. Raising the bound
