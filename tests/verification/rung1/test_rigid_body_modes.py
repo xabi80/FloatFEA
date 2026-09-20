@@ -27,12 +27,17 @@ that mode SHAPES are an arbitrary basis inside the degenerate block, and the
 subspace form was the answer to that. But the subspace form is computed from
 the first six eigenVECTORS, so what it measures includes the eigensolver --
 and the reviewer's corpus found it exceeding its ceiling on MORE frames than
-the ratio it was preferred to, with a defect-free element. NO COUNT IS WRITTEN
-HERE for the loss: its count is not machine-stable, which is why no figure
-publishes it, and `a large minority` stood here as a quantifier nothing could
-check (R405). The ratio's count is `{{fig:retired_ratio_over_ceiling_on_corpus}}`
-of `{{fig:rigid_mode_corpus_frames}}`, and the corpus test prints both when it
+the ratio it was preferred to, with a defect-free element. The loss's count is
+not machine-stable, so no figure carries it and none is typed here; `a large
+minority` stood here as a quantifier nothing could check (R405). The ratio's
+count is `{{fig:retired_ratio_over_ceiling_on_corpus}}` of
+`{{fig:rigid_mode_corpus_frames}}`, and the corpus test prints both when it
 runs.
+
+claim: the generated figures file carries a count for the retired ratio and
+       none for the retired subspace loss
+cmd:   count("docs/milestones/F2_figures.md", "retired_loss_over")
+out:   0
 Both are retired (CS2) and both are reported by
 `test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate`. The residual
 answers AP3's objection without an eigensolve: the analytic vectors are
@@ -270,13 +275,27 @@ def epsilon_unit(k: np.ndarray) -> float:
 def zero_modes_under_the_bound(k: np.ndarray) -> int:
     """How many eigenvalues of `K_hat` fall under the bound. DIAGNOSTIC ONLY.
 
-    NOTHING ASSERTS AGAINST THIS AND NOTHING MAY (CU0). Under a single constant
-    it carries no information the gate does not already have: `count == 6` is
-    algebraically `lambda_7 > bound AND the six rigid eigenvalues are under
-    bound`, and over all 114 corpus frames the two disagree on none. It is
-    printed because the second conjunct -- Courant-Fischer's six actually being
-    under the bound -- is the composition the gate rests on, and a reader
-    should be able to see it rather than take it.
+    THE GATE MAY NOT ASSERT AGAINST THIS; A CONTROL MAY (CU0, corrected at
+    R425). Under a single constant this count carries no information the gate
+    does not already have: `count == 6` is algebraically `lambda_7 > bound AND
+    the six rigid eigenvalues are under bound`, so asserting it inside
+    `test_there_is_NO_SEVENTH_zero_mode` would be a second name for one
+    decision -- which is the defect CU0 removed. The gate prints it instead,
+    because the second conjunct is the composition the gate rests on and a
+    reader should be able to see it rather than take it.
+
+    A CONTROL IS THE OPPOSITE CASE and R420 is why.
+    `test_ONE_RELEASED_CONNECTION_gives_SEVEN` needs a second measurement that
+    can disagree with the bound, and counting the spectrum is one: the release
+    must put exactly SEVEN under the bound, which also requires `lambda_8`
+    above it, and that can fail while the bound assertion passes. A reader who
+    takes `nothing may assert this` at its word deletes that assertion, which
+    is what the sentence standing here would have cost.
+
+    claim: three lines in this file name this function -- its definition, the
+           gate's DIAGNOSTIC print, and the release control's second assertion
+    cmd:   count("tests/verification/rung1/test_rigid_body_modes.py", "zero_modes_under_the_bound(")
+    out:   3
     """
     w = np.sort(np.abs(sla.eigh(homogenised(k), eigvals_only=True)))
     return int(np.sum(w <= RIGID_MODE_BOUND * epsilon_unit(k)))
@@ -317,8 +336,12 @@ def seventh_over_epsilon(k: np.ndarray) -> float:
         the transition happens to be detects being AT a transition, not being
         past one (R403).
 
-    The bound is at the sixth-seventh boundary. Nothing reads "the last
-    eigenvalue below tau" anywhere in this file.
+    The bound is at the sixth-seventh boundary.
+
+    claim: nothing in this file measures anything at "the last eigenvalue
+           below tau", which is where the refuted form measured
+    cmd:   count("tests/verification/rung1/test_rigid_body_modes.py", "last_below")
+    out:   0
 
     A SMALL RESULT IS NOT A FAILED COUNT, it is `lambda_7` at the arithmetic
     floor: the softest flexible mode has sunk into round-off, and no spectral
@@ -441,9 +464,10 @@ def _defect(size: float, capsys):
 
     The defect is a diagonal stiffness on one translational degree of freedom,
     as a fraction `size` of the largest entry: the shape of a real defect, since
-    it is a stiffness that resists a rigid translation. Both halves of G2.1 must
-    see it -- it lifts a zero eigenvalue AND takes that translation out of the
-    span -- which is why one injected defect carries both counters.
+    it is a stiffness that resists a rigid translation. It lifts a zero
+    eigenvalue AND takes that translation out of the span, which is why the
+    residual's counter and the retired subspace loss's counter were one
+    injection.
     """
     original = globals()["assembled"]
 
@@ -542,10 +566,20 @@ def test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate(capsys) -> None:
     number three earlier revisions published. Nothing is asserted against it.
 
     `RIGID_BODY_SUBSPACE_LOSS` IS RETIRED WITH IT (CS2), for the stronger
-    reason: it breached at seventeen of the reviewer's first twenty-eight
-    clean frames against the ratio's ten, so the quantity that had been kept
-    was the one the evidence indicted harder. Both are reported here and
-    neither is asserted anywhere.
+    reason: it breached at more of the reviewer's clean frames than the ratio
+    did, so the quantity that had been kept was the one the evidence indicted
+    harder. NO COUNT FOR EITHER IS TYPED IN THIS FILE. Two were, in words,
+    measured on a 28-frame corpus that is now four times that, twelve lines
+    from a docstring in this same file saying the loss count is not written
+    here (R423). The dead numbers are deliberately not quoted back: writing
+    them would make the sentence beside them false, which is how the first
+    version of this repair failed its own check.
+    `test_the_RETIRED_ratio_is_why_the_form_changed` in the corpus file
+    prints both when it runs.
+
+    claim: no count of either retired quantity's breaches is typed in this file
+    cmd:   count("tests/verification/rung1/test_rigid_body_modes.py", "seventeen")
+    out:   0
     """
     model, els = _frame()
     k = assembled(model, els)
@@ -780,10 +814,12 @@ def test_the_ARPACK_path_is_REPRODUCIBLE_under_its_pin(capsys) -> None:
     """AP3. The gate above is dense and has no start vector; ARPACK has one.
 
     This does not assert that ARPACK's eigenvectors are meaningful inside the
-    degenerate block -- AP3 is explicit that they are not, which is why the gate
-    asserts on the subspace. It asserts the narrower thing the pin actually
-    buys: two runs of the same problem give bit-identical eigenvalues, so a
-    stored result cannot move with no code change.
+    degenerate block -- AP3 is explicit that they are not, which is why the
+    gate reads no eigenvector at all: the subspace form that once answered AP3
+    is retired, and the residual answers it without an eigensolve. What this
+    asserts is the narrower thing the pin actually buys: two runs of the same
+    problem give bit-identical eigenvalues, so a stored result cannot move
+    with no code change.
     """
     model, els = _frame()
     k = assemble(model, els).astype(np.float64)

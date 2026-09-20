@@ -344,9 +344,9 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 # entered the only assertion as their product. Nothing counted eigenvalues
 # below the floor, so no measurement in this repository could tell one
 # constant from the other: the reviewer moved `FLOOR 10 -> 1` with
-# `GAP 1.3 -> 2.3` and the gate, both counters, all four controls, both cells
-# of the meta-test and every corpus frame stayed green, with the floor at a
-# value its own entry said was wrong. The product is the constant. Its value
+# `GAP 1.3 -> 2.3` and the gate, the two counters it then had, all four
+# controls, both cells of the meta-test and every corpus frame stayed green,
+# with the floor at a value its own entry said was wrong. The product is the constant. Its value
 # is that product, unchanged: `10.0 * 10**1.3 = 199.526231496888`.
 #
 # TWO EARLIER FORMS ARE GONE AND BOTH WERE REFUTED BY THE REVIEWER'S CORPUS.
@@ -360,18 +360,22 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 #
 # Reason for 199.53, with its window measured on both sides:
 #
-#   below  A GENUINE SEVENTH ZERO MODE is refused at all 35 re-expressions
-#          of one torsional release -- 7 unit systems from `1e-6` to `1e6`
-#          crossed with 5 spans -- and the highest `lambda_7` any of them
-#          reaches is in the step report, measured rather than typed here.
-#          The binding side is the SIX THEMSELVES: the bound has to exceed
-#          the largest of the numerically-zero eigenvalues or
-#          Courant-Fischer's six are not all under it. That is
-#          `{{fig:rigid_mode_largest_rigid_eigenvalue}}` units of
-#          `||K_hat|| * eps` over the corpus, and it is a floor-class row
-#          against THIS constant -- so the clearance is computed by
-#          `scripts/regen_figures.py --check` on every machine rather than
-#          written down on one.
+#   below  TWO CANDIDATES, BOTH RENDERED, AND WHICH ONE BINDS IS A PROPERTY
+#          OF THE MACHINE (CV1, R426).
+#            * the six themselves: the bound must exceed the largest
+#              numerically-zero eigenvalue or Courant-Fischer's six are not
+#              all under it --
+#              `{{fig:rigid_mode_largest_rigid_eigenvalue}}` units;
+#            * a genuine seventh zero mode: one torsional release
+#              re-expressed over every unit system and span the corpus uses,
+#              refused at all of them, reaching
+#              `{{fig:rigid_mode_mechanism_ceiling}}` units at the highest.
+#          The two sit within `FIGURE_FLOOR_CLASS_SPREAD` of each other and
+#          their ORDER REVERSES between the canonical runner and a laptop, so
+#          no sentence here says which binds. Both are floor-class rows
+#          against THIS constant, so both clearances are recomputed by
+#          `scripts/regen_figures.py --check` wherever it runs, and the gate
+#          is held to the tighter of the two whichever that is on the day.
 #   above  the smallest `lambda_7` the gate accepts over the corpus is
 #          `{{fig:rigid_mode_smallest_decided}}` units and the largest it
 #          refuses is `{{fig:rigid_mode_largest_refused}}`. Raising the bound
@@ -389,15 +393,33 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 # `lambda_7 > bound and rigid_max < bound` disagree on ZERO. The two limits
 # above are what is left when the tautology is removed.
 #
-# AND THE UPPER SIDE IS NOT PLATFORM-STABLE, said here rather than left to be
-# found. `{{fig:rigid_mode_smallest_decided}}` and
+# AND THE UPPER SIDE IS NOT PLATFORM-STABLE, so the partition is published
+# WITH ITS WINDOW rather than as one count (CV2, R427).
+# `{{fig:rigid_mode_smallest_decided}}` and
 # `{{fig:rigid_mode_largest_refused}}` straddle this bound by less than
 # `FIGURE_FLOOR_CLASS_SPREAD`, so the spread does not separate them and which
-# side those two frames fall on is a property of the machine. The DECISION
-# on each is a domain-membership
-# question and not a breach, since refusal is a declared outcome; what is not
-# platform-stable is the published count of refusals. CI is canonical for that
-# figure (Q8) and the determinism legs are what would catch it moving.
+# side those frames fall on is a property of the machine. The DECISION on each
+# is a domain-membership question and not a breach, since refusal is a
+# declared outcome.
+#
+# WHAT THE THREE ROWS MEAN, and what checks them:
+#
+#   `{{fig:rigid_mode_corpus_decided_clear}}` frames clear the bound by MORE
+#   than the spread and `{{fig:rigid_mode_corpus_refused_clear}}` miss it by
+#   more. Those two sets are the same on any machine, and the determinism
+#   legs -- ten runs of one pinned environment -- are a check on them.
+#
+#   `{{fig:rigid_mode_corpus_in_the_window}}` frames are inside the spread of
+#   the bound and their outcome is a property of the machine. They are named
+#   in `{{fig:rigid_mode_corpus_window_members}}`. NOTHING IN CI CHECKS WHICH
+#   SIDE THEY FALL ON: every leg is `ubuntu-latest` with the same kernel pin,
+#   so ten legs agreeing says nothing about a second machine. The check that
+#   would see it is `--check` on a non-canonical runner, and there this row is
+#   `derived` rather than exact.
+#
+# `rigid_mode_corpus_refused` was an EXACT row, which Q8 requires to agree
+# everywhere -- published under one policy while the same generator withheld
+# the subspace loss's count six lines away under the other (R427).
 # Set: 2026-09-19, F2; ONE CONSTANT from CU0, at the product of the two it replaces
 RIGID_MODE_BOUND: Final[float] = 199.526231496888
 
@@ -418,9 +440,15 @@ RIGID_MODE_BOUND: Final[float] = 199.526231496888
 RIGID_MODE_BOUND_COUNTER_DEFECT: Final[float] = 1.0e-13
 
 # CLASS: ACCURACY -- and RETIRED at CU0/R415, with its counter below. NOT A
-# GATE: nothing asserts against it. The class is kept because
-# `tests/verification/rung3` requires every declared float to carry one from
-# its own vocabulary; what this no longer has is an assertion.
+# GATE. The class is kept because `tests/verification/rung3` requires every
+# declared float to carry one from its own vocabulary; what this no longer
+# has is an assertion.
+#
+# claim: two test files still name `RIGID_MODE_FLOOR` -- the gate file, whose
+#        header records what the two constants were, and the counter
+#        meta-test, which names the retired counter it no longer registers
+# cmd:   files("tests/**/*.py", "RIGID_MODE_FLOOR")
+# out:   tests/test_counters_are_injected.py,tests/verification/rung1/test_rigid_body_modes.py
 #
 # EVERYTHING BELOW IS THE RECORD OF WHAT IT WAS. Read it in the past tense.
 # It was the floor on what counted as numerically zero, `tau = FLOOR *
@@ -484,9 +512,18 @@ RIGID_MODE_FLOOR_COUNTER_DEFECT: Final[float] = 2.0e-14
 # Set: 2026-09-14, F2; retired 2026-09-19
 RIGID_MODE_GAP: Final[float] = 1.3
 
+# RETIRED-ALIAS: uniform elastic foundation
+# RETIRED-ALIAS: gap counter
 # RETIRED WITH THE CONSTANT IT DEFENDED (CU0). Its injection and its size are
 # what `RIGID_MODE_BOUND_COUNTER_DEFECT` above carries forward unchanged; this
 # entry is the record. Read it in the past tense.
+#
+# THE UNIFORM ELASTIC FOUNDATION IS AN ALIAS OF THIS ENTRY AND NOT OF ANY
+# SHIPPED INJECTION. It was the first attempt at this counter, it lifts all
+# six rigid modes together so the RESIDUAL degrades instead, and it was
+# replaced by the nearly-released connection before either counter shipped.
+# The plan described it as the shipped injection for four rounds after the
+# code stopped saying so (R422).
 #
 # Reason for 1.0e-13: the same nearly-released connection, FIVE TIMES stiffer
 # than the floor's counter at `2.0e-14` -- `0.7` of a decade, not the "one and
@@ -497,11 +534,17 @@ RIGID_MODE_GAP: Final[float] = 1.3
 # Set: 2026-09-14, F2; retired 2026-09-19
 RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 1.0e-13
 
-# CLASS: ACCURACY -- and RETIRED at Q7/CS2. NOT A GATE: nothing asserts
-# against it, and the class is kept only because `tests/verification/rung3`
-# requires every declared float to carry one from its own vocabulary. A
-# retired value is still a float in this file, so it still needs a class;
-# what it no longer has is an assertion.
+# RETIRED-ALIAS: eigenvalue ratio
+# RETIRED-ALIAS: ratio to the first flexible mode
+# CLASS: ACCURACY -- and RETIRED at Q7/CS2. NOT A GATE, and the class is kept
+# only because `tests/verification/rung3` requires every declared float to
+# carry one from its own vocabulary. A retired value is still a float in this
+# file, so it still needs a class; what it no longer has is an assertion.
+#
+# claim: one test file mentions this ceiling, and it is the diagnostic that
+#        prints it -- no assertion anywhere compares against it
+# cmd:   files("tests/**/*.py", "RIGID_BODY_MODE_RATIO)")
+# out:   none
 #
 # EVERYTHING BELOW IS THE RECORD OF WHAT IT WAS, kept because the step report
 # cites the contrast and because a value deleted outright takes its own history
@@ -512,7 +555,12 @@ RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 1.0e-13
 # constant is referenced twice -- by `counter_response`, which still reports
 # what the retired defect would have done, and by the import that feeds it --
 # and by no assertion. `its counter constant is referenced by nothing` stood
-# here and was refuted by one grep (R408).
+# here and was refuted by one grep (R408), which is now this one:
+#
+# claim: the retired ratio's counter constant is named in exactly one test
+#        file, by `counter_response` and the import that feeds it
+# cmd:   files("tests/**/*.py", "RIGID_BODY_MODE_RATIO_COUNTER_DEFECT")
+# out:   tests/verification/rung1/test_rigid_body_modes.py
 #
 # WHY IT WAS RETIRED, in one line: it exceeds this ceiling on
 # `{{fig:retired_ratio_over_ceiling_on_corpus}}` of the reviewer's
@@ -563,6 +611,13 @@ RIGID_BODY_MODE_RATIO: Final[float] = 1e-12
 # Set: 2026-09-09, F2; retired 2026-09-14
 RIGID_BODY_MODE_RATIO_COUNTER_DEFECT: Final[float] = 1.0e-12
 
+# RETIRED-ALIAS: subspace loss
+# RETIRED-ALIAS: asserts on the subspace
+# RETIRED-ALIAS: rigid-body modes (subspace)
+# claim: the retired subspace loss is named by one test file, which prints
+#        it as a diagnostic, and by no assertion
+# cmd:   files("tests/**/*.py", "RIGID_BODY_SUBSPACE_LOSS)")
+# out:   none
 # CLASS: ACCURACY -- and RETIRED at CS2. NOT A GATE: nothing asserts
 # against it, and the class is kept for the reason given above.
 #

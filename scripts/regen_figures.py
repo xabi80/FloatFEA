@@ -85,10 +85,10 @@ def _figures() -> list[tuple[str, str]]:
         )
     )
     # Q7's two quantities, which are what G2.1 is asserted with now. The ratio
-    # and the subspace loss above are kept as diagnostics and are still
-    # generated, because the report cites the contrast between the two forms
-    # and a withdrawn figure that nothing regenerates is how a contrast goes
-    # stale.
+    # and the RETIRED subspace loss above are kept as diagnostics and are
+    # still generated, because the report cites the contrast between the two
+    # forms and a withdrawn figure that nothing regenerates is how a contrast
+    # goes stale.
     rows.append(
         (
             _floor("rigid_mode_residual", "below", "RIGID_MODE_EXACTNESS"),
@@ -114,20 +114,54 @@ def _figures() -> list[tuple[str, str]]:
     # of the rule any more.
     rows.append(
         (
-            _floor(
-                "rigid_mode_seventh_orders", "above", "RIGID_MODE_GAP", log=True
-            ),
+            # `derived`, NOT `above RIGID_MODE_GAP` (R428). The ceiling
+            # this row named was retired in the same round that left the mark
+            # on it, so `compare()` was computing a margin against a
+            # RETIRED constant. The margin was `10**11.08` and would never have
+            # fallen under the spread -- the form is what was wrong, and R399
+            # asked for exactly this a round earlier.
+            _floor("rigid_mode_seventh_orders", "derived", log=True),
             f"{math.log10(RB.seventh_over_epsilon(k_rb) / RETIRED_FLOOR):.3f}",
         )
     )
 
-    # The corpus, which is the evidence Q7 rests on: the same defect-free
-    # element at each of the reviewer's frames.
+    # CV1: THE OTHER LOWER-LIMIT CANDIDATE, RENDERED HERE SO THE TWO COME
+    # FROM ONE MACHINE. `RIGID_MODE_BOUND`'s window has two candidates below
+    # it -- the largest of the six numerically-zero eigenvalues, and the
+    # highest `lambda_7` a GENUINE seventh zero mode reaches -- and the entry
+    # said which one binds. They are within `FIGURE_FLOOR_CLASS_SPREAD` of
+    # each other and the ordering reverses between machines (R426), so the
+    # sentence was a comparison of two numbers from two renders. Both are
+    # floor-class rows against the bound now and neither entry says which
+    # binds.
+    #
+    # The cell is one torsional release re-expressed: every unit system and
+    # span the corpus uses, nothing else moved. It is a provable mechanism at
+    # each, so the bound must exceed all of them.
     import test_rigid_body_corpus as RBC
+
+    mechanism = 0.0
+    for unit in ("1e-6", "1e-4", "1e-2", "1", "1e2", "1e4", "1e6"):
+        for stretch in ("1", "10", "100", "1000", "1e4"):
+            entry = dict(RBC.ENTRIES[0])
+            entry.update(unit=unit, stretch=stretch, subdiv="1")
+            m_m, els_m = RBC._build(entry)
+            k_m = RB._assemble_with_torsional_release(m_m, els_m, released=6)
+            mechanism = max(mechanism, RB.seventh_over_epsilon(k_m))
+    rows.append(
+        (
+            _floor("rigid_mode_mechanism_ceiling", "below", "RIGID_MODE_BOUND"),
+            f"{mechanism:.4f}",
+        )
+    )
+
+    from floatfea.tolerances import FIGURE_FLOOR_CLASS_SPREAD as SPREAD
 
     worst_residual, smallest_decided = 0.0, float("inf")
     largest_refused, rigid_max = 0.0, 0.0
     refused = 0
+    decided_clear = refused_clear = 0
+    in_window: list[str] = []
     ratio_over = loss_over = 0
     for entry in RBC.ENTRIES:
         m_c, els_c = RBC._build(entry)
@@ -139,6 +173,17 @@ def _figures() -> list[tuple[str, str]]:
         else:
             largest_refused = max(largest_refused, over_c)
             refused += 1
+        # CV2: THE THREE-WAY SPLIT. A frame is decided ON EVERY MACHINE only
+        # if it clears the bound by more than the declared platform spread,
+        # and refused on every machine only if it misses by more than that.
+        # What is between them is the window, and its size is the honest
+        # statement about how portable the partition is.
+        if over_c >= RB.RIGID_MODE_BOUND * SPREAD:
+            decided_clear += 1
+        elif over_c <= RB.RIGID_MODE_BOUND / SPREAD:
+            refused_clear += 1
+        else:
+            in_window.append(entry["id"])
         rigid_max = max(rigid_max, RB.largest_rigid_eigenvalue(k_c))
         if RB.mode_ratio(k_c) > RB.RIGID_BODY_MODE_RATIO:
             ratio_over += 1
@@ -205,7 +250,26 @@ def _figures() -> list[tuple[str, str]]:
         )
     )
     rows.append(("rigid_mode_corpus_frames", f"{len(RBC.ENTRIES)}"))
-    rows.append(("rigid_mode_corpus_refused", f"{refused} of {len(RBC.ENTRIES)}"))
+    rows.append(
+        (
+            # CV2 / R427: `derived`, NOT an exact row. This count is the one
+            # the bound's own entry says is not platform-stable, and Q8
+            # requires a row that is not floor-class to agree EXACTLY
+            # everywhere -- so it was published under the one policy the same
+            # generator refuses six lines away for the loss count. The three
+            # rows below are what a reader should use; this one is kept
+            # because two revisions of the step report cite it by name.
+            _floor("rigid_mode_corpus_refused", "derived"),
+            f"{refused} of {len(RBC.ENTRIES)}",
+        )
+    )
+    # THE COUNT WITH ITS WINDOW (CV2). The first two are the sets the
+    # determinism legs can speak for; the third is the set they cannot, and
+    # naming its members is the only honest form the boundary has.
+    rows.append(("rigid_mode_corpus_decided_clear", f"{decided_clear}"))
+    rows.append(("rigid_mode_corpus_refused_clear", f"{refused_clear}"))
+    rows.append(("rigid_mode_corpus_in_the_window", f"{len(in_window)}"))
+    rows.append(("rigid_mode_corpus_window_members", " ".join(sorted(in_window)) or "none"))
     rows.append(("retired_ratio_over_ceiling_on_corpus", f"{ratio_over} of {len(RBC.ENTRIES)}"))
     # THE LOSS'S COUNT IS NOT MACHINE-STABLE AND IS NOT PUBLISHED. It read
     # `42 of 56` on the implementer's laptop and `41 of 56` on the canonical
@@ -523,10 +587,18 @@ CANONICAL_CORETYPE = "Haswell"
 # suffix `_orders` instead, and the round that introduced that rule renamed a
 # log-valued row to end in `_decided`: the row kept its meaning, lost the
 # suffix, and was silently compared by the wrong rule. A rename cannot move a
-# figure between rules now. No shipped row declares it at this commit -- the
-# quantity that needed it is a plain ratio under CU0 -- so the guard for it is
-# an injected pair in `tests/test_figure_local_check.py` rather than a live
-# row, and that is said here rather than left to be discovered.
+# figure between rules now. The rows that carry it are the RETIRED
+# parametrisation's two, kept generated because revision 21 of the step report
+# cites them by name; the quantity the gate decides on is a plain ratio under
+# CU0 and declares nothing. `No shipped row declares it at this commit` stood
+# here, in the same commit that added both declarations 409 lines above and a
+# test asserting exactly that set (R424).
+#
+# claim: two `_floor(...)` calls in this file declare `log=True`, and both are
+#        the retired parametrisation; the other two mentions are this comment
+#        block and the one above
+# cmd:   count("scripts/regen_figures.py", "log=True")
+# out:   4
 #
 # Every row NOT marked here must match the canonical render exactly, on any
 # machine, so staleness is caught off the canonical runner as it always was.

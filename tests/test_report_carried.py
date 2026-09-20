@@ -911,8 +911,78 @@ def test_the_report_carries_a_CI_SECTION() -> None:
 # first version matched `526231496888` inside `199.526231496888` and asked
 # for a conclusion on a tolerance value. A run id is not part of a longer
 # number, and this guard caught its own author on its first report.
-_RUN_ID = re.compile(r"(?<![\d.])(\d{9,12})(?![\d.])")
-_CONCLUSION = re.compile(r"conclusion\s+\**([A-Za-z_]+)", re.I)
+# THE PATTERN, AT ITS THIRD VERSION, AND THE REVIEWER MEASURED THE SECOND.
+#
+# `\b...\b` matched `526231496888` inside `199.526231496888` and asked for a
+# conclusion on a tolerance value. Tightening both sides to reject a digit or
+# a DOT then rejected the most ordinary way anyone writes a run id -- at the
+# end of a sentence. `tests/corpus/report_ci_section.txt` measures that
+# version at **2 of 7** unseen shapes caught (R429). The misses were a
+# trailing full stop, the same inside a list item, a 13-digit id, thousands
+# separators, and the word `conclusion` appearing only in the COMMAND.
+#
+#   right side  a digit is still rejected, and so is `.` FOLLOWED BY A DIGIT
+#               -- which is what `199.526231496888` is -- but a sentence-final
+#               full stop is not a decimal point;
+#   left side   unchanged;
+#   length      `9,` and not `9,12`: GitHub run ids are not bounded at twelve
+#               and the corpus plants a thirteen-digit one;
+#   commas      stripped between digits before the scan, so `35,479,925,335`
+#               is one id rather than four short numbers.
+_RUN_ID = re.compile(r"(?<![\d.])(\d{9,})(?!\d)(?!\.\d)")
+_THOUSANDS = re.compile(r"(?<=\d),(?=\d\d\d\b)")
+
+# AND THE CONCLUSION IS THE RESULT, NOT THE FLAG (CV3). `conclusion` on its
+# own was satisfied by `gh run view <id> --json conclusion status` with the
+# output never pasted -- which is R412's own shape, and the corpus plants it.
+# What has to appear is a VALUE: the word GitHub puts in that field.
+_CONCLUSION = re.compile(
+    r"\b(success|failure|cancelled|canceled|skipped|timed_out|neutral|stale"
+    r"|action_required|startup_failure)\b",
+    re.I,
+)
+
+
+def runs_without_a_conclusion(text: str) -> list[tuple[str, str]]:
+    """`(run id, the paragraph)` for every run named with no result beside it.
+
+    A FUNCTION rather than a loop inside the test, so the controls below can
+    run it on text that is not this report. R430: a guard that cannot be shown
+    to fail is the thing this repository keeps rediscovering.
+    """
+    naked = []
+    for para in _paragraphs(text):
+        flat = _THOUSANDS.sub("", para)
+        ids = set(_RUN_ID.findall(flat))
+        if ids and not _CONCLUSION.search(flat):
+            naked.append((sorted(ids)[0], " ".join(para.split())[:90]))
+    return naked
+
+
+def a_green_table_under_a_failed_run(text: str) -> str | None:
+    """The reason this CI section reads green while its run did not, or None.
+
+    Also a function for the same reason. On a report whose section 0 concludes
+    `success` it returns None, which at `d8ac843` meant the shipped test
+    asserted nothing at all and had no state in
+    `tests/test_report_guard_states.py` (R430).
+    """
+    if not text.strip() or _UNAVAILABLE.search(text):
+        return None
+    stated = [c.lower() for c in _CONCLUSION.findall(text)]
+    if not stated:
+        return "the CI section states no overall conclusion"
+    if all(c in ("success", "skipped") for c in stated):
+        return None
+    red = re.search(r"(\d+)\s+jobs?,\s*(\d+)\s+not green", text)
+    if not red:
+        return f"conclusion {stated} and no `N jobs, M not green` line"
+    if int(red.group(2)) == 0 and _GREEN_UNDER_RED not in text:
+        return (
+            f"conclusion {stated} with {red.group(1)} jobs and none not "
+            f"green, and no `{_GREEN_UNDER_RED}`"
+        )
+    return None
 # The literal a report writes to say "yes, this run failed and the jobs I show
 # are green; here is why". Nothing infers it, exactly like `no change` in the
 # untouched-sites table.
@@ -931,12 +1001,7 @@ def test_every_CI_RUN_the_report_names_carries_its_conclusion() -> None:
     naming a run is a paragraph of its own under this split, which is right --
     a row that names a run states something about it.
     """
-    body = _newest_revision(REPORT_TEXT)
-    naked = []
-    for para in _paragraphs(body):
-        ids = set(_RUN_ID.findall(para))
-        if ids and not _CONCLUSION.search(para):
-            naked.append((sorted(ids)[0], " ".join(para.split())[:90]))
+    naked = runs_without_a_conclusion(_newest_revision(REPORT_TEXT))
     assert not naked, (
         "these paragraphs name a CI run and never say what it concluded:\n"
         + "\n".join(f"  run {r}: {t}..." for r, t in naked)
@@ -955,30 +1020,123 @@ def test_a_GREEN_JOB_TABLE_does_not_stand_under_a_FAILED_run() -> None:
     next commit fixes, which is what happened -- but it has to SAY so, and the
     literal is how it says it.
     """
-    body = _ci_section()
-    if not body.strip() or _UNAVAILABLE.search(body):
-        return
-    stated = [c.lower() for c in _CONCLUSION.findall(body)]
-    assert stated, (
-        "the CI section states no overall conclusion. "
-        "`python scripts/ci_section.py` puts it in the heading; a section "
-        "without it is hand-edited or stale."
+    why = a_green_table_under_a_failed_run(_ci_section())
+    assert why is None, (
+        f"the CI section: {why}. That reads as a green build. Write "
+        f"`{_GREEN_UNDER_RED}` in this section with the reason, or the table "
+        "is telling a reader the opposite of what the run did."
     )
-    if all(c in ("success", "skipped") for c in stated):
-        return
-    red = re.search(r"(\d+)\s+jobs?,\s*(\d+)\s+not green", body)
-    assert red, (
-        f"the CI section states conclusion {stated} and carries no "
-        "`N jobs, M not green` line to say which jobs that was."
+
+
+# THE CONTROLS FOR BOTH GUARDS (R429, R430). Seven shapes the reviewer wrote
+# into `tests/corpus/report_ci_section.txt` at the forty-eighth verdict and
+# measured the shipped pattern against: 2 of 7 caught. Each id below is that
+# file's, and the text is the shape it describes. The corpus is the
+# reviewer's and is not imported -- these are the paragraphs it specifies,
+# written out, so a change to either one shows up as a disagreement.
+_CI_SHAPES: list[tuple[str, str, bool]] = [
+    ("run_id_ends_a_sentence", "The dispatch for this round was run 35479925335.", True),
+    (
+        "run_id_immediately_before_a_period_in_a_list_item",
+        "* The push run for this round is 35479506950.",
+        True,
+    ),
+    ("run_id_13_digits", "The paragraph names run 3547992533512 and no result.", True),
+    (
+        "run_id_with_thousands_separators",
+        "The paragraph names run 35,479,925,335 and no result.",
+        True,
+    ),
+    (
+        "the_word_conclusion_is_in_the_COMMAND_and_never_in_the_OUTPUT",
+        "cmd gh run view 35479506950 --json conclusion status\nout I did not paste it",
+        True,
+    ),
+    (
+        "run_id_ends_a_sentence_inside_backticks",
+        "The push run for this round is `35479506950`.",
+        True,
+    ),
+    ("control_run_id_then_a_space", "The push run for this round is 35479506950 .", True),
+    # And the shape that must be ALLOWED, or the guard refuses every report.
+    (
+        "a_run_named_with_its_result",
+        "Run `35482244521` at `d8ac843`, event `push`, conclusion **success**.",
+        False,
+    ),
+    (
+        "the_tolerance_value_that_is_not_a_run_id",
+        "RIGID_MODE_BOUND = 199.526231496888, which is 10.0 * 10**1.3.",
+        False,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "name, text, must_refuse", _CI_SHAPES, ids=[s[0] for s in _CI_SHAPES]
+)
+def test_the_RUN_CONCLUSION_guard_rules_on_the_reviewer_shapes(
+    name: str, text: str, must_refuse: bool
+) -> None:
+    """`tests/corpus/report_ci_section.txt`, applied to the function directly."""
+    got = bool(runs_without_a_conclusion(text))
+    assert got == must_refuse, (
+        f"shape `{name}`: the guard "
+        f"{'allowed' if must_refuse else 'refused'} it.\n    {text}\n"
+        "The reviewer measured this pattern at 2 of 7 on these shapes; a row "
+        "that flips back is that coverage going backwards."
     )
-    if int(red.group(2)) == 0:
-        assert _GREEN_UNDER_RED in body, (
-            f"the run concluded {stated} and the section shows "
-            f"{red.group(1)} jobs with none not green. That reads as a green "
-            f"build. Write `{_GREEN_UNDER_RED}` in this section with the "
-            "reason, or the table is telling a reader the opposite of what "
-            "the run did."
-        )
+
+
+_GREEN_TABLE_SHAPES: list[tuple[str, str, bool]] = [
+    (
+        "a_failed_run_whose_every_job_reads_green",
+        "## 0. CI at `abc1234` \u2014 conclusion **FAILURE**\n\n"
+        "| job | passed | failed | skipped |\n|---|---|---|---|\n"
+        "| lint | 10 | 0 | 0 |\n\n**Job conclusions: 4 jobs, 0 not green.**",
+        True,
+    ),
+    (
+        "the_same_section_saying_so",
+        "## 0. CI at `abc1234` \u2014 conclusion **FAILURE**\n\n"
+        "| job | passed | failed | skipped |\n|---|---|---|---|\n"
+        "| lint | 10 | 0 | 0 |\n\n**Job conclusions: 4 jobs, 0 not green.**\n\n"
+        "GREEN JOBS UNDER A FAILED RUN: the failures are report guards.",
+        False,
+    ),
+    (
+        "a_failed_run_with_a_red_job",
+        "## 0. CI at `abc1234` \u2014 conclusion **FAILURE**\n\n"
+        "**Job conclusions: 4 jobs, 1 not green.**",
+        False,
+    ),
+    (
+        "a_green_run",
+        "## 0. CI at `abc1234` \u2014 conclusion **SUCCESS**\n\n"
+        "**Job conclusions: 4 jobs, 0 not green.**",
+        False,
+    ),
+    ("a_section_with_no_conclusion_at_all", "## 0. CI at `abc1234`\n\nsome prose", True),
+]
+
+
+@pytest.mark.parametrize(
+    "name, text, must_refuse", _GREEN_TABLE_SHAPES, ids=[s[0] for s in _GREEN_TABLE_SHAPES]
+)
+def test_the_GREEN_TABLE_guard_has_a_negative_control(
+    name: str, text: str, must_refuse: bool
+) -> None:
+    """R430. This guard returns early on every report that is green.
+
+    At `d8ac843` section 0 concluded `success`, so the shipped assertion above
+    asserted nothing and no state in `tests/test_report_guard_states.py`
+    covered it. These five run the function on text of their own.
+    """
+    got = a_green_table_under_a_failed_run(text) is not None
+    assert got == must_refuse, (
+        f"shape `{name}`: the guard "
+        f"{'allowed' if must_refuse else 'refused'} it.\n    {text[:200]}"
+    )
 
 
 _SHA_IN_SECTION = re.compile(r"\b[0-9a-f]{7,40}\b")

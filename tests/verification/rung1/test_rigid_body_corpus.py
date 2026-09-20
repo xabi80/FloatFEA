@@ -2,9 +2,9 @@
 
 `tests/corpus/g21_rigid_body_frames.txt` is the reviewer's file. It was written
 at the twenty-sixth verdict and its own header says why: the shipped gate poses
-ONE frame -- one section, one mesh, one unit system -- and both controls, both
-counters and both published figures were measured at that single configuration
-by the hand that chose it.
+ONE frame -- one section, one mesh, one unit system -- and every control, every
+counter and every published figure was measured at that single configuration by
+the hand that chose it.
 
 **Nothing read it for eighteen rounds.** This does.
 
