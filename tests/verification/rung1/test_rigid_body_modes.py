@@ -37,6 +37,7 @@ runs.
 claim: the generated figures file carries a count for the retired ratio and
        none for the retired subspace loss
 cmd:   count("docs/milestones/F2_figures.md", "retired_loss_over")
+ctl:   retired_loss_figure_row
 out:   0
 Both are retired (CS2) and both are reported by
 `test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate`. The residual
@@ -295,6 +296,7 @@ def zero_modes_under_the_bound(k: np.ndarray) -> int:
     claim: three lines in this file name this function -- its definition, the
            gate's DIAGNOSTIC print, and the release control's second assertion
     cmd:   count("tests/verification/rung1/test_rigid_body_modes.py", "zero_modes_under_the_bound(")
+    ctl:   zero_modes_call_site
     out:   3
     """
     w = np.sort(np.abs(sla.eigh(homogenised(k), eigvals_only=True)))
@@ -341,6 +343,7 @@ def seventh_over_epsilon(k: np.ndarray) -> float:
     claim: nothing in this file measures anything at "the last eigenvalue
            below tau", which is where the refuted form measured
     cmd:   count("tests/verification/rung1/test_rigid_body_modes.py", "last_below")
+    ctl:   last_below_needle
     out:   0
 
     A SMALL RESULT IS NOT A FAILED COUNT, it is `lambda_7` at the arithmetic
@@ -563,7 +566,10 @@ def test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate(capsys) -> None:
     the frame, and G2.1 is not a statement about the frame.
 
     It is printed because it is informative about conditioning and it is the
-    number three earlier revisions published. Nothing is asserted against it.
+    number three earlier revisions published. THE CEILING DECIDES NOTHING; the
+    quantity is asserted to be FINITE, thirty lines below, which is a check on
+    the eigensolve and not on the element. `Nothing is asserted against it`
+    stood here and was refuted by the function's own body (R436).
 
     `RIGID_BODY_SUBSPACE_LOSS` IS RETIRED WITH IT (CS2), for the stronger
     reason: it breached at more of the reviewer's clean frames than the ratio
@@ -579,6 +585,7 @@ def test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate(capsys) -> None:
 
     claim: no count of either retired quantity's breaches is typed in this file
     cmd:   count("tests/verification/rung1/test_rigid_body_modes.py", "seventeen")
+    ctl:   seventeen_word
     out:   0
     """
     model, els = _frame()

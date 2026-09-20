@@ -1,0 +1,32 @@
+# NEGATIVE CONTROLS FOR THE PROSE TRIPLES (CW0).
+#
+# Every `cmd:` in this repository whose `out:` is `none` or a bare count has to
+# name a line here, and `tests/test_tree_prose_consistent.py` asserts that the
+# SAME needle the command searches for is found in that line. A command that
+# returns `none` for a needle that occurs nowhere is a command that cannot
+# fail, and R434 was exactly that: `RIGID_BODY_MODE_RATIO)` -- the name plus a
+# right paren -- matches nothing in the tree, so `out: none` was printed
+# whatever the code did, under a claim that was false in both halves.
+#
+# THIS FILE IS EXCLUDED FROM THE VOCABULARY'S OWN SEARCHES. If it were not,
+# every planted line would be counted by the command it is the control for,
+# which is the self-reference the annotation strip already exists to stop.
+#
+# FORMAT
+#   <id>: <a line containing the needle>
+#
+# The id is what a triple's `ctl:` names. The text after the colon is data and
+# nothing parses it further -- the only question asked of it is whether the
+# needle occurs in it.
+
+ratio_ceiling_name: if ratio > RIGID_BODY_MODE_RATIO:
+ratio_counter_name: kk[0, 0] += RIGID_BODY_MODE_RATIO_COUNTER_DEFECT * scale
+ratio_counter_name: kk[0, 0] += RIGID_BODY_MODE_RATIO_COUNTER_DEFECT * scale
+ratio_counter_name: kk[0, 0] += RIGID_BODY_MODE_RATIO_COUNTER_DEFECT * scale
+loss_ceiling_name: loss > RIGID_BODY_SUBSPACE_LOSS and nothing asserts on it
+floor_constant_name: tau = RIGID_MODE_FLOOR * norm * EPS
+last_below_needle: w_below = last_below(spectrum, tau)
+log_declaration: _floor("some_row", "derived", log=True)
+retired_loss_figure_row: | `retired_loss_over_ceiling_on_corpus` | 41 of 56 |
+seventeen_word: it breached at seventeen of the reviewer's frames
+zero_modes_call_site: dim = zero_modes_under_the_bound(k)

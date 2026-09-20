@@ -29,6 +29,13 @@ element and the transformation, so its measure has to be one too.
 THE `expect` FIELD IN THE CORPUS IS ABOUT THE RETIRED QUANTITIES and is read
 here only to report the contrast. It is not an expectation on the new form, and
 the new form is asserted on every entry whatever that field says.
+
+AND ONE ASSERTION IN THIS FILE DOES READ A RETIRED CEILING, deliberately.
+`test_the_RETIRED_ratio_is_why_the_form_changed` compares every frame's ratio
+with `RIGID_BODY_MODE_RATIO` and requires at least one to exceed it. That is
+not a gate on the element -- it is the EVIDENCE FOR THE RETIREMENT, and it
+goes red if the evidence ever disappears, which is the only way a reader would
+learn that the reason recorded in `tolerances.py` had stopped being true.
 """
 
 from __future__ import annotations
@@ -233,9 +240,13 @@ def test_the_gate_REFUSES_rather_than_guesses_and_says_how_often(capsys) -> None
 def test_the_RETIRED_ratio_is_why_the_form_changed(capsys) -> None:
     """The contrast, measured rather than asserted (Q7).
 
-    The retired quantity is recomputed here at every entry and reported. It is
-    not asserted against anything -- that is what "retired" means -- and it is
-    kept because a reader is owed the evidence for why a gate changed shape.
+    The retired quantity is recomputed here at every entry and reported, and
+    ONE THING IS ASSERTED: that some frame still exceeds the retired ceiling.
+    `It is not asserted against anything -- that is what retired means` stood
+    here and the assert is twenty-three lines below it (R436). What "retired"
+    means is that no GATE decides by it; this assertion decides nothing about
+    the element and everything about whether the recorded reason for retiring
+    it is still true.
     """
     from floatfea.tolerances import RIGID_BODY_MODE_RATIO, RIGID_BODY_SUBSPACE_LOSS
 

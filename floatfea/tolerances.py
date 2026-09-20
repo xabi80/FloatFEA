@@ -360,26 +360,30 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 #
 # Reason for 199.53, with its window measured on both sides:
 #
-#   below  TWO CANDIDATES, BOTH RENDERED, AND WHICH ONE BINDS IS A PROPERTY
-#          OF THE MACHINE (CV1, R426).
+#   below  TWO CANDIDATES, BOTH RENDERED, BOTH ENFORCED (CV1/CW2, R426/R438).
 #            * the six themselves: the bound must exceed the largest
 #              numerically-zero eigenvalue or Courant-Fischer's six are not
 #              all under it --
 #              `{{fig:rigid_mode_largest_rigid_eigenvalue}}` units;
-#            * a genuine seventh zero mode: one torsional release
-#              re-expressed over every unit system and span the corpus uses,
-#              refused at all of them, reaching
-#              `{{fig:rigid_mode_mechanism_ceiling}}` units at the highest.
-#          The two sit within `FIGURE_FLOOR_CLASS_SPREAD` of each other, so
-#          ONE RENDER CANNOT SETTLE WHICH BINDS and no sentence here says.
-#          On both machines rendered so far the six bind; the reversal the
-#          forty-eighth verdict saw came from comparing the canonical runner's
-#          figure with a cell measured on a laptop, which is the defect
-#          rendering them together removes. Both are floor-class rows against
-#          THIS constant, so both clearances are recomputed by
-#          `scripts/regen_figures.py --check` wherever it runs and the gate is
-#          held to whichever is tighter there -- which is why the question
-#          does not have to be settled.
+#            * a genuine seventh zero mode: ONE TORSIONAL RELEASE OVER THE
+#              CORPUS'S OWN UNIT AND SPAN SETS,
+#              `{{fig:rigid_mode_mechanism_cell}}`, of which
+#              `{{fig:rigid_mode_mechanism_count}}` really do carry a seventh
+#              zero mode and NONE escapes the bound. The highest `lambda_7`
+#              any of them reaches is
+#              `{{fig:rigid_mode_mechanism_ceiling}}` units.
+#          THE MECHANISM IS THE BINDING SIDE. It was not, while the cell was
+#          7 units x 5 spans under a sentence claiming the corpus's coverage
+#          -- 6 of 19 unit values and 5 of 31 span values, one of them a unit
+#          the corpus does not use -- and over the set that sentence named
+#          the mechanism goes above the six (R438). Widening the cell to the
+#          claimed set reversed which candidate binds; the gate did not move,
+#          because both are floor-class rows against THIS constant and both
+#          clearances are recomputed by `scripts/regen_figures.py --check`
+#          wherever it runs.
+#          `subdiv` IS PINNED TO 1 IN THAT CELL and the reason is in
+#          `scripts/regen_figures.py`: above it the release stops being a
+#          mechanism, so there is nothing to measure.
 #   above  the smallest `lambda_7` the gate accepts over the corpus is
 #          `{{fig:rigid_mode_smallest_decided}}` units and the largest it
 #          refuses is `{{fig:rigid_mode_largest_refused}}`. Raising the bound
@@ -452,7 +456,9 @@ RIGID_MODE_BOUND_COUNTER_DEFECT: Final[float] = 1.0e-13
 #        header records what the two constants were, and the counter
 #        meta-test, which names the retired counter it no longer registers
 # cmd:   files("tests/**/*.py", "RIGID_MODE_FLOOR")
-# out:   tests/test_counters_are_injected.py,tests/verification/rung1/test_rigid_body_modes.py
+# ctl:   floor_constant_name
+# out:   tests/test_counters_are_injected.py,
+# out:   tests/verification/rung1/test_rigid_body_modes.py
 #
 # EVERYTHING BELOW IS THE RECORD OF WHAT IT WAS. Read it in the past tense.
 # It was the floor on what counted as numerically zero, `tau = FLOOR *
@@ -545,10 +551,21 @@ RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 1.0e-13
 # carry one from its own vocabulary. A retired value is still a float in this
 # file, so it still needs a class; what it no longer has is an assertion.
 #
-# claim: one test file mentions this ceiling, and it is the diagnostic that
-#        prints it -- no assertion anywhere compares against it
-# cmd:   files("tests/**/*.py", "RIGID_BODY_MODE_RATIO)")
-# out:   none
+# claim: three test files name this ceiling, and ONE OF THEM ASSERTS ON IT --
+#        `test_the_RETIRED_ratio_is_why_the_form_changed` builds a list by
+#        comparing every corpus frame's ratio with this value and requires the
+#        list to be non-empty, so it reddens if the retired quantity ever stops
+#        breaching. That is the retirement's own evidence and not a gate on the
+#        element. The other two are the literal scanner and the diagnostic.
+# cmd:   files("tests/**/*.py", "RIGID_BODY_MODE_RATIO")
+# ctl:   ratio_ceiling_name
+# out:   tests/test_no_tolerance_literals.py,
+# out:   tests/verification/rung1/test_rigid_body_corpus.py,
+# out:   tests/verification/rung1/test_rigid_body_modes.py
+#
+# `one test file ... no assertion anywhere compares against it` stood here with
+# a command that searched for this name followed by a right paren -- a string
+# that occurs nowhere, so `out: none` was printed whatever the tree did (R434).
 #
 # EVERYTHING BELOW IS THE RECORD OF WHAT IT WAS, kept because the step report
 # cites the contrast and because a value deleted outright takes its own history
@@ -564,6 +581,7 @@ RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 1.0e-13
 # claim: the retired ratio's counter constant is named in exactly one test
 #        file, by `counter_response` and the import that feeds it
 # cmd:   files("tests/**/*.py", "RIGID_BODY_MODE_RATIO_COUNTER_DEFECT")
+# ctl:   ratio_counter_name
 # out:   tests/verification/rung1/test_rigid_body_modes.py
 #
 # WHY IT WAS RETIRED, in one line: it exceeds this ceiling on
@@ -618,10 +636,14 @@ RIGID_BODY_MODE_RATIO_COUNTER_DEFECT: Final[float] = 1.0e-12
 # RETIRED-ALIAS: subspace loss
 # RETIRED-ALIAS: asserts on the subspace
 # RETIRED-ALIAS: rigid-body modes (subspace)
-# claim: the retired subspace loss is named by one test file, which prints
-#        it as a diagnostic, and by no assertion
-# cmd:   files("tests/**/*.py", "RIGID_BODY_SUBSPACE_LOSS)")
-# out:   none
+# claim: two test files name this ceiling and neither asserts on it -- both
+#        compute the loss and print it. Unlike the retired ratio above, no
+#        test requires this one to keep breaching, so nothing would notice if
+#        the evidence for retiring it disappeared
+# cmd:   files("tests/**/*.py", "RIGID_BODY_SUBSPACE_LOSS")
+# ctl:   loss_ceiling_name
+# out:   tests/verification/rung1/test_rigid_body_corpus.py,
+# out:   tests/verification/rung1/test_rigid_body_modes.py
 # CLASS: ACCURACY -- and RETIRED at CS2. NOT A GATE: nothing asserts
 # against it, and the class is kept for the reason given above.
 #

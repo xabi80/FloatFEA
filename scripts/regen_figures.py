@@ -60,6 +60,13 @@ def _figures() -> list[tuple[str, str]]:
     )
 
     ceil = PATCH_TEST_EXACTNESS
+    # THE FOUR RETIRED ROWS ARE `derived` (R445, by R439's rule). They were
+    # marked `below`/`above` against `RIGID_BODY_MODE_RATIO` and
+    # `RIGID_BODY_SUBSPACE_LOSS`, both retired at Q7/CS2, so `compare()` was
+    # computing a margin against constants nothing asserts -- R428's species
+    # at four sites its condition did not name. `derived` keeps the spread
+    # check, which is what a diagnostic still owes a reader, and drops the
+    # margin, which decides nothing.
     rows: list[tuple[str, str]] = []
 
     # G2.1 / V1.1 (D2 step 5). Both halves of the rigid-body gate, generated
@@ -74,13 +81,13 @@ def _figures() -> list[tuple[str, str]]:
     k_rb = RB.assemble_dense(model, els)
     rows.append(
         (
-            _floor("rigid_body_mode_ratio", "below", "RIGID_BODY_MODE_RATIO"),
+            _floor("rigid_body_mode_ratio", "derived"),
             f"{RB.mode_ratio(k_rb):.4e}",
         )
     )
     rows.append(
         (
-            _floor("rigid_body_subspace_loss", "below", "RIGID_BODY_SUBSPACE_LOSS"),
+            _floor("rigid_body_subspace_loss", "derived"),
             f"{RB.subspace_loss(k_rb, model):.4e}",
         )
     )
@@ -128,25 +135,41 @@ def _figures() -> list[tuple[str, str]]:
     # CV1: THE OTHER LOWER-LIMIT CANDIDATE, RENDERED HERE SO THE TWO COME
     # FROM ONE MACHINE. `RIGID_MODE_BOUND`'s window has two candidates below
     # it -- the largest of the six numerically-zero eigenvalues, and the
-    # highest `lambda_7` a GENUINE seventh zero mode reaches -- and the entry
-    # said which one binds. They are within `FIGURE_FLOOR_CLASS_SPREAD` of
-    # each other and the ordering reverses between machines (R426), so the
-    # sentence was a comparison of two numbers from two renders. Both are
-    # floor-class rows against the bound now and neither entry says which
-    # binds.
+    # highest `lambda_7` a GENUINE seventh zero mode reaches. Both are
+    # floor-class rows against the bound, so both clearances are recomputed
+    # wherever `--check` runs and the gate is held to whichever is tighter
+    # there.
     #
-    # The cell is one torsional release re-expressed: every unit system and
-    # span the corpus uses, nothing else moved. It is a provable mechanism at
-    # each, so the bound must exceed all of them.
+    # THE CELL IS THE CORPUS'S OWN UNIT AND SPAN SETS, at `subdiv=1`, one
+    # torsional release, nothing else moved (CW2, R438). It was 7 units x 5
+    # spans under a sentence claiming "every unit system and span the corpus
+    # uses" -- 6 of the 19 unit values and 5 of the 31 span values, with one
+    # unit the corpus does not use at all -- and over the set the sentence
+    # named the mechanism reaches higher than the cell reported. The cell is
+    # now that set: every distinct `unit` string crossed with every distinct
+    # `stretch` string, which is 858 configurations and costs under a second.
+    #
+    # `subdiv` IS PINNED TO 1 AND THAT IS NOT AN OVERSIGHT. Above it,
+    # `_assemble_with_torsional_release(..., released=6)` releases a member
+    # that is no longer the axis-parallel tip member, so the injection stops
+    # being a mechanism and leaves SIX under the bound rather than seven --
+    # there is nothing to measure. Only the configurations that really do
+    # carry a seventh zero mode are counted.
     import test_rigid_body_corpus as RBC
 
     mechanism = 0.0
-    for unit in ("1e-6", "1e-4", "1e-2", "1", "1e2", "1e4", "1e6"):
-        for stretch in ("1", "10", "100", "1000", "1e4"):
+    mechanisms = 0
+    units = sorted({e["unit"] for e in RBC.ENTRIES}, key=float)
+    spans = sorted({e["stretch"] for e in RBC.ENTRIES}, key=float)
+    for unit in units:
+        for stretch in spans:
             entry = dict(RBC.ENTRIES[0])
             entry.update(unit=unit, stretch=stretch, subdiv="1")
             m_m, els_m = RBC._build(entry)
             k_m = RB._assemble_with_torsional_release(m_m, els_m, released=6)
+            if RB.zero_modes_under_the_bound(k_m) != RB.RIGID + 1:
+                continue
+            mechanisms += 1
             mechanism = max(mechanism, RB.seventh_over_epsilon(k_m))
     rows.append(
         (
@@ -154,6 +177,8 @@ def _figures() -> list[tuple[str, str]]:
             f"{mechanism:.4f}",
         )
     )
+    rows.append(("rigid_mode_mechanism_cell", f"{len(units)} units x {len(spans)} spans, subdiv 1"))
+    rows.append(("rigid_mode_mechanism_count", f"{mechanisms}"))
 
     from floatfea.tolerances import FIGURE_FLOOR_CLASS_SPREAD as SPREAD
 
@@ -252,14 +277,13 @@ def _figures() -> list[tuple[str, str]]:
     rows.append(("rigid_mode_corpus_frames", f"{len(RBC.ENTRIES)}"))
     rows.append(
         (
-            # CV2 / R427: `derived`, NOT an exact row. This count is the one
-            # the bound's own entry says is not platform-stable, and Q8
-            # requires a row that is not floor-class to agree EXACTLY
-            # everywhere -- so it was published under the one policy the same
-            # generator refuses six lines away for the loss count. The three
-            # rows below are what a reader should use; this one is kept
-            # because two revisions of the step report cite it by name.
-            _floor("rigid_mode_corpus_refused", "derived"),
+            # `words`, NOT `derived` (R448). `derived` reads only the
+            # LEADING number of a cell, so off the canonical machine the
+            # denominator of `N of M` was compared by nothing. The `words`
+            # class compares the word sequence exactly AND every number
+            # beside it for spread, which is what `counter_defect_boundary`
+            # uses and for this reason.
+            _floor("rigid_mode_corpus_refused", "words"),
             f"{refused} of {len(RBC.ENTRIES)}",
         )
     )
@@ -270,14 +294,38 @@ def _figures() -> list[tuple[str, str]]:
     rows.append(("rigid_mode_corpus_refused_clear", f"{refused_clear}"))
     rows.append(("rigid_mode_corpus_in_the_window", f"{len(in_window)}"))
     rows.append(("rigid_mode_corpus_window_members", " ".join(sorted(in_window)) or "none"))
-    rows.append(("retired_ratio_over_ceiling_on_corpus", f"{ratio_over} of {len(RBC.ENTRIES)}"))
-    # THE LOSS'S COUNT IS NOT MACHINE-STABLE AND IS NOT PUBLISHED. It read
-    # `42 of 56` on the implementer's laptop and `41 of 56` on the canonical
-    # runner, because the subspace loss is computed from EIGENVECTORS and one
-    # frame sits on its retired ceiling. An exact row that disagrees between
-    # machines is staleness by Q8's rule, and it is not floor-class either --
-    # a count is not a measurement against a tolerance. It is left out, and
-    # the disagreement is itself one more reason the loss is not a gate.
+    rows.append(
+        (
+            # SAME CLASS AS THE ROW ABOVE, AND THE RULE IS NOW WRITTEN ONCE
+            # (R439). This was an exact row while its sibling was floor-class
+            # and a third count was withheld -- three policies for a count in
+            # twenty lines, with the sentence stating the rule refuted by the
+            # row sixteen lines above it.
+            #
+            # THE RULE THIS FILE FOLLOWS, stated: a count is published when
+            # something cites it, and its CLASS is decided by whether it can
+            # move between machines. A count derived from eigenvalues can:
+            # both of these compare a per-frame quantity with a ceiling and a
+            # frame sitting near that ceiling changes sides. So both are
+            # `words` -- the word sequence exact, both numbers compared for
+            # spread. A count that cannot move at all, like the number of
+            # frames in the corpus file, stays a plain row.
+            #
+            # "a count is not a measurement against a tolerance" stood below
+            # this as the ground for withholding the third one. It is
+            # withdrawn: these two ARE counts of measurements against
+            # tolerances, and the class handles them.
+            _floor("retired_ratio_over_ceiling_on_corpus", "words"),
+            f"{ratio_over} of {len(RBC.ENTRIES)}",
+        )
+    )
+    # THE LOSS'S COUNT IS STILL NOT PUBLISHED, and the reason is now the one
+    # that survives: NOTHING CITES IT. It read `42 of 56` on the implementer's
+    # laptop and `41 of 56` on the canonical runner, which under the rule
+    # above would make it `words` like the other two rather than a reason to
+    # withhold it. What keeps it out is that no sentence anywhere needs it --
+    # the contrast the reports draw is with the ratio, and the corpus test
+    # prints the loss count when it runs for a reader who wants it.
     _ = loss_over
 
     rows.append(
@@ -288,13 +336,13 @@ def _figures() -> list[tuple[str, str]]:
     )
     rows.append(
         (
-            _floor("rigid_body_counter_ratio", "above", "RIGID_BODY_MODE_RATIO"),
+            _floor("rigid_body_counter_ratio", "derived"),
             f"{RB.counter_response('ratio'):.4e}",
         )
     )
     rows.append(
         (
-            _floor("rigid_body_counter_loss", "above", "RIGID_BODY_SUBSPACE_LOSS"),
+            _floor("rigid_body_counter_loss", "derived"),
             f"{RB.counter_response('loss'):.4e}",
         )
     )
@@ -595,10 +643,11 @@ CANONICAL_CORETYPE = "Haswell"
 # test asserting exactly that set (R424).
 #
 # claim: two `_floor(...)` calls in this file declare `log=True`, and both are
-#        the retired parametrisation; the other two mentions are this comment
-#        block and the one above
+#        the retired parametrisation. The rest of the hits are prose: this
+#        comment block, the one above it, and the two in the class vocabulary
 # cmd:   count("scripts/regen_figures.py", "log=True")
-# out:   4
+# ctl:   log_declaration
+# out:   6
 #
 # Every row NOT marked here must match the canonical render exactly, on any
 # machine, so staleness is caught off the canonical runner as it always was.

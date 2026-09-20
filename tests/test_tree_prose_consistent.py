@@ -1,65 +1,64 @@
-"""Sentences in the SOURCE TREE are checked the way sentences in a report are (CV0).
+"""Prose in the source tree does not claim things about the code (CW0, CW1).
 
-`tests/test_report_numbers_are_sourced.py` makes a number in a step report carry
-the command that produced it. It stops at `docs/reports/`. Eight findings in the
-forty-eighth verdict were sentences in `floatfea/`, `tests/`, `scripts/` and the
-locked plan, **every one of them refuted by a grep over a file the same commit
-touched**, and five of the eight were written in the round that fixed the same
-species somewhere else. The reviewer's words: that is worth a rule rather than
-eight repairs.
+`tests/test_report_numbers_are_sourced.py` makes a number in a step report
+carry the command that produced it, and stops at `docs/reports/`. This file is
+the same discipline for the rest of the tree, at its second shape.
 
-WHAT THIS FILE DECIDES, IN THREE PARTS.
+WHY THE FIRST SHAPE IS GONE. CV0 built two DETECTORS beside the triple runner:
+a keyword list for absence claims and an alias list for retired quantities.
+The reviewer measured them against unseen phrasings in
+`tests/corpus/tree_prose_claims.txt` and got **0 of 20** and **3 of 8** -- the
+only shapes either caught were the ones their author had written. A probe over
+this file's own roots found 21 absence-shaped paragraphs the pattern missed
+against 13 it matched. That is not a list that converges with another round of
+words in it: the defect is a sentence making an unchecked claim, and "makes an
+unchecked claim" is not a keyword.
 
-1. **A TRIPLE IS RUN.** Prose anywhere under the roots below may write
+So the rule is smaller and it is a prohibition rather than a search. **Prose
+here does not assert what the code does or does not do.** A claim is one of
+three things:
 
-       claim: <one sentence about what this repository contains>
-       cmd:   <a call from the vocabulary in `_VOCABULARY`>
-       out:   <what that call returns>
+  * a test, which is the normal case and always was;
+  * a TRIPLE, checked by this file;
+  * deleted.
 
-   and this file evaluates the call and compares. A triple whose `out` is stale
-   is a failure, so the sentence cannot rot silently the way a comment does.
-   The vocabulary is deliberately tiny and is *the grep the reviewer ran*:
-   `count`, `lines`, `files`, `defined`. No shell, no network, no arbitrary
-   Python -- the expression is parsed and rejected if it is anything but a call
-   to one of those names on literal arguments.
+The reviewer reads for the fourth case. Three rounds running it has found
+those sentences by reading, and by measurement it is better at it than any
+pattern written here -- R436's two were in docstrings the same round rewrote,
+and neither phrasing was in the list.
 
-2. **AN ABSENCE CLAIM CARRIES A TRIPLE.** A paragraph that says something is
-   *not* in the tree -- "nothing asserts against it", "no shipped row declares
-   it", "not typed anywhere", "NOTHING ASSERTS AGAINST THIS AND NOTHING MAY" --
-   is the exact shape that failed. Those sentences look like documentation and
-   read like guarantees, and nothing has ever checked one. Each must carry a
-   triple or be listed in `_ABSENCE_EXEMPT` with a reason.
+THE TRIPLE
 
-3. **A RETIRED QUANTITY IS NOT DESCRIBED IN THE PRESENT TENSE.** When a gate
-   changes shape the old quantity keeps its entry, marked `RETIRED`, and every
-   sentence describing the gate BY that quantity has to move with it in the
-   same commit (BP0). Nothing enforced that, so the plan's own gate register
-   still called G2.1 an eigenvalue ratio 1600 lines above the section that says
-   the ratio is retired. Each retired entry declares its prose names beside
-   itself:
+    claim: <one sentence about what this repository contains>
+    cmd:   <a call from the vocabulary below>
+    ctl:   <an id in tests/prose_triple_controls.txt>    (see NEGATIVE CONTROL)
+    out:   <what that call returns>
 
-       # RETIRED-ALIAS: eigenvalue ratio
+The vocabulary is `count`, `lines`, `files`, `defined` and nothing else: the
+expression is PARSED and refused unless it is one of those four names applied
+to string literals, because `eval` over a comment in the source tree is
+otherwise a way to run anything from a docstring.
 
-   and any paragraph using an alias must say `retired` (or carry a triple).
-   The aliases live next to the constant, written by whoever retires it, so
-   the vocabulary cannot drift from the retirement.
+NEGATIVE CONTROL, AND IT IS THE WHOLE OF R434. A command whose answer is
+`none` or a count proves nothing unless the needle it searches for can be
+found at all. The needle that failed was a retired ceiling's name with a right
+paren after it -- spelled out nowhere here, because naming it would put this
+file into the answer of the very command it is the example for -- and it
+matches nothing anywhere, so it printed `none` whatever the tree did, under a
+claim that was false in both halves and now looked certified. Every such
+triple names a planted line in `tests/prose_triple_controls.txt` and this file
+asserts the same needle is found there. A needle that cannot match fails its control.
 
-WHAT IT DOES NOT DECIDE, said so it is not trusted past its reach:
+WHAT THIS STILL DOES NOT DO, said plainly:
 
-* it cannot find a POSITIVE claim that is false -- "this file asserts X" when
-  it does not. Absence and retirement are the two species this milestone has
-  actually produced, eight times and four times respectively; a general
-  checker for "is this sentence about the code true" is not a thing that
-  exists;
-* the patterns in `_ABSENCE` are a list, not a grammar. A sentence that says
-  the same thing in words nobody has used yet is not seen. `R429` is the same
-  limitation one file over and the answer there was the reviewer's corpus of
-  unseen shapes; the answer here is the same, and until that corpus exists the
-  coverage is the list;
-* a triple proves its own `out` is current. It does not prove the `claim`
-  sentence is what the `cmd` measures -- that half is a reader's, and it is
-  why the claim is written out in full beside the call rather than left as a
-  bare assertion.
+* it checks the triples that exist. A sentence with no triple is invisible to
+  it -- that is the reviewer's half, and it is now the stated division of
+  labour rather than a gap left by a list;
+* a triple proves its `out` is current and its needle is findable. It does not
+  prove the `claim` sentence is what the `cmd` measures. R434 and R435 were
+  both that failure, and both would have survived a green run of this file;
+  the answer is that a human reads the claim against the command, which is
+  what the reviewer did.
 """
 
 from __future__ import annotations
@@ -73,31 +72,35 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-ROOTS = ("floatfea", "tests", "scripts", "docs/milestones")
 
-# `docs/reports/` is NOT a root here: it has its own guard, and a step report
-# is a record of a moment rather than a description of the tree -- revision 14
-# says true things about a commit fourteen revisions back and must keep saying
-# them.
+# `docs/verification/` IS IN SCOPE FROM CW1 (R437). The ladder document is what
+# `CLAUDE.md` § Testing names as the ordering authority, and it defined G2.1 by
+# a quantity retired two steps earlier while four roots that excluded it were
+# being checked. `CLAUDE.md` itself is in scope for the same reason.
+ROOTS = ("floatfea", "tests", "scripts", "docs/milestones", "docs/verification")
+EXTRA_FILES = ("CLAUDE.md",)
+
+# `docs/reports/` is NOT in scope: a step report is a record of a moment rather
+# than a description of the tree, and revision 14 must keep saying true things
+# about a commit fourteen revisions back. It has its own guard.
+
+CONTROLS = ROOT / "tests" / "prose_triple_controls.txt"
 
 
 # --------------------------------------------------------------------------
 # The vocabulary. This is the grep, and nothing else runs.
 # --------------------------------------------------------------------------
 
-
-# A TRIPLE'S OWN ANNOTATION IS NOT PART OF THE TREE IT MEASURES.
+# AN ANNOTATION LINE IS NOT PART OF THE TREE IT MEASURES: every `cmd:` contains
+# the needle it searches for, so the first four triples written here counted
+# themselves.
 #
-# Every `cmd:` line contains the needle it searches for, so the first four
-# triples written against this file all counted themselves: "nothing reads
-# `last_below`" returned 1, and the 1 was the sentence saying it returned 0.
-# That is the citation rule catching its own explanation, one file over, and
-# the fix is the same -- the annotation lines are stripped before any search.
-#
-# The cost is real and is stated rather than hidden: a needle that only ever
-# appears on an annotation line is invisible to the vocabulary, so a triple
-# cannot assert anything about the triples.
-_ANNOTATION = re.compile(r"^\s*(?:#\s*)?(?:claim|cmd|out):", re.M)
+# KEYED ON THE PREFIX AT LINE START AND NOT ON THE TOKEN (CW0, R443b). The
+# first version matched any line beginning with `out:`, which includes a
+# Python annotated assignment -- `out: list[tuple[int, str]] = []` -- so a
+# count over this very file returned 5 where the file had 6. An assignment is
+# excluded by the `=` it must carry.
+_ANNOTATION = re.compile(r"^[ \t]*(?:#[ \t]*)?(?:claim|cmd|ctl|out):(?![^=\n]*=)")
 
 
 def _without_annotations(text: str) -> str:
@@ -109,10 +112,20 @@ def _read(rel: str) -> str:
 
 
 def _paths(pattern: str) -> list[Path]:
-    """Every file matching `pattern`, which is a path or a glob under ROOT."""
+    """Every file matching `pattern`, which is a path or a glob under ROOT.
+
+    AN EMPTY MATCH IS AN ERROR AND NOT AN ANSWER (R443a). A glob that reaches
+    no file returned `none` from `files()` and `0` from `count()`, so a triple
+    could certify an absence with a pattern that looked at nothing -- AM5's
+    rule about empty parameter sets, inside this guard.
+    """
     if any(ch in pattern for ch in "*?["):
-        return sorted(p for p in ROOT.glob(pattern) if p.is_file())
-    return [ROOT / pattern]
+        got = sorted(p for p in ROOT.glob(pattern) if p.is_file() and p != CONTROLS)
+    else:
+        got = [ROOT / pattern]
+    if not got or not all(p.exists() for p in got):
+        raise ValueError(f"the pattern {pattern!r} matches no file under the repository root")
+    return got
 
 
 def _text(p: Path) -> str:
@@ -130,6 +143,7 @@ def lines(rel: str, needle: str) -> str:
     Filtered in place rather than through `_read`, because dropping the
     annotation lines first would renumber every line after them.
     """
+    _paths(rel)
     raw = (ROOT / rel).read_text(encoding="utf-8", errors="replace").splitlines()
     got = [
         str(i) for i, line in enumerate(raw, 1) if needle in line and not _ANNOTATION.match(line)
@@ -154,16 +168,9 @@ def defined(name: str) -> str:
 _VOCABULARY = {"count": count, "lines": lines, "files": files, "defined": defined}
 
 
-def _evaluate(expr: str) -> str:
-    """Run one `cmd:` call, refusing anything that is not a vocabulary call.
-
-    Parsed rather than pattern-matched: a call is admitted only when it is a
-    single `Name(args...)` whose name is in the vocabulary and whose arguments
-    are string literals. `eval` on a comment in the source tree would otherwise
-    be a way to run anything from a docstring.
-    """
-    tree = ast.parse(expr.strip(), mode="eval")
-    node = tree.body
+def _parse(expr: str) -> tuple[str, list[str]]:
+    """`(name, string arguments)` for one `cmd:`, refusing anything else."""
+    node = ast.parse(expr.strip(), mode="eval").body
     if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
         raise ValueError(f"not a call: {expr!r}")
     if node.func.id not in _VOCABULARY:
@@ -172,7 +179,17 @@ def _evaluate(expr: str) -> str:
         isinstance(a, ast.Constant) and isinstance(a.value, str) for a in node.args
     ):
         raise ValueError(f"arguments must be string literals: {expr!r}")
-    return str(_VOCABULARY[node.func.id](*[a.value for a in node.args]))
+    return node.func.id, [a.value for a in node.args]
+
+
+def _evaluate(expr: str) -> str:
+    name, args = _parse(expr)
+    return str(_VOCABULARY[name](*args))
+
+
+def _needle(expr: str) -> str:
+    """The string a command searches for: the last argument."""
+    return _parse(expr)[1][-1]
 
 
 # --------------------------------------------------------------------------
@@ -184,9 +201,7 @@ def _python_prose(path: Path) -> list[tuple[int, str]]:
     """Comment and docstring lines only -- never executable code.
 
     An assertion MESSAGE is not a claim about the tree; it is a sentence the
-    program prints when something else is wrong. Reading code as prose put
-    every f-string in the repository into this guard's domain, which is how
-    the first version of it found forty-seven sites and meant nothing.
+    program prints when something else is wrong.
     """
     text = path.read_text(encoding="utf-8", errors="replace")
     out: list[tuple[int, str]] = []
@@ -223,7 +238,7 @@ def _markdown_prose(path: Path) -> list[tuple[int, str]]:
 
 
 def _prose_files() -> list[Path]:
-    got: list[Path] = []
+    got: list[Path] = [ROOT / name for name in EXTRA_FILES]
     for where in ROOTS:
         for p in sorted((ROOT / where).rglob("*")):
             if p.suffix in (".py", ".md") and "__pycache__" not in str(p):
@@ -231,65 +246,35 @@ def _prose_files() -> list[Path]:
     return got
 
 
-def _paragraphs(prose: list[tuple[int, str]]) -> list[tuple[int, int, str]]:
-    """Consecutive non-blank prose lines as `(first, last, joined)`.
-
-    A claim is a sentence and a sentence wraps: the first version of this
-    matched line by line and missed three of the eight findings because the
-    verb and the symbol were on different lines. The extent comes back with
-    it so a paragraph can be asked whether a triple sits inside it -- joining
-    first and searching the joined text for `out:` ran the expected value to
-    the end of the paragraph, which made every triple's `out` the rest of the
-    comment.
-    """
-    out: list[tuple[int, int, str]] = []
-    cur: list[str] = []
-    start: int | None = None
-    last = 0
-    prev: int | None = None
-    for lineno, line in prose:
-        if not line or (prev is not None and lineno > prev + 1):
-            if cur:
-                out.append((start or 0, last, " ".join(cur)))
-            cur, start = [], None
-        if line:
-            start = lineno if start is None else start
-            last = lineno
-            cur.append(line)
-        prev = lineno
-    if cur:
-        out.append((start or 0, last, " ".join(cur)))
-    return out
-
-
-PROSE: list[tuple[str, int, int, str]] = []
 LINES_OF: dict[str, list[tuple[int, str]]] = {}
 for _p in _prose_files():
     _rel = str(_p.relative_to(ROOT)).replace("\\", "/")
-    _lines = _python_prose(_p) if _p.suffix == ".py" else _markdown_prose(_p)
-    LINES_OF[_rel] = _lines
-    for _first, _last, _para in _paragraphs(_lines):
-        PROSE.append((_rel, _first, _last, _para))
+    LINES_OF[_rel] = _python_prose(_p) if _p.suffix == ".py" else _markdown_prose(_p)
 
 
 # --------------------------------------------------------------------------
-# 1. The triples
+# The triples
 # --------------------------------------------------------------------------
 
 _CLAIM = re.compile(r"^claim:\s*(.+)$")
 _CMD = re.compile(r"^cmd:\s*(.+)$")
+_CTL = re.compile(r"^ctl:\s*(.+)$")
 _OUT = re.compile(r"^out:\s*(.+)$")
+_BARE_COUNT = re.compile(r"^\d+$")
 
 
-def _triples_in(rel: str, prose: list[tuple[int, str]]) -> list[tuple[str, int, str, str, str]]:
-    """`claim:` then `cmd:` then `out:`, each on its own prose line.
+Triple = tuple[str, int, str, str, str, str]
 
-    A claim may WRAP: continuation lines between `claim:` and `cmd:` are part
-    of the sentence. `cmd:` and `out:` may not -- a call and its result are
-    one line each, and letting them wrap is how the joined-paragraph version
-    swallowed the rest of the comment into `out`.
+
+def _triples_in(rel: str, prose: list[tuple[int, str]]) -> list[Triple]:
+    """`claim:` then `cmd:`, then an optional `ctl:`, then `out:`.
+
+    A claim may WRAP: continuation lines before `cmd:` are part of the
+    sentence. The other three may not -- a call, a control id and a result are
+    one line each, and letting them wrap is how an earlier version swallowed
+    the rest of the comment into `out`.
     """
-    got: list[tuple[str, int, str, str, str]] = []
+    got: list[Triple] = []
     i, n = 0, len(prose)
     while i < n:
         m = _CLAIM.match(prose[i][1])
@@ -300,53 +285,86 @@ def _triples_in(rel: str, prose: list[tuple[int, str]]) -> list[tuple[str, int, 
         while j < n and not _CMD.match(prose[j][1]) and prose[j][1]:
             claim += " " + prose[j][1]
             j += 1
-        if j + 1 < n and _CMD.match(prose[j][1]) and _OUT.match(prose[j + 1][1]):
-            got.append(
-                (
-                    rel,
-                    start,
-                    claim.strip(),
-                    _CMD.match(prose[j][1]).group(1).strip(),
-                    _OUT.match(prose[j + 1][1]).group(1).strip(),
-                )
+        cmd = _CMD.match(prose[j][1]) if j < n else None
+        if cmd is None:
+            raise AssertionError(
+                f"{rel}:{start} opens `claim:` and no `cmd:` follows it. A claim "
+                f"without its command is the thing this file exists to refuse.\n"
+                f"    {claim[:200]}"
             )
-            i = j + 2
-            continue
-        raise AssertionError(
-            f"{rel}:{start} opens `claim:` and the next prose lines are not "
-            f"`cmd:` then `out:`. A claim without its command is the thing "
-            f"this file exists to refuse.\n    {claim[:200]}"
-        )
+        j += 1
+        ctl = ""
+        ctl_match = _CTL.match(prose[j][1]) if j < n else None
+        if ctl_match:
+            ctl = ctl_match.group(1).strip()
+            j += 1
+        out = _OUT.match(prose[j][1]) if j < n else None
+        if out is None:
+            raise AssertionError(
+                f"{rel}:{start} has `claim:` and `cmd:` and no `out:`.\n    {claim[:200]}"
+            )
+        # AN `out:` MAY CONTINUE ON FURTHER `out:` LINES, joined with nothing
+        # between them. A list of file paths does not fit in a hundred columns
+        # and shortening the answer to fit would be shortening what the
+        # command is allowed to check. The continuation is bounded by the
+        # marker itself -- the first line that is not `out:` ends it -- which
+        # is why a bare wrap is still refused and why this cannot swallow the
+        # rest of the comment, as an earlier version did.
+        answer = out.group(1).strip()
+        j += 1
+        while j < n and _OUT.match(prose[j][1]):
+            answer += _OUT.match(prose[j][1]).group(1).strip()
+            j += 1
+        got.append((rel, start, claim.strip(), cmd.group(1).strip(), ctl, answer))
+        i = j
     return got
 
 
-TRIPLES: list[tuple[str, int, str, str, str]] = [
+TRIPLES: list[Triple] = [
     t
     for rel, prose in LINES_OF.items()
     if rel != "tests/test_tree_prose_consistent.py"
     for t in _triples_in(rel, prose)
 ]
-TRIPLE_LINES: dict[str, set[int]] = {}
-for _t in TRIPLES:
-    TRIPLE_LINES.setdefault(_t[0], set()).add(_t[1])
+
+_CONTROL_LINES: dict[str, str] = {
+    k.strip(): v.strip()
+    for k, _, v in (
+        line.partition(":")
+        for line in CONTROLS.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.startswith("#")
+    )
+}
+
+_FALLBACK = [("(none)", 0, "", "count('tests/**/*.py','x')", "", "0")]
 
 
 def test_there_are_triples_to_run() -> None:
-    """Meta-test: zero triples makes the runner below a test of nothing."""
+    """Meta-test: zero triples makes everything below a test of nothing."""
     assert len(TRIPLES) >= 6, (
-        f"only {len(TRIPLES)} prose triple(s) found in the tree. Either the "
-        "sentences lost their commands or the pattern stopped matching, and "
-        "both make this file vacuous."
+        f"only {len(TRIPLES)} prose triple(s) found. Either the sentences lost "
+        "their commands or the pattern stopped matching, and both make this "
+        "file vacuous."
+    )
+
+
+def test_every_control_line_is_used_by_a_triple() -> None:
+    """A planted line no triple names is a control for nothing."""
+    named = {t[4] for t in TRIPLES if t[4]}
+    unused = sorted(set(_CONTROL_LINES) - named)
+    assert not unused, (
+        f"{unused} are planted in {CONTROLS.name} and no triple names them. A "
+        "control nothing runs is a line in a file."
     )
 
 
 @pytest.mark.parametrize(
-    "rel, start, claim, cmd, expected",
-    TRIPLES or [("(none)", 0, "", "count('x','y')", "0")],
+    "rel, start, claim, cmd, ctl, expected",
+    TRIPLES or _FALLBACK,
     ids=[f"{r}:{s}" for r, s, *_ in TRIPLES] or ["(none)"],
 )
 def test_a_prose_triple_still_says_what_the_tree_says(
-    rel: str, start: int, claim: str, cmd: str, expected: str
+    rel: str, start: int, claim: str, cmd: str, ctl: str, expected: str
 ) -> None:
     """The sentence's own command, run here, against the `out` beside it."""
     if rel == "(none)":
@@ -355,206 +373,63 @@ def test_a_prose_triple_still_says_what_the_tree_says(
     assert got == expected.strip(), (
         f"{rel}:{start} claims:\n    {claim}\n"
         f"and its own command `{cmd}` returns `{got}`, not `{expected.strip()}`.\n"
-        "Either the sentence is stale or the tree moved under it. This is the "
-        "species the forty-eighth verdict found eight times in one round."
+        "Either the sentence is stale or the tree moved under it."
     )
-
-
-# --------------------------------------------------------------------------
-# 2. Absence claims
-# --------------------------------------------------------------------------
-
-_ABSENCE = re.compile(
-    r"\b(?:"
-    r"nothing (?:asserts|reads|counts|publishes|declares|registers|cites)"
-    r"|and nothing may\b"
-    r"|(?:asserted|referenced|declared|registered|published|cited) by nothing"
-    r"|no shipped \w+ (?:declares|carries|uses|reads|produces)"
-    r"|no shipped row declares"
-    r"|typed anywhere"
-    r"|no figure publishes"
-    r"|is not written here|not written here|count is written here"
-    r"|appears nowhere|exists nowhere"
-    r"|both counters|both are registered"
-    r")",
-    re.I,
-)
-
-# EXEMPT, WITH THE REASON, and keyed on the matched phrase plus the file rather
-# than on a line number, so the row lapses when the sentence is rewritten.
-#
-# A row here is a statement that the phrase is not a claim about what this tree
-# contains. It is NOT a way to keep an unchecked claim: where the sentence does
-# assert something about the tree, it gets a triple instead.
-# KEYED ON (file, the matched phrase, lowercased), so a row lapses the moment
-# the sentence is reworded -- the same content-addressing the marker exemption
-# corpus uses, and for the same reason: an exemption that survives a rewrite is
-# an exemption for a sentence nobody has read since.
-_ABSENCE_EXEMPT: dict[tuple[str, str], str] = {
-    ("floatfea/tolerances.py", "not written here"): (
-        "POLICY, not a claim: BI3's rule that a measured value is cited by "
-        "name or it is not written, and R316's that the spread's count is "
-        "re-taken rather than typed. Both say what this file may contain, "
-        "not what it does contain"
-    ),
-    ("tests/test_marker_exemption_corpus.py", "not written here"): (
-        "policy, as above -- the two counts move with the scanner and the "
-        "file says it will not type them"
-    ),
-    ("tests/verification/rung1/test_rigid_body_corpus.py", "not written here"): (
-        "policy, twice: the docstring refuses to type a count and names the "
-        "test that prints it instead"
-    ),
-    ("tests/test_collected_set_golden.py", "not written here"): (
-        "a deliberate omission with its reason inline -- writing the dead "
-        "name in backticks would make that rule flag its own explanation"
-    ),
-    ("tests/test_collected_set_golden.py", "exists nowhere"): (
-        "HISTORY: R387's dead test name, which existed nowhere at the commit "
-        "that shipped it. Past tense, about a name no longer in the tree"
-    ),
-    ("tests/verification/rung1/test_patch_test.py", "shipped test produces"): (
-        "a CONDITIONAL -- 'where a block carries a table that no shipped test "
-        "produces, it says so' -- which states a policy for future blocks "
-        "rather than asserting anything about the tree now"
-    ),
-    ("tests/verification/rung1/test_corpus_configurations.py", "nothing asserts"): (
-        "BO2's rule about a fitted DIAGNOSTIC curve: the sentence says the "
-        "curve may not be asserted on, not that no assertion exists"
-    ),
-}
-
-
-# THIS FILE IS OUT OF ITS OWN DOMAIN, and that is a hole rather than a
-# convenience: it has to quote every phrase it forbids in order to define
-# them, so every pattern matches its own docstring. The same exemption exists
-# one file over in `tests/test_no_tolerance_literals.py`, for the same reason
-# and with the same cost -- a false sentence written HERE is not caught here.
-SELF = "tests/test_tree_prose_consistent.py"
-
-
-def _carries_a_triple(rel: str, first: int, last: int) -> bool:
-    return any(first <= ln <= last + 3 for ln in TRIPLE_LINES.get(rel, ()))
-
-
-ABSENCE_HITS: list[tuple[str, int, int, str, str]] = []
-for _rel, _first, _last, _para in PROSE:
-    if _rel == SELF:
-        continue
-    for _m in _ABSENCE.finditer(_para):
-        ABSENCE_HITS.append((_rel, _first, _last, _m.group(0), _para))
-
-
-def test_the_absence_pattern_finds_something() -> None:
-    """Meta-test: a pattern that matches nothing cannot be enforcing anything."""
-    assert len(ABSENCE_HITS) >= 5, (
-        f"the absence pattern matched {len(ABSENCE_HITS)} paragraph(s). It was "
-        "written against eight real findings; if it now finds almost nothing "
-        "the pattern broke rather than the prose improving."
-    )
-
-
-def _norm(phrase: str) -> str:
-    """An exemption key: lowercased, with a leading `is`/`and` dropped.
-
-    `is not written here` and `not written here` are the same claim and the
-    pattern reports whichever the sentence happens to start with.
-    """
-    return re.sub(r"^(?:is|and|no)\s+", "", phrase.strip().lower())
 
 
 @pytest.mark.parametrize(
-    "rel, first, last, phrase, para",
-    ABSENCE_HITS or [("(none)", 0, 0, "", "")],
-    ids=[f"{r}:{f}-{p[:24]}" for r, f, _l, p, _ in ABSENCE_HITS] or ["(none)"],
+    "rel, start, claim, cmd, ctl, expected",
+    TRIPLES or _FALLBACK,
+    ids=[f"{r}:{s}" for r, s, *_ in TRIPLES] or ["(none)"],
 )
-def test_an_ABSENCE_claim_carries_the_command_that_would_refute_it(
-    rel: str, first: int, last: int, phrase: str, para: str
+def test_a_triple_that_reports_an_ABSENCE_carries_a_negative_control(
+    rel: str, start: int, claim: str, cmd: str, ctl: str, expected: str
 ) -> None:
-    """ "Nothing asserts against it" is a grep, written as a sentence."""
-    if rel == "(none)":
-        pytest.skip("reported by test_the_absence_pattern_finds_something")
-    if _carries_a_triple(rel, first, last):
-        return
-    if (rel, _norm(phrase)) in _ABSENCE_EXEMPT:
-        return
-    start = first
-    pytest.fail(
-        f"{rel}:{start} says `{phrase}` and carries no command.\n"
-        f"    {para[:300]}\n"
-        "An absence claim is a grep written as a sentence: put the grep beside "
-        "it as `claim:` / `cmd:` / `out:`, delete the sentence, or add a row to "
-        "`_ABSENCE_EXEMPT` saying why it is not a claim about this tree."
-    )
+    """R434. `out: none` proves nothing if the needle cannot match anything.
 
-
-# --------------------------------------------------------------------------
-# 3. Retired quantities
-# --------------------------------------------------------------------------
-
-_ALIAS = re.compile(r"^#\s*RETIRED-ALIAS:\s*(.+?)\s*$", re.M)
-RETIRED_ALIASES: list[str] = sorted(set(_ALIAS.findall(_read("floatfea/tolerances.py"))))
-
-# The sentence is allowed to use the alias when it SAYS the thing is retired,
-# or when it is the retirement itself talking.
-# `no longer` is a retirement in as many words, and `used to` and `was the
-# gate` are the two other spellings already in the tree. The list is a list:
-# a sentence that retires a quantity in words nobody has used yet reads as a
-# present-tense description and fails here, which is the safe direction.
-_SAYS_RETIRED = re.compile(
-    r"\bretire[ds]?\b|\bwas the gate\b|\bused to\b|\bformer\b|\bno longer\b",
-    re.I,
-)
-
-
-def test_a_retired_quantity_declares_its_prose_names() -> None:
-    """Meta-test: no aliases means part 3 checks nothing."""
-    assert len(RETIRED_ALIASES) >= 3, (
-        f"`floatfea/tolerances.py` declares {RETIRED_ALIASES}. Every retired "
-        "quantity carries `# RETIRED-ALIAS:` lines for the words prose calls "
-        "it by, or a sentence describing the gate by the old quantity cannot "
-        "be found. R421 was four such sentences in the locked plan."
-    )
-
-
-def _unemphasised(text: str) -> str:
-    """`an eigenvalue *ratio*` is the alias `eigenvalue ratio`.
-
-    Markdown emphasis lands in the middle of the phrase, so matching the raw
-    line missed the plan's gate register -- which is the site R421 is about.
+    Required wherever the answer is `none` or a bare count, which are the two
+    shapes that read as "this is not in the tree" and the two a malformed
+    needle produces for free.
     """
-    return re.sub(r"[*_`]+", "", text)
-
-
-ALIAS_HITS: list[tuple[str, int, str, str]] = []
-for _rel, _first, _last, _para in PROSE:
-    if _rel in ("floatfea/tolerances.py", SELF):
-        continue  # the retirement entries themselves, and this file's own prose
-    _flat = _unemphasised(_para)
-    for _alias in RETIRED_ALIASES:
-        if re.search(rf"\b{re.escape(_alias)}\b", _flat, re.I):
-            ALIAS_HITS.append((_rel, _first, _alias, _para))
-
-
-@pytest.mark.parametrize(
-    "rel, start, alias, para",
-    ALIAS_HITS or [("(none)", 0, "", "")],
-    ids=[f"{r}:{s}-{a[:20]}" for r, s, a, _ in ALIAS_HITS] or ["(none)"],
-)
-def test_prose_naming_a_RETIRED_quantity_says_that_it_is_retired(
-    rel: str, start: int, alias: str, para: str
-) -> None:
-    """BP0, made mechanical: the rule moved, so every sentence citing it moves."""
     if rel == "(none)":
-        pytest.skip("no retired aliases declared")
-    if _SAYS_RETIRED.search(para):
+        pytest.skip("reported by test_there_are_triples_to_run")
+    answer = expected.strip()
+    if answer != "none" and not _BARE_COUNT.match(answer):
         return
-    pytest.fail(
-        f"{rel}:{start} describes the gate by `{alias}`, which "
-        "`floatfea/tolerances.py` declares as a RETIRED quantity's prose name, "
-        "and the paragraph does not say it is retired.\n"
-        f"    {para[:300]}\n"
-        "Say the form it asserts now, or say at this sentence that this is the "
-        "retired form. BP0: when a decision rule changes, every sentence citing "
-        "the old rule moves in the same commit."
+    assert ctl, (
+        f"{rel}:{start} reports `{answer}` and names no `ctl:`. A command that "
+        "returns none or a count is a command a malformed needle satisfies for "
+        "free -- R434 was the constant's name with a right paren after it, "
+        f"which occurs nowhere. Plant a line in {CONTROLS.name} and name it."
     )
+    assert ctl in _CONTROL_LINES, (
+        f"{rel}:{start} names control `{ctl}` and {CONTROLS.name} has " f"{sorted(_CONTROL_LINES)}."
+    )
+    needle = _needle(cmd)
+    assert needle in _CONTROL_LINES[ctl], (
+        f"{rel}:{start} searches for `{needle}` and the control line `{ctl}` "
+        f"does not contain it:\n    {_CONTROL_LINES[ctl]}\n"
+        "The needle cannot match, so the command cannot fail."
+    )
+
+
+def test_an_EMPTY_GLOB_is_an_error_and_not_an_answer() -> None:
+    """R443a, with its own control. AM5 one level down."""
+    with pytest.raises(ValueError, match="matches no file"):
+        count("floatfea/**/*.rs", "anything")
+    # And a pattern that does reach files still answers, so the raise above is
+    # about the empty match and not about the call.
+    assert count("floatfea/*.py", "def ") > 0
+
+
+def test_the_ANNOTATION_strip_does_not_eat_a_python_annotation() -> None:
+    """R443b, with its own control.
+
+    `out: list[tuple[int, str]] = []` begins with the annotation prefix and is
+    executable code. Stripping it made a count over this file read one short.
+    """
+    assert _ANNOTATION.match("# out:   none")
+    assert _ANNOTATION.match("out:   none")
+    assert _ANNOTATION.match("    claim: something")
+    assert not _ANNOTATION.match("    out: list[tuple[int, str]] = []")
+    assert not _ANNOTATION.match("    counts: dict[str, int] = {}")

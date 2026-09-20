@@ -14,8 +14,19 @@ Tolerances.
 ## Rung 1 — The solver is a solver
 
 **V1.1 Rigid-body modes.** An unconstrained model has exactly six zero-energy
-modes. Test the eigenvalue ratio against the first flexible mode, not an
-absolute value, so the test is mesh- and unit-independent. *Gate G2.1.*
+modes, asserted in **two halves**, neither of which reads an eigenvector: the
+six analytic rigid-body vectors are annihilated by `K` in the **residual**, and
+there is **no seventh** eigenvalue under `RIGID_MODE_BOUND · ‖K̂‖ · ε`. Both are
+dimensionless, so the test is mesh- and unit-independent. Where `λ₇` is not
+resolvably above the bound the outcome is **undecidable** — a distinct red,
+never a number — which is a conditioning limit rather than a gap. *Gate G2.1.*
+
+> The eigenvalue **ratio** against the first flexible mode is what this entry
+> said until CT0/CU0 and it is **retired**: the reviewer's corpus exceeds that
+> ceiling on a large fraction of frames with a defect-free element, because the
+> quantity moves with the frame's conditioning rather than with the element.
+> `docs/milestones/F2.md` §D5 carries the reasoning; R437 is this sentence
+> outliving it in the document `CLAUDE.md` § Testing points at.
 
 **V1.2 Patch test.** A small irregular assembly under boundary conditions
 corresponding to a constant strain state recovers that state exactly. This is

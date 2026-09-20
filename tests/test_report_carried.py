@@ -929,18 +929,49 @@ def test_the_report_carries_a_CI_SECTION() -> None:
 #               and the corpus plants a thirteen-digit one;
 #   commas      stripped between digits before the scan, so `35,479,925,335`
 #               is one id rather than four short numbers.
-_RUN_ID = re.compile(r"(?<![\d.])(\d{9,})(?!\d)(?!\.\d)")
-_THOUSANDS = re.compile(r"(?<=\d),(?=\d\d\d\b)")
+_RUN_ID = re.compile(r"(?<![\d.])(\d{9,})(?!\d)")
 
-# AND THE CONCLUSION IS THE RESULT, NOT THE FLAG (CV3). `conclusion` on its
-# own was satisfied by `gh run view <id> --json conclusion status` with the
-# output never pasted -- which is R412's own shape, and the corpus plants it.
-# What has to appear is a VALUE: the word GitHub puts in that field.
-_CONCLUSION = re.compile(
-    r"\b(success|failure|cancelled|canceled|skipped|timed_out|neutral|stale"
-    r"|action_required|startup_failure)\b",
-    re.I,
+# THE RIGHT-HAND DOT GUARD IS GONE (R444). It was there to keep
+# `526231496888` inside `199.526231496888` out, and the LEFT lookbehind
+# already does that -- the digits inside a decimal have a dot before them.
+# What the right-hand guard did instead was miss a run id followed by a
+# decimal: `run 35479925335.0 seconds long` was never seen.
+#
+# SEPARATORS ARE JOINED ONLY AFTER THE WORD `run` (R444). The first version
+# stripped commas between digits anywhere, which joined a plain list --
+# `100,200,300,400` -- into a twelve-digit id and demanded a conclusion for
+# it. A grouped id is only a grouped id where someone wrote `run` in front of
+# it; a bare list of numbers is a list.
+_GROUPED = re.compile(r"(?i)\brun\s+(\d[\d,\s\u2013-]{6,}\d)")
+
+
+def _joined(text: str) -> str:
+    """`run 35,479,925,335` -> `run 35479925335`, and nothing else joined."""
+
+    def fix(m: re.Match[str]) -> str:
+        return m.group(0)[: m.start(1) - m.start(0)] + re.sub(r"[,\s\u2013-]", "", m.group(1))
+
+    return _GROUPED.sub(fix, text)
+
+
+# A CONCLUSION IS A RESULT BESIDE THE WORD, ON A LINE THAT IS NOT A COMMAND
+# (CW3, R444). The previous version matched a bare VALUE anywhere in the
+# paragraph, which the reviewer refuted four ways: the value inside a `--jq`
+# filter, inside a `grep` needle, inside a negation, and an unrelated
+# `skipped` about a different job rescuing a naked run id.
+_VALUE = (
+    r"success|failure|cancelled|canceled|skipped|timed_out|neutral|stale"
+    r"|action_required|startup_failure"
 )
+_CONCLUSION = re.compile(rf"conclusion[^A-Za-z0-9]{{0,12}}\b({_VALUE})\b", re.I)
+_COMMANDISH = re.compile(r"(?:\bgh\s|--json|--jq|--log|\bgrep\b|\bjq\b|\|)")
+
+# THE HISTORY OF THIS PATTERN, in one place, because it has been wrong three
+# ways. `conclusion\s+\**([A-Za-z_]+)` was satisfied by the `gh` flag with the
+# output never pasted -- R412's own shape. A bare VALUE anywhere replaced it
+# and was satisfied by a `--jq` filter, a `grep` needle, a negation, and an
+# unrelated `skipped` about a different job (R444). What is required now is
+# the WORD and the VALUE together, on a line that is not a command.
 
 
 def runs_without_a_conclusion(text: str) -> list[tuple[str, str]]:
@@ -952,9 +983,14 @@ def runs_without_a_conclusion(text: str) -> list[tuple[str, str]]:
     """
     naked = []
     for para in _paragraphs(text):
-        flat = _THOUSANDS.sub("", para)
+        flat = _joined(para)
         ids = set(_RUN_ID.findall(flat))
-        if ids and not _CONCLUSION.search(flat):
+        if not ids:
+            continue
+        stated = any(
+            _CONCLUSION.search(line) for line in flat.splitlines() if not _COMMANDISH.search(line)
+        )
+        if not stated:
             naked.append((sorted(ids)[0], " ".join(para.split())[:90]))
     return naked
 
@@ -1030,12 +1066,18 @@ def test_a_GREEN_JOB_TABLE_does_not_stand_under_a_FAILED_run() -> None:
     )
 
 
-# THE CONTROLS FOR BOTH GUARDS (R429, R430). Seven shapes the reviewer wrote
-# into `tests/corpus/report_ci_section.txt` at the forty-eighth verdict and
-# measured the shipped pattern against: 2 of 7 caught. Each id below is that
-# file's, and the text is the shape it describes. The corpus is the
-# reviewer's and is not imported -- these are the paragraphs it specifies,
-# written out, so a change to either one shows up as a disagreement.
+# THE CONTROLS FOR BOTH GUARDS (R429, R430, R444). Nineteen shapes the
+# reviewer wrote into its CI-section corpus over two verdicts and measured
+# the shipped pattern against: 2 of 7 the first time, 3 of 12 the second.
+# Each id below is that file's and the text is the paragraph it describes.
+#
+# THE IDS ARE READ FROM THE CORPUS, NOT REMEMBERED (R440). The previous
+# version said a change to either one "shows up as a disagreement" and
+# nothing in the repository read the file, so a shape added there appeared
+# nowhere. `test_every_corpus_shape_is_transcribed` below reads the ids and
+# fails on any that is not here. The reviewer owns the file and the
+# PARAGRAPHS are still transcriptions of its prose descriptions -- that half
+# is a reading and is not mechanised.
 _CI_SHAPES: list[tuple[str, str, bool]] = [
     ("run_id_ends_a_sentence", "The dispatch for this round was run 35479925335.", True),
     (
@@ -1071,7 +1113,107 @@ _CI_SHAPES: list[tuple[str, str, bool]] = [
         "RIGID_MODE_BOUND = 199.526231496888, which is 10.0 * 10**1.3.",
         False,
     ),
+    # THE FORTY-NINTH VERDICT'S TWELVE. The first four are the R412 shape one
+    # level up: the value is in the command, in a needle, negated, or about a
+    # different job.
+    (
+        "conclusion_value_only_inside_a_jq_filter",
+        "Run 35479925335: gh run list --json conclusion "
+        "--jq 'select(.conclusion==\"success\")' -- output never pasted.",
+        True,
+    ),
+    (
+        "conclusion_value_only_inside_a_grep_needle",
+        "cmd gh run view 35489487935 --log-failed | grep -c failure\nout not pasted",
+        True,
+    ),
+    (
+        "the_result_is_negated",
+        "Run 35479925335 was not a failure as far as I could tell.",
+        True,
+    ),
+    (
+        "an_unrelated_skipped_rescues_a_naked_run_id",
+        "Run 35479925335 - the determinism legs were skipped and nothing else is said.",
+        True,
+    ),
+    (
+        "comma_list_of_three_digit_numbers",
+        "Counts across the corpus: 100,200,300,400 and nothing else.",
+        False,
+    ),
+    (
+        "run_id_with_spaces_as_separators",
+        "The paragraph names run 35 479 925 335 and no result.",
+        True,
+    ),
+    (
+        "run_id_broken_across_a_line_with_a_hyphen",
+        "The paragraph names run 354799-\n25335 and no result.",
+        True,
+    ),
+    (
+        "run_id_followed_by_a_decimal_fraction",
+        "The dispatch was run 35479925335.0 seconds long and no result.",
+        True,
+    ),
+    (
+        "run_id_preceded_by_a_dot_in_a_decimal",
+        "0.35479925335 is the run and no result is given.",
+        False,
+    ),
+    ("an_eight_digit_id", "The paragraph names run 35479925 and no result.", False),
+    (
+        "control_a_workflow_url_with_no_result",
+        "https://github.com/x/y/actions/runs/35479925335 shows what happened.",
+        True,
+    ),
+    (
+        "control_an_id_inside_a_fenced_block_with_no_result",
+        "```\ngh run view 35479925335\n```",
+        True,
+    ),
+    # AND THE SHAPE THAT MUST STILL BE ALLOWED, in the form this report uses.
+    (
+        "the_generated_section_line",
+        "Generated: `python scripts/ci_section.py`, anchored on verdict 48 at "
+        "`a0b2873`. Run `35489487935`, event `push`, conclusion **success**.",
+        False,
+    ),
 ]
+
+_CI_CORPUS = ROOT / "tests" / "corpus" / "report_ci_section.txt"
+
+
+def test_every_corpus_shape_is_transcribed() -> None:
+    """R440. The disagreement the comment above promises, made to happen.
+
+    The reviewer owns the corpus and adds shapes to it between verdicts. Until
+    now nothing here read it, so a shape added there was measured by nobody
+    and the sentence claiming otherwise was refuted by one grep. Reading the
+    IDS is the mechanical half; the paragraphs are still transcriptions of the
+    file's prose descriptions, which is a reading and is not mechanised.
+    """
+    ids = re.findall(r"^id=(\S+)", _CI_CORPUS.read_text(encoding="utf-8"), re.M)
+    assert len(ids) >= 19, f"the corpus parsed to {len(ids)} ids; the pattern broke"
+    # THE FIRST FOUR ENTRIES ARE ABOUT A DIFFERENT GUARD. They were written at
+    # the thirty-first verdict against `test_the_report_carries_a_CI_SECTION`
+    # -- whole job TABLES, rewritten or invented -- and not against either of
+    # the two run-id guards these shapes control. They are named rather than
+    # filtered by a pattern, so a new table shape is not silently excluded.
+    table_shapes = {
+        "the_shipped_section_0_table_unmodified",
+        "a_red_run_reported_as_all_green",
+        "no_run_id_and_an_invented_green_table",
+        "three_rows_of_a_table_about_something_else",
+    }
+    known = {s[0] for s in _CI_SHAPES} | table_shapes
+    missing = [i for i in ids if i not in known]
+    assert not missing, (
+        f"{len(missing)} shape(s) in {_CI_CORPUS.name} are not transcribed into "
+        f"`_CI_SHAPES`: {missing}. Each one is a paragraph nobody has run the "
+        "guard against."
+    )
 
 
 @pytest.mark.parametrize("name, text, must_refuse", _CI_SHAPES, ids=[s[0] for s in _CI_SHAPES])
