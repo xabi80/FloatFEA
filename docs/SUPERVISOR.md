@@ -143,6 +143,20 @@ step on everything else.
 6. Now read the diff for the step, then the inside verdict, then the report —
    in that order. Every claim in the report is located in the diff or the test
    output; a claim that cannot be located is recorded as unverified.
+
+   **And the same reading runs over the DIFF's prose, not only the report's
+   (CW1).** Any sentence in a comment, a docstring or a locked plan that
+   asserts what the code does or does not do, and carries no
+   `claim:`/`cmd:`/`out:` triple beside it, is a finding. This is a reading
+   and not a pattern on purpose: two rounds were spent on keyword detectors
+   for it and they measured **0 of 20** and **3 of 8** against unseen
+   phrasings, while the reviewer reading the diff found eight such sentences
+   in one round and five more in the next. `tests/test_tree_prose_consistent.py`
+   checks the triples that exist and says in its own docstring that the rest
+   is this step.
+
+   A triple whose command cannot fail is the same finding: the reviewer runs
+   the `cmd:` with the needle changed and confirms the answer moves.
 7. Construct one adversarial case for the step and run it. The inside
    supervisor is asked to do the same; do not assume it did.
 8. Post the comment. If the verdict is STOP, also say so in the PR title

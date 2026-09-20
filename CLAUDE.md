@@ -222,6 +222,27 @@ is not carelessness about numbers in general — it is that the attention goes
 to the thing being fixed, and the prose written *around* the fix inherits none
 of the discipline being applied *to* it.
 
+**And prose in the SOURCE TREE does not claim things about the code (CW0).**
+The rule above is about step reports. Eight findings in one verdict and five
+in the next were sentences in `floatfea/`, `tests/`, `scripts/` and the locked
+plan — "nothing asserts against it", "no shipped row declares it", "the gap
+counter is a uniform elastic foundation" — each refuted by a grep over a file
+the same commit touched. A claim about this repository written in a comment,
+a docstring or a plan is one of three things: **a test**, **a triple**
+(`claim:` / `cmd:` / `out:`, run by `tests/test_tree_prose_consistent.py`), or
+**deleted**.
+
+A triple whose command cannot fail is not a triple. `files("tests/**/*.py",
+"<a name with a right paren after it>")` matches nothing anywhere, so it
+printed `none` whatever the tree did under a claim false in both halves —
+which is why every triple reporting an absence or a count names a planted
+line in `tests/prose_triple_controls.txt` that the same needle must find.
+
+*Two rounds were spent trying to DETECT these sentences with keyword lists
+instead. Measured against unseen phrasings they caught 0 of 20 and 3 of 8.
+The detectors are deleted; the prohibition and the reviewer's reading are what
+remain, and `docs/SUPERVISOR.md` item 6 carries the reading.*
+
 `tests/test_report_numbers_are_sourced.py` enforces most of this mechanically:
 a number in prose must appear in a command block or table of its own section.
 What it cannot see is a commit message, or a number that is sourced to a
