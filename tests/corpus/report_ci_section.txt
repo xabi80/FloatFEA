@@ -39,3 +39,54 @@ id=the_shipped_section_0_table_unmodified state=the_nine_job_rows_as_revision_5_
 id=a_red_run_reported_as_all_green state=guards_row_rewritten_390_0_0_and_ladder4_row_rewritten_85_0_0_contradicting_run_34408014924_on_both expect=refused measured=allowed_2_passed_nothing_compares_the_table_with_the_run
 id=no_run_id_and_an_invented_green_table state=the_line_naming_run_34408014924_deleted_and_every_row_reported_green expect=refused measured=allowed_2_passed_the_run_id_is_prose_and_is_read_by_nothing
 id=three_rows_of_a_table_about_something_else state=the_job_table_replaced_by_a_table_headed_thing_a_b_c_with_rows_alpha_1_0_0_beta_2_0_0_gamma_3_0_0 expect=refused measured=allowed_2_passed_the_row_regex_reads_any_name_followed_by_three_integers
+
+# ==========================================================================
+# ADDED AT THE FORTY-EIGHTH VERDICT (step 5, HEAD d8ac843). SEVEN ENTRIES,
+# all aimed at the two guards CU3 asked for and b83d776 wrote:
+#
+#   tests/test_report_carried.py::test_every_CI_RUN_the_report_names_carries_its_conclusion
+#   tests/test_report_carried.py::test_a_GREEN_JOB_TABLE_does_not_stand_under_a_FAILED_run
+#
+# The first scans the newest revision paragraph by paragraph for a run id
+# with no conclusion beside it. Its pattern is
+#
+#   _RUN_ID = re.compile(r"(?<![\d.])(\d{9,12})(?![\d.])")
+#
+# and its docstring records that an earlier `\b...\b` version matched
+# 526231496888 inside 199.526231496888, so the lookarounds were tightened to
+# reject a digit or a DOT on either side. The dot on the RIGHT is the hole:
+# a run id at the end of a sentence is followed by a full stop, which is the
+# most ordinary way anyone writes one.
+#
+# FORMAT
+#   id=<name> state=<one paragraph inserted under the section 0a heading>
+#   expect=<refused|allowed> measured=<what the shipped tests did at d8ac843>
+#
+# WHAT A PASSING SCAN MEANS. Insert the paragraph into the newest revision of
+# docs/reports/F2/step-5.md in a scratch clone at d8ac843 and run
+#   pytest tests/test_report_carried.py -k "CI_RUN or GREEN_JOB_TABLE" -q
+# then compare with expect. It does not mean the guards are complete.
+#
+# MEASURED AT d8ac843 by the reviewer, in a git clone --local scratch tree
+# with the shipped tests unchanged: 7 entries, 2 agree, 5 do not. The two
+# that agree are the two where the run id is followed by whitespace or a
+# backtick. The implementer count of planted shapes is not the coverage
+# number; this is.
+#
+id=run_id_ends_a_sentence state=paragraph_reads_The_dispatch_for_this_round_was_run_35479925335_FULLSTOP expect=refused measured=allowed_2_passed_the_lookahead_rejects_a_trailing_dot_so_the_id_is_never_seen
+id=run_id_immediately_before_a_period_in_a_list_item state=bullet_reads_STAR_The_push_run_for_this_round_is_35479506950_FULLSTOP expect=refused measured=allowed_2_passed_same_trailing_dot
+id=run_id_13_digits state=paragraph_names_run_3547992533512_and_no_conclusion expect=refused measured=allowed_2_passed_the_pattern_is_9_to_12_digits_and_github_ids_are_not_bounded_at_12
+id=run_id_with_thousands_separators state=paragraph_names_run_35_COMMA_479_COMMA_925_COMMA_335_and_no_conclusion expect=refused measured=allowed_2_passed_no_9_digit_run_survives_the_split
+id=the_word_conclusion_is_in_the_COMMAND_and_never_in_the_OUTPUT state=paragraph_is_cmd_gh_run_view_35479506950_dashdashjson_conclusion_status_then_out_I_did_not_paste_it expect=refused measured=allowed_2_passed_the_CONCLUSION_regex_matches_the_gh_flag_so_naming_the_command_satisfies_the_guard_without_naming_the_result
+id=run_id_ends_a_sentence_inside_backticks state=paragraph_reads_The_push_run_for_this_round_is_BACKTICK_35479506950_BACKTICK_FULLSTOP expect=refused measured=refused_1_failed_the_backtick_breaks_the_dot_adjacency
+id=control_run_id_then_a_space state=paragraph_reads_The_push_run_for_this_round_is_35479506950_SPACE expect=refused measured=refused_1_failed_this_is_the_shape_the_guard_was_written_against
+#
+# AND ONE SHAPE THE SECOND GUARD CANNOT SEE, recorded rather than planted.
+# test_a_GREEN_JOB_TABLE_does_not_stand_under_a_FAILED_run returns early
+# when every conclusion it finds in section 0 is success or skipped, which
+# is the case at d8ac843, so on this report it asserts nothing. The runs
+# that DID conclude failure this round are named in section 0a, which
+# _ci_section() does not return. There is no state for it in
+# tests/test_report_guard_states.py either, so the guard has no negative
+# control at this commit. A guard that cannot be shown to fail is the thing
+# this repository keeps rediscovering.

@@ -402,3 +402,87 @@ id=rb_subdiv48_span_x10000 section=circular_tube,D=0.6,t=0.012 subdiv=48 unit=1 
 id=rb_km_span_x1e6 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=0.001 stretch=1e6 tip=4.4,1.1,2.8 residual=8.7983e-17 seventh_orders=0.581 below_tau=6 outcome=refused ratio=3.5747e-02 loss=6.5820e-03 runs_in_suite=no expect=breach
 id=rb_um_span_x0p001 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e6 stretch=0.001 tip=4.4,1.1,2.8 residual=3.7573e-20 seventh_orders=2.845 below_tau=6 outcome=decided ratio=6.7578e-05 loss=1.5193e-05 runs_in_suite=no expect=breach
 id=rb_km_unit_span_x1e9 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=0.001 stretch=1e9 tip=4.4,1.1,2.8 residual=7.2615e-17 seventh_orders=-1.465 below_tau=8 outcome=refused ratio=9.1405e-01 loss=7.9177e-01 runs_in_suite=no expect=breach
+
+# ==========================================================================
+# ADDED AT THE FORTY-EIGHTH VERDICT (step 5, HEAD d8ac843). TWELVE ENTRIES.
+#
+# THE FIELDS CHANGED UNDER THE ENTRIES ABOVE, AND THE OLD ONES ARE LEFT AS
+# THEY WERE. seventh_orders= and below_tau= on every entry above this line
+# were measured against tau = RIGID_MODE_FLOOR * ||K_hat|| * eps, with the
+# gate reading log10(lambda_7 / tau) >= RIGID_MODE_GAP. CU0 retired both
+# constants into RIGID_MODE_BOUND = 199.526231496888 and the quantity is a
+# plain ratio now, so those two fields are HISTORY above and are read by
+# nothing. My own block header at "THE DECISION BOUNDARY, LADDERED ON ONE
+# PARAMETER" says the margin reaches zero at stretch ~1.95e6; that was true
+# against the retired floor of 10 units and is not true against the bound.
+# Against the bound the count leaves six at stretch 4.3716e+05, measured
+# here, which is where lambda_7 crosses 199.53 units -- the threshold
+# restating itself. BP0 applies to the reviewer own files too, and this is
+# the reviewer applying it.
+#
+# THE NEW FIELDS, measured at d8ac843 on the reviewer machine
+# (Windows 11, Python 3.13.15, numpy and scipy as pinned):
+#
+#   seventh_over_eps=  lambda_7(K_hat) / (||K_hat|| * eps), the quantity the
+#                      gate compares with RIGID_MODE_BOUND
+#   rigid_max=         the SIXTH smallest |eigenvalue| in the same units --
+#                      the largest of the six that Courant-Fischer puts at
+#                      the arithmetic floor. The gate argument needs this
+#                      UNDER the bound or "lambda_7 >= bound" certifies
+#                      nothing, and nothing in the rung asserts it per frame.
+#   below_bound=       how many eigenvalues are at or under the bound
+#   outcome=           decided | refused, by the shipped rule
+#
+# --- BLOCK A: THE BOUND OWN WINDOW, OCCUPIED RATHER THAN DESCRIBED.
+#     floatfea/tolerances.py says at RIGID_MODE_BOUND that
+#     rigid_mode_smallest_decided and rigid_mode_largest_refused "straddle
+#     this bound by less than FIGURE_FLOOR_CLASS_SPREAD, so ... which side
+#     those two frames fall on is a property of the machine", and that "what
+#     is not platform-stable is the published count of refusals".
+#
+#     THAT IS AN ARGUMENT, AND THESE SIX ENTRIES ARE THE MEASUREMENT. Six
+#     stretches at metre units, solved so lambda_7 lands at 215, 205, 200,
+#     195, 188 and 180 units either side of 199.53. Three decide, three
+#     refuse, and rb_window_l7_200 sits at 199.51 units -- 1.00008x from the
+#     bound, four orders inside the declared 1.5x spread.
+#
+#     A PASSING SCAN FOR BLOCK A IS NOT "THE COUNT IS N OF 126". It is: the
+#     residual holds at all six (it does, worst 1.07e-16 against 1e-15);
+#     below_bound == 6 at every DECIDED entry (it does); and whatever the
+#     refusal count turns out to be, the figure carrying it survives being
+#     rendered on two machines. rigid_mode_corpus_refused is not floor-class
+#     today, so compare() requires it to agree EXACTLY off the canonical
+#     runner and calls a disagreement "staleness rather than platform" --
+#     the wrong diagnosis. The generator withholds the SUBSPACE LOSS count
+#     six lines away for exactly this reason. If these entries make the two
+#     machines disagree, that is the finding, and the remedy is to classify
+#     or withdraw the count, not to delete the entry.
+#     ---------------------------------------------------------------------
+id=rb_window_l7_215 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=4.210165e5 tip=4.4,1.1,2.8 residual=7.4841e-17 seventh_over_eps=2.1505e+02 rigid_max=0.6798 below_bound=6 outcome=decided ratio=7.7848e-04 loss=5.9964e-04 runs_in_suite=no expect=breach
+id=rb_window_l7_205 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=4.312271e5 tip=4.4,1.1,2.8 residual=7.3573e-17 seventh_over_eps=2.0481e+02 rigid_max=1.1307 below_bound=6 outcome=decided ratio=8.3163e-04 loss=4.3379e-04 runs_in_suite=no expect=breach
+id=rb_window_l7_200 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=4.371037e5 tip=4.4,1.1,2.8 residual=1.0652e-16 seventh_over_eps=1.9951e+02 rigid_max=0.2473 below_bound=7 outcome=refused ratio=1.2909e-03 loss=1.2402e-03 runs_in_suite=no expect=breach
+id=rb_window_l7_195 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=4.421463e5 tip=4.4,1.1,2.8 residual=1.0292e-16 seventh_over_eps=1.9505e+02 rigid_max=0.8332 below_bound=7 outcome=refused ratio=5.2867e-03 loss=2.0540e-03 runs_in_suite=no expect=breach
+id=rb_window_l7_188 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=4.503613e5 tip=4.4,1.1,2.8 residual=5.8409e-17 seventh_over_eps=1.8784e+02 rigid_max=0.6361 below_bound=8 outcome=refused ratio=2.0202e-03 loss=2.2236e-03 runs_in_suite=no expect=breach
+id=rb_window_l7_180 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=4.602299e5 tip=4.4,1.1,2.8 residual=8.9943e-17 seventh_over_eps=1.8003e+02 rigid_max=0.3964 below_bound=8 outcome=refused ratio=6.5411e-03 loss=1.2692e-03 runs_in_suite=no expect=breach
+#
+# --- BLOCK B: THE COURANT-FISCHER SIDE. The lower limit of the bound is now
+#     {{fig:rigid_mode_largest_rigid_eigenvalue}} -- the max of rigid_max
+#     over this file -- and it is the only side of the window that anything
+#     enforces. Nothing in this corpus ever tried to make that number large.
+#     These six do: a near-solid section at thirteen times the shipped
+#     diameter, a wall of one tenth of a millimetre on an eight-metre tube,
+#     a wire, and unit and span pulling apart in both directions.
+#
+#     THE HIGHEST rigid_max ANY OF THEM REACHES IS 1.3295, against 1.4614
+#     for the file as it stood -- so they do not move the published figure,
+#     and that is the result rather than a reason to leave them out. The
+#     worst residual DOES move: rb_solid_D13_mm_shrunk_1e-6 reads 1.3502e-16
+#     against the committed 1.1410e-16, still 7.4x under
+#     RIGID_MODE_EXACTNESS.
+#     ---------------------------------------------------------------------
+id=rb_solid_D13_mm_unit_span_x1e4 section=circular_tube,D=13.0,t=6.4999 subdiv=1 unit=0.001 stretch=1e4 tip=4.4,1.1,2.8 residual=9.0766e-17 seventh_over_eps=9.2757e+07 rigid_max=1.3295 below_bound=6 outcome=decided ratio=8.7438e-09 loss=2.0466e-09 runs_in_suite=no expect=breach
+id=rb_solid_D13_mm_shrunk_1e-6 section=circular_tube,D=13.0,t=6.4999 subdiv=1 unit=1000 stretch=1e-6 tip=4.4,1.1,2.8 residual=1.3502e-16 seventh_over_eps=2.2583e+07 rigid_max=0.4384 below_bound=6 outcome=decided ratio=3.2019e-08 loss=1.0998e-08 runs_in_suite=no expect=breach
+id=rb_D8_wall_0p1mm_shrunk_1e-6 section=circular_tube,D=8.0,t=0.0001 subdiv=1 unit=1 stretch=1e-6 tip=4.4,1.1,2.8 residual=1.2420e-16 seventh_over_eps=2.9817e+13 rigid_max=0.8422 below_bound=6 outcome=decided ratio=3.0171e-14 loss=8.4641e-15 runs_in_suite=no expect=hold
+id=rb_wire_D0p02_wall_10um section=circular_tube,D=0.02,t=1e-05 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 residual=5.2980e-17 seventh_over_eps=2.9539e+10 rigid_max=0.9609 below_bound=6 outcome=decided ratio=8.9821e-12 loss=3.7160e-12 runs_in_suite=no expect=breach
+id=rb_solid_D13_mm_unit_subdiv16 section=circular_tube,D=13.0,t=6.4999 subdiv=16 unit=0.001 stretch=1 tip=4.4,1.1,2.8 residual=2.6206e-17 seventh_over_eps=5.3995e+07 rigid_max=0.1514 below_bound=6 outcome=decided ratio=2.9165e-09 loss=1.0624e-09 runs_in_suite=no expect=breach
+id=rb_D8_wall_0p1mm_km_span_x1e6 section=circular_tube,D=8.0,t=0.0001 subdiv=1 unit=0.001 stretch=1e6 tip=4.4,1.1,2.8 residual=7.4727e-17 seventh_over_eps=7.0538e+03 rigid_max=0.5305 below_bound=6 outcome=decided ratio=8.9389e-05 loss=1.3725e-05 runs_in_suite=no expect=breach
