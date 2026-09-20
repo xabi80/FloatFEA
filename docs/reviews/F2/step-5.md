@@ -1,544 +1,683 @@
 # Review � F2 step 5
-Reviewed commit: 224d57c84270aad2da22c501d01e3149c1016cbd
+Reviewed commit: a89f149066c746eda41c8a1689114c56e04cc3f3
 Verdict: HOLD
 
-**Reviewed commit: `681c380`.** Report revision 21, `Answers: verdict 46 @
-2058087`. The `Reviewed commit:` line stamped above this one by
+**Reviewed commit: `d8ac843`.** Report revision 22, `Answers: verdict 47 @
+b375cd0`. The `Reviewed commit:` line stamped above this one by
 `scripts/write_verdict.py` is HEAD at the moment of writing -- my corpus commit
-`224d57c` -- not the commit judged. That is R373, still open; read `681c380`.
+`a89f149` -- not the commit judged. That is R373, still open; read `d8ac843`.
 
-Tests: **2350 passed, 0 failed, 0 skipped** at `681c380` (my run, clean tree,
-`python -m pytest -q`, 486.22 s, Python 3.13.15 on Windows). The report's
-`2043` excludes 307 report-parametrised tests and reconciles exactly:
-`2043 + 307 = 2350`.
+Tests: **2480 passed, 0 failed, 0 skipped** at `d8ac843` (my run, clean tree,
+`python -m pytest -q`, 521.99 s, Python 3.13.15 on Windows).
 
-**AT MY OWN CORPUS COMMIT `224d57c`: 1 failed**, and it is the figures guard
-doing its job -- `rigid_mode_residual_worst_over_corpus` moves `1.0589e-16` to
-`1.1410e-16`, `rigid_mode_corpus_frames` `82` to `114`,
-`rigid_mode_corpus_refused` `21 of 82` to `29 of 114`. **None of my 32 new
-frames reddens the gate.** Named below and in the next report.
+**AT MY OWN CORPUS COMMIT `a89f149`: 1 failed**, the figures guard doing its
+job. `rigid_mode_corpus_frames` `114` to `126`, `rigid_mode_corpus_refused`
+`29 of 114` to `33 of 126`, `retired_ratio_over_ceiling_on_corpus` `80 of 114`
+to `91 of 126`, `rigid_mode_residual_worst_over_corpus` `1.1410e-16` to
+`1.3502e-16`, `rigid_mode_largest_refused` `1.8800e+02` to `1.9951e+02`.
+**None of my 12 new frames reddens the gate.**
 
-**Commits: `a15502a`, `34ce4b3`, `8ded15a` (plan, RE-LOCKED), `4d8b583`,
-`f079810`. Report `681c380`.**
+**Item 1b.** Revision 22 at line 7873 reads `Answers: verdict 47 @ b375cd0`;
+`git log -1 --format=%H -- docs/reviews/F2/step-5.md` is
+`b375cd0bb194f3dfd4ab03e5fedfcdbe9e395891`. It is the latest. **Passes.**
 
-**Item 1b.** Revision 21's header at line 7535 reads `Answers: verdict 46 @
-2058087`; `git log -1 --format=%H -- docs/reviews/F2/step-5.md` is
-`20580870b8a76744bbf8e2475e235f02fae530f3`. It is the latest. **Passes.**
+**Commits judged: `b83d776`, `78970b7`, `d2a4666`, `fb5a5cf` (plan, RE-LOCKED),
+`0a9d54d`, `0fe6f83`, `e1340dc`, `fd56d97`. Report `d8ac843`.**
 
 ## CI, item 3b -- GREEN AT THE REVIEWED COMMIT
 
 ```
-cmd  gh run list --commit 681c38001b8d4552eedc009fc0abd47121f1f37a
-out  run 34927650922, event push, conclusion SUCCESS, status completed
-cmd  gh run view 34927650922 --json jobs
-out  "the verification ladder"      success, 13 steps, 04:08:23 -> 04:11:00
-     "lint, unit and guards"        success, 14 steps, 04:08:23 -> 04:17:33
-     "CI determinism -- leg"        skipped, 0 steps
-     "CI determinism -- ten legs"   skipped, 0 steps
+cmd  gh run list --commit d8ac843c165c0b082f898755e18d73b1090a3937
+out  run 35482244521, event push, conclusion SUCCESS, status completed
+cmd  gh run view 35482244521 --json jobs
+out  "the verification ladder"       success, 13 steps, 01:46:14 -> 01:48:47
+     "lint, unit and guards"         success, 14 steps, 01:46:14 -> 01:55:39
+     "CI determinism -- leg"         skipped, 0 steps
+     "CI determinism -- ten legs"    skipped, 0 steps
 judge THE TWO JOBS THAT RAN ARE GREEN ON LINUX AT THE COMMIT I AM JUDGING,
-     with the rewritten gate in the ladder. Not CK2: both ran real steps for
-     minutes. The determinism pair is dispatch-only here and is recorded as an
-     UNAVAILABLE check at this commit rather than skipped over.
-cmd  gh run view 34925280557 --json headSha,conclusion   -- the dispatch the
-     report's 0a and the invocation both name
-out  headSha 8ded15a, event workflow_dispatch, conclusion **FAILURE**
-     ten "CI determinism -- leg (n)" success, "ten legs agree" success,
-     "the verification ladder" success, and "lint, unit and guards" FAILURE
-cmd  gh run view 34925280557 --log-failed | grep -Eo "FAILED [^ ]+" | sort -u
-out  22 rows, every one a report-or-figure staleness guard: test_plan_figures
-     (the figures commit landed after), test_report_carried,
-     test_report_guard_states, and one test_collected_set_golden citation row.
-     Nothing in `floatfea/` and nothing in rung 1.
-judge THE FAILURE IS EXPLICABLE AND THE OMISSION IS R412, SECOND ROUND. 0a
-     names the run by id under "ten legs green, the verdict job green, the
-     ladder green" and does not say its conclusion is `failure`. Every
-     sentence in it is true. One line is missing and it is the line about the
-     one machine neither of us controls. Still 4a, now with a repeat.
-cmd  git diff --stat 8ded15a..HEAD -- tests/verification scripts .github
-out  one file, tests/verification/rung1/test_rigid_body_corpus.py, 1 insertion
-     1 deletion -- a test NAME inside a comment. R383 advanced; the executed
-     legs describe the tree under review up to a comment.
+     with the single-constant gate in the ladder. Not CK2: both ran real
+     steps for minutes. The determinism pair is dispatch-only here and is
+     recorded as an UNAVAILABLE check at this commit rather than skipped over.
+cmd  gh run view 35479925335 --json jobs   -- this round dispatch, at 0a9d54d
+out  ten "CI determinism -- leg (n)" success, "ten legs agree" success,
+     "the verification ladder" success, "lint, unit and guards" FAILURE
+cmd  gh run view 35479925335 --log-failed | grep -Eo "FAILED [^ ]+" | sort -u
+out  14 rows, every one a report-or-figure staleness guard at a commit where
+     this revision did not yet exist. Nothing in floatfea/, nothing in rung 1.
+cmd  git diff --stat 0a9d54d..HEAD -- tests/verification scripts .github
+out  scripts/regen_figures.py, 16 insertions 5 deletions -- the `derived`
+     marks on three figure rows. R383 advanced; the ten executed legs
+     describe the tree under review except for those marks.
 cmd  gh pr view 1 --json comments --jq '.comments | length'
 out  0 -- no outside-witness comment. Recorded as an unavailable check.
+judge R412 IS ANSWERED AND THE ANSWER IS BETTER THAN THE FINDING ASKED FOR.
+     Both this round runs are named with their conclusions in the report 0a,
+     the conclusion is in the section 0 heading, and two tests were added.
+     The tests have holes -- R429, R430 -- but the omission does not recur.
 ```
 
 ## My own instructions (4b), the conftest pathspec (4c), tolerances (4)
 
 ```
-cmd  git diff 2058087..HEAD -- .claude docs/SUPERVISOR.md
+cmd  git diff b375cd0..HEAD -- .claude docs/SUPERVISOR.md
 out  (empty) -- no STOP-class finding. Nothing under `.claude/` moved.
 cmd  git ls-files -- tests/conftest.py "tests/**/conftest.py"
-out  tests/conftest.py                  -- the instruction's own expectation
-cmd  git diff 2058087..HEAD -- the same two pathspecs
+out  tests/conftest.py                  -- the instruction own expectation
+cmd  git diff b375cd0..HEAD -- the same two pathspecs
 out  (empty)
 cmd  git ls-files "*conftest.py"
 out  tests/conftest.py -- still the whole set. No plugin was added, so no
-     rung's green is being written by code in its own directory.
-cmd  git diff --stat 2058087..HEAD -- floatfea
-out  floatfea/tolerances.py | 176 +++++----- -- ONE FILE
-cmd  git show --stat on each of the five commits
-out  `8ded15a` touches docs/milestones/F2.md ALONE and says RE-LOCKED.
-     `a15502a` touches docs/milestones/F2.md AND code: two rows of the
-     tolerance-value table, which `tests/test_plan_matches_tolerances.py`
-     forces to move with the values, and the figure-name list. Mechanical,
-     not a plan change dressed as one; the argument moved in `8ded15a`. Noted,
-     not a finding.
+     rung green is being written by code in its own directory.
+cmd  git diff --stat b375cd0..HEAD -- floatfea
+out  floatfea/tolerances.py | 251 ++++++----- -- ONE FILE
+cmd  git show --stat on each of the eight commits
+out  `fb5a5cf` touches docs/milestones/F2.md ALONE and says RE-LOCKED.
+     `78970b7` touches tests/goldens/collected_tests.txt ALONE and its
+     message names every moved line with a reason -- that is R409 rule,
+     applied, and it is the best commit in the round.
+     `b83d776` is the code commit; it touches no plan and no golden.
 ```
 
 ## Carried
 
-Verdict 46 held on R403, R404, R405, R406, R407, R408, R409 and carried R399.
-**R403, R407, R408 and R399 are answered. R413 is answered without being
-claimed. R404 is answered except for the row it created. R405, R406 and R409
-are recorded as answered by the report and are not.**
+Verdict 47 held on R415, R416, R417, R418, R405, R406 and R409, and recorded
+R419 and R420. **R415, R416, R417, R418, R405, R406, R409 and R420 are all
+answered at the sites their conditions named. R419 is correctly left open and
+said so. What holds this step is eight NEW findings, every one of them a
+sentence, and five of them written this round.**
 
-- **R403 -- ANSWERED, AND THIS IS THE STRONGEST THING IN THE ROUND.** I put my
-  own instrument on the replacement and could not break it.
-
-
-```
-rule  lambda_7(K_hat) >= tau * 10**RIGID_MODE_GAP, tau = FLOOR*||K_hat||*eps
-cell  THE SAME TECHNIQUE THAT KILLED BOTH PREDECESSORS: compose corpus entries
-      that hold alone, and ladder one parameter through the transition.
-out   rb_unit_millimetre x rb_span_x10000, R403's own composition: REFUSED.
-      Over all 82 committed frames: 61 decided, 21 refused, and the number of
-      eigenvalues below tau is EXACTLY SIX at every one of the 61. All 11
-      non-six frames are refused.
-cmd  440 further (unit, stretch) points, 11 unit systems from 1e-4 to 1e6,
-     stretch 1 to 2e7, asking for margin >= 1.3 WITH below_tau != 6
-out  ZERO. Plus my 32 new frames: zero. 554 configurations, no green with a
-     seventh numerically-zero mode.
-cell AND SOLVED RATHER THAN SAMPLED, one parameter at metre units:
-out  stretch 1.90e6 margin  0.024 below_tau 6
-             1.95e6 margin -0.003 below_tau 7
-             2.00e6 margin -0.024 below_tau 8
-judge THE COUNT LEAVES SIX EXACTLY WHERE THE MARGIN CROSSES ZERO, and the
-     bound sits 1.3 orders on the safe side of it. That is what R403 said the
-     old gap did not do, measured over 554 configurations. Closed.
-cell AND THE OTHER DIRECTION -- a REAL mechanism, re-expressed 48 ways
-out  the torsional release at 6 unit systems x 4 spans x 2 subdivisions:
-     48 of 48 REFUSED, margins -1.09 to -9.60. Not one certified.
-```
-
-- **R404 -- ANSWERED ON THE ROW IT NAMED, OPEN ON THE ROW THE FIX CREATED.
-  This carries as R418.** `10**abs(a-b)` and `10**(b-ceil)` are the right
-  comparison and I reproduce the entry's `1.095` and `1.603x` exactly through
-  the shipped `counter_response("gap")`. But `as_ratio = n.endswith("_orders")`
-  dispatches on a NAME, and the same commit renamed the second log-valued row
-  to `rigid_mode_seventh_orders_smallest_decided`, which does not end in
-  `_orders`. Its spread is still computed as a ratio of logarithms. R404's
-  condition said "the two gap-in-orders rows".
-
-- **R405 -- NOT ANSWERED. The report's own named command refutes the report.**
+- **R415 -- ANSWERED, AND IT IS THE RIGHT ANSWER.** The two constants are
+  collapsed rather than justified, which is the first branch of the condition.
 
 ```
-code report section 3: "cmd grep for `sixteen` and for `twenty-eight frames`
-                        out replaced by the rendered figure"
-cmd  that grep, run at 681c380, over floatfea/ tests/verification docs/
-out  floatfea/tolerances.py:295  "corpus of twenty-eight frames ... a large
-                                  minority of them exceed its ceiling"
-     floatfea/tolerances.py:438  "a large minority of the reviewer's
-     floatfea/tolerances.py:439   fifty-six frames"
-     test_rigid_body_modes.py:23  "exceeding its ceiling on a large minority"
-     test_rigid_body_modes.py:468 "Sixteen of the
-     test_rigid_body_modes.py:469  twenty-eight frames in the corpus"
-     docs/milestones/F2.md:1823   "poses twenty-eight frames" ... "a large
-                                   minority of those frames"
-cmd  grep -c "^id=" tests/corpus/g21_rigid_body_frames.txt   (at 681c380)
-out  82
-cmd  grep retired_ratio_over_ceiling docs/milestones/F2_figures.md
-out  | retired_ratio_over_ceiling_on_corpus | 60 of 82 |   -- I reproduce it
-judge 60/82 IS 73 PER CENT. Not a large minority, and neither "twenty-eight"
-     nor "fifty-six" is the size of the file. THREE of the five sites are the
-     three R405 named; TWO ARE NEW THIS ROUND, written into the gate file's
-     header and docstring by the commit that repaired R407 six lines above
-     them. The carried table records this item as answered.
+rule  lambda_7(K_hat) >= RIGID_MODE_BOUND * ||K_hat|| * eps
+cmd   python -c "print(10.0*10**1.3)"
+out   199.526231496888 -- the product, unchanged to the last digit
+cmd   grep -rn "RIGID_MODE_FLOOR\|RIGID_MODE_GAP" --include=*.py . | grep -v tolerances.py
+out   nine hits: three retired-record comments, two retired counter sizes
+      `counter_response` still reports, and `_floor(..., "RIGID_MODE_GAP")`
+      in regen_figures -- which is R428 below. NO ASSERTION READS EITHER.
+cell  MY OWN COMPENSATED PAIR, re-run: there is nothing to compensate. One
+      constant cannot be moved against itself.
+judge THE SECOND HALF OF THE CONDITION IS ALSO MET, in a way I did not ask
+      for and that is better. `largest_rigid_eigenvalue` is a figure now,
+      floor-class BELOW `RIGID_MODE_BOUND`, so `regen_figures --check` --
+      which `tests/test_plan_figures.py` runs inside the suite on every
+      machine -- decides the Courant-Fischer composition and can fail.
+cmd   my own sweep: 1980 configurations, 12 unit systems x 11 stretches x 5
+      sections x 3 subdivisions, asking for DECIDED with the six NOT all
+      under the bound -- the vacuous pass the composition rules out
+out   ZERO. Closest approach rigid_max/bound = 7.32e-03, a 137x clearance.
+      Plus all 114 committed frames and my 12 new ones: zero.
+cmd   the tautology claim, checked over all 114 committed frames:
+      (below_bound == 6) against (lambda_7 > bound and rigid_max < bound)
+out   they disagree on ZERO frames, and they cannot: `below_bound == 6` is
+      `w_6 <= bound < w_7` on a sorted spectrum, which is that conjunction
+      written out. The claim is an identity and the departure rests on it.
+judge THE COMPOSITION IS SOUND AND IT IS NOW ENFORCED. Closed.
 ```
 
-  **Closed when** all five sites carry the rendered figure or a quantifier the
-  figure supports, and the corpus size is read from the file rather than typed.
-  `{{fig:rigid_mode_corpus_frames}}` exists and now reads `114`.
+- **R416 -- ANSWERED.** The clause is withdrawn by name at
+  `floatfea/tolerances.py:449-455`, with the cross cell recorded and the
+  surviving measurement kept -- a decade of widening takes the margin to
+  `1.396`. No live entry claims a discrimination between two constants,
+  because there is one. **Closed.**
 
-- **R406 -- HALF ANSWERED. The counter paragraph is right; the section the
-  last verdict called "worse" is untouched.**
+- **R417 -- ANSWERED at both sites its condition named.**
+  `floatfea/tolerances.py:491` now reads "FIVE TIMES stiffer than the floor
+  counter at `2.0e-14` -- `0.7` of a decade, not the one and a half decades
+  that stood here and in the test that injected it".
+  `grep -rn "decade and a half\|one and a half decades" tests/ floatfea/
+  docs/milestones/` returns nothing but that record. **Closed.**
 
-```
-cmd  git show 8ded15a -- docs/milestones/F2.md | grep "^@@"
-out  ONE hunk, at -1774,29 +1774,50. The "G2.1's two quantities, added at
-     step 5 (V1.1)" section at :1865-1900 is not in it.
-code :1889 "Both are registered in `tests/test_counters_are_injected.py` and
-           pass its two cells."
-cmd  grep -n "RATIO PAIR IS GONE" tests/test_counters_are_injected.py
-out  :128 "THE RATIO PAIR IS GONE FROM THIS REGISTRY (Q7)."
-code :1884 the headroom table, `~83x` and `~18x`, against two ceilings that
-           decide nothing, in the present tense
-code :1878 "it is the assertion AP3 asks for, and without it G2.1 would be six
-           numbers near zero with nothing said about what they are modes of"
-code report section 4: "R406. ... The plan text is rewritten to CT0 in full."
-judge "IN FULL" IS ONE HUNK. The verdict's condition named this section
-     explicitly -- "either says at its head that everything in it is the
-     retired form, or is cut" -- and BP0's "regenerated or withdrawn in the
-     same commit" applies to `~83x`, `~18x` and "two cells" by name.
-```
+- **R418 -- ANSWERED, and the mechanism rather than the row.**
+  `as_ratio = floor_class().get(n, ("", None, False))[2]`, declared at the
+  `rows.append`. Two guards, one of which injects a log-valued row named
+  `a_log_row_named_anything` and checks BOTH classes on the same pair -- a
+  real negative control, and I ran it. **Closed.** The comment beside the flag
+  is R424.
 
-  **Closed when** :1865-1900 says at its head that it is the retired form, or
-  is cut; and the false registry sentence goes either way.
+- **R405 -- ANSWERED at all five sites.**
+  `grep -rn "twenty-eight|fifty-six|Sixteen of the|a large minority"` over
+  `floatfea/ tests/verification docs/milestones/` returns seven text hits and
+  six are past-tense records of the refutation. The counts are `{{fig:...}}`
+  wherever they are asserted and the corpus size is read from the file.
+  **Closed.** The seventh hit is a typed count at a site the condition did not
+  name, and it is R423.
 
-- **R409 -- NOT ANSWERED. Section 5 answers a different window.**
+- **R406 -- ANSWERED at the section its condition named.** `:1917` is headed
+  `-- **THE RETIRED FORM**` with a block quote saying every present tense below
+  is a past tense; the headroom column is `headroom it HAD`; the registry
+  sentence is replaced by what `tests/test_counters_are_injected.py` says.
+  **Closed.** The section EIGHT LINES ABOVE it is R422.
 
-```
-cmd  git diff f19eef5..44f28e8 -- tests/goldens/collected_tests.txt | grep ^-
-out  -test_a_RIGID_BODY_MODE_that_carries_ENERGY_is_caught
-     -test_the_analytic_rigid_body_vectors_are_SPANNED    <- the two DELETIONS
-code report section 5 heads its command `git diff 2058087..HEAD`, lists seven
-     renames, and concludes "EVERY ONE IS A RENAME ... None is a deletion."
-judge TRUE OF THIS ROUND'S WINDOW AND IRRELEVANT TO THE ITEM. R409 was about
-     two assertions deleted in `7a5445a`, which is BEFORE `2058087`. Neither
-     name appears anywhere in revision 21. It is a good golden-change section
-     for the wrong diff.
-cmd  grep -n "six numbers near zero" docs/milestones/F2.md
-out  1878 -- the second half of R409's condition, verbatim, untouched. And
-     :1662's D5 row and :1672 still say V1.1 asserts on the subspace.
-judge The substance is still defensible and I said so last round: the residual
-     is a stronger form of AP3's claim. What is missing is still anyone SAYING
-     so where the golden rule and the plan need it.
-```
+- **R409 -- ANSWERED at both sites its condition named.** `:1664` states the
+  residual-and-bound form; `:1674` reads "V1.1 asserts on the RESIDUAL, not on
+  the modes and no longer on the subspace"; "six numbers near zero" is
+  withdrawn by name at `:1943`. The golden is its own commit with a
+  line-by-line reason and it is the best commit in the round. **Closed.**
+  Four sites the condition did NOT name still say the retired thing: R421.
 
-- **R407 -- ANSWERED.** The header states the two halves, neither reads an
-  eigenvector, AP3 is answered onto the residual rather than dropped, and the
-  "TWO QUANTITIES, BOTH GATED" block is gone -- `grep -n "BOTH GATED"` is
-  empty. **Closed.** The two count sentences six and 445 lines below it are
-  R405, not a re-carry of this.
+- **R420 -- ANSWERED, and I checked that it can now fail.**
+  `dim = zero_modes_under_the_bound(k)` is an independent count: `assert over
+  < RIGID_MODE_BOUND` and `assert dim == RIGID + 1` can disagree, because the
+  second also requires `lambda_8` above the bound. **Closed.** The docstring on
+  the function it calls says nothing may assert against it, which is R425.
 
-- **R408 -- ANSWERED, with the grep run.** `:437` now reads "referenced twice
-  -- by `counter_response` ... and by the import that feeds it -- and by no
-  assertion", and records the sentence that was refuted. I reran the grep:
-  three hits, the definition plus the two the entry names. **Closed.**
+- **R419 -- OPEN, correctly, and not claimed.** The per-entry assertion moved
+  from `np.isfinite(margin)` to `over > 0.0`, the same statement in the new
+  quantity. The split is still asserted only as "both sides non-empty" and the
+  `outcome=` field I ship is still unread. My Block A makes this sharper, not
+  softer: three of my six window entries are refused and nothing in the rung
+  would notice if all 126 were. 4a.
 
-- **R399 -- ANSWERED at both sites its condition named.** Both `_COUNTER_DEFECT`
-  entries now open "RETIRED WITH ITS CEILING (R399)" and put the rest in the
-  past tense, and `grep -n "rigid_body_counter" scripts/regen_figures.py` shows
-  both rows plain, with no `_floor(...)` mark against a retired ceiling.
-  **Closed.**
+- **R412 -- ANSWERED as a rule.** See the CI block. The two tests it produced
+  are R429 and R430.
 
-- **R413 -- ANSWERED, and not claimed.** `:353-356` now says `1.461` units at
-  `rb_span_x1000` and `6.84x`, solved rather than sampled. I reproduce `1.4614`
-  and `6.843x` over the same 82 frames, and the "a decade on each side"
-  sentence is gone. **Closed.** What the solved bracket does not do is decide
-  anything, and that is R415.
+- **R411 -- OPEN, SIXTH ROUND, OFF BY ONE NOW.** Revision 22 second line reads
+  "Commits since the forty-seventh verdict, listed in §10"; §10 is `Carried`
+  and the commit list is in §11 at line 8343. It is closer than it has been
+  and it is still a pointer that does not resolve. 4a.
 
-- **R410 -- DOES NOT RECUR IN ITS OWN SHAPE.** The generated table and the
-  prose sections agree this round. They agree on three statuses that are
-  wrong, which is R405, R406 and R409 above, not this item. Still 4a.
+- **R410 -- DOES NOT RECUR IN ITS OWN SHAPE.** 4a.
 
-- **R411 -- OPEN, AND THE POINTER IS NOW BROKEN.** Revision 21's second line
-  says "Commits since the forty-sixth verdict, listed in section 8"; section 8
-  is "Sites named by findings and not touched" and lists no commit. There is no
-  commit block in this revision at all. Fifth round for this row; 4a.
+- **R383 -- ADVANCED, NOT CLOSED.** Ten legs executed and agreed at `0a9d54d`;
+  `scripts/regen_figures.py` has moved since, by the three `derived` marks.
 
-- **R412 -- OPEN, second round, same shape.** See the CI block.
-
-- **R414 -- OPEN.** `test_ONE_PINNED_DOF_leaves_FIVE` and
-  `test_a_PINNED_DOF_is_caught_by_the_RESIDUAL_half` still pin the same 30 DOFs
-  by the same rule in two files, and the release pair does the same. 4a.
-
-- **R383 -- ADVANCED, NOT CLOSED.** Ten legs executed and agreed at `8ded15a`;
-  one comment line in the rung the legs run has moved since.
-
-- **R400, R401, R402, R390, R391, R392, R393 -- OPEN at 4a**, correctly listed.
+- **R413, R414, R400, R401, R402, R390, R391, R392, R393 -- OPEN at 4a**,
+  correctly listed.
 - **R370, R371, R372, R373, R374 -- OPEN at 4a.** R373 bites again in this
-  verdict's own header.
-- **R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350's second
+  verdict header.
+- **R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second
   half, R330, R331, R332 -- OPEN at 4a, correctly listed.**
-- **R231, R244, R245, R275 -- OPEN, unblocked**, and the report correctly does
-  not claim them. Step R has not run.
+- **R231, R244, R245, R275 -- OPEN, unblocked.** Step R has not run.
 - **R230, R261 -- OPEN by instruction, correctly listed.**
-- **R300, R291, R292, R281, R321, R322 -- OPEN, recordable at 4a.** R302
-  accepted at verdict 37, not reopened.
+- **R300, R291, R292, R281, R321, R322 -- OPEN, recordable at 4a.**
 - **R315-R320, R323-R329, R293, R303-R308 -- closed in earlier verdicts,
   carried.** The section 9 status-versus-subject disagreement stays at 4a.
 - **R253, R254, R256, R257, R262-R274, R276, R277, the two R248 residues,
   R249-R252, R225-R228, R232, R233, R288, R289, R290 -- carried.** R250, R251,
   R226, R227, R264 and R266 still have no row; R348 territory, unmoved.
 - **R365-R369, R375-R382, R384 -- carried in `step-5-answers.json`.**
-- **R223, R224, R394, R395, R396, R397, R398, R388 -- closed earlier**, not
-  reopened.
+- **R223, R224, R394-R399, R403, R404, R407, R408, R388 -- closed earlier**,
+  not reopened.
 
 ## Findings
 
-**First, what is right, and it is the larger part of this round.**
+**First, what is right, and it is again the larger part of this round.**
 
-**THE BOUND IS THE BEST FORM G2.1 HAS HAD AND I COULD NOT BREAK IT.** Three
-attacks, all measured: 554 configurations with no green on a seventh zero mode;
-48 re-expressions of a genuine mechanism, 48 refused; and the six-to-seven
-transition solved on one parameter, landing exactly at margin zero with the
-bound 1.3 orders clear of it. Dropping the count for a statement about
-`lambda_7` alone is right, and refusing rather than answering is the honest
-outcome of a conditioning limit. `pytest.skip` was tried and removed, the
-residual is asserted at all 82 frames including all 21 refused, and the domain
-is published rather than buried. R398's controls survive the rewrite: I ran
-both cells of the meta-test for both spectral counters and all four fire.
+**THE GATE IS IN THE BEST SHAPE IT HAS BEEN IN AND I COULD NOT BREAK IT.** One
+constant, one bound, one counter, and a departure from my own directive that
+is correct. I attacked the composition the whole thing now rests on -- 1980
+configurations asking for a DECIDED frame whose six are not all under the
+bound, the vacuous pass -- and found none, closest approach 137x. The
+tautology the departure rests on is an identity, not an empirical claim, and
+it holds on all 114 frames. The 35-way re-expression of a real mechanism is
+35 of 35 refused; I reproduced it. The counter detection edge is a linear
+family and it is SOLVED, not sampled: `lambda_7 = 1.2445e15 * size`, so the
+give-back at which the gate stops refusing is `1.6032e-13` and the shipped
+counter at `1.0e-13` is `1.6033x` under it in DEFECT SIZE as well as in
+response. **Deleting the second counter costs nothing** -- the two sat on one
+line and the survivor is the harder of the two in both directions.
 
-**And my own corpus says so too.** Thirty-two new frames, none of them
-breaching anything -- the first round in five in which the corpus found no hole
-in the thing it was aimed at.
+**And `78970b7` is the best commit this milestone has produced.** One file,
+every moved golden line named, the reason for the deletion measured, and the
+statement that the previous commit is red on it, said rather than hidden.
 
 ---
 
-**R415. (BLOCKS -- `RIGID_MODE_FLOOR` and `RIGID_MODE_GAP` are one threshold
-wearing two names. FLOOR can be moved to a value its own entry says is wrong,
-with the entire gate, both counters, all four controls, both meta-cells and all
-82 corpus frames green.)** `floatfea/tolerances.py:327-363` and `:388-411`,
-`tests/verification/rung1/test_rigid_body_modes.py:247-286`.
+**R421. (BLOCKS -- the locked plan section 3 GATE REGISTER still defines G2.1
+as the retired eigenvalue ratio, and three more sites still say the retired
+thing. R409 fixed the two sites its condition named; these four it did not.)**
+`docs/milestones/F2.md:51`, `:136`, `:212`, `:1505`.
 
 ```
-code the decision, in full: lambda_7(K_hat) >= FLOOR * ||K_hat|| * eps * 10**GAP
-cmd  grep -rn "RIGID_MODE_FLOOR" --include=*.py .
-out  tolerances.py (definition and comments); test_rigid_body_modes.py:251
-     inside `zero_mode_threshold`; :450 a print; test_counters_are_injected
-     .py:160. `zero_mode_threshold` is called from `seventh_over_threshold`
-     and from one print. NOTHING COUNTS EIGENVALUES BELOW TAU ANYWHERE.
-judge SO THE TWO CONSTANTS ENTER THE ONLY ASSERTION AS THE PRODUCT
-     FLOOR * 10**GAP = 199.53, and no measurement in this repository can tell
-     one from the other.
-cell ONE VARIABLE MOVED IN COMPENSATED PAIRS, everything else held: FLOOR
-     10.0 -> 1.0 and GAP 1.3 -> 2.3, product unchanged. Then: the gate, the
-     retired-diagnostic test, both pin controls, both release controls, R403's
-     composition, the finer-unit frame, all 82 corpus entries, and both cells
-     of the meta-test for both spectral counters.
-out  SHIPPED  FLOOR=10.0 GAP=1.3 : ALL GREEN
-     MOVED    FLOOR=1.0  GAP=2.3 : ALL GREEN
-judge AT FLOOR = 1.0, tau SITS BELOW THE LARGEST RIGID-BODY EIGENVALUE the
-     entry itself measures -- `1.461` units of ||K_hat||*eps at `rb_span_x1000`
-     -- so a genuine rigid mode is no longer numerically zero, which is the
-     exact condition :353-356 says the floor must clear by `6.84x`. The entry's
-     own bracket is a real measurement against a rule nothing applies. That is
-     BP0 one level down: the rule beneath the figure moved when CT0 deleted the
-     count, and the figure is correct and no longer load-bearing.
-judge AND IT IS WHAT MAKES "EXACTLY SIX" TRUE RATHER THAN MERELY "NO SEVENTH".
-     The file's own argument is Courant-Fischer: the residual half puts six
-     eigenvalues under tau. That step needs RIGID_MODE_EXACTNESS <= FLOOR*eps
-     -- `1e-15` against `2.22e-15`, a 2.2x margin -- which is stated nowhere,
-     and empirically 1.461 against 10, which is stated and unenforced. The
-     composition is TRUE at this commit: I measured below_tau == 6 at all 61
-     decided frames of 82, at all 24 decided of my 32, and at 440 swept points.
-     It is true and untested.
+code :51  "| **G2.1** | Six rigid-body modes at zero strain energy, tested as
+          an eigenvalue *ratio* against the first flexible mode so it is
+          mesh- and unit-independent | V1.1 |"
+code :136 "| **V1.1** rigid-body modes | constructed | an eigenvalue *ratio*;
+          no external reference needed |"
+code :212 "**So G2.1 asserts on the SUBSPACE, not on the vectors:**"
+code :1505 "| **5** | **V1.1 rigid-body modes** (subspace) | no spurious
+           strain energy | **G2.1** |"
+cmd  grep -rn "RIGID_BODY_MODE_RATIO\|RIGID_BODY_SUBSPACE_LOSS" --include=*.py
+     floatfea tests | grep assert
+out  nothing. Both are retired and `:1917` in this same file now says so at
+     length, under a heading this round added.
+judge THIS IS NOT PROSE PRECISION AND IT IS NOT 4a. Line 51 is the register
+     of what the gate PROVES, in a plan RE-LOCKED at `fb5a5cf` whose commit
+     message reads "G2.1 has ONE constant; the retired section says it is
+     retired". A reader who opens the plan at section 3 is told G2.1 is an
+     eigenvalue ratio; the form it actually asserts is 1600 lines later. The
+     plan states BOTH forms in the present tense and nothing says which one
+     is the gate.
 ```
 
-**Closed when** either the two constants are collapsed into the one number the
-decision uses, or something asserts the composition that makes the second
-constant observable -- "the below-tau count is six at every decided frame" is
-one loop, it is already true everywhere I can measure it, and it turns the
-`6.84x` bracket back into something that can fail. **I am not asking for a
-third constant or a wider gate. I am asking that the entry's own window decide
-something.**
+  **Closed when** `:51` states the form `:1664` and `:1787` state, and `:136`,
+  `:212` and `:1505` either carry the same or say at their head that they are
+  the retired form -- the treatment `:1917` already got.
 
-**R416. (BLOCKS -- a sentence added THIS ROUND to justify a counter's size says
-the meta-test checks a discrimination it does not check, and the cross cell
-refutes the discrimination.)** `floatfea/tolerances.py:372-379`.
+**R422. (BLOCKS -- the plan says the gap counter is a uniform elastic
+foundation. No such injection exists anywhere in the repository, the code
+comment that said the same thing was DELETED by this round, and the sentence
+opens "Both counters" eight lines above the paragraph headed "ONE COUNTER".)**
+`docs/milestones/F2.md:1902-1908`.
 
 ```
-code :372 "SIZED BY THIS CONSTANT AND NOT BY THE OTHER ONE, which is what
-     :373  `tests/test_counters_are_injected.py` widens to check."
-cmd  tests/test_counters_are_injected.py, _ceiling_cell, run four ways
-out  floor counter: fails when FLOOR widened = True   when GAP widened = True
-     gap counter:   fails when FLOOR widened = True   when GAP widened = True
-judge "SIZED BY THIS AND NOT THE OTHER" WOULD READ True/False AND False/True.
-     Each counter responds to both, because there is one bound (R415). The
-     meta-test runs one cell per row and never compares rows, so it cannot
-     check the clause attributed to it -- its own docstring says so: "both
-     cells are per-counter".
-judge THE MEASURED HALF IS TRUE AND WORTH KEEPING: lowering FLOOR by a decade
-     does take this margin to `1.396` and the cell does pass. I reproduce
-     `0.3962`, `1.3962`, and `0.0151` at the retired `8.318e-15`. It is the
-     "AND NOT BY THE OTHER ONE" that is a causal claim with no cell.
+code :1902 "**Both counters are injected through `assembled`** ... The gap
+     :1904  counter is a uniform elastic foundation: it lifts all six rigid
+     :1905  modes together, so the residual is what degrades and lambda_7
+     :1906  does not come down at all."
+code :1910 "**ONE COUNTER, AT `1.0e-13` (CU0).**"   -- eight lines below
+cmd  grep -rn "foundation" --include=*.py tests/ floatfea/
+out  one hit, in test_closure_evidence_exists.py, about milestone F1
+cmd  git show b83d776 -- tests/verification/rung1/test_rigid_body_modes.py
+     | grep "^-.*uniform foundation"
+out  "- # than by scaling one diagonal entry: a uniform foundation lifts all
+      six rigid modes together, which is what degrades the gap without
+      moving the count."   -- THE ROUND DELETED THE TWIN OF THIS SENTENCE
+      FROM THE CODE AND LEFT IT STANDING IN THE PLAN.
+code the shipped injection, `counter_response`, for "bound", "retired_floor"
+     and "retired_gap" alike: `_assemble_with_torsional_release` then
+     `kr[-1,-1] += size * max|kr|`. And `_nearly_released`: "A UNIFORM
+     FOUNDATION WAS THE FIRST ATTEMPT AND IT DOES NOT WORK."
+judge THE PLAN DESCRIBES A REJECTED APPROACH AS THE SHIPPED ONE, and BP0 says
+     a rule change carries every sentence citing the old rule with it in the
+     SAME commit. `fb5a5cf` rewrote the section below this one and walked
+     past this paragraph.
 ```
 
-**Closed when** :372 claims what the cell measures, or a cell that measures the
-discrimination exists. The first is one sentence.
+  **Closed when** `:1902-1908` says what `counter_response` does, or is cut,
+  and "Both counters" agrees with "ONE COUNTER" eight lines below it.
 
-**R417. (BLOCKS -- both descriptions of the gap counter's size are wrong by a
-factor of three, in the tolerance entry and in the test that injects it.)**
-`floatfea/tolerances.py:413-414` and
-`tests/verification/rung1/test_rigid_body_modes.py:679`.
-
-```
-code tolerances.py:413 "Reason for 1.0e-13: the same nearly-released
-     :414              connection, one and a half decades stiffer"
-code test_rigid_body_modes.py:679 "The same defect a decade and a half stiffer"
-cmd  RIGID_MODE_GAP_COUNTER_DEFECT / RIGID_MODE_FLOOR_COUNTER_DEFECT
-out  1.0e-13 / 2.0e-14 = 5.0  ->  log10(5.0) = 0.699 decades
-judge NOT ONE AND A HALF DECADES. Not against the retired `8.318e-15` either,
-     which is 1.08. The numbers `0.396` and `1.095` that flank the sentence are
-     both exactly right and I reproduce both; the arithmetic relating them is
-     the thing nobody ran. That is CP2's species precisely -- the prose written
-     around a repair inheriting none of the discipline applied to the repair.
-```
-
-**Closed when** both sentences say `5x`, or `0.7 of a decade`, or nothing.
-
-**R418. (BLOCKS -- R404's fix dispatches on a name suffix, and the same commit
-created a log-valued row the suffix does not match.)**
-`scripts/regen_figures.py:636`.
+**R423. (BLOCKS -- two sentences written to say a number is NOT typed, each
+refuted by one grep, and one of them is in the same file as the count it
+denies.)** `docs/milestones/F2.md:1914-1915` and
+`tests/verification/rung1/test_rigid_body_modes.py:30` against `:545`.
 
 ```
-code as_ratio = n.endswith("_orders")
-cmd  the figure names this commit publishes
-out  rigid_mode_seventh_orders                    -- matches, compared right
-     rigid_mode_seventh_orders_smallest_decided   -- DOES NOT MATCH
-judge THE SECOND ROW IS log10 OF A RATIO AND ITS SPREAD IS STILL COMPUTED AS
-     max(a,b)/min(a,b) ON LOGARITHMS. At `1.312` a platform factor of 1.5 on
-     the underlying ratio shifts it by 0.176 and the guard would read
-     `1.488/1.312 = 1.134x` where the declared spread is `1.5x` on the ratio.
-     Nothing tripped; the guard's sensitivity on that row is reduced by roughly
-     the row's own magnitude, which is the sentence I wrote in R404 about the
-     row this one replaced. R404's condition said "the two gap-in-orders rows".
-judge AND THE MECHANISM IS THE FINDING, not the row: a name-suffix test means
-     the next log-valued figure is compared wrongly by default and silently.
+code F2.md:1914 "Both numbers are printed by the counter test rather than
+     :1915       typed anywhere."                   -- ADDED THIS ROUND
+cmd  grep -rn "1\.248\|6\.237" --include=*.py --include=*.md floatfea/ tests/
+     docs/milestones/
+out  floatfea/tolerances.py:408  `6.237x`
+     floatfea/tolerances.py:414  `1.248x`
+     floatfea/tolerances.py:446  `1.248x`
+     docs/milestones/F2.md:1911  `1.248x`   -- three lines above the sentence
+     docs/milestones/F2.md:1913  `6.237x`   -- two lines above the sentence
+judge FOUR SITES PLUS THE PARAGRAPH THE SENTENCE IS IN. Both numbers are
+     correct -- I measure 1.2479 and 6.2372 -- and the sentence about them
+     is false. That is CP2 exactly: the prose written AROUND a repair
+     inheriting none of the discipline applied TO it.
+code test_rigid_body_modes.py:30 "NO COUNT IS WRITTEN HERE for the loss: its
+     :31                          count is not machine-stable, which is why
+     :32                          no figure publishes it"   -- ADDED THIS ROUND
+code test_rigid_body_modes.py:545 "it breached at seventeen of the reviewer
+     :546                          first twenty-eight clean frames against
+     :547                          the ratio ten"
+judge THE SAME FILE, 515 LINES APART, WRITES THE LOSS COUNT AND SAYS IT IS
+     NOT WRITTEN. `seventeen` and `ten` are typed, unreproducible at this
+     commit, and measured on a 28-frame corpus that is now 114.
 ```
 
-**Closed when** log-valuedness is carried by the row rather than inferred from
-its name, or the second row is renamed so the existing rule reaches it.
+  **Closed when** the F2.md sentence says where the two numbers are typed or
+  the numbers move to the figure that carries them, and `:545` carries a
+  figure, a bracket, or no count -- the treatment `:30` gave the same
+  quantity twelve lines from the top of the same file.
 
-**R419. (recordable, 4a) The corpus test's spectral half asserts almost nothing
-per entry, and the domain can drift without a red.**
-`tests/verification/rung1/test_rigid_body_corpus.py:189-230`. Per entry only
-`np.isfinite(margin)` is asserted; the split is asserted only as "both sides
-non-empty". The gate could refuse 80 of 82 frames and this file would stay
-green. What actually guards the number is `{{fig:rigid_mode_corpus_refused}}`
-through the figures staleness check on the canonical machine -- a real guard,
-and not where a reader of this file would look. The docstring says the reviewer
-will mark entries `expect=undecidable`; I have not, and I say so here rather
-than leaving it implied. My new block carries `outcome=` for every entry, so
-the next round can assert against it.
+**R424. (BLOCKS -- a comment added this round says no shipped row declares
+`log=True`; two shipped rows declare it, one of them 409 lines above in the
+same file and in the same commit, and a test added in the same commit asserts
+that both do.)** `scripts/regen_figures.py:526-529`.
 
-**R420. (recordable, 4a) `test_ONE_RELEASED_CONNECTION_gives_SEVEN` computes
-its own answer from the thing it is testing.**
-`tests/verification/rung1/test_rigid_body_modes.py:589`:
-`dim = RIGID + 1 if margin < RIGID_MODE_GAP else RIGID`, then
-`assert dim == RIGID + 1` five lines after `assert margin < RIGID_MODE_GAP`.
-The second assertion cannot fail while the first passes. The control is sound
--- the first assertion does the work and I confirmed it fires -- but "a gate
-carries its own failure", and this half cannot.
+```
+code :526 "No shipped row declares it at this commit -- the quantity that
+     :527  needed it is a plain ratio under CU0 -- so the guard for it is an
+     :528  injected pair in `tests/test_figure_local_check.py` rather than a
+     :529  live row, and that is said here rather than left to be discovered."
+cmd  grep -n "log=True" scripts/regen_figures.py
+out  :118  _floor("rigid_mode_seventh_orders", "above", "RIGID_MODE_GAP", log=True)
+     :180  log=True,     (rigid_mode_seventh_orders_smallest_decided)
+code :111 of the SAME FILE, added in the SAME commit: "AND THEY ARE WHY
+     `log=True` IS NOT A DEAD FLAG (CU1, R418). These are the repository
+     log-valued rows"
+code tests/test_figure_local_check.py, added in the same commit, asserts
+     marked == the set of those two names, and is green
+judge THREE STATEMENTS IN ONE COMMIT, TWO CORRECT AND ONE THE OPPOSITE, and
+     the false one is the one a reader of the class vocabulary meets first.
+     It is load-bearing too: it is the reason given for the guard being an
+     injected pair rather than a live row.
+```
+
+  **Closed when** `:526-529` says what `grep -n "log=True"` prints.
+
+**R425. (BLOCKS -- a docstring added this round says NOTHING ASSERTS AGAINST
+THIS AND NOTHING MAY, and a test 388 lines below it in the same file, added
+in the same commit, asserts against it. The report repeats the sentence.)**
+`tests/verification/rung1/test_rigid_body_modes.py:273` against `:661`
+and `:673`.
+
+```
+code :271 def zero_modes_under_the_bound(k) -> int:
+     :273 "NOTHING ASSERTS AGAINST THIS AND NOTHING MAY (CU0)."
+code :661 dim = zero_modes_under_the_bound(k)
+     :673 assert dim == RIGID + 1, ...
+code report section 2: "**below_bound stays printed and nothing asserts
+     it**, which is what CU0 asked for"
+cmd  grep -n zero_modes_under_the_bound tests/verification/rung1/test_rigid_body_modes.py
+out  :270 def, :508 comment, :513 print, :659 comment, :661 A CALL FEEDING
+     AN ASSERT AT :673
+judge AND THE INTERESTING PART IS THAT THE CODE IS RIGHT AND THE SENTENCE IS
+     WRONG. R420 needed the second assertion to be an independent
+     measurement, and counting the spectrum is the right one -- I confirmed
+     it can fail while the first passes, since it also requires lambda_8
+     above the bound. CU0 asked that the count never become a second name
+     for the gate decision. BOTH ARE SATISFIED, and the distinction between
+     them -- not asserted BY THE GATE, asserted BY A CONTROL -- is what
+     neither the docstring nor the report records. A later reader who takes
+     the docstring at its word deletes `:673`.
+```
+
+  **Closed when** `:273` says which assertions may read it and which may not,
+  and the report sentence says the same.
+
+**R426. (BLOCKS -- "The binding side is the SIX THEMSELVES" compares two
+numbers 1.06x apart, taken on different machines, and the side it dismisses
+is the one nothing enforces.)** `floatfea/tolerances.py:363-374`.
+
+```
+code :363 "below  A GENUINE SEVENTH ZERO MODE is refused at all 35
+     :367  re-expressions ... The binding side is the SIX THEMSELVES"
+cell the 35-way cell, reproduced: one torsional release, 7 unit systems from
+     1e-6 to 1e6 crossed with 5 spans, nothing else moved
+out  35 of 35 refused; the highest lambda_7 any of them reaches is 1.3750
+     units of ||K_hat||*eps
+cmd  the corpus max of rigid_max, same machine, same commit
+out  1.4614 units -- so on THIS machine the six do bind, by 1.0628x
+cmd  the published figure, from the canonical runner
+out  rigid_mode_largest_rigid_eigenvalue = 1.2727, which is BELOW the 1.3750
+     the mechanism reaches here
+judge SO THE TWO CANDIDATE LOWER LIMITS SIT INSIDE FIGURE_FLOOR_CLASS_SPREAD
+     OF EACH OTHER, and the published pair is measured on two machines with
+     the ordering reversed between them. Eight lines below, the same entry
+     applies exactly this test to the UPPER side and declares the result a
+     limitation. The lower side gets no such test, and it is the side that
+     matters more: only the six are enforced, as a floor-class row, while
+     the mechanism ceiling is enforced by nothing and is not a figure. The
+     bound is 145x above both, so no decision moves -- what is wrong is the
+     sentence saying which measurement brackets the constant.
+```
+
+  **Closed when** the entry says the two lower limits are within the declared
+  spread of each other and reports both, or the mechanism ceiling becomes a
+  figure so the comparison is between two numbers from one render.
+
+**R427. (BLOCKS -- `rigid_mode_corpus_refused` is published as an EXACT row,
+its own entry says it is not platform-stable, and the mechanism named as the
+one that would catch it moving cannot: ten legs of one canonical environment
+do not measure a second machine. The generator withholds another count six
+lines away for precisely this reason.)** `floatfea/tolerances.py:392-400`
+and `scripts/regen_figures.py:203-213`.
+
+```
+code tolerances.py:398 "what is not platform-stable is the published count
+     :400              of refusals. CI is canonical for that figure (Q8) and
+                       the determinism legs are what would catch it moving."
+cmd  grep -n "runs-on\|OPENBLAS_CORETYPE\|leg: \[" .github/workflows/ci.yml
+out  every leg runs-on ubuntu-latest with OPENBLAS_CORETYPE Haswell; the
+     matrix is leg 1..10 -- ten runs of ONE pinned environment
+judge THE LEGS MEASURE RUN-TO-RUN DETERMINISM ON THE CANONICAL MACHINE. The
+     machine on which this count would move is a NON-canonical one, and
+     there the path is compare(), where this row is not floor-class:
+code regen_figures.py:664 "Not a floor-class figure: Q8 requires these to
+                           agree EXACTLY on every machine, so this is
+                           staleness rather than platform."
+code regen_figures.py:203-213, SIX LINES ABOVE the row: "THE LOSS COUNT IS
+     NOT MACHINE-STABLE AND IS NOT PUBLISHED ... An exact row that disagrees
+     between machines is staleness by Q8 rule, and it is not floor-class
+     either -- a count is not a measurement against a tolerance. It is left
+     out."
+judge ONE GENERATOR, TWO POLICIES, SIX LINES APART, AND THE ROUND WROTE THE
+     REASON FOR ONE OF THEM DOWN WHILE PUBLISHING THE OTHER.
+cell  AND I MADE IT MEASURABLE RATHER THAN ARGUED. Block A puts six frames
+     in the window; rb_window_l7_200 renders at 1.9951e+02 against a bound
+     of 199.526 -- it becomes rigid_mode_largest_refused and it is 1.00008x
+     from flipping, four orders inside the declared 1.5x spread. The
+     refusal count is now one round-off away from 32 or 33.
+```
+
+  **Closed when** `rigid_mode_corpus_refused` is floor-class or withdrawn the
+  way the loss count was, or the entry names a check that would actually see
+  the count move. Deleting the corpus entry is not one of the three.
+
+**R428. (BLOCKS -- a figure row is decided against a ceiling this round
+retired.)** `scripts/regen_figures.py:117-118`.
+
+```
+code _floor("rigid_mode_seventh_orders", "above", "RIGID_MODE_GAP", log=True)
+cmd  the class vocabulary at :514 on this kind
+out  "above <ceiling>   a counter: it must stay over the ceiling it defends"
+code tolerances.py:460 "CLASS: ACCURACY -- and RETIRED at CU0/R415 ... NOT A
+     GATE, for the same reason as the floor above"
+judge compare() COMPUTES A MARGIN FOR THIS ROW AGAINST A RETIRED CONSTANT
+     and fails the build if it falls under FIGURE_FLOOR_CLASS_SPREAD. It
+     never will -- the margin is 10**11.08 -- so nothing breaks today. The
+     form is what is wrong. R399, which verdict 47 closed, asked for "no
+     `_floor(...)` mark against a retired ceiling"; this round retired the
+     ceiling and left the mark. The mark was correct when it was written,
+     which is the whole of BP0. The row beside it got `derived` for a
+     weaker reason.
+```
+
+  **Closed when** the row is `derived` like the other retired parametrisation
+  beside it, or the ceiling it names is not a retired constant.
+
+---
+
+**Recorded, and lock items for step 4a (BU0). None of these touches the gate
+assertion, a tolerance, or the truth of a published figure.**
+
+**R429. The run-id guard CU3 asked for misses the most ordinary way of
+writing a run id, and I measured it.** `tests/test_report_carried.py`,
+`_RUN_ID`. The right-hand lookahead rejects a trailing DOT as well as a
+digit, so a run id at the end of a sentence is never seen. Seven unseen
+shapes in `tests/corpus/report_ci_section.txt`, each applied to the newest
+revision in a scratch clone at `d8ac843` and run through the shipped tests:
+**2 of 7 refused, 5 allowed.** The misses are a trailing full stop, a full
+stop in a list item, a 13-digit id, thousands separators, and -- the R412
+shape itself -- a paragraph whose only "conclusion" is the word inside
+`gh run view <id> --json conclusion status`, which satisfies the conclusion
+regex without anyone pasting what the run did.
+
+**R430. The second CU3 guard has no negative control and is vacuous on this
+report.** `test_a_GREEN_JOB_TABLE_does_not_stand_under_a_FAILED_run` returns
+early when every conclusion in `_ci_section()` is success or skipped, which
+is the case at `d8ac843`; the runs that DID conclude failure are in section
+0a, which `_ci_section()` does not return. There is no state for it in
+`tests/test_report_guard_states.py`. A gate carries its own failure.
+
+**R431. `scripts/suite_count.py` excludes three files and a fourth grows
+with the revision.**
+`tests/test_plan_figures.py::test_every_figure_reference_anywhere_resolves`
+is parametrised over every figure reference ANYWHERE, including the step
+report: 105 parameters at `fd56d97`, 110 at `d8ac843`. So the published
+"2107 passed ... excluding 309 tests in 3 files parametrised over this
+report" does not reconcile with my run -- 2480 collected at `d8ac843`, 368
+excluded, 2112 left, five more than 2107, and `d8ac843` touches only two
+docs files. I confirmed 2416 / 309 / 2107 at `fd56d97` in a scratch
+worktree, so the number is right for what it counts; the sentence about what
+it counts is not, and R323 is the reason that line exists at all.
+
+**R432. A local literal duplicates `WIDEN` in the counter test.**
+`tests/verification/rung1/test_rigid_body_modes.py:760` reads
+`widened = RIGID_MODE_BOUND / 10.0`, three lines under a comment that says
+"the meta-test widens the bound by `WIDEN`". `WIDEN = 10.0` lives at
+`tests/test_counters_are_injected.py:68`. It feeds a print and not an
+assertion, but the print is where `6.237x` and `1.248x` come from, and
+`1.248x` is the stated justification for deleting a counter.
+
+**R433. Seven machine-dependent measurements are typed into
+`floatfea/tolerances.py` rather than rendered.** `124.45`, `1.603x`,
+`6.237x`, `24.90`, `1.248x`, `4.3707e+05` and `199.5625`. I reproduce every
+one to four digits -- 124.4494, 1.6033, 6.2372, 24.8989, 1.2479, 4.3716e+05,
+199.538 -- so they are right at this commit. They are also eigenvalue-derived,
+which is the round own argument for why two figure rows had to become
+`derived`, and `rigid_mode_counter_seventh` already publishes the first of
+them. BI3 territory; the mechanism is 4a.
 
 ## Tolerances touched
 
-**One file, `floatfea/tolerances.py`, `+98 -78`, all in `a15502a` and
-`34ce4b3`. Two values moved, both of them counters; no ceiling moved.**
+**One file, `floatfea/tolerances.py`, `+166 -85`, all in `b83d776` and
+`0a9d54d`. One constant created at the product of two retired ones, one
+counter created at the size of a retired one, two constants and two counters
+retired. NO VALUE MOVED.**
 
 | name | old | new | form | counter | basis located |
 |---|---|---|---|---|---|
-| `RIGID_MODE_FLOOR` | `10.0` | `10.0` | unchanged in value; **the rule it serves changed** -- it no longer thresholds a count, only `tau` in one bound | `RIGID_MODE_FLOOR_COUNTER_DEFECT`, now the nearly-released connection at `2.0e-14`, injected through `assembled`, decided by the shipped bound, pinned by `match="UNDECIDABLE"` | `:339-362`. Bracket re-measured and solved; I reproduce `1.4614` units and `6.843x` over 82 frames. **R413 closed. R415: nothing makes this bracket decide anything.** |
-| `RIGID_MODE_FLOOR_COUNTER_DEFECT` | `1.0e-12` | `2.0e-14` | relative stiffness given back on the released twist DOF | n/a | `:365-380`. **Margin `0.3962` reproduced exactly, `1.3962` under the meta-test's own widening, `0.0151` at the retired value. The move is right and the meta-test forced it, which is that file working. R416 is the sentence beside it.** |
-| `RIGID_MODE_GAP` | `1.3` | `1.3` | unchanged in value; **the quantity it bounds changed** -- from the separation after the last eigenvalue below `tau` to `log10(lambda_7 / tau)` at the sixth-seventh boundary | `RIGID_MODE_GAP_COUNTER_DEFECT` at `1.0e-13`, same injection one size up, pinned by `match="UNDECIDABLE"` | `:388-410`. **Both margins now in the same quantity (R404): `1.095` orders, `1.603x` as a ratio against a declared `1.5x`. I reproduce both. The `below` half is the counter's placement rather than a reachable minimum -- the smallest non-negative margin this injection reaches is `0.029` on my 200-point scan -- and the entry no longer claims otherwise.** |
-| `RIGID_MODE_GAP_COUNTER_DEFECT` | `8.318e-15` | `1.0e-13` | relative, same site | n/a | `:412-417`. **R417: "one and a half decades stiffer" is `5x`.** |
-| `RIGID_BODY_MODE_RATIO` and its counter | `1e-12` / `1.0e-12` | unchanged (**retired**) | nothing asserts against either | -- | `:419-473`. R399 and R408 closed. **R405 on "a large minority of the reviewer's fifty-six frames".** |
-| `RIGID_BODY_SUBSPACE_LOSS` and its counter | `1e-13` / `1.0e-12` | unchanged (**retired**) | nothing asserts against either | -- | `:475-531`. R399 closed. |
+| `RIGID_MODE_BOUND` | -- | `199.526231496888` | NEW. Dimensionless, in units of `\|\|K_hat\|\| * eps`; the assertion is `lambda_7(K_hat) >= BOUND * \|\|K_hat\|\| * eps`. Exactly `RIGID_MODE_FLOOR * 10**RIGID_MODE_GAP`, so the decision is bit-unchanged | `RIGID_MODE_BOUND_COUNTER_DEFECT` at `1.0e-13`, nearly-released connection injected through `assembled`, pinned by `match="UNDECIDABLE"` | `:329-401`. **R415 closed: one degree of freedom, one constant.** Counter margin `1.6033x` under the bound and `6.2372x` over the widened bound -- I reproduce both, and I SOLVED the edge: the give-back at which the gate stops refusing is `1.6032e-13`, so the counter is `1.6033x` under it in defect size too. Window: R426 on the lower side, R427 on the upper. |
+| `RIGID_MODE_BOUND_COUNTER_DEFECT` | -- | `1.0e-13` | NEW, at the size the retired gap counter carried. Relative stiffness given back on the released twist DOF | n/a | `:404-418`. The response is linear in the give-back, `lambda_7 = 1.2445e15 * size`, so this is a detection threshold and not one perturbation. R433 on the typed numbers beside it. |
+| `RIGID_MODE_FLOOR` | `10.0` | `10.0` | **RETIRED.** Value unchanged; nothing asserts against it | retired with it | `:420-439`. Entry rewritten to the past tense, window moved to the figure where it decides. **R399 discipline applied here and missed one file over: R428.** |
+| `RIGID_MODE_FLOOR_COUNTER_DEFECT` | `2.0e-14` | `2.0e-14` | **RETIRED.** Still computed by `counter_response("retired_floor")` and printed; asserted nowhere | n/a | `:441-458`. **R416 closed** -- the discrimination clause is withdrawn by name with the cross cell recorded. |
+| `RIGID_MODE_GAP` | `1.3` | `1.3` | **RETIRED.** Value unchanged; nothing asserts against it | retired with it | `:460-485`. **R418 closed** at the mechanism. R428: `regen_figures` still decides a row against this constant. |
+| `RIGID_MODE_GAP_COUNTER_DEFECT` | `1.0e-13` | `1.0e-13` | **RETIRED**, its size carried forward unchanged into the new counter | n/a | `:487-498`. **R417 closed** -- `FIVE TIMES stiffer`, `0.7` of a decade, at both sites. |
+| `RIGID_BODY_MODE_RATIO`, `RIGID_BODY_SUBSPACE_LOSS` and their counters | unchanged | unchanged | retired earlier, still nothing asserts | -- | `:500-610`. **R405 closed** at all five sites. |
 
 ```
-judge NO VALUE WAS WIDENED TO RESCUE A TEST. No test was failing before either
-     counter moved; the floor's counter moved because the meta-test refused it
-     for reddening on the other constant's account, which is that guard doing
-     its job, and the move makes the counter a FIFTY TIMES SMALLER defect. No
-     ceiling moved at all this round.
-judge NO OTHER NUMBER IN THE FIVE COMMITS FUNCTIONS AS A TOLERANCE. `RIGID` is
-     still a kinematic constant with a not-a-tolerance docstring; `EPS` is
-     `np.finfo(float).eps`; `WIDEN` is a declared not-a-tolerance; the
-     `-1.0e-3` ARPACK shift carries its own not-a-tolerance comment.
+judge NO VALUE WAS WIDENED AND NO VALUE MOVED AT ALL. `RIGID_MODE_BOUND` is
+     the arithmetic product of the two constants it replaces, to the last
+     digit of a double, and I checked it: 10.0*10**1.3 is exactly
+     199.526231496888. The gate decides the same thing on the same frames.
+judge THE ONE COVERAGE REDUCTION IS DEFENSIBLE AND I MEASURED IT. Deleting
+     the `2.0e-14` counter removes a sample from a LINEAR family whose edge
+     is solved; the survivor is harder in both directions (1.6033x under
+     the bound against 8.0135x, 6.2372x over the widened bound against
+     1.2479x). One counter for one constant is right.
+judge NO OTHER NUMBER IN THE EIGHT COMMITS FUNCTIONS AS A TOLERANCE. `RIGID`
+     is still a kinematic constant; `EPS` is `np.finfo(float).eps`; the
+     `10.0` at test_rigid_body_modes.py:760 is a duplicate of a declared
+     not-a-tolerance and feeds a print (R432).
 cmd  my whole-suite run includes the shipped literal scanner over tests/
-out  2350 passed at 681c380 -- no undeclared literal entered tests/ this round
-     and nothing was added to `tolerance_marker_exemptions.txt`.
+out  2480 passed at d8ac843 -- no undeclared literal entered tests/ this
+     round and nothing was added to `tolerance_marker_exemptions.txt`.
 ```
 
 ## Next step opens when
 
 **Step 5 stays OPEN. Step 6 does not begin.**
 
-**The gate's claim is in the best shape it has been in, and that goes first.**
-R403 is answered by measurement rather than by argument: 554 configurations, 48
-re-expressions of a real mechanism, and the transition solved on one parameter
-with the bound 1.3 orders clear of it. No count, one bound, and a refusal that
-is a red rather than a skip is the right answer to a conditioning limit. R407,
-R408, R399 and R413 are closed at the lines their conditions named, CI is green
-on Linux at the reviewed commit, the local suite is 2350 green, and nothing
-went near `.claude/` or a conftest.
+**The departure from CU0 is CORRECT and it is not a STOP.** I asked for the
+transition at `stretch ~ 1.95e6` as the lower side of the window and the
+implementer refused it as a tautology. He is right, and it is an identity
+rather than an empirical claim: `below_bound == 6` is `w_6 <= bound < w_7`
+on a sorted spectrum, which is exactly "lambda_7 above the bound AND the six
+under it". I confirmed zero disagreements on all 114 frames and I re-solved
+the crossing myself -- `4.3716e+05`, where `lambda_7` is `199.538` units,
+the bound restating itself. My `1.95e6` was a real bracket for the retired
+floor of 10 and it died with that constant. The departure was declared in the
+commit message, in the tolerance entry and in two report sections, which is
+what `CLAUDE.md` asks of a reviewer directive that execution shows to be
+wrong. **A directive I wrote is not the locked plan and a measured refusal of
+one is the process working.**
 
-**What holds is six items. Two are about the gate's own constants, one is a
-counter's size described wrongly, and three are closing conditions the report
-records as met that measurement says are not.**
+**What holds is eight items and every one of them is a sentence.** Not one is
+an element defect; not one moves a threshold; the gate decides the same thing
+on the same frames before and after every repair I am asking for.
 
-1. **R415 -- two constants, one threshold.** `FLOOR 10 -> 1` with
-   `GAP 1.3 -> 2.3` leaves everything green while `tau` falls under the `1.461`
-   the entry says it must clear by `6.84x`.
-2. **R416 -- "sized by this constant and not by the other one"**, refuted by
-   the cross cell: both counters fail under both widenings.
-3. **R417 -- "one and a half decades stiffer" is `5x`,** in the tolerance entry
-   and in the test that injects it.
-4. **R418 -- R404's fix misses the row R404 named,** because it dispatches on
-   the suffix `_orders` and that row was renamed to end in `_decided`.
-5. **R405 -- five sites still say twenty-eight, fifty-six, sixteen and "a large
-   minority"** against a rendered `60 of 82`; two of the five were written this
-   round, and section 3's own grep is the command that refutes section 3.
-6. **R406 and R409 -- the plan section the last verdict called "worse" is
-   untouched** (`~83x`, `~18x`, "registered ... and pass its two cells", "six
-   numbers near zero"), and section 5's golden-change section documents this
-   round's seven renames instead of the two deletions R409 named.
+1. **R421 -- the plan gate register still defines G2.1 as the retired
+   eigenvalue ratio**, at `:51`, with `:136`, `:212` and `:1505` behind it.
+   The plan was RE-LOCKED this round on the claim that the retired section
+   says it is retired; four sites outside that section do not.
+2. **R422 -- the plan says the gap counter is a uniform elastic foundation.**
+   No such injection exists; the same commit deleted the twin of that sentence
+   from the code; and it opens "Both counters" eight lines above "ONE
+   COUNTER".
+3. **R423 -- two sentences saying a number is not typed**, both refuted by
+   one grep, one of them two lines below the number it denies.
+4. **R424 -- "No shipped row declares `log=True` at this commit"**, with two
+   shipped rows declaring it, one 409 lines above in the same file and in the
+   same commit, and a test asserting exactly that set.
+5. **R425 -- "NOTHING ASSERTS AGAINST THIS AND NOTHING MAY"**, with an assert
+   on it 388 lines below in the same file and in the same commit. The code is
+   right; the sentence and the report sentence are not.
+6. **R426 -- "The binding side is the SIX THEMSELVES"**, a comparison of
+   `1.2727` from the canonical runner with `1.3750` from the laptop, 1.06x
+   apart, and the side it dismisses is the one nothing enforces.
+7. **R427 -- the published refusal count is an exact row that the entry says
+   is not platform-stable**, with the determinism legs named as the check
+   that would catch it and ten legs of one pinned environment unable to. The
+   same generator withholds the loss count six lines away for that reason.
+8. **R428 -- a figure row still decided against `RIGID_MODE_GAP`**, retired
+   this round.
 
-**Adversarial corpus (BE3): 32 new entries in
-`tests/corpus/g21_rigid_body_frames.txt`, all unseen by the implementer,
-committed separately at `224d57c`.** The file goes 82 -> 114.
+**One observation about the shape of these eight, because it is the finding
+behind the findings.** Five were written in the round that fixed the same
+species elsewhere. `b83d776` deleted the uniform-foundation sentence from the
+code and left it in the plan; wrote a correct comment about `log=True` at
+line 111 and its negation at line 526; wrote a docstring saying nothing may
+assert a quantity and an assert on it in the same file; and `fb5a5cf`
+rewrote the retired section while walking past the paragraph eight lines
+above it. CP2 already names this -- the prose written AROUND a repair
+inheriting none of the discipline applied TO it -- and the mechanical guard
+`tests/test_report_numbers_are_sourced.py` reaches the report and stops at the
+source tree. **Every one of these eight is refuted by a grep over files the
+commit itself touched.** That is worth a directive rather than eight repairs.
 
-**The coverage measurement, stated plainly: of my 32 new frames the shipped
-gate reddens at NONE.** Twenty-four decided, eight refused, and a refusal is
-the declared domain rather than a breach. The residual half holds at all 32,
-worst `1.1410e-16` against `1e-15`. Last round it was 13 breaches of 26; the
-rule changed underneath and the same technique no longer finds a hole.
+**Adversarial corpus (BE3): 19 new entries across two files, all unseen by the
+implementer, committed separately at `a89f149`.**
+
+**`tests/corpus/g21_rigid_body_frames.txt`, 114 to 126. Twelve frames, and
+the shipped gate reddens at NONE.** Nine decided, three refused, residual
+holds at all twelve with a new corpus worst of `1.3502e-16` against `1e-15`,
+and `below_bound` is six at every decided one. Block A occupies the window
+the entry describes as a limitation -- six stretches solved so `lambda_7`
+lands at 215, 205, 200, 195, 188 and 180 units either side of `199.53` -- and
+`rb_window_l7_200` becomes `rigid_mode_largest_refused` at `1.9951e+02`,
+`1.00008x` from the bound. That is R427 turned from an argument into a
+number. Block B aims at the only side of the window anything enforces and
+does not move it: the highest `rigid_max` the six reach is `1.3295` against
+the file existing `1.4614`, which is the result rather than a reason to leave
+them out. **And I applied BP0 to my own file**: my block header from the
+forty-seventh verdict said the margin reaches zero at `stretch ~1.95e6`, true
+against the retired floor and not against the bound, and the new header says
+so.
+
+**`tests/corpus/report_ci_section.txt`, 4 to 11. Seven CI-section shapes, and
+the implementer check caught 2.** That is the coverage measurement for the
+CU3 guard, and it is not the planted-shape count: **2 of 7 refused, 5
+allowed**, with the misses listed at R429. The one that matters is the fifth:
+a paragraph naming a run and showing `gh run view <id> --json conclusion
+status` without pasting the result satisfies the guard, and that is R412
+itself.
 
 ```
 cmd  python -m pytest tests/verification/rung1/test_rigid_body_corpus.py
-       tests/test_plan_figures.py -q        (at 224d57c)
-out  1 failed, 363 passed
+       tests/test_plan_figures.py -q        (at a89f149)
+out  1 failed, 292 passed
      tests/test_plan_figures.py::test_the_generated_figures_are_not_stale
 ```
 
 * **The one red at my commit is the figures guard and it is correct.**
-  `rigid_mode_residual_worst_over_corpus` `1.0589e-16` -> `1.1410e-16`,
-  `rigid_mode_corpus_frames` `82` -> `114`, `rigid_mode_corpus_refused`
-  `21 of 82` -> `29 of 114`. **The next report regenerates them and names
-  them.**
-* **What is new, and the first item is the one that mattered.** The `tip` field
-  has existed in this format since the twenty-sixth verdict and no entry ever
-  moved it: all 82 are `4.4,1.1,2.8`. The shipped release control asserts that
-  member is parallel to global x, so the one piece of geometry the gate leans
-  on is the one the corpus never varied. Eight entries move it -- skewed,
-  reversed, nearly coincident with node 3, ten times further out -- and all
-  eight are decided with `below_tau = 6`.
-* **Also unseen:** near-solid and `1e-6 m`-wall sections; `D=4.0` and `D=8.0`
-  on a four-metre frame; `stretch < 1`, which shrinks the frame where every
-  composed entry above stretches it; `subdiv` 32 and 48; and unit and span
-  pulling in OPPOSITE directions, where every composed entry above pushes both
-  the same way.
-* **Six entries ladder the decision boundary on one parameter** so the margin
-  crosses `RIGID_MODE_GAP` with nothing else moving, and the block's header
-  records the solved crossing: the margin reaches zero at `stretch ~1.95e6`,
-  which is exactly where `below_tau` leaves six.
-* **The block carries `below_tau=` as the control on the bound**, and its
-  header names the shape to watch for: `outcome=decided` with `below_tau` not
-  six. There is none, in 114 entries or 440 swept points.
+  `rigid_mode_corpus_frames` `114` to `126`, `rigid_mode_corpus_refused`
+  `29 of 114` to `33 of 126`, `retired_ratio_over_ceiling_on_corpus`
+  `80 of 114` to `91 of 126`, `rigid_mode_residual_worst_over_corpus`
+  `1.1410e-16` to `1.3502e-16`, `rigid_mode_largest_refused` `1.8800e+02`
+  to `1.9951e+02`. **The next report regenerates them and names them.**
 
-**Not gates on step 5, into the next report's Carried section:** R419, R420,
-R410, R411, R412, R414, R400, R401, R402, R390, R391, R392, R393, R383, R370,
-R371, R372, R373, R374, R362, R363, R364, R354, R355, R356, R357, R347, R348,
-R349, R350's second half, R330, R331, R332, the section 9 status-versus-subject
-disagreement, R321, R322, R300, R291, R292, R281, R231, R244, R245, R275, R230,
-R261, the underlying gap in R276, R277, R262, R264, R266, the two R248
-residues, R249-R252, R225-R228, R232, R233, and everything already at 4a.
-R403, R407, R408, R399 and R413 are closed. R404 is closed on its own row and
-reopens as R418. R405, R406 and R409 carry.
+**Not gates on step 5, into the next report Carried section:** R429, R430,
+R431, R432, R433, R419, R410, R411, R413, R414, R400, R401, R402, R390,
+R391, R392, R393, R383, R370, R371, R372, R373, R374, R362, R363, R364,
+R354, R355, R356, R357, R347, R348, R349, R350 second half, R330, R331,
+R332, the section 9 status-versus-subject disagreement, R321, R322, R300,
+R291, R292, R281, R231, R244, R245, R275, R230, R261, the underlying gap in
+R276, R277, R262, R264, R266, the two R248 residues, R249-R252, R225-R228,
+R232, R233, and everything already at 4a. **R415, R416, R417, R418, R405,
+R406, R409 and R420 are closed.** R411 advanced to off-by-one and stays
+open. R412 is answered as a rule and reopens as R429 and R430.
 
-**Forty-seven rounds have found no element defect, and this round found none
-either -- for the first time including my own corpus.** Every one of the 114
-frames is the same defect-free element and the residual half holds at all of
-them. It still means "not yet contradicted": ladder 5 has printed
+**Forty-eight rounds have found no element defect and this round found none
+either.** Every one of the 126 frames is the same defect-free element; the
+residual half holds at all of them; 1980 further configurations produced no
+vacuous pass; 35 re-expressions of a real mechanism were all refused. It
+still means "not yet contradicted": ladder 5 has printed
 `OK -- 0 directories ran` every time it has run, and V5.1 against CalculiX is
 the witness that has not spoken.
