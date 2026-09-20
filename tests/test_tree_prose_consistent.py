@@ -101,15 +101,11 @@ _ANNOTATION = re.compile(r"^\s*(?:#\s*)?(?:claim|cmd|out):", re.M)
 
 
 def _without_annotations(text: str) -> str:
-    return "\n".join(
-        line for line in text.splitlines() if not _ANNOTATION.match(line)
-    )
+    return "\n".join(line for line in text.splitlines() if not _ANNOTATION.match(line))
 
 
 def _read(rel: str) -> str:
-    return _without_annotations(
-        (ROOT / rel).read_text(encoding="utf-8", errors="replace")
-    )
+    return _without_annotations((ROOT / rel).read_text(encoding="utf-8", errors="replace"))
 
 
 def _paths(pattern: str) -> list[Path]:
@@ -125,12 +121,7 @@ def _text(p: Path) -> str:
 
 def count(pattern: str, needle: str) -> int:
     """How many LINES across `pattern` contain `needle`, literally."""
-    return sum(
-        1
-        for p in _paths(pattern)
-        for line in _text(p).splitlines()
-        if needle in line
-    )
+    return sum(1 for p in _paths(pattern) for line in _text(p).splitlines() if needle in line)
 
 
 def lines(rel: str, needle: str) -> str:
@@ -141,9 +132,7 @@ def lines(rel: str, needle: str) -> str:
     """
     raw = (ROOT / rel).read_text(encoding="utf-8", errors="replace").splitlines()
     got = [
-        str(i)
-        for i, line in enumerate(raw, 1)
-        if needle in line and not _ANNOTATION.match(line)
+        str(i) for i, line in enumerate(raw, 1) if needle in line and not _ANNOTATION.match(line)
     ]
     return ",".join(got) if got else "none"
 
@@ -151,9 +140,7 @@ def lines(rel: str, needle: str) -> str:
 def files(pattern: str, needle: str) -> str:
     """The files under `pattern` containing `needle`, comma-joined, or `none`."""
     got = [
-        str(p.relative_to(ROOT)).replace("\\", "/")
-        for p in _paths(pattern)
-        if needle in _text(p)
+        str(p.relative_to(ROOT)).replace("\\", "/") for p in _paths(pattern) if needle in _text(p)
     ]
     return ",".join(sorted(got)) if got else "none"
 
@@ -445,6 +432,7 @@ _ABSENCE_EXEMPT: dict[tuple[str, str], str] = {
 # and with the same cost -- a false sentence written HERE is not caught here.
 SELF = "tests/test_tree_prose_consistent.py"
 
+
 def _carries_a_triple(rel: str, first: int, last: int) -> bool:
     return any(first <= ln <= last + 3 for ln in TRIPLE_LINES.get(rel, ()))
 
@@ -483,7 +471,7 @@ def _norm(phrase: str) -> str:
 def test_an_ABSENCE_claim_carries_the_command_that_would_refute_it(
     rel: str, first: int, last: int, phrase: str, para: str
 ) -> None:
-    """"Nothing asserts against it" is a grep, written as a sentence."""
+    """ "Nothing asserts against it" is a grep, written as a sentence."""
     if rel == "(none)":
         pytest.skip("reported by test_the_absence_pattern_finds_something")
     if _carries_a_triple(rel, first, last):

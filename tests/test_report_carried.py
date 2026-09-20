@@ -983,6 +983,8 @@ def a_green_table_under_a_failed_run(text: str) -> str | None:
             f"green, and no `{_GREEN_UNDER_RED}`"
         )
     return None
+
+
 # The literal a report writes to say "yes, this run failed and the jobs I show
 # are green; here is why". Nothing infers it, exactly like `no change` in the
 # untouched-sites table.
@@ -1072,9 +1074,7 @@ _CI_SHAPES: list[tuple[str, str, bool]] = [
 ]
 
 
-@pytest.mark.parametrize(
-    "name, text, must_refuse", _CI_SHAPES, ids=[s[0] for s in _CI_SHAPES]
-)
+@pytest.mark.parametrize("name, text, must_refuse", _CI_SHAPES, ids=[s[0] for s in _CI_SHAPES])
 def test_the_RUN_CONCLUSION_guard_rules_on_the_reviewer_shapes(
     name: str, text: str, must_refuse: bool
 ) -> None:
