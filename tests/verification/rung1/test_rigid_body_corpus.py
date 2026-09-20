@@ -49,7 +49,7 @@ from test_rigid_body_modes import (  # noqa: E402
     _frame,
     mode_ratio,
     residual_exactness,
-    seventh_over_threshold,
+    seventh_over_epsilon,
     subspace_loss,
 )
 
@@ -58,8 +58,8 @@ from floatfea.assemble.system import BeamElement, assemble_dense  # noqa: E402
 from floatfea.model.material import Material, Section  # noqa: E402
 from floatfea.model.nodes import Model, Node  # noqa: E402
 from floatfea.tolerances import (  # noqa: E402
+    RIGID_MODE_BOUND,
     RIGID_MODE_EXACTNESS,
-    RIGID_MODE_GAP,
 )
 
 CORPUS = ROOT / "tests" / "corpus" / "g21_rigid_body_frames.txt"
@@ -186,13 +186,13 @@ def test_G2_1_holds_at_every_frame_in_the_corpus(entry: dict[str, str]) -> None:
     # spectral question is the one the gate declines, and which frames it
     # declines is asserted in `test_the_gate_REFUSES_rather_than_guesses_and_says_how_often`,
     # from the same measurement.
-    margin = seventh_over_threshold(k)
-    assert np.isfinite(margin), (
-        f"{entry['id']}: lambda_7 is zero or absent, so there is no margin to "
+    over = seventh_over_epsilon(k)
+    assert over > 0.0, (
+        f"{entry['id']}: lambda_7 is zero or absent, so there is nothing to "
         "report. The frame has fewer than seven modes, which is not a "
         "conditioning limit but a broken model."
     )
-    DECIDED[entry["id"]] = margin
+    DECIDED[entry["id"]] = over
 
 
 def test_the_gate_REFUSES_rather_than_guesses_and_says_how_often(capsys) -> None:
@@ -212,16 +212,16 @@ def test_the_gate_REFUSES_rather_than_guesses_and_says_how_often(capsys) -> None
     decided, refused = [], []
     for entry in ENTRIES:
         model, els = _build(entry)
-        margin = seventh_over_threshold(assemble_dense(model, els))
-        (decided if margin >= RIGID_MODE_GAP else refused).append((entry["id"], margin))
+        over = seventh_over_epsilon(assemble_dense(model, els))
+        (decided if over >= RIGID_MODE_BOUND else refused).append((entry["id"], over))
     assert len(decided) + len(refused) == len(ENTRIES)
     with capsys.disabled():
         print(
             f"\n  the gate decides {len(decided)} of {len(ENTRIES)} frames and "
             f"refuses {len(refused)}"
         )
-        for name, margin in sorted(refused, key=lambda r: r[1])[:4]:
-            print(f"    refused: {name} at {margin:.3f} orders")
+        for name, over in sorted(refused, key=lambda r: r[1])[:4]:
+            print(f"    refused: {name} at {over:.4e} units of ||K_hat||*eps")
     assert decided, "the gate decides no frame in the corpus, so it certifies nothing."
     assert refused, (
         "the gate refuses no frame in the corpus, which would make the "
@@ -303,19 +303,19 @@ def test_a_PINNED_DOF_is_caught_by_the_RESIDUAL_half(capsys) -> None:
 def test_a_RELEASED_CONNECTION_makes_the_gate_REFUSE(capsys) -> None:
     """Upward, by the shipped bound (CT1).
 
-    A released connection puts a seventh mode at the floor, so `lambda_7` is
-    not resolvable and the gate refuses. That is the same red an
-    over-conditioned frame gets, deliberately: in double precision the two are
-    the same observation.
+    A released connection puts a seventh mode at the arithmetic floor, so
+    `lambda_7` cannot clear the bound and the gate refuses. That is the same
+    red an over-conditioned frame gets, deliberately: in double precision the
+    two are the same observation.
     """
     model, els = _frame()
-    margin = seventh_over_threshold(_assemble_with_torsional_release(model, els, released=6))
+    over = seventh_over_epsilon(_assemble_with_torsional_release(model, els, released=6))
     with capsys.disabled():
-        print(f"  one released connection: lambda_7 {margin:.3f} orders above tau")
-    assert margin < RIGID_MODE_GAP, (
-        f"a released connection leaves lambda_7 {margin:.3f} orders above tau, "
-        f"at or over {RIGID_MODE_GAP:g}, so the gate would answer rather than "
-        "refuse."
+        print(f"  one released connection: lambda_7 at {over:.4e} units")
+    assert over < RIGID_MODE_BOUND, (
+        f"a released connection leaves lambda_7 at {over:.4e} units of "
+        f"||K_hat||*eps, at or over {RIGID_MODE_BOUND:g}, so the gate would "
+        "answer rather than refuse."
     )
 
 
@@ -325,7 +325,8 @@ def test_the_COMPOSED_eight_mode_frame_is_REFUSED_not_certified(capsys) -> None:
     A millimetre unit and a ten-thousand-fold span, each of which holds alone.
     Under the retired rule the count read EIGHT and the gap said the answer
     was trustworthy at seven times its floor. Under CT0 there is no count to
-    be wrong: `lambda_7` is not resolvable and the gate refuses.
+    be wrong, and under CU0 there is one constant to clear: `lambda_7` does
+    not clear it and the gate refuses.
     """
     entry = {
         "id": "composed_mm_span",
@@ -336,12 +337,12 @@ def test_the_COMPOSED_eight_mode_frame_is_REFUSED_not_certified(capsys) -> None:
         "tip": "4.4,1.1,2.8",
     }
     model, els = _build(entry)
-    margin = seventh_over_threshold(assemble_dense(model, els))
+    over = seventh_over_epsilon(assemble_dense(model, els))
     with capsys.disabled():
-        print(f"  millimetres at ten thousand spans: {margin:.3f} orders above tau")
-    assert margin < RIGID_MODE_GAP, (
-        f"R403's composition leaves lambda_7 {margin:.3f} orders above tau, so "
-        "the gate answers where it used to answer WRONGLY. It should refuse."
+        print(f"  millimetres at ten thousand spans: {over:.4e} units")
+    assert over < RIGID_MODE_BOUND, (
+        f"R403's composition leaves lambda_7 at {over:.4e} units, so the gate "
+        "answers where it used to answer WRONGLY. It should refuse."
     )
 
 
@@ -356,10 +357,10 @@ def test_a_FINER_UNIT_than_the_corpus_is_still_decided(capsys) -> None:
         "tip": "4.4,1.1,2.8",
     }
     model, els = _build(entry)
-    margin = seventh_over_threshold(assemble_dense(model, els))
+    over = seventh_over_epsilon(assemble_dense(model, els))
     with capsys.disabled():
-        print(f"  unit 1e-4: {margin:.3f} orders above tau")
-    assert margin >= RIGID_MODE_GAP, (
-        f"the finer-unit frame is refused at {margin:.3f} orders. `K_hat` is "
+        print(f"  unit 1e-4: {over:.4e} units of ||K_hat||*eps")
+    assert over >= RIGID_MODE_BOUND, (
+        f"the finer-unit frame is refused at {over:.4e} units. `K_hat` is "
         "homogenised, so a unit change alone must not move this."
     )

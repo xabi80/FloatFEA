@@ -112,9 +112,18 @@ def _anchor() -> tuple[str, str]:
     return number, j.group(1)
 
 
-def _heading(number: str, sha: str, tail: str = "") -> str:
-    """The one place a §0 heading is written. No sha appears beside `reviewed`."""
-    return f"## 0. CI at `{sha[:7]}`, the commit verdict {number} judged{tail}"
+def _heading(number: str, sha: str, tail: str = "", conclusion: str | None = None) -> str:
+    """The one place a §0 heading is written. No sha appears beside `reviewed`.
+
+    AND THE OVERALL CONCLUSION IS IN THE HEADING (CU3, R412). It was in the
+    body, one line down, beside the run id -- and twice a report described a
+    run job by job, truthfully, without the one word that says what the run
+    did. Per-job lines cannot carry it: a run whose jobs are all green or
+    skipped can still conclude `failure`, which is exactly the shape that got
+    past two rounds. The first line a reader sees now says it.
+    """
+    verdict = f" \u2014 conclusion **{conclusion.upper()}**" if conclusion else ""
+    return f"## 0. CI at `{sha[:7]}`, the commit verdict {number} judged{tail}{verdict}"
 
 
 def _generated_by(number: str, sha: str, legs: bool = False) -> str:
@@ -304,6 +313,14 @@ def leg_section(sha: str, number: str) -> str:
     kernels = {r[2] for r in rows}
     models = sorted({r[1] for r in rows})
     lines = [
+        # THE LEG TABLE IS A DIFFERENT RUN FROM THE SECTION ABOVE IT, usually
+        # a `workflow_dispatch`, and it carries its own conclusion on its own
+        # first line (CU3, R412). A report that shows ten green legs from a
+        # run that concluded `failure` has said something true and left out
+        # the thing a reader needed.
+        f"**Run `{run['databaseId']}` at `{sha[:7]}`, event `{run['event']}`, "
+        f"conclusion **{run['conclusion']}**.**",
+        "",
         "| leg | CPU the runner drew | kernel | `F2_figures.md` sha256 | regression rung |",
         "|---|---|---|---|---|",
     ]
@@ -335,7 +352,12 @@ def section() -> str:
         # expanded at all, and it gets its own sentence rather than a table
         # of zeros.
         lines = [
-            _heading(number, sha, " \u2014 **unavailable, no jobs created**"),
+            _heading(
+                number,
+                sha,
+                " \u2014 **unavailable, no jobs created**",
+                run["conclusion"],
+            ),
             "",
             _generated_by(number, sha) + f" Run `{run['databaseId']}`, event `{run['event']}`, "
             f"conclusion **{run['conclusion']}**.",
@@ -376,7 +398,7 @@ def section() -> str:
     measured = counts(run["databaseId"])
 
     lines = [
-        _heading(number, sha),
+        _heading(number, sha, conclusion=run["conclusion"]),
         "",
         _generated_by(number, sha) + f" Run `{run['databaseId']}`, event `{run['event']}`, "
         f"conclusion **{run['conclusion']}**.",

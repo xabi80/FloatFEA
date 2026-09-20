@@ -101,6 +101,74 @@ def _scaled(name: str, factor: float) -> str:
     return _with(**{name: f"{number * factor:.6g}{suffix}"})
 
 
+def _with_mark(name: str, kind: str, ceiling: str | None, log: bool):
+    """Add one synthetic mark to the generator's table, and take it away after.
+
+    `floor_class()` renders on first call, so this forces the render before
+    touching `_MARKS` -- otherwise the render would run inside the test and
+    overwrite the injected row.
+    """
+    R.floor_class()
+    R._MARKS[name] = (kind, ceiling, log)
+    return name
+
+
+def test_a_LOG_VALUED_row_is_compared_as_a_RATIO_whatever_it_is_CALLED() -> None:
+    """R418's mechanism, not R418's row.
+
+    `as_ratio` read the suffix `_orders` off the figure's NAME, and the commit
+    that introduced that rule renamed a log-valued row to end in `_decided`.
+    The row kept its meaning, lost the suffix, and was silently compared by
+    the wrong rule -- its guard's sensitivity reduced by roughly its own
+    magnitude. The flag is declared beside the value now.
+
+    THE TWO RULES DISAGREE ON THIS PAIR AND THAT IS THE POINT: `1.0` against
+    `1.3` is `10**0.3 = 2.0x` as a ratio of the underlying quantities, over
+    the declared spread, and `1.3x` as a quotient of logarithms, under it.
+    """
+    name = _with_mark("a_log_row_named_anything", "derived", None, True)
+    try:
+        canon = dict(CANON)
+        canon[name] = "1.000"
+        moved = dict(canon)
+        moved[name] = "1.300"
+        code, lines = R.compare(_file(canon), _file(moved))
+        assert code != 0, (
+            "a log-valued row moved by 0.3 ORDERS -- a factor of 2.0 in the "
+            "quantity the spread is declared on -- and the check passed it. "
+            "That is R418: the rule was reached by the name and this name "
+            "does not end in `_orders`.\n" + "\n".join(lines)
+        )
+        # And the same pair under the OTHER class is allowed, so the failure
+        # above is the log flag and not the numbers.
+        R._MARKS[name] = ("derived", None, False)
+        code, lines = R.compare(_file(canon), _file(moved))
+        assert code == 0, (
+            "1.000 against 1.300 is 1.3x as a plain ratio, under the declared "
+            "spread. If this fails, the test above proves nothing about the "
+            "flag.\n" + "\n".join(lines)
+        )
+    finally:
+        R._MARKS.pop(name, None)
+
+
+def test_the_SHIPPED_log_rows_declare_themselves() -> None:
+    """The flag is not dead code: the retired parametrisation still uses it.
+
+    `rigid_mode_seventh_orders` is generated because revision 21 of the step
+    report cites it by name, and it is `log10` of a ratio. If it ever stops
+    being marked, the row above stops being the only thing that exercises the
+    branch -- and this says so rather than leaving the branch untested by
+    accident.
+    """
+    marked = {n for n, (_k, _c, log) in R.floor_class().items() if log}
+    assert marked == {"rigid_mode_seventh_orders"}, (
+        f"the log-valued rows are {sorted(marked)}. Every one of them carries "
+        "`log10` of a ratio and is compared as a ratio; a row that is log-"
+        "valued and unmarked is compared by the wrong rule, silently."
+    )
+
+
 def test_the_control_agrees_with_itself() -> None:
     """A check that refuses everything is not a check."""
     code, lines = R.compare(_file(CANON), _file(CANON))
@@ -246,7 +314,7 @@ def test_the_floor_class_is_what_the_GENERATOR_marks() -> None:
         "magnitude and `detection_edge_at` is a NAME, which no tolerance on a "
         "value can bound."
     )
-    for name, (kind, ceiling) in marks.items():
+    for name, (kind, ceiling, _log) in marks.items():
         assert kind in ("below", "above", "derived", "words"), (name, kind)
         if kind in ("below", "above") and ceiling is not None:
             assert hasattr(__import__("floatfea.tolerances", fromlist=["x"]), ceiling), (
@@ -320,7 +388,7 @@ def test_the_spread_bound_is_bracketed_by_its_own_measurements() -> None:
     )
     figures = R._values(FIGURES.read_text(encoding="utf-8", errors="replace"))
     margins = []
-    for name, (kind, _) in R.floor_class().items():
+    for name, (kind, _ceil, _log) in R.floor_class().items():
         if kind in ("derived", "words") or name not in figures:
             continue
         value = R._number(figures[name])

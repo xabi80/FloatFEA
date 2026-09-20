@@ -8,20 +8,31 @@ neither of them reads an eigenvector (CT0).
    rigid-body vectors, on `K_hat = K / max|K|`, against `RIGID_MODE_EXACTNESS`.
    The six exact rigid motions are annihilated by `K`. Dimensionless, and it
    uses no eigensolve at all.
-2. THERE IS NO SEVENTH. `lambda_7 >= tau * 10**RIGID_MODE_GAP`, where
-   `tau = RIGID_MODE_FLOOR * ||K_hat|| * eps`. The first half puts six
-   eigenvalues at the floor by Courant-Fischer; this certifies that nothing
-   else is down there. Where `lambda_7` is not resolvable the outcome is
-   UNDECIDABLE -- red, with the margin reported -- because at that
+2. THERE IS NO SEVENTH. `lambda_7(K_hat) >= RIGID_MODE_BOUND * ||K_hat|| *
+   eps`, a plain ratio against ONE constant (CU0). The first half puts six
+   eigenvalues at the arithmetic floor by Courant-Fischer; this certifies that
+   nothing else is down there. Where `lambda_7` is not resolvable the outcome
+   is UNDECIDABLE -- red, with the ratio reported -- because at that
    conditioning no spectral rule in double precision separates a soft flexible
    mode from a mechanism.
+
+   IT SHIPPED AS TWO CONSTANTS AND THEY WERE ONE THRESHOLD. `RIGID_MODE_FLOOR`
+   times `10**RIGID_MODE_GAP` entered the only assertion as a product, nothing
+   counted eigenvalues below the floor, and the reviewer moved the pair in
+   compensating directions with everything green and the floor at a value its
+   own entry called wrong (R415). `RIGID_MODE_BOUND` is that product.
 
 WHY NOT THE SUBSPACE, WHICH IS WHAT THIS FILE USED TO ASSERT. `AP3` is right
 that mode SHAPES are an arbitrary basis inside the degenerate block, and the
 subspace form was the answer to that. But the subspace form is computed from
-the first six eigenVECTORS, so what it measures includes the eigensolver -- and
-the reviewer's corpus found it exceeding its ceiling on a large minority of
-frames with a defect-free element, worse than the ratio it was preferred to.
+the first six eigenVECTORS, so what it measures includes the eigensolver --
+and the reviewer's corpus found it exceeding its ceiling on MORE frames than
+the ratio it was preferred to, with a defect-free element. NO COUNT IS WRITTEN
+HERE for the loss: its count is not machine-stable, which is why no figure
+publishes it, and `a large minority` stood here as a quantifier nothing could
+check (R405). The ratio's count is `{{fig:retired_ratio_over_ceiling_on_corpus}}`
+of `{{fig:rigid_mode_corpus_frames}}`, and the corpus test prints both when it
+runs.
 Both are retired (CS2) and both are reported by
 `test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate`. The residual
 answers AP3's objection without an eigensolve: the analytic vectors are
@@ -83,9 +94,9 @@ from floatfea.tolerances import (  # noqa: E402
     RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT,
     RIGID_MODE_EXACTNESS,
     RIGID_MODE_EXACTNESS_COUNTER_DEFECT,
-    RIGID_MODE_FLOOR,
+    RIGID_MODE_BOUND,
+    RIGID_MODE_BOUND_COUNTER_DEFECT,
     RIGID_MODE_FLOOR_COUNTER_DEFECT,
-    RIGID_MODE_GAP,
     RIGID_MODE_GAP_COUNTER_DEFECT,
 )
 
@@ -244,16 +255,51 @@ def homogenised(k: np.ndarray) -> np.ndarray:
     return k / float(np.max(np.abs(k)))
 
 
-def zero_mode_threshold(k: np.ndarray) -> float:
-    """`tau = RIGID_MODE_FLOOR * ||K_hat|| * eps` -- numerically zero, below here."""
+def epsilon_unit(k: np.ndarray) -> float:
+    """`||K_hat|| * eps` -- the arithmetic floor of the homogenised matrix.
+
+    Everything the spectral half measures is measured in these units, which is
+    what makes the constant above it a pure number: `K_hat`'s entries are O(1)
+    whatever the model's units, stiffness or section, so its round-off floor is
+    a property of the arithmetic rather than of the structure.
+    """
     kh = homogenised(k)
-    norm = float(np.max(np.abs(sla.eigh(kh, eigvals_only=True))))
-    return RIGID_MODE_FLOOR * norm * EPS
+    return float(np.max(np.abs(sla.eigh(kh, eigvals_only=True)))) * EPS
 
 
-def seventh_over_threshold(k: np.ndarray) -> float:
-    """`log10(lambda_7 / tau)` -- how resolvably the FIRST FLEXIBLE mode clears
-    the floor, in orders of magnitude.
+def zero_modes_under_the_bound(k: np.ndarray) -> int:
+    """How many eigenvalues of `K_hat` fall under the bound. DIAGNOSTIC ONLY.
+
+    NOTHING ASSERTS AGAINST THIS AND NOTHING MAY (CU0). Under a single constant
+    it carries no information the gate does not already have: `count == 6` is
+    algebraically `lambda_7 > bound AND the six rigid eigenvalues are under
+    bound`, and over all 114 corpus frames the two disagree on none. It is
+    printed because the second conjunct -- Courant-Fischer's six actually being
+    under the bound -- is the composition the gate rests on, and a reader
+    should be able to see it rather than take it.
+    """
+    w = np.sort(np.abs(sla.eigh(homogenised(k), eigvals_only=True)))
+    return int(np.sum(w <= RIGID_MODE_BOUND * epsilon_unit(k)))
+
+
+def largest_rigid_eigenvalue(k: np.ndarray) -> float:
+    """The largest of the six numerically-zero eigenvalues, in `||K_hat||*eps`.
+
+    THE COURANT-FISCHER COMPOSITION, made visible. The residual half proves the
+    six analytic rigid-body vectors are annihilated, which puts six eigenvalues
+    at the arithmetic floor; the bound then certifies there is no seventh. That
+    argument needs the six to be UNDER the bound, and this is the number that
+    says how far under. It is the lower side of `RIGID_MODE_BOUND`'s window and
+    it is reported, not asserted here -- `regen_figures` carries it as a
+    floor-class row against the bound, which is where it decides something.
+    """
+    w = np.sort(np.abs(sla.eigh(homogenised(k), eigvals_only=True)))
+    return float(w[RIGID - 1] / epsilon_unit(k))
+
+
+def seventh_over_epsilon(k: np.ndarray) -> float:
+    """`lambda_7(K_hat) / (||K_hat|| * eps)` -- where the FIRST FLEXIBLE mode
+    sits above the arithmetic floor, as a PLAIN RATIO.
 
     THIS IS THE WHOLE OF THE COUNT HALF (CT0). The residual half proves the six
     analytic rigid-body vectors are annihilated by `K`, and by Courant-Fischer
@@ -274,16 +320,23 @@ def seventh_over_threshold(k: np.ndarray) -> float:
     The bound is at the sixth-seventh boundary. Nothing reads "the last
     eigenvalue below tau" anywhere in this file.
 
-    A NEGATIVE RESULT IS NOT A FAILED COUNT, it is `lambda_7` at or under the
+    A SMALL RESULT IS NOT A FAILED COUNT, it is `lambda_7` at the arithmetic
     floor: the softest flexible mode has sunk into round-off, and no spectral
     rule in double precision can tell that mode from a mechanism. The gate's
     only honest output there is UNDECIDABLE.
+
+    A RATIO AND NOT A LOGARITHM (CU0). It was published in orders, which made
+    it the first log-valued figure here and cost two rounds: the staleness
+    guard compared a difference of logarithms against a spread declared on
+    ratios (R404), and the repair then missed a row that had been renamed out
+    of the `_orders` suffix it dispatched on (R418). One constant makes the
+    natural quantity a ratio, and the comparison rule is keyed on the row's
+    declared class now rather than on its name.
     """
     w = np.sort(np.abs(sla.eigh(homogenised(k), eigvals_only=True)))
-    tau = zero_mode_threshold(k)
     if w.size <= RIGID or w[RIGID] <= 0.0:
-        return float("-inf")
-    return float(np.log10(w[RIGID] / tau))
+        return 0.0
+    return float(w[RIGID] / epsilon_unit(k))
 
 
 def subspace_loss(k: np.ndarray, model: Model) -> float:
@@ -348,38 +401,37 @@ def counter_response(which: str) -> float:
     k = assemble_dense(model, els)
     scale = float(np.abs(k).max())
 
-    # THE GAP'S COUNTER IS A DIFFERENT INJECTION, so it is built here rather
-    # than by scaling one diagonal entry: a uniform foundation lifts all six
-    # rigid modes together, which is what degrades the gap without moving the
-    # count.
-    # THE GAP'S COUNTER IS A DIFFERENT INJECTION and is built here rather than
-    # by scaling one diagonal entry: a connection that is NEARLY released
-    # leaves the seventh mode just above `tau`, which narrows the separation
-    # without moving the count.
-    if which == "gap":
+    # THE BOUND'S COUNTER IS A DIFFERENT INJECTION and is built here rather
+    # than by scaling one diagonal entry: a connection that is NEARLY released
+    # leaves the seventh mode just under the bound, which is the state the gate
+    # exists to refuse. Scaling a diagonal lifts a rigid mode instead, which is
+    # the residual half's defect and is already covered above.
+    #
+    # THE TWO RETIRED SIZES ARE STILL COMPUTED, exactly as the retired ratio's
+    # and loss's counters are: a retired constant keeps its record, and the
+    # record here is what its defect does under the rule that replaced it.
+    # `RIGID_MODE_FLOOR_COUNTER_DEFECT` is the reason one of them is retired
+    # rather than kept -- see the counter test below.
+    if which in ("bound", "retired_floor", "retired_gap"):
+        size = {
+            "bound": RIGID_MODE_BOUND_COUNTER_DEFECT,
+            "retired_floor": RIGID_MODE_FLOOR_COUNTER_DEFECT,
+            "retired_gap": RIGID_MODE_GAP_COUNTER_DEFECT,
+        }[which]
         kr = _assemble_with_torsional_release(model, els, released=6)
-        kr[-1, -1] += RIGID_MODE_GAP_COUNTER_DEFECT * float(np.abs(kr).max())
-        return seventh_over_threshold(kr)
+        kr[-1, -1] += size * float(np.abs(kr).max())
+        return seventh_over_epsilon(kr)
 
     size = {
         "ratio": RIGID_BODY_MODE_RATIO_COUNTER_DEFECT,
         "loss": RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT,
         "residual": RIGID_MODE_EXACTNESS_COUNTER_DEFECT,
-        "floor": RIGID_MODE_FLOOR_COUNTER_DEFECT,
     }[which]
     k[0, 0] += size * scale
     if which == "ratio":
         return mode_ratio(k)
     if which == "residual":
         return residual_exactness(k, model)
-    if which == "floor":
-        # BOTH RIGID-BODY COUNTERS INJECT THE SAME MECHANISM AT DIFFERENT
-        # SIZES (CT0), because the two constants enter one bound
-        # multiplicatively. What each returns is the margin its own defect
-        # leaves, in orders.
-        kr = _assemble_with_torsional_release(model, els, released=6)
-        kr[-1, -1] += RIGID_MODE_FLOOR_COUNTER_DEFECT * float(np.abs(kr).max())
-        return seventh_over_threshold(kr)
     return subspace_loss(k, model)
 
 
@@ -444,32 +496,44 @@ def test_there_is_NO_SEVENTH_zero_mode(capsys) -> None:
     """
     model, els = _frame()
     k = assembled(model, els)
-    margin = seventh_over_threshold(k)
+    over = seventh_over_epsilon(k)
     with capsys.disabled():
         w = np.sort(np.abs(sla.eigh(homogenised(k), eigvals_only=True)))
-        tau = zero_mode_threshold(k)
+        unit = epsilon_unit(k)
         print(
-            f"  lambda_7 {w[RIGID]:.4e} against tau {tau:.4e}: {margin:.3f} "
-            f"orders, needing {RIGID_MODE_GAP:g}"
+            f"  lambda_7 {w[RIGID]:.4e} is {over:.4e} units of ||K_hat||*eps "
+            f"({unit:.4e}), needing {RIGID_MODE_BOUND:g}"
         )
-    assert margin >= RIGID_MODE_GAP, (
-        f"UNDECIDABLE: the first flexible mode sits {margin:.3f} orders above "
-        f"tau and G2.1 needs {RIGID_MODE_GAP:g} to tell it from a mechanism. "
-        "Either this model HAS a seventh zero mode, or its softest flexible "
-        "mode has sunk into round-off at this conditioning -- and in double "
-        "precision no spectral rule separates those two. The gate refuses "
-        "rather than reporting a number it cannot defend."
+        # THE DIAGNOSTIC, PRINTED AND NOT ASSERTED (CU0). See
+        # `zero_modes_under_the_bound`: under one constant this is the
+        # assertion plus "the six are under the bound", so asserting it would
+        # add a second name for one decision -- which is the defect this
+        # round removed.
+        print(
+            f"  DIAGNOSTIC {zero_modes_under_the_bound(k)} eigenvalues under "
+            f"the bound; the largest of the six is "
+            f"{w[RIGID - 1] / unit:.4f} units"
+        )
+    assert over >= RIGID_MODE_BOUND, (
+        f"UNDECIDABLE: the first flexible mode sits at {over:.4e} units of "
+        f"||K_hat||*eps and G2.1 needs {RIGID_MODE_BOUND:g} to tell it from a "
+        "mechanism. Either this model HAS a seventh zero mode, or its softest "
+        "flexible mode has sunk into round-off at this conditioning -- and in "
+        "double precision no spectral rule separates those two. The gate "
+        "refuses rather than reporting a number it cannot defend."
     )
 
 
 def test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate(capsys) -> None:
     """`lambda_6 / lambda_7`, RETIRED to a diagnostic by Q7.
 
-    IT WAS THE GATE AND THE REVIEWER'S CORPUS REFUTED IT. Sixteen of the
-    twenty-eight frames in `tests/corpus/g21_rigid_body_frames.txt` exceed its
-    ceiling with a defect-free element, because the quantity moves with the
-    frame's conditioning -- bracing sections, mesh subdivision, span, and above
-    all the length unit. A ceiling that a defect-free element fails at the
+    IT WAS THE GATE AND THE REVIEWER'S CORPUS REFUTED IT.
+    `{{fig:retired_ratio_over_ceiling_on_corpus}}` of the reviewer's
+    `{{fig:rigid_mode_corpus_frames}}` frames exceed its ceiling with a
+    defect-free element, because the quantity moves with the frame's
+    conditioning -- bracing sections, mesh subdivision, span, and above all
+    the length unit. `Sixteen of the twenty-eight frames` stood here and both
+    numbers were stale (R405); this test prints the live count when it runs. A ceiling that a defect-free element fails at the
     centimetre re-expression of a frame it passes at the metre is a ceiling on
     the frame, and G2.1 is not a statement about the frame.
 
@@ -579,19 +643,26 @@ def test_ONE_RELEASED_CONNECTION_gives_SEVEN(capsys) -> None:
         "not be one."
     )
     k = _assemble_with_torsional_release(model, els, released)
-    margin = seventh_over_threshold(k)
+    over = seventh_over_epsilon(k)
     w = _spectrum(k)
     flexible = w[RIGID + 1]
     # BY THE SHIPPED RULE (CT1). A released connection puts a SEVENTH mode at
-    # the floor, so `lambda_7` is not resolvable and the gate must refuse --
-    # which is the same red an over-conditioned frame gets, and deliberately:
-    # in double precision the two are the same observation.
-    dim = RIGID + 1 if margin < RIGID_MODE_GAP else RIGID
-    assert margin < RIGID_MODE_GAP, (
-        f"a released connection leaves lambda_7 {margin:.3f} orders above tau, "
-        f"at or over {RIGID_MODE_GAP:g}, so the gate would answer rather than "
-        "refuse. The seventh mode this control creates is at zero energy and "
-        "the bound is supposed to be unable to clear it."
+    # the arithmetic floor, so `lambda_7` cannot clear the bound and the gate
+    # must refuse -- which is the same red an over-conditioned frame gets, and
+    # deliberately: in double precision the two are the same observation.
+    #
+    # THE SECOND ASSERTION IS MEASURED SEPARATELY (R420). It read
+    # `dim = RIGID + 1 if margin < GAP else RIGID` and then asserted
+    # `dim == RIGID + 1` five lines after asserting `margin < GAP`, so it
+    # could not fail while the first passed -- a gate carrying its own answer.
+    # `zero_modes_under_the_bound` counts the spectrum instead, which is a
+    # different measurement and can disagree.
+    dim = zero_modes_under_the_bound(k)
+    assert over < RIGID_MODE_BOUND, (
+        f"a released connection leaves lambda_7 at {over:.4e} units of "
+        f"||K_hat||*eps, at or over {RIGID_MODE_BOUND:g}, so the gate would "
+        "answer rather than refuse. The seventh mode this control creates is "
+        "at zero energy and the bound is supposed to be unable to clear it."
     )
     with capsys.disabled():
         print(
@@ -599,10 +670,11 @@ def test_ONE_RELEASED_CONNECTION_gives_SEVEN(capsys) -> None:
             f"{flexible:.4e}  nullspace {dim}"
         )
     assert dim == RIGID + 1, (
-        f"releasing one member's torsional continuity gives a nullspace of "
-        f"{dim}, not {RIGID + 1}. The mechanism is provable -- that member can "
-        "twist rigidly about its own axis at zero energy -- so a gate that does "
-        "not see it is not measuring the nullspace dimension."
+        f"releasing one member's torsional continuity puts {dim} eigenvalues "
+        f"under the bound, not {RIGID + 1}. The mechanism is provable -- that "
+        "member can twist rigidly about its own axis at zero energy -- so a "
+        "count that does not see exactly one extra is not measuring the "
+        "nullspace dimension."
     )
 
 
@@ -611,16 +683,16 @@ def _nearly_released(size: float, capsys):
     """Patch `assembled` with a connection that is NEARLY released.
 
     The torsional continuity of the axis-parallel member is cut -- which alone
-    gives SEVEN modes below `tau` -- and then given back a stiffness of
-    relative `size`. That leaves the seventh just above `tau`: the count reads
-    six, which is the right answer, and the separation collapses. It is the
-    state the gap exists to refuse.
+    puts a SEVENTH mode at the arithmetic floor -- and then given back a
+    stiffness of relative `size`. That lifts the seventh clear of round-off
+    but leaves it under the bound: a real flexible mode the gate cannot
+    certify, which is exactly the state UNDECIDABLE exists for.
 
-    A UNIFORM FOUNDATION WAS THE FIRST ATTEMPT AND IT DOES NOT WORK UNDER
-    CS0's RULE. It lifts all six rigid modes together, so nothing is left
-    below `tau` and the COUNT fails instead of the gap -- measured at every
-    size from `1e-12` to `1e-7`. No defect narrows this gap without touching
-    the count except one that leaves a mode just above the floor.
+    A UNIFORM FOUNDATION WAS THE FIRST ATTEMPT AND IT DOES NOT WORK. It lifts
+    all six rigid modes together, so the residual half fails instead --
+    measured at every size from `1e-12` to `1e-7`. Nothing brings `lambda_7`
+    down towards the floor without touching the six except a defect in the
+    connectivity.
     """
     original = globals()["assembled"]
 
@@ -656,15 +728,22 @@ def test_a_RESISTED_rigid_motion_reddens_the_RESIDUAL(capsys) -> None:
     test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys)
 
 
-def test_a_SEVENTH_MODE_AT_THE_FLOOR_reddens_the_gate(capsys) -> None:
-    """`RIGID_MODE_FLOOR`'s counter, INJECTED into the assembled matrix.
+def test_a_SEVENTH_MODE_UNDER_THE_BOUND_reddens_the_gate(capsys) -> None:
+    """`RIGID_MODE_BOUND`'s counter, INJECTED into the assembled matrix.
 
-    A connection NEARLY released leaves `lambda_7` AT `tau`. That is this
-    entry's own mechanism: at the floor a flexible mode is indistinguishable
-    from a mechanism, and the gate must refuse.
+    A connection NEARLY released leaves `lambda_7` clear of round-off and
+    still under the bound: a seventh mode the gate cannot certify as flexible,
+    which it must refuse rather than answer about.
+
+    ONE COUNTER, BECAUSE THERE IS ONE CONSTANT (CU0). Two shipped, one per
+    retired constant, and the meta-test's cross cell showed each of them
+    reddening under EITHER widening -- there was one bound, so there was one
+    discrimination to make. The smaller of the two, `2.0e-14`, is also the one
+    that sat under the platform spread from the widened bound, so it is the
+    larger that carries forward.
     """
     with (
-        _nearly_released(RIGID_MODE_FLOOR_COUNTER_DEFECT, capsys),
+        _nearly_released(RIGID_MODE_BOUND_COUNTER_DEFECT, capsys),
         pytest.raises(AssertionError, match="UNDECIDABLE"),
     ):
         test_there_is_NO_SEVENTH_zero_mode(capsys)
@@ -672,23 +751,23 @@ def test_a_SEVENTH_MODE_AT_THE_FLOOR_reddens_the_gate(capsys) -> None:
     # And undefected it passes, so the failure above is the injection.
     test_there_is_NO_SEVENTH_zero_mode(capsys)
 
-
-def test_a_SEVENTH_MODE_TOO_CLOSE_TO_THE_FLOOR_reddens_the_gate(capsys) -> None:
-    """`RIGID_MODE_GAP`'s counter, INJECTED into the same way.
-
-    The same defect a decade and a half stiffer: `lambda_7` clears `tau`, so
-    the floor's own mechanism is satisfied, and it does not clear it by the
-    declared separation. The two counters differ exactly as the two constants
-    do.
-    """
-    with (
-        _nearly_released(RIGID_MODE_GAP_COUNTER_DEFECT, capsys),
-        pytest.raises(AssertionError, match="UNDECIDABLE"),
-    ):
-        test_there_is_NO_SEVENTH_zero_mode(capsys)
-
-    # And undefected it passes, so the failure above is the injection.
-    test_there_is_NO_SEVENTH_zero_mode(capsys)
+    # WHY THIS SIZE AND NOT THE OTHER RETIRED ONE, measured here rather than
+    # asserted in a comment. Both reddened the two-constant gate. Against one
+    # constant the meta-test widens the bound by `WIDEN`, and a counter has to
+    # survive that widening by more than the platform spread or it is a
+    # counter that could flip on another machine.
+    widened = RIGID_MODE_BOUND / 10.0
+    with capsys.disabled():
+        for label, which in (
+            ("shipped  1.0e-13", "bound"),
+            ("retired  2.0e-14", "retired_floor"),
+        ):
+            r = counter_response(which)
+            print(
+                f"  {label}: lambda_7 {r:.4f} units -- "
+                f"{RIGID_MODE_BOUND / r:.4f}x under the bound, "
+                f"{r / widened:.4f}x over the widened bound"
+            )
 
 
 # --------------------------------------------------------------------------

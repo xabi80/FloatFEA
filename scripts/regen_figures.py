@@ -67,6 +67,7 @@ def _figures() -> list[tuple[str, str]]:
     # instead of typing them -- R194's remedy, applied from this gate's first
     # commit rather than five rounds into it.
     import test_rigid_body_modes as RB
+    from floatfea.tolerances import RIGID_MODE_FLOOR as RETIRED_FLOOR
 
     model, els = RB._frame()
     k_rb = RB.assemble_dense(model, els)
@@ -95,8 +96,27 @@ def _figures() -> list[tuple[str, str]]:
     )
     rows.append(
         (
-            _floor("rigid_mode_seventh_orders", "above", "RIGID_MODE_GAP"),
-            f"{RB.seventh_over_threshold(k_rb):.3f}",
+            _floor("rigid_mode_seventh_over_epsilon", "above", "RIGID_MODE_BOUND"),
+            f"{RB.seventh_over_epsilon(k_rb):.4e}",
+        )
+    )
+    # THE RETIRED PARAMETRISATION IS STILL GENERATED, for the same reason the
+    # retired ratio and loss above are: revision 21 of the step report cites
+    # these two by name, and a reference that stops resolving is how a record
+    # turns into a dangling pointer. They are `log10(lambda_7 / tau)` with
+    # `tau = RIGID_MODE_FLOOR * ||K_hat|| * eps`, DERIVED from the live ratio
+    # rather than computed a second way, so the two cannot drift apart.
+    #
+    # AND THEY ARE WHY `log=True` IS NOT A DEAD FLAG (CU1, R418). These are
+    # the repository's log-valued rows; the flag that says so is declared
+    # here, at the line that produces them, and a rename cannot move them out
+    # of the rule any more.
+    rows.append(
+        (
+            _floor(
+                "rigid_mode_seventh_orders", "above", "RIGID_MODE_GAP", log=True
+            ),
+            f"{math.log10(RB.seventh_over_epsilon(k_rb) / RETIRED_FLOOR):.3f}",
         )
     )
 
@@ -105,17 +125,20 @@ def _figures() -> list[tuple[str, str]]:
     import test_rigid_body_corpus as RBC
 
     worst_residual, smallest_decided = 0.0, float("inf")
+    largest_refused, rigid_max = 0.0, 0.0
     refused = 0
     ratio_over = loss_over = 0
     for entry in RBC.ENTRIES:
         m_c, els_c = RBC._build(entry)
         k_c = RB.assemble_dense(m_c, els_c)
         worst_residual = max(worst_residual, RB.residual_exactness(k_c, m_c))
-        margin_c = RB.seventh_over_threshold(k_c)
-        if margin_c >= RB.RIGID_MODE_GAP:
-            smallest_decided = min(smallest_decided, margin_c)
+        over_c = RB.seventh_over_epsilon(k_c)
+        if over_c >= RB.RIGID_MODE_BOUND:
+            smallest_decided = min(smallest_decided, over_c)
         else:
+            largest_refused = max(largest_refused, over_c)
             refused += 1
+        rigid_max = max(rigid_max, RB.largest_rigid_eigenvalue(k_c))
         if RB.mode_ratio(k_c) > RB.RIGID_BODY_MODE_RATIO:
             ratio_over += 1
         if RB.subspace_loss(k_c, m_c) > RB.RIGID_BODY_SUBSPACE_LOSS:
@@ -129,12 +152,44 @@ def _figures() -> list[tuple[str, str]]:
     rows.append(
         (
             # NOT FLOOR-CLASS, deliberately. This figure IS the domain
-            # boundary: the smallest margin the gate accepts sits just above
-            # the floor by construction, so asking it to clear the floor by
+            # boundary: the smallest value the gate accepts sits just above
+            # the bound by construction, so asking it to clear the bound by
             # the platform spread would be asking the boundary to be far from
-            # itself. What it reports is where the domain ends.
+            # itself. What it reports is where the domain ends -- and how
+            # close to the bound it is, which is the upper side of
+            # `RIGID_MODE_BOUND`'s own window.
+            "rigid_mode_smallest_decided",
+            f"{smallest_decided:.4e}",
+        )
+    )
+    rows.append(
+        (
+            # The retired spelling of the row above, kept resolvable for the
+            # same reason and not floor-class for the same reason either.
             "rigid_mode_seventh_orders_smallest_decided",
-            f"{smallest_decided:.3f}",
+            f"{math.log10(smallest_decided / RETIRED_FLOOR):.3f}",
+        )
+    )
+    rows.append(
+        (
+            # THE OTHER SIDE OF THE SAME BOUNDARY, published for the same
+            # reason: together these two say how wide the corpus's own gap
+            # around the bound is, and it is narrower than the declared
+            # platform spread. Not floor-class, for the reason above.
+            "rigid_mode_largest_refused",
+            f"{largest_refused:.4e}",
+        )
+    )
+    rows.append(
+        (
+            # THE COURANT-FISCHER COMPOSITION, in one number: the largest of
+            # the six numerically-zero eigenvalues over the corpus, in units
+            # of `||K_hat||*eps`. It is the lower side of the bound's window
+            # -- the bound has to exceed it or the six are not all under the
+            # bound -- and it is what the retired floor's `6.84x` bracket
+            # measured against a rule nothing applied.
+            _floor("rigid_mode_largest_rigid_eigenvalue", "below", "RIGID_MODE_BOUND"),
+            f"{rigid_max:.4f}",
         )
     )
     rows.append(("rigid_mode_corpus_frames", f"{len(RBC.ENTRIES)}"))
@@ -149,6 +204,12 @@ def _figures() -> list[tuple[str, str]]:
     # the disagreement is itself one more reason the loss is not a gate.
     _ = loss_over
 
+    rows.append(
+        (
+            _floor("rigid_mode_counter_seventh", "below", "RIGID_MODE_BOUND"),
+            f"{RB.counter_response('bound'):.4e}",
+        )
+    )
     rows.append(
         (
             _floor("rigid_body_counter_ratio", "above", "RIGID_BODY_MODE_RATIO"),
@@ -444,19 +505,30 @@ CANONICAL_CORETYPE = "Haswell"
 #   words             the decision is the pass/fail words; the numbers beside
 #                     them are still compared for spread
 #
+# AND `log=True` SAYS THE VALUE IS log10 OF A RATIO (CU1, R418). It is a
+# property of how the number is computed, so it is declared where the number
+# is produced, exactly like the class beside it. It was inferred from the
+# suffix `_orders` instead, and the round that introduced that rule renamed a
+# log-valued row to end in `_decided`: the row kept its meaning, lost the
+# suffix, and was silently compared by the wrong rule. A rename cannot move a
+# figure between rules now. No shipped row declares it at this commit -- the
+# quantity that needed it is a plain ratio under CU0 -- so the guard for it is
+# an injected pair in `tests/test_figure_local_check.py` rather than a live
+# row, and that is said here rather than left to be discovered.
+#
 # Every row NOT marked here must match the canonical render exactly, on any
 # machine, so staleness is caught off the canonical runner as it always was.
-_MARKS: dict[str, tuple[str, str | None]] = {}
+_MARKS: dict[str, tuple[str, str | None, bool]] = {}
 
 
-def _floor(name: str, kind: str, ceiling: str | None = None) -> str:
+def _floor(name: str, kind: str, ceiling: str | None = None, log: bool = False) -> str:
     """Mark `name` floor-class and return it, so the call sites read as one."""
     assert kind in ("below", "above", "derived", "words"), kind
-    _MARKS[name] = (kind, ceiling)
+    _MARKS[name] = (kind, ceiling, log)
     return name
 
 
-def floor_class() -> dict[str, tuple[str, str | None]]:
+def floor_class() -> dict[str, tuple[str, str | None, bool]]:
     """The marks, from a render if one has not happened yet.
 
     A render is what executes the marks, so this triggers one when the caller
@@ -510,7 +582,7 @@ def _number(value: str) -> float | None:
 def _ceiling(name: str) -> float:
     import floatfea.tolerances as T
 
-    kind, ceil_name = floor_class()[name]
+    kind, ceil_name, _log = floor_class()[name]
     if ceil_name is None:
         # `clean_worst_ratio` and `counter_headroom_room` are already
         # normalised by the quantity they are compared with, so their ceiling
@@ -590,7 +662,7 @@ def compare(committed: str, local: str) -> tuple[int, list[str]]:
             # SUBSET on purpose -- which is what the injected pairs in
             # `tests/test_figure_local_check.py` are.
             continue
-        kind, _ = marks[n]
+        kind, _ceil, _log = marks[n]
         a, b = _number(have[n]), _number(mine[n])
         if kind == "words":
             # WHOLE WORDS (R313). Substituting over the character class
@@ -627,14 +699,16 @@ def compare(committed: str, local: str) -> tuple[int, list[str]]:
             out.append(f"  {n:<30}  {have[n]:<16} {mine[n]:<16} (not a positive number)")
             bad = 1
             continue
-        # A LOG-VALUED FIGURE IS COMPARED AS A RATIO (CT3, R404). A figure
-        # named `*_orders` carries `log10` of a ratio, and
-        # `FIGURE_FLOOR_CLASS_SPREAD` is declared on ratios -- its own entry
-        # says the value "is invariant under the figure's units", and `log10`
-        # is not a unit change. Dividing two logarithms compared a quantity
-        # the spread was never about, and it refused a floor with more room
-        # than the one it forced.
-        as_ratio = n.endswith("_orders")
+        # A LOG-VALUED FIGURE IS COMPARED AS A RATIO (CT3, R404), and it
+        # says so itself (CU1, R418). `FIGURE_FLOOR_CLASS_SPREAD` is declared
+        # on ratios -- its own entry says the value "is invariant under the
+        # figure's units", and `log10` is not a unit change -- so dividing two
+        # logarithms compared a quantity the spread was never about, and it
+        # refused a floor with more room than the one it forced. The flag
+        # comes from the row's declared class, because the first version read
+        # the suffix `_orders` off the NAME and the same commit renamed a
+        # log-valued row past it.
+        as_ratio = floor_class().get(n, ("", None, False))[2]
         spread = 10 ** abs(a - b) if as_ratio else max(a, b) / min(a, b)
         note = ""
         if spread > FIGURE_FLOOR_CLASS_SPREAD:

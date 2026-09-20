@@ -893,6 +893,90 @@ def test_the_report_carries_a_CI_SECTION() -> None:
     )
 
 
+# CU3 / R412: A RUN IS NEVER NAMED WITHOUT ITS OVERALL CONCLUSION.
+#
+# Twice in two rounds a report described a CI run job by job, every sentence
+# true, and left out the one word that says what the run DID. The second time
+# the run had concluded `failure` while the three job groups the report named
+# were all green -- the failing job was a fourth one the sentence did not
+# reach. Per-job lines cannot carry this: a run can conclude `failure` with
+# every job it names green, which is exactly the shape that got past both
+# rounds.
+#
+# `scripts/ci_section.py` now puts the conclusion in the heading and on the
+# leg table's first line. These two make it a build failure rather than a
+# habit: the first for any run id anywhere in the revision, the second for the
+# specific shape -- a green-looking job table under a run that failed.
+_RUN_ID = re.compile(r"\b(\d{9,12})\b")
+_CONCLUSION = re.compile(r"conclusion\s+\**([A-Za-z_]+)", re.I)
+# The literal a report writes to say "yes, this run failed and the jobs I show
+# are green; here is why". Nothing infers it, exactly like `no change` in the
+# untouched-sites table.
+_GREEN_UNDER_RED = "GREEN JOBS UNDER A FAILED RUN"
+
+
+def _paragraphs(text: str) -> list[str]:
+    return [p for p in re.split(r"\n\s*\n", text) if p.strip()]
+
+
+def test_every_CI_RUN_the_report_names_carries_its_conclusion() -> None:
+    """R412, twice. A run id with no conclusion beside it is the whole defect.
+
+    Scoped to the paragraph, because that is the unit a reader takes a claim
+    from: a conclusion three sections away is not beside anything. A table row
+    naming a run is a paragraph of its own under this split, which is right --
+    a row that names a run states something about it.
+    """
+    body = _newest_revision(REPORT_TEXT)
+    naked = []
+    for para in _paragraphs(body):
+        ids = set(_RUN_ID.findall(para))
+        if ids and not _CONCLUSION.search(para):
+            naked.append((sorted(ids)[0], " ".join(para.split())[:90]))
+    assert not naked, (
+        "these paragraphs name a CI run and never say what it concluded:\n"
+        + "\n".join(f"  run {r}: {t}..." for r, t in naked)
+        + "\nA run's job rows can all be green while the run concluded "
+        "`failure`; that is how R412 happened twice. Name the conclusion, or "
+        "do not name the run."
+    )
+
+
+def test_a_GREEN_JOB_TABLE_does_not_stand_under_a_FAILED_run() -> None:
+    """The specific shape, refused (CU3).
+
+    When the CI section's own stated conclusion is not `success`, a table in
+    which nothing is red is a table that reads as a green build. The report
+    may still be right -- the failures can be report-staleness guards that the
+    next commit fixes, which is what happened -- but it has to SAY so, and the
+    literal is how it says it.
+    """
+    body = _ci_section()
+    if not body.strip() or _UNAVAILABLE.search(body):
+        return
+    stated = [c.lower() for c in _CONCLUSION.findall(body)]
+    assert stated, (
+        "the CI section states no overall conclusion. "
+        "`python scripts/ci_section.py` puts it in the heading; a section "
+        "without it is hand-edited or stale."
+    )
+    if all(c in ("success", "skipped") for c in stated):
+        return
+    red = re.search(r"(\d+)\s+jobs?,\s*(\d+)\s+not green", body)
+    assert red, (
+        f"the CI section states conclusion {stated} and carries no "
+        "`N jobs, M not green` line to say which jobs that was."
+    )
+    if int(red.group(2)) == 0:
+        assert _GREEN_UNDER_RED in body, (
+            f"the run concluded {stated} and the section shows "
+            f"{red.group(1)} jobs with none not green. That reads as a green "
+            f"build. Write `{_GREEN_UNDER_RED}` in this section with the "
+            "reason, or the table is telling a reader the opposite of what "
+            "the run did."
+        )
+
+
 _SHA_IN_SECTION = re.compile(r"\b[0-9a-f]{7,40}\b")
 # The verdict names the commit it judged, in bold, in its own header. The plain
 # `Reviewed commit:` line at the top is the DIFF BASE -- the reviewer's corpus

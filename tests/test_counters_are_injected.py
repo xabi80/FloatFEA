@@ -139,33 +139,26 @@ REGISTERED = [
         "RIGID_MODE_EXACTNESS",
         WIDEN * RIGID.counter_response("residual"),
     ),
-    # BOTH RIGID-BODY SPECTRAL COUNTERS REDDEN ONE ASSERTION (CT0), because
-    # `RIGID_MODE_FLOOR` and `RIGID_MODE_GAP` enter one bound
-    # multiplicatively: `lambda_7 >= tau * 10**GAP`. Each is sized on its own
-    # constant's meaning -- the first puts `lambda_7` AT the floor, the second
-    # leaves it above the floor but under the separation -- and each widened
-    # value is what that constant would have to become for its own defect to
-    # go unnoticed.
+    # ONE SPECTRAL COUNTER, BECAUSE THERE IS ONE CONSTANT (CU0, R415). Two
+    # were registered here, one for `RIGID_MODE_FLOOR` and one for
+    # `RIGID_MODE_GAP`, and the comment above them said each was "sized by its
+    # own constant and not by the other one". The two constants entered a
+    # single bound as their product, so there was no such discrimination to
+    # make, and the reviewer's cross cell measured it: EACH counter failed
+    # under EITHER widening. This file could not have checked the clause
+    # anyway -- both cells are per-counter and no cell compares rows, which
+    # its own docstring says (R416).
     #
-    # THE GAP'S WIDENED VALUE IS A LOGARITHM, so widening it means SUBTRACTING
-    # rather than dividing. `WIDEN` is a ratio; `log10(WIDEN)` is the same
-    # move in orders. Dividing a value in orders by a ratio is the R404
-    # mistake one file over.
+    # The widened value is a plain division now. `RIGID_MODE_BOUND` is a
+    # ratio, the counter's response is a ratio, and neither is a logarithm --
+    # which is what made the previous row subtract `log10(WIDEN)` instead.
     (
-        "rigid-body seventh at the floor",
-        lambda: RIGID.test_a_SEVENTH_MODE_AT_THE_FLOOR_reddens_the_gate(_Capsys),
+        "rigid-body seventh under the bound",
+        lambda: RIGID.test_a_SEVENTH_MODE_UNDER_THE_BOUND_reddens_the_gate(_Capsys),
         RIGID,
         "test_there_is_NO_SEVENTH_zero_mode",
-        "RIGID_MODE_FLOOR",
-        RIGID.RIGID_MODE_FLOOR / WIDEN,
-    ),
-    (
-        "rigid-body seventh too close",
-        lambda: RIGID.test_a_SEVENTH_MODE_TOO_CLOSE_TO_THE_FLOOR_reddens_the_gate(_Capsys),
-        RIGID,
-        "test_there_is_NO_SEVENTH_zero_mode",
-        "RIGID_MODE_GAP",
-        RIGID.counter_response("gap") - math.log10(WIDEN),
+        "RIGID_MODE_BOUND",
+        RIGID.RIGID_MODE_BOUND / WIDEN,
     ),
     # AND THE SUBSPACE LOSS LEAVES WITH THE RATIO (CS2). Its gate is a
     # diagnostic now, for the stronger reason of the two: it breached at more

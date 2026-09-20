@@ -292,11 +292,13 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 #
 # WHY THIS RATHER THAN THE EIGENVALUE RATIO. `RIGID_BODY_MODE_RATIO` below
 # compares the sixth eigenvalue with the seventh, and the reviewer's corpus of
-# twenty-eight frames showed what that measures: a large minority of them
-# exceed its ceiling with a DEFECT-FREE element -- the count is
-# `{{fig:retired_ratio_over_ceiling_on_corpus}}`, regenerated rather than
-# written here, because `sixteen` stood in this sentence and the same round's
-# own render said ten (R395). The quantity moves with the frame's
+# `{{fig:rigid_mode_corpus_frames}}` frames showed what that measures: it exceeds
+# its ceiling on `{{fig:retired_ratio_over_ceiling_on_corpus}}` of them
+# with a DEFECT-FREE element. BOTH NUMBERS ARE RENDERED AND NEITHER IS TYPED
+# (R405). `sixteen` stood here and the same round's own render said ten
+# (R395); `twenty-eight` and `a large minority` then stood here for four more
+# rounds while the file grew to its present size and the fraction passed a
+# half, so the quantifier was wrong in the other direction. The quantity moves with the frame's
 # conditioning -- bracing sections, mesh subdivision, span, and above
 # all the length unit. The residual form does not. It reads `K` and the
 # analytic vectors and nothing else, and it needs no eigensolver, so there is
@@ -324,98 +326,166 @@ RIGID_MODE_EXACTNESS: Final[float] = 1e-15
 # Set: 2026-09-13, F2; figures re-taken 2026-09-14
 RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 
-# CLASS: ACCURACY -- carries RIGID_MODE_FLOOR_COUNTER_DEFECT below.
-# G2.1 / V1.1 (Q7 as CT0 states it). On `K_hat = K / max|K|` -- the same
-# homogenisation the residual uses -- this is what counts as numerically zero:
+# CLASS: ACCURACY -- carries RIGID_MODE_BOUND_COUNTER_DEFECT below.
+# G2.1 / V1.1 (Q7, as CT0 states it and CU0 parametrises it). On
+# `K_hat = K / max|K|` -- the same homogenisation the residual uses -- the gate
+# asserts ONE thing about the spectrum, and it is not a count:
 #
-#     tau = RIGID_MODE_FLOOR * ||K_hat|| * eps
-#
-# THE GATE ASSERTS ONE THING ABOUT THE SPECTRUM and it is not a count:
-#
-#     lambda_7 >= tau * 10**RIGID_MODE_GAP
+#     lambda_7(K_hat) >= RIGID_MODE_BOUND * ||K_hat|| * eps
 #
 # The residual half already proves the six analytic rigid-body vectors are
 # annihilated by `K`, and by Courant-Fischer that puts six eigenvalues at the
-# floor. What remains to certify is that there is no SEVENTH, which is a
-# statement about `lambda_7` alone.
+# arithmetic floor. What remains to certify is that there is no SEVENTH, which
+# is a statement about `lambda_7` alone.
+#
+# ONE CONSTANT, BECAUSE THE DECISION HAS ONE DEGREE OF FREEDOM (CU0, R415).
+# This shipped as `RIGID_MODE_FLOOR * 10**RIGID_MODE_GAP` -- a floor on what
+# counts as numerically zero, times a separation above it -- and the two
+# entered the only assertion as their product. Nothing counted eigenvalues
+# below the floor, so no measurement in this repository could tell one
+# constant from the other: the reviewer moved `FLOOR 10 -> 1` with
+# `GAP 1.3 -> 2.3` and the gate, both counters, all four controls, both cells
+# of the meta-test and every corpus frame stayed green, with the floor at a
+# value its own entry said was wrong. The product is the constant. Its value
+# is that product, unchanged: `10.0 * 10**1.3 = 199.526231496888`.
 #
 # TWO EARLIER FORMS ARE GONE AND BOTH WERE REFUTED BY THE REVIEWER'S CORPUS.
 # "Modes below the largest gap" returned eighteen at a fine length unit, since
 # the largest gap can sit anywhere (R397). "The count below tau, with the gap
 # after the last one below it" let EIGHT modes through with a separation seven
-# times its floor, because a gap measured wherever the transition happens to be
-# detects being AT a transition rather than being past one (R403). Nothing is
-# measured at "the last eigenvalue below tau" any more; the bound is at the
-# sixth-seventh boundary, which is the one place the claim lives.
+# times its floor, because a gap measured wherever the transition happens to
+# be detects being AT a transition rather than being past one (R403). The
+# bound is at the sixth-seventh boundary, which is the one place the claim
+# lives.
 #
-# Reason for 10, with its window measured on both sides:
+# Reason for 199.53, with its window measured on both sides:
 #
-#   below  the largest rigid-body eigenvalue over the eighty-two corpus frames
-#          is `1.461` units of `||K_hat|| * eps`, at `rb_span_x1000`. `tau` has
-#          to be above that or a genuine rigid mode is not numerically zero,
-#          so the floor is `6.84x` clear of it.
-#   above  raising it moves every frame's margin down by the same factor, so
-#          the upper side is not a measurement but a domain choice: how much
-#          conditioning the gate declines to judge. It is stated in
-#          `docs/milestones/F2.md` rather than hidden here.
+#   below  A GENUINE SEVENTH ZERO MODE reaches `1.375` units of
+#          `||K_hat|| * eps` at the highest of 35 re-expressions of one
+#          torsional release -- 7 unit systems from `1e-6` to `1e6` crossed
+#          with 5 spans -- and all 35 are refused. The largest of the six
+#          numerically-zero eigenvalues over the corpus is `1.4614` units, at
+#          `rb_span_x1000`, and that is the binding side: the bound has to
+#          exceed it or Courant-Fischer's six are not all under it. The bound
+#          is `136.5x` above that.
+#   above  the smallest `lambda_7` the gate accepts over the corpus is
+#          `204.94` units, at `rb_unit_1um` -- only `1.027x` above the bound,
+#          and UNDER the declared platform spread. Raising the bound by three
+#          per cent declines a frame that decides today. See the note below.
 #
-# Set: 2026-09-14, F2; restated at CT0 2026-09-14
+# THE TRANSITION AT `stretch ~ 1.95e6` IS NOT THE LOWER LIMIT, and CU0 asked
+# for it as one. Under a single constant `below_bound == 6` is algebraically
+# `lambda_7 > bound AND the six are under the bound`, so the stretch at which
+# the count leaves six is the stretch at which `lambda_7` crosses the bound
+# itself -- solved here at `4.3707e+05`, where `lambda_7` is `199.5625` units.
+# It restates the threshold instead of bracketing it. That is measured, not
+# argued: over all 114 corpus frames `below_bound == 6` and
+# `lambda_7 > bound and rigid_max < bound` disagree on ZERO. The two limits
+# above are what is left when the tautology is removed.
+#
+# AND THE UPPER SIDE IS NOT PLATFORM-STABLE, said here rather than left to be
+# found. The corpus straddles this bound within six per cent -- `204.94`
+# decided against `187.998` refused -- so `FIGURE_FLOOR_CLASS_SPREAD` of
+# `1.5x` does not separate them, and which side those two frames fall on is a
+# property of the machine. The DECISION on each is a domain-membership
+# question and not a breach, since refusal is a declared outcome; what is not
+# platform-stable is the published count of refusals. CI is canonical for that
+# figure (Q8) and the determinism legs are what would catch it moving.
+# Set: 2026-09-19, F2; ONE CONSTANT from CU0, at the product of the two it replaces
+RIGID_MODE_BOUND: Final[float] = 199.526231496888
+
+# COUNTER-CASE, INJECTED into the assembled matrix and run through the gate.
+# Reason for 1.0e-13: a connection NEARLY released -- the torsional continuity
+# of one member cut and given back this much of `max|K|` -- leaves `lambda_7`
+# at `124.45` units of `||K_hat|| * eps`. That is `1.603x` UNDER the bound, so
+# the gate must refuse it, and `6.237x` OVER `RIGID_MODE_BOUND / WIDEN`, so
+# the meta-test's widened bound admits it. Both margins clear the declared
+# `1.5x` platform spread, which is why this size and not the other one:
+#
+#   ONE COUNTER, BECAUSE THERE IS ONE CONSTANT. Two shipped, at `2.0e-14` and
+#   `1.0e-13`, one per retired constant. At `2.0e-14` `lambda_7` reaches
+#   `24.90` units -- only `1.248x` over the widened bound, under the platform
+#   spread -- so against a single constant that size is the one that could
+#   flip on another machine. It is retired below with the constant it defended.
+# Set: 2026-09-19, F2
+RIGID_MODE_BOUND_COUNTER_DEFECT: Final[float] = 1.0e-13
+
+# CLASS: ACCURACY -- and RETIRED at CU0/R415, with its counter below. NOT A
+# GATE: nothing asserts against it. The class is kept because
+# `tests/verification/rung3` requires every declared float to carry one from
+# its own vocabulary; what this no longer has is an assertion.
+#
+# EVERYTHING BELOW IS THE RECORD OF WHAT IT WAS. Read it in the past tense.
+# It was the floor on what counted as numerically zero, `tau = FLOOR *
+# ||K_hat|| * eps`, and the gate's bound was `tau * 10**RIGID_MODE_GAP`. The
+# two constants were one threshold wearing two names and no measurement here
+# could tell them apart; `RIGID_MODE_BOUND` above is their product.
+#
+# ITS WINDOW WENT WITH IT. "The largest rigid-body eigenvalue over the corpus
+# is `1.461` units, so the floor is `6.84x` clear of it" was a true
+# measurement against a rule nothing applied once CT0 deleted the count. The
+# same measurement now brackets `RIGID_MODE_BOUND`, at `136.5x`, where it
+# decides something.
+# Set: 2026-09-14, F2; retired 2026-09-19
 RIGID_MODE_FLOOR: Final[float] = 10.0
 
-# COUNTER-CASE, INJECTED into the assembled matrix and run through the gate.
-# Reason for 2.0e-14: a connection NEARLY released -- the torsional continuity
-# of one member cut and given back this much of `max|K|` -- leaves `lambda_7`
-# `0.396` orders above `tau`. At the floor a flexible mode is
-# indistinguishable from a mechanism, and the gate must refuse rather than
-# answer.
+# RETIRED WITH THE CONSTANT IT DEFENDED (CU0). A counter defends an assertion
+# and that assertion is gone. Read the rest in the past tense.
 #
-# SIZED BY THIS CONSTANT AND NOT BY THE OTHER ONE, which is what
-# `tests/test_counters_are_injected.py` widens to check. Lowering
-# `RIGID_MODE_FLOOR` by a decade lowers `tau` by a decade and so raises this
-# margin to `1.396`, over `RIGID_MODE_GAP`, and the defect goes unnoticed --
-# which is the cell passing. At `8.318e-15`, the first value here, the margin
-# was `0.015` and a decade of widening left it at `1.015`, still under the
-# separation: the counter reddened for the OTHER constant's reason and the
-# meta-test said so.
-# Set: 2026-09-14, F2
+# Reason for 2.0e-14: a connection nearly released, which left `lambda_7`
+# `0.396` orders above `tau`. It is not the size the single-constant gate
+# carries: against `RIGID_MODE_BOUND` the same defect sits only `1.248x` over
+# the widened bound, under the declared platform spread.
+#
+# "SIZED BY THIS CONSTANT AND NOT BY THE OTHER ONE, which is what
+# `tests/test_counters_are_injected.py` widens to check" stood here and was
+# withdrawn (R416). The meta-test runs one cell per counter and never compares
+# rows, so it could not check a discrimination between two constants -- and
+# the cross cell refutes the discrimination itself: each counter failed under
+# EITHER widening, because there was one bound. What the cell does measure is
+# true and is all that was ever measured: lowering this constant by a decade
+# raised the margin to `1.396` and the defect went unnoticed.
+# Set: 2026-09-14, F2; retired 2026-09-19
 RIGID_MODE_FLOOR_COUNTER_DEFECT: Final[float] = 2.0e-14
 
-# CLASS: ACCURACY -- carries RIGID_MODE_GAP_COUNTER_DEFECT below.
-# G2.1 / V1.1 (CT0). How far above `tau` the seventh eigenvalue has to sit
-# before "there is no seventh zero mode" is a statement anyone can check, IN
-# ORDERS OF MAGNITUDE. Where it fails the gate's outcome is UNDECIDABLE -- a
-# distinct red, with `lambda_7 / tau` reported -- and never a number.
+# CLASS: ACCURACY -- and RETIRED at CU0/R415, with its counter below. NOT A
+# GATE, for the same reason as the floor above: it was the second name on one
+# threshold. Read the rest in the past tense.
 #
-# THAT IS A CONDITIONING LIMIT AND NOT A GAP IN THE GATE. When the softest
-# flexible mode has sunk into round-off, no spectral rule in double precision
-# can tell it from a mechanism. Every FE mechanism check has this limit;
-# stating it is the difference between a gate that knows its domain and one
-# that answers anyway.
+# It was how far above `tau` the seventh eigenvalue had to sit, IN ORDERS OF
+# MAGNITUDE, before "there is no seventh zero mode" was a statement anyone
+# could check. That claim survives unchanged in `RIGID_MODE_BOUND`; what goes
+# is the second degree of freedom, which never existed.
 #
-# Reason for 1.3 orders, window measured on both sides:
+# WHAT DOES NOT RETIRE WITH IT IS THE OUTCOME IT NAMED. Where the bound is not
+# cleared the gate's result is UNDECIDABLE -- a distinct red, with
+# `lambda_7 / bound` reported -- and never a number. That is a conditioning
+# limit and not a gap in the gate: when the softest flexible mode has sunk
+# into round-off, no spectral rule in double precision can tell it from a
+# mechanism. Every FE mechanism check has this limit; stating it is the
+# difference between a gate that knows its domain and one that answers anyway.
 #
-#   below  the counter reaches `1.095` orders with `lambda_7` resolvable but
-#          not resolvably separated, so the floor must exceed that to be
-#          reddened by it: `1.60x` in the ratio the figure class compares.
-#   above  raising it declines more configurations. At `1.3` the gate refuses
-#          twenty-one of the eighty-two corpus frames, every one of them a
-#          deliberate extreme of unit or span; at `2.0` it would refuse
-#          twenty-four.
-#
-# THE MARGIN IS PUBLISHED UNROUNDED (R404). This is the first log-valued
-# figure in the repository and `scripts/regen_figures.py` compared its margin
-# as a ratio of logarithms against a spread declared on ratios -- which is not
-# a unit change, and which refused a value with more room than the one it
-# forced. The comparison converts both to ratios now.
-# Set: 2026-09-14, F2
+# AND THE LOG-VALUED FIGURE RETIRES WITH IT. This was the first log-valued
+# figure in the repository, and `scripts/regen_figures.py` compared its margin
+# as a ratio of logarithms against a spread declared on ratios (R404). Under
+# one constant the quantity is a plain ratio and the question does not arise
+# here; the comparison rule is keyed on the row's declared class rather than
+# on its name, so the next log-valued figure cannot be dispatched wrongly by a
+# rename (R418).
+# Set: 2026-09-14, F2; retired 2026-09-19
 RIGID_MODE_GAP: Final[float] = 1.3
 
-# COUNTER-CASE, INJECTED into the assembled matrix and run through the gate.
-# Reason for 1.0e-13: the same nearly-released connection, one and a half
-# decades stiffer, which leaves `lambda_7` ABOVE `tau` -- so the floor's own
-# mechanism is satisfied -- and `1.095` orders above it, under this separation.
-# The two counters differ in exactly the way the two constants do.
-# Set: 2026-09-14, F2
+# RETIRED WITH THE CONSTANT IT DEFENDED (CU0). Its injection and its size are
+# what `RIGID_MODE_BOUND_COUNTER_DEFECT` above carries forward unchanged; this
+# entry is the record. Read it in the past tense.
+#
+# Reason for 1.0e-13: the same nearly-released connection, FIVE TIMES stiffer
+# than the floor's counter at `2.0e-14` -- `0.7` of a decade, not the "one and
+# a half decades" that stood here and in the test that injected it (R417).
+# Both flanking figures, `0.396` orders and `1.095` orders, were right; the
+# arithmetic relating them was never run. It left `lambda_7` above `tau`, so
+# the floor's own mechanism was satisfied, and under the separation.
+# Set: 2026-09-14, F2; retired 2026-09-19
 RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 1.0e-13
 
 # CLASS: ACCURACY -- and RETIRED at Q7/CS2. NOT A GATE: nothing asserts
@@ -435,10 +505,12 @@ RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 1.0e-13
 # and by no assertion. `its counter constant is referenced by nothing` stood
 # here and was refuted by one grep (R408).
 #
-# WHY IT WAS RETIRED, in one line: it exceeds this ceiling on a large minority
-# of the reviewer's fifty-six frames with a DEFECT-FREE element, because the
-# quantity moves with the frame's conditioning rather than with the element.
-# `{{fig:retired_ratio_over_ceiling_on_corpus}}` carries the count.
+# WHY IT WAS RETIRED, in one line: it exceeds this ceiling on
+# `{{fig:retired_ratio_over_ceiling_on_corpus}}` of the reviewer's
+# `{{fig:rigid_mode_corpus_frames}}` frames with a DEFECT-FREE element, because
+# the quantity moves with the frame's conditioning rather than with the
+# element. `a large minority of the reviewer's fifty-six frames` stood here
+# and neither half of it was true at the commit that published it (R405).
 # G2.1 / V1.1 -- the sixth eigenvalue of an unconstrained stiffness matrix,
 # divided by the seventh. Dimensionless BY CONSTRUCTION, and that is the gate's
 # own wording rather than a convenience: the eigenvalues of `K` carry units and
