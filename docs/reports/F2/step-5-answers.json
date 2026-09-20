@@ -297,12 +297,10 @@
       "state": "carried"
     },
     "R405": {
-      "state": "answered",
-      "where": "§4"
+      "state": "carried"
     },
     "R406": {
-      "state": "answered",
-      "where": "§4"
+      "state": "carried"
     },
     "R407": {
       "state": "carried"
@@ -311,8 +309,7 @@
       "state": "carried"
     },
     "R409": {
-      "state": "answered",
-      "where": "§4"
+      "state": "carried"
     },
     "R410": {
       "state": "open",
@@ -334,33 +331,85 @@
       "where": "§7"
     },
     "R415": {
-      "state": "answered",
-      "where": "§1",
-      "site": "floatfea/tolerances.py"
+      "state": "carried"
     },
     "R416": {
-      "state": "answered",
-      "where": "§3",
-      "site": "floatfea/tolerances.py"
+      "state": "carried"
     },
     "R417": {
-      "state": "answered",
-      "where": "§3",
-      "site": "floatfea/tolerances.py"
+      "state": "carried"
     },
     "R418": {
-      "state": "answered",
-      "where": "§3",
-      "site": "scripts/regen_figures.py"
+      "state": "carried"
     },
     "R419": {
       "state": "open",
       "where": "§5"
     },
     "R420": {
+      "state": "carried"
+    },
+    "R421": {
       "state": "answered",
-      "where": "§5",
+      "where": "§2",
+      "site": "docs/milestones/F2.md"
+    },
+    "R422": {
+      "state": "answered",
+      "where": "§2",
+      "site": "docs/milestones/F2.md"
+    },
+    "R423": {
+      "state": "answered",
+      "where": "§2",
+      "site": "docs/milestones/F2.md"
+    },
+    "R424": {
+      "state": "answered",
+      "where": "§2",
+      "site": "scripts/regen_figures.py"
+    },
+    "R425": {
+      "state": "answered",
+      "where": "§2",
       "site": "tests/verification/rung1/test_rigid_body_modes.py"
+    },
+    "R426": {
+      "state": "answered",
+      "where": "§3",
+      "site": "floatfea/tolerances.py"
+    },
+    "R427": {
+      "state": "answered",
+      "where": "§3",
+      "site": "floatfea/tolerances.py"
+    },
+    "R428": {
+      "state": "answered",
+      "where": "§2",
+      "site": "scripts/regen_figures.py"
+    },
+    "R429": {
+      "state": "answered",
+      "where": "§4",
+      "site": "tests/test_report_carried.py"
+    },
+    "R430": {
+      "state": "answered",
+      "where": "§4",
+      "site": "tests/test_report_carried.py"
+    },
+    "R431": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R432": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R433": {
+      "state": "open",
+      "where": "§5"
     }
   }
 }
