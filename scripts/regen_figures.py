@@ -159,15 +159,26 @@ def _figures() -> list[tuple[str, str]]:
             # itself. What it reports is where the domain ends -- and how
             # close to the bound it is, which is the upper side of
             # `RIGID_MODE_BOUND`'s own window.
-            "rigid_mode_smallest_decided",
+            #
+            # `derived` AND NOT PLAIN: it is an eigenvalue and it moves
+            # between machines -- `2.0494e+02` here against `2.0502e+02`
+            # on the canonical runner -- so a plain row would call that
+            # staleness. `derived` gets the spread without a margin, which
+            # is exactly what a row that decides nothing needs.
+            _floor("rigid_mode_smallest_decided", "derived"),
             f"{smallest_decided:.4e}",
         )
     )
     rows.append(
         (
             # The retired spelling of the row above, kept resolvable for the
-            # same reason and not floor-class for the same reason either.
-            "rigid_mode_seventh_orders_smallest_decided",
+            # same reason and `derived` for the same reason too -- and it
+            # is log-valued, so it says so.
+            _floor(
+                "rigid_mode_seventh_orders_smallest_decided",
+                "derived",
+                log=True,
+            ),
             f"{math.log10(smallest_decided / RETIRED_FLOOR):.3f}",
         )
     )
@@ -176,8 +187,8 @@ def _figures() -> list[tuple[str, str]]:
             # THE OTHER SIDE OF THE SAME BOUNDARY, published for the same
             # reason: together these two say how wide the corpus's own gap
             # around the bound is, and it is narrower than the declared
-            # platform spread. Not floor-class, for the reason above.
-            "rigid_mode_largest_refused",
+            # platform spread. `derived` for the reason above.
+            _floor("rigid_mode_largest_refused", "derived"),
             f"{largest_refused:.4e}",
         )
     )

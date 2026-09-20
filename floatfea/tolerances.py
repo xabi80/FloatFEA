@@ -360,18 +360,24 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 #
 # Reason for 199.53, with its window measured on both sides:
 #
-#   below  A GENUINE SEVENTH ZERO MODE reaches `1.375` units of
-#          `||K_hat|| * eps` at the highest of 35 re-expressions of one
-#          torsional release -- 7 unit systems from `1e-6` to `1e6` crossed
-#          with 5 spans -- and all 35 are refused. The largest of the six
-#          numerically-zero eigenvalues over the corpus is `1.4614` units, at
-#          `rb_span_x1000`, and that is the binding side: the bound has to
-#          exceed it or Courant-Fischer's six are not all under it. The bound
-#          is `136.5x` above that.
+#   below  A GENUINE SEVENTH ZERO MODE is refused at all 35 re-expressions
+#          of one torsional release -- 7 unit systems from `1e-6` to `1e6`
+#          crossed with 5 spans -- and the highest `lambda_7` any of them
+#          reaches is in the step report, measured rather than typed here.
+#          The binding side is the SIX THEMSELVES: the bound has to exceed
+#          the largest of the numerically-zero eigenvalues or
+#          Courant-Fischer's six are not all under it. That is
+#          `{{fig:rigid_mode_largest_rigid_eigenvalue}}` units of
+#          `||K_hat|| * eps` over the corpus, and it is a floor-class row
+#          against THIS constant -- so the clearance is computed by
+#          `scripts/regen_figures.py --check` on every machine rather than
+#          written down on one.
 #   above  the smallest `lambda_7` the gate accepts over the corpus is
-#          `204.94` units, at `rb_unit_1um` -- only `1.027x` above the bound,
-#          and UNDER the declared platform spread. Raising the bound by three
-#          per cent declines a frame that decides today. See the note below.
+#          `{{fig:rigid_mode_smallest_decided}}` units and the largest it
+#          refuses is `{{fig:rigid_mode_largest_refused}}`. Raising the bound
+#          past the first declines a frame that decides today. See the note
+#          below: those two straddle this value by less than the declared
+#          platform spread.
 #
 # THE TRANSITION AT `stretch ~ 1.95e6` IS NOT THE LOWER LIMIT, and CU0 asked
 # for it as one. Under a single constant `below_bound == 6` is algebraically
@@ -384,10 +390,11 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 # above are what is left when the tautology is removed.
 #
 # AND THE UPPER SIDE IS NOT PLATFORM-STABLE, said here rather than left to be
-# found. The corpus straddles this bound within six per cent -- `204.94`
-# decided against `187.998` refused -- so `FIGURE_FLOOR_CLASS_SPREAD` of
-# `1.5x` does not separate them, and which side those two frames fall on is a
-# property of the machine. The DECISION on each is a domain-membership
+# found. `{{fig:rigid_mode_smallest_decided}}` and
+# `{{fig:rigid_mode_largest_refused}}` straddle this bound by less than
+# `FIGURE_FLOOR_CLASS_SPREAD`, so the spread does not separate them and which
+# side those two frames fall on is a property of the machine. The DECISION
+# on each is a domain-membership
 # question and not a breach, since refusal is a declared outcome; what is not
 # platform-stable is the published count of refusals. CI is canonical for that
 # figure (Q8) and the determinism legs are what would catch it moving.
@@ -424,8 +431,10 @@ RIGID_MODE_BOUND_COUNTER_DEFECT: Final[float] = 1.0e-13
 # ITS WINDOW WENT WITH IT. "The largest rigid-body eigenvalue over the corpus
 # is `1.461` units, so the floor is `6.84x` clear of it" was a true
 # measurement against a rule nothing applied once CT0 deleted the count. The
-# same measurement now brackets `RIGID_MODE_BOUND`, at `136.5x`, where it
-# decides something.
+# same measurement brackets `RIGID_MODE_BOUND` now, as the floor-class row
+# `{{fig:rigid_mode_largest_rigid_eigenvalue}}`, where it decides something --
+# and it is a figure rather than a typed number because it moves between
+# machines, which the `6.84x` never said.
 # Set: 2026-09-14, F2; retired 2026-09-19
 RIGID_MODE_FLOOR: Final[float] = 10.0
 

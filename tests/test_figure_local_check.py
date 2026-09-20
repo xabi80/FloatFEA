@@ -162,7 +162,10 @@ def test_the_SHIPPED_log_rows_declare_themselves() -> None:
     accident.
     """
     marked = {n for n, (_k, _c, log) in R.floor_class().items() if log}
-    assert marked == {"rigid_mode_seventh_orders"}, (
+    assert marked == {
+        "rigid_mode_seventh_orders",
+        "rigid_mode_seventh_orders_smallest_decided",
+    }, (
         f"the log-valued rows are {sorted(marked)}. Every one of them carries "
         "`log10` of a ratio and is compared as a ratio; a row that is log-"
         "valued and unmarked is compared by the wrong rule, silently."
