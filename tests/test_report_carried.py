@@ -907,7 +907,11 @@ def test_the_report_carries_a_CI_SECTION() -> None:
 # leg table's first line. These two make it a build failure rather than a
 # habit: the first for any run id anywhere in the revision, the second for the
 # specific shape -- a green-looking job table under a run that failed.
-_RUN_ID = re.compile(r"\b(\d{9,12})\b")
+# NOT `\\b...\\b`: a word boundary sits between `.` and a digit, so the
+# first version matched `526231496888` inside `199.526231496888` and asked
+# for a conclusion on a tolerance value. A run id is not part of a longer
+# number, and this guard caught its own author on its first report.
+_RUN_ID = re.compile(r"(?<![\d.])(\d{9,12})(?![\d.])")
 _CONCLUSION = re.compile(r"conclusion\s+\**([A-Za-z_]+)", re.I)
 # The literal a report writes to say "yes, this run failed and the jobs I show
 # are green; here is why". Nothing infers it, exactly like `no change` in the
