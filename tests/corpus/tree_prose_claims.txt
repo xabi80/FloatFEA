@@ -1,0 +1,93 @@
+# CORPUS: sentences the SOURCE-TREE PROSE guard (CV0) must rule on.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, and nothing here is a test name. Written at the
+# forty-ninth verdict on F2, the eighth verdict on step 5 (reviewed commit
+# d5d85ed).
+#
+# WHY THIS FILE EXISTS (BE3). tests/test_tree_prose_consistent.py was added at
+# c65b1bb to stop a species of defect the forty-eighth verdict found eight
+# times: a sentence in the source tree stating something about the repository
+# that one grep refutes. Its three parts are
+#
+#   1  a claim: / cmd: / out: triple is EVALUATED, over the vocabulary
+#      count, lines, files, defined on string literals;
+#   2  an ABSENCE claim must carry a triple or an _ABSENCE_EXEMPT row;
+#   3  a paragraph naming a RETIRED-ALIAS must say the thing is retired.
+#
+# Parts 2 and 3 are keyword lists, and the implementer says so in the file and
+# in the report: the patterns are a list and not a grammar, and the coverage
+# is the pattern list, written against sentences the same hand wrote. A list
+# written against sentences its own author wrote catches the sentences its
+# author thought of. Unseen entries are the only ones that measure anything,
+# which is what this file is.
+#
+# FORMAT
+#   id=<name> kind=<absence|alias|vocabulary|scope> shape=<the candidate, with
+#   punctuation spelled out> expect=<refused|allowed>
+#   measured=<what the shipped guard did at d5d85ed>
+#
+# shape= spells punctuation out -- FULLSTOP, COMMA, BACKTICK, STAR, PIPE,
+# FENCE, HYPHEN, HASH -- so no line of this file is itself a sentence the
+# guard would have to rule on. A scan applies the shape to a file under one of
+# the guard roots in a scratch clone, runs
+#   pytest tests/test_tree_prose_consistent.py -q
+# and compares with expect.
+#
+# WHAT A PASSING SCAN MEANS: the guard rules on these shapes the way a reader
+# would. It does NOT mean the guard is complete. In particular it cannot find
+# a POSITIVE claim that is false, which is exactly what the two triples at
+# floatfea/tolerances.py 548 and 621 are.
+#
+# MEASURED AT d5d85ed by the reviewer, against the shipped predicates applied
+# directly: 39 entries, 6 agree, 33 do not. The 6 that agree are the three
+# absence controls and the three alias controls -- that is, every entry the
+# guard rules on correctly is one written in the author's own phrasing. The
+# implementer planted-shape count is not the coverage number; this is.
+
+# --- part 2, the ABSENCE detector: 20 unseen phrasings, 0 of 20 caught ----
+id=nothing_is_asserted_against_it kind=absence shape=Nothing_is_asserted_against_it_FULLSTOP expect=refused measured=allowed_the_pattern_knows_nothing_asserts_and_not_nothing_is_asserted_AND_THIS_SENTENCE_IS_LIVE_at_test_rigid_body_modes_py_566
+id=asserted_nowhere kind=absence shape=The_quantity_is_printed_and_asserted_nowhere_FULLSTOP expect=refused measured=allowed_the_pattern_knows_appears_nowhere_and_exists_nowhere_only_AND_THIS_SHAPE_IS_LIVE_at_five_sites
+id=it_is_not_asserted_against_anything kind=absence shape=It_is_not_asserted_against_anything_HYPHEN_that_is_what_retired_means expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_test_rigid_body_corpus_py_236
+id=no_assertion_anywhere_compares_against_it kind=absence shape=No_assertion_anywhere_compares_against_it_FULLSTOP expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_548_inside_a_claim_line
+id=no_test_reads_this_value kind=absence shape=No_test_reads_this_value_FULLSTOP expect=refused measured=allowed
+id=read_by_nothing kind=absence shape=The_constant_is_read_by_nothing_outside_this_file_FULLSTOP expect=refused measured=allowed_the_pattern_has_referenced_by_nothing_and_not_read_by_nothing
+id=there_is_no_caller kind=absence shape=There_is_no_caller_for_this_helper_anywhere_under_tests expect=refused measured=allowed
+id=appears_in_no_shipped_test kind=absence shape=This_appears_in_no_shipped_test_FULLSTOP expect=refused measured=allowed
+id=never_asserted kind=absence shape=The_margin_is_recorded_per_entry_and_never_asserted_against_a_constant expect=refused measured=allowed_AND_THIS_SHAPE_IS_LIVE_at_F2_md_481_and_963_and_2359
+id=has_no_assertion kind=absence shape=What_it_no_longer_has_is_an_assertion_FULLSTOP expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_546
+id=no_such_injection_exists kind=absence shape=No_such_injection_exists_in_the_repository_FULLSTOP expect=refused measured=allowed_AND_THIS_SENTENCE_WAS_WRITTEN_THIS_ROUND_at_F2_md_1920
+id=shows_up_as_a_disagreement kind=absence shape=These_are_written_out_so_a_change_to_either_one_shows_up_as_a_disagreement expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_test_report_carried_py_1038_AND_IS_FALSE_nothing_in_the_repository_reads_the_corpus_file_it_names
+id=exactly_one_file_names_it kind=absence shape=Exactly_one_test_file_names_this_ceiling_FULLSTOP expect=refused measured=allowed_a_COUNT_claim_is_the_shape_this_round_replaced_two_absence_claims_with_and_both_replacements_are_false
+id=neither_is_asserted_anywhere kind=absence shape=Neither_is_asserted_anywhere_FULLSTOP expect=refused measured=allowed
+id=is_unused kind=absence shape=The_flag_is_unused_at_this_commit_FULLSTOP expect=refused measured=allowed
+id=not_registered_anywhere kind=absence shape=The_counter_is_not_registered_anywhere_FULLSTOP expect=refused measured=allowed_the_pattern_has_nothing_registers_and_not_not_registered_anywhere
+id=no_other_row_carries_this_mark kind=absence shape=No_other_row_carries_this_mark_FULLSTOP expect=refused measured=allowed
+id=nothing_under_tests_reads_it kind=absence shape=Nothing_under_tests_SLASH_reads_it_FULLSTOP expect=refused measured=allowed_nothing_reads_is_in_the_pattern_and_the_intervening_path_breaks_the_adjacency
+id=the_flag_is_dead kind=absence shape=The_flag_is_dead_at_this_commit_FULLSTOP expect=refused measured=allowed
+id=the_only_site_is_this_one kind=absence shape=The_only_site_that_names_it_is_this_one_FULLSTOP expect=refused measured=allowed
+id=control_nothing_asserts kind=absence shape=Nothing_asserts_against_it_FULLSTOP expect=refused measured=refused_the_authors_own_phrasing
+id=control_no_shipped_row_declares kind=absence shape=No_shipped_row_declares_it_at_this_commit_FULLSTOP expect=refused measured=refused_the_authors_own_phrasing
+id=control_typed_anywhere kind=absence shape=Both_numbers_are_printed_rather_than_typed_anywhere expect=refused measured=refused_the_authors_own_phrasing
+
+# --- part 3, the RETIRED-ALIAS detector: 8 shapes, 3 of 8 caught ----------
+id=alias_inside_a_fenced_block_in_markdown kind=alias shape=FENCE_newline_G2p1_asserts_on_the_subspace_of_the_first_six_vectors_newline_FENCE expect=refused measured=allowed_markdown_prose_blanks_every_fenced_line
+id=alias_in_an_assert_message kind=alias shape=assert_1_COMMA_QUOTE_G2p1_asserts_on_the_subspace_QUOTE expect=refused measured=allowed_python_prose_reads_comments_and_docstrings_only_which_is_right_for_a_message_and_wrong_for_a_message_that_describes_the_gate
+id=alias_hyphenated kind=alias shape=V1p1_tests_the_eigenvalue_HYPHEN_ratio_against_the_first_flexible_mode expect=refused measured=allowed_unemphasised_strips_STAR_UNDERSCORE_BACKTICK_and_not_HYPHEN
+id=alias_rescued_by_the_word_retired_about_something_else kind=alias shape=The_subspace_loss_is_what_the_gate_reads_FULLSTOP_PATCH_TEST_EXACTNESS_was_retired_last_year expect=refused measured=allowed_SAYS_RETIRED_matches_anywhere_in_the_paragraph_and_is_not_bound_to_the_alias_it_excuses
+id=alias_split_across_a_blank_line kind=alias shape=V1p1_tests_an_eigenvalue_newline_newline_ratio_against_the_first_flexible_mode expect=refused measured=allowed_a_blank_line_ends_the_paragraph_so_the_two_words_never_join
+id=control_alias_in_an_html_comment kind=alias shape=HTMLOPEN_G2p1_asserts_on_the_subspace_HTMLCLOSE expect=refused measured=refused
+id=control_alias_in_a_markdown_table_cell kind=alias shape=PIPE_V1p1_PIPE_an_eigenvalue_ratio_PIPE_G2p1_PIPE expect=refused measured=refused
+id=control_alias_in_a_python_inline_comment kind=alias shape=x_EQ_1_HASH_G2p1_asserts_on_the_subspace_here expect=refused measured=refused
+
+# --- part 1, the VOCABULARY: what a triple can be made to certify ---------
+id=a_glob_that_matches_no_file kind=vocabulary shape=a_cmd_calling_files_over_tests_SLASH_no_such_dir_SLASH_STARSTAR_SLASH_STAR_dot_py expect=refused measured=allowed_files_returns_none_and_count_returns_0_so_a_triple_can_certify_an_absence_with_a_pattern_that_reaches_no_file_AM5_says_an_empty_parameter_set_is_an_error_not_a_skip
+id=a_needle_narrowed_by_one_character_so_it_cannot_occur kind=vocabulary shape=a_cmd_whose_needle_is_a_declared_NAME_followed_by_RPAREN expect=refused measured=allowed_AND_THIS_IS_LIVE_TWICE_at_floatfea_tolerances_py_550_and_623_where_the_trailing_RPAREN_makes_the_call_return_none_whatever_the_tree_does
+id=a_needle_only_on_a_python_variable_annotation_named_out kind=vocabulary shape=a_cmd_counting_a_needle_whose_only_occurrence_is_on_a_line_beginning_out_COLON expect=refused measured=allowed_the_ANNOTATION_strip_removes_it_measured_5_against_6_raw_occurrences_in_the_guards_own_file
+id=a_claim_sentence_the_cmd_beside_it_does_not_measure kind=vocabulary shape=claim_one_test_file_names_X_beside_a_cmd_over_a_different_needle expect=refused measured=allowed_stated_as_a_known_limitation_in_the_guards_docstring_and_LIVE_TWICE_with_both_claims_false
+id=a_triple_whose_out_is_correct_and_whose_claim_is_its_opposite kind=vocabulary shape=claim_no_assertion_compares_against_it_beside_out_none_while_an_assert_depends_on_it expect=refused measured=allowed_LIVE_at_floatfea_tolerances_py_548_refuted_by_assert_over_at_test_rigid_body_corpus_py_259
+
+# --- scope: files the guard never opens -----------------------------------
+id=an_alias_in_docs_verification_README kind=scope shape=Test_the_eigenvalue_ratio_against_the_first_flexible_mode_COMMA_not_an_absolute_value expect=refused measured=allowed_docs_SLASH_verification_is_not_in_ROOTS_AND_THIS_SENTENCE_IS_LIVE_at_docs_verification_README_md_17_describing_V1p1_and_G2p1_in_the_present_tense
+id=an_alias_in_floatfea_tolerances_outside_a_retirement_entry kind=scope shape=an_alias_used_in_the_present_tense_anywhere_in_the_file_that_declares_the_aliases expect=refused measured=allowed_part_3_skips_floatfea_SLASH_tolerances_py_wholesale_rather_than_skipping_only_the_retirement_entries
+id=an_absence_claim_in_a_yml_or_txt_under_a_root kind=scope shape=an_absence_sentence_in_a_dot_yml_or_a_dot_txt_file_under_tests_or_scripts expect=refused measured=allowed_prose_files_takes_dot_py_and_dot_md_only

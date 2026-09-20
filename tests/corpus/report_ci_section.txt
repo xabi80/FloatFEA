@@ -90,3 +90,46 @@ id=control_run_id_then_a_space state=paragraph_reads_The_push_run_for_this_round
 # tests/test_report_guard_states.py either, so the guard has no negative
 # control at this commit. A guard that cannot be shown to fail is the thing
 # this repository keeps rediscovering.
+
+# ==========================================================================
+# ADDED AT THE FORTY-NINTH VERDICT (step 5, HEAD d5d85ed). TWELVE ENTRIES.
+#
+# CV3 rewrote both guards and wrote the seven shapes above into
+# `_CI_SHAPES` in `tests/test_report_carried.py`. I re-measured all seven
+# against the shipped `runs_without_a_conclusion` at d5d85ed: 7 of 7
+# refused, and the two allow-shapes allowed. That claim holds.
+#
+# What is new is the OTHER side of the rewrite. `_CONCLUSION` used to be
+# `conclusion\s+\**([A-Za-z_]+)` and is now a bare list of conclusion
+# VALUES matched anywhere in the paragraph. That closes the shape where the
+# word `conclusion` came only from the `gh` flag and opens one where any
+# occurrence of `success`, `failure`, `skipped` or `cancelled` -- in a jq
+# filter, in a grep needle, in a negation, or about a different job -- is
+# accepted as the run's result.
+#
+# ALSO RECORDED, and it is not a shape: NOTHING IN THE REPOSITORY READS
+# THIS FILE. `tests/test_report_carried.py:1038` says the seven shapes are
+# written out "so a change to either one shows up as a disagreement". A
+# change to this file shows up nowhere; `grep -rn report_ci_section tests/`
+# returns three comments and no read.
+#
+# FORMAT as above.
+#
+# MEASURED AT d5d85ed by the reviewer, against the shipped
+# `runs_without_a_conclusion` applied directly: 12 entries, 3 refused, 9
+# allowed. Of the 9, four are shapes the guard should catch (the first
+# four below) and one -- `comma_list_of_three_digit_numbers` -- is a FALSE
+# POSITIVE in the other direction.
+#
+id=conclusion_value_only_inside_a_jq_filter state=paragraph_names_run_35479925335_and_shows_gh_run_list_dashdashjson_conclusion_dashdashjq_select_conclusion_EQEQ_success_with_the_output_never_pasted expect=refused measured=allowed_the_value_success_inside_the_COMMAND_satisfies_the_new_regex_which_is_R412_shape_one_level_up
+id=conclusion_value_only_inside_a_grep_needle state=paragraph_is_cmd_gh_run_view_35489487935_dashdashlog_failed_PIPE_grep_dash_c_failure_then_out_not_pasted expect=refused measured=allowed_the_word_failure_in_the_needle_satisfies_the_regex
+id=the_result_is_negated state=paragraph_reads_Run_35479925335_was_not_a_failure_as_far_as_I_could_tell expect=refused measured=allowed_the_regex_reads_the_value_and_not_the_polarity
+id=an_unrelated_skipped_rescues_a_naked_run_id state=paragraph_reads_Run_35479925335_DASH_the_determinism_legs_were_skipped_and_nothing_else_is_said expect=refused measured=allowed_any_conclusion_word_anywhere_in_the_paragraph_counts_and_this_reports_own_0a_mixes_ids_and_the_word_skipped_freely
+id=comma_list_of_three_digit_numbers state=paragraph_reads_Counts_across_the_corpus_COLON_100_COMMA_200_COMMA_300_COMMA_400_and_nothing_else expect=allowed measured=refused_the_THOUSANDS_strip_joins_them_into_100200300400_which_is_twelve_digits_and_demands_a_conclusion_FALSE_POSITIVE
+id=run_id_with_spaces_as_separators state=paragraph_names_run_35_SPACE_479_SPACE_925_SPACE_335_and_no_result expect=refused measured=allowed_only_commas_are_stripped
+id=run_id_broken_across_a_line_with_a_hyphen state=paragraph_names_run_354799_HYPHEN_newline_25335_and_no_result expect=refused measured=allowed
+id=run_id_followed_by_a_decimal_fraction state=paragraph_reads_The_dispatch_was_run_35479925335_FULLSTOP_0_seconds_long_and_no_result expect=refused measured=allowed_the_right_lookahead_rejects_FULLSTOP_then_a_digit_which_is_the_carve_out_for_the_tolerance_value
+id=run_id_preceded_by_a_dot_in_a_decimal state=paragraph_reads_0_FULLSTOP_35479925335_is_the_run_and_no_result_is_given expect=allowed measured=allowed_this_is_the_carve_out_working
+id=an_eight_digit_id state=paragraph_names_run_35479925_and_no_result expect=allowed measured=allowed_github_ids_are_nine_digits_or_more
+id=control_a_workflow_url_with_no_result state=paragraph_is_https_COLON_SLASH_SLASH_github_FULLSTOP_com_SLASH_x_SLASH_y_SLASH_actions_SLASH_runs_SLASH_35479925335_shows_what_happened expect=refused measured=refused
+id=control_an_id_inside_a_fenced_block_with_no_result state=fenced_block_containing_gh_run_view_35479925335_and_nothing_else expect=refused measured=refused
