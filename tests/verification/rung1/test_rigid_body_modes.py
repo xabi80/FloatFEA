@@ -92,10 +92,10 @@ from floatfea.tolerances import (  # noqa: E402
     RIGID_BODY_MODE_RATIO_COUNTER_DEFECT,
     RIGID_BODY_SUBSPACE_LOSS,
     RIGID_BODY_SUBSPACE_LOSS_COUNTER_DEFECT,
-    RIGID_MODE_EXACTNESS,
-    RIGID_MODE_EXACTNESS_COUNTER_DEFECT,
     RIGID_MODE_BOUND,
     RIGID_MODE_BOUND_COUNTER_DEFECT,
+    RIGID_MODE_EXACTNESS,
+    RIGID_MODE_EXACTNESS_COUNTER_DEFECT,
     RIGID_MODE_FLOOR_COUNTER_DEFECT,
     RIGID_MODE_GAP_COUNTER_DEFECT,
 )
@@ -533,7 +533,8 @@ def test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate(capsys) -> None:
     defect-free element, because the quantity moves with the frame's
     conditioning -- bracing sections, mesh subdivision, span, and above all
     the length unit. `Sixteen of the twenty-eight frames` stood here and both
-    numbers were stale (R405); this test prints the live count when it runs. A ceiling that a defect-free element fails at the
+    numbers were stale (R405); this test prints the live count when it runs.
+    A ceiling that a defect-free element fails at the
     centimetre re-expression of a frame it passes at the metre is a ceiling on
     the frame, and G2.1 is not a statement about the frame.
 

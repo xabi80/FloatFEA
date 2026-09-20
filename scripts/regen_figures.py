@@ -67,6 +67,7 @@ def _figures() -> list[tuple[str, str]]:
     # instead of typing them -- R194's remedy, applied from this gate's first
     # commit rather than five rounds into it.
     import test_rigid_body_modes as RB
+
     from floatfea.tolerances import RIGID_MODE_FLOOR as RETIRED_FLOOR
 
     model, els = RB._frame()
