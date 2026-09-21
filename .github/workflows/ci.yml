@@ -375,7 +375,16 @@ jobs:
         run: mypy floatfea
       - name: unit tests
         run: pytest tests/unit -q
+      # `GH_TOKEN` IS FOR ONE TEST AND IT IS NAMED (CY3, R462).
+      # `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` asks `gh run view`
+      # what each row of the report's CI table actually did, because nothing
+      # re-ran `gh` and R449's exact content was re-admissible by editing the
+      # table. It FAILS rather than skips when it cannot reach `gh`, so the
+      # token is not optional: without it the guard job goes red and says
+      # why, which is the honest state for a check that cannot run.
       - name: guards and meta-tests
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: pytest tests --ignore=tests/unit --ignore=tests/verification --ignore=tests/regression -q
 
   # ------------------------------------------------------------------
