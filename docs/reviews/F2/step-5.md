@@ -1,54 +1,52 @@
 # Review � F2 step 5
-Reviewed commit: 3ff6ceb41c85a055368aed07b811d9810216e8ed
+Reviewed commit: 05390a59428978b84627ec0ff77b992c6c881534
 Verdict: HOLD
 
-**Reviewed commit: `d5d85ed`.** Report revision 23, `Answers: verdict 48 @
-a0b2873`. The `Reviewed commit:` line stamped above by
+**Reviewed commit: `ab698c0`.** Report revision 24, `Answers: verdict 49 @
+ed67a7d`. The `Reviewed commit:` line stamped above by
 `scripts/write_verdict.py` is HEAD at the moment of writing -- my corpus
-commit -- not the commit judged. That is R373, still open; read `d5d85ed`.
+commit `05390a5` -- not the commit judged. That is R373, still open; read
+`ab698c0`.
 
-Tests: **2516 passed, 0 failed, 0 skipped** at `d5d85ed` (my run, clean tree,
-`python -m pytest -q`, 540.70 s, Python 3.13.15 on Windows). Reconciles with
-the report: `python scripts/suite_count.py` at `d5d85ed` prints
-`2172 passed ... excluding 344`, and `2172 + 344 = 2516`.
+Tests: **2537 passed, 0 failed, 0 skipped** at `ab698c0` (my run, clean tree,
+`python -m pytest -q`, 563.14 s, Python 3.13.15 on Windows). Reconciles with
+the report: at `1824b9a` the whole tree collects 2527 and the three excluded
+files collect 358, so `2527 - 358 = 2169`, which is the report's line; the
+report commit adds 10 tests, 5 of them in a fourth file (R431, below).
 
-**Item 1b.** Revision 23 line 8383 reads `Answers: verdict 48 @ a0b2873`;
+**Item 1b.** Revision 24 line 8810 reads `Answers: verdict 49 @ ed67a7d`;
 `git log -1 --format=%H -- docs/reviews/F2/step-5.md` is
-`a0b2873e55660f004f3a56ab87467ee146ad9f82`. It is the latest. **Passes.**
+`ed67a7dec798be500806492bce7caed4b5a037a4`. It is the latest. **Passes.**
 
-**Commits judged: `c65b1bb`, `0e63448`, `1c94118` (plan, RE-LOCKED),
-`4236848`, `e332f38`. Report `d5d85ed`.**
+**Commits judged: `f5268ee`, `7a6d796`, `75c73ea`, `3cde01b` (plan,
+RE-LOCKED), `7895944` (`process:`), `1824b9a`. Report `ab698c0`.**
 
 ## CI, item 3b -- GREEN AT THE REVIEWED COMMIT
 
 ```
-cmd  gh run list --commit d5d85edc77bc73f2584e71bdfbc94148301470b3
-out  run 35489487935, event push, conclusion SUCCESS, status completed
-cmd  gh run view 35489487935 --json jobs
-out  "the verification ladder"       success, 13 steps, 04:34:37 -> 04:37:27
-     "lint, unit and guards"         success, 14 steps, 04:34:37 -> 04:44:27
-     "CI determinism -- leg"         skipped, 0 steps
-     "CI determinism -- ten legs"    skipped, 0 steps
-judge THE TWO JOBS THAT RAN ARE GREEN ON LINUX AT THE COMMIT I AM JUDGING.
-     Not CK2: both ran real steps for minutes. The determinism pair is
+cmd  gh run list --commit ab698c0db344d07a3d0433c77b1ac426dcfc73eb
+out  run 35548152088, event push, conclusion SUCCESS, status completed
+cmd  gh run view 35548152088 --json jobs
+out  "lint, unit and guards"        success, 14 steps, 00:34:57 -> 00:44:28
+     "the verification ladder"      success, 13 steps, 00:34:57 -> 00:37:35
+     "CI determinism -- leg"        skipped, 0 steps
+     "CI determinism -- ten legs"   skipped, 0 steps
+judge THE TWO JOBS THAT RAN ARE GREEN ON LINUX AT THE COMMIT I JUDGE. Not
+     CK2: both ran real steps for minutes. The determinism pair is
      dispatch-only here and is recorded as an UNAVAILABLE check at this
      commit rather than skipped over.
-cmd  gh run view 35487682884 --json jobs   -- this round's dispatch, at 4236848
+cmd  gh run view 35545894507 --json jobs   -- this round's dispatch, at 7895944
 out  ten "CI determinism -- leg (n)" success, "ten legs agree" success,
      "the verification ladder" success, "lint, unit and guards" FAILURE
-cmd  gh run view 35487682884 --log-failed | grep -Eo "FAILED [^ ]+" | sort -u
+cmd  gh run view 35545894507 --log-failed | grep -Eo "FAILED [^ ]+" | sort -u
 out  13 rows, every one a report-or-figure staleness guard at a commit where
-     revision 23 did not yet exist. Nothing in floatfea/, nothing in rung 1.
-cmd  git diff --stat 4236848..HEAD -- tests/verification scripts .github
-out  (empty) -- THE TEN EXECUTED LEGS DESCRIBE THE TREE UNDER REVIEW exactly.
-     That is the strongest determinism evidence this step has had.
-cmd  gh run list --limit 12, the two earlier pushes this round
-out  35487290760 at 4236848 FAILURE, 35487102737 at 1c94118 FAILURE. Both are
-     named with their conclusions in the report's 0a, as is the dispatch.
-cmd  python -m black --check floatfea tests scripts ; python -m ruff check ...
-out  90 files unchanged; all checks passed. `4236848` cleared it.
-judge FOUR RUNS, FOUR CONCLUSIONS, ALL NAMED. R412's omission does not
-     recur and the report leads with the conclusion rather than the table.
+     revision 24 did not yet exist. Nothing in floatfea/, nothing in rung 1.
+cmd  git diff --stat 7895944..HEAD -- tests/verification scripts .github
+out  scripts/regen_figures.py | 16 +, 1 -   -- NOT empty this round. The ten
+     executed legs describe the tree in `tests/verification` and `.github`
+     exactly, and NOT `scripts/regen_figures.py`, which `1824b9a` moved
+     after them. R383 is weaker than last round, where the diff was empty;
+     recorded rather than glossed.
 cmd  gh pr view 1 --json comments --jq '.comments | length'
 out  0 -- no outside-witness comment. Recorded as an unavailable check.
 ```
@@ -56,86 +54,106 @@ out  0 -- no outside-witness comment. Recorded as an unavailable check.
 ## My own instructions (4b), the conftest pathspec (4c), tolerances (4)
 
 ```
-cmd  git diff a0b2873..HEAD -- .claude docs/SUPERVISOR.md
-out  (empty) -- no STOP-class finding. Nothing under `.claude/` moved.
+cmd  git log --oneline ed67a7d..HEAD -- .claude docs/SUPERVISOR.md
+out  7895944 process: prose in the source tree does not claim things about
+     the code (CW0, CW1)   -- ONE commit, and it is standalone
+cmd  git show --stat 7895944
+out  CLAUDE.md | 21 +++, docs/SUPERVISOR.md | 14 +++, 35 insertions(+), 0
+     deletions. Nothing under floatfea/ or tests/ in it. The message cites
+     CW0 and CW1 and quotes the rule it is obeying.
+judge NO STOP-CLASS FINDING. Additive, zero deletions, no guard removed --
+     I read all 35 lines. `.claude/` itself did not move.
 cmd  git ls-files -- tests/conftest.py "tests/**/conftest.py"
 out  tests/conftest.py                  -- the instruction's own expectation
-cmd  git diff a0b2873..HEAD -- the same two pathspecs
+cmd  git diff ed67a7d..HEAD -- the same two pathspecs
 out  (empty)
 cmd  git ls-files "*conftest.py"
 out  tests/conftest.py -- still the whole set. No plugin was added, so no
      rung's green is being written by code in its own directory.
-cmd  git diff a0b2873..d5d85ed -- floatfea/ | grep -E "^[+-][A-Z_]+.*Final"
-out  (empty) -- NO CONSTANT MOVED. The 90/31 in tolerances.py is comments and
-     two `# RETIRED-ALIAS:` declarations.
-cmd  git show --stat on each of the five commits
-out  `1c94118` touches docs/milestones/F2.md ALONE and says RE-LOCKED.
-     `0e63448` and `e332f38` are the figure renders. `c65b1bb` is the code
-     commit and carries the golden with a stated reason -- eight names added,
-     none removed, and the rule is about removals. Clean separation.
+cmd  git diff ed67a7d..HEAD -- floatfea/tolerances.py | grep -E "^[+-][A-Z_]+.*Final"
+out  (empty) -- NO CONSTANT MOVED. The 72 changed lines in that file are
+     comments and two rewritten triples.
 ```
 
 ## Carried
 
-Verdict 48 held on R421-R428 and recorded R429-R433. **R421 through R428 are
-all answered at the sites their conditions named, and R429 and R430 are
-answered better than asked. R419, R431, R432 and R433 are correctly left open
-and said so. What holds this step is seven NEW findings, and five of them are
-again sentences written in the commit that repaired the same species
-elsewhere.**
+Verdict 49 held on R434-R440 and recorded R441-R448. **R434, R435, R436,
+R437, R440 and R444 are answered at the sites their conditions named. R438
+is answered better than asked and I re-measured it independently. R439 is
+answered as asked and its own repair reopens as R454. R447 is correctly left
+open, and the SENTENCE the report uses to leave it open is false in both
+halves (R453) -- and half of R447 as I wrote it was wrong, recorded below as
+mine.** What holds this step is six new findings, and five of them are again
+sentences written in the commit that repaired the same species elsewhere.
 
-- **R421 -- ANSWERED at all four named sites.** `:51` states the two halves;
-  `:136` reads "a residual and a bound"; `:212` is past tense under a
-  retirement note; `:1505` reads "(residual, and no seventh)". **Closed.** A
-  FIFTH site, outside the condition and outside the new guard's roots, still
-  says the retired thing: R437.
-- **R422 -- ANSWERED.** `F2.md:1918-1927` names the uniform elastic
-  foundation as the retired first attempt, "Both counters" is gone, and
-  `tolerances.py:525-530` records it as an alias of the retired gap counter.
-  **Closed.**
-- **R423 -- ANSWERED at both named sites.** `grep -n "1\.248\|6\.237"
-  docs/milestones/F2.md` returns nothing and the plan points at the entry
-  that types them; `count(... "seventeen")` is 0 in the test file.
-  **Closed.**
-- **R424 -- ANSWERED.** `regen_figures.py:590-599` says what `grep -n
-  "log=True"` prints, and carries the grep as a triple that runs. **Closed.**
-- **R425 -- ANSWERED, and the distinction is the right one.** `:275-290`
-  separates "the gate may not assert this" from "a control may", names
-  `test_ONE_RELEASED_CONNECTION_gives_SEVEN`, and the plan says the same.
-  **Closed.**
-- **R426 -- ANSWERED by the better of the two branches.**
-  `rigid_mode_mechanism_ceiling` is a figure, floor-class below the bound,
-  rendered beside `rigid_mode_largest_rigid_eigenvalue`. **Closed.** And the
-  implementer's correction is right and I confirm it: rendered together the
-  six bind on both machines (`1.2727` vs `0.9606` canonical; `1.4614` vs
-  `1.3750` here), and the reversal I reported came from my mixed comparison.
-  **That is my error, corrected by a measurement, and it is recorded as
-  mine.** What the shared render does NOT settle is R438.
-- **R427 -- ANSWERED.** `rigid_mode_corpus_refused` is `derived`, and the
-  partition ships as `88` decided-clear, `25` refused-clear, `13` in the
-  window with all thirteen named. My six window frames are all in that list.
-  **Closed.** The sentence sixteen lines below it is R439.
-- **R428 -- ANSWERED.** `_floor("rigid_mode_seventh_orders", "derived",
-  log=True)`. **Closed.** Four marks against retired ceilings that the
-  condition did not name are R445.
-- **R429 -- ANSWERED, and I re-measured rather than read it.** All seven of
-  my shapes are refused by `runs_without_a_conclusion` at this commit and
-  both allow-shapes are allowed. **7 of 7, up from 2 of 7. Closed.** The
-  other half of the rewrite is R444.
-- **R430 -- ANSWERED.** `a_green_table_under_a_failed_run` is a function with
-  five states, one of them a failed run whose every job reads green. It can
-  fail now. **Closed.**
+- **R434 -- ANSWERED, and the repair is the right one.** `tolerances.py:554`
+  now says three files name the ceiling and names
+  `test_the_RETIRED_ratio_is_why_the_form_changed` as the one that asserts;
+  `cmd` is the bare name and returns exactly the three files, which I ran.
+  The assertion at `test_rigid_body_corpus.py:269` is declared as the
+  retirement's own evidence in the entry AND in both docstrings that denied
+  it. **Closed.**
+- **R435 -- ANSWERED.** `tolerances.py:639`: two files, neither asserts, and
+  the entry adds the honest half -- nothing would notice if the evidence
+  disappeared, unlike the ratio. `cmd` returns the two. **Closed.**
+- **R436 -- ANSWERED at both sites.** `modes.py:566` now says the quantity is
+  asserted FINITE thirty lines below and names the refutation;
+  `corpus.py:236` moved into the function docstring and says the assert is
+  twenty-three lines below it. **Closed.**
+- **R437 -- ANSWERED.** `docs/verification/README.md:16-24` states the two
+  halves, the undecidable outcome, and quotes the ratio as retired with a
+  pointer to F2.md. `ROOTS` now includes `docs/verification/` and
+  `EXTRA_FILES` includes `CLAUDE.md`. **Closed.**
+- **R438 -- ANSWERED, AND I RE-MEASURED IT RATHER THAN READ IT.** The cell is
+  now every distinct `unit` crossed with every distinct `stretch` in the
+  corpus, 22 x 39 = 858 -- the same set my own sweep used last round -- and
+  it renders `1.5243` here, matching my independent figure to four digits.
+  `subdiv=1` is pinned WITH its reason at the cell and in the entry. Both
+  machines now put the mechanism above the six (`1.6519` vs `1.2727`
+  canonical; `1.5243` vs `1.4614` here), so the reversal is real and the
+  plan records it. **Closed.** See my widening attack in Findings.
+- **R439 -- ANSWERED as asked, and the repair reopens one level up.**
+  `:278-280` is gone; the rule is written once and both published counts are
+  `words`. The ground for withholding the loss count changed from a refuted
+  reason to a new one, and the new one is refuted too: **R454**.
+- **R440 -- ANSWERED, and the mechanism works.**
+  `test_every_corpus_shape_is_transcribed` reads `^id=` from the corpus and
+  fails on anything not transcribed. **Confirmed by measurement: my 20 new
+  entries turn it red.** **Closed.**
+- **R444 -- ANSWERED, and measured.** 15 of my 20 unseen shapes ruled
+  correctly, against 3 of 12 last round; all four R412-one-level-up shapes
+  are refused. What survives is **R457**.
+- **R441, R442 -- ANSWERED BY DELETION, and I endorse it.** See the first
+  paragraph of Findings.
+- **R443 -- ANSWERED on (a); (b) is the cause of R450.** The empty glob
+  raises and has its own shipped test. The annotation fix is right for an
+  annotated assignment and wrong for a needle containing `=`.
+- **R445 -- ANSWERED.** All four rows are `derived`; no `_floor` call in
+  `scripts/` names a retired ceiling. **Closed.**
+- **R446 -- ANSWERED by deletion.** The `_ABSENCE_EXEMPT` table went with the
+  detector. **Closed.**
+- **R447 -- OPEN, correctly not claimed, and HALF OF IT WAS MY ERROR.** See
+  R453: the item stands only as "a floor-class row sits close to
+  `FIGURE_FLOOR_CLASS_SPREAD` and no entry says so", and the row is
+  `rigid_body_mode_ratio`, not `rigid_mode_mechanism_ceiling`.
+- **R448 -- ANSWERED.** `words` compares the word sequence and every number
+  beside it, so `33 of 126` has both numbers checked. **Closed.**
 - **R419 -- OPEN, correctly, and not claimed.** 4a.
-- **R431, R432, R433 -- OPEN, correctly listed and not touched.** R431's
-  arithmetic reconciles at this commit (`2172 + 344 = 2516`, my run), so what
-  is left of it is the sentence about what the exclusion counts, which still
-  names three files while a fourth grows with the revision. 4a.
-- **R411 -- OPEN, SEVENTH ROUND.** Revision 23's second line reads "Commits
-  since the forty-eighth verdict, listed in §10"; §10 is `Carried` and the
-  commit list is in §11. Unchanged from last round. 4a.
-- **R383 -- ADVANCED FURTHEST IT HAS.** Ten legs executed and agreed at
-  `4236848`, and `git diff 4236848..HEAD -- tests/verification scripts
-  .github` is empty, so their result describes the tree under review.
+- **R431 -- OPEN, and I can now name the fourth file.** The suite line says
+  it excludes "3 files parametrised over this report"; a fourth is
+  `tests/test_plan_figures.py`, whose
+  `test_every_figure_reference_anywhere_resolves` gains one parameter per
+  `{{fig:}}` reference in the report. Measured: 5 of the 10 tests the report
+  commit adds are in that file. The arithmetic in the line is right; the
+  sentence about what it counts is not. 4a.
+- **R432, R433 -- OPEN, correctly listed and not touched.** 4a.
+- **R411 -- OPEN, EIGHTH ROUND.** Revision 24's second line reads "Commits
+  since the forty-ninth verdict, listed in section 10"; section 10 is
+  `Carried` and the commit list is section 11. Unchanged. 4a.
+- **R383 -- WEAKER THAN LAST ROUND, and the report does not say so.** Ten
+  legs executed at `7895944`, then `1824b9a` changed
+  `scripts/regen_figures.py`. Recorded, not blocking: the ladder at
+  `ab698c0` is green and the change is to a generator, not to a rung.
 - **R410, R413, R414, R400, R401, R402, R390, R391, R392, R393 -- OPEN at
   4a**, correctly listed.
 - **R370, R371, R372, R373, R374 -- OPEN at 4a.** R373 bites again in this
@@ -149,338 +167,307 @@ elsewhere.**
   carried.** The section 9 status-versus-subject disagreement stays at 4a.
 - **R253, R254, R256, R257, R262-R274, R276, R277, the two R248 residues,
   R249-R252, R225-R228, R232, R233, R288, R289, R290 -- carried.** R250,
-  R251, R226, R227, R264 and R266 still have no row; R348 territory, unmoved.
+  R251, R226, R227, R264 and R266 still have no row; R348 territory.
 - **R365-R369, R375-R382, R384 -- carried in `step-5-answers.json`.**
-- **R223, R224, R394-R399, R403-R409, R412, R415-R418, R420, R388 -- closed
-  earlier**, not reopened.
+- **R223, R224, R394-R399, R403-R409, R412, R415-R418, R420, R421-R430 --
+  closed earlier**, not reopened.
 
 ## Findings
 
-**First, what is right, and it is again the larger part.**
+**First, what is right, and it is the larger part again.**
 
-**THE GATE STILL HOLDS AND I ATTACKED THE NEW FIGURE HARD.** 858
-configurations at `subdiv=1` over the corpus's own 22 unit strings and 39
-span strings, one torsional release, nothing else moved: 350 of them are a
-genuine seventh zero mode, and **0 of 350 escape the bound.** Rung 1 is green
-on Linux and on Windows, `floatfea/` carries no executable change for the
-fifth round, and the plan is RE-LOCKED in its own commit. `e332f38` is the
-best commit in this round: it publishes a canonical render AND names the
-sentence that render refuted on the way in, in the commit message, with both
-numbers. That is the discipline working without a reviewer in the loop.
+**THE CW1 DELETION IS THE CORRECT CALL AND I WANT THAT ON THE RECORD.** The
+measurement that killed the detectors was mine and the implementer acted on
+it rather than arguing with it. A keyword list that rules on a sixth of its
+domain while reading as complete is worse than a prohibition, because the
+green suite is the thing that lies. Both halves landed in a standalone
+`process:` commit citing the directive, additive, zero deletions. The honest
+cost -- a sentence of the species can now land with the suite green -- is
+written down in three places and is real: six landed this round. That is an
+argument for running the reading every round, which `docs/SUPERVISOR.md`
+item 6 now requires, and not an argument for the list.
 
-**And CV0 is the right instrument.** A guard that evaluates a prose triple is
-a real advance, the `eval` surface is closed properly (parsed, four names,
-string literals only), the annotation-strip bug was found by its own author,
-and the cost is written down. Nothing below argues against the mechanism.
-What is below is that **the first nine triples it certifies include two it
-certifies falsely**, and that is worth saying precisely because the
-mechanism is good.
+**AND THE GATE HOLDS UNDER AN ATTACK THE CELL DOES NOT MAKE.** I widened the
+R438 cell along the one axis it still pins: which member is released. Over
+all seven members x 22 units x 39 spans at `subdiv=1`, 392 configurations
+pass `zero_modes_under_the_bound == 7` and **0 escape the bound**. The
+worst, `199.5206` against `199.5262`, is not a mechanism at all -- every one
+of the twelve worst sits at `stretch = 4.371037e5`, the corpus stretch
+placed exactly where the CLEAN frame first flexible mode crosses the bound,
+so the seventh eigenvalue counted there is that flexible mode. Excluding
+bases whose clean `lambda_7` is inside `1.5x` of the bound leaves 329 and
+**only released member 6 produces a mechanism at all**, worst `1.5243` --
+the shipped figure, to four digits, from a sweep the implementer did not
+write. The cell picks the right member and the figure is right. The `== 7`
+filter is confounded at that one stretch and it does not reach the published
+figure, because at member 6 those bases have EIGHT under the bound and are
+dropped.
 
 ---
 
-**R434. (BLOCKS -- a `claim:` beside a `cmd:` that CANNOT FAIL. The claim is
-false in both halves; the command searches for a string that does not occur
-and cannot occur, so `out: none` is what it prints whatever the tree does. A
-gate carries its own failure.)** `floatfea/tolerances.py:548-551`.
+**R449. (BLOCKS, and it is the head. A cmd/out pair in the report CI section
+where running the command gives a different answer in both halves. This is
+the R412 subject -- a CI run reported as something it was not -- in the
+round that repaired the CI-section guard.)** `docs/reports/F2/step-5.md`
+section 0a.
 
 ```
-code :548 "claim: one test file mentions this ceiling, and it is the
-     :549         diagnostic that prints it -- no assertion anywhere
-     :550         compares against it"
-     :550 "cmd:   files(tests/**/*.py, RIGID_BODY_MODE_RATIO<RPAREN>)"
-     :551 "out:   none"
-cmd  the SAME call with the trailing right-paren removed from the needle
-out  tests/test_no_tolerance_literals.py,
-     tests/verification/rung1/test_rigid_body_corpus.py,
-     tests/verification/rung1/test_rigid_body_modes.py
-     -- THREE FILES, not one. The needle as written matches nothing in the
-     repository, because no site spells the name followed by a right paren.
-code tests/verification/rung1/test_rigid_body_corpus.py:247
-     `if ratio > RIGID_BODY_MODE_RATIO:` ... :259 `assert over, (...)`
-cell MY OWN ABLATION, one variable moved: over all 126 corpus frames the
-     largest `mode_ratio` is `0.9141` and the ceiling is `1e-12`, so 91
-     frames populate `over`. Raise the ceiling past `0.9141` and `over` is
-     empty and `:259` goes RED. THE ASSERTION'S TRUTH IS A FUNCTION OF THE
-     RETIRED CONSTANT. "no assertion anywhere compares against it" is false.
-judge AND THIS SENTENCE REPLACED "nothing asserts against it", which the new
-     guard WOULD have flagged. The rewrite moved an absence claim into a
-     `claim:` field where it is checked by a command that returns `none` for
-     a needle that cannot occur. The entry now reads as certified and is
-     wrong in both halves. My own verdict-48 grep missed the assert because
-     I piped through `grep assert` and the assert is twelve lines below the
-     comparison -- assertion domain blindness, and it is recorded as mine.
+code 0a "cmd   gh run view 35545894471 --json conclusion -- this round push
+         out   conclusion **FAILURE**, same reason, ladder green"
+cmd  gh run view 35545894471 --json conclusion,jobs
+out  conclusion: cancelled
+     jobs: the verification ladder      -> cancelled
+           lint, unit and guards        -> cancelled
+           CI determinism -- leg        -> skipped
+           CI determinism -- ten legs   -> skipped
+cmd  gh run list --limit 12 --json databaseId,headSha,conclusion
+out  35545894471 at 7895944: cancelled. The only FAILURE at that head is the
+     dispatch 35545894507, which 0a names separately and correctly.
+judge BOTH HALVES ARE WRONG. The conclusion is cancelled, not failure, and
+     the ladder was CANCELLED, not green -- it completed none of its steps.
+     A cancelled run is not a result at all, and reporting it as a failure
+     "for the same reason" attributes to it a reason it never reached.
+cell ONE VARIABLE: the same command against the sibling run. gh run view
+     35545894507 --json conclusion returns failure, which 0a reports
+     correctly. So the tool works and the run id is right; what is wrong is
+     that the output beside the command is not the output.
+judge AND IT PROPAGATED. The directive I was handed repeated the report
+     wording, so this would have entered my own verdict unchecked.
 ```
 
-  **Closed when** the `cmd:` is a call whose result could differ if the claim
-  were false -- the bare name, not the name plus a paren -- and the `claim:`
-  says what that call prints, including that `test_rigid_body_corpus.py:259`
-  asserts on a list built by comparing against this constant.
+  **Closed when** section 0a states cancelled for `35545894471`, drops "same
+  reason, ladder green", and says what a cancelled run does and does not
+  license -- pasted from the command, not from the neighbouring run.
 
-**R435. (BLOCKS -- the same shape, the same commit, one entry down.)**
-`floatfea/tolerances.py:621-624`.
-
-```
-code :621 "claim: the retired subspace loss is named by one test file, which
-     :622         prints it as a diagnostic, and by no assertion"
-     :623 "cmd:   files(tests/**/*.py, RIGID_BODY_SUBSPACE_LOSS<RPAREN>)"
-     :624 "out:   none"
-cmd  the same call without the trailing right-paren
-out  tests/verification/rung1/test_rigid_body_corpus.py,
-     tests/verification/rung1/test_rigid_body_modes.py   -- TWO files
-judge "by no assertion" is true here -- `loss_over` is printed only, and I
-     checked. "named by one test file" is false, and the command beside it
-     prints `none`, which is neither one nor two. A triple whose `out`
-     denies its own `claim` is worse than a bare sentence: the bare sentence
-     does not look checked.
-```
-
-  **Closed when** the `cmd:` is the bare name and the `claim:` says what it
-  prints.
-
-**R436. (BLOCKS -- two absence sentences refuted by their OWN function
-bodies, both invisible to the guard this round added, both in docstrings the
-round rewrote.)** `tests/verification/rung1/test_rigid_body_modes.py:566` and
-`tests/verification/rung1/test_rigid_body_corpus.py:236-237`.
+**R450. (BLOCKS -- a triple counts its own `claim:` and `cmd:` lines, so
+`out: 6` is the tree 4 plus 2 of itself, and the claim enumeration names two
+lines that do not exist. The R443b fix opened this in the same round.)**
+`scripts/regen_figures.py:660-665` and
+`tests/test_tree_prose_consistent.py:94-103`.
 
 ```
-code modes.py:566  "Nothing is asserted against it."
-code modes.py:596  `assert math.isfinite(ratio), (...)`  -- SAME FUNCTION,
-     30 lines below, asserting on the very quantity the sentence is about
-code corpus.py:236 "It is not asserted against anything -- that is what
-                    retired means"
-code corpus.py:259 `assert over, (...)`  -- SAME FUNCTION, 23 lines below,
-     and `over` is built by `ratio > RIGID_BODY_MODE_RATIO` at :247
-cmd  both paragraphs through the shipped `_ABSENCE` pattern
-out  NEITHER MATCHES. The pattern knows `nothing asserts` and not `nothing
-     is asserted`; it knows `referenced by nothing` and not `is not asserted
-     against anything`.
-judge THE ROUND EDITED BOTH FILES AND BOTH DOCSTRINGS. `c65b1bb` rewrote the
-     docstring at modes.py:566's own function and left the sentence; it
-     rewrote corpus.py's module docstring and left :236. CP2 exactly, for
-     the third round running: the prose around the repair inherits none of
-     the discipline applied to it.
+code test_tree_prose_consistent.py:94 "AN ANNOTATION LINE IS NOT PART OF THE
+     TREE IT MEASURES: every `cmd:` contains the needle it searches for, so
+     the first four triples written here counted themselves."
+code :103 _ANNOTATION carries a trailing negative lookahead for an equals
+     sign, added to spare `out: list[tuple[int, str]] = []` (R443b)
+judge THE LOOKAHEAD EXEMPTS ANY ANNOTATION LINE WHOSE REST CONTAINS AN
+     EQUALS SIGN -- including every `cmd:` whose NEEDLE contains one, which
+     is the one shipped triple that has one.
+cmd  the shipped _ANNOTATION applied to every line of scripts/regen_figures.py
+     containing the needle log=True
+out  118: comment, AND THEY ARE WHY log=True IS NOT A DEAD FLAG ...
+     130: _floor("rigid_mode_seventh_orders", "derived", log=True),
+     265: log=True,
+     647: comment, AND log=True SAYS THE VALUE IS log10 OF A RATIO ...
+     660: the triple OWN claim line
+     663: the triple OWN cmd line
+cell ONE VARIABLE, the regex: with the PREVIOUS annotation pattern (at
+     ed67a7d, no equals carve-out) the same needle counts **4**. The tree
+     content is 4; the shipped answer is 6; the difference is the triple.
+code the claim at :660-662 enumerates the six as two _floor calls plus
+     "this comment block, the one above it, and the two in the class
+     vocabulary"
+cmd  grep -n "log=True" over the class-vocabulary block, lines 640-646
+out  no hit. THERE ARE NO TWO IN THE CLASS VOCABULARY. The two unaccounted
+     hits are :660 and :663 themselves.
+judge SO out:4 -> out:6 WAS A DEFECT IN THE GUARD, and the claim was
+     rewritten to justify the new number with an enumeration naming lines
+     that do not exist. R434 exactly -- a claim that is not what its command
+     measures -- inside the mechanism built to close R434.
 ```
 
-  **Closed when** both sentences say what a grep prints -- or are deleted --
-  and the two phrasings are in `_ABSENCE`.
+  **Closed when** the annotation strip excludes an annotated ASSIGNMENT
+  rather than any line containing an equals sign, `out:` returns to what the
+  tree contains, and the claim enumerates lines a reader can find.
+  `tests/corpus/prose_triple_shapes.txt` carries three entries for this.
 
-**R437. (BLOCKS -- the VERIFICATION LADDER document, which `CLAUDE.md` §
-Testing names as the ordering authority, still defines V1.1 and G2.1 as the
-retired eigenvalue ratio, in the present tense. R421 fixed the plan's four
-sites; this is the fifth, and it is outside the new guard's roots.)**
-`docs/verification/README.md:16-18`.
-
-```
-code :16 "**V1.1 Rigid-body modes.** An unconstrained model has exactly six
-     :17  zero-energy modes. Test the eigenvalue ratio against the first
-     :18  flexible mode, not an absolute value, so the test is mesh- and
-          unit-independent. *Gate G2.1.*"
-cmd  the shipped RETIRED-ALIAS predicate, applied to this file
-out  MATCHES the declared alias `eigenvalue ratio`, and the paragraph does
-     not say retired -- it WOULD FAIL the guard. The guard never opens the
-     file: ROOTS is ("floatfea", "tests", "scripts", "docs/milestones").
-cmd  grep -rn "eigenvalue ratio" docs/verification/
-out  one hit, this one
-judge A READER FOLLOWING `CLAUDE.md` TO THE LADDER IS TOLD G2.1 IS A RATIO.
-     This is not prose precision and it is not 4a: it is the same sentence
-     R421 blocked on, in the one document the ladder's ordering is defined
-     in. The round declared the alias, built the detector, and pointed it at
-     four roots that exclude the document.
-```
-
-  **Closed when** `:16-18` states the residual-and-bound form, and the
-  guard's roots either include `docs/verification/` or the file says at its
-  head why it is out of scope.
-
-**R438. (BLOCKS -- `rigid_mode_mechanism_ceiling` is published, enforced and
-quoted as one of the two lower candidates for `RIGID_MODE_BOUND` under a
-sentence claiming a coverage the cell does not have; over the set the
-sentence names the figure is not the maximum, and the round's own conclusion
-about which candidate binds reverses.)** `floatfea/tolerances.py:369-371`
-and `scripts/regen_figures.py:127-129`.
+**R451. (BLOCKS -- the BP0 case. A figure row CLASS changed in `1824b9a` and
+the sentence in `floatfea/tolerances.py` naming the old class was
+republished unchanged in the same round.)** `floatfea/tolerances.py:424-426`.
 
 ```
-code tolerances.py:369 "a genuine seventh zero mode: one torsional release
-     :370                re-expressed over EVERY UNIT SYSTEM AND SPAN THE
-     :371                CORPUS USES, refused at all of them, reaching
-                         {{fig:rigid_mode_mechanism_ceiling}} units at the
-                         highest"
-code regen_figures.py:127 "The cell is one torsional release re-expressed:
-                           every unit system and span the corpus uses,
-                           nothing else moved."
-code the cell as shipped: 7 units x 5 spans, `subdiv` forced to "1"
-cmd  the corpus's own distinct values
-out  19 distinct unit VALUES (22 strings) and 31 distinct span VALUES (39
-     strings), and 10 distinct subdivisions. The cell covers 6 of the 19
-     units and 5 of the 31 spans, and one of its seven units -- `1e-2` --
-     IS NOT A UNIT THE CORPUS USES.
-cell MY SWEEP, over the set the sentence names: 22 unit strings x 39 span
-     strings at subdiv=1, one torsional release, nothing else moved. 858
-     configurations, 350 of them a genuine seventh zero mode
-     (`zero_modes_under_the_bound == 7`).
-out  0 of 350 escape the bound -- THE GATE HOLDS, and that is the important
-     half. But the HIGHEST `lambda_7` among them is **1.5243** units, at
-     unit `1.0` with span `3600.0`, both of which the corpus uses. The cell
-     renders **1.3750** on this same machine. The published figure is not
-     the maximum of the set its own sentence names, and it is low by 1.109x.
-judge AND THE CONSEQUENCE IS THE QUESTION CV1 WAS ASKED TO SETTLE.
-     `rigid_mode_largest_rigid_eigenvalue` is 1.4614 here. Against the cell
-     (1.3750) the six bind, which is what the entry and `e332f38`'s message
-     conclude. Against the set the sentence claims (1.5243) THE MECHANISM
-     BINDS. The correction to R426 is right about the cell, and the cell is
-     not what the sentence says it is.
-judge I ALSO CHECKED WHY subdiv IS PINNED, because the sentence does not say
-     it is: at every `subdiv > 1` I tried,
-     `_assemble_with_torsional_release(..., released=6)` leaves SIX under
-     the bound, not seven -- the injection stops being a mechanism. Pinning
-     it is CORRECT. Not saying so, in a sentence that claims the corpus's
-     coverage, is not.
+code :420 "{{fig:rigid_mode_corpus_in_the_window}} frames are inside the
+     :424  spread ... NOTHING IN CI CHECKS WHICH SIDE THEY FALL ON ... The
+     :425  check that would see it is --check on a non-canonical runner,
+     :426  and there this row is `derived` rather than exact."
+cmd  floor_class() from scripts/regen_figures.py, at this commit
+out  rigid_mode_corpus_refused         -> kind words
+     rigid_mode_corpus_in_the_window   -> NOT PRESENT, it is a plain row
+judge FALSE UNDER BOTH READINGS. If "this row" is rigid_mode_corpus_refused
+     -- the row that counts which side they fall on -- it is `words` now,
+     changed by R448 in `1824b9a`, in this round. If it is
+     rigid_mode_corpus_in_the_window, it is not floor-class at all, so
+     --check requires it to agree EXACTLY and would call a difference
+     staleness rather than "seeing it".
+cmd  git show --stat 1824b9a
+out  floatfea/tolerances.py and scripts/regen_figures.py in the same commit.
+     The class moved and the sentence naming it did not.
 ```
 
-  **Closed when** the two sentences say what the cell is -- 7 units, 5 spans,
-  `subdiv=1`, and why -- or the cell is widened to the set they claim and the
-  figure is re-rendered. If it is widened, the entry's statement about which
-  candidate binds is re-taken with it (BP0).
+  **Closed when** `:426` names the row and its class as `floor_class()`
+  returns them, or the sentence is deleted.
 
-**R439. (BLOCKS -- one generator, THREE policies for a count in twenty
-lines, and the sentence stating the rule is refuted by the row above it,
-added in the same commit.)** `scripts/regen_figures.py:253-280`.
+**R452. (BLOCKS -- a number in `floatfea/tolerances.py` that does not
+describe the repository, in the entry this round edited, five lines above
+the generated figure that contradicts it.)** `floatfea/tolerances.py:400`.
 
 ```
-code :262 `_floor("rigid_mode_corpus_refused", "derived")`  -- a count,
-          floor-class, published                                    (NEW)
-code :273 `("retired_ratio_over_ceiling_on_corpus", "{ratio_over} of ...")`
-          -- a count, EXACT row, published, untouched
-code :278 "An exact row that disagrees between machines is staleness by Q8's
-     :279  rule, and IT IS NOT FLOOR-CLASS EITHER -- A COUNT IS NOT A
-     :280  MEASUREMENT AGAINST A TOLERANCE. It is left out"
-judge THE STATED GROUND FOR WITHHOLDING THE LOSS COUNT IS REFUTED BY THE ROW
-     SIXTEEN LINES ABOVE IT, written in the same commit. R427 was "one
-     generator, two policies, six lines apart"; the repair made one of the
-     two counts floor-class, left the sentence saying that cannot be done,
-     and left the third count exact. If `derived` is right for the refusal
-     count -- and I think it is -- then the reason the loss count is
-     withheld has to be restated, and the same question has to be asked of
-     `retired_ratio_over_ceiling_on_corpus`.
+code :399 "That is measured, not argued: over all 114 corpus frames
+     :400  below_bound == 6 and lambda_7 > bound and rigid_max < bound
+     :401  disagree on ZERO."
+cmd  grep "rigid_mode_corpus_frames" docs/milestones/F2_figures.md
+out  | rigid_mode_corpus_frames | 126 |
+cell MY OWN RE-RUN of the claim at 126 frames, one variable moved (the
+     corpus, not the predicate): 126 frames, 0 disagreements. THE CLAIM IS
+     STILL TRUE. The number beside it is stale by 12 frames.
+judge The entry references {{fig:rigid_mode_corpus_frames}} five lines later
+     and types 114 here. BI3 inside the file BI3 is about, and a different
+     species from R433, which named seven MACHINE-DEPENDENT values: 114 is
+     machine-independent and simply old.
 ```
 
-  **Closed when** `:278-280` states the rule the file actually follows, and
-  `retired_ratio_over_ceiling_on_corpus` is classed by that rule.
+  **Closed when** `:400` reads the figure reference or the sentence drops
+  the count.
 
-**R440. (BLOCKS -- a sentence added this round says a change to the
-reviewer's corpus "shows up as a disagreement". Nothing in the repository
-reads that file.)** `tests/test_report_carried.py:1033-1039`.
+**R453. (BLOCKS -- the report sentence for leaving R447 open is false in
+both halves, and one command the implementer ran this round prints the
+refutation. It also refutes half of R447 as I wrote it, which is mine.)**
+`docs/reports/F2/step-5.md` section 5.
 
 ```
-code :1037 "The corpus is the reviewer's and is not imported -- these are the
-     :1038  paragraphs it specifies, written out, SO A CHANGE TO EITHER ONE
-     :1039  SHOWS UP AS A DISAGREEMENT."
-cmd  grep -rn "report_ci_section" tests/ --include=*.py
-out  three hits, all comments: :919, :1034, :1081. NO READ.
-judge THE SHAPES ARE TRANSCRIBED, NOT LINKED. `tests/test_marker_exemption_
-     corpus.py` and `tests/verification/rung1/test_corpus_configurations.py`
-     both read their corpus file; this one does not, and the sentence claims
-     the property those two have. Same species as R424 -- a correct
-     mechanism described by a sentence one grep refutes -- in the file this
-     round rewrote.
+code s5 "**R447 stands and I am not claiming it**: rigid_mode_mechanism_
+     ceiling is the tightest floor-class row in the file and the entry does
+     not say so. It got tighter this round, not looser."
+cmd  python scripts/regen_figures.py --check     (this machine, at ab698c0)
+out  rigid_body_mode_ratio                1.1986e-14  1.6009e-14   1.3356x
+     rigid_mode_largest_rigid_eigenvalue  1.2727      1.4614       1.1483x
+     rigid_mode_mechanism_ceiling         1.6519      1.5243       1.0837x
+     clean_worst_ratio                    0.2564x     0.2765x      1.0784x
+     -- every other row at or under 1.0086x
+judge (a) THE TIGHTEST ROW IS rigid_body_mode_ratio AT 1.3356x, with 1.123x
+     of margin against FIGURE_FLOOR_CLASS_SPREAD = 1.5. The mechanism
+     ceiling is fourth.
+     (b) IT GOT LOOSER, NOT TIGHTER: 1.4314x last round (0.9606 against
+     1.3750) against 1.0837x now, so the margin went from 1.048x to 1.384x.
+     The widened cell raised the canonical value more than the local one and
+     closed the gap.
+judge AND HALF OF R447 WAS MY OWN ERROR. I wrote "every other floor-class
+     row on this machine is at or under 1.1483x"; rigid_body_mode_ratio was
+     `below`-class then with the same two values, so it printed 1.3356x in
+     the same table I was reading. A `below`-class row prints its spread
+     exactly as a `derived` one does. **Recorded as mine.**
 ```
 
-  **Closed when** the sentence says the shapes are transcribed and unlinked,
-  or the ids are read from the corpus file so the disagreement it promises
-  can occur.
+  **Closed when** section 5 says which row is tightest and in which
+  direction the mechanism row moved, both from the --check run, and R447 is
+  restated on the row it is actually about.
+
+**R454. (BLOCKS -- the R439 repair replaced a refuted reason with another
+refuted reason. The ground for withholding the loss count is now "nothing
+cites it", and four sentences in the tree cite it.)**
+`scripts/regen_figures.py:337-343`.
+
+```
+code :341 "What keeps it out is that no sentence anywhere needs it -- the
+     :342  contrast the reports draw is with the ratio"
+cmd  grep -rn "breached at more|indicted harder" floatfea/ tests/ scripts/ docs/milestones/
+out  floatfea/tolerances.py:650                    (the loss entry itself)
+     tests/test_counters_are_injected.py:164
+     tests/verification/rung1/test_rigid_body_modes.py:575
+     docs/milestones/F2.md:1784
+     -- four sentences, each of the form "it breached at MORE of the
+     reviewer clean frames THAN THE RATIO DID". Every one is a comparison
+     whose truth IS the loss count against the published one.
+cell MY OWN MEASUREMENT, one loop over the corpus: 126 frames, ratio_over
+     91, loss_over 101. THE SENTENCE IS TRUE. It is also uncheckable by any
+     reader, because 91 is a published figure and 101 is withheld on the
+     ground that nothing needs it.
+judge R439 was "the stated ground for withholding the loss count is refuted
+     by the row sixteen lines above it". This is the same shape one round
+     later: the new ground is refuted by four sentences, one of them in the
+     same file, and the round that wrote it also rewrote that entry.
+```
+
+  **Closed when** `retired_loss_over_ceiling_on_corpus` is published as a
+  `words` row like its two siblings and the four sentences reference it, or
+  the four sentences are reduced to what the published figures support.
+  Note that `tests/verification/rung1/test_rigid_body_modes.py:37` asserts
+  that figure is ABSENT, so publishing it moves that triple too.
 
 ---
 
 **Recorded, and lock items for step 4a (BU0). None of these touches the gate
 assertion, a tolerance, or the truth of a published figure.**
 
-**R441. The CV0 absence detector catches 0 of 20 unseen phrasings, and seven
-of the twenty are sentences already in the tree.** Measured against the
-shipped `_ABSENCE` predicate; the entries are in
-`tests/corpus/tree_prose_claims.txt`. The three controls -- the author's own
-phrasings -- are all caught. The misses include `nothing is asserted`,
-`asserted nowhere`, `never asserted`, `no assertion anywhere`, `read by
-nothing`, `not registered anywhere`, `is unused`, and `no such injection
-exists` (written this round at `F2.md:1920`). A probe over the guard's own
-roots finds **21 absence-shaped paragraphs it does not match, against the 13
-it does**.
+**R455. The negative control is satisfiable by writing the needle down, and
+R434 is re-admissible verbatim -- one shape of it without adding a control
+line at all.** Measured against the shipped module; the entries are in
+`tests/corpus/prose_triple_shapes.txt`. (a) `files("tests/**/*.py",
+"RIGID_MODE_FLOOR ")` -- the name plus a trailing space -- returns `none`,
+and the SHIPPED control `tau = RIGID_MODE_FLOOR * norm * EPS` contains that
+substring, so `ctl: floor_constant_name` passes and an absence claim is
+certified by a needle that matches nothing in `tests/`. (b)
+`defined("RIGID_MODE_BONUD")` returns `no`, which is neither `none` nor a
+bare count, so `_BARE_COUNT` does not fire and **no control is required at
+all** -- R434 in the one vocabulary word the control requirement does not
+reach. (c) The requirement is written on the shape of the ANSWER, so an
+absence spelled `0 of 12` escapes it. 0 of the 17 defect shapes in the new
+corpus are caught; the 5 that agree are allow-controls and declared design
+decisions. The module docstring already says a triple does not prove the
+claim is what the command measures, which is honest; what it also says at
+:50 is "A needle that cannot match fails its control", and that is the
+sentence these three refute.
 
-**R442. The RETIRED-ALIAS detector is 3 of 8, and its domain has four
-holes.** A fenced block in markdown, an assertion message in Python, a
-hyphenated alias, a blank line inside the phrase, and the word `retired`
-about a different quantity in the same paragraph all pass. Scope: `.py` and
-`.md` only; `ROOTS` excludes `docs/verification/` (R437) and everything
-outside those four; and `floatfea/tolerances.py` is skipped WHOLESALE rather
-than only at its retirement entries, so a present-tense alias anywhere in the
-1400-line file that declares the aliases is invisible.
+**R456. `tests/prose_triple_controls.txt` says it is excluded from the
+vocabulary own searches and it is not, and three of its eleven lines are a
+silently collapsed duplicate.** `_paths()` excludes CONTROLS in the GLOB
+branch only, so `count("tests/prose_triple_controls.txt",
+"RIGID_BODY_MODE_RATIO")` returns **5**. `ratio_counter_name` is planted
+three times identically; `_CONTROL_LINES` is a dict comprehension, so 11
+lines parse to 9 ids and the LAST wins -- a bad duplicate placed first is
+invisible, and `test_every_control_line_is_used_by_a_triple` compares sets
+and cannot see it.
 
-**R443. Two vocabulary holes, both measured.** (a) A glob that matches no
-file returns `none` from `files()` and `0` from `count()`, silently -- so a
-triple can certify an absence with a pattern that reaches nothing. AM5 says
-an empty parameter set is an error and not a skip, and this is that rule
-inside the new guard. (b) The annotation strip removes any line matching
-`^\s*(?:#\s*)?(?:claim|cmd|out):`, which includes a Python variable
-annotation named `out`: `count("tests/test_tree_prose_consistent.py",
-"list[tuple[int, str]]")` returns **5** where the file has **6**.
+**R457. CV3 rules correctly on 15 of 20 unseen shapes, up from 3 of 12, and
+the substantive miss is that it decides per PARAGRAPH and not per RUN.**
+`tests/corpus/report_ci_section.txt`, twenty new entries. One conclusion
+anywhere in a paragraph satisfies every run id in it, so "Run 35489487935
+had conclusion success. Run 35545894507 is also named here." is allowed --
+the R412 shape with a neighbour, and the shape section 0a would have had if
+two of its three runs had been left bare. `_joined` strips commas, spaces,
+hyphens and en-dashes after the word `run` but not underscores. Two false
+positives: a conclusion whose value wraps to the next line, and a genuine
+result pasted on the same line as the gh command that produced it, which
+`_COMMANDISH` discards.
 
-**R444. CV3 closed one hole in `_CONCLUSION` and opened another; 3 of 12
-unseen shapes refused.** `tests/corpus/report_ci_section.txt`, twelve new
-entries. The regex now matches a bare conclusion VALUE anywhere in the
-paragraph, so a value inside a `--jq 'select(.conclusion=="success")'`,
-inside `grep -c failure`, inside "was not a failure", or in an unrelated "the
-legs were skipped" all satisfy it. One false positive in the other
-direction: `100,200,300,400` is joined by the thousands strip into a
-twelve-digit run id and the paragraph is then required to carry a conclusion.
-
-**R445. Four `_floor(...)` marks still decide a figure against a RETIRED
-ceiling.** `scripts/regen_figures.py:77, 83, 291, 297` --
-`rigid_body_mode_ratio` and `rigid_body_counter_ratio` against
-`RIGID_BODY_MODE_RATIO`, `rigid_body_subspace_loss` and
-`rigid_body_counter_loss` against `RIGID_BODY_SUBSPACE_LOSS`, both retired at
-Q7/CS2. R428's species at four sites its condition did not name, and R399
-asked for the general form two rounds ago.
-
-**R446. One `_ABSENCE_EXEMPT` row describes its own sentence wrongly.**
-`("tests/verification/rung1/test_corpus_configurations.py", "nothing
-asserts")`, reason "the sentence says the curve may not be asserted on, not
-that no assertion exists". The sentence at `:1590` reads "The fitted curve is
-a DIAGNOSTIC and nothing asserts it" -- descriptive, not prescriptive, and it
-is the exact conflation R425 was a finding about. The claim is TRUE today (I
-checked: `fit` is printed and the function ends `assert True`) and nothing
-would notice if it stopped being. The other six rows are honest policy
-statements and I read all seven.
-
-**R447. `rigid_mode_mechanism_ceiling` is the tightest floor-class row in the
-file and the entry does not say so.** `scripts/regen_figures.py --check`
-here prints `0.9606` committed against `1.3750` local, **spread 1.4314x**
-against `FIGURE_FLOOR_CLASS_SPREAD = 1.5` -- `1.048x` of margin. Every other
-floor-class row on this machine is at or under `1.1483x`. A fourth machine
-reddens the build on this row before it reddens on anything else.
-
-**R448. `derived` drops the denominator.** `rigid_mode_corpus_refused`
-renders `"33 of 126"`, and `compare()`'s numeric branch reads only the
-LEADING number for a floor-class row. Off the canonical machine the `126` is
-compared by nothing. `counter_defect_boundary` uses kind `words` for exactly
-this reason.
+**R458. The CW1 reading is the whole enforcement now, and its declared scope
+is five roots plus one file, `.py` and `.md` only.** Out of scope and not
+declared out: `PLAN.md`, `docs/conventions.md` (locked and authoritative for
+frames and signs), `docs/hsp-coupling.md`, `docs/closure/`,
+`.github/workflows/*.yml`, and every `tests/corpus/*.txt` header -- including
+the two I write. And a claim/cmd/out written inside a markdown fenced block
+is parsed by nothing: `_markdown_prose` blanks fenced lines, so a fenced
+triple reads as checked and is checked by no one. Measured: 0 triples found
+in a fenced block.
 
 ## Tolerances touched
 
 **NONE. No constant was created, retired, or moved.**
 
 ```
-cmd  git diff a0b2873..d5d85ed -- floatfea/ | grep -E "^[+-][A-Z_]+.*Final"
+cmd  git diff ed67a7d..HEAD -- floatfea/ | grep -E "^[+-][A-Z_]+.*Final"
 out  (empty)
-cmd  git diff --stat a0b2873..d5d85ed -- floatfea/
-out  floatfea/tolerances.py | 90 insertions, 31 deletions -- ONE FILE, and
-     every line of it a comment or a `# RETIRED-ALIAS:` declaration
-judge NO VALUE WAS WIDENED AND NO VALUE MOVED. What changed in that file is
-     prose: R416's clause, R423's numbers, R426's two candidates, R427's
-     window, and two aliases. Two of those prose changes are R434 and R435
-     and one is R438, which is why this step holds -- but not one of them
-     moves a threshold or a decision.
+cmd  git diff --stat ed67a7d..HEAD -- floatfea/
+out  floatfea/tolerances.py | 72 ++-   -- ONE FILE, every line a comment
+judge NO VALUE WAS WIDENED AND NO VALUE MOVED. What changed is prose: the
+     R434 and R435 triples, the R438 two candidates and the subdiv reason.
+     Two of those prose neighbourhoods carry R451 and R452, which is part of
+     why this step holds -- but not one of them moves a threshold or a
+     decision.
 cmd  my whole-suite run includes the shipped literal scanner over tests/
-out  2516 passed at d5d85ed -- no undeclared literal entered tests/ this
-     round and nothing was added to `tolerance_marker_exemptions.txt`.
+out  2537 passed at ab698c0 -- no undeclared literal entered tests/ this
+     round and nothing was added to tolerance_marker_exemptions.txt.
 ```
 
 | name | old | new | form | counter | basis located |
@@ -491,91 +478,96 @@ out  2516 passed at d5d85ed -- no undeclared literal entered tests/ this
 
 **Step 5 stays OPEN. Step 6 does not begin.**
 
-**CV0 is the right answer to the forty-eighth verdict and I want that on the
-record before the list.** A guard that runs a prose triple is worth more than
-eight repairs; the `eval` surface is closed properly; the annotation-strip
-defect was found by its own author; and `e332f38` shows the discipline
-working unprompted -- a canonical render that refuted a sentence two commits
-old, with the refutation in the commit message and both numbers beside it.
-Three of the implementer's own claims were refuted by running them this round
-and all three are in the report. **The fourth is R434, and it is inside the
-sentence the new guard certifies.**
+**CW4 asked for PASS or a named head. The head is R449** -- a CI run
+reported as a failure that was cancelled, with its ladder reported green
+when the ladder was cancelled, beside the command that says so. I am not
+classing that as apparatus. CE1 exists because CI was red at three
+consecutive reviewed commits and no report said so; R412 was a run named
+with no result; the species is "the CI record in the report is not the CI
+record", and this is that species with a cmd line in front of it. It also
+propagated: the directive I was handed repeated the wording, and I would
+have published it unchecked.
 
-**What holds is seven items.**
+**Six items hold.**
 
-1. **R434 -- a triple whose command cannot fail**, beside a claim that is
-   false in both halves. `tolerances.py:548`. The needle carries a right
-   paren that occurs nowhere, so `out: none` is printed whatever the tree
-   does, and `assert over` at `test_rigid_body_corpus.py:259` compares
-   against the constant the claim says nothing compares against. My own
-   verdict-48 grep missed that assert; the ablation is in the finding.
-2. **R435 -- the same shape one entry down**, `tolerances.py:621`.
-3. **R436 -- two absence sentences refuted by their own function bodies**,
-   `modes.py:566` against `:596` and `corpus.py:236` against `:259`, both in
-   docstrings this round rewrote, both invisible to the new pattern.
-4. **R437 -- the ladder document still defines V1.1 and G2.1 as the retired
-   eigenvalue ratio**, `docs/verification/README.md:16-18`, outside the
-   guard's roots and inside what `CLAUDE.md` § Testing points at.
-5. **R438 -- "every unit system and span the corpus uses" is 6 of 19 units
-   and 5 of 31 spans**, and over the set the sentence names the mechanism
-   reaches `1.5243` here against the cell's `1.3750` -- which puts it ABOVE
-   the six (`1.4614`) and reverses the round's own conclusion about which
-   candidate binds. The gate is NOT breached: 0 of 350 mechanisms escape.
-6. **R439 -- three policies for a count in twenty lines**, with the sentence
-   stating the rule refuted by the row sixteen lines above it.
-7. **R440 -- "a change to either one shows up as a disagreement"**, with
-   nothing in the repository reading the file.
+1. **R449 -- gh run view 35545894471 returns cancelled, not FAILURE, and its
+   ladder job was cancelled, not green.** Report section 0a.
+2. **R450 -- a triple counts its own claim and cmd lines**, because the
+   R443b fix exempts any annotation line whose needle contains an equals
+   sign. out:6 is the tree 4 plus 2 of itself, and the claim names "the two
+   in the class vocabulary", where there are none.
+3. **R451 -- "this row is derived rather than exact"**, in the file whose
+   sibling commit made it words. BP0.
+4. **R452 -- "over all 114 corpus frames"**, where the corpus is 126 and the
+   generated figure saying so is referenced five lines away. The claim
+   itself I re-measured and it holds at 126.
+5. **R453 -- the sentence leaving R447 open is false in both halves**: the
+   tightest floor-class row is rigid_body_mode_ratio at 1.3356x, and the
+   mechanism row went from 1.4314x to 1.0837x, which is looser.
+6. **R454 -- "no sentence anywhere needs it"**, with four sentences in four
+   files needing it, one of them in tolerances.py.
 
-**The finding behind the findings, third round running.** Five of these seven
-are sentences written in the commit that repaired the same species elsewhere,
-and two of the five are inside the mechanism built to stop it. CP2 named the
-species and CV0 now enforces it for three phrasings; **the species survives
-because the enforcement is a keyword list and the defect is not.** R441-R443
-are the measurement of that. The answer is not a longer list -- it is that a
-`claim:` is read by a human against its `cmd:` before either is believed,
-exactly as the guard's own docstring already says. Two of the first nine
-triples in this repository fail that reading, and both were written by the
-hand that wrote the rule.
+**The finding behind the findings, fourth round running, and it has changed
+shape.** Last round I wrote that the species survives because the
+enforcement is a keyword list and the defect is not. The list is gone and
+the species is unchanged: five of these six are sentences written in the
+commit that repaired the same species elsewhere. What CP2 names is not a
+detection problem at all -- it is that the attention goes to the thing being
+fixed and the prose written AROUND the fix inherits none of the discipline
+applied TO it. R450 is the sharpest instance this project has produced: the
+guard built to stop a claim that is not what its command measures shipped a
+claim that is not what its command measures, and the command was made wrong
+by the same commit other fix. **The reading is the right answer and the
+reading has to cover the repair own prose**, which is the one place four
+rounds of this have landed. The cheapest mechanical help available is not
+another pattern: it is that any commit changing a figure CLASS, a regex or
+a generator runs `grep -rn` for the old class name and the old number before
+it is committed, which is BP0 with a command attached.
 
-**Adversarial corpus (BE3): 51 new entries across two files, all unseen by
-the implementer, committed separately.**
+**Adversarial corpus (BE3): 42 new entries across two files, all unseen by
+the implementer, committed separately at `05390a5`.**
 
-**`tests/corpus/tree_prose_claims.txt`, NEW, 39 entries. The shipped guard
-rules correctly on 6, and all six are controls written in the author's own
-phrasing.** Twenty unseen absence phrasings: **0 of 20**. Eight alias
-shapes: **3 of 8**. Five vocabulary shapes and three scope shapes: **0 of
-8**. Seven of the twenty absence phrasings are sentences already in the
-tree, and three of those became R436, R440 and R441.
+**`tests/corpus/prose_triple_shapes.txt`, NEW, 22 entries. The shipped code
+agrees with 5, and all five are allow-controls or design decisions the
+module declares. 0 of the 17 defect shapes.** Four of the seventeen are
+R434 re-admissible; one of those four needs no new control line, because a
+shipped one already contains the malformed needle. Three are R450 and were
+found by running the shipped `_ANNOTATION` over the tree rather than reading
+it.
 
-**`tests/corpus/report_ci_section.txt`, 11 to 23. Twelve entries, and the
-implementer's check caught 3 -- one of which is a false positive.** The seven
-shapes from last round are re-measured here at **7 of 7 refused**, which is
-the CV3 claim and it holds. The twelve new ones measure the other half of the
-rewrite: four of them are the R412 shape surviving one level up, inside a jq
-filter, a grep needle, a negation, or an unrelated `skipped`.
+**`tests/corpus/report_ci_section.txt`, 23 to 43. Twenty entries, 15 ruled
+correctly.** Against 3 of 12 last round, and all four of the R412-one-level-
+up shapes from last round are refused now. CV3 is the best-measured repair
+in this round and I want that said next to R449, which is in the same
+section of the same report.
 
 ```
 cmd  python -m pytest tests/ -q --ignore=tests/verification   (after my adds)
-out  1113 passed -- the corpus files are data and break nothing
+out  9 failed, 1125 passed -- test_every_corpus_shape_is_transcribed and
+     eight cascades in test_report_guard_states.py. THAT IS THE R440 REPAIR
+     WORKING: my 20 new ids are not transcribed and the guard says so. It is
+     not a regression, and the 2537-pass run above is at ab698c0, before my
+     commit.
 ```
 
-**Not gates on step 5, into the next report's Carried section:** R441, R442,
-R443, R444, R445, R446, R447, R448, R419, R431, R432, R433, R410, R411, R413,
-R414, R400, R401, R402, R390, R391, R392, R393, R383, R370, R371, R372, R373,
-R374, R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second
-half, R330, R331, R332, the section 9 status-versus-subject disagreement,
-R321, R322, R300, R291, R292, R281, R231, R244, R245, R275, R230, R261, the
-underlying gap in R276, R277, R262, R264, R266, the two R248 residues,
-R249-R252, R225-R228, R232, R233, and everything already at 4a. **R421, R422,
-R423, R424, R425, R426, R427, R428, R429 and R430 are closed.** R411 is
-unchanged and stays open. R426 closed and reopens in substance as R438; R427
-closed and reopens as R439; R428 closed and reopens at four unnamed sites as
-R445.
+**Not gates on step 5, into the next report Carried section:** R455, R456,
+R457, R458, R447 (restated), R419, R431, R432, R433, R410, R411, R413, R414,
+R400, R401, R402, R390, R391, R392, R393, R383, R370, R371, R372, R373,
+R374, R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350
+second half, R330, R331, R332, the section 9 status-versus-subject
+disagreement, R321, R322, R300, R291, R292, R281, R231, R244, R245, R275,
+R230, R261, the underlying gap in R276, R277, R262, R264, R266, the two R248
+residues, R249-R252, R225-R228, R232, R233, and everything already at 4a.
+**R434, R435, R436, R437, R438, R440, R444, R445, R446 and R448 are closed.**
+R439 closed and reopens in substance as R454; R443b closed and reopens as
+R450; R447 stands, restated, with half of it withdrawn as my error.
 
-**Forty-nine rounds have found no element defect and this round found none
-either.** 858 mechanism configurations, 350 genuine seventh zero modes, zero
-escapes; 126 corpus frames with the residual green at all of them; ten
-determinism legs executed on a tree byte-identical to the one under review in
-`tests/verification`, `scripts` and `.github`. It still means "not yet
-contradicted": ladder 5 has printed `OK -- 0 directories ran` every time it
-has run, and V5.1 against CalculiX is the witness that has not spoken.
+**Fifty rounds have found no element defect and this round found none
+either.** 392 mechanism configurations over all seven released members, 22
+units and 39 spans, zero escapes, and the shipped figure reproduced to four
+digits by a sweep the implementer did not write; 126 corpus frames with the
+residual green at every one; ten determinism legs executed on a tree
+identical in `tests/verification` and `.github` to the one under review. It
+still means "not yet contradicted": ladder 5 has printed `OK -- 0
+directories ran` every time it has run, and V5.1 against CalculiX is the
+witness that has not spoken.
