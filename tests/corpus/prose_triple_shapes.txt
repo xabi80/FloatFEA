@@ -104,3 +104,38 @@ id=an_absence_spelled_with_emphasis shape=out_double_star_none_double_star_or_ou
 
 # --- CONTROL, AND IT MUST STAY ALLOWED.
 id=control_a_needle_that_occurs_in_the_tree_and_in_its_own_control shape=cmd_count_tests_verification_rung1_test_rigid_body_modes_py_zero_modes_under_the_bound_LPAREN_out_3_ctl_zero_modes_call_site expect=allowed measured=allowed_and_the_answer_moves_if_a_call_site_is_added_or_removed
+
+# ==========================================================================
+# ADDED AT THE FIFTY-SECOND VERDICT (HEAD b21760b), entries 36-45.
+#
+# CY3 answered R464 by INVERTING the control rule from containment to
+# EQUALITY: _CONTROL_LINES[ctl] must now BE the needle, character for
+# character. That closes my four re-admissions through already-shipped
+# controls, and it is a real fix for what I named.
+#
+# It also turns control_defect() into a REGISTRY. The control file is now a
+# list of needles, so the question "can this needle match anything?" --
+# which the module docstring at lines 42-50 still states as the whole point
+# -- is answered by copying the needle into the file. Every entry below was
+# run against the shipped control_defect() AND against
+# test_a_prose_triple_still_says_what_the_tree_says, so SHIPS_GREEN means
+# the triple would pass the whole module, not merely one predicate.
+# ==========================================================================
+
+# --- R434, RE-ADMITTED BY ONE LINE THAT IS THE NEEDLE ITSELF. ---
+id=a_misspelled_constant_needle_planted_verbatim shape=cmd_files_over_tests_globstar_py_for_RIGID_MODE_FLOR_out_none_ctl_a_new_line_whose_text_is_RIGID_MODE_FLOR expect=caught_a_needle_that_is_a_typo_of_a_real_constant_matches_nothing_and_certifies_an_absence_that_is_true_of_the_typo_and_not_of_the_code measured=SHIPS_GREEN_control_defect_returns_None_and_the_evaluated_answer_is_none_so_the_out_agrees
+id=a_unicode_hyphen_lookalike_needle_planted_verbatim shape=cmd_count_over_tests_globstar_py_for_RIGID_MODE_FLOOR_with_a_unicode_hyphen_u2010_where_the_first_underscore_belongs_out_0 expect=caught_this_is_R434_with_an_invisible_character_instead_of_a_paren measured=SHIPS_GREEN
+id=a_lowercased_constant_name_as_a_needle_planted_verbatim shape=cmd_count_over_tests_globstar_py_for_rigid_mode_floor_in_lower_case_out_0 expect=caught measured=SHIPS_GREEN
+id=a_whole_english_sentence_as_a_needle_planted_verbatim shape=cmd_count_over_tests_globstar_py_for_the_sentence_nothing_asserts_on_this_ceiling_at_all_out_0 expect=caught_a_claim_of_absence_whose_needle_is_a_sentence_nobody_would_ever_write_is_the_purest_form_of_the_defect measured=SHIPS_GREEN
+id=a_nonsense_token_as_a_needle_planted_verbatim shape=cmd_count_over_floatfea_star_py_for_zzzznotpresent_out_0_ctl_a_new_line_whose_text_is_zzzznotpresent expect=caught measured=SHIPS_GREEN_nothing_asks_whether_the_needle_resembles_anything_in_the_tree
+id=defined_of_a_misspelled_constant_with_the_misspelling_planted shape=cmd_defined_of_RIGID_MODE_BONUD_out_no_ctl_a_new_line_whose_text_is_RIGID_MODE_BONUD expect=caught_this_is_the_shipped_shape_defined_of_a_misspelled_constant_which_the_rule_refuses_ONLY_while_nobody_plants_the_misspelling expect_note=the_shipped_shape_is_refused_because_its_ctl_is_the_empty_string_and_not_because_the_misspelling_is_detected measured=SHIPS_GREEN_once_the_misspelling_has_a_control_line
+
+# --- WHAT THE MODULE SAYS ABOUT ITSELF, MEASURED. ---
+id=the_docstring_sentence_a_needle_that_cannot_match_fails_its_control shape=tests_test_tree_prose_consistent_py_line_50_with_lines_42_to_49_stating_that_a_command_proves_nothing_unless_the_needle_it_searches_for_can_be_found_at_all expect=true_or_regenerated_in_the_commit_that_inverted_the_rule measured=FALSE_under_equality_the_needle_IS_its_control_line_so_the_check_establishes_nothing_about_findability_and_six_of_the_ten_shapes_here_ship_green
+id=the_control_defect_docstring_still_enumerates_the_containment_rule shape=the_three_numbered_rules_in_the_control_defect_docstring_of_which_rule_3_reads_THE_NEEDLE_MATCHES_ITS_OWN_CONTROL_AND_NO_OTHER_a_needle_matching_several_planted_lines_is_a_needle_nobody_has_thought_about expect=rewritten_with_the_rule_the_function_now_implements measured=STALE_under_equality_matching_several_planted_lines_can_only_mean_two_identical_plants_which_is_not_what_that_sentence_describes
+
+# --- REFUSED, BUT NOT BY control_defect. RECORD WHICH MACHINE CAUGHT IT. ---
+id=an_absence_narrowed_to_a_glob_reaching_exactly_one_unrelated_file shape=cmd_count_over_floatfea_underscore_version_py_for_RIGID_MODE_FLOOR_out_0_ctl_floor_constant_name expect=caught measured=refused_but_control_defect_returned_None_and_what_refused_it_was_the_R443a_empty_glob_ValueError_from_the_equality_test
+
+# --- CONTROL, AND IT MUST STAY ALLOWED. ---
+id=control_the_shipped_last_below_triple_under_the_inverted_rule shape=cmd_count_over_tests_verification_rung1_test_rigid_body_modes_py_for_last_below_ctl_last_below_needle_whose_planted_text_is_now_the_bare_token expect=allowed measured=allowed_and_the_equality_rule_holds_because_the_plant_was_regenerated_to_the_bare_needle_in_the_same_commit
