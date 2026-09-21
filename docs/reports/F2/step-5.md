@@ -8802,3 +8802,403 @@ eight repairs.**
 **What is not claimed.** Step R has not run. R431, R432, R433 and R419 are
 untouched. The new guard's coverage is a pattern list I wrote, measured
 against nothing but the sentences it was written for.
+
+---
+
+# Revision 24 — forbid the sentence; the triple keeps its command honest
+
+Answers: verdict 49 @ ed67a7d
+
+**2026-09-20.** Commits since the forty-ninth verdict, listed in §10.
+
+## 0. CI at `d5d85ed`, the commit verdict 49 judged — conclusion **SUCCESS**
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 49 at `d5d85ed` through the report's own `Answers:` line. Run `35489487935`, event `push`, conclusion **success**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint, unit and guards | 1021 | 0 | 0 |
+| the verification ladder | 1407 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 0 not green.**
+
+**Failing tests named in the log: 0.**
+
+## 0a. This round's other runs, each with what it concluded
+
+```
+claim §0 above is the run at the commit verdict 49 judged. This round has two
+      more and each is named with its result
+cmd   gh run view 35545894507 --json conclusion,jobs   -- this round's dispatch
+out   conclusion **FAILURE**, event workflow_dispatch, head 7895944
+      10 "CI determinism -- leg (n)" success, "ten legs agree" success,
+      "the verification ladder" success, "lint, unit and guards" FAILURE
+      -- the figures stamp and this report not yet being written
+cmd   gh run view 35545894471 --json conclusion        -- this round's push
+out   conclusion **FAILURE**, same reason, ladder green
+judge THE CONCLUSION IS THE HEADLINE AND THE JOBS ARE THE MEASUREMENT.
+```
+
+## 1. CW1 — the detectors are deleted, and that is the finding acted on
+
+**The reviewer's closing point is the one I built to.** A keyword list cannot
+converge on "this sentence makes an unchecked claim", and the measurement is
+not close.
+
+```
+cmd   the reviewer's unseen phrasings, against the shipped detectors
+out   0 of 20 absence phrasings caught, and 3 of 8 alias shapes
+out   over the guard's own roots, 21 absence-shaped paragraphs missed
+      against 13 matched
+judge EVERY SHAPE EITHER DETECTOR CAUGHT WAS ONE I HAD WRITTEN.
+```
+
+```
+code both detectors are gone, with their exemption table and their alias
+     declarations. What is left is the triple runner.
+code `CLAUDE.md` carries the prohibition: a claim about this repository
+     written in a comment, a docstring or a plan is a test, a triple, or
+     deleted.
+code `docs/SUPERVISOR.md` item 6 carries the reading, and asks the reviewer
+     to run a triple's `cmd:` with the needle changed and confirm the answer
+     moves -- which is how R434 was found.
+judge THIS IS LESS AUTOMATED COVERAGE AND IT IS DELIBERATE. Thirteen such
+     sentences were found by reading in two rounds, against the list's three.
+     A guard that catches a sixth of its domain while reading as complete is
+     worse than a rule saying the sentence may not exist. Both are in a
+     standalone `process:` commit citing CW.
+```
+
+## 2. CW0 — R434, and the control that would have caught it
+
+```
+cell the reviewer's own test, applied to every triple: change the needle and
+     see whether the answer moves
+out  it did not, for two of the nine. `out: none` was printed by a needle
+     that matches nothing anywhere, under a claim false in both halves.
+code every `cmd:` whose `out:` is `none` or a bare count now names a planted
+     line in `tests/prose_triple_controls.txt`, and the test asserts the same
+     needle is found there. Nine triples, nine controls.
+code R443's two vocabulary holes, both closed: a glob matching no file
+     raises rather than answering `none`, and the annotation strip excludes
+     an annotated assignment, so a Python `out:` declaration is no longer
+     eaten -- it had made a count over the guard itself read one short
+cmd  python -m pytest tests/test_tree_prose_consistent.py -q
+out  22 passed
+```
+
+**R434's claim was false in both halves and the repair says what is true.**
+Three test files name the retired ratio and one asserts on it — the assertion
+requires some corpus frame to still exceed the retired ceiling, which is the
+retirement's own evidence rather than a gate on the element. It is named as
+that in the entry and in both docstrings that denied it. R435 is the same
+shape one entry down; there the "by no assertion" half was true and the count
+was not.
+
+## 3. CW1's other half, and CW2
+
+- **R436.** Two sentences refuted by their own function bodies, thirty and
+  twenty-three lines below them. Both say what the bodies do.
+- **R437.** `docs/verification/README.md` states the two halves, with the
+  eigenvalue ratio quoted as retired. The guard's roots now include
+  `docs/verification/` and `CLAUDE.md`.
+- **R440.** The shapes corpus is read for its ids, so a shape the reviewer
+  adds and nobody transcribes is red. The sentence claiming that property
+  while nothing read the file is gone.
+- **R444.** The conclusion must be the word and the value together, on a line
+  that is not a command: a `--jq` filter, a `grep` needle, a negation and an
+  unrelated `skipped` all satisfied the bare-value version. The right-hand
+  dot guard is gone, and separators are joined only after the word `run`, so
+  a plain list of numbers is a list again.
+
+**CW2 / R438 reverses a conclusion I published, and the gate does not move.**
+
+```
+cmd   the cell as shipped, against the set its sentence claimed
+out   7 units x 5 spans, against 19 unit values and 31 spans in the corpus --
+      and one of the seven units is not a unit the corpus uses
+code  the cell is now `{{fig:rigid_mode_mechanism_cell}}`, of which
+      `{{fig:rigid_mode_mechanism_count}}` really carry a seventh zero mode
+out   `{{fig:rigid_mode_mechanism_ceiling}}` at the highest, against
+      `{{fig:rigid_mode_largest_rigid_eigenvalue}}` for the six -- so THE
+      MECHANISM IS THE BINDING SIDE, which is the opposite of what the entry
+      said, and it binds on BOTH machines rather than only on one
+judge NONE OF THE MECHANISMS ESCAPES THE BOUND and the gate is unchanged:
+      both candidates are floor-class rows against `RIGID_MODE_BOUND`, so
+      neither clearance was ever written down and the answer reversing costs
+      nothing. `subdiv` is pinned to 1 and the reason is now written where
+      the cell is: above it the release stops being a mechanism.
+```
+
+## 4. R439, R448, R445 — one rule for a count, and it caught a row of mine
+
+```
+code THE RULE, written once: a count is published when something cites it,
+     and its CLASS is decided by whether it can move between machines.
+out  both published counts are `words` -- the word sequence exact and BOTH
+     numbers compared, so `derived` no longer drops the denominator of
+     `N of M` off the canonical machine (R448).
+out  "a count is not a measurement against a tolerance" is withdrawn. The
+     loss count stays out because nothing cites it, which is the reason that
+     survives.
+out  the four retired figure rows are `derived` rather than measured against
+     retired ceilings (R445, four sites R428's condition did not name).
+cell AND THE RULE CAUGHT A ROW FROM ITS OWN ROUND. `rigid_mode_mechanism_count`
+     shipped plain; the canonical render refused it -- `350` here against
+     `347` there -- because how many of 858 configurations carry a seventh
+     zero mode is decided by a spectrum. It is `words`.
+```
+
+## 5. What I did not do
+
+- **R441, R442, R443's residue, R446, R447** — R441 and R442 are the
+  measurement of the detectors and are answered by deleting them; R446's
+  exemption table went with them; R443's two holes are closed in §2. **R447
+  stands and I am not claiming it**: `rigid_mode_mechanism_ceiling` is the
+  tightest floor-class row in the file and the entry does not say so. It got
+  tighter this round, not looser.
+- **R431, R432, R433** — the suite line's sentence about what it excludes,
+  a local literal duplicating `WIDEN`, and seven machine-dependent numbers
+  typed into `tolerances.py`. R431 is right and the number is correct for
+  what it counts; all three are apparatus and none is touched this round.
+- **R419, R429's residual, R410, R411, R413, R414** and the rest of the 4a
+  list.
+- **Step R** — the four F1 reader tolerances, planned and not executed.
+
+## 6. CW4 — what I am asking for, and what the gate rests on
+
+**The gate has not moved for five rounds and `floatfea/` carries no
+executable change in any of them.** What the reviewer has measured against
+it:
+
+```
+out  858 configurations over the corpus's own unit and span sets, 350 of them
+     a genuine seventh zero mode: NONE escapes the bound
+out  two independent no-vacuous-pass sweeps: no decided frame whose six are
+     not all under the bound, closest approach 137x
+out  the counter's detection edge SOLVED rather than sampled -- the response
+     is linear, so the give-back at which the gate stops refusing is known
+     and the shipped counter is 1.6033x under it in defect size
+out  126 corpus frames, the residual holding at every one, and undecidable
+     published as a domain with its members named
+judge NO ELEMENT DEFECT IN FIFTY ROUNDS, and that still means "not yet
+     contradicted": ladder 5 has printed `OK -- 0 directories ran` every time
+     it has run, and V5.1 against CalculiX is the witness that has not spoken.
+```
+
+**Every item this round is apparatus under BU0** — prose, a figure's class, a
+guard's pattern. None touches the gate assertion, a tolerance value, or the
+element. I am asking for **PASS** on step 5 with the 4a list carried, or for
+**HOLD** naming the head item if the reviewer reads one of them as reaching
+the gate.
+
+## 7. What is open
+
+- **R447** and the 4a list: R441's residue, R419, R429's residual, R410,
+  R411, R413, R414, R400, R401, R402, R390, R391, R392, R393, R382, R383,
+  R384, R370, R371, R372, R373, R374, R362, R363, R364, R354, R355, R356,
+  R357, R347, R348, R349, R350, R330, R331, R332.
+- **Step R** — the four F1 reader tolerances, planned and not executed.
+- **R231, R244, R245, R275** — the remaining Q8 values.
+- **R230**, reopened by my own error at revision 3, and mine to leave open.
+
+## 8. The whole suite, at the commit this revision is committed on top of
+
+**Whole suite at `1824b9a`: 2169 passed, 0 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit, excluding 358 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py) -- which the supervisor runs at the commit that carries it. R339: the count of what is excluded is part of the line, so a reader can size it without running anything.
+
+## 9. Sites named by findings and not touched
+
+Generated: `python scripts/untouched_sites.py`. The rows are the guard's own
+`SITES` and `TOUCHED`, imported rather than re-derived, so the table cannot
+enumerate a different set than the check does. The reason column is mine and
+carries the literal `no change`, which is the string the guard looks for.
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R434 | `test_rigid_body_corpus.py:259` | the file is touched and this line number is the old one | **no change** — the verdict's short spelling of the file in the row above |
+| R434 | `tests/test_no_tolerance_literals.py` | the file is untouched | **no change** — the finding quotes this file as a place the species also occurs or a rule is stated, not as a site this item asks to edit |
+| R434 | `tests/verification/rung1/test_rigid_body_corpus.py:247` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R436 | `corpus.py:259` | the file is touched and this line number is the old one | **no change** — the verdict's short spelling of the file in the row above |
+| R436 | `modes.py:596` | the file is touched and this line number is the old one | **no change** — the verdict's short spelling of the file in the row above |
+| R437 | `docs/verification/README.md:16` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R438 | `regen_figures.py:127` | the file is touched and this line number is the old one | **no change** — the verdict's short spelling of the file in the row above |
+| R438 | `scripts/regen_figures.py:127` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R438 | `scripts/regen_figures.py:128` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R438 | `scripts/regen_figures.py:129` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R439 | `scripts/regen_figures.py:253` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R439 | `scripts/regen_figures.py:254` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R439 | `scripts/regen_figures.py:263` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R439 | `scripts/regen_figures.py:264` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R439 | `scripts/regen_figures.py:265` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R439 | `scripts/regen_figures.py:266` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R439 | `scripts/regen_figures.py:267` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R439 | `scripts/regen_figures.py:268` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R439 | `scripts/regen_figures.py:269` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R439 | `scripts/regen_figures.py:270` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R439 | `scripts/regen_figures.py:271` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R439 | `scripts/regen_figures.py:272` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R440 | `tests/test_report_carried.py:1039` | the file is touched and this line number is the old one | **no change** at these line numbers — the file is touched and the block moved. The repair is in the section this row's finding points at |
+| R440 | `tests/verification/rung1/test_corpus_configurations.py` | the file is untouched | **no change** — the finding quotes this file as a place the species also occurs or a rule is stated, not as a site this item asks to edit |
+| R441 | `F2.md:1920` | the file is touched and this line number is the old one | **no change** at this line — `no such injection exists` is one of the twenty phrasings the deleted detector missed, and the sentence it is in was rewritten by the plan commit this round; the line number is the old one |
+| R441 | `tests/corpus/tree_prose_claims.txt` | the file is untouched | **no change** — the reviewer's corpus, refused to me. It is the measurement the repair is scored against, and the section this row points at reports what the shipped code did on it |
+| R444 | `tests/corpus/report_ci_section.txt` | the file is untouched | **no change** — the reviewer's corpus, refused to me. It is the measurement the repair is scored against, and the section this row points at reports what the shipped code did on it |
+| R446 | `tests/verification/rung1/test_corpus_configurations.py` | the file is untouched | **no change** — the exemption table this row is about was DELETED with the detector it belonged to (CW1), so there is nothing left at this site to repair |
+
+## 10. Carried
+
+Generated: `python scripts/carried_table.py <verdict> docs/reports/F2/step-5-answers.json`. The row set, the class and the subject of every row are read from the verdict; the answers file carries a state and a section pointer, and the pointer is resolved against this report by `tests/test_report_carried.py`.
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R223 | **carried** | closed |
+| R224 | **carried** | closed |
+| R225 | **open** — carried from an earlier verdict | carried. R250, |
+| R226 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R227 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R228 | **open** — carried from an earlier verdict | carried. R250, |
+| R230 | **open** — §7 | OPEN by instruction, correctly listed. |
+| R231 | **open** — §7 | OPEN, unblocked. Step R has not run. |
+| R232 | **open** — carried from an earlier verdict | carried. R250, |
+| R233 | **open** — carried from an earlier verdict | carried. R250, |
+| R244 | **open** — §7 | OPEN, unblocked. Step R has not run. |
+| R245 | **open** — §7 | OPEN, unblocked. Step R has not run. |
+| R248 | **open** — carried from an earlier verdict | residues, |
+| R249 | **open** — carried from an earlier verdict | carried. R250, |
+| R250 | **open** — carried from an earlier verdict | carried. R250, |
+| R251 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R252 | **open** — carried from an earlier verdict | carried. R250, |
+| R253 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R254 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R256 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R257 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R261 | **open** — carried from an earlier verdict | OPEN by instruction, correctly listed. |
+| R262 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R264 | **open** — carried from an earlier verdict | and R266 still have no row; R348 territory, unmoved. |
+| R266 | **open** — carried from an earlier verdict | still have no row; R348 territory, unmoved. |
+| R274 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R275 | **open** — §7 | OPEN, unblocked. Step R has not run. |
+| R276 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R277 | **open** — carried from an earlier verdict | , the two R248 residues, |
+| R281 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. |
+| R288 | **open** — carried from an earlier verdict | carried. R250, |
+| R289 | **open** — carried from an earlier verdict | carried. R250, |
+| R290 | **open** — carried from an earlier verdict | carried. R250, |
+| R291 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. |
+| R292 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. |
+| R293 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R300 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. |
+| R303 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R308 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R315 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R320 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R321 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. |
+| R322 | **open** — carried from an earlier verdict | OPEN, recordable at 4a. |
+| R323 | **carried** | closed in earlier verdicts, |
+| R329 | **open** — carried from an earlier verdict | closed in earlier verdicts, |
+| R330 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R331 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R332 | **open** — §7 | OPEN at 4a, correctly listed. |
+| R347 | **open** — §7 | - R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second |
+| R348 | **open** — §7 | - R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second |
+| R349 | **open** — §7 | - R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second |
+| R350 | **open** — §7 | - R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second |
+| R354 | **open** — §7 | - R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second |
+| R355 | **open** — §7 | - R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second |
+| R356 | **open** — §7 | - R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second |
+| R357 | **open** — §7 | - R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second |
+| R362 | **open** — §7 | - R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second |
+| R363 | **open** — §7 | - R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second |
+| R364 | **open** — §7 | - R362, R363, R364, R354, R355, R356, R357, R347, R348, R349, R350 second |
+| R365 | **carried** | carried in step-5-answers.json. |
+| R369 | **carried** | carried in step-5-answers.json. |
+| R370 | **open** — §7 | OPEN at 4a. R373 bites again in this |
+| R371 | **open** — §7 | OPEN at 4a. R373 bites again in this |
+| R372 | **open** — §7 | OPEN at 4a. R373 bites again in this |
+| R373 | **open** — §7 | OPEN at 4a. R373 bites again in this |
+| R374 | **open** — §7 | OPEN at 4a. R373 bites again in this |
+| R375 | **carried** | carried in step-5-answers.json. |
+| R382 | **open** — §7 | carried in step-5-answers.json. |
+| R383 | **open** — §7 | ADVANCED FURTHEST IT HAS. Ten legs executed and agreed at |
+| R384 | **open** — §7 | carried in step-5-answers.json. |
+| R388 | **carried** | closed |
+| R390 | **open** — §7 | OPEN at |
+| R391 | **open** — §7 | OPEN at |
+| R392 | **open** — §7 | OPEN at |
+| R393 | **open** — §7 | OPEN at |
+| R394 | **carried** | closed |
+| R399 | **carried** | closed |
+| R400 | **open** — §7 | OPEN at |
+| R401 | **open** — §7 | OPEN at |
+| R402 | **open** — §7 | OPEN at |
+| R403 | **carried** | closed |
+| R409 | **carried** | closed |
+| R410 | **open** — §7 | OPEN at |
+| R411 | **open** — §7 | OPEN, SEVENTH ROUND. Revision 23's second line reads "Commits |
+| R412 | **carried** | closed |
+| R413 | **carried** | OPEN at |
+| R414 | **open** — §7 | OPEN at |
+| R415 | **carried** | closed |
+| R418 | **carried** | closed |
+| R419 | **open** — §5 | and R433 are correctly left open |
+| R420 | **carried** | closed |
+| R421 | **carried** | and recorded R429-R433. R421 through R428 are |
+| R422 | **carried** | ANSWERED. F2.md:1918-1927 names the uniform elastic |
+| R423 | **carried** | ANSWERED at both named sites. grep -n "1\.248\|6\.237" |
+| R424 | **carried** | ANSWERED. regen_figures.py:590-599 says what grep -n |
+| R425 | **carried** | ANSWERED, and the distinction is the right one. :275-290 |
+| R426 | **carried** | ANSWERED by the better of the two branches. |
+| R427 | **carried** | ANSWERED. rigid_mode_corpus_refused is derived, and the |
+| R428 | **carried** | and recorded R429-R433. R421 through R428 are |
+| R429 | **carried** | . R421 through R428 are |
+| R430 | **carried** | all answered at the sites their conditions named, and R429 and R430 are |
+| R431 | **open** — §5 | and R433 are correctly left open |
+| R432 | **open** — §5 | and R433 are correctly left open |
+| R433 | **open** — §5 | . R421 through R428 are |
+| R434 | **answered** — §2 | floatfea/tolerances.py:548-551. code :548 "claim: one test file mentions this ceiling, and it... |
+| R435 | **answered** — §2 | floatfea/tolerances.py:621-624. code :621 "claim: the retired subspace loss is named by one... |
+| R436 | **answered** — §3 | tests/verification/rung1/test_rigid_body_modes.py:566 and... |
+| R437 | **answered** — §3 | docs/verification/README.md:16-18. code :16 "V1.1 Rigid-body modes. An unconstrained model has... |
+| R438 | **answered** — §3 | floatfea/tolerances.py:369-371 and scripts/regen_figures.py:127-129. code tolerances.py:369 "a... |
+| R439 | **answered** — §4 | scripts/regen_figures.py:253-280. code :262 _floor("rigid_mode_corpus_refused", "derived") -- a... |
+| R440 | **answered** — §3 | tests/test_report_carried.py:1033-1039. code :1037 "The corpus is the reviewer's and is not... |
+| R441 | **answered** — §5 | carried, and the verdict says nothing further about it here |
+| R442 | **answered** — §5 | carried, and the verdict says nothing further about it here |
+| R443 | **answered** — §2 | carried, and the verdict says nothing further about it here |
+| R444 | **answered** — §3 | other half of the rewrite is R444. |
+| R445 | **answered** — §4 | condition did not name are R445. |
+| R446 | **answered** — §5 | carried, and the verdict says nothing further about it here |
+| R447 | **open** — §5 | carried, and the verdict says nothing further about it here |
+| R448 | **answered** — §4 | carried, and the verdict says nothing further about it here |
+
+## 11. Commits
+
+```
+cmd  git log --oneline ed67a7d..HEAD
+out  f5268ee CW0-CW3: forbid the sentence, and a triple whose command can fail
+     7a6d796 golden: the two prose detectors are deleted, and five guards repla
+     75c73ea figures: the mechanism cell is the set its sentence names, and cou
+     3cde01b plan: two lower candidates, the mechanism binding; RE-LOCKED
+     7895944 process: prose in the source tree does not claim things about the 
+     1824b9a CG2: the canonical render, and R439's rule catching a row from the
+     (this revision's own commit follows)
+```
+
+**Seven blocking items answered, and the head one deletes a mechanism rather
+than extending it.**
+
+- **CW1, R441, R442** — both detectors deleted; the prohibition is in
+  `CLAUDE.md` and the reading in `docs/SUPERVISOR.md`, in a `process:` commit.
+- **CW0, R434, R435, R443** — a triple whose command cannot fail is not a
+  triple, and nine of them now prove their needle can match.
+- **R436, R437, R440** — sentences refuted by their own bodies, the ladder
+  document, and a corpus that is now read.
+- **CW2, R438** — the cell is the set its sentence names, and the binding
+  candidate reverses without the gate moving.
+- **R439, R448, R445** — one rule for a count, applied at five sites and
+  caught on a sixth of my own.
+
+**What is not claimed.** R447 stands. Step R has not run. The prohibition is
+enforced by a reading, not by a pattern, and that is the trade this round
+makes deliberately.

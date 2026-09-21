@@ -320,8 +320,7 @@
       "where": "§7"
     },
     "R412": {
-      "state": "answered",
-      "where": "§4"
+      "state": "carried"
     },
     "R413": {
       "state": "carried"
@@ -350,54 +349,34 @@
       "state": "carried"
     },
     "R421": {
-      "state": "answered",
-      "where": "§2",
-      "site": "docs/milestones/F2.md"
+      "state": "carried"
     },
     "R422": {
-      "state": "answered",
-      "where": "§2",
-      "site": "docs/milestones/F2.md"
+      "state": "carried"
     },
     "R423": {
-      "state": "answered",
-      "where": "§2",
-      "site": "docs/milestones/F2.md"
+      "state": "carried"
     },
     "R424": {
-      "state": "answered",
-      "where": "§2",
-      "site": "scripts/regen_figures.py"
+      "state": "carried"
     },
     "R425": {
-      "state": "answered",
-      "where": "§2",
-      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+      "state": "carried"
     },
     "R426": {
-      "state": "answered",
-      "where": "§3",
-      "site": "floatfea/tolerances.py"
+      "state": "carried"
     },
     "R427": {
-      "state": "answered",
-      "where": "§3",
-      "site": "floatfea/tolerances.py"
+      "state": "carried"
     },
     "R428": {
-      "state": "answered",
-      "where": "§2",
-      "site": "scripts/regen_figures.py"
+      "state": "carried"
     },
     "R429": {
-      "state": "answered",
-      "where": "§4",
-      "site": "tests/test_report_carried.py"
+      "state": "carried"
     },
     "R430": {
-      "state": "answered",
-      "where": "§4",
-      "site": "tests/test_report_carried.py"
+      "state": "carried"
     },
     "R431": {
       "state": "open",
@@ -410,6 +389,77 @@
     "R433": {
       "state": "open",
       "where": "§5"
+    },
+    "R434": {
+      "state": "answered",
+      "where": "§2",
+      "site": "floatfea/tolerances.py"
+    },
+    "R435": {
+      "state": "answered",
+      "where": "§2",
+      "site": "floatfea/tolerances.py"
+    },
+    "R436": {
+      "state": "answered",
+      "where": "§3",
+      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+    },
+    "R437": {
+      "state": "answered",
+      "where": "§3",
+      "site": "docs/verification/README.md"
+    },
+    "R438": {
+      "state": "answered",
+      "where": "§3",
+      "site": "scripts/regen_figures.py"
+    },
+    "R439": {
+      "state": "answered",
+      "where": "§4",
+      "site": "scripts/regen_figures.py"
+    },
+    "R440": {
+      "state": "answered",
+      "where": "§3",
+      "site": "tests/test_report_carried.py"
+    },
+    "R441": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R442": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R443": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/test_tree_prose_consistent.py"
+    },
+    "R444": {
+      "state": "answered",
+      "where": "§3",
+      "site": "tests/test_report_carried.py"
+    },
+    "R445": {
+      "state": "answered",
+      "where": "§4",
+      "site": "scripts/regen_figures.py"
+    },
+    "R446": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R447": {
+      "state": "open",
+      "where": "§5"
+    },
+    "R448": {
+      "state": "answered",
+      "where": "§4",
+      "site": "scripts/regen_figures.py"
     }
   }
 }
