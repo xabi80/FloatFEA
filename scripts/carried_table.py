@@ -243,6 +243,14 @@ def table(verdict_text: str, answers: dict) -> str:
     return NL.join(rows(required(verdict_text), classes, answered, verdict_text, by_block))
 
 
+GENERATED_MARK = "<!-- generated: scripts/carried_table.py -->"
+
+
+def _mark(text: str) -> str:
+    """CY3: the generated/hand-written split keys on this line."""
+    return GENERATED_MARK + "\n\n" + text
+
+
 def main(argv: list[str]) -> int:
     # The table carries em dashes and section marks. On a console whose
     # encoding is not UTF-8 those are replaced on the way out, and the
@@ -254,7 +262,7 @@ def main(argv: list[str]) -> int:
         return 2
     verdict = Path(argv[1]).read_text(encoding="utf-8", errors="replace")
     answers = json.loads(Path(argv[2]).read_text(encoding="utf-8"))
-    print(table(verdict, answers))
+    print(_mark(table(verdict, answers)))
     return 0
 
 

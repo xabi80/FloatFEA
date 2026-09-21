@@ -64,12 +64,22 @@ def state_of(path: str, line: int) -> str | None:
     return "the file is touched and this line number is the old one"
 
 
+GENERATED_MARK = "<!-- generated: scripts/untouched_sites.py -->"
+
+
+def _mark(text: str) -> str:
+    """CY3: the generated/hand-written split keys on this line."""
+    return GENERATED_MARK + "\n\n" + text
+
+
 def main(argv: list[str]) -> int:
     sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
     if TOUCHED_ERROR is not None:
         print(f"the diff is not available: {TOUCHED_ERROR}", file=sys.stderr)
         return 1
     show_all = "--all" in argv
+    print(GENERATED_MARK)
+    print()
     print("| item | site | what the diff says | why it was left |")
     print("|---|---|---|---|")
     for finding, path, line in SITES:

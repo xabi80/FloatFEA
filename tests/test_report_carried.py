@@ -1077,7 +1077,16 @@ def _zero_sections() -> str:
     return "\n".join(out)
 
 
-_GENERATED_SECTIONS = re.compile(r"^##+ (?:0[a-z]?|1[12])\.", re.MULTILINE)
+# THE MARKER THE GENERATOR WRITES, not a heading number (CY3, R463). Keying
+# on `## 0<letter>.` made the exemption a title anyone could choose: a `## 0b.`
+# of prose was outside every CI rule, and section 11's hand-written reason
+# column was inside the exemption for free. A generator emits this line; a
+# hand-written section that claims it is claiming its output is reproducible,
+# which is the next check along.
+# `\s*$` AND NOT `$`: the report is CRLF and `$` stops before the `\n`,
+# so the trailing `\r` made every marker invisible and the split returned
+# nothing -- which read as "no generated section" rather than as an error.
+_GENERATED_MARK = re.compile(r"^<!-- generated: (\S+) -->\s*$", re.MULTILINE)
 
 
 def _generated(body: str) -> str:
@@ -1089,9 +1098,11 @@ def _generated(body: str) -> str:
     report's own rule fire on the reviewer's words.
     """
     out = []
-    for m in _GENERATED_SECTIONS.finditer(body):
+    for m in _GENERATED_MARK.finditer(body):
+        head = body.rfind("\n## ", 0, m.start())
+        start = head + 1 if head != -1 else m.start()
         nxt = re.search(r"^##+ ", body[m.end() :], re.MULTILINE)
-        out.append((m.start(), m.end() + nxt.start() if nxt else len(body)))
+        out.append((start, m.end() + nxt.start() if nxt else len(body)))
     return out
 
 
@@ -1147,8 +1158,190 @@ def test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS() -> None:
 
 
 _ROUNDS_HEADER = "| run | event | head | outcome |"
-_ROUNDS_ROW = re.compile(r"^\|\s*`(\d{9,})`\s*\|[^|]*\|[^|]*\|\s*(.+?)\s*\|$", re.M)
+_ROUNDS_ROW = re.compile(r"^\|\s*`(\d{9,})`\s*\|[^|]*\|[^|]*\|\s*(.+?)\s*\|\s*$", re.M)
 _SECTION_0_RUN = re.compile(r"Run `(\d{9,})`,[^.]*conclusion \*\*\w+\*\*")
+
+
+def _gh_outcome(run_id: str) -> str | None:
+    """`gh run view <id>`'s own words for what that run did, or None."""
+    out = subprocess.run(
+        ["gh", "run", "view", run_id, "--json", "status,conclusion"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    if out.returncode != 0 or not out.stdout.strip():
+        return None
+    got = json.loads(out.stdout)
+    if got["status"] != "completed":
+        return "no result"
+    if not got["conclusion"] or got["conclusion"] == "cancelled":
+        return "no result"
+    return got["conclusion"].lower()
+
+
+def ci_table_defects(zero: str, lookup) -> list[str]:
+    """Every way the CI table can disagree with the runs it claims to report.
+
+    A FUNCTION WITH AN INJECTED LOOKUP, so the reviewer's report-level shapes
+    can be run without the network while the shipped test uses `gh`.
+    """
+    rows = _ROUNDS_ROW.findall(zero)
+    if _ROUNDS_HEADER not in zero:
+        return ["the 0a table is missing its header"]
+    if not rows:
+        return ["the 0a table has a header and no rows"]
+    out = []
+    for run_id, stated in rows:
+        truth = lookup(run_id)
+        if truth is None:
+            out.append(f"run {run_id}: `gh run view` returns nothing -- no such run")
+            continue
+        ok = "no result" in stated if truth == "no result" else truth in stated.lower()
+        if not ok:
+            out.append(f"run {run_id}: the table says `{stated}`, gh says `{truth}`")
+    # A ROW MUST NOT CONTRADICT THE FAILING-NAME BLOCK GENERATED BESIDE IT.
+    for run_id, stated in rows:
+        marker = f"Run `{run_id}`, conclusion **failure**"
+        if marker in zero and "failure" not in stated.lower():
+            out.append(
+                f"run {run_id}: the row says `{stated}` and a failing-test block "
+                "for the same run stands under it"
+            )
+    return out
+
+
+def test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW() -> None:
+    """R462. Nothing re-ran `gh`, so R449's exact content was re-admissible.
+
+    The reviewer measured four edits that every guard accepted: a cancelled
+    row rewritten to `success`; a failure rewritten to `success` with its
+    failing-test bullets left underneath; an invented run id; and every row
+    deleted with the header kept. Each is the CI record in the report not
+    being the CI record, which is CE1's whole subject.
+
+    So this asks `gh`. It is the one test in the suite that reaches the
+    network, and it FAILS rather than skips when it cannot -- a check that
+    goes quiet when the tool is missing is the shape three verdicts have
+    now named.
+    """
+    zero = _generated_text(_newest_revision(REPORT_TEXT))
+    rows = _ROUNDS_ROW.findall(zero)
+    assert rows, (
+        "the 0a table has no rows. `python scripts/ci_section.py --rounds` "
+        "emits one row per run of this round, and an empty table with its "
+        "header kept passed every other guard here."
+    )
+    assert not ci_table_defects(zero, _gh_outcome), "\n".join(ci_table_defects(zero, _gh_outcome))
+
+
+_TRUTH = {
+    "35559285688": "no result",
+    "35559285363": "failure",
+    "35563850428": "success",
+    "35561482997": "failure",
+}
+
+_MARK = "<!-- generated: scripts/ci_section.py -->"
+_BASE = (
+    "## 0a. Runs since the commit verdict 51 judged\n\n"
+    + _MARK
+    + "\n\nGenerated: `python scripts/ci_section.py`, anchored on verdict 51.\n\n"
+    + _ROUNDS_HEADER
+    + "\n|---|---|---|---|\n"
+    "| `35559285688` | push | `afc5b05` | **no result** (`cancelled`) |\n"
+    "| `35559285363` | workflow_dispatch | `afc5b05` | conclusion **failure** |\n"
+    "| `35563850428` | push | `6170263` | conclusion **success** |\n"
+)
+
+
+def _shape(name: str) -> str:
+    """The reviewer's eleven report-level edits, by id."""
+    if name == "a_0a_row_hand_edited_from_no_result_to_conclusion_success":
+        return _BASE.replace("**no result** (`cancelled`)", "conclusion **success**")
+    if name == "a_0a_row_hand_edited_from_failure_to_success_with_its_failing_list_left_below":
+        return (
+            _BASE.replace(
+                "| `35559285363` | workflow_dispatch | `afc5b05` | conclusion **failure** |",
+                "| `35559285363` | workflow_dispatch | `afc5b05` | conclusion **success** |",
+            )
+            + "\n**Run `35559285363`, conclusion **failure**: 15 failing test name(s).**\n"
+        )
+    if name == "an_invented_run_id_added_as_a_0a_table_row":
+        return _BASE + "| `99999999999` | push | `deadbee` | conclusion **success** |\n"
+    if name == "every_0a_row_deleted_and_the_header_kept":
+        return _BASE.split("|---|---|---|---|")[0] + "|---|---|---|---|\n"
+    if name == "control_section_0a_deleted_entirely":
+        return "## 1. The reading\n\nnothing about CI here.\n"
+    if name == "prose_about_runs_under_a_0b_heading":
+        return (
+            _BASE + "\n## 0b. What the runs mean\n\nRun 35559285688 was a clean green "
+            "build and nothing went wrong.\n"
+        )
+    if name == "an_invented_run_id_under_a_0b_heading":
+        return _BASE + "\n## 0b. What the runs mean\n\nRun 99999999999 also passed.\n"
+    if name == "a_false_CI_sentence_in_the_section_11_reason_column":
+        return (
+            _BASE + "\n## 3. Sites\n\n| item | site | diff | why |\n|---|---|---|---|\n"
+            "| R1 | `a.py` | untouched | run 35559285688 concluded success, ladder green |\n"
+        )
+    if name == "a_false_CI_sentence_in_the_section_12_subject_column":
+        return (
+            _BASE + "\n## 4. Carried\n\n| item | status | subject |\n|---|---|---|\n"
+            "| R2 | **carried** | run 35561482997 concluded success |\n"
+        )
+    if name == "a_red_run_at_a_commit_that_was_force_pushed_away":
+        return _BASE + (
+            "| `35561482997` | push | `2bd9e89` \u2014 **head not in current history** "
+            "| conclusion **failure** |\n"
+        )
+    if name == "the_Generated_provenance_line_is_itself_typed":
+        return (
+            "## 0a. Runs since the commit verdict 51 judged\n\n"
+            "Generated: `python scripts/ci_section.py`, anchored on verdict 51.\n\n"
+            + _ROUNDS_HEADER
+            + "\n|---|---|---|---|\n"
+            "| `35559285688` | push | `afc5b05` | conclusion **success** |\n"
+        )
+    raise AssertionError(name)
+
+
+_REPORT_SHAPES = [
+    ("a_0a_row_hand_edited_from_no_result_to_conclusion_success", True),
+    ("a_0a_row_hand_edited_from_failure_to_success_with_its_failing_list_left_below", True),
+    ("an_invented_run_id_added_as_a_0a_table_row", True),
+    ("every_0a_row_deleted_and_the_header_kept", True),
+    ("control_section_0a_deleted_entirely", True),
+    ("prose_about_runs_under_a_0b_heading", True),
+    ("an_invented_run_id_under_a_0b_heading", True),
+    ("a_false_CI_sentence_in_the_section_11_reason_column", True),
+    ("a_false_CI_sentence_in_the_section_12_subject_column", True),
+    ("a_red_run_at_a_commit_that_was_force_pushed_away", False),
+    ("the_Generated_provenance_line_is_itself_typed", True),
+]
+
+
+@pytest.mark.parametrize("name, must_refuse", _REPORT_SHAPES, ids=[s[0] for s in _REPORT_SHAPES])
+def test_the_CI_GUARDS_rule_on_the_reviewer_REPORT_shapes(name: str, must_refuse: bool) -> None:
+    """R462, R463. Eleven edits to the report itself, not to a paragraph.
+
+    Each is checked by the three things that decide a CI section: the
+    generated/hand-written split, the table-versus-`gh` comparison, and the
+    naked-run-id rule. `lookup` is injected, so a shape naming a run that
+    does not exist is refused here without the network.
+    """
+    text = _shape(name)
+    zero = _generated_text(text)
+    hand = _hand_written(text)
+    refused = bool(
+        ci_table_defects(zero, _TRUTH.get)
+        or runs_without_a_conclusion(hand)
+        or any(_RUN_ID.findall(_joined(hand)))
+    )
+    assert (
+        refused == must_refuse
+    ), f"shape `{name}`: the guards {'allowed' if must_refuse else 'refused'} it"
 
 
 def test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph() -> None:
@@ -1484,7 +1677,7 @@ def test_every_corpus_shape_is_transcribed() -> None:
         "no_run_id_and_an_invented_green_table",
         "three_rows_of_a_table_about_something_else",
     }
-    known = {s[0] for s in _CI_SHAPES} | table_shapes
+    known = {s[0] for s in _CI_SHAPES} | {s[0] for s in _REPORT_SHAPES} | table_shapes
     missing = [i for i in ids if i not in known]
     assert not missing, (
         f"{len(missing)} shape(s) in {_CI_CORPUS.name} are not transcribed into "

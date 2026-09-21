@@ -34,18 +34,27 @@ A withdrawal marker on the line -- `stood here`, `is withdrawn`, `(withdrawn)`
 convention for recording what a sentence used to say. Everything else is
 reported and the commit is refused until the author has looked at each one.
 
-MEASURED ON ITS OWN ROUND, because a checker that has never been run on a
-real diff is a script. Over CX's diff it extracted 12 numbers, 0 renamed rows
-and 0 changed classes, and reported **5 survivors: 1 true and 4 false**. The
-true one was a record in this file quoting both machines' values, which now
-carries a marker. Of the four false, three are a spread table in the plan
-holding the CANONICAL values while the diff temporarily carries a local
-render -- they stop being survivors the moment the canonical render lands --
-and one is an area in `F1.md` that happens to read `1.312`.
+MEASURED, AND THE FIRST FIGURE PUBLISHED HERE WAS WITHDRAWN (CY2, R460).
+`12 numbers ... 5 survivors, 1 TRUE and 4 false` stood here and in the step
+report, and no command at that commit produced it: the report's own spec
+printed "no figure class, row name or measured number removed", and the
+`1 TRUE` was a survivor that stopped surviving in the same commit that added
+its marker -- a figure describing a tree that existed for the length of one
+`git add`. The reviewer re-measured and classified every survivor:
 
-A four-in-five false rate on a round that changed eleven figures is the cost
-of a literal grep, and it is the reason the tool reports and refuses rather
-than deciding: every line above took one look.
+    cmd  python scripts/precommit_stale.py afc5b05^..afc5b05
+    out  11 numbers, 0 renamed rows, 0 changed classes; 14 survivors
+    out  all 14 are an `F2.md` or `F2_figures.md` row holding a CANONICAL
+         value against a local render -- ZERO true
+
+That is the honest rate on the one round this has been run against: fourteen
+reports, none of them a defect. It is the cost of a literal grep, and it is
+why this refuses by ASKING rather than by deciding -- every line above took
+one look, and the alternative is a tool nobody runs.
+
+WIRED, AS OF CY2. `.claude/hooks/stale-before-commit.sh` runs this before any
+`git commit`. It was wired to nothing when it was written, which is the
+species it exists to catch, and the reviewer said so (R465).
 
 WHAT IT CANNOT SEE, measured rather than assumed. A citation carrying no
 number and no row name is invisible to it: R454's four sentences said "it

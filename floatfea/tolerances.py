@@ -457,12 +457,18 @@ RIGID_MODE_BOUND_COUNTER_DEFECT: Final[float] = 1.0e-13
 # declared float to carry one from its own vocabulary; what this no longer
 # has is an assertion.
 #
-# claim: two test files still name `RIGID_MODE_FLOOR` -- the gate file, whose
-#        header records what the two constants were, and the counter
-#        meta-test, which names the retired counter it no longer registers
+# claim: THREE test files name `RIGID_MODE_FLOOR` -- the gate file, whose
+#        header records what the two constants were; the counter meta-test,
+#        which names the retired counter it no longer registers; and the
+#        prose guard, where the name is test DATA in a shape table. `two`
+#        stood here and the third file entered in the same commit that
+#        excluded it from the vocabulary, so the triple stayed green while
+#        the sentence went false (R459). There is no implicit scope now: the
+#        glob searches what it says.
 # cmd:   files("tests/**/*.py", "RIGID_MODE_FLOOR")
 # ctl:   floor_constant_name
 # out:   tests/test_counters_are_injected.py,
+# out:   tests/test_tree_prose_consistent.py,
 # out:   tests/verification/rung1/test_rigid_body_modes.py
 #
 # EVERYTHING BELOW IS THE RECORD OF WHAT IT WAS. Read it in the past tense.
@@ -556,15 +562,19 @@ RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 1.0e-13
 # carry one from its own vocabulary. A retired value is still a float in this
 # file, so it still needs a class; what it no longer has is an assertion.
 #
-# claim: three test files name this ceiling, and ONE OF THEM ASSERTS ON IT --
+# claim: FOUR test files name this ceiling, and ONE OF THEM ASSERTS ON IT --
 #        `test_the_RETIRED_ratio_is_why_the_form_changed` builds a list by
 #        comparing every corpus frame's ratio with this value and requires the
 #        list to be non-empty, so it reddens if the retired quantity ever stops
 #        breaching. That is the retirement's own evidence and not a gate on the
-#        element. The other two are the literal scanner and the diagnostic.
+#        element. The other three are the literal scanner, the diagnostic, and
+#        the prose guard where the name is test DATA. `three` stood here and
+#        the fourth file entered in the same commit that excluded it from the
+#        vocabulary (R459).
 # cmd:   files("tests/**/*.py", "RIGID_BODY_MODE_RATIO")
 # ctl:   ratio_ceiling_name
 # out:   tests/test_no_tolerance_literals.py,
+# out:   tests/test_tree_prose_consistent.py,
 # out:   tests/verification/rung1/test_rigid_body_corpus.py,
 # out:   tests/verification/rung1/test_rigid_body_modes.py
 #

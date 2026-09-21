@@ -157,21 +157,22 @@ def _paths(pattern: str) -> list[Path]:
     rule about empty parameter sets, inside this guard.
     """
     if any(ch in pattern for ch in "*?["):
-        got = sorted(p for p in ROOT.glob(pattern) if p.is_file() and p != CONTROLS)
+        got = sorted(p for p in ROOT.glob(pattern) if p.is_file())
     else:
         got = [ROOT / pattern]
-    # THE INSTRUMENT IS OUT OF THE VOCABULARY'S REACH, by name as well as by
-    # glob (R456). The control file was excluded in the glob branch only, so
-    # naming it directly searched it -- and every planted line is, by
-    # construction, a line containing a needle some triple is about. THIS
-    # MODULE is excluded for the same reason from CX2: its shape tables quote
-    # the constants the triples are about, as test data, so leaving it in
-    # would put the measuring device into every measurement.
+    # THERE IS NO IMPLICIT SCOPE (CY1, R459). Two files were excluded here --
+    # the control file and this module -- and the cost was stated as "no
+    # triple can make a claim about them". The real cost was larger and was
+    # not stated: EVERY triple whose glob contains those files silently
+    # changed answer, so `files()` stopped meaning what a reader's grep
+    # means, and two published claims in `floatfea/tolerances.py` went false
+    # in the same commit that narrowed the rule while their triples stayed
+    # green.
     #
-    # THE COST, STATED: no triple can make a claim about these two files. A
-    # claim about the guard is the reviewer's to read, which is where the
-    # enforcement for unchecked prose now lives anyway.
-    got = [p for p in got if p not in (CONTROLS, SELF)]
+    # A pattern now searches what it says. A triple that wants a file out
+    # writes a glob that leaves it out, visibly, in the `cmd:` a reader
+    # sees -- and a triple's answer can never change because the runner
+    # changed underneath it.
     if not got or not all(p.exists() for p in got):
         raise ValueError(f"the pattern {pattern!r} matches no file under the repository root")
     return got
@@ -452,11 +453,22 @@ def control_defect(cmd: str, ctl: str, answer: str) -> str | None:
     needle = _needle(cmd)
     if not needle or needle != needle.strip():
         return f"searches for `{needle}`, which is empty or carries whitespace"
-    hits = sorted(k for k, v in _CONTROL_LINES.items() if needle in v)
-    if ctl not in hits:
-        return f"searches for `{needle}`, which its control `{ctl}` does not contain"
-    if len(hits) > 1:
-        return f"searches for `{needle}`, which matches controls {hits}"
+    # EQUALITY, NOT CONTAINMENT (CY3, R464). A control line that CONTAINS the
+    # needle certifies every needle its own text contains: the reviewer
+    # walked four fresh R434s through shipped control lines without planting
+    # anything -- `RIGID_MODE_FLOOR * norm` against
+    # `tau = RIGID_MODE_FLOOR * norm * EPS`, and three more. The uniqueness
+    # rule pointed the wrong way for the same reason: a needle matching nine
+    # controls was refused and a needle matching one was allowed, when what
+    # distinguishes them is whether the control was planted FOR it.
+    if _CONTROL_LINES[ctl] != needle:
+        return (
+            f"searches for `{needle}` and its control `{ctl}` is "
+            f"`{_CONTROL_LINES[ctl]}` -- a control is the needle, exactly"
+        )
+    others = sorted(k for k, v in _CONTROL_LINES.items() if v == needle and k != ctl)
+    if others:
+        return f"searches for `{needle}`, which is also planted as {others}"
     return None
 
 
@@ -512,9 +524,20 @@ _CONTROL_SHAPES: list[tuple[str, str, str, str, bool]] = [
         True,
     ),
     (
-        "a_needle_matching_two_controls",
+        # R464's shape, and the reason the rule inverted. Under CONTAINMENT
+        # this needle was certified by the control planted for the bare
+        # name; under EQUALITY the control must BE the needle, so a needle
+        # carrying a neighbouring token needs its own plant.
+        "a_needle_with_an_interior_match_in_a_shipped_control",
+        'count("tests/**/*.py", "RIGID_MODE_FLOOR * norm")',
+        "floor_constant_name",
+        "0",
+        True,
+    ),
+    (
+        "a_needle_whose_control_was_planted_for_another",
         'count("tests/**/*.py", "RIGID_BODY_MODE_RATIO")',
-        "ratio_ceiling_name",
+        "loss_ceiling_name",
         "0",
         True,
     ),

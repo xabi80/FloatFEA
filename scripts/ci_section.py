@@ -55,6 +55,7 @@ import json
 import re
 import subprocess
 import sys
+from datetime import UTC
 from pathlib import Path
 
 NEWLINE = chr(10)
@@ -127,9 +128,17 @@ def _heading(number: str, sha: str, tail: str = "", conclusion: str | None = Non
     return f"## 0. CI at `{sha[:7]}`, the commit verdict {number} judged{tail}{verdict}"
 
 
+# THE MARKER A READER'S TOOLING KEYS ON (CY3, R463). The generated/hand-written
+# split used to key on a HEADING NUMBER, so a `## 0b.` of prose was exempt from
+# every CI rule by choosing its own title. A generator writes this line; prose
+# cannot claim it without lying in a way the next check catches, because the
+# same line is what `--check` style comparisons anchor on.
+GENERATED_MARK = "<!-- generated: scripts/ci_section.py -->"
+
+
 def _generated_by(number: str, sha: str, legs: bool = False) -> str:
     flag = " --legs" if legs else ""
-    return (
+    return (GENERATED_MARK + "\n\n") + (
         f"Generated: `python scripts/ci_section.py{flag}`, anchored on verdict "
         f"{number} at `{sha[:7]}` through the report's own `Answers:` line."
     )
@@ -444,24 +453,32 @@ def rounds_runs(sha: str) -> list[dict]:
     run published as `FAILURE`, with its cancelled ladder published as green,
     beside the `gh` command that says otherwise.
     """
-    heads = subprocess.run(
-        ["git", "log", "--format=%H", f"{sha}..HEAD"],
-        capture_output=True,
-        text=True,
-    ).stdout.split()
-    if not heads:
-        return []
+    since = _committed_at(sha)
     runs = json.loads(
         _gh(
             "run",
             "list",
             "--json",
-            "databaseId,event,conclusion,status,headSha",
+            "databaseId,event,conclusion,status,headSha,createdAt",
             "--limit",
-            "60",
+            "80",
         )
     )
-    mine = [r for r in runs if r["headSha"] in set(heads)]
+    # BY TIME, NOT BY ANCESTRY (CY0, R461). The first version filtered on
+    # `git log <judged>..HEAD`, so a run whose head was rewritten away
+    # vanished from a section titled "runs since the verdict" -- and a red
+    # push run of one round disappeared from the report and from the
+    # generated invocation together, silently. What makes a run this round's
+    # is WHEN it ran.
+    mine = [r for r in runs if _epoch(r["createdAt"]) > since]
+    for r in mine:
+        r["orphaned"] = (
+            subprocess.run(
+                ["git", "merge-base", "--is-ancestor", r["headSha"], "HEAD"],
+                capture_output=True,
+            ).returncode
+            != 0
+        )
     return sorted(mine, key=lambda r: r["databaseId"])
 
 
@@ -499,9 +516,10 @@ def rounds_section(sha: str, number: str) -> str:
         lines.append("| (none) | | | no run at any commit in this round |")
         return "\n".join(lines) + "\n"
     for r in runs:
-        lines.append(
-            f"| `{r['databaseId']}` | {r['event']} | `{r['headSha'][:7]}` " f"| {outcome(r)} |"
-        )
+        head = f"`{r['headSha'][:7]}`"
+        if r.get("orphaned"):
+            head += " \u2014 **head not in current history**"
+        lines.append(f"| `{r['databaseId']}` | {r['event']} | {head} | {outcome(r)} |")
     failed = [r for r in runs if r["status"] == "completed" and r["conclusion"] == "failure"]
     for r in failed:
         named = failing_names(r["databaseId"])
@@ -520,17 +538,160 @@ def rounds_section(sha: str, number: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _committed_at(sha: str) -> int:
+    """The judged commit's time, in epoch seconds.
+
+    EPOCHS AND NOT ISO STRINGS. `gh` reports `createdAt` in UTC with a `Z`
+    and `git` reports `%cI` with a local offset, so comparing them as text
+    ordered `2026-09-20T04:41Z` after `2026-09-20T21:47-07:00` -- which is
+    seventeen hours wrong and pulled six runs from the PREVIOUS round into
+    this one's table on the first attempt.
+    """
+    out = subprocess.run(
+        ["git", "show", "-s", "--format=%ct", sha], capture_output=True, text=True
+    ).stdout.strip()
+    return int(out) if out.isdigit() else 0
+
+
+def _epoch(stamp: str) -> int:
+    from datetime import datetime
+
+    return int(datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp())
+
+
+def history_section(sha: str, number: str) -> str:
+    """Commits this branch has held since the judged commit and no longer holds.
+
+    A REWRITE CANNOT BE SILENT (CY0, R461). One `docs:` commit was split
+    after a guard refused it -- the right call, and the rule working -- and
+    nothing in the report said so. The run at the rewritten-away commit
+    dropped out of section 0a, and the commit whose message was the only
+    record of the split dropped out of the commit list, both without a word.
+    #
+    Read from the REFLOG, which is local: a fresh clone has none, and this
+    says so rather than printing an empty table that reads as "nothing
+    happened". What the report carries is what was generated at the report's
+    own commit.
+    """
+    since = _committed_at(sha)
+    reflog = subprocess.run(
+        ["git", "reflog", "--date=unix", "--format=%H %gd %gs"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    ).stdout.splitlines()
+    live = set(
+        subprocess.run(
+            ["git", "log", "--format=%H", sha + "..HEAD"], capture_output=True, text=True
+        ).stdout.split()
+    )
+    seen, orphans = set(), []
+    for line in reflog:
+        parts = line.split(None, 1)
+        if len(parts) != 2:
+            continue
+        commit, rest = parts
+        if commit in live or commit in seen or commit == full_sha(sha):
+            continue
+        # BOUNDED BY THE SAME INSTANT AS THE RUN TABLE. Unbounded, this
+        # listed every commit ever rewritten on the branch -- twenty-five
+        # rows reaching back to the first week -- which is a table nobody
+        # reads and therefore the same silence in a different shape.
+        when = rest.split("{", 1)[-1].split("}", 1)[0]
+        if not when.isdigit() or int(when) < since:
+            continue
+        if (
+            subprocess.run(
+                ["git", "merge-base", "--is-ancestor", commit, "HEAD"], capture_output=True
+            ).returncode
+            == 0
+        ):
+            continue
+        seen.add(commit)
+        subject = subprocess.run(
+            ["git", "show", "-s", "--format=%s", commit],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        ).stdout.strip()
+        from datetime import datetime
+
+        stamp = datetime.fromtimestamp(int(when), UTC).strftime("%Y-%m-%d %H:%MZ")
+        orphans.append((commit[:7], stamp, subject))
+    lines = [
+        f"## 0b. History since the commit verdict {number} judged",
+        "",
+        _generated_by(number, sha)
+        + " Commits this branch held and no longer holds, from `git reflog`."
+        " A rewrite is the right answer to some findings and it is never a"
+        " silent one (CY0, R461). The reflog is LOCAL: a fresh clone has"
+        " none, so this table is what was generated at the report's own"
+        " commit and cannot be reproduced from the clone alone.",
+        "",
+    ]
+    if not orphans:
+        lines.append("**No commit has left this branch's history since then.**")
+        return "\n".join(lines) + "\n"
+    lines += ["| commit | left history at | subject |", "|---|---|---|"]
+    for short, rest, subject in orphans:
+        lines.append(f"| `{short}` | {rest} | {subject[:64]} |")
+    return "\n".join(lines) + "\n"
+
+
+def commits_section(sha: str, number: str) -> str:
+    """The round's commit list, generated rather than pasted (CY0, R461).
+
+    Section 9 was a `cmd`/`out` pair written by hand and not re-run after the
+    history underneath it moved, so it showed two commits where the command
+    returned four -- and the one it dropped was the guard commit whose
+    message is the only record of the split.
+    """
+    log = (
+        subprocess.run(
+            ["git", "log", "--oneline", "--no-decorate", f"{sha}..HEAD"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        .stdout.strip()
+        .splitlines()
+    )
+    lines = [
+        f"## 0c. Commits since the commit verdict {number} judged",
+        "",
+        _generated_by(number, sha) + " `git log --oneline <judged>..HEAD`, run at the report's own"
+        " commit. This revision's own commit is not in it, because it does"
+        " not exist yet when the section is generated.",
+        "",
+        "```",
+    ]
+    lines += [ln[:76] for ln in reversed(log)] or ["(no commit since the judged one)"]
+    lines.append("```")
+    return "\n".join(lines) + "\n"
+
+
 def main(argv: list[str]) -> int:
     # The table carries em dashes and section marks. On a console whose
     # encoding is not UTF-8 those are replaced on the way out, and the
     # published table then differs from the generated one by exactly the
     # characters nobody looks at.
     sys.stdout.reconfigure(encoding="utf-8")
-    if len(argv) == 2 and argv[1] == "--rounds":
+    if len(argv) == 2 and argv[1] in ("--rounds", "--history", "--commits"):
         number, sha = _anchor()
-        sys.stdout.write(rounds_section(full_sha(sha), number))
+        full = full_sha(sha)
+        writer = {
+            "--rounds": rounds_section,
+            "--history": history_section,
+            "--commits": commits_section,
+        }[argv[1]]
+        sys.stdout.write(writer(full, number))
         return 0
-    if len(argv) > 2 or (len(argv) == 2 and argv[1] not in ("--legs", "--rounds")):
+    if len(argv) > 2 or (
+        len(argv) == 2 and argv[1] not in ("--legs", "--rounds", "--history", "--commits")
+    ):
         # A SHA ARGUMENT IS REFUSED RATHER THAN IGNORED (CO1). Silently
         # dropping it would let a caller believe they had chosen the commit.
         print(__doc__)
