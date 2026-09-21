@@ -1077,6 +1077,43 @@ def _zero_sections() -> str:
     return "\n".join(out)
 
 
+_GENERATED_SECTIONS = re.compile(r"^##+ (?:0[a-z]?|1[12])\.", re.MULTILINE)
+
+
+def _generated(body: str) -> str:
+    """Every section this report does not write by hand.
+
+    Sections 0 and 0a are `scripts/ci_section.py`; 11 and 12 are
+    `untouched_sites.py` and `carried_table.py`, both of which quote the
+    VERDICT -- and a verdict naming a run id would otherwise make the
+    report's own rule fire on the reviewer's words.
+    """
+    out = []
+    for m in _GENERATED_SECTIONS.finditer(body):
+        nxt = re.search(r"^##+ ", body[m.end() :], re.MULTILINE)
+        out.append((m.start(), m.end() + nxt.start() if nxt else len(body)))
+    return out
+
+
+def _generated_text(body: str) -> str:
+    return "\n".join(body[a:b] for a, b in _generated(body))
+
+
+def _hand_written(body: str) -> str:
+    """The revision with every generated section cut out, BY INDEX.
+
+    Not by `replace` (CX0): the joined sections and the body differ in
+    their line endings, so removing one from the other removed nothing
+    and the guards below read the generated tables as prose.
+    """
+    keep, last = [], 0
+    for a, b in _generated(body):
+        keep.append(body[last:a])
+        last = b
+    keep.append(body[last:])
+    return "".join(keep)
+
+
 def test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS() -> None:
     """R449, mechanically. A run's outcome is generated or it is not written.
 
@@ -1092,7 +1129,7 @@ def test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS() -> None:
     else in the revision is a typed CI fact.
     """
     body = _newest_revision(REPORT_TEXT)
-    allowed = _zero_sections()
+    allowed = _generated_text(body)
     stray = []
     for para in _paragraphs(body):
         if para in allowed or all(line in allowed for line in para.splitlines()):
@@ -1125,7 +1162,7 @@ def test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph() -> None:
     sentence about a run cannot satisfy either, which is what R449 was.
     """
     body = _newest_revision(REPORT_TEXT)
-    zero = _zero_sections()
+    zero = _generated_text(body)
     assert _ROUNDS_HEADER in zero, (
         "no `## 0a` table in the newest revision. `python "
         "scripts/ci_section.py --rounds` emits every run this round with what "
@@ -1136,7 +1173,7 @@ def test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph() -> None:
     ), "the section 0 block carries no generator provenance line."
     tabled = {m.group(1) for m in _ROUNDS_ROW.finditer(zero)}
     inline = set(_SECTION_0_RUN.findall(zero))
-    for run_id in set(_RUN_ID.findall(_joined(body))):
+    for run_id in set(_RUN_ID.findall(_joined(_hand_written(body)))):
         assert run_id in tabled or run_id in inline, (
             f"run {run_id} is named in the revision but is in neither "
             "generated form -- not a row of the 0a table and not section 0's "
@@ -1157,7 +1194,14 @@ def test_every_CI_RUN_the_report_names_carries_its_conclusion() -> None:
     naming a run is a paragraph of its own under this split, which is right --
     a row that names a run states something about it.
     """
-    naked = runs_without_a_conclusion(_newest_revision(REPORT_TEXT))
+    # THE GENERATED SECTIONS ARE NOT READ HERE (CX0). They are the CI record
+    # and they carry their own rules -- `test_the_ROUNDS_SECTION_is_the_
+    # GENERATORS_and_not_a_paragraph` checks their shape and every outcome in
+    # them. This guard is about the PROSE, where R412 and R449 both happened,
+    # and running it over a generated table made its own `no result` rows
+    # look like naked ids.
+    body = _newest_revision(REPORT_TEXT)
+    naked = runs_without_a_conclusion(_hand_written(body))
     assert not naked, (
         "these paragraphs name a CI run and never say what it concluded:\n"
         + "\n".join(f"  run {r}: {t}..." for r, t in naked)
