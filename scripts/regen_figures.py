@@ -178,7 +178,22 @@ def _figures() -> list[tuple[str, str]]:
         )
     )
     rows.append(("rigid_mode_mechanism_cell", f"{len(units)} units x {len(spans)} spans, subdiv 1"))
-    rows.append(("rigid_mode_mechanism_count", f"{mechanisms}"))
+    rows.append(
+        (
+            # `words`, BY R439'S OWN RULE, and this row is what caught it: how
+            # many of the 858 configurations really carry a seventh zero mode
+            # is decided by a spectrum, so it moves -- `350` on the
+            # implementer's machine against `347` on the canonical runner. It
+            # shipped plain for the length of one render and the guard refused
+            # it, which is the rule written one commit earlier working on the
+            # row written in the same commit.
+            #
+            # The CELL above is exact and stays plain: it counts distinct
+            # strings in the corpus file and no arithmetic touches it.
+            _floor("rigid_mode_mechanism_count", "words"),
+            f"{mechanisms}",
+        )
+    )
 
     from floatfea.tolerances import FIGURE_FLOOR_CLASS_SPREAD as SPREAD
 
