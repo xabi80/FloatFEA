@@ -177,3 +177,43 @@ id=id_split_by_a_markdown_bold_marker state=paragraph_reads_Run_STARSTAR_3547992
 id=no_run_id_at_all_but_a_conclusion state=paragraph_reads_conclusion_success_and_no_run_named expect=allowed measured=allowed
 id=run_id_as_part_of_a_longer_token state=paragraph_reads_Artifact_a35479925335b_was_produced_SEMICOLON_no_result_given expect=refused measured=refused_the_left_lookbehind_only_excludes_digits_and_dots_so_a_letter_prefixed_token_is_still_an_id
 id=the_generated_section_line_at_this_commit state=Generated_COLON_python_scripts_ci_section_FULLSTOP_py_anchored_on_verdict_49_at_ed67a7d_FULLSTOP_Run_BACKTICK_35489487935_BACKTICK_event_push_conclusion_STARSTAR_success_STARSTAR expect=allowed measured=allowed_the_shape_the_report_actually_uses_still_passes
+
+# ==========================================================================
+# ADDED AT THE FIFTY-FIRST VERDICT ON F2 (reviewed commit 6170263), 11 new
+# entries, unseen by the implementer.
+#
+# WHAT CHANGED UNDER THESE. CX0 answered R449 by GENERATING sections 0 and 0a
+# and by exempting them, plus sections 11 and 12, from the two run-id guards.
+# The exemption is keyed on the HEADING -- `^##+ (?:0[a-z]?|1[12])\.` in
+# `_GENERATED_SECTIONS` -- and the word `Generated:` in the provenance line.
+# Both are typed by hand. Nothing in the suite re-runs `gh` and compares.
+#
+# WHAT A PASSING SCAN MEANS. For each entry, apply the described edit to the
+# newest revision and run the three guards in tests/test_report_carried.py:
+# test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS,
+# test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph, and
+# test_every_CI_RUN_the_report_names_carries_its_conclusion. Compare with
+# expect. MEASURED AT 6170263 by the reviewer, applying each edit to the
+# revision text in memory and calling the three predicates directly.
+#
+# THE COMMITTED TABLE AT THIS COMMIT IS FAITHFUL -- I re-ran
+# `python scripts/ci_section.py --rounds` and it reproduces both rows. These
+# entries measure what would have caught it if it were not.
+# ==========================================================================
+
+# --- THE CONTENT OF A GENERATED SECTION IS NOT CHECKED AGAINST gh. ---
+id=a_0a_row_hand_edited_from_no_result_to_conclusion_success shape=the_cancelled_push_run_row_rewritten_to_read_conclusion_success expect=caught_this_is_R449_with_one_word_changed measured=MISSED_by_all_three_guards_the_row_is_still_a_conclusion_form_and_the_run_id_is_still_tabled
+id=a_0a_row_hand_edited_from_failure_to_success_with_its_failing_list_left_below shape=the_dispatch_failure_row_rewritten_to_success_while_the_fifteen_failing_test_bullets_stay_underneath_it expect=caught_the_row_and_the_block_under_it_now_contradict_each_other measured=MISSED_nothing_cross_checks_a_row_against_the_failing_name_block_generated_from_the_same_run
+id=an_invented_run_id_added_as_a_0a_table_row shape=a_row_for_run_99999999999_at_head_deadbee_reading_conclusion_success expect=caught_no_such_run_exists measured=MISSED_ROUNDS_ROW_accepts_any_nine_digit_id_and_asks_only_that_the_outcome_cell_be_a_conclusion_or_no_result
+id=every_0a_row_deleted_and_the_header_kept shape=the_0a_table_reduced_to_its_header_and_separator_with_no_rows_at_all expect=caught_a_round_that_produced_runs_must_show_them measured=MISSED_ROUNDS_HEADER_in_zero_is_satisfied_by_the_header_line_alone_so_a_whole_round_of_runs_can_be_suppressed
+id=control_section_0a_deleted_entirely shape=the_0a_heading_table_and_provenance_line_removed expect=caught measured=caught_test_the_ROUNDS_SECTION_is_the_GENERATORS_fails_on_the_missing_header
+
+# --- THE EXEMPTION IS KEYED ON A HEADING THE IMPLEMENTER WRITES. ---
+id=prose_about_runs_under_a_0b_heading shape=a_hand_written_paragraph_under_a_heading_reading_double_hash_0b_dot_what_the_runs_mean_naming_a_real_run_with_a_false_story expect=caught_the_paragraph_is_prose measured=MISSED_the_exemption_regex_is_0_bracket_a_to_z_question_so_0b_through_0z_are_all_read_as_generated
+id=an_invented_run_id_under_a_0b_heading shape=the_same_paragraph_also_naming_run_99999999999 expect=caught measured=MISSED_for_the_same_reason_and_the_id_need_not_exist
+id=a_false_CI_sentence_in_the_section_11_reason_column shape=an_untouched_sites_row_whose_why_it_was_left_cell_reads_run_35559285688_concluded_success_ladder_green expect=caught_the_reason_column_is_hand_written_prose expect_note=the_report_itself_says_the_reason_column_is_mine measured=MISSED_651a524_added_sections_11_and_12_to_the_exemption_so_this_channel_opened_this_round
+id=a_false_CI_sentence_in_the_section_12_subject_column shape=a_Carried_row_whose_subject_cell_carries_run_35561482997_concluded_success expect=caught measured=MISSED_same_exemption
+
+# --- THE GENERATOR ITSELF, AND WHAT IT CANNOT SEE. ---
+id=a_red_run_at_a_commit_that_was_force_pushed_away shape=run_35561482997_event_push_head_2bd9e89_conclusion_failure_at_the_combined_docs_plus_guard_commit_that_was_split_into_651a524_and_6170263 expect=recorded_as_a_run_this_round_or_the_rewrite_declared_in_the_report expect_note=the_commit_object_is_still_reachable_and_gh_run_list_still_returns_it measured=MISSED_rounds_runs_filters_on_git_log_judged_dot_dot_HEAD_so_a_rewritten_head_drops_out_of_BOTH_the_report_section_and_the_generated_invocation_and_the_report_nowhere_mentions_the_rewrite
+id=the_Generated_provenance_line_is_itself_typed shape=a_hand_written_0a_section_that_opens_with_the_literal_string_Generated_colon_backtick_python_scripts_ci_section_py_backtick expect=caught_provenance_must_be_earned measured=MISSED_the_guard_asserts_the_STRING_is_present_and_nothing_re_runs_the_generator_or_compares_its_output

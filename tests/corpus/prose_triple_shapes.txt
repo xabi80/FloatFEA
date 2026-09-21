@@ -63,3 +63,44 @@ id=a_claim_in_docs_closure shape=a_sentence_in_docs_closure_F1_md_about_a_gate_t
 id=control_a_well_formed_triple_with_a_real_absence shape=cmd_count_tests_verification_rung1_test_rigid_body_modes_py_last_below_out_0_ctl_last_below_needle expect=allowed measured=allowed_and_the_control_line_w_below_EQ_last_below_spectrum_tau_is_a_line_that_could_occur
 id=control_an_empty_glob shape=cmd_count_floatfea_globstar_rs_anything expect=refused measured=refused_R443a_raises_ValueError_matches_no_file_and_has_its_own_shipped_test
 id=control_a_needle_perturbed_by_two_characters shape=every_one_of_the_nine_shipped_cmds_re_run_with_the_needle_suffixed expect=the_answer_moves_wherever_it_can measured=moved_on_4_of_9_and_the_other_5_answer_0_or_none_already_which_is_exactly_the_set_the_control_requirement_covers
+
+# ==========================================================================
+# ADDED AT THE FIFTY-FIRST VERDICT ON F2 (reviewed commit 6170263), 13 new
+# entries, unseen by the implementer. CX2 shipped `control_defect()` with the
+# five re-admission shapes from the fiftieth verdict as its own controls.
+# These are the shapes that rule did not come from.
+#
+# THE RULE UNDER TEST. `control_defect(cmd, ctl, answer)` refuses an absence
+# whose needle carries LEADING OR TRAILING whitespace, and refuses a needle
+# that matches more than one planted control. Neither rule constrains what
+# is INSIDE the needle, and the planted control lines are 30-50 characters
+# long, so every substring of every shipped control is an acceptable needle.
+# Measured by calling the shipped function directly at 6170263.
+# ==========================================================================
+
+# --- R434 RE-ADMITTED THROUGH THE INTERIOR OF A SHIPPED CONTROL LINE. None
+# --- of these four adds a control line; each uses one already in the file.
+id=needle_with_an_INTERIOR_space_against_a_shipped_control shape=cmd_count_tests_globstar_py_RIGID_MODE_FLOOR_SPACE_STAR_SPACE_norm_out_0_ctl_floor_constant_name expect=refused_the_needle_occurs_nowhere_in_the_tree measured=ALLOWED_control_defect_returns_None_grep_for_it_over_tests_floatfea_scripts_hits_only_the_controls_file_itself
+id=needle_that_is_a_substring_of_the_counter_control shape=cmd_count_tests_globstar_py_RIGID_BODY_MODE_RATIO_COUNTER_DEFECT_SPACE_STAR_SPACE_scale_out_0_ctl_ratio_counter_name expect=refused_the_needle_occurs_nowhere_in_the_tree measured=ALLOWED_the_trailing_STAR_scale_is_in_the_planted_line_and_in_no_test_file
+id=needle_carrying_the_controls_own_equals_sign shape=cmd_count_tests_globstar_py_EQUALS_SPACE_last_below_LPAREN_spectrum_COMMA_tau_RPAREN_out_0_ctl_last_below_needle expect=refused measured=ALLOWED_the_control_line_is_w_below_EQ_last_below_spectrum_tau_and_the_leading_equals_makes_the_needle_unmatchable_in_the_tree
+id=files_variant_of_the_interior_space_needle shape=cmd_files_tests_globstar_py_RIGID_MODE_FLOOR_SPACE_STAR_SPACE_norm_out_none_ctl_floor_constant_name expect=refused measured=ALLOWED_out_none_is_certified_by_a_control_planted_for_a_different_triple
+
+# --- THE UNIQUENESS RULE POINTS THE WRONG WAY. It refuses the GENERAL needle
+# --- and admits the NARROW one, which is the opposite of what a control is
+# --- for: a narrower needle is the one more likely to be malformed.
+id=the_uniqueness_rule_refuses_a_CORRECT_needle shape=cmd_count_tests_globstar_py_RIGID_BODY_MODE_RATIO_out_9_ctl_ratio_ceiling_name expect=allowed_the_needle_has_nine_real_hits_in_the_tree measured=would_be_REFUSED_if_the_answer_were_an_absence_matches_controls_ratio_ceiling_name_and_ratio_counter_name
+id=lengthening_a_needle_until_it_matches_one_control_re_admits_it shape=cmd_count_tests_globstar_py_GT_SPACE_RIGID_BODY_MODE_RATIO_COLON_ctl_ratio_ceiling_name expect=the_narrower_needle_is_scrutinised_at_least_as_hard_as_the_broad_one measured=ALLOWED_control_defect_returns_None_because_only_one_planted_line_contains_it
+
+# --- THE INSTRUMENT EXCLUSION CHANGED WHAT THE VOCABULARY MEANS, AND THE
+# --- FIGURES CITING THE OLD MEANING WERE NOT REGENERATED (BP0).
+id=the_SELF_exclusion_makes_a_glob_answer_differ_from_grep shape=cmd_files_tests_globstar_py_RIGID_MODE_FLOOR_which_the_vocabulary_answers_with_two_files expect=the_answer_is_what_a_reader_running_the_command_gets measured=grep_rl_RIGID_MODE_FLOOR_tests_include_py_returns_THREE_the_third_being_tests_test_tree_prose_consistent_py_which_afc5b05_added_and_the_same_commit_excluded
+id=the_shipped_claim_at_tolerances_455_is_false_at_this_commit shape=the_sentence_two_test_files_still_name_RIGID_MODE_FLOOR_with_its_enumeration_of_the_gate_file_and_the_counter_meta_test expect=true_or_regenerated_in_the_commit_that_moved_it measured=FALSE_three_test_files_name_it_the_claim_went_stale_in_afc5b05_and_the_guard_was_blinded_by_the_same_commit
+id=the_shipped_claim_at_tolerances_556_is_false_at_this_commit shape=the_sentence_three_test_files_name_this_ceiling_and_ONE_OF_THEM_ASSERTS_ON_IT expect=true_or_regenerated measured=FALSE_four_test_files_name_RIGID_BODY_MODE_RATIO_the_fourth_being_the_guard_module_itself
+id=a_direct_path_to_the_excluded_instrument_reports_a_false_reason shape=cmd_count_tests_test_tree_prose_consistent_py_anything expect=an_error_saying_the_file_is_excluded_from_the_vocabulary measured=ValueError_the_pattern_matches_no_file_under_the_repository_root_about_a_file_that_exists_and_is_tracked
+
+# --- R455c, MEASURED AGAIN AND WITHDRAWN IN SUBSTANCE AT ONE LEVEL UP.
+id=an_absence_spelled_0_of_12_reaches_no_control_requirement shape=out_0_of_12_under_a_needle_that_matches_nothing_and_no_ctl_line expect=refused measured=control_defect_returns_None_BUT_test_a_prose_triple_still_says_what_the_tree_says_refuses_it_on_equality_so_the_shape_cannot_ship
+id=an_absence_spelled_with_emphasis shape=out_double_star_none_double_star_or_out_None_capitalised_with_no_ctl expect=refused measured=control_defect_returns_None_and_the_equality_test_refuses_it_the_same_way
+
+# --- CONTROL, AND IT MUST STAY ALLOWED.
+id=control_a_needle_that_occurs_in_the_tree_and_in_its_own_control shape=cmd_count_tests_verification_rung1_test_rigid_body_modes_py_zero_modes_under_the_bound_LPAREN_out_3_ctl_zero_modes_call_site expect=allowed measured=allowed_and_the_answer_moves_if_a_call_site_is_added_or_removed
