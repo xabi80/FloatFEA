@@ -34,11 +34,13 @@ count is `{{fig:retired_ratio_over_ceiling_on_corpus}}` of
 `{{fig:rigid_mode_corpus_frames}}`, and the corpus test prints both when it
 runs.
 
-claim: the generated figures file carries a count for the retired ratio and
-       none for the retired subspace loss
+claim: the generated figures file carries a count for the retired subspace
+       loss as well as for the retired ratio. It did not, for three rounds
+       and three refuted reasons, while four sentences compared the two
+       (R454) -- this one among them.
 cmd:   count("docs/milestones/F2_figures.md", "retired_loss_over")
 ctl:   retired_loss_figure_row
-out:   0
+out:   1
 Both are retired (CS2) and both are reported by
 `test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate`. The residual
 answers AP3's objection without an eigensolve: the analytic vectors are
@@ -572,14 +574,16 @@ def test_the_eigenvalue_RATIO_is_a_diagnostic_and_not_a_gate(capsys) -> None:
     stood here and was refuted by the function's own body (R436).
 
     `RIGID_BODY_SUBSPACE_LOSS` IS RETIRED WITH IT (CS2), for the stronger
-    reason: it breached at more of the reviewer's clean frames than the ratio
-    did, so the quantity that had been kept was the one the evidence indicted
-    harder. NO COUNT FOR EITHER IS TYPED IN THIS FILE. Two were, in words,
-    measured on a 28-frame corpus that is now four times that, twelve lines
-    from a docstring in this same file saying the loss count is not written
-    here (R423). The dead numbers are deliberately not quoted back: writing
-    them would make the sentence beside them false, which is how the first
-    version of this repair failed its own check.
+    reason: it breached at `{{fig:retired_loss_over_ceiling_on_corpus}}` of
+    the reviewer's clean frames against the ratio's
+    `{{fig:retired_ratio_over_ceiling_on_corpus}}`, so the quantity that had
+    been kept was the one the evidence indicted harder. BOTH COUNTS ARE
+    FIGURES AND NEITHER IS TYPED. Two were, in words, measured on a 28-frame
+    corpus that is now four times that, twelve lines from a docstring in this
+    same file saying the loss count is not written here (R423). The dead
+    numbers are deliberately not quoted back: writing them would make the
+    sentence beside them false, which is how the first version of this repair
+    failed its own check.
     `test_the_RETIRED_ratio_is_why_the_form_changed` in the corpus file
     prints both when it runs.
 

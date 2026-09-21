@@ -85,6 +85,7 @@ EXTRA_FILES = ("CLAUDE.md",)
 # about a commit fourteen revisions back. It has its own guard.
 
 CONTROLS = ROOT / "tests" / "prose_triple_controls.txt"
+SELF = Path(__file__).resolve()
 
 
 # --------------------------------------------------------------------------
@@ -95,16 +96,52 @@ CONTROLS = ROOT / "tests" / "prose_triple_controls.txt"
 # the needle it searches for, so the first four triples written here counted
 # themselves.
 #
-# KEYED ON THE PREFIX AT LINE START AND NOT ON THE TOKEN (CW0, R443b). The
-# first version matched any line beginning with `out:`, which includes a
-# Python annotated assignment -- `out: list[tuple[int, str]] = []` -- so a
-# count over this very file returned 5 where the file had 6. An assignment is
-# excluded by the `=` it must carry.
-_ANNOTATION = re.compile(r"^[ \t]*(?:#[ \t]*)?(?:claim|cmd|ctl|out):(?![^=\n]*=)")
+# KEYED ON THE PREFIX AT LINE START (CW0, R443b) AND DISAMBIGUATED BY A
+# PARSE (CX2, R450). The first version matched any line beginning with
+# `out:`, which includes a Python annotated assignment --
+# `out: list[tuple[int, str]] = []` -- so a count over this file read one
+# short. The second excluded any annotation line whose REST CONTAINED AN
+# EQUALS SIGN, which is every `cmd:` whose needle has one: the single shipped
+# triple searching for `log=True` then counted its own `claim:` and `cmd:`
+# lines, `out: 4` became `out: 6`, and the claim was rewritten to justify the
+# new number by naming two lines that do not exist.
+#
+# The question is whether the line is a Python ANNOTATED ASSIGNMENT, and that
+# is a parse rather than a character. `ast` answers it exactly.
+_ANNOTATION_PREFIX = re.compile(r"^[ \t]*(?:#[ \t]*)?(?:claim|cmd|ctl|out):")
+
+
+def _is_annotated_assignment(line: str) -> bool:
+    """`out: list[int] = []` is code; `out:   none` is an annotation.
+
+    THE DISCRIMINATOR IS THE VALUE, not the parse. `cmd: count("a", "b")` is
+    also a well-formed `AnnAssign` -- Python allows a bare annotation -- so
+    testing the node type alone classified every `cmd:` line as code and
+    stopped stripping it, which is the self-counting defect one turn later.
+    What only code has is an assigned value.
+
+    The cost, stated: a genuine bare Python declaration whose target is
+    literally `claim`, `cmd`, `ctl` or `out` would be read as an annotation.
+    There is none, and a four-name collision is a cheaper hole than the one
+    this closes.
+    """
+    try:
+        tree = ast.parse(line.strip())
+    except SyntaxError:
+        return False
+    return (
+        len(tree.body) == 1
+        and isinstance(tree.body[0], ast.AnnAssign)
+        and tree.body[0].value is not None
+    )
+
+
+def _is_annotation(line: str) -> bool:
+    return bool(_ANNOTATION_PREFIX.match(line)) and not _is_annotated_assignment(line)
 
 
 def _without_annotations(text: str) -> str:
-    return "\n".join(line for line in text.splitlines() if not _ANNOTATION.match(line))
+    return "\n".join(line for line in text.splitlines() if not _is_annotation(line))
 
 
 def _read(rel: str) -> str:
@@ -123,6 +160,18 @@ def _paths(pattern: str) -> list[Path]:
         got = sorted(p for p in ROOT.glob(pattern) if p.is_file() and p != CONTROLS)
     else:
         got = [ROOT / pattern]
+    # THE INSTRUMENT IS OUT OF THE VOCABULARY'S REACH, by name as well as by
+    # glob (R456). The control file was excluded in the glob branch only, so
+    # naming it directly searched it -- and every planted line is, by
+    # construction, a line containing a needle some triple is about. THIS
+    # MODULE is excluded for the same reason from CX2: its shape tables quote
+    # the constants the triples are about, as test data, so leaving it in
+    # would put the measuring device into every measurement.
+    #
+    # THE COST, STATED: no triple can make a claim about these two files. A
+    # claim about the guard is the reviewer's to read, which is where the
+    # enforcement for unchecked prose now lives anyway.
+    got = [p for p in got if p not in (CONTROLS, SELF)]
     if not got or not all(p.exists() for p in got):
         raise ValueError(f"the pattern {pattern!r} matches no file under the repository root")
     return got
@@ -145,9 +194,7 @@ def lines(rel: str, needle: str) -> str:
     """
     _paths(rel)
     raw = (ROOT / rel).read_text(encoding="utf-8", errors="replace").splitlines()
-    got = [
-        str(i) for i, line in enumerate(raw, 1) if needle in line and not _ANNOTATION.match(line)
-    ]
+    got = [str(i) for i, line in enumerate(raw, 1) if needle in line and not _is_annotation(line)]
     return ",".join(got) if got else "none"
 
 
@@ -377,6 +424,42 @@ def test_a_prose_triple_still_says_what_the_tree_says(
     )
 
 
+def control_defect(cmd: str, ctl: str, answer: str) -> str | None:
+    """Why this triple's negative control does not hold, or None (CX2).
+
+    A FUNCTION, so the reviewer's re-admission shapes can be run against it
+    directly. Three rules, each closing one hole it re-admitted R434 through:
+
+      1. AN ABSENCE INCLUDES `no`. The requirement keyed on `none` or a bare
+         count, and `defined("RIGID_MODE_BONUD")` returns `no` -- a
+         misspelling certified as an absence with no control required at all.
+      2. THE NEEDLE IS A TOKEN, not a token with whitespace around it.
+         `"RIGID_MODE_FLOOR "` -- the name plus a trailing space -- answers
+         `none` over `tests/` while the shipped control line contains it, so
+         the control passed and the claim was false. A needle that differs
+         from the thing it claims to be about by invisible characters is the
+         R434 shape with a space instead of a paren.
+      3. THE NEEDLE MATCHES ITS OWN CONTROL AND NO OTHER. A needle matching
+         several planted lines is a needle nobody has thought about.
+    """
+    answer = answer.strip()
+    if answer not in ("none", "no") and not _BARE_COUNT.match(answer):
+        return None
+    if not ctl:
+        return f"reports `{answer}` and names no `ctl:`"
+    if ctl not in _CONTROL_LINES:
+        return f"names control `{ctl}`, which is not planted"
+    needle = _needle(cmd)
+    if not needle or needle != needle.strip():
+        return f"searches for `{needle}`, which is empty or carries whitespace"
+    hits = sorted(k for k, v in _CONTROL_LINES.items() if needle in v)
+    if ctl not in hits:
+        return f"searches for `{needle}`, which its control `{ctl}` does not contain"
+    if len(hits) > 1:
+        return f"searches for `{needle}`, which matches controls {hits}"
+    return None
+
+
 @pytest.mark.parametrize(
     "rel, start, claim, cmd, ctl, expected",
     TRIPLES or _FALLBACK,
@@ -385,31 +468,86 @@ def test_a_prose_triple_still_says_what_the_tree_says(
 def test_a_triple_that_reports_an_ABSENCE_carries_a_negative_control(
     rel: str, start: int, claim: str, cmd: str, ctl: str, expected: str
 ) -> None:
-    """R434. `out: none` proves nothing if the needle cannot match anything.
-
-    Required wherever the answer is `none` or a bare count, which are the two
-    shapes that read as "this is not in the tree" and the two a malformed
-    needle produces for free.
-    """
+    """R434. `out: none` proves nothing if the needle cannot match anything."""
     if rel == "(none)":
         pytest.skip("reported by test_there_are_triples_to_run")
-    answer = expected.strip()
-    if answer != "none" and not _BARE_COUNT.match(answer):
-        return
-    assert ctl, (
-        f"{rel}:{start} reports `{answer}` and names no `ctl:`. A command that "
-        "returns none or a count is a command a malformed needle satisfies for "
-        "free -- R434 was the constant's name with a right paren after it, "
-        f"which occurs nowhere. Plant a line in {CONTROLS.name} and name it."
+    why = control_defect(cmd, ctl, expected)
+    assert why is None, (
+        f"{rel}:{start} {why}.\\n"
+        "A command that returns none, no, or a count is a command a malformed "
+        "needle satisfies for free."
     )
-    assert ctl in _CONTROL_LINES, (
-        f"{rel}:{start} names control `{ctl}` and {CONTROLS.name} has " f"{sorted(_CONTROL_LINES)}."
-    )
-    needle = _needle(cmd)
-    assert needle in _CONTROL_LINES[ctl], (
-        f"{rel}:{start} searches for `{needle}` and the control line `{ctl}` "
-        f"does not contain it:\n    {_CONTROL_LINES[ctl]}\n"
-        "The needle cannot match, so the command cannot fail."
+
+
+# THE REVIEWER'S RE-ADMISSION SHAPES, run against the function directly. Each
+# reproduced R434 with the guard green, and the last three are the shapes that
+# must still be allowed.
+_CONTROL_SHAPES: list[tuple[str, str, str, str, bool]] = [
+    (
+        "needle_with_a_trailing_space",
+        'files("tests/**/*.py", "RIGID_MODE_FLOOR ")',
+        "floor_constant_name",
+        "none",
+        True,
+    ),
+    (
+        "defined_of_a_misspelled_constant",
+        'defined("RIGID_MODE_BONUD")',
+        "",
+        "no",
+        True,
+    ),
+    (
+        "an_absence_with_no_control_at_all",
+        'count("tests/**/*.py", "RIGID_BODY_MODE_RATIO)")',
+        "",
+        "0",
+        True,
+    ),
+    (
+        "a_control_that_is_not_planted",
+        'count("tests/**/*.py", "RIGID_MODE_FLOOR")',
+        "no_such_control",
+        "0",
+        True,
+    ),
+    (
+        "a_needle_matching_two_controls",
+        'count("tests/**/*.py", "RIGID_BODY_MODE_RATIO")',
+        "ratio_ceiling_name",
+        "0",
+        True,
+    ),
+    (
+        "a_well_formed_absence",
+        'count("tests/verification/rung1/test_rigid_body_modes.py", "last_below")',
+        "last_below_needle",
+        "0",
+        False,
+    ),
+    (
+        "an_answer_that_is_not_an_absence",
+        'files("tests/**/*.py", "RIGID_MODE_FLOOR")',
+        "",
+        "tests/test_counters_are_injected.py",
+        False,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "name, cmd, ctl, answer, must_refuse",
+    _CONTROL_SHAPES,
+    ids=[s[0] for s in _CONTROL_SHAPES],
+)
+def test_the_CONTROL_rule_rules_on_the_reviewer_shapes(
+    name: str, cmd: str, ctl: str, answer: str, must_refuse: bool
+) -> None:
+    """R455. Each of the first five certified an absence with the guard green."""
+    got = control_defect(cmd, ctl, answer) is not None
+    assert got == must_refuse, (
+        f"shape `{name}`: the rule {'allowed' if must_refuse else 'refused'} it "
+        f"-- control_defect returned {control_defect(cmd, ctl, answer)!r}"
     )
 
 
@@ -428,8 +566,16 @@ def test_the_ANNOTATION_strip_does_not_eat_a_python_annotation() -> None:
     `out: list[tuple[int, str]] = []` begins with the annotation prefix and is
     executable code. Stripping it made a count over this file read one short.
     """
-    assert _ANNOTATION.match("# out:   none")
-    assert _ANNOTATION.match("out:   none")
-    assert _ANNOTATION.match("    claim: something")
-    assert not _ANNOTATION.match("    out: list[tuple[int, str]] = []")
-    assert not _ANNOTATION.match("    counts: dict[str, int] = {}")
+    assert _is_annotation("# out:   none")
+    assert _is_annotation("out:   none")
+    assert _is_annotation("    claim: something")
+    assert not _is_annotation("    out: list[tuple[int, str]] = []")
+    assert not _is_annotation("    counts: dict[str, int] = {}")
+    # R450: a `cmd:` whose NEEDLE carries an equals sign is still an
+    # annotation. The equals-sign carve-out said otherwise and the triple
+    # counted itself.
+    assert _is_annotation('# cmd:   count("scripts/regen_figures.py", "log=True")')
+    assert _is_annotation('cmd:   count("a.py", "x=1")')
+    # And a bare Python annotation with no value is code-shaped but harmless:
+    # what makes a line code here is the assigned value.
+    assert _is_annotation("out:   none")

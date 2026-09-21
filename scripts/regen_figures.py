@@ -183,7 +183,8 @@ def _figures() -> list[tuple[str, str]]:
             # `words`, BY R439'S OWN RULE, and this row is what caught it: how
             # many of the 858 configurations really carry a seventh zero mode
             # is decided by a spectrum, so it moves -- `350` on the
-            # implementer's machine against `347` on the canonical runner. It
+            # implementer's machine against `347` on the canonical runner --
+            # both values stood here and are kept as the record. It
             # shipped plain for the length of one render and the guard refused
             # it, which is the rule written one commit earlier working on the
             # row written in the same commit.
@@ -334,14 +335,22 @@ def _figures() -> list[tuple[str, str]]:
             f"{ratio_over} of {len(RBC.ENTRIES)}",
         )
     )
-    # THE LOSS'S COUNT IS STILL NOT PUBLISHED, and the reason is now the one
-    # that survives: NOTHING CITES IT. It read `42 of 56` on the implementer's
-    # laptop and `41 of 56` on the canonical runner, which under the rule
-    # above would make it `words` like the other two rather than a reason to
-    # withhold it. What keeps it out is that no sentence anywhere needs it --
-    # the contrast the reports draw is with the ratio, and the corpus test
-    # prints the loss count when it runs for a reader who wants it.
-    _ = loss_over
+    rows.append(
+        (
+            # AND THE LOSS'S COUNT IS PUBLISHED (R454), by the same rule. It
+            # was withheld on three grounds in three rounds, each refuted:
+            # "an exact row that disagrees between machines is staleness" --
+            # answered by the class; "a count is not a measurement against a
+            # tolerance" -- refuted by its two siblings; and "nothing cites
+            # it" -- refuted by four sentences in four files, each of the
+            # form "it breached at MORE of the reviewer's clean frames than
+            # the ratio did". That comparison is between this count and the
+            # published one, so withholding it made four true sentences
+            # uncheckable by any reader.
+            _floor("retired_loss_over_ceiling_on_corpus", "words"),
+            f"{loss_over} of {len(RBC.ENTRIES)}",
+        )
+    )
 
     rows.append(
         (
@@ -657,12 +666,16 @@ CANONICAL_CORETYPE = "Haswell"
 # here, in the same commit that added both declarations 409 lines above and a
 # test asserting exactly that set (R424).
 #
-# claim: two `_floor(...)` calls in this file declare `log=True`, and both are
-#        the retired parametrisation. The rest of the hits are prose: this
-#        comment block, the one above it, and the two in the class vocabulary
+# claim: four lines in this file contain `log=True` -- the two `_floor(...)`
+#        calls that declare it, both of them the retired parametrisation, and
+#        two comment lines naming the flag: the one above this block and the
+#        one beside the retired rows. `out: 6` stood here, which was the four
+#        plus this triple's own `claim:` and `cmd:` lines, under an
+#        enumeration that named two hits in the class vocabulary where a grep
+#        over it finds none (R450).
 # cmd:   count("scripts/regen_figures.py", "log=True")
 # ctl:   log_declaration
-# out:   6
+# out:   4
 #
 # Every row NOT marked here must match the canonical render exactly, on any
 # machine, so staleness is caught off the canonical runner as it always was.

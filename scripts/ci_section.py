@@ -3,6 +3,7 @@
 
     python scripts/ci_section.py > section.md
     python scripts/ci_section.py --legs > legs.md
+    python scripts/ci_section.py --rounds > section0a.md
 
 THE SHA IS NOT AN ARGUMENT (CO1, R352). It took one, labelled whatever it was
 handed "the reviewed commit", and four consecutive verdicts found a heading
@@ -433,13 +434,103 @@ def section() -> str:
     return "\n".join(lines) + "\n"
 
 
+def rounds_runs(sha: str) -> list[dict]:
+    """Every run whose head is a commit in `<judged>..HEAD`, newest last.
+
+    THE REPORT'S OTHER RUNS, GENERATED (CX0, R449). A step report names more
+    than one run: the one at the commit the verdict judged, and the ones this
+    round produced. The first was generated and the rest were typed, and the
+    typing is where the CI record stopped being the CI record -- a `cancelled`
+    run published as `FAILURE`, with its cancelled ladder published as green,
+    beside the `gh` command that says otherwise.
+    """
+    heads = subprocess.run(
+        ["git", "log", "--format=%H", f"{sha}..HEAD"],
+        capture_output=True,
+        text=True,
+    ).stdout.split()
+    if not heads:
+        return []
+    runs = json.loads(
+        _gh(
+            "run",
+            "list",
+            "--json",
+            "databaseId,event,conclusion,status,headSha",
+            "--limit",
+            "60",
+        )
+    )
+    mine = [r for r in runs if r["headSha"] in set(heads)]
+    return sorted(mine, key=lambda r: r["databaseId"])
+
+
+def outcome(run: dict) -> str:
+    """What a run DID, in the only words this repository uses for it.
+
+    A RUN THAT DID NOT COMPLETE HAS NO RESULT (CX0). `cancelled`, `queued`
+    and `in_progress` are states, not outcomes: a cancelled run reached no
+    verdict on anything, so reporting it as a failure attributes a reason it
+    never got to. It renders as `no result` and carries no job lines at all.
+    """
+    if run["status"] != "completed":
+        return f"**no result** (status `{run['status']}`)"
+    if not run["conclusion"] or run["conclusion"] == "cancelled":
+        return f"**no result** (`{run['conclusion'] or 'none'}`)"
+    return f"conclusion **{run['conclusion']}**"
+
+
+def rounds_section(sha: str, number: str) -> str:
+    """The `0a` table: every run this round produced, with what it did."""
+    runs = rounds_runs(sha)
+    lines = [
+        f"## 0a. Runs since the commit verdict {number} judged",
+        "",
+        _generated_by(number, sha) + " Every run whose head is a commit in this round, from"
+        " `gh run list --json databaseId,event,conclusion,status,headSha`."
+        " A run that did not complete has **no result** and no job lines:"
+        " it reached no verdict on anything, so no reason is attributed to"
+        " it (CX0, R449).",
+        "",
+        "| run | event | head | outcome |",
+        "|---|---|---|---|",
+    ]
+    if not runs:
+        lines.append("| (none) | | | no run at any commit in this round |")
+        return "\n".join(lines) + "\n"
+    for r in runs:
+        lines.append(
+            f"| `{r['databaseId']}` | {r['event']} | `{r['headSha'][:7]}` " f"| {outcome(r)} |"
+        )
+    failed = [r for r in runs if r["status"] == "completed" and r["conclusion"] == "failure"]
+    for r in failed:
+        named = failing_names(r["databaseId"])
+        total = sum(len(v) for v in named.values())
+        lines += [
+            "",
+            f"**Run `{r['databaseId']}`, conclusion **failure**: "
+            f"{total} failing test name(s) in the log.**",
+        ]
+        # THE ONLY REASON A CONCLUSION MAY CARRY IS A FAILING TEST NAME FROM
+        # THE SAME QUERY (CX0). "same reason, ladder green" was prose about a
+        # neighbouring run and it was wrong about both halves.
+        for job in sorted(named):
+            for name in named[job]:
+                lines.append(f"- `{name}` ({job})")
+    return "\n".join(lines) + "\n"
+
+
 def main(argv: list[str]) -> int:
     # The table carries em dashes and section marks. On a console whose
     # encoding is not UTF-8 those are replaced on the way out, and the
     # published table then differs from the generated one by exactly the
     # characters nobody looks at.
     sys.stdout.reconfigure(encoding="utf-8")
-    if len(argv) > 2 or (len(argv) == 2 and argv[1] != "--legs"):
+    if len(argv) == 2 and argv[1] == "--rounds":
+        number, sha = _anchor()
+        sys.stdout.write(rounds_section(full_sha(sha), number))
+        return 0
+    if len(argv) > 2 or (len(argv) == 2 and argv[1] not in ("--legs", "--rounds")):
         # A SHA ARGUMENT IS REFUSED RATHER THAN IGNORED (CO1). Silently
         # dropping it would let a caller believe they had chosen the commit.
         print(__doc__)

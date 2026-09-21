@@ -161,7 +161,9 @@ REGISTERED = [
         RIGID.RIGID_MODE_BOUND / WIDEN,
     ),
     # AND THE SUBSPACE LOSS LEAVES WITH THE RATIO (CS2). Its gate is a
-    # diagnostic now, for the stronger reason of the two: it breached at more
+    # diagnostic now, for the stronger reason of the two --
+    # `{{fig:retired_loss_over_ceiling_on_corpus}}` against
+    # `{{fig:retired_ratio_over_ceiling_on_corpus}}`: it breached at more
     # of the reviewer's clean frames than the quantity already retired. A
     # counter registered against a gate that does not assert cannot redden it,
     # and both cells here failed at the commit that retired it -- which is

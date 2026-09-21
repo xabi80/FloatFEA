@@ -397,8 +397,10 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 # the count leaves six is the stretch at which `lambda_7` crosses the bound
 # itself -- solved here at `4.3707e+05`, where `lambda_7` is `199.5625` units.
 # It restates the threshold instead of bracketing it. That is measured, not
-# argued: over all 114 corpus frames `below_bound == 6` and
-# `lambda_7 > bound and rigid_max < bound` disagree on ZERO. The two limits
+# argued: over all `{{fig:rigid_mode_corpus_frames}}` corpus frames
+# `below_bound == 6` and `lambda_7 > bound and rigid_max < bound` disagree on
+# ZERO. `114` stood here after the corpus reached 126, five lines above the
+# figure that says so (R452); the claim itself still holds at 126. The two limits
 # above are what is left when the tautology is removed.
 #
 # AND THE UPPER SIDE IS NOT PLATFORM-STABLE, so the partition is published
@@ -422,8 +424,11 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 #   in `{{fig:rigid_mode_corpus_window_members}}`. NOTHING IN CI CHECKS WHICH
 #   SIDE THEY FALL ON: every leg is `ubuntu-latest` with the same kernel pin,
 #   so ten legs agreeing says nothing about a second machine. The check that
-#   would see it is `--check` on a non-canonical runner, and there this row is
-#   `derived` rather than exact.
+#   would see it is `--check` on a non-canonical runner, and there
+#   `rigid_mode_corpus_refused` is `words` -- the word sequence exact and both
+#   of its numbers compared for spread. `derived rather than exact` stood
+#   here, naming a class the sibling commit had already changed, and the
+#   window row itself is not floor-class at all (R451).
 #
 # `rigid_mode_corpus_refused` was an EXACT row, which Q8 requires to agree
 # everywhere -- published under one policy while the same generator withheld
@@ -647,7 +652,9 @@ RIGID_BODY_MODE_RATIO_COUNTER_DEFECT: Final[float] = 1.0e-12
 # CLASS: ACCURACY -- and RETIRED at CS2. NOT A GATE: nothing asserts
 # against it, and the class is kept for the reason given above.
 #
-# Retired for the STRONGER of the two reasons: it breached at more of the
+# Retired for the STRONGER of the two reasons:
+# `{{fig:retired_loss_over_ceiling_on_corpus}}` against the ratio's
+# `{{fig:retired_ratio_over_ceiling_on_corpus}}` -- it breached at more of the
 # reviewer's clean frames than the ratio did, so the quantity that had been
 # kept was the one the evidence indicted harder. Its own count is not even
 # machine-stable -- it reads differently on the laptop and on the runner,

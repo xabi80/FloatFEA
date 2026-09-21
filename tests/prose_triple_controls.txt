@@ -21,12 +21,10 @@
 
 ratio_ceiling_name: if ratio > RIGID_BODY_MODE_RATIO:
 ratio_counter_name: kk[0, 0] += RIGID_BODY_MODE_RATIO_COUNTER_DEFECT * scale
-ratio_counter_name: kk[0, 0] += RIGID_BODY_MODE_RATIO_COUNTER_DEFECT * scale
-ratio_counter_name: kk[0, 0] += RIGID_BODY_MODE_RATIO_COUNTER_DEFECT * scale
 loss_ceiling_name: loss > RIGID_BODY_SUBSPACE_LOSS and nothing asserts on it
 floor_constant_name: tau = RIGID_MODE_FLOOR * norm * EPS
 last_below_needle: w_below = last_below(spectrum, tau)
 log_declaration: _floor("some_row", "derived", log=True)
-retired_loss_figure_row: | `retired_loss_over_ceiling_on_corpus` | 41 of 56 |
+retired_loss_figure_row: | `retired_loss_over_ceiling_on_corpus` | N of M |
 seventeen_word: it breached at seventeen of the reviewer's frames
 zero_modes_call_site: dim = zero_modes_under_the_bound(k)

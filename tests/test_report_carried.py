@@ -942,14 +942,14 @@ _RUN_ID = re.compile(r"(?<![\d.])(\d{9,})(?!\d)")
 # `100,200,300,400` -- into a twelve-digit id and demanded a conclusion for
 # it. A grouped id is only a grouped id where someone wrote `run` in front of
 # it; a bare list of numbers is a list.
-_GROUPED = re.compile(r"(?i)\brun\s+(\d[\d,\s\u2013-]{6,}\d)")
+_GROUPED = re.compile(r"(?i)\brun\s+(\d[\d,\s_\u2013-]{6,}\d)")
 
 
 def _joined(text: str) -> str:
     """`run 35,479,925,335` -> `run 35479925335`, and nothing else joined."""
 
     def fix(m: re.Match[str]) -> str:
-        return m.group(0)[: m.start(1) - m.start(0)] + re.sub(r"[,\s\u2013-]", "", m.group(1))
+        return m.group(0)[: m.start(1) - m.start(0)] + re.sub(r"[,\s_\u2013-]", "", m.group(1))
 
     return _GROUPED.sub(fix, text)
 
@@ -984,15 +984,46 @@ def runs_without_a_conclusion(text: str) -> list[tuple[str, str]]:
     naked = []
     for para in _paragraphs(text):
         flat = _joined(para)
-        ids = set(_RUN_ID.findall(flat))
-        if not ids:
-            continue
-        stated = any(
-            _CONCLUSION.search(line) for line in flat.splitlines() if not _COMMANDISH.search(line)
-        )
-        if not stated:
-            naked.append((sorted(ids)[0], " ".join(para.split())[:90]))
+        hits = list(_RUN_ID.finditer(flat))
+        # PER RUN, NOT PER PARAGRAPH (R457). One conclusion anywhere in a
+        # paragraph satisfied every id in it, so "Run A had conclusion
+        # success. Run B is also named here." passed -- the R412 shape with a
+        # neighbour. Each id owns the text from itself to the next id.
+        for k, m in enumerate(hits):
+            end = hits[k + 1].start() if k + 1 < len(hits) else len(flat)
+            if not _stated_in(flat[m.start() : end]):
+                naked.append((m.group(1), " ".join(para.split())[:90]))
     return naked
+
+
+def _stated_in(segment: str) -> bool:
+    """Is a RUN's conclusion stated here, on text that is not a command?
+
+    THE SEGMENT IS FLATTENED BEFORE THE SEARCH, not filtered line by line
+    (R457). A value that wrapped to the next line was refused, because the
+    word was on one line and the result on the next. Command text is removed
+    from each line rather than the whole line being discarded, so a genuine
+    result pasted after the command that produced it still counts.
+
+    WHAT THIS DOES NOT DISTINGUISH, stated because the reviewer asked for a
+    rule that says which: a JOB's conclusion from the RUN's. "the ladder job
+    conclusion was success" satisfies it. The generated sections make that
+    moot -- they print the run's conclusion from `gh run view --json
+    conclusion`, and CX0 forbids a run id anywhere else -- so the
+    distinction has no site left to matter at.
+    """
+    kept = []
+    for line in segment.splitlines():
+        tail = line
+        for marker in ("->", " out ", "	out "):
+            if marker in tail:
+                tail = tail.split(marker, 1)[1]
+                break
+        else:
+            if _COMMANDISH.search(tail):
+                continue
+        kept.append(tail)
+    return bool(_CONCLUSION.search(" ".join(kept)))
 
 
 def a_green_table_under_a_failed_run(text: str) -> str | None:
@@ -1029,6 +1060,93 @@ _GREEN_UNDER_RED = "GREEN JOBS UNDER A FAILED RUN"
 
 def _paragraphs(text: str) -> list[str]:
     return [p for p in re.split(r"\n\s*\n", text) if p.strip()]
+
+
+def _zero_sections() -> str:
+    """Every `## 0...` section of the newest revision, joined.
+
+    THE GENERATED ONES. Section 0 is `python scripts/ci_section.py` and
+    section 0a is `--rounds`; between them they are the only place a run's
+    outcome is allowed to appear (CX0).
+    """
+    body = _newest_revision(REPORT_TEXT)
+    out = []
+    for m in re.finditer(r"^##+ 0[a-z]?\.", body, re.MULTILINE):
+        nxt = re.search(r"^##+ ", body[m.end() :], re.MULTILINE)
+        out.append(body[m.start() : m.end() + nxt.start()] if nxt else body[m.start() :])
+    return "\n".join(out)
+
+
+def test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS() -> None:
+    """R449, mechanically. A run's outcome is generated or it is not written.
+
+    Section 0a was prose. It named three runs and got one of them wrong in
+    both halves -- a `cancelled` run published as `FAILURE` with its
+    cancelled ladder published as green, beside the `gh` command that
+    refutes it. The conclusion guard could not see it: the paragraph carried
+    the word and a value, which is all that rule asks.
+
+    So the rule is not "say the conclusion" any more, it is "do not type the
+    run". `scripts/ci_section.py` and `--rounds` emit every run this round
+    from `gh run list --json ... status,conclusion`, and a run id anywhere
+    else in the revision is a typed CI fact.
+    """
+    body = _newest_revision(REPORT_TEXT)
+    allowed = _zero_sections()
+    stray = []
+    for para in _paragraphs(body):
+        if para in allowed or all(line in allowed for line in para.splitlines()):
+            continue
+        for run_id in set(_RUN_ID.findall(_joined(para))):
+            if run_id not in allowed:
+                stray.append((run_id, " ".join(para.split())[:90]))
+    assert not stray, (
+        "these paragraphs name a CI run outside the generated sections:\n"
+        + "\n".join(f"  run {r}: {t}..." for r, t in stray)
+        + "\nA run's outcome is what `scripts/ci_section.py` prints or it is "
+        "not written. R449 was a cancelled run typed as a failure with a "
+        "reason it never reached."
+    )
+
+
+_ROUNDS_HEADER = "| run | event | head | outcome |"
+_ROUNDS_ROW = re.compile(r"^\|\s*`(\d{9,})`\s*\|[^|]*\|[^|]*\|\s*(.+?)\s*\|$", re.M)
+_SECTION_0_RUN = re.compile(r"Run `(\d{9,})`,[^.]*conclusion \*\*\w+\*\*")
+
+
+def test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph() -> None:
+    """R449. Section 0a was prose, and prose is where the CI record drifted.
+
+    Structural rather than byte-for-byte: the generator is re-run at review
+    time against a repository that has moved on, so its newest row is not in
+    the committed text. What is checked is that the section IS the
+    generator's shape -- its provenance line and its table -- and that every
+    run id in the revision sits in one of the two generated forms. A
+    sentence about a run cannot satisfy either, which is what R449 was.
+    """
+    body = _newest_revision(REPORT_TEXT)
+    zero = _zero_sections()
+    assert _ROUNDS_HEADER in zero, (
+        "no `## 0a` table in the newest revision. `python "
+        "scripts/ci_section.py --rounds` emits every run this round with what "
+        "it did; a paragraph about them is what R449 was."
+    )
+    assert (
+        "Generated: `python scripts/ci_section.py`" in zero
+    ), "the section 0 block carries no generator provenance line."
+    tabled = {m.group(1) for m in _ROUNDS_ROW.finditer(zero)}
+    inline = set(_SECTION_0_RUN.findall(zero))
+    for run_id in set(_RUN_ID.findall(_joined(body))):
+        assert run_id in tabled or run_id in inline, (
+            f"run {run_id} is named in the revision but is in neither "
+            "generated form -- not a row of the 0a table and not section 0's "
+            "own `Run ..., conclusion ...` line. It was typed."
+        )
+    for _id, outcome in _ROUNDS_ROW.findall(zero):
+        assert _CONCLUSION.search("conclusion " + outcome) or "no result" in outcome, (
+            f"the 0a row for run {_id} reads `{outcome}`, which is neither a "
+            "conclusion nor `no result`."
+        )
 
 
 def test_every_CI_RUN_the_report_names_carries_its_conclusion() -> None:
@@ -1174,6 +1292,121 @@ _CI_SHAPES: list[tuple[str, str, bool]] = [
         True,
     ),
     # AND THE SHAPE THAT MUST STILL BE ALLOWED, in the form this report uses.
+    # THE FIFTIETH VERDICT'S TWENTY. The substantive one is the first: the
+    # guard decided per PARAGRAPH, so one conclusion satisfied every id in
+    # it. Five of the twenty are shapes the reviewer expects ALLOWED and two
+    # of those were false positives.
+    (
+        "conclusion_stated_for_a_DIFFERENT_run_in_the_same_paragraph",
+        "Run 35489487935 had conclusion success. Run 35545894507 is also named here.",
+        True,
+    ),
+    (
+        "two_runs_one_conclusion",
+        "Runs 35479925335 and 35489487935: conclusion success",
+        True,
+    ),
+    (
+        "run_id_with_underscores_as_separators",
+        "The paragraph names run 35_479_925_335 and no result.",
+        True,
+    ),
+    (
+        "conclusion_word_and_value_split_by_a_newline",
+        "Run 35479925335, event push, conclusion\n**success** on both jobs.",
+        False,
+    ),
+    (
+        # THE RULE THAT SAYS WHICH, since the corpus asked for one: the value
+        # must sit within twelve NON-ALPHANUMERIC characters of the word, so
+        # `conclusion was success` does not satisfy it, and neither does `the
+        # conclusion of the whole exercise ... was success`. That refuses a
+        # job's conclusion written in a sentence, and it refuses some true
+        # statements about the run too. The generated sections write
+        # `conclusion **success**`, so the adjacency costs nothing where it
+        # matters, and the looser form is exactly where a job's result gets
+        # mistaken for a run's.
+        "conclusion_of_a_job_not_the_run",
+        "Run 35479925335: the ladder job conclusion was success; the run itself is not stated.",
+        True,
+    ),
+    (
+        "the_word_conclusion_far_from_its_value",
+        "Run 35479925335, the conclusion of the whole exercise after a long "
+        "argument nobody wanted was success.",
+        True,
+    ),
+    (
+        "conclusion_value_inside_a_yaml_snippet_no_pipe",
+        "Run 35479925335\nconclusion: success",
+        False,
+    ),
+    (
+        "a_result_word_with_no_run_word_and_no_conclusion",
+        "35479925335 finished green and everything passed.",
+        True,
+    ),
+    (
+        "value_only_in_a_markdown_table_row",
+        "Run 35479925335\n| job | conclusion |\n| ladder | success |",
+        True,
+    ),
+    (
+        "commandish_line_that_also_carries_the_real_result",
+        "cmd gh run view 35479925335 --json conclusion -> conclusion **failure**",
+        False,
+    ),
+    (
+        "conclusion_spelled_as_a_verb",
+        "Run 35479925335 concluded: success",
+        True,
+    ),
+    (
+        "run_id_in_a_url_query_string",
+        "See ?run_id=35479925335 for what happened.",
+        True,
+    ),
+    (
+        "thirteen_digit_id_with_a_conclusion",
+        "Run 3547992533512 had conclusion success.",
+        False,
+    ),
+    (
+        "conclusion_value_more_than_twelve_chars_after_the_word",
+        "Run 35479925335 conclusion, as reported by the API, success",
+        True,
+    ),
+    (
+        "conclusion_inside_an_inline_code_span",
+        "Run 35479925335, `conclusion=success`",
+        False,
+    ),
+    (
+        "em_dash_separated_conclusion",
+        "The paragraph names run 35479925335 and the conclusion \u2014 success",
+        False,
+    ),
+    (
+        "id_split_by_a_markdown_bold_marker",
+        "Run **35479925335** and no result.",
+        True,
+    ),
+    (
+        "no_run_id_at_all_but_a_conclusion",
+        "conclusion success and no run named",
+        False,
+    ),
+    (
+        "run_id_as_part_of_a_longer_token",
+        "Artifact a35479925335b was produced; no result given.",
+        True,
+    ),
+    (
+        "the_generated_section_line_at_this_commit",
+        "Generated: `python scripts/ci_section.py`, anchored on verdict 49 at "
+        "`ed67a7d`. Run `35489487935`, event push, conclusion **success**",
+        False,
+    ),
     (
         "the_generated_section_line",
         "Generated: `python scripts/ci_section.py`, anchored on verdict 48 at "
