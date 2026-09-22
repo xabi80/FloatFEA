@@ -602,6 +602,46 @@
       "state": "answered",
       "where": "§2",
       "site": "tests/test_tree_prose_consistent.py"
+    },
+    "R467": {
+      "state": "answered",
+      "where": "§2",
+      "site": ".claude/hooks/stale-before-commit.sh"
+    },
+    "R468": {
+      "state": "answered",
+      "where": "§2",
+      "site": "scripts/ci_section.py"
+    },
+    "R469": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/test_tree_prose_consistent.py"
+    },
+    "R470": {
+      "state": "answered",
+      "where": "§2",
+      "site": "docs/reports/F2/step-5.md"
+    },
+    "R471": {
+      "state": "open",
+      "where": "§2",
+      "site": "docs/milestones/F2a.md"
+    },
+    "R472": {
+      "state": "open",
+      "where": "§2",
+      "site": "docs/milestones/F2a.md"
+    },
+    "R473": {
+      "state": "open",
+      "where": "§2",
+      "site": "docs/milestones/F2a.md"
+    },
+    "R474": {
+      "state": "open",
+      "where": "§2",
+      "site": "docs/milestones/F2a.md"
     }
   }
 }
