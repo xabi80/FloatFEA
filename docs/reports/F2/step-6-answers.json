@@ -1,0 +1,694 @@
+{
+  "_": [
+    "POINTERS ONLY (CH4). A state from the generator's fixed list and a section",
+    "of this report. The subject beside each item is read out of the verdict,",
+    "and the pointer is resolved against the report: the section must exist,",
+    "must mention the item, and may not be the Carried section itself."
+  ],
+  "answered": {
+    "R223": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R224": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R230": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R231": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R244": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R245": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R275": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R323": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R324": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R325": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R330": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R331": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R332": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R333": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R334": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R335": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R336": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R337": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R338": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R339": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R340": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R341": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R342": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R343": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R344": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R345": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R346": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R347": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R348": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R349": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R350": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R351": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R352": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R353": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R354": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R355": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R356": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R357": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R358": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R359": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R360": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R361": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R362": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R363": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R364": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R365": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R366": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R367": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R368": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R369": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R370": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R371": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R372": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R373": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R374": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R375": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R376": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R377": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R378": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R379": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R380": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R381": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R382": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R383": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R384": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R385": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R386": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R387": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R388": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R389": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R390": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R391": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R392": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R393": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R394": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R395": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R396": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R397": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R398": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R399": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R400": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R401": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R402": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R403": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R404": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R405": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R406": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R407": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R408": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R409": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R410": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R411": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R412": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R413": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R414": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R415": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R416": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R417": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R418": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R419": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R420": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R421": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R422": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R423": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R424": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R425": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R426": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R427": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R428": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R429": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R430": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R431": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R432": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R433": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R434": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R435": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R436": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R437": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R438": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R439": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R440": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R441": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R442": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R443": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R444": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R445": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R446": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R447": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R448": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R449": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R450": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R451": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R452": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R453": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R454": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R455": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R456": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R457": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R458": {
+      "state": "open",
+      "where": "§2"
+    },
+    "R459": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R460": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R461": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R462": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R463": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R464": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R465": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R466": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R467": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R468": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R469": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R470": {
+      "state": "carried",
+      "where": "§2"
+    },
+    "R471": {
+      "state": "open",
+      "where": "§2",
+      "site": "docs/milestones/F2a.md"
+    },
+    "R472": {
+      "state": "open",
+      "where": "§2",
+      "site": "docs/milestones/F2a.md"
+    },
+    "R473": {
+      "state": "open",
+      "where": "§2",
+      "site": "docs/milestones/F2a.md"
+    },
+    "R474": {
+      "state": "open",
+      "where": "§2",
+      "site": "docs/milestones/F2a.md"
+    },
+    "R482": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/test_report_carried.py"
+    },
+    "R483": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/test_report_carried.py"
+    },
+    "R484": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+    },
+    "R485": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+    },
+    "R486": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+    },
+    "R487": {
+      "state": "open",
+      "where": "§2",
+      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+    },
+    "R488": {
+      "state": "open",
+      "where": "§2",
+      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+    },
+    "R489": {
+      "state": "open",
+      "where": "§2",
+      "site": "tests/test_report_carried.py"
+    },
+    "R490": {
+      "state": "answered",
+      "where": "§2",
+      "site": "scripts/regen_figures.py"
+    },
+    "R491": {
+      "state": "answered",
+      "where": "§2",
+      "site": "docs/closure/F2-step5.md"
+    },
+    "R492": {
+      "state": "open",
+      "where": "§2",
+      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+    },
+    "R493": {
+      "state": "open",
+      "where": "§2",
+      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+    }
+  }
+}
