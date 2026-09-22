@@ -292,12 +292,10 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 #
 # WHY THIS RATHER THAN THE EIGENVALUE RATIO. `RIGID_BODY_MODE_RATIO` below
 # compares the sixth eigenvalue with the seventh, and the reviewer's corpus of
-# frames showed what that measures: it exceeds its ceiling on a large fraction
-# of them with a DEFECT-FREE element. NEITHER COUNT IS PUBLISHED HERE (DB1):
-# both move whenever the reviewer adds frames, which is what a corpus is for,
-# and `tests/verification/rung1/test_rigid_body_corpus.py`
-# recomputes them over whatever it holds. `sixteen` stood here and the same
-# round's own render said ten
+# `{{fig:rigid_mode_corpus_frames}}` frames showed what that measures: it exceeds
+# its ceiling on `{{fig:retired_ratio_over_ceiling_on_corpus}}` of them
+# with a DEFECT-FREE element. BOTH NUMBERS ARE RENDERED AND NEITHER IS TYPED
+# (R405). `sixteen` stood here and the same round's own render said ten
 # (R395); `twenty-eight` and `a large minority` then stood here for four more
 # rounds while the file grew to its present size and the fraction passed a
 # half, so the quantifier was wrong in the other direction. The quantity moves with the frame's
@@ -365,16 +363,15 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 #   below  TWO CANDIDATES, BOTH RENDERED, BOTH ENFORCED (CV1/CW2, R426/R438).
 #            * the six themselves: the bound must exceed the largest
 #              numerically-zero eigenvalue or Courant-Fischer's six are not
-#              all under it;
+#              all under it --
+#              `{{fig:rigid_mode_largest_rigid_eigenvalue}}` units;
 #            * a genuine seventh zero mode: ONE TORSIONAL RELEASE OVER THE
-#              CORPUS'S OWN UNIT AND SPAN SETS, of which the ones that really
-#              do carry a seventh zero mode NONE escapes the bound.
-#          THE FOUR FIGURES THAT STOOD HERE ARE WITHDRAWN (DB1) -- the largest
-#          rigid eigenvalue, the cell's size, how many of its entries are
-#          mechanisms, and the highest `lambda_7` any of them reaches. The
-#          cell is built from the corpus's own unit and span strings, so all
-#          four moved every time the corpus grew, which is the staleness the
-#          paragraph below is already about.
+#              CORPUS'S OWN UNIT AND SPAN SETS,
+#              `{{fig:rigid_mode_mechanism_cell}}`, of which
+#              `{{fig:rigid_mode_mechanism_count}}` really do carry a seventh
+#              zero mode and NONE escapes the bound. The highest `lambda_7`
+#              any of them reaches is
+#              `{{fig:rigid_mode_mechanism_ceiling}}` units.
 #          THE MECHANISM IS THE BINDING SIDE. It was not, while the cell was
 #          7 units x 5 spans under a sentence claiming the corpus's coverage
 #          -- 6 of 19 unit values and 5 of 31 span values, one of them a unit
@@ -387,9 +384,10 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 #          `subdiv` IS PINNED TO 1 IN THAT CELL and the reason is in
 #          `scripts/regen_figures.py`: above it the release stops being a
 #          mechanism, so there is nothing to measure.
-#   above  the smallest `lambda_7` the gate accepts over the corpus and the
-#          largest it refuses are withdrawn figures (DB1). Raising the bound
-#          past the first would decline a frame that decides today. See the note
+#   above  the smallest `lambda_7` the gate accepts over the corpus is
+#          `{{fig:rigid_mode_smallest_decided}}` units and the largest it
+#          refuses is `{{fig:rigid_mode_largest_refused}}`. Raising the bound
+#          past the first declines a frame that decides today. See the note
 #          below: those two straddle this value by less than the declared
 #          platform spread.
 #
@@ -399,35 +397,31 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 # the count leaves six is the stretch at which `lambda_7` crosses the bound
 # itself -- solved here at `4.3707e+05`, where `lambda_7` is `199.5625` units.
 # It restates the threshold instead of bracketing it. That is measured, not
-# argued: over every corpus frame `below_bound == 6` and `lambda_7 > bound and
-# rigid_max < bound` disagree on ZERO. `114` stood here after the corpus
-# reached 126, five lines above the figure that says so (R452); the frame
-# count is not published here at all now (DB1), because it went stale twice
-# more after that. The two limits
+# argued: over all `{{fig:rigid_mode_corpus_frames}}` corpus frames
+# `below_bound == 6` and `lambda_7 > bound and rigid_max < bound` disagree on
+# ZERO. `114` stood here after the corpus reached 126, five lines above the
+# figure that says so (R452); the claim itself still holds at 126. The two limits
 # above are what is left when the tautology is removed.
 #
 # AND THE UPPER SIDE IS NOT PLATFORM-STABLE, so the partition is published
 # WITH ITS WINDOW rather than as one count (CV2, R427).
-# The smallest accepted and largest refused `lambda_7` straddle this bound by
-# less than `FIGURE_FLOOR_CLASS_SPREAD` -- both withdrawn as figures under DB1
-# -- so the spread does not separate them and which
+# `{{fig:rigid_mode_smallest_decided}}` and
+# `{{fig:rigid_mode_largest_refused}}` straddle this bound by less than
+# `FIGURE_FLOOR_CLASS_SPREAD`, so the spread does not separate them and which
 # side those frames fall on is a property of the machine. The DECISION on each
 # is a domain-membership question and not a breach, since refusal is a
 # declared outcome.
 #
 # WHAT THE THREE ROWS MEAN, and what checks them:
 #
-#   Some frames clear the bound by MORE than the spread and some miss it by
+#   `{{fig:rigid_mode_corpus_decided_clear}}` frames clear the bound by MORE
+#   than the spread and `{{fig:rigid_mode_corpus_refused_clear}}` miss it by
 #   more. Those two sets are the same on any machine, and the determinism
 #   legs -- ten runs of one pinned environment -- are a check on them.
 #
-#   The frames inside the spread of the bound have an outcome that is a
-#   property of the machine.
-#
-#   THE THREE COUNTS AND THE MEMBER LIST ARE WITHDRAWN AS FIGURES (DB1). A
-#   partition of the corpus moves with the corpus; the partition itself is
-#   computed, and the membership asserted, in
-#   `tests/verification/rung1/test_rigid_body_corpus.py`. NOTHING IN CI CHECKS WHICH
+#   `{{fig:rigid_mode_corpus_in_the_window}}` frames are inside the spread of
+#   the bound and their outcome is a property of the machine. They are named
+#   in `{{fig:rigid_mode_corpus_window_members}}`. NOTHING IN CI CHECKS WHICH
 #   SIDE THEY FALL ON: every leg is `ubuntu-latest` with the same kernel pin,
 #   so ten legs agreeing says nothing about a second machine. The check that
 #   would see it is `--check` on a non-canonical runner, and there
@@ -486,11 +480,10 @@ RIGID_MODE_BOUND_COUNTER_DEFECT: Final[float] = 1.0e-13
 # ITS WINDOW WENT WITH IT. "The largest rigid-body eigenvalue over the corpus
 # is `1.461` units, so the floor is `6.84x` clear of it" was a true
 # measurement against a rule nothing applied once CT0 deleted the count. The
-# same measurement brackets `RIGID_MODE_BOUND` now, where it decides
-# something. It was a floor-class figure rather than a typed number because it
-# moves between machines, which the `6.84x` never said; under DB1 it is not
-# published at all, because it also moves whenever the corpus grows. It is
-# measured in `tests/verification/rung1/test_rigid_body_corpus.py`.
+# same measurement brackets `RIGID_MODE_BOUND` now, as the floor-class row
+# `{{fig:rigid_mode_largest_rigid_eigenvalue}}`, where it decides something --
+# and it is a figure rather than a typed number because it moves between
+# machines, which the `6.84x` never said.
 # Set: 2026-09-14, F2; retired 2026-09-19
 RIGID_MODE_FLOOR: Final[float] = 10.0
 
@@ -606,9 +599,9 @@ RIGID_MODE_GAP_COUNTER_DEFECT: Final[float] = 1.0e-13
 # ctl:   ratio_counter_name
 # out:   tests/verification/rung1/test_rigid_body_modes.py
 #
-# WHY IT WAS RETIRED, in one line: it exceeds this ceiling on a large fraction
-# of the reviewer's frames with a DEFECT-FREE element -- the count and the
-# frame total are withdrawn figures (DB1) -- because
+# WHY IT WAS RETIRED, in one line: it exceeds this ceiling on
+# `{{fig:retired_ratio_over_ceiling_on_corpus}}` of the reviewer's
+# `{{fig:rigid_mode_corpus_frames}}` frames with a DEFECT-FREE element, because
 # the quantity moves with the frame's conditioning rather than with the
 # element. `a large minority of the reviewer's fifty-six frames` stood here
 # and neither half of it was true at the commit that published it (R405).
@@ -669,10 +662,10 @@ RIGID_BODY_MODE_RATIO_COUNTER_DEFECT: Final[float] = 1.0e-12
 # CLASS: ACCURACY -- and RETIRED at CS2. NOT A GATE: nothing asserts
 # against it, and the class is kept for the reason given above.
 #
-# Retired for the STRONGER of the two reasons: it breached at more of the
-# reviewer's clean frames than the ratio did -- the two counts are withdrawn
-# figures (DB1), and the comparison between them is recomputed rather than
-# published -- so the quantity that had been
+# Retired for the STRONGER of the two reasons:
+# `{{fig:retired_loss_over_ceiling_on_corpus}}` against the ratio's
+# `{{fig:retired_ratio_over_ceiling_on_corpus}}` -- it breached at more of the
+# reviewer's clean frames than the ratio did, so the quantity that had been
 # kept was the one the evidence indicted harder. Its own count is not even
 # machine-stable -- it reads differently on the laptop and on the runner,
 # because it is computed from eigenvectors and one frame sits on this ceiling.
