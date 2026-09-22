@@ -33,9 +33,18 @@ if [ "$code" -eq 0 ]; then
   exit 0
 fi
 
-# The survivors are reported, not decided: every one needs a look, and the
-# measured false rate on a real round was four in five. The reason carries the
-# whole list so the decision is made against the lines rather than the count.
+# The survivors are reported, not decided: every one needs a look, and on the
+# one round this has been run against, the reviewer classified every survivor
+# as false. The figure and the command that prints it live in the docstring of
+# scripts/precommit_stale.py; no number is repeated here, because nothing
+# regenerates a comment in a shell script (BI3).
+#
+# THE SENTENCE THAT STOOD HERE said the false rate was four in five. That is
+# the 5-survivor / 4-false ratio the fifty-first verdict WITHDREW, republished
+# one commit after the withdrawal, in the file that answers the finding about
+# it (R467) -- and it was the stated reason this hook asks instead of denying.
+# The reason it asks is unchanged and does not rest on a count: a stale-figure
+# report is a reading, and a hook cannot do the reading.
 reason=$(printf '%s' "$out" | "$PY_BIN" -c 'import json,sys;print(json.dumps(sys.stdin.read()))')
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":%s}}\n' "$reason"
 exit 0
