@@ -477,6 +477,14 @@ def _figures() -> list[tuple[str, str]]:
     )
     rows.append(("boundary_margin_refused", f"{len(refused)}: {', '.join(refused) or 'none'}"))
     rows.append(("calibration_ulp_histogram", _ulp_histogram(C, CD)))
+
+    # DB1, APPLIED AT THE ONE PLACE ROWS BECOME THE PUBLISHED FILE. The
+    # computations above still run: they are what the ladder's own tests
+    # exercise, and several feed each other. What changes is that a
+    # corpus-derived VALUE is not published, so the file no longer moves when
+    # the reviewer adds entries. A reader who wants the number runs the named
+    # test, which is the thing that actually asserts it.
+    rows = [(n, _withdrawal(n) if _is_withdrawn(n) else v) for n, v in rows]
     return rows
 
 
@@ -680,6 +688,87 @@ CANONICAL_CORETYPE = "Haswell"
 # Every row NOT marked here must match the canonical render exactly, on any
 # machine, so staleness is caught off the canonical runner as it always was.
 _MARKS: dict[str, tuple[str, str | None, bool]] = {}
+
+
+# ---------------------------------------------------------------- DB1
+# A COUNT OF CORPUS ENTRIES IS NOT A PUBLISHED FIGURE.
+#
+# The loop this breaks, which ran four times: the reviewer adds entries to a
+# corpus it owns; every row below that is a count, a partition or a
+# worst-over-corpus value moves; `test_the_generated_figures_are_not_stale`
+# goes red; the implementer's repair is necessarily a commit after a closed
+# step's report, which reddens the whole-suite-line guard. Two guards telling
+# the truth, a red tree, and nothing wrong with the code.
+#
+# DB1's ruling: the TESTS that assert the ceiling over every entry are the
+# claim. A count of entries is not, and it never was -- it is a fact about
+# how much measuring has been done, which changes by design every time the
+# reviewer does more of it.
+#
+# The name stays resolvable on purpose. `test_every_figure_reference_anywhere
+# _resolves` checks every `{{fig:...}}` in the repository, and roughly ninety
+# of them are in shipped step reports and in this milestone's plan. Deleting
+# the rows would dangle all of them, including inside history that is
+# supposed to stay as it was written; what a reader now gets in place of a
+# stale count is the name of the test that carries the claim.
+_WITHDRAWN = {
+    # the rigid-body frame corpus -- G2.1 / V1.1
+    "rigid_mode_corpus_frames": "tests/verification/rung1/test_rigid_body_corpus.py",
+    "rigid_mode_corpus_refused": "tests/verification/rung1/test_rigid_body_corpus.py",
+    "rigid_mode_corpus_decided_clear": "tests/verification/rung1/test_rigid_body_corpus.py",
+    "rigid_mode_corpus_refused_clear": "tests/verification/rung1/test_rigid_body_corpus.py",
+    "rigid_mode_corpus_in_the_window": "tests/verification/rung1/test_rigid_body_corpus.py",
+    "rigid_mode_corpus_window_members": "tests/verification/rung1/test_rigid_body_corpus.py",
+    "rigid_mode_residual_worst_over_corpus": ("tests/verification/rung1/test_rigid_body_corpus.py"),
+    "rigid_mode_smallest_decided": "tests/verification/rung1/test_rigid_body_corpus.py",
+    "rigid_mode_largest_refused": "tests/verification/rung1/test_rigid_body_corpus.py",
+    "rigid_mode_largest_rigid_eigenvalue": ("tests/verification/rung1/test_rigid_body_corpus.py"),
+    "rigid_mode_mechanism_cell": "tests/verification/rung1/test_rigid_body_corpus.py",
+    "rigid_mode_mechanism_count": "tests/verification/rung1/test_rigid_body_corpus.py",
+    "rigid_mode_mechanism_ceiling": "tests/verification/rung1/test_rigid_body_corpus.py",
+    "retired_ratio_over_ceiling_on_corpus": ("tests/verification/rung1/test_rigid_body_corpus.py"),
+    "retired_loss_over_ceiling_on_corpus": ("tests/verification/rung1/test_rigid_body_corpus.py"),
+    # the model-configuration corpus -- G2.2 / V1.2
+    "corpus_entries": "tests/verification/rung1/test_corpus_configurations.py",
+    "corpus_solved": "tests/verification/rung1/test_corpus_configurations.py",
+    "clean_worst_ratio": "tests/verification/rung1/test_corpus_configurations.py",
+    "clean_worst_entry": "tests/verification/rung1/test_corpus_configurations.py",
+    "exempt_total": "tests/verification/rung1/test_corpus_configurations.py",
+    "exempt_by_defect": "tests/verification/rung1/test_corpus_configurations.py",
+    "exempt_detected": "tests/verification/rung1/test_corpus_configurations.py",
+    "calibration_ulp_worst": "tests/verification/rung1/test_corpus_configurations.py",
+    "detection_edge_at": "tests/verification/rung1/test_corpus_configurations.py",
+    "detection_edge_worst": "tests/verification/rung1/test_corpus_configurations.py",
+    "detection_edge": "tests/verification/rung1/test_corpus_configurations.py",
+    "detection_edge_tie_set": "tests/verification/rung1/test_corpus_configurations.py",
+    "counter_defect_over_edge": "tests/verification/rung1/test_corpus_configurations.py",
+    "counter_defect_boundary": "tests/verification/rung1/test_corpus_configurations.py",
+    "counter_headroom_room": "tests/verification/rung1/test_corpus_configurations.py",
+    "calibration_ulp_histogram": "tests/verification/rung1/test_corpus_configurations.py",
+    "rigid_mode_seventh_orders_smallest_decided": (
+        "tests/verification/rung1/test_rigid_body_corpus.py"
+    ),
+}
+
+
+_WITHDRAWN_PREFIXES = ("margin_", "below_ceiling_", "boundary_margin_")
+"""Per-defect margins and counts, one pair per injected defect, every one of
+them a minimum or a count over `C.SOLVED`."""
+
+
+def _is_withdrawn(name: str) -> bool:
+    return name in _WITHDRAWN or name.startswith(_WITHDRAWN_PREFIXES)
+
+
+def _withdrawal(name: str) -> str:
+    claim = _WITHDRAWN.get(name)
+    if claim is None:
+        claim = (
+            "tests/verification/rung1/test_corpus_configurations.py"
+            if name.startswith(_WITHDRAWN_PREFIXES)
+            else "unknown"
+        )
+    return f"*withdrawn (DB1) -- the claim is `{claim}`*"
 
 
 def _floor(name: str, kind: str, ceiling: str | None = None, log: bool = False) -> str:
