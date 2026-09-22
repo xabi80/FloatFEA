@@ -39,15 +39,34 @@ expression is PARSED and refused unless it is one of those four names applied
 to string literals, because `eval` over a comment in the source tree is
 otherwise a way to run anything from a docstring.
 
-NEGATIVE CONTROL, AND IT IS THE WHOLE OF R434. A command whose answer is
-`none` or a count proves nothing unless the needle it searches for can be
-found at all. The needle that failed was a retired ceiling's name with a right
+NEGATIVE CONTROL, AND WHAT IT IS AND IS NOT (R434, corrected at R469). A
+command whose answer is `none` or a count proves nothing about a needle nobody
+has looked at. The needle that failed was a retired ceiling's name with a right
 paren after it -- spelled out nowhere here, because naming it would put this
 file into the answer of the very command it is the example for -- and it
 matches nothing anywhere, so it printed `none` whatever the tree did, under a
-claim that was false in both halves and now looked certified. Every such
-triple names a planted line in `tests/prose_triple_controls.txt` and this file
-asserts the same needle is found there. A needle that cannot match fails its control.
+claim that was false in both halves and now looked certified.
+
+So every triple reporting an absence or a count REGISTERS its needle, by exact
+text, in `tests/prose_triple_controls.txt`, and this file refuses a needle that
+is not registered, is registered twice, or differs from its registration by so
+much as a space.
+
+**REGISTRATION IS NOT FINDABILITY, and the earlier wording here claimed it
+was.** Under the equality rule the planted line IS the needle, so "the same
+needle is found there" is true by construction for every needle a triple
+declares and demonstrates nothing about the tree. What registration buys is
+that a reader sees the exact string the claim rests on, in one file, without
+reading the claim -- a decision made visible, not a property proved. The
+fifty-second verdict measured this over unseen defect shapes -- needles
+registered, claims false, and most of them green -- and the count lives there,
+in `docs/reviews/F2/step-5.md` under R469. It is not repeated here: nothing in
+this tree regenerates it, and a figure nothing regenerates goes stale in place
+(BI3). The mechanism that would close that is frozen into 4a's
+list in `docs/milestones/F2a.md`; the
+direction is still right, because it refuses every re-admission through a
+plausible-looking fake control line and a file of bare needles is the one an
+adversarial reader can check.
 
 WHAT THIS STILL DOES NOT DO, said plainly:
 
@@ -440,8 +459,15 @@ def control_defect(cmd: str, ctl: str, answer: str) -> str | None:
          the control passed and the claim was false. A needle that differs
          from the thing it claims to be about by invisible characters is the
          R434 shape with a space instead of a paren.
-      3. THE NEEDLE MATCHES ITS OWN CONTROL AND NO OTHER. A needle matching
-         several planted lines is a needle nobody has thought about.
+      3. THE NEEDLE IS REGISTERED EXACTLY ONCE. Under equality a needle can
+         match two planted lines only if two registrations are byte-identical,
+         so this rule is now about the registry being unambiguous and not, as
+         it read before, about a needle that matches more of the tree than its
+         author expected.
+
+    WHAT THIS FUNCTION DOES NOT DECIDE: whether the needle is the right needle.
+    It is a registry check, and most unseen defect shapes pass it. Read R469 in
+    the verdict for the measurement before quoting this as coverage.
     """
     answer = answer.strip()
     if answer not in ("none", "no") and not _BARE_COUNT.match(answer):

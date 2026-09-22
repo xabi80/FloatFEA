@@ -136,8 +136,17 @@ def _heading(number: str, sha: str, tail: str = "", conclusion: str | None = Non
 GENERATED_MARK = "<!-- generated: scripts/ci_section.py -->"
 
 
-def _generated_by(number: str, sha: str, legs: bool = False) -> str:
-    flag = " --legs" if legs else ""
+def _generated_by(number: str, sha: str, flag: str = "") -> str:
+    """`flag` is THE INVOCATION THAT REPRODUCES THIS SECTION, and every
+    caller passes its own (R468).
+
+    It was a `legs: bool` that no caller ever set, so `--rounds`,
+    `--history` and `--commits` all published `Generated: python
+    scripts/ci_section.py` -- the command that prints section 0. Three
+    sections added to make the CI record reproducible each named a command
+    that reproduces a different section, in the round whose whole subject
+    was a record generated rather than typed.
+    """
     return (GENERATED_MARK + "\n\n") + (
         f"Generated: `python scripts/ci_section.py{flag}`, anchored on verdict "
         f"{number} at `{sha[:7]}` through the report's own `Answers:` line."
@@ -503,7 +512,8 @@ def rounds_section(sha: str, number: str) -> str:
     lines = [
         f"## 0a. Runs since the commit verdict {number} judged",
         "",
-        _generated_by(number, sha) + " Every run whose head is a commit in this round, from"
+        _generated_by(number, sha, " --rounds")
+        + " Every run whose head is a commit in this round, from"
         " `gh run list --json databaseId,event,conclusion,status,headSha`."
         " A run that did not complete has **no result** and no job lines:"
         " it reached no verdict on anything, so no reason is attributed to"
@@ -623,7 +633,7 @@ def history_section(sha: str, number: str) -> str:
     lines = [
         f"## 0b. History since the commit verdict {number} judged",
         "",
-        _generated_by(number, sha)
+        _generated_by(number, sha, " --history")
         + " Commits this branch held and no longer holds, from `git reflog`."
         " A rewrite is the right answer to some findings and it is never a"
         " silent one (CY0, R461). The reflog is LOCAL: a fresh clone has"
@@ -662,7 +672,8 @@ def commits_section(sha: str, number: str) -> str:
     lines = [
         f"## 0c. Commits since the commit verdict {number} judged",
         "",
-        _generated_by(number, sha) + " `git log --oneline <judged>..HEAD`, run at the report's own"
+        _generated_by(number, sha, " --commits")
+        + " `git log --oneline <judged>..HEAD`, run at the report's own"
         " commit. This revision's own commit is not in it, because it does"
         " not exist yet when the section is generated.",
         "",

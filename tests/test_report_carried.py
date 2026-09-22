@@ -1241,6 +1241,12 @@ _TRUTH = {
     "35559285363": "failure",
     "35563850428": "success",
     "35561482997": "failure",
+    # THE TWO RED RUNS OF THE FIFTY-SECOND ROUND, and the run at the commit
+    # verdict 52 judged. `99999999999` is absent on purpose: `.get` returns
+    # None for it, which is what a lookup of a run nobody made returns.
+    "35659133236": "failure",
+    "35660198114": "failure",
+    "35664796051": "success",
 }
 
 _MARK = "<!-- generated: scripts/ci_section.py -->"
@@ -1304,6 +1310,63 @@ def _shape(name: str) -> str:
             + "\n|---|---|---|---|\n"
             "| `35559285688` | push | `afc5b05` | conclusion **success** |\n"
         )
+    # ---- the twelve handed over at the fifty-second verdict -------------
+    if name == "prose_about_runs_under_a_heading_that_types_the_generated_marker":
+        return _BASE + (
+            "\n## 0d. What the runs mean\n\n"
+            + _MARK
+            + "\n\nRun `35659133236` was a clean green build; nothing this round "
+            "went red.\n"
+        )
+    if name == "an_invented_run_id_inside_a_section_that_types_the_marker":
+        return _BASE + (
+            "\n## 0d. What the runs mean\n\n" + _MARK + "\n\nRun `99999999999` passed as well.\n"
+        )
+    if name == "a_prose_section_marked_generated_by_a_script_that_does_not_exist":
+        return _BASE + (
+            "\n## 0d. Coverage\n\n<!-- generated: scripts/no_such_script.py -->"
+            "\n\nRun `35563850428` covered every leg.\n"
+        )
+    if name == "a_0a_row_whose_head_column_names_a_commit_the_run_was_not_at":
+        return _BASE.replace(
+            "| `35563850428` | push | `6170263` | conclusion **success** |",
+            "| `35563850428` | push | `deadbee` | conclusion **success** |",
+        )
+    if name == "a_0a_row_whose_event_column_is_falsified":
+        return _BASE.replace(
+            "| `35559285363` | workflow_dispatch | `afc5b05` | conclusion **failure** |",
+            "| `35559285363` | push | `afc5b05` | conclusion **failure** |",
+        )
+    if name == "a_0a_row_stating_two_outcomes_at_once":
+        return _BASE.replace(
+            "| `35559285363` | workflow_dispatch | `afc5b05` | conclusion **failure** |",
+            "| `35559285363` | workflow_dispatch | `afc5b05` | conclusion **failure**, "
+            "effectively **success** |",
+        )
+    if name == "the_two_non_green_rows_deleted_and_the_green_one_kept":
+        return (
+            _BASE.split("|---|---|---|---|")[0]
+            + "|---|---|---|---|\n"
+            + "| `35563850428` | push | `6170263` | conclusion **success** |\n"
+        )
+    if name == "a_0a_table_copied_forward_from_the_previous_round_unchanged":
+        # EVERY ROW INDIVIDUALLY TRUE, three newer runs unlisted. The text is
+        # `_BASE` itself under a later verdict number.
+        return _BASE.replace(
+            "## 0a. Runs since the commit verdict 51 judged",
+            "## 0a. Runs since the commit verdict 52 judged",
+        )
+    if name == "the_head_not_in_current_history_label_stripped_from_a_row":
+        return _BASE + ("| `35561482997` | push | `2bd9e89` | conclusion **failure** |\n")
+    if name == "a_false_narrative_paragraph_appended_inside_the_generated_0a_section":
+        return _BASE + (
+            "\nBoth failures were the same report-staleness guard, and the "
+            "verification ladder was green in each.\n"
+        )
+    if name == "control_a_real_failure_row_rewritten_to_conclusion_success":
+        return _BASE + ("| `35659133236` | push | `1796183` | conclusion **success** |\n")
+    if name == "control_a_naked_run_id_in_a_plain_paragraph_outside_any_marked_section":
+        return _BASE + "\n## 1. The reading\n\nRun 35660198114 was fine.\n"
     raise AssertionError(name)
 
 
@@ -1319,6 +1382,26 @@ _REPORT_SHAPES = [
     ("a_false_CI_sentence_in_the_section_12_subject_column", True),
     ("a_red_run_at_a_commit_that_was_force_pushed_away", False),
     ("the_Generated_provenance_line_is_itself_typed", True),
+    # THE TWELVE FROM THE FIFTY-SECOND VERDICT'S CORPUS COMMIT (217a5ce).
+    # `must_refuse` is the corpus's own `measured=` field, so ten of these
+    # rows assert that the guards DO NOT catch the shape. That is what the
+    # guards do; the rows make it a fact the suite states rather than one a
+    # grep of the corpus finds. Every False row is in the frozen 4a list in
+    # docs/milestones/F2a.md, and CZ0 freezes the apparatus that would close
+    # it -- so a row
+    # here flipping to True later is a change somebody made on purpose.
+    ("prose_about_runs_under_a_heading_that_types_the_generated_marker", False),
+    ("an_invented_run_id_inside_a_section_that_types_the_marker", False),
+    ("a_prose_section_marked_generated_by_a_script_that_does_not_exist", False),
+    ("a_0a_row_whose_head_column_names_a_commit_the_run_was_not_at", False),
+    ("a_0a_row_whose_event_column_is_falsified", False),
+    ("a_0a_row_stating_two_outcomes_at_once", False),
+    ("the_two_non_green_rows_deleted_and_the_green_one_kept", False),
+    ("a_0a_table_copied_forward_from_the_previous_round_unchanged", False),
+    ("the_head_not_in_current_history_label_stripped_from_a_row", False),
+    ("a_false_narrative_paragraph_appended_inside_the_generated_0a_section", False),
+    ("control_a_real_failure_row_rewritten_to_conclusion_success", True),
+    ("control_a_naked_run_id_in_a_plain_paragraph_outside_any_marked_section", True),
 ]
 
 
@@ -1360,6 +1443,14 @@ def test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph() -> None:
         "no `## 0a` table in the newest revision. `python "
         "scripts/ci_section.py --rounds` emits every run this round with what "
         "it did; a paragraph about them is what R449 was."
+    )
+    # EACH SECTION'S PROVENANCE LINE NAMES THE INVOCATION THAT REPRODUCES IT
+    # (R468). This assertion used to require the bare string on section 0a,
+    # which `--rounds` writes -- so the guard REQUIRED the false line, and
+    # correcting the generator would have reddened it.
+    assert "Generated: `python scripts/ci_section.py --rounds`" in zero, (
+        "the 0a block carries no `--rounds` provenance line. `python "
+        "scripts/ci_section.py` with no flag prints section 0, not this one."
     )
     assert (
         "Generated: `python scripts/ci_section.py`" in zero
