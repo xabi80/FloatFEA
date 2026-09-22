@@ -159,11 +159,21 @@ STEP_REPORT = max(REPORTED) if REPORTED else 0
 # BOTH to the newest complete pair, so a report for the next step could never
 # be the one checked, and the boundary could not be left.
 _PLAN_STEP = _plan_step()
-STEP = (
-    _PLAN_STEP
-    if _PLAN_STEP in REPORTED
-    else (max(REPORTED & REVIEWED) if (REPORTED & REVIEWED) else 0)
-)
+_PAIRED = max(REPORTED & REVIEWED) if (REPORTED & REVIEWED) else 0
+# THE LATER OF THE TWO, because they disagree in opposite directions.
+#
+#   plan ahead of the pair -- the boundary DB2 exists to let us leave: the next
+#     step has a report and its verdict is not written yet.
+#   pair ahead of the plan -- the plan line was not advanced, or a synthetic
+#     state injected a newer complete pair without touching the plan, which is
+#     what the guard-state harness does. Reading the plan there would take step
+#     5 while a complete step-10 pair sits in the tree.
+#
+# The second case is not hypothetical: the first version of this took the plan
+# whenever its step had a report, and the harness reddened on
+# `two_digit_step_number` -- injected report AND verdict for step 10, plan line
+# untouched at 5 -- which is the state the harness exists to inject.
+STEP = max(_PLAN_STEP if _PLAN_STEP in REPORTED else 0, _PAIRED)
 VERDICT = REVIEWS / f"step-{max(REVIEWED)}.md" if REVIEWED else REVIEWS / "step-0.md"
 REPORT = REPORTS / f"step-{STEP}.md"
 
