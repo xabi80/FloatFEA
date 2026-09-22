@@ -1,579 +1,486 @@
 # Review — F2 step 5
-Reviewed commit: 3e2417f4a663d5618017bb7079e108917f605e67
+Reviewed commit: cbf8520717432f1220dbe7def1f941b9bb040174
 Verdict: HOLD
 
-**Reviewed commit: `7d6a94e`.** Fifty-fourth verdict. **Step 5 is closed and
-this does not reopen it** -- verdict 53 closed it PASS at `125cee1` under
-CZ0's three-verdict rule, and nothing here is a fourth review of that work.
-What this is: two implementer commits landed on top of a closed step, the
-tree under `tests/` changed, and the hook is right that a verdict must cover
-it. You asked whether that deserves a number. It does, because the tree it
-covers is **red**, and because the substance you sent -- the negative result
-on R475 -- is a (b)/(c) question that needed measuring rather than agreeing
-with.
+**Reviewed commit: `ccb5346`.** Fifty-fifth verdict. **Step 5 is still closed
+and this does not reopen it** -- verdict 53 closed it PASS at `125cee1` under
+CZ0's three-verdict rule. Verdicts 54 and 55 are on the *tree*, not on step 5's
+work, and the tree is red here and on the machine neither of us controls.
 
-Tests: **9 failed, 2591 passed, 0 skipped** -- my run, clean tree at
-`7d6a94e`, `python -m pytest -q`, 1355.49 s, Python 3.13 on Windows.
+Tests: **8 failed, 2336 passed, 0 skipped** -- my run, clean tree at `ccb5346`,
+`python -m pytest -q`, 641.56 s, Python 3.13 on Windows. The failing set agrees
+with yours exactly. The headline count does not: see R497.
 
-**Commits judged: `677ba35` (DA1), `7d6a94e` (R481).**
+**Commits judged: `7f13c93`, `422d608`, `c2e2ddc`, `e884dbc`, `4333fb2`,
+`a697a53`, `a5746c0`, `82cadeb`, `ccb5346`.**
 
-**Item 1b.** There is no new report revision, so there is no
-`Answers: verdict <n>` header to check against verdict 53. That absence is
-part of R482; it is recorded, not stepped over.
+**Item 1b -- CHECKED AND CLEAN.** `docs/reports/F2/step-6.md:3` reads
+`Answers: verdict 54 @ e32ae1e`, and verdict 54 is the newest verdict in the
+repository. The report answers the round it claims to answer. One comparison,
+made.
 
 ## CI at the reviewed commit (3b) -- RED
 
 ```
-cmd  gh run list --commit 7d6a94e12245e4221022cd2e09524d8e4ad380d7 --json
-       databaseId,event,status,conclusion
-out  35682754448 push completed FAILURE
-cmd  gh run view 35682754448 --json jobs
-out  lint, unit and guards | FAILURE | 14 steps
-     the verification ladder | success | 13 steps
-     CI determinism -- leg | skipped | 0 steps
-     CI determinism -- ten legs agree | skipped | 0 steps
-judge RED ON LINUX AT THE COMMIT I JUDGE. Under CA2 that is a HOLD on its own
-     and the local run does not outrank it. NOT CK2: the failing job ran 14
-     real steps for minutes. The ten determinism legs are SKIPPED, not
-     allowance-exhausted -- recorded as an unavailable check, third round.
-judge THE LADDER IS GREEN. rung 1 passed on Linux at this commit, so this is
-     not a STOP: no low rung is red and the element is not implicated.
-cmd  gh run list --commit 612e79b1... / 677ba355...
-out  612e79b: 35681689456 push cancelled; 35681689335 dispatch FAILURE.
-     677ba35: [] -- no run at all. Unavailable, not skipped.
+cmd  gh run list --commit ccb534627a94c52ec518978965eba7c7ef26c2c6 --json
+       databaseId,name,event,status,conclusion,workflowName
+out  35751444035 CI push completed FAILURE
+cmd  gh run view 35751444035 --json jobs
+out  lint, unit and guards            | FAILURE | 14 steps
+     the verification ladder          | success | 13 steps
+     CI determinism -- leg            | skipped |  0 steps
+     CI determinism -- ten legs agree | skipped |  0 steps
+judge RED ON LINUX AT THE HEAD YOU GAVE ME. Under CA2 that is a HOLD on its
+     own and my local run does not outrank it. NOT CK2: the failing job ran
+     14 real steps. You presented it as red and it is red -- the first round
+     in three where nothing in your account of CI needed correcting.
+judge THE LADDER IS GREEN ON LINUX. Rung 1 passed at this commit, so no low
+     rung is red and this is NOT A STOP.
+judge THE TEN DETERMINISM LEGS ARE SKIPPED, not allowance-exhausted --
+     recorded as an unavailable check, FOURTH ROUND RUNNING (R479).
 cmd  gh pr view 1 --json comments --jq ".comments | length"
-out  0 -- no outside-witness comment. Unavailable check, sixth round running.
+out  0 -- no outside-witness comment. Unavailable check, seventh round.
 ```
 
 ## My own instructions (4b), conftest (4c), tolerances (4)
 
 ```
-cmd  git diff 612e79b..7d6a94e -- .claude docs/SUPERVISOR.md
-out  (empty).  NOT A STOP.
+cmd  git diff 7d6a94e..ccb5346 -- .claude docs/SUPERVISOR.md
+out  (empty).  NOT A STOP. Nothing governing what I read, carry or write
+     moved inside this step.
 cmd  git ls-files -- tests/conftest.py "tests/**/conftest.py"
 out  tests/conftest.py            -- the instruction's own expectation
-cmd  git diff 612e79b..7d6a94e -- tests/conftest.py "tests/**/conftest.py"
+cmd  git diff 7d6a94e..ccb5346 -- tests/conftest.py "tests/**/conftest.py"
 out  (empty)
 cmd  git ls-files "*conftest.py"
 out  tests/conftest.py -- still the whole set. No plugin was added, so no
      rung's green is written by code in its own directory.
-cmd  git diff 612e79b..7d6a94e -- floatfea/
-out  (EMPTY -- not one byte, comments included, for the tenth round running)
-cmd  git diff 612e79b..7d6a94e -- floatfea/tolerances.py
-out  (EMPTY)
-judge YOUR STATEMENT THAT NOTHING IN floatfea/ OR THE GATE CHANGED IS TRUE.
-     The whole diff is three files: docs/closure/F2-step5.md,
-     docs/milestones/F2_figures.md, tests/test_report_carried.py.
+cmd  extract every `NAME: Final[...] = value` from tolerances.py at both ends
+out  48 constants at 7d6a94e, 48 at ccb5346; added [], removed [],
+     changed [].  NOT ONE VALUE MOVED.
+cmd  for each commit in 7d6a94e..ccb5346, does it touch both floatfea/ and
+     docs/reviews/
+out  (none) -- no verdict was committed with code it judges.
+judge THE 46/39 LINES IN tolerances.py ARE ALL COMMENT. True, and you said
+     so. What is not true is that they are inert: R495.
 ```
 
 ## Carried
 
-Verdict 53 carried one blocking item by name and listed six closure items.
+Verdict 54 carried R475 as blocking and listed R489 to R493 as closure items,
+on top of the earlier list.
 
-- **R475 -- OPEN, AND THIS ROUND IS WORK ON IT, NOT AN ANSWER TO IT.**
-  Neither half of the closing condition has landed: no counter is injected on
-  a rotational degree of freedom, no quantity is renormalised, and
-  `docs/closure/F2-step5.md` sections 1 and 4 still publish sensitivity
-  figures without saying which dof class or which span they were measured at.
-  What did land is a negative result on the prescribed remedy, reported
-  honestly, with the scratchpad kept out of the tree. That is the right thing
-  to have done and it moves the item forward; it does not close it.
-  **Still blocking F2-rung2.** R484 to R488 are my answers to the three
-  questions you asked about it.
-- **R481 -- ANSWERED AT THE SITE, AND ITS CONDITION IS ONLY PARTLY CLOSED.**
-  `tests/test_report_carried.py:1386` no longer says `must_refuse` IS the
-  corpus's `measured=` field; the replacement says it is what the guards were
-  measured to do, names the divergence explicitly, and adds that a row flips
-  in the same commit as the repair. That is more than I asked for and it is
-  correct. But CI disagrees that the item is closed, on three lines, and it
-  is right to -- see R489, which is my fault and not yours.
-- **R476, R477, R478, R479 (R383), R480 -- OPEN, closure items, correctly not
-  touched.** R479's state is worse than unchanged: the ten determinism legs
-  did not run at all at `7d6a94e`, so there is not even a green to bank.
-- **R471 to R474 and the 48 items frozen in `docs/milestones/F2a.md` section
-  7 -- OPEN on the frozen list**, not re-reviewed item by item under CZ0.
+- **R475 -- OPEN AND STILL BLOCKING, correctly not claimed.** DB0 is not in
+  this round, you say so plainly, and the reason is the right one: the
+  row-shared form plus the reference-point cell is a gate change and belongs
+  in one commit with its ceiling. Nothing here pretends otherwise.
+  **Still blocking F2-rung2's first commit.**
+- **R486 -- OPEN, carried into that same commit.** Correctly not touched.
+- **R487 -- OPEN.** The `content > 0` one-line assertion is not in this
+  round; correctly deferred to the form's commit, and you say so.
+- **R488 -- ADOPTED, not closed.** The directive takes the row-shared form. I
+  record adoption rather than closure because nothing is measured yet.
+- **R489 -- ANSWERED, AND IN THE RIGHT SHAPE.** `docs/reports/F2/step-6.md`
+  section 3 declares all twenty-one lines (`1385`-`1404`, `2451`) as
+  `no change`, site by site, which is what R29's half-of-an-item rule asks.
+  My own convention change stands: from verdict 54 on I cite the single line.
+- **R490 -- ANSWERED BY DB1, AND THE RULING IS THE ONE I WOULD HAVE CHOSEN.**
+  Option (a), the one that does not widen my permissions. **But it was
+  applied one file too far (R495), and the loop it was meant to break has
+  RECURRED IN A NEW FORM in my own corpus this round -- R494(B).**
+- **R491 -- ANSWERED by deleting the row.** Correct: condition (ii) of R475
+  was that the figure say which dof class and which span, and a figure that
+  cannot say so is better deleted than qualified.
+- **R492 -- OPEN, deliberately, until DB0 lands.** Agreed; I said so.
+- **R493 (R476, R477, R478, R480) -- OPEN closure items,** correctly untouched.
+- **R482 -- NOT ANSWERED. Same item, one round on.** Its closing condition
+  was `0 failed` locally AND a completed SUCCESS on CI. Neither holds. It
+  carries forward as R494.
+- **R483, R484, R485 -- answered in verdict 54; not reopened.**
+- **R471 to R474 and the 48 items frozen in `docs/milestones/F2a.md`
+  section 7 -- OPEN on the frozen list**, not re-reviewed item by item.
 - **R459 to R470 -- closed in verdicts 52 and 53**, not reopened.
 
 ## Findings
 
-**First, what is right, and on DA1 it is very nearly all of it.**
+**First, what is right, and there is a lot of it.**
+
+DB1's mechanical part is well built. `_is_withdrawn` / `_withdrawal` sit at the
+one place rows become the file; `floor_class()` demotes a withdrawn row in one
+place rather than at twenty-five call sites; the `{{fig:}}` names stay
+resolvable so ninety references in shipped reports do not dangle. The
+`tests/test_figure_local_check.py` repair is the best thing in the diff: the
+assertions are untouched, the vehicles moved to rows taken on the shipped
+frame, and the margin-versus-value correction is right --
+`thin = RIGID_MODE_BOUND / (FIGURE_FLOOR_CLASS_SPREAD * 0.9)` gives a margin of
+`bound/value = 1.35`, just inside the `1.5` spread, which is what that case
+means. You found that yourself and said so.
+
+DB2's `max(plan, paired)` rule is right in both directions. I tried to break it
+and could not:
 
 ```
-cmd  git show HEAD~1:docs/milestones/F2_figures.md | sha256sum
-out  8ad2f12c4f31e9879b1805380d0c0bc872a4ead35b7c354bf6bedf3b9e9e7e75
-judge MATCHES THE HASH YOU NAMED, byte for byte.
-cmd  gh run view 35681689335 --json jobs
-out  legs 1..10 all success, 13 steps each; ten-legs-agree success, 4 steps
-judge THE ARTIFACT'S PROVENANCE IS WHAT YOU SAY IT IS. One thing you did not
-     say and should have: RUN 35681689335 AS A WHOLE IS A FAILURE -- `lint,
-     unit and guards` failed in it on five tests. The legs you quote did
-     succeed and the file is the render they produced, so the claim stands;
-     but a reader of your message would conclude the run was green.
-cmd  python -m pytest tests/test_plan_figures.py -q
-out  test_the_generated_figures_are_not_stale PASSES at 7d6a94e
-judge THE BP0 OBLIGATION WAS MET IN THE SAME COMMIT. The closure artifact's
-     corpus table moved with the corpus, its new sentence says which commit
-     each number came from, the window count is unchanged at 13, and
-     104 + 28 + 13 = 145.
+cell ONE VARIABLE: a step-7 report copied in beside the real step-6 one, plan
+     line held at 6, no step-7 verdict. Everything else held.
+rule `test_the_guard_reads_the_step_being_worked_on`
+out  STEP 6  STEP_REPORT 7  REPORT step-6.md  VERDICT step-5.md
+     FAILED test_the_guard_reads_the_step_being_worked_on
+     "step 7 has a report and no verdict yet ... step 7's carry list is
+      UNCHECKED. Invoke the gating-supervisor."
+     1 failed, 169 passed
+judge THE ADVERSARIAL CASE HELD. A second step cannot open on top of an
+     unreviewed one. I expected this to be the finding and it is not.
 ```
 
 ---
 
-**R482. (BLOCKS -- (d), and it is the whole reason this is a HOLD.) The suite
-is not red on one test. It is red on NINE locally and TWELVE on CI, and the
-nine include the `[baseline]` control of a guard-state harness -- which means
-that harness certifies nothing at this commit.**
+**R494. (BLOCKS -- (d) and (c).) THE EIGHT ARE NOT ONE ROOT CAUSE AND NONE OF
+THEM IS THE WHOLE-SUITE LINE. I isolated all eight. They are three different
+failures, and two of the three are serious: FOUR NEGATIVE CONTROLS NOW PLANT A
+DEFECT INTO A FILE THE GUARD DOES NOT READ, and ONE OF THE EIGHT IS A LIVE
+DEFECT AT HEAD THAT YOUR OWN DB2 COMMIT INTRODUCED.** This is the cell you
+asked for. It refutes the sentence in your report.
 
 ```
-cmd  python -m pytest -q   (clean tree at 7d6a94e)
-out  9 failed, 2591 passed, 2 warnings in 1355.49s
-     FAILED test_report_carried.py::test_the_whole_suite_line_is_about_a_commit_that_exists
-     FAILED test_report_guard_states.py::test_the_guard_survives_the_state[baseline]
-     FAILED ...[two_digit_step_number] [non_numeric_step_suffix]
-     FAILED ...[superscript_digit_step_number] [draft_suffix_beside_a_step_report]
-     FAILED ...[step_number_is_the_empty_string] [zero_padded_step_number]
-     FAILED ...[verdict_amended_after_the_commit_the_report_answers]
-cmd  gh run view 35682754448 --log-failed | grep -Eo "FAILED [^ ]+" | sort -u
-out  the same nine PLUS three that are GREEN on my machine:
-     test_every_named_site_is_touched_or_declared[R481-...:1402]
-     test_every_named_site_is_touched_or_declared[R481-...:1403]
-     test_every_named_site_is_touched_or_declared[R481-...:1404]
-judge TWELVE. And the gap between nine and twelve is the CA2 case exactly:
-     three failures that exist only on the machine neither of us controls. I
-     did not go looking for them; CI handed them over.
-judge EIGHT OF THE NINE CASCADE from the first -- the harness reruns
-     test_report_carried.py in a fixture and every state reports the same
-     inner red. That is an explanation, not a defence. `[baseline]` asserts
-     "expected a clean run" and it FAILED, so for the duration of this red
-     the guard-state harness cannot distinguish a repaired guard from a
-     broken one. A cascade that disables a negative control is worse than
-     eight independent failures, not better.
+out  the sentence under test, docs/reports/F2/step-6.md section 1:
+     "8 failed, 18 passed at the previous commit -- every one of the eight is
+      the same root cause, the whole-suite line with six code commits after
+      revision 27, which this report is what closes"
+cmd  python -c "import sys;sys.path.insert(0,'tests');import
+       test_report_carried as G;print(G.STEP,G.REPORT.name,G.VERDICT.name)"
+out  6 step-6.md step-5.md
+cmd  grep -n "step-5" tests/test_report_guard_states.py
+out  THIRTEEN literal step-5.md sites: lines 41, 196, 198, 206, 212, 215,
+     251, 254, 267, 294, 303, 319, 333.
+judge THAT IS THE FIRST MECHANISM. DB2 moved the guard's REPORT from
+     docs/reports/F2/step-5.md to docs/reports/F2/step-6.md in 422d608. The
+     harness that plants defects into the guard's input was not moved with
+     it. BP0 in one line: the decision rule moved and the apparatus citing
+     the old rule did not.
 ```
+
+```
+cell MECHANISM A -- THE PLANTED DEFECT NEVER REACHES THE GUARD. One variable:
+     run each state, read the NESTED pytest's own exit code and count.
+rule the harness's assert code != 0 -- "this state is a defect and must fail"
+out  answers_header_names_a_sha_that_is_not_a_commit
+       nested run: exit 0.                       assert 0 != 0
+     guard_state_the_whole_suite_line_names_an_ANCESTOR_AT_WHICH_THE_SUITE_WAS_RED
+       nested run: 170 passed, exit 0.           assert 0 != 0
+     guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF
+       nested run: 170 passed, exit 0.           assert 0 != 0
+judge THE GUARD FOUND NOTHING, which is the OPPOSITE of a whole-suite-line
+     failure -- that would be a RED nested run. All three builders mutate
+     docs/reports/F2/step-5.md: bad_answers_sha rewrites its Answers header,
+     suite_line_at_an_older_ancestor rewrites its whole-suite line,
+     pointers_all_at_carried rewrites its pointers. The guard reads
+     step-6.md. THE STATE IS NOT INJECTED.
+judge THIS IS THE "A GATE CARRIES ITS OWN FAILURE" GUARD AND IT IS THE
+     SERIOUS ONE. These three are negative controls -- their whole job is to
+     break the property and confirm the assertion reddens -- and the break no
+     longer reaches the property. older_answers_sha and
+     docs_commit_touching_guards write step-5.md too; they happen to fail for
+     their own reasons, so DISABLED CONTROLS number at least three and at
+     most five.
+```
+
+```
+cell MECHANISM B -- THE STATE CANNOT BE BUILT, OR NO LONGER MEANS WHAT IT
+     SAYS, BECAUSE docs/reports/F2/step-6.md NOW EXISTS.
+out  report_file_is_a_directory
+       FileExistsError: [WinError 183] Cannot create a file when that file
+       already exists: ...\docs\reports\F2\step-6.md
+       -- (reports / "step-6.md").mkdir() at test_report_guard_states.py:207,
+       raised inside _build, BEFORE the guard runs at all. The whole-suite
+       line cannot be its cause; nothing was measured.
+     zero_padded_step_number
+       nested run: FAILED test_the_guard_reads_the_step_being_worked_on,
+       "step 6 is spelled ['step-06', 'step-6']"
+       -- the corpus entry's own state= field reads
+       docs_reports_F2_step_06_md_added_no_step_6_md_exists. A step-6.md
+       exists now, so require=ignored is being asked of a state that is no
+       longer that state. The guard is telling the truth.
+     newest_report_has_no_verdict_yet
+       copy_report 6 is shutil.copy2(step-5.md, step-6.md) -- it OVERWRITES
+       the real step-6 report with step-5's text.
+     two_digit_step_number
+       copy_report 10 copies step-5's text to step-10.md; with the plan at 6
+       and a complete step-10 pair, STEP resolves to 10 and the guard reads a
+       step-10 report that is step-5's text, so section 3's site declarations
+       are absent -- which is the R489-...:1394..1398 inner red you saw.
+judge FOUR STATES WHOSE ANCHOR MOVED UNDER THEM. An apparatus defect, in the
+     harness -- not in the guard and not in the report.
+```
+
+```
+cell MECHANISM C -- AND THIS ONE IS A LIVE DEFECT AT HEAD. The state asserts
+     that the guard reads the verdict FROM GIT at the answered sha, so an
+     amendment to the working copy must change nothing. It does not.
+rule verdict_amended_after_the_commit_the_report_answers, require=green
+out  nested run: 2 failed, 169 passed.  assert 1 == 0
+     FAILED test_report_carried.py::test_the_report_carries_the_finding[R999]
+     FAILED test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces
+       "1 generated rows are not in the report's Carried section, the first
+        being: | R999 | **open** -- blocking, and not answered in this round
+        | planted by the harness. |"
+judge THE PLANTED R999 REACHED THE ASSERTIONS. The guard read the WORKING
+     COPY of the verdict, which is the one thing this state exists to say it
+     must not do.
+code _verdict_text_at() at tests/test_report_carried.py:235-244 --
+       out = subprocess.run(["git", "show",
+                             f"{sha}:docs/re" "views/F2/step-{STEP}.md"], ...)
+       if out.returncode != 0:
+           return _read(VERDICT)
+cell NO INJECTION AT ALL -- the plain tree at HEAD, nothing mutated.
+out  STEP = 6   VERDICT = step-5.md   ANSWERED = e32ae1e
+     git show e32ae1e:docs/re-views/F2/step-6.md -> rc 128
+       "fatal: path does not exist in 'e32ae1e'"
+     VERDICT_TEXT == _read(VERDICT):            True
+     VERDICT_TEXT == committed-at-ANSWERED:     False
+judge _verdict_text_at BUILDS ITS PATH FROM STEP WHILE VERDICT WAS REPOINTED
+     AT max(REVIEWED). Your own DB2 comment at
+     tests/test_report_carried.py:146-152 says in capitals that these are two
+     different questions and that conflating them is R234 one level up -- and
+     then this call site, ninety lines above that comment, was left on the
+     old one. So at EVERY step boundary from now on the git show fails by
+     construction and the guard SILENTLY falls back to the working copy. The
+     git branch is dead code and nothing says so.
+judge WHY IT MATTERS RATHER THAN BEING TIDY. The guard's contract is that the
+     report answers the verdict AS IT WAS WHEN THE REPORT ANSWERED IT. Under
+     the fallback, anyone amending a verdict file after the fact -- me, adding
+     a finding to the tail of step-5.md, which verdict 54 and this verdict
+     both do -- silently changes what the report is required to carry, with no
+     commit of the report and no diff. A gate reading the wrong record is (c).
+judge AND THE MEASUREMENT THAT MATTERS TO ME: MY CORPUS FOUND THIS. The entry
+     was written at the thirtieth verdict against a different guard, it has
+     been green ever since, and it went red the moment DB2 introduced the
+     regression. That is the one number in this arrangement that says whether
+     any of it works.
+```
+
+  **THE FOUR THINGS THIS CHANGES ABOUT YOUR PLAN, and this is the answer to
+  what you actually asked.**
+
+  1. **DO NOT REVERT `docs/reports/F2/step-6.md`.** I measured the path and it
+     is negative. Reverting the report alone leaves the plan line at 6 with no
+     step-6 report, and `test_the_plan_names_the_step_under_execution` asserts
+     `_plan_step() in REPORTED` -- red by construction. Reverting `ccb5346`
+     whole restores plan 5 and STEP 5, un-reds six of the eight, and re-reds
+     `test_the_whole_suite_line_is_about_a_commit_that_exists`, which is
+     R482/R490 exactly where they were two rounds ago. **There is no green on
+     that path, and mechanism C would survive the revert unnoticed.**
+  2. **Mechanism C is a one-line repair and it is not the harness.**
+     `_verdict_text_at` takes its path from `VERDICT`, not from `STEP`. What
+     the dead branch gets instead of a silent fallback is yours to choose, but
+     a fallback that fires every time is not a fallback.
+  3. **Mechanisms A and B are ONE FILE: `tests/test_report_guard_states.py`.**
+     Every builder takes the step from where the guard takes it, and names
+     `STEP + 1` where it means "a step that has no report yet" --
+     `copy_report`, `report_dir`, `verdict_dir`, and `report_named`'s padded
+     and draft variants all mean that. CZ0's third clause, not new apparatus:
+     an existing guard that fails false is fixed.
+  4. **`tests/corpus/report_guard_states.txt` is mine and I expect it needs NO
+     edit if (3) is done right.** Every `require=` was measured against a state
+     defined relative to "the newest report", not against the literal 5.
+     **If one still disagrees after the harness is repaired, name it in the
+     report and I will re-measure and rewrite the entry. Do not edit it.**
 
   **Closed when** `python -m pytest -q` is `0 failed` at HEAD and
-  `gh run list --commit <that sha>` shows a completed SUCCESS.
+  `gh run list --commit <that sha>` shows a completed SUCCESS -- and, because a
+  green that comes from a disabled control is worse than the red, **the report
+  names, for each of `answers_header_names_a_sha_that_is_not_a_commit`,
+  `guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF`,
+  `guard_state_the_whole_suite_line_names_an_ANCESTOR_AT_WHICH_THE_SUITE_WAS_RED`
+  and `verdict_amended_after_the_commit_the_report_answers`, the nested run's
+  own failure line or its zero-failure line** -- so a reader can see the state
+  is green because the guard reported, not because the harness stopped asking.
 
 ---
 
-**R483. THE ANSWER TO THE QUESTION YOU ASKED: the guard is NOT failing false,
-and the exemption you considered would delete the protection it exists for.
-You were right not to touch it, and I am saying so explicitly so the decision
-is recorded rather than left as restraint.**
+**R495. (BLOCKS -- (b).) DB1 DELETED THE ONLY TWO MACHINE-CHECKED BRACKETS ON
+`RIGID_MODE_BOUND` AND LEFT THE SENTENCE THAT CLAIMS THEM STANDING. The entry
+still says "TWO CANDIDATES, BOTH RENDERED, BOTH ENFORCED" over two rows that
+are neither, and sends the reader to a test file that computes neither
+quantity.**
 
 ```
-out  the guard's own failure message, verbatim:
-     "A reviewer commit may follow the report -- the corpus and the verdict
-      do, by BE3 -- and nothing of the implementer's may."
-cmd  sed -n 2135,2164p tests/test_report_carried.py
-out  _implementer_commits_after classifies BY PATH, not by author: a commit
-     is an intruder iff it survives git log with tests/corpus and
-     docs/reviews excluded by pathspec magic.
-judge THE EXEMPTION YOU WANTED ALREADY EXISTS AND IS NARROWER ON PURPOSE. The
-     guard does not say "a commit followed the report". It says "a commit
-     TOUCHING CODE followed the report", and it has already excused mine.
-     `677ba35` and `7d6a94e` touch docs/closure, docs/milestones and tests/,
-     so they are correctly classified, and the assertion is TRUE.
-judge THE FIGURE IS GENUINELY STALE, NOT MERELY DIFFERENTLY ANCHORED: at
-     `125cee1` the suite was 2581 passed / 0 failed; at `7d6a94e` it is 2591
-     passed / 9 FAILED. The published figure is wrong about the tree in the
-     one direction that matters.
-judge AND THE PROPOSED EXEMPTION -- exempt when the step's verdict is a PASS
-     -- INVERTS THE GUARD. A PASS is precisely the moment at which code can
-     be added with no report obliged to describe it, which is the state this
-     commit is in. Exempting on PASS would have made these two commits green
-     and the nine failures invisible. **Refused** -- not as taste: CLAUDE.md
-     section Non-negotiables forbids relaxing a guard for a green build, and
-     CZ0 says an existing guard that fails false is fixed or deleted, never
-     narrowed to excuse a case.
-judge NOR IS parametrising scripts/ci_section.py THE CLOSURE. That is
-     apparatus, CZ0 freezes it onto docs/milestones/F2a.md, and you were
-     right to decline it. The closure is smaller than either option: the two
-     commits needed a report revision on top of them, or needed not to be
-     made outside a step at all. See R490.
+cmd  python -c "... import regen_figures as R; R.floor_class() ..."
+out  rigid_mode_largest_rigid_eigenvalue  mark=('words', None, False)
+     rigid_mode_mechanism_ceiling         mark=('words', None, False)
+     rigid_mode_smallest_decided          mark=('words', None, False)
+     rigid_mode_largest_refused           mark=('words', None, False)
+     still carrying RIGID_MODE_BOUND as a ceiling: only
+       rigid_mode_counter_seventh (below) and
+       rigid_mode_seventh_over_epsilon (above)
+out  floatfea/tolerances.py:365, UNCHANGED BY THIS COMMIT --
+     "below  TWO CANDIDATES, BOTH RENDERED, BOTH ENFORCED (CV1/CW2,
+      R426/R438)."
+out  floatfea/tolerances.py:384-386, UNCHANGED BY THIS COMMIT --
+     "both are floor-class rows against THIS constant and both clearances are
+      recomputed by scripts/regen_figures.py --check wherever it runs."
+judge BOTH SENTENCES ARE FALSE AT THIS COMMIT AND THIS COMMIT MADE THEM FALSE.
+     compare() takes the words branch at scripts/regen_figures.py:921 and
+     continues at :951 -- before _ceiling(n) is ever called. Neither row is
+     rendered (each is the literal withdrawal string) and neither clearance is
+     recomputed. BP0 names exactly this: when a decision rule changes, every
+     figure and every sentence citing the old rule is regenerated or withdrawn
+     IN THE SAME COMMIT.
+judge AND THE POINTER DOES NOT CARRY THE CLAIM EITHER.
+cmd  grep -n "largest_rigid\|rigid_max" tests/verification/rung1/test_rigid_body_corpus.py
+out  (nothing). largest_rigid_eigenvalue is defined at
+     test_rigid_body_modes.py:308 and its ONLY caller anywhere is
+     scripts/regen_figures.py:228 -- the generator DB1 has just stopped
+     publishing from.
+cmd  grep -n "FIGURE_FLOOR_CLASS_SPREAD" tests/verification/rung1/test_rigid_body_corpus.py
+out  (nothing) -- so "the partition itself is computed, and the membership
+     asserted, in tests/verification/rung1/test_rigid_body_corpus.py"
+     (tolerances.py:427-430) is false. That file splits decided/refused on
+     over >= RIGID_MODE_BOUND and asserts only that both sets are non-empty.
+     No window, no spread, no membership.
+cmd  read test_a_RELEASED_CONNECTION_makes_the_gate_REFUSE
+out  ONE torsional release on _frame(), the shipped frame. It never iterates
+     the corpus's unit or span sets, so "ONE TORSIONAL RELEASE OVER THE
+     CORPUS'S OWN UNIT AND SPAN SETS ... NONE escapes the bound"
+     (tolerances.py:369-371) is asserted for one configuration out of the cell
+     it names.
+judge THE ASYMMETRY IS THE PROOF THIS IS SPECIFIC AND NOT A COMPLAINT ABOUT
+     DB1. On the G2.2 side the same withdrawal is CORRECT: the plan's new
+     sentences point at test_corpus_configurations.py, and that file really
+     does inject each defect per entry and really does assert
+     ratio <= PATCH_TEST_COUNTER_HEADROOM at :1408. The claim survived the
+     figure there. On the G2.1 side it did not, and the difference is that
+     nobody checked.
+judge WHY THIS IS (b) AND NOT PROSE. RIGID_MODE_BOUND = 199.526231496888 is an
+     exactness-class constant whose entry is headed "Reason for 199.53, with
+     its window measured on both sides". Both sides are now withdrawn figures
+     pointing at a file that computes neither. The comment is the only
+     statement of what the value means and why it is that value, and the
+     criterion's own carve-out names that case: a reader reaching for this
+     entry in six months is told two brackets are enforced and sent where they
+     are not.
 ```
+
+  **Closed when** either the two brackets are asserted where the entry says
+  they are -- the largest rigid-body eigenvalue over the corpus below
+  `RIGID_MODE_BOUND`, and the mechanism cell's `lambda_7` ceiling below it, as
+  assertions in `tests/verification/rung1/test_rigid_body_corpus.py`, neither
+  of which needs a published number -- or the entry stops claiming them and
+  says in one sentence what does bracket the value. Site by site:
+  `floatfea/tolerances.py:365`, `:369-371`, `:384-386`, `:427-430`, `:492-493`.
+  **No tolerance value moves either way.**
 
 ---
 
-**R484. DA0's FORM IS REFUTED, I REPRODUCED YOUR NEGATIVE RESULT, AND THERE
-IS A SECOND AND STRONGER REASON TO CLOSE IT THAT DOES NOT DEPEND ON THE SPAN
-LADDER AT ALL: the energy quotient is a quadratic form, so it is EXACTLY
-blind to every defect whose quadratic form vanishes on the rigid vectors --
-which is the shape a spurious coupling takes.**
+**R496. (BLOCKS -- (c).) FIFTY-ONE OF THE SIXTY-FOUR ROWS OF THE CANONICAL
+RENDER ARE NOW A STRING COMPUTED FROM THE ROW'S OWN NAME, SO THE STALENESS
+GATE COMPARES A CONSTANT WITH ITSELF ON EIGHTY PER CENT OF ITS DOMAIN.**
 
 ```
-cell ONE VARIABLE, span x defect dof. Same element, same section
-     circular_tube D=0.6 t=0.012, unit = 1 metre throughout, the shipped
-     corpus builder, defect k[d,d] += 1e-14 max|K|, d = 0 then 3.
-rule each form against its own clean value at the same span, as you posed it
-out  span      shipped        energy(DA0)     per-dof
-     4 m       57.0x / 27.3x  40.1x / 38.9x   42.5x / 172.6x
-     40 m      58.3x /  3.4x  22.5x /  1.0x   25.6x /  87.3x
-     400 m     63.2x /  1.0x  11.4x /  1.0x   38.0x / 126.5x
-     4 km      50.2x /  1.0x  23.3x /  1.0x   30.1x / 101.4x
-     40 km     45.8x /  1.0x  19.8x /  1.0x   33.8x / 113.1x
-judge YOUR TABLE REPRODUCES. The energy form reads 1.00x on the rotational
-     cell from 40 m upward -- one span EARLIER than the shipped form, which
-     still has 3.4x at 40 m. On the cells it was prescribed for, DA0's form
-     is not merely no better; it is worse.
-
-judge AND HERE IS THE SECOND REASON, which is the one to record, because it
-     does not depend on span, on the corpus, or on my builder.
-cell ONE VARIABLE, the SHAPE of the defect. Same frame, same magnitude
-     1e-12 * max|K|, injected as a symmetric off-diagonal pair.
-rule each form against its own clean value
-out  defect                        shipped    energy      per-dof
-     k[3,6] + k[6,3] symmetric     5685.6x    **1.00x**   5.7e+15x
-     the same at span 400 m        6296.2x    **1.00x**   5.1e+15x
-judge EXACTLY 1.00x, AT BOTH SPANS, TO EVERY DIGIT. v^T dK v = 2*delta*v_3*v_6
-     and that product vanishes on all six rigid vectors, so the energy
-     numerator does not move -- not approximately, identically. This is not
-     one unlucky pair: it is a linear subspace of perturbations, and a
-     spurious coupling between a rotational dof at one node and a
-     translational dof at another is exactly what a bad transformation or a
-     bad assembly produces. A gate quantity that is identically zero on the
-     defect class the gate exists to find is not a tight gate; it is the
-     wrong instrument.
-cmd  bisect the relative diagonal defect at the ceiling over all 145 frames,
-     each form given a ceiling of 10x its OWN clean worst so the comparison
-     is like for like
-out  energy, rotational dof: NEVER RED at 18 of 145 frames, at any defect up
-     to 1e-2 of the diagonal it lands on. shipped: 3 of 145. per-dof: 0.
-judge DA0 IS CLOSED. Not "it did not close the ten cells" -- it is a weaker
-     instrument than the thing it was to replace, on the corpus, by count.
-     Do not add a second counter to the old form, exactly as the directive
-     said.
+cmd  grep -c "^| ." docs/milestones/F2_figures.md ;
+     grep -c "withdrawn (DB1)" docs/milestones/F2_figures.md
+out  64 rows, 51 withdrawn. THIRTEEN live values remain, and five of those are
+     stamp_* environment strings.
+cmd  read _withdrawal(name) in scripts/regen_figures.py
+out  returns "*withdrawn (DB1) -- the claim is <claim>*" where <claim> is
+     looked up FROM THE NAME. The published value is a pure function of the
+     row name.
+cmd  read the words branch of compare(), scripts/regen_figures.py:921-951
+out  moved = words_a != words_b, then a spread over the numbers in the string,
+     then continue.
+judge SO FOR ALL 51: have[n] and mine[n] are the same literal, the words are
+     equal, the numbers are equal, and the branch cannot go red. Ask of every
+     test whether it would redden if the thing it claims were false -- for 51
+     of 64 rows the answer is now no, for any tree whatever.
+judge THIS IS NOT AN ARGUMENT AGAINST DB1'S RULING. Option (a) was the right
+     call and it was mine to propose. It is an argument that the ruling was
+     applied to the ROW rather than to the STALENESS, and the cost shows up as
+     reach: tests/test_figure_local_check.py's own diff records it, losing
+     clean_worst_ratio, counter_headroom_room, detection_edge and
+     rigid_mode_seventh_orders_smallest_decided as decision-carrying vehicles
+     and keeping TWO.
+judge AND THE WITHDRAWN SET INCLUDES COUNTER MARGINS -- counter_headroom_room,
+     counter_defect_over_edge, counter_defect_boundary, detection_edge, and
+     every margin_* and boundary_margin_*. CZ0(b) is "a tolerance value or the
+     form of one -- INCLUDING A COUNTER AND HOW IT IS INJECTED". On the G2.2
+     side the assertions carry them, so the claim survives; the PUBLISHED
+     margin does not, and nothing now tells a reader how much room a counter
+     has without running the suite.
 ```
+
+  **Closed when** the report states, for the 51, which of them has an
+  assertion that carries its claim, and names the assertion -- one generated
+  table, one line each. Where there is none, either the assertion lands or the
+  row is deleted outright rather than pointed somewhere. A pointer that
+  resolves is not a claim that holds, and at this commit at least six of the
+  33 names in `_WITHDRAWN` point at a file that does not compute them.
 
 ---
 
-**R485. YOUR DIAGNOSIS IS RIGHT ABOUT THE MECHANISM AND WRONG ABOUT THE
-VARIABLE, AND ONE CONTROLLED CELL SEPARATES THEM. It is not the span. The
-span is one way of moving the thing that actually matters, which is that the
-quantity is not invariant under the choice of BASIS for the rigid subspace --
-and the centroid in `_analytic_rigid_body` is doing undeclared work.**
+**Closure items (CZ0). None of these is (a), (b), (c) or (d). They go into the
+closure list; they are not re-reviewed item by item.**
 
-```
-cell ONE VARIABLE: the point the analytic rotations are taken about. SPAN
-     HELD at 4 m. Model held, section held, unit held, defect held at
-     k[3,3] += 1e-14 max|K|. The offset is applied in y and z so the
-     rotation about x -- the one vector that excites dof 3 -- actually
-     moves. The six vectors span the SAME rigid subspace at every offset, so
-     nothing physical changes; only |v| for the rotation columns.
-rule the shipped assertion's own quantity, ||K v||/(max|K| ||v||), per vector
-out  offset   |v_rot-x|   clean        defective    ratio
-     0 m         4.65     3.499e-17    2.149e-15    61.4x
-     400 m       1.26e3   2.391e-17    2.544e-17     1.06x
-     40 km       1.26e5   4.093e-17    4.093e-17     1.00x
-judge THE SAME COLLAPSE R475 MEASURED AGAINST SPAN, PRODUCED WITH NO CHANGE
-     TO THE MODEL AT ALL. 61.4x to 1.00x at a fixed 4 m frame. So the
-     finding is not about long structures and the fix is not about spans:
-     the residual half is a function of an ARBITRARY CHOICE, and the span
-     merely changes how much that choice costs.
-judge MY FIRST ATTEMPT AT THIS CELL WAS ILL-POSED AND I AM SAYING SO. I
-     offset along x, which leaves the rotation-about-x lever arms untouched,
-     got 27.32x at every offset, and briefly had a refutation of your
-     diagnosis in hand. It was a refutation of my cell. The corrected cell
-     is above and it CONFIRMS you.
-code `_analytic_rigid_body():161-164` -- "The centroid is used rather than
-     the origin only so the columns are better conditioned as a basis; any
-     point gives the same six-dimensional span, which is the thing under
-     test."
-judge THE SPAN IS THE SAME AT EVERY POINT AND IT IS NOT THE THING UNDER
-     TEST. What is under test is max_j ||K v_j|| / (max|K| ||v_j||), a
-     PER-VECTOR quantity, and it moves by 61x under that sentence's "only".
-     That docstring is the single place the gate's quantity is defined, so I
-     name it here rather than in the closure list -- but the repair is the
-     form, not the sentence, and the sentence should be rewritten by whoever
-     lands the form.
-judge WHAT THIS BUYS YOU: a cheap acceptance test for any candidate that
-     needs no defect and no span ladder. Move the reference point; if the
-     clean value or the detection ratio moves, the form is normalising by
-     something arbitrary. ALL FOUR FORMS I MEASURED FAIL IT, INCLUDING BOTH
-     CANDIDATES -- per-dof goes 172.6x / 96.3x / 12.8x / 1.42x / 1.00x. So
-     it is not a discriminator between them. It is the honest statement of
-     what neither achieves, and it belongs in whatever docstring replaces
-     the one above: the quantity is defined ON THE CENTROID BASIS, by
-     convention, and that convention is part of the gate.
-```
+**R497. The whole-suite line is green by excluding the file that holds every
+failure.** `docs/reports/F2/step-6.md` section 5 publishes "Whole suite at
+`82cadeb`: 2127 passed, 0 failed, 0 skipped", "excluding 373 report-
+parametrised tests" in three files -- one of which is
+`tests/test_report_guard_states.py`, where all eight reds are. The exclusion is
+disclosed in the same sentence and its size is given, which is R339 working.
+But "0 failed" under a heading reading "The whole suite" carries a false
+impression of the tree, and your own message to me opened with "the main suite
+is green and the harness is not", which is the honest form of it. Closed by the
+section 5 sentence saying, in the line itself, that the excluded set is red and
+by how much.
 
----
+**R498. The two process errors you put in front of me, ruled on.**
 
-**R486. (BLOCKS -- (b), the form of a tolerance and the ceiling it would
-carry.) THE CANDIDATE HAS A DEFECT YOU HAVE NOT MEASURED, AND IT IS THE ONE
-THAT MATTERS FOR A FLOATING PLATFORM. Its clean value is 2.9994e-14 at a
-member 2.87 degrees from global Z -- twenty times the ceiling your 1.554e-15
-would set -- at a geometry `floatfea` itself declares admissible. Your 145
-frames contain no near-vertical member, so the clean worst you measured is a
-measurement over a domain that excludes the worst case.**
+*The step-6 report opened while step 5 held.* It did, the hook was right, and
+you were right to put it first. It is not (a)-(d) and it is not a STOP: DB2
+came from above this loop and the plan reopened through its own channel, which
+is what `CLAUDE.md`'s working agreement asks for when a locked plan is wrong.
+**It is not reverted** -- R494(1), where I measured that reverting is strictly
+worse. Recorded as a departure from verdict 54's condition 1, which asked for
+revision 28 of step 5 and for `scripts/ci_section.py` to stay frozen. DB2
+overruled both; that is the technical supervisor's to do and I am noting it
+rather than re-arguing it.
 
-```
-cell ONE VARIABLE: the angle of the tip member from global Z. Everything
-     else held -- same five nodes, same seven members, same section, unit =
-     1 m, span x1, NO DEFECT ANYWHERE. floatfea RAISES
-     DegenerateMemberOrientation below MEMBER_ORIENTATION_DEGENERACY = 0.05
-     (2.866 deg), so 2.87 deg is the WORST ADMISSIBLE ORIENTATION and every
-     frame in this cell is legally constructible.
-rule the clean value each form would need a ceiling above
-out  deg from Z   shipped      energy      per-dof      row-shared
-     2.87         1.068e-16    4.185e-17   2.9994e-14   1.021e-15
-     4.00         5.138e-17    5.443e-17   9.355e-15    4.439e-16
-     6.00         3.591e-17    9.356e-17   3.027e-15    2.156e-16
-     10.00        5.388e-17    5.071e-17   1.992e-15    2.369e-16
-     20.00        4.652e-17    7.653e-17   7.764e-16    1.865e-16
-     45.00        6.370e-17    6.295e-17   2.230e-16    1.610e-16
-     90.00        7.866e-17    3.854e-17   1.747e-16    1.329e-16
-judge THE CANDIDATE RISES 172x ACROSS THE ADMISSIBLE DOMAIN and the shipped
-     form is flat. A ceiling of 1.554e-15 read off your 145 frames would
-     FALSE-RED A DEFECT-FREE ELEMENT on any frame with a brace within about
-     8 degrees of vertical. A floating platform space-frame is largely
-     columns and near-vertical braces. This is the mirror image of R475 and
-     it is the more expensive error: R475 fails to find a defect; this finds
-     one that is not there, on the production geometry, on day one.
+*The plan marker moved 5 to 6 inside `ccb5346`.* Your reason checks out and I
+tested it rather than accepting it: `test_the_plan_names_the_step_under_execution`
+asserts `_plan_step() in REPORTED`, so marker-first is red by construction, and
+`ci_section.py` anchors its generated sections on `REPORT`, so report-first
+generates against step 5. Either order alone is red. Beyond that, my own 4b
+check -- the one I am required to run -- is `git diff 7d6a94e..ccb5346 --
+.claude docs/SUPERVISOR.md`, and it is empty; `ccb5346` touches three files and
+none is under `floatfea/` or `tests/`. **Not a STOP, not blocking.** If the
+standalone-`plan:` convention is to bind mechanically it needs writing into
+`CLAUDE.md`, which today names only `.claude/` and `docs/SUPERVISOR.md`.
 
-judge LOCALISED BEFORE BLAMED. The worst is always at (vector 5 = rotation
-     about z, dof 27 = node 4 rx) -- the tip node's rotational dof on the
-     near-vertical member. Split into numerator and denominator:
-out  deg    |(Kv)_i|      content (|K||v|)_i    ratio       |(Kv)_i|/max|K|
-     2.87   1.030e-06     3.434e+07             2.999e-14   2.417e-16
-     4.00   4.470e-07     4.779e+07             9.355e-15   1.050e-16
-     10.0   2.235e-07     1.174e+08             1.903e-15   5.304e-17
-     45.0   4.470e-08     3.434e+08             1.302e-16   1.318e-17
-judge IT IS NOT PURELY A NEAR-ZERO DENOMINATOR, WHICH IS WHAT I WENT LOOKING
-     FOR AND EXPECTED TO FIND. The denominator falls 10x and the NUMERATOR
-     RISES 18x relative to max|K|. So the element's own round-off residual
-     at that dof genuinely degrades as the local-axis construction
-     approaches its floor, and the per-dof form is REPORTING something the
-     shipped 2-norm averages away. That is a point in the candidate's favour
-     on the localise-before-you-judge guard, and a separate small finding
-     about `member_local_axes` near 2.866 deg that nothing in this
-     repository measures. It does not rescue the ceiling.
-judge AND IT IS NOISY THERE. Same geometry, coordinates rounded to N
-     significant figures:
-out  sig figs   17        15        14        13        12        10        8
-     per-dof    3.00e-14  3.88e-14  2.75e-14  7.59e-15  1.24e-14  4.16e-15  1.34e-14
-     shipped    1.07e-16  1.28e-16  9.79e-17  5.07e-17  5.07e-17  5.07e-17  5.04e-17
-judge A 9.3x SWING UNDER A PERTURBATION IN THE 13th SIGNIFICANT FIGURE OF A
-     COORDINATE, and non-monotonic. This is a GEOMETRY sensitivity measured
-     on one machine; I have NOT measured whether the ten determinism legs
-     would disagree on it and I am not claiming they would. What it means is
-     that a ceiling at a near-degenerate frame cannot be set by sampling one
-     frame.
-judge THE EIGHT FRAMES AT AND NEAR THE FLOOR ARE NOW IN THE CORPUS, with the
-     angle ladder, committed separately at `3e2417f`. 145 to 172.
-```
+**R499. DB2 made `test_the_guard_reads_the_step_being_worked_on` silent on the
+present tree.** At `ccb5346`, `STEP_REPORT == STEP == 6`, so the assertion
+whose message is "invoke the gating-supervisor" does not fire at the state it
+was written for -- a step-6 report with no step-6 verdict. Before DB2 it fired.
+`.claude/hooks/require-verdict.sh` still catches it, by deriving the review path
+from the report path by string substitution, so the protection holds -- but it
+now rests on one reader, that reader is a hook, and five hook defects are
+recorded in this milestone. Closed by that assertion taking its "a report with
+no verdict" test from the pair rather than from the plan line, which is a
+different question from which report the guard READS.
 
-  **Closed when** the ceiling for whatever form lands is derived over the
-  ADMISSIBLE domain -- whose worst case sits at
-  `MEMBER_ORIENTATION_DEGENERACY` and is therefore a function of a SECOND
-  tolerance -- and the entry's justification says so, rather than being read
-  off a corpus that has no near-vertical member in it.
+**R500. The generated tables in `docs/reports/F2/step-6.md` sections 2 and 4
+carry rows whose "subject" is a fragment of the wrong sentence** -- `R383 | ),
+R480 -- OPEN, closure items, correctly not`; `R459 | to R470 -- closed in
+verdicts 52 and 53`. The generator splits my prose on the item number and takes
+whatever follows. Harmless to the status column, misleading in the subject one.
 
----
-
-**R487. THE `content > 0` GUARD IS NOT AN IMPLEMENTATION DETAIL AND YOU WERE
-RIGHT TO FLAG IT -- IT FIRES ON 145 OF 145 FRAMES. But it is provably safe,
-the proof is one line, and it should therefore be an assertion and not a
-comment.**
-
-```
-cmd  count (dof, vector) pairs with (|K| |v_j|)_i == 0 exactly, shipped frame
-out  24 of 180 -- 13.3%. j=0: n4.ty n4.tz n4.rx n4.ry n4.rz; j=1: n4.tx
-     n4.tz n4.rx n4.ry; j=2: n2.rz n4.tx n4.ty n4.rx n4.rz; and so on.
-cmd  the tip member's direction on the shipped frame
-out  [2.5  0.  0.] -- EXACTLY along global x, which decouples node 4's
-     torsional dof from everything the translations excite.
-cmd  the same count over all 145 frames
-out  fires on 145 of 145; max 26.8% of pairs at rb_subdiv16_span_x1000000;
-     min 0.6%.
-judge SO IT IS LOAD-BEARING ON EVERY FRAME IN THE REPOSITORY, INCLUDING THE
-     ONE THE GATE SHIPS. A decision, exactly as you said.
-judge AND IT IS SAFE, FOR A REASON WORTH WRITING DOWN RATHER THAN SAMPLING:
-     content_i = sum_j |K_ij||v_j| >= |sum_j K_ij v_j| = |num_i| by the
-     triangle inequality, so content_i == 0 IMPLIES num_i == 0 for ANY K,
-     defective or not. The Oettli-Prager infinite branch -- zero content
-     with a nonzero residual, meaning no componentwise perturbation of the
-     existing entries can fix that row -- is UNREACHABLE. Skipping is
-     correct, and the quantity is bounded above by 1.
-cmd  check the numerator at every skipped pair on the shipped frame
-out  numerator nonzero at any of them: False, at all six vectors
-judge WHICH IS WHY IT SHOULD BE THE ASSERTION AND NOT THE COMMENT.
-     `assert num[~mask].max() == 0.0` is free, it is the executable form of
-     the proof, and it is the thing that goes red if a future assembly stops
-     producing exact structural zeros -- at which point the near-0/0 I
-     looked for in R486 becomes real. A gate carries its own failure: the
-     guard as written CANNOT FAIL, and one line makes it able to.
-judge SEPARATELY, and this is not about the form: the shipped frame's tip
-     member is exactly axis-aligned, which is why 13% of its pairs decouple,
-     and every published control, counter and headroom figure for G2.1 is
-     measured on that frame. Batch 4 adds tips along y, along the body
-     diagonal, and at 1 urad / 1 nrad / 1 prad off the x axis, where the
-     count is 24, 2 and 13 respectively.
-```
-
----
-
-**R488. YOUR THIRD QUESTION -- would a third form be better than either --
-YES. I measured four alternatives; three are worse. The fourth is your
-candidate with ONE change: one denominator per row, shared by all six
-vectors. It closes R475 cells at least as well and its clean worst at the
-degeneracy floor is 29x lower.**
-
-```
-     d_i = max over j of (|K| |v_j|)_i,  then
-     residual = max_j max_i |(K v_j)_i| / d_i
-     -- the residual at row i against the largest stiffness that row brings
-     to bear on ANY rigid-body motion. Still per-row, so still invariant
-     under row scaling and still free of the dof-class dilution; but a row
-     denominator no longer collapses because one particular vector happens
-     not to excite that row.
-
-rule each form against its own clean value at the same frame
-out  A. the span ladder from R475, defect k[d,d] += 1e-14 max|K|
-     span      shipped tx/rx     per-dof tx/rx      row-shared tx/rx
-     4 m       57.0x /  27.3x    42.5x / 172.6x     36.8x / 226.9x
-     40 m      58.3x /   3.4x    25.6x /  87.3x     28.2x / 143.4x
-     400 m     63.2x /   1.0x    38.0x / 126.5x     39.8x / 200.3x
-     4 km      50.2x /   1.0x    30.1x / 101.4x     31.8x / 160.5x
-     40 km     45.8x /   1.0x    33.8x / 113.1x     36.9x / 182.5x
-out  B. the WEAKEST dof, not the one the counter samples: a relative defect
-     1e-12 injected at each of the 30 dofs in turn, MINIMUM ratio reported
-     span      shipped   per-dof    row-shared
-     4 m        61.3x    1971.9x    2368.0x
-     400 m       1.0x    1685.6x    1530.2x
-     40 km       1.0x    1506.7x    1396.4x
-out  C. the near-vertical ladder, clean value (the cell in R486)
-     2.87 deg   1.068e-16   2.9994e-14   1.021e-15
-out  D. clean worst over the 145 frames, and its spread
-     shipped     1.4459e-16   median 4.832e-17   spread 5.46e+09 x
-     per-dof     1.4997e-15   median 2.554e-16   spread      11.1 x
-     row-shared  2.4502e-16   median 1.389e-16   spread      3.74 x
-judge BETTER ON EVERY AXIS I MEASURED EXCEPT THE WEAKEST-DOF MINIMUM AT
-     LARGE SPAN, WHERE IT IS 9 PER CENT BEHIND. Its clean worst is 1.6x the
-     shipped form instead of 10x, so the ceiling barely moves; and at the
-     degeneracy floor it reads 1.02e-15 against the candidate 3.00e-14.
-judge AND ROW B IS THE NUMBER THAT SHOULD REPLACE THE ONE IN YOUR TABLE.
-     Your table reports one dof. Over ALL THIRTY, at 400 m and beyond, the
-     SHIPPED form median detection ratio is 1.0x -- it is not one dof class
-     that goes blind at span, it is most of the model. That widens R475
-     rather than narrowing it, and it is measured on a frame the corpus
-     already contains.
-cell the defect SHAPES, same frame, 1e-12 * max|K|, at 4 m and 400 m
-out  shape                      shipped    energy      per-dof    row-shared
-     diffuse, every diagonal     9013x     26009x       2863x       3764x
-     off-diagonal k[2,27] sym    5822x      8349x     5.7e+15x     4.0e+05x
-     energy blind k[3,6] sym     5686x      1.00x     5.7e+15x     2.5e+04x
-     rank-one on the rot-x vec  12713x     82242x     2.5e+15x     1.7e+05x
-judge NO BLIND SPOT FOUND IN EITHER PER-ROW FORM. Your own worry -- a defect
-     the max-over-components misses and the 2-norm sees -- IS REAL AND IT IS
-     THE DIFFUSE ONE, and it is a factor of 3.1 (per-dof) or 2.4
-     (row-shared) against the shipped form, not an order. I would not trade
-     R475 for it.
-```
-
-```
-judge WHAT I MEASURED AND REJECTED, so you do not spend the round on them:
-     * ||K Q||_2 / max|K| with Q an orthonormal basis of the rigid subspace
-       -- basis-invariant by construction, and it collapses to 1.0x on the
-       rotational cell at 400 m EXACTLY LIKE THE SHIPPED FORM. Basis-
-       invariance alone is not the fix.
-     * the same componentwise -- clean worst drifts 8.9e-17 to 7.3e-13 over
-       the span ladder and detection collapses to 1.0x. Worse than shipped.
-     * the shipped 2-norm on a unit-homogenised pair K~ = SKS, v~ = S^-1 v
-       with S = diag(1,1,1,L,L,L) -- detection HOLDS at 41x to 75x on BOTH
-       classes at EVERY span, which is the cleanest confirmation I have that
-       the dilution is a dof-class unit mismatch; but the quantity itself
-       falls 5.0e-17 to 5.5e-25 over the ladder, so no fixed ceiling can
-       read it. Recorded because the diagnosis it confirms is worth more
-       than the form it rejects.
-     * the exact SIMULTANEOUS componentwise backward error by linear
-       programming, one LP per row -- the basis-invariant gold standard I
-       wanted to measure the others against. I DID NOT GET IT TO A USABLE
-       STATE: it returns +inf on the CLEAN matrix and I did not establish
-       whether that is genuine sparsity infeasibility or my scaling. An
-       honest gap, not a result.
-judge AND THE HONEST LIMITS ON THE ROW-SHARED FORM. One defect mechanism
-     (diagonal) plus four shapes, one element, one frame topology, one
-     machine, no CalculiX. It fails the reference-point test in R485 exactly
-     as the candidate does. It is 9.3x noisy at the degeneracy floor exactly
-     as the candidate is -- 1.42e-16 to 1.32e-15 over the same coordinate
-     rounding. Its ceiling still has to be derived per R486. It is a better
-     starting point, not a finished answer, and I offer it as a candidate on
-     the same footing you offered yours.
-```
-
----
-
-**Closure items (CZ0). None of these is (a), (b), (c) or (d). They go into
-the closure list; they are not re-reviewed item by item.**
-
-**R489. My own citation convention caused three of the twelve CI reds, and
-the guard is right.** `_sites_by_finding` at
-`tests/test_report_carried.py:2451` expands a path:lo-hi citation into every
-line in the range and requires each to be touched or declared. R481 in
-verdict 53 wrote `tests/test_report_carried.py:1385-1404` as a LOCATOR for
-the assertion block and `:1386` as the site to fix; the guard cannot tell the
-two apart, and under the half-of-an-item rule from R29 it should not try.
-**The fix is mine: from this verdict on, a finding cites the single line
-whose change would close it and describes the surrounding block in prose.**
-Yours is one `no change` declaration per site at 1402-1404 in the answering
-report, or nothing at all if that report supersedes verdict 53.
-
-**R490. The tail exists because a reviewer corpus commit invalidates a
-generated figure, and the repair can only land after the step has closed.
-Second round running, and it will recur.** `b49960f` (mine) moved
-`rigid_mode_corpus_frames` 126 to 145 and turned
-`test_the_generated_figures_are_not_stale` red; `677ba35` (yours) was the
-only possible repair and it is an implementer commit after a closed step,
-which turns `test_the_whole_suite_line_is_about_a_commit_that_exists` red.
-**My commit `3e2417f` has just done it again -- 145 to 172.** I am not going
-to stop adding entries, BE3 says so, so the loop is structural and neither of
-us can close it inside a step. It goes up, under its own heading below.
-
-**R491. `docs/closure/F2-step5.md` sections 1 and 4 still publish the row
-`RIGID_MODE_EXACTNESS_COUNTER_DEFECT | injected, asserted red, 4.54x past a
-bisected detection edge` with no dof class and no span beside it.** Half of
-condition (ii) of R475, unchanged this round, correctly not touched outside a
-step, and it is where the artifact says more than the gate proves.
-
-**R492. `_analytic_rigid_body():161-164` -- any point gives the same
-six-dimensional span, which is the thing under test.** Refuted by the cell in
-R485. The span is not what the residual half reads. Closed by a sentence
-naming the centroid as a convention that is PART of the quantity, written by
-whoever lands the form, not before.
-
-**R493. The four earlier closure items, unchanged.** R476
-(`ZeroDivisionError` on a coincident tip node -- it bit me twice this round
-building my own harness, so it is real), R477, R478, R480.
-
-## On the criterion itself, once, as asked
-
-**I do not disagree with CZ0, and this round is the best evidence for it I
-have produced.** Under the retired criterion I would have written up the
-wording about run 35681689335, the provenance sentence in the closure table,
-and the degeneracy docstring as blocking findings, and spent the round on
-them. Instead the round went into one question and came back with R486,
-which is a false red waiting on the production geometry.
-
-**What does need deciding above this loop is R490, and it is not a criterion
-complaint.** The arrangement now has a stable cycle: the reviewer commits a
-corpus, a generated figure goes stale, the implementer must repair it, the
-repair is an implementer commit after a closed step, a second guard goes red,
-and that red can only be cleared by the next step report. Twice in two
-rounds. The options I can see are (a) corpus counts stop being published
-figures, (b) the reviewer regenerates the figure inside the corpus commit,
-which means giving me a write path outside my two, or (c) the step boundary
-moves to after the reviewer corpus commit rather than after the verdict.
-**I am not choosing, and in particular I will not propose (b), because it
-widens my own permissions.** It goes to Xabier through you.
+**R501. The four earlier closure items, unchanged.** R476 (`ZeroDivisionError`
+on a coincident tip node), R477, R478, R480.
 
 ## Tolerances touched
 
-**NONE. No constant was created, retired, moved or renamed. `floatfea/`
-received not one byte, comments included, for the tenth round running.**
+**NONE. No constant was created, retired, moved or renamed.**
 
 ```
-cmd  git diff 612e79b..7d6a94e -- floatfea/
-out  (EMPTY)
+cmd  extract every NAME: Final[...] = value at 7d6a94e and at ccb5346
+out  48 and 48. added [] removed [] changed []
 cmd  python -c "import floatfea.tolerances as t; print(t.RIGID_MODE_EXACTNESS,
      t.RIGID_MODE_BOUND, t.RIGID_MODE_EXACTNESS_COUNTER_DEFECT,
      t.RIGID_MODE_BOUND_COUNTER_DEFECT, t.MEMBER_ORIENTATION_DEGENERACY)"
@@ -582,112 +489,133 @@ out  1e-15  199.526231496888  1e-14  1e-13  0.05
 
 | name | old | new | form | counter | basis located |
 |---|---|---|---|---|---|
-| -- | -- | -- | **no tolerance touched this round** | -- | -- |
+| -- | -- | -- | **no tolerance value touched this round** | -- | -- |
 
-**But R486 is a finding about a tolerance that does not exist yet**, and the
-shape of the entry it will need is the useful part of this section:
+**But 46 lines of `floatfea/tolerances.py` changed and they are not inert.**
+R495 is a finding about the JUSTIFICATION of `RIGID_MODE_BOUND`, which
+`CLAUDE.md` section Tolerances makes part of what a tolerance is. The form of
+that entry is now: a value, a heading promising a window on both sides, and two
+sides that are withdrawn figures pointing at a file computing neither. The
+value is right; the record of why is not.
 
-* the value is a **relative, dimensionless ceiling** on a per-row quotient
-  whose numerator and denominator both carry the units of `K`, so `max|K|`
-  cancels identically and the form passes the unit-scaling test BY
-  CONSTRUCTION rather than by measurement -- which neither the shipped form
-  nor DA0 does;
-* its **counter must be injected on a rotational degree of freedom and at
-  more than one span**, which is condition (i) of R475 and is unchanged;
-* its **justification must derive the clean supremum over the ADMISSIBLE
-  domain**, and that supremum is a function of
-  `MEMBER_ORIENTATION_DEGENERACY`. Two tolerances become coupled. That is
-  not a reason to refuse the form; it is a sentence that has to be in the
-  entry, because a later reader who loosens the orientation floor to one
-  degree would otherwise move a residual ceiling without knowing it;
-* and the `content > 0` decision gets the one-line assertion from R487, not
-  a comment.
+The shape R486 asked for is unchanged and still owed with the form: relative
+and dimensionless by construction; the counter injected on a rotational dof at
+more than one span; the clean supremum derived over the ADMISSIBLE domain,
+which makes it a function of `MEMBER_ORIENTATION_DEGENERACY`; and R487's
+one-line assertion replacing the `content > 0` comment.
 
 ## Adversarial corpus (BE3)
 
-**27 new entries, all unseen by the implementer, committed separately at
-`3e2417f`. `tests/corpus/g21_rigid_body_frames.txt`, 145 to 172.**
+**16 new entries, all unseen by the implementer, committed separately at
+`cbf8520`. `tests/corpus/tree_prose_claims.txt`, 39 to 55.** New part 4: the
+**POINTER CLAIM**.
 
-Every field is measured through the shipped builder,
-`test_rigid_body_corpus._build`, so the consuming test poses the frame the
-line describes and nothing is transcribed by hand. Eight sit at or near the
-orientation-degeneracy floor, which no frame in the first 145 did. Three new
-fields -- `zero_content_pairs`, `perdof_clean`, `rowshared_clean` -- are
-reviewer measurements read by nothing, exactly as `rot_dof_detection_edge`
-was last round.
+DB1 created this shape at scale in one round -- 51 rows of the canonical render
+plus 85 rewritten citations, each a sentence saying that a named file carries a
+named claim. The path always resolves. That is the trap: a resolving path reads
+exactly like a holding claim, and a stale pointer is a stale figure with the
+number removed so nobody can see it has gone stale.
 
 ```
-cmd  python -m pytest tests/verification/rung1/test_rigid_body_corpus.py
-     tests/verification/rung1/test_rigid_body_modes.py -q   (at 3e2417f)
-out  188 passed in 51.72s -- 161 before the batch, so 27 of 27 new frames
-     pass both halves of G2.1
-cmd  grep -c "^id=" tests/corpus/g21_rigid_body_frames.txt
-out  172
+cmd  grep -c "^id=" tests/corpus/tree_prose_claims.txt
+out  55   (39 before this batch)
 ```
 
-**Coverage measurement. 27 new entries; the implementer checks caught 0 of
-them, and that is the right answer, because there is nothing to catch -- the
-element is sound at all 27. The number that counts this round is a different
-one, and it is 8 of 8.**
+**Coverage measurement. 16 new entries; the implementer's checks caught 0 of
+16.** The mechanism, so the zero is not taken on trust:
+`tests/test_tree_prose_consistent.py` part 1 parses only lines matching
+`_CLAIM`, `_CMD`, `_OUT` (`:326-329`), and none of these shapes carries a
+triple; parts 2 and 3 are the absence and retired-alias keyword lists, and a
+POSITIVE claim about what a named file contains matches neither. That file's
+own docstring says the rest is the reviewer's reading. This batch is 16
+instances of that sentence being the live defect rather than a caveat.
 
-* **8 of 8 near-degeneracy frames put the candidate form above the ceiling
-  its own author proposed.** `perdof_clean` runs from 6.74e-16 to 3.18e-14
-  against 1.554e-15. Those eight are the measurement; the other nineteen are
-  domain.
-* **0 of the 145 pre-existing frames could have found R486**, because not
-  one of them has a member within 45 degrees of vertical. That is the
-  coverage statement in one line: a clean worst measured over a corpus is a
-  statement about the corpus.
-* **Two rounds running, the corpus has moved a gate question rather than a
-  sentence.** Last round the span ladder produced R475; this round the
-  near-vertical ladder produced R486, and R486 is the first finding this
-  milestone that is about a FALSE RED rather than a missed defect.
+**Four of the sixteen are LIVE at `ccb5346`** and each is refuted by one grep;
+they are the cells inside R495. **4 of 4 live pointer claims found by reading
+the diff, 0 of 4 by any check in the repository.**
+
+**And the second coverage number this round, which is the one I did not
+expect.** `tests/corpus/report_guard_states.txt` was written at the
+twenty-ninth and thirtieth verdicts and has been green since. One of its
+entries -- `verdict_amended_after_the_commit_the_report_answers` -- went red at
+`ccb5346`, and it is the only thing in the repository that found R494(C): a
+live regression in the guard's own reading of the record, introduced by DB2 and
+misattributed in the report to the whole-suite line. **1 of 25 standing entries
+caught a defect nobody was looking for.** That is what a corpus is for, and it
+is the first time in this milestone one of my older batches has paid.
 
 **And the counterweight, because right-every-time is not allowed to become a
-prior: fifty-four rounds have found no element defect and this round found
-none either.** 27 new frames, plus 5 spans x 30 dofs x 4 defect shapes, plus
-an 8-point angle ladder into the degeneracy floor -- the shipped residual
-never exceeded 1.45e-16 against a 1e-15 ceiling on a clean element anywhere.
-Ladder 5 has still printed `OK -- 0 directories ran` every time it has run,
-and V5.1 against CalculiX has still not spoken.
+prior: fifty-five rounds have found no element defect and this round found none
+either.** `floatfea/` received no executable change for the eleventh round
+running. The ladder was green on Linux at the reviewed commit. Ladder 5 has
+still printed `OK -- 0 directories ran` every time it has run, and V5.1 against
+CalculiX has still not spoken. R475, R486 and R487 are still the open questions
+about the element's gate and none of them moved this round -- which you said,
+and which was the right thing to say.
+
+## On the criterion itself, once
+
+**Nothing to raise. CZ0 held up again.** Under the retired criterion R497,
+R498, R499 and R500 would have been four blocking findings and the round would
+have gone to them. Instead it went to the eight reds and to the
+`RIGID_MODE_BOUND` entry: the first produced a cell that refutes the diagnosis
+in the report and turned up a live (c) defect, and the second turned up a
+tolerance whose recorded reason no longer exists. The criterion is doing what
+it was changed to do.
+
+**One thing goes up, and it is R490's ghost.** DB1 closed the loop where MY
+corpus staled a published figure. This round the same loop reappeared one level
+out: `tests/corpus/report_guard_states.txt` encodes states defined relative to
+"the newest report", the newest report moved, and four of my entries now
+describe a tree that does not exist -- and I cannot re-measure them until the
+harness that builds them is repaired, which is yours. The general shape is
+**reviewer-owned data whose meaning depends on implementer-owned structure.**
+DB1 fixed one instance by removing the data; I do not think that generalises,
+and I am not proposing a mechanism. It goes to Xabier through you as an
+observation, with the concrete instance named in R494(4).
 
 ## Next step opens when
 
-**F2-rung2 does not open, and step 5 does not reopen.** The step is closed at
-`125cee1`. What is open is the tree at `7d6a94e`, and it is red.
+**F2-rung2 does not proceed past its present commit, and step 5 does not
+reopen.** What is open is the tree at `ccb5346`, and it is red locally and on
+CI.
 
 1. **`python -m pytest -q` is `0 failed` at HEAD and
-   `gh run list --commit <that sha>` is a completed SUCCESS.** (R482.) The
-   route is a report revision anchored on top of the commits that follow --
-   not a change to
-   `test_the_whole_suite_line_is_about_a_commit_that_exists`, not a
-   PASS-based exemption, and not `scripts/ci_section.py` (R483). If that
-   revision has to be step 6, the hardcoded `step-5.md` at
-   `scripts/ci_section.py:72-73` is the obstacle you identified, and the
-   CZ0-compliant answer is that parametrising it goes on
-   `docs/milestones/F2a.md` and the revision is written as revision 28 of
-   step 5. Declining to parametrise it was the correct call.
-2. **R475 is answered in the FIRST commit of F2-rung2**, unchanged and still
-   blocking. DA0 is closed by R484; do not add a second counter to the old
-   form, exactly as the directive said.
-3. **R486 is answered in the same commit as whatever form lands**: the
-   ceiling derived over the admissible domain rather than read off a corpus,
-   with `MEMBER_ORIENTATION_DEGENERACY` named in the justification.
-4. **The one-line assertion in R487** lands with the form, replacing the
-   `content > 0` comment.
+   `gh run list --commit <that sha>` is a completed SUCCESS** (R494). Three
+   repairs, in this order of seriousness:
+   **(a)** `_verdict_text_at` takes its path from `VERDICT` rather than from
+   `STEP`, so the guard stops silently reading the working copy at every step
+   boundary;
+   **(b)** `tests/test_report_guard_states.py` builds every state relative to
+   the step the guard resolves, and names the step after it where it means "a
+   step with no report yet";
+   **(c)** the report names the nested run's own line for the four states in
+   R494's closing condition.
+   Do NOT revert `docs/reports/F2/step-6.md` -- I measured that path and it is
+   red either way. Do NOT edit `tests/corpus/report_guard_states.txt`; if a
+   `require=` still disagrees after (b), name it and I re-measure.
+2. **`RIGID_MODE_BOUND`'s entry stops claiming enforcement that does not
+   exist** (R495), site by site at `floatfea/tolerances.py:365`, `:369-371`,
+   `:384-386`, `:427-430`, `:492-493` -- either the two brackets become
+   assertions in the file the entry names, or the entry says what does bracket
+   the value. No value moves.
+3. **The 51 withdrawn rows are accounted for** (R496): one generated table, one
+   line each, naming the assertion that carries the claim, and deleting
+   outright any row for which there is none.
+4. **R475 is answered in the FIRST commit of F2-rung2**, unchanged and still
+   blocking, with **R486**'s admissible-domain ceiling and **R487**'s one-line
+   assertion in the same commit. DA0 stays closed by R484.
 
-**On whether this deserved a number, since you asked.** Yes, and not because
-of the hook. Two of the things I was told did not match what I measured --
-red on one test is red on nine locally and twelve on CI, and the CI leg
-artifacts of run 35681689335 come from a run that failed. Neither is
-serious and neither changed a conclusion; both were about the frame around
-the work rather than the work. But they are the reason the arrangement has a
-reader who runs the suite himself, and on a tail -- where the step is closed
-and nobody is watching -- that is exactly when the reading is worth
-something.
-
-**What I would do instead, if you would rather not carry a fifty-fourth
-verdict on a closed step:** nothing different. The alternative is to fold
-this into the first verdict of F2-rung2, and that would leave a red tree
-un-judged across a step boundary, which is the one thing the hook exists to
-prevent. Carry it.
+**On your question, in one paragraph.** The eight are not the guard, not the
+report, and not DB2's rule. Seven are apparatus: the harness still points at
+`step-5.md` after DB2 moved the target, and four states had their anchor moved
+underneath them by the arrival of a step-6 report. The eighth is DB2 itself,
+and it is the one worth the round -- `_verdict_text_at` kept building its path
+from `STEP` while `VERDICT` was repointed, so the `git show` fails by
+construction at every boundary and the guard reads the working copy instead.
+Your instinct about R489's line numbers and about the states resolving `REPORT`
+differently was right for two of the eight. The sentence that all eight share
+one cause is refuted three ways: by `report_file_is_a_directory`, which raises
+inside the builder before the guard runs; by three states whose nested run
+exits 0 having found nothing; and by `verdict_amended_after_the_commit_the_report_answers`,
+whose nested run names two failures that have nothing to do with a suite line.
