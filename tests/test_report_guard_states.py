@@ -38,14 +38,54 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "tests" / "corpus" / "report_guard_states.txt"
 GUARD = "tests/test_report_carried.py"
-REVIEW_PATH = "docs/re" + "views/F2/step-5.md"
+
+_PLAN = ROOT / "docs" / "milestones" / "F2.md"
+_STEP_LINE = re.compile(r"<!--\s*step-under-execution:\s*(\d+)\s*-->")
+
+
+def _step() -> int:
+    """The step the guard reads, taken the way the guard takes it (DB2).
+
+    THIS WAS THE LITERAL `5`, THIRTEEN TIMES, AND DB2 MOVED THE GUARD OFF IT.
+    The harness went on planting its defects in `step-5.md` while
+    `test_report_carried.py` read `step-6.md`, so three negative controls --
+    `answers_header_names_a_sha_that_is_not_a_commit`,
+    `guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF` and
+    `guard_state_the_whole_suite_line_names_an_ANCESTOR_AT_WHICH_THE_SUITE_WAS
+    _RED` -- each failed on `assert 0 != 0` with the nested run at 170 passed:
+    the guard found NOTHING, which is the opposite of the failure the state
+    was built to provoke. A disabled negative control is worse than a missing
+    one, because it reports green.
+    """
+    m = _STEP_LINE.search(_PLAN.read_text(encoding="utf-8", errors="replace"))
+    return int(m.group(1)) if m else 0
+
+
+STEP = _step()
+REPORT_NAME = f"step-{STEP}.md"
+NEXT = STEP + 1
+"""The step AFTER the one under execution.
+
+Every state below that means "a report for the next step" used the literal
+`6`, which was the next step when they were written and is the current one
+now. That is not cosmetic: `report_file_is_a_directory` did
+`(reports/"step-6.md").mkdir()` over a file that exists and raised
+`FileExistsError` inside the builder, before the guard ran at all, and
+`newest_report_has_no_verdict_yet` overwrote the real step-6 report with a
+copy of step 5's. A state that cannot be built reports as a failure of the
+thing it was built to test.
+"""
+REVIEW_PATH = "docs/re" + f"views/F2/step-{STEP}.md"
 
 # How each state is built, relative to a COPY of the repository. A state is a
 # mutation of `docs/reports/F2/` or `docs/reviews/F2/` and nothing else.
 STATES: dict[str, list[tuple[str, str]]] = {
     "baseline": [],
-    "newest_report_has_no_verdict_yet": [("copy_report", "6")],
-    "newest_verdict_file_present_but_empty": [("copy_report", "6"), ("empty_verdict", "6")],
+    "newest_report_has_no_verdict_yet": [("copy_report", str(NEXT))],
+    "newest_verdict_file_present_but_empty": [
+        ("copy_report", str(NEXT)),
+        ("empty_verdict", str(NEXT)),
+    ],
     "two_digit_step_number": [("copy_report", "10"), ("copy_verdict", "10")],
     "non_numeric_step_suffix": [("copy_report", "5b")],
     "reports_directory_renamed_away": [("rename_reports", "")],
@@ -55,26 +95,32 @@ STATES: dict[str, list[tuple[str, str]]] = {
     "reviews_directory_renamed_away": [("rename_reviews", "")],
     "answers_header_names_a_sha_that_is_not_a_commit": [("bad_answers_sha", "deadbee")],
     "two_reports_ahead_of_the_newest_verdict": [
-        ("copy_report", "6"),
-        ("copy_report", "7"),
+        ("copy_report", str(NEXT)),
+        ("copy_report", str(NEXT + 1)),
     ],
-    "report_file_is_a_directory": [("report_dir", "6"), ("copy_verdict", "6")],
-    "verdict_file_is_a_directory": [("copy_report", "6"), ("verdict_dir", "6")],
-    "draft_suffix_beside_a_step_report": [("report_named", "step-6-draft.md")],
+    "report_file_is_a_directory": [
+        ("report_dir", str(NEXT)),
+        ("copy_verdict", str(NEXT)),
+    ],
+    "verdict_file_is_a_directory": [
+        ("copy_report", str(NEXT)),
+        ("verdict_dir", str(NEXT)),
+    ],
+    "draft_suffix_beside_a_step_report": [("report_named", f"step-{NEXT}-draft.md")],
     "step_number_is_the_empty_string": [("report_named", "step-.md")],
     "two_digit_step_number_discriminating": [
         ("copy_report", "10"),
         ("copy_verdict", "10"),
         ("append_finding", "10"),
     ],
-    "verdict_amended_after_the_commit_the_report_answers": [("append_finding", "5")],
+    "verdict_amended_after_the_commit_the_report_answers": [("append_finding", str(STEP))],
     # --- the thirtieth verdict's four --------------------------------------
     "shallow_clone_depth_1_reports_one_diagnosis_not_sixteen": [("shallow", "")],
-    "zero_padded_step_number": [("report_named", "step-06.md")],
+    "zero_padded_step_number": [("report_named", f"step-0{NEXT}.md")],
     "zero_padded_step_number_beside_the_unpadded_one": [
-        ("report_named", "step-06.md"),
-        ("copy_report", "6"),
-        ("copy_verdict", "6"),
+        ("report_named", f"step-0{NEXT}.md"),
+        ("copy_report", str(NEXT)),
+        ("copy_verdict", str(NEXT)),
     ],
     "answers_header_names_an_older_verdict_commit": [("older_answers_sha", "")],
     # --- the thirty-fifth verdict's two ------------------------------------
@@ -193,9 +239,9 @@ def _build(tmp: Path, state: str) -> Path:
     reports, reviews = work / "docs/reports/F2", work / "docs/reviews/F2"
     for action, arg in STATES[state]:
         if action == "copy_report":
-            shutil.copy2(reports / "step-5.md", reports / f"step-{arg}.md")
+            shutil.copy2(reports / REPORT_NAME, reports / f"step-{arg}.md")
         elif action == "copy_verdict":
-            shutil.copy2(reviews / "step-5.md", reviews / f"step-{arg}.md")
+            shutil.copy2(reviews / f"step-{STEP}.md", reviews / f"step-{arg}.md")
         elif action == "empty_verdict":
             (reviews / f"step-{arg}.md").write_text("", encoding="utf-8")
         elif action == "rename_reports":
@@ -203,16 +249,29 @@ def _build(tmp: Path, state: str) -> Path:
         elif action == "rename_reviews":
             reviews.rename(reviews.parent / "F2_moved")
         elif action == "report_named":
-            shutil.copy2(reports / "step-5.md", reports / arg)
+            shutil.copy2(reports / REPORT_NAME, reports / arg)
         elif action == "report_dir":
-            (reports / f"step-{arg}.md").mkdir()
+            # A DIRECTORY WHERE A REPORT SHOULD BE, whether or not a file is
+            # there first. The state used to be built at the step AFTER the
+            # current one, where nothing existed; once that step acquired a
+            # real report, `mkdir` raised FileExistsError, and once the arg
+            # followed the step again it raised FileNotFoundError on the
+            # unlink. Both are the builder failing, which reads as the guard
+            # failing.
+            target = reports / f"step-{arg}.md"
+            if target.exists():
+                target.unlink()
+            target.mkdir()
         elif action == "verdict_dir":
-            (reviews / f"step-{arg}.md").mkdir()
+            target = reviews / f"step-{arg}.md"
+            if target.exists():
+                target.unlink()
+            target.mkdir()
         elif action == "bad_answers_sha":
-            text = (reports / "step-5.md").read_text(encoding="utf-8", errors="replace")
+            text = (reports / REPORT_NAME).read_text(encoding="utf-8", errors="replace")
             head = text.rindex("Answers: verdict")
             end = text.index("\n", head)
-            (reports / "step-5.md").write_text(
+            (reports / REPORT_NAME).write_text(
                 text[:head] + f"Answers: verdict 28 @ {arg}" + text[end:],
                 encoding="utf-8",
             )
@@ -248,10 +307,10 @@ def _build(tmp: Path, state: str) -> Path:
                 "to name and this state cannot be built"
             )
             older = history[1]
-            text = (reports / "step-5.md").read_text(encoding="utf-8", errors="replace")
+            text = (reports / REPORT_NAME).read_text(encoding="utf-8", errors="replace")
             head = text.rindex("Answers: verdict")
             end = text.index(chr(10), head)
-            (reports / "step-5.md").write_text(
+            (reports / REPORT_NAME).write_text(
                 text[:head] + f"Answers: verdict 28 @ {older}" + text[end:],
                 encoding="utf-8",
             )
@@ -264,7 +323,7 @@ def _build(tmp: Path, state: str) -> Path:
             # always committed before anyone reads it, so committing it here
             # is also what the real occurrence looks like.
             for args in (
-                ["add", "docs/reports/F2/step-5.md"],
+                ["add", f"docs/reports/F2/{REPORT_NAME}"],
                 [
                     "-c",
                     "user.name=harness",
@@ -291,7 +350,7 @@ def _build(tmp: Path, state: str) -> Path:
                 + chr(10),
                 encoding="utf-8",
             )
-            report = reports / "step-5.md"
+            report = reports / REPORT_NAME
             report.write_text(
                 report.read_text(encoding="utf-8", errors="replace")
                 + chr(10)
@@ -300,7 +359,7 @@ def _build(tmp: Path, state: str) -> Path:
                 encoding="utf-8",
             )
             for args in (
-                ["add", "tests/test_report_carried.py", "docs/reports/F2/step-5.md"],
+                ["add", "tests/test_report_carried.py", f"docs/reports/F2/{REPORT_NAME}"],
                 [
                     "-c",
                     "user.name=harness",
@@ -308,7 +367,7 @@ def _build(tmp: Path, state: str) -> Path:
                     "user.email=harness@localhost",
                     "commit",
                     "-m",
-                    "docs: step-5 revision 99 -- and the guard that judges it",
+                    f"docs: step-{STEP} revision 99 -- and the guard that judges it",
                 ],
             ):
                 subprocess.run(["git", "-C", str(work), *args], capture_output=True, check=True)
@@ -316,7 +375,7 @@ def _build(tmp: Path, state: str) -> Path:
             # Every pointer moved to the Carried section, which contains every
             # item by construction. The reviewer did exactly this and the file
             # stayed green: the resolution resolved and said nothing.
-            report = reports / "step-5.md"
+            report = reports / REPORT_NAME
             text = report.read_text(encoding="utf-8", errors="replace")
             head = text.rindex("# Revision ")
             body = re.sub(r"\u00a7\s*\d+[a-z]?", "\u00a79", text[head:])
@@ -330,7 +389,7 @@ def _build(tmp: Path, state: str) -> Path:
                 text=True,
                 check=True,
             ).stdout.split()[1]
-            report = reports / "step-5.md"
+            report = reports / REPORT_NAME
             text = report.read_text(encoding="utf-8", errors="replace")
             text = re.sub(
                 r"Whole suite at `[0-9a-f]+`: \d+ passed, \d+ failed, \d+ skipped",

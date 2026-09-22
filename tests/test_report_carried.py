@@ -233,11 +233,29 @@ def _answered_verdict(report_text: str) -> str:
 
 
 def _verdict_text_at(sha: str) -> str:
-    """The verdict file as it stood at `sha`, or the working copy if unknown."""
+    """The verdict file as it stood at `sha`, or the working copy if unknown.
+
+    THE PATH IS `VERDICT`, NOT `step-{STEP}`, AND THE DIFFERENCE IS THE WHOLE
+    OF R494(C). `STEP` is the step under execution; `VERDICT` is the file the
+    newest verdict is IN, and at a boundary they differ -- step 6 under
+    execution, verdict 54 written into the step-5 file. This call site was
+    left on `STEP` when DB2 split the two, ninety lines below a comment that
+    says in capitals that they answer different questions.
+
+    What that cost: `git show e32ae1e:docs/reviews/F2/step-6.md` returns 128
+    at every boundary, so the branch below was dead and this returned the
+    WORKING COPY every time -- which is the one thing the function exists not
+    to do, since the guard is meant to read the verdict as it stood at the
+    commit the report answers. The reviewer's
+    `verdict_amended_after_the_commit_the_report_answers` state caught it with
+    a planted `R999`.
+    """
     if not sha:
         return _read(VERDICT)
     out = subprocess.run(
-        ["git", "show", f"{sha}:docs/reviews/F2/step-{STEP}.md"], cwd=ROOT, capture_output=True
+        ["git", "show", f"{sha}:{VERDICT.relative_to(ROOT).as_posix()}"],
+        cwd=ROOT,
+        capture_output=True,
     )
     if out.returncode != 0:
         return _read(VERDICT)
