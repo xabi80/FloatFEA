@@ -119,6 +119,53 @@ while an earlier step holds and a later one has been started. A `PreToolUse`
 hook refuses edits under `docs/reviews/` — the implementer never writes,
 edits, or deletes a verdict.
 
+### What blocks, and what is a closure item (CZ0)
+
+**Throughput is a requirement: FloatSim loads through an FE analysis of the
+main platform parts, by 31 October.** The gate discipline below is unchanged.
+What changes is what may consume a review round.
+
+A finding **blocks** only if it is one of four things:
+
+(a) a defect in `floatfea/`;
+(b) a tolerance value, or the form of one, including a counter and how it is
+    injected;
+(c) a gate assertion — what a gate claims, on which quantity, at what
+    threshold;
+(d) a red test at the reviewed commit.
+
+Everything else — prose, figures, docstrings, guards, apparatus, report
+sections — is a **closure item**. The verdict lists it under its own heading;
+the implementer fixes the whole list once, in the step's closure commit; it is
+not re-reviewed item by item. **"The truth of a published figure or sentence"
+is retired as a blocking head**, and the findings it produced become closure
+items. They were real and they were fixed. Six consecutive rounds of them did
+not move a gate, and the coverage measurement that would have justified the
+spend went *down* over those rounds — 2 of 22 unseen defect shapes caught, then
+1 of 19.
+
+**Three verdicts per step. After the third, the step closes.** A blocking item
+still open at that point carries by name into the next step's `Carried` section
+and stays blocking there. Closure items still open go into the closure artifact
+as a list.
+
+**No new apparatus through F6.** No new guards, scanners, meta-tests, detectors
+or report generators. `docs/milestones/F2a.md` is frozen as a list. An existing
+guard that fails false is fixed or deleted, never extended. The reviewer's
+corpus rounds continue — a corpus finding that is not (a)–(d) is a closure item.
+
+**A report is its generated sections plus at most one hand-written paragraph**,
+and that paragraph carries the schedule: which date the step is measured
+against, and whether it holds. **Slippage is reported the day it is known**,
+not when the step closes. If two consecutive steps close carrying blocking
+items, that is escalated with the choice stated — slip the date, or reduce
+scope.
+
+Every invocation asks the reviewer to rule under this criterion, and to say so
+if it disagrees with *the criterion* rather than with the work. That
+disagreement leaves the loop and goes to Xabier; it does not become another
+round.
+
 ### The reviewer's own instructions are not edited inside a step
 
 `.claude/agents/`, `.claude/hooks/` and `docs/SUPERVISOR.md` define what the

@@ -212,30 +212,56 @@ the same hand as the code, against closed forms both share assumptions with, are
 instruments — and four of them have been defective this milestone while the
 element was fine.
 
-## What blocks this step, and what goes to 4a (BU0)
+## What blocks, and what is a closure item (CZ0, superseding BU0)
 
-A finding **blocks** if it touches
+A finding **blocks** if it is one of four things and not otherwise:
 
-* the gate's assertion — what G2.2 claims, on what quantity, at what threshold;
-* a tolerance or the form of one, including a counter and how it is injected;
-* **the truth of a published figure or sentence** — a number that does not
-  describe the repository, a claim measurement refutes.
+* **(a)** a defect in `floatfea/`;
+* **(b)** a tolerance value or the form of one — including a counter and how it
+  is injected;
+* **(c)** a gate assertion: what a gate claims, on which quantity, at what
+  threshold;
+* **(d)** a red test at the reviewed commit. A red CI is red (CA2); an
+  unavailable run is neither (CK2).
 
-A finding that touches none of those is **recorded and becomes a lock item for
-step 4a**, whose plan (`docs/milestones/F2a.md`) owns verification apparatus.
-Parser reach, generator plumbing, a docstring's precision about its own
-machinery: real, worth fixing, and not step 4's gate.
+Everything else is a **closure item**: prose, figures, docstrings, guards,
+generators, parsers, report structure, the corpus's own reach. List them in the
+verdict under `## Closure items`, name the file and line, and say what would
+close each — then move on. The implementer fixes the whole list once, in the
+step's closure commit. **Do not re-review them item by item, and do not hold a
+step on one.**
 
-**This is a scope decision and it is written down so it can be argued with.**
-Rung 1 has been green and `floatfea/` untouched for four consecutive rounds; what
-remains under review is the apparatus around the gate, and a reader can find holes
-in parsers and prose indefinitely. Without a stated criterion this step has no
-terminating condition — which is a defect in the arrangement, not in the reviews.
-Nothing in the gate's claim moves by drawing the line here, and everything found
-is still recorded and still owned.
+**"The truth of a published figure or sentence" is no longer a blocking head.**
+It was one, it was earned, and it produced six consecutive rounds of findings
+that were all correct and moved no gate. Your own coverage measurement over
+those rounds went from 2 of 22 unseen defect shapes caught to 1 of 19 — the
+apparatus stopped paying. A false sentence is still a finding and you still
+write it down; it is a closure item.
 
-If you judge that something classed as apparatus DOES touch the gate's claim, say
-so and block on it. The criterion is the default, not a gag.
+**Three verdicts per step.** Count the verdicts already in
+`docs/reviews/F<n>/step-<k>.md` for this step. On the third, the step closes:
+write PASS, carry any open blocking item by name into `## Carried for the next
+step` so it blocks there, and put the closure items in a list the closure
+artifact will absorb. This is a throughput decision made above you — FloatSim
+loads through an FE analysis by 31 October — and it is written here so you can
+argue with it.
+
+**No new apparatus through F6.** Do not ask for a new guard, scanner,
+meta-test, detector or report generator; `docs/milestones/F2a.md` is frozen as
+a list and a finding that needs one goes onto it. An existing guard that fails
+false is fixed or deleted, never extended. Your corpus rounds continue
+unchanged (BE3) — that measurement is the one thing here that is not apparatus,
+because it is the only number that says whether any of this works.
+
+**If you disagree with the criterion rather than with the work, say so under
+its own heading and say it once.** It leaves the loop and goes to Xabier
+through the implementer. Do not express it as a HOLD on something that is not
+(a)–(d).
+
+If you judge that something classed as a closure item DOES touch (a), (b) or
+(c) — a docstring that is the only statement of what a tolerance means, a
+generator whose output *is* a gate's assertion — say so and block on it. The
+criterion is the default, not a gag.
 
 ## Try to break it
 

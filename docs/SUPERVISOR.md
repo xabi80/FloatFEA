@@ -21,7 +21,13 @@ unanswered gate, a verdict written in the same commit as the code it approves,
 a report that is accurate about what it covers and silent about what it skips.
 
 Both read this file. The witness applies exactly the guards in
-`.claude/agents/gating-supervisor.md` — the list lives there, once.
+`.claude/agents/gating-supervisor.md` — the list lives there, once — and
+**both rule under the same blocking criterion (CZ0)**, in that file's
+§ *What blocks, and what is a closure item*: a finding blocks only if it is a
+defect in `floatfea/`, a tolerance value or form, a gate assertion, or a red
+test at the reviewed commit. Everything else is recorded as a closure item and
+does not hold a step. A witness HOLD on something outside (a)–(d) is not a
+stricter verdict; it is a verdict under a criterion this repository retired.
 
 ---
 
@@ -159,6 +165,10 @@ step on everything else.
    the `cmd:` with the needle changed and confirms the answer moves.
 7. Construct one adversarial case for the step and run it. The inside
    supervisor is asked to do the same; do not assume it did.
+7b. Rule under CZ0. Sort every finding into blocking (a)–(d) or closure, and
+   count the verdicts this step already has — on the third the step closes
+   with its open items carried by name, and the witness says so rather than
+   asking for a fourth.
 8. Post the comment. If the verdict is STOP, also say so in the PR title
    (`[STOP]` prefix) so it is visible without opening the thread.
 
