@@ -1383,13 +1383,20 @@ _REPORT_SHAPES = [
     ("a_red_run_at_a_commit_that_was_force_pushed_away", False),
     ("the_Generated_provenance_line_is_itself_typed", True),
     # THE TWELVE FROM THE FIFTY-SECOND VERDICT'S CORPUS COMMIT (217a5ce).
-    # `must_refuse` is the corpus's own `measured=` field, so ten of these
-    # rows assert that the guards DO NOT catch the shape. That is what the
-    # guards do; the rows make it a fact the suite states rather than one a
-    # grep of the corpus finds. Every False row is in the frozen 4a list in
+    # `must_refuse` IS WHAT THE GUARDS WERE MEASURED TO DO with each shape at
+    # the commit these rows were written. Ten of them do not catch it, so ten
+    # rows are False. The corpus's `measured=` field records the same
+    # measurement, and the two agreed when this was written -- but the field
+    # is prose in a file the reviewer may rewrite, and this row is the
+    # assertion. R481: the earlier wording here said `must_refuse` IS that
+    # field, which would make a corpus edit silently redefine what the suite
+    # asserts. It does not. A row changes when someone re-measures.
+    #
+    # The rows make the hole a fact the suite states rather than one a grep of
+    # the corpus finds. Every False row is in the frozen 4a list in
     # docs/milestones/F2a.md, and CZ0 freezes the apparatus that would close
-    # it -- so a row
-    # here flipping to True later is a change somebody made on purpose.
+    # it -- so a row here flipping to True later is a change somebody made on
+    # purpose, and it flips in the same commit as the repair.
     ("prose_about_runs_under_a_heading_that_types_the_generated_marker", False),
     ("an_invented_run_id_inside_a_section_that_types_the_marker", False),
     ("a_prose_section_marked_generated_by_a_script_that_does_not_exist", False),
