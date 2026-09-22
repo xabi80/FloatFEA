@@ -786,7 +786,12 @@ def floor_class() -> dict[str, tuple[str, str | None, bool]]:
     """
     if not _MARKS:
         _figures()
-    return dict(_MARKS)
+    # A WITHDRAWN ROW IS A `words` ROW (DB1). It was marked `below` or
+    # `above` against a constant, and `compare()` then reads its value as a
+    # number to take a margin and a spread -- which a pointer is not. The mark
+    # is overridden here rather than at the ~25 call sites, so the reason sits
+    # in one place and the call sites keep saying what the figure WAS.
+    return {n: (("words", None, False) if _is_withdrawn(n) else m) for n, m in _MARKS.items()}
 
 
 _ROW = re.compile(r"^\| `([a-z0-9_]+)` \| (.+?) \|$", re.MULTILINE)
