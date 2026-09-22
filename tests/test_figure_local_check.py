@@ -42,6 +42,7 @@ from floatfea.tolerances import (
     FIGURE_ARGMIN_TIE_WINDOW_COUNTER_DEFECT,
     FIGURE_FLOOR_CLASS_SPREAD,
     FIGURE_FLOOR_CLASS_SPREAD_COUNTER_DEFECT,
+    RIGID_MODE_BOUND,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,6 +73,15 @@ CANON = {
     "stamp_openblas_coretype": "Haswell",
     "corpus_entries": "187",
     "clean_worst_ratio": "0.2564x",
+    # THE TWO SURVIVING FLOOR-CLASS ROWS (DB1). Every row this fixture used
+    # to carry a decision on -- `clean_worst_ratio`, `counter_headroom_room`,
+    # `detection_edge` -- is a worst over a corpus or a ratio to one, so DB1
+    # withdraws it and `floor_class()` reports it as `words`, which decides
+    # nothing. These two are taken on the shipped frame, decide against a
+    # named constant, and are what the cases below now move. The values are
+    # the canonical render's.
+    "rigid_mode_residual": "7.8658e-17",
+    "rigid_mode_counter_seventh": "1.2445e+02",
     "rigid_body_mode_ratio": "1.1986e-14",
     "rigid_body_counter_loss": "7.4709e-12",
     "counter_headroom_room": "2.19x",
@@ -162,10 +172,14 @@ def test_the_SHIPPED_log_rows_declare_themselves() -> None:
     accident.
     """
     marked = {n for n, (_k, _c, log) in R.floor_class().items() if log}
-    assert marked == {
-        "rigid_mode_seventh_orders",
-        "rigid_mode_seventh_orders_smallest_decided",
-    }, (
+    # ONE ROW, NOT TWO, SINCE DB1. `rigid_mode_seventh_orders_smallest_decided`
+    # was the second and it is a corpus-derived figure -- `log10` of a ratio
+    # taken at the smallest DECIDED entry, which moves whenever the corpus
+    # grows -- so DB1 withdraws it and `floor_class()` reports a withdrawn row
+    # as `words`. The branch is still exercised by the row that remains, which
+    # is what this test exists to say; if that one ever goes too, the flag
+    # becomes dead code and this assertion is what notices.
+    assert marked == {"rigid_mode_seventh_orders"}, (
         f"the log-valued rows are {sorted(marked)}. Every one of them carries "
         "`log10` of a ratio and is compared as a ratio; a row that is log-"
         "valued and unmarked is compared by the wrong rule, silently."
@@ -212,13 +226,19 @@ def test_a_row_that_is_not_floor_class_must_agree_EXACTLY() -> None:
 
 
 def test_the_DECISION_moving_is_a_failure_however_small_the_move() -> None:
-    """`clean_worst_ratio` at `1.02x` is a breach of the patch-test ceiling.
+    """A figure that crosses its ceiling is a failure whatever the distance.
 
-    A `1.02x` figure is inside the spread bound of the canonical `0.2564x`
-    by no stretch -- but the point of the case is that the decision, not the
+    THE VEHICLE CHANGED AT DB1 AND THE ASSERTION DID NOT. This read
+    `clean_worst_ratio` at `1.02x` against the patch-test ceiling;
+    `clean_worst_ratio` is a worst-over-corpus value, so DB1 withdraws it and
+    `floor_class()` reports it as `words` -- which is not a class that decides
+    anything, so the case stopped testing what it was written for.
+    `rigid_mode_residual` is floor-class `below RIGID_MODE_EXACTNESS`, survives
+    DB1 because it is taken on the shipped frame, and carries the same
+    decision. The point of the case is unchanged: the decision, not the
     distance, is what the third class asserts.
     """
-    code, lines = R.compare(_file(CANON), _with(clean_worst_ratio="1.02x"))
+    code, lines = R.compare(_file(CANON), _with(rigid_mode_residual="1e-9"))
     assert code != 0, "\n".join(lines)
     assert any("DECISION MOVED" in line or "margin" in line for line in lines)
 
@@ -231,8 +251,18 @@ def test_a_margin_thinner_than_the_spread_is_a_finding() -> None:
     figure's own margin ever drops below the bound, that reasoning stops
     holding for it, and this is where that is noticed.
     """
-    thin = f"{FIGURE_FLOOR_CLASS_SPREAD * 0.9:.4f}x"
-    code, lines = R.compare(_file(CANON), _with(counter_headroom_room=thin))
+    # THE VEHICLE CHANGED AT DB1, LIKE THE CASE ABOVE. `counter_headroom_room`
+    # is a ratio to a minimum over the corpus, so it is withdrawn and reports
+    # as `words`. `rigid_mode_counter_seventh` is floor-class
+    # `below RIGID_MODE_BOUND`, is taken on the shipped frame, and is the
+    # counter whose margin this reasoning is actually about.
+    # A MARGIN, NOT A VALUE. `counter_headroom_room` WAS the margin, so the
+    # old case wrote the thin number straight in. `rigid_mode_counter_seventh`
+    # is a `lambda_7` in units of `||K_hat||*eps`, and its margin against
+    # `RIGID_MODE_BOUND` is `bound / value` -- so the thin case is the value
+    # that puts THE MARGIN just inside the spread, not the spread itself.
+    thin = f"{RIGID_MODE_BOUND / (FIGURE_FLOOR_CLASS_SPREAD * 0.9):.4e}"
+    code, lines = R.compare(_file(CANON), _with(rigid_mode_counter_seventh=thin))
     assert code != 0, "\n".join(lines)
     assert any("under the declared spread" in line for line in lines)
 
