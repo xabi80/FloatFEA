@@ -541,3 +541,71 @@ id=rb_wire_D1mm_wall_1um_subdiv4 section=circular_tube,D=0.001,t=1e-6 subdiv=4 u
 id=rb_unit_1e9_nanometre section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e9 stretch=1 tip=4.4,1.1,2.8 residual=6.1670e-26 seventh_over_eps=2.2939e-02 rigid_max=0.0150 below_bound=15 outcome=refused ratio=8.1851e-01 loss=9.0757e-01 runs_in_suite=no expect=breach
 id=rb_unit_1e-9_gigametre section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e-9 stretch=1 tip=4.4,1.1,2.8 residual=4.2777e-17 seventh_over_eps=3.5771e-04 rigid_max=0.0002 below_bound=18 outcome=refused ratio=8.5322e-01 loss=8.3621e-01 runs_in_suite=no expect=breach
 id=rb_unit_1e6_micrometre_subdiv8 section=circular_tube,D=0.6,t=0.012 subdiv=8 unit=1e6 stretch=1 tip=4.4,1.1,2.8 residual=4.8042e-23 seventh_over_eps=1.7445e+01 rigid_max=0.2189 below_bound=17 outcome=refused ratio=6.4702e-03 loss=2.9286e-03 runs_in_suite=no expect=breach
+
+# ---------------------------------------------------------------------------
+# BATCH 4 -- 27 FRAMES, FIFTY-FOURTH VERDICT (tail of step 5, HEAD 7d6a94e).
+#
+# WHY THIS BATCH EXISTS. DA0 prescribed a normalisation for the residual half
+# of G2.1 and the implementer measured that it does not close R475's ten
+# cells. Two replacement forms are under discussion, both of which normalise
+# PER ROW rather than by the global vector norm. The 145 frames in batches 1-3
+# cannot decide between them, because not one of them contains a member near
+# the MEMBER_ORIENTATION_DEGENERACY floor, and that is where a per-row
+# denominator is smallest. These frames go there.
+#
+# THE SHIPPED GATE IS UNCHANGED AND EVERY FRAME HERE PASSES IT. `residual` is
+# at or below RIGID_MODE_EXACTNESS at all 27 and `seventh_over_eps` is
+# positive at all 27, so A PASSING SCAN MEANS WHAT IT HAS ALWAYS MEANT. No
+# entry here is evidence of an element defect and none is asserted against a
+# candidate form: the candidate fields are measurements, read by nothing.
+#
+# WHAT THE BATCH IS ORGANISED AROUND.
+#   * a near-vertical ladder, 2.87 / 4 / 6 / 10 / 20 degrees from global Z.
+#     floatfea REFUSES below 2.866 deg, so 2.87 is the WORST ADMISSIBLE
+#     orientation and every one of these is legally constructible.
+#   * tip members along y and along the body diagonal, and at 1 urad, 1 nrad
+#     and 1 prad off the x axis. The shipped tip member is EXACTLY along x,
+#     which decouples node 4 and makes 24 of 180 (dof, vector) pairs carry
+#     exactly zero row content. Nothing before this batch varied that.
+#   * spans at x3, x30, x300 and x3000, between and beyond batch 3's ladder.
+#   * the 2.87 deg frame crossed with span x100, with a slender brace, and
+#     with unit 1e-6.
+#
+# NEW FIELDS, all reviewer measurements, all read by nothing.
+#   zero_content_pairs  how many of the 6*n_dof (vector, dof) pairs have
+#                       (|K| |v_j|)_i == 0 exactly, over 6*n_dof. A per-row
+#                       form must decide what to do at these, and on the
+#                       shipped frame there are 24 of them.
+#   perdof_clean        max_j max_i |(K v_j)_i| / (|K| |v_j|)_i, content > 0.
+#   rowshared_clean     the same numerator over ONE denominator per row,
+#                       d_i = max_j (|K| |v_j|)_i.
+# Both are clean values on a defect-free element. Neither is a ceiling and
+# neither is asserted.
+# ---------------------------------------------------------------------------
+id=rb_tip_along_y_axis section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=1.9,3.6,2.8 residual=6.5948e-17 seventh_over_eps=2.4022e+13 rigid_max=0.2523 below_bound=6 outcome=decided ratio=1.9029e-14 loss=1.1650e-14 zero_content_pairs=24/180 perdof_clean=1.8315e-16 rowshared_clean=1.3285e-16 runs_in_suite=no expect=hold
+id=rb_tip_along_body_diagonal section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=3.34349717,2.54349717,4.24349717 residual=6.9703e-17 seventh_over_eps=2.5714e+13 rigid_max=0.3714 below_bound=6 outcome=decided ratio=2.3774e-14 loss=3.8888e-15 zero_content_pairs=2/180 perdof_clean=2.0431e-16 rowshared_clean=1.3285e-16 runs_in_suite=no expect=hold
+id=rb_tip_1urad_off_the_x_axis section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=4.39999999999875,1.1000025,2.8 residual=7.9380e-17 seventh_over_eps=2.4027e+13 rigid_max=0.4888 below_bound=6 outcome=decided ratio=1.3493e-14 loss=4.7901e-15 zero_content_pairs=13/180 perdof_clean=2.2718e-16 rowshared_clean=1.3292e-16 runs_in_suite=no expect=hold
+id=rb_tip_1nrad_off_the_x_axis section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=4.4,1.1000000025,2.8 residual=7.8806e-17 seventh_over_eps=2.4027e+13 rigid_max=0.5557 below_bound=6 outcome=decided ratio=3.8297e-14 loss=5.6785e-15 zero_content_pairs=13/180 perdof_clean=1.7465e-16 rowshared_clean=1.3285e-16 runs_in_suite=no expect=hold
+id=rb_tip_1prad_off_the_x_axis section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=4.4,1.1000000000025,2.8 residual=7.8806e-17 seventh_over_eps=2.4027e+13 rigid_max=0.5266 below_bound=6 outcome=decided ratio=8.8671e-15 loss=5.4305e-15 zero_content_pairs=13/180 perdof_clean=1.7465e-16 rowshared_clean=1.3285e-16 runs_in_suite=no expect=hold
+id=rb_span_x3_between_the_ladder section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=3 tip=4.4,1.1,2.8 residual=6.3906e-17 seventh_over_eps=3.9971e+12 rigid_max=0.9633 below_bound=6 outcome=decided ratio=1.2934e-13 loss=3.4297e-14 zero_content_pairs=24/180 perdof_clean=1.6697e-16 rowshared_clean=1.1214e-16 runs_in_suite=no expect=hold
+id=rb_span_x30_between_the_ladder section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=30 tip=4.4,1.1,2.8 residual=1.3369e-16 seventh_over_eps=4.2335e+10 rigid_max=1.2016 below_bound=6 outcome=decided ratio=7.0349e-12 loss=5.4586e-12 zero_content_pairs=24/180 perdof_clean=1.9240e-16 rowshared_clean=1.9240e-16 runs_in_suite=no expect=hold
+id=rb_span_x300_between_the_ladder section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=300 tip=4.4,1.1,2.8 residual=7.9469e-17 seventh_over_eps=4.2359e+08 rigid_max=1.1314 below_bound=6 outcome=decided ratio=1.6512e-09 loss=3.3840e-10 zero_content_pairs=27/180 perdof_clean=3.1723e-16 rowshared_clean=1.3471e-16 runs_in_suite=no expect=hold
+id=rb_span_x3000_beyond_the_ladder section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=3000 tip=4.4,1.1,2.8 residual=1.0826e-16 seventh_over_eps=4.2359e+06 rigid_max=0.9533 below_bound=6 outcome=decided ratio=7.8038e-08 loss=1.9491e-08 zero_content_pairs=22/180 perdof_clean=3.2828e-16 rowshared_clean=2.3478e-16 runs_in_suite=no expect=hold
+id=rb_brace_span_x100_tip_along_y section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=1 stretch=100 tip=1.9,3.6,2.8 residual=7.1196e-17 seventh_over_eps=1.0913e+08 rigid_max=0.8860 below_bound=6 outcome=decided ratio=8.2046e-09 loss=2.0962e-09 zero_content_pairs=24/180 perdof_clean=1.7431e-16 rowshared_clean=1.1101e-16 runs_in_suite=no expect=hold
+id=rb_subdiv3_span_x100 section=circular_tube,D=0.6,t=0.012 subdiv=3 unit=1 stretch=100 tip=4.4,1.1,2.8 residual=5.1160e-17 seventh_over_eps=5.9259e+08 rigid_max=0.2240 below_bound=6 outcome=decided ratio=4.1376e-10 loss=1.1268e-10 zero_content_pairs=152/684 perdof_clean=2.4476e-16 rowshared_clean=2.0684e-16 runs_in_suite=no expect=hold
+id=rb_subdiv5_tip_5deg_from_Z section=circular_tube,D=0.6,t=0.012 subdiv=5 unit=1 stretch=1 tip=2.117889,1.1,5.290487 residual=2.8923e-17 seventh_over_eps=1.5567e+12 rigid_max=0.1490 below_bound=6 outcome=decided ratio=1.3819e-13 loss=6.8943e-14 zero_content_pairs=273/1188 perdof_clean=9.1273e-15 rowshared_clean=2.0299e-16 runs_in_suite=no expect=hold
+id=rb_mm_unit_span_x100 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e-3 stretch=100 tip=4.4,1.1,2.8 residual=7.9514e-17 seventh_over_eps=6.0867e+07 rigid_max=0.4870 below_bound=6 outcome=decided ratio=4.9662e-09 loss=1.9586e-09 zero_content_pairs=24/180 perdof_clean=1.4663e-16 rowshared_clean=7.4768e-17 runs_in_suite=no expect=hold
+id=rb_km_unit_span_x100 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e3 stretch=100 tip=4.4,1.1,2.8 residual=5.2675e-22 seventh_over_eps=1.8774e+04 rigid_max=0.4197 below_bound=6 outcome=decided ratio=4.1355e-05 loss=1.3689e-05 zero_content_pairs=21/180 perdof_clean=2.1810e-16 rowshared_clean=1.5326e-16 runs_in_suite=no expect=hold
+id=rb_um_unit_span_x1000 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e-6 stretch=1000 tip=4.4,1.1,2.8 residual=4.2793e-17 seventh_over_eps=6.1295e+01 rigid_max=0.2822 below_bound=9 outcome=refused ratio=2.0567e-03 loss=1.4680e-03 zero_content_pairs=27/180 perdof_clean=2.7638e-16 rowshared_clean=8.5328e-17 runs_in_suite=no expect=hold
+id=rb_solid_D2_t1_span_x100 section=circular_tube,D=2.0,t=0.9 subdiv=1 unit=1 stretch=100 tip=4.4,1.1,2.8 residual=4.2755e-17 seventh_over_eps=1.8774e+10 rigid_max=0.6897 below_bound=6 outcome=decided ratio=3.1368e-11 loss=2.3781e-11 zero_content_pairs=21/180 perdof_clean=1.4078e-16 rowshared_clean=1.1185e-16 runs_in_suite=no expect=hold
+id=rb_thinwall_D3_t0p0003_span_x10 section=circular_tube,D=3.0,t=0.0003 subdiv=1 unit=1 stretch=10 tip=4.4,1.1,2.8 residual=1.2778e-17 seventh_over_eps=1.9201e+12 rigid_max=0.4152 below_bound=6 outcome=decided ratio=2.1576e-13 loss=7.0858e-14 zero_content_pairs=24/180 perdof_clean=3.9099e-16 rowshared_clean=1.2742e-16 runs_in_suite=no expect=hold
+id=rb_tip_along_x_span_x100_subdiv8 section=circular_tube,D=0.6,t=0.012 subdiv=8 unit=1 stretch=100 tip=4.4,1.1,2.8 residual=3.9838e-17 seventh_over_eps=9.4683e+07 rigid_max=0.1167 below_bound=6 outcome=decided ratio=9.3725e-10 loss=1.0400e-09 zero_content_pairs=478/1944 perdof_clean=3.0950e-16 rowshared_clean=1.0921e-16 runs_in_suite=no expect=hold
+id=rb_tip_reflected_through_node3 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=-0.6,1.1,2.8 residual=7.3325e-17 seventh_over_eps=2.4098e+13 rigid_max=0.3764 below_bound=6 outcome=decided ratio=2.4835e-14 loss=9.0691e-15 zero_content_pairs=24/180 perdof_clean=2.1967e-16 rowshared_clean=1.3285e-16 runs_in_suite=no expect=hold
+id=rb_tip_2p87deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.02517501233,1.1,5.29686427671 residual=5.0667e-17 seventh_over_eps=2.8678e+13 rigid_max=0.5049 below_bound=6 outcome=decided ratio=2.4816e-14 loss=8.2525e-15 zero_content_pairs=19/180 perdof_clean=1.2425e-14 rowshared_clean=4.2293e-16 runs_in_suite=no expect=hold
+id=rb_tip_4deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.07439118436,1.1,5.29391012565 residual=3.9951e-17 seventh_over_eps=2.8665e+13 rigid_max=0.6188 below_bound=6 outcome=decided ratio=2.2251e-14 loss=3.6755e-15 zero_content_pairs=19/180 perdof_clean=2.3815e-15 rowshared_clean=1.1837e-16 runs_in_suite=no expect=hold
+id=rb_tip_6deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.16132115817,1.1,5.28630473842 residual=8.4830e-17 seventh_over_eps=2.8635e+13 rigid_max=0.2823 below_bound=6 outcome=decided ratio=1.7375e-14 loss=7.7844e-15 zero_content_pairs=19/180 perdof_clean=1.0476e-14 rowshared_clean=7.4617e-16 runs_in_suite=no expect=hold
+id=rb_tip_10deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.33412044417,1.1,5.26201938253 residual=4.0518e-17 seventh_over_eps=2.8547e+13 rigid_max=0.3209 below_bound=6 outcome=decided ratio=1.1513e-14 loss=2.6912e-15 zero_content_pairs=19/180 perdof_clean=9.7622e-16 rowshared_clean=1.1612e-16 runs_in_suite=no expect=hold
+id=rb_tip_20deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.75505035831,1.1,5.14923155196 residual=4.6070e-17 seventh_over_eps=2.8171e+13 rigid_max=0.5313 below_bound=6 outcome=decided ratio=1.6986e-14 loss=4.2926e-15 zero_content_pairs=19/180 perdof_clean=6.7407e-16 rowshared_clean=1.6193e-16 runs_in_suite=no expect=hold
+id=rb_tip_2p87deg_from_Z_span_x100 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=100 tip=2.02517501233,1.1,5.29686427671 residual=3.0038e-17 seventh_over_eps=5.2541e+09 rigid_max=0.7954 below_bound=6 outcome=decided ratio=1.7484e-11 loss=2.7453e-11 zero_content_pairs=13/180 perdof_clean=1.2281e-14 rowshared_clean=4.1801e-16 runs_in_suite=no expect=hold
+id=rb_tip_2p87deg_from_Z_brace section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=1 stretch=1 tip=2.02517501233,1.1,5.29686427671 residual=5.8268e-17 seventh_over_eps=8.6248e+11 rigid_max=0.2557 below_bound=6 outcome=decided ratio=2.6227e-13 loss=1.6126e-13 zero_content_pairs=19/180 perdof_clean=1.2437e-14 rowshared_clean=4.2332e-16 runs_in_suite=no expect=hold
+id=rb_tip_2p87deg_from_Z_unit_1e-6 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e-6 stretch=1 tip=2.02517501233,1.1,5.29686427671 residual=1.5025e-17 seventh_over_eps=4.7867e+01 rigid_max=0.2055 below_bound=11 outcome=refused ratio=3.1295e-03 loss=1.1418e-03 zero_content_pairs=20/180 perdof_clean=3.1757e-14 rowshared_clean=1.0536e-16 runs_in_suite=no expect=hold
