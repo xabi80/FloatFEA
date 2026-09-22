@@ -486,3 +486,58 @@ id=rb_D8_wall_0p1mm_shrunk_1e-6 section=circular_tube,D=8.0,t=0.0001 subdiv=1 un
 id=rb_wire_D0p02_wall_10um section=circular_tube,D=0.02,t=1e-05 subdiv=1 unit=1 stretch=1 tip=4.4,1.1,2.8 residual=5.2980e-17 seventh_over_eps=2.9539e+10 rigid_max=0.9609 below_bound=6 outcome=decided ratio=8.9821e-12 loss=3.7160e-12 runs_in_suite=no expect=breach
 id=rb_solid_D13_mm_unit_subdiv16 section=circular_tube,D=13.0,t=6.4999 subdiv=16 unit=0.001 stretch=1 tip=4.4,1.1,2.8 residual=2.6206e-17 seventh_over_eps=5.3995e+07 rigid_max=0.1514 below_bound=6 outcome=decided ratio=2.9165e-09 loss=1.0624e-09 runs_in_suite=no expect=breach
 id=rb_D8_wall_0p1mm_km_span_x1e6 section=circular_tube,D=8.0,t=0.0001 subdiv=1 unit=0.001 stretch=1e6 tip=4.4,1.1,2.8 residual=7.4727e-17 seventh_over_eps=7.0538e+03 rigid_max=0.5305 below_bound=6 outcome=decided ratio=8.9389e-05 loss=1.3725e-05 runs_in_suite=no expect=breach
+
+# ===========================================================================
+# ADDED AT THE FIFTY-THIRD VERDICT ON F2 (HEAD 125cee1). 19 entries, none of
+# them read by the implementer before this commit.
+#
+# WHAT THIS BATCH IS A CORPUS OF, and it is a different question from the
+# first 126. Those asked: does a badly conditioned FRAME move the gate's
+# quantity? The answer was no, and it is why the form changed at Q7. These
+# ask the question the first batch could not: WHERE IN THE MODEL can a defect
+# hide from the gate, and does that place move with the frame?
+#
+# The gate's first claim is  max_j ||K v_j|| / (max|K| * ||v_j||) <= 1e-15.
+# Six analytic vectors: three translations, whose entries are 1.0 on
+# translational dofs, and three rotations about the centroid, whose entries
+# are LEVER ARMS on translational dofs and 1.0 on rotational dofs. ||v_j||
+# for a rotation column therefore grows with the span of the model, and the
+# quantity it normalises shrinks by the same factor.
+#
+# `RIGID_MODE_EXACTNESS_COUNTER_DEFECT` is injected at `k[0,0]` -- a
+# TRANSLATIONAL dof, the one class whose detection threshold does NOT move
+# with the span. The span ladder below is the cell that separates the two.
+# `rot_dof_detection_edge` is the reviewer's measurement and is asserted by
+# nothing: the smallest spurious stiffness on `k[3,3]`, as a fraction of
+# max|K|, that turns EITHER half of G2.1 red at that frame. The translational
+# edge is 2.2e-15 at every one of them.
+#
+# A PASSING SCAN still means what it meant: `residual` at or below
+# RIGID_MODE_EXACTNESS and `seventh_over_eps` positive, at every entry. Every
+# frame here is the same defect-free element and every one of them passes.
+# The finding is not in this file; it is what this file's span ladder lets
+# somebody measure.
+#
+# NEW FIELD
+#   rot_dof_detection_edge  the reviewer's bisected edge, above. Present only
+#                           on the four span-ladder entries. Read by nothing.
+# ---------------------------------------------------------------------------
+id=rb_span_x10_rotational_dof_blind_spot section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=10 tip=4.4,1.1,2.8 residual=7.5720e-17 seventh_over_eps=3.7923e+11 rigid_max=0.7624 below_bound=6 outcome=decided ratio=4.0649e-13 loss=3.8175e-13 rot_dof_detection_edge=2.759e-13 runs_in_suite=no expect=breach
+id=rb_span_x100_rotational_dof_blind_spot section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=100 tip=4.4,1.1,2.8 residual=7.1029e-17 seventh_over_eps=3.8121e+09 rigid_max=0.4283 below_bound=6 outcome=decided ratio=9.4283e-11 loss=3.3566e-11 rot_dof_detection_edge=2.755e-12 runs_in_suite=no expect=breach
+id=rb_span_x1000_rotational_dof_blind_spot section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1000 tip=4.4,1.1,2.8 residual=8.8343e-17 seventh_over_eps=3.8123e+07 rigid_max=1.4614 below_bound=6 outcome=decided ratio=1.9514e-08 loss=4.7552e-09 rot_dof_detection_edge=2.752e-11 runs_in_suite=no expect=breach
+id=rb_span_x10000_rotational_dof_blind_spot section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=10000 tip=4.4,1.1,2.8 residual=9.7420e-17 seventh_over_eps=3.8123e+05 rigid_max=0.3316 below_bound=6 outcome=decided ratio=9.3175e-07 loss=2.6470e-07 rot_dof_detection_edge=2.751e-10 runs_in_suite=no expect=breach
+id=rb_brace_D0p1_span_x10 section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=1 stretch=10 tip=4.4,1.1,2.8 residual=7.3456e-17 seventh_over_eps=1.0759e+10 rigid_max=1.2084 below_bound=6 outcome=decided ratio=3.4876e-12 loss=1.7906e-11 runs_in_suite=no expect=breach
+id=rb_brace_D0p1_span_x100 section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=1 stretch=100 tip=4.4,1.1,2.8 residual=6.4872e-17 seventh_over_eps=1.0803e+08 rigid_max=0.7281 below_bound=6 outcome=decided ratio=4.3676e-09 loss=2.0399e-09 runs_in_suite=no expect=breach
+id=rb_brace_D0p1_span_x1000 section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=1 stretch=1000 tip=4.4,1.1,2.8 residual=1.4459e-16 seventh_over_eps=1.0804e+06 rigid_max=0.8509 below_bound=6 outcome=decided ratio=8.2881e-07 loss=1.5825e-07 runs_in_suite=no expect=breach
+id=rb_tip_1e-6_m_from_node3 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=1.900001,1.1,2.8 residual=4.5320e-17 seventh_over_eps=7.0092e+07 rigid_max=0.9605 below_bound=6 outcome=decided ratio=2.7909e-09 loss=7.0179e-10 runs_in_suite=no expect=breach
+id=rb_tip_1e-9_m_from_node3 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=1.900000001,1.1,2.8 residual=4.6430e-17 seventh_over_eps=7.0092e+04 rigid_max=0.4697 below_bound=6 outcome=decided ratio=1.5720e-06 loss=6.5447e-07 runs_in_suite=no expect=breach
+id=rb_tip_duplicate_of_node0_unconnected section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=0,0,0 residual=5.5170e-17 seventh_over_eps=1.0024e+13 rigid_max=0.2792 below_bound=6 outcome=decided ratio=2.6026e-14 loss=2.1099e-14 runs_in_suite=no expect=hold
+id=rb_tip_collinear_beyond_node1 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=8,0,0 residual=8.5469e-17 seventh_over_eps=4.0682e+12 rigid_max=0.7226 below_bound=6 outcome=decided ratio=1.4653e-13 loss=4.7388e-14 runs_in_suite=no expect=hold
+id=rb_tip_1e6_m_away section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=1000000,0,0 residual=4.9999e-17 seventh_over_eps=2.5249e+07 rigid_max=0.3616 below_bound=6 outcome=decided ratio=1.5691e-08 loss=6.4854e-09 runs_in_suite=no expect=breach
+id=rb_tip_negative_octant_far section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=-1000,-1000,-1000 residual=2.9694e-17 seventh_over_eps=1.6064e+10 rigid_max=0.2235 below_bound=6 outcome=decided ratio=2.5412e-11 loss=1.4791e-11 runs_in_suite=no expect=breach
+id=rb_subdiv64_shipped_span section=circular_tube,D=0.6,t=0.012 subdiv=64 unit=1 stretch=1 tip=4.4,1.1,2.8 residual=3.0168e-17 seventh_over_eps=8.3893e+09 rigid_max=0.0577 below_bound=6 outcome=decided ratio=1.7536e-11 loss=5.8417e-12 runs_in_suite=no expect=breach
+id=rb_subdiv16_span_x1000 section=circular_tube,D=0.6,t=0.012 subdiv=16 unit=1 stretch=1000 tip=4.4,1.1,2.8 residual=2.4613e-17 seventh_over_eps=2.5135e+05 rigid_max=0.1149 below_bound=6 outcome=decided ratio=3.1271e-07 loss=1.9629e-07 runs_in_suite=no expect=breach
+id=rb_wire_D1mm_wall_1um_subdiv4 section=circular_tube,D=0.001,t=1e-6 subdiv=4 unit=1 stretch=1 tip=4.4,1.1,2.8 residual=4.5194e-17 seventh_over_eps=5.9571e+06 rigid_max=0.1813 below_bound=6 outcome=decided ratio=1.6150e-08 loss=1.9325e-08 runs_in_suite=no expect=breach
+id=rb_unit_1e9_nanometre section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e9 stretch=1 tip=4.4,1.1,2.8 residual=6.1670e-26 seventh_over_eps=2.2939e-02 rigid_max=0.0150 below_bound=15 outcome=refused ratio=8.1851e-01 loss=9.0757e-01 runs_in_suite=no expect=breach
+id=rb_unit_1e-9_gigametre section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e-9 stretch=1 tip=4.4,1.1,2.8 residual=4.2777e-17 seventh_over_eps=3.5771e-04 rigid_max=0.0002 below_bound=18 outcome=refused ratio=8.5322e-01 loss=8.3621e-01 runs_in_suite=no expect=breach
+id=rb_unit_1e6_micrometre_subdiv8 section=circular_tube,D=0.6,t=0.012 subdiv=8 unit=1e6 stretch=1 tip=4.4,1.1,2.8 residual=4.8042e-23 seventh_over_eps=1.7445e+01 rigid_max=0.2189 below_bound=17 outcome=refused ratio=6.4702e-03 loss=2.9286e-03 runs_in_suite=no expect=breach
