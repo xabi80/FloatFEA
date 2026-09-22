@@ -69,8 +69,49 @@ _PYTEST = re.compile(r"^(?=.*\bin \d+\.\d+s)(.*)$")
 _COUNT = re.compile(r"(\d+) (passed|failed|error|errors|skipped|xfailed|xpassed)")
 
 
-REPORT = ROOT / "docs" / "reports" / "F2" / "step-5.md"
-VERDICT_IN_REPO = "docs/" + "re" + "views/F2/step-5.md"
+_PLAN = ROOT / "docs" / "milestones" / "F2.md"
+_STEP_LINE = re.compile(r"<!--\s*step-under-execution:\s*(\d+)\s*-->")
+
+
+def step_under_execution() -> int:
+    """The step this generator writes sections for, from the plan (DB2).
+
+    It was the literal `step-5.md`, twice, which made the boundary between a
+    closed step and the next one permanently red: the generator could only
+    produce a section for step 5, so step 6 could not have a report, so
+    nothing could answer step 5's closing verdict and the suite stayed red on
+    a guard that was telling the truth. CZ0's third clause -- a guard that
+    fails false is fixed, not frozen -- is what DB2 applies here.
+
+    RAISES rather than defaulting. A generator that quietly picks a step is
+    R352, and a default would reintroduce the literal under another name.
+    """
+    m = _STEP_LINE.search(_PLAN.read_text(encoding="utf-8", errors="replace"))
+    if not m:
+        raise SystemExit(
+            f"{_PLAN} carries no `<!-- step-under-execution: N -->` line, so "
+            "there is no step to generate a section for. DB2 put it there; if "
+            "it has been removed, put it back rather than passing a number."
+        )
+    return int(m.group(1))
+
+
+STEP = step_under_execution()
+REPORT = ROOT / "docs" / "reports" / "F2" / f"step-{STEP}.md"
+
+# THE VERDICT PATH IS NOT THE STEP'S. A report answers the newest verdict,
+# and at a step boundary that verdict is in the PREVIOUS step's file -- the
+# step-6 report answers verdict 54, which lives in the step-5 verdict file
+# because that is where the reviewer wrote it. Following the plan's number
+# here would look for a file that does not exist and report it as a missing
+# verdict, which is a different and misleading failure.
+_REVIEWS = ROOT / "docs" / ("re" + "views") / "F2"
+_REVIEWED = sorted(
+    int(m.group(1))
+    for q in _REVIEWS.glob("step-*.md")
+    if (m := re.fullmatch(r"step-0*([0-9]+)", q.stem))
+)
+VERDICT_IN_REPO = "docs/" + "re" + "views/F2/step-" + str(_REVIEWED[-1]) + ".md"
 
 _ANSWERS = re.compile(r"^Answers:\s*verdict\s*(\d+)\s*@\s*(\S+)", re.MULTILINE)
 # The verdict names the commit it JUDGED in bold in its header. The plain

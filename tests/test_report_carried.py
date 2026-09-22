@@ -108,6 +108,25 @@ def _step_files(where: Path) -> dict[int, list[str]]:
     return out
 
 
+_PLAN = ROOT / "docs" / "milestones" / "F2.md"
+_STEP_LINE = re.compile(r"<!--\s*step-under-execution:\s*(\d+)\s*-->")
+
+
+def _plan_step() -> int:
+    """The step the plan says is under execution, or 0 if it says nothing.
+
+    RETURNS 0 rather than raising: this runs at import, and a raise at import
+    is R234 -- the module fails to collect and the suite reports one error
+    instead of running. `test_the_plan_names_the_step_under_execution` is the
+    named test that carries the message.
+    """
+    try:
+        m = _STEP_LINE.search(_PLAN.read_text(encoding="utf-8", errors="replace"))
+    except OSError:
+        return 0
+    return int(m.group(1)) if m else 0
+
+
 # THE NEWEST REPORT AND THE NEWEST COMPLETE PAIR ARE DIFFERENT NUMBERS, and
 # conflating them took the whole suite down (R234). CB2 made this module read
 # `step-<newest report>` at import; `CLAUDE.md` guarantees the verdict is
@@ -123,8 +142,29 @@ def _step_files(where: Path) -> dict[int, list[str]]:
 REPORTED = _steps(REPORTS)
 REVIEWED = _steps(REVIEWS)
 STEP_REPORT = max(REPORTED) if REPORTED else 0
-STEP = max(REPORTED & REVIEWED) if (REPORTED & REVIEWED) else 0
-VERDICT = REVIEWS / f"step-{STEP}.md"
+
+# DB2: THE STEP COMES FROM THE PLAN, and the two paths below are resolved
+# separately because they answer different questions.
+#
+#   REPORT  -- the report of the step under execution. It carries the whole-
+#              suite line and the generated CI sections, and it is the file
+#              a reader means by "the report".
+#   VERDICT -- the file the newest verdict is IN. At a step boundary that is
+#              the PREVIOUS step's file: the step-6 report answers verdict 54,
+#              which the reviewer wrote into the step-5 verdict file. Taking
+#              this from the plan's number would look for a file that does not
+#              exist and call it a missing verdict.
+#
+# Conflating the two is R234 one level up: `max(REPORTED & REVIEWED)` pinned
+# BOTH to the newest complete pair, so a report for the next step could never
+# be the one checked, and the boundary could not be left.
+_PLAN_STEP = _plan_step()
+STEP = (
+    _PLAN_STEP
+    if _PLAN_STEP in REPORTED
+    else (max(REPORTED & REVIEWED) if (REPORTED & REVIEWED) else 0)
+)
+VERDICT = REVIEWS / f"step-{max(REVIEWED)}.md" if REVIEWED else REVIEWS / "step-0.md"
 REPORT = REPORTS / f"step-{STEP}.md"
 
 # `**R12.` and `**R12 ` both open a finding: the missing dot dropped one silently.
@@ -345,6 +385,25 @@ def test_the_guard_reads_the_step_being_worked_on() -> None:
         f"committed -- and until it lands this guard checks step {STEP}, so "
         f"step {STEP_REPORT}'s carry list is UNCHECKED. Invoke the "
         "gating-supervisor."
+    )
+
+
+def test_the_plan_names_the_step_under_execution() -> None:
+    """DB2. `_plan_step` returns 0 rather than raising, so this carries it.
+
+    A raise at import is R234: the module does not collect and `pytest -q`
+    reports one error having run none of the file.
+    """
+    assert _plan_step() > 0, (
+        f"{_PLAN} carries no `<!-- step-under-execution: N -->` line, so the "
+        "guards fell back to the newest complete report/verdict pair. That is "
+        "the behaviour DB2 replaced, and it makes the step boundary "
+        "permanently red."
+    )
+    assert _plan_step() in REPORTED, (
+        f"the plan says step {_plan_step()} is under execution and there is no "
+        f"`step-{_plan_step()}.md` under {REPORTS}. The line is advanced in the "
+        "commit that adds the next step's report, never before it."
     )
 
 
