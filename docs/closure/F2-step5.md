@@ -64,27 +64,20 @@ the arithmetic at that conditioning cannot tell a mechanism from round-off, and
 saying so is the honest answer. A frame is decided only when `lambda_7` is
 above the bound; it fails only when a genuine seventh mode is found.
 
-Measured over the reviewer's corpus, `tests/corpus/g21_rigid_body_frames.txt`
-(**145 frames**, none written by the implementer):
+Measured over the reviewer's corpus, `tests/corpus/g21_rigid_body_frames.txt`,
+none of it written by the implementer. Every frame falls in exactly one of
+three classes: **decided and clear of the window**, **refused and clear of
+it**, or **inside the window**, where the outcome is a property of the machine.
 
-| outcome | count | figure |
-|---|---|---|
-| frames in the corpus | 145 | `rigid_mode_corpus_frames` |
-| refused as undecidable | 36 | `rigid_mode_corpus_refused` |
-| decided, and clear of the window | 104 | `rigid_mode_corpus_decided_clear` |
-| refused, and clear of the window | 28 | `rigid_mode_corpus_refused_clear` |
-| inside the window, either way | 13 | `rigid_mode_corpus_in_the_window` |
-
-**The three disjoint classes are 104 + 28 + 13 = 145.** The 36 refused are the
-28 refused clear plus 8 of the 13 in the window; the other 5 in the window are
-decided. Every figure is a name in `docs/milestones/F2_figures.md`, rendered on
-CI, and none is retyped here from a local run.
-
-**This table moved with the corpus, not with the code.** It read 126 / 33 / 88
-/ 25 / 13 when it was written, at the fifty-third verdict's own commit; the
-verdict's corpus commit took the file to 145 frames, and the numbers above are
-the canonical render at `612e79b` -- the same commit that publishes them. The
-window count is unchanged at 13; the nineteen new frames all decide.
+**The counts are deliberately not written here, and this paragraph is why.**
+They were published figures; they read 126 / 33 / 88 / 25 / 13 when this
+artifact was first written, and by the time it was next read the corpus had
+grown twice and every one of them was wrong. Each time, the repair was a commit
+after a closed step, which reddened a second guard. DB1 retires them: the claim
+is that no frame breaches the ceiling and that every refusal is a declared
+outcome, and `tests/verification/rung1/test_rigid_body_corpus.py`
+asserts it over whatever the corpus holds. A reader who wants today's partition
+runs that test.
 
 **The window is real and it is a property of the arithmetic, not of the
 element.** The thirteen frames inside it are a unit-system list, not a geometry
@@ -108,7 +101,7 @@ answers it by having exactly one place figures come from.
 | `RIGID_MODE_EXACTNESS_COUNTER_DEFECT` | injected, asserted red, `4.54x` past a bisected detection edge |
 | `RIGID_MODE_BOUND_COUNTER_DEFECT` | injected, asserted red |
 | genuine mechanisms over the corpus's own unit × span cell | every one detected; none escaped |
-| adversarial corpus | 145 frames, the reviewer's, none written by the implementer |
+| adversarial corpus | the reviewer's frames, none written by the implementer; the count is not published (DB1) |
 
 ## 5. Where the apparatus stopped — the number to read first
 
