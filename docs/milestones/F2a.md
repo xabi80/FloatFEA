@@ -115,3 +115,78 @@ mutation that must make it go red — and where does that live?
    new entries were caught by a scanner that did not see them coming.
 4. No file in `tests/` or `floatfea/` carries a numeric comparison threshold
    that is not a name from `floatfea/tolerances.py`.
+
+## 7. The frozen list (CZ0)
+
+**This list is closed.** CZ0 stops new apparatus through F6, so nothing is
+added to 4a from here: an item found after this commit is recorded in a verdict
+and in the milestone's closure artifact, and it does not enter this plan. The
+48 items below are every item open at the fifty-second verdict on step 5,
+plus the four recorded there.
+
+The description in each row is the subject its own verdict gave it. Verdict
+files are rotated by `scripts/write_verdict.py`, so for the older items the
+verdict text no longer exists in the tree and the description is the longest
+cell naming the item in `docs/reports/F2/step-4.md` or `step-5.md`. It was
+assembled once, by a script in the session scratchpad that is deliberately not
+committed -- a frozen list is a list nothing regenerates.
+
+**What this list is worth, measured rather than asserted.** The apparatus these
+items would extend was measured twice by the reviewer against defect shapes it
+had not seen: 2 of 22 caught at the fifty-first verdict, 1 of 19 at the
+fifty-second, and at the second of those, 0 of 19 by the check written for the
+shape's own class. That is the number to read before spending a day here. The
+ten `False` rows in `_REPORT_SHAPES` in `tests/test_report_carried.py` are the
+same fact in the suite: shapes the CI guards do not catch, asserted as not
+caught, so that closing one is a deliberate act.
+
+| item | what it is |
+|---|---|
+| R230 | open — REOPENED BY NAME.** Revision 3 gave it a status only a verdict may give, against that verdict's own words; §0 |
+| R231 | open** — a Q8 value, and no Q8 value is written before the canonical render (R293) |
+| R244 | open** — Q8 is locked; the drift tolerance is measured on CI under it before any value is written |
+| R245 | OPEN, and now UNBLOCKED for the first time. The report says |
+| R275 | the alternating measurement. CF1's job must reach ten of ten first |
+| R330 | R320's repair added a whole-line exemption on a weaker predicate than the one it replaced.... |
+| R331 | A commit message's count, and an unrecorded CI red inside the range. 265b32f's subject says... |
+| R332 | R281 is seven files, not three, and the largest is the corpus for this step's own gate. cmd... |
+| R347 | no change** — this is `tests/regression/test_exempt_pair_responses.py`, wrapped across a line in the verdict. It is the guard the finding names as the one that  |
+| R348 | no change** at this line — the file is touched by R342's repair and the substring assertion is not. Parsing the condition rather than searching it is 4a |
+| R349 | no change** — 4a, and narrowed rather than left: §8 is generated now, and by importing the guard's own site list rather than re-deriving it |
+| R350 | no change** — the reviewer's file and refused to me. What I could do is §5: the field is decoded rather than compared, so `measured=clean` reads as the synonym  |
+| R354 | The cheap-first comment prices a lint red in seconds and not in evidence.... |
+| R355 | no change** — 4a. The name promises orders and the body asserts greater-than; the docstring is right that a threshold would re-introduce R326's literal, so the  |
+| R356 | no change** — 4a, and it is R351's species in a fourth reader. The fix is one line each and they go together, not one at a time in whichever round notices |
+| R357 | no change** — this is the finding's own EXAMPLE of what a suffix match would wrongly hit, not a file in the tree. It is quoted here because the generator reads  |
+| R362 | no change** — 4a, and it is the hook's own documented limitation rather than a defect in it. Changing anything under `.claude/` is a standalone `process:` commi |
+| R363 | no change** — 4a. Anchoring on the judged commit is the choice the finding calls defensible; what is owed is one docstring sentence saying it is a choice, and i |
+| R364 | The scanner's coverage is still two thirds unseen axes, four batches running. My 22 entries... |
+| R370 | no change** — 4a. The closure artifact for a CLOSED step is the record of what was published then; regenerating it is a decision about how closure artifacts age |
+| R371 | no change** — the content is right and the finding says so; what was wrong was reformatting in the same commit as the content. Reformatting it again now would r |
+| R372 | "The dispatch run at this round's head" names a run at the report parent. Report section 4,... |
+| R373 | no change** — the reviewer's own tool, and the finding says it is not a path I may write. Recorded at 4a with the fix named there |
+| R374 | The scanner coverage is two thirds unseen axes for the fifth consecutive batch, and the shape... |
+| R381 | CP4 second species has no magnitude bound, so float("inf") is reported as a tolerance.... |
+| R382 | no change** — `.claude/hooks/` changes only in a standalone `process:` commit citing a directive, and the finding quotes the hook's own statement of its limits  |
+| R383 | no change** — 4a. A shipped test for the leg predicate goes with the other three 4a items about that same job rather than one per round |
+| R384 | no change** — the finding quotes the rule; CQ3 closes the species itself and §5 carries the measurement |
+| R390 | The CQ3 species does not reach a tolerance keyword. assert np.isclose(a, b,... |
+| R391 | Section 10's out is still not the command's output. git log --oneline 7fd7155..4e79873 prints... |
+| R392 | no change** — 4a. It goes with the other items about that generator rather than one per round |
+| R393 | no change** — step 6 has not opened and the file does not exist. The finding is about what this log will need when it does |
+| R400 | no change** — 4a. The corpus reader raising before its own meta-test can speak is R234's species and goes with the other readers that share it |
+| R401 | no change** — 4a. The escaped dot in the citation regex skips a cited test FILE; one character, and it goes with the other 4a items in that file |
+| R402 | no change** — the finding quotes the rule about what section 10's output block must be; the omission it names is in the report and is fixed there |
+| R410 | no change** — 4a, and it goes with the other items about the report generators rather than one per round |
+| R411 | Section 9's git log --oneline block drops a commit that touches floatfea/tolerances.py. git log... |
+| R414 | The pin and release controls now exist twice. test_ONE_PINNED_DOF_leaves_FIVE and... |
+| R419 | no change** — 4a. The per-entry assertion in this file moved from `isfinite` to `> 0.0` when the quantity changed, which is stronger, but the domain is still as |
+| R431 | OPEN, and I can now name the fourth file. The suite line says |
+| R432 | carried, and the verdict says nothing further about it here |
+| R433 | carried, and the verdict says nothing further about it here |
+| R447 | carried, and the verdict says nothing further about it here |
+| R458 | no change** — R458 is OPEN and §6 says so. These are the paths the reading's declared scope excludes and does not declare excluded; widening it is not in this r |
+| R471 | The generated/hand-written split now keys on a string the implementer types, so R463 moved house rather than closing. |
+| R472 | `ci_table_defects()` reads the outcome cell and nothing else, and asks for non-emptiness rather than completeness. |
+| R473 | The suite now requires an authenticated `gh` to pass anywhere. |
+| R474 | The section 0c out block is not what its cmd prints. |
