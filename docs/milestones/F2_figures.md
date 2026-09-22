@@ -20,21 +20,21 @@ this file is not what a fresh run produces.
 | `rigid_mode_seventh_over_epsilon` | 2.4027e+13 |
 | `rigid_mode_seventh_orders` | 12.381 |
 | `rigid_mode_mechanism_ceiling` | 1.6519 |
-| `rigid_mode_mechanism_cell` | 22 units x 39 spans, subdiv 1 |
+| `rigid_mode_mechanism_cell` | 24 units x 39 spans, subdiv 1 |
 | `rigid_mode_mechanism_count` | 347 |
-| `rigid_mode_residual_worst_over_corpus` | 1.3502e-16 |
+| `rigid_mode_residual_worst_over_corpus` | 1.4459e-16 |
 | `rigid_mode_smallest_decided` | 2.0493e+02 |
 | `rigid_mode_seventh_orders_smallest_decided` | 1.312 |
 | `rigid_mode_largest_refused` | 1.9953e+02 |
 | `rigid_mode_largest_rigid_eigenvalue` | 1.2727 |
-| `rigid_mode_corpus_frames` | 126 |
-| `rigid_mode_corpus_refused` | 33 of 126 |
-| `rigid_mode_corpus_decided_clear` | 88 |
-| `rigid_mode_corpus_refused_clear` | 25 |
+| `rigid_mode_corpus_frames` | 145 |
+| `rigid_mode_corpus_refused` | 36 of 145 |
+| `rigid_mode_corpus_decided_clear` | 104 |
+| `rigid_mode_corpus_refused_clear` | 28 |
 | `rigid_mode_corpus_in_the_window` | 13 |
 | `rigid_mode_corpus_window_members` | rb_brace_mm_span_x1000 rb_brace_unit_1um rb_cm_span_x10000 rb_heavy_unit_1um rb_mm_span_x1000 rb_subdiv48_span_x10000 rb_unit_1um rb_window_l7_180 rb_window_l7_188 rb_window_l7_195 rb_window_l7_200 rb_window_l7_205 rb_window_l7_215 |
-| `retired_ratio_over_ceiling_on_corpus` | 91 of 126 |
-| `retired_loss_over_ceiling_on_corpus` | 99 of 126 |
+| `retired_ratio_over_ceiling_on_corpus` | 107 of 145 |
+| `retired_loss_over_ceiling_on_corpus` | 116 of 145 |
 | `rigid_mode_counter_seventh` | 1.2445e+02 |
 | `rigid_body_counter_ratio` | 3.0612e-11 |
 | `rigid_body_counter_loss` | 7.4709e-12 |
