@@ -140,6 +140,16 @@ ten `False` rows in `_REPORT_SHAPES` in `tests/test_report_carried.py` are the
 same fact in the suite: shapes the CI guards do not catch, asserted as not
 caught, so that closing one is a deliberate act.
 
+**The control rule has its own number, and CZ1 asks for it here.** The
+equality rule in `tests/test_tree_prose_consistent.py` REGISTERS a needle;
+it does not demonstrate the needle can be found. Measured at the
+fifty-second verdict (R469) against nine unseen defect shapes, each with
+its needle registered: **six ship green**, and **zero of the nine** are
+refused by `control_defect`, the function the rule lives in. The direction
+is still right -- it refuses every re-admission through a plausible-looking
+fake control line -- and the mechanism that would close the gap is an item
+on this frozen list rather than work to be done now.
+
 | item | what it is |
 |---|---|
 | R230 | open — REOPENED BY NAME.** Revision 3 gave it a status only a verdict may give, against that verdict's own words; §0 |
