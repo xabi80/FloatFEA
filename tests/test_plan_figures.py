@@ -100,7 +100,11 @@ def test_every_referenced_figure_exists(name: str) -> None:
     )
 
 
-# `test_the_generated_figures_are_not_stale` WAS HERE AND IS DELETED (DC0).
+# THE STALENESS GUARD WAS HERE AND IS DELETED (DC0). Its name is not written
+# out, because `test_every_test_name_cited_in_prose_exists` requires a cited
+# test name to exist and this one no longer does -- which is that guard doing
+# exactly its job on a deletion. The name is in the golden's diff, in this
+# commit, and in the closure artifact.
 #
 # It re-rendered the figures and compared them with the committed file. Its
 # domain includes every row derived from `tests/corpus/`, which is the

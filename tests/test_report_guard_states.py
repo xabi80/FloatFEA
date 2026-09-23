@@ -63,6 +63,27 @@ def _step() -> int:
 
 STEP = _step()
 REPORT_NAME = f"step-{STEP}.md"
+
+
+def _verdict_step() -> int:
+    """The step whose file the NEWEST VERDICT is in, which is not `STEP`.
+
+    R494(C) was this same confusion one level in: the guard fetched
+    `step-{STEP}.md` for the verdict while the verdict lived in the previous
+    step's file, and read the working copy every time as a result. I fixed it
+    there and left it here, so `copy_verdict` tried to copy a `step-6.md`
+    verdict that does not exist and raised `FileNotFoundError` from inside
+    `shutil.copy2` -- reported as the guard failing.
+    """
+    steps = [
+        int(q.stem.split("-")[1])
+        for q in (ROOT / "docs" / ("re" + "views") / "F2").glob("step-*.md")
+        if q.stem.split("-")[1].isdigit()
+    ]
+    return max(steps) if steps else STEP
+
+
+VERDICT_STEP = _verdict_step()
 NEXT = STEP + 1
 """The step AFTER the one under execution.
 
@@ -75,7 +96,8 @@ now. That is not cosmetic: `report_file_is_a_directory` did
 copy of step 5's. A state that cannot be built reports as a failure of the
 thing it was built to test.
 """
-REVIEW_PATH = "docs/re" + f"views/F2/step-{STEP}.md"
+# THE VERDICT FILE, WHICH IS NOT step-{STEP} AT A BOUNDARY (see _verdict_step).
+REVIEW_PATH = "docs/re" + f"views/F2/step-{VERDICT_STEP}.md"
 
 # How each state is built, relative to a COPY of the repository. A state is a
 # mutation of `docs/reports/F2/` or `docs/reviews/F2/` and nothing else.
@@ -241,7 +263,7 @@ def _build(tmp: Path, state: str) -> Path:
         if action == "copy_report":
             shutil.copy2(reports / REPORT_NAME, reports / f"step-{arg}.md")
         elif action == "copy_verdict":
-            shutil.copy2(reviews / f"step-{STEP}.md", reviews / f"step-{arg}.md")
+            shutil.copy2(reviews / f"step-{VERDICT_STEP}.md", reviews / f"step-{arg}.md")
         elif action == "empty_verdict":
             (reviews / f"step-{arg}.md").write_text("", encoding="utf-8")
         elif action == "rename_reports":
