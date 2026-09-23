@@ -407,7 +407,13 @@ def test_the_guard_reads_the_step_being_worked_on() -> None:
             "files for one step means the guard reads one of them and the "
             "other is invisible; a step number has one spelling."
         )
-    assert STEP_REPORT == STEP, (
+    # AGAINST THE PAIR, NOT AGAINST STEP (R499). DB2 made STEP follow the plan
+    # line, and at the very state this assertion exists for -- a report for the
+    # next step whose verdict is not written -- STEP_REPORT == STEP == 6, so it
+    # stopped firing. Which report the guard READS and whether the newest report
+    # has been reviewed are different questions; this is the second one, and the
+    # newest COMPLETE pair is what answers it.
+    assert STEP_REPORT == _PAIRED, (
         f"step {STEP_REPORT} has a report and no verdict yet. That is the "
         "legitimate boundary -- the verdict is written after the report is "
         f"committed -- and until it lands this guard checks step {STEP}, so "
