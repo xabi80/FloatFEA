@@ -172,13 +172,20 @@ def main(argv: list[str]) -> int:
         "green subset."
     )
     if failing or skips or ex_failing:
+        # FENCED, BECAUSE IT IS OUTPUT. The names carry digits -- R369, R371 --
+        # and a bare bullet list of them reads to
+        # tests/test_report_numbers_are_sourced.py as unsourced figures in
+        # prose. They are this script's output, so they go in an output block,
+        # which is what that guard asks of any number.
         print()
+        print("```")
         for name in failing:
             print(f"- **failed** `{name}`")
         for name in ex_failing:
             print(f"- **failed, in the excluded set** `{name}`")
         for name in skips:
             print(f"- **skipped** `{name}`")
+        print("```")
     return 0
 
 
