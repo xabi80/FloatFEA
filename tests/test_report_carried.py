@@ -59,6 +59,7 @@ import re
 import subprocess
 import tempfile
 import unicodedata
+from functools import lru_cache
 from pathlib import Path
 
 import pytest
@@ -2489,7 +2490,29 @@ def _changed_lines() -> dict[str, set[int]]:
     # passed for that reason on every shallow checkout. One machine, one commit,
     # one variable: full clone `122 passed`, `git clone --depth 1`
     # `23 failed, 99 passed`. A guard cannot report what it cannot tell apart.
-    out = subprocess.run(["git", "diff", "-U0", reviewed], cwd=ROOT, capture_output=True)
+    # THE SAME PATHSPEC ITS SIBLING USES (DD3, R511). This ran bare, while
+    # `_implementer_commits_after()` excludes `REVIEWER_TREES` and explains
+    # why. So a site a verdict named inside `docs/reviews/` or `tests/corpus/`
+    # was closed by the reviewer's OWN NEXT WRITE -- and `write_verdict.py`
+    # rewrites the whole verdict file every round, so it closed every such
+    # site, every time. Measured by the reviewer while writing verdict 57: the
+    # carry guard went from 126 failed to 125 with nothing answered, and the
+    # name that went green was
+    # `test_every_named_site_is_touched_or_declared[R502-docs/reviews/F2/
+    # step-5.md]`.
+    out = subprocess.run(
+        [
+            "git",
+            "diff",
+            "-U0",
+            reviewed,
+            "--",
+            ".",
+            *(f":(exclude){tree}" for tree in REVIEWER_TREES),
+        ],
+        cwd=ROOT,
+        capture_output=True,
+    )
     if out.returncode != 0:
         # RETURNED, NOT RAISED (CD1). Raising here runs at module scope, which
         # is R234 again: the import dies and nothing in the file is collected.
@@ -2523,6 +2546,84 @@ def _changed_lines() -> dict[str, set[int]]:
     return touched, None
 
 
+@lru_cache(maxsize=1)
+def _tracked_paths_at_reviewed() -> frozenset[str]:
+    """Every path `git` had at the commit the verdict reviewed."""
+    reviewed = _reviewed_commit(VERDICT_TEXT)
+    if not reviewed:
+        return frozenset()
+    out = subprocess.run(
+        ["git", "ls-tree", "-r", "--name-only", reviewed],
+        cwd=ROOT,
+        capture_output=True,
+    )
+    if out.returncode != 0:
+        return frozenset()
+    return frozenset(out.stdout.decode("utf-8", errors="replace").split())
+
+
+def _tracked_at_reviewed(path: str) -> bool:
+    """Is this string a file the repository had, or is it printed output?
+
+    Suffix match, because a verdict names `tests/test_report_carried.py` and
+    also `test_report_carried.py`, and both are the same site. A bare
+    `frames.txt` matches nothing and is dropped, which is the point.
+    """
+    known = _tracked_paths_at_reviewed()
+    if not known:
+        return True  # nothing to check against; do not silently drop sites
+    if path in known:
+        return True
+    return any(k.endswith("/" + path) for k in known)
+
+
+_R507_CONTROLS = [
+    # (the string as it appears in the verdict, is it counted as a site, why)
+    (
+        "frames.txt",
+        False,
+        "not a path at all -- the tail of `g21_rigid_body_frames.txt` broken "
+        "across a line in the reviewer's prose. The rule kills it.",
+    ),
+    (
+        "g22_model_configurations.txt",
+        True,
+        "A REAL TRACKED FILE that also appears as printed output. The rule "
+        "keeps it, so DD3's second half does NOT close this case.",
+    ),
+    (
+        "tree_prose_claims.txt",
+        True,
+        "the same: tracked under `tests/corpus/`, and also printed. Kept.",
+    ),
+]
+"""DD3 asked for the three live `R507` cases as controls, and they are here
+with the outcome each ACTUALLY produces rather than the one the directive
+expected.
+
+DD3's wording was that the tracked-file rule "kills the `frames.txt` case and
+printed-output paths together". It kills the first and not the other two,
+because those two ARE files the repository has -- they are named as printed
+output in the verdict's prose and they are also real corpus files. Existence
+cannot separate `named` from `printed` when the printed thing exists.
+
+What the rule does buy: a bare fragment can never become a site again, which
+is the case that was nonsense rather than merely noisy. The other two fall to
+the first half of DD3 instead -- they live under `tests/corpus/`, the diff now
+excludes the reviewer's trees, so they read as untouched and the report has to
+DECLARE them, which is the honest handling of a site nobody may edit.
+"""
+
+
+@pytest.mark.parametrize("path, counted, why", _R507_CONTROLS, ids=[c[0] for c in _R507_CONTROLS])
+def test_the_R507_cases_rule_as_measured(path: str, counted: bool, why: str) -> None:
+    """R511's second defect, pinned to what the repair actually does."""
+    assert _tracked_at_reviewed(path) is counted, (
+        f"`{path}` now counts as a site: {_tracked_at_reviewed(path)}, "
+        f"expected {counted}. {why}"
+    )
+
+
 def _sites_by_finding() -> list[tuple[str, str, int]]:
     """`(finding, path, line)` for every site a finding names; line 0 = no line.
 
@@ -2537,6 +2638,20 @@ def _sites_by_finding() -> list[tuple[str, str, int]]:
         if nxt:
             end = m.end() + nxt.start()
         for path, first, last in _SITE.findall(VERDICT_TEXT[m.start() : end]):
+            # A SITE IS A FILE THE REPOSITORY HAS (DD3, R511). The pattern
+            # cannot tell a path a verdict NAMES from a path it PRINTS as
+            # measured output: `docs/reviews/F2/step-5.md` appeared inside
+            # R502's block as the printed value of `REVIEW_PATH`, and three
+            # `R507` cases are live at HEAD -- one of them `frames.txt`, which
+            # is not a path at all but the tail of
+            # `g21_rigid_body_frames.txt` broken across a line in the
+            # reviewer's own prose.
+            #
+            # Tracked AT THE REVIEWED COMMIT, not now: a file the step deletes
+            # was a real site when the verdict named it, and `git ls-files` on
+            # the working tree would silently drop it.
+            if not _tracked_at_reviewed(path):
+                continue
             if not first:
                 out.append((m.group(1), path, 0))
                 continue
