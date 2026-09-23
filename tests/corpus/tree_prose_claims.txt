@@ -180,3 +180,67 @@ id=runner_claim_naming_a_check_deleted_in_the_same_commit_as_the_sentence kind=r
 id=runner_claim_where_the_check_exists_twice_and_only_the_dead_copy_is_named kind=runner shape=it_is_checked_in_BACKTICK_the_script_BACKTICK_rather_than_in_the_rung expect=refused measured=allowed_a_reader_told_the_script_checks_it_will_not_look_for_a_second_weaker_assertion_in_the_rung_and_cannot_tell_which_one_the_gate_actually_rests_on
 id=runner_claim_for_an_enforcement_that_is_a_print_rather_than_an_assert kind=runner shape=the_clearance_is_reported_at_every_run_COMMA_so_a_breach_would_be_seen expect=refused measured=allowed_LIVE_in_shape_at_test_rigid_body_modes_py_316_where_a_quantity_is_reported_not_asserted_here_and_a_printed_number_in_a_green_run_is_read_by_nobody
 id=runner_claim_that_survives_because_the_grep_matches_the_definition kind=runner shape=BACKTICK_a_helper_name_BACKTICK_is_computed_over_the_corpus_and_held_below_the_bound expect=refused measured=allowed_a_grep_for_the_helper_name_returns_its_def_line_and_reads_as_confirmation_so_the_check_that_separates_a_caller_from_a_definition_is_the_one_nobody_runs
+
+# --- part 6, the REPAIR-STALE claim: 13 unseen shapes, added at the
+# fifty-eighth verdict on F2 (reviewed commit 8e64f22). Parts 4 and 5 are
+# about a sentence that was ALWAYS false -- a pointer at a file that does not
+# compute the quantity, a runner claim with no caller. This part is the other
+# half and it is harder, because the sentence was TRUE AT THE COMMIT THAT
+# WROTE IT and a later commit in the SAME ROUND made it false.
+#
+# The species was found live. At f7501ee the RIGID_MODE_BOUND entry was
+# rewritten to record, correctly and in detail, that DC0 had left both of its
+# brackets unenforced. At 8945a4e -- the very next commit, one directive
+# later -- tests/test_plan_figures.py gained
+# test_every_floor_class_row_clears_its_tolerance_on_THIS_tree, which asserts
+# exactly those two rows against exactly that constant. The entry was not
+# touched. So the tolerance whose written justification CLAUDE.md makes part
+# of the tolerance now tells its reader that nothing guards it, one commit
+# after something started to.
+#
+# WHY IT IS ITS OWN SPECIES, and why every earlier part misses it:
+#
+#   * it is false in the REASSURING-LOOKING direction. A sentence that
+#     overstates a guarantee reads as a claim and invites a grep. A sentence
+#     that UNDERSTATES one reads as candour -- this is a gap, recorded here
+#     rather than papered over -- and a reader who agrees with it stops.
+#   * the refuting command is not a grep over the file the sentence is in. It
+#     is a grep over a file the sentence does not name, added by a commit the
+#     sentence predates. Nothing in the entry points at it.
+#   * BP0 already covers the case where a RULE moves under a FIGURE. This is
+#     the case where a GAP is closed under a sentence ABOUT the gap, and the
+#     repository has no rule for it: the tolerance-table regeneration rule
+#     (BI3) fires on numbers, and there is no number here.
+#
+# The refuting command for the whole species is one line and it is the same
+# line every time -- WAS ANYTHING ADDED AFTER THIS SENTENCE THAT MAKES IT
+# FALSE:
+#   git log -S <the assertion the sentence says does not exist>
+#           <the commit the sentence was written at>..HEAD
+#
+# MEASURED AT 8e64f22: 13 entries, 0 caught. Mechanism, so the zero is not
+# taken on trust: tests/test_tree_prose_consistent.py rules ONLY on explicit
+# claim COLON / cmd COLON / out COLON triples -- the absence and
+# retired-alias keyword lists were deleted, and CLAUDE.md records that they
+# caught 0 of 20 and 3 of 8 against unseen phrasings. Every sentence below is
+# plain comment prose and carries no triple, so no part of the guard reads
+# it. The vocabulary count, lines, files, defined also has NO TERM FOR TIME:
+# a triple can ask whether something is true NOW, never whether it is STILL
+# true, and a triple written at f7501ee and never re-run is exactly the
+# defect this part is about.
+#
+# The first four are LIVE at 8e64f22 and each is refuted by one command.
+# The eleventh is the CONTROL: it must be ALLOWED, and it is.
+id=absence_sentence_falsified_by_the_next_commit_in_the_same_round kind=repair_stale shape=TWO_CANDIDATES_COMMA_BOTH_RENDERED_COMMA_AND_NEITHER_ENFORCED_SINCE_DC0 expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_363_written_at_f7501ee_and_falsified_at_8945a4e_by_test_every_floor_class_row_clears_its_tolerance_on_THIS_tree_which_asserts_both_named_rows_against_RIGID_MODE_BOUND
+id=nothing_would_notice_sentence_outliving_the_thing_that_notices kind=repair_stale shape=NOTHING_IN_THE_SUITE_WOULD_NOTICE_IF_THEY_STOPPED_HOLDING expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_395_to_397_one_test_in_tests_SLASH_test_plan_figures_py_notices_and_it_was_added_one_commit_after_the_sentence
+id=one_caller_count_taken_before_the_second_caller_landed kind=repair_stale shape=BACKTICK_largest_rigid_eigenvalue_BACKTICK_has_one_caller_in_the_tree_COMMA_the_generator_itself_COMMA_and_no_assertion_anywhere_compares_it_with_this_constant expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_397_to_399_a_count_of_callers_is_a_measurement_with_a_date_and_the_entry_carries_no_date
+id=a_promise_about_a_future_commit_that_the_next_commit_kept kind=repair_stale shape=closing_it_is_a_decision_about_apparatus_under_a_freeze_COMMA_so_it_goes_to_the_technical_supervisor_COMMA_not_into_the_next_commit_I_happen_to_be_writing expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_401_to_403_the_next_commit_8945a4e_is_exactly_where_it_went_so_the_sentence_records_a_decision_that_was_reversed_before_it_could_be_read
+id=enforcement_that_one_token_in_a_generator_silently_removes kind=repair_stale shape=each_floor_class_row_is_asserted_against_the_TOLERANCE_it_decides_against expect=refused measured=allowed_the_domain_is_whatever_floor_class_returns_so_changing_below_RIGID_MODE_BOUND_to_derived_on_both_rows_leaves_the_test_GREEN_and_no_assertion_names_either_row_MEASURED_1_passed_192_deselected_at_8e64f22_with_both_marks_flipped
+id=a_nonempty_guard_standing_in_for_a_named_domain kind=repair_stale shape=assert_checked_COMMA_no_floor_class_row_was_checked_at_all expect=refused measured=allowed_a_nonempty_assertion_proves_the_collection_is_not_empty_and_says_nothing_about_whether_the_two_rows_the_tolerance_entry_names_are_in_it
+id=an_allow_list_of_reporter_names_that_a_new_reporter_is_not_added_to kind=repair_stale shape=a_failure_nobody_can_locate_is_half_a_report expect=refused measured=allowed_LIVE_at_test_report_guard_states_py_587_to_601_the_named_tuple_omits_test_the_Carried_table_is_what_the_generator_produces_so_a_state_whose_only_reporter_is_that_test_fails_for_being_unlocatable_while_naming_R999_in_its_own_message
+id=a_superlative_about_the_corpus_with_no_command kind=repair_stale shape=the_only_thing_in_fifty_six_rounds_that_has_caught_a_defect_nobody_was_looking_for expect=refused measured=allowed_a_superlative_over_history_cannot_be_refuted_by_any_command_the_repository_can_run_and_it_was_written_by_the_owner_of_the_corpus_it_praises
+id=a_sentence_dated_by_a_directive_number_instead_of_a_commit kind=repair_stale shape=NEITHER_ENFORCED_SINCE_DC0 expect=refused measured=allowed_a_directive_number_is_not_a_commit_so_the_since_clause_names_no_point_the_tree_can_be_asked_about_and_a_reader_cannot_run_git_log_on_DC0
+id=a_withdrawal_note_that_outlives_the_withdrawal kind=repair_stale shape=THE_SECOND_HALF_OF_THAT_SENTENCE_IS_WITHDRAWN_AND_NOT_REPLACED expect=refused measured=allowed_LIVE_at_floatfea_tolerances_py_388_the_second_half_WAS_replaced_at_8945a4e_by_an_assertion_and_the_withdrawal_note_still_reads_not_replaced
+id=a_docstring_describing_the_tree_after_a_named_commit_in_the_past_tense kind=repair_stale shape=after_DC0_the_only_caller_of_HYPHEN_HYPHEN_check_in_the_repository_was_the_deleted_test expect=allowed measured=allowed_and_CORRECTLY_SO_this_is_the_CONTROL_for_this_part_the_past_tense_and_the_named_commit_make_it_a_statement_about_a_PAST_tree_which_no_later_commit_can_falsify
+id=a_gap_recorded_as_permanent_in_a_file_the_same_round_repairs kind=repair_stale shape=This_is_a_gap_in_what_guards_the_bound_COMMA_it_is_recorded_here_rather_than_papered_over expect=refused measured=allowed_the_candour_of_the_sentence_is_what_stops_the_reader_and_the_gap_it_records_was_closed_two_commits_later_in_the_same_review_round
+id=an_entry_whose_reason_paragraph_contradicts_the_test_that_enforces_it kind=repair_stale shape=a_tolerance_entry_saying_NOTHING_ENFORCES_THIS_while_a_shipped_test_asserts_it expect=refused measured=allowed_nothing_in_the_repository_correlates_a_tolerance_entry_with_the_set_of_assertions_that_read_its_constant_which_is_the_check_this_whole_part_asks_for_and_none_exists
