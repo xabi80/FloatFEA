@@ -250,6 +250,32 @@ def _force_remove(func, path, exc):  # noqa: ANN001 - shutil's handler signature
     func(path)
 
 
+def _seed_older_verdict(work: Path, reviews: Path) -> None:
+    """Give the verdict file a second commit, inside the scratch copy (R517).
+
+    Three states need an EARLIER verdict commit to point at, and at a step's
+    first verdict there is none. This rewrites the file to a marked earlier
+    form, commits that, then restores the real text and commits again -- so
+    the real verdict is still `HEAD` for that path and there is a commit
+    behind it.
+    """
+    path = reviews / f"step-{VERDICT_STEP}.md"
+    real = path.read_text(encoding="utf-8", errors="replace")
+    path.write_text(
+        "<!-- seeded by the guard-state harness: an earlier verdict to point "
+        "at (R517) -->\n" + real,
+        encoding="utf-8",
+    )
+    for message in ("seed: an earlier verdict commit", "seed: the real verdict"):
+        if message.endswith("the real verdict"):
+            path.write_text(real, encoding="utf-8")
+        subprocess.run(["git", "-C", str(work), "add", REVIEW_PATH], check=True)
+        subprocess.run(
+            ["git", "-C", str(work), "commit", "-q", "--no-verify", "-m", message],
+            check=True,
+        )
+
+
 def _build(tmp: Path, state: str) -> Path:
     """A repository copy with the state applied. Only `docs/` is mutated."""
     work = tmp / "repo"
@@ -330,9 +356,29 @@ def _build(tmp: Path, state: str) -> Path:
                 text=True,
                 check=True,
             ).stdout.split()
+            if len(history) < 2:
+                # R517: THE HARNESS BUILDS WHAT THE STATE NEEDS. A verdict
+                # file with ONE commit is every step's first verdict -- step 6
+                # is there now -- so "amend the verdict after the commit the
+                # report answers" had no older verdict to point at, and the
+                # assert reported that as the state failing. It recurs at the
+                # first verdict of every step for the rest of the project.
+                #
+                # Skipping would be skipping a test to get a green build,
+                # which `CLAUDE.md` forbids outright. So the state's
+                # precondition is CONSTRUCTED, inside this scratch copy: one
+                # earlier commit on the verdict file, which is what the
+                # reviewer's own ablation did by hand.
+                _seed_older_verdict(work, reviews)
+                history = subprocess.run(
+                    ["git", "-C", str(work), "log", "--format=%h", "--", REVIEW_PATH],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                ).stdout.split()
             assert len(history) > 1, (
-                "the verdict file has one commit, so there is no older verdict "
-                "to name and this state cannot be built"
+                "the verdict file still has one commit after seeding, so this "
+                "state could not be built and is NOT being reported as green"
             )
             older = history[1]
             text = (reports / REPORT_NAME).read_text(encoding="utf-8", errors="replace")
@@ -416,7 +462,22 @@ def _build(tmp: Path, state: str) -> Path:
                 capture_output=True,
                 text=True,
                 check=True,
-            ).stdout.split()[1]
+            ).stdout.split()
+            if len(older) < 2:
+                # R517 again: the same shape one action down, where it was a
+                # bare IndexError from `[1]`.
+                _seed_older_verdict(work, reviews)
+                older = subprocess.run(
+                    ["git", "-C", str(work), "log", "--format=%h", "--", REVIEW_PATH],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                ).stdout.split()
+            assert len(older) > 1, (
+                "no older verdict commit after seeding; this state is not "
+                "being reported as green"
+            )
+            older = older[1]
             report = reports / REPORT_NAME
             text = report.read_text(encoding="utf-8", errors="replace")
             text = re.sub(
@@ -598,6 +659,13 @@ def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) 
             "test_a_docs_commit_does_not_also_edit_the_guard_that_judges_it",
             "test_the_report_carries_a_WHOLE_SUITE_count",
             "test_a_carried_row_points_at_a_section_that_discusses_it",
+            # R516. `two_digit_step_number_discriminating` names R999
+            # correctly, and this was the reporter that named it, missing
+            # from the list. It looked green on CI at `8a88bf2` ONLY
+            # because an unrelated test was failing in the same run; the
+            # commit that fixed that line took the pass with it, so the
+            # state had been certifying nothing.
+            "test_the_Carried_table_is_what_the_generator_produces",
             "test_the_whole_suite_line_is_about_a_commit_that_exists",
         )
         if state in DIAGNOSIS:

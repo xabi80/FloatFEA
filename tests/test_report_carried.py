@@ -2580,6 +2580,14 @@ def _tracked_at_reviewed(path: str) -> bool:
 _R507_CONTROLS = [
     # (the string as it appears in the verdict, is it counted as a site, why)
     (
+        "tests/verification/rung1/test_new_thing.py",
+        True,
+        "R518: a file a closing condition asks to be CREATED. It has a "
+        "separator, so it is a site although nothing is there yet -- dropping "
+        "it read as answered, which is the one direction that must never be "
+        "silent.",
+    ),
+    (
         "frames.txt",
         False,
         "not a path at all -- the tail of `g21_rigid_body_frames.txt` broken "
@@ -2615,12 +2623,16 @@ DECLARE them, which is the honest handling of a site nobody may edit.
 """
 
 
+def _is_a_site(path: str) -> bool:
+    """The rule `_sites_by_finding()` applies, as one callable (R511, R518)."""
+    return "/" in path or _tracked_at_reviewed(path)
+
+
 @pytest.mark.parametrize("path, counted, why", _R507_CONTROLS, ids=[c[0] for c in _R507_CONTROLS])
 def test_the_R507_cases_rule_as_measured(path: str, counted: bool, why: str) -> None:
     """R511's second defect, pinned to what the repair actually does."""
-    assert _tracked_at_reviewed(path) is counted, (
-        f"`{path}` now counts as a site: {_tracked_at_reviewed(path)}, "
-        f"expected {counted}. {why}"
+    assert _is_a_site(path) is counted, (
+        f"`{path}` now counts as a site: {_is_a_site(path)}, " f"expected {counted}. {why}"
     )
 
 
@@ -2650,7 +2662,19 @@ def _sites_by_finding() -> list[tuple[str, str, int]]:
             # Tracked AT THE REVIEWED COMMIT, not now: a file the step deletes
             # was a real site when the verdict named it, and `git ls-files` on
             # the working tree would silently drop it.
-            if not _tracked_at_reviewed(path):
+            # AND A PATH WITH A SEPARATOR IS A SITE EVEN IF NOTHING IS
+            # THERE YET (R518). Existence alone dropped
+            # `tests/verification/rung1/test_new_thing.py` -- a closing
+            # condition naming a file to be CREATED -- silently, which is the
+            # one direction that must never be silent: the site would read as
+            # answered because nobody could see it had been asked for. The
+            # comment above reasoned about deletion and never about creation.
+            #
+            # So the rule is narrower: a bare token with NO separator must
+            # also be tracked. That keeps `frames.txt` out -- the tail of a
+            # filename broken across a line, not a path -- and lets a file
+            # that does not exist yet in.
+            if not _is_a_site(path):
                 continue
             if not first:
                 out.append((m.group(1), path, 0))

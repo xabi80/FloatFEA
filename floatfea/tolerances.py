@@ -360,8 +360,8 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 #
 # Reason for 199.53, with its window measured on both sides:
 #
-#   below  TWO CANDIDATES, BOTH RENDERED, AND NEITHER ENFORCED SINCE DC0
-#          (CV1/CW2, R426/R438; R503).
+#   below  TWO CANDIDATES, BOTH RENDERED AND BOTH ENFORCED AGAIN
+#          (CV1/CW2, R426/R438; R503 then R514).
 #            * the six themselves: the bound must exceed the largest
 #              numerically-zero eigenvalue or Courant-Fischer's six are not
 #              all under it --
@@ -381,7 +381,7 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 #          claimed set reversed which candidate binds; the gate did not move,
 #          because both are floor-class rows against THIS constant.
 #
-#          THE SECOND HALF OF THAT SENTENCE IS WITHDRAWN AND NOT REPLACED
+#          THE SECOND HALF OF THAT SENTENCE WAS WITHDRAWN AND IS NOW REPLACED
 #          (R503). It read "both clearances are recomputed by
 #          `scripts/regen_figures.py --check` wherever it runs", and that was
 #          true until DC0 deleted `test_the_generated_figures_are_not_stale`
@@ -390,17 +390,27 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 #          asserted every floor-class clearance, and that job went with it
 #          unmentioned, including mine.
 #
-#          So today: both candidates are rendered, the numbers are right --
-#          `--check` run by hand at this commit returns 0 and both clearances
-#          hold -- and NOTHING IN THE SUITE WOULD NOTICE IF THEY STOPPED
-#          HOLDING. `largest_rigid_eigenvalue` has one caller in the tree, the
-#          generator itself, and no assertion anywhere compares it with this
-#          constant. The same is true of the mechanism ceiling.
+#          FOR ONE COMMIT nothing in the suite would have noticed either of
+#          them crossing. DD2 closed that:
+#          `tests/test_plan_figures.py::test_every_floor_class_row_clears_its
+#          _tolerance_on_THIS_tree` renders on the current tree and asserts
+#          each floor-class row against its own constant -- these two
+#          included, by name -- and it never reads the committed render, so a
+#          corpus commit can redden it only by moving a number PAST a ceiling.
 #
-#          This is a gap in what guards the bound, it is recorded here rather
-#          than papered over, and closing it is a decision about apparatus
-#          under a freeze -- so it goes to the technical supervisor, not into
-#          the next commit I happen to be writing.
+#          THE PARAGRAPH THAT STOOD HERE IS WITHDRAWN AND IT IS WORTH SAYING
+#          WHY (R514). It read "NOTHING IN THE SUITE WOULD NOTICE IF THEY
+#          STOPPED HOLDING", "no assertion anywhere compares it with this
+#          constant", and "closing it is a decision about apparatus under a
+#          freeze -- so it goes to the technical supervisor, not into the next
+#          commit I happen to be writing". Every sentence was true when
+#          written. The technical supervisor ruled the next day, the
+#          enforcement went into the very next commit, and NOTHING CAME BACK
+#          HERE -- so five sentences in this file went on describing a gap
+#          that had been closed, in the reassuring direction, for two
+#          commits. That is BP0's rule turned on the entry that cites it: when
+#          the thing a sentence describes moves, the sentence is regenerated
+#          or withdrawn in the same commit.
 #          `subdiv` IS PINNED TO 1 IN THAT CELL and the reason is in
 #          `scripts/regen_figures.py`: above it the release stops being a
 #          mechanism, so there is nothing to measure.

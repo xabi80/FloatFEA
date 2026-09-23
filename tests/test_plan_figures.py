@@ -170,6 +170,22 @@ def test_every_floor_class_row_clears_its_tolerance_on_THIS_tree() -> None:
                 "alone could carry this decision across its ceiling"
             )
 
+    # MEMBERSHIP, NOT NON-EMPTINESS (R515). `assert checked` said only that
+    # SOME row was floor-class. The reviewer's ablation: flip the two
+    # `_floor(..., "below", "RIGID_MODE_BOUND")` marks in
+    # scripts/regen_figures.py to "derived" and this test passed -- two
+    # tokens in a non-test file removed both brackets from the gate and the
+    # suite stayed green. These two are the ones R503 was about, so they are
+    # named here and their absence is the failure.
+    REQUIRED = {"rigid_mode_largest_rigid_eigenvalue", "rigid_mode_mechanism_ceiling"}
+    missing = REQUIRED - set(checked)
+    assert not missing, (
+        f"{sorted(missing)} is not floor-class any more, so nothing compared "
+        f"it with RIGID_MODE_BOUND. Checked: {sorted(checked)}. These two "
+        "bracket the bound from below and are the whole of what DD2 restored; "
+        "a row losing its class is how the enforcement would leave again, "
+        "quietly, from a file that is not a test."
+    )
     assert checked, (
         "no floor-class row was checked at all. Every row is `derived` or "
         "`words`, or the marks did not load -- either way this test is "
