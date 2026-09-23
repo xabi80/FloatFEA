@@ -100,6 +100,84 @@ def test_every_referenced_figure_exists(name: str) -> None:
     )
 
 
+def test_every_floor_class_row_clears_its_tolerance_on_THIS_tree() -> None:
+    """DD2. The one useful half of the guard DC0 deleted, restored alone.
+
+    `scripts/regen_figures.py --check` did two jobs. One was the staleness
+    comparison -- re-render, diff against the committed file -- whose domain
+    included every row derived from the reviewer's corpora, so it reddened on
+    the reviewer's own commits and DC0 deleted it. The other was this: each
+    floor-class row is compared with the TOLERANCE it decides against, and the
+    margin must both hold and be wider than the declared platform spread.
+
+    That second job went with the deletion and nobody said so, including the
+    commit message I wrote for it (R503). `largest_rigid_eigenvalue` and
+    `rigid_mode_mechanism_ceiling` bracket `RIGID_MODE_BOUND` from below, and
+    after DC0 the only caller of `--check` in the repository was the deleted
+    test, so nothing in the suite would have noticed either of them crossing.
+
+    WHAT THIS DOES AND DOES NOT DO. It renders on THIS tree and asserts each
+    row against its own constant. It does NOT read
+    `docs/milestones/F2_figures.md`, so a corpus commit cannot redden it by
+    moving a number -- only by moving a number PAST A CEILING, which is a real
+    finding and the one worth being woken for. The committed render staying
+    current is a closure item now, not a guard.
+
+    THE SPREAD CHECK IS PART OF THE DECISION, not decoration: a margin thinner
+    than `FIGURE_FLOOR_CLASS_SPREAD` is one the platform difference alone could
+    carry across the ceiling, which is Q8's third class and the reason these
+    rows are floor-class at all.
+    """
+    # LOADED HERE, NOT AT MODULE SCOPE. `floor_class()` renders on first
+    # call, and a render at import would cost every test in this file the
+    # ninety seconds this one pays on purpose.
+    import importlib.util
+
+    from floatfea.tolerances import FIGURE_FLOOR_CLASS_SPREAD
+
+    spec = importlib.util.spec_from_file_location(
+        "regen_figures_for_clearance", ROOT / "scripts" / "regen_figures.py"
+    )
+    assert spec is not None and spec.loader is not None
+    R = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(R)
+
+    marks = R.floor_class()
+    rows = dict(R._ROW.findall(R.render()))
+    checked, failures = [], []
+    for name, (kind, ceiling_name, as_ratio) in sorted(marks.items()):
+        if kind not in ("below", "above"):
+            continue
+        value = R._number(rows.get(name, ""))
+        if value is None or value <= 0:
+            failures.append(f"{name}: rendered `{rows.get(name)}`, not a positive number")
+            continue
+        ceil = R._ceiling(name)
+        if as_ratio:
+            margin = 10 ** (ceil - value) if kind == "below" else 10 ** (value - ceil)
+        else:
+            margin = ceil / value if kind == "below" else value / ceil
+        checked.append(name)
+        if margin < 1.0:
+            failures.append(
+                f"{name} is {value:.6g} and must be {kind} "
+                f"{ceil:.6g} ({ceiling_name}): THE DECISION MOVED"
+            )
+        elif margin < FIGURE_FLOOR_CLASS_SPREAD:
+            failures.append(
+                f"{name} clears {ceiling_name} by {margin:.4g}x, under the "
+                f"declared spread {FIGURE_FLOOR_CLASS_SPREAD}x -- the platform "
+                "alone could carry this decision across its ceiling"
+            )
+
+    assert checked, (
+        "no floor-class row was checked at all. Every row is `derived` or "
+        "`words`, or the marks did not load -- either way this test is "
+        "vacuous, which is how the last one stopped meaning anything."
+    )
+    assert not failures, "\n".join(failures)
+
+
 # THE STALENESS GUARD WAS HERE AND IS DELETED (DC0). Its name is not written
 # out, because `test_every_test_name_cited_in_prose_exists` requires a cited
 # test name to exist and this one no longer does -- which is that guard doing
