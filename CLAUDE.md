@@ -119,6 +119,28 @@ while an earlier step holds and a later one has been started. A `PreToolUse`
 hook refuses edits under `docs/reviews/` — the implementer never writes,
 edits, or deletes a verdict.
 
+**A step whose closure verdict is PASS is closed (DD1).** A later verdict
+written into that step's file about the state of the *tree* does not reopen
+it, and **a step's disposition is read from its closure verdict, not from the
+last line of its file.**
+
+Earned twice in one milestone. Step 5 closed at verdict 53 — PASS, on a tree
+measured green at that commit. Verdicts 54 and 55 were then written into the
+same file because two rounds about the tree had no other container, and the
+file's header read HOLD. The gate read the header, refused every turn with
+"the held step must reach PASS before any later step is worked", and there was
+no exit: a verdict on step 5 could not clear a step-6 report, and a verdict on
+step 6 was what the refusal was trying to prevent. It cost two verdicts — 56
+ruled the substance, 57 wrote the disposition back into the file by hand — and
+neither was about the work.
+
+The reviewer's own note on it: the mechanism cannot distinguish *a step whose
+work is open* from *a step file whose last verdict was about the tree*. This
+sentence is the distinction. The `Stop` hook is unchanged and still reads the
+last line, so the two can disagree; when they do, this rule is what the
+disagreement is resolved against, and a verdict written by hand is the way it
+gets recorded.
+
 ### What blocks, and what is a closure item (CZ0)
 
 **Throughput is a requirement: FloatSim loads through an FE analysis of the
