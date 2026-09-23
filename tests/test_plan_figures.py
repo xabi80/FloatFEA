@@ -184,13 +184,22 @@ def test_every_floor_class_row_clears_its_tolerance_on_THIS_tree() -> None:
 # exactly its job on a deletion. The name is in the golden's diff, in this
 # commit, and in the closure artifact.
 #
-# It re-rendered the figures and compared them with the committed file. Its
-# domain includes every row derived from `tests/corpus/`, which is the
-# REVIEWER'S data and grows by design at every review round -- so the guard
-# went red on the reviewer's commit, every time, and the repair was an
-# implementer commit after a closed step, which reddened the whole-suite-line
-# guard in turn. Two guards telling the truth, a red tree, and nothing wrong
-# in `floatfea/`. It ran four times.
+# It re-rendered the figures and compared them with the committed file.
+#
+# THE MECHANISM, WHICH IS WHAT WAS MEASURED. Two corpus files feed rendered
+# rows: `g21_rigid_body_frames.txt` reaches `rigid_mode_corpus_frames` through
+# `RBC.ENTRIES`, and `g22_model_configurations.txt` reaches `corpus_entries`
+# through `C.ENTRIES`. A commit that adds entries to either moves those rows,
+# so the guard reports the reviewer's own data as a stale figure, and the
+# repair is an implementer commit after a closed step -- which reddens the
+# whole-suite-line guard in turn.
+#
+# "EVERY TIME" AND "IT RAN FOUR TIMES" STOOD HERE AND ARE WITHDRAWN (R506,
+# R507). Neither had a cell. The second is a count of history with no command
+# behind it, and the first is false as stated: a corpus commit touching
+# neither of those two files moves nothing, which is what `cbf8520` did --
+# it touched `tree_prose_claims.txt` only, and `--check` reads the same 172
+# frames on both sides of it.
 #
 # A STALENESS CHECK WHOSE DOMAIN INCLUDES REVIEWER-OWNED DATA REPORTS THE
 # REVIEWER'S WORK AS THE IMPLEMENTER'S DEFECT. That is the reason, and it is
@@ -204,7 +213,14 @@ def test_every_floor_class_row_clears_its_tolerance_on_THIS_tree() -> None:
 # test carried a claim it does not carry. Deleting the guard is the honest
 # form of the same decision.
 #
-# The figures file is still generated, still canonical, and still rendered on
-# CI. It is regenerated as a CLOSURE ITEM at each step's closure, not at every
-# corpus commit. `test_every_figure_reference_anywhere_resolves` still holds:
-# a `{{fig:}}` name that the generator does not produce is still a failure.
+# The figures file is still generated and still canonical, and the committed
+# copy is refreshed as a CLOSURE ITEM at each step's closure rather than at
+# every corpus commit.
+#
+# WHAT IS NOT CLAIMED HERE, and the earlier wording implied it (R506): `ci.yml`
+# runs the generator inside the determinism legs, which RENDER and hash but
+# compare nothing, so no CI job checks the committed copy against a fresh one.
+# The only comparison left in the repository is
+# `test_every_figure_reference_anywhere_resolves`, which fails a `{{fig:}}`
+# name the generator does not produce -- a different question from whether a
+# published number is current.
