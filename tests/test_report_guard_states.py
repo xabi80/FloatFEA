@@ -135,7 +135,13 @@ STATES: dict[str, list[tuple[str, str]]] = {
         ("copy_verdict", "10"),
         ("append_finding", "10"),
     ],
-    "verdict_amended_after_the_commit_the_report_answers": [("append_finding", str(STEP))],
+    # VERDICT_STEP, NOT STEP (R502). `append_finding` edits the VERDICT file,
+    # and at a boundary that is the previous step's: STEP is 6 and the verdict
+    # is in step-5.md. With STEP it raised FileNotFoundError before the guard
+    # ran, which disabled the one corpus entry here that has ever caught a
+    # live defect. This is R494(C) a third time, in the commit that defined
+    # `_verdict_step()` to fix the other two.
+    "verdict_amended_after_the_commit_the_report_answers": [("append_finding", str(VERDICT_STEP))],
     # --- the thirtieth verdict's four --------------------------------------
     "shallow_clone_depth_1_reports_one_diagnosis_not_sixteen": [("shallow", "")],
     "zero_padded_step_number": [("report_named", f"step-0{NEXT}.md")],

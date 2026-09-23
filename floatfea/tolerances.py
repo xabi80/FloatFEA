@@ -360,7 +360,8 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 #
 # Reason for 199.53, with its window measured on both sides:
 #
-#   below  TWO CANDIDATES, BOTH RENDERED, BOTH ENFORCED (CV1/CW2, R426/R438).
+#   below  TWO CANDIDATES, BOTH RENDERED, AND NEITHER ENFORCED SINCE DC0
+#          (CV1/CW2, R426/R438; R503).
 #            * the six themselves: the bound must exceed the largest
 #              numerically-zero eigenvalue or Courant-Fischer's six are not
 #              all under it --
@@ -378,9 +379,28 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 #          the corpus does not use -- and over the set that sentence named
 #          the mechanism goes above the six (R438). Widening the cell to the
 #          claimed set reversed which candidate binds; the gate did not move,
-#          because both are floor-class rows against THIS constant and both
-#          clearances are recomputed by `scripts/regen_figures.py --check`
-#          wherever it runs.
+#          because both are floor-class rows against THIS constant.
+#
+#          THE SECOND HALF OF THAT SENTENCE IS WITHDRAWN AND NOT REPLACED
+#          (R503). It read "both clearances are recomputed by
+#          `scripts/regen_figures.py --check` wherever it runs", and that was
+#          true until DC0 deleted `test_the_generated_figures_are_not_stale`
+#          -- which was the ONLY caller of `--check` in the repository. The
+#          deletion was scoped to the staleness comparison; `--check` also
+#          asserted every floor-class clearance, and that job went with it
+#          unmentioned, including mine.
+#
+#          So today: both candidates are rendered, the numbers are right --
+#          `--check` run by hand at this commit returns 0 and both clearances
+#          hold -- and NOTHING IN THE SUITE WOULD NOTICE IF THEY STOPPED
+#          HOLDING. `largest_rigid_eigenvalue` has one caller in the tree, the
+#          generator itself, and no assertion anywhere compares it with this
+#          constant. The same is true of the mechanism ceiling.
+#
+#          This is a gap in what guards the bound, it is recorded here rather
+#          than papered over, and closing it is a decision about apparatus
+#          under a freeze -- so it goes to the technical supervisor, not into
+#          the next commit I happen to be writing.
 #          `subdiv` IS PINNED TO 1 IN THAT CELL and the reason is in
 #          `scripts/regen_figures.py`: above it the release stops being a
 #          mechanism, so there is nothing to measure.
