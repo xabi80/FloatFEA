@@ -631,29 +631,24 @@
       "site": "docs/milestones/F2a.md"
     },
     "R482": {
-      "state": "answered",
-      "where": "§2",
-      "site": "tests/test_report_carried.py"
+      "state": "carried",
+      "where": "§2"
     },
     "R483": {
-      "state": "answered",
-      "where": "§2",
-      "site": "tests/test_report_carried.py"
+      "state": "carried",
+      "where": "§2"
     },
     "R484": {
-      "state": "answered",
-      "where": "§2",
-      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+      "state": "carried",
+      "where": "§2"
     },
     "R485": {
-      "state": "answered",
-      "where": "§2",
-      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+      "state": "carried",
+      "where": "§2"
     },
     "R486": {
-      "state": "answered",
-      "where": "§2",
-      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+      "state": "carried",
+      "where": "§2"
     },
     "R487": {
       "state": "open",
@@ -671,14 +666,12 @@
       "site": "tests/test_report_carried.py"
     },
     "R490": {
-      "state": "answered",
-      "where": "§2",
-      "site": "scripts/regen_figures.py"
+      "state": "carried",
+      "where": "§2"
     },
     "R491": {
-      "state": "answered",
-      "where": "§2",
-      "site": "docs/closure/F2-step5.md"
+      "state": "carried",
+      "where": "§2"
     },
     "R492": {
       "state": "open",
@@ -686,6 +679,46 @@
       "site": "tests/verification/rung1/test_rigid_body_modes.py"
     },
     "R493": {
+      "state": "open",
+      "where": "§2",
+      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+    },
+    "R494": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/test_report_guard_states.py"
+    },
+    "R495": {
+      "state": "answered",
+      "where": "§2",
+      "site": "floatfea/tolerances.py"
+    },
+    "R496": {
+      "state": "answered",
+      "where": "§2",
+      "site": "scripts/regen_figures.py"
+    },
+    "R497": {
+      "state": "answered",
+      "where": "§2",
+      "site": "scripts/suite_count.py"
+    },
+    "R498": {
+      "state": "answered",
+      "where": "§2",
+      "site": "docs/reports/F2/step-6.md"
+    },
+    "R499": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/test_report_carried.py"
+    },
+    "R500": {
+      "state": "open",
+      "where": "§2",
+      "site": "scripts/answered_table.py"
+    },
+    "R501": {
       "state": "open",
       "where": "§2",
       "site": "tests/verification/rung1/test_rigid_body_modes.py"
