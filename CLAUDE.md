@@ -166,7 +166,12 @@ not move a gate, and the coverage measurement that would have justified the
 spend went *down* over those rounds — 2 of 22 unseen defect shapes caught, then
 1 of 19.
 
-**Three verdicts per step. After the third, the step closes.** A blocking item
+**Three verdicts per step. After the third, the step closes.** **A plan
+re-lock inside a step does not restart that count (DK0)** — if reopening the
+plan bought three more rounds, every reopen would buy them and the cap would
+mean nothing. Step 6 was already past three when Q7 reopened at the STOP in
+its fifty-ninth verdict, and it closed on the next verdict rather than on a
+fresh three. A blocking item
 still open at that point carries by name into the next step's `Carried` section
 and stays blocking there. Closure items still open go into the closure artifact
 as a list.
