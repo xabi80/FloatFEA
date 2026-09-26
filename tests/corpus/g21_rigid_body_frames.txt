@@ -609,3 +609,69 @@ id=rb_tip_20deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=
 id=rb_tip_2p87deg_from_Z_span_x100 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=100 tip=2.02517501233,1.1,5.29686427671 residual=3.0038e-17 seventh_over_eps=5.2541e+09 rigid_max=0.7954 below_bound=6 outcome=decided ratio=1.7484e-11 loss=2.7453e-11 zero_content_pairs=13/180 perdof_clean=1.2281e-14 rowshared_clean=4.1801e-16 runs_in_suite=no expect=hold
 id=rb_tip_2p87deg_from_Z_brace section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=1 stretch=1 tip=2.02517501233,1.1,5.29686427671 residual=5.8268e-17 seventh_over_eps=8.6248e+11 rigid_max=0.2557 below_bound=6 outcome=decided ratio=2.6227e-13 loss=1.6126e-13 zero_content_pairs=19/180 perdof_clean=1.2437e-14 rowshared_clean=4.2332e-16 runs_in_suite=no expect=hold
 id=rb_tip_2p87deg_from_Z_unit_1e-6 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e-6 stretch=1 tip=2.02517501233,1.1,5.29686427671 residual=1.5025e-17 seventh_over_eps=4.7867e+01 rigid_max=0.2055 below_bound=11 outcome=refused ratio=3.1295e-03 loss=1.1418e-03 zero_content_pairs=20/180 perdof_clean=3.1757e-14 rowshared_clean=1.0536e-16 runs_in_suite=no expect=hold
+
+# ---------------------------------------------------------------------------
+# BATCH 8 (fifty-ninth verdict, HEAD acbbd0a): THE NEAR-VERTICAL BAND OF THE
+# GATE'S OWN FRAME, UNDER THE ROW-SHARED RESIDUAL THAT LANDED AT aa5ccf3.
+#
+# WHAT THIS PART IS A CORPUS OF. The tip member (3,4) of the shipped frame,
+# swept through the band a platform is mostly made of -- 2.87 degrees, the
+# MEMBER_ORIENTATION_DEGENERACY floor, up to 5 degrees from global Z -- built
+# exactly as the `rb_tip_*deg_from_global_Z` entries above are built: node 4 at
+# node 3 plus 2.5 m in the swept direction. The section, the span, the length
+# unit and the subdivision are crossed into it. NONE of these frames is a new
+# kind of structure: every one is the same defect-free element as every other
+# entry in this file.
+#
+# WHAT A PASSING SCAN MEANS, AND IT DOES NOT PASS TODAY. Six of these fifteen
+# frames put the SHIPPED quantity -- residual_exactness(), the row-shared form
+# -- OVER `RIGID_MODE_EXACTNESS` with a defect-free element: 1.250x, 2.473x,
+# 1.391x, 1.082x, 1.580x and 1.244x of the ceiling. The `shipped_gate` field
+# says which. A passing scan means every entry reads `shipped_gate=green`,
+# and that is a statement about the CEILING and the FORM, not about the
+# element.
+#
+# THE ELEMENT IS FINE AT ALL FIFTEEN, BY TWO WITNESSES THAT DO NOT SHARE THE
+# NEW NORMALISATION. `retired_residual` -- the global-norm form the gate read
+# until aa5ccf3 -- is at or below 2.4e-16 at every entry, and `energy`, the
+# corpus's own frame-versus-element control, at or below 2.1e-17. Both are the
+# same order they are at the shipped frame. What moved is the measure.
+#
+# AND THE BAND IS NOT SMOOTH IN THE GEOMETRY, WHICH IS THE POINT.
+# `rb_tip_2p95deg_from_global_Z` and `rb_tip_2p95deg_from_Z_tip_1pm_moved` are
+# the SAME frame to eleven decimal places and differ in the twelfth -- about a
+# picometre on a 4 m frame -- and read 1.250x and 2.473x. The same pair at 2.9
+# degrees and span x30 reads 0.427x and 1.580x. A ceiling whose decision turns
+# on the twelfth decimal of a coordinate is not separating a defect from a
+# defect-free element.
+#
+# FIELDS ADDED BY THIS PART (the parser ignores unknown fields; the builder
+# reads only section/subdiv/unit/stretch/tip)
+#   member_deg_from_Z  the angle of member (3,4) from global Z, measured on the
+#                      assembled model rather than asserted from the tip string
+#   shipped_residual   residual_exactness(K, model) at HEAD acbbd0a
+#   x_ceiling          shipped_residual / RIGID_MODE_EXACTNESS
+#   retired_residual   max_j ||K_hat v_j|| / ||v_j||, the form retired at aa5ccf3
+#   energy             max_j |v'Kv| / (||v||^2 max|K|)
+#   shipped_gate       green | false_red -- what the shipped assertion does here
+#   expect             hold | breach, about the two RETIRED ceilings, as above
+#
+# Measured on Windows, Python 3.13, at acbbd0a. Re-summing both matvecs in
+# reverse order moves the figures by under 0.1 percent, so these are not
+# summation-order artefacts.
+# ---------------------------------------------------------------------------
+id=rb_tip_2p95deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.02866116939,1.10000000000,5.29668706559 member_deg_from_Z=2.950 shipped_residual=1.2497e-15 x_ceiling=1.250 retired_residual=1.2332e-16 energy=1.259e-17 ratio=7.2269e-15 loss=4.4401e-15 runs_in_suite=no shipped_gate=false_red expect=hold
+id=rb_tip_2p95deg_from_Z_tip_1pm_moved section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.028661169390,1.100000000000,5.296687065591 member_deg_from_Z=2.950 shipped_residual=2.4727e-15 x_ceiling=2.473 retired_residual=2.3873e-16 energy=1.678e-17 ratio=2.1966e-14 loss=4.2477e-15 runs_in_suite=no shipped_gate=false_red expect=hold
+id=rb_tip_3deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.03083989061,1.10000000000,5.29657383689 member_deg_from_Z=3.000 shipped_residual=3.6831e-16 x_ceiling=0.368 retired_residual=5.1639e-17 energy=1.259e-17 ratio=1.0175e-14 loss=6.5703e-15 runs_in_suite=no shipped_gate=green expect=hold
+id=rb_tip_3p05deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.03301851218,1.10000000000,5.29645870693 member_deg_from_Z=3.050 shipped_residual=3.2023e-16 x_ceiling=0.320 retired_residual=6.5978e-17 energy=1.049e-17 ratio=1.3996e-14 loss=6.1426e-15 runs_in_suite=no shipped_gate=green expect=hold
+id=rb_tip_3p1deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.03519703246,1.10000000000,5.29634167582 member_deg_from_Z=3.100 shipped_residual=6.5054e-16 x_ceiling=0.651 retired_residual=6.9305e-17 energy=1.189e-17 ratio=1.7601e-14 loss=2.9993e-15 runs_in_suite=no shipped_gate=green expect=hold
+id=rb_tip_3p2deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.03955376248,1.10000000000,5.29610191045 member_deg_from_Z=3.200 shipped_residual=9.7313e-16 x_ceiling=0.973 retired_residual=1.0165e-16 energy=1.329e-17 ratio=3.3265e-14 loss=1.0290e-14 runs_in_suite=no shipped_gate=green expect=hold
+id=rb_tip_3p5deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.05262134884,1.10000000000,5.29533699605 member_deg_from_Z=3.500 shipped_residual=7.3871e-16 x_ceiling=0.739 retired_residual=8.0589e-17 energy=1.679e-17 ratio=2.3307e-14 loss=1.3020e-14 runs_in_suite=no shipped_gate=green expect=hold
+id=rb_tip_4p4deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.09179757032,1.10000000000,5.29263188057 member_deg_from_Z=4.400 shipped_residual=1.3905e-15 x_ceiling=1.391 retired_residual=1.4003e-16 energy=1.190e-17 ratio=9.9227e-15 loss=3.7489e-15 runs_in_suite=no shipped_gate=false_red expect=hold
+id=rb_tip_5deg_from_global_Z section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1 tip=2.11788935687,1.10000000000,5.29048674523 member_deg_from_Z=5.000 shipped_residual=1.6229e-16 x_ceiling=0.162 retired_residual=5.0773e-17 energy=1.401e-17 ratio=1.5599e-14 loss=5.2713e-15 runs_in_suite=no shipped_gate=green expect=hold
+id=rb_tip_2p9deg_from_Z_span_x30 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=30 tip=2.02648235019,1.10000000000,5.29679839296 member_deg_from_Z=2.900 shipped_residual=4.2740e-16 x_ceiling=0.427 retired_residual=3.9394e-17 energy=2.044e-17 ratio=1.7816e-11 loss=3.5881e-12 runs_in_suite=no shipped_gate=green expect=breach
+id=rb_tip_3deg_from_Z_span_x10 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=10 tip=2.03083989061,1.10000000000,5.29657383689 member_deg_from_Z=3.000 shipped_residual=1.0818e-15 x_ceiling=1.082 retired_residual=5.5049e-17 energy=7.906e-18 ratio=4.5147e-13 loss=4.8086e-13 runs_in_suite=no shipped_gate=false_red expect=breach
+id=rb_tip_2p9deg_from_Z_span_x30_12dp section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=30 tip=2.026482350192,1.100000000000,5.296798392960 member_deg_from_Z=2.900 shipped_residual=1.5796e-15 x_ceiling=1.580 retired_residual=3.8709e-17 energy=1.870e-17 ratio=1.5926e-11 loss=5.0002e-12 runs_in_suite=no shipped_gate=false_red expect=breach
+id=rb_tip_2p9deg_from_Z_centimetre section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=100 stretch=1 tip=2.02648235019,1.10000000000,5.29679839296 member_deg_from_Z=2.900 shipped_residual=4.2519e-16 x_ceiling=0.425 retired_residual=2.2813e-18 energy=1.313e-20 ratio=8.2143e-12 loss=6.3255e-12 runs_in_suite=no shipped_gate=green expect=breach
+id=rb_tip_2p95deg_from_Z_brace section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=1 stretch=1 tip=2.02866116939,1.10000000000,5.29668706559 member_deg_from_Z=2.950 shipped_residual=1.2435e-15 x_ceiling=1.244 retired_residual=6.2045e-17 energy=1.902e-17 ratio=8.1675e-14 loss=1.4689e-13 runs_in_suite=no shipped_gate=false_red expect=breach
+id=rb_tip_3deg_from_Z_subdiv3 section=circular_tube,D=0.6,t=0.012 subdiv=3 unit=1 stretch=1 tip=2.03083989061,1.10000000000,5.29657383689 member_deg_from_Z=3.000 shipped_residual=7.0525e-16 x_ceiling=0.705 retired_residual=5.1578e-17 energy=1.897e-18 ratio=6.0329e-14 loss=2.0603e-14 runs_in_suite=no shipped_gate=green expect=hold
