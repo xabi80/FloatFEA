@@ -24,7 +24,8 @@ Two further properties the matrix enforces:
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import pytest
@@ -96,45 +97,77 @@ def _write_good(path, meta: dict[str, Any] | None = None) -> None:
 
 # --- mutations, one per fault ---------------------------------------------
 
+
 def _m_schema(h):
     import json
-    m = _good_meta(); m["schema_version"] = "9.9"
+
+    m = _good_meta()
+    m["schema_version"] = "9.9"
     h.attrs["meta"] = json.dumps(m)
 
 
 def _m_units(h):
     import json
-    m = _good_meta(); m["units"].pop("force")
+
+    m = _good_meta()
+    m["units"].pop("force")
     h.attrs["meta"] = json.dumps(m)
 
 
 def _m_provenance(h):
     import json
-    m = _good_meta(); m["run_id"] = ""
+
+    m = _good_meta()
+    m["run_id"] = ""
     h.attrs["meta"] = json.dumps(m)
+
+
+# PROVENANCE_MISSING has THREE raise sites -- absent `meta`, empty `hsp_git_sha`,
+# empty `run_id` -- and the matrix exercised only the last. Fault-level coverage
+# said it was covered; the other two paths could have been deleted without a test
+# noticing. Found by the F1 gate-table audit (AL2), which is the same gap one level
+# down: covering a fault is not covering the conditions that raise it.
+def _m_provenance_sha(h):
+    import json
+
+    m = _good_meta()
+    m["hsp_git_sha"] = ""
+    h.attrs["meta"] = json.dumps(m)
+
+
+def _m_provenance_meta_absent(h):
+    del h.attrs["meta"]
 
 
 def _m_gravity(h):
     import json
-    m = _good_meta(); m["gravity"] = [0.0, 0.0, -9.80665]
+
+    m = _good_meta()
+    m["gravity"] = [0.0, 0.0, -9.80665]
     h.attrs["meta"] = json.dumps(m)
 
 
 def _m_integrator(h):
     import json
-    m = _good_meta(); m["integrator"].pop("alpha_m")
+
+    m = _good_meta()
+    m["integrator"].pop("alpha_m")
     h.attrs["meta"] = json.dumps(m)
 
 
 def _m_mu_treatment(h):
     import json
-    m = _good_meta(); m["integrator"]["mu_treatment"] = "blended"
+
+    m = _good_meta()
+    m["integrator"]["mu_treatment"] = "blended"
     h.attrs["meta"] = json.dumps(m)
 
 
 def _m_time_convention(h):
     import json
-    m = _good_meta(); m.pop("time_convention")
+
+    m = _good_meta()
+    m.pop("time_convention")
     h.attrs["meta"] = json.dumps(m)
 
 
@@ -161,7 +194,7 @@ def _m_bound_missing(h):
 
 def _m_bound_exceeded(h):
     d = h["kinematics/buoy1/rotation"][()]
-    d[5, :] = 0.2   # |theta| ~ 0.346 rad against a declared 0.1
+    d[5, :] = 0.2  # |theta| ~ 0.346 rad against a declared 0.1
     h["kinematics/buoy1/rotation"][...] = d
 
 
@@ -194,6 +227,8 @@ MATRIX: list[tuple[Fault, Callable[[Any], None]]] = [
     (Fault.SCHEMA_VERSION, _m_schema),
     (Fault.UNITS_MISSING, _m_units),
     (Fault.PROVENANCE_MISSING, _m_provenance),
+    (Fault.PROVENANCE_MISSING, _m_provenance_sha),
+    (Fault.PROVENANCE_MISSING, _m_provenance_meta_absent),
     (Fault.GRAVITY_MISMATCH, _m_gravity),
     (Fault.INTEGRATOR_INCOMPLETE, _m_integrator),
     (Fault.MU_TREATMENT_UNKNOWN, _m_mu_treatment),
@@ -232,9 +267,8 @@ def test_each_fault_is_rejected_with_its_own_fault_tag(tmp_path, fault, mutate) 
     _write_good(path)
     with h5py.File(path, "a") as h:
         mutate(h)
-    with h5py.File(path, "r") as h:
-        with pytest.raises(FlrValidationError) as exc:
-            validate(h)
+    with h5py.File(path, "r") as h, pytest.raises(FlrValidationError) as exc:
+        validate(h)
     assert exc.value.fault is fault, (
         f"expected {fault.name}, got {exc.value.fault.name} — the fault tags are "
         "what make G1.2's 'specific message' requirement testable"
@@ -254,9 +288,23 @@ def test_no_two_faults_share_a_message() -> None:
     The easy implementation collapses faults into a generic 'invalid record',
     which satisfies 'it rejected' while destroying the diagnostic value.
     """
-    messages = [f.value for f in Fault]
-    assert len(set(messages)) == len(messages), "two faults share a message"
-    names = [f.name for f in Fault]
+    # `list(Fault)` yields only CANONICAL members. Python collapses two enum
+    # members with equal values into an ALIAS, so a duplicated message never
+    # reaches this list -- the count silently drops instead. Asserting over
+    # `list(Fault)` therefore cannot fail, which a mutation proved (AM1): giving
+    # MU_WARMUP the PROVENANCE_MISSING message left the whole matrix green.
+    #
+    # `__members__` includes aliases, so it is the only view that can see the
+    # collision.
+    by_name = {name: m.value for name, m in Fault.__members__.items()}
+    dupes = {v for v in by_name.values() if list(by_name.values()).count(v) > 1}
+    assert not dupes, f"two faults share a message: {sorted(dupes)}"
+
+    assert len(Fault.__members__) == len(list(Fault)), (
+        "an enum ALIAS exists -- two faults were declared with the same value and "
+        "Python merged them. The merged fault can never be raised distinctly."
+    )
+    names = list(Fault.__members__)
     assert len(set(names)) == len(names)
 
 

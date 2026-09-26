@@ -584,3 +584,36 @@ The mean displacement moved 32% over five periods, which is far larger than any
 leak and is real. Everything beyond that fact needs a longer record than the
 stored window contains.
 
+
+---
+
+# AI3 — THE DRIFT WORK IS INVALIDATED BY THE CONVOLUTION FIX, NOT PERTURBED
+
+The re-synced record moves platform surge at 120 s from `+0.009147 m` to
+`+0.016648 m` — **+82%**. That is not a correction to apply to the existing
+result; it removes its basis.
+
+**Why this is invalidation rather than adjustment.** The driver/brake decomposition
+is a **near-cancellation**:
+
+```
+driver  -0.220
+brake   +0.203
+```
+
+Two terms of nearly equal magnitude and opposite sign, whose small difference is
+the result. It is fed by the **pitch–heave phase correlation**, and the **pitch
+endpoint term moved by 44×**.
+
+A near-cancellation under a 44× change to one of its inputs is a **fresh
+measurement**. There is no sense in which `-0.220` and `+0.203` survive with an
+adjustment: the phase relationship that set their near-equality was itself
+computed under the defect.
+
+**Status:** the drift mechanism, the driver/brake split, and every number derived
+from them are **suspended pending re-run**. This is the second independent reason
+for that re-run — the first being full-scale Reynolds — and it is already queued
+behind the full-scale work carried to F3.
+
+Nothing here says the mechanism was wrong. It says the evidence for it no longer
+exists.

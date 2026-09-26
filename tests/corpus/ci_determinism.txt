@@ -1,0 +1,155 @@
+# CORPUS: states the `determinism` job must gate on, and the ones it must
+# stay green through (CF1).
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. Written at the thirty-second verdict on F2, the
+# seventh verdict on step 5 (HEAD 73cf6ce).
+#
+# WHY THIS FILE EXISTS (BE3). CF1 built the right measurement: ten runners at
+# one commit, and the outcome split exactly by CPU vendor -- three INTEL(R)
+# XEON(R) PLATINUM 8573C produced `F2_figures.md` sha256 b0dc947f... and failed
+# the regression rung; seven AMD EPYC produced 2af0f7cb... and passed. With
+# `OPENBLAS_CORETYPE: Haswell` pinned the re-run gave one hash on all ten. The
+# diagnosis is real, it is measured rather than argued, and it retired the
+# reviewer's own 2.6e9 figure. None of that is in question here.
+#
+# WHAT IS IN QUESTION IS THE JOB AS A GATE. Its name is "10 runners,
+# byte-identity" and its body is three steps: print `/proc/cpuinfo`, run
+# `regen_figures.py` and print a sha256, run `pytest tests/regression -q`.
+# NOTHING IN IT READS ANOTHER SHARD'S OUTPUT. The byte-identity in the name is
+# established by a human reading ten log lines, which is a measurement that
+# happened once and an assertion that exists nowhere. The one artifact the job
+# can go red about is `tests/regression`, and `tests/regression` does not read
+# `docs/milestones/F2_figures.md` -- which is one of the three things Q8 makes
+# CI canonical for.
+#
+# AND THE CONDITION THE WHOLE ARRANGEMENT NOW RESTS ON IS ONE UNASSERTED LINE.
+# Q8 names "Linux, with Python, numpy and scipy pinned in a lockfile" as what
+# makes CI canonical. The measurement says that is not sufficient: the kernel
+# OpenBLAS dispatches to is chosen at run time from the CPU, and a lockfile
+# does not pin it. `OPENBLAS_CORETYPE` is the load-bearing condition, it is in
+# `ci.yml` and in no plan, and deleting it leaves the guards suite green.
+#
+# FORMAT
+#   id=<name> state=<what is true of the tree or the runners> require=<pass|fail>
+#   measured=<what the shipped job body or the shipped suite did at 73cf6ce>
+#
+#   require=fail  the arrangement must go red -- some job, some assertion
+#   require=pass  the state is legitimate and nothing may redden
+#
+# WHAT A PASSING SCAN MEANS. For each entry, put the tree in the state and run
+# the shipped `determinism` job body verbatim -- `python scripts/regen_figures.py`,
+# the sha256 print, `pytest tests/regression -q` -- plus, for the states that
+# concern the workflow file, the guards job body. A passing scan means every
+# entry's outcome matches `require`. IT DOES NOT MEAN CI IS CANONICAL: a scan
+# cannot sample a runner allocation, and the discriminating part -- the INTEL
+# 8573C -- was drawn once in the pinned run and three times in the unpinned one.
+#
+# MEASURED AT 73cf6ce by the reviewer, Windows, Python 3.13.11, in a
+# `git clone --local`, one state at a time.
+
+id=determinism_committed_figures_file_replaced_by_one_line_of_garbage state=docs_milestones_F2_figures_md_overwritten_with_THE_COMMITTED_FIGURES_ARE_NOW_GARBAGE_then_the_job_body_run_verbatim require=fail measured=pass_regen_exit0_FIGURES_SHA256_be6555af_unchanged_tests_regression_4_passed_the_regen_step_OVERWRITES_the_file_before_hashing_it_so_the_printed_hash_says_nothing_about_the_repository
+id=determinism_committed_figures_file_deleted_outright state=docs_milestones_F2_figures_md_removed_then_the_job_body_run_verbatim require=fail measured=pass_regen_exit0_file_recreated_2487_bytes_tests_regression_4_passed_git_status_clean_afterwards
+id=determinism_two_shards_print_different_FIGURES_SHA256 state=any_two_of_the_ten_matrix_legs_produce_different_hashes_while_both_pass_tests_regression require=fail measured=NO_ASSERTION_EXISTS_the_job_body_is_checkout_setup_python_pip_install_cpuinfo_regen_and_hash_and_pytest_tests_regression_and_no_step_reads_another_legs_output_no_artifact_is_uploaded_and_there_is_no_needs_gathering_leg
+id=determinism_figures_disagree_with_CI_while_every_golden_agrees state=the_live_state_at_73cf6ce_all_ten_legs_report_4_passed_on_tests_regression_and_the_guards_job_reports_test_the_generated_figures_are_not_stale_FAILED_in_the_same_run require=fail measured=pass_run_34435454388_determinism_10_of_10_success_the_decoupling_is_not_hypothetical_it_is_the_state_of_HEAD
+id=determinism_OPENBLAS_CORETYPE_pin_deleted_from_the_workflow state=the_env_line_OPENBLAS_CORETYPE_Haswell_removed_from_github_workflows_ci_yml_and_nothing_else_changed require=fail measured=pass_482_passed_0_failed_over_the_whole_guards_job_body_nothing_in_the_repository_asserts_the_pin_exists_and_no_plan_records_it_as_a_condition
+id=determinism_a_regression_golden_that_genuinely_moves_on_one_vendor state=the_unpinned_state_at_291f096_three_INTEL_XEON_PLATINUM_8573C_legs_and_seven_AMD_EPYC_legs require=fail measured=fail_3_of_10_legs_failed_run_34434995901_tests_regression_2_failed_2_passed_on_each_Intel_leg_CONTROL_the_job_does_catch_a_golden_that_moves
+
+# ------------------------------------------------------------------------
+# THIRTY-THIRD VERDICT, eighth on step 5. The job COMPARES now: the committed
+# file is hashed before anything touches it and `regen_figures.py --check`
+# returns 1 on any difference. I re-ran the garbage and the delete against the
+# new body and both redden, so R284's repair is real and I say so.
+#
+# WHAT THE FIRST LIVE RUN OF THE NEW BODY SHOWED. At a949709, run 34440129351,
+# ALL TEN LEGS FAILED -- `regen_figures: F2_figures.md is not what this script
+# produces at HEAD` -- on four CPU models, with the kernel pinned. The committed
+# figures file is a LAPTOP render: CI's entry name is
+# `ch_edgemin_D0p0758_roll1p05_aniso9p4e5` at edge 3.6425e-14 where the committed
+# file and a local run give `ci_plateau_D0p0689_roll1p017_aniso9p6e5` at
+# 3.6275e-14. `F2.md` already says a figure "whose stamp is not CI's pinned
+# environment fails the build"; `F2_figures.md` carries no stamp.
+#
+# AND TWO MEASUREMENTS WERE LOST IN THE REPAIR. `--check` and the
+# `FIGURES-SHA256` print sit in ONE `run:` block, so a failing comparison
+# suppresses the render hash -- the only cross-runner quantity the job has --
+# on every leg; and the `pytest tests/regression` step is `needs`-ordered after
+# it and was SKIPPED on all ten. The goldens ran ten times on CI at 73cf6ce and
+# zero times at a949709.
+#
+# MEASURED AT a949709: the two shipped step bodies verbatim in a
+# `git clone --local`, Windows, Python 3.13.11; and run 34440129351 on CI.
+# ------------------------------------------------------------------------
+
+id=determinism_committed_figures_file_replaced_by_one_line_of_garbage_AT_a949709 state=docs_milestones_F2_figures_md_overwritten_with_GARBAGE_then_the_two_shipped_steps_run_verbatim require=fail measured=fail_regen_figures_F2_figures_md_is_not_what_this_script_produces_at_HEAD_exit_1_and_the_file_is_NOT_overwritten_CAUGHT_the_R284_repair_works
+id=determinism_committed_figures_file_deleted_outright_AT_a949709 state=docs_milestones_F2_figures_md_removed_then_the_two_shipped_steps_run_verbatim require=fail measured=fail_exit_1_and_the_file_is_NOT_recreated_CAUGHT
+id=determinism_OPENBLAS_CORETYPE_pin_deleted_from_the_workflow_AT_a949709 state=the_env_line_OPENBLAS_CORETYPE_Haswell_removed_from_github_workflows_ci_yml_and_nothing_else_changed require=fail measured=pass_463_passed_0_failed_over_the_whole_guards_job_body_and_grep_for_OPENBLAS_CORETYPE_or_Haswell_across_tests_floatfea_and_scripts_returns_NOTHING_the_plan_now_records_the_condition_and_no_machine_does
+id=determinism_a_vendor_split_in_the_RENDER_hiding_behind_a_stale_committed_file state=two_legs_render_different_bytes_AND_the_committed_file_matches_neither require=fail measured=INDISTINGUISHABLE_at_a949709_all_ten_legs_exit_1_with_one_message_and_FIGURES_SHA256_was_printed_on_0_of_10_legs_the_only_hash_the_job_publishes_is_COMMITTED_SHA256_545f74b6_which_is_identical_on_all_ten_by_construction_and_carries_no_information
+id=determinism_the_goldens_execute_on_no_CI_job_at_all state=at_a949709_the_pytest_tests_regression_step_is_SKIPPED_on_all_ten_legs_because_the_step_before_it_failed_and_ladder6_is_skipped_behind_a_red_ladder4 require=fail measured=pass_nothing_asserts_that_tests_regression_actually_EXECUTED_test_ci_runs_the_whole_suite_parses_the_workflow_file_and_is_green_the_goldens_ran_ten_times_at_73cf6ce_and_zero_times_here
+id=determinism_committed_figures_were_produced_on_a_NON_canonical_machine state=docs_milestones_F2_figures_md_as_committed_is_the_Windows_render_and_the_runner_renders_a_different_corpus_entry_name_and_a_different_detection_edge require=fail measured=fail_all_ten_legs_run_34440129351_CAUGHT_and_this_is_the_coupling_R284_asked_for_working_on_its_first_live_run
+id=determinism_a_generated_figure_file_carrying_no_environment_stamp state=docs_milestones_F2_figures_md_header_names_the_generator_and_says_nothing_about_the_interpreter_or_the_libraries_that_produced_it require=fail measured=pass_no_stamp_exists_so_nothing_can_read_one_while_F2_md_states_that_a_golden_or_figure_whose_stamp_is_not_CIs_pinned_environment_fails_the_build
+id=determinism_all_ten_legs_render_bytes_equal_to_the_committed_file state=the_state_the_job_is_NAMED_after_ten_runners_one_render_and_it_matches_what_is_in_git require=pass measured=NEVER_OBSERVED_no_leg_has_reached_this_state_at_any_commit_on_this_branch
+
+# ------------------------------------------------------------------------
+# THIRTY-FOURTH VERDICT, ninth on step 5. MEASURED AT 55498f4 and against CI
+# runs 34459537327 (at 1be5606) and 34460382184 (at 05133c4) by the reviewer.
+# 6 new entries, 2 agree, 4 do not.
+#
+# THE JOB NOW MEASURES, AND I VERIFIED THE MEASUREMENT INDEPENDENTLY. Ten legs,
+# one hash `2af0f7cb`, `Haswell` on all ten, `4 collected, 0 failed` on all ten,
+# and `ten of ten identical` printed by a job that did not exist a commit ago.
+# At 05133c4 the ten legs drew SIX CPU models across two vendors -- AMD EPYC
+# 7763, 9V74 and 9V45, Intel 8573C, 8370C and 6973P-C -- which is a stronger
+# result than the three-model run the report publishes. `gh run download
+# 34460382184 -n determinism-leg-1` gives an `F2_figures.md` whose sha256 is
+# `2af0f7cb...`, equal to the leg's own `figures.sha256`, so CG2's artifact is
+# the file the legs agreed on. I checked it rather than assuming it, which is
+# the point of the next entry.
+#
+# AND THE COMMITTED FILE IS STILL NOT THAT FILE. `COMMITTED-MATCHES-CI no` on
+# 10 of 10, `test_the_generated_figures_are_not_stale` is the ONE remaining
+# failure in the `guards and meta-tests` job at the reviewed commit, and the
+# entry `determinism_all_ten_legs_render_bytes_equal_to_the_committed_file`
+# above is still NEVER OBSERVED at any commit on this branch.
+#
+# THE DELTA, LOCALISED, because the report classifies six of the nine differing
+# rows and the ninth is the one that matters. Nine lines of 47 differ, not
+# eleven. Three are last-bit at 1e-14 (`rigid_body_mode_ratio`,
+# `rigid_body_subspace_loss`, `rigid_body_counter_loss`). Five are the argmin
+# and its dependents: `detection_edge_at` names a different corpus entry,
+# and `detection_edge`, `counter_defect_over_edge`, `counter_headroom_room`
+# and `counter_defect_boundary` are all computed from that edge and all move
+# by 0.4 to 0.5 percent with it. The ninth is `clean_worst_ratio`, 0.2765x
+# against 0.2564x -- 7.3 percent -- AND `clean_worst_entry` IS BYTE-IDENTICAL
+# ON BOTH MACHINES. No argmax flipped. That row is the same extremum, over the
+# same winning entry, computed twice, and it is the headroom quantity the gate
+# is about. The report attributes it to a flip. It is not one.
+# ------------------------------------------------------------------------
+
+id=determinism_a_leg_whose_REGRESSION_RUNG_FAILS state=the_shipped_leg_step_run_verbatim_over_a_leg_regression_xml_recording_4_testcases_of_which_3_carry_a_failure_element require=fail measured=pass_exit0_the_step_writes_4_collected_3_failed_into_leg_regression_txt_and_exits_0_because_the_only_sys_exit_is_on_an_EMPTY_case_list_and_determinism_verdict_PRINTS_that_string_and_asserts_nothing_about_it_so_the_goldens_run_on_ten_CI_legs_and_their_failure_is_fatal_on_none_while_ladder6_is_skipped_behind_a_red_ladder4
+id=determinism_a_leg_uploading_an_F2_figures_md_that_is_not_the_file_its_hash_was_taken_over state=leg_F2_figures_md_replaced_after_leg_figures_sha256_is_written_and_before_the_upload require=fail measured=pass_determinism_verdict_reads_cpu_txt_coretype_txt_figures_sha256_and_regression_txt_and_never_re_hashes_the_uploaded_F2_figures_md_so_CG2s_claim_that_the_bytes_uploaded_are_the_bytes_ten_legs_agreed_on_is_held_by_nothing_I_downloaded_leg_1_at_34460382184_and_it_HELD_which_is_existence_not_provenance
+id=determinism_ten_legs_agreeing_on_a_render_nobody_compared_with_the_repository state=all_ten_hashes_equal_all_ten_core_types_Haswell_and_COMMITTED_MATCHES_CI_no_on_all_ten require=fail measured=pass_determinism_verdict_is_GREEN_in_exactly_this_state_at_both_34459537327_and_34460382184_because_the_comparison_step_is_continue_on_error_and_the_verdict_job_never_reads_its_result_the_split_that_would_be_caught_is_leg_against_leg_and_the_one_that_is_live_is_leg_against_git
+id=determinism_the_CI_rendered_artifact_also_carries_no_environment_stamp state=head_9_of_the_downloaded_leg_F2_figures_md_is_a_title_a_provenance_sentence_and_a_table_header_with_no_interpreter_or_library_version require=fail measured=pass_identical_to_the_committed_file_head_so_committing_the_artifact_today_would_land_a_canonical_file_that_says_nothing_about_where_it_came_from_while_F2_md_1040_1045_states_that_the_stamp_is_what_enforces_the_rule
+id=determinism_clean_worst_ratio_moves_7_3_percent_at_an_IDENTICAL_winning_entry state=CI_render_0_2564x_committed_render_0_2765x_and_clean_worst_entry_ck_cleanmax_D18p8_tw0p499_aniso1e6_on_BOTH require=fail measured=pass_nothing_compares_the_two_renders_row_by_row_and_the_reports_explanation_that_this_row_is_an_argmin_whose_winner_flips_is_refuted_by_the_adjacent_row_of_the_same_file_Q8s_declared_local_classes_are_exact_or_2_ULP_of_the_channels_amplitude_and_7_3_percent_is_neither
+id=determinism_ten_legs_across_SIX_cpu_models_agree_on_one_hash state=run_34460382184_AMD_EPYC_7763_9V74_9V45_and_Intel_8573C_8370C_6973P_C_all_reporting_2af0f7cb_and_Haswell require=pass measured=pass_CONTROL_this_is_CG1_working_and_it_is_the_first_time_this_branch_has_had_it_the_previous_ten_of_ten_was_a_job_hashing_what_it_had_just_written
+
+# ------------------------------------------------------------------------
+# ADDED AT THE THIRTY-FIFTH VERDICT ON F2, THE TENTH ON STEP 5 (HEAD e3a3bd1).
+#
+# THE ENTRY THIS FILE WAS WAITING FOR IS NOW OBSERVED. At run 34486215228, the
+# push run at the reviewed commit, all ten legs printed `COMMITTED-MATCHES-CI
+# yes` and the verdict job printed `ten of ten identical: 40b8828fb3f5 core
+# Haswell`, and docs/milestones/F2_figures.md hashes to exactly that. I
+# downloaded leg 1 of 34482015314 and `cmp` against the committed file is
+# byte-identical. The entry
+# `determinism_all_ten_legs_render_bytes_equal_to_the_committed_file`, NEVER
+# OBSERVED for four rounds, is observed. That is the round's result and it is
+# recorded before the five below, which are what it does not cover.
+# ------------------------------------------------------------------------
+
+id=determinism_committed_render_equals_all_ten_legs_at_the_reviewed_commit_CONTROL state=run_34486215228_ten_legs_each_printing_COMMITTED_MATCHES_CI_yes_and_the_verdict_job_printing_ten_of_ten_identical_40b8828fb3f5_core_Haswell require=pass measured=pass_CONTROL_and_verified_outside_CI_gh_run_download_34482015314_n_determinism_leg_1_then_sha256sum_gives_40b8828fb3f57b64_equal_to_the_legs_own_figures_sha256_and_cmp_against_docs_milestones_F2_figures_md_is_identical_this_is_the_first_canonical_file_this_branch_has_had
+id=determinism_every_leg_uploads_clean_worst_txt_and_nothing_ever_reads_it state=ten_legs_run_scripts_localise_clean_worst_py_and_tee_it_into_leg_clean_worst_txt_which_is_uploaded_with_the_artifact require=fail measured=pass_the_verdict_job_opens_F2_figures_md_figures_sha256_cpu_txt_coretype_txt_and_regression_txt_and_never_clean_worst_txt_so_the_per_state_localisation_that_answers_R303_is_produced_ten_times_and_compared_zero_times_a_leg_on_which_curvature_xz_stopped_winning_would_upload_that_and_nothing_would_say_so
+id=determinism_counter_defect_boundary_probe_sizes_may_move_nine_orders_of_magnitude_off_the_canonical_machine state=the_committed_row_reads_2_183e_06_passes_2_188e_06_fails_and_the_local_render_reads_1e_99_passes_1e_99_fails require=fail measured=pass_exit0_regen_figures_compare_treats_this_row_as_kind_words_and_continues_before_any_number_is_read_so_no_spread_is_computed_no_spread_is_printed_and_FIGURE_FLOOR_CLASS_SPREAD_is_never_applied_to_it_while_F2_md_Q8_clause_3_says_the_local_value_is_within_FIGURE_FLOOR_CLASS_SPREAD_of_the_committed_canonical_one_and_the_spread_is_printed_beside_the_value_either_way
+id=determinism_the_words_comparator_strips_the_letter_e_out_of_the_decision_words state=counter_defect_boundary_reading_passees_where_the_committed_file_reads_passes require=fail measured=pass_exit0_the_comparator_is_re_sub_over_the_character_class_dash_plus_digits_dot_e_E_so_passes_and_passees_both_reduce_to_passs_the_pair_that_matters_passes_versus_fails_survives_it_and_the_decision_word_is_nevertheless_compared_after_an_unintended_transformation_of_itself
+id=determinism_FLOOR_CLASS_grants_the_local_licence_to_a_row_that_was_BYTE_IDENTICAL_on_both_machines state=rigid_body_counter_ratio_reads_3_0612e_11_in_the_canonical_render_and_3_0612e_11_on_this_laptop_and_is_listed_in_regen_figures_FLOOR_CLASS require=fail measured=pass_membership_of_FLOOR_CLASS_is_a_hand_written_dict_and_nothing_measures_whether_a_member_needs_the_licence_the_plan_says_nine_rows_move_and_all_nine_are_in_this_class_or_are_the_argmin_name_which_holds_in_one_direction_only_the_class_has_nine_members_of_which_eight_moved_and_the_ninth_mover_detection_edge_at_is_not_in_it_at_all
+id=determinism_a_stale_floor_class_value_in_the_committed_file_read_on_a_non_canonical_machine state=the_committed_clean_worst_ratio_replaced_with_this_laptops_0_2765x_and_regen_figures_py_check_run_here require=pass measured=pass_DECLARED_exit0_with_the_spread_1_0784x_printed_beside_it_this_is_Q8s_third_class_working_as_written_and_it_is_recorded_so_the_dependency_is_on_the_page_the_ONLY_place_a_stale_floor_class_row_reddens_is_the_byte_comparison_on_the_canonical_machine_inside_the_guards_job

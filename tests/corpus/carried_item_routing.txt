@@ -1,0 +1,57 @@
+# CORPUS: status cells that route a BLOCKING item away from the step it
+# belongs to (CF2).
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. Written at the thirty-second verdict on F2, the
+# seventh verdict on step 5 (HEAD 73cf6ce).
+#
+# WHY THIS FILE EXISTS (BE3). R267 was that a step report recorded four of a
+# verdict's eight BLOCKING items as `open -- 4a`, re-filing the verdict's own
+# ruling about which step an item belongs to. CF2 answers it with
+# `test_a_blocking_item_is_not_routed_to_4a`, whose report-side predicate is
+#
+#     "4a" in _plain(status_cell)
+#
+# -- a literal substring. The verdict-side half is read from the verdict's own
+# `(BLOCKS ...)` headings and is sound; this file measures the OTHER half, the
+# only inputs to which so far are the exact four cells the report had already
+# written. A detector whose corpus is the one shape its author just fixed has a
+# reach of one shape.
+#
+# The routing that matters is a MEANING, not a token. `docs/milestones/F2a.md`
+# is the name of the document that owns the deferred work, and a report writing
+# `F2a` is doing precisely the thing R267 named while never typing `4a`.
+#
+# FORMAT
+#   id=<name> expect=<refused|allowed> measured=<what the shipped guard did at
+#   73cf6ce> row=<the markdown table row, verbatim, to end of line>
+#
+#   expect=refused   the row parks an item the answered verdict headed
+#                    `(BLOCKS ...)` somewhere other than this step;
+#                    `test_a_blocking_item_is_not_routed_to_4a` must go red
+#   expect=allowed   the row is legitimate and the guard must stay green:
+#                    either the item is not blocking, or the status says only
+#                    that the work is not done
+#
+# WHAT A PASSING SCAN MEANS. For each entry, substitute the row for the
+# corresponding row of the newest revision's Carried table and run
+# `pytest tests/test_report_carried.py::test_a_blocking_item_is_not_routed_to_4a`.
+# A passing scan means every entry's outcome matches `expect`. It does NOT mean
+# the report is honest: this guard reads a cell, and what the cell should say is
+# a judgement no substring test makes.
+#
+# MEASURED AT 73cf6ce by the reviewer, in a `git clone --local`, one row
+# substituted at a time, everything else held. R275 is headed
+# `(BLOCKS -- head 2, a tolerance basis)` in the answered verdict; R277 is
+# headed `(recordable, 4a)`.
+
+id=blocking_item_status_reads_the_bare_token_4a expect=refused measured=refused_1_failed row=| R275 | **open** — 4a |
+id=blocking_item_status_reads_step_4a expect=refused measured=refused_1_failed row=| R275 | **open** — step 4a |
+id=blocking_item_status_names_the_milestone_document_F2a expect=refused measured=ALLOWED_1_passed row=| R275 | **open** — F2a |
+id=blocking_item_status_names_the_milestone_document_path expect=refused measured=ALLOWED_1_passed row=| R275 | **open** — owned by `docs/milestones/F2a.md` |
+id=blocking_item_status_spells_the_step_number_in_words expect=refused measured=ALLOWED_1_passed row=| R275 | **open** — step four a |
+id=blocking_item_status_separates_the_digit_and_the_letter expect=refused measured=ALLOWED_1_passed row=| R275 | **open** — deferred to step 4 a |
+id=blocking_item_status_says_verification_apparatus_not_this_step expect=refused measured=ALLOWED_1_passed row=| R275 | **open** — verification apparatus, not this step |
+id=blocking_item_status_asserts_the_classification_the_verdict_did_not_give expect=refused measured=ALLOWED_1_passed row=| R275 | **open** — recordable, not blocking |
+id=nonblocking_item_routed_to_4a_is_legitimate expect=allowed measured=allowed_1_passed row=| R277 | **open** — recordable at 4a in the verdict's own classification |
+id=blocking_item_simply_not_done_yet_is_legitimate expect=allowed measured=allowed_1_passed row=| R275 | **open** — §3, CF1 must reach ten of ten first |

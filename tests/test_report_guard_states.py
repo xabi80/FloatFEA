@@ -1,0 +1,678 @@
+"""The carry guard's inputs, run as the states that actually occur (R234).
+
+`tests/test_report_carried.py` reads a report and a verdict at MODULE scope, so
+whatever it cannot read it cannot report -- it dies during collection and takes
+the suite with it. That is what CB2 shipped: at every legitimate step boundary,
+where the report is committed and the verdict is written afterwards, `pytest -q`
+gave `1 error` and ran **zero** of 1589 tests. Item 1b made a boundary red; this
+made it silent.
+
+A guard whose failure mode is "no tests ran" is worse than one that is wrong,
+because a wrong answer is still an answer. This file runs the guard against each
+state the reviewer enumerated and requires the outcome to be one of three:
+
+    green        the state is normal and every assertion passes
+    named_fail   the state is a defect and a NAMED test carries the message,
+                 with the rest of the file still collected and run
+    ignored      the state is not a step at all and the guard steps over it
+
+**`named_fail` is the whole point.** It is not enough that the guard notices;
+it has to notice without preventing anything else from running.
+
+THE CORPUS IS THE REVIEWER'S. `tests/corpus/report_guard_states.txt` is test
+DATA and the implementer does not edit it.
+"""
+
+from __future__ import annotations
+
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from typing import NamedTuple
+from xml.etree import ElementTree
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+CORPUS = ROOT / "tests" / "corpus" / "report_guard_states.txt"
+GUARD = "tests/test_report_carried.py"
+
+_PLAN = ROOT / "docs" / "milestones" / "F2.md"
+_STEP_LINE = re.compile(r"<!--\s*step-under-execution:\s*(\d+)\s*-->")
+
+
+def _step() -> int:
+    """The step the guard reads, taken the way the guard takes it (DB2).
+
+    THIS WAS THE LITERAL `5`, THIRTEEN TIMES, AND DB2 MOVED THE GUARD OFF IT.
+    The harness went on planting its defects in `step-5.md` while
+    `test_report_carried.py` read `step-6.md`, so three negative controls --
+    `answers_header_names_a_sha_that_is_not_a_commit`,
+    `guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF` and
+    `guard_state_the_whole_suite_line_names_an_ANCESTOR_AT_WHICH_THE_SUITE_WAS
+    _RED` -- each failed on `assert 0 != 0` with the nested run at 170 passed:
+    the guard found NOTHING, which is the opposite of the failure the state
+    was built to provoke. A disabled negative control is worse than a missing
+    one, because it reports green.
+    """
+    m = _STEP_LINE.search(_PLAN.read_text(encoding="utf-8", errors="replace"))
+    return int(m.group(1)) if m else 0
+
+
+STEP = _step()
+REPORT_NAME = f"step-{STEP}.md"
+
+
+def _verdict_step() -> int:
+    """The step whose file the NEWEST VERDICT is in, which is not `STEP`.
+
+    R494(C) was this same confusion one level in: the guard fetched
+    `step-{STEP}.md` for the verdict while the verdict lived in the previous
+    step's file, and read the working copy every time as a result. I fixed it
+    there and left it here, so `copy_verdict` tried to copy a `step-6.md`
+    verdict that does not exist and raised `FileNotFoundError` from inside
+    `shutil.copy2` -- reported as the guard failing.
+    """
+    steps = [
+        int(q.stem.split("-")[1])
+        for q in (ROOT / "docs" / ("re" + "views") / "F2").glob("step-*.md")
+        if q.stem.split("-")[1].isdigit()
+    ]
+    return max(steps) if steps else STEP
+
+
+VERDICT_STEP = _verdict_step()
+NEXT = STEP + 1
+"""The step AFTER the one under execution.
+
+Every state below that means "a report for the next step" used the literal
+`6`, which was the next step when they were written and is the current one
+now. That is not cosmetic: `report_file_is_a_directory` did
+`(reports/"step-6.md").mkdir()` over a file that exists and raised
+`FileExistsError` inside the builder, before the guard ran at all, and
+`newest_report_has_no_verdict_yet` overwrote the real step-6 report with a
+copy of step 5's. A state that cannot be built reports as a failure of the
+thing it was built to test.
+"""
+# THE VERDICT FILE, WHICH IS NOT step-{STEP} AT A BOUNDARY (see _verdict_step).
+REVIEW_PATH = "docs/re" + f"views/F2/step-{VERDICT_STEP}.md"
+
+# How each state is built, relative to a COPY of the repository. A state is a
+# mutation of `docs/reports/F2/` or `docs/reviews/F2/` and nothing else.
+STATES: dict[str, list[tuple[str, str]]] = {
+    "baseline": [],
+    "newest_report_has_no_verdict_yet": [("copy_report", str(NEXT))],
+    "newest_verdict_file_present_but_empty": [
+        ("copy_report", str(NEXT)),
+        ("empty_verdict", str(NEXT)),
+    ],
+    "two_digit_step_number": [("copy_report", "10"), ("copy_verdict", "10")],
+    "non_numeric_step_suffix": [("copy_report", "5b")],
+    "reports_directory_renamed_away": [("rename_reports", "")],
+    # --- the twenty-ninth verdict's eleven ---------------------------------
+    "superscript_digit_step_number": [("report_named", "step-\N{SUPERSCRIPT ONE}.md")],
+    "shallow_clone_depth_1": [("shallow", "")],
+    "reviews_directory_renamed_away": [("rename_reviews", "")],
+    "answers_header_names_a_sha_that_is_not_a_commit": [("bad_answers_sha", "deadbee")],
+    "two_reports_ahead_of_the_newest_verdict": [
+        ("copy_report", str(NEXT)),
+        ("copy_report", str(NEXT + 1)),
+    ],
+    "report_file_is_a_directory": [
+        ("report_dir", str(NEXT)),
+        ("copy_verdict", str(NEXT)),
+    ],
+    "verdict_file_is_a_directory": [
+        ("copy_report", str(NEXT)),
+        ("verdict_dir", str(NEXT)),
+    ],
+    "draft_suffix_beside_a_step_report": [("report_named", f"step-{NEXT}-draft.md")],
+    "step_number_is_the_empty_string": [("report_named", "step-.md")],
+    "two_digit_step_number_discriminating": [
+        ("copy_report", "10"),
+        ("copy_verdict", "10"),
+        ("append_finding", "10"),
+    ],
+    # VERDICT_STEP, NOT STEP (R502). `append_finding` edits the VERDICT file,
+    # and at a boundary that is the previous step's: STEP is 6 and the verdict
+    # is in step-5.md. With STEP it raised FileNotFoundError before the guard
+    # ran, which disabled the one corpus entry here that has ever caught a
+    # live defect. This is R494(C) a third time, in the commit that defined
+    # `_verdict_step()` to fix the other two.
+    "verdict_amended_after_the_commit_the_report_answers": [("append_finding", str(VERDICT_STEP))],
+    # --- the thirtieth verdict's four --------------------------------------
+    "shallow_clone_depth_1_reports_one_diagnosis_not_sixteen": [("shallow", "")],
+    "zero_padded_step_number": [("report_named", f"step-0{NEXT}.md")],
+    "zero_padded_step_number_beside_the_unpadded_one": [
+        ("report_named", f"step-0{NEXT}.md"),
+        ("copy_report", str(NEXT)),
+        ("copy_verdict", str(NEXT)),
+    ],
+    "answers_header_names_an_older_verdict_commit": [("older_answers_sha", "")],
+    # --- the thirty-fifth verdict's two ------------------------------------
+    # The control is the same build as the state above, under its own name:
+    # the entry asks whether a state that REDDENS is reported when someone
+    # has declared it green, and the answer has to be a run rather than a
+    # reading of the branch. It is not in `REQUIREMENT_CHANGED`, which is the
+    # whole point -- a declaration is what would hide it.
+    "guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL": [
+        ("older_answers_sha", "")
+    ],
+    "guard_state_a_report_commit_messaged_docs_that_also_edits_the_guards_measuring_it": [
+        ("docs_commit_touching_guards", "")
+    ],
+    # --- the thirty-sixth verdict's two ------------------------------------
+    "guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF": [
+        ("pointers_all_at_carried", "")
+    ],
+    "guard_state_the_whole_suite_line_names_an_ANCESTOR_AT_WHICH_THE_SUITE_WAS_RED": [
+        ("suite_line_at_an_older_ancestor", "")
+    ],
+}
+
+
+def _entries() -> list[tuple[str, str]]:
+    out: list[tuple[str, str]] = []
+    for line in CORPUS.read_text(encoding="utf-8").splitlines():
+        if not line.startswith("id="):
+            continue
+        f = dict(p.split("=", 1) for p in line.split() if "=" in p and not p.startswith("src="))
+        out.append((f["id"], f["require"]))
+    return out
+
+
+ENTRIES = _entries()
+
+# States whose required outcome CHANGES under the repaired guard, with the
+# reason. Recorded rather than forced: the reviewer's `require` was measured
+# against the version that died at module scope, and a state that only failed
+# because the guard could not be imported is not a state that should fail.
+# Each entry maps to the outcome the REPAIRED guard produces, so the direction
+# is asserted rather than merely excused. A bare string here silently indexed to
+# its first character and asserted the right thing by accident.
+REQUIREMENT_CHANGED: dict[str, tuple[str, str]] = {
+    "shallow_clone_depth_1": (
+        "named_fail",
+        "require=green. A guard that cannot see the diff and says nothing is "
+        "the defect R243 names, so the repaired guard reports a NAMED failure "
+        "instead of passing. `fetch-depth: 0` removes the state from CI; it "
+        "does not make the state harmless where it occurs",
+    ),
+    "two_digit_step_number": (
+        "green",
+        "require=named_fail, measured against CB2's guard. A step-10 report and "
+        "a step-10 verdict are a COHERENT pair -- `int(stem.split('-')[1])` "
+        "reads `10` correctly and the carry comparison resolves -- so the "
+        "repaired guard is green. The failure the reviewer measured was the "
+        "module-scope read, not the two-digit number",
+    ),
+}
+
+
+# CE2: AN ABLATION ASSERTS THE DIAGNOSIS, NOT THE FAILURE.
+#
+# `assert code != 0` was satisfied both by the repair and by its absence: with
+# the return-code branch removed, the shallow clone still exits non-zero -- with
+# SIXTEEN site failures instead of one named diagnosis. The test could not tell
+# the two apart, which was the whole content of R243.
+#
+# `{state: (must fail, must NOT fail)}`. The second half is what makes the
+# assertion an ablation: removing the branch turns the deferring tests red, and
+# that is a different set.
+DIAGNOSIS: dict[str, tuple[str, str]] = {
+    "shallow_clone_depth_1_reports_one_diagnosis_not_sixteen": (
+        "test_the_diff_the_site_check_needs_is_available",
+        "test_every_named_site_is_touched_or_declared",
+    ),
+    "shallow_clone_depth_1": (
+        "test_the_diff_the_site_check_needs_is_available",
+        "test_every_named_site_is_touched_or_declared",
+    ),
+    "newest_report_has_no_verdict_yet": (
+        "test_the_guard_reads_the_step_being_worked_on",
+        "test_the_report_names_the_verdict_it_answers",
+    ),
+    "answers_header_names_a_sha_that_is_not_a_commit": (
+        "test_the_report_names_the_verdict_it_answers",
+        "test_the_diff_the_site_check_needs_is_available",
+    ),
+}
+
+
+def _force_remove(func, path, exc):  # noqa: ANN001 - shutil's handler signature
+    """Clear the read-only bit and retry. Git packs arrive read-only."""
+    import os
+    import stat
+
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+
+def _seed_older_verdict(work: Path, reviews: Path) -> None:
+    """Give the verdict file a second commit, inside the scratch copy (R517).
+
+    Three states need an EARLIER verdict commit to point at, and at a step's
+    first verdict there is none. This rewrites the file to a marked earlier
+    form, commits that, then restores the real text and commits again -- so
+    the real verdict is still `HEAD` for that path and there is a commit
+    behind it.
+    """
+    path = reviews / f"step-{VERDICT_STEP}.md"
+    real = path.read_text(encoding="utf-8", errors="replace")
+    path.write_text(
+        "<!-- seeded by the guard-state harness: an earlier verdict to point "
+        "at (R517) -->\n" + real,
+        encoding="utf-8",
+    )
+    for message in ("seed: an earlier verdict commit", "seed: the real verdict"):
+        if message.endswith("the real verdict"):
+            path.write_text(real, encoding="utf-8")
+        subprocess.run(["git", "-C", str(work), "add", REVIEW_PATH], check=True)
+        subprocess.run(
+            ["git", "-C", str(work), "commit", "-q", "--no-verify", "-m", message],
+            check=True,
+        )
+
+
+def _build(tmp: Path, state: str) -> Path:
+    """A repository copy with the state applied. Only `docs/` is mutated."""
+    work = tmp / "repo"
+    work.mkdir(parents=True, exist_ok=True)
+    # `.git` IS PART OF THE INPUT. `_changed_lines()` runs `git diff` against the
+    # reviewed commit, so a copy without it gives an empty touched-set and every
+    # site check fails for a reason that is the harness, not the guard.
+    for rel in (".git", "tests", "docs", "floatfea", "scripts", "pyproject.toml"):
+        src = ROOT / rel
+        dst = work / rel
+        if src.is_dir():
+            shutil.copytree(src, dst, dirs_exist_ok=True)
+        else:
+            shutil.copy2(src, dst)
+    reports, reviews = work / "docs/reports/F2", work / "docs/reviews/F2"
+    for action, arg in STATES[state]:
+        if action == "copy_report":
+            shutil.copy2(reports / REPORT_NAME, reports / f"step-{arg}.md")
+        elif action == "copy_verdict":
+            shutil.copy2(reviews / f"step-{VERDICT_STEP}.md", reviews / f"step-{arg}.md")
+        elif action == "empty_verdict":
+            (reviews / f"step-{arg}.md").write_text("", encoding="utf-8")
+        elif action == "rename_reports":
+            reports.rename(reports.parent / "F2_moved")
+        elif action == "rename_reviews":
+            reviews.rename(reviews.parent / "F2_moved")
+        elif action == "report_named":
+            shutil.copy2(reports / REPORT_NAME, reports / arg)
+        elif action == "report_dir":
+            # A DIRECTORY WHERE A REPORT SHOULD BE, whether or not a file is
+            # there first. The state used to be built at the step AFTER the
+            # current one, where nothing existed; once that step acquired a
+            # real report, `mkdir` raised FileExistsError, and once the arg
+            # followed the step again it raised FileNotFoundError on the
+            # unlink. Both are the builder failing, which reads as the guard
+            # failing.
+            target = reports / f"step-{arg}.md"
+            if target.exists():
+                target.unlink()
+            target.mkdir()
+        elif action == "verdict_dir":
+            target = reviews / f"step-{arg}.md"
+            if target.exists():
+                target.unlink()
+            target.mkdir()
+        elif action == "bad_answers_sha":
+            text = (reports / REPORT_NAME).read_text(encoding="utf-8", errors="replace")
+            head = text.rindex("Answers: verdict")
+            end = text.index("\n", head)
+            (reports / REPORT_NAME).write_text(
+                text[:head] + f"Answers: verdict 28 @ {arg}" + text[end:],
+                encoding="utf-8",
+            )
+        elif action == "append_finding":
+            # A finding the report cannot possibly carry, appended to the
+            # WORKING COPY of the verdict. The guard reads the verdict from git
+            # at the answered sha, so this must change nothing -- and if it
+            # does, the guard is reading the working copy instead.
+            v = reviews / f"step-{arg}.md"
+            v.write_text(
+                v.read_text(encoding="utf-8", errors="replace")
+                + "\n**R999. (BLOCKING) planted by the harness.**\n",
+                encoding="utf-8",
+            )
+        elif action == "older_answers_sha":
+            # A real commit, but not the newest verdict's. Item 1b is the
+            # reviewer's to check by eye; this asks whether the guard says
+            # anything at all when the header points backwards.
+            # THE PREVIOUS VERDICT'S COMMIT, not `HEAD~4`. The count was a
+            # moving target: with four commits on top of the newest verdict,
+            # `HEAD~4` IS that verdict, the header then named the newest one
+            # and the state stopped being a defect. What this state means is
+            # "a verdict older than the newest", and the second-newest commit
+            # touching the verdict file is that, at any distance.
+            history = subprocess.run(
+                ["git", "-C", str(work), "log", "--format=%H", "--", REVIEW_PATH],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.split()
+            if len(history) < 2:
+                # R517: THE HARNESS BUILDS WHAT THE STATE NEEDS. A verdict
+                # file with ONE commit is every step's first verdict -- step 6
+                # is there now -- so "amend the verdict after the commit the
+                # report answers" had no older verdict to point at, and the
+                # assert reported that as the state failing. It recurs at the
+                # first verdict of every step for the rest of the project.
+                #
+                # Skipping would be skipping a test to get a green build,
+                # which `CLAUDE.md` forbids outright. So the state's
+                # precondition is CONSTRUCTED, inside this scratch copy: one
+                # earlier commit on the verdict file, which is what the
+                # reviewer's own ablation did by hand.
+                _seed_older_verdict(work, reviews)
+                history = subprocess.run(
+                    ["git", "-C", str(work), "log", "--format=%h", "--", REVIEW_PATH],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                ).stdout.split()
+            assert len(history) > 1, (
+                "the verdict file still has one commit after seeding, so this "
+                "state could not be built and is NOT being reported as green"
+            )
+            older = history[1]
+            text = (reports / REPORT_NAME).read_text(encoding="utf-8", errors="replace")
+            head = text.rindex("Answers: verdict")
+            end = text.index(chr(10), head)
+            (reports / REPORT_NAME).write_text(
+                text[:head] + f"Answers: verdict 28 @ {older}" + text[end:],
+                encoding="utf-8",
+            )
+            # AND COMMITTED (R309). Left in the working tree, this state's
+            # outcome depended on which of the report and the verdict git saw
+            # last: while the report predated the verdict the ancestry check
+            # returned early and the state was GREEN, and the moment the
+            # report was re-committed it went red. A state that flips at every
+            # step boundary is not a state; it is the boundary. A report is
+            # always committed before anyone reads it, so committing it here
+            # is also what the real occurrence looks like.
+            for args in (
+                ["add", f"docs/reports/F2/{REPORT_NAME}"],
+                [
+                    "-c",
+                    "user.name=harness",
+                    "-c",
+                    "user.email=harness@localhost",
+                    "commit",
+                    "-m",
+                    "harness: the report, re-committed with an older Answers sha",
+                ],
+            ):
+                subprocess.run(["git", "-C", str(work), *args], capture_output=True, check=True)
+        elif action == "docs_commit_touching_guards":
+            # A commit messaged `docs:` that also edits the test judging the
+            # report. Nothing refused it: the `PreToolUse` hook protects
+            # `docs/reviews/` and `tests/corpus/`, and `CLAUDE.md` protects
+            # `.claude/` and `docs/SUPERVISOR.md`. A step report's own commit
+            # could still change the guard that measures it, and at `e3a3bd1`
+            # it did -- and that change is what turned the suite red.
+            guard = work / "tests" / "test_report_carried.py"
+            guard.write_text(
+                guard.read_text(encoding="utf-8", errors="replace")
+                + chr(10)
+                + "# harness: a guard edit smuggled into a docs commit"
+                + chr(10),
+                encoding="utf-8",
+            )
+            report = reports / REPORT_NAME
+            report.write_text(
+                report.read_text(encoding="utf-8", errors="replace")
+                + chr(10)
+                + "A line appended by the harness."
+                + chr(10),
+                encoding="utf-8",
+            )
+            for args in (
+                ["add", "tests/test_report_carried.py", f"docs/reports/F2/{REPORT_NAME}"],
+                [
+                    "-c",
+                    "user.name=harness",
+                    "-c",
+                    "user.email=harness@localhost",
+                    "commit",
+                    "-m",
+                    f"docs: step-{STEP} revision 99 -- and the guard that judges it",
+                ],
+            ):
+                subprocess.run(["git", "-C", str(work), *args], capture_output=True, check=True)
+        elif action == "pointers_all_at_carried":
+            # Every pointer moved to the Carried section, which contains every
+            # item by construction. The reviewer did exactly this and the file
+            # stayed green: the resolution resolved and said nothing.
+            report = reports / REPORT_NAME
+            text = report.read_text(encoding="utf-8", errors="replace")
+            head = text.rindex("# Revision ")
+            body = re.sub(r"\u00a7\s*\d+[a-z]?", "\u00a79", text[head:])
+            report.write_text(text[:head] + body, encoding="utf-8")
+        elif action == "suite_line_at_an_older_ancestor":
+            # A true sentence about a tree nobody is reading: the previous
+            # verdict's commit, and the count the suite had there.
+            older = subprocess.run(
+                ["git", "-C", str(work), "log", "--format=%h", "--", REVIEW_PATH],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.split()
+            if len(older) < 2:
+                # R517 again: the same shape one action down, where it was a
+                # bare IndexError from `[1]`.
+                _seed_older_verdict(work, reviews)
+                older = subprocess.run(
+                    ["git", "-C", str(work), "log", "--format=%h", "--", REVIEW_PATH],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                ).stdout.split()
+            assert len(older) > 1, (
+                "no older verdict commit after seeding; this state is not "
+                "being reported as green"
+            )
+            older = older[1]
+            report = reports / REPORT_NAME
+            text = report.read_text(encoding="utf-8", errors="replace")
+            text = re.sub(
+                r"Whole suite at `[0-9a-f]+`: \d+ passed, \d+ failed, \d+ skipped",
+                f"Whole suite at `{older}`: 1833 passed, 0 failed, 0 skipped",
+                text,
+            )
+            report.write_text(text, encoding="utf-8")
+        elif action == "shallow":
+            # A REAL SHALLOW CLONE, not `fetch --depth 1` on a full one. The
+            # first version ran the fetch against `origin` and changed nothing,
+            # so the state passed without ever being built -- the harness
+            # equivalent of the defect it is here to catch. `--no-local` forces
+            # the transport that honours the depth for a file URL.
+            shallow = tmp / "shallow"
+            subprocess.run(
+                ["git", "clone", "--depth", "1", "--no-local", ROOT.as_uri(), str(shallow)],
+                capture_output=True,
+                check=True,
+            )
+            # `rmtree` on a copied `.git` hits read-only pack files on
+            # Windows, so the handler clears the bit rather than the harness
+            # reporting a permission error as a guard failure.
+            #
+            # `onerror=`, NOT `onexc=` (CE0). `onexc` arrived in 3.12; the
+            # project pins 3.11 and the runner has it, so the one state that
+            # measures the shallow-clone repair was the one state that could not
+            # run where the shallow clone was found. The handler ignores its
+            # third argument, so it fits either signature.
+            shutil.rmtree(work / ".git", onerror=_force_remove)
+            shutil.move(str(shallow / ".git"), str(work / ".git"))
+    return work
+
+
+class Outcome(NamedTuple):
+    """What the nested run did, read from pytest itself rather than its prose."""
+
+    code: int
+    collected: int
+    failed: int
+    errors: int
+    names: tuple[str, ...]
+    log: str
+
+    @property
+    def collection_failed(self) -> bool:
+        """Nothing ran. `pytest` exit 2 is a usage or collection error, and a
+        junit report with no test cases says the same thing from the other
+        side."""
+        return self.code == 2 or self.collected == 0
+
+    @property
+    def everything_failed(self) -> bool:
+        return self.collected > 0 and self.failed + self.errors == self.collected
+
+
+def _run_guard(work: Path) -> Outcome:
+    """Run the guard in `work` and read the result from the junit report.
+
+    NOT FROM THE TEXT (CC4). The first version searched stdout for the word
+    "error", so on CI it announced that a nested run had not collected while
+    that run's own summary read `5 failed in 0.05s`. Its mirror was worse:
+    `or "passed" in log` disabled the check outright as soon as anything passed.
+    A substring cannot separate "nothing ran" from "everything failed", and
+    those are the two states this file exists to tell apart.
+    """
+    report = work / "junit.xml"
+    out = subprocess.run(
+        [sys.executable, "-m", "pytest", GUARD, "-q", f"--junit-xml={report}"],
+        cwd=work,
+        capture_output=True,
+        text=True,
+    )
+    collected = failed = errors = 0
+    names: list[str] = []
+    if report.is_file():
+        root = ElementTree.parse(report).getroot()
+        for case in root.iter("testcase"):
+            collected += 1
+            bad = False
+            for child in case:
+                if child.tag == "failure":
+                    failed += 1
+                    bad = True
+                elif child.tag == "error":
+                    errors += 1
+                    bad = True
+            if bad:
+                names.append(case.get("name", ""))
+    return Outcome(out.returncode, collected, failed, errors, tuple(names), out.stdout + out.stderr)
+
+
+def _assert_diagnosis(state: str, got: Outcome, log: str) -> None:
+    """The ablation: the named diagnosis fails and its dependants do not."""
+    must, must_not = DIAGNOSIS[state]
+    assert any(must in n for n in got.names), (
+        f"{state}: the guard failed, but `{must}` -- the test that carries the "
+        f"diagnosis -- is not among {list(got.names)[:6]}. A failure that does "
+        "not name its cause is not an ablation.\n" + log[-1200:]
+    )
+    assert not any(must_not in n for n in got.names), (
+        f"{state}: `{must_not}` failed too. That is the SHAPE the repair "
+        "removes -- one diagnosis rather than a cascade -- so its presence "
+        "means the branch under test is not doing the work.\n" + log[-1200:]
+    )
+
+
+def test_the_corpus_and_the_states_agree() -> None:
+    """Meta-test: a state this file forgot to build is a state nothing runs."""
+    assert ENTRIES, f"{CORPUS} parsed to no entries; the format changed"
+    named = {e[0] for e in ENTRIES}
+    assert named == set(STATES), (
+        f"in the corpus and not built: {sorted(named - set(STATES))}; "
+        f"built and not in the corpus: {sorted(set(STATES) - named)}"
+    )
+
+
+@pytest.mark.parametrize("state, require", ENTRIES, ids=[e[0] for e in ENTRIES])
+def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) -> None:
+    work = _build(tmp_path, state)
+    got = _run_guard(work)
+    code, log = got.code, got.log
+
+    # TWO SEPARATE ASSERTIONS, because they are two different failures (CC4).
+    assert not got.collection_failed, (
+        f"{state}: the guard did not COLLECT -- exit {got.code}, "
+        f"{got.collected} test cases in the junit report. Nothing in the file "
+        f"ran and nothing was reported, which is R234.\n{log[-1500:]}"
+    )
+    assert not got.everything_failed, (
+        f"{state}: every one of {got.collected} tests failed. A guard that "
+        "fails wholesale is reporting the state of its own inputs, not of the "
+        f"repository.\n{log[-1500:]}"
+    )
+
+    if state in REQUIREMENT_CHANGED:
+        # NOT skipped and NOT xfailed. The state runs and its outcome is
+        # asserted, in the direction the repair produces.
+        #
+        # AND THE ABLATION STILL RUNS (R276, twice). This branch returned before
+        # `DIAGNOSIS` was consulted, so `shallow_clone_depth_1` -- the one state
+        # in both maps -- passed under an ablation its twin caught. The previous
+        # round said this was fixed and the call site never landed; it is here
+        # now, and `_assert_diagnosis` has two call sites.
+        if state in DIAGNOSIS and REQUIREMENT_CHANGED[state][0] != "green":
+            _assert_diagnosis(state, got, log)
+        if REQUIREMENT_CHANGED[state][0] == "green":
+            assert code == 0, (
+                f"{state}: the repaired guard is expected to be GREEN here and "
+                f"it failed.\n{log[-1500:]}"
+            )
+        else:
+            assert code != 0, (
+                f"{state}: the repaired guard is expected to REPORT here and it "
+                f"passed.\n{log[-1500:]}"
+            )
+        return
+
+    if require == "green":
+        assert code == 0, f"{state}: expected a clean run.\n{log[-1500:]}"
+    elif require == "ignored":
+        assert code == 0, (
+            f"{state}: a file that is not a numbered step must be stepped over, "
+            f"not reacted to.\n{log[-1500:]}"
+        )
+    else:
+        assert code != 0, f"{state}: this state is a defect and must fail.\n{log[-1500:]}"
+        named = (
+            "test_the_guard_reads_the_step_being_worked_on",
+            "test_the_report_names_the_verdict_it_answers",
+            "test_the_diff_the_site_check_needs_is_available",
+            "test_the_parse_found_something_to_check",
+            "test_the_report_carries_the_finding",
+            "test_every_named_site_is_touched_or_declared",
+            # CI1: the two this round adds. A state whose only reporter is
+            # not in this list fails for "nobody can locate it", which is the
+            # right answer for an anonymous collapse and the wrong one for a
+            # test that names the commit and the file.
+            "test_a_docs_commit_does_not_also_edit_the_guard_that_judges_it",
+            "test_the_report_carries_a_WHOLE_SUITE_count",
+            "test_a_carried_row_points_at_a_section_that_discusses_it",
+            # R516. `two_digit_step_number_discriminating` names R999
+            # correctly, and this was the reporter that named it, missing
+            # from the list. It looked green on CI at `8a88bf2` ONLY
+            # because an unrelated test was failing in the same run; the
+            # commit that fixed that line took the pass with it, so the
+            # state had been certifying nothing.
+            "test_the_Carried_table_is_what_the_generator_produces",
+            "test_the_whole_suite_line_is_about_a_commit_that_exists",
+        )
+        if state in DIAGNOSIS:
+            _assert_diagnosis(state, got, log)
+
+        assert any(any(n in got_name for n in named) for got_name in got.names), (
+            f"{state}: the guard failed through {list(got.names)[:4]}, none of "
+            "which is a named reporter. A failure nobody can locate is half a "
+            f"report.\n{log[-1500:]}"
+        )

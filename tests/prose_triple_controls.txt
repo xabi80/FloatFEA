@@ -1,0 +1,39 @@
+# NEGATIVE CONTROLS FOR THE PROSE TRIPLES (CW0, inverted at CY3).
+#
+# Every `cmd:` whose `out:` is `none`, `no` or a bare count names a line here,
+# and `tests/test_tree_prose_consistent.py` asserts the SAME needle is found.
+# A command that returns `none` for a needle occurring nowhere is a command
+# that cannot fail, and R434 was exactly that.
+#
+# THE CONTROL LINE IS THE NEEDLE AND NOTHING ELSE (CY3, R464). It used to be a
+# realistic line CONTAINING the needle, and the reviewer walked four fresh
+# R434s through that door: `RIGID_MODE_FLOOR * norm`,
+# `RIGID_BODY_MODE_RATIO_COUNTER_DEFECT * scale` and
+# `= last_below(spectrum, tau)` all answer `none` over `tests/`, and all three
+# were certified by a shipped control line that happened to contain them. A
+# control that admits an INTERIOR match certifies any needle its own text
+# contains.
+#
+# So the text after the colon is compared for EQUALITY with the needle. A
+# control can no longer certify a needle other than the one it was planted
+# for, and a needle carrying a neighbouring token needs its own plant --
+# which is a decision, visible in this file, rather than a coincidence.
+#
+# THIS FILE IS SEARCHED BY THE VOCABULARY LIKE ANY OTHER (CY1). It used to be
+# excluded, and that exclusion is what made two published claims false while
+# their triples stayed green: `files()` stopped meaning what a reader's grep
+# means. Nothing here is a `.py` file, so no `*.py` glob reaches it; a glob
+# that does reach it counts these lines, and that is the honest answer.
+#
+# FORMAT
+#   <id>: <the needle, exactly>
+
+ratio_ceiling_name: RIGID_BODY_MODE_RATIO
+ratio_counter_name: RIGID_BODY_MODE_RATIO_COUNTER_DEFECT
+loss_ceiling_name: RIGID_BODY_SUBSPACE_LOSS
+floor_constant_name: RIGID_MODE_FLOOR
+last_below_needle: last_below
+log_declaration: log=True
+retired_loss_figure_row: retired_loss_over
+seventeen_word: seventeen
+zero_modes_call_site: zero_modes_under_the_bound(

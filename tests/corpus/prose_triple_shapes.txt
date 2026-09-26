@@ -1,0 +1,141 @@
+# CORPUS: shapes the prose-triple guard (CW0) and the CW1 reading must rule on.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. Written at the fiftieth verdict on F2, HEAD ab698c0.
+#
+# WHY THIS FILE EXISTS (BE3). tests/corpus/tree_prose_claims.txt measured the two
+# KEYWORD DETECTORS that CV0 shipped -- 0 of 20 absence phrasings and 3 of 8
+# alias shapes -- and both detectors were DELETED at this round on the strength
+# of that measurement. What replaced them is (a) a prohibition in CLAUDE.md,
+# (b) a reading as item 6 of docs/SUPERVISOR.md, and (c) the NEGATIVE CONTROL in
+# tests/prose_triple_controls.txt, which is the only executable half. This file
+# measures the executable half and the scope of the reading. The older file
+# stands and is not superseded: it is the evidence for the deletion.
+#
+# WHAT THE CONTROL CLAIMS TO DO. tests/test_tree_prose_consistent.py:50 says
+# A NEEDLE THAT CANNOT MATCH FAILS ITS CONTROL, and the controls file header
+# says THIS FILE IS EXCLUDED FROM THE VOCABULARY OWN SEARCHES. Those two
+# sentences are what these entries are aimed at.
+#
+# FORMAT
+#   id=<name> shape=<the triple or the prose, described>
+#   expect=<what a guard that worked would do> measured=<what ab698c0 did>
+#
+# WHAT A PASSING SCAN MEANS. For each entry, construct the triple described and
+# run pytest tests/test_tree_prose_consistent.py; compare with expect. A passing
+# scan means the nine triples that exist are current and their needles are
+# findable SOMEWHERE. It does not mean a claim is what its command measures, and
+# the module docstring says so.
+#
+# MEASURED AT ab698c0 by the reviewer, calling the shipped module directly. 22
+# entries. The control requirement is satisfied by four of the shapes it is
+# supposed to refuse, because the planted line is written by the same hand as
+# the needle and nothing constrains it to be a line that could occur.
+
+# --- R434 IS RE-ADMISSIBLE. These four are the measurement of the control. ---
+id=r434_verbatim_with_a_planted_control shape=claim_that_nothing_names_the_retired_ratio_with_cmd_files_tests_globstar_py_RIGID_BODY_MODE_RATIO_RPAREN_out_none_and_a_NEW_control_line_reading_x_EQ_RIGID_BODY_MODE_RATIO_RPAREN expect=caught measured=missed_files_returns_none_and_the_planted_line_contains_the_needle_so_BOTH_shipped_tests_pass_R434_verbatim
+id=needle_with_a_trailing_space_against_the_SHIPPED_control shape=cmd_files_tests_globstar_py_RIGID_MODE_FLOOR_SPACE_out_none_ctl_floor_constant_name expect=caught measured=missed_files_returns_none_and_the_SHIPPED_control_line_tau_EQ_RIGID_MODE_FLOOR_SPACE_STAR_norm_STAR_EPS_contains_the_trailing_space_so_NO_NEW_CONTROL_IS_EVEN_NEEDED
+id=defined_with_a_misspelt_constant shape=cmd_defined_RIGID_MODE_BONUD_out_no_under_a_claim_that_the_constant_was_removed expect=caught measured=missed_defined_returns_no_for_any_typo_and_no_is_neither_none_nor_a_bare_count_so_NO_control_is_required_at_all
+id=an_absence_written_as_a_ratio_rather_than_a_count shape=any_future_vocabulary_word_whose_absence_answer_reads_0_of_12_rather_than_0 expect=caught measured=missed_BARE_COUNT_anchors_on_digits_alone_so_the_control_requirement_is_written_on_the_SHAPE_OF_THE_ANSWER_and_not_on_the_question
+
+# --- THE ANNOTATION STRIP, AND THE DOOR THE R443b FIX REOPENED. ---
+id=cmd_line_whose_needle_contains_an_equals_is_not_stripped shape=the_SHIPPED_triple_at_scripts_regen_figures_py_663_cmd_count_scripts_regen_figures_py_logEQTrue expect=stripped measured=NOT_stripped_ANNOTATION_carries_a_negative_lookahead_for_an_equals_so_the_triple_OWN_cmd_line_is_counted_by_its_own_command
+id=claim_line_whose_sentence_contains_an_equals_is_not_stripped shape=the_SHIPPED_claim_at_scripts_regen_figures_py_660_which_quotes_logEQTrue_inside_the_sentence expect=stripped measured=NOT_stripped_for_the_same_reason_so_out_6_is_the_TREE_4_plus_the_TRIPLE_OWN_2
+id=out_line_whose_value_contains_an_equals shape=an_out_line_reading_out_xEQ1 expect=stripped measured=NOT_stripped_the_same_rule_applies_to_all_four_markers
+id=a_python_annotated_assignment_named_ctl shape=a_line_reading_ctl_colon_list_of_str_assigned_empty_in_executable_code expect=not_stripped measured=not_stripped_R443b_closed_this_for_out_and_the_same_carve_out_covers_the_other_three
+
+# --- THE CONTROLS FILE ITSELF. ---
+id=the_controls_file_is_reachable_by_a_direct_path shape=cmd_count_tests_prose_triple_controls_txt_RIGID_BODY_MODE_RATIO expect=excluded_per_the_file_own_header measured=returns_5_PATHS_excludes_CONTROLS_only_in_the_GLOB_branch_so_the_header_sentence_is_false_for_a_direct_path
+id=duplicate_control_ids shape=ratio_counter_name_is_planted_three_times_identically_in_the_shipped_file expect=refused_or_reported measured=silently_collapsed_CONTROL_LINES_is_a_dict_comprehension_so_11_lines_parse_to_9_ids_and_the_LAST_line_wins
+id=an_unused_duplicate_of_a_used_id shape=a_second_line_for_a_named_id_whose_text_does_NOT_contain_the_needle_placed_BEFORE_the_good_one expect=refused measured=allowed_the_last_line_wins_so_a_bad_duplicate_placed_first_is_invisible
+id=a_control_line_that_is_the_bare_needle shape=a_planted_line_consisting_of_nothing_but_the_needle_string expect=refused_a_control_must_be_a_line_that_could_occur measured=allowed_the_only_question_asked_of_a_control_is_whether_the_needle_occurs_in_it_and_the_header_says_so
+
+# --- THE DOMAIN OF THE READING, WHICH IS NOW THE WHOLE ENFORCEMENT. ---
+id=a_triple_inside_a_markdown_fenced_block shape=claim_cmd_out_written_inside_a_triple_backtick_fence_in_a_file_under_docs_milestones expect=parsed measured=INVISIBLE_markdown_prose_blanks_every_fenced_line_so_a_fenced_triple_is_read_by_nothing_and_reads_as_checked
+id=a_claim_in_an_assertion_message shape=a_sentence_asserting_what_the_code_does_inside_an_assert_message_string expect=out_of_scope_by_design measured=out_of_scope_python_prose_reads_comments_and_docstrings_only_and_says_so
+id=a_claim_in_PLAN_md shape=a_sentence_about_the_code_in_the_repository_root_PLAN_md expect=in_scope measured=OUT_of_scope_EXTRA_FILES_is_CLAUDE_md_alone
+id=a_claim_in_docs_conventions_md shape=a_sentence_about_frames_or_signs_that_the_code_does_not_implement expect=in_scope_conventions_is_LOCKED_and_authoritative measured=OUT_of_scope_ROOTS_stops_at_docs_milestones_and_docs_verification
+id=a_claim_in_a_workflow_yml shape=a_comment_in_dotgithub_workflows_ci_yml_describing_what_a_job_runs expect=in_scope measured=OUT_of_scope_only_py_and_md_suffixes_are_read
+id=a_claim_in_a_corpus_txt_header shape=a_sentence_in_a_tests_corpus_txt_header_describing_what_the_shipped_code_does expect=in_scope measured=OUT_of_scope_same_suffix_filter_and_this_file_is_one_of_them
+id=a_claim_in_docs_closure shape=a_sentence_in_docs_closure_F1_md_about_a_gate_that_has_since_moved expect=in_scope_or_declared_out measured=OUT_of_scope_and_nothing_declares_it_out
+
+# --- CONTROLS: shapes that must be ALLOWED. ---
+id=control_a_well_formed_triple_with_a_real_absence shape=cmd_count_tests_verification_rung1_test_rigid_body_modes_py_last_below_out_0_ctl_last_below_needle expect=allowed measured=allowed_and_the_control_line_w_below_EQ_last_below_spectrum_tau_is_a_line_that_could_occur
+id=control_an_empty_glob shape=cmd_count_floatfea_globstar_rs_anything expect=refused measured=refused_R443a_raises_ValueError_matches_no_file_and_has_its_own_shipped_test
+id=control_a_needle_perturbed_by_two_characters shape=every_one_of_the_nine_shipped_cmds_re_run_with_the_needle_suffixed expect=the_answer_moves_wherever_it_can measured=moved_on_4_of_9_and_the_other_5_answer_0_or_none_already_which_is_exactly_the_set_the_control_requirement_covers
+
+# ==========================================================================
+# ADDED AT THE FIFTY-FIRST VERDICT ON F2 (reviewed commit 6170263), 13 new
+# entries, unseen by the implementer. CX2 shipped `control_defect()` with the
+# five re-admission shapes from the fiftieth verdict as its own controls.
+# These are the shapes that rule did not come from.
+#
+# THE RULE UNDER TEST. `control_defect(cmd, ctl, answer)` refuses an absence
+# whose needle carries LEADING OR TRAILING whitespace, and refuses a needle
+# that matches more than one planted control. Neither rule constrains what
+# is INSIDE the needle, and the planted control lines are 30-50 characters
+# long, so every substring of every shipped control is an acceptable needle.
+# Measured by calling the shipped function directly at 6170263.
+# ==========================================================================
+
+# --- R434 RE-ADMITTED THROUGH THE INTERIOR OF A SHIPPED CONTROL LINE. None
+# --- of these four adds a control line; each uses one already in the file.
+id=needle_with_an_INTERIOR_space_against_a_shipped_control shape=cmd_count_tests_globstar_py_RIGID_MODE_FLOOR_SPACE_STAR_SPACE_norm_out_0_ctl_floor_constant_name expect=refused_the_needle_occurs_nowhere_in_the_tree measured=ALLOWED_control_defect_returns_None_grep_for_it_over_tests_floatfea_scripts_hits_only_the_controls_file_itself
+id=needle_that_is_a_substring_of_the_counter_control shape=cmd_count_tests_globstar_py_RIGID_BODY_MODE_RATIO_COUNTER_DEFECT_SPACE_STAR_SPACE_scale_out_0_ctl_ratio_counter_name expect=refused_the_needle_occurs_nowhere_in_the_tree measured=ALLOWED_the_trailing_STAR_scale_is_in_the_planted_line_and_in_no_test_file
+id=needle_carrying_the_controls_own_equals_sign shape=cmd_count_tests_globstar_py_EQUALS_SPACE_last_below_LPAREN_spectrum_COMMA_tau_RPAREN_out_0_ctl_last_below_needle expect=refused measured=ALLOWED_the_control_line_is_w_below_EQ_last_below_spectrum_tau_and_the_leading_equals_makes_the_needle_unmatchable_in_the_tree
+id=files_variant_of_the_interior_space_needle shape=cmd_files_tests_globstar_py_RIGID_MODE_FLOOR_SPACE_STAR_SPACE_norm_out_none_ctl_floor_constant_name expect=refused measured=ALLOWED_out_none_is_certified_by_a_control_planted_for_a_different_triple
+
+# --- THE UNIQUENESS RULE POINTS THE WRONG WAY. It refuses the GENERAL needle
+# --- and admits the NARROW one, which is the opposite of what a control is
+# --- for: a narrower needle is the one more likely to be malformed.
+id=the_uniqueness_rule_refuses_a_CORRECT_needle shape=cmd_count_tests_globstar_py_RIGID_BODY_MODE_RATIO_out_9_ctl_ratio_ceiling_name expect=allowed_the_needle_has_nine_real_hits_in_the_tree measured=would_be_REFUSED_if_the_answer_were_an_absence_matches_controls_ratio_ceiling_name_and_ratio_counter_name
+id=lengthening_a_needle_until_it_matches_one_control_re_admits_it shape=cmd_count_tests_globstar_py_GT_SPACE_RIGID_BODY_MODE_RATIO_COLON_ctl_ratio_ceiling_name expect=the_narrower_needle_is_scrutinised_at_least_as_hard_as_the_broad_one measured=ALLOWED_control_defect_returns_None_because_only_one_planted_line_contains_it
+
+# --- THE INSTRUMENT EXCLUSION CHANGED WHAT THE VOCABULARY MEANS, AND THE
+# --- FIGURES CITING THE OLD MEANING WERE NOT REGENERATED (BP0).
+id=the_SELF_exclusion_makes_a_glob_answer_differ_from_grep shape=cmd_files_tests_globstar_py_RIGID_MODE_FLOOR_which_the_vocabulary_answers_with_two_files expect=the_answer_is_what_a_reader_running_the_command_gets measured=grep_rl_RIGID_MODE_FLOOR_tests_include_py_returns_THREE_the_third_being_tests_test_tree_prose_consistent_py_which_afc5b05_added_and_the_same_commit_excluded
+id=the_shipped_claim_at_tolerances_455_is_false_at_this_commit shape=the_sentence_two_test_files_still_name_RIGID_MODE_FLOOR_with_its_enumeration_of_the_gate_file_and_the_counter_meta_test expect=true_or_regenerated_in_the_commit_that_moved_it measured=FALSE_three_test_files_name_it_the_claim_went_stale_in_afc5b05_and_the_guard_was_blinded_by_the_same_commit
+id=the_shipped_claim_at_tolerances_556_is_false_at_this_commit shape=the_sentence_three_test_files_name_this_ceiling_and_ONE_OF_THEM_ASSERTS_ON_IT expect=true_or_regenerated measured=FALSE_four_test_files_name_RIGID_BODY_MODE_RATIO_the_fourth_being_the_guard_module_itself
+id=a_direct_path_to_the_excluded_instrument_reports_a_false_reason shape=cmd_count_tests_test_tree_prose_consistent_py_anything expect=an_error_saying_the_file_is_excluded_from_the_vocabulary measured=ValueError_the_pattern_matches_no_file_under_the_repository_root_about_a_file_that_exists_and_is_tracked
+
+# --- R455c, MEASURED AGAIN AND WITHDRAWN IN SUBSTANCE AT ONE LEVEL UP.
+id=an_absence_spelled_0_of_12_reaches_no_control_requirement shape=out_0_of_12_under_a_needle_that_matches_nothing_and_no_ctl_line expect=refused measured=control_defect_returns_None_BUT_test_a_prose_triple_still_says_what_the_tree_says_refuses_it_on_equality_so_the_shape_cannot_ship
+id=an_absence_spelled_with_emphasis shape=out_double_star_none_double_star_or_out_None_capitalised_with_no_ctl expect=refused measured=control_defect_returns_None_and_the_equality_test_refuses_it_the_same_way
+
+# --- CONTROL, AND IT MUST STAY ALLOWED.
+id=control_a_needle_that_occurs_in_the_tree_and_in_its_own_control shape=cmd_count_tests_verification_rung1_test_rigid_body_modes_py_zero_modes_under_the_bound_LPAREN_out_3_ctl_zero_modes_call_site expect=allowed measured=allowed_and_the_answer_moves_if_a_call_site_is_added_or_removed
+
+# ==========================================================================
+# ADDED AT THE FIFTY-SECOND VERDICT (HEAD b21760b), entries 36-45.
+#
+# CY3 answered R464 by INVERTING the control rule from containment to
+# EQUALITY: _CONTROL_LINES[ctl] must now BE the needle, character for
+# character. That closes my four re-admissions through already-shipped
+# controls, and it is a real fix for what I named.
+#
+# It also turns control_defect() into a REGISTRY. The control file is now a
+# list of needles, so the question "can this needle match anything?" --
+# which the module docstring at lines 42-50 still states as the whole point
+# -- is answered by copying the needle into the file. Every entry below was
+# run against the shipped control_defect() AND against
+# test_a_prose_triple_still_says_what_the_tree_says, so SHIPS_GREEN means
+# the triple would pass the whole module, not merely one predicate.
+# ==========================================================================
+
+# --- R434, RE-ADMITTED BY ONE LINE THAT IS THE NEEDLE ITSELF. ---
+id=a_misspelled_constant_needle_planted_verbatim shape=cmd_files_over_tests_globstar_py_for_RIGID_MODE_FLOR_out_none_ctl_a_new_line_whose_text_is_RIGID_MODE_FLOR expect=caught_a_needle_that_is_a_typo_of_a_real_constant_matches_nothing_and_certifies_an_absence_that_is_true_of_the_typo_and_not_of_the_code measured=SHIPS_GREEN_control_defect_returns_None_and_the_evaluated_answer_is_none_so_the_out_agrees
+id=a_unicode_hyphen_lookalike_needle_planted_verbatim shape=cmd_count_over_tests_globstar_py_for_RIGID_MODE_FLOOR_with_a_unicode_hyphen_u2010_where_the_first_underscore_belongs_out_0 expect=caught_this_is_R434_with_an_invisible_character_instead_of_a_paren measured=SHIPS_GREEN
+id=a_lowercased_constant_name_as_a_needle_planted_verbatim shape=cmd_count_over_tests_globstar_py_for_rigid_mode_floor_in_lower_case_out_0 expect=caught measured=SHIPS_GREEN
+id=a_whole_english_sentence_as_a_needle_planted_verbatim shape=cmd_count_over_tests_globstar_py_for_the_sentence_nothing_asserts_on_this_ceiling_at_all_out_0 expect=caught_a_claim_of_absence_whose_needle_is_a_sentence_nobody_would_ever_write_is_the_purest_form_of_the_defect measured=SHIPS_GREEN
+id=a_nonsense_token_as_a_needle_planted_verbatim shape=cmd_count_over_floatfea_star_py_for_zzzznotpresent_out_0_ctl_a_new_line_whose_text_is_zzzznotpresent expect=caught measured=SHIPS_GREEN_nothing_asks_whether_the_needle_resembles_anything_in_the_tree
+id=defined_of_a_misspelled_constant_with_the_misspelling_planted shape=cmd_defined_of_RIGID_MODE_BONUD_out_no_ctl_a_new_line_whose_text_is_RIGID_MODE_BONUD expect=caught_this_is_the_shipped_shape_defined_of_a_misspelled_constant_which_the_rule_refuses_ONLY_while_nobody_plants_the_misspelling expect_note=the_shipped_shape_is_refused_because_its_ctl_is_the_empty_string_and_not_because_the_misspelling_is_detected measured=SHIPS_GREEN_once_the_misspelling_has_a_control_line
+
+# --- WHAT THE MODULE SAYS ABOUT ITSELF, MEASURED. ---
+id=the_docstring_sentence_a_needle_that_cannot_match_fails_its_control shape=tests_test_tree_prose_consistent_py_line_50_with_lines_42_to_49_stating_that_a_command_proves_nothing_unless_the_needle_it_searches_for_can_be_found_at_all expect=true_or_regenerated_in_the_commit_that_inverted_the_rule measured=FALSE_under_equality_the_needle_IS_its_control_line_so_the_check_establishes_nothing_about_findability_and_six_of_the_ten_shapes_here_ship_green
+id=the_control_defect_docstring_still_enumerates_the_containment_rule shape=the_three_numbered_rules_in_the_control_defect_docstring_of_which_rule_3_reads_THE_NEEDLE_MATCHES_ITS_OWN_CONTROL_AND_NO_OTHER_a_needle_matching_several_planted_lines_is_a_needle_nobody_has_thought_about expect=rewritten_with_the_rule_the_function_now_implements measured=STALE_under_equality_matching_several_planted_lines_can_only_mean_two_identical_plants_which_is_not_what_that_sentence_describes
+
+# --- REFUSED, BUT NOT BY control_defect. RECORD WHICH MACHINE CAUGHT IT. ---
+id=an_absence_narrowed_to_a_glob_reaching_exactly_one_unrelated_file shape=cmd_count_over_floatfea_underscore_version_py_for_RIGID_MODE_FLOOR_out_0_ctl_floor_constant_name expect=caught measured=refused_but_control_defect_returned_None_and_what_refused_it_was_the_R443a_empty_glob_ValueError_from_the_equality_test
+
+# --- CONTROL, AND IT MUST STAY ALLOWED. ---
+id=control_the_shipped_last_below_triple_under_the_inverted_rule shape=cmd_count_over_tests_verification_rung1_test_rigid_body_modes_py_for_last_below_ctl_last_below_needle_whose_planted_text_is_now_the_bare_token expect=allowed measured=allowed_and_the_equality_rule_holds_because_the_plant_was_regenerated_to_the_bare_needle_in_the_same_commit

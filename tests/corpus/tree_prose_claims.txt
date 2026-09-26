@@ -1,0 +1,246 @@
+# CORPUS: sentences the SOURCE-TREE PROSE guard (CV0) must rule on.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, and nothing here is a test name. Written at the
+# forty-ninth verdict on F2, the eighth verdict on step 5 (reviewed commit
+# d5d85ed).
+#
+# WHY THIS FILE EXISTS (BE3). tests/test_tree_prose_consistent.py was added at
+# c65b1bb to stop a species of defect the forty-eighth verdict found eight
+# times: a sentence in the source tree stating something about the repository
+# that one grep refutes. Its three parts are
+#
+#   1  a claim: / cmd: / out: triple is EVALUATED, over the vocabulary
+#      count, lines, files, defined on string literals;
+#   2  an ABSENCE claim must carry a triple or an _ABSENCE_EXEMPT row;
+#   3  a paragraph naming a RETIRED-ALIAS must say the thing is retired.
+#
+# Parts 2 and 3 are keyword lists, and the implementer says so in the file and
+# in the report: the patterns are a list and not a grammar, and the coverage
+# is the pattern list, written against sentences the same hand wrote. A list
+# written against sentences its own author wrote catches the sentences its
+# author thought of. Unseen entries are the only ones that measure anything,
+# which is what this file is.
+#
+# FORMAT
+#   id=<name> kind=<absence|alias|vocabulary|scope> shape=<the candidate, with
+#   punctuation spelled out> expect=<refused|allowed>
+#   measured=<what the shipped guard did at d5d85ed>
+#
+# shape= spells punctuation out -- FULLSTOP, COMMA, BACKTICK, STAR, PIPE,
+# FENCE, HYPHEN, HASH -- so no line of this file is itself a sentence the
+# guard would have to rule on. A scan applies the shape to a file under one of
+# the guard roots in a scratch clone, runs
+#   pytest tests/test_tree_prose_consistent.py -q
+# and compares with expect.
+#
+# WHAT A PASSING SCAN MEANS: the guard rules on these shapes the way a reader
+# would. It does NOT mean the guard is complete. In particular it cannot find
+# a POSITIVE claim that is false, which is exactly what the two triples at
+# floatfea/tolerances.py 548 and 621 are.
+#
+# MEASURED AT d5d85ed by the reviewer, against the shipped predicates applied
+# directly: 39 entries, 6 agree, 33 do not. The 6 that agree are the three
+# absence controls and the three alias controls -- that is, every entry the
+# guard rules on correctly is one written in the author's own phrasing. The
+# implementer planted-shape count is not the coverage number; this is.
+
+# --- part 2, the ABSENCE detector: 20 unseen phrasings, 0 of 20 caught ----
+id=nothing_is_asserted_against_it kind=absence shape=Nothing_is_asserted_against_it_FULLSTOP expect=refused measured=allowed_the_pattern_knows_nothing_asserts_and_not_nothing_is_asserted_AND_THIS_SENTENCE_IS_LIVE_at_test_rigid_body_modes_py_566
+id=asserted_nowhere kind=absence shape=The_quantity_is_printed_and_asserted_nowhere_FULLSTOP expect=refused measured=allowed_the_pattern_knows_appears_nowhere_and_exists_nowhere_only_AND_THIS_SHAPE_IS_LIVE_at_five_sites
+id=it_is_not_asserted_against_anything kind=absence shape=It_is_not_asserted_against_anything_HYPHEN_that_is_what_retired_means expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_test_rigid_body_corpus_py_236
+id=no_assertion_anywhere_compares_against_it kind=absence shape=No_assertion_anywhere_compares_against_it_FULLSTOP expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_548_inside_a_claim_line
+id=no_test_reads_this_value kind=absence shape=No_test_reads_this_value_FULLSTOP expect=refused measured=allowed
+id=read_by_nothing kind=absence shape=The_constant_is_read_by_nothing_outside_this_file_FULLSTOP expect=refused measured=allowed_the_pattern_has_referenced_by_nothing_and_not_read_by_nothing
+id=there_is_no_caller kind=absence shape=There_is_no_caller_for_this_helper_anywhere_under_tests expect=refused measured=allowed
+id=appears_in_no_shipped_test kind=absence shape=This_appears_in_no_shipped_test_FULLSTOP expect=refused measured=allowed
+id=never_asserted kind=absence shape=The_margin_is_recorded_per_entry_and_never_asserted_against_a_constant expect=refused measured=allowed_AND_THIS_SHAPE_IS_LIVE_at_F2_md_481_and_963_and_2359
+id=has_no_assertion kind=absence shape=What_it_no_longer_has_is_an_assertion_FULLSTOP expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_546
+id=no_such_injection_exists kind=absence shape=No_such_injection_exists_in_the_repository_FULLSTOP expect=refused measured=allowed_AND_THIS_SENTENCE_WAS_WRITTEN_THIS_ROUND_at_F2_md_1920
+id=shows_up_as_a_disagreement kind=absence shape=These_are_written_out_so_a_change_to_either_one_shows_up_as_a_disagreement expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_test_report_carried_py_1038_AND_IS_FALSE_nothing_in_the_repository_reads_the_corpus_file_it_names
+id=exactly_one_file_names_it kind=absence shape=Exactly_one_test_file_names_this_ceiling_FULLSTOP expect=refused measured=allowed_a_COUNT_claim_is_the_shape_this_round_replaced_two_absence_claims_with_and_both_replacements_are_false
+id=neither_is_asserted_anywhere kind=absence shape=Neither_is_asserted_anywhere_FULLSTOP expect=refused measured=allowed
+id=is_unused kind=absence shape=The_flag_is_unused_at_this_commit_FULLSTOP expect=refused measured=allowed
+id=not_registered_anywhere kind=absence shape=The_counter_is_not_registered_anywhere_FULLSTOP expect=refused measured=allowed_the_pattern_has_nothing_registers_and_not_not_registered_anywhere
+id=no_other_row_carries_this_mark kind=absence shape=No_other_row_carries_this_mark_FULLSTOP expect=refused measured=allowed
+id=nothing_under_tests_reads_it kind=absence shape=Nothing_under_tests_SLASH_reads_it_FULLSTOP expect=refused measured=allowed_nothing_reads_is_in_the_pattern_and_the_intervening_path_breaks_the_adjacency
+id=the_flag_is_dead kind=absence shape=The_flag_is_dead_at_this_commit_FULLSTOP expect=refused measured=allowed
+id=the_only_site_is_this_one kind=absence shape=The_only_site_that_names_it_is_this_one_FULLSTOP expect=refused measured=allowed
+id=control_nothing_asserts kind=absence shape=Nothing_asserts_against_it_FULLSTOP expect=refused measured=refused_the_authors_own_phrasing
+id=control_no_shipped_row_declares kind=absence shape=No_shipped_row_declares_it_at_this_commit_FULLSTOP expect=refused measured=refused_the_authors_own_phrasing
+id=control_typed_anywhere kind=absence shape=Both_numbers_are_printed_rather_than_typed_anywhere expect=refused measured=refused_the_authors_own_phrasing
+
+# --- part 3, the RETIRED-ALIAS detector: 8 shapes, 3 of 8 caught ----------
+id=alias_inside_a_fenced_block_in_markdown kind=alias shape=FENCE_newline_G2p1_asserts_on_the_subspace_of_the_first_six_vectors_newline_FENCE expect=refused measured=allowed_markdown_prose_blanks_every_fenced_line
+id=alias_in_an_assert_message kind=alias shape=assert_1_COMMA_QUOTE_G2p1_asserts_on_the_subspace_QUOTE expect=refused measured=allowed_python_prose_reads_comments_and_docstrings_only_which_is_right_for_a_message_and_wrong_for_a_message_that_describes_the_gate
+id=alias_hyphenated kind=alias shape=V1p1_tests_the_eigenvalue_HYPHEN_ratio_against_the_first_flexible_mode expect=refused measured=allowed_unemphasised_strips_STAR_UNDERSCORE_BACKTICK_and_not_HYPHEN
+id=alias_rescued_by_the_word_retired_about_something_else kind=alias shape=The_subspace_loss_is_what_the_gate_reads_FULLSTOP_PATCH_TEST_EXACTNESS_was_retired_last_year expect=refused measured=allowed_SAYS_RETIRED_matches_anywhere_in_the_paragraph_and_is_not_bound_to_the_alias_it_excuses
+id=alias_split_across_a_blank_line kind=alias shape=V1p1_tests_an_eigenvalue_newline_newline_ratio_against_the_first_flexible_mode expect=refused measured=allowed_a_blank_line_ends_the_paragraph_so_the_two_words_never_join
+id=control_alias_in_an_html_comment kind=alias shape=HTMLOPEN_G2p1_asserts_on_the_subspace_HTMLCLOSE expect=refused measured=refused
+id=control_alias_in_a_markdown_table_cell kind=alias shape=PIPE_V1p1_PIPE_an_eigenvalue_ratio_PIPE_G2p1_PIPE expect=refused measured=refused
+id=control_alias_in_a_python_inline_comment kind=alias shape=x_EQ_1_HASH_G2p1_asserts_on_the_subspace_here expect=refused measured=refused
+
+# --- part 1, the VOCABULARY: what a triple can be made to certify ---------
+id=a_glob_that_matches_no_file kind=vocabulary shape=a_cmd_calling_files_over_tests_SLASH_no_such_dir_SLASH_STARSTAR_SLASH_STAR_dot_py expect=refused measured=allowed_files_returns_none_and_count_returns_0_so_a_triple_can_certify_an_absence_with_a_pattern_that_reaches_no_file_AM5_says_an_empty_parameter_set_is_an_error_not_a_skip
+id=a_needle_narrowed_by_one_character_so_it_cannot_occur kind=vocabulary shape=a_cmd_whose_needle_is_a_declared_NAME_followed_by_RPAREN expect=refused measured=allowed_AND_THIS_IS_LIVE_TWICE_at_floatfea_tolerances_py_550_and_623_where_the_trailing_RPAREN_makes_the_call_return_none_whatever_the_tree_does
+id=a_needle_only_on_a_python_variable_annotation_named_out kind=vocabulary shape=a_cmd_counting_a_needle_whose_only_occurrence_is_on_a_line_beginning_out_COLON expect=refused measured=allowed_the_ANNOTATION_strip_removes_it_measured_5_against_6_raw_occurrences_in_the_guards_own_file
+id=a_claim_sentence_the_cmd_beside_it_does_not_measure kind=vocabulary shape=claim_one_test_file_names_X_beside_a_cmd_over_a_different_needle expect=refused measured=allowed_stated_as_a_known_limitation_in_the_guards_docstring_and_LIVE_TWICE_with_both_claims_false
+id=a_triple_whose_out_is_correct_and_whose_claim_is_its_opposite kind=vocabulary shape=claim_no_assertion_compares_against_it_beside_out_none_while_an_assert_depends_on_it expect=refused measured=allowed_LIVE_at_floatfea_tolerances_py_548_refuted_by_assert_over_at_test_rigid_body_corpus_py_259
+
+# --- scope: files the guard never opens -----------------------------------
+id=an_alias_in_docs_verification_README kind=scope shape=Test_the_eigenvalue_ratio_against_the_first_flexible_mode_COMMA_not_an_absolute_value expect=refused measured=allowed_docs_SLASH_verification_is_not_in_ROOTS_AND_THIS_SENTENCE_IS_LIVE_at_docs_verification_README_md_17_describing_V1p1_and_G2p1_in_the_present_tense
+id=an_alias_in_floatfea_tolerances_outside_a_retirement_entry kind=scope shape=an_alias_used_in_the_present_tense_anywhere_in_the_file_that_declares_the_aliases expect=refused measured=allowed_part_3_skips_floatfea_SLASH_tolerances_py_wholesale_rather_than_skipping_only_the_retirement_entries
+id=an_absence_claim_in_a_yml_or_txt_under_a_root kind=scope shape=an_absence_sentence_in_a_dot_yml_or_a_dot_txt_file_under_tests_or_scripts expect=refused measured=allowed_prose_files_takes_dot_py_and_dot_md_only
+
+# --- part 4, the POINTER claim: 16 unseen shapes, added at the fifty-fifth
+# verdict on F2 (reviewed commit ccb5346). DB1 replaced 51 of the 64 rows of
+# the canonical render with the literal sentence
+#   STAR withdrawn OPEN DB1 CLOSE HYPHEN HYPHEN the claim is BACKTICK
+#   <a path> BACKTICK STAR
+# and rewrote 85 live citations in docs/milestones/F2.md and
+# floatfea/tolerances.py from a rendered number to a sentence naming a test
+# "that asserts the claim". A POINTER CLAIM is a sentence of the form "the
+# claim is <path>" / "it is measured in <path>" / "<path> recomputes them" /
+# "the membership is asserted in <path>". It asserts something about the code
+# -- that a named file carries a named claim -- and NOTHING IN THE
+# REPOSITORY CHECKS IT: the shipped guard reads only lines beginning
+# claim COLON / cmd COLON / out COLON, and none of these shapes carries one.
+# The path resolving is not the claim holding; a pointer at a file that does
+# not compute the quantity is the same defect as a stale number, with the
+# number removed so nobody can see it is stale.
+#
+# MEASURED AT ccb5346: 16 entries, 0 caught. Mechanism, so the number is not
+# taken on trust: tests/test_tree_prose_consistent.py part 1 parses only
+# _CLAIM / _CMD / _OUT (test_tree_prose_consistent.py:326-329) and every
+# shape below is ordinary comment prose with no triple; parts 2 and 3 are the
+# absence and retired-alias keyword lists, and a POSITIVE claim about what a
+# named file contains matches neither. The file's own header already says the
+# guard "cannot find a POSITIVE claim that is false" -- this part is 16
+# instances of that sentence being the live defect rather than a caveat.
+#
+# The first four are LIVE at ccb5346 and each is refuted by one grep.
+id=pointer_at_a_file_that_does_not_compute_the_quantity kind=pointer shape=The_largest_rigid_body_eigenvalue_over_the_corpus_is_measured_in_BACKTICK_tests_SLASH_verification_SLASH_rung1_SLASH_test_rigid_body_corpus_py_BACKTICK_FULLSTOP expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_489_to_493_refuted_by_grep_largest_rigid_over_that_file_which_returns_nothing_the_helper_is_defined_in_test_rigid_body_modes_py_308_and_its_only_caller_is_scripts_SLASH_regen_figures_py_228
+id=pointer_asserting_a_membership_nothing_asserts kind=pointer shape=the_partition_itself_is_computed_COMMA_and_the_membership_asserted_COMMA_in_BACKTICK_a_test_file_BACKTICK expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_427_to_431_the_window_partition_is_taken_against_FIGURE_FLOOR_CLASS_SPREAD_and_that_name_does_not_occur_in_the_named_file_at_all
+id=pointer_at_a_cell_the_named_file_runs_one_case_of kind=pointer shape=ONE_TORSIONAL_RELEASE_OVER_THE_CORPUS_OWN_UNIT_AND_SPAN_SETS_COMMA_of_which_the_ones_that_really_do_carry_a_seventh_zero_mode_NONE_escapes_the_bound expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_369_to_372_the_named_file_runs_one_release_on_the_shipped_frame_at_test_rigid_body_corpus_py_test_a_RELEASED_CONNECTION_makes_the_gate_REFUSE_and_never_iterates_the_unit_or_span_sets
+id=an_enforcement_sentence_left_standing_when_the_enforcement_was_deleted kind=pointer shape=TWO_CANDIDATES_COMMA_BOTH_RENDERED_COMMA_BOTH_ENFORCED expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_365_after_the_same_commit_made_floor_class_report_both_rows_as_words_so_neither_is_rendered_and_neither_is_compared_against_RIGID_MODE_BOUND
+id=a_recompute_sentence_naming_a_script_that_no_longer_recomputes_it kind=pointer shape=both_clearances_are_recomputed_by_BACKTICK_scripts_SLASH_regen_figures_py_HYPHEN_HYPHEN_check_BACKTICK_wherever_it_runs expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_385_to_387_the_words_branch_of_compare_never_reads_a_ceiling
+id=pointer_whose_target_prints_but_does_not_assert kind=pointer shape=the_comparison_between_them_is_recomputed_rather_than_published expect=refused measured=allowed_the_named_test_prints_both_counts_and_asserts_only_that_one_of_them_is_non_empty_so_the_comparison_the_sentence_names_is_asserted_nowhere
+id=pointer_at_a_withdrawn_row_whose_value_is_a_function_of_its_own_name kind=pointer shape=A_reader_who_wants_the_number_runs_the_named_test_COMMA_which_is_the_thing_that_actually_asserts_it expect=refused measured=allowed_LIVE_at_scripts_SLASH_regen_figures_py_in_the_DB1_block_and_false_for_at_least_six_of_the_33_names_in_WITHDRAWN
+id=pointer_at_a_directory_rather_than_a_test kind=pointer shape=the_claim_is_carried_under_BACKTICK_tests_SLASH_verification_SLASH_rung1_SLASH_BACKTICK expect=refused measured=allowed_a_directory_cannot_carry_a_claim_and_no_check_resolves_the_path_to_a_test_at_all
+id=pointer_at_a_test_that_does_not_exist kind=pointer shape=the_claim_is_BACKTICK_tests_SLASH_verification_SLASH_rung1_SLASH_test_rigid_body_window_py_BACKTICK expect=refused measured=allowed_nothing_resolves_a_pointer_path_so_a_phantom_file_reads_the_same_as_a_real_one
+id=pointer_at_a_test_that_exists_and_is_deselected_by_a_marker kind=pointer shape=the_claim_is_BACKTICK_a_test_carrying_a_marker_the_default_run_deselects_BACKTICK expect=refused measured=allowed_a_pointer_at_a_test_that_never_runs_is_indistinguishable_from_a_pointer_at_one_that_does
+id=pointer_at_a_test_whose_only_assertion_is_that_the_corpus_parsed kind=pointer shape=the_claim_is_BACKTICK_a_file_whose_only_assert_is_that_the_corpus_parsed_to_entries_BACKTICK expect=refused measured=allowed_a_meta_test_carries_no_claim_about_the_quantity_the_pointer_was_written_for
+id=pointer_that_inverts_the_direction_of_the_bound kind=pointer shape=the_named_test_asserts_the_value_is_ABOVE_the_bound_where_the_withdrawn_row_was_marked_BELOW_it expect=refused measured=allowed_the_withdrawal_string_carries_no_direction_so_a_pointer_cannot_disagree_with_the_row_it_replaced
+id=pointer_written_in_a_commit_that_deletes_the_assertion_it_names kind=pointer shape=a_pointer_added_in_the_same_commit_that_removes_the_assert_it_points_at expect=refused measured=allowed_nothing_correlates_a_pointer_with_the_diff_of_the_commit_that_publishes_it
+id=a_withdrawal_string_that_can_never_move kind=pointer shape=a_published_row_whose_value_is_computed_from_the_row_name_alone_and_compared_against_itself expect=refused measured=allowed_51_of_the_64_rows_of_the_canonical_render_are_now_this_shape_so_the_staleness_check_on_them_cannot_fail
+id=a_bare_quantifier_replacing_a_withdrawn_count kind=pointer shape=it_exceeds_its_ceiling_on_a_large_fraction_of_them_with_a_DEFECT_FREE_element expect=refused measured=allowed_LIVE_at_floatfea_tolerances_py_295_and_296_and_a_large_minority_in_the_same_entry_is_recorded_two_paragraphs_below_as_having_been_WRONG_for_four_rounds_which_is_the_same_shape_readmitted
+id=a_comparative_with_both_operands_withdrawn kind=pointer shape=it_breached_at_more_of_the_reviewers_clean_frames_than_the_ratio_did expect=refused measured=allowed_LIVE_at_floatfea_tolerances_py_672_to_675_neither_operand_is_published_and_no_assertion_compares_them_so_the_sentence_cannot_be_refuted_or_confirmed_from_the_tree
+
+# --- part 5, the RUNNER claim: 14 unseen shapes, added at the fifty-sixth
+# verdict on F2 (reviewed commit 9e02cb5). A POINTER claim (part 4) says a
+# named FILE carries a claim. A RUNNER claim says a named EXECUTABLE CHECK
+# enforces it -- "recomputed by BACKTICK a script BACKTICK", "BOTH ENFORCED",
+# "asserted wherever it runs", "the determinism legs are a check on them".
+# The distinction is the one DC0 made live: the staleness guard
+# test_the_generated_figures_are_not_stale was the ONLY caller of
+# scripts/regen_figures.py --check anywhere in the repository, and --check is
+# what compares every floor-class row against the ceiling named beside it.
+# Deleting the guard left every "ENFORCED" sentence in floatfea/tolerances.py
+# standing over an enforcement that no longer runs, and the file the sentences
+# name still exists, still contains the code, and still passes a grep.
+#
+# A POINTER claim fails when the path does not compute the quantity. A RUNNER
+# claim fails when it does compute it AND NOTHING INVOKES IT. The second is
+# strictly harder to see: the code is there, the function is there, the
+# comparison is there, and the only missing thing is a caller. One command
+# separates them --
+#   grep -rn "<the script>" --include=*.py --include=*.yml . | grep -v itself
+# -- and nothing in this repository runs it.
+#
+# MEASURED AT 9e02cb5: 14 entries, 0 caught. Mechanism, so the number is not
+# taken on trust: tests/test_tree_prose_consistent.py part 1 evaluates only
+# claim COLON / cmd COLON / out COLON triples over the vocabulary count,
+# lines, files -- and that vocabulary has no term for "is invoked by", so even
+# a triple could not express the check. Parts 2 and 3 are the absence and
+# retired-alias keyword lists; an ENFORCEMENT sentence is a positive claim and
+# matches neither.
+#
+# The first three are LIVE at 9e02cb5 and each is refuted by one grep.
+id=runner_claim_whose_only_caller_was_deleted_in_the_same_round kind=runner shape=TWO_CANDIDATES_COMMA_BOTH_RENDERED_COMMA_BOTH_ENFORCED expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_365_RENDERED_is_true_again_after_the_DB1_revert_and_ENFORCED_is_false_because_the_ceilings_are_compared_only_inside_regen_figures_HYPHEN_HYPHEN_check_whose_only_caller_test_the_generated_figures_are_not_stale_was_deleted_at_3861d89
+id=runner_claim_with_a_wherever_it_runs_escape_clause kind=runner shape=both_clearances_are_recomputed_by_BACKTICK_scripts_SLASH_regen_figures_py_HYPHEN_HYPHEN_check_BACKTICK_wherever_it_runs expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_381_to_383_the_clause_wherever_it_runs_is_now_vacuously_true_because_it_runs_nowhere_and_a_sentence_that_cannot_be_false_is_not_a_claim
+id=runner_claim_for_a_bracket_whose_helper_has_one_caller_and_it_is_a_script kind=runner shape=the_bound_must_exceed_the_largest_numerically_zero_eigenvalue_or_Courant_Fischer_six_are_not_all_under_it expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_365_to_367_largest_rigid_eigenvalue_is_defined_at_test_rigid_body_modes_py_308_and_its_only_caller_in_the_repository_is_scripts_SLASH_regen_figures_py_228_so_no_assertion_anywhere_compares_it_with_RIGID_MODE_BOUND
+id=runner_claim_naming_a_CI_job_that_runs_only_on_workflow_dispatch kind=runner shape=the_determinism_legs_HYPHEN_HYPHEN_ten_runs_of_one_pinned_environment_HYPHEN_HYPHEN_are_a_check_on_them expect=refused measured=allowed_the_legs_job_carries_if_github_event_name_equals_workflow_dispatch_so_it_does_not_run_on_push_and_a_reader_of_the_sentence_cannot_tell_a_check_that_runs_from_one_that_must_be_asked_for
+id=runner_claim_naming_a_script_invoked_without_the_flag_that_checks kind=runner shape=the_figures_file_is_still_generated_COMMA_still_canonical_COMMA_and_still_rendered_on_CI expect=refused measured=allowed_LIVE_at_tests_SLASH_test_plan_figures_py_in_the_deletion_note_CI_runs_the_script_bare_at_ci_yml_110_which_WRITES_the_file_and_compares_nothing_so_rendered_on_CI_is_true_and_carries_no_check
+id=runner_claim_about_a_precommit_hook_nobody_installed kind=runner shape=BACKTICK_scripts_SLASH_precommit_stale_py_BACKTICK_catches_this_before_the_commit_lands expect=refused measured=allowed_a_pre_commit_hook_is_a_local_installation_and_nothing_in_the_repository_records_whether_it_is_installed_on_the_machine_that_made_a_given_commit
+id=runner_claim_satisfied_by_a_test_that_exercises_the_COMPARATOR_not_the_FILE kind=runner shape=the_decision_is_asserted_COMMA_and_its_margin_must_exceed_the_spread_bound expect=refused measured=allowed_LIVE_at_tests_SLASH_test_figure_local_check_py_docstring_item_3_every_case_in_that_file_calls_compare_on_the_synthetic_CANON_dict_so_the_comparator_is_exercised_and_the_shipped_render_is_never_fed_through_it
+id=runner_claim_for_a_check_reachable_only_through_a_deselected_marker kind=runner shape=the_ceiling_is_enforced_in_the_rung_that_owns_it expect=refused measured=allowed_a_marker_the_default_addopts_deselects_makes_an_enforcement_sentence_true_of_the_source_and_false_of_every_run
+id=runner_claim_for_a_check_that_runs_and_swallows_its_own_exit_code kind=runner shape=the_rung_is_run_and_its_result_recorded expect=refused measured=allowed_a_step_ending_in_two_pipes_true_runs_the_check_and_cannot_fail_the_job_which_is_the_shape_ci_yml_already_uses_deliberately_for_the_regression_leg_and_repairs_with_a_second_reader
+id=runner_claim_whose_caller_is_only_called_by_the_thing_it_checks kind=runner shape=the_generator_produces_the_table_at_the_commit_that_publishes_it expect=refused measured=allowed_BI3_requires_a_committed_script_to_produce_a_tolerance_table_and_nothing_asserts_that_the_script_was_RUN_at_that_commit_so_the_requirement_is_carried_by_discipline_and_reads_as_carried_by_machinery
+id=runner_claim_naming_a_check_deleted_in_the_same_commit_as_the_sentence kind=runner shape=a_sentence_added_in_the_commit_that_removes_the_only_invocation_of_the_check_it_names expect=refused measured=allowed_nothing_correlates_an_enforcement_sentence_with_the_diff_of_the_commit_that_publishes_it_which_is_how_3861d89_shipped
+id=runner_claim_where_the_check_exists_twice_and_only_the_dead_copy_is_named kind=runner shape=it_is_checked_in_BACKTICK_the_script_BACKTICK_rather_than_in_the_rung expect=refused measured=allowed_a_reader_told_the_script_checks_it_will_not_look_for_a_second_weaker_assertion_in_the_rung_and_cannot_tell_which_one_the_gate_actually_rests_on
+id=runner_claim_for_an_enforcement_that_is_a_print_rather_than_an_assert kind=runner shape=the_clearance_is_reported_at_every_run_COMMA_so_a_breach_would_be_seen expect=refused measured=allowed_LIVE_in_shape_at_test_rigid_body_modes_py_316_where_a_quantity_is_reported_not_asserted_here_and_a_printed_number_in_a_green_run_is_read_by_nobody
+id=runner_claim_that_survives_because_the_grep_matches_the_definition kind=runner shape=BACKTICK_a_helper_name_BACKTICK_is_computed_over_the_corpus_and_held_below_the_bound expect=refused measured=allowed_a_grep_for_the_helper_name_returns_its_def_line_and_reads_as_confirmation_so_the_check_that_separates_a_caller_from_a_definition_is_the_one_nobody_runs
+
+# --- part 6, the REPAIR-STALE claim: 13 unseen shapes, added at the
+# fifty-eighth verdict on F2 (reviewed commit 8e64f22). Parts 4 and 5 are
+# about a sentence that was ALWAYS false -- a pointer at a file that does not
+# compute the quantity, a runner claim with no caller. This part is the other
+# half and it is harder, because the sentence was TRUE AT THE COMMIT THAT
+# WROTE IT and a later commit in the SAME ROUND made it false.
+#
+# The species was found live. At f7501ee the RIGID_MODE_BOUND entry was
+# rewritten to record, correctly and in detail, that DC0 had left both of its
+# brackets unenforced. At 8945a4e -- the very next commit, one directive
+# later -- tests/test_plan_figures.py gained
+# test_every_floor_class_row_clears_its_tolerance_on_THIS_tree, which asserts
+# exactly those two rows against exactly that constant. The entry was not
+# touched. So the tolerance whose written justification CLAUDE.md makes part
+# of the tolerance now tells its reader that nothing guards it, one commit
+# after something started to.
+#
+# WHY IT IS ITS OWN SPECIES, and why every earlier part misses it:
+#
+#   * it is false in the REASSURING-LOOKING direction. A sentence that
+#     overstates a guarantee reads as a claim and invites a grep. A sentence
+#     that UNDERSTATES one reads as candour -- this is a gap, recorded here
+#     rather than papered over -- and a reader who agrees with it stops.
+#   * the refuting command is not a grep over the file the sentence is in. It
+#     is a grep over a file the sentence does not name, added by a commit the
+#     sentence predates. Nothing in the entry points at it.
+#   * BP0 already covers the case where a RULE moves under a FIGURE. This is
+#     the case where a GAP is closed under a sentence ABOUT the gap, and the
+#     repository has no rule for it: the tolerance-table regeneration rule
+#     (BI3) fires on numbers, and there is no number here.
+#
+# The refuting command for the whole species is one line and it is the same
+# line every time -- WAS ANYTHING ADDED AFTER THIS SENTENCE THAT MAKES IT
+# FALSE:
+#   git log -S <the assertion the sentence says does not exist>
+#           <the commit the sentence was written at>..HEAD
+#
+# MEASURED AT 8e64f22: 13 entries, 0 caught. Mechanism, so the zero is not
+# taken on trust: tests/test_tree_prose_consistent.py rules ONLY on explicit
+# claim COLON / cmd COLON / out COLON triples -- the absence and
+# retired-alias keyword lists were deleted, and CLAUDE.md records that they
+# caught 0 of 20 and 3 of 8 against unseen phrasings. Every sentence below is
+# plain comment prose and carries no triple, so no part of the guard reads
+# it. The vocabulary count, lines, files, defined also has NO TERM FOR TIME:
+# a triple can ask whether something is true NOW, never whether it is STILL
+# true, and a triple written at f7501ee and never re-run is exactly the
+# defect this part is about.
+#
+# The first four are LIVE at 8e64f22 and each is refuted by one command.
+# The eleventh is the CONTROL: it must be ALLOWED, and it is.
+id=absence_sentence_falsified_by_the_next_commit_in_the_same_round kind=repair_stale shape=TWO_CANDIDATES_COMMA_BOTH_RENDERED_COMMA_AND_NEITHER_ENFORCED_SINCE_DC0 expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_363_written_at_f7501ee_and_falsified_at_8945a4e_by_test_every_floor_class_row_clears_its_tolerance_on_THIS_tree_which_asserts_both_named_rows_against_RIGID_MODE_BOUND
+id=nothing_would_notice_sentence_outliving_the_thing_that_notices kind=repair_stale shape=NOTHING_IN_THE_SUITE_WOULD_NOTICE_IF_THEY_STOPPED_HOLDING expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_395_to_397_one_test_in_tests_SLASH_test_plan_figures_py_notices_and_it_was_added_one_commit_after_the_sentence
+id=one_caller_count_taken_before_the_second_caller_landed kind=repair_stale shape=BACKTICK_largest_rigid_eigenvalue_BACKTICK_has_one_caller_in_the_tree_COMMA_the_generator_itself_COMMA_and_no_assertion_anywhere_compares_it_with_this_constant expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_397_to_399_a_count_of_callers_is_a_measurement_with_a_date_and_the_entry_carries_no_date
+id=a_promise_about_a_future_commit_that_the_next_commit_kept kind=repair_stale shape=closing_it_is_a_decision_about_apparatus_under_a_freeze_COMMA_so_it_goes_to_the_technical_supervisor_COMMA_not_into_the_next_commit_I_happen_to_be_writing expect=refused measured=allowed_AND_THIS_SENTENCE_IS_LIVE_at_floatfea_tolerances_py_401_to_403_the_next_commit_8945a4e_is_exactly_where_it_went_so_the_sentence_records_a_decision_that_was_reversed_before_it_could_be_read
+id=enforcement_that_one_token_in_a_generator_silently_removes kind=repair_stale shape=each_floor_class_row_is_asserted_against_the_TOLERANCE_it_decides_against expect=refused measured=allowed_the_domain_is_whatever_floor_class_returns_so_changing_below_RIGID_MODE_BOUND_to_derived_on_both_rows_leaves_the_test_GREEN_and_no_assertion_names_either_row_MEASURED_1_passed_192_deselected_at_8e64f22_with_both_marks_flipped
+id=a_nonempty_guard_standing_in_for_a_named_domain kind=repair_stale shape=assert_checked_COMMA_no_floor_class_row_was_checked_at_all expect=refused measured=allowed_a_nonempty_assertion_proves_the_collection_is_not_empty_and_says_nothing_about_whether_the_two_rows_the_tolerance_entry_names_are_in_it
+id=an_allow_list_of_reporter_names_that_a_new_reporter_is_not_added_to kind=repair_stale shape=a_failure_nobody_can_locate_is_half_a_report expect=refused measured=allowed_LIVE_at_test_report_guard_states_py_587_to_601_the_named_tuple_omits_test_the_Carried_table_is_what_the_generator_produces_so_a_state_whose_only_reporter_is_that_test_fails_for_being_unlocatable_while_naming_R999_in_its_own_message
+id=a_superlative_about_the_corpus_with_no_command kind=repair_stale shape=the_only_thing_in_fifty_six_rounds_that_has_caught_a_defect_nobody_was_looking_for expect=refused measured=allowed_a_superlative_over_history_cannot_be_refuted_by_any_command_the_repository_can_run_and_it_was_written_by_the_owner_of_the_corpus_it_praises
+id=a_sentence_dated_by_a_directive_number_instead_of_a_commit kind=repair_stale shape=NEITHER_ENFORCED_SINCE_DC0 expect=refused measured=allowed_a_directive_number_is_not_a_commit_so_the_since_clause_names_no_point_the_tree_can_be_asked_about_and_a_reader_cannot_run_git_log_on_DC0
+id=a_withdrawal_note_that_outlives_the_withdrawal kind=repair_stale shape=THE_SECOND_HALF_OF_THAT_SENTENCE_IS_WITHDRAWN_AND_NOT_REPLACED expect=refused measured=allowed_LIVE_at_floatfea_tolerances_py_388_the_second_half_WAS_replaced_at_8945a4e_by_an_assertion_and_the_withdrawal_note_still_reads_not_replaced
+id=a_docstring_describing_the_tree_after_a_named_commit_in_the_past_tense kind=repair_stale shape=after_DC0_the_only_caller_of_HYPHEN_HYPHEN_check_in_the_repository_was_the_deleted_test expect=allowed measured=allowed_and_CORRECTLY_SO_this_is_the_CONTROL_for_this_part_the_past_tense_and_the_named_commit_make_it_a_statement_about_a_PAST_tree_which_no_later_commit_can_falsify
+id=a_gap_recorded_as_permanent_in_a_file_the_same_round_repairs kind=repair_stale shape=This_is_a_gap_in_what_guards_the_bound_COMMA_it_is_recorded_here_rather_than_papered_over expect=refused measured=allowed_the_candour_of_the_sentence_is_what_stops_the_reader_and_the_gap_it_records_was_closed_two_commits_later_in_the_same_review_round
+id=an_entry_whose_reason_paragraph_contradicts_the_test_that_enforces_it kind=repair_stale shape=a_tolerance_entry_saying_NOTHING_ENFORCES_THIS_while_a_shipped_test_asserts_it expect=refused measured=allowed_nothing_in_the_repository_correlates_a_tolerance_entry_with_the_set_of_assertions_that_read_its_constant_which_is_the_check_this_whole_part_asks_for_and_none_exists
