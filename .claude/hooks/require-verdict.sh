@@ -41,9 +41,28 @@ review=${report/docs\/reports/docs\/reviews}
 # Any earlier step still on HOLD/STOP while a later report exists is a
 # violation regardless of what the newest review says.
 stepnum() { local s=${1##*step-}; echo "${s%.md}"; }
+
+# DD1/DE1: A STEP'S DISPOSITION IS ITS CLOSURE VERDICT, NOT THE FILE'S LAST
+# LINE. A verdict file accumulates every verdict written on that step, and
+# once a step has closed, later verdicts in the same file are about the state
+# of the TREE -- they do not reopen the step. Reading only the header made
+# this hook refuse every turn after step 5 closed at verdict 53: two
+# tree-rounds were written into its file, the header read HOLD, and the
+# refusal had no exit, because a verdict on step 5 could not clear a step-6
+# report and a verdict on step 6 was what the refusal was preventing. It cost
+# two verdicts, neither about the work, and `CLAUDE.md` § Step gating calls
+# that a guard failing false.
+#
+# So a step counts as closed when ANY verdict in its file is a PASS.
+# `grep -c` over `^Verdict: *PASS` rather than the first line only.
+closed_by_a_pass() { grep -cE '^Verdict: *PASS' "$1" 2>/dev/null | grep -qv '^0$'; }
+
 for r in $(ls docs/reviews/F*/step-*.md 2>/dev/null); do
   [ "$r" = "$review" ] && continue
   v=$(grep -m1 -E '^Verdict:' "$r" | awk '{print $2}')
+  if closed_by_a_pass "$r"; then
+    continue
+  fi
   if [ "$v" = "HOLD" ] || [ "$v" = "STOP" ]; then
     # Same milestone, and the newest report is a later step than the held one.
     if [ "$(dirname "$r")" = "$(dirname "$review")" ] && [ "$(stepnum "$report")" -gt "$(stepnum "$r")" ]; then
