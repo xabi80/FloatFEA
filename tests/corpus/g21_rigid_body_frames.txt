@@ -746,3 +746,70 @@ id=rb9_base_mm_unit_span_x1e8_3deg section=circular_tube,D=0.6,t=0.012 subdiv=1 
 id=rb9_brace_1e6unit_span_x1e6_3deg section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=1e+06 stretch=1e+06 tip=0.20934382497,1.10000000000,3.99451813902 lambda6_units=0.2103 lambda7_units=2.3322e-01 spectral=refused local_eps=0.000 assembled_residual=1.2968e-16 x_retired_ceiling=0.130 ratio=1.9899e-01 loss=7.3564e-01 runs_in_suite=yes expect=breach
 id=rb9_solid_D13mm_2p87deg_subdiv4 section=circular_tube,D=0.013,t=0.006 subdiv=4 unit=1 stretch=1 tip=0.20028001973,1.10000000000,3.99498284273 lambda6_units=0.2483 lambda7_units=5.8743e+08 spectral=decided local_eps=0.000 assembled_residual=2.1943e-16 x_retired_ceiling=0.219 ratio=3.5887e-10 loss=1.6010e-10 runs_in_suite=yes expect=breach
 id=rb9_thinwall_D3_span_x1e4_2p87deg section=circular_tube,D=3.0,t=0.001 subdiv=1 unit=1 stretch=10000 tip=0.20028001973,1.10000000000,3.99498284273 lambda6_units=0.6707 lambda7_units=3.4083e+06 spectral=decided local_eps=0.000 assembled_residual=1.9845e-16 x_retired_ceiling=0.198 ratio=2.3281e-07 loss=5.8752e-08 runs_in_suite=yes expect=breach
+
+# --- BATCH 10, the sixty-first verdict: the REFUSED half of the new carrier ---
+#
+# Written after 061bb70 replaced `lambda_7 > 0.0` with `lambda_6 <
+# RIGID_MODE_BOUND` at every frame. Batch 9 asked whether the new carrier
+# FALSE-REDS; it does not, and neither does this batch. This batch asks the next
+# question, which is what the per-frame assertion can DETECT where it is the only
+# assertion left -- on a frame whose `lambda_7` is under the bound, so the
+# spectral half refuses and says nothing about the element.
+#
+# WHAT A PASSING SCAN MEANS, for these entries. Every entry is the SAME
+# defect-free element. `lambda6_units` is below `RIGID_MODE_BOUND` = 199.526 at
+# every one of them, which is what the shipped per-frame assertion in
+# `test_G2_1_holds_at_every_frame_in_the_corpus` requires, so a passing scan
+# means the assertion is not false-reddening here. It does NOT mean the element
+# is under test at these frames.
+#
+# THE NEW FIELD. `l6_counters_detected` records how many of the three
+# element-local counter shapes -- `dropped_flip`, `wrong_dof_index`,
+# `rotational_block` from `scripts/rigid_counter_response.py`, each injected into
+# every element's own local stiffness at 1e-8 of `max|k_e|` -- lift `lambda_6`
+# over the bound at that frame, measured through the shipped
+# `largest_rigid_eigenvalue`. It is DATA and no shipped test reads it. On the
+# `spectral=decided` entries here it is 3 of 3; on the `spectral=refused` ones it
+# runs 0 to 2, and it is 0 on five of them.
+#
+# AXES THIS BATCH REACHES AND NO EARLIER ONE DID: unit 1e-06 and 1e+09 (earlier
+# batches span 1e-03 to 1e+06), stretch 1e-09 and 1e+10 (earlier: 1e-06 to
+# 1e+08), and subdiv 8 and 16 (earlier: 1, 2, 4, 6, 8 at unit 1 only).
+#
+# FOUR CANDIDATES OF THE FIFTEEN ARE NOT IN THIS FILE, and the reason belongs in
+# the record. On each of them the defect-free `K_hat` is INDEFINITE at round-off
+# -- its seventh eigenvalue is negative -- and `mode_ratio`, which
+# `test_the_RETIRED_ratio_is_why_the_form_changed` calls over every entry in this
+# file, raises `ValueError` rather than returning. The raise is the right
+# behaviour for an unsupported case; the consequence is that this corpus cannot
+# carry the frame class, so the class is recorded here instead:
+#
+#   thin  D=3.0 t=0.001  subdiv=8  unit=1e+06  stretch=1e+05  tip=3.1,2.2,4.4
+#         lambda_7(K) = -9.738e-05; lambda6_units 0.0000, lambda7_units 6.032e-08
+#   solid D=0.013 t=0.006 subdiv=8 unit=1e+09 stretch=1 tip=2.87deg
+#         lambda_7(K) = -1.345e-03; lambda6_units 0.0002, lambda7_units 2.630e-04
+#   thin  D=3.0 t=0.001  subdiv=1  unit=1e+09  stretch=1e-09 tip=2.87deg
+#         lambda_7(K) = -2.620e+09; lambda6_units 0.0033, lambda7_units 5.455e-03
+#   solid D=0.013 t=0.006 subdiv=4 unit=1 stretch=1e+10 tip=6deg
+#         lambda_7(K) = -8.185e-19; lambda6_units 0.0000, lambda7_units 6.542e-06
+#
+# Both shipped per-frame assertions PASS on all four, because
+# `largest_rigid_eigenvalue` and `seventh_over_epsilon` sort by ABSOLUTE value:
+# the sign of the seventh eigenvalue is destroyed before either assertion sees
+# it. At these four the negatives are at round-off and the element is fine --
+# element-local worst 0.000 eps at the first of them.
+#
+# Measured on Windows, Python 3.13, at 792c44e, through the shipped
+# `test_rigid_body_corpus._build` and `test_rigid_body_modes`'s own functions.
+# ---------------------------------------------------------------------------
+id=rb10_base_1e-6unit_span_x1e-9_35deg section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e-06 stretch=1e-09 tip=3.1,2.2,4.4 lambda6_units=0.8882 lambda7_units=4.5757e+01 spectral=refused local_eps=0.000 assembled_residual=9.9191e-17 x_retired_ceiling=0.099 ratio=6.7511e-03 loss=1.5614e-03 l6_counters_detected=0of3 runs_in_suite=yes expect=breach
+id=rb10_base_1e9unit_35deg section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e+09 stretch=1 tip=3.1,2.2,4.4 lambda6_units=0.0104 lambda7_units=2.6999e-02 spectral=refused local_eps=0.038 assembled_residual=1.6526e-16 x_retired_ceiling=0.165 ratio=6.1282e-02 loss=9.3935e-01 l6_counters_detected=1of3 runs_in_suite=yes expect=breach
+id=rb10_brace_1e9unit_span_x1e-9_2p87 section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=1e+09 stretch=1e-09 tip=0.20028001973,1.10000000000,3.99498284273 lambda6_units=0.2958 lambda7_units=3.4716e-01 spectral=refused local_eps=0.224 assembled_residual=1.9532e-16 x_retired_ceiling=0.195 ratio=3.4635e-01 loss=8.8477e-01 l6_counters_detected=0of3 runs_in_suite=yes expect=breach
+id=rb10_thin_1e-6unit_span_x1e10_6deg section=circular_tube,D=3.0,t=0.001 subdiv=1 unit=1e-06 stretch=1e+10 tip=0.41811385307,1.10000000000,3.97808758147 lambda6_units=0.1641 lambda7_units=5.8954e-01 spectral=refused local_eps=0.000 assembled_residual=1.4285e-16 x_retired_ceiling=0.143 ratio=2.9222e-01 loss=8.0977e-01 l6_counters_detected=2of3 runs_in_suite=yes expect=breach
+id=rb10_solid_1e-6unit_span_x1e-9_2p87 section=circular_tube,D=0.013,t=0.006 subdiv=1 unit=1e-06 stretch=1e-09 tip=0.20028001973,1.10000000000,3.99498284273 lambda6_units=0.0259 lambda7_units=4.9942e-02 spectral=refused local_eps=0.282 assembled_residual=1.1231e-16 x_retired_ceiling=0.112 ratio=8.8518e-01 loss=9.3014e-01 l6_counters_detected=0of3 runs_in_suite=yes expect=breach
+id=rb10_brace_subdiv8_span_x1e5_35deg section=circular_tube,D=0.1,t=0.001 subdiv=8 unit=1 stretch=1e+05 tip=3.1,2.2,4.4 lambda6_units=0.1554 lambda7_units=3.5033e+00 spectral=refused local_eps=0.000 assembled_residual=1.3467e-16 x_retired_ceiling=0.135 ratio=2.8859e-02 loss=1.9711e-02 l6_counters_detected=0of3 runs_in_suite=yes expect=breach
+id=rb10_brace_subdiv16_mm_unit_2p87 section=circular_tube,D=0.1,t=0.001 subdiv=16 unit=0.001 stretch=1 tip=0.20028001973,1.10000000000,3.99498284273 lambda6_units=0.0964 lambda7_units=7.5912e+03 spectral=decided local_eps=0.078 assembled_residual=1.1416e-16 x_retired_ceiling=0.114 ratio=7.6879e-06 loss=5.5391e-06 l6_counters_detected=3of3 runs_in_suite=yes expect=breach
+id=rb10_base_subdiv16_span_x1e-6_6deg section=circular_tube,D=0.6,t=0.012 subdiv=16 unit=1 stretch=1e-06 tip=0.41811385307,1.10000000000,3.97808758147 lambda6_units=0.0760 lambda7_units=1.7531e+11 spectral=decided local_eps=0.365 assembled_residual=1.7165e-16 x_retired_ceiling=0.172 ratio=9.3826e-13 loss=2.0553e-13 l6_counters_detected=3of3 runs_in_suite=yes expect=breach
+id=rb10_base_span_x1e10_2p87 section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1 stretch=1e+10 tip=0.20028001973,1.10000000000,3.99498284273 lambda6_units=0.1699 lambda7_units=2.1504e-01 spectral=refused local_eps=0.000 assembled_residual=1.3546e-16 x_retired_ceiling=0.135 ratio=5.5837e-01 loss=7.2331e-01 l6_counters_detected=1of3 runs_in_suite=yes expect=breach
+id=rb10_brace_1e-6unit_span_x1e10_35deg section=circular_tube,D=0.1,t=0.001 subdiv=1 unit=1e-06 stretch=1e+10 tip=3.1,2.2,4.4 lambda6_units=0.1623 lambda7_units=2.6117e-01 spectral=refused local_eps=0.000 assembled_residual=1.8419e-16 x_retired_ceiling=0.184 ratio=3.6741e-01 loss=7.0318e-01 l6_counters_detected=0of3 runs_in_suite=yes expect=breach
+id=rb10_base_1e9unit_span_x1e10_35deg section=circular_tube,D=0.6,t=0.012 subdiv=1 unit=1e+09 stretch=1e+10 tip=3.1,2.2,4.4 lambda6_units=0.0069 lambda7_units=1.4307e-02 spectral=refused local_eps=0.000 assembled_residual=2.3033e-16 x_retired_ceiling=0.230 ratio=4.6947e-01 loss=9.1273e-01 l6_counters_detected=1of3 runs_in_suite=yes expect=breach
