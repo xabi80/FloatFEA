@@ -319,28 +319,51 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 # `{{fig:rigid_mode_residual}}`, both rendered on CI rather than typed. The
 # ceiling is unchanged because the new quantity lands in the same decade, and
 # the counter's own clearance moved with it -- see
-# `RIGID_MODE_EXACTNESS_COUNTER_DEFECT` below, whose detection edge is now
-# bisected at five spans on BOTH DOF classes rather than at one.
+# `RIGID_MODE_EXACTNESS_COUNTER_DEFECT` below, which has no gate to redden
+# any more -- see its entry.
 #
 # WHY THE VALUE IS NOT RE-TUNED TO THE NEW MEASUREMENT: a ceiling chosen to
 # sit just above whatever the corpus currently reads is a ceiling that moves
 # whenever the corpus grows, which is the defect DB1 and DC0 spent two rounds
-# on. `1e-15` is a decade boundary above the measured worst, and the margin is
-# asserted per frame by the corpus test rather than declared here.
+# on. `1e-15` is a decade boundary above the measured worst.
+#
+# AND NOTHING ASSERTS THIS CONSTANT ANY MORE (DI0, R530). Claim A was dropped
+# as an F2 gate: 298 of the corpus's 1592 distinct elements did not redden
+# under at least one of the element-local form's three counters, and DG2 was
+# pre-registered for exactly that. The sentence that stood here -- "the margin
+# is asserted per frame by the corpus test" -- named an assertion deleted in
+# the same commit that wrote it, which is the R514 shape a second time.
+#
+# The constant is kept because the diagnostic and the closure artifact both
+# read it as the scale the retired quantity was measured against. Its CLASS
+# line above still says ACCURACY and that is now wrong in spirit: it bounds
+# nothing. It is left rather than retired-with-a-marker because F3 asserts the
+# element-local check on every real platform member, and that gate needs a
+# ceiling of this shape -- which will be derived from THAT quantity's own
+# measurements, not inherited from here.
 # Set: 2026-09-13, F2; quantity re-normalised and reason re-measured
-# 2026-09-25 (R475)
+# 2026-09-25 (R475); assertion dropped 2026-09-26 (DI0, R530)
 RIGID_MODE_EXACTNESS: Final[float] = 1e-15
 
-# COUNTER-CASE, INJECTED into the assembled matrix and run through the gate.
+# A COUNTER-CASE WITH NO GATE LEFT TO REDDEN (R530).
 #
-# AND IT IS INJECTED ON BOTH DOF CLASSES NOW (R475). The value is one
-# constant and it is applied at a translational DOF and at a rotational one,
-# at five spans each -- `test_BOTH_counters_redden_at_EVERY_span`, ten cells.
-# It was injected at `k[0,0]` only, which is the one class whose detection
-# edge the old normalisation left span-invariant, so the counter was measuring
-# the case that could not fail. The rotational edge is the tighter of the two
-# and the counter clears both at every span; the figures are printed by that
-# test rather than typed here.
+# It was injected into the assembled matrix and run through claim A's gate.
+# That gate is retired, and the two sentences that stood here are withdrawn:
+# one named a test deleted in the commit that wrote it -- the ten span cells
+# -- and the other said the value is injected at a translational DOF and a
+# rotational one at five spans each, which was the deleted test's behaviour
+# and not the tree's.
+#
+# WHAT IT ACTUALLY DOES NOW, and it is less than the prose claimed: nothing
+# injects it. It survives as a DISCRIMINATION FLOOR in two controls, which
+# read it as a size a defect must exceed; no gate compares anything with it.
+# The claim in `tests/test_counters_are_injected.py` that "the diagnostic
+# still injects it when it prints" was mine and is false -- the diagnostic
+# prints a clean residual and injects nothing.
+#
+# It is not deleted because F3's element-local gate needs a counter of this
+# shape, and that counter's size will be bisected against THAT gate rather
+# than assumed from this one.
 #
 # Reason for 1.0e-14: a diagonal stiffness resisting a rigid translation at
 # this size takes the residual to `4.4841e-15`, against a ceiling of `1e-15`.

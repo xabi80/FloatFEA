@@ -139,9 +139,12 @@ REGISTERED = [
     # this meta-test noticing that a counter had lost the assertion it defends
     # before any reader did, exactly as the note above describes for the ratio.
     #
-    # The counter constant `RIGID_MODE_EXACTNESS_COUNTER_DEFECT` stays in
-    # `tolerances.py` with its entry marked, because the diagnostic still
-    # injects it when it prints -- what it no longer has is a gate to redden.
+    # THE SENTENCE THAT STOOD HERE WAS FALSE IN BOTH HALVES (R530). It said
+    # the constant's entry was marked and that "the diagnostic still injects it
+    # when it prints". Neither was true: the entry was untouched, and the
+    # diagnostic prints a clean residual and injects nothing. What the constant
+    # actually does now is serve as a discrimination floor in two controls.
+    # Its entry says so.
     # In F3 the element-local check becomes an assertion on every real
     # platform member and its counters are registered here again, against
     # that gate (F2.md section 5e).

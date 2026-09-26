@@ -54,6 +54,7 @@ from test_rigid_body_modes import (  # noqa: E402
     _analytic_rigid_body,
     _assemble_with_torsional_release,
     _frame,
+    largest_rigid_eigenvalue,
     mode_ratio,
     residual_exactness,
     seventh_over_epsilon,
@@ -193,20 +194,47 @@ def test_G2_1_holds_at_every_frame_in_the_corpus(entry: dict[str, str]) -> None:
     # `test_rigid_body_modes.py`, where orientation, span and reference point
     # cannot enter the quantity at all -- a diagnostic in F2 by DG2, and an
     # assertion on every real platform member in F3 (F2.md §5e). Claim B, the
-    # `lambda_7` bound below, is unchanged and still asserted at every frame.
+    # `lambda_6` under the bound is what is asserted per frame now (R531).
     # Computed and printed as a diagnostic; nothing decides on it.
     worst = residual_exactness(k, model)
     print(f"  {entry['id']}: retired assembled residual {worst:.4e}")
 
-    # UNDECIDABLE IS AN OUTCOME AND NOT A SKIP (CT2). `CLAUDE.md`
-    # § Non-negotiables forbids `skip` outright, and a first version of this
-    # used one -- the forbidden mechanism wearing a reason, which is the exact
-    # shape this repository has caught twice before. What is asserted per
-    # entry is the RESIDUAL, above, which holds at every frame in the corpus
-    # including every refused one: the element is under test everywhere. The
-    # spectral question is the one the gate declines, and which frames it
-    # declines is asserted in `test_the_gate_REFUSES_rather_than_guesses_and_says_how_often`,
-    # from the same measurement.
+    # THE SENTENCES THAT STOOD HERE WERE FALSE AND THE ASSERTION WAS VACUOUS
+    # (R531). They said "Claim B ... is unchanged and still asserted at every
+    # frame" and "what is asserted per entry is the RESIDUAL, above ... the
+    # element is under test everywhere". The residual's assertion had been
+    # deleted in the same commit that wrote those words, and what remained was
+    # `lambda_7 > 0.0`, which the reviewer measured passing with a defect of
+    # 1e+03 x max|K| injected -- there was no defect size at which it
+    # reddened. A refused frame was asserted on nothing at all, which is the
+    # opposite of what CT2's "undecidable is an outcome and not a skip" rests
+    # on.
+    #
+    # WHAT IS ASSERTED PER FRAME NOW: the six numerically-zero eigenvalues sit
+    # UNDER `RIGID_MODE_BOUND`. That is the lower side of the bound's window
+    # and the premise Courant-Fischer needs -- if the six are not at the
+    # arithmetic floor, "there is no seventh" says nothing about the element.
+    # It holds at EVERY frame including every refused one, so the element is
+    # under test everywhere, and unlike the sentence it replaces that is true.
+    # A defect lifts `lambda_6` off the floor, so the assertion can fail;
+    # `test_a_DEFECT_lifts_lambda_6_off_the_floor` is the control that shows
+    # it does.
+    #
+    # UNDECIDABLE IS STILL AN OUTCOME AND NOT A SKIP (CT2). `CLAUDE.md`
+    # § Non-negotiables forbids `skip` outright. The SPECTRAL question -- is
+    # there a seventh -- is the one the gate declines on a refused frame, and
+    # which frames it declines is asserted in
+    # `test_the_gate_REFUSES_rather_than_guesses_and_says_how_often`, from the
+    # same measurement.
+    six = largest_rigid_eigenvalue(k)
+    assert six < RIGID_MODE_BOUND, (
+        f"{entry['id']}: the largest numerically-zero eigenvalue is {six:.4f} "
+        f"units of ||K_hat||*eps, at or above RIGID_MODE_BOUND = "
+        f"{RIGID_MODE_BOUND:.4f}. The six are then not all at the arithmetic "
+        "floor, so Courant-Fischer's premise fails and the seventh-mode bound "
+        "certifies nothing about this frame."
+    )
+
     over = seventh_over_epsilon(k)
     assert over > 0.0, (
         f"{entry['id']}: lambda_7 is zero or absent, so there is nothing to "
@@ -214,6 +242,47 @@ def test_G2_1_holds_at_every_frame_in_the_corpus(entry: dict[str, str]) -> None:
         "conditioning limit but a broken model."
     )
     DECIDED[entry["id"]] = over
+
+
+def test_a_DEFECT_lifts_lambda_6_off_the_floor(capsys) -> None:
+    """R531's control: the per-frame assertion can fail, measured not argued.
+
+    The assertion that replaced `lambda_7 > 0.0` is only worth having if a
+    defect breaks it. A diagonal stiffness resisting a rigid translation is
+    injected into the assembled matrix at increasing sizes, and the size at
+    which `lambda_6` crosses `RIGID_MODE_BOUND` is bisected and printed.
+
+    The previous assertion had no such size: the reviewer injected up to
+    `1e+03 x max|K|` and `lambda_7 > 0.0` still passed.
+    """
+    model, els = _build(ENTRIES[0])
+    k = assemble_dense(model, els)
+    big = float(np.abs(k).max())
+    clean = largest_rigid_eigenvalue(k)
+
+    def lifted(size: float) -> float:
+        kk = k.copy()
+        kk[0, 0] += size * big
+        return largest_rigid_eigenvalue(kk)
+
+    lo, hi = 1e-20, 1e-2
+    for _ in range(120):
+        mid = (lo * hi) ** 0.5
+        if lifted(mid) >= RIGID_MODE_BOUND:
+            hi = mid
+        else:
+            lo = mid
+    with capsys.disabled():
+        print(
+            f"\n  clean lambda_6 {clean:.4f} units, bound {RIGID_MODE_BOUND:.4f}; "
+            f"the assertion breaks at a defect of {hi:.4e} of max|K|"
+        )
+    assert clean < RIGID_MODE_BOUND, "the clean frame already fails the assertion"
+    assert lifted(hi * 10.0) >= RIGID_MODE_BOUND, (
+        "ten times the bisected edge does not break the per-frame assertion, "
+        "so the bisection did not find an edge and the assertion may be "
+        "unfalsifiable -- which is exactly what R531 was."
+    )
 
 
 def test_the_gate_REFUSES_rather_than_guesses_and_says_how_often(capsys) -> None:
