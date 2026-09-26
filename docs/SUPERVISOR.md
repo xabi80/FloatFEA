@@ -196,6 +196,42 @@ Scheduled-task prompt, verbatim:
 > block format. If there is nothing unreviewed, post nothing and end. Do not
 > edit any file in the repository; you review, you do not fix.
 
+## Corpus scope through F6 (DE2)
+
+**Corpus rounds target the element, the gates, and — from F3 — the platform
+model. Not the apparatus.**
+
+This is a scope instruction to the reviewer, from the technical supervisor. It
+is **not** a guard change and nothing in `tests/` enforces it; the reviewer is
+asked to hold it.
+
+**No new corpus files for apparatus species** — prose staleness, pointer
+claims, report shapes, guard shapes, runner claims, repair-staleness. The
+existing apparatus corpus files stay exactly as they are, and they **join the
+frozen 4a list** rather than growing.
+
+**REPAIR-STALE is recorded on that list with its coverage, 0 of 13, and is not
+transcribed.** A coverage number is a measurement, not a work item.
+
+**The reasoning, stated so it can be argued with.** Each new apparatus corpus
+is a new species of prose or process defect, and each one forces transcription
+work on the implementer before the gate can move. Measured over the rounds
+that produced them: the apparatus corpora caught 2 of 22 unseen shapes, then 1
+of 19, then 0 of 16, then 0 of 13 — while four days of rounds went into
+apparatus and R475, the one finding that touched the gate, did not land. The
+corpus rounds that found something about the *element* are the ones worth the
+implementer's time: R475 itself came from a corpus-adjacent span ladder, and
+R486 from a near-vertical orientation nobody had built.
+
+**What does not change.** BE3 is unchanged in every other respect: the corpus
+is the reviewer's, the implementer's tools are blocked from it, entries are
+unseen, the old ones stay, and the coverage measurement the reviewer reports
+is still the number that decides whether a check is worth anything. What
+changed is only what the entries are *about*.
+
+Apparatus defects are still findings. The reviewer reads for them, reports
+them, and — under CZ0 — most of them are closure items.
+
 ## What the witness does not do
 
 It does not merge. It does not edit tests, tolerances, or reviews. It does not
