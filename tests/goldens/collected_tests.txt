@@ -9,7 +9,7 @@
 # reviewer's corpora and with the report being written. A FUNCTION
 # disappearing is what this file exists to catch.
 
-[tests] 355
+[tests] 362
 tests/regression/test_exempt_pair_responses.py::test_a_MOVED_response_is_caught
 tests/regression/test_exempt_pair_responses.py::test_every_recorded_pair_is_still_detected
 tests/regression/test_exempt_pair_responses.py::test_the_golden_file_is_not_empty
@@ -282,6 +282,13 @@ tests/verification/rung1/test_rigid_body_modes.py::test_the_eigenvalue_RATIO_is_
 tests/verification/rung1/test_rigid_body_modes.py::test_the_element_local_residual_is_FRAME_INDEPENDENT
 tests/verification/rung1/test_rigid_body_modes.py::test_the_element_local_rigid_residual_is_REPORTED_not_asserted
 tests/verification/rung1/test_rigid_body_modes.py::test_there_is_NO_SEVENTH_zero_mode
+tests/verification/rung2/test_consistent_mass.py::test_a_DROPPED_COUPLING_TERM_is_visible_in_the_analytic_comparison
+tests/verification/rung2/test_consistent_mass.py::test_a_LUMPED_MASS_fails_the_euler_bernoulli_limit
+tests/verification/rung2/test_consistent_mass.py::test_the_MODEL_rigid_body_block_is_the_ANALYTIC_mass_and_inertia
+tests/verification/rung2/test_consistent_mass.py::test_the_PHI_ZERO_limit_reproduces_the_TRANSCRIBED_mass_matrix
+tests/verification/rung2/test_consistent_mass.py::test_the_six_RIGID_BODY_inertias_of_ONE_ELEMENT_are_exact
+tests/verification/rung2/test_consistent_mass.py::test_the_three_SOFTENING_MECHANISMS_are_ordered_as_the_physics_requires
+tests/verification/rung2/test_consistent_mass.py::test_the_transcribed_BETA_L_table_agrees_with_the_solved_roots
 tests/verification/rung3/test_basis_constants.py::test_an_unknown_shape_RAISES_rather_than_defaulting
 tests/verification/rung3/test_basis_constants.py::test_chs_class_limits_follow_the_code_formula
 tests/verification/rung3/test_basis_constants.py::test_it_is_a_BOUND_understressed_members_sit_below_it

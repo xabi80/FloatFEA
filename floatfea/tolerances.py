@@ -1372,8 +1372,14 @@ MATRIX_SYMMETRY_COUNTER: Final[float] = 1.0e-2
 # Dimensionless in every use.
 #
 # Reason: these have no discretisation error to bound, only floating-point
-# accumulation. Worst measured across its nine sites is 2.2204e-16 -- one ULP.
+# accumulation. Worst measured across its sites is one ULP, 2.2204e-16, and
 # 1e-14 sits ~45x above that.
+#
+# THE SITE COUNT IS NOT WRITTEN HERE (BI3). It said "its nine sites", and step 7
+# added more when V2.5's Euler-Bernoulli limit and its six rigid-body inertias
+# came to this constant -- a comment carrying a count is a report that nothing
+# regenerates. `grep -rn ROUNDOFF_IDENTITY tests --include=*.py` is the count,
+# at the commit it is run at.
 #
 # SET BY THE TIGHTEST MEMBER OF THE GROUP (BD1). It was briefly 1e-12, which was
 # a 100x WIDENING of three sites that had carried 1e-14 and measured 3.7e-17 ..

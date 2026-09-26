@@ -23,7 +23,7 @@ import scipy.sparse.linalg as spla
 from numpy.typing import NDArray
 
 from floatfea.determinism import SPARSE_PERMC_SPEC
-from floatfea.element.beam import local_stiffness
+from floatfea.element.beam import local_mass, local_stiffness
 from floatfea.element.transform import rotation_matrix, to_global
 from floatfea.model.material import Material, Section
 from floatfea.model.nodes import Model, element_dofs
@@ -86,6 +86,35 @@ def element_global_stiffness(model: Model, e: BeamElement) -> NDArray[np.float64
     k_loc = local_stiffness(e.section, e.material, element_length(model, e))
     r = rotation_matrix(a, b, orientation_node=e.orientation_node, roll_rad=e.roll_rad)
     return to_global(k_loc, r)
+
+
+def element_global_mass(model: Model, e: BeamElement) -> NDArray[np.float64]:
+    """The element consistent mass in global axes.
+
+    The SAME rotation as the stiffness, through the same `to_global`. A mass
+    matrix that used a separately built rotation could disagree with the
+    stiffness on a sign and the free-free frequencies would still look
+    plausible, which is why there is one `rotation_matrix` call shape in this
+    module and not two.
+    """
+    a = model.nodes[e.node_a].xyz
+    b = model.nodes[e.node_b].xyz
+    m_loc = local_mass(e.section, e.material, element_length(model, e))
+    r = rotation_matrix(a, b, orientation_node=e.orientation_node, roll_rad=e.roll_rad)
+    return to_global(m_loc, r)
+
+
+def assemble_mass_dense(model: Model, elements: list[BeamElement]) -> NDArray[np.float64]:
+    """Dense global consistent mass, by the same scatter-add as `assemble_dense`."""
+    n = model.n_dof
+    m = np.zeros((n, n), dtype=np.float64)
+    for e in elements:
+        dofs = element_dofs(e.node_a, e.node_b)
+        mg = element_global_mass(model, e)
+        for i, gi in enumerate(dofs):
+            for j, gj in enumerate(dofs):
+                m[gi, gj] += mg[i, j]
+    return m
 
 
 def assemble(model: Model, elements: list[BeamElement]) -> sp.csr_matrix:
