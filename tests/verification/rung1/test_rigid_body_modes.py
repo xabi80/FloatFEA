@@ -74,7 +74,6 @@ from __future__ import annotations
 
 import contextlib
 import math
-import pathlib
 import sys
 from pathlib import Path
 
@@ -514,33 +513,6 @@ def counter_response(which: str) -> float:
     if which == "residual":
         return residual_exactness(k, model)
     return subspace_loss(k, model)
-
-
-@contextlib.contextmanager
-def _defect(size: float, capsys):
-    """Patch `assembled` so the SHIPPED gate computes a defective matrix.
-
-    The defect is a diagonal stiffness on one translational degree of freedom,
-    as a fraction `size` of the largest entry: the shape of a real defect, since
-    it is a stiffness that resists a rigid translation. It lifts a zero
-    eigenvalue AND takes that translation out of the span, which is why the
-    residual's counter and the retired subspace loss's counter were one
-    injection.
-    """
-    original = globals()["assembled"]
-
-    def defective(model, els):
-        k = original(model, els)
-        k[0, 0] += size * float(np.abs(k).max())
-        return k
-
-    globals()["assembled"] = defective
-    try:
-        with capsys.disabled():
-            print(f"\n  injected {size:g} of max|K| on one translational DOF")
-        yield
-    finally:
-        globals()["assembled"] = original
 
 
 # --------------------------------------------------------------------------
@@ -1062,32 +1034,6 @@ def test_a_WEAKER_KEY_reports_a_difference_that_is_not_there(capsys) -> None:
 
 _SPAN_CELLS = ((1.0, "4 m"), (10.0, "40 m"), (100.0, "400 m"), (1e3, "4 km"), (1e4, "40 km"))
 _COUNTER_DOFS = ((0, "translational"), (3, "rotational"))
-
-
-def _stretched(stretch: float, tip: str = "3.1,2.2,4.4"):
-    """The corpus builder's frame at one stretch, so the cells and the corpus
-    are the same geometry rather than two similar ones."""
-    # BY PATH, not by name: `tests/` is not a package, so a bare import of a
-    # sibling module fails under pytest's rootdir -- which is how this module
-    # already loads things elsewhere in the repository.
-    import importlib.util
-
-    spec = importlib.util.spec_from_file_location(
-        "rbc_for_cells", pathlib.Path(__file__).with_name("test_rigid_body_corpus.py")
-    )
-    assert spec is not None and spec.loader is not None
-    RBC = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(RBC)
-
-    return RBC._build(
-        {
-            "section": "circular_tube,D=0.6,t=0.012",
-            "unit": "1.0",
-            "stretch": str(stretch),
-            "tip": tip,
-            "subdiv": "1",
-        }
-    )
 
 
 def _residual_with(k, model, dof: int, size: float) -> float:
