@@ -360,26 +360,47 @@ def zero_modes_under_the_bound(k: np.ndarray) -> int:
 def largest_rigid_eigenvalue(k: np.ndarray) -> float:
     """The largest of the six numerically-zero eigenvalues, in `||K_hat||*eps`.
 
-    THE COURANT-FISCHER COMPOSITION, made visible. The residual half proves the
-    six analytic rigid-body vectors are annihilated, which puts six eigenvalues
-    at the arithmetic floor; the bound then certifies there is no seventh. That
-    argument needs the six to be UNDER the bound, and this is the number that
-    says how far under. It is the lower side of `RIGID_MODE_BOUND`'s window and
-    it is reported, not asserted here -- `regen_figures` carries it as a
-    floor-class row against the bound, which is where it decides something.
+    THE COURANT-FISCHER COMPOSITION, made visible. The argument needs six
+    eigenvalues to be UNDER the bound before "there is no seventh" says
+    anything about the element, and this is the number that says how far
+    under. It is the lower side of `RIGID_MODE_BOUND`'s window.
+
+    THIS QUANTITY IS WHAT CARRIES THAT PREMISE NOW, AND IT IS ASSERTED. "The
+    residual half proves the six analytic rigid-body vectors are annihilated"
+    stood here, and DI0 retired the residual half in this step; "reported, not
+    asserted here" stood here too, and read as though nothing asserted it
+    anywhere (C7). It is asserted per frame, over every corpus entry, at
+    `tests/verification/rung1/test_rigid_body_corpus.py:230`, and
+    `regen_figures` additionally carries it as a floor-class row against the
+    bound.
     """
     w = np.sort(np.abs(sla.eigh(homogenised(k), eigvals_only=True)))
     return float(w[RIGID - 1] / epsilon_unit(k))
 
 
 def seventh_over_epsilon(k: np.ndarray) -> float:
-    """`lambda_7(K_hat) / (||K_hat|| * eps)` -- where the FIRST FLEXIBLE mode
+    """`|lambda_7(K_hat)| / (||K_hat|| * eps)` -- where the FIRST FLEXIBLE mode
     sits above the arithmetic floor, as a PLAIN RATIO.
 
-    THIS IS THE WHOLE OF THE COUNT HALF (CT0). The residual half proves the six
-    analytic rigid-body vectors are annihilated by `K`, and by Courant-Fischer
-    that puts six eigenvalues at the floor; what remains to certify is that
-    there is no SEVENTH, which is a statement about `lambda_7` and nothing else.
+    THE ABSOLUTE VALUE IS IN THE NAME BECAUSE IT IS IN THE BODY (C10). The
+    spectrum is sorted by magnitude, so a NEGATIVE seventh eigenvalue is
+    reported by its size and its sign is lost here: on a frame whose
+    defect-free `K_hat` is indefinite at round-off this reads as a small
+    positive ratio and passes `over > 0.0`. It was documented as `lambda_7`
+    and computes `|lambda_7|`. The case where the sign matters is caught by
+    the sibling `lambda_6` ceiling -- a sign flip large enough to be
+    structural lifts `lambda_6` far off the floor and the per-frame assertion
+    reddens -- and at round-off the frame is genuinely undecidable, which is
+    an outcome and not a pass. An absolute value destroys information; this
+    says which.
+
+    THIS IS THE WHOLE OF THE COUNT HALF (CT0). That six eigenvalues are at the
+    floor is asserted by `largest_rigid_eigenvalue` above, per frame, over
+    every corpus entry -- "the residual half proves the six analytic
+    rigid-body vectors are annihilated by `K`" stood here as that premise's
+    proof and the residual half was retired in this step (C7). By
+    Courant-Fischer what remains to certify is that there is no SEVENTH, which
+    is a statement about `lambda_7` and nothing else.
 
     TWO EARLIER FORMS WERE REFUTED BY THE REVIEWER'S CORPUS, and both failed
     the same way -- by measuring somewhere other than where the claim lives:
@@ -872,9 +893,15 @@ def element_rigid_residual(k_local: np.ndarray, length: float) -> float:
     """`max_j ||k_hat r_hat|| / (||k_hat|| ||r_hat||)` over the six (DI0).
 
     A DIAGNOSTIC IN F2 AND NOT A GATE, and the reason is measured rather than
-    asserted: over the 1592 distinct elements of the reviewer's corpus the
-    clean worst is 0.540 eps and frame-independent, but **298 of those 1592
-    elements do not redden under at least one of the three counters**. At
+    asserted: over the distinct elements of the reviewer's corpus the clean
+    worst is a fraction of an eps and frame-independent, but **a large
+    minority of those elements do not redden under at least one of the three
+    counters**. NO COUNT IS WRITTEN HERE (C1, BI3). `0.540 eps` and `298 of
+    those 1592` were, and both were stale in the commit that published them --
+    the corpus had already grown, and one commit later the same measurement
+    read `0.656 eps` and `335 of 1702`. `python scripts/rigid_counter_response.py`
+    prints both at the commit it runs at, which is the only form of these
+    numbers that cannot go stale. At
     `L/r` of 1e+08 -- or on a member a nanometre long -- the local stiffness
     entries span so many decades that a perturbation of the largest entry
     falls below round-off in the blocks these vectors excite, so the defect is
@@ -1028,35 +1055,21 @@ def test_a_WEAKER_KEY_reports_a_difference_that_is_not_there(capsys) -> None:
 
 
 # --------------------------------------------------------------------------
-# R475's three cells. The residual's normalisation changed at R475, so every
-# claim about what it detects is re-measured here rather than inherited.
+# R475'S THREE CELLS AND THEIR APPARATUS ARE DELETED (C9, following R534).
+# The cells were retired at DI0 with the assembled residual they measured; the
+# span table, the counter-DOF table, the injection helper and the bisection
+# helper outlived them by one commit with no caller anywhere in the
+# repository. Deleted by iterating the search, because one deletion strands
+# the next: the bisection helper was the injection helper's only caller.
+#
+# NOT DELETED, AND THE REASON IS NOT THE ONE ABOVE: the `"residual"` branch of
+# `counter_response`. It has no caller either, and it is the shipped record of
+# a retired counter that two sentences outside this file name as the function
+# reporting what that defect does -- `floatfea/tolerances.py` in
+# `RIGID_MODE_EXACTNESS_COUNTER_DEFECT`'s Reason paragraph, and a line in
+# `tests/corpus/`, which the implementer may not edit. Deleting the branch
+# would falsify both. It is left deliberately and this sentence is the record.
 # --------------------------------------------------------------------------
-
-_SPAN_CELLS = ((1.0, "4 m"), (10.0, "40 m"), (100.0, "400 m"), (1e3, "4 km"), (1e4, "40 km"))
-_COUNTER_DOFS = ((0, "translational"), (3, "rotational"))
-
-
-def _residual_with(k, model, dof: int, size: float) -> float:
-    kk = k.copy()
-    kk[dof, dof] += size * float(np.abs(k).max())
-    return residual_exactness(kk, model)
-
-
-def _detection_edge(k, model, dof: int) -> float:
-    """The defect size at which the gate flips, BISECTED rather than swept.
-
-    Two hundred halvings of a geometric bracket, so the edge is located to
-    round-off rather than to the resolution of a sweep -- which is what CO1
-    asked for on the other gate's counter and is the same requirement here.
-    """
-    lo, hi = 1e-18, 1e-6
-    for _ in range(200):
-        mid = (lo * hi) ** 0.5
-        if _residual_with(k, model, dof, mid) > RIGID_MODE_EXACTNESS:
-            hi = mid
-        else:
-            lo = mid
-    return hi
 
 
 # R475'S TEN SPAN CELLS WAS HERE AND IS RETIRED (DI0). Its name is not written out: R475's ten span

@@ -328,9 +328,17 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 # on. `1e-15` is a decade boundary above the measured worst.
 #
 # AND NOTHING ASSERTS THIS CONSTANT ANY MORE (DI0, R530). Claim A was dropped
-# as an F2 gate: 298 of the corpus's 1592 distinct elements did not redden
-# under at least one of the element-local form's three counters, and DG2 was
-# pre-registered for exactly that. The sentence that stood here -- "the margin
+# as an F2 gate: a large minority of the corpus's distinct elements did not
+# redden under at least one of the element-local form's three counters, and
+# DG2 was pre-registered for exactly that.
+#
+# THE COUNT IS NOT WRITTEN HERE, AND THAT IS THE POINT (C1, BI3). `298 of
+# 1592` was written here, and it was already stale in the commit that
+# published it -- the corpus had grown two batches, and the same measurement
+# read `335 of 1702` one commit later. Nothing in this repository re-takes a
+# figure when the corpus beneath it moves, so the figure is replaced by the
+# command that produces it: `python scripts/rigid_counter_response.py` prints
+# the count at the commit it runs at. The sentence that stood here -- "the margin
 # is asserted per frame by the corpus test" -- named an assertion deleted in
 # the same commit that wrote it, which is the R514 shape a second time.
 #
@@ -380,15 +388,47 @@ RIGID_MODE_EXACTNESS_COUNTER_DEFECT: Final[float] = 1.0e-14
 
 # CLASS: ACCURACY -- carries RIGID_MODE_BOUND_COUNTER_DEFECT below.
 # G2.1 / V1.1 (Q7, as CT0 states it and CU0 parametrises it). On
-# `K_hat = K / max|K|` -- the same homogenisation the residual uses -- the gate
-# asserts ONE thing about the spectrum, and it is not a count:
+# `K_hat = K / max|K|` -- the same homogenisation the residual uses -- THIS
+# CONSTANT IS READ IN TWO DIRECTIONS, and until R540 only one of them was
+# written down in the file `CLAUDE.md` makes the sole home of every tolerance:
 #
-#     lambda_7(K_hat) >= RIGID_MODE_BOUND * ||K_hat|| * eps
+#   AS A FLOOR ON lambda_7 -- claim B, the seventh-mode bound:
+#       lambda_7(K_hat) >= RIGID_MODE_BOUND * ||K_hat|| * eps
 #
-# The residual half already proves the six analytic rigid-body vectors are
-# annihilated by `K`, and by Courant-Fischer that puts six eigenvalues at the
-# arithmetic floor. What remains to certify is that there is no SEVENTH, which
-# is a statement about `lambda_7` alone.
+#   AS A CEILING ON lambda_6 -- per frame, over every corpus entry, at
+#   `tests/verification/rung1/test_rigid_body_corpus.py:230`:
+#       lambda_6(K_hat) <  RIGID_MODE_BOUND * ||K_hat|| * eps
+#
+# IT IS ONE CONSTANT AND NOT TWO: these are the two sides of the same window.
+# The floor says no flexible mode has sunk into the round-off band; the
+# ceiling says the six that are supposed to be in that band are in it. Neither
+# implies the other, and the second is new in F2 step 6.
+#
+# WHAT CARRIES THE CEILING'S PREMISE. "The residual half already proves the
+# six analytic rigid-body vectors are annihilated by `K`, and by
+# Courant-Fischer that puts six eigenvalues at the arithmetic floor" stood
+# here as the premise's proof. DI0 retired that half in this same step, and
+# for two commits this entry went on citing a proof the repository no longer
+# performs (R540) -- the R530 shape, on the next constant down. The premise is
+# carried by the lambda_6 ceiling above, by THIS constant used in the other
+# direction; the element-local residual is a diagnostic in F2 (DG2) and an
+# assertion on every real platform member in F3. What remains to certify above
+# the six is that there is no SEVENTH, which is a statement about `lambda_7`
+# alone.
+#
+# THE CEILING IS EVALUATED EVERYWHERE AND IS NOT SENSITIVE EVERYWHERE, and the
+# split is measured rather than assumed. `python scripts/rigid_counter_response.py`
+# injects the three named element-defect shapes into every element's local
+# stiffness at the assembly site and splits the response by the gate's own
+# decided/refused classification, printing both halves at the commit it runs
+# at -- no table is typed here, because a table in this file is a report
+# nothing regenerates (BI3). The shape of the result: on the frames the
+# spectral half DECIDES, each of the three shapes reddens the ceiling on most
+# frames; on the frames it REFUSES -- where this ceiling is the only assertion
+# left -- one of the three reddens no frame at any size the script reaches,
+# four decades above the injection. That is the half CT2's "undecidable is an
+# outcome and not a skip" argument is about, so what holds there is stated
+# precisely rather than generously.
 #
 # ONE CONSTANT, BECAUSE THE DECISION HAS ONE DEGREE OF FREEDOM (CU0, R415).
 # This shipped as `RIGID_MODE_FLOOR * 10**RIGID_MODE_GAP` -- a floor on what

@@ -1,18 +1,33 @@
 #!/usr/bin/env python
-"""The measurement DG2's decision rests on: how many elements the element-local
-counters fail to redden.
+"""TWO measurements about the same three defect shapes: what the element-local
+diagnostic fails to redden, and what the per-frame `lambda_6` ceiling does.
 
     python scripts/rigid_counter_response.py
 
-WHY THIS IS A SCRIPT AND NOT A TEST. It measures a quantity nothing asserts:
-claim A was dropped as an F2 gate, so there is no gate here to guard and a test
-would be a guard without one. What the plan cites is a NUMBER -- 298 of 1592 --
-and `CLAUDE.md` says a figure in the plan is produced by a command at the
-commit that publishes it. This is that command.
+WHY THIS IS A SCRIPT AND NOT A TEST. Neither measurement is asserted anywhere.
+Claim A was dropped as an F2 gate (DG2), so the first has no gate to guard and
+a test would be a guard without one; the second is the SENSITIVITY of a gate
+that does exist, which is a property of the corpus rather than of the code.
+`CLAUDE.md` says a figure in a plan, a report or a tolerance comment is
+produced by a command at the commit that publishes it. This is that command,
+and the plan, the entry and the test comments cite it instead of carrying its
+numbers -- because `298 of 1592` was carried, and was stale in the commit that
+published it.
 
-The reviewer could not reproduce 298 at the sixtieth verdict, and was right not
-to accept it: the three counters existed only in the implementer's scratchpad.
-A figure whose only witness is a scratch file is a figure with no witness.
+The reviewer could not reproduce that count at the sixtieth verdict, and was
+right not to accept it: the three counters existed only in the implementer's
+scratchpad. A figure whose only witness is a scratch file is a figure with no
+witness.
+
+WHAT THE SECOND MEASUREMENT IS FOR (R540). `RIGID_MODE_BOUND` is read in two
+directions -- a floor on `lambda_7` and, per frame, a ceiling on `lambda_6`.
+The ceiling is EVALUATED at every corpus frame including the ones the spectral
+half refuses, and a comment claimed that therefore "the element is under test
+everywhere". Evaluated is not sensitive. This script injects each defect shape
+into every element's local stiffness AT THE ASSEMBLY SITE, reassembles, and
+reports how many frames the ceiling reddens on -- separately for the frames
+the spectral half decides and the frames it refuses, which is the split the
+claim was made across.
 
 WHAT IT MEASURES. For every distinct element in the rigid-body corpus --
 distinct by (length, A, I_y, I_z, J, E, nu), because two tubes can share an
@@ -41,9 +56,10 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from floatfea.assemble.system import element_length  # noqa: E402
+import floatfea.assemble.system as SYSTEM  # noqa: E402
+from floatfea.assemble.system import assemble_dense, element_length  # noqa: E402
 from floatfea.element.beam import local_stiffness  # noqa: E402
-from floatfea.tolerances import RIGID_MODE_EXACTNESS  # noqa: E402
+from floatfea.tolerances import RIGID_MODE_BOUND, RIGID_MODE_EXACTNESS  # noqa: E402
 
 SIZE = 1.0e-8
 """The injected size, as a fraction of `max|k_e|`. Chosen once and not tuned:
@@ -77,6 +93,38 @@ def injected(k: np.ndarray, kind: str, size: float) -> np.ndarray:
 
 
 KINDS = ("dropped_flip", "wrong_dof_index", "rotational_block")
+
+ASSEMBLED_SIZES = (1.0e-8, 1.0e-4)
+"""The two sizes the per-frame ceiling is probed at. The first is `SIZE`, so the
+two measurements are comparable; the second is four decades up, because a shape
+that reddens nothing at the first is worth asking about again before the word
+"insensitive" is used.
+
+not-a-tolerance: nothing is compared against either value. They are the sizes of
+an injected defect, and the output is a count."""
+
+
+def frame_response(model, els, kind: str | None, size: float, rbm) -> float:
+    """`lambda_6` of the assembled matrix, with `kind` in every element.
+
+    THE PATCH IS AT THE ASSEMBLY SITE and not at `floatfea.element.beam`.
+    `assemble_dense` resolved `local_stiffness` through its own module's
+    namespace, so patching the definition's home injects nothing at all and the
+    measurement reads "no defect" on a defect that was never applied. The
+    reviewer's first cell did exactly that.
+    """
+    if kind is None:
+        return float(rbm.largest_rigid_eigenvalue(assemble_dense(model, els)))
+    original = SYSTEM.local_stiffness
+
+    def patched(section, material, length):
+        return injected(original(section, material, length), kind, size)
+
+    SYSTEM.local_stiffness = patched
+    try:
+        return float(rbm.largest_rigid_eigenvalue(assemble_dense(model, els)))
+    finally:
+        SYSTEM.local_stiffness = original
 
 
 def main() -> int:
@@ -145,6 +193,36 @@ def main() -> int:
             print(f"  {kind:18s} reddens every element")
     print()
     print(f"ELEMENTS FAILING AT LEAST ONE COUNTER: {any_fail} of {len(elements)}")
+
+    # ---------------------------------------------------------------- R540
+    print()
+    print("THE PER-FRAME lambda_6 CEILING, split by the gate's own domain:")
+    decided, refused = [], []
+    for entry in rbc.ENTRIES:
+        try:
+            model, els = rbc._build(entry)
+        except Exception:
+            continue
+        k = assemble_dense(model, els)
+        over = rbm.seventh_over_epsilon(k)
+        (decided if over >= RIGID_MODE_BOUND else refused).append((entry, model, els))
+    print(
+        f"  the spectral half decides {len(decided)} frames and refuses "
+        f"{len(refused)}; the ceiling is evaluated at all "
+        f"{len(decided) + len(refused)}"
+    )
+    for size in ASSEMBLED_SIZES:
+        print(f"  injected at {size:g} of max|k_e| into EVERY element:")
+        for kind in KINDS:
+            counts = []
+            for label, half in (("decided", decided), ("refused", refused)):
+                red = sum(
+                    1
+                    for _entry, model, els in half
+                    if frame_response(model, els, kind, size, rbm) >= RIGID_MODE_BOUND
+                )
+                counts.append(f"{label} {red:4d} of {len(half):4d}")
+            print(f"    {kind:18s} " + "   ".join(counts))
     return 0
 
 

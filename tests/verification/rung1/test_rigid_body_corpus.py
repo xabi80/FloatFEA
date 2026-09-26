@@ -22,9 +22,13 @@ physical structure re-expressed in centimetres breaches a ceiling it passes in
 metres, and an element does not know what unit anybody wrote its coordinates
 in.
 
-THE RESIDUAL FORM AND THE SPECTRAL GAP HOLD AT EVERY ONE. That is the claim
-this file makes, and it is the claim Q7 rests on: G2.1 is a statement about the
-element and the transformation, so its measure has to be one too.
+WHAT THIS FILE ASSERTS AT EVERY ONE: the six numerically-zero eigenvalues sit
+UNDER `RIGID_MODE_BOUND`, and there is a seventh to report. THE RESIDUAL FORM
+IS PRINTED AND NOT ASSERTED (DI0). "The residual form and the spectral gap hold
+at every one" stood here for two commits after the residual's assertion was
+deleted (C5). Q7 is still what the file rests on: G2.1 is a statement about the
+element and the transformation, so its measure has to be one too -- which is
+why the residual moved to the element and out of this file.
 
 THE `expect` FIELD IN THE CORPUS IS ABOUT THE RETIRED QUANTITIES and is read
 here only to report the contrast. It is not an expectation on the new form, and
@@ -163,9 +167,12 @@ def test_the_corpus_is_read_at_all() -> None:
 
 @pytest.mark.parametrize("entry", ENTRIES, ids=[e["id"] for e in ENTRIES])
 def test_G2_1_holds_at_every_frame_in_the_corpus(entry: dict[str, str]) -> None:
-    """The residual form and the spectral gap, at each of the reviewer's frames.
+    """The `lambda_6` ceiling and the spectral gap, at each of the reviewer's frames.
 
-    Asserted on EVERY entry, including the ones the retired pair breaches.
+    Asserted on EVERY entry, including the ones the retired pair breaches. THE
+    RESIDUAL FORM IS COMPUTED AND PRINTED AND IS NOT ONE OF THE ASSERTIONS
+    (DI0, C5) -- it was named in this line as though it were, for two commits
+    after it was retired.
     HOW MANY IS NOT WRITTEN HERE -- `sixteen` was, and the same round's own
     canonical render said ten (R395). `{{fig:retired_ratio_over_ceiling_on_corpus}}`
     carries it, and `test_the_RETIRED_ratio_is_why_the_form_changed` prints
@@ -193,9 +200,14 @@ def test_G2_1_holds_at_every_frame_in_the_corpus(entry: dict[str, str]) -> None:
     # What replaces it: the ELEMENT-LOCAL diagnostic in
     # `test_rigid_body_modes.py`, where orientation, span and reference point
     # cannot enter the quantity at all -- a diagnostic in F2 by DG2, and an
-    # assertion on every real platform member in F3 (F2.md §5e). Claim B, the
-    # `lambda_6` under the bound is what is asserted per frame now (R531).
-    # Computed and printed as a diagnostic; nothing decides on it.
+    # assertion on every real platform member in F3 (F2.md §5e). The assembled
+    # residual on the line below is computed and printed as a diagnostic;
+    # nothing decides on it.
+    #
+    # WHAT IS ASSERTED PER FRAME INSTEAD: `lambda_6` under `RIGID_MODE_BOUND`
+    # (R531), stated at the assertion itself. IT IS NOT CLAIM B. Claim B is
+    # the `lambda_7` bound; this comment called `lambda_6` claim B for one
+    # commit, at the one site R531 was about (C6).
     worst = residual_exactness(k, model)
     print(f"  {entry['id']}: retired assembled residual {worst:.4e}")
 
@@ -214,8 +226,17 @@ def test_G2_1_holds_at_every_frame_in_the_corpus(entry: dict[str, str]) -> None:
     # UNDER `RIGID_MODE_BOUND`. That is the lower side of the bound's window
     # and the premise Courant-Fischer needs -- if the six are not at the
     # arithmetic floor, "there is no seventh" says nothing about the element.
-    # It holds at EVERY frame including every refused one, so the element is
-    # under test everywhere, and unlike the sentence it replaces that is true.
+    # It is EVALUATED at EVERY frame including every refused one. IT IS NOT
+    # EQUALLY SENSITIVE AT BOTH, and "so the element is under test everywhere"
+    # stood here and overstated it on the refused frames (R540). The split is
+    # printed by `python scripts/rigid_counter_response.py`, which injects the
+    # three named element-defect shapes into every element's local stiffness
+    # at the assembly site and separates the frames the spectral half decides
+    # from the ones it refuses: on the decided frames each of the three shapes
+    # reddens this assertion on most frames; on the refused frames one of the
+    # three reddens none of them, at any size that script reaches. Evaluated
+    # is not the same word as sensitive, and the refused set is exactly the
+    # set CT2's argument is about.
     # A defect lifts `lambda_6` off the floor, so the assertion can fail;
     # `test_a_DEFECT_lifts_lambda_6_off_the_floor` is the control that shows
     # it does.
@@ -333,13 +354,28 @@ def test_the_RETIRED_ratio_is_why_the_form_changed(capsys) -> None:
     """
     from floatfea.tolerances import RIGID_BODY_MODE_RATIO, RIGID_BODY_SUBSPACE_LOSS
 
-    over, loss_over = [], 0
+    over, loss_over, uncomputable = [], 0, []
     for entry in ENTRIES:
         model, els = _build(entry)
         k = assemble_dense(model, els)
-        ratio = mode_ratio(k)
-        if ratio > RIGID_BODY_MODE_RATIO:
-            over.append((entry["id"], ratio))
+        # C11: `mode_ratio` RAISES when the seventh eigenvalue is not positive
+        # -- correct behaviour, and the reviewer recorded four candidate frames
+        # that could not be carried into the corpus at all because this scan
+        # propagated it. Caught HERE AND ONLY HERE, around the retired
+        # quantity, and counted rather than silenced. Nothing is being
+        # validated on this line: this test asserts that the recorded REASON
+        # for retiring the ratio is still true, and a frame on which the
+        # retired quantity cannot even be computed is evidence for that reason
+        # rather than an error in it. Every such frame is still asserted by the
+        # per-frame `lambda_6` ceiling in the gate test above, which is what
+        # would catch a defect here.
+        try:
+            ratio = mode_ratio(k)
+        except ValueError:
+            uncomputable.append(entry["id"])
+        else:
+            if ratio > RIGID_BODY_MODE_RATIO:
+                over.append((entry["id"], ratio))
         if subspace_loss(k, model) > RIGID_BODY_SUBSPACE_LOSS:
             loss_over += 1
     with capsys.disabled():
@@ -350,6 +386,13 @@ def test_the_RETIRED_ratio_is_why_the_form_changed(capsys) -> None:
         )
         for name, ratio in over[:4]:
             print(f"    {name}: {ratio:.4e} against {RIGID_BODY_MODE_RATIO:g}")
+        print(
+            f"    the retired ratio is UNCOMPUTABLE at {len(uncomputable)} of "
+            f"{len(ENTRIES)} frames (no positive seventh eigenvalue to "
+            f"normalise against)"
+        )
+        for name in uncomputable[:4]:
+            print(f"      uncomputable: {name}")
     assert over, (
         "the retired ratio now holds at every corpus frame. That is not a "
         "failure, but it removes the evidence this file cites for retiring "
