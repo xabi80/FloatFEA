@@ -2274,3 +2274,462 @@ DF1 does not apply and the red stands as reported. The twelve in the excluded
 set are the report-parametrised guards measured at the commit this revision
 sits on, judging a report that does not yet carry verdict 58's findings --
 which is what this revision is.
+
+
+# Revision 5 — the STOP is answered by dropping the claim, not by a fifth form
+
+Answers: verdict 59 @ 136e77d
+
+**2026-09-26.**
+
+## 0. CI at `acbbd0a`, the commit verdict 59 judged — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 59 at `acbbd0a` through the report's own `Answers:` line. Run `36253615495`, event `workflow_dispatch`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 1480 | 0 | 0 |
+| CI determinism -- leg (7) | 4 | 0 | 0 |
+| lint, unit and guards | 976 | 1 | 0 |
+| CI determinism -- leg (6) | 4 | 0 | 0 |
+| CI determinism -- leg (4) | 4 | 0 | 0 |
+| CI determinism -- leg (8) | 4 | 0 | 0 |
+| CI determinism -- leg (5) | 4 | 0 | 0 |
+| CI determinism -- leg (2) | 4 | 0 | 0 |
+| CI determinism -- leg (1) | 4 | 0 | 0 |
+| CI determinism -- leg (3) | 4 | 0 | 0 |
+| CI determinism -- leg (9) | 4 | 0 | 0 |
+| CI determinism -- leg (10) | 4 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 13 jobs, 1 not green.**
+
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 1.**
+
+- `tests/test_plan_figures.py::test_every_floor_class_row_clears_its_tolerance_on_THIS_tree` (lint, unit and guards)
+
+## 0a. Runs since the commit verdict 59 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 59 at `acbbd0a` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `36253525659` | push | `4c2bf8d` | conclusion **failure** |
+| `36253615495` | workflow_dispatch | `acbbd0a` | conclusion **failure** |
+
+**Run `36253525659`, conclusion **failure**: 19 failing test name(s) in the log.**
+- `tests/test_collected_set_golden.py::test_every_test_name_cited_in_prose_exists[tests/verification/rung1/test_rigid_body_modes.py:test_BOTH_counters_redden_at_EVERY_span]` (lint, unit and guards)
+- `tests/test_collected_set_golden.py::test_every_test_name_cited_in_prose_exists[tests/verification/rung1/test_rigid_body_modes.py:test_a_NEAR_VERTICAL_member_is_not_false_reddened]` (lint, unit and guards)
+- `tests/test_collected_set_golden.py::test_every_test_name_cited_in_prose_exists[tests/verification/rung1/test_rigid_body_modes.py:test_a_RESISTED_rigid_motion_reddens_the_RESIDUAL]` (lint, unit and guards)
+- `tests/test_collected_set_golden.py::test_every_test_name_cited_in_prose_exists[tests/verification/rung1/test_rigid_body_modes.py:test_the_REFERENCE_POINT_is_load_bearing]` (lint, unit and guards)
+- `tests/test_collected_set_golden.py::test_every_test_name_cited_in_prose_exists[tests/verification/rung1/test_rigid_body_modes.py:test_the_rigid_body_vectors_are_EXACT_in_the_residual]` (lint, unit and guards)
+- `tests/test_collected_set_golden.py::test_every_test_name_cited_in_prose_exists[tests/verification/rung1/test_rigid_body_modes.py:test_the_shipped_vectors_are_built_about_the_NODE_CENTROID]` (lint, unit and guards)
+- `tests/test_plan_figures.py::test_every_floor_class_row_clears_its_tolerance_on_THIS_tree` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_whole_suite_line_is_about_a_commit_that_exists` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[two_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R527-tests/verification/rung1/test_rigid_body_modes.py:297]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R527-tests/verification/rung1/test_rigid_body_modes.py:298]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R528-docs/reports/F2/step-6.md]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+**Run `36253615495`, conclusion **failure**: 1 failing test name(s) in the log.**
+- `tests/test_plan_figures.py::test_every_floor_class_row_clears_its_tolerance_on_THIS_tree` (lint, unit and guards)
+
+## 0b. History since the commit verdict 59 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --history`, anchored on verdict 59 at `acbbd0a` through the report's own `Answers:` line. Commits this branch held and no longer holds, from `git reflog`. A rewrite is the right answer to some findings and it is never a silent one (CY0, R461). The reflog is LOCAL: a fresh clone has none, so this table is what was generated at the report's own commit and cannot be reproduced from the clone alone.
+
+**No commit has left this branch's history since then.**
+
+## 0c. Commits since the commit verdict 59 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --commits`, anchored on verdict 59 at `acbbd0a` through the report's own `Answers:` line. `git log --oneline <judged>..HEAD`, run at the report's own commit. This revision's own commit is not in it, because it does not exist yet when the section is generated.
+
+```
+4064897 corpus: 15 unseen near-vertical frames (batch 8), 6 of them false re
+136e77d review: F2 step 6 -- fifty-ninth verdict, STOP @ acbbd0a
+11e563e plan: Q7 reopened -- claim A is dropped as a gate (DI0/DI1, Xabier's
+96c5607 DI0: claim A becomes a diagnostic; the assembled-form tests are reti
+4c2bf8d golden: the collected set loses claim A's gate and counter, and gain
+```
+
+## 1. The reading
+
+**Schedule: F2 closes 4 October, F3 9 October, F4 and F5-prep 17 October, the
+member-force table 20 October, the code-check screen 25 October, with 25–31
+October as buffer for V5.1's CalculiX cross-check.** **R524 is answered by
+DG2, which was pre-registered before the element-local form was measured:
+claim A is dropped as an F2 gate.** G2.1 in F2 is the λ₇ bound plus G2.2's
+coverage; the element-local check ships computed and reported and asserted
+nowhere; **no fifth form is proposed.** The element-local form's clean side
+held well — 0.540 ε worst over the corpus's 1592 distinct elements, 8.33×
+clear, frame-independent, 0.007–0.035 ε in the near-vertical band — and its
+counters did not: **298 of 1592 elements fail at least one**, at proportions
+where a perturbation of the largest entry falls below round-off in the blocks
+the rigid vectors excite. **I first reported that as "two elements" and it is
+298**, because I read a worst-case listing as a population count, which is
+R525's own shape and is recorded in the plan as such. **R525 is answered by
+retiring the cell**: its eleven cells put their members at 61.34° down to
+55.08° from Z and never tested the band they were named for. **R528's sentence
+goes with it.** Claim B is untouched, no tolerance value moved anywhere in
+this round, and **rung 1 is green at 1249 passed** — the six frames that were
+red are green because the assertion is gone, not because anything was tuned.
+**What this revision does NOT contain: V2.5 and V2.6.** DI2 puts them in the
+next pass and they are not written yet; reporting them here would be
+reporting work that does not exist.
+
+```
+cmd   the element-local clean side, over the proportion domain and the corpus
+out   0.186 eps worst over 196 proportions; 0.540 eps worst over 1592 corpus
+      elements, 8.33x clear of 1e-15; frame independence TRUE; the
+      near-vertical band 0.007 to 0.035 eps
+cmd   the minimum response per counter over all 1592 elements
+out   298 fail at least one. Worst rows: 5.079e-11 of the ceiling at L=1e-09 m;
+      2.185e-09 at L=4.0e+07 m, L/r 1.9e+08; 3.453e-09 and 7.757e-09 on the
+      8.0e6 and 6.0e6 boundary spans. Failing L 1e-09 to 4e+10 m, L/r 4.8e-09
+      to 1.9e+10; passing L/r up to 1.9e+04, and the sets OVERLAP in length
+rule  each counter must redden on every element (DH1), which is what fails
+cmd   the weak-key control, printing both sections
+out   same area 2.216708e-02, I_y 9.5842e-04 vs 3.1747e-04 (0.33x); the weak
+      key groups them into 1, the full identity into 2
+cmd   python -m pytest tests/verification/rung1 -q
+out   1249 passed
+cmd   git diff --stat 136e77d..HEAD -- floatfea/tolerances.py
+out   (empty)
+cmd   the schedule DH6 sets, quoted and not measured
+out   F2 4 October; F3 9 October; F4 and F5-prep 17 October; the member-force
+      table 20 October; the code-check screen 25 October; 25 to 31 October
+      buffer, going to V5.1's CalculiX cross-check if unconsumed
+cmd   the retired near-vertical cell's own geometry, member (3,4) from global Z
+out   61.34 degrees at its 0-degree cell down to 55.08 at its 10-degree cell,
+      with the closest member to vertical 38.10 degrees in every cell -- which
+      is R525
+cmd   the four assembled forms and the axis each broke on
+out   the ratio on frame conditioning; the global norm on span (R475); the
+      per-DOF denominator on near-vertical members (R486, 2.9994e-14 on a
+      defect-free element at 2.87 degrees); the row-shared denominator on
+      near-vertical again (R524, 22 of 130 frames over the ceiling, and the
+      element reading 3.8709e-17 with 1.870e-17 of strain energy)
+```
+
+## 2. Findings, and every item carried
+
+Generated: `python scripts/answered_table.py docs/reviews/F2/step-6.md docs/reports/F2/step-6-answers.json`. The class and the subject are read from the verdict; the state and the site come from the answers file.
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R223 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R224 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R230 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R231 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R244 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R245 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R275 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R323 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R324 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R325 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R330 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R331 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R332 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R333 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R334 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R335 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R336 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R337 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R338 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R339 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R340 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R341 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R342 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R343 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R344 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R345 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R346 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R347 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R348 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R349 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R350 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R351 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R352 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R353 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R354 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R355 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R356 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R357 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R358 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R359 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R360 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R361 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R362 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R363 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R364 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R365 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R366 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R367 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R368 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R369 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R370 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R371 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R372 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R373 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R374 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R375 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R376 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R377 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R378 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R379 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R380 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R381 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R382 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R383 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R384 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R385 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R386 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R387 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R388 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R389 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R390 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R391 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R392 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R393 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R394 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R395 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R396 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R397 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R398 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R399 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R400 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R401 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R402 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R403 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R404 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R405 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R406 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R407 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R408 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R409 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R410 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R411 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R412 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R413 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R414 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R415 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R416 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R417 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R418 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R419 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R420 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R421 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R422 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R423 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R424 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R425 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R426 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R427 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R428 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R429 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R430 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R431 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R432 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R433 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R434 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R435 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R436 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R437 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R438 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R439 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R440 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R441 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R442 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R443 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R444 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R445 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R446 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R447 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R448 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R449 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R450 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R451 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R452 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R453 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R454 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R455 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R456 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R457 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R458 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R459 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R460 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R461 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R462 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R463 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R464 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R465 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R466 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R467 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R468 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R469 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R470 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R471 | carried | **open** | §2 | `docs/milestones/F2a.md` | carried from an earlier verdict |
+| R472 | carried | **open** | §2 | `docs/milestones/F2a.md` | carried from an earlier verdict |
+| R473 | carried | **open** | §2 | `docs/milestones/F2a.md` | carried from an earlier verdict |
+| R474 | carried | **open** | §2 | `docs/milestones/F2a.md` | carried from an earlier verdict |
+| R482 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R483 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R484 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R485 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R486 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R487 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | carried from an earlier verdict |
+| R488 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | carried from an earlier verdict |
+| R489 | carried | **open** | §2 | `tests/test_report_carried.py` | carried from an earlier verdict |
+| R490 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R491 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R492 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | carried from an earlier verdict |
+| R493 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | carried from an earlier verdict |
+| R494 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R495 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R496 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R497 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R498 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R499 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R500 | carried | **open** | §2 | `scripts/answered_table.py` | carried from an earlier verdict |
+| R501 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | carried from an earlier verdict |
+| R502 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R503 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R504 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_corpus.py` | carried from an earlier verdict |
+| R505 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R506 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R507 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R508 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R509 | carried | **open** | §2 | `scripts/answered_table.py` | carried from an earlier verdict |
+| R510 | carried | **open** | §2 | `floatfea/tolerances.py` | carried from an earlier verdict |
+| R511 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R512 | carried | **open** | §2 | `tests/test_report_guard_states.py` | carried from an earlier verdict |
+| R514 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R515 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R516 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R517 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R518 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R519 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R520 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R521 | carried | **open** | §2 | `scripts/answered_table.py` | carried from an earlier verdict |
+| R522 | carried | **open** | §2 | `floatfea/tolerances.py` | carried from an earlier verdict |
+| R523 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R524 | recorded | **answered** | §2 | `docs/milestones/F2.md` | , (c) and (d).) THE ROW-SHARED RESIDUAL'S CLEAN |
+| R525 | blocks | **answered** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | .) `test_a_NEAR_VERTICAL_member_is_not_false_reddened` DOES |
+| R526 | recorded | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | The downward negative control for the residual half decides by the |
+| R527 | recorded | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | R487's assertion cannot fail, and the one cause its own message names |
+| R528 | recorded | **answered** | §2 | `docs/reports/F2/step-6.md` | `docs/reports/F2/step-6.md` § 1 says "the near-vertical band shows no false |
+| R529 | recorded | **open** | §2 | `scripts/answered_table.py` | R519, R521, R522 and R513 unchanged**, and not re-measured here. |
+
+## 3. Sites named by findings and not touched
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R524 | `floatfea/tolerances.py:328` | the file is untouched | **no change** -- the sentences the finding names are restored by reverting the DB1 prose commit, not edited |
+| R526 | `tests/verification/rung1/test_rigid_body_corpus.py:302` | the file is touched and this line number is the old one | **no change** -- named as where a claim is asserted, not as a site |
+| R526 | `tests/verification/rung1/test_rigid_body_modes.py:694` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:285` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:286` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:287` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:288` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:289` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:290` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:291` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:292` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:293` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:294` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:295` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:296` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:297` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+| R527 | `tests/verification/rung1/test_rigid_body_modes.py:298` | the file is touched and this line number is the old one | **no change** -- this is DB0's site; the form is measured and not yet written, and the reference-point cell is why |
+
+## 4. Carried
+
+Generated: `python scripts/carried_table.py docs/reviews/F2/step-6.md docs/reports/F2/step-6-answers.json`.
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R426 | **carried** — §2 | /R438; R503 then R514)"; |
+| R438 | **carried** — §2 | ; R503 then R514)"; |
+| R475 | **open** — carried from an earlier verdict | / R487 / R488 / R492 / R493 / R500 / R501 as open on top. |
+| R476 | **open** — carried from an earlier verdict | 's ZeroDivisionError on a coincident tip node, R477, R478, R480. |
+| R477 | **open** — carried from an earlier verdict | carries R476's ZeroDivisionError on a coincident tip node, R477, R478, R480. |
+| R478 | **open** — carried from an earlier verdict | carries R476's ZeroDivisionError on a coincident tip node, R477, R478, R480. |
+| R480 | **open** — carried from an earlier verdict | carries R476's ZeroDivisionError on a coincident tip node, R477, R478, R480. |
+| R486 | **carried** — §2 | OUT OF F2 BY DD0, not reopened by me. I want to be explicit that |
+| R487 | **open** — §2 | / R488 / R492 / R493 / R500 / R501 as open on top. |
+| R488 | **open** — §2 | / R492 / R493 / R500 / R501 as open on top. |
+| R492 | **open** — §2 | / R493 / R500 / R501 as open on top. |
+| R493 | **open** — §2 | / R500 / R501 as open on top. |
+| R500 | **open** — §2 | / R501 as open on top. |
+| R501 | **open** — §2 | as open on top. |
+| R503 | **carried** — §2 | then R514)"; |
+| R505 | **carried** — §2 | ) -- ANSWERED as recorded in the answers file; not re-measured. |
+| R509 | **open** — §2 | ), R522 (R510) -- OPEN closure items, unchanged. R522 still |
+| R510 | **open** — §2 | ) -- OPEN closure items, unchanged. R522 still |
+| R513 | **open** — carried from an earlier verdict | OPEN and live in this file's own header line, as in the last two. |
+| R514 | **carried** — §2 | as blocking, R519 to R523 as |
+| R515 | **carried** — §2 | as blocking, R519 to R523 as |
+| R516 | **carried** — §2 | as blocking, R519 to R523 as |
+| R517 | **carried** — §2 | as blocking, R519 to R523 as |
+| R518 | **carried** — §2 | as blocking, R519 to R523 as |
+| R519 | **carried** — §2 | to R523 as |
+| R520 | **carried** — §2 | (R505) -- ANSWERED as recorded in the answers file; not re-measured. |
+| R521 | **open** — §2 | (R509), R522 (R510) -- OPEN closure items, unchanged. R522 still |
+| R522 | **open** — §2 | (R510) -- OPEN closure items, unchanged. R522 still |
+| R523 | **carried** — §2 | Verdict 58 carried R514, R515, R516, R517, R518 as blocking, R519 to R523 as |
+| R524 | **answered** — §2 | , (c) and (d).) THE ROW-SHARED RESIDUAL'S CLEAN SCATTER CROSSES RIGID_MODE_EXACTNESS ON... |
+| R525 | **answered** — §2 | .) test_a_NEAR_VERTICAL_member_is_not_false_reddened DOES NOT BUILD A NEAR-VERTICAL MEMBER. ITS... |
+| R526 | **open** — §2 | carried, and the verdict says nothing further about it here |
+| R527 | **open** — §2 | , a closure item, with its measurement attached so nobody |
+| R528 | **answered** — §2 | carried, and the verdict says nothing further about it here |
+| R529 | **open** — §2 | carried, and the verdict says nothing further about it here |
+
+## 5. The whole suite
+
+**Whole suite at `b047dc2`: 2274 passed, 0 failed, 0 skipped.** **The excluded set: 249 passed, 12 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 261 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+- **failed, in the excluded set** `tests.test_report_carried::test_the_whole_suite_line_is_about_a_commit_that_exists`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[baseline]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[two_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[non_numeric_step_suffix]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[superscript_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[shallow_clone_depth_1]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[shallow_clone_depth_1_reports_one_diagnosis_not_sixteen]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]`
+```
+
+**Zero failed in the main set, and the twelve in the excluded set are the
+report-parametrised guards** measured at the commit this revision sits on,
+judging a report that does not yet carry verdict 59's findings -- which is what
+this revision is. The clearance red that sent verdict 59 to STOP is gone
+because the figure stopped claiming a decision, not because a ceiling moved:
+`git diff 136e77d..HEAD -- floatfea/tolerances.py` is empty across this whole
+round.
