@@ -150,6 +150,19 @@ is still right -- it refuses every re-admission through a plausible-looking
 fake control line -- and the mechanism that would close the gap is an item
 on this frozen list rather than work to be done now.
 
+**R532 joins this list as frozen apparatus (DK1).** The citation guard
+`test_every_test_name_cited_in_prose_exists` walks `("tests", "scripts")` and
+therefore cannot see `floatfea/` — which is how `floatfea/tolerances.py` went
+on naming `test_BOTH_counters_redden_at_EVERY_span` for two commits after that
+test was deleted, and why a human reader caught it rather than the guard. The
+fix is one tuple. It is **not applied**, because CZ0 freezes apparatus through
+F6 and widening a guard's domain is extending it; the finding is here so that
+whoever unfreezes 4a has the one-line change waiting.
+
+The same list already holds the coverage measurements that argue for spending
+nothing here: 2 of 22 unseen shapes caught, then 1 of 19, then 0 of 16, then
+0 of 13, and REPAIR-STALE at 0 of 13 recorded under DE2 without transcription.
+
 | item | what it is |
 |---|---|
 | R230 | open — REOPENED BY NAME.** Revision 3 gave it a status only a verdict may give, against that verdict's own words; §0 |
