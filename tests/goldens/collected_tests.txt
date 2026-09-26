@@ -9,7 +9,7 @@
 # reviewer's corpora and with the report being written. A FUNCTION
 # disappearing is what this file exists to catch.
 
-[tests] 354
+[tests] 355
 tests/regression/test_exempt_pair_responses.py::test_a_MOVED_response_is_caught
 tests/regression/test_exempt_pair_responses.py::test_every_recorded_pair_is_still_detected
 tests/regression/test_exempt_pair_responses.py::test_the_golden_file_is_not_empty
@@ -264,6 +264,7 @@ tests/verification/rung1/test_patch_test.py::test_the_shear_state_actually_conta
 tests/verification/rung1/test_patch_test.py::test_the_six_constant_strain_states_are_EXACT
 tests/verification/rung1/test_patch_test.py::test_the_solve_is_BACKWARD_STABLE
 tests/verification/rung1/test_rigid_body_corpus.py::test_G2_1_holds_at_every_frame_in_the_corpus
+tests/verification/rung1/test_rigid_body_corpus.py::test_a_DEFECT_lifts_lambda_6_off_the_floor
 tests/verification/rung1/test_rigid_body_corpus.py::test_a_FINER_UNIT_than_the_corpus_is_still_decided
 tests/verification/rung1/test_rigid_body_corpus.py::test_a_PINNED_DOF_is_caught_by_the_RESIDUAL_half
 tests/verification/rung1/test_rigid_body_corpus.py::test_a_RELEASED_CONNECTION_makes_the_gate_REFUSE
@@ -440,7 +441,7 @@ tests/unit/test_transform_invariance.py::test_the_fixture_rotation_is_not_axis_a
 tests/unit/test_transform_invariance.py::test_the_member_triad_equals_the_intended_rotation
 tests/unit/test_transform_invariance.py::test_the_supported_section_still_constructs
 
-[tests/verification/rung1] 60
+[tests/verification/rung1] 61
 tests/verification/rung1/test_corpus_configurations.py::test_a_CONSTANT_ell_breaks_unit_invariance
 tests/verification/rung1/test_corpus_configurations.py::test_a_LARGER_deviation_fails_the_calibration
 tests/verification/rung1/test_corpus_configurations.py::test_a_NO_OP_defect_classifies_below_resolution
@@ -484,6 +485,7 @@ tests/verification/rung1/test_patch_test.py::test_the_shear_state_actually_conta
 tests/verification/rung1/test_patch_test.py::test_the_six_constant_strain_states_are_EXACT
 tests/verification/rung1/test_patch_test.py::test_the_solve_is_BACKWARD_STABLE
 tests/verification/rung1/test_rigid_body_corpus.py::test_G2_1_holds_at_every_frame_in_the_corpus
+tests/verification/rung1/test_rigid_body_corpus.py::test_a_DEFECT_lifts_lambda_6_off_the_floor
 tests/verification/rung1/test_rigid_body_corpus.py::test_a_FINER_UNIT_than_the_corpus_is_still_decided
 tests/verification/rung1/test_rigid_body_corpus.py::test_a_PINNED_DOF_is_caught_by_the_RESIDUAL_half
 tests/verification/rung1/test_rigid_body_corpus.py::test_a_RELEASED_CONNECTION_makes_the_gate_REFUSE
