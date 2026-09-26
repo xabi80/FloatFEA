@@ -165,11 +165,25 @@ commit acting on it; R533 is the citation guard's domain. Corrected here rather
 than left, because a frozen item that names the wrong finding is a pointer to
 nothing — which is the species R533 itself is about.
 
-**R532 is answered rather than frozen**, and by this round's own commits: every
-directive that moved anything now has a `plan:` or `process:` commit citing it
-by name, and `docs/closure/F2-step6.md` records the reasoning DG2 rests on. The
-load-bearing sentence — "DG2 was pre-registered" — is checkable in the plan's
-own history now instead of only in a conversation.
+**R532 is answered rather than frozen**, and `docs/closure/F2-step6.md` records
+the reasoning DG2 rests on, so the load-bearing sentence — "DG2 was
+pre-registered" — is checkable in the plan's own history instead of only in a
+conversation.
+
+**THE FIRST VERSION OF THIS PARAGRAPH CLAIMED MORE THAN THE TREE HELD.** It
+said "every directive that moved anything now has a `plan:` or `process:`
+commit citing it by name", and one grep refuted it for three of them — DH1,
+DK2 and DK4 appeared in no commit message and in no file (C8). The claim is
+replaced by a ledger that can be read rather than a sentence that has to be
+believed: `docs/milestones/F2.md` §5g lists every directive from DG1 onward
+with what was acted on and where it is recorded, and a row whose "recorded in"
+column points at nothing is visible as such.
+
+```
+cmd    grep -rn "DH1\|DK2\|DK4" docs/milestones docs/closure CLAUDE.md
+out    at the commit that published the sentence above: nothing. At the commit
+       that publishes this paragraph: §5g, §5h and §5i of F2.md.
+```
 
 The same list already holds the coverage measurements that argue for spending
 nothing here: 2 of 22 unseen shapes caught, then 1 of 19, then 0 of 16, then
