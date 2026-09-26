@@ -131,14 +131,20 @@ REGISTERED = [
     # failed at the commit that retired it, which is this meta-test doing
     # exactly its job: it noticed that a counter had lost the assertion it
     # defended before any reader did.
-    (
-        "rigid-body residual exactness",
-        lambda: RIGID.test_a_RESISTED_rigid_motion_reddens_the_RESIDUAL(_Capsys),
-        RIGID,
-        "test_the_rigid_body_vectors_are_EXACT_in_the_residual",
-        "RIGID_MODE_EXACTNESS",
-        WIDEN * RIGID.counter_response("residual"),
-    ),
+    # AND THE RESIDUAL PAIR IS GONE TOO, FOR THE SAME REASON (DI0). Claim A
+    # is a diagnostic now: `element_rigid_residual` is computed, reported, and
+    # asserted against nothing in F2, and its assembled predecessor is retired
+    # entirely. Both cells here failed at the commit that retired the gate --
+    # `_neutered` and `_widened` on "rigid-body residual exactness" -- which is
+    # this meta-test noticing that a counter had lost the assertion it defends
+    # before any reader did, exactly as the note above describes for the ratio.
+    #
+    # The counter constant `RIGID_MODE_EXACTNESS_COUNTER_DEFECT` stays in
+    # `tolerances.py` with its entry marked, because the diagnostic still
+    # injects it when it prints -- what it no longer has is a gate to redden.
+    # In F3 the element-local check becomes an assertion on every real
+    # platform member and its counters are registered here again, against
+    # that gate (F2.md section 5e).
     # ONE SPECTRAL COUNTER, BECAUSE THERE IS ONE CONSTANT (CU0, R415). Two
     # were registered here, one for `RIGID_MODE_FLOOR` and one for
     # `RIGID_MODE_GAP`, and the comment above them said each was "sized by its
@@ -297,7 +303,18 @@ def test_there_is_something_to_check() -> None:
     """Meta-test: an empty registry makes this file a test of nothing, and a
     control set that exercises only one cell makes the other one vacuous."""
     assert REGISTERED, "no counter is registered; this file checks nothing"
-    assert len(REGISTERED) >= 5, (
+    # FOUR, NOT FIVE, SINCE DI0. The floor followed a retirement rather than a
+    # deletion of convenience: "rigid-body residual exactness" left this
+    # registry because the gate it defended is a diagnostic now -- claim A is
+    # dropped as an F2 gate under DG2, pre-registered before the element-local
+    # form was measured. A counter with no assertion to redden cannot be
+    # checked here, and leaving it registered would have meant two permanently
+    # red cells describing nothing.
+    #
+    # It goes back UP in F3, where the element-local check becomes an
+    # assertion on every real platform member and its three counters are
+    # registered against that gate.
+    assert len(REGISTERED) >= 4, (
         f"only {[r[0] for r in REGISTERED]} registered -- every counter with a "
         "callable gate belongs here, and an exemption is a hole in the guard "
         "written for exactly this"

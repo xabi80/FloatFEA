@@ -177,7 +177,7 @@ def _analytic_rigid_body(model: Model) -> np.ndarray:
     1, so the defect's share of the quantity falls.
 
     Measured, span held at 4 m, only the point moved -- the cell that ships as
-    `test_the_REFERENCE_POINT_is_load_bearing`: at the centroid an injected
+    the reference-point cell, now retired with the quantity: at the centroid an injected
     rotational defect is detected; at 10^3 and 10^6 spans away the defective
     frame and the clean frame produce the same number. That is why the point
     is fixed here, in one place, and why a caller does not get to choose it.
@@ -548,7 +548,8 @@ def _defect(size: float, capsys):
 # --------------------------------------------------------------------------
 
 
-# `test_the_rigid_body_vectors_are_EXACT_in_the_residual` IS RETIRED (DI0). It asserted claim A on
+# THE CLAIM-A GATE WAS HERE AND IS RETIRED (DI0). Its name is not written out: It asserted claim A
+# on
 # the assembled matrix. Claim A is a diagnostic now and the quantity it used is retired; see
 # `element_rigid_residual` above and F2.md section 5d.
 
@@ -795,7 +796,8 @@ def _nearly_released(size: float, capsys):
         globals()["assembled"] = original
 
 
-# `test_a_RESISTED_rigid_motion_reddens_the_RESIDUAL` IS RETIRED (DI0). claim A's counter. The
+# CLAIM A'S COUNTER WAS HERE AND IS RETIRED (DI0). Its name is not written out: claim A's counter.
+# The
 # counter is only meaningful against the assertion it defends, and that assertion is retired.
 
 
@@ -1111,22 +1113,26 @@ def _detection_edge(k, model, dof: int) -> float:
     return hi
 
 
-# `test_BOTH_counters_redden_at_EVERY_span` IS RETIRED (DI0). R475's ten span cells. They measured
+# R475'S TEN SPAN CELLS WAS HERE AND IS RETIRED (DI0). Its name is not written out: R475's ten span
+# cells. They measured
 # the assembled quantity, which R524 then showed crossing the ceiling on defect-free near-vertical
 # frames; the span property they proved is real and belongs to a form that is no longer the gate.
 
 
-# `test_the_REFERENCE_POINT_is_load_bearing` IS RETIRED (DI0). the reference point only enters the
+# THE REFERENCE-POINT CELL WAS HERE AND IS RETIRED (DI0). Its name is not written out: the reference
+# point only enters the
 # ASSEMBLED quantity. In the element-local form the vectors are built about the element's own
 # midpoint, so there is no global point to depend on -- which is why this cell has nothing left to
 # measure.
 
 
-# `test_the_shipped_vectors_are_built_about_the_NODE_CENTROID` IS RETIRED (DI0). the structural half
+# ITS STRUCTURAL HALF WAS HERE AND IS RETIRED (DI0). Its name is not written out: the structural
+# half
 # of the same claim, retired with it.
 
 
-# `test_a_NEAR_VERTICAL_member_is_not_false_reddened` IS RETIRED (DI0). R525: its eleven cells put
+# THE NEAR-VERTICAL CELL WAS HERE AND IS RETIRED (DI0). Its name is not written out: R525: its
+# eleven cells put
 # their members at 61.34 down to 55.08 degrees from Z, never near vertical, so it never tested the
 # band it was named for. The band is covered by the element-local diagnostic, where it reads 0.007
 # to 0.035 eps, and asserted in F3 on real members.

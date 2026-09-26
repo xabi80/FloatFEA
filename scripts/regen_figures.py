@@ -98,7 +98,13 @@ def _figures() -> list[tuple[str, str]]:
     # goes stale.
     rows.append(
         (
-            _floor("rigid_mode_residual", "below", "RIGID_MODE_EXACTNESS"),
+            # `derived`, NOT `below`, SINCE DI0: claim A is a diagnostic and this
+            # figure decides nothing. A floor-class row is compared with the
+            # constant it decides against, and there is no such decision left
+            # -- the row is kept because the plan and the closure artifact cite
+            # the contrast between the forms, and a withdrawn figure nothing
+            # regenerates is how a contrast goes stale.
+            _floor("rigid_mode_residual", "derived"),
             f"{RB.residual_exactness(k_rb, model):.4e}",
         )
     )
@@ -232,7 +238,12 @@ def _figures() -> list[tuple[str, str]]:
             loss_over += 1
     rows.append(
         (
-            _floor("rigid_mode_residual_worst_over_corpus", "below", "RIGID_MODE_EXACTNESS"),
+            # `derived` for the same reason (DI0). This is the row whose 1.347x
+            # clearance was the finding that sent verdict 59 to STOP; it is a
+            # diagnostic of a retired quantity now, and comparing it with a
+            # ceiling nothing asserts would be the false-precision the
+            # clearance check exists to prevent.
+            _floor("rigid_mode_residual_worst_over_corpus", "derived"),
             f"{worst_residual:.4e}",
         )
     )
