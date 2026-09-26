@@ -74,6 +74,7 @@ from __future__ import annotations
 
 import contextlib
 import math
+import pathlib
 import sys
 from pathlib import Path
 
@@ -159,10 +160,29 @@ def _frame() -> tuple[Model, list[BeamElement]]:
 def _analytic_rigid_body(model: Model) -> np.ndarray:
     """`(n_dof, 6)` — the exact rigid-body modes of this node set.
 
-    Three unit translations, and three rotations about the CENTROID. The
+    Three unit translations, and three rotations about the **CENTROID**, and
+    the choice of that point is LOAD-BEARING rather than cosmetic.
+
+    THE SENTENCE THAT STOOD HERE SAID THE OPPOSITE (R492, R475). It read "the
     centroid is used rather than the origin only so the columns are better
-    conditioned as a basis; any point gives the same six-dimensional span, which
-    is the thing under test.
+    conditioned as a basis; any point gives the same six-dimensional span,
+    which is the thing under test". The span claim is true and it is not what
+    the gate reads. The gate reads a residual computed FROM THESE COLUMNS, and
+    that quantity is not invariant under the reference point: moving the point
+    away from the node set scales every rotation column's translational
+    entries by the lever arm, while a defect on a rotational DOF keeps weight
+    1, so the defect's share of the quantity falls.
+
+    Measured, span held at 4 m, only the point moved -- the cell that ships as
+    `test_the_REFERENCE_POINT_is_load_bearing`: at the centroid an injected
+    rotational defect is detected; at 10^3 and 10^6 spans away the defective
+    frame and the clean frame produce the same number. That is why the point
+    is fixed here, in one place, and why a caller does not get to choose it.
+
+    It is the centroid rather than any other interior point because the
+    centroid is inside the convex hull of the node set by construction, so the
+    lever arms are bounded by the model's own span and no choice of origin can
+    inflate them.
     """
     xyz = model.nodes.coords()
     centre = xyz.mean(axis=0)
@@ -224,32 +244,62 @@ and nothing is compared against it."""
 
 
 def residual_exactness(k: np.ndarray, model: Model) -> float:
-    """G2.1's first quantity in the RESIDUAL form (Q7).
+    """G2.1's first quantity, normalised PER ROW and shared across the six.
 
-    The worst over the six analytic rigid-body vectors of
+        d_i       = max_j ( |K_hat| |v_j| )_i          one denominator per DOF
+        residual  = max_j max_i |(K_hat v_j)_i| / d_i
 
-        ||K v|| / (max|K| * ||v||)
+    `K_hat = K / max|K|`, so the quantity is invariant under `E`, the section
+    and the length unit. No eigenvalues, no eigenvectors, no solve: it reads
+    `K` and the analytic vectors and nothing else.
 
-    -- how far an exact rigid-body motion is from the nullspace of the
-    assembled matrix. Dimensionless: the numerator carries `K`'s units and the
-    denominator carries them too, so the quantity is invariant under `E`, the
-    section and the length unit in the way `mode_ratio` only claimed to be.
+    WHY PER ROW, AND WHY SHARED (R475). The shipped form was
+    `||K v_j|| / (max|K| * ||v_j||)` -- one global normaliser per vector. A
+    rotation column carries lever arms O(span) on translational DOFs and
+    exactly 1.0 on rotational ones, so `||v_j||` grows with the model while a
+    defect on a rotational DOF does not, and the defect's share of the
+    quantity falls away. Measured by the reviewer: the same injected defect
+    that reddens at 4 m is INVISIBLE at 400 m, the defective frame and the
+    clean frame reading the same number to four figures. A defect 40x the
+    shipped counter passed the whole gate at a span the corpus already held.
 
-    WHAT IT DOES NOT USE, and that is the point: no eigenvalues and no
-    eigenvectors. `subspace_loss` projects onto the first six COMPUTED
-    eigenvectors, so what it measures includes the eigensolver; this reads `K`
-    and the analytic vectors and nothing else. There is no iterative solve
-    here, so there is no starting vector to pin -- `deterministic_v0` is
-    pinned where a solve does happen, in the sparse cross-check below.
+    Dividing each residual COMPONENT by the absolute stiffness available at
+    that same DOF removes the mismatch: both sides of the ratio are weighted
+    the same way, so a defect is measured against what could have resisted it
+    rather than against the whole model. The denominator is shared across the
+    six vectors -- `max_j` rather than per-vector -- because a per-vector
+    denominator was measured false-reddening a defect-free element on
+    near-vertical members, which is R486's finding and now a G3 gate.
 
     ASSERTED ON THE WORST OF THE SIX, never a mean, per `CLAUDE.md`.
     """
     scale = float(np.max(np.abs(k)))
-    analytic = _analytic_rigid_body(model)
+    khat = k / scale
+    absk = np.abs(khat)
+    modes = _analytic_rigid_body(model)
+
+    # One denominator per row, the largest any of the six vectors excites there.
+    content = np.max(np.stack([absk @ np.abs(modes[:, j]) for j in range(modes.shape[1])]), axis=0)
+    live = content > 0.0
+
+    # R487: THE MASKED BRANCH IS UNREACHABLE, AND THAT IS AN ASSERTION RATHER
+    # THAN A COMMENT. `content_i >= |(K_hat v_j)_i|` for every i and j by the
+    # triangle inequality -- `|sum_k K_ik v_jk| <= sum_k |K_ik||v_jk|` -- so a
+    # row with zero content has zero numerator in all six columns, and
+    # skipping it cannot hide a residual. A comment saying so is a claim; this
+    # is the check.
+    for j in range(modes.shape[1]):
+        numerator = np.abs(khat @ modes[:, j])
+        assert not np.any(numerator[~live] > 0.0), (
+            "a DOF with no absolute stiffness content carries a non-zero "
+            "residual, which the triangle inequality forbids. Either `K_hat` "
+            "has a NaN or the masking below is hiding a real residual."
+        )
+
     worst = 0.0
-    for j in range(analytic.shape[1]):
-        v = analytic[:, j]
-        worst = max(worst, float(np.linalg.norm(k @ v) / (scale * np.linalg.norm(v))))
+    for j in range(modes.shape[1]):
+        numerator = np.abs(khat @ modes[:, j])
+        worst = max(worst, float(np.max(numerator[live] / content[live])))
     return worst
 
 
@@ -819,6 +869,251 @@ def test_a_SEVENTH_MODE_UNDER_THE_BOUND_reddens_the_gate(capsys) -> None:
 # --------------------------------------------------------------------------
 # The pin AP3 is about
 # --------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------
+# R475's three cells. The residual's normalisation changed at R475, so every
+# claim about what it detects is re-measured here rather than inherited.
+# --------------------------------------------------------------------------
+
+_SPAN_CELLS = ((1.0, "4 m"), (10.0, "40 m"), (100.0, "400 m"), (1e3, "4 km"), (1e4, "40 km"))
+_COUNTER_DOFS = ((0, "translational"), (3, "rotational"))
+
+
+def _stretched(stretch: float, tip: str = "3.1,2.2,4.4"):
+    """The corpus builder's frame at one stretch, so the cells and the corpus
+    are the same geometry rather than two similar ones."""
+    # BY PATH, not by name: `tests/` is not a package, so a bare import of a
+    # sibling module fails under pytest's rootdir -- which is how this module
+    # already loads things elsewhere in the repository.
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "rbc_for_cells", pathlib.Path(__file__).with_name("test_rigid_body_corpus.py")
+    )
+    assert spec is not None and spec.loader is not None
+    RBC = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(RBC)
+
+    return RBC._build(
+        {
+            "section": "circular_tube,D=0.6,t=0.012",
+            "unit": "1.0",
+            "stretch": str(stretch),
+            "tip": tip,
+            "subdiv": "1",
+        }
+    )
+
+
+def _residual_with(k, model, dof: int, size: float) -> float:
+    kk = k.copy()
+    kk[dof, dof] += size * float(np.abs(k).max())
+    return residual_exactness(kk, model)
+
+
+def _detection_edge(k, model, dof: int) -> float:
+    """The defect size at which the gate flips, BISECTED rather than swept.
+
+    Two hundred halvings of a geometric bracket, so the edge is located to
+    round-off rather than to the resolution of a sweep -- which is what CO1
+    asked for on the other gate's counter and is the same requirement here.
+    """
+    lo, hi = 1e-18, 1e-6
+    for _ in range(200):
+        mid = (lo * hi) ** 0.5
+        if _residual_with(k, model, dof, mid) > RIGID_MODE_EXACTNESS:
+            hi = mid
+        else:
+            lo = mid
+    return hi
+
+
+@pytest.mark.parametrize("stretch, label", _SPAN_CELLS, ids=[c[1] for c in _SPAN_CELLS])
+@pytest.mark.parametrize("dof, kind", _COUNTER_DOFS, ids=[c[1] for c in _COUNTER_DOFS])
+def test_BOTH_counters_redden_at_EVERY_span(
+    stretch: float, label: str, dof: int, kind: str, capsys
+) -> None:
+    """R475's ten cells: the same defect, on both DOF classes, over four decades.
+
+    THIS IS THE FINDING R475 WAS. Under the old normalisation the rotational
+    counter was detected at 4 m and INVISIBLE from 400 m up -- the defective
+    frame and the clean frame reading the same number -- because `||v_j||` grew
+    with the span while a defect on a rotational DOF did not. The gate is
+    asserted here on both classes at every span, so a normalisation that works
+    on one class and dilutes on the other cannot ship again.
+    """
+    model, els = _stretched(stretch)
+    k = assembled(model, els)
+    clean = residual_exactness(k, model)
+    defective = _residual_with(k, model, dof, RIGID_MODE_EXACTNESS_COUNTER_DEFECT)
+    edge = _detection_edge(k, model, dof)
+    with capsys.disabled():
+        print(
+            f"\n  {label:>5s} k[{dof},{dof}] ({kind}): clean {clean:.4e}, "
+            f"defective {defective:.4e}, edge {edge:.4e}, counter "
+            f"{RIGID_MODE_EXACTNESS_COUNTER_DEFECT / edge:.3g}x past it"
+        )
+    assert clean <= RIGID_MODE_EXACTNESS, (
+        f"{label}: the CLEAN frame is {clean:.6e}, over the ceiling "
+        f"{RIGID_MODE_EXACTNESS:.0e}. The element, not the counter, is the "
+        "finding here."
+    )
+    assert defective > RIGID_MODE_EXACTNESS, (
+        f"{label}: a {RIGID_MODE_EXACTNESS_COUNTER_DEFECT:g} defect on a "
+        f"{kind} DOF leaves the residual at {defective:.6e}, under the ceiling "
+        f"{RIGID_MODE_EXACTNESS:.0e}. The gate cannot see it, which is exactly "
+        "R475 and exactly what this cell exists to refuse."
+    )
+    assert edge < RIGID_MODE_EXACTNESS_COUNTER_DEFECT, (
+        f"{label}: the counter {RIGID_MODE_EXACTNESS_COUNTER_DEFECT:g} is at or "
+        f"under its own detection edge {edge:.6e}, so it certifies nothing."
+    )
+
+
+def test_the_REFERENCE_POINT_is_load_bearing(capsys) -> None:
+    """The cell behind `_analytic_rigid_body`'s docstring (R492, R504).
+
+    Span HELD at 4 m, defect held, ONLY the reference point of the rotations
+    moved. At the node centroid the rotational counter is detected; far from
+    it the defective frame and the clean frame produce the same number, so the
+    quantity is not invariant under the point and the choice is load-bearing.
+
+    BOTH SIDES ARE PUBLISHED, NOT THE QUOTIENT (R504). `1.00x` at 10^3 and at
+    10^6 spans is a saturated ratio and says nothing about how far past
+    saturation it went; the clean and defective values say it.
+
+    AND THE STRUCTURAL HALF IS ASSERTED, not left to this cell passing: the
+    shipped vectors are built about the centroid, which is inside the convex
+    hull by construction, so a caller cannot choose a point that inflates the
+    lever arms. That is what `_rotation_reference_point` checks below.
+    """
+    model, els = _stretched(1.0)
+    k = assembled(model, els)
+    xyz = model.nodes.coords()
+    span = float(np.max(xyz.max(axis=0) - xyz.min(axis=0)))
+    centroid = xyz.mean(axis=0)
+
+    def residual_about(centre, defect: bool) -> float:
+        kk = k.copy()
+        if defect:
+            kk[3, 3] += RIGID_MODE_EXACTNESS_COUNTER_DEFECT * float(np.abs(k).max())
+        scale = float(np.max(np.abs(kk)))
+        khat = kk / scale
+        absk = np.abs(khat)
+        r = xyz - np.asarray(centre, dtype=float)
+        modes = np.zeros((model.nodes.n_dof, RIGID))
+        for d in range(3):
+            modes[d::6, d] = 1.0
+        for a in range(3):
+            axis = np.zeros(3)
+            axis[a] = 1.0
+            cross = np.cross(axis, r)
+            for d in range(3):
+                modes[d::6, 3 + a] = cross[:, d]
+            modes[3 + a :: 6, 3 + a] = 1.0
+        content = np.max(np.stack([absk @ np.abs(modes[:, j]) for j in range(RIGID)]), axis=0)
+        live = content > 0
+        return max(
+            float(np.max(np.abs(khat @ modes[:, j])[live] / content[live])) for j in range(RIGID)
+        )
+
+    rows = []
+    for label, centre in (
+        ("the node centroid", centroid),
+        ("10^3 spans away", centroid + np.array([1e3 * span, 0.0, 0.0])),
+        ("10^6 spans away", centroid + np.array([1e6 * span, 0.0, 0.0])),
+    ):
+        rows.append((label, residual_about(centre, False), residual_about(centre, True)))
+    with capsys.disabled():
+        print()
+        for label, clean, defective in rows:
+            print(
+                f"  {label:20s} clean {clean:.4e}  with k[3,3] {defective:.4e}  "
+                f"{'RED' if defective > RIGID_MODE_EXACTNESS else 'blind'}"
+            )
+
+    assert rows[0][2] > RIGID_MODE_EXACTNESS, (
+        "at the node centroid the rotational counter is NOT detected, which is "
+        "the case the shipped form depends on."
+    )
+    for label, clean, defective in rows[1:]:
+        assert defective == clean, (
+            f"{label}: the defective and clean residuals differ "
+            f"({defective:.6e} vs {clean:.6e}). The blindness far from the "
+            "centroid is what makes the point load-bearing; if that has "
+            "changed, the docstring's reason has changed with it."
+        )
+
+
+def test_the_shipped_vectors_are_built_about_the_NODE_CENTROID(capsys) -> None:
+    """The structural half of the claim above (R504), asserted not inferred.
+
+    A rotation column's translational entries are `axis x (xyz - centre)`. Summed
+    over the nodes that is `axis x (sum xyz - n*centre)`, which vanishes exactly
+    when `centre` is the mean of the coordinates. So the check is on the shipped
+    columns rather than on a reimplementation of them.
+    """
+    model, els = _stretched(1.0)
+    modes = _analytic_rigid_body(model)
+    n_nodes = model.nodes.coords().shape[0]
+    scale = float(np.abs(model.nodes.coords()).max())
+    for a in range(3):
+        column = modes[:, 3 + a]
+        lever = np.stack([column[d::6] for d in range(3)], axis=1)
+        residual = float(np.abs(lever.sum(axis=0)).max()) / (n_nodes * scale)
+        with capsys.disabled():
+            print(f"\n  rotation about axis {a}: lever arms sum to {residual:.3e} (relative)")
+        # THE BOUND IS ROUND-OFF, NOT A CHOSEN TOLERANCE. Summing `n_nodes`
+        # coordinates each carrying relative error `EPS` gives at most
+        # `n_nodes * EPS` relative, and the quantity above is already divided
+        # by `n_nodes * scale`. A literal here would have been a comparison
+        # threshold under another name, which `CLAUDE.md` puts in
+        # tolerances.py -- so it is derived instead of declared.
+        bound = n_nodes * EPS
+        assert residual < bound, (
+            f"rotation about axis {a} has lever arms summing to {residual:.3e} "
+            f"relative, over the round-off bound {bound:.3e}, so the reference "
+            "point is NOT the node centroid. The "
+            "residual's sensitivity depends on that point -- see "
+            "test_the_REFERENCE_POINT_is_load_bearing -- so this is a gate "
+            "property and not a style choice."
+        )
+
+
+_NEAR_VERTICAL = tuple(range(0, 11))
+
+
+@pytest.mark.parametrize("degrees", _NEAR_VERTICAL, ids=[f"{d}deg" for d in _NEAR_VERTICAL])
+def test_a_NEAR_VERTICAL_member_is_not_false_reddened(degrees: int, capsys) -> None:
+    """One cell per degree from vertical, 0 to 10 (R486's band, R475's form).
+
+    A platform space frame is mostly near-vertical members, so this band is the
+    operating point rather than an edge case. It is here because the FIRST
+    candidate normalisation -- one denominator per DOF, not shared across the
+    six vectors -- read `2.9994e-14` on a DEFECT-FREE element at 2.87 degrees
+    from vertical, thirty times the ceiling, and a ceiling read off the corpus
+    would have false-reddened every brace within about eight degrees of
+    vertical.
+
+    R486's admissible-domain version of this is now a G3 gate on the real
+    platform model (DD0). This cell is the band itself, at one geometry.
+    """
+    rad = np.deg2rad(float(degrees))
+    tip = f"{4.0 * np.sin(rad):.6f},0.0,{4.0 * np.cos(rad):.6f}"
+    model, els = _stretched(1.0, tip)
+    k = assembled(model, els)
+    clean = residual_exactness(k, model)
+    with capsys.disabled():
+        print(
+            f"\n  {degrees:2d} deg off vertical: clean {clean:.4e}, "
+            f"{clean / RIGID_MODE_EXACTNESS:.3f}x the ceiling"
+        )
+    assert clean <= RIGID_MODE_EXACTNESS, (
+        f"a defect-free element {degrees} degrees from vertical reads "
+        f"{clean:.6e}, over the ceiling {RIGID_MODE_EXACTNESS:.0e}. That is a "
+        "false red on the orientation a platform is mostly made of."
+    )
 
 
 def test_the_ARPACK_path_is_REPRODUCIBLE_under_its_pin(capsys) -> None:

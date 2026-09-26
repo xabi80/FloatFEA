@@ -304,15 +304,44 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 # analytic vectors and nothing else, and it needs no eigensolver, so there is
 # no starting vector and nothing to pin.
 #
-# Reason for 1e-15: measured over every entry in
-# `tests/corpus/g21_rigid_body_frames.txt`, which is the reviewer's file and
-# not mine, and published by name in the step report. The worst configuration
-# sits an order below this ceiling, and the spread across the corpus is the
-# unit system rather than the element.
-# Set: 2026-09-13, F2
+# THE QUANTITY THIS BOUNDS CHANGED AT R475, AND THE VALUE DID NOT. The
+# normalisation is now per ROW and shared across the six vectors --
+# `d_i = max_j (|K_hat| |v_j|)_i`, residual `= max_j max_i |(K_hat v_j)_i| / d_i`
+# -- instead of one global `||K_hat v_j|| / ||v_j||` per vector. The old form
+# diluted: a rotation column's norm grows with the model's span while a defect
+# on a rotational DOF does not, so the same defect that reddened at 4 m was
+# invisible from 400 m up, and a defect forty times the counter passed the
+# whole gate at a span the corpus already held.
+#
+# Reason for 1e-15, re-measured under the new form: the worst DEFECT-FREE
+# frame over every entry of the reviewer's corpus is
+# `{{fig:rigid_mode_residual_worst_over_corpus}}` and the shipped frame is
+# `{{fig:rigid_mode_residual}}`, both rendered on CI rather than typed. The
+# ceiling is unchanged because the new quantity lands in the same decade, and
+# the counter's own clearance moved with it -- see
+# `RIGID_MODE_EXACTNESS_COUNTER_DEFECT` below, whose detection edge is now
+# bisected at five spans on BOTH DOF classes rather than at one.
+#
+# WHY THE VALUE IS NOT RE-TUNED TO THE NEW MEASUREMENT: a ceiling chosen to
+# sit just above whatever the corpus currently reads is a ceiling that moves
+# whenever the corpus grows, which is the defect DB1 and DC0 spent two rounds
+# on. `1e-15` is a decade boundary above the measured worst, and the margin is
+# asserted per frame by the corpus test rather than declared here.
+# Set: 2026-09-13, F2; quantity re-normalised and reason re-measured
+# 2026-09-25 (R475)
 RIGID_MODE_EXACTNESS: Final[float] = 1e-15
 
 # COUNTER-CASE, INJECTED into the assembled matrix and run through the gate.
+#
+# AND IT IS INJECTED ON BOTH DOF CLASSES NOW (R475). The value is one
+# constant and it is applied at a translational DOF and at a rotational one,
+# at five spans each -- `test_BOTH_counters_redden_at_EVERY_span`, ten cells.
+# It was injected at `k[0,0]` only, which is the one class whose detection
+# edge the old normalisation left span-invariant, so the counter was measuring
+# the case that could not fail. The rotational edge is the tighter of the two
+# and the counter clears both at every span; the figures are printed by that
+# test rather than typed here.
+#
 # Reason for 1.0e-14: a diagonal stiffness resisting a rigid translation at
 # this size takes the residual to `4.4841e-15`, against a ceiling of `1e-15`.
 # The detection edge, solved by bisection rather than read off a sweep, is
