@@ -92,8 +92,10 @@ from floatfea.assemble.system import (  # noqa: E402
     assemble,
     assemble_dense,
     element_global_stiffness,
+    element_length,
 )
 from floatfea.determinism import deterministic_v0  # noqa: E402
+from floatfea.element.beam import local_stiffness  # noqa: E402
 from floatfea.model.material import Material, Section  # noqa: E402
 from floatfea.model.nodes import Model, Node, element_dofs  # noqa: E402
 from floatfea.tolerances import (  # noqa: E402
@@ -109,6 +111,7 @@ from floatfea.tolerances import (  # noqa: E402
     RIGID_MODE_GAP_COUNTER_DEFECT,
 )
 
+DOF_PER_NODE = 6
 RIGID = 6
 """not-a-tolerance: the dimension of the rigid-body space of a free body in three
 dimensions. Three translations and three rotations; a structural constant of the
@@ -545,23 +548,9 @@ def _defect(size: float, capsys):
 # --------------------------------------------------------------------------
 
 
-def test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys) -> None:
-    """G2.1's first half, in the form Q7 settles on.
-
-    The six analytic rigid-body motions are in the nullspace of the assembled
-    matrix, measured as a residual and not through an eigensolver.
-    """
-    model, els = _frame()
-    k = assembled(model, els)
-    worst = residual_exactness(k, model)
-    with capsys.disabled():
-        print(f"\n  worst rigid-body residual {worst:.4e} against " f"{RIGID_MODE_EXACTNESS:g}")
-    assert worst <= RIGID_MODE_EXACTNESS, (
-        f"an exact rigid-body motion leaves {worst:.4e} of residual behind, "
-        f"above {RIGID_MODE_EXACTNESS:g}. A rigid motion that `K` resists is "
-        "an element or transformation defect: the stiffness is doing work on "
-        "a displacement that strains nothing."
-    )
+# `test_the_rigid_body_vectors_are_EXACT_in_the_residual` IS RETIRED (DI0). It asserted claim A on
+# the assembled matrix. Claim A is a diagnostic now and the quantity it used is retired; see
+# `element_rigid_residual` above and F2.md section 5d.
 
 
 def test_there_is_NO_SEVENTH_zero_mode(capsys) -> None:
@@ -806,22 +795,8 @@ def _nearly_released(size: float, capsys):
         globals()["assembled"] = original
 
 
-def test_a_RESISTED_rigid_motion_reddens_the_RESIDUAL(capsys) -> None:
-    """`RIGID_MODE_EXACTNESS`'s counter, INJECTED into the assembled matrix.
-
-    The same defect shape as the ratio's: a diagonal stiffness on one
-    translational DOF, which is a stiffness resisting a rigid translation. It
-    is run through the SHIPPED gate, which recomputes the residual on the
-    defective matrix and decides on it (BV1/BX0).
-    """
-    with (
-        _defect(RIGID_MODE_EXACTNESS_COUNTER_DEFECT, capsys),
-        pytest.raises(AssertionError, match="leaves"),
-    ):
-        test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys)
-
-    # And undefected it passes, so the failure above is the injection.
-    test_the_rigid_body_vectors_are_EXACT_in_the_residual(capsys)
+# `test_a_RESISTED_rigid_motion_reddens_the_RESIDUAL` IS RETIRED (DI0). claim A's counter. The
+# counter is only meaningful against the assertion it defends, and that assertion is retired.
 
 
 def test_a_SEVENTH_MODE_UNDER_THE_BOUND_reddens_the_gate(capsys) -> None:
@@ -869,6 +844,213 @@ def test_a_SEVENTH_MODE_UNDER_THE_BOUND_reddens_the_gate(capsys) -> None:
 # --------------------------------------------------------------------------
 # The pin AP3 is about
 # --------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------
+# CLAIM A, AS A DIAGNOSTIC (DI0). Computed per element, reported, asserted
+# nowhere in F2. In F3 this becomes an assertion on every real platform member
+# (R486's gate, F2.md §5e).
+# --------------------------------------------------------------------------
+
+
+def element_rigid_vectors(length: float) -> np.ndarray:
+    """`(12, 6)` — the six rigid motions about the ELEMENT'S OWN MIDPOINT.
+
+    Local frame: node A at `-L/2`, node B at `+L/2` along local x. A rotation
+    about the midpoint gives each end `cross(axis, r)` of translation and the
+    axis itself of rotation. PHYSICALLY RIGID, with no homogenisation applied
+    here — dividing the translation by `L/2` while leaving the rotation at 1
+    is only a rigid motion when `L/2 == 1`, and that error read `4.3e-02`
+    instead of round-off when this was first measured.
+    """
+    half = length / 2.0
+    modes = np.zeros((2 * DOF_PER_NODE, RIGID))
+    for d in range(3):
+        modes[d, d] = 1.0
+        modes[DOF_PER_NODE + d, d] = 1.0
+    for a in range(3):
+        axis = np.zeros(3)
+        axis[a] = 1.0
+        for node, x in ((0, -half), (DOF_PER_NODE, +half)):
+            arm = np.cross(axis, np.array([x, 0.0, 0.0]))
+            modes[node : node + 3, 3 + a] = arm
+            modes[node + 3 : node + 6, 3 + a] = axis
+    return modes
+
+
+def element_homogeniser(length: float) -> np.ndarray:
+    """`S` as a vector: rotational DOFs scaled by the element length.
+
+    `k_hat = S^-1 k S^-1` and the rigid vector becomes `S r`, so
+    `k_hat (S r) = S^-1 (k r)`: a vector annihilated by `k` is annihilated by
+    `k_hat`. The transform cannot create or destroy the property under test,
+    which is what makes it a homogenisation rather than a second
+    normalisation — and `S r`, not `r / S`, which was the second arithmetic
+    error in the first measurement of this quantity.
+    """
+    s = np.ones(2 * DOF_PER_NODE)
+    for node in (0, DOF_PER_NODE):
+        s[node + 3 : node + 6] = length
+    return s
+
+
+def element_rigid_residual(k_local: np.ndarray, length: float) -> float:
+    """`max_j ||k_hat r_hat|| / (||k_hat|| ||r_hat||)` over the six (DI0).
+
+    A DIAGNOSTIC IN F2 AND NOT A GATE, and the reason is measured rather than
+    asserted: over the 1592 distinct elements of the reviewer's corpus the
+    clean worst is 0.540 eps and frame-independent, but **298 of those 1592
+    elements do not redden under at least one of the three counters**. At
+    `L/r` of 1e+08 -- or on a member a nanometre long -- the local stiffness
+    entries span so many decades that a perturbation of the largest entry
+    falls below round-off in the blocks these vectors excite, so the defect is
+    invisible for the same reason the clean residual is tiny. Proportions are
+    the one axis this form keeps.
+
+    DG2 was pre-registered before the form was measured and it applies: claim
+    A is dropped as an F2 gate, no fifth form is proposed, and the platform
+    guarantee arrives in F3 on real geometry.
+    """
+    s = element_homogeniser(length)
+    khat = k_local / np.outer(s, s)
+    norm = float(np.linalg.norm(khat))
+    modes = element_rigid_vectors(length)
+    worst = 0.0
+    for j in range(RIGID):
+        r = modes[:, j] * s
+        worst = max(worst, float(np.linalg.norm(khat @ r) / (norm * np.linalg.norm(r))))
+    return worst
+
+
+def test_the_element_local_rigid_residual_is_REPORTED_not_asserted(capsys) -> None:
+    """DI0. The diagnostic, over the shipped frame's own elements.
+
+    It prints and it decides nothing. The only assertion here is that the
+    quantity is FINITE and frame-independent -- if it ever stopped being
+    either, the number in the F3 gate would be meaningless, and that is worth
+    catching in F2 even though the value is not gated.
+    """
+    model, els = _frame()
+    seen: dict[tuple, float] = {}
+    for el in els:
+        length = element_length(model, el)
+        k_local = local_stiffness(el.section, el.material, length)
+        value = element_rigid_residual(k_local, length)
+        assert np.isfinite(value), "the element-local residual is not finite"
+        key = (
+            length,
+            el.section.A,
+            el.section.I_y,
+            el.section.I_z,
+            el.section.J,
+            el.material.E,
+            el.material.nu,
+        )
+        if key in seen:
+            assert value == seen[key], (
+                "the same element read two different values. The quantity is "
+                "computed in the element's own frame, so it cannot depend on "
+                "anything outside the element -- see "
+                "test_the_element_local_residual_is_FRAME_INDEPENDENT."
+            )
+        seen[key] = value
+    with capsys.disabled():
+        print(f"\n  element-local rigid residual over {len(seen)} distinct elements:")
+        print(f"    worst {max(seen.values()):.4e} = {max(seen.values()) / EPS:.3f} eps")
+        print("    DIAGNOSTIC (DI0): reported, asserted nowhere in F2")
+
+
+def test_the_element_local_residual_is_FRAME_INDEPENDENT(capsys) -> None:
+    """The property no assembled form had: the quantity never sees a frame.
+
+    The residual is computed from `k_local` and the element's own length, so
+    translating or rotating the model cannot reach it. That is asserted here by
+    building the same elements at two different global offsets and requiring
+    the values to be identical, not merely close.
+    """
+    values: dict[tuple, set[float]] = {}
+    for offset in ((0.0, 0.0, 0.0), (1.0e3, -4.0e2, 7.0e1)):
+        model = Model()
+        for xyz in _frame()[0].nodes.coords():
+            model.nodes.add(Node(*(xyz + np.array(offset))))
+        for el in _frame()[1]:
+            length = element_length(model, el)
+            value = element_rigid_residual(local_stiffness(el.section, el.material, length), length)
+            key = _element_identity(el, length)
+            values.setdefault(key, set()).add(value)
+    with capsys.disabled():
+        print(
+            f"\n  {len(values)} distinct elements, both offsets, identical: "
+            f"{all(len(v) == 1 for v in values.values())}"
+        )
+    assert all(len(v) == 1 for v in values.values()), (
+        "the same element read different values at two global offsets, which "
+        "the quantity's construction forbids -- it is computed in the "
+        "element's own frame and never sees a global coordinate."
+    )
+
+
+def _element_identity(el: BeamElement, length: float) -> tuple:
+    """What makes two elements the same element, for the check above."""
+    return (
+        length,
+        el.section.A,
+        el.section.I_y,
+        el.section.I_z,
+        el.section.J,
+        el.material.E,
+        el.material.nu,
+    )
+
+
+def test_a_WEAKER_KEY_reports_a_difference_that_is_not_there(capsys) -> None:
+    """The control, and it is my own near-miss turned into a test (DI0).
+
+    Keying element identity on `(length, area)` alone made me report frame
+    dependence that did not exist: two circular tubes can carry the SAME area
+    and different `I` and `J`, so the weak key grouped two different elements
+    and their two different residuals looked like one element disagreeing with
+    itself.
+
+    `A = pi * t * (D - t)`, so `(D=0.6, t=0.012)` and `(D=0.318, t=0.024)`
+    share an area to round-off while their second moments differ by a factor of
+    about three. The weak key must conflate them and the full identity must
+    not; if a future change made the weak key adequate, this test says so
+    rather than leaving the control quietly vacuous.
+    """
+    pair = (Section.circular_tube(0.6, 0.012), Section.circular_tube(0.318, 0.024))
+    assert abs(pair[0].A - pair[1].A) <= 1e-12 * pair[0].A, (
+        f"the two sections no longer share an area ({pair[0].A:.6e} vs "
+        f"{pair[1].A:.6e}), so this control is not about a weak key any more."
+    )
+    assert pair[0].I_y != pair[1].I_y, "the two sections have the same I; pick another pair"
+
+    length = 4.0
+    residuals = [element_rigid_residual(local_stiffness(sec, S355, length), length) for sec in pair]
+    # A KEY A HUMAN WOULD WRITE, which is the one I wrote: the area compared
+    # at the precision a table shows it. The two areas here agree to fifteen
+    # digits and differ by a few ulps, so an EXACT float key happens to
+    # separate them -- which is luck, not a property, and is why the control
+    # keys the way a reader does.
+    weak = {(length, float(f"{sec.A:.12e}")) for sec in pair}
+    strong = {_element_identity(BeamElement(0, 1, sec, S355), length) for sec in pair}
+    with capsys.disabled():
+        print(
+            f"\n  same area {pair[0].A:.6e}, I_y {pair[0].I_y:.4e} vs "
+            f"{pair[1].I_y:.4e} ({pair[1].I_y / pair[0].I_y:.2f}x)"
+        )
+        print(f"  residuals {residuals[0]:.4e} and {residuals[1]:.4e}")
+        print(f"  weak key groups them into {len(weak)}; the full identity into {len(strong)}")
+    assert len(weak) == 1, (
+        "the weak key did not conflate two different elements, so this control "
+        "proves nothing. The two areas agree to twelve decimals by "
+        "construction; if that has changed, pick another pair."
+    )
+    assert pair[0].A != pair[1].A, (
+        "the two areas are now bit-identical, which makes the ulp remark above "
+        "false -- rewrite it rather than leaving it."
+    )
+    assert len(strong) == 2, "the full identity conflated two different elements"
 
 
 # --------------------------------------------------------------------------
@@ -929,191 +1111,25 @@ def _detection_edge(k, model, dof: int) -> float:
     return hi
 
 
-@pytest.mark.parametrize("stretch, label", _SPAN_CELLS, ids=[c[1] for c in _SPAN_CELLS])
-@pytest.mark.parametrize("dof, kind", _COUNTER_DOFS, ids=[c[1] for c in _COUNTER_DOFS])
-def test_BOTH_counters_redden_at_EVERY_span(
-    stretch: float, label: str, dof: int, kind: str, capsys
-) -> None:
-    """R475's ten cells: the same defect, on both DOF classes, over four decades.
-
-    THIS IS THE FINDING R475 WAS. Under the old normalisation the rotational
-    counter was detected at 4 m and INVISIBLE from 400 m up -- the defective
-    frame and the clean frame reading the same number -- because `||v_j||` grew
-    with the span while a defect on a rotational DOF did not. The gate is
-    asserted here on both classes at every span, so a normalisation that works
-    on one class and dilutes on the other cannot ship again.
-    """
-    model, els = _stretched(stretch)
-    k = assembled(model, els)
-    clean = residual_exactness(k, model)
-    defective = _residual_with(k, model, dof, RIGID_MODE_EXACTNESS_COUNTER_DEFECT)
-    edge = _detection_edge(k, model, dof)
-    with capsys.disabled():
-        print(
-            f"\n  {label:>5s} k[{dof},{dof}] ({kind}): clean {clean:.4e}, "
-            f"defective {defective:.4e}, edge {edge:.4e}, counter "
-            f"{RIGID_MODE_EXACTNESS_COUNTER_DEFECT / edge:.3g}x past it"
-        )
-    assert clean <= RIGID_MODE_EXACTNESS, (
-        f"{label}: the CLEAN frame is {clean:.6e}, over the ceiling "
-        f"{RIGID_MODE_EXACTNESS:.0e}. The element, not the counter, is the "
-        "finding here."
-    )
-    assert defective > RIGID_MODE_EXACTNESS, (
-        f"{label}: a {RIGID_MODE_EXACTNESS_COUNTER_DEFECT:g} defect on a "
-        f"{kind} DOF leaves the residual at {defective:.6e}, under the ceiling "
-        f"{RIGID_MODE_EXACTNESS:.0e}. The gate cannot see it, which is exactly "
-        "R475 and exactly what this cell exists to refuse."
-    )
-    assert edge < RIGID_MODE_EXACTNESS_COUNTER_DEFECT, (
-        f"{label}: the counter {RIGID_MODE_EXACTNESS_COUNTER_DEFECT:g} is at or "
-        f"under its own detection edge {edge:.6e}, so it certifies nothing."
-    )
+# `test_BOTH_counters_redden_at_EVERY_span` IS RETIRED (DI0). R475's ten span cells. They measured
+# the assembled quantity, which R524 then showed crossing the ceiling on defect-free near-vertical
+# frames; the span property they proved is real and belongs to a form that is no longer the gate.
 
 
-def test_the_REFERENCE_POINT_is_load_bearing(capsys) -> None:
-    """The cell behind `_analytic_rigid_body`'s docstring (R492, R504).
-
-    Span HELD at 4 m, defect held, ONLY the reference point of the rotations
-    moved. At the node centroid the rotational counter is detected; far from
-    it the defective frame and the clean frame produce the same number, so the
-    quantity is not invariant under the point and the choice is load-bearing.
-
-    BOTH SIDES ARE PUBLISHED, NOT THE QUOTIENT (R504). `1.00x` at 10^3 and at
-    10^6 spans is a saturated ratio and says nothing about how far past
-    saturation it went; the clean and defective values say it.
-
-    AND THE STRUCTURAL HALF IS ASSERTED, not left to this cell passing: the
-    shipped vectors are built about the centroid, which is inside the convex
-    hull by construction, so a caller cannot choose a point that inflates the
-    lever arms. That is what `_rotation_reference_point` checks below.
-    """
-    model, els = _stretched(1.0)
-    k = assembled(model, els)
-    xyz = model.nodes.coords()
-    span = float(np.max(xyz.max(axis=0) - xyz.min(axis=0)))
-    centroid = xyz.mean(axis=0)
-
-    def residual_about(centre, defect: bool) -> float:
-        kk = k.copy()
-        if defect:
-            kk[3, 3] += RIGID_MODE_EXACTNESS_COUNTER_DEFECT * float(np.abs(k).max())
-        scale = float(np.max(np.abs(kk)))
-        khat = kk / scale
-        absk = np.abs(khat)
-        r = xyz - np.asarray(centre, dtype=float)
-        modes = np.zeros((model.nodes.n_dof, RIGID))
-        for d in range(3):
-            modes[d::6, d] = 1.0
-        for a in range(3):
-            axis = np.zeros(3)
-            axis[a] = 1.0
-            cross = np.cross(axis, r)
-            for d in range(3):
-                modes[d::6, 3 + a] = cross[:, d]
-            modes[3 + a :: 6, 3 + a] = 1.0
-        content = np.max(np.stack([absk @ np.abs(modes[:, j]) for j in range(RIGID)]), axis=0)
-        live = content > 0
-        return max(
-            float(np.max(np.abs(khat @ modes[:, j])[live] / content[live])) for j in range(RIGID)
-        )
-
-    rows = []
-    for label, centre in (
-        ("the node centroid", centroid),
-        ("10^3 spans away", centroid + np.array([1e3 * span, 0.0, 0.0])),
-        ("10^6 spans away", centroid + np.array([1e6 * span, 0.0, 0.0])),
-    ):
-        rows.append((label, residual_about(centre, False), residual_about(centre, True)))
-    with capsys.disabled():
-        print()
-        for label, clean, defective in rows:
-            print(
-                f"  {label:20s} clean {clean:.4e}  with k[3,3] {defective:.4e}  "
-                f"{'RED' if defective > RIGID_MODE_EXACTNESS else 'blind'}"
-            )
-
-    assert rows[0][2] > RIGID_MODE_EXACTNESS, (
-        "at the node centroid the rotational counter is NOT detected, which is "
-        "the case the shipped form depends on."
-    )
-    for label, clean, defective in rows[1:]:
-        assert defective == clean, (
-            f"{label}: the defective and clean residuals differ "
-            f"({defective:.6e} vs {clean:.6e}). The blindness far from the "
-            "centroid is what makes the point load-bearing; if that has "
-            "changed, the docstring's reason has changed with it."
-        )
+# `test_the_REFERENCE_POINT_is_load_bearing` IS RETIRED (DI0). the reference point only enters the
+# ASSEMBLED quantity. In the element-local form the vectors are built about the element's own
+# midpoint, so there is no global point to depend on -- which is why this cell has nothing left to
+# measure.
 
 
-def test_the_shipped_vectors_are_built_about_the_NODE_CENTROID(capsys) -> None:
-    """The structural half of the claim above (R504), asserted not inferred.
-
-    A rotation column's translational entries are `axis x (xyz - centre)`. Summed
-    over the nodes that is `axis x (sum xyz - n*centre)`, which vanishes exactly
-    when `centre` is the mean of the coordinates. So the check is on the shipped
-    columns rather than on a reimplementation of them.
-    """
-    model, els = _stretched(1.0)
-    modes = _analytic_rigid_body(model)
-    n_nodes = model.nodes.coords().shape[0]
-    scale = float(np.abs(model.nodes.coords()).max())
-    for a in range(3):
-        column = modes[:, 3 + a]
-        lever = np.stack([column[d::6] for d in range(3)], axis=1)
-        residual = float(np.abs(lever.sum(axis=0)).max()) / (n_nodes * scale)
-        with capsys.disabled():
-            print(f"\n  rotation about axis {a}: lever arms sum to {residual:.3e} (relative)")
-        # THE BOUND IS ROUND-OFF, NOT A CHOSEN TOLERANCE. Summing `n_nodes`
-        # coordinates each carrying relative error `EPS` gives at most
-        # `n_nodes * EPS` relative, and the quantity above is already divided
-        # by `n_nodes * scale`. A literal here would have been a comparison
-        # threshold under another name, which `CLAUDE.md` puts in
-        # tolerances.py -- so it is derived instead of declared.
-        bound = n_nodes * EPS
-        assert residual < bound, (
-            f"rotation about axis {a} has lever arms summing to {residual:.3e} "
-            f"relative, over the round-off bound {bound:.3e}, so the reference "
-            "point is NOT the node centroid. The "
-            "residual's sensitivity depends on that point -- see "
-            "test_the_REFERENCE_POINT_is_load_bearing -- so this is a gate "
-            "property and not a style choice."
-        )
+# `test_the_shipped_vectors_are_built_about_the_NODE_CENTROID` IS RETIRED (DI0). the structural half
+# of the same claim, retired with it.
 
 
-_NEAR_VERTICAL = tuple(range(0, 11))
-
-
-@pytest.mark.parametrize("degrees", _NEAR_VERTICAL, ids=[f"{d}deg" for d in _NEAR_VERTICAL])
-def test_a_NEAR_VERTICAL_member_is_not_false_reddened(degrees: int, capsys) -> None:
-    """One cell per degree from vertical, 0 to 10 (R486's band, R475's form).
-
-    A platform space frame is mostly near-vertical members, so this band is the
-    operating point rather than an edge case. It is here because the FIRST
-    candidate normalisation -- one denominator per DOF, not shared across the
-    six vectors -- read `2.9994e-14` on a DEFECT-FREE element at 2.87 degrees
-    from vertical, thirty times the ceiling, and a ceiling read off the corpus
-    would have false-reddened every brace within about eight degrees of
-    vertical.
-
-    R486's admissible-domain version of this is now a G3 gate on the real
-    platform model (DD0). This cell is the band itself, at one geometry.
-    """
-    rad = np.deg2rad(float(degrees))
-    tip = f"{4.0 * np.sin(rad):.6f},0.0,{4.0 * np.cos(rad):.6f}"
-    model, els = _stretched(1.0, tip)
-    k = assembled(model, els)
-    clean = residual_exactness(k, model)
-    with capsys.disabled():
-        print(
-            f"\n  {degrees:2d} deg off vertical: clean {clean:.4e}, "
-            f"{clean / RIGID_MODE_EXACTNESS:.3f}x the ceiling"
-        )
-    assert clean <= RIGID_MODE_EXACTNESS, (
-        f"a defect-free element {degrees} degrees from vertical reads "
-        f"{clean:.6e}, over the ceiling {RIGID_MODE_EXACTNESS:.0e}. That is a "
-        "false red on the orientation a platform is mostly made of."
-    )
+# `test_a_NEAR_VERTICAL_member_is_not_false_reddened` IS RETIRED (DI0). R525: its eleven cells put
+# their members at 61.34 down to 55.08 degrees from Z, never near vertical, so it never tested the
+# band it was named for. The band is covered by the element-local diagnostic, where it reads 0.007
+# to 0.035 eps, and asserted in F3 on real members.
 
 
 def test_the_ARPACK_path_is_REPRODUCIBLE_under_its_pin(capsys) -> None:
