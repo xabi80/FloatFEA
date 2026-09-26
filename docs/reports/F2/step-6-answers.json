@@ -808,14 +808,12 @@
       "where": "§2"
     },
     "R524": {
-      "state": "answered",
-      "where": "§2",
-      "site": "docs/milestones/F2.md"
+      "state": "carried",
+      "where": "§2"
     },
     "R525": {
-      "state": "answered",
-      "where": "§2",
-      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+      "state": "carried",
+      "where": "§2"
     },
     "R526": {
       "state": "open",
@@ -828,14 +826,63 @@
       "site": "tests/verification/rung1/test_rigid_body_modes.py"
     },
     "R528": {
-      "state": "answered",
-      "where": "§2",
-      "site": "docs/reports/F2/step-6.md"
+      "state": "carried",
+      "where": "§2"
     },
     "R529": {
       "state": "open",
       "where": "§2",
       "site": "scripts/answered_table.py"
+    },
+    "R530": {
+      "state": "answered",
+      "where": "§2",
+      "site": "floatfea/tolerances.py"
+    },
+    "R531": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/verification/rung1/test_rigid_body_corpus.py"
+    },
+    "R532": {
+      "state": "answered",
+      "where": "§2",
+      "site": "docs/milestones/F2a.md"
+    },
+    "R533": {
+      "state": "open",
+      "where": "§2",
+      "site": "docs/milestones/F2a.md"
+    },
+    "R534": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+    },
+    "R535": {
+      "state": "open",
+      "where": "§2",
+      "site": "tests/verification/rung1/test_rigid_body_modes.py"
+    },
+    "R536": {
+      "state": "answered",
+      "where": "§2",
+      "site": "scripts/rigid_counter_response.py"
+    },
+    "R537": {
+      "state": "answered",
+      "where": "§2",
+      "site": "docs/reports/F2/step-6.md"
+    },
+    "R538": {
+      "state": "open",
+      "where": "§2",
+      "site": "scripts/answered_table.py"
+    },
+    "R539": {
+      "state": "open",
+      "where": "§2",
+      "site": "docs/milestones/F2.md"
     }
   }
 }

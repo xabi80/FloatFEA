@@ -2733,3 +2733,464 @@ this revision is. The clearance red that sent verdict 59 to STOP is gone
 because the figure stopped claiming a decision, not because a ceiling moved:
 `git diff 136e77d..HEAD -- floatfea/tolerances.py` is empty across this whole
 round.
+
+
+# Revision 6 — the closure revision for step 6
+
+Answers: verdict 60 @ aa67cc2
+
+**2026-09-26.**
+
+## 0. CI at `6cc6b07`, the commit verdict 60 judged — conclusion **SUCCESS**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 60 at `6cc6b07` through the report's own `Answers:` line. Run `36256042985`, event `push`, conclusion **success**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 1473 | 0 | 0 |
+| lint, unit and guards | 950 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 0 not green.**
+
+**Failing tests named in the log: 0.**
+
+## 0a. Runs since the commit verdict 60 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 60 at `6cc6b07` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `36256042985` | push | `6cc6b07` | conclusion **success** |
+| `36258311635` | push | `061bb70` | conclusion **failure** |
+| `36260606601` | push | `8f6622c` | conclusion **failure** |
+
+**Run `36258311635`, conclusion **failure**: 13 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_whole_suite_line_is_about_a_commit_that_exists` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[two_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R531-test_rigid_body_modes.py:370]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R532-F2.md:1511]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R533-tests/test_collected_set_golden.py:203]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R539-F2.md:1849]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+**Run `36260606601`, conclusion **failure**: 13 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_whole_suite_line_is_about_a_commit_that_exists` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[two_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R531-test_rigid_body_modes.py:370]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R532-F2.md:1511]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R533-tests/test_collected_set_golden.py:203]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R539-F2.md:1849]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 0b. History since the commit verdict 60 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --history`, anchored on verdict 60 at `6cc6b07` through the report's own `Answers:` line. Commits this branch held and no longer holds, from `git reflog`. A rewrite is the right answer to some findings and it is never a silent one (CY0, R461). The reflog is LOCAL: a fresh clone has none, so this table is what was generated at the report's own commit and cannot be reproduced from the clone alone.
+
+**No commit has left this branch's history since then.**
+
+## 0c. Commits since the commit verdict 60 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --commits`, anchored on verdict 60 at `6cc6b07` through the report's own `Answers:` line. `git log --oneline <judged>..HEAD`, run at the report's own commit. This revision's own commit is not in it, because it does not exist yet when the section is generated.
+
+```
+df59465 corpus: 15 unseen frames against the carrier claim A left behind (ba
+aa67cc2 review: F2 step 6 -- sixtieth verdict, HOLD @ 6cc6b07
+061bb70 R531: the corpus gate asserts something a defect can break. R530: th
+0a7423a process: a plan re-lock does not restart the three-verdict clock (DK
+3fe6cfa DK1: the 298 figure becomes reproducible, and it is not 298
+8fe4530 golden: the collected set gains R531's control
+67be14e docs: the closure artifact for step 6
+8f6622c plan: R532 joins the frozen list as apparatus that is not extended (
+3c83650 plan: the frozen item named the wrong finding -- the citation guard 
+```
+
+## 1. The reading
+
+**Schedule: F2 closes 4 October, F3 9 October, F4 and F5-prep 17 October, the
+member-force table 20 October, the code-check screen 25 October. It holds.**
+**This is step 6's closure revision.** DK0 settles the clock — a plan re-lock
+does not restart it, because otherwise every reopen would buy three more rounds
+— so the step is past three and closes on this verdict, with anything still
+under (a)–(d) carrying by name into step 7. **R531 is answered by a per-frame
+assertion a defect can break**, and the edge is bisected rather than argued:
+clean λ₆ `0.4143` units against a bound of `199.5262`, breaking at a defect of
+`2.7202e-13` of `max|K|`, which is the reviewer's own independently measured
+translational edge to five digits. **R530 is answered at three sites** in the
+entry that described a deleted gate — the third time verdict 59's condition
+named that file, and the second time R514's shape appeared in it. **R536 is
+answered by a reproducer, and the figure it reproduces is not the one the plan
+carried**: `335 of 1702`, not `298 of 1592`, because the corpus gained two
+batches after I measured; the plan now cites the command instead of the number.
+**R534's stranded helpers are deleted**, **R532 is answered** by every directive
+now having a commit that cites it, **R533 is frozen** as apparatus that is not
+extended, and **R537's CI sentence was wrong** — a run did exist at the commit I
+said had none. **Open and carried: R533, R535, R538, R539**, plus the 48 frozen
+4a items. **Step 7 is V2.5, V2.6 and the V6.1 golden, and nothing else.**
+
+```
+cmd   the schedule DK4 sets, quoted and not measured
+out   F2 4 October; F3 9 October; F4 and F5-prep 17 October; the member-force
+      table 20 October; the code-check screen 25 October
+cmd   grep -c "^| R" docs/milestones/F2a.md
+out   48
+cmd   python scripts/rigid_counter_response.py
+out   1702 distinct elements; clean worst 1.4575e-16 = 0.656 eps at
+      rb9_brace_shrunk_1e3_2p87_subdiv4, clearing 1e-15 by 6.861x;
+      dropped_flip misses 67, wrong_dof_index 32, rotational_block 303;
+      ELEMENTS FAILING AT LEAST ONE COUNTER: 335 of 1702
+rule  each counter must redden every element, which is what DG2 tested for
+out   the earlier figure was 298 of 1592 and both are right at their own
+      commit -- the plan cites the script now, so the next reader gets theirs
+cmd   test_a_DEFECT_lifts_lambda_6_off_the_floor
+out   clean lambda_6 0.4143 units, bound 199.5262, assertion breaks at a
+      defect of 2.7202e-13 of max|K|
+out   the reviewer's independent measurement of the same carrier: 2.7202e-13
+      translational, 1.6809e-12 rotational -- so the carrier is 27x to 168x
+      coarser than claim A was, which the closure artifact states plainly
+cmd   the reviewer's 1344-frame unseen sweep of the carrier
+out   worst 1.8235 units against the bound's 199.526, 0 over -- 109x clear
+cmd   git diff 136e77d..HEAD -- floatfea/tolerances.py, comments filtered out
+out   53 changed lines, 0 of them non-comment -- no value moved
+cmd   grep -c test_BOTH_counters_redden_at_EVERY_span floatfea/tolerances.py
+out   0
+cmd   python -m pytest tests/verification/rung1 -q
+out   1265 passed
+```
+
+## 2. Findings, and every item carried
+
+Generated: `python scripts/answered_table.py docs/reviews/F2/step-6.md docs/reports/F2/step-6-answers.json`. The class and the subject are read from the verdict; the state and the site come from the answers file.
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R223 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R224 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R230 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R231 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R244 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R245 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R275 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R323 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R324 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R325 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R330 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R331 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R332 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R333 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R334 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R335 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R336 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R337 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R338 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R339 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R340 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R341 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R342 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R343 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R344 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R345 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R346 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R347 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R348 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R349 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R350 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R351 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R352 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R353 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R354 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R355 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R356 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R357 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R358 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R359 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R360 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R361 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R362 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R363 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R364 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R365 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R366 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R367 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R368 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R369 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R370 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R371 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R372 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R373 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R374 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R375 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R376 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R377 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R378 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R379 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R380 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R381 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R382 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R383 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R384 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R385 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R386 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R387 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R388 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R389 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R390 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R391 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R392 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R393 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R394 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R395 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R396 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R397 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R398 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R399 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R400 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R401 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R402 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R403 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R404 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R405 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R406 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R407 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R408 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R409 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R410 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R411 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R412 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R413 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R414 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R415 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R416 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R417 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R418 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R419 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R420 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R421 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R422 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R423 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R424 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R425 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R426 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R427 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R428 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R429 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R430 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R431 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R432 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R433 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R434 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R435 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R436 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R437 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R438 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R439 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R440 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R441 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R442 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R443 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R444 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R445 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R446 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R447 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R448 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R449 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R450 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R451 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R452 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R453 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R454 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R455 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R456 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R457 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R458 | carried | **open** | §2 | `` | carried from an earlier verdict |
+| R459 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R460 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R461 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R462 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R463 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R464 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R465 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R466 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R467 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R468 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R469 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R470 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R471 | carried | **open** | §2 | `docs/milestones/F2a.md` | carried from an earlier verdict |
+| R472 | carried | **open** | §2 | `docs/milestones/F2a.md` | carried from an earlier verdict |
+| R473 | carried | **open** | §2 | `docs/milestones/F2a.md` | carried from an earlier verdict |
+| R474 | carried | **open** | §2 | `docs/milestones/F2a.md` | carried from an earlier verdict |
+| R482 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R483 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R484 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R485 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R486 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R487 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | carried from an earlier verdict |
+| R488 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | carried from an earlier verdict |
+| R489 | carried | **open** | §2 | `tests/test_report_carried.py` | carried from an earlier verdict |
+| R490 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R491 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R492 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | carried from an earlier verdict |
+| R493 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | carried from an earlier verdict |
+| R494 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R495 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R496 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R497 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R498 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R499 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R500 | carried | **open** | §2 | `scripts/answered_table.py` | carried from an earlier verdict |
+| R501 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | carried from an earlier verdict |
+| R502 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R503 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R504 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_corpus.py` | carried from an earlier verdict |
+| R505 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R506 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R507 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R508 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R509 | carried | **open** | §2 | `scripts/answered_table.py` | carried from an earlier verdict |
+| R510 | carried | **open** | §2 | `floatfea/tolerances.py` | carried from an earlier verdict |
+| R511 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R512 | carried | **open** | §2 | `tests/test_report_guard_states.py` | carried from an earlier verdict |
+| R514 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R515 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R516 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R517 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R518 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R519 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R520 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R521 | carried | **open** | §2 | `scripts/answered_table.py` | carried from an earlier verdict |
+| R522 | carried | **open** | §2 | `floatfea/tolerances.py` | carried from an earlier verdict |
+| R523 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R524 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R525 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R526 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | carried from an earlier verdict |
+| R527 | carried | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | carried from an earlier verdict |
+| R528 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R529 | carried | **open** | §2 | `scripts/answered_table.py` | carried from an earlier verdict |
+| R530 | blocks | **answered** | §2 | `floatfea/tolerances.py` | .) `floatfea/tolerances.py` STILL DESCRIBES THE GATE THIS |
+| R531 | blocks | **answered** | §2 | `tests/verification/rung1/test_rigid_body_corpus.py` | .) `test_G2_1_holds_at_every_frame_in_the_corpus` NOW |
+| R532 | recorded | **answered** | §2 | `docs/milestones/F2a.md` | Not one of DG1, DG2, DG4, DH0, DH1, DI0, DI1 or DI2 is recorded anywhere in |
+| R533 | recorded | **open** | §2 | `docs/milestones/F2a.md` | The citation guard domain excludes `floatfea/`. |
+| R534 | recorded | **answered** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | Six helpers and one branch are now unreachable** in |
+| R535 | recorded | **open** | §2 | `tests/verification/rung1/test_rigid_body_modes.py` | The retirement comments read as though a linter wrote them.** "THE CLAIM-A |
+| R536 | recorded | **answered** | §2 | `scripts/rigid_counter_response.py` | The two largest numbers in the report are produced by no shipped command. |
+| R537 | recorded | **answered** | §2 | `docs/reports/F2/step-6.md` | The CI section of the report says there is no run at `6cc6b07`.** There is, |
+| R538 | recorded | **open** | §2 | `scripts/answered_table.py` | R519, R521, R522, R526, R527, R529 and R513 are unchanged**, and not |
+| R539 | recorded | **open** | §2 | `docs/milestones/F2.md` | `F2.md:1849`, `:1331`, `:1617` and `:2002` still declare the retired |
+
+## 3. Sites named by findings and not touched
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R530 | `test_rigid_body_corpus.py:322` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R530 | `test_rigid_body_modes.py:109` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R530 | `test_rigid_body_modes.py:695` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R530 | `tests/test_collected_set_golden.py:203` | the file is untouched | **no change** -- R533's one-tuple fix to the citation guard's domain. It is frozen apparatus under CZ0, recorded on the 4a list with the change written out, and widening a guard's domain is extending it |
+| R530 | `tolerances.py:330` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R531 | `floatfea/tolerances.py:359` | the file is touched and this line number is the old one | **no change** -- the sentences the finding names are restored by reverting the DB1 prose commit, not edited |
+| R531 | `floatfea/tolerances.py:360` | the file is touched and this line number is the old one | **no change** -- the sentences the finding names are restored by reverting the DB1 prose commit, not edited |
+| R531 | `floatfea/tolerances.py:361` | the file is touched and this line number is the old one | **no change** -- the sentences the finding names are restored by reverting the DB1 prose commit, not edited |
+| R531 | `floatfea/tolerances.py:362` | the file is touched and this line number is the old one | **no change** -- the sentences the finding names are restored by reverting the DB1 prose commit, not edited |
+| R531 | `floatfea/tolerances.py:363` | the file is touched and this line number is the old one | **no change** -- the sentences the finding names are restored by reverting the DB1 prose commit, not edited |
+| R531 | `floatfea/tolerances.py:364` | the file is touched and this line number is the old one | **no change** -- the sentences the finding names are restored by reverting the DB1 prose commit, not edited |
+| R531 | `floatfea/tolerances.py:365` | the file is touched and this line number is the old one | **no change** -- the sentences the finding names are restored by reverting the DB1 prose commit, not edited |
+| R531 | `floatfea/tolerances.py:366` | the file is touched and this line number is the old one | **no change** -- the sentences the finding names are restored by reverting the DB1 prose commit, not edited |
+| R531 | `test_rigid_body_corpus.py:197` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R531 | `test_rigid_body_modes.py:361` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R531 | `test_rigid_body_modes.py:362` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R531 | `test_rigid_body_modes.py:363` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R531 | `test_rigid_body_modes.py:364` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R531 | `test_rigid_body_modes.py:365` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R531 | `test_rigid_body_modes.py:366` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R531 | `test_rigid_body_modes.py:367` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R531 | `test_rigid_body_modes.py:368` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R531 | `test_rigid_body_modes.py:369` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R531 | `test_rigid_body_modes.py:370` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R532 | `F2.md:1511` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+| R533 | `tests/test_collected_set_golden.py:203` | the file is untouched | **no change** -- R533's one-tuple fix to the citation guard's domain. It is frozen apparatus under CZ0, recorded on the 4a list with the change written out, and widening a guard's domain is extending it |
+| R539 | `F2.md:1849` | the file is touched and this line number is the old one | **no change** -- the verdict's short spelling of a file named above |
+
+## 4. Carried
+
+Generated: `python scripts/carried_table.py docs/reviews/F2/step-6.md docs/reports/F2/step-6-answers.json`.
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R475 | **open** — carried from an earlier verdict | / R487 / R488 / R492 / R493 / R500 / R501 / |
+| R487 | **open** — §2 | / R488 / R492 / R493 / R500 / R501 / |
+| R488 | **open** — §2 | / R492 / R493 / R500 / R501 / |
+| R492 | **open** — §2 | / R493 / R500 / R501 / |
+| R493 | **open** — §2 | / R500 / R501 / |
+| R500 | **open** — §2 | / R501 / |
+| R501 | **open** — §2 | R526 to R529 as closure items, R475 / R487 / R488 / R492 / R493 / R500 / R501 / |
+| R513 | **open** — carried from an earlier verdict | / R519 to R523 as open on top, and six closing conditions. |
+| R519 | **carried** — §2 | to R523 as open on top, and six closing conditions. |
+| R521 | **open** — §2 | OPEN, unchanged, none re-reviewed. R519's |
+| R522 | **open** — §2 | OPEN, unchanged, none re-reviewed. R519's |
+| R523 | **carried** — §2 | as open on top, and six closing conditions. |
+| R524 | **carried** — §2 | (STOP-class) and R525 (blocking), |
+| R525 | **carried** — §2 | (blocking), |
+| R526 | **open** — §2 | to R529 as closure items, R475 / R487 / R488 / R492 / R493 / R500 / R501 / |
+| R527 | **open** — §2 | OPEN closure item, unchanged: the not any(numerator[~live] > 0) |
+| R528 | **carried** — §2 | ANSWERED, withdrawn with R525's cell. |
+| R529 | **open** — §2 | as closure items, R475 / R487 / R488 / R492 / R493 / R500 / R501 / |
+| R530 | **answered** — §2 | .) floatfea/tolerances.py STILL DESCRIBES THE GATE THIS COMMIT DELETED. RIGID_MODE_EXACTNESS IS... |
+| R531 | **answered** — §2 | .) test_G2_1_holds_at_every_frame_in_the_corpus NOW ASSERTS lambda_7 > 0.0 AND NOTHING ELSE. IT... |
+| R532 | **answered** — §2 | carried, and the verdict says nothing further about it here |
+| R533 | **open** — §2 | carried, and the verdict says nothing further about it here |
+| R534 | **answered** — §2 | carried, and the verdict says nothing further about it here |
+| R535 | **open** — §2 | carried, and the verdict says nothing further about it here |
+| R536 | **answered** — §2 | carried, and the verdict says nothing further about it here |
+| R537 | **answered** — §2 | carried, and the verdict says nothing further about it here |
+| R538 | **open** — §2 | carried, and the verdict says nothing further about it here |
+| R539 | **open** — §2 | carried, and the verdict says nothing further about it here |
+
+## 5. The whole suite
+
+**Whole suite at `3c83650`: 2296 passed, 0 failed, 0 skipped.** **The excluded set: 225 passed, 12 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 237 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+- **failed, in the excluded set** `tests.test_report_carried::test_the_whole_suite_line_is_about_a_commit_that_exists`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[baseline]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[two_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[non_numeric_step_suffix]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[superscript_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[shallow_clone_depth_1]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[shallow_clone_depth_1_reports_one_diagnosis_not_sixteen]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]`
+```
+
+**Zero failed in the main set.** The twelve in the excluded set are the
+report-parametrised guards, measured at the commit this revision sits on and so
+judging a report that does not yet carry verdict 60's findings -- which is what
+this revision is.
