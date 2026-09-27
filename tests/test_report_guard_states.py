@@ -258,6 +258,17 @@ def _seed_older_verdict(work: Path, reviews: Path) -> None:
     form, commits that, then restores the real text and commits again -- so
     the real verdict is still `HEAD` for that path and there is a commit
     behind it.
+
+    **WHAT IT DOES NOT GIVE, AND R544 IS THAT (DO0).** Both commits land ON TOP
+    of the scratch HEAD, so the "earlier" verdict commit is a DESCENDANT of the
+    commit the report sits on. The state that needs a genuine ANCESTOR -- to make
+    the whole-suite line name a commit the head has moved away from -- cannot use
+    what this produces: the distance from a descendant to the anchor is zero, the
+    guard passes correctly, and the control that expects red fails.
+
+    `_older_ancestor` below is what that state uses instead. This function stays
+    because the other two states need only *a second commit on the path*, which
+    is what it honestly provides, and its docstring now says which is which.
     """
     path = reviews / f"step-{VERDICT_STEP}.md"
     real = path.read_text(encoding="utf-8", errors="replace")
@@ -274,6 +285,60 @@ def _seed_older_verdict(work: Path, reviews: Path) -> None:
             ["git", "-C", str(work), "commit", "-q", "--no-verify", "-m", message],
             check=True,
         )
+
+
+def _older_ancestor(work: Path) -> str:
+    """A commit touching the verdict path that is a REAL ancestor of the report's
+    own commit, far enough behind it to redden the distance rule (R544, DO0).
+
+    The state this serves makes the whole-suite line name a commit the head has
+    moved away from, and `test_the_whole_suite_line_is_about_a_commit_that_exists`
+    must then go red. That needs `rev-list --count <older>..<anchor>` above one,
+    so `older` has to be BEHIND the anchor -- which is exactly what
+    `_seed_older_verdict` cannot provide, because it commits on top.
+
+    Selection, not fabrication: every commit that touched the verdict path is
+    tested with `merge-base --is-ancestor` against the report's own commit, and
+    the newest one at distance above one is taken. **If there is none the state
+    is not buildable and this RAISES**, because a control that cannot be built is
+    reported and not skipped -- `CLAUDE.md` forbids the skip, and a silently
+    substituted descendant is what R544 was.
+    """
+
+    def log(path: str) -> list[str]:
+        return subprocess.run(
+            ["git", "-C", str(work), "log", "--format=%h", "--", path],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.split()
+
+    report_path = f"docs/reports/F2/{REPORT_NAME}"
+    anchor_log = log(report_path)
+    assert anchor_log, f"no commit touches {report_path}; the state has no anchor"
+    anchor = anchor_log[0]
+    for candidate in log(REVIEW_PATH):
+        is_ancestor = subprocess.run(
+            ["git", "-C", str(work), "merge-base", "--is-ancestor", candidate, anchor],
+            capture_output=True,
+        )
+        if is_ancestor.returncode != 0:
+            continue
+        distance = subprocess.run(
+            ["git", "-C", str(work), "rev-list", "--count", f"{candidate}..{anchor}"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        if int(distance or "0") > 1:
+            return candidate
+    raise AssertionError(
+        "no commit touching the verdict path is an ancestor of the report's own "
+        f"commit ({anchor}) at a distance above one, so this state cannot be "
+        "built. `_seed_older_verdict` commits ON TOP and gives a descendant, "
+        "which is R544: the guard passes correctly and the control fails. "
+        "Reported rather than skipped, and rather than substituted."
+    )
 
 
 def _build(tmp: Path, state: str) -> Path:
@@ -457,27 +522,7 @@ def _build(tmp: Path, state: str) -> Path:
         elif action == "suite_line_at_an_older_ancestor":
             # A true sentence about a tree nobody is reading: the previous
             # verdict's commit, and the count the suite had there.
-            older = subprocess.run(
-                ["git", "-C", str(work), "log", "--format=%h", "--", REVIEW_PATH],
-                capture_output=True,
-                text=True,
-                check=True,
-            ).stdout.split()
-            if len(older) < 2:
-                # R517 again: the same shape one action down, where it was a
-                # bare IndexError from `[1]`.
-                _seed_older_verdict(work, reviews)
-                older = subprocess.run(
-                    ["git", "-C", str(work), "log", "--format=%h", "--", REVIEW_PATH],
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                ).stdout.split()
-            assert len(older) > 1, (
-                "no older verdict commit after seeding; this state is not "
-                "being reported as green"
-            )
-            older = older[1]
+            older = _older_ancestor(work)
             report = reports / REPORT_NAME
             text = report.read_text(encoding="utf-8", errors="replace")
             text = re.sub(
