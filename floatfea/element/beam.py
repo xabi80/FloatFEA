@@ -206,6 +206,15 @@ def local_stiffness(section: Section, material: Material, length: float) -> NDAr
 # The rigid-inertia parametrisation runs at Phi = 2.509 and Phi = 10.169 and
 # passed on the defective sign.
 #
+# THAT IS A STATEMENT ABOUT THE CHECKS AND NOT ABOUT `M` (the milestone witness's
+# F1). `docs/closure/F2.md` used it as a reason F4's inertia relief was safe, and
+# it is not one: the term vanishes in the quadratic form `a^T M a` and in `M . a`
+# for a rigid TRANSLATION, and it does NOT vanish in `M . a` for a rigid
+# ROTATION -- 22.2% at L/D = 2, 0.09% still at L/D = 50. Inertia relief forms
+# `M . a`. **No gate in F2 reads that product**, which is why nothing here
+# noticed, and F4's G4.2 has to load its case from an independently computed
+# body force rather than from the mass matrix under test.
+#
 # WHY THIS PAIRING AND NOT A DIFFERENT ONE. The interpolation above spans
 # exactly the space the exact stiffness eq. 5.36 is built from, so stiffness and
 # mass are a conforming Rayleigh-Ritz pair. **That is what makes G2.4's band
