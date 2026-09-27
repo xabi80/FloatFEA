@@ -630,13 +630,63 @@ def _assert_diagnosis(state: str, got: Outcome, log: str) -> None:
     )
 
 
-def test_the_corpus_and_the_states_agree() -> None:
-    """Meta-test: a state this file forgot to build is a state nothing runs."""
+AWAITING_TRANSCRIPTION = sorted({e[0] for e in ENTRIES} - set(STATES))
+"""Reviewer corpus entries with no build action yet (BE3, DQ3).
+
+**A MEASUREMENT IS NOT A RED BUILD.** This used to be an assertion, so every
+reviewer corpus round turned CI red until the implementer transcribed it -- which
+made "the suite is green" and "the reviewer has stopped finding new shapes" the
+same statement, and the reviewer said so. The count is reported now and the
+closure commit is what asserts it is zero.
+"""
+
+
+def test_the_corpus_and_the_states_agree(capsys) -> None:
+    """The two directions are DIFFERENT failures and only one of them is red.
+
+    * **built and not in the corpus** -- a state this file runs that the reviewer
+      never wrote. That is still an assertion: it is the implementer inventing a
+      control, and nothing outside this file vouches for it.
+    * **in the corpus and not built** -- a shape the reviewer found and nobody has
+      transcribed. That is a WORK ITEM. It is reported by name and counted, and
+      `test_every_reviewer_entry_is_BUILT_at_a_closure_commit` is where it has to
+      be zero.
+    """
     assert ENTRIES, f"{CORPUS} parsed to no entries; the format changed"
     named = {e[0] for e in ENTRIES}
-    assert named == set(STATES), (
-        f"in the corpus and not built: {sorted(named - set(STATES))}; "
-        f"built and not in the corpus: {sorted(set(STATES) - named)}"
+    invented = sorted(set(STATES) - named)
+    with capsys.disabled():
+        print(f"\n  {len(AWAITING_TRANSCRIPTION)} entries awaiting transcription")
+        for name in AWAITING_TRANSCRIPTION:
+            print(f"    awaiting: {name}")
+    assert not invented, (
+        f"built and not in the corpus: {invented}. A state this file runs that "
+        "the reviewer never wrote is the implementer vouching for its own "
+        "control, and that direction stays red."
+    )
+
+
+def test_every_reviewer_entry_is_BUILT_at_a_closure_commit() -> None:
+    """`N = 0` is asserted at a step's CLOSURE commit and reported before it.
+
+    BE3 puts the reviewer's corpus commit after the report by design, so between
+    a corpus round and its transcription the count is non-zero and that is the
+    normal state of the loop rather than a defect. What may not happen is a step
+    CLOSING with entries still untranscribed -- at that point the shapes the
+    reviewer found have been carried past the gate that was supposed to read them.
+
+    The closure commit is recognised by `docs/closure/F<n>-step<k>.md` existing
+    for the step under execution. Before it exists this reports; once it exists
+    this asserts.
+    """
+    closure = ROOT / "docs" / "closure" / f"F2-step{STEP}.md"
+    if not closure.is_file():
+        return  # the step has not closed; the count above is the report
+    assert not AWAITING_TRANSCRIPTION, (
+        f"step {STEP} has a closure artifact at {closure.name} and "
+        f"{len(AWAITING_TRANSCRIPTION)} reviewer entries are still untranscribed: "
+        f"{AWAITING_TRANSCRIPTION}. A step may not close carrying shapes the "
+        "reviewer found and nothing runs."
     )
 
 

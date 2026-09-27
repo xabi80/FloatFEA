@@ -52,6 +52,7 @@ touched at the right line. Both are the reviewer's.
 
 from __future__ import annotations
 
+import ast
 import html
 import importlib.util
 import json
@@ -2226,15 +2227,52 @@ def _last_commit_touching(path: Path) -> str:
 REVIEWER_TREES = ("tests/corpus", "docs/" + "re" + "views")
 
 
+EXECUTABLE_PATHS = ("floatfea", "tests", "scripts", ".github")
+"""The trees whose contents can change a test outcome (R546, DQ3).
+
+not-a-tolerance: a pathspec. Nothing is compared against it; it is the domain the
+whole-suite rule reads. `docs/` and `CLAUDE.md` are deliberately absent -- they
+cannot move a suite count, and treating them as intruders is what left the rule
+unsatisfiable at a milestone close.
+"""
+
+
 def _implementer_commits_after(
     anchor: str, head: str = "HEAD", root: Path | None = None
 ) -> list[str]:
-    """`['<sha> <subject>']` for commits in `anchor..head` that touch code.
+    """`['<sha> <subject>']` for commits in `anchor..head` that touch EXECUTABLE
+    paths.
 
-    The exclusion is git's own: a commit that survives
-    `-- . ':(exclude)tests/corpus' ':(exclude)docs/reviews'` touched something
-    outside those trees. No file list is parsed here and no path is compared
-    by hand, which is the half of CO3 that was reasoning rather than checking.
+    The pathspec is an INCLUDE LIST now, and R546 is why (DQ3). It was
+    `-- . ':(exclude)tests/corpus' ':(exclude)docs/reviews'` -- everything except
+    two reviewer trees -- so a commit that changed no executable line still
+    reddened the rule: a closure artifact, a plan re-lock, a `process:` text
+    change, a comment-only edit. `CLAUDE.md` REQUIRES the closure artifact after
+    the last report, so **no commit order satisfied both** and the rule had no
+    satisfiable state at a milestone close. The reviewer that wrote the condition
+    said so itself, and `c9a8736` and `303d203` are two comment-only
+    demonstrations: AST-identical to their parents, and each one reddened this.
+
+    What the rule is FOR is a stale measurement -- a suite count taken at a tree
+    the head has moved away from. Only a change under an executable path can move
+    a suite count, so those are the paths it reads:
+
+        floatfea/   the package
+        tests/      the suite itself
+        scripts/    generators and gates the suite imports
+        .github/    what CI runs
+
+    Everything else -- `docs/`, `CLAUDE.md`, `PLAN.md` -- cannot change a test
+    outcome, so a commit touching only those is not an intruder. `tests/corpus`
+    is inside `tests/` and stays exempt explicitly, because a reviewer corpus
+    commit DOES change the collected count (R361) and BE3 puts it after the
+    report by design.
+
+    An include list is the stricter thing to get wrong in the safe direction: a
+    new executable tree would be missed until someone adds it, where the old
+    exclude list caught every new tree and also every document. That trade is
+    deliberate and `test_the_pathspec_names_every_executable_tree` is what keeps
+    it honest.
     """
     if anchor == "HEAD":
         return []  # the report is not committed yet; nothing can follow it
@@ -2247,7 +2285,7 @@ def _implementer_commits_after(
             "--format=%h %s",
             f"{anchor}..{head}",
             "--",
-            ".",
+            *EXECUTABLE_PATHS,
             *(f":(exclude){tree}" for tree in REVIEWER_TREES),
         ],
         capture_output=True,
@@ -2255,7 +2293,125 @@ def _implementer_commits_after(
     )
     if out.returncode != 0:
         return ["git could not read the history: " + out.stderr.strip()[:120]]
-    return [ln for ln in out.stdout.splitlines() if ln.strip()]
+    candidates = [ln for ln in out.stdout.splitlines() if ln.strip()]
+    return [ln for ln in candidates if _changes_the_parse(ln.split()[0], root)]
+
+
+def _changes_the_parse(sha: str, root: Path | None = None) -> bool:
+    """Whether `sha` changed the PARSE of any executable file it touched.
+
+    The pathspec above is necessary and not sufficient (R546, DQ3). A
+    comment-only edit under `floatfea/` touches an executable path and cannot
+    move a suite count -- `c9a8736` and `303d203` are two of them, each
+    AST-identical to its parent, and each reddened this rule before this
+    function existed.
+
+    So the question is asked of the parse rather than of the path: for every
+    Python file the commit touched under an executable tree, compare
+    `ast.dump(ast.parse(...))` before and after. A commit that changes no parse
+    is not an intruder.
+
+    **A NON-PYTHON FILE COUNTS AS CHANGED**, without exception -- a workflow
+    `.yml`, a shell script, a golden `.json`. There is no parse to compare, and
+    guessing that a YAML edit is inert is the kind of reasoning this rule
+    replaced with a check. Same for a file that fails to parse at either end: a
+    syntax error is a change that matters.
+    """
+    where = str(root or ROOT)
+    touched = subprocess.run(
+        ["git", "-C", where, "show", "--name-only", "--format=", sha, "--", *EXECUTABLE_PATHS],
+        capture_output=True,
+        text=True,
+    )
+    if touched.returncode != 0:
+        return True  # unreadable history is not an exemption
+    for name in (n.strip() for n in touched.stdout.splitlines()):
+        if not name:
+            continue
+        if any(name.startswith(f"{tree}/") for tree in REVIEWER_TREES):
+            continue
+        if not name.endswith(".py"):
+            return True
+        dumps = []
+        for rev in (f"{sha}~1", sha):
+            blob = subprocess.run(
+                ["git", "-C", where, "show", f"{rev}:{name}"], capture_output=True
+            )
+            if blob.returncode != 0:
+                return True  # added or removed outright
+            try:
+                dumps.append(ast.dump(ast.parse(blob.stdout.decode("utf-8", "replace"))))
+            except SyntaxError:
+                return True
+        if dumps[0] != dumps[1]:
+            return True
+    return False
+
+
+def test_the_pathspec_names_every_executable_tree() -> None:
+    """R546's include list is checked against the tree, not trusted.
+
+    An include list fails in the unsafe direction when a new executable tree is
+    added and nobody adds it here -- the old exclude list could not have that
+    defect. So the trade is guarded: every top-level directory that contains a
+    `.py` file, or that is `.github`, must be named in `EXECUTABLE_PATHS` or be a
+    documentation tree.
+    """
+    # `artifacts/` is tracked and holds `.py`, and a change there CANNOT move a
+    # suite count: nothing under `floatfea/`, `tests/` or `scripts/` imports it,
+    # and `pytest artifacts --collect-only` collects nothing. That is not an
+    # assumption -- G1.6's evidence used to live there as a script, and AN2
+    # promoted it into `tests/verification/rung4/test_panel_reconstruction.py`
+    # precisely because a script in `artifacts/` is not a gate. It is an evidence
+    # tree, so it sits beside `docs/` here.
+    doc_trees = {"docs", "artifacts"}
+    executable: set[str] = set()
+    for entry in sorted(ROOT.iterdir()):
+        if not entry.is_dir() or entry.name.startswith(".") and entry.name != ".github":
+            continue
+        if entry.name in {"__pycache__", ".git"}:
+            continue
+        if entry.name == ".github" or any(entry.rglob("*.py")):
+            executable.add(entry.name)
+    unnamed = executable - set(EXECUTABLE_PATHS) - doc_trees
+    assert not unnamed, (
+        f"{sorted(unnamed)} contain executable content and are not in "
+        f"EXECUTABLE_PATHS {list(EXECUTABLE_PATHS)}, so a commit touching only "
+        "them cannot make the whole-suite line stale as far as this rule is "
+        "concerned. An include list has to be extended when the tree grows; that "
+        "is the cost R546 accepted and this is what makes it visible."
+    )
+
+
+def test_a_COMMENT_ONLY_commit_is_exempt_and_a_CODE_commit_is_NOT() -> None:
+    """The parse check's own control, on this repository's real history.
+
+    `c9a8736` and `303d203` are comment-only under `floatfea/` -- AST-identical
+    to their parents, each verified by the reviewer -- and `80735cf` changes
+    executable lines under `tests/`. If the first two were intruders the rule
+    would have no satisfiable state at a milestone close, which is R546; if the
+    third were exempt the rule would certify nothing.
+    """
+    for sha in ("c9a8736", "303d203"):
+        present = subprocess.run(
+            ["git", "-C", str(ROOT), "cat-file", "-e", f"{sha}^{{commit}}"],
+            capture_output=True,
+        )
+        if present.returncode != 0:
+            continue  # a shallow clone or a rewritten history; nothing to assert
+        assert not _changes_the_parse(sha), (
+            f"{sha} is comment-only under an executable path and this rule calls "
+            "it an intruder. That is the state R546 was: a commit that cannot "
+            "move a suite count reddening the rule that reads suite counts."
+        )
+    code = subprocess.run(
+        ["git", "-C", str(ROOT), "cat-file", "-e", "80735cf^{commit}"], capture_output=True
+    )
+    if code.returncode == 0:
+        assert _changes_the_parse("80735cf"), (
+            "80735cf changes executable lines under tests/ and this rule calls it "
+            "exempt, so the parse check is not reading the parse."
+        )
 
 
 def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:

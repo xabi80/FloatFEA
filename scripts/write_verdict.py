@@ -8,10 +8,22 @@ Usage:
     python scripts/write_verdict.py --milestone 2 --step 5 < review.md
 
 The review body is read from stdin and must begin with a line
-`Verdict: PASS|HOLD|STOP`. The script stamps the reviewed commit, refuses to
-overwrite a PASS with anything but a fresh review of a *changed* report, and
-refuses a body that lacks the mandatory sections, so a verdict cannot be
-written by accident or by a summary that skipped the dependency re-read.
+`Verdict: PASS|HOLD|STOP`. The script stamps the reviewed commit and refuses a
+body that lacks the mandatory sections, so a verdict cannot be written by a
+summary that skipped the dependency re-read.
+
+IT DOES NOT REFUSE TO OVERWRITE A PASS, and this docstring said it did (DQ3).
+The claim was: "PLACEHOLDER_WRITE_VERDICT with anything but a fresh review of
+a *changed* report". No such check exists in this file -- the two refusals are
+the `Verdict:` line and the missing-sections list, and they are the two named
+above. A false claim about a refusal is worse than no claim, because it is in
+the one script that writes this gate's output and a reader would stop looking.
+
+The `Reviewed commit:` stamp is taken from `HEAD`, which is structurally NOT the
+reviewed commit whenever the reviewer commits its corpus first -- as it is
+instructed to. The body names the commit it judged; that line does not. Recorded
+here rather than fixed, because changing what the stamp reads is a change to the
+reviewer's own tooling and goes through a directive, not through this edit.
 """
 from __future__ import annotations
 
