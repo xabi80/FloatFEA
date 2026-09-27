@@ -474,7 +474,7 @@ jobs:
       - name: "ladder 1 -- the solver is a solver"
         run: sh scripts/run_rung.sh full:tests/verification/rung1
       - name: "ladder 2 -- the element is the element"
-        run: sh scripts/run_rung.sh empty:tests/verification/rung2
+        run: sh scripts/run_rung.sh full:tests/verification/rung2
       - name: "ladder 3 -- the model is the platform"
         run: sh scripts/run_rung.sh full:tests/verification/rung3
       - name: "ladder 6 -- it stays fixed"
