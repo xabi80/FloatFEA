@@ -172,18 +172,39 @@ def local_stiffness(section: Section, material: Material, length: float) -> NDAr
 #
 # THE DERIVATION, in one plane, with no distributed load:
 #
-#     V' = 0                 =>  V  constant
-#     M' = V,  M = EI th'    =>  th  quadratic in x
-#     w' = th + V/(kappa G A) =>  w   cubic in x
+#     V' = 0                    =>  V  constant
+#     M = EI th',  V = -EI th'' =>  th  quadratic in x
+#     w' = th - c th'',  c = EI/(kappa G A)
 #
 # so with xi = x/L and free coefficients (w_A, th_A, c2, c3):
 #
 #     th(xi) = th_A + c2 xi + c3 xi^2
-#     w(xi)  = w_A + th_A L xi + L [ c2 xi^2/2 + c3 (xi^3/3 + Phi xi/6) ]
+#     w(xi)  = w_A + th_A L xi + L [ c2 xi^2/2 + c3 (xi^3/3 - Phi xi/6) ]
 #
-# The `Phi xi / 6` term is the shear part: V = 2 EI c3 / L^2 and
-# V/(kappa G A) = c3 Phi / 6 by the definition of Phi, so the shear strain is
+# The `- Phi xi / 6` term is the shear part, and the shear strain it gives is
 # CONSTANT over the element, which is what the exact Timoshenko solution says.
+#
+# THE SIGN WAS `+` AND IT WAS WRONG (R541). The first version of this comment
+# wrote `M' = V` with `M = EI th'`, giving `w' = th + V/(kappa G A)` and a `+`.
+# What settles it is not the derivation -- the two forms differ by a sign
+# convention between `th` and `dw/dx` -- but two convention-free checks:
+#
+#   * eq. 5.36 IS the exact strain energy of this field, so `q^T k q` must equal
+#     `int EI th'^2 dx + kappa G A gamma^2 L`. With `-` it matches at round-off;
+#     with `+` it is wrong by 4.0e-03 at Phi = 1e-3, 3.9e-02 at 1e-2, 0.33 at
+#     0.1, and worse above.
+#   * `det(T)` below is `L(1 - Phi)/6` with `+` -- SINGULAR at Phi = 1 and
+#     negative above, so `local_mass` returned 1.62e+30 for a 46 kg member or
+#     raised `LinAlgError` -- and `L(1 + Phi)/6` with `-`, which is the
+#     `(1 + Phi)` denominator the classical shear-flexible shape functions
+#     carry.
+#
+# Every one of V2.5's four checks was BLIND to it, which is the part worth
+# recording: the Euler-Bernoulli checkpoint is at Phi = 0 by construction, and
+# the rigid-body inertias and `Phi^T M Phi` are quadratic forms of vectors whose
+# `c3` is zero -- and `c3` is the only coefficient the shear term multiplies.
+# The rigid-inertia parametrisation runs at Phi = 2.509 and Phi = 10.169 and
+# passed on the defective sign.
 #
 # WHY THIS PAIRING AND NOT A DIFFERENT ONE. The interpolation above spans
 # exactly the space the exact stiffness eq. 5.36 is built from, so stiffness and
@@ -191,6 +212,15 @@ def local_stiffness(section: Section, material: Material, length: float) -> NDAr
 # one-sided (AO4).** A Euler-Bernoulli consistent mass bolted to a Timoshenko
 # stiffness is not such a pair, and the upper-bound theorem the band is
 # pre-registered on would not apply to it.
+#
+# AND THE SPACES ARE NESTED, which a wrong sign made look otherwise (R541). The
+# field family is `{th in P2, w' = th - c th''}` with `c = EI/(kappa G A)`, a
+# length-INDEPENDENT constant; `Phi = 12c/L^2` is only its dimensionless
+# rendering, so refining the mesh does not change the family. Two half-length
+# elements span what one full-length element spanned, Rayleigh-Ritz applies, and
+# the frequency sequence is monotone. A report and a plan section claimed the
+# opposite on the strength of the defective sign; both are corrected where they
+# stand.
 #
 # Phi -> 0 recovers the classical Euler-Bernoulli consistent mass, and that is
 # asserted against an independently transcribed matrix rather than claimed here.
@@ -244,13 +274,13 @@ def bending_interpolation(
         [
             [1.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0],
-            [1.0, ll, ll / 2.0, ll * (1.0 / 3.0 + phi / 6.0)],
+            [1.0, ll, ll / 2.0, ll * (1.0 / 3.0 - phi / 6.0)],
             [0.0, 1.0, 1.0, 1.0],
         ],
         dtype=np.float64,
     )
     p_w = np.array(
-        [1.0, ll * xi, ll * xi**2 / 2.0, ll * (xi**3 / 3.0 + phi * xi / 6.0)],
+        [1.0, ll * xi, ll * xi**2 / 2.0, ll * (xi**3 / 3.0 - phi * xi / 6.0)],
         dtype=np.float64,
     )
     p_t = np.array([0.0, 1.0, xi, xi**2], dtype=np.float64)
