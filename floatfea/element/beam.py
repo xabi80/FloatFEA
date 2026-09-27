@@ -208,12 +208,21 @@ def local_stiffness(section: Section, material: Material, length: float) -> NDAr
 #
 # THAT IS A STATEMENT ABOUT THE CHECKS AND NOT ABOUT `M` (the milestone witness's
 # F1). `docs/closure/F2.md` used it as a reason F4's inertia relief was safe, and
-# it is not one: the term vanishes in the quadratic form `a^T M a` and in `M . a`
-# for a rigid TRANSLATION, and it does NOT vanish in `M . a` for a rigid
-# ROTATION -- 22.2% at L/D = 2, 0.09% still at L/D = 50. Inertia relief forms
-# `M . a`. **No gate in F2 reads that product**, which is why nothing here
-# noticed, and F4's G4.2 has to load its case from an independently computed
-# body force rather than from the mass matrix under test.
+# it is not one. Inertia relief forms `M . a`, and the sentence above is about a
+# quadratic form.
+#
+# AND THE SUBSPACE IS `{c3 = 0}`, WHICH THE LINE ABOVE ALREADY SAID -- the
+# artifact re-rendered it as "rigid vectors" and a first correction repeated that
+# narrowing, so it is written out here once: a NON-rigid field `a(x) = x^2` is
+# still blind in the quadratic form (6.8e-16) while differing by 29.18% in
+# `M . a`, and `a(x) = x^3`, the first field with `c3 != 0`, is caught by the
+# quadratic form at 5.2e-01. **A test built to the rigid-field reading is built
+# to the wrong boundary.**
+#
+# F4's G4.2 has to load its case from an independently computed body force rather
+# than from the mass matrix under test: with the case built from `M . a` the
+# relief right-hand side is algebraically zero whatever `M` is, and the reviewer
+# measured it EXACTLY zero with one mass entry inflated by a factor of eleven.
 #
 # WHY THIS PAIRING AND NOT A DIFFERENT ONE. The interpolation above spans
 # exactly the space the exact stiffness eq. 5.36 is built from, so stiffness and
