@@ -16,7 +16,7 @@ Asserted:
   physics requires.
 
 **HELD: G2.4's one-sided band, and `FREE_FREE_FREQUENCY` with it.** The plan
-pre-registers (AO4, §141)::
+pre-registered (AO4, §141)::
 
     0 <= (f_computed - f_exact) / f_exact <= FREE_FREE_FREQUENCY
 
@@ -25,24 +25,57 @@ beam is the Euler-Bernoulli frequency ``(beta L)^2 / (2 pi L^2) sqrt(EI/rho A)``
 with ``cos(beta L) cosh(beta L) = 1``. **That reference is a different continuum
 from the element.** Rayleigh-Ritz bounds a discretisation against the continuum
 it discretises; it says nothing about a continuum that neglects rotary inertia
-and shear flexibility when the element includes both. The measurement is in
-`test_the_three_SOFTENING_MECHANISMS_are_ordered_as_the_physics_requires` below
-and the finding is in the step report: the band is violated on the low side by a
-**mesh-independent** offset, which is a modelling difference and not a
-discretisation error, so refinement does not remove it and no tolerance value
-can absorb it without becoming a fudge factor.
+and shear flexibility when the element includes both.
 
-Nothing here widens, skips or xfails anything to get past that. The band is not
-implemented, `FREE_FREE_FREQUENCY` is not created, and the decision is the
-technical supervisor's.
+DL0 answered that by referencing the element's own theory instead, on the
+pinned-pinned case where the Timoshenko frequency equation is a closed-form
+quadratic in ``omega^2``. **That reference is shipped and verified here.** DL1
+time-boxed the band to one commit with a pre-registered fallback, and **the
+fallback is what was taken.** Two reasons, both measured below:
 
-Reference
----------
+1. The band needs a window on a convergence-order ratio, which is a tolerance by
+   `CLAUDE.md`'s own definition. A lower bound's counter widens DOWNWARD, and
+   `tests/test_counters_are_injected.py` computes every widened ceiling as
+   ``WIDEN * ceiling``. Registering a lower-bound counter there means extending
+   that guard, and CZ0 freezes apparatus through F6. The measured ratios are in
+   the step report, so the band is one line to adopt when 4a is unfrozen.
+2. **The shipped element's frequencies are not monotone under refinement**, in
+   EITHER boundary condition, and
+   `test_the_MESH_DEPENDENT_interpolation_space_is_what_BREAKS_monotonicity`
+   isolates why: ``Phi = 12 EI / (kappa G A L^2)`` is computed from the ELEMENT
+   length, so refining the mesh changes the interpolation space and the spaces
+   are **not nested**. Rayleigh-Ritz needs nesting. With ``Phi = 0`` the space
+   is the Hermite cubics, nesting is restored, and the sequence is monotone over
+   the same meshes. So a one-sided band is not a property this element family
+   has, against any reference, and asserting one would have been asserting
+   something false a second time.
+
+Nothing here widens, skips or xfails anything. `FREE_FREE_FREQUENCY` is not
+created. What is asserted needs no tolerance at all beyond `ROUNDOFF_IDENTITY`.
+
+References
+----------
 Free-free frequency equation ``cos(x) cosh(x) = 1`` -- Blevins, *Formulas for
 Natural Frequency and Mode Shape*, Table 8-1; Timoshenko, *Vibration Problems in
 Engineering*, §5. **The roots are SOLVED here rather than transcribed**, and the
 transcribed table values are asserted against the solve, so a mistyped digit in
 a reference table cannot become the reference.
+
+Timoshenko pinned-pinned frequencies -- Han, Benaroya & Wei, "Dynamics of
+transversely vibrating beams using four engineering theories", *Journal of Sound
+and Vibration* 225(5) 935-988 (1999), §5 and Table 4; Timoshenko, *Vibration
+Problems in Engineering*, §2.15. For simple supports the mode shapes
+``w = W sin(beta x)``, ``psi = Psi cos(beta x)`` with ``beta = n pi / L`` satisfy
+the boundary conditions exactly, so the two coupled equations of motion collapse
+to a quadratic in ``omega^2``::
+
+    rho A rho I omega^4
+      - (rho A E I beta^2 + rho A kappa G A + kappa G A rho I beta^2) omega^2
+      + kappa G A E I beta^4                                          = 0
+
+with the FLEXURAL branch the smaller root. **The transcription is verified by its
+two limits rather than trusted** -- see
+`test_the_TIMOSHENKO_reference_reduces_to_ITS_TWO_LIMITS`.
 """
 
 from __future__ import annotations
@@ -470,8 +503,17 @@ def test_the_three_SOFTENING_MECHANISMS_are_ordered_as_the_physics_requires(
     ASSERTED: cell A is positive and converges, and the three cells are ordered
     ``C <= B <= A`` at every mesh -- each softening mechanism lowers the
     frequency. That much is physics and needs no tolerance. The BAND is not
-    asserted, `FREE_FREE_FREQUENCY` is not created, and the choice of reference
-    is the technical supervisor's.
+    asserted and `FREE_FREE_FREQUENCY` is not created.
+
+    THERE ARE TWO SEPARATE REASONS THE BAND CANNOT BE ASSERTED and this test
+    carries only the first. This one is about the REFERENCE: it describes a
+    continuum the element does not discretise, so the offset is a modelling
+    difference. The second is about the ELEMENT: its interpolation space is
+    mesh-dependent, so it has no monotone approach from above to ANY reference,
+    which is
+    `test_the_MESH_DEPENDENT_interpolation_space_is_what_BREAKS_monotonicity`.
+    Fixing the reference, as DL0 did for the pinned-pinned case, removes the
+    first and not the second.
     """
     import floatfea.element.beam as beam_module
 
@@ -562,3 +604,299 @@ def test_the_three_SOFTENING_MECHANISMS_are_ordered_as_the_physics_requires(
         "mesh-dependent it is a discretisation error after all, and the "
         "finding in the step report is wrong."
     )
+
+
+# --------------------------------------------------------------------------
+# The Timoshenko pinned-pinned reference (DL0), and what replaced the band (DL1)
+# --------------------------------------------------------------------------
+
+
+def euler_bernoulli_pinned_pinned(
+    mode: int, length: float, section: Section, material: Material, inertia: float
+) -> float:
+    """`omega^2 = E I beta^4 / (rho A)`, written INDEPENDENTLY of the quadratic.
+
+    The classical simply-supported beam frequency. Transcribed, not derived from
+    the Timoshenko form, for the same reason `euler_bernoulli_bending_mass` is.
+    """
+    beta = mode * np.pi / length
+    omega_sq = material.E * inertia * beta**4 / (material.rho * section.A)
+    return float(np.sqrt(omega_sq) / (2.0 * np.pi))
+
+
+def rayleigh_pinned_pinned(
+    mode: int, length: float, section: Section, material: Material, inertia: float
+) -> float:
+    """`omega^2 = E I beta^4 / (rho A + rho I beta^2)` -- rotary inertia, no shear.
+
+    The Rayleigh beam. Also written independently; it is the second of the two
+    limits the Timoshenko transcription is checked against.
+    """
+    beta = mode * np.pi / length
+    denominator = material.rho * section.A + material.rho * inertia * beta**2
+    omega_sq = material.E * inertia * beta**4 / denominator
+    return float(np.sqrt(omega_sq) / (2.0 * np.pi))
+
+
+def timoshenko_pinned_pinned(
+    mode: int,
+    length: float,
+    section: Section,
+    material: Material,
+    inertia: float,
+    *,
+    rotary_factor: float = 1.0,
+    shear_factor: float = 1.0,
+    stable_root: bool = True,
+) -> float:
+    """The EXACT Timoshenko pinned-pinned frequency, flexural branch, in Hz.
+
+    Han, Benaroya & Wei (1999) §5; the quadratic is written out in the module
+    docstring. `rotary_factor` and `shear_factor` scale `rho I` and `kappa G A`
+    and exist ONLY so the two limits can be taken by the test below -- they are
+    both 1.0 in every other call.
+
+    THE SMALLER ROOT IS TAKEN AS `2c / (-b + sqrt(disc))`, NOT `(-b - sqrt(disc))
+    / (2a)`, and the difference is measured rather than asserted. For a slender
+    beam ``b^2 >> 4ac``, so `-b - sqrt(disc)` subtracts two numbers that agree to
+    seven digits and throws away the precision the reference is supposed to
+    supply. At the first mode of the shipped case the two branches differ by
+    3.7e-10 relative -- small, and large enough to matter when the quantity being
+    compared against it converges to 1e-8.
+
+    not-a-tolerance: `rotary_factor` and `shear_factor` are inputs that switch
+    between three named beam theories. Nothing is compared against either.
+    """
+    beta = mode * np.pi / length
+    rho_a = material.rho * section.A
+    rho_i = material.rho * inertia * rotary_factor
+    ei = material.E * inertia
+    kga = section.kappa(material) * material.G * section.A * shear_factor
+
+    a = rho_a * rho_i
+    b = -(rho_a * ei * beta**2 + rho_a * kga + kga * rho_i * beta**2)
+    c = kga * ei * beta**4
+    disc = np.sqrt(b * b - 4.0 * a * c)
+    omega_sq = (2.0 * c / (-b + disc)) if stable_root else ((-b - disc) / (2.0 * a))
+    return float(np.sqrt(omega_sq) / (2.0 * np.pi))
+
+
+def _pinned_pinned_frequencies(
+    length: float, n_el: int, section: Section, count: int, plane: str
+) -> list[float]:
+    """Bending frequencies of a pinned-pinned beam, ONE plane at a time.
+
+    Pinned means the translation is held and the bending rotation is free, which
+    is `M = 0` at each end -- exactly the condition the analytic mode shape
+    satisfies. Every DOF outside the chosen bending plane is held, including the
+    axial one, so mode identification is unambiguous: taking the three smallest
+    eigenvalues of a fully three-dimensional model would pick up the second
+    bending plane and read the first mode against the second analytic root,
+    which is a 60% error and nothing of the kind.
+    """
+    nodes = NodeSet()
+    for x in np.linspace(0.0, length, n_el + 1):
+        nodes.add(Node(x=float(x), y=0.0, z=0.0))
+    model = Model(nodes=nodes)
+    els = [
+        BeamElement(node_a=i, node_b=i + 1, section=section, material=STEEL) for i in range(n_el)
+    ]
+    k = assemble_dense(model, els)
+    m = assemble_mass_dense(model, els)
+
+    n_nodes = n_el + 1
+    free: list[int] = []
+    for i in range(n_nodes):
+        base = 6 * i
+        if plane == "xy":
+            if 0 < i < n_nodes - 1:
+                free.append(base + 1)  # u_y, interior only
+            free.append(base + 5)  # r_z, every node
+        else:
+            if 0 < i < n_nodes - 1:
+                free.append(base + 2)  # u_z, interior only
+            free.append(base + 4)  # r_y, every node
+    index = np.array(free)
+    w = np.sqrt(
+        np.clip(
+            sla.eigh(k[np.ix_(index, index)], m[np.ix_(index, index)], eigvals_only=True), 0.0, None
+        )
+    ) / (2.0 * np.pi)
+    return [float(v) for v in w[:count]]
+
+
+@pytest.mark.parametrize("mode", [1, 2, 3])
+def test_the_TIMOSHENKO_reference_reduces_to_ITS_TWO_LIMITS(mode: int, capsys) -> None:
+    """DL0's independent verification of the transcription.
+
+    A frequency equation copied from a paper is a transcription, and this
+    repository's answer to a transcription is not to trust it. Two limits, each
+    against a closed form written separately in this file:
+
+      rotary -> 0 and shear -> infinity   =>  Euler-Bernoulli
+      shear  -> infinity                  =>  Rayleigh
+
+    If a term were dropped or a sign flipped, at least one limit moves.
+    """
+    section = _tube(0.3, 0.008)
+    length = 30.0
+    inertia = section.I_y
+    big = 1.0e12
+    small = 1.0e-12
+
+    got_eb = timoshenko_pinned_pinned(
+        mode, length, section, STEEL, inertia, rotary_factor=small, shear_factor=big
+    )
+    want_eb = euler_bernoulli_pinned_pinned(mode, length, section, STEEL, inertia)
+    got_rayleigh = timoshenko_pinned_pinned(mode, length, section, STEEL, inertia, shear_factor=big)
+    want_rayleigh = rayleigh_pinned_pinned(mode, length, section, STEEL, inertia)
+
+    naive = timoshenko_pinned_pinned(mode, length, section, STEEL, inertia, stable_root=False)
+    stable = timoshenko_pinned_pinned(mode, length, section, STEEL, inertia)
+    with capsys.disabled():
+        print(
+            f"\n  mode {mode}: EB limit {abs(got_eb - want_eb) / want_eb:.3e}, "
+            f"Rayleigh limit {abs(got_rayleigh - want_rayleigh) / want_rayleigh:.3e}, "
+            f"root branches differ by {abs(stable - naive) / stable:.3e}"
+        )
+
+    for label, got, want in (
+        ("Euler-Bernoulli", got_eb, want_eb),
+        ("Rayleigh", got_rayleigh, want_rayleigh),
+    ):
+        rel = abs(got - want) / want
+        assert rel <= ROUNDOFF_IDENTITY, (
+            f"mode {mode}: the Timoshenko quadratic does not reduce to the "
+            f"{label} closed form in its own limit -- {got:.12f} against "
+            f"{want:.12f}, relative {rel:.4e} over {ROUNDOFF_IDENTITY:g}. The "
+            "transcription has a wrong term or a wrong sign."
+        )
+
+
+def test_the_MESH_DEPENDENT_interpolation_space_is_what_BREAKS_monotonicity(
+    capsys, monkeypatch
+) -> None:
+    """Why no one-sided band exists for this element, against ANY reference.
+
+    Rayleigh-Ritz needs the refined subspace to CONTAIN the coarse one. It does
+    not here: `Phi = 12 E I / (kappa G A L^2)` is computed from the ELEMENT
+    length, so the interpolation changes shape when the mesh changes and two
+    half-length elements do not span what one full-length element spanned.
+
+    cell  ONE VARIABLE: `Phi`. Same beam, same meshes, same eigensolver, both
+          boundary conditions. `Phi = 0` gives the Hermite cubics, which ARE
+          nested, and the frequency sequence is monotone decreasing. `Phi` as
+          shipped is not.
+
+    That is the whole reason DL1's fallback was taken rather than DL0's band:
+    a one-sided band asserts monotone approach from above, and this element does
+    not have it. Asserted here: the `Phi = 0` sequence IS monotone. The shipped
+    sequence is REPORTED, with the size of the violation, because asserting that
+    a defect is present would redden the day it was fixed.
+    """
+    import floatfea.element.beam as beam_module
+
+    section = _tube(0.3, 0.008)
+    length = 30.0
+    meshes = (4, 8, 16, 32, 64)
+    real_bending_mass = beam_module.bending_mass
+
+    def sequences(no_phi: bool) -> dict[str, list[list[float]]]:
+        out: dict[str, list[list[float]]] = {}
+        with monkeypatch.context() as patch:
+            if no_phi:
+                patch.setattr(beam_module, "shear_parameter", lambda *a, **k: 0.0)
+                patch.setattr(
+                    beam_module,
+                    "bending_mass",
+                    lambda rho_a, rho_i, ll, phi: real_bending_mass(rho_a, 0.0, ll, phi),
+                )
+            out["free-free"] = [
+                _bending_frequencies(*_straight(length, n_el, section), 3) for n_el in meshes
+            ]
+            out["pinned-pinned"] = [
+                _pinned_pinned_frequencies(length, n_el, section, 3, "xy") for n_el in meshes
+            ]
+        return out
+
+    def worst_rise(rows: list[list[float]]) -> tuple[float, int, int]:
+        worst, at_mesh, at_mode = 0.0, 0, 0
+        for i in range(len(rows) - 1):
+            for mode, (coarse, fine) in enumerate(zip(rows[i], rows[i + 1], strict=True)):
+                if fine > coarse:
+                    rise = (fine - coarse) / coarse
+                    if rise > worst:
+                        worst, at_mesh, at_mode = rise, meshes[i + 1], mode + 1
+        return worst, at_mesh, at_mode
+
+    nested = sequences(no_phi=True)
+    shipped = sequences(no_phi=False)
+
+    with capsys.disabled():
+        print("\n  largest RISE in a frequency under mesh refinement:")
+        for label in ("free-free", "pinned-pinned"):
+            a = worst_rise(nested[label])
+            c = worst_rise(shipped[label])
+            print(
+                f"    {label:14s} Phi=0 (nested): {a[0]:.3e}"
+                f"   shipped: {c[0]:.3e} at n={c[1]}, mode {c[2]}"
+            )
+
+    for label in ("free-free", "pinned-pinned"):
+        rise, at_mesh, at_mode = worst_rise(nested[label])
+        assert rise == 0.0, (
+            f"{label}, Phi = 0: a frequency ROSE by {rise:.4e} at n={at_mesh}, "
+            f"mode {at_mode}. With Phi = 0 the interpolation is the Hermite "
+            "cubics and the meshes are nested, so Rayleigh-Ritz forbids it. "
+            "Either the mass matrix or the stiffness is wrong."
+        )
+        rise_shipped, _, _ = worst_rise(shipped[label])
+        assert rise_shipped >= 0.0, "unreachable: a rise is non-negative by construction"
+
+
+@pytest.mark.parametrize("plane", ["xy", "xz"])
+def test_the_SHIPPED_element_approaches_its_OWN_continuum(plane: str, capsys) -> None:
+    """The shipped element against the exact Timoshenko pinned-pinned frequency.
+
+    The reference is now the element's own theory, which is what DL0 asked for,
+    and both bending planes are run because the `xz` plane carries the sign flip
+    a planar case cannot see.
+
+    ASSERTED: the error falls under refinement over 4 -> 8 -> 16. **NOT
+    asserted: a one-sided band.** The range stops at 16 and the reason is
+    measured, not chosen -- beyond it the non-nested wobble isolated in
+    `test_the_MESH_DEPENDENT_interpolation_space_is_what_BREAKS_monotonicity`
+    is the same size as the discretisation error, and the error changes sign at
+    n=32. The full table including that sign change is printed rather than
+    trimmed, and the ratios are in the step report so DL0's band can be adopted
+    in one line when a lower-bound counter can be registered.
+    """
+    section = _tube(0.3, 0.008)
+    length = 30.0
+    inertia = section.I_y
+    reference = [
+        timoshenko_pinned_pinned(mode, length, section, STEEL, inertia) for mode in (1, 2, 3)
+    ]
+    reported = (4, 8, 16, 32, 64, 128)
+    errors: dict[int, list[float]] = {}
+    for n_el in reported:
+        got = _pinned_pinned_frequencies(length, n_el, section, 3, plane)
+        errors[n_el] = [(value - want) / want for value, want in zip(got, reference, strict=True)]
+
+    with capsys.disabled():
+        print(f"\n  plane {plane}, against the EXACT Timoshenko pinned-pinned reference:")
+        for n_el in reported:
+            print(f"    n={n_el:4d}  " + "  ".join(f"{e:+.4e}" for e in errors[n_el]))
+
+    asserted = (4, 8, 16)
+    for coarse, fine in zip(asserted[:-1], asserted[1:], strict=True):
+        for mode in range(3):
+            before = abs(errors[coarse][mode])
+            after = abs(errors[fine][mode])
+            assert after < before, (
+                f"plane {plane}, mode {mode + 1}: refining from n={coarse} to "
+                f"n={fine} did not reduce the error against the element's own "
+                f"continuum -- {before:.4e} then {after:.4e}. That reference is "
+                "exact for these boundary conditions, so refinement has to "
+                "approach it."
+            )
