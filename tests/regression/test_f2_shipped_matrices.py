@@ -18,10 +18,15 @@ WHAT IS DELIBERATELY NOT RECORDED, and this is the honest limit of the guard.
 builds, and this golden is checked on two platforms -- Windows locally, Linux on
 CI. A tolerance loose enough to survive that difference would record almost
 nothing; a tighter one would redden on a platform difference rather than on a
-defect. **The cross-platform drift is a measurement nobody has taken**, and until
-it is taken V6.1 covers the matrices while `tests/verification/rung2` covers the
-frequencies with assertions of its own. Taking that measurement is one CI run and
-it belongs to whoever tightens this.
+defect. **What a frequency golden needs first is a bound on that drift**, and
+`docs/milestones/F2a.md` records it as the missing measurement with what it would
+take. Until then V6.1 covers the matrices and `tests/verification/rung2` covers
+the frequencies with assertions of its own.
+
+The sentence here used to say the measurement was one "nobody has taken", which
+is a claim about the repository in source-tree prose with nothing to check it
+against (CW0, C16). What replaces it is a pointer to where the requirement is
+recorded.
 
 WHY THE COMPARISON IS RELATIVE AT `ROUNDOFF_IDENTITY` AND NOT IN ULP. The
 neighbouring golden, `test_exempt_pair_responses.py`, compares in ULP with its

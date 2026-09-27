@@ -17,9 +17,19 @@ had then gone unanswered for three rounds -- fell off the end of the shift.
 THREE THINGS ARE READ AND NEVER REMEMBERED.
 
 1. THE ROW SET. Every `R<n>` the verdict declares as a finding, plus every one
-   its own `Carried` section mentions, in numeric order. This is the same rule
-   `tests/test_report_carried.py` uses to decide what the report must carry, so
-   the generated table cannot be short of what the guard demands.
+   its own `Carried` section mentions, in numeric order.
+
+   **THIS IS NOT QUITE THE GUARD'S RULE AND THE DIFFERENCE IS REAL (C15).** The
+   sentence here claimed it was the same rule, "so the generated table cannot be
+   short of what the guard demands" -- and at the sixty-second verdict it was
+   short by four. `tests/test_report_carried.py` takes the union of the verdict's
+   findings and every `R<n>` its Carried SECTION mentions; this takes the
+   findings and the mentions in that section as the generator parses it, and a
+   number the verdict mentions elsewhere -- in its account of how the step went,
+   say -- reaches the guard and not the table. The report names those items in
+   its own Carried prose. Whoever unfreezes 4a can make the two read one
+   expression; until then the difference is written down rather than claimed
+   away.
 
 2. THE CLASS, from each finding's own heading:
 

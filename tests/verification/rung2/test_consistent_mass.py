@@ -820,18 +820,16 @@ def test_the_frequency_sequence_is_MONOTONE_under_refinement(capsys, monkeypatch
     section = _tube(0.3, 0.008)
     length = 30.0
     meshes = (4, 8, 16, 32, 64)
-    real_bending_mass = beam_module.bending_mass
 
     def sequences(no_phi: bool) -> dict[str, list[list[float]]]:
+        # C17: ONE VARIABLE, AND IT USED TO BE TWO. The `Phi = 0` leg also
+        # rewrote `bending_mass` to pass `rho_i = 0.0`, so it had no rotary
+        # inertia either and the cell did not isolate what it said it did. BG0
+        # asks for one variable moved; rotary inertia is now on in both legs.
         out: dict[str, list[list[float]]] = {}
         with monkeypatch.context() as patch:
             if no_phi:
                 patch.setattr(beam_module, "shear_parameter", lambda *a, **k: 0.0)
-                patch.setattr(
-                    beam_module,
-                    "bending_mass",
-                    lambda rho_a, rho_i, ll, phi: real_bending_mass(rho_a, 0.0, ll, phi),
-                )
             out["free-free"] = [
                 _bending_frequencies(*_straight(length, n_el, section), 3) for n_el in meshes
             ]
