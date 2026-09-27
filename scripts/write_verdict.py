@@ -7,17 +7,27 @@ docs/reviews/ by a PreToolUse hook; this is the one sanctioned path in.
 Usage:
     python scripts/write_verdict.py --milestone 2 --step 5 < review.md
 
-The review body is read from stdin and must begin with a line
-`Verdict: PASS|HOLD|STOP`. The script stamps the reviewed commit and refuses a
-body that lacks the mandatory sections, so a verdict cannot be written by a
-summary that skipped the dependency re-read.
+The review body is read from stdin. The script stamps the reviewed commit and
+refuses FOUR things -- the count, not a summary of it:
+
+    :53  a body not beginning with `Verdict: PASS|HOLD|STOP`
+    :56  a body missing any mandatory section
+    :58  an empty `## Carried` section
+    :63  a step with no report to review
+
+cmd: grep -n "sys.exit" scripts/write_verdict.py
+out: the four lines above
 
 IT DOES NOT REFUSE TO OVERWRITE A PASS, and this docstring said it did (DQ3).
-The claim was: "PLACEHOLDER_WRITE_VERDICT with anything but a fresh review of
-a *changed* report". No such check exists in this file -- the two refusals are
-the `Verdict:` line and the missing-sections list, and they are the two named
-above. A false claim about a refusal is worse than no claim, because it is in
-the one script that writes this gate's output and a reader would stop looking.
+The deleted claim was that it "refuses to overwrite a PASS with anything but a
+fresh review of a changed report". No such check exists in this file.
+
+THE REPAIR THEN WROTE A SECOND FALSE COUNT, AND A PLACEHOLDER (C31, C32). It
+said "the two refusals" one paragraph after deleting a false claim, when the grep
+gives four -- CP2 is exactly the rule that a repair carries no new numeric claim
+outside a triple -- and the patch script that made the edit left the token
+`PLACEHOLDER_WRITE_VERDICT` in the quoted sentence, which nothing in the tree
+reads and so nothing caught.
 
 The `Reviewed commit:` stamp is taken from `HEAD`, which is structurally NOT the
 reviewed commit whenever the reviewer commits its corpus first -- as it is

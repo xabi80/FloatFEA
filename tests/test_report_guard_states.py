@@ -666,31 +666,58 @@ def test_the_corpus_and_the_states_agree(capsys) -> None:
     )
 
 
-def test_every_reviewer_entry_is_BUILT_at_a_closure_commit() -> None:
-    """`N = 0` is asserted at a step's CLOSURE commit and reported before it.
+def test_every_reviewer_entry_is_BUILT_before_a_step_CLOSES() -> None:
+    """`N = 0` once any step has closed. Reported before that.
 
-    BE3 puts the reviewer's corpus commit after the report by design, so between
-    a corpus round and its transcription the count is non-zero and that is the
-    normal state of the loop rather than a defect. What may not happen is a step
-    CLOSING with entries still untranscribed -- at that point the shapes the
-    reviewer found have been carried past the gate that was supposed to read them.
+    BE3 puts the reviewer's corpus commit after the report by design, so between a
+    corpus round and its transcription the count is non-zero and that is the
+    normal state of the loop. What may not happen is a step CLOSING with entries
+    untranscribed: at that point the shapes the reviewer found were carried past
+    the gate that was supposed to read them.
 
-    The closure commit is recognised by `docs/closure/F<n>-step<k>.md` existing
-    for the step under execution. Before it exists this reports; once it exists
-    this asserts.
+    **THREE WAYS THE FIRST VERSION COULD BE WALKED PAST (R557), all measured.**
+
+    * it keyed on `docs/closure/F2-step{STEP}.md`, and `STEP` comes from the plan
+      marker -- a line in a document the constrained party writes. Bumping
+      `step-under-execution: 7` to `8` took this from FAILED to PASSED with all
+      five entries still untranscribed, and the whole-suite rule reported no
+      intruder for that commit;
+    * the path was hardcoded to `F2`, so it stopped applying at the milestone
+      boundary;
+    * `if not closure.is_file(): return` made the gate's own precondition a file
+      the constrained party creates.
+
+    So it does not read the marker and it does not read one path. It globs every
+    closure artifact in the repository. **If any step anywhere has closed, every
+    reviewer entry must be built** -- and there is nothing an implementer can
+    write that makes the set empty except transcribing the entries.
     """
-    closure = ROOT / "docs" / "closure" / f"F2-step{STEP}.md"
-    if not closure.is_file():
-        return  # the step has not closed; the count above is the report
+    closed = sorted((ROOT / "docs" / "closure").glob("F*-step*.md"))
+    if not closed:
+        return  # no step has closed anywhere; the count is the report
     assert not AWAITING_TRANSCRIPTION, (
-        f"step {STEP} has a closure artifact at {closure.name} and "
-        f"{len(AWAITING_TRANSCRIPTION)} reviewer entries are still untranscribed: "
-        f"{AWAITING_TRANSCRIPTION}. A step may not close carrying shapes the "
-        "reviewer found and nothing runs."
+        f"{len(closed)} step closure artifacts exist ({[p.name for p in closed][:4]}"
+        f"...) and {len(AWAITING_TRANSCRIPTION)} reviewer entries are still "
+        f"untranscribed: {AWAITING_TRANSCRIPTION}. A step may not close carrying "
+        "shapes the reviewer found and nothing runs."
     )
 
 
-@pytest.mark.parametrize("state, require", ENTRIES, ids=[e[0] for e in ENTRIES])
+BUILT_ENTRIES = [e for e in ENTRIES if e[0] in STATES]
+"""The corpus entries that have a build action (BE3, DQ3, R558).
+
+**RULING 2 WAS NOT IMPLEMENTED AND THIS IS THE LINE THAT DOES IT.** The
+parametrisation was over `ENTRIES` -- the whole corpus -- and `_build` does
+`STATES[state]`, so an untranscribed entry raised `KeyError` and a reviewer round
+still cost one red per entry. Six before, six after; the commit message that
+claimed otherwise was wrong.
+
+The count of what is NOT here is reported by `test_the_corpus_and_the_states_agree`
+and asserted zero by `test_every_reviewer_entry_is_BUILT_before_a_step_CLOSES`.
+"""
+
+
+@pytest.mark.parametrize("state, require", BUILT_ENTRIES, ids=[e[0] for e in BUILT_ENTRIES])
 def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) -> None:
     work = _build(tmp_path, state)
     got = _run_guard(work)

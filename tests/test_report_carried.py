@@ -2227,7 +2227,7 @@ def _last_commit_touching(path: Path) -> str:
 REVIEWER_TREES = ("tests/corpus", "docs/" + "re" + "views")
 
 
-EXECUTABLE_PATHS = ("floatfea", "tests", "scripts", ".github")
+EXECUTABLE_PATHS = ("floatfea", "tests", "scripts", ".github", "pyproject.toml")
 """The trees whose contents can change a test outcome (R546, DQ3).
 
 not-a-tolerance: a pathspec. Nothing is compared against it; it is the domain the
@@ -2293,12 +2293,26 @@ def _implementer_commits_after(
     )
     if out.returncode != 0:
         return ["git could not read the history: " + out.stderr.strip()[:120]]
-    candidates = [ln for ln in out.stdout.splitlines() if ln.strip()]
-    return [ln for ln in candidates if _changes_the_parse(ln.split()[0], root)]
+    return [ln for ln in out.stdout.splitlines() if ln.strip()]
 
 
 def _changes_the_parse(sha: str, root: Path | None = None) -> bool:
     """Whether `sha` changed the PARSE of any executable file it touched.
+
+    **NO LONGER USED BY THE RULE, AND THE REASON IS MEASURED (R556).** It was the
+    second half of R546's repair, exempting a commit whose parse was unchanged.
+    The premise -- that a comment cannot move a test outcome -- is false in THIS
+    tree, because CW0 deliberately made comments load-bearing: one appended
+    `# claim:` line with no `cmd:` after it took
+    `pytest tests/test_tree_prose_consistent.py` from `30 passed` to
+    `Interrupted: 1 error during collection`, with the parse identical. The two
+    commits the control names were COINCIDENTALLY inert; the docstring
+    generalised from them to a class.
+
+    Kept as a helper because the two controls below read it and it is the honest
+    way to ask "is this commit comment-only", which is a real question. It is no
+    longer an answer to "can this commit move a suite count", which is what the
+    rule asks.
 
     The pathspec above is necessary and not sufficient (R546, DQ3). A
     comment-only edit under `floatfea/` touches an executable path and cannot
@@ -2348,6 +2362,14 @@ def _changes_the_parse(sha: str, root: Path | None = None) -> bool:
     return False
 
 
+def _is_ignored(path: Path) -> bool:
+    """Whether git ignores `path`. Used so a build tree cannot name itself (C35)."""
+    out = subprocess.run(
+        ["git", "-C", str(ROOT), "check-ignore", "-q", str(path)], capture_output=True
+    )
+    return out.returncode == 0
+
+
 def test_the_pathspec_names_every_executable_tree() -> None:
     """R546's include list is checked against the tree, not trusted.
 
@@ -2366,12 +2388,25 @@ def test_the_pathspec_names_every_executable_tree() -> None:
     # tree, so it sits beside `docs/` here.
     doc_trees = {"docs", "artifacts"}
     executable: set[str] = set()
+    # FILES AS WELL AS DIRECTORIES, and R555 is why: this skipped everything that
+    # was `not entry.is_dir()`, so `pyproject.toml` could never be named -- and a
+    # commit touching only it moved `--collect-only` from 2777 to 88 while the
+    # rule reported no intruder. The counter-evidence was thirty lines away in
+    # the sibling file, which copies `pyproject.toml` into its work tree because
+    # without it the nested suite does not reproduce.
     for entry in sorted(ROOT.iterdir()):
-        if not entry.is_dir() or entry.name.startswith(".") and entry.name != ".github":
+        if entry.name in {"__pycache__", ".git", "build", "dist"}:
             continue
-        if entry.name in {"__pycache__", ".git"}:
+        if entry.is_file():
+            if entry.name in {"pyproject.toml", "setup.py", "setup.cfg", "tox.ini"}:
+                executable.add(entry.name)
             continue
-        if entry.name == ".github" or any(entry.rglob("*.py")):
+        if entry.name.startswith(".") and entry.name != ".github":
+            continue
+        # A GITIGNORED TREE IS NOT PART OF THE REPOSITORY (C35). `build/lib/...`
+        # holds copies of the package after `python -m build` and would name a
+        # tree that no commit can touch.
+        if entry.name == ".github" or any(f for f in entry.rglob("*.py") if not _is_ignored(f)):
             executable.add(entry.name)
     unnamed = executable - set(EXECUTABLE_PATHS) - doc_trees
     assert not unnamed, (
@@ -2486,7 +2521,10 @@ def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
         text=True,
     )
     distance = int(near.stdout.strip() or "99")
-    assert distance <= 1, (
+    # R548: ZERO IS REJECTED TOO, and it was not for four verdicts. A line
+    # stamped with the report's own commit names a tree measured BEFORE the
+    # report existed, so the count cannot describe the commit it sits on.
+    assert distance == 1, (
         f"the whole-suite line names `{sha}`, which is {distance} commit(s) "
         f"behind `{anchor[:7]}`, the commit this revision is committed from. "
         "The count describes that tree: run `python scripts/suite_count.py` "
