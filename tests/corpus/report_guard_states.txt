@@ -208,3 +208,47 @@ id=suite_line_sha_is_a_THREE_CHAR_ABBREVIATION state=whole_suite_line_sha_replac
 id=suite_line_names_the_report_commit_ITSELF state=whole_suite_line_stamped_with_36b5899_the_commit_the_report_is_committed_in_distance_zero_from_the_anchor require=fail measured=pass_206_passed_0_failed_the_distance_rule_is_le_1_so_zero_satisfies_it_and_a_count_cannot_have_been_taken_at_a_commit_that_did_not_yet_exist_HOLE
 id=only_a_REVIEWER_corpus_commit_follows_the_report state=one_commit_adding_a_file_under_tests_corpus_committed_after_the_report_nothing_else_moved require=fail measured=pass_206_passed_0_failed_rule_2_excludes_tests_corpus_by_pathspec_while_the_guards_own_comment_records_that_justification_as_withdrawn_because_R361_measured_a_corpus_only_commit_moving_the_collected_suite_by_four_HOLE
 id=closure_artifact_is_the_only_commit_after_the_report state=one_commit_adding_a_file_under_docs_closure_committed_after_the_report_nothing_else_moved require=fail measured=fail_1_failed_205_passed_through_test_the_whole_suite_line_is_about_a_commit_that_exists_naming_the_closure_commit_as_an_implementer_commit_CAUGHT_and_this_is_the_shape_that_is_red_at_fdf4fb0
+
+# ---------------------------------------------------------------------------
+# SIXTY-SIXTH VERDICT, the fourth written into step 7's file after its closure
+# verdict (HEAD 9682bcc). 7 new entries and ONE RULING ON AN EXISTING ONE.
+#
+# PROTOCOL, AND IT IS NOT THE ONE ABOVE. The old protocol -- build the state in
+# a checkout where `python -m pytest tests/test_report_carried.py -q` is green,
+# then re-run it -- is UNAVAILABLE at 9682bcc: `baseline` is red, so no
+# outcome is attributable to the variable moved. That cost was recorded at the
+# sixty-fourth verdict and it is unchanged. These seven were measured instead as
+# a controlled pair in a scratch clone at 9682bcc, one variable moved per row:
+#
+#   1. call the rule's OWN function on the state's commit --
+#      `_implementer_commits_after(HEAD~1)` and `_changes_the_parse(HEAD)` from
+#      `tests/test_report_carried.py`, imported from the clone;
+#   2. and `python -m pytest --collect-only -q` before and after, because the
+#      question every one of these entries asks is whether the rule stays silent
+#      while the suite count MOVED. Baseline collected = 2777.
+#
+# `require=fail` means the rule must report the commit as an intruder, because
+# the whole-suite count in the report no longer describes the head.
+#
+# THE RULING, on closure_artifact_is_the_only_commit_after_the_report.
+# R546/DQ3 exempted `docs/` by pathspec, so this state's measurement flips from
+# CAUGHT to a HOLE. **The require field does NOT change.** It is not a matter of
+# taste: a single commit adding `docs/closure/F3-step1.md` moves the collected
+# count from 2777 to 2781, because
+# `tests/verification/rung3/test_closure_evidence_exists.py:38` parametrises
+# four tests over `docs/closure/F*.md`, and it adds one rung-3 failure. The
+# state is a stale count by measurement, so `require=fail` stands and the
+# `measured=` field records the hole. What to do about the ruling that produced
+# it is not the corpus's to say.
+#
+# THE ONE THAT IS NOT A HOLE BUT A FALSE ALARM is the last entry. It is the only
+# `require=green` row in this batch, and the rule reds on it.
+# ---------------------------------------------------------------------------
+
+id=pyproject_toml_only_narrows_testpaths state=one_commit_changing_only_pyproject_toml_testpaths_to_tests_unit_and_xfail_strict_to_false_committed_after_the_report require=fail measured=pass_implementer_commits_after_returned_empty_while_collect_only_moved_2777_to_88_pyproject_toml_is_a_FILE_and_EXECUTABLE_PATHS_holds_only_directories_HOLE
+id=comment_only_under_floatfea_plants_a_malformed_triple state=one_commit_appending_a_single_hash_claim_comment_to_floatfea_element_beam_py_with_no_cmd_line_after_it_parse_identical require=fail measured=pass_changes_the_parse_returned_False_while_pytest_tests_test_tree_prose_consistent_py_went_from_30_passed_to_1_collection_error_at_floatfea_element_beam_py_369_HOLE
+id=docs_closure_artifact_adds_four_parametrised_cases state=one_commit_adding_docs_closure_F3_step1_md_and_nothing_else require=fail measured=pass_implementer_commits_after_returned_empty_while_collect_only_moved_2777_to_2781_and_rung3_test_closure_evidence_exists_gained_one_failure_HOLE
+id=plan_marker_bumped_disarms_the_transcription_backstop state=one_commit_changing_only_the_step_under_execution_marker_in_docs_milestones_F2_md_from_7_to_8 require=fail measured=pass_implementer_commits_after_returned_empty_while_test_every_reviewer_entry_is_BUILT_at_a_closure_commit_went_from_FAILED_to_PASSED_with_all_five_entries_still_untranscribed_HOLE
+id=evil_merge_changes_a_file_present_in_neither_parent state=a_no_ff_merge_amended_to_add_a_line_to_floatfea_tolerances_py_that_is_in_neither_parent require=fail measured=fail_changes_the_parse_returned_True_and_both_the_merge_and_the_side_commit_are_reported_CAUGHT
+id=plain_no_ff_merge_of_a_code_branch state=a_no_ff_merge_bringing_in_one_side_commit_that_edits_floatfea_tolerances_py require=fail measured=fail_the_merge_ITSELF_is_exempt_because_git_show_name_only_prints_nothing_for_a_merge_but_history_simplification_reports_the_side_commit_instead_so_the_rule_is_CAUGHT_BY_A_DIFFERENT_ROUTE_THAN_THE_ONE_IT_DESCRIBES
+id=gitignored_build_tree_present_in_the_working_copy state=an_untracked_gitignored_build_lib_floatfea_beam_py_present_while_git_status_porcelain_is_EMPTY require=green measured=fail_test_the_pathspec_names_every_executable_tree_reds_naming_build_because_it_walks_ROOT_iterdir_and_not_git_ls_files_so_it_reacts_to_a_tree_with_no_repository_change_GUARD_FAILS_FALSE
