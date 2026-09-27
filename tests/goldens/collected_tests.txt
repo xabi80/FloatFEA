@@ -9,11 +9,16 @@
 # reviewer's corpora and with the report being written. A FUNCTION
 # disappearing is what this file exists to catch.
 
-[tests] 377
+[tests] 382
 tests/regression/test_exempt_pair_responses.py::test_a_MOVED_response_is_caught
 tests/regression/test_exempt_pair_responses.py::test_every_recorded_pair_is_still_detected
 tests/regression/test_exempt_pair_responses.py::test_the_golden_file_is_not_empty
 tests/regression/test_exempt_pair_responses.py::test_the_recorded_set_is_the_measured_set
+tests/regression/test_f2_shipped_matrices.py::test_every_recorded_quantity_is_still_produced
+tests/regression/test_f2_shipped_matrices.py::test_the_generator_produces_nothing_UNRECORDED
+tests/regression/test_f2_shipped_matrices.py::test_the_golden_exists_and_records_something
+tests/regression/test_f2_shipped_matrices.py::test_the_golden_would_notice_a_CHANGED_FORMULATION
+tests/regression/test_f2_shipped_matrices.py::test_the_recorded_value_has_not_moved
 tests/test_ci_canonical_environment.py::test_each_determinism_leg_records_the_kernel_it_RAN_under
 tests/test_ci_canonical_environment.py::test_the_pin_is_set_once_for_EVERY_job
 tests/test_ci_canonical_environment.py::test_the_plan_and_the_workflow_name_THE_SAME_kernel
@@ -613,8 +618,13 @@ tests/verification/rung4/test_writer_round_trip.py::test_the_fixture_exists_and_
 tests/verification/rung4/test_writer_round_trip.py::test_the_validator_ACCEPTS_real_writer_output
 tests/verification/rung4/test_writer_round_trip.py::test_time_round_trips_bit_exact
 
-[tests/regression] 4
+[tests/regression] 9
 tests/regression/test_exempt_pair_responses.py::test_a_MOVED_response_is_caught
 tests/regression/test_exempt_pair_responses.py::test_every_recorded_pair_is_still_detected
 tests/regression/test_exempt_pair_responses.py::test_the_golden_file_is_not_empty
 tests/regression/test_exempt_pair_responses.py::test_the_recorded_set_is_the_measured_set
+tests/regression/test_f2_shipped_matrices.py::test_every_recorded_quantity_is_still_produced
+tests/regression/test_f2_shipped_matrices.py::test_the_generator_produces_nothing_UNRECORDED
+tests/regression/test_f2_shipped_matrices.py::test_the_golden_exists_and_records_something
+tests/regression/test_f2_shipped_matrices.py::test_the_golden_would_notice_a_CHANGED_FORMULATION
+tests/regression/test_f2_shipped_matrices.py::test_the_recorded_value_has_not_moved
