@@ -1,0 +1,129 @@
+{
+ "_": [
+  "POINTERS ONLY (CH4). A state from the generator's fixed list and a",
+  "section of this report. The subject beside each item is read out of",
+  "the verdict, and the pointer is resolved against the report.",
+  "",
+  "Step 7 answers the SIXTY-FIRST verdict, which closed step 6. R540 was",
+  "its one blocking item and it is answered in the closure commit rather",
+  "than carried, so it points at the section that shows the diff."
+ ],
+ "answered": {
+  "R475": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R487": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R488": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R492": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R493": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R500": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R501": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R513": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R519": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R521": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R522": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R523": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R524": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R525": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R526": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R527": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R528": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R529": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R530": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R531": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R532": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R533": {
+   "state": "later",
+   "where": "\u00a72"
+  },
+  "R534": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R535": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R536": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R537": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R538": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R539": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R540": {
+   "state": "answered",
+   "where": "\u00a71"
+  }
+ }
+}
