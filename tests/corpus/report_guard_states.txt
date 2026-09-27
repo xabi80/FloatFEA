@@ -252,3 +252,46 @@ id=plan_marker_bumped_disarms_the_transcription_backstop state=one_commit_changi
 id=evil_merge_changes_a_file_present_in_neither_parent state=a_no_ff_merge_amended_to_add_a_line_to_floatfea_tolerances_py_that_is_in_neither_parent require=fail measured=fail_changes_the_parse_returned_True_and_both_the_merge_and_the_side_commit_are_reported_CAUGHT
 id=plain_no_ff_merge_of_a_code_branch state=a_no_ff_merge_bringing_in_one_side_commit_that_edits_floatfea_tolerances_py require=fail measured=fail_the_merge_ITSELF_is_exempt_because_git_show_name_only_prints_nothing_for_a_merge_but_history_simplification_reports_the_side_commit_instead_so_the_rule_is_CAUGHT_BY_A_DIFFERENT_ROUTE_THAN_THE_ONE_IT_DESCRIBES
 id=gitignored_build_tree_present_in_the_working_copy state=an_untracked_gitignored_build_lib_floatfea_beam_py_present_while_git_status_porcelain_is_EMPTY require=green measured=fail_test_the_pathspec_names_every_executable_tree_reds_naming_build_because_it_walks_ROOT_iterdir_and_not_git_ls_files_so_it_reacts_to_a_tree_with_no_repository_change_GUARD_FAILS_FALSE
+
+# ---------------------------------------------------------------------------
+# SIXTY-SEVENTH VERDICT, the fifth on the post-closure tree (HEAD 0f26f03).
+# NINE new entries, all nine unseen, and TWO RULINGS ON EXISTING ONES.
+#
+# MEASURED AT 0f26f03, in two scratch clones, one variable moved per row. The
+# reference state for every row is the tree at 0f26f03 itself, whose whole-suite
+# result is `11 failed, 2761 passed, 0 skipped` under `python -m pytest -q`
+# (761.79s) and `failure` on CI run 36349346875.
+#
+# `require=fail` means the whole-suite rule must report the commit as an intruder.
+# `require=named_fail` means a NAMED test must red and the module must still
+# collect. `require=green` means the state is legitimate and nothing may red on
+# it -- and three of the rows below are `require=green` states that the repaired
+# rule reds on, which is the direction that matters: a rule that reds on the
+# correct state teaches the opposite of what it asserts.
+#
+# THE MEASUREMENT PROTOCOL DEVIATION IS THE SAME AS BATCH 15's and it is now in
+# its third round: `baseline` is red at 0f26f03, so no whole-file outcome is
+# attributable to the variable moved. Rows are measured as controlled pairs --
+# the named test alone, before and after the single change, plus the rule's own
+# `_implementer_commits_after` called on the state's commit in the clone.
+#
+# THE TWO RULINGS.
+#   * suite_line_names_the_report_commit_ITSELF -- require=fail STANDS and its
+#     measurement flips from HOLE to CAUGHT: `assert distance == 1` at
+#     tests/test_report_carried.py:2527 rejects distance 0 as of 0f26f03. The
+#     entry is now CAUGHT in the tracked-and-CLEAN anchor state only; the two
+#     rows below show the same threshold rejecting the CORRECT sha in the other
+#     two anchor states, so the property this entry wanted is half-won.
+#   * closure_artifact_is_the_only_commit_after_the_report -- require=fail still
+#     stands, unchanged from batch 15, and is untouched by 0f26f03.
+# ---------------------------------------------------------------------------
+
+id=root_conftest_py_is_the_only_file_a_commit_touches state=one_commit_adding_a_top_level_conftest_py_whose_pytest_collection_modifyitems_sets_items_to_the_empty_list require=fail measured=pass_implementer_commits_after_returned_empty_and_test_the_pathspec_names_every_executable_tree_stayed_GREEN_while_pytest_tests_test_report_carried_py_reported_no_tests_ran_in_0_24s_HOLE
+id=top_level_noxfile_py_and_Makefile_added state=one_commit_adding_noxfile_py_and_a_Makefile_whose_default_target_runs_pytest_at_the_repository_root require=named_fail measured=pass_test_the_pathspec_names_every_executable_tree_names_only_the_four_hardcoded_filenames_pyproject_toml_setup_py_setup_cfg_tox_ini_so_no_other_top_level_file_can_ever_be_named_HOLE
+id=all_per_step_closure_artifacts_deleted state=one_commit_git_rm_ing_docs_closure_F2_step4_md_through_F2_step7_md_with_the_twelve_reviewer_entries_still_untranscribed require=named_fail measured=pass_test_every_reviewer_entry_is_BUILT_before_a_step_CLOSES_went_from_FAILED_to_PASSED_because_the_glob_found_no_artifacts_and_implementer_commits_after_reported_no_intruder_for_the_docs_only_deletion_and_grep_shows_no_other_test_reads_those_paths_HOLE
+id=suite_line_names_HEAD_while_the_report_is_TRACKED_AND_MODIFIED state=the_committed_step_7_report_edited_in_the_working_tree_so_its_whole_suite_line_names_HEAD_the_commit_the_revision_will_sit_on require=green measured=named_fail_assert_distance_equals_1_reds_with_0_commits_behind_HEAD_although_report_anchor_returns_the_literal_string_HEAD_and_its_own_docstring_says_HEAD_is_the_commit_it_will_sit_on_so_0_IS_THE_CORRECT_DISTANCE_GUARD_FAILS_FALSE
+id=suite_line_names_HEAD_minus_1_while_the_report_is_TRACKED_AND_MODIFIED state=the_same_modified_report_with_its_whole_suite_line_naming_HEAD_minus_1_so_the_count_describes_a_tree_one_commit_behind_the_one_the_revision_will_sit_on require=named_fail measured=green_1_passed_the_threshold_accepts_the_STALE_count_and_rejects_the_FRESH_one_and_implementer_commits_after_HEAD_returns_empty_by_early_return_so_no_second_assertion_covers_it_INVERTED
+id=suite_line_names_HEAD_while_the_report_is_UNTRACKED state=the_step_7_report_present_but_not_tracked_git_rm_cached_with_its_whole_suite_line_naming_HEAD require=green measured=named_fail_0_commits_behind_36b5899_the_reports_TREE_anchor_and_the_same_state_with_the_line_naming_HEAD_minus_1_is_green_so_the_inversion_holds_in_the_untracked_anchor_state_too
+id=an_F3_step1_report_is_committed_and_the_guard_still_reads_F2 state=docs_reports_F3_step_1_md_committed_with_a_whole_suite_line_naming_HEAD_while_docs_reports_F2_step_7_md_is_unchanged require=green measured=named_fail_REPORTS_is_hardcoded_to_docs_reports_F2_at_tests_test_report_carried_py_70_so_STEP_stays_7_REPORT_stays_F2_step_7_md_and_the_rule_still_measures_against_36b5899_NO_F3_REPORT_CAN_CLEAR_IT
+id=three_reviewer_corpus_entries_with_no_build_action_added state=three_id_lines_appended_to_this_file_with_no_matching_STATES_key require=green measured=green_pytest_tests_test_report_guard_states_py_q_went_from_9_failed_18_passed_to_9_failed_18_passed_zero_new_reds_and_the_collected_count_did_not_move_RULING_2_IS_IMPLEMENTED
+id=BUILT_ENTRIES_emptied_so_the_parametrisation_has_no_cases state=tests_test_report_guard_states_py_706_replaced_by_the_empty_list_so_test_the_guard_survives_the_state_has_zero_parameters require=named_fail measured=COLLECTION_ERROR_1_error_in_0_17s_because_pyproject_toml_68_sets_empty_parameter_set_mark_fail_at_collect_so_the_state_does_NOT_read_silently_green_but_a_collection_error_is_never_an_agreement_with_named_fail_and_the_property_is_carried_by_pyproject_toml_which_0f26f03_put_inside_EXECUTABLE_PATHS
