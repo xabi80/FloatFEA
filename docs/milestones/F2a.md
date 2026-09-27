@@ -189,6 +189,31 @@ The same list already holds the coverage measurements that argue for spending
 nothing here: 2 of 22 unseen shapes caught, then 1 of 19, then 0 of 16, then
 0 of 13, and REPAIR-STALE at 0 of 13 recorded under DE2 without transcription.
 
+**G2.4's ORDER BAND JOINS THIS LIST, WITH ITS ADOPTION WRITTEN DOWN (DM1).**
+DL0 specified a window of `[12, 20]` on the convergence ratio at each mesh
+halving. The sign half of the band ships; the order half does not, and two
+things stand between it and adoption:
+
+1. **the mechanism.** The ratios sag from fourth order toward second and neither
+   the eigensolver's round-off floor nor the rotary term's lower-order
+   interpolation explains it -- both measured and refuted in
+   `docs/closure/F2-step7.md` §3. It goes to F3 with those cells.
+2. **the counter's shape.** A LOWER bound's counter widens DOWNWARD while
+   `tests/test_counters_are_injected.py` computes every widened ceiling as
+   `WIDEN * ceiling`. **The adoption is one line in that registry's ceiling
+   expression** -- `ceiling / WIDEN` for an entry declared as a floor -- plus the
+   two constants and a mass defect that reddens the order inside the asserted
+   range. Not applied, because CZ0 freezes apparatus through F6.
+
+**AND WHY FREQUENCIES ARE NOT IN V6.1 (DM1).** The golden records matrix
+invariants and not frequencies, because a frequency comes out of `eigh` whose
+last bits differ between LAPACK builds, and this golden is checked on Windows
+locally and Linux on CI. **The missing measurement is the cross-platform drift
+of one eigenvalue at a fixed commit**; it is one CI run, and until it is taken a
+tolerance loose enough to survive the difference would record almost nothing
+while a tighter one would redden on a platform difference. Whoever tightens V6.1
+takes that measurement first.
+
 | item | what it is |
 |---|---|
 | R230 | open — REOPENED BY NAME.** Revision 3 gave it a status only a verdict may give, against that verdict's own words; §0 |
