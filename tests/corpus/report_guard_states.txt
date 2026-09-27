@@ -163,3 +163,48 @@ id=guard_state_a_report_commit_messaged_docs_that_also_edits_the_guards_measurin
 
 id=guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF state=every_answered_row_in_step_5_answers_json_has_where_set_to_section_9_which_is_the_Carried_section_and_the_table_is_regenerated_with_the_committed_script require=fail measured=pass_165_passed_the_pointer_resolution_asks_only_that_the_named_section_exists_and_mentions_the_item_and_the_Carried_section_is_a_table_that_mentions_every_item_so_a_pointer_at_the_table_resolves_for_all_of_them_and_the_check_becomes_vacuous_without_a_single_rotation
 id=guard_state_the_whole_suite_line_names_an_ANCESTOR_AT_WHICH_THE_SUITE_WAS_RED state=the_whole_suite_line_rewritten_to_Whole_suite_at_9cc7744_1833_passed_0_failed_0_skipped_which_is_the_previous_verdict_commit_the_last_rounds_count_and_a_commit_at_which_the_suite_was_actually_1_failed_1833_passed require=fail measured=pass_165_passed_the_three_shipped_assertions_are_the_line_exists_passed_is_over_100_and_the_sha_is_an_ancestor_of_HEAD_so_any_ancestor_with_any_count_and_a_typed_zero_in_the_failed_field_satisfies_all_three_and_the_RUN_IT_LAST_ordering_that_is_the_whole_content_of_R309_is_stated_in_the_script_docstring_and_asserted_nowhere
+
+# ------------------------------------------------------------------------
+# BATCH 13, ADDED AT THE SIXTY-FOURTH VERDICT ON F2 (HEAD fdf4fb0). Five new
+# entries, and all five are about ONE rule: what
+# `test_the_whole_suite_line_is_about_a_commit_that_exists` claims, which is the
+# rule R544 was raised against and the rule that is red at this commit.
+#
+# WHY THESE FIVE WERE NOT MEASURED AT fdf4fb0. At fdf4fb0 the `baseline` state
+# itself is red -- four commits touching code follow the report's own commit --
+# so every mutation of the reports tree inherits that failure and no outcome
+# here is attributable to the mutation. The five were therefore measured in a
+# scratch COPY reset to 36b5899, the report's own commit, where the same
+# 206-test module is `exit 0, 206 collected, 0 failed` before any mutation is
+# applied. That control is the first row below and it is what makes the other
+# five readable. The mutation is the only variable in each.
+#
+# MEASURED BY THE REVIEWER at 36b5899, one variable moved per row, running
+# `python -m pytest tests/test_report_carried.py -q` in the copy:
+# 5 new entries, 3 caught, 2 not.
+#
+# THE TWO THAT ARE NOT CAUGHT ARE THE FINDING, and neither is an accident of
+# phrasing:
+#
+#   * distance ZERO is accepted. The rule is `rev-list --count <sha>..<anchor>
+#     <= 1`, so a line stamped with the report's OWN commit satisfies it -- and
+#     that commit did not exist when any count could have been taken at it.
+#   * `tests/corpus/` is exempted from rule 2 by pathspec, while the guard's own
+#     comment at :2296-2304 records that CO3's justification for that exemption
+#     ("a reviewer commit changes nothing the count describes") is FALSE, refuted
+#     by R361: a corpus-only commit moved the collected suite by four. The
+#     justification is withdrawn in the file and the exemption is still there.
+#
+# AND ONE THAT IS CAUGHT IS THE MILESTONE-CLOSE WINDOW. A single commit under
+# `docs/closure/` after the newest report is enough to redden the rule. That is
+# a true report about a stale count, and at a milestone close there is no commit
+# ORDER that avoids it: the closure artifact is written after the last step
+# report by rule, and a closed step may not take a further revision (DD1, DK2).
+# The entry records the shape; what to do about it is not the corpus's to say.
+# ------------------------------------------------------------------------
+
+id=suite_line_names_a_commit_on_a_SIBLING_BRANCH state=whole_suite_line_stamped_with_a_real_commit_made_on_a_branch_that_is_not_an_ancestor_of_HEAD_report_then_committed_as_revision_3 require=fail measured=fail_1_failed_205_passed_through_test_the_whole_suite_line_is_about_a_commit_that_exists_naming_the_not_an_ancestor_of_HEAD_half_CAUGHT
+id=suite_line_sha_is_a_THREE_CHAR_ABBREVIATION state=whole_suite_line_sha_replaced_with_aaa_three_hex_characters_report_committed_as_revision_3 require=fail measured=fail_1_failed_205_passed_but_through_test_the_report_carries_a_WHOLE_SUITE_count_because_the__SUITE_regex_does_not_match_a_three_char_sha_so_the_ancestry_test_SKIPS_and_the_diagnosis_a_reader_gets_is_the_line_is_absent_for_a_line_that_is_present_CAUGHT_WITH_THE_WRONG_MESSAGE
+id=suite_line_names_the_report_commit_ITSELF state=whole_suite_line_stamped_with_36b5899_the_commit_the_report_is_committed_in_distance_zero_from_the_anchor require=fail measured=pass_206_passed_0_failed_the_distance_rule_is_le_1_so_zero_satisfies_it_and_a_count_cannot_have_been_taken_at_a_commit_that_did_not_yet_exist_HOLE
+id=only_a_REVIEWER_corpus_commit_follows_the_report state=one_commit_adding_a_file_under_tests_corpus_committed_after_the_report_nothing_else_moved require=fail measured=pass_206_passed_0_failed_rule_2_excludes_tests_corpus_by_pathspec_while_the_guards_own_comment_records_that_justification_as_withdrawn_because_R361_measured_a_corpus_only_commit_moving_the_collected_suite_by_four_HOLE
+id=closure_artifact_is_the_only_commit_after_the_report state=one_commit_adding_a_file_under_docs_closure_committed_after_the_report_nothing_else_moved require=fail measured=fail_1_failed_205_passed_through_test_the_whole_suite_line_is_about_a_commit_that_exists_naming_the_closure_commit_as_an_implementer_commit_CAUGHT_and_this_is_the_shape_that_is_red_at_fdf4fb0
