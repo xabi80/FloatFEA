@@ -1,0 +1,73 @@
+# CORPUS: members whose SHEAR PARAMETER Phi the consistent mass matrix must
+# survive -- G2.4 / V2.5, the step-7 element.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the sixty-second verdict on F2, the first verdict
+# on step 7 (HEAD acb5e8c).
+#
+# WHY THIS FILE EXISTS (BE3, scoped by DE2 to the element). V2.5's four shipped
+# checks are all evaluated where the shear term cannot be seen. The
+# Euler-Bernoulli checkpoint is taken at Phi = 0 by construction. The six
+# rigid-body inertias and the model-level Phi^T M Phi are quadratic forms of
+# vectors that lie in the interpolation's rigid subspace, where the cubic
+# coefficient c3 -- the only coefficient the shear term multiplies -- is zero.
+# So the whole Phi-dependent half of the matrix is asserted by nothing, and the
+# axis that would show it is the axis nobody swept: the STUBBY member. The
+# builder admits L/D >= 2 (F2.md section 5i), and at L/D = 2 a steel tube has
+# Phi ~= 1.8.
+#
+# WHAT A PASSING SCAN MEANS. For each entry, build the member's own
+# `bending_mass` and the same member's shipped `bending_stiffness`
+# (Przemieniecki eq. 5.36), and compare the STRAIN ENERGY of the field
+# `bending_interpolation` implies against `q^T k q` for random nodal q. The two
+# are the same object -- eq. 5.36 IS the exact strain energy of the exact
+# homogeneous Timoshenko field -- so a passing scan means `energy_vs_eq536` is
+# at round-off on every entry. It is not: it is O(Phi), rising to 0.46 at the
+# builder's own admission limit. A passing scan therefore does NOT yet exist
+# for this file, and that is the finding it was written for (R541).
+#
+# Fields
+#   phi               12 E I / (kappa G A L^2), from the shipped shear_parameter
+#   energy_vs_eq536   worst relative difference, over 8 random nodal vectors,
+#                     between q^T k q and the analytic strain-energy integral of
+#                     the field bending_interpolation returns. ROUND-OFF IS THE
+#                     ONLY PASSING VALUE.
+#   mass_blowup       max|bending_mass(...,phi)| / max|bending_mass(...,0)| at
+#                     the same member. Dimensionless, and O(1) for a correct
+#                     shear-flexible mass. inf means bending_mass RAISED.
+#   rigid_inertia_check / model_block_check
+#                     the verbatim bodies of
+#                     test_the_six_RIGID_BODY_inertias_of_ONE_ELEMENT_are_exact
+#                     and test_the_MODEL_rigid_body_block_is_the_ANALYTIC_mass_
+#                     and_inertia, evaluated at THIS member: green / RED / raises
+#   shipped_caught    yes if either shipped check is RED at this member
+#   builder_admits    L/D >= 2, the limit F2.md section 5i names for F3
+#
+# COVERAGE AT THIS COMMIT: 15 entries, all unseen. shipped_caught=yes on 4,
+# raises on 1, and green on 10 -- including every one of the five members at the
+# builder's own L/D = 2 limit, where energy_vs_eq536 is 0.46. The four that are
+# caught are caught by arithmetic blow-up within 1e-7 of Phi = 1, not by the
+# sign: the coefficient-to-DOF matrix the shipped interpolation inverts has
+# determinant L(1 - Phi)/6 and is SINGULAR there. With the shear term's sign
+# corrected that determinant is L(1 + Phi)/6, which is the (1 + Phi) denominator
+# the classical shear-flexible shape functions carry and never vanishes.
+#
+# Measured on Windows, Python 3.13, at acb5e8c, through the shipped
+# `floatfea.element.beam` functions and the shipped rung-2 helpers.
+# ---------------------------------------------------------------------------
+id=cm11_tube300_LD2_stubbiest section=circular_tube,D=0.3,t=0.008 L=0.6 L_over_D=2.0000 phi=1.74211333 energy_vs_eq536=4.6247e-01 mass_blowup=8.8854e-01 rigid_inertia_check=green model_block_check=green shipped_caught=no builder_admits=yes
+id=cm11_tube300_phi_unity_LD2p64 section=circular_tube,D=0.3,t=0.008 L=0.791934845805 L_over_D=2.6398 phi=1.00000000 energy_vs_eq536=4.2080e-01 mass_blowup=2.1923e+24 rigid_inertia_check=RED model_block_check=RED shipped_caught=yes builder_admits=yes
+id=cm11_tube300_phi_1p0000001 section=circular_tube,D=0.3,t=0.008 L=0.791934806208 L_over_D=2.6398 phi=1.00000010 energy_vs_eq536=4.2080e-01 mass_blowup=6.4236e+12 rigid_inertia_check=RED model_block_check=RED shipped_caught=yes builder_admits=yes
+id=cm11_tube300_LD3_phi0p77 section=circular_tube,D=0.3,t=0.008 L=0.9 L_over_D=3.0000 phi=0.77427259 energy_vs_eq536=3.8557e-01 mass_blowup=2.2844e+00 rigid_inertia_check=green model_block_check=green shipped_caught=no builder_admits=yes
+id=cm11_tube600_LD2_phi1p77 section=circular_tube,D=0.6,t=0.012 L=1.2 L_over_D=2.0000 phi=1.76547000 energy_vs_eq536=4.6274e-01 mass_blowup=8.8206e-01 rigid_inertia_check=green model_block_check=green shipped_caught=no builder_admits=yes
+id=cm11_tube600_phi_unity section=circular_tube,D=0.6,t=0.012 L=1.59445188074 L_over_D=2.6574 phi=1.00000000 energy_vs_eq536=4.2080e-01 mass_blowup=2.1332e+24 rigid_inertia_check=RED model_block_check=RED shipped_caught=yes builder_admits=yes
+id=cm11_tube3000_thin_LD2_phi1p84 section=circular_tube,D=3.0,t=0.001 L=6 L_over_D=2.0000 phi=1.83627541 energy_vs_eq536=4.6334e-01 mass_blowup=3.8365e+00 rigid_inertia_check=green model_block_check=green shipped_caught=no builder_admits=yes
+id=cm11_tube3000_thin_phi_unity section=circular_tube,D=3.0,t=0.001 L=8.13055439069 L_over_D=2.7102 phi=1.00000000 energy_vs_eq536=4.2080e-01 mass_blowup=inf rigid_inertia_check=raises model_block_check=raises shipped_caught=raises builder_admits=yes
+id=cm11_tube100_brace_LD2_phi1p80 section=circular_tube,D=0.1,t=0.001 L=0.2 L_over_D=2.0000 phi=1.80111750 energy_vs_eq536=4.6309e-01 mass_blowup=8.7318e-01 rigid_inertia_check=green model_block_check=green shipped_caught=no builder_admits=yes
+id=cm11_tube100_brace_phi_unity section=circular_tube,D=0.1,t=0.001 L=0.268411437908 L_over_D=2.6841 phi=1.00000000 energy_vs_eq536=4.2080e-01 mass_blowup=1.6687e+29 rigid_inertia_check=RED model_block_check=RED shipped_caught=yes builder_admits=yes
+id=cm11_solid13_LD2_phi0p92 section=circular_tube,D=0.013,t=0.006 L=0.026 L_over_D=2.0000 phi=0.92418639 energy_vs_eq536=4.1077e-01 mass_blowup=1.2511e+01 rigid_inertia_check=green model_block_check=green shipped_caught=no builder_admits=yes
+id=cm11_tube300_LD5_phi0p28 section=circular_tube,D=0.3,t=0.008 L=1.5 L_over_D=5.0000 phi=0.27873813 energy_vs_eq536=2.1627e-01 mass_blowup=1.0597e+00 rigid_inertia_check=green model_block_check=green shipped_caught=no builder_admits=yes
+id=cm11_tube300_LD20_phi0p017 section=circular_tube,D=0.3,t=0.008 L=6 L_over_D=20.0000 phi=0.01742113 energy_vs_eq536=1.8166e-02 mass_blowup=1.0021e+00 rigid_inertia_check=green model_block_check=green shipped_caught=no builder_admits=yes
+id=cm11_tube300_LD100_phi7e-4 section=circular_tube,D=0.3,t=0.008 L=30 L_over_D=100.0000 phi=0.00069685 energy_vs_eq536=7.4208e-04 mass_blowup=1.0002e+00 rigid_inertia_check=green model_block_check=green shipped_caught=no builder_admits=yes
+id=cm11_tube600_LD0p83_phi10p2 section=circular_tube,D=0.6,t=0.012 L=0.5 L_over_D=0.8333 phi=10.16910720 energy_vs_eq536=2.6159e-01 mass_blowup=5.7383e-01 rigid_inertia_check=green model_block_check=green shipped_caught=no builder_admits=no
