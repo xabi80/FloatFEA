@@ -238,3 +238,38 @@ It does not merge. It does not edit tests, tolerances, or reviews. It does not
 soften a HOLD because the inside verdict was PASS. And it does not accept "the
 supervisor already checked this" as evidence — that sentence is the reason the
 witness exists.
+
+## The milestone witness (DO3)
+
+**The PR witness above never ran.** Fourteen rounds, no outside comment on any F2
+step, and F2 closed with twenty-eight consecutive reviews by one reader. A channel
+that is available and unused is not a second reader; recording that here is the
+first half of the fix.
+
+**The second half is cheaper and it runs. At each MILESTONE close, one independent
+pass:**
+
+* a **fresh reader**, not the gating supervisor, with **no conversation history** —
+  it is given the repository, `PLAN.md`, `CLAUDE.md`, `docs/conventions.md`, the
+  ladder, the milestone plan and the milestone closure artifact, and nothing about
+  how the milestone went;
+* asked **one question in two halves**: *does this milestone's physics do what the
+  closure artifact says, and what would you test that nobody did?*
+* **one pass, not a round.** It writes no verdict, it does not gate, and it does
+  not enter the three-verdict count. Its findings go to Xabier.
+* it may not modify a tracked file. If it needs a tree it takes a `git worktree`
+  outside the repository and removes it.
+
+**Once per milestone rather than once per step**, which is what makes it
+affordable: seven steps of F2 would have been seven passes, and the weakness the
+witness exists to catch is a milestone-level one — a physics claim that has been
+read so many times by the same reader that it stops being read.
+
+**Why it is asked about the ARTIFACT and not the diff.** The closure artifact is
+what a later milestone builds on and what F4 will cite when its inertia relief
+reads this element. If the artifact's physics claims do not hold, nothing
+downstream of it is safe, and that is a different question from whether any step's
+diff was correct.
+
+**It is not a substitute for the PR witness.** If the PR channel ever runs, both
+apply and the stricter finding stands, exactly as the step-level rule says.
