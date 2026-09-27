@@ -39,16 +39,38 @@ fallback is what was taken.** Two reasons, both measured below:
    ``WIDEN * ceiling``. Registering a lower-bound counter there means extending
    that guard, and CZ0 freezes apparatus through F6. The measured ratios are in
    the step report, so the band is one line to adopt when 4a is unfrozen.
-2. **The shipped element's frequencies are not monotone under refinement**, in
-   EITHER boundary condition, and
-   `test_the_MESH_DEPENDENT_interpolation_space_is_what_BREAKS_monotonicity`
-   isolates why: ``Phi = 12 EI / (kappa G A L^2)`` is computed from the ELEMENT
-   length, so refining the mesh changes the interpolation space and the spaces
-   are **not nested**. Rayleigh-Ritz needs nesting. With ``Phi = 0`` the space
-   is the Hermite cubics, nesting is restored, and the sequence is monotone over
-   the same meshes. So a one-sided band is not a property this element family
-   has, against any reference, and asserting one would have been asserting
-   something false a second time.
+2. **THIS REASON WAS A DEFECT IN THE ELEMENT AND IS WITHDRAWN (R541).** It read:
+   the shipped element's frequencies are not monotone under refinement in either
+   boundary condition, because ``Phi`` is computed from the element length so the
+   interpolation spaces are not nested. **The sign of the shear term in
+   `bending_interpolation` was wrong**, and with it corrected the largest rise in
+   any frequency under refinement is ``0.000e+00`` in both boundary conditions --
+   where the published figures were ``1.476e-04`` and ``7.924e-05``. The spaces
+   ARE nested: the field family is ``{th in P2, w' = th - c th''}`` with
+   ``c = EI/(kappa G A)``, a length-independent constant, and ``Phi = 12c/L^2`` is
+   only its dimensionless rendering.
+
+   **So the sign half of DL0's band ships**, and it is asserted in
+   `test_the_SHIPPED_element_approaches_its_OWN_continuum` over the whole range
+   that test prints.
+
+**WHAT IS STILL NOT ASSERTED: the ORDER half of the band, DL0's [12, 20] window
+on the convergence ratio.** DN0 time-boxed that to one hypothesis with a
+pre-registered branch, and the hypothesis was refuted:
+
+* **round-off floor** -- the discretisation error at ``n = 16`` is ``1.95e-06``
+  against a floor ``0.5 * eps * lambda_max/lambda_1`` of ``1.93e-10``, four orders
+  below it, while the ratio has already sagged to ``10.31``. The floor does become
+  comparable at ``n = 128`` (``1.28e-08`` against an error of ``1.41e-08``), so it
+  explains the finest meshes and not the sag;
+* **rotary inertia** (the ``N_theta`` interpolation being one order lower than
+  ``N_w``) -- refuted outright: with rotary inertia off against its own closed
+  form the ratios are ``13.63, 10.31, 6.62, 4.47``, identical to four figures.
+
+The residual signature is a weaker ``h^2`` term taking over from a dominant
+``h^4`` one, and it is not identified. **Per DN0's second branch the order
+question goes to F3 with these two cells as its starting point**, and no band is
+asserted on it here.
 
 Nothing here widens, skips or xfails anything. `FREE_FREE_FREQUENCY` is not
 created. What is asserted needs no tolerance at all beyond `ROUNDOFF_IDENTITY`.
@@ -83,6 +105,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 import scipy.linalg as sla
+from numpy.typing import NDArray
 
 from floatfea import basis  # noqa: E402
 from floatfea.assemble.system import (  # noqa: E402
@@ -92,7 +115,9 @@ from floatfea.assemble.system import (  # noqa: E402
     element_length,
 )
 from floatfea.element.beam import (  # noqa: E402
+    bending_interpolation,
     bending_mass,
+    bending_stiffness,
     euler_bernoulli_bending_mass,
     local_mass,
 )
@@ -773,26 +798,22 @@ def test_the_TIMOSHENKO_reference_reduces_to_ITS_TWO_LIMITS(mode: int, capsys) -
         )
 
 
-def test_the_MESH_DEPENDENT_interpolation_space_is_what_BREAKS_monotonicity(
-    capsys, monkeypatch
-) -> None:
-    """Why no one-sided band exists for this element, against ANY reference.
+def test_the_frequency_sequence_is_MONOTONE_under_refinement(capsys, monkeypatch) -> None:
+    """Rayleigh-Ritz on nested subspaces: no frequency may RISE when the mesh is
+    refined, in either boundary condition, with `Phi` on or off.
 
-    Rayleigh-Ritz needs the refined subspace to CONTAIN the coarse one. It does
-    not here: `Phi = 12 E I / (kappa G A L^2)` is computed from the ELEMENT
-    length, so the interpolation changes shape when the mesh changes and two
-    half-length elements do not span what one full-length element spanned.
+    THIS TEST WAS NAMED `..._MESH_DEPENDENT_interpolation_space_is_what_BREAKS_
+    monotonicity` AND IT MEASURED A DEFECT (R541). The shipped element did
+    produce rises -- `1.476e-04` free-free and `7.924e-05` pinned-pinned, both at
+    n=64 -- and the conclusion drawn from them, that `Phi`'s dependence on the
+    element length makes the spaces non-nested, was wrong. The spaces are nested;
+    the shear term's sign was not. The old body asserted only the `Phi = 0` half
+    and REPORTED the shipped half, "because asserting that a defect is present
+    would redden the day it was fixed" -- which is exactly what a report of a
+    defect should do, and is why the assertion now covers both.
 
     cell  ONE VARIABLE: `Phi`. Same beam, same meshes, same eigensolver, both
-          boundary conditions. `Phi = 0` gives the Hermite cubics, which ARE
-          nested, and the frequency sequence is monotone decreasing. `Phi` as
-          shipped is not.
-
-    That is the whole reason DL1's fallback was taken rather than DL0's band:
-    a one-sided band asserts monotone approach from above, and this element does
-    not have it. Asserted here: the `Phi = 0` sequence IS monotone. The shipped
-    sequence is REPORTED, with the size of the violation, because asserting that
-    a defect is present would redden the day it was fixed.
+          boundary conditions, and now both halves asserted at zero rises.
     """
     import floatfea.element.beam as beam_module
 
@@ -837,21 +858,18 @@ def test_the_MESH_DEPENDENT_interpolation_space_is_what_BREAKS_monotonicity(
         for label in ("free-free", "pinned-pinned"):
             a = worst_rise(nested[label])
             c = worst_rise(shipped[label])
-            print(
-                f"    {label:14s} Phi=0 (nested): {a[0]:.3e}"
-                f"   shipped: {c[0]:.3e} at n={c[1]}, mode {c[2]}"
-            )
+            print(f"    {label:14s} Phi=0: {a[0]:.3e}   shipped: {c[0]:.3e}")
 
     for label in ("free-free", "pinned-pinned"):
-        rise, at_mesh, at_mode = worst_rise(nested[label])
-        assert rise == 0.0, (
-            f"{label}, Phi = 0: a frequency ROSE by {rise:.4e} at n={at_mesh}, "
-            f"mode {at_mode}. With Phi = 0 the interpolation is the Hermite "
-            "cubics and the meshes are nested, so Rayleigh-Ritz forbids it. "
-            "Either the mass matrix or the stiffness is wrong."
-        )
-        rise_shipped, _, _ = worst_rise(shipped[label])
-        assert rise_shipped >= 0.0, "unreachable: a rise is non-negative by construction"
+        for which, rows in (("Phi = 0", nested[label]), ("shipped", shipped[label])):
+            rise, at_mesh, at_mode = worst_rise(rows)
+            assert rise == 0.0, (
+                f"{label}, {which}: a frequency ROSE by {rise:.4e} at "
+                f"n={at_mesh}, mode {at_mode}. The interpolation family is "
+                "length-independent, so the meshes are nested and Rayleigh-Ritz "
+                "forbids it. R541 was exactly this assertion failing on the "
+                "shipped element, and the cause was the shear term's sign."
+            )
 
 
 @pytest.mark.parametrize("plane", ["xy", "xz"])
@@ -862,14 +880,24 @@ def test_the_SHIPPED_element_approaches_its_OWN_continuum(plane: str, capsys) ->
     and both bending planes are run because the `xz` plane carries the sign flip
     a planar case cannot see.
 
-    ASSERTED: the error falls under refinement over 4 -> 8 -> 16. **NOT
-    asserted: a one-sided band.** The range stops at 16 and the reason is
-    measured, not chosen -- beyond it the non-nested wobble isolated in
-    `test_the_MESH_DEPENDENT_interpolation_space_is_what_BREAKS_monotonicity`
-    is the same size as the discretisation error, and the error changes sign at
-    n=32. The full table including that sign change is printed rather than
-    trimmed, and the ratios are in the step report so DL0's band can be adopted
-    in one line when a lower-bound counter can be registered.
+    ASSERTED OVER THE WHOLE RANGE THIS TEST PRINTS: the error is POSITIVE at
+    every mesh and falls at every refinement, both planes, all three modes. That
+    is the sign half of DL0's band and on the corrected element it is exact
+    theory rather than a measurement that happened to come out that way.
+
+    THE RANGE USED TO STOP AT 16 AND THE REASON WAS A DEFECT (R542, R541). It
+    read: "beyond it the non-nested wobble is the same size as the discretisation
+    error, and the error changes sign at n=32." The sign change at n=32 WAS the
+    defect. Corrected, the error is positive and falling from n=4 to n=128, so
+    there is nothing to truncate -- and the reviewer's own measurement showed the
+    old assertion passing on BOTH signs over 4 -> 8 -> 16, so the narrowed domain
+    certified nothing about the thing that was wrong. A test correct about a
+    domain that excludes the fault is the shape this finding is named for.
+
+    STILL NOT ASSERTED: DL0's [12, 20] window on the convergence RATIO. The
+    module docstring carries the two cells that refuted the round-off-floor and
+    rotary-inertia explanations for the order sagging toward 2 at fine meshes,
+    and DN0's second branch sends that question to F3.
     """
     section = _tube(0.3, 0.008)
     length = 30.0
@@ -888,8 +916,16 @@ def test_the_SHIPPED_element_approaches_its_OWN_continuum(plane: str, capsys) ->
         for n_el in reported:
             print(f"    n={n_el:4d}  " + "  ".join(f"{e:+.4e}" for e in errors[n_el]))
 
-    asserted = (4, 8, 16)
-    for coarse, fine in zip(asserted[:-1], asserted[1:], strict=True):
+    for mode in range(3):
+        for n_el in reported:
+            assert errors[n_el][mode] > 0.0, (
+                f"plane {plane}, mode {mode + 1}, n={n_el}: the computed frequency "
+                f"is BELOW the exact Timoshenko value by {errors[n_el][mode]:.4e}. "
+                "The interpolation family is length-independent and conforming, so "
+                "Rayleigh-Ritz forbids it -- R541 was this assertion failing, and "
+                "the cause was the shear term's sign."
+            )
+    for coarse, fine in zip(reported[:-1], reported[1:], strict=True):
         for mode in range(3):
             before = abs(errors[coarse][mode])
             after = abs(errors[fine][mode])
@@ -900,3 +936,150 @@ def test_the_SHIPPED_element_approaches_its_OWN_continuum(plane: str, capsys) ->
                 "exact for these boundary conditions, so refinement has to "
                 "approach it."
             )
+
+
+# --------------------------------------------------------------------------
+# DN1. The convention-free check: the interpolated field's own strain energy
+# --------------------------------------------------------------------------
+
+
+def _field_coefficients(
+    length: float, phi: float, q: NDArray[np.float64], interp=bending_interpolation
+) -> tuple[float, float, float]:
+    """`(c2, c3, gamma)` read OUT of the interpolation, assuming nothing.
+
+    `theta` is exactly quadratic in `xi` and `w` exactly cubic, so three and four
+    exact samples determine them. **Nothing here re-derives the shear term**: the
+    shape functions are sampled and the coefficients fitted, so a wrong sign
+    shows up in `gamma` rather than being cancelled by a reference that shares
+    the mistake. That is the whole point -- V2.5's four other checks all live
+    where the shear coefficient cannot be seen.
+
+    `interp` IS A PARAMETER AND NOT A PATCHED MODULE ATTRIBUTE. The first version
+    of the counter below patched `floatfea.element.beam.bending_interpolation`
+    while this function read the name imported into THIS module, so the defect
+    was never injected and the counter reported that it could not see it. That is
+    the resolution mistake the reviewer recorded against its own first cell in
+    the sixty-first verdict, made here a round later.
+    """
+
+    def theta(xi: float) -> float:
+        return float(interp(length, phi, xi)[1] @ q)
+
+    def w(xi: float) -> float:
+        return float(interp(length, phi, xi)[0] @ q)
+
+    t0, t_half, t1 = theta(0.0), theta(0.5), theta(1.0)
+    c3 = 2.0 * (t1 - 2.0 * t_half + t0)
+    c2 = t1 - t0 - c3
+    nodes = np.array([0.0, 1.0 / 3.0, 2.0 / 3.0, 1.0])
+    coeffs = np.linalg.solve(np.vander(nodes, 4, increasing=True), np.array([w(x) for x in nodes]))
+    slope = coeffs[1] + 2.0 * coeffs[2] * 0.5 + 3.0 * coeffs[3] * 0.25
+    gamma = slope / length - t_half
+    return c2, c3, gamma
+
+
+PHI_PROBES = (1.0e-3, 1.0e-2, 0.1, 1.0, 10.0)
+"""not-a-tolerance: the shear parameters the identity below is probed at. They
+span four decades because the term under test is proportional to `Phi` and
+vanishes at `Phi = 0`, where no check can see it."""
+
+
+def _energy_mismatch(phi_target: float, interp) -> float:
+    """Worst relative gap between `q^T k q` and the field's own strain energy.
+
+        integral_0^L EI theta'^2 dx = (EI/L) (c2^2 + 2 c2 c3 + 4 c3^2 / 3)
+        kappa G A gamma^2 L          with gamma constant over the element
+
+    Closed form, not sampled. The rigid part of `q` is projected out, because a
+    rigid motion has zero energy on both sides and would dilute the comparison.
+    """
+    d_outer, thickness = 0.6, 0.012
+    area = basis.tube_area(d_outer, thickness)
+    inertia = basis.tube_second_moment(d_outer, thickness)
+    section = Section(
+        A=area,
+        I_y=inertia,
+        I_z=inertia,
+        J=basis.torsion_constant("thin_tube", inertia, inertia),
+        shape="thin_tube",
+    )
+    ei = STEEL.E * inertia
+    kga = section.kappa(STEEL) * STEEL.G * area
+    length = float(np.sqrt(12.0 * ei / (kga * phi_target)))
+    k = bending_stiffness(ei, length, phi_target)
+
+    rigid = np.column_stack([np.array([1.0, 0.0, 1.0, 0.0]), np.array([0.0, 1.0, length, 1.0])])
+    rng = np.random.default_rng(20260927)
+    worst = 0.0
+    for _ in range(24):
+        q = rng.standard_normal(4)
+        q = q - rigid @ np.linalg.lstsq(rigid, q, rcond=None)[0]
+        c2, c3, gamma = _field_coefficients(length, phi_target, q, interp)
+        want = (ei / length) * (c2**2 + 2.0 * c2 * c3 + 4.0 * c3**2 / 3.0)
+        want += kga * gamma**2 * length
+        worst = max(worst, abs(float(q @ k @ q) - want) / abs(want))
+    return worst
+
+
+def _flipped(length: float, phi: float, xi: float):
+    """The interpolation with the shear term's sign as it SHIPPED (R541)."""
+    return bending_interpolation(length, -phi, xi)
+
+
+@pytest.mark.parametrize("phi_target", PHI_PROBES)
+def test_the_INTERPOLATED_FIELDS_OWN_ENERGY_equals_the_stiffness(phi_target: float, capsys) -> None:
+    """`q^T k q == integral EI theta'^2 dx + kappa G A gamma^2 L`, exactly.
+
+    THIS IS THE CHECK THAT WOULD HAVE CAUGHT R541 ON THE DAY, and it is here
+    because none of V2.5's other four reach the shear coefficient: the
+    Euler-Bernoulli checkpoint is at `Phi = 0` by construction, and the
+    rigid-body inertias and `Phi^T M Phi` are quadratic forms of vectors whose
+    `c3` is zero -- `c3` being the only coefficient the shear term multiplies.
+
+    WHY IT IS CONVENTION-FREE. Przemieniecki eq. 5.36 is the exact stiffness of
+    the exact homogeneous Timoshenko field, so it IS the strain energy of the
+    field the interpolation describes. Both sides are scalars built from the same
+    `q`, and no sign convention between `theta` and `dw/dx` survives into either.
+    """
+    worst = _energy_mismatch(phi_target, bending_interpolation)
+    with capsys.disabled():
+        print(f"\n  Phi={phi_target:<8g} worst {worst:.4e}")
+    assert worst <= ROUNDOFF_IDENTITY, (
+        f"Phi={phi_target:g}: the interpolated field's strain energy disagrees "
+        f"with eq. 5.36 by {worst:.4e} relative, against {ROUNDOFF_IDENTITY:g}. "
+        "The stiffness IS that field's energy, so the two cannot differ unless "
+        "the interpolation is not the field the stiffness was derived for."
+    )
+
+
+def test_the_SHIPPED_SIGN_FLIP_breaks_the_energy_identity(capsys) -> None:
+    """R541's counter, and it is the defect that shipped rather than an invention.
+
+    The response has to grow with `Phi`, because at `Phi = 0` the term vanishes
+    and no check can see it. That is why the probes start at `1e-3` and why this
+    test says so rather than claiming coverage it does not have.
+    """
+    rows = []
+    for phi_target in PHI_PROBES:
+        try:
+            rows.append((phi_target, _energy_mismatch(phi_target, _flipped)))
+        except np.linalg.LinAlgError:
+            rows.append((phi_target, float("inf")))
+    with capsys.disabled():
+        print("\n  the shipped sign flip, against the energy identity:")
+        for phi_target, gap in rows:
+            shown = "LinAlgError (singular at Phi = 1)" if gap == float("inf") else f"{gap:.4e}"
+            print(f"    Phi={phi_target:<8g} {shown}   ceiling {ROUNDOFF_IDENTITY:g}")
+
+    blind = [phi for phi, gap in rows if gap <= ROUNDOFF_IDENTITY]
+    assert not blind, (
+        f"the flipped sign passes the energy identity at Phi={blind}, so that "
+        "check cannot see the defect R541 was."
+    )
+    ordered = [gap for _, gap in rows]
+    assert ordered[0] < ordered[1] < ordered[2], (
+        f"the response does not grow with Phi -- {ordered[:3]}. The term under "
+        "test is proportional to Phi, so a response that does not grow with it "
+        "is not measuring that term."
+    )
