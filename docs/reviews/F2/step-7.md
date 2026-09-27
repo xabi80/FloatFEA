@@ -1,576 +1,499 @@
 # Review — F2 step 7
-Reviewed commit: b9a985999972a4738671a66e9cd8dcc1585a6dfb
+Reviewed commit: d877c91005c9b7ef211c439f05f3c7dea95ea9b3
 Verdict: HOLD
-Tests: 2762 passed, 15 failed, 0 skipped   (my run at `9682bcc`, `python -m pytest -q`, 750.49s)
+Tests: 2761 passed, 11 failed, 0 skipped   (my run at `0f26f03`, `python -m pytest -q`, 761.79s)
 
-**Sixty-sixth verdict on F2; the third written into this file after step 7's closure
-verdict (DD1), and it rules on one commit, `9682bcc`, and on nothing else.**
+**Sixty-seventh verdict on F2; the fourth written into this file after step 7's closure
+verdict (DD1), and it rules on one commit, `0f26f03`, and on nothing else.**
 
-**STEP 7 IS AND STAYS CLOSED. F2 IS AND STAYS CLOSED. Verdict 63 at `2c48a4f` remains
-the closure verdict and nothing here withdraws it.** The three-verdicts-per-step cap is
-not in play: this is not a fourth round on step 7's *work*, it is the same
-post-closure tree loop verdicts 64 and 65 ran, and the reason it exists is that
-`9682bcc` changed `tests/` after a verdict. The `Stop` hook is right to refuse.
+**STEP 7 IS AND STAYS CLOSED. F2 IS AND STAYS CLOSED. Verdict 63 at `2c48a4f` remains the
+closure verdict and nothing here withdraws it.** No later step has been started:
+`docs/milestones/F2.md:10` still reads `step-under-execution: 7` and the reports tree holds
+only F2. This is the same post-closure tree loop as verdicts 64, 65 and 66.
 
-**The HOLD is on the TREE, not on step 7's work, and the exit exists.** No later step
-has been started -- `docs/milestones/F2.md:10` still reads `step-under-execution: 7`
-and F3 step 1 has no commits -- so the DD1 deadlock (a verdict on step 7 that cannot
-clear a step-6 report) cannot form here. The exit is: fix the four blocking items in
-`tests/`, re-invoke, and a PASS-on-the-tree verdict is written into this file.
+**The invocation is IN ORDER and its three direct questions are answered here.**
 
-**The direct answer to the invocation's two questions.**
-
-1. **YES. `9682bcc` relaxes more than DQ3 ruled, in three separate ways, each
-   measured.** `pyproject.toml` is exempt and is neither `docs/` nor `CLAUDE.md`
-   (R555). The `_changes_the_parse` exemption rests on a premise this repository
-   refutes -- a comment-only commit under `floatfea/` turns the suite into a
-   collection error (R556). And the BE3 backstop, which is the whole of what makes
-   ruling 2 safe, is disarmed by a one-line edit to a document the same commit just
-   exempted (R557).
-2. **YES, `pyproject.toml`'s absence is a hole and it carries.** It is the largest one
-   measured here: `2777` collected becomes `88`, and the rule reports no intruder.
-
-**And one thing that is worse than a hole: ruling 2 is NOT IMPLEMENTED (R558).** An
-untranscribed reviewer entry still reddens CI, one failure per entry. My own corpus
-batch this round took the tree from 15 failures to 22 -- seven entries, seven new
-reds -- which is exactly the coupling BE3 was ruled to break.
+1. **The four items: three answered, one answered in part.** R558 ANSWERED and measured.
+   R556 ANSWERED. R555 ANSWERED at both halves I named, with a residual hole of the same
+   class (R565). **R557 ANSWERED AT TWO OF ITS THREE SILENCERS** -- the third was
+   relocated, not closed, and one `git rm` of four markdown files takes the backstop from
+   red to green (R562).
+2. **The ten remaining reds are ELEVEN, and none of them is a false red.** The eleventh is
+   new, it is caused by this commit, and the five-file subset the commit message measured
+   is the one subset that cannot see it (R561).
+3. **R548's fix is correct in one anchor state of three and INVERTS THE RULE in the other
+   two.** With the report tracked-and-modified or untracked, `assert distance == 1` rejects
+   a count taken at the head and accepts a count one commit stale. Measured as a controlled
+   pair both ways (R563). **That condition was mine and it was underspecified; the finding
+   is not that the implementer misread it.**
 
 ```
-cmd  git log --oneline e663a88..HEAD
-out  9682bcc process: R546, BE3 and write_verdict.py -- three rulings (DQ3)
-     303d203 docs: the blind subspace is {c3 = 0}, not the rigid subspace
-     (303d203 was reviewed at verdict 65; 9682bcc is the only commit ruled on here)
-cmd  git diff e663a88..HEAD -- floatfea/tolerances.py
+cmd  git log --oneline b9a9859..HEAD
+out  d877c91 corpus: batch 16 (mine, committed after this review's measurements)
+     0f26f03 fix: the HOLD exit -- R555, R556, R557, R558, R548, C31, C32
+     53c4908 review: F2 step 7 -- sixty-sixth verdict, HOLD @ 9682bcc
+cmd  git diff b9a9859..0f26f03 -- floatfea/tolerances.py
 out  (no output)
-cmd  git diff e663a88..HEAD -- tests/conftest.py "tests/**/conftest.py"
+cmd  git diff b9a9859..0f26f03 -- floatfea
+out  (no output)
+cmd  git diff b9a9859..0f26f03 -- tests/conftest.py "tests/**/conftest.py"
 out  (no output)
 cmd  git ls-files -- tests/conftest.py "tests/**/conftest.py"
 out  tests/conftest.py      -- CI0: the pathspec resolves; the instruction is not broken
-cmd  git diff e663a88..HEAD -- .claude docs/SUPERVISOR.md
+cmd  git diff b9a9859..0f26f03 -- .claude docs/SUPERVISOR.md
 out  (no output)   -- my own instructions are untouched. NOT a STOP-class edit.
-cmd  git diff 9682bcc~1..9682bcc --stat
-out  scripts/write_verdict.py 20+, tests/test_report_carried.py 172+,
-     tests/test_report_guard_states.py 60+  -- no floatfea/, and the process: commit
-     is standalone as CLAUDE.md requires
+cmd  git diff b9a9859..0f26f03 -- .github
+out  (no output)
+cmd  git diff 0f26f03~1..0f26f03 --stat
+out  scripts/write_verdict.py 28, tests/test_report_carried.py 52,
+     tests/test_report_guard_states.py 67 -- no floatfea/
+cmd  the same diff of scripts/write_verdict.py, filtered to added or removed lines
+       matching "sys.exit", "def " or "import "
+out  one line, and it is inside the docstring. That file is the reviewer's one
+     sanctioned write path and no executable line of it moved.
+cmd  python -m ruff check tests scripts ; python -m black --check tests scripts floatfea
+out  All checks passed! ; 101 files would be left unchanged
+     -- the two lint claims in the commit message hold at this commit
 ```
+
+**CI, for the reviewed commit (CA2).**
+
+```
+cmd  gh run list --commit 0f26f0383f2ba221364013c6aa6b675ce83d44ac
+       --json name,conclusion,workflowName,status
+out  CI / CI   status=completed   conclusion=failure     (run 36349346875)
+cmd  gh run view 36349346875 --json jobs
+out  the verification ladder      SUCCESS   13 steps   20:48:05 -> 20:51:00
+     lint, unit and guards        FAILURE   14 steps   20:48:06 -> 21:00:08 (12 min)
+     CI determinism -- leg / ten legs agree   skipped, 0 steps
+cmd  gh run view 36349346875 --log-failed, unique FAILED names
+out  eleven names, identical to my local eleven
+```
+
+**Not CK2.** Twelve minutes over fourteen steps with real assertion text in the log: a real
+red, and under CA2 a real red is (d). **The LADDER IS SUCCESS**, so no rung is red and
+nothing above is uninterpretable -- HOLD, not STOP. The tree moved from 22 failures at
+`b9a9859` to 11 at `0f26f03`.
+
+**On 1b: there is no report, for the fourth consecutive commit that touches `tests/`.**
+`docs/reports/F2/step-7.md` is unchanged since `36b5899` and still reads
+`Answers: verdict 61 @ 52941f7`; `0f26f03` arrived with its triples in the commit message
+and in the invocation. Applying 1b mechanically would HOLD a closed step over a report
+nobody submitted, so I apply it as verdicts 65 and 66 did. **The cost is measured again
+this round and it is the same cost: the commit message's one numeric claim about the suite
+is short by one, and the guard that catches the miss was outside the subset it was measured
+on.**
 
 ## Carried
 
-From verdict 65 at `e663a88`. **Five of six are untouched by `9682bcc`; the sixth is
-answered in form and reintroduced in substance.**
+From verdict 66 at `b9a9859`.
 
-1. **R546 -- ATTEMPTED, NOT ANSWERED.** This is the commit under review and it is the
-   subject of R555, R556 and R557. The condition verdict 65 set -- `pytest -q` at
-   `0 failed` at one commit -- is still unmet (15 failures at `9682bcc`, 22 at
-   `b9a9859`), and the rule that was unsatisfiable is now satisfiable by four commit
-   shapes that move the suite count. **Still open.**
-2. **R547 -- ANSWERED IN PART.** The comment-only and `process:` halves are now
-   exempt, which is what R547 asked for. The `docs/closure/**` half is exempt too and
-   that is the one I can now show is wrong by measurement rather than by argument
-   (R557, and the corpus ruling in batch 15). **Still open, narrowed.**
-3. **R548 -- STILL OPEN, BOTH HALVES, AND NEITHER WAS TOUCHED.**
+1. **R555 -- ANSWERED, at both halves the condition named, and a residual of the same
+   class is R565.** The one filename is in the include list; the control can now fail on a
+   top-level file.
    ```
-   cmd  sed -n '2489p' tests/test_report_carried.py
-   out  assert distance <= 1,
+   cell  ONE VARIABLE: remove that one filename from the include list at 0f26f03
+   cmd   python -m pytest tests/test_report_carried.py -q -k pathspec_names_every
+   out   1 failed -- it is named as executable content missing from the list.
+         The negative control fires.
    ```
-   **Distance zero is still accepted.** The invocation asks and this is the answer:
-   it was never rejected, `9682bcc` did not change it, and `0 <= 1` is the whole
-   measurement. `git diff 9682bcc~1..9682bcc -- tests/test_report_carried.py` touches
-   `_implementer_commits_after`, `_changes_the_parse` and two new tests, and not that
-   line. The reviewer-tree half is also unchanged -- **and for `tests/corpus` I now
-   record it as checked rather than carried: `git ls-files tests/corpus | grep -c
-   '\.py$'` is `0`, the tree is data-only, and the `PreToolUse` hook blocks the
-   implementer from writing it, so the exemption is sound for a reason the file does
-   not give.** The `docs/reviews` half stands as R548 wrote it.
-4. **R549 -- still open**, closed by R547.
-5. **R545 -- still open**, correctly not started.
-6. **Batch 13's five states -- STILL OPEN, and the direction of travel is wrong.**
-   None was built. The claim that they "now produce one named work item" is false:
-   they produce five `KeyError`s plus one named work item. See R558.
-7. **R550 -- still open and unchanged**, carried against F4. **`git diff
-   e663a88..HEAD -- docs/verification/README.md` is empty**, so V4.2's row is
-   untouched, which is correct: the ladder is a locked document and DQ5 is the route.
-   Note for the record that naming those sites has a cost I created: the nested
-   `two_digit_step_number` state now reds on
-   `test_every_named_site_is_touched_or_declared[R550-docs/verification/README.md:105]`
-   and two siblings, and the only thing that clears them is F3 step 1's report saying
-   `no change` beside each site by name.
-8. **C28, C29, C30 (closure items from verdict 65)** -- C28 and C29 untouched, which
-   is correct; they belong to the closure commit. **C30 was answered and a new
-   instance of the same defect was written in its place.** See the closure items.
-
-**On 1b: there is no report to check.** `docs/reports/F2/step-7.md` is unchanged since
-`36b5899` and still reads `Answers: verdict 61 @ 52941f7`; `9682bcc` arrived with no
-report at all, its triples in the invocation instead. As at verdict 65, applying 1b
-mechanically here would HOLD a closed step over a report nobody submitted. **But this
-is now the third consecutive `tests/`-or-`floatfea/`-touching commit to arrive with no
-report, and the invocation's own prose is the only place the numbers live.** One of the
-four numbers in it is wrong at the commit it describes (C34). That is the cost of the
-arrangement, stated once.
+2. **R556 -- ANSWERED, and the withdrawn helper is reachable nowhere from the rule.**
+   ```
+   cmd   grep -rn "_changes_the_parse" --include=*.py .
+   out   three lines: the definition, and the two controls that read it. The
+         intruder helper no longer calls it.
+   ```
+   The consequence is real and I record it rather than complain about it: `c9a8736` and
+   `303d203`, two commits I accepted as inert at verdict 65, are intruders again and are
+   two of the five names in today's whole-suite failure. The rule is still satisfiable -- a
+   report committed on top of the commit it names clears it -- so this is a cost, not R546.
+   **It does put the code and DQ3's first ruling in disagreement**, and see the criterion
+   section.
+3. **R557 -- ANSWERED AT TWO OF THREE. Still open at the third; see R562.** Measured, one
+   variable each, in a scratch clone at `0f26f03`:
+   ```
+   cell  bump `step-under-execution: 7` to `8`, nothing else
+   out   BEFORE 1 failed -> AFTER 1 failed    (it PASSED before this commit) FIXED
+   cell  set the marker to 1 and add a closure artifact for the next milestone
+   out   1 failed                              FIXED -- it survives the boundary
+   cell  git rm the four per-step closure artifacts, entries still untranscribed
+   out   1 passed, and the rule reported no intruder for it   NOT FIXED
+   ```
+4. **R548 -- ANSWERED IN THE LETTER AT ITS ONE NAMED SITE, AND THE ANSWER INVERTS THE RULE
+   IN TWO ANCHOR STATES.** See R563. The reviews-tree half of R548 is untouched and stays
+   open; the corpus half stays checked-not-carried for the reason verdict 66 gave.
+5. **R546 -- OPEN, WITH XABIER, AND CORRECTLY NOT ATTEMPTED.** The implementer did not
+   argue with the measurement and did not act on it; no pathspec moved beyond the one
+   filename. This is the criterion item, not a work item.
+6. **R547 and R549 -- STILL OPEN.** The exemption of the documentation tree is the
+   mechanism R562 now measures from the other side: it is what makes the closure-artifact
+   deletion invisible to the whole-suite rule.
+7. **Batch 13's five and batch 15's seven -- STILL UNTRANSCRIBED, and the direction of
+   travel is now RIGHT while the count grew.** Twelve at `0f26f03`, twenty-one after my
+   batch 16. The per-entry cost is gone (R558) and the backstop names them in one failure.
+   **A reasoned refusal has a channel and it is not a new mechanism**: the
+   requirement-changed table in the guard-states file exists to record a state whose
+   required outcome changed, with the reason. The entry the implementer says needs a ruling
+   can be built and recorded there; it does not need the ruling first.
+8. **R550 -- still open, carried against F4.** `git diff b9a9859..HEAD --
+   docs/verification/README.md` is empty, which is correct: the ladder is locked and DQ5
+   is the route.
+9. **R545 -- still open**, correctly not started.
+10. **C30, C31, C32 -- C32 ANSWERED; C31's count is right and its line numbers are not.**
+    C33 open at all three sites. C34 superseded. **C35 ANSWERED, by a different remedy
+    than the one its condition named** -- the walk is still over the filesystem, with a
+    git-ignore check and a hard skip of the build trees, rather than over tracked files.
+    Measured: a gitignored build tree present with `git status --porcelain` empty gives
+    `1 passed`; a new untracked tree is still named. The defect is gone and the named
+    remedy was not taken, which under CLAUDE.md's site rule is a thing to state rather
+    than to re-litigate. See the closure items.
+11. **The DP3 counter condition -- carried unchanged.** It is a condition on F3 step 2,
+    not on this commit; `floatfea/tolerances.py` is untouched, which is correct.
 
 ## Findings
 
-**R555. (c) -- BLOCKING. `pyproject.toml` is exempt from the whole-suite rule, and a
-commit touching only it moves the collected count from 2777 to 88.
-`tests/test_report_carried.py:2230` and `:2369-2377`.**
+**R561. (d) -- BLOCKING, NEW, AND CAUSED BY THIS COMMIT. The rename left a phantom
+citation and the repository's own citation guard catches it.
+`tests/test_report_guard_states.py:652`.**
 
 ```
-rule   _implementer_commits_after(anchor) must be non-empty for a commit that
-       makes the report's whole-suite count stale
-cell   ONE VARIABLE: one commit, pyproject.toml only, in a scratch clone at 9682bcc.
-       testpaths ["tests"] -> ["tests/unit"], xfail_strict true -> false.
-       Nothing else moved.
-cmd    python -m pytest --collect-only -q   before and after
-out    2777 tests collected  ->  88 tests collected
-cmd    _implementer_commits_after("HEAD~1") and _changes_the_parse(HEAD), imported
-       from the clone's own tests/test_report_carried.py
-out    []      and    False
-judge  HOLE. The rule is silent about a commit that deleted 2689 tests from the
-       suite the report's count describes.
+cmd  python -m pytest -q, unique FAILED names
+out  test_every_test_name_cited_in_prose_exists reds on the pair
+     (tests/test_report_guard_states.py, the OLD test name)
+out  "cites `test_every_reviewer_entry_is_BUILT_at_a_closure_commit` in prose and nothing
+     by that name exists"
 ```
 
-**The proximate cause is that the guard meant to keep the include list honest cannot
-see files.** `test_the_pathspec_names_every_executable_tree` iterates
-`ROOT.iterdir()` and skips everything that is `not entry.is_dir()`, so no
-top-level file can ever be named by it -- `pyproject.toml`, `CLAUDE.md`, `PLAN.md`,
-`WORKFLOW.md`, `.gitignore`. An include list guarded by a check blind to half the
-things it must include is not guarded.
-
-**And the same commit contains the counter-evidence, thirty lines from the list.**
-`tests/test_report_guard_states.py:351` enumerates what a nested pytest run needs
-copied into a work tree:
-
-```
-cmd  sed -n '351p' tests/test_report_guard_states.py
-out  for rel in (".git", "tests", "docs", "floatfea", "scripts", "pyproject.toml"):
-```
-
-**`docs` and `pyproject.toml` are both there, because without them the nested suite
-does not reproduce.** Two files in the same guard family give two different answers to
-"what can change a suite outcome", and the one written this commit is the narrower.
-
-**Closed when** `pyproject.toml` is inside the rule's domain, *and*
-`test_the_pathspec_names_every_executable_tree` can fail on a top-level file that is
-missing from the list -- break it by removing one entry and confirm it reds. A guard
-that cannot see the class of thing it checks is the "gate carries its own failure"
-defect, not a gap in a list.
+The test was renamed to one ending `_BUILT_before_a_step_CLOSES`; the sibling docstring at
+`:652` still points at the old name. **The five-file subset the commit message measured
+(`10 failed, 326 passed`) is the one subset that excludes the guard that catches the
+commit's own edit**, which is why the tree has eleven failures and the message says ten.
+One line. **Closed when** the citation names the test that exists.
 
 ---
 
-**R556. (c) -- BLOCKING. `_changes_the_parse` exempts a commit class that this
-repository has three tests reading as data. `tests/test_report_carried.py:2296-2318`
-says a comment-only edit under `floatfea/` "cannot move a suite count". It can, and
-the result is a collection error, not a changed number.**
+**R562. (c) -- BLOCKING. R557's third silencer was relocated, not closed: the backstop's
+precondition is still a set of files the constrained party writes, and deleting them is a
+documentation commit the whole-suite rule exempts.
+`tests/test_report_guard_states.py:695`, `:696`, `:697`.**
 
 ```
-rule   _changes_the_parse(sha) is False only for a commit that cannot change a test
-       outcome -- the docstring's own words
-cell   ONE VARIABLE: one commit appending ONE hash-comment line to
-       floatfea/element/beam.py, `# claim: this probe comment asserts something
-       about the repository`, with no `cmd:` after it. Parse identical; nothing
-       else moved.
-cmd    _changes_the_parse(HEAD) ; _implementer_commits_after("HEAD~1")
-out    False ; []          -- exempt
-cmd    python -m pytest tests/test_tree_prose_consistent.py -q   before and after
-out    30 passed  ->  AssertionError: floatfea/element/beam.py:369 opens `claim:`
-       and no `cmd:` follows it ;  1 error in 0.45s, Interrupted: 1 error during
-       collection
-judge  HOLE, and the worst-shaped one available: the state the rule calls inert is a
-       state in which NOTHING RUNS. The corpus header at
-       tests/corpus/report_guard_states.txt:43 already rules that a collection error
-       is never an agreement with any expected outcome.
-```
-
-**Comments in this tree are executable content, and this was knowable by reading.**
-`tests/test_tree_prose_consistent.py:99` scans `ROOTS = ("floatfea", "tests",
-"scripts", "docs/milestones", "docs/verification")` and `:100`
-`EXTRA_FILES = ("CLAUDE.md",)` for claim/cmd/out triples, which live in
-comments by construction -- CW0 requires it. `tests/test_plan_figures.py:52` sweeps
-`("floatfea", "tests", "scripts", "docs")` for figure names in `.py`, `.md` and `.sh`.
-`tests/test_no_tolerance_literals.py:92` reads `tokenize.COMMENT` tokens for the
-`not-a-tolerance:` exemption. **The AST is the wrong invariant for this repository**,
-because CW0 deliberately made comments load-bearing.
-
-**One honest negative, recorded because I measured it and it did not fire.** I also
-deleted the `not-a-tolerance:` marker line at
-`tests/test_counters_are_injected.py:64` as a second instance of the same class:
-`_changes_the_parse` returned `False` and `tests/test_no_tolerance_literals.py` stayed
-`50 passed`. That channel did not redden. The `beam.py` one did, and one measured
-counter-example is what the claim needs to be false.
-
-**What `c9a8736` and `303d203` prove, precisely.** They are two commits that happened
-to be inert. `test_a_COMMENT_ONLY_commit_is_exempt_and_a_CODE_commit_is_NOT` asserts a
-property of those two shas, not of the class, and the docstring generalises from them.
-
-**Closed when** the exemption stops applying to a file whose comments a shipped test
-reads -- measured, by naming the readers above, not asserted -- or the docstring's
-claim is reduced to what was measured ("these two commits are inert") and the rule's
-promise is restated to match. **DQ3 ruled that comment-only edits must not redden the
-rule. It did not rule that a comment-only edit which reddens the SUITE must be exempt,
-and those are different sentences.**
-
----
-
-**R557. (c) -- BLOCKING. The BE3 backstop is disarmed by one line in a document, and
-that line is exempt from the rule that would notice it.
-`tests/test_report_guard_states.py:664-690`.**
-
-The safety of ruling 2 rests entirely on "each step closure commit asserts N = 0". The
-assertion is conditional on `docs/closure/F2-step{STEP}.md` existing, and `STEP` is read
-from a regex over `docs/milestones/F2.md`.
-
-```
-rule   test_every_reviewer_entry_is_BUILT_at_a_closure_commit asserts
-       AWAITING_TRANSCRIPTION is empty once the step has closed
-cell   ONE VARIABLE: one commit changing the marker step-under-execution: 7 to
-       8 in docs/milestones/F2.md. Nothing else moved; no entry transcribed.
-cmd    python -m pytest tests/test_report_guard_states.py -q -k
-         every_reviewer_entry_is_BUILT
-out    BEFORE: 1 failed -- assert not [the five batch-13 names, listed verbatim in
-       the CI log of run 36345404842]
+rule   the backstop asserts the awaiting-transcription set is empty once any step
+       has closed
+cell   ONE VARIABLE: one commit removing the four per-step closure artifacts, in a
+       scratch clone at 0f26f03. No entry transcribed, no test code touched.
+cmd    python -m pytest tests/test_report_guard_states.py -q -k BUILT_before_a_step
+out    BEFORE: 1 failed, naming twelve untranscribed entries
 out    AFTER:  1 passed in 0.01s
-cmd    _implementer_commits_after(HEAD~1) on that same commit
-out    []      -- and the rule that reads suite counts is silent about it too
-judge  HOLE. One line in a document takes the backstop from red to green with all
-       five reviewer shapes still unbuilt, and the commit that does it is exempt.
+cmd    the rule's own intruder helper on that commit
+out    []        -- the whole-suite rule is silent about it too
+judge  HOLE. `if not closed: return` is the same early return as the single-path
+       version it replaced, over a glob instead of one path.
 ```
 
-**There is a second silencer and it is structural rather than adversarial.** The path
-is hardcoded `F2-step{STEP}.md` while `STEP` comes from `docs/milestones/F2.md`, a
-frozen file for a closed milestone. Every F3 step will look for an F2 artifact. The
-backstop is live today only because that marker still reads 7 -- it does not survive
-the milestone boundary, which is where carried items are lost.
+**And nothing else in the repository requires those artifacts to exist.**
 
-**Third: a gate whose precondition is a file the constrained party writes.** The body
-returns early when the closure artifact is absent. Closing a step without writing the
-per-step artifact is enough, and nothing asserts the artifact exists.
+```
+cmd  grep -rn "F2-step\|F\*-step" tests/ scripts/ --include=*.py
+out  two lines, both inside this one test: its docstring and its own glob
+```
 
-**Closed when** the assertion trigger is not a document the implementer edits in a
-commit the whole-suite rule exempts. Two forms satisfy DQ3 without a new mechanism:
-assert whenever a closure artifact exists for **any** step whose review file carries a
-PASS, or assert unconditionally and let the report carry N -- the ruling says the
-count is reported, and reporting it does not require the assertion to be skippable.
-**Ask of it what CLAUDE.md asks of every gate: if the thing it claims were false,
-would this go red? Today: only while one integer in one markdown file holds still.**
+So the four PASS verdicts recorded in the reviews tree would still record four closed steps
+while the assertion about them did not run. **Closed when** the trigger is a file the
+implementer cannot write. The form I named at R557 is still available and costs one line:
+glob the reviews tree for a `Verdict: PASS` line -- the `PreToolUse` hook blocks the
+implementer from that tree, which is the property the closure artifacts do not have. Break
+it to check: delete the artifacts and confirm it still reds.
 
 ---
 
-**R558. (c) -- BLOCKING, and this is the one I would fix first. Ruling 2 of DQ3 is NOT
-IMPLEMENTED. An untranscribed reviewer entry still reddens CI, one failure per entry.
-`tests/test_report_guard_states.py:693` with `:359`.**
+**R563. (c) -- BLOCKING, AND THIS IS THE ONE THAT MATTERS MOST. `assert distance == 1` is
+correct in one of the three anchor states and requires a STALE count in the other two.
+`tests/test_report_carried.py:2527`.**
+
+The anchor helper has three live states and its own docstring names them: a sha when the
+report is tracked and clean, the literal string `"HEAD"` when it is tracked and MODIFIED --
+"HEAD is the commit it will sit on" -- and the reports-tree sha when it is UNTRACKED. The
+distance the rule wants is one in the first state and **zero** in the other two, because in
+those two the correct measurement is the one taken at the head itself.
 
 ```
-cmd  sed -n 359p and sed -n 693p on tests/test_report_guard_states.py
-out  359:     for action, arg in STATES[state]:
-     693: @pytest.mark.parametrize("state, require", ENTRIES, ids=...)
+rule   the whole-suite line names the commit the count was taken at, and that
+       commit is the tree the report describes
+cell   ONE VARIABLE: the sha in the report's whole-suite line. Scratch clone at
+       0f26f03, report tracked and MODIFIED (not committed), nothing else moved.
+cmd    python -m pytest tests/test_report_carried.py -q -k whole_suite_line_is_about
+out    names HEAD    (0f26f03, the FRESH count) -> 1 failed:
+       "names `0f26f03`, which is 0 commit(s) behind `HEAD`"
+out    names HEAD~1  (53c4908, one commit STALE) -> 1 passed
+cell   SAME VARIABLE, report UNTRACKED via git rm --cached, nothing else moved
+out    names HEAD -> 1 failed, "0 commit(s) behind `36b5899`"
+out    names HEAD~1 -> 1 passed
+judge  INVERTED. In both states the fresh count reds and the stale count greens.
+       And in the MODIFIED state the intruder half returns [] by early return, so
+       this is the ONLY assertion covering that state.
 ```
 
-`ENTRIES` is the corpus. `STATES` is what is built. An entry in the first and not the
-second raises `KeyError` inside `_build`, before any assertion runs.
-`test_the_corpus_and_the_states_agree` was softened; the thing that actually failed was
-not.
+**The old `<= 1` was loose and included the correct value; `== 1` excludes it.** This is the
+guard-fails-false case in its worst form -- the assertion fires on the state whose claim is
+true -- and it will bite on the first report written after this commit, because a report is
+modified-or-untracked at the moment its count is taken.
 
-```
-rule   DQ3 ruling 2: an untranscribed reviewer corpus entry stops failing CI
-out    AT 9682bcc, failures attributable to untranscribed entries: 5 KeyErrors in
-       test_the_guard_survives_the_state cases plus 1 named work item = 6
-out    AT e663a88, the same count was 5 KeyErrors plus
-       test_the_corpus_and_the_states_agree = 6      (verdict 65, R553)
-cell   ONE VARIABLE: my corpus batch 15, seven entries, committed at b9a9859.
-       No test code changed.
-cmd    python -m pytest tests/test_report_guard_states.py -q
-out    14 failed -> 21 failed. Seven entries, seven new reds, one per entry.
-judge  NOT IMPLEMENTED. The count is unchanged at six and the coupling is intact:
-       a reviewer round still costs a red build, one for one.
-```
-
-**This is the finding the invocation asked me to look for and it points the other
-way.** I was asked whether the relaxation lets a reviewer finding be ignored. The
-measurement says the relaxation did not happen: "the suite is green" and "the reviewer
-has stopped finding shapes" are still the same statement, and my batch 15 above is
-seven more reds on a tree that is already red. **That is a bad trade for the one
-number in this process that says whether any of it works.**
-
-**Closed when** a corpus entry with no build action produces no failure -- parametrise
-over the built intersection, or make the unbuilt path report -- and the count is
-asserted by the repaired backstop of R557 and nowhere else. Break it to check: add one
-entry, confirm the delta is zero failures.
+**I own the shape of this.** R548 said `<= 1` must become `== 1` and named one line. It did
+not distinguish the three anchor states, the implementer implemented it literally, and the
+literal version is wrong. **Closed when** the threshold is per-state -- one where the anchor
+is a sha, zero where it is the `"HEAD"` or reports-tree fallback -- with both directions
+broken once and shown to red.
 
 ---
 
-**R559. (d) -- the tree is RED at the reviewed commit. 15 failures, CI red, carried
-rather than new.**
+**R564. (c) -- BLOCKING. The whole-suite rule cannot see a report for the next milestone, so
+F3 step 1's report cannot clear it and the rule is red from F3's first commit onward.
+`tests/test_report_carried.py:69`, `:70`; `scripts/ci_section.py:100`, `:108`;
+`tests/test_report_guard_states.py:80`.**
+
+```
+cell   ONE VARIABLE: commit a step-1 report for the next milestone with a
+       whole-suite line naming HEAD, in a scratch clone at 0f26f03. Nothing else
+       moved.
+cmd    import the guard module and print its reports directory, its step and its
+       report path
+out    the directory is docs/reports/F2, the step is 7, and the report is
+       docs/reports/F2/step-7.md
+cmd    python -m pytest tests/test_report_carried.py -q -k whole_suite_line_is_about
+out    1 failed -- "5 commit(s) touching code follow the report's own commit `36b5899`"
+judge  The new report is invisible. The only tree state that clears this rule is one
+       in which a CLOSED step's report is re-stamped and re-committed on top of the
+       newest commit, at every commit, forever.
+```
+
+This is R546's unsatisfiability in its original form, re-earned at the milestone boundary,
+and it is the same defect class R557's second silencer was: a path hardcoded to a milestone
+that has closed. It predates `0f26f03`; I block on it here rather than in F3 step 1's first
+round because **it is directly on the throughput path and it is one substitution in five
+places.** **Closed when** the five sites read the milestone under execution instead of the
+literal name, and a committed report for the next milestone is measured clearing the rule.
+
+---
+
+**R565. (c) -- BLOCKING. R555's repair reads top-level FILES from a four-name whitelist, so
+the domain is still blind to every other one -- including a root `conftest.py`, which can
+empty the collection. `tests/test_report_carried.py:2400`, `:2401`, `:2402`.**
+
+```
+rule   the include-list control must name anything a commit can touch that moves a
+       suite outcome
+cell   ONE VARIABLE: one commit adding a top-level conftest.py whose collection hook
+       empties the item list, in a scratch clone at 0f26f03. Nothing else moved.
+cmd    python -m pytest tests/test_report_carried.py -q -k pathspec_names_every
+out    no tests ran in 0.24s        -- the conftest emptied the collection
+cell   the SAME commit with a benign one-line conftest.py, plus a noxfile and a
+       Makefile whose default target runs pytest
+cmd    python -m pytest tests/test_report_carried.py -q -k pathspec_names_every
+out    1 passed
+cmd    the rule's own intruder helper on that commit
+out    []
+judge  HOLE, same class as R555. The branch adds a name only when it is one of four
+       hardcoded filenames and otherwise skips the file.
+```
+
+A root `conftest.py` is the channel my own instructions single out (CH2 and CI0): everything
+a gate reads is writable from a conftest. **Closed when** a top-level file that can move a
+suite outcome cannot be silently outside the domain -- the cheap form is that any top-level
+`.py`, and any tracked top-level file pytest or CI reads, must be named or explicitly
+classed -- and the control is broken once on a file that is not the one already listed.
+
+---
+
+**R566. (d) -- the tree is RED at the reviewed commit: 11 failures, CI red, and ten of the
+eleven are carried rather than new.**
 
 ```
 cmd  python -m pytest -q 2>&1 | tail -40
-out  15 failed, 2762 passed, 2 warnings in 750.49s
-cmd  gh run list --commit 9682bcc37ed708625020fb0ee2e1ff0c776b754e --json name,
-       conclusion,workflowName,status
-out  CI / CI   status=completed   conclusion=failure     (run 36345404842)
-cmd  gh run view 36345404842 --json jobs
-out  lint, unit and guards     FAILURE   14 steps, 19:43:38 -> 19:54:20 (11 min)
-     the verification ladder   SUCCESS   13 steps
-     CI determinism -- leg / ten legs   skipped, 0 steps
-cmd  gh run view 36345404842 --log-failed
-out  the same fifteen, same roots, same messages as my local run
+out  11 failed, 2761 passed, 2 warnings in 761.79s
 ```
 
-**Not CK2.** The job ran eleven minutes over fourteen steps with real assertions in the
-log; it is a real red and under CA2 a real red is (d). **The LADDER IS SUCCESS**, so no
-rung is red and nothing above is uninterpretable -- this is a HOLD, not a STOP.
+**Composition, and none of the eleven is a false red as a test outcome:**
 
-**Composition, the same fifteen as at `e663a88` with one substitution:**
-`test_the_whole_suite_line_is_about_a_commit_that_exists` (the genuine stale line, now
-naming **two** commits, not one -- see C34), `baseline` and eight inherited states, the
-five untranscribed entries, and
-`test_every_reviewer_entry_is_BUILT_at_a_closure_commit` in place of
-`test_the_corpus_and_the_states_agree`. **Both new tests pass**, locally and on CI.
+* **1 -- the whole-suite-line rule.** TRUE: five code-touching commits follow the report's
+  own commit and no report has been written. Two of the five named intruders cannot move a
+  count; see carried item 2.
+* **8 -- the guard-state cases**, `baseline` and seven step-number states. All eight have the
+  SAME root cause: the nested guard run reads the stale suite line above. **`baseline` red
+  means the harness has no valid control**, so the other seven carry no independent
+  information until the first item is green.
+* **1 -- the transcription backstop.** TRUE, and this one is the new backstop doing its job:
+  twelve reviewer entries untranscribed with four steps closed. It is a work item, not a
+  defect.
+* **1 -- R561**, new and caused by this commit.
 
----
-
-**R560. Checked and NOT a hole -- recorded because the invocation asked, and because a
-negative result measured is worth more than a suspicion carried.**
-
-* **Merge commits.** `git show --name-only --format=` prints nothing for a merge
-  TREESAME to a parent, so `_changes_the_parse` returns False for the merge itself --
-  but git history simplification reports the *side* commit instead, and that one is
-  caught. Measured: `_implementer_commits_after(9682bcc)` on a no-ff merge of a branch
-  editing `floatfea/tolerances.py` returned the side commit
-  `4cf55ba a real code change on a side branch`. **An evil merge is also caught**:
-  amended to add a line present in neither parent, git show falls back to the
-  conflicted-file list, `_changes_the_parse` returned True, and both the merge and the
-  side commit were reported. Both are corpus entries in batch 15. History here is
-  rebase-then-ff-only, so this was the cheap check, not the likely one.
-* **A commit that reverts and re-applies within itself** is correctly exempt: the net
-  parse is unchanged and the net suite outcome is too. Not a hole.
-* **Python files under `tests/corpus` are skipped for the right reason**, which I
-  checked rather than accepted: `git ls-files tests/corpus` matches zero names ending
-  in .py, the header declares the file test data only, and the PreToolUse hook blocks
-  the implementer from that tree. The *reason given in the docstring* is the R361
-  collected-count one, which is true and is why the exemption is necessary; the reason
-  it is **safe** is the hook, and the file does not say so.
-* **A shallow clone would make the new control vacuous** -- it skips when the sha is
-  absent -- but it cannot happen here: all three `actions/checkout@v4` steps in
-  `.github/workflows/ci.yml` carry fetch-depth 0, at lines 97, 355 and 467, for exactly
-  this reason (CC3).
-* **`artifacts/` -- the classification survives, and by a route the check in the
-  invocation did not cover.** `grep -rn artifacts tests scripts floatfea` does not read
-  `.github/`, and `.github/` is in `EXECUTABLE_PATHS` precisely because CI content moves
-  outcomes; if a workflow ran a script from `artifacts/`, the tree would be
-  CI-executable. It does not: `grep -rn artifacts .github/ scripts/ docs/verification/`
-  returns one prose mention at `scripts/ci_section.py:351`. The other route is a
-  repo-wide sweep, and every sweep is rooted: `tests/test_collected_set_golden.py:206`
-  at tests and scripts, `tests/test_plan_figures.py:52` at floatfea, tests, scripts and
-  docs, `tests/test_no_tolerance_literals.py:630` at TESTS, and every globbing triple in
-  the tree is over `tests/**/*.py`. **`artifacts/` is reachable by none of them.** The
-  classification is right; the evidence given for it was incomplete.
-
-## On the criterion rather than on the work -- this goes to Xabier, and I say it once
-
-**Ruling 1 of DQ3 rests on a premise this repository refutes, and I am not treating that
-as a HOLD because the premise is for Xabier to re-make, not for me to overrule.** The
-ruling is that `docs/` and `CLAUDE.md` are exempt by pathspec because they cannot move a
-suite count. Measured at `9682bcc`:
-
-```
-cell   ONE VARIABLE: one commit adding docs/closure/F3-step1.md, nothing else
-cmd    python -m pytest --collect-only -q   before and after
-out    2777 -> 2781, and tests/verification/rung3/test_closure_evidence_exists.py
-       gained one failure (test_the_artifact_cites_evidence_at_all)
-cmd    sed -n 38p and sed -n 53p on that file
-out    CLOSURE = sorted((REPO / "docs" / "closure").glob("F*.md"))
-       @pytest.mark.parametrize("doc", CLOSURE, ids=lambda d: d.stem)
-cmd    sed -n 99,100p tests/test_tree_prose_consistent.py
-out    ROOTS = ("floatfea","tests","scripts","docs/milestones","docs/verification")
-       EXTRA_FILES = ("CLAUDE.md",)
-```
-
-**A closure artifact adds four parametrised cases to the collected count -- the same
-shape as R361, which is the measurement that withdrew the justification of the last
-pathspec exemption. `CLAUDE.md` is scanned by the prose guard. `docs/milestones/F2.md`
-carries the integer that selects the entire input of the guard-state harness.** So the
-exempted set is not inert, and what the rule claims after `9682bcc` is narrower than the
-sentence written beside it.
-
-**The real problem is that no pathspec can express this rule**, and that is worth saying
-plainly rather than iterating on the list. The rule wants "the suite count in the report
-still describes the head". What it checks is "no commit of a certain shape followed the
-report". Those diverge in both directions, and R546 was the divergence becoming
-unsatisfiable. **The satisfiable form needs no new apparatus: either the count is
-re-taken by the last commit before the reviewer is invoked, or the rule is retired and
-`tests/test_collected_set_golden.py` -- which already exists and already compares the
-collected set against a golden -- is what carries the property.** I am not asking for
-either; the F2a list is frozen and this is a choice about a rule, which is for Xabier.
-
-**What I am asking for is that the four blocking items be fixed before the report for F3
-step 1 is written**, because that report whole-suite line is the first artifact measured
-by the relaxed rule, and verdict 65 already predicted the failure mode in those words: a
-rule that goes red on a comment is a rule that will be worked around, and that is worse
-than not having it. The worked-around version is what `9682bcc` produced, and I would
-rather say so now than certify it.
+**What IS false here is not a red, it is three guard BEHAVIOURS, and they are R562, R563 and
+R565.** The distinction is the whole of this verdict: the failures are honest and three of
+the passes are not.
 
 ## Tolerances touched
 
 **None.**
 
 ```
-cmd  git diff e663a88..HEAD -- floatfea/tolerances.py
+cmd  git diff b9a9859..HEAD -- floatfea/tolerances.py
 out  (no output)
-cmd  git diff 9682bcc~1..9682bcc -- floatfea
+cmd  git diff 0f26f03~1..0f26f03 -- floatfea
 out  (no output)
 ```
 
-No counter changed, no injection site changed, no golden file changed, no assertion
-threshold changed. **One not-a-tolerance declaration was added and it is correctly
-formed**: `EXECUTABLE_PATHS` at `tests/test_report_carried.py:2230` carries
-"not-a-tolerance: a pathspec. Nothing is compared against it", which is true -- it is a
-domain, and R555 is about the domain being wrong, not about it being a threshold.
+No counter changed, no injection site changed, no golden file changed. **One threshold in a
+gate assertion did change and it is not a tolerance**: `assert distance <= 1` became
+`assert distance == 1`. It is a discrete commit count, not a numerical tolerance, it lives
+in `tests/` by design, and it is R563.
 
 ## Closure items
 
 Not blocking under CZ0. Not to be re-reviewed item by item. Fixed once, in the closure
-commit. **C28 and C29 from verdict 65 stand unchanged and are not repeated here.**
+commit. **C28, C29 and C33 from the previous two verdicts stand unchanged and are not
+restated.**
 
-- **C31. `scripts/write_verdict.py:14-19` -- C30 was answered and the same defect was
-  written in its place. The file has FOUR refusals and the new docstring says two.**
+- **C36. The repair of a false count wrote a third false figure, in the same docstring, in
+  the same sentence shape. The count of four is now right and every line number cited is
+  wrong.**
   ```
   cmd  grep -n "sys.exit" scripts/write_verdict.py
-  out  53: the Verdict: line;  56: the missing-sections list;
-       58: the empty Carried section;  63: no step report at ...
-  cmd  grep -n "the two refusals" scripts/write_verdict.py
-  out  17: "No such check exists in this file -- the two refusals are"
+  out  18 (the cmd line itself), 63, 66, 68, 73
+  out  the docstring names :53, :56, :58, :63 -- the pre-edit numbers, shifted by the
+       ten lines the edit added, so the `out:` line "the four lines above" is refuted
+       by the `cmd:` printed directly above it
   ```
-  The false clause **was** deleted and only the false clause -- I read the hunk, and the
-  only other words lost were the hedge "by accident or", which claimed nothing. But the
-  replacement is a new false claim about refusals, in the same file, in the same
-  sentence shape, introduced while fixing a false claim about refusals. **That is CP2
-  verbatim: the prose written around the fix inherits none of the discipline applied to
-  the fix.** Closed when the docstring names four, or names none and points at the code.
-- **C32. `scripts/write_verdict.py:16` -- the PLACEHOLDER token makes the quoted false
-  claim unreadable, and nothing requires it.** A grep for PLACEHOLDER over `tests/`,
-  `scripts/` and `floatfea/` returns only that line; no test reads the text of this
-  file. A reader cannot see what was wrong with the old sentence, which is the one thing
-  a withdrawal is for. Closed when the withdrawn words are quoted or the quotation is
-  dropped.
-- **C33. The `EXECUTABLE_PATHS` and `_changes_the_parse` docstrings state a property
-  that is false, and the false sentence is the justification for the domain of a gate.**
-  `tests/test_report_carried.py:2236` (docs and CLAUDE.md "cannot move a suite count"),
-  `:2273` (everything else "cannot change a test outcome") and `:2299` (a comment-only
-  edit "cannot move a suite count"). All three are refuted above by measurement. **I
-  class these as closure items and not as blocks only because R555, R556 and R557
-  already block on the domain itself**; if the domain is repaired and these sentences
-  are left, they become the only statement of what the rule covers and they are wrong.
-  Closed when each is either a CW0 triple with a registered needle or reduced to the
-  measurement that was taken.
-- **C34. The out line "1 commit: 80735cf" in the commit message and in the invocation is
-  wrong at the commit it describes.** It was measured before committing.
-  ```
-  cmd  python -m pytest tests/test_report_carried.py -q -k whole_suite_line_is_about
-  out  2 commit(s) touching code follow the report own commit 36b5899:
-       9682bcc process: R546, BE3 and write_verdict.py -- three rulings (DQ3)
-       80735cf R544: the ancestor state plants a real ancestor (DO0)
-  ```
-  The implementing commit of the rule is itself an intruder, which is not a defect but
-  is the number. BP0 -- when the decision rule changes, every figure citing it is
-  regenerated in the same commit -- applies to a figure measured at HEAD~1 and published
-  at HEAD.
-- **C35. `test_the_pathspec_names_every_executable_tree` fails false on a working copy
-  that git status calls clean.** It walks `ROOT.iterdir()` rather than tracked files, so
-  a gitignored tree counts.
-  ```
-  cell   ONE VARIABLE: mkdir -p build/lib/floatfea and one .py inside it
-  cmd    git status --porcelain
-  out    (empty)
-  cmd    python -m pytest tests/test_report_carried.py -q -k pathspec_names_every
-  out    1 failed -- AssertionError: [build] contain executable content and are not
-         in EXECUTABLE_PATHS
-  ```
-  `.gitignore` lists build/, dist/ and egg-info. It did **not** fire on CI at `9682bcc`,
-  so the editable install did not leave a build tree with .py in it there -- but it is
-  one `python -m build` away on any developer machine, and the CLAUDE.md rule is that a
-  guard which fails false is fixed or deleted. Corpus entry
-  `gitignored_build_tree_present_in_the_working_copy`, batch 15. Closed when the walk is
-  over tracked files.
+  This is the third consecutive round in which the prose written *around* a fix inherits
+  none of the discipline applied *to* it, which is CP2 verbatim. It is also a CW0 triple
+  whose `cmd:` refutes its own `out:` at the commit that publishes it, and
+  `tests/test_tree_prose_consistent.py` is green -- the pair has no `claim:` line, so
+  nothing executes it. **Closed when** the line numbers are dropped and the grep is left as
+  the source, which is what C31's second option said.
+- **C37. C35 was closed by a remedy other than the one its condition named.** The walk is
+  over the filesystem with a git-ignore call per file and a hard skip of the build trees;
+  the condition said "the walk is over tracked files". The measured defect is gone. Recorded
+  so that a later reader does not find the condition and think it was met literally.
+- **C38. DQ3 exists nowhere in this repository.** A grep for it across `docs/` returns only
+  this review file -- my own verdict. The ruling that authorises the entire relaxation of the
+  whole-suite rule, and that two commits now implement, is not a locked decision anywhere:
+  not in the plan's amendment table, not in the closure artifacts. **I have judged
+  conformance to DQ3 from my own paraphrase of it**, which is the thing CLAUDE.md's working
+  agreement exists to prevent. Closed when the ruling is written into the amendment table
+  with the commit that entered it.
+- **C39. The backstop's docstring claims more than was measured.** "There is nothing an
+  implementer can write that makes the set empty except transcribing the entries" is true of
+  the SET and false of the GATE, and the sentence above it -- "If any step anywhere has
+  closed, every reviewer entry must be built" -- is refuted by R562's cell. Closed when the
+  sentence states the trigger it actually has.
 
 ## Corpus
 
-**`tests/corpus/report_guard_states.txt`, batch 15, committed separately at `b9a9859`.
-Seven entries, all seven unseen, plus one ruling on an existing entry.**
+**`tests/corpus/report_guard_states.txt`, batch 16, committed separately at `d877c91`. Nine
+entries, all nine unseen, plus two rulings on existing entries.**
 
-**Coverage: the rule under review catches 2 of 7.** Four are holes -- pyproject only,
-the comment-only `floatfea/` commit, the docs/closure artifact, and the plan marker --
-and each is R555, R556, R557 or the Xabier item above. Two are caught, both merge
-shapes, and one of those, `plain_no_ff_merge_of_a_code_branch`, is caught **by a
-different route than the rule describes**: the merge itself is exempt and git history
-simplification reports the side commit instead. The seventh is the only require=green
-row and the rule reds on it (C35).
+**Coverage: the apparatus under review catches 2 of 9.** Seven are holes and each is a
+finding above -- the root `conftest.py` and the top-level whitelist (R565), the closure
+artifact deletion (R562), the three anchor-state rows (R563), and the next-milestone report
+row (R564). The two that hold are the three-entries-with-no-build-action row, which is the
+positive control for R558, and the emptied-parametrisation row, which does not read silently
+green because `pyproject.toml` sets `empty_parameter_set_mark = "fail_at_collect"` -- one
+more reason that file belongs inside the include list, which this commit put it in.
 
-**The old measurement protocol is still unavailable and this is its second round of
-cost.** Building each state and running `tests/test_report_carried.py -q` requires a
-green baseline; baseline is red at `9682bcc`, so no outcome would be attributable to the
-variable moved. I measured instead as controlled pairs -- the rule own
-`_implementer_commits_after` and `_changes_the_parse` called on each state commit in a
-scratch clone, plus `--collect-only` before and after -- and the batch header records
-that deviation. **A corpus round on this rule has not been available at the rule own
-commit for three verdicts.**
+**R558 is verified by the corpus rather than by the implementer's count**, and this is the
+measurement the previous verdict asked for:
 
-**The ruling.** `closure_artifact_is_the_only_commit_after_the_report` keeps
-require=fail. Its measurement flips from CAUGHT to HOLE because DQ3 exempted `docs/`,
-and **I did not change require to match the new behaviour**: the state is a stale count
-by measurement (2777 -> 2781, plus a rung-3 failure), so the corpus records the property
-and the disagreement of the implementation with it. The invocation asked whether
-building these five would change what R546 should have been. **For this one, yes**: it
-stops being a negative control the moment `docs/` is exempt, and the shape it was
-written for is still live. For `suite_line_names_the_report_commit_ITSELF` and
-`only_a_REVIEWER_corpus_commit_follows_the_report`, no -- R546 touched neither mechanism
-and they are R548 unchanged.
+```
+cell  ONE VARIABLE: three corpus entries with no build action, appended in a scratch
+      clone at 0f26f03. No test code touched.
+cmd   python -m pytest tests/test_report_guard_states.py -q
+out   9 failed, 18 passed   ->   9 failed, 18 passed
+out   zero new reds for three entries, and the collected count did not move
+cell  the same, nine entries, in the live tree at d877c91
+cmd   python -m pytest tests/test_report_guard_states.py -q -k
+        "corpus_and_the_states_agree or BUILT_before_a_step"
+out   1 failed, 1 passed -- ONE failure naming twenty-one entries, not twenty-one
+      failures
+judge DQ3 RULING 2 IS IMPLEMENTED. A reviewer round no longer costs a red per entry.
+```
 
-**And a warning about transcribing them.** Every entry built adds a
-`test_the_guard_survives_the_state` case; every entry *not* built adds a `KeyError`.
-Until R558 is fixed the corpus cannot grow without reddening the build, and it grew by
-seven this round: `tests/test_report_guard_states.py` went from 14 failed to 21 failed
-at `b9a9859`, and the tree from 15 failures to 22.
+**The measurement-protocol deviation is in its third round.** `baseline` is red, so no
+whole-file outcome is attributable to the variable moved, and every row is measured as a
+controlled pair on the named test plus the rule's own helpers in a scratch clone. The batch
+header records the deviation. **This is the third consecutive verdict at which a corpus round
+on this rule has not been available at the rule's own commit**, and R563 plus R564 are why it
+will not be available at the next one either.
+
+## On the criterion rather than on the work -- this goes to Xabier, and I say it once
+
+**The post-closure tree loop has no verdict cap and it has now run four rounds.** CZ0 caps a
+step at three verdicts precisely so that a loop cannot consume the schedule; this loop is not
+a step, so the cap does not reach it, and verdicts 64, 65, 66 and 67 have all been about the
+same guard apparatus. Each round has been correct and each round has produced the next one.
+**That is a structural gap in CZ0, not a failure of any one verdict, and it is for Xabier to
+close.**
+
+**The single highest-value thing available is to retire the whole-suite-line rule.** Nine of
+the eleven failures at `0f26f03` are that one rule and its nested harness. R563 and R564 are
+both in it. R546's unsatisfiability was in it. `tests/test_collected_set_golden.py` already
+exists, already compares the collected set against a golden, and already carries the property
+the whole-suite line is a proxy for -- **it is the thing that caught R561 in this very diff.**
+Retiring the line rule and letting the golden carry it would delete R563, R564, the first item
+of R566 and its eight dependents in one commit. I am not asking for it; the F2a list is frozen
+and this is a choice about a rule.
+
+**And DQ3 and the code now disagree.** DQ3's first ruling, as I have it, is that a
+comment-only edit must not redden this rule. `0f26f03` withdrew the exemption that delivered
+that, for a reason I measured and stand behind, and two comment-only commits are intruders
+again today. One of those two sentences has to give and it is not mine to choose. See C38: the
+ruling is not written down anywhere, which is why this has to be asked rather than looked up.
 
 ## Next step opens when
 
-**`9682bcc` is NOT accepted as it stands. Step 7 stays closed, F2 stays closed, verdict
-63 at `2c48a4f` remains the closure verdict, and F3 step 1 does NOT open** until the four
-items below are answered in `tests/`. They are all apparatus in the (c) sense -- what a
-gate claims -- and none of them requires new apparatus or a plan change.
+**`0f26f03` is a real improvement and it is not accepted as it stands. Step 7 stays closed, F2
+stays closed, verdict 63 at `2c48a4f` remains the closure verdict, and F3 step 1 does NOT
+open** until the items below are answered. They are all (c) or (d), none needs new apparatus,
+and none needs a plan change.
 
-1. **R558 first**, because it is the cheapest and it is the ruling that was directed and
-   not delivered. A corpus entry with no build action produces no failure, demonstrated
-   by adding one and measuring zero new reds.
-2. **R555.** `pyproject.toml` inside the domain, and
-   `test_the_pathspec_names_every_executable_tree` able to fail on a top-level file that
-   is missing from the list -- broken once to show it reds.
-3. **R556.** The parse exemption stops covering files whose comments a shipped test
-   reads, with the readers named by path and line, or the docstring claim is reduced to
-   the two commits actually measured.
-4. **R557.** The trigger of the transcription backstop is not a document the implementer
-   edits in a commit the whole-suite rule exempts, and it survives the milestone
-   boundary. Break it to check: leave one entry untranscribed and confirm red.
-5. **Each of R546, R547, R548 and R549 answered site by site per CLAUDE.md**, including
-   any site left and why. The distance-zero half of R548 is one line, `:2489`, and has
-   now been carried through four verdicts untouched.
-6. **R545 and R550 unchanged**, carried by name -- R545 before any F3 test parametrises
-   G2.4 over a platform member, R550 into F4 through DQ5, with **no step report citing
-   G4.2 as a check on the mass matrix until the V4.2 row is re-specified**.
-7. **The DP3 counter registered at a stated operating point and not injected on a rigid
-   translation** -- the 2.7e-16 of ma08 and L/D = 15.612, from verdict 65.
-8. **The commit that answers this carries a report**, or its numbers carry their commands
-   at the commit they describe. Three commits in a row have now arrived without one and
-   C34 is what that costs.
+1. **R563 first.** The anchor-state threshold, broken once in each direction and shown to red.
+   It is the item that makes the next report writable at all.
+2. **R564.** The five hardcoded milestone sites, with a committed next-milestone report
+   measured clearing the rule.
+3. **R561.** One line, the phantom citation.
+4. **R562.** The backstop trigger is a file the implementer cannot write, demonstrated by
+   deleting the closure artifacts and confirming it still reds.
+5. **R565.** A top-level file outside the four-name whitelist cannot be silently outside the
+   domain, with the control broken on a file that is not the one already listed.
+6. **The twenty-one corpus entries built, or each refused BY NAME through the
+   requirement-changed table with its reason.** The backstop is red until this is done and that
+   is the backstop working. No ruling is needed first; the refusal channel exists.
+7. **Each of R546, R547, R548 and R549 answered site by site per CLAUDE.md**, including any
+   site left and why. R548's reviews-tree half has now been carried through five verdicts
+   untouched.
+8. **R545 and R550 unchanged**, carried by name -- R545 before any F3 test parametrises G2.4
+   over a platform member, R550 into F4 through DQ5, with **no step report citing G4.2 as a
+   check on the mass matrix until the V4.2 row is re-specified**.
+9. **The DP3 counter registered at a stated operating point and not injected on a rigid
+   translation** -- the `2.7e-16` of `ma08` and `L/D = 15.612`, from verdict 65. A condition on
+   F3 step 2.
+10. **The commit that answers this carries a report.** Four in a row have not, and R561 is what
+    that cost this round: a subset-measured count that missed the commit's own new red.
 
-**On the schedule, because it is a requirement and nobody else is measuring it here.**
-Three of the last four verdicts on this file have been consumed by the guard apparatus
-rather than by the platform, and F3 step 1 has not started. **That is slippage against 5
-and 10 October and it is reportable today, not when a step closes.** The choice CLAUDE.md
-asks for is stated rather than made: slip the date, or reduce scope -- and I note that of
-the four blocking items here, R558 is a two-line change and R557 a handful, so the cost
-of clearing this HOLD is hours, not a round. **The 12-buoy BEM solve at 19.69 GB resident
-against a 12.71 GB documented estimate, with 20.68 GB free of 63.7, is not mine to rule
-on and I have not measured it; it is here only so that it is in a document.**
+**On the schedule, because it is a requirement and nobody else is measuring it here.** Four of
+the last five verdicts on this file have been consumed by the report-carry apparatus rather
+than by the platform, and F3 step 1 has not started. **That is slippage against 5 and 10
+October, it was reportable at verdict 66, and it is worse today.** The choice CLAUDE.md asks
+for is stated rather than made: **slip the date, or reduce scope** -- and I add the third
+option above, which is to retire one rule and recover nine of the eleven failures in a single
+commit. Of the items here, R561 is one line, R562 and R564 are substitutions, and R563 is the
+only one that needs thought.
 
-**Not in this verdict and not reviewed here:** the work of step 7, DM0, DM2, DP1 through
-DP5, DQ4, DQ5, DQ2, the ../HSP-stable pin, and the design-wave load-case answer.
+**The FloatSim finding in the invocation is Xabier's and I have not measured it.** Recorded so
+that it is in a document: the BEM solve completed at the pinned tag in 13191.1 s at 40.64 GB
+peak resident against a documented estimate of about 42 minutes and 12.71 GB, and the timed
+design-wave run was stopped by FloatSim's own restoring-PSD gate with 24 negative generalized
+eigenvalues, so no per-run wall time exists for the twelve-against-two decision. **That is
+upstream of this repository and CLAUDE.md makes it a conversation. It is not in scope for this
+verdict and nothing here depends on it.**
+
+**Not in this verdict and not reviewed here:** the work of step 7, DM0, DM2, DP1 through DP5,
+DQ2, DQ4, DQ5, the `../HSP-stable` pin, and the design-wave load-case answer.
