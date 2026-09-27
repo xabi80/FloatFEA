@@ -649,8 +649,8 @@ def test_the_corpus_and_the_states_agree(capsys) -> None:
       control, and nothing outside this file vouches for it.
     * **in the corpus and not built** -- a shape the reviewer found and nobody has
       transcribed. That is a WORK ITEM. It is reported by name and counted, and
-      `test_every_reviewer_entry_is_BUILT_at_a_closure_commit` is where it has to
-      be zero.
+      `test_every_reviewer_entry_is_BUILT_before_a_step_CLOSES` is where it has
+      to be zero.
     """
     assert ENTRIES, f"{CORPUS} parsed to no entries; the format changed"
     named = {e[0] for e in ENTRIES}
