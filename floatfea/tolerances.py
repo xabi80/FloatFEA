@@ -1372,14 +1372,23 @@ MATRIX_SYMMETRY_COUNTER: Final[float] = 1.0e-2
 # Dimensionless in every use.
 #
 # Reason: these have no discretisation error to bound, only floating-point
-# accumulation. Worst measured across its sites is one ULP, 2.2204e-16, and
-# 1e-14 sits ~45x above that.
+# accumulation. Worst measured across its sites is **4.93 ULP, 1.0952e-15**, at
+# V2.5's Euler-Bernoulli limit on a 1000 m span, so 1e-14 sits **9.13x** above
+# it. The value is unchanged and its margin is a decade rather than two.
 #
-# THE SITE COUNT IS NOT WRITTEN HERE (BI3). It said "its nine sites", and step 7
-# added more when V2.5's Euler-Bernoulli limit and its six rigid-body inertias
-# came to this constant -- a comment carrying a count is a report that nothing
-# regenerates. `grep -rn ROUNDOFF_IDENTITY tests --include=*.py` is the count,
-# at the commit it is run at.
+# THE RECORDED BASIS SAID "one ULP, 2.2204e-16 ... ~45x" AND STEP 7 FALSIFIED IT
+# IN THE SAME COMMIT THAT ANNOUNCED NEW SITES (R543). The paragraph below was
+# added at `d147f25` to say the site COUNT had moved, and the sentence above it
+# -- the worst value and the headroom, which is what the entry is actually for --
+# was left describing the sites that existed before. The step report published
+# `1.1e-15` for that very comparison and it was not carried back here. **BI3 is
+# about the count; BD1 is about the basis, and only the first was applied.**
+#
+# THE SITE COUNT IS STILL NOT WRITTEN HERE (BI3) -- a comment carrying a count is
+# a report that nothing regenerates. `grep -rn ROUNDOFF_IDENTITY tests
+# --include=*.py` is the count at the commit it is run at, and the worst value
+# above is re-taken by `python -m pytest tests/verification/rung2 -q -s -k
+# PHI_ZERO`, whose five spans are where it lives.
 #
 # SET BY THE TIGHTEST MEMBER OF THE GROUP (BD1). It was briefly 1e-12, which was
 # a 100x WIDENING of three sites that had carried 1e-14 and measured 3.7e-17 ..
