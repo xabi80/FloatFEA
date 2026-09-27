@@ -118,7 +118,8 @@ def condense(matrix: NDArray[np.floating], recovery: NDArray[np.floating]) -> ND
     a = np.asarray(matrix, dtype=np.float64)
     r = np.asarray(recovery, dtype=np.float64)
     out = r.T @ a @ r
-    return 0.5 * (out + out.T)
+    symmetric: NDArray[np.float64] = 0.5 * (out + out.T)
+    return symmetric
 
 
 def released_local_stiffness(

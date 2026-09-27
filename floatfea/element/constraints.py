@@ -129,4 +129,5 @@ def reduce_matrix(
     a = np.asarray(matrix, dtype=np.float64)
     t = np.asarray(transform, dtype=np.float64)
     out = t.T @ a @ t
-    return 0.5 * (out + out.T)
+    symmetric: NDArray[np.float64] = 0.5 * (out + out.T)
+    return symmetric

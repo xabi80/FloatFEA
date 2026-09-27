@@ -229,7 +229,9 @@ error to bound. Raising the count would change nothing; lowering it would make
 the mass matrix wrong rather than approximate."""
 
 
-def bending_interpolation(length: float, phi: float, xi: float) -> tuple[NDArray, NDArray]:
+def bending_interpolation(
+    length: float, phi: float, xi: float
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """``N_w`` and ``N_theta`` at ``xi = x/L``, for DOF ``(w_A, th_A, w_B, th_B)``.
 
     The derivation is in the module comment above. ``T`` maps the free
