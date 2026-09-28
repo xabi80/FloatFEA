@@ -1,0 +1,96 @@
+# CORPUS: what the PLATFORM DECK SOURCE must rule on -- the generated YAML at
+# data/platform/platform12_deck.yaml, the generator that writes it, and the two
+# halves of gate G3.2 that are supposed to protect it.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Written at the
+# seventieth verdict on F2/F3 (HEAD 2e24459), against DV0 as it landed at
+# 00a588b and the gate split at b958083.
+#
+# IN SCOPE UNDER DE2. "Corpus rounds target the element, the gates, and -- from
+# F3 -- the platform model." This file is the platform model and a gate. It is
+# not an apparatus corpus, so the DR1 deferral to docs/milestones/F2a.md does
+# not reach it and it is not transcribed anywhere.
+#
+# WHY IT EXISTS (BE3). 2575 lines of generated content entered the repository
+# in one commit, and everything that checks it was written in the same commit
+# by the same hand: four assertions in one module and one check path in the
+# generator. The mutations below are the ones that hand did not run. The
+# measurement that matters is not how many shapes the module was built to
+# catch; it is how many of these it catches.
+#
+# WHAT A PASSING SCAN MEANS. For each entry the mutation is applied to a copy
+# of the tree at the reviewed commit, the named surface is run, and the outcome
+# compared with expect. A passing scan means every measured outcome equals its
+# expectation. Entries whose measured outcome is NOT caught while expect=caught
+# ARE the coverage measurement.
+#
+# FIELDS
+#   id        stable name
+#   surface   suite   -- tests/verification/rung3/test_platform_deck_export.py
+#             check   -- python scripts/export_platform_deck.py --check
+#             deck    -- a property of the exported model itself, no mutation
+#   case      the mutation or the question, in words
+#   expect    caught | uncaught_and_accepted | hold | explain
+#   measured  what happened at 2e24459, run by this reviewer
+#
+# expect=caught                 something must go red
+# expect=uncaught_and_accepted  nothing should go red and that is correct
+# expect=hold                   the shipped behaviour is right and must stay
+# expect=explain                a question about the model, not a mutation;
+#                               closed by an answer, not by a test
+#
+# --------------------------------------------------------------------------
+# A. THE COMMITTED FILE, MUTATED. The half of G3.2 that runs in CI is the only
+# thing standing between a hand-edit and the model F3 is built on. Every entry
+# here is a hand-edit a careless or hurried writer could make.
+
+id=deck_one_body_coordinate_moved surface=suite case=a_single_buoy_reference_point_changed_from_-0.5_to_99.0 expect=caught measured=NOT_CAUGHT_4_passed
+id=deck_every_mass_multiplied_by_ten surface=suite case=all_17_mass_lines_multiplied_by_10 expect=caught measured=NOT_CAUGHT_4_passed
+id=deck_all_z_negated surface=suite case=every_body_z_of_0.49337_flipped_to_-0.49337 expect=caught measured=NOT_CAUGHT_4_passed
+id=deck_a_buoy_moved_onto_the_diagonal surface=suite case=buoy1_moved_to_0.7071_0.7071_while_the_hubs_stay_axial expect=caught measured=NOT_CAUGHT_4_passed
+id=deck_nan_coordinate surface=suite case=a_reference_point_component_replaced_by_dot_nan expect=caught measured=NOT_CAUGHT_4_passed
+id=deck_duplicate_name_key surface=suite case=a_body_mapping_carries_name_twice_and_safe_load_keeps_the_last expect=caught measured=NOT_CAUGHT_4_passed
+id=deck_keys_fully_resorted surface=suite case=the_whole_document_re-emitted_with_sort_keys_True expect=caught measured=NOT_CAUGHT_4_passed_and_the_gate_docstring_names_reordering_as_what_it_detects
+id=deck_a_body_dropped surface=suite case=buoy12_removed_leaving_16_bodies expect=caught measured=CAUGHT_topology
+id=deck_joint_type_changed surface=suite case=every_yaw_locked_joint_relabelled_ball expect=caught measured=CAUGHT_topology
+id=deck_truncated_to_the_header surface=suite case=everything_below_the_provenance_comment_deleted expect=caught measured=CAUGHT_by_topology_and_axial_but_NOT_by_the_assertion_carrying_the_gate_id
+id=deck_hub_moved_onto_the_diagonal surface=suite case=hub1_moved_to_0.7071_0.7071 expect=caught measured=CAUGHT_axial
+id=deck_one_arm_made_longer surface=suite case=hub1_radius_changed_from_1.0_to_1.5_model expect=caught measured=CAUGHT_axial_spread
+id=deck_header_counts_falsified surface=suite case=the_header_comment_changed_to_bodies_99_joints_99_while_the_content_is_unchanged expect=caught measured=NOT_CAUGHT_4_passed
+id=deck_header_export_date_falsified surface=suite case=the_exported_date_changed_to_1999-01-01 expect=uncaught_and_accepted measured=NOT_CAUGHT_and_the_date_is_not_a_claim_about_the_model
+id=deck_replaced_by_a_different_but_conformant_deck surface=suite case=a_wholly_different_17_body_16_yaw_locked_axial_hub_model_substituted expect=caught measured=NOT_CAUGHT_no_assertion_binds_the_file_to_THIS_platform
+id=deck_empty_document surface=suite case=the_file_parses_to_None expect=caught measured=the_round_trip_assertion_PASSES_on_None_and_two_siblings_fail
+id=deck_round_trip_assertion_has_a_falsifier surface=suite case=name_ANY_committed_content_that_reddens_the_assertion_carrying_the_G3_2_id expect=explain measured=none_found_in_11_mutations_0_of_11
+
+# --------------------------------------------------------------------------
+# B. THE GENERATOR AND ITS PREFLIGHT. The cross-repository half of G3.2 is the
+# only thing that ties this file to HSP. The claim it makes is "rebuilt from
+# HSP AT THE PIN and compared"; these ask whether that is what it measures.
+
+id=check_runs_anywhere_automatic surface=check case=is_export_platform_deck_named_in_dot_github_or_in_run_rung_sh expect=explain measured=NO_it_is_named_only_in_docs_verification_README_and_in_the_step_report
+id=check_at_this_commit surface=check case=run_the_check_mode_against_the_committed_file_at_2e24459_independently expect=hold measured=PASSED_exit_0_bodies_17_joints_16_round_trip_9_top_level_keys_by_this_reviewer
+id=preflight_dirty_hsp_worktree surface=check case=HSP-runs_HEAD_at_the_pin_with_a_tracked_file_locally_modified expect=caught measured=NO_STATUS_CHECK_EXISTS_the_preflight_reads_describe_and_rev-parse_only
+id=preflight_commits_past_the_tag surface=check case=HSP-runs_five_commits_past_the_tag_so_describe_returns_floatfea-ref-1-5-gXXXXXXX expect=caught measured=the_startswith_on_describe_PASSES_and_the_separate_HEAD_check_refuses_net_CAUGHT
+id=preflight_hsp_stable_by_symlink surface=check case=the_runs_path_is_a_link_whose_resolved_path_is_HSP-stable expect=caught measured=CAUGHT_the_check_is_on_resolved_parts
+id=check_ignores_the_header surface=check case=the_header_block_is_sliced_off_BOTH_sides_before_comparing_so_tag_commit_and_counts_are_compared_with_nothing expect=caught measured=NOT_CAUGHT_by_construction
+id=check_with_the_file_absent surface=check case=check_mode_when_the_deck_yaml_does_not_exist expect=caught measured=returns_1_and_says_so
+id=round_trip_is_dump_to_dump_not_deck_to_deck surface=check case=a_Deck_field_excluded_from_model_dump_would_be_absent_from_both_sides_of_the_comparison expect=explain measured=the_comparison_is_dump_equals_dump_which_cannot_see_a_field_neither_dump_carries
+id=round_trip_float_exactness surface=check case=does_the_yaml_dump_round_trip_every_float_in_this_deck_bit_exactly expect=hold measured=YES_re-validated_dump_compares_equal_over_9_top_level_keys
+
+# --------------------------------------------------------------------------
+# C. THE MODEL ITSELF, AGAINST WHAT DJ1 AND DV0 SAY ABOUT IT. No mutation --
+# these are the deck own numbers against the sentences in the locked plan. The
+# F3 builder is written from these, and a sentence one step off the deck is a
+# member sized for the wrong span.
+
+id=model_hub_radius_is_50m surface=deck case=DJ1_says_50_m_to_each_hub_at_full_scale expect=hold measured=hub_radius_1.0_model_is_50.000_m_full_exactly_on_all_four
+id=model_hub_arm_is_not_horizontal surface=deck case=DJ1_says_a_cross_through_the_centre_but_the_platform_reference_is_z_0.7_and_the_hub_joint_is_z_0.49337 expect=explain measured=the_platform_to_hub_member_is_1.0211_model_is_51.06_m_full_inclined_11.7_degrees_not_50_m_in_a_plane
+id=model_cluster_arm_is_25m_horizontal surface=deck case=DJ1_and_F1_389_size_the_cluster_arm_as_a_25_m_span expect=hold measured=hub_reference_to_joint_point_is_0.5_model_is_25.000_m_full_horizontal_which_is_the_span_F1_sized
+id=model_three_cluster_arms_per_hub_not_one surface=deck case=each_hub_carries_THREE_joints_at_120_degrees expect=explain measured=confirmed_12_cluster_arms_in_4_tripods_which_no_plan_sentence_states
+id=model_buoy_reference_is_84m_below_its_joint surface=deck case=hub_reference_to_buoy_reference_is_1.76149_model_is_88.07_m_full_of_which_1.689_model_is_84.45_m_vertical expect=explain measured=a_member_built_hub_reference_to_buoy_reference_is_88_m_not_25_m_and_the_180_mm_section_was_sized_for_25_m
+id=model_joint_points_close_to_machine_zero surface=deck case=attach_a_from_body_A_and_attach_b_from_body_B_must_name_the_same_point expect=hold measured=gap_0.00e+00_on_all_16_joints
+id=model_16_joints_all_yaw_locked_4_rows surface=deck case=DJ0_reads_all_16_joints_as_two-rotation_gimbals expect=hold measured=16_of_16_worst_released_moment_leak_2.753e-15_relative_reproduced_by_this_reviewer
+id=model_free_dof_arithmetic surface=deck case=17_bodies_times_6_minus_16_joints_times_4_rows expect=hold measured=38_and_the_shipped_assertion_for_it_compares_three_literals_in_its_own_file_rather_than_the_parsed_deck
+id=model_is_at_model_scale_and_nothing_converts_it surface=deck case=the_file_declares_MODEL_scale_and_floatfea_has_no_caller_that_converts_it_yet expect=hold measured=confirmed_no_floatfea_module_imports_the_deck_at_this_commit
+id=model_hub_z_full_scale surface=deck case=hub_reference_z_is_0.49337_model_is_24.67_m_full_above_the_origin expect=explain measured=unstated_anywhere_in_the_plan_and_it_is_the_vertical_datum_every_member_length_is_measured_from
