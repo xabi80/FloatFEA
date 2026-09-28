@@ -87,11 +87,21 @@ being wrong in the direction that matters. *Gate G3.3.*
 
 **V3.2 Model definition round-trip.** YAML in, model built, YAML out, no loss.
 The layout source is `data/platform/platform12_deck.yaml`, written only by
-`scripts/export_platform_deck.py` (DV0), and the gate has two halves: the emitted
-file re-validates to the deck it was dumped from, and the **committed bytes** still
-reproduce a deck built from HSP at the pin. The second half is what a
-self-regenerating golden cannot do. *Gate G3.2;
-`tests/verification/rung3/test_platform_deck_export.py`.*
+`scripts/export_platform_deck.py` (DV0), and the gate is **split by what can be
+asserted where, with neither half conditional**:
+
+* `tests/verification/rung3/test_platform_deck_export.py` asserts, everywhere and
+  always, that the committed file round-trips through a parse-and-re-emit cycle,
+  carries the platform's own topology, declares its provenance and its scale, and
+  has its four arms on the axes.
+* `python scripts/export_platform_deck.py --check` rebuilds the deck from HSP at the
+  pin and compares against the committed bytes. **That needs a second repository at
+  a specific tag, so it is a procedure with a command rather than a test**, and its
+  output goes in the step report as a triple. It was written as a `skipif` test
+  first, which meant the half carrying the gate silently did not run in CI and
+  every CI summary read as though it had passed.
+
+*Gate G3.2.*
 
 ## Rung 4 — The loads are the loads
 
