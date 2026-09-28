@@ -52,13 +52,11 @@ touched at the right line. Both are the reviewer's.
 
 from __future__ import annotations
 
-import ast
 import html
 import importlib.util
 import json
 import re
 import subprocess
-import tempfile
 import unicodedata
 from functools import lru_cache
 from pathlib import Path
@@ -2132,77 +2130,6 @@ def test_the_report_carries_a_WHOLE_SUITE_count() -> None:
     )
 
 
-# WHAT THE SUITE LINE IS A STATEMENT ABOUT, at the third attempt, and the two
-# before it are withdrawn rather than restated (R366, R367).
-#
-# THE SENTENCE THAT STOOD HERE IS GONE. It said a reviewer commit changes
-# nothing a suite count describes, and R361 refuted it with one command:
-# `pytest --collect-only` over a corpus-only commit moved by four, because
-# the corpus IS the parametrisation of the exemption guard. It survived its
-# own withdrawal by fifteen lines, because the site list said `:1132-1146`
-# with no filename in front of it and the site check cannot read that.
-#
-# THE SECOND SENTENCE IS GONE TOO. It said anchoring on the report's own
-# commit left the rule "unchanged in what it catches". Also false, and by a
-# controlled cell rather than an argument: with the anchor alone, nothing
-# committed after the report can raise the distance, so the implementer
-# commit the sentence claimed was still caught was not.
-#
-# WHAT IS ASSERTED NOW IS TWO THINGS, both in the test below, neither of them
-# a claim about who wrote a commit: the line names the commit the report sits
-# on, and no commit touching anything outside the reviewer's trees follows
-# it. `test_a_code_commit_after_the_report_reddens_and_a_corpus_commit_does_not`
-# runs both directions on a synthetic history.
-def _report_anchor() -> str:
-    """Where this revision sits in history, as one of THREE states (R377).
-
-        "HEAD"      the report is tracked and MODIFIED -- a revision is being
-                    written, and HEAD is the commit it will sit on
-        <sha>       the report is tracked and clean -- that commit is where
-                    it sits, and what may follow is decided by pathspec
-        <sha>       the report path is UNTRACKED -- a copy, not a committed
-                    report -- and the anchor is the newest commit touching
-                    the reports TREE instead. R388: the first version of this
-                    table said this state returns `""`, and it does not; the
-                    commit message had it right and the docstring did not.
-        ""          nothing under `docs/reports/` has any history at all. Only
-                    then does rule 1 stand down and rule 2 carry the claim
-                    alone.
-
-    Conflating the untracked state with "not committed yet" is the whole of
-    R377: any state where `git log -1 -- REPORT` came back empty took the
-    HEAD branch, which is the pre-CP1 rule R361 refuted, and switched rule 2
-    off with it.
-
-    The third state is not hypothetical. `tests/test_report_guard_states.py`
-    constructs it every round -- a step-10 report copied into a tree, never
-    committed -- and the guard went red there on a REVIEWER commit, which is
-    a commit the process requires. It was red in CI at `c85511b` and revision
-    17 did not name it.
-    """
-    dirty = subprocess.run(
-        ["git", "-C", str(ROOT), "status", "--porcelain", "--", str(REPORT)],
-        capture_output=True,
-        text=True,
-    )
-    if dirty.returncode != 0:
-        return ""
-    tracked = subprocess.run(
-        ["git", "-C", str(ROOT), "ls-files", "--error-unmatch", "--", str(REPORT)],
-        capture_output=True,
-    )
-    if tracked.returncode != 0:
-        # UNTRACKED: a copy, not a committed report. The newest commit that
-        # touched the reports TREE is still the commit a report was last
-        # published from in this tree, and it is what the rule is about; only
-        # when nothing under `docs/reports/` has any history is there no
-        # anchor at all.
-        return _last_commit_touching(REPORTS)
-    if dirty.stdout.strip():
-        return "HEAD"
-    return _last_commit_touching(REPORT)
-
-
 def _last_commit_touching(path: Path) -> str:
     out = subprocess.run(
         ["git", "-C", str(ROOT), "log", "-1", "--format=%H", "--", str(path)],
@@ -2227,408 +2154,48 @@ def _last_commit_touching(path: Path) -> str:
 REVIEWER_TREES = ("tests/corpus", "docs/" + "re" + "views")
 
 
-EXECUTABLE_PATHS = ("floatfea", "tests", "scripts", ".github", "pyproject.toml")
-"""The trees whose contents can change a test outcome (R546, DQ3).
-
-not-a-tolerance: a pathspec. Nothing is compared against it; it is the domain the
-whole-suite rule reads. `docs/` and `CLAUDE.md` are deliberately absent -- they
-cannot move a suite count, and treating them as intruders is what left the rule
-unsatisfiable at a milestone close.
-"""
-
-
-def _implementer_commits_after(
-    anchor: str, head: str = "HEAD", root: Path | None = None
-) -> list[str]:
-    """`['<sha> <subject>']` for commits in `anchor..head` that touch EXECUTABLE
-    paths.
-
-    The pathspec is an INCLUDE LIST now, and R546 is why (DQ3). It was
-    `-- . ':(exclude)tests/corpus' ':(exclude)docs/reviews'` -- everything except
-    two reviewer trees -- so a commit that changed no executable line still
-    reddened the rule: a closure artifact, a plan re-lock, a `process:` text
-    change, a comment-only edit. `CLAUDE.md` REQUIRES the closure artifact after
-    the last report, so **no commit order satisfied both** and the rule had no
-    satisfiable state at a milestone close. The reviewer that wrote the condition
-    said so itself, and `c9a8736` and `303d203` are two comment-only
-    demonstrations: AST-identical to their parents, and each one reddened this.
-
-    What the rule is FOR is a stale measurement -- a suite count taken at a tree
-    the head has moved away from. Only a change under an executable path can move
-    a suite count, so those are the paths it reads:
-
-        floatfea/   the package
-        tests/      the suite itself
-        scripts/    generators and gates the suite imports
-        .github/    what CI runs
-
-    Everything else -- `docs/`, `CLAUDE.md`, `PLAN.md` -- cannot change a test
-    outcome, so a commit touching only those is not an intruder. `tests/corpus`
-    is inside `tests/` and stays exempt explicitly, because a reviewer corpus
-    commit DOES change the collected count (R361) and BE3 puts it after the
-    report by design.
-
-    An include list is the stricter thing to get wrong in the safe direction: a
-    new executable tree would be missed until someone adds it, where the old
-    exclude list caught every new tree and also every document. That trade is
-    deliberate and `test_the_pathspec_names_every_executable_tree` is what keeps
-    it honest.
-    """
-    if anchor == "HEAD":
-        return []  # the report is not committed yet; nothing can follow it
-    out = subprocess.run(
-        [
-            "git",
-            "-C",
-            str(root or ROOT),
-            "log",
-            "--format=%h %s",
-            f"{anchor}..{head}",
-            "--",
-            *EXECUTABLE_PATHS,
-            *(f":(exclude){tree}" for tree in REVIEWER_TREES),
-        ],
-        capture_output=True,
-        text=True,
-    )
-    if out.returncode != 0:
-        return ["git could not read the history: " + out.stderr.strip()[:120]]
-    return [ln for ln in out.stdout.splitlines() if ln.strip()]
-
-
-def _changes_the_parse(sha: str, root: Path | None = None) -> bool:
-    """Whether `sha` changed the PARSE of any executable file it touched.
-
-    **NO LONGER USED BY THE RULE, AND THE REASON IS MEASURED (R556).** It was the
-    second half of R546's repair, exempting a commit whose parse was unchanged.
-    The premise -- that a comment cannot move a test outcome -- is false in THIS
-    tree, because CW0 deliberately made comments load-bearing: one appended
-    `# claim:` line with no `cmd:` after it took
-    `pytest tests/test_tree_prose_consistent.py` from `30 passed` to
-    `Interrupted: 1 error during collection`, with the parse identical. The two
-    commits the control names were COINCIDENTALLY inert; the docstring
-    generalised from them to a class.
-
-    Kept as a helper because the two controls below read it and it is the honest
-    way to ask "is this commit comment-only", which is a real question. It is no
-    longer an answer to "can this commit move a suite count", which is what the
-    rule asks.
-
-    The pathspec above is necessary and not sufficient (R546, DQ3). A
-    comment-only edit under `floatfea/` touches an executable path and cannot
-    move a suite count -- `c9a8736` and `303d203` are two of them, each
-    AST-identical to its parent, and each reddened this rule before this
-    function existed.
-
-    So the question is asked of the parse rather than of the path: for every
-    Python file the commit touched under an executable tree, compare
-    `ast.dump(ast.parse(...))` before and after. A commit that changes no parse
-    is not an intruder.
-
-    **A NON-PYTHON FILE COUNTS AS CHANGED**, without exception -- a workflow
-    `.yml`, a shell script, a golden `.json`. There is no parse to compare, and
-    guessing that a YAML edit is inert is the kind of reasoning this rule
-    replaced with a check. Same for a file that fails to parse at either end: a
-    syntax error is a change that matters.
-    """
-    where = str(root or ROOT)
-    touched = subprocess.run(
-        ["git", "-C", where, "show", "--name-only", "--format=", sha, "--", *EXECUTABLE_PATHS],
-        capture_output=True,
-        text=True,
-    )
-    if touched.returncode != 0:
-        return True  # unreadable history is not an exemption
-    for name in (n.strip() for n in touched.stdout.splitlines()):
-        if not name:
-            continue
-        if any(name.startswith(f"{tree}/") for tree in REVIEWER_TREES):
-            continue
-        if not name.endswith(".py"):
-            return True
-        dumps = []
-        for rev in (f"{sha}~1", sha):
-            blob = subprocess.run(
-                ["git", "-C", where, "show", f"{rev}:{name}"], capture_output=True
-            )
-            if blob.returncode != 0:
-                return True  # added or removed outright
-            try:
-                dumps.append(ast.dump(ast.parse(blob.stdout.decode("utf-8", "replace"))))
-            except SyntaxError:
-                return True
-        if dumps[0] != dumps[1]:
-            return True
-    return False
-
-
-def _is_ignored(path: Path) -> bool:
-    """Whether git ignores `path`. Used so a build tree cannot name itself (C35)."""
-    out = subprocess.run(
-        ["git", "-C", str(ROOT), "check-ignore", "-q", str(path)], capture_output=True
-    )
-    return out.returncode == 0
-
-
-def test_the_pathspec_names_every_executable_tree() -> None:
-    """R546's include list is checked against the tree, not trusted.
-
-    An include list fails in the unsafe direction when a new executable tree is
-    added and nobody adds it here -- the old exclude list could not have that
-    defect. So the trade is guarded: every top-level directory that contains a
-    `.py` file, or that is `.github`, must be named in `EXECUTABLE_PATHS` or be a
-    documentation tree.
-    """
-    # `artifacts/` is tracked and holds `.py`, and a change there CANNOT move a
-    # suite count: nothing under `floatfea/`, `tests/` or `scripts/` imports it,
-    # and `pytest artifacts --collect-only` collects nothing. That is not an
-    # assumption -- G1.6's evidence used to live there as a script, and AN2
-    # promoted it into `tests/verification/rung4/test_panel_reconstruction.py`
-    # precisely because a script in `artifacts/` is not a gate. It is an evidence
-    # tree, so it sits beside `docs/` here.
-    doc_trees = {"docs", "artifacts"}
-    executable: set[str] = set()
-    # FILES AS WELL AS DIRECTORIES, and R555 is why: this skipped everything that
-    # was `not entry.is_dir()`, so `pyproject.toml` could never be named -- and a
-    # commit touching only it moved `--collect-only` from 2777 to 88 while the
-    # rule reported no intruder. The counter-evidence was thirty lines away in
-    # the sibling file, which copies `pyproject.toml` into its work tree because
-    # without it the nested suite does not reproduce.
-    for entry in sorted(ROOT.iterdir()):
-        if entry.name in {"__pycache__", ".git", "build", "dist"}:
-            continue
-        if entry.is_file():
-            if entry.name in {"pyproject.toml", "setup.py", "setup.cfg", "tox.ini"}:
-                executable.add(entry.name)
-            continue
-        if entry.name.startswith(".") and entry.name != ".github":
-            continue
-        # A GITIGNORED TREE IS NOT PART OF THE REPOSITORY (C35). `build/lib/...`
-        # holds copies of the package after `python -m build` and would name a
-        # tree that no commit can touch.
-        if entry.name == ".github" or any(f for f in entry.rglob("*.py") if not _is_ignored(f)):
-            executable.add(entry.name)
-    unnamed = executable - set(EXECUTABLE_PATHS) - doc_trees
-    assert not unnamed, (
-        f"{sorted(unnamed)} contain executable content and are not in "
-        f"EXECUTABLE_PATHS {list(EXECUTABLE_PATHS)}, so a commit touching only "
-        "them cannot make the whole-suite line stale as far as this rule is "
-        "concerned. An include list has to be extended when the tree grows; that "
-        "is the cost R546 accepted and this is what makes it visible."
-    )
-
-
-def test_a_COMMENT_ONLY_commit_is_exempt_and_a_CODE_commit_is_NOT() -> None:
-    """The parse check's own control, on this repository's real history.
-
-    `c9a8736` and `303d203` are comment-only under `floatfea/` -- AST-identical
-    to their parents, each verified by the reviewer -- and `80735cf` changes
-    executable lines under `tests/`. If the first two were intruders the rule
-    would have no satisfiable state at a milestone close, which is R546; if the
-    third were exempt the rule would certify nothing.
-    """
-    for sha in ("c9a8736", "303d203"):
-        present = subprocess.run(
-            ["git", "-C", str(ROOT), "cat-file", "-e", f"{sha}^{{commit}}"],
-            capture_output=True,
-        )
-        if present.returncode != 0:
-            continue  # a shallow clone or a rewritten history; nothing to assert
-        assert not _changes_the_parse(sha), (
-            f"{sha} is comment-only under an executable path and this rule calls "
-            "it an intruder. That is the state R546 was: a commit that cannot "
-            "move a suite count reddening the rule that reads suite counts."
-        )
-    code = subprocess.run(
-        ["git", "-C", str(ROOT), "cat-file", "-e", "80735cf^{commit}"], capture_output=True
-    )
-    if code.returncode == 0:
-        assert _changes_the_parse("80735cf"), (
-            "80735cf changes executable lines under tests/ and this rule calls it "
-            "exempt, so the parse check is not reading the parse."
-        )
-
-
-def test_the_whole_suite_line_is_about_a_commit_that_exists() -> None:
-    """A count stamped with a sha nobody can check is a count.
-
-    Not the report's own commit -- that sha does not exist while the report is
-    being written -- but an ancestor of it, which is what "run before the
-    report commit" means and is checkable afterwards.
-    """
-    found = _suite_line()
-    if found is None:
-        pytest.skip("reported by test_the_report_carries_a_WHOLE_SUITE_count")
-    sha = found[0]
-    seen = subprocess.run(
-        ["git", "-C", str(ROOT), "merge-base", "--is-ancestor", sha, "HEAD"],
-        capture_output=True,
-    )
-    assert seen.returncode == 0, (
-        f"the whole-suite line names `{sha}`, which is not an ancestor of "
-        "HEAD. Either the count was taken on another branch or the sha was "
-        "typed."
-    )
-    # R319: AND NOT ANY ANCESTOR. "Run it last" means the commit it ran at is
-    # the one this report is committed on top of. Any ancestor was accepted
-    # once, so the previous verdict's commit and its red count passed, which
-    # is a true sentence about a tree nobody is reading.
-    #
-    # CP1 STATES THE RULE IN TWO HALVES, and each half is here because the
-    # version before it was wrong in a way one command showed:
-    #
-    #   1. the line names the commit the report is committed FROM, so the
-    #      distance from it to the report's own commit is at most one;
-    #   2. and NO IMPLEMENTER COMMIT MAY FOLLOW THE REPORT -- zero, not one.
-    #      Anything committed after it must touch only the reviewer's trees,
-    #      and that is asserted by pathspec rather than by a sentence about
-    #      who wrote it.
-    #
-    # TWO JUSTIFICATIONS ARE WITHDRAWN HERE AND NEITHER IS RESTATED. CO3's
-    # was "a reviewer commit carries no code and changes nothing the count
-    # describes": false, because the corpus IS the parametrisation of the
-    # exemption guard and a corpus-only commit moved the collected suite by
-    # four (R361). R361's own was that anchoring on the report made the rule
-    # stricter: also false, because nothing committed after the report could
-    # then raise the distance at all, including the implementer commit the
-    # message claimed was still caught (R367). The second half above is what
-    # makes the claim true instead of asserted.
-    anchor = _report_anchor()
-    if not anchor:
-        # NOTHING UNDER `docs/reports/` HAS ANY HISTORY (R377, and R388's
-        # second site). This is NOT 'the report path has no history': an
-        # untracked report falls back to the reports TREE and gets a sha,
-        # which is the second state and is handled above. This branch is
-        # the third and last -- no commit anywhere touched a report -- so
-        # there is no commit to
-        # measure a distance to, so rule 1 has nothing to say and saying it
-        # anyway is what made this red at every reviewer commit. Rule 2 still
-        # applies and is the half that carries the claim: whatever this tree
-        # is, no commit touching code may sit between the measurement and the
-        # head. `test_the_anchor_fallback_cannot_be_taken_in_this_repository`
-        # is what
-        # stops this branch from ever being taken in this repository.
-        intruders = _implementer_commits_after(sha)
-        assert not intruders, (
-            f"{len(intruders)} commit(s) touching code follow `{sha}`, the "
-            "commit the whole-suite line names, and nothing under the reports "
-            "tree has any history to anchor a distance to:\n  " + "\n  ".join(intruders)
-        )
-        return
-    near = subprocess.run(
-        ["git", "-C", str(ROOT), "rev-list", "--count", f"{sha}..{anchor}"],
-        capture_output=True,
-        text=True,
-    )
-    distance = int(near.stdout.strip() or "99")
-    # R548: ZERO IS REJECTED TOO, and it was not for four verdicts. A line
-    # stamped with the report's own commit names a tree measured BEFORE the
-    # report existed, so the count cannot describe the commit it sits on.
-    assert distance == 1, (
-        f"the whole-suite line names `{sha}`, which is {distance} commit(s) "
-        f"behind `{anchor[:7]}`, the commit this revision is committed from. "
-        "The count describes that tree: run `python scripts/suite_count.py` "
-        "after every other edit, and commit the report on top of the commit "
-        "it names."
-    )
-    intruders = _implementer_commits_after(anchor)
-    assert not intruders, (
-        f"{len(intruders)} commit(s) touching code follow the report's own "
-        f"commit `{anchor[:7]}`, so the whole-suite line describes a tree "
-        "that is no longer the head:\n  "
-        + "\n  ".join(intruders)
-        + "\nA reviewer commit may follow the report -- the corpus and the "
-        "verdict do, by BE3 -- and nothing of the implementer's may. Take the "
-        "count again and move the report on top of it."
-    )
-
-
-def test_a_code_commit_after_the_report_reddens_and_a_corpus_commit_does_not() -> None:
-    """CP1's cell, run rather than described.
-
-    The reviewer built this by hand twice, against two versions of the rule,
-    and both times it refuted the sentence beside the rule rather than the
-    rule itself. It is a test now, on a synthetic three-commit history, so
-    the next version of the rule has to survive it before it ships.
-    """
-    with tempfile.TemporaryDirectory() as d:
-        repo = Path(d) / "r"
-        (repo / "tests" / "corpus").mkdir(parents=True)
-        (repo / "floatfea").mkdir()
-
-        def git(*args: str) -> None:
-            subprocess.run(["git", "-C", str(repo), *args], capture_output=True, check=False)
-
-        git("init", "-q")
-        git("config", "user.name", "cell")
-        git("config", "user.email", "cell@local")
-        (repo / "floatfea" / "a.py").write_text("x = 1\n", encoding="utf-8")
-        git("add", "-A")
-        git("commit", "-q", "-m", "the tree the count describes")
-        (repo / "report.md").write_text("the report\n", encoding="utf-8")
-        git("add", "-A")
-        git("commit", "-q", "-m", "docs: the report")
-        anchor = subprocess.run(
-            ["git", "-C", str(repo), "rev-parse", "HEAD"],
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-
-        assert (
-            _implementer_commits_after(anchor, root=repo) == []
-        ), "nothing follows the report yet and the rule already objects"
-
-        (repo / "tests" / "corpus" / "shapes.txt").write_text("id=x\n", encoding="utf-8")
-        git("add", "-A")
-        git("commit", "-q", "-m", "corpus: one shape")
-        assert _implementer_commits_after(anchor, root=repo) == [], (
-            "a corpus-only commit was counted as the implementer's. BE3 "
-            "requires it between the report and the verdict, so counting it "
-            "makes the process contradict itself -- which is R358."
-        )
-
-        (repo / "floatfea" / "a.py").write_text("x = 2\n", encoding="utf-8")
-        git("add", "-A")
-        git("commit", "-q", "-m", "a code change after the count")
-        intruders = _implementer_commits_after(anchor, root=repo)
-        assert len(intruders) == 1 and "code change" in intruders[0], (
-            "a code commit after the report was NOT caught, which is the "
-            f"whole reason this rule exists. Got: {intruders}"
-        )
-
-
-def test_the_anchor_fallback_cannot_be_taken_in_this_repository() -> None:
-    """The third anchor state is for the harness, never for a real report.
-
-    R377's repair gives `_report_anchor()` a branch for a report path with no
-    history. In `tests/test_report_guard_states.py` that is a copied step-10
-    report and the branch is correct; here it would mean the step report was
-    never committed, and a rule that quietly stops measuring is the shape
-    every finding in this milestone has had.
-
-    TWO ASSERTIONS, AND THE FIRST HOLDS EVERYWHERE. The reports TREE always
-    has history -- in the harness copy too, because `step-5.md` is committed
-    there -- so the fallback always has something to anchor on. The second is
-    the real invariant for a report that is tracked at all: it has history.
-    A copied report is untracked and asserts nothing, which is the same
-    three-state distinction the anchor itself draws.
-    """
-    tree = _last_commit_touching(REPORTS)
-    assert tree, (
-        f"nothing under {REPORTS.name} has any commit history, so the anchor "
-        "fallback has nothing to anchor on and the distance rule measures "
-        "nothing at all."
-    )
-    tracked = subprocess.run(
-        ["git", "-C", str(ROOT), "ls-files", "--error-unmatch", "--", str(REPORT)],
-        capture_output=True,
-    )
-    if tracked.returncode != 0:
-        return  # a copied report: untracked by construction, nothing to assert
-    assert _last_commit_touching(REPORT), (
-        f"{REPORT.name} is tracked and has no commit history, which should be "
-        "impossible. The distance rule is not measuring anything here."
-    )
+# --------------------------------------------------------------------------
+# THE WHOLE-SUITE-LINE COMMIT-DISTANCE RULE IS RETIRED (DR0)
+# --------------------------------------------------------------------------
+#
+# What it asserted: that the commit named by the report's whole-suite line was
+# at most one commit behind the commit the report is committed from, and that no
+# implementer commit followed it. The purpose was real -- a suite count taken at
+# a tree the head has moved away from describes nothing.
+#
+# WHY IT IS GONE RATHER THAN FIXED. It produced a finding against ITSELF in four
+# consecutive verdicts, and the last two were structural rather than incidental:
+#
+#   R546  no satisfiable state at a milestone close. `CLAUDE.md` requires the
+#         closure artifact after the last report, and the artifact moved the
+#         collected count through `test_closure_evidence_exists.py`, so no commit
+#         order satisfied both.
+#   R564  `REPORTS` is `docs/reports/F2`, so at the F2 -> F3 boundary no F3 report
+#         could clear it: the rule kept measuring against an F2 commit.
+#   R563  the three anchor states need different distance rules from each other,
+#         and the repair that rejected distance zero inverted them.
+#   R548  distance zero had never been rejected at all, four verdicts running.
+#
+# Four attempts to express "this count is stale" as a pathspec plus a distance,
+# and each repair moved the defect rather than closing it. No pathspec can carry
+# it: `docs/` can move a suite count, `CLAUDE.md` is scanned by the prose guard,
+# and `docs/milestones/F2.md` holds the integer that selects the guard harness's
+# whole input.
+#
+# WHAT CARRIES THE PROPERTY NOW. `tests/test_collected_set_golden.py` -- which is
+# also the guard that caught R561, the phantom citation this rule did not see. It
+# records the collected set and reddens when a name disappears, which is the half
+# of "the count describes this tree" that is checkable without a pathspec.
+#
+# WHAT IS LOST, SAID PLAINLY SO NOBODY DISCOVERS IT: a stale whole-suite FIGURE is
+# no longer caught. A report may now publish a count taken several commits back
+# and nothing will say so. R309 -- take the count last, in a clean worktree at the
+# report's own commit -- is discipline now rather than a check, and
+# `scripts/suite_count.py` is still what produces it.
+#
+# Retired under DR0 with R546, R548, R563 and R564. R562 and R565 were findings
+# against this rule's own helpers and go with it.
+# --------------------------------------------------------------------------
 
 
 def test_a_RED_suite_is_named_in_the_report() -> None:

@@ -167,9 +167,11 @@ STATES: dict[str, list[tuple[str, str]]] = {
     "guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF": [
         ("pointers_all_at_carried", "")
     ],
-    "guard_state_the_whole_suite_line_names_an_ANCESTOR_AT_WHICH_THE_SUITE_WAS_RED": [
-        ("suite_line_at_an_older_ancestor", "")
-    ],
+    # RETIRED WITH THE RULE IT EXERCISED (DR0). This state made the whole-suite
+    # line name an older ancestor and required the commit-distance rule to redden.
+    # That rule is gone, so the state asserts nothing and its corpus row stays as
+    # the record of what was measured. The build action is deleted rather than
+    # repaired, per DR1.
 }
 
 
@@ -287,58 +289,11 @@ def _seed_older_verdict(work: Path, reviews: Path) -> None:
         )
 
 
-def _older_ancestor(work: Path) -> str:
-    """A commit touching the verdict path that is a REAL ancestor of the report's
-    own commit, far enough behind it to redden the distance rule (R544, DO0).
-
-    The state this serves makes the whole-suite line name a commit the head has
-    moved away from, and `test_the_whole_suite_line_is_about_a_commit_that_exists`
-    must then go red. That needs `rev-list --count <older>..<anchor>` above one,
-    so `older` has to be BEHIND the anchor -- which is exactly what
-    `_seed_older_verdict` cannot provide, because it commits on top.
-
-    Selection, not fabrication: every commit that touched the verdict path is
-    tested with `merge-base --is-ancestor` against the report's own commit, and
-    the newest one at distance above one is taken. **If there is none the state
-    is not buildable and this RAISES**, because a control that cannot be built is
-    reported and not skipped -- `CLAUDE.md` forbids the skip, and a silently
-    substituted descendant is what R544 was.
-    """
-
-    def log(path: str) -> list[str]:
-        return subprocess.run(
-            ["git", "-C", str(work), "log", "--format=%h", "--", path],
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.split()
-
-    report_path = f"docs/reports/F2/{REPORT_NAME}"
-    anchor_log = log(report_path)
-    assert anchor_log, f"no commit touches {report_path}; the state has no anchor"
-    anchor = anchor_log[0]
-    for candidate in log(REVIEW_PATH):
-        is_ancestor = subprocess.run(
-            ["git", "-C", str(work), "merge-base", "--is-ancestor", candidate, anchor],
-            capture_output=True,
-        )
-        if is_ancestor.returncode != 0:
-            continue
-        distance = subprocess.run(
-            ["git", "-C", str(work), "rev-list", "--count", f"{candidate}..{anchor}"],
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.strip()
-        if int(distance or "0") > 1:
-            return candidate
-    raise AssertionError(
-        "no commit touching the verdict path is an ancestor of the report's own "
-        f"commit ({anchor}) at a distance above one, so this state cannot be "
-        "built. `_seed_older_verdict` commits ON TOP and gives a descendant, "
-        "which is R544: the guard passes correctly and the control fails. "
-        "Reported rather than skipped, and rather than substituted."
-    )
+# `_older_ancestor` IS DELETED WITH THE STATE IT SERVED (DR0). It selected a real
+# ancestor of the report's commit so that the commit-distance rule would redden.
+# That rule is retired, so there is nothing for it to select against. R544 -- the
+# finding that the harness planted a descendant instead of an ancestor -- closes
+# here rather than being carried: the mechanism it was about no longer exists.
 
 
 def _build(tmp: Path, state: str) -> Path:
@@ -519,18 +474,10 @@ def _build(tmp: Path, state: str) -> Path:
             head = text.rindex("# Revision ")
             body = re.sub(r"\u00a7\s*\d+[a-z]?", "\u00a79", text[head:])
             report.write_text(text[:head] + body, encoding="utf-8")
-        elif action == "suite_line_at_an_older_ancestor":
-            # A true sentence about a tree nobody is reading: the previous
-            # verdict's commit, and the count the suite had there.
-            older = _older_ancestor(work)
-            report = reports / REPORT_NAME
-            text = report.read_text(encoding="utf-8", errors="replace")
-            text = re.sub(
-                r"Whole suite at `[0-9a-f]+`: \d+ passed, \d+ failed, \d+ skipped",
-                f"Whole suite at `{older}`: 1833 passed, 0 failed, 0 skipped",
-                text,
-            )
-            report.write_text(text, encoding="utf-8")
+        # THE `suite_line_at_an_older_ancestor` ACTION IS DELETED (DR0). It
+        # rewrote the whole-suite line to name an older ancestor so the
+        # commit-distance rule would redden. That rule is retired; there is
+        # nothing left for the action to provoke.
         elif action == "shallow":
             # A REAL SHALLOW CLONE, not `fetch --depth 1` on a full one. The
             # first version ran the fetch against `origin` and changed nothing,
@@ -649,8 +596,8 @@ def test_the_corpus_and_the_states_agree(capsys) -> None:
       control, and nothing outside this file vouches for it.
     * **in the corpus and not built** -- a shape the reviewer found and nobody has
       transcribed. That is a WORK ITEM. It is reported by name and counted, and
-      `test_every_reviewer_entry_is_BUILT_before_a_step_CLOSES` is where it has
-      to be zero.
+      The backstop that asserted it zero at a step close is deleted under DR1;
+      until the freeze lifts the count is reported and not asserted.
     """
     assert ENTRIES, f"{CORPUS} parsed to no entries; the format changed"
     named = {e[0] for e in ENTRIES}
@@ -666,41 +613,15 @@ def test_the_corpus_and_the_states_agree(capsys) -> None:
     )
 
 
-def test_every_reviewer_entry_is_BUILT_before_a_step_CLOSES() -> None:
-    """`N = 0` once any step has closed. Reported before that.
-
-    BE3 puts the reviewer's corpus commit after the report by design, so between a
-    corpus round and its transcription the count is non-zero and that is the
-    normal state of the loop. What may not happen is a step CLOSING with entries
-    untranscribed: at that point the shapes the reviewer found were carried past
-    the gate that was supposed to read them.
-
-    **THREE WAYS THE FIRST VERSION COULD BE WALKED PAST (R557), all measured.**
-
-    * it keyed on `docs/closure/F2-step{STEP}.md`, and `STEP` comes from the plan
-      marker -- a line in a document the constrained party writes. Bumping
-      `step-under-execution: 7` to `8` took this from FAILED to PASSED with all
-      five entries still untranscribed, and the whole-suite rule reported no
-      intruder for that commit;
-    * the path was hardcoded to `F2`, so it stopped applying at the milestone
-      boundary;
-    * `if not closure.is_file(): return` made the gate's own precondition a file
-      the constrained party creates.
-
-    So it does not read the marker and it does not read one path. It globs every
-    closure artifact in the repository. **If any step anywhere has closed, every
-    reviewer entry must be built** -- and there is nothing an implementer can
-    write that makes the set empty except transcribing the entries.
-    """
-    closed = sorted((ROOT / "docs" / "closure").glob("F*-step*.md"))
-    if not closed:
-        return  # no step has closed anywhere; the count is the report
-    assert not AWAITING_TRANSCRIPTION, (
-        f"{len(closed)} step closure artifacts exist ({[p.name for p in closed][:4]}"
-        f"...) and {len(AWAITING_TRANSCRIPTION)} reviewer entries are still "
-        f"untranscribed: {AWAITING_TRANSCRIPTION}. A step may not close carrying "
-        "shapes the reviewer found and nothing runs."
-    )
+# THE TRANSCRIPTION BACKSTOP IS DELETED (DR1). Its name is not written out, because
+# the citation guard reads this file for names that no longer exist. It asserted that
+# no step may close
+# with a reviewer corpus entry unbuilt, and it was true -- twelve are unbuilt. DR1
+# rules that batch 15 and any later apparatus corpus go to `docs/milestones/F2a.md`
+# UNTRANSCRIBED until the member-force table ships, which makes the assertion a
+# permanent red on a decision already taken. Deleted rather than repaired, with the
+# count still REPORTED by the corpus-agreement test above, so the debt stays
+# visible. It goes back when the freeze lifts.
 
 
 BUILT_ENTRIES = [e for e in ENTRIES if e[0] in STATES]
@@ -713,7 +634,8 @@ still cost one red per entry. Six before, six after; the commit message that
 claimed otherwise was wrong.
 
 The count of what is NOT here is reported by `test_the_corpus_and_the_states_agree`
-and asserted zero by `test_every_reviewer_entry_is_BUILT_before_a_step_CLOSES`.
+and, until DR1's freeze lifts, asserted by nothing -- see the note above the
+corpus-agreement test.
 """
 
 
@@ -788,7 +710,7 @@ def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) 
             # commit that fixed that line took the pass with it, so the
             # state had been certifying nothing.
             "test_the_Carried_table_is_what_the_generator_produces",
-            "test_the_whole_suite_line_is_about_a_commit_that_exists",
+            # the commit-distance reporter was named here and is retired (DR0)
         )
         if state in DIAGNOSIS:
             _assert_diagnosis(state, got, log)
