@@ -1,397 +1,508 @@
 # Review — F2 step 7
-Reviewed commit: 0a660cede5b9a7031508ad517bfb908a7f4e7983
-Verdict: PASS
-Tests: 2759 passed, 1 failed, 0 skipped   (my run at `0a660ce`, `python -m pytest -q`, 699.17s)
+Reviewed commit: b9dd0273f54667268dff5e76944b5e99df354648
+Verdict: STOP
 
-**Sixty-eighth verdict on F2; the fifth written into this file after step 7's closure
-verdict (DD1). STEP 7 IS AND STAYS CLOSED. F2 IS AND STAYS CLOSED. Verdict 63 at
-`2c48a4f` remains the closure verdict and nothing here withdraws it.** No later step has
-been started: `docs/milestones/F2.md:10` still reads `step-under-execution: 7` and the
-reports tree holds only F2. This verdict rules on four commits, `d877c91..HEAD`, and on
-nothing else. It is NOT the engineering verdict -- DR1 defers that until DP2 and DQ4
-land -- and it exists because the `Stop` hook requires a verdict when `tests/` moves,
-which it should.
+**Reviewed commit: `2dc6a99`.**
+Tests: 2729 passed, 25 failed, 0 skipped   (my run at `2dc6a99`, `python -m pytest -q`, 572.15s)
 
-**WHY PASS ON A RED TREE, said once and plainly.** The tree IS red at `0a660ce` -- one
-test, and CI agrees -- so by CZ0 (d) alone this is a HOLD. Two written rules collide and
-one has to yield:
+**Sixty-ninth verdict on F2; the sixth written into this file after step 7's closure
+verdict (DD1). STEP 7 IS AND STAYS CLOSED. F2 IS AND STAYS CLOSED.** Verdict 63 at
+`2c48a4f` remains F2's closure verdict and nothing here withdraws it. Under DR1 this is
+the second post-closure round counted against the next step's cap; verdict 68 was the
+first.
 
-* CA2 / CZ0 (d): a red test or a red CI at the reviewed commit blocks.
-* the `CLAUDE.md` three-verdict cap: after the third round a step closes, and a
-  still-open blocking item **carries by name** into the next step rather than buying a
-  fourth round. DR1 adds that post-closure verdicts count against the next step's cap.
+**WHY STOP AND NOT HOLD.** A STOP is "the locked plan is wrong". It is, at its first
+executable step, and it is wrong in three independent places measured below (R576).
+`CLAUDE.md` says do not soften a STOP into a HOLD, and my own instructions say the same,
+so I am not recording this as a tall HOLD. **The implementer stopped and reported rather
+than adapting the plan, which is exactly what the working agreement asks for; the STOP is
+the mechanism that records it, not a judgement on that decision.** Nothing about the
+DS2 work at `ca6959a` is uninterpretable because of it -- that commit precedes the lock --
+so the findings below still stand and still have to be answered.
 
-This is the FIFTH post-closure round against a cap of THREE; the red is the same red
-verdict 67 already ruled on (R566); it is measured BELOW where it was; and it is not
-caused by anything in this diff. Holding again would also reproduce the exact deadlock
-`CLAUDE.md` DD1 records: a HOLD on step 7 freezes DP2 and DQ4 at the hook, while DR1
-withholds the next verdict until DP2 and DQ4 land, and the only exit is a hand-written
-disposition. So I apply the cap, PASS the round, and **carry the red by name as a
-blocking item.** It is not softened and it is not forgiven: `## Next step opens when`
-states the condition, and green does not mean green in this repository until it clears.
-The collision itself goes to Xabier under its own heading below.
-
-## The one question: is the retirement clean or over-broad?
-
-**CLEAN IN EXTENT. ONE ITEM WIDER THAN DR0'S REASON. AND THE LOSS STATEMENT IS
-INCOMPLETE BY EXACTLY THAT ITEM.** Nothing was deleted that DR0 and DR1 did not
-authorise, nothing survived that carries the retired rule, and no tolerance, no
-`floatfea/` line and no conftest moved.
+## CI, for the commit under review (CA2)
 
 ```
-claim  six test functions and five helpers were deleted across the range, and they are
-       the ones the invocation lists
-cmd    git diff d877c91..HEAD -- tests | grep -E "^-\s*def "
-out    _report_anchor, _implementer_commits_after, _changes_the_parse, _is_ignored,
-       test_the_pathspec_names_every_executable_tree,
-       test_a_COMMENT_ONLY_commit_is_exempt_and_a_CODE_commit_is_NOT,
-       test_the_whole_suite_line_is_about_a_commit_that_exists,
-       test_a_code_commit_after_the_report_reddens_and_a_corpus_commit_does_not,
-       test_the_anchor_fallback_cannot_be_taken_in_this_repository,
-       _older_ancestor, test_every_reviewer_entry_is_BUILT_before_a_step_CLOSES
-       (plus two nested `def`s inside deleted bodies)
-judge  the rule, its two controls, the two controls from the failed repair, four
-       helpers, one build action, one state, and the backstop. That is the invocation's
-       list with nothing extra and nothing missing.
+cmd  gh run list --commit 2dc6a99 --json name,conclusion,workflowName
+out  []        -- UNAVAILABLE. Recorded as unavailable, not skipped over.
 ```
 
-```
-claim  nothing outside the reviewer's own trees still names any deleted object
-cmd    grep -rn <each of the fourteen names> .   (excluding .git and the reviews tree)
-out    live code: NONE. Live prose: two dangling HELPER citations (R571).
-       docs/closure/F2.md: one dangling TEST citation (R573). The step-5 and step-6
-       reports: historical records, correct as records. tests/corpus/
-       report_guard_states.txt: mine, and a record of what was measured.
-```
+The local head `2dc6a99` was rebased this turn and has not been pushed; `origin/F3` is
+`6186eb4`, a different sha. This is NOT CK2's allowance state -- runs are executing and
+billing is live. **The last run that EXECUTED on a commit in this range is `c78d895`,
+and the code under review has not moved since:**
 
 ```
-claim  REVIEWER_TREES has exactly one remaining consumer and it is the site-check diff
-cmd    grep -rn "REVIEWER_TREES" tests scripts .github
-out    tests/test_report_carried.py:2154 (the definition), :2272 (the site-check
-       `git diff` pathspec), :2255 (a COMMENT naming a deleted function -- R571)
-judge  the claim holds for code. One comment beside it does not.
+cmd  git diff --stat c78d895..HEAD -- floatfea tests scripts .github
+out  (no output)   -- the two commits after it are docs/milestones/F3.md only
+cmd  gh run view 36440843564 --json jobs
+out  "the verification ladder"    success  -- 13 steps, 2m32s. NO RUNG IS RED.
+     "lint, unit and guards"      failure  -- 14 steps, 5m22s, a real execution
+     two determinism jobs         skipped
+cmd  gh run view 36440843564 --log-failed | tail -1
+out  25 failed, 913 passed, 1 warning in 290.29s
 ```
 
-```
-claim  the three kept tests are about the LINE'S CONTENT, not about commit distance
-cmd    read tests/test_report_carried.py:2116-2130, :2205-2221, :2224-2232
-out    WHOLE_SUITE_count: the line exists and `passed > 100`. RED_suite_is_named:
-       every failure the line reports is named with a node id. CI_counts_not_all_zero:
-       the CI table is not all zeros. None of the three reads git history.
-judge  kept correctly. That judgement in the invocation is right.
-```
-
-**Where it goes wider than DR0's REASON, and this is the answer to question 2.** The
-deleted test carried TWO assertions under one name. DR0's reason -- R546, R548, R563,
-R564 -- is about the second only: the distance and the pathspec. The first was "a count
-stamped with a sha nobody can check is a count": the sha must be an ancestor of `HEAD`.
-That went with it, and the note at the site does not say so.
-
-```
-rule   (retired) the whole-suite line names a commit that is an ancestor of HEAD
-cell   ONE VARIABLE: the newest revision's suite-line sha, set to `deadbee`, a commit
-       that exists nowhere in this repository. Scratch worktree at 0a660ce, nothing
-       else moved.
-cmd    python -m pytest tests/test_report_carried.py -q
-out    203 passed        -- identical to the unmutated tree
-cmd    grep -rn "is-ancestor\|merge-base" tests scripts --include=*.py
-out    tests/test_report_carried.py:364 (report vs verdict ordering),
-       scripts/ci_section.py:527,:657 (CI run shas). Nothing reads the suite line.
-judge  a fabricated sha in a published count is now invisible. That is a SECOND loss
-       and it is not in the note.
-```
-
-**And the staleness loss is not hypothetical. It is already realised at this commit, in
-the dangerous direction:**
-
-```
-claim  the newest published whole-suite figure is stale and wrong in the failed count
-cmd    grep -n "Whole suite at" docs/reports/F2/step-7.md | tail -1
-out    **Whole suite at `41a200c`: 2509 passed, 0 failed, 0 skipped.**
-cmd    git rev-list --count 41a200c..HEAD
-out    23
-cmd    python -m pytest -q 2>&1 | tail -1
-out    1 failed, 2759 passed in 699.17s
-judge  the report publishes `0 failed` measured at a tree 23 commits behind a tree that
-       is RED. Under the retired rule this was the red F2 closed with; it is now green
-       and silent. That is the trade DR0 made, stated so nobody discovers it later.
-```
-
-**Deleting the backstop was within DR1 (question 3).** DR1 as recorded authorises it by
-name and for the same reason the invocation gives:
-
-```
-cmd  sed -n '292,296p' docs/SUPERVISOR.md
-out  "the backstop that asserted it zero at a step close is deleted, because it was
-      failing *true* against a decision already taken. It returns when the freeze lifts."
-cmd  git show --stat 0a660ce
-out  docs/SUPERVISOR.md | 33 +++ -- one file, a standalone `process:` commit citing DR1
-cmd  git diff d877c91..HEAD -- .claude docs/SUPERVISOR.md | grep -c "^-[^-]"
-out  0        -- additive only. No guard removed from my own instructions. NOT a STOP.
-```
-
-The failing-true / failing-false distinction the invocation is least sure of does not
-decide it: DR1 names this case explicitly. What is missing is not the deletion; it is
-the ledger (R574) -- and the reason recorded at the site carries the wrong number (R570).
+**CI and my machine agree on the count and on the set: 25.** That is up from ONE at
+verdict 68. The ladder being green is why this STOP is about the plan and not about a
+low rung.
 
 ## Carried
 
-Verdict 67's open items were R561, R562, R563, R564, R565 and R566. DR0 additionally
-named R546 and R548.
+Verdict 68 carried **R567** blocking by name and listed R568-R575 as closure items. The
+invocation asks me to rule on each.
 
-* **R561 -- ANSWERED at `77d55c6`.** `cmd git show 77d55c6 -- tests/test_report_guard_states.py`;
-  `out` the citation was corrected to
-  `test_every_reviewer_entry_is_BUILT_before_a_step_CLOSES`, and `85541e1` then removed
-  the name entirely with the test it named. The check is that the citation guard is green
-  over the whole tree at `0a660ce`: no `test_*` name in prose under `tests/` or `scripts/`
-  is dangling.
-* **R562 -- CLOSED AS MOOT, but NOT for the reason the invocation gives.** It was a
-  finding against the TRANSCRIPTION BACKSTOP (`tests/test_report_guard_states.py:695-697`
-  at `0f26f03`), not against the retired rule's helpers; it closes under DR1's deletion,
-  not under DR0. The distinction is load-bearing exactly once: DR1 says the backstop
-  RETURNS when the freeze lifts, and R562's constraint must return with it -- the trigger
-  must be a file the implementer cannot write, for example a `Verdict: PASS` line in the
-  protected reviews tree, which is the property the closure artifacts do not have.
-  Nothing in the repository records that constraint now. See R574.
-* **R563 -- CLOSED with the rule.** Its site, the `assert distance == 1` at
-  `tests/test_report_carried.py:2527` of that commit, no longer exists.
-* **R564 -- CLOSED with the rule.** The `REPORTS`-is-F2 milestone trap dies with the
-  anchor.
-* **R565 -- CLOSED with the rule, and here the invocation's reasoning is right.** Its
-  site was `test_the_pathspec_names_every_executable_tree`, one of the two controls of
-  the retired rule; verified deleted in the `def` list above.
-* **R546 and R548 -- CLOSED with the rule** (DR0 names both).
-* **R566 -- STILL OPEN, reduced from eleven reds to one, CARRIED BY NAME as blocking
-  into the next step.** Restated as R567 with the ablation.
+* **R567 -- WITHDRAWN, and say why rather than let it lapse.** Its site,
+  `test_the_guard_survives_the_state[two_digit_step_number]`, no longer exists: `391e375`
+  deleted the state under DT2, which is one of the two DR1-compliant moves verdict 68
+  itself named ("or records that the state was deleted under DR1 with the reason at the
+  site"). The reason is at the site, in the STATES dict where the entry was. The deletion
+  is clean in extent for the parametrisation -- `BUILT_ENTRIES` filters the corpus by
+  `STATES`, so the case disappears rather than erroring -- and the corpus row stays as the
+  record. **It is withdrawn as an item and replaced by R580: the tree is redder now, and
+  for different reasons.** Deleting it did not reduce the red count and the commit message
+  says so plainly, which is the right way to have written it.
+* **R568 -- ANSWERED in substance, and its repair introduced two stale numbers.** The note
+  at `tests/test_report_carried.py:2183-2198` now names both losses. Closure item C1.
+* **R569 -- ANSWERED.** The claim that `test_collected_set_golden.py` carries the retired
+  property is withdrawn at the site and replaced with "nothing replaces it". Correct.
+* **R570 -- NOT ANSWERED. The site was never touched.** This is the one the report gets
+  wrong, and it is (d) at the reviewed commit. See R580.
+* **R571 -- ANSWERED, both sites.** `tests/test_report_guard_states.py:268-273` no longer
+  names `_older_ancestor`; `tests/test_report_carried.py:2263` no longer names
+  `_implementer_commits_after()`. Verified line by line.
+* **R572 -- ANSWERED.** `cmd grep -rn "_last_commit_touching" tests scripts`; `out` (no
+  output).
+* **R573 -- ANSWERED, AND RE-BROKEN BY THE NEXT COMMIT.** `docs/closure/F2.md:206-224` was
+  re-measured at `e500ea0` and now names `two_digit_step_number` as the red -- which
+  `391e375` deleted one commit later, and whose reproduction command
+  (`pytest tests/test_report_guard_states.py -q`, `out 1 failed`) gives `7 failed` at HEAD.
+  Closure item C2. This is BP0's shape twice in the same paragraph in two commits.
+* **R574 -- ANSWERED.** The four-row ledger is in `docs/milestones/F2a.md`, including
+  R562's constraint travelling with the backstop. This was the one verdict 68 would not
+  let slide and it landed. Its own count ("22 unbuilt") is stale at HEAD -- closure item C3.
+* **R575 -- ANSWERED in substance.** `scripts/run_floatsim_design_waves.py:20-31` now names
+  the single-heading BEM database as the binding constraint and demotes the hardcoded
+  argument. The named site at line 27 is still red in the site guard; that is part of R580.
 
 ## Findings
 
-**R567. (d) -- BLOCKING, CARRIED. The tree is red at `0a660ce`, locally and in CI, and the
-retirement did not cause it: it reduced it.
-`tests/test_report_guard_states.py::test_the_guard_survives_the_state[two_digit_step_number]`.**
+**R576 (plan, blocking). F3's locked plan is wrong at its first executable step, in three
+independent places. `docs/milestones/F3.md:24-26`, `:70`, `:77`, `:152-158`.**
+
+The implementer reported the first of these against itself and stopped rather than
+adapting. That is the correct move and I am confirming the finding independently.
 
 ```
-cmd  python -m pytest -q 2>&1 | tail -3
-out  FAILED tests/test_report_guard_states.py::test_the_guard_survives_the_state[two_digit_step_number]
-     1 failed, 2759 passed, 2 warnings in 699.17s
-cmd  gh api repos/xabi80/FloatFEA/actions/runs/36374615479/jobs
-out  "lint, unit and guards"   failure -- runner "GitHub Actions 1000001366", 14 steps,
-     11m46s: a run that EXECUTED, so this is not CK2's allowance state
-     "the verification ladder" success -- no rung is red, so this is not a STOP
-cmd  gh run view 36374615479 --log-failed | tail -5
-out  1 failed, 963 passed -- the same single failure, the same assertion, on Linux. CI
-     and my machine agree, so it is not platform-dependent.
+claim  DJ1 sources the layout from an HSP model-definition YAML, and no such file exists
+cmd    find ../HSP-runs ../HSP-stable -name "*.yaml" -o -name "*.yml"
+out    studies/cluster-3buoy-rigid/deck_bem_morison.yaml, deck_bem_only.yaml
+       examples/two_body_semisub_barge.yml, tests/fixtures/bem/orcaflex/platform_small.yml
+cmd    ls ../HSP-runs/studies/platform-12buoy/
+out    platform_common.py, platform_bem.py, build_platform_mesh.py, ... -- no YAML
+judge  the 12-buoy deck is built in Python. Two 3-buoy-cluster decks, one semisub example
+       and one orcaflex fixture are the only YAMLs upstream. The named reference does not
+       exist, and G3.1a -- "size every other member to reproduce its body's YAML mass" --
+       has no reference either. "Verify the reference" is the guard, and this reference
+       is not merely unverified, it is absent.
 ```
 
 ```
-claim  the red predates the retirement; the retirement removed eleven of twelve
-cell   ONE VARIABLE: the commit. Same test, same machine. A worktree at 5bfdf3e --
-       verdict 67 landed, retirement not yet made -- against 0a660ce.
-cmd    python -m pytest tests/test_report_guard_states.py -q -k two_digit_step_number
-out    at 5bfdf3e: 1 failed -- nested run 36 failed, 128 passed
-out    at 0a660ce: 1 failed -- nested run 25 failed, 134 passed
-judge  same assertion, same cause class, eleven fewer nested failures. The retirement is
-       neither the cause nor an aggravation of it.
+claim  DJ1's geometry is wrong: the arms do not lie on the diagonals
+cmd    grep -n "CLUSTER_ANGLES_DEG =" ../HSP-runs/studies/platform-12buoy/platform_common.py
+out    34:CLUSTER_ANGLES_DEG = np.array([0.0, 90.0, 180.0, 270.0])  # C4-a
+judge  `docs/milestones/F3.md:25` says "two diagonal arms crossing at the central hub".
+       The arms lie along +/-x and +/-y. The same wrong belief is published twice at this
+       commit -- once in a locked plan and once in a step report -- which is why it is a
+       plan finding and not only a prose one.
 ```
 
-**The cause, measured rather than taken from the invocation. The invocation's reading is
-RIGHT about the mechanism and INCOMPLETE about the consequence.**
-
 ```
-claim  the nested run demands the NEWEST verdict while the outer run is held to the
-       verdict the report CLAIMS to answer, so the state is red for the whole interval
-       between any verdict and its answering report
-cmd    grep -n "Answers: verdict" docs/reports/F2/step-7.md | tail -1
-out    278:Answers: verdict 62 @ b52b370
-cmd    the nested failure names, from the CI log above
-out    test_the_report_carries_the_finding[R562] through [R566] -- verdict 67's findings
-judge  the `Answers:` header rule -- my own instructions, item 1b -- is what makes "green
-       mean green" at the outer level. The nested harness has no such rule, and this state
-       COPIES the verdict to step 10, so the comparison lands on 67 and reds. It clears
-       when a report revision answers the newest verdict, which is the invocation's
-       reading and is correct, and it reds again at the NEXT verdict. It has now been red
-       for five rounds.
+claim  DJ2 locks a load basis this repository records as unobtainable
+cmd    grep -n "45" docs/milestones/F3.md
+out    :70  headings 0 and 45, 3 seeds each -- 12 runs
+out    :77  the REDUCED set: 1 seed at 0 and 45 -- 2 runs
+cmd    sed -n '20,31p' scripts/run_floatsim_design_waves.py
+out    "the BEM database is solved at a single wave heading ... it needs a BEM solve at
+       the second heading, which is 3.66 h and 40.6 GB measured ... an HSP task"
+judge  R575 established that one commit earlier. The fallback keeps both headings, so the
+       runtime escape does not escape this. The plan was locked over the top of a
+       constraint the same tree had just recorded.
 ```
 
-**Closed when** a report revision answers the newest verdict and this state is green in CI
-at that commit -- or, if that price is judged wrong, when the state is DELETED under DR1
-with the reason at the site. Those are the only two DR1-compliant moves; a repair is a
-guard edit and the freeze forbids it. I am naming the choice, not asking for one, and I
-will not treat another round on this harness as available. **Do not repair it.**
+**Closed when** the plan reopens and DJ1 names a source that exists (`platform_common.py`
+and what in it), states the arm directions as measured, and DJ2 either drops heading 45 or
+records the BEM solve as a precondition with an owner. This is a plan re-lock; per DK0 it
+does not restart the verdict count.
 
-**R568. (closure) The loss statement is incomplete by one item -- the sha-existence half.
-`tests/test_report_carried.py:2190-2199`.** Measured under "The one question" above: a
-fabricated sha gives `203 passed`. **Closed when** the note names both losses -- a stale
-figure AND a sha that names nothing -- and `docs/milestones/F2a.md` carries the row.
+**R577 (a, blocking). `floatfea/io/reader.py::validate` enforces nothing from `scale`.
+This is the direct answer to the invocation's question 1, and the answer is no.**
 
-**R569. (closure) "WHAT CARRIES THE PROPERTY NOW" is refuted by the same two cells.
-`tests/test_report_carried.py:2185-2188`.** The collected-set golden records test NAMES;
-the suite line is a COUNT and a SHA. They share no quantity.
+DU0 re-locked `docs/load-interchange-v1.md` sec.2.1 to say the field "constrains the
+READER". Measured, at `2dc6a99`, against the shipped validator:
 
 ```
-cell   the two mutations above: the 23-commit-stale figure, and the fabricated sha
-cmd    python -m pytest tests/test_collected_set_golden.py -q
-out    green in both        -- it can see neither
-claim  and it could not see this commit's own deletions either
-cmd    git diff d877c91..HEAD -- tests/goldens/collected_tests.txt | grep -c "^-tests/"
-out    3        -- while six test functions were deleted
-cmd    git log --all -S the backstop's name -- tests/goldens/collected_tests.txt
-out    (no output)   -- three of the six were added after the previous regen, and the
-       golden is one-directional by design, so it never recorded them
-judge  the golden is a good guard for the defect it was written for. It carries none of
-       the retired rule's property, and it cannot be used to enumerate deletions -- the
-       `def` diff is what I had to use above.
+cell   ONE VARIABLE: the `scale` value in the G1.2 positive-control fixture. Everything
+       else held. Probe under /tmp, not in the repository.
+cmd    validate(record) for scale in {model, full, banana, MODEL, 50.0, absent}
+out    scale='model'  -> ACCEPTED       scale='banana' -> ACCEPTED
+       scale='full'   -> ACCEPTED       scale=absent   -> ACCEPTED
+       scale='MODEL'  -> ACCEPTED       scale=50.0     -> ACCEPTED
+cmd    grep -n "scale" floatfea/io/reader.py
+out    (no output)   -- the reader does not read the field at all
+judge  the enumeration is not enforced, the field is not required, and a record declaring
+       model scale is read as SI full scale by everything downstream. The gravity check
+       cannot stand in for it: |g| is 9.81 at both scales.
 ```
 
-**Closed when** the sentence is reduced to what was measured: nothing carries the retired
-property, and the golden carries a different one.
+**And the shipped gate asserts the wrong direction.** `tests/verification/rung4/
+test_validator_matrix.py:55` puts `"scale": "model"` in `_good_meta()` -- the fixture whose
+docstring is "A minimal record that MUST validate. The positive control." So G1.2 currently
+*asserts* that a model-scale record is well-formed and acceptable. That is the assertion,
+not an oversight in it, which is why this is (a) and (c) rather than a closure item.
 
-**R570. (closure) "it was true -- twelve are unbuilt" is 22 at the commit that publishes
-it. `tests/test_report_guard_states.py:616-624`.** CP2's species exactly: the number sits
-in the prose written AROUND the fix.
+**`provenance()` and `assumption_record()` do not close this.** They are correct in
+content -- `scale: "full"`, `source_scale: "model"`, `froude_lambda`, the bases and every
+derived exponent, and a sentence saying no quantity was measured at full scale. But:
 
 ```
-cmd  python -m pytest tests/test_report_guard_states.py -q -s -k corpus_and_the_states
-out  22 entries awaiting transcription
-cmd  the same module imported at 5bfdf3e
-out  46 entries, 25 built, 21 awaiting
-judge  twelve was verdict 67's figure, taken before my batch 16 (nine entries) and before
-       this commit's own state deletion (one). 12 + 9 + 1 = 22. Correct when taken, wrong
-       when published, which is BI3's shape inside a comment.
+cmd    grep -rn "froude" floatfea/ scripts/ --include=*.py -i | grep -v io/froude.py
+out    scripts/run_floatsim_design_waves.py:57 (a docstring about the study scale)
+judge  nothing in floatfea/ calls to_full_scale, provenance or assumption_record. The
+       non-confusability property lives entirely inside a module with no caller, and the
+       one component that WOULD have to refuse a mis-declared record does not look at the
+       field. Available is not enforced.
 ```
 
-**R571. (closure) Two dangling HELPER citations, which the citation guard cannot see
-because it reads `test_*` names only.**
+**Closed when** `validate()` rejects a record whose `scale` is absent or not in the
+enumeration; rejects `scale: "model"` (or accepts it only through a named conversion path
+that sets the provenance fields); rejects `scale: "full"` carrying `source_scale` without
+`froude_lambda`; and `_good_meta()` declares what a well-formed record actually is. The
+fault needs a name in `Fault` beside the eight that are there.
 
-* `tests/test_report_guard_states.py:271` -- "`_older_ancestor` below is what that state
-  uses instead. This function stays because..." -- and `_older_ancestor` is deleted twenty
-  lines below it, in the same commit.
-* `tests/test_report_carried.py:2255` -- "`_implementer_commits_after()` excludes
-  `REVIEWER_TREES` and explains why" -- present tense, and both the function and the
-  explanation are gone. The measured cell beside it, 126 failed to 125, survives, so the
-  substance of DD3 and R511 is not lost; only the pointer is.
+**R578 (b, blocking). The DS2 counter's injection is inert, and its round-trip control
+cannot fail. `tests/verification/rung4/test_froude_scaling.py:95-141`.**
 
-**This is the answer to "is the citation guard the right replacement".** It is a good
-guard; it caught three of the implementer's own dangling names inside the commit that
-named it; that is worth the line and I agree with it. It is NOT a replacement for the
-retired rule -- a different property entirely -- and its reach is exactly where this
-retirement left two dangling pointers. **Closed when** both sentences say what is true.
+This is the invocation's question 2, and the ruling is: **the intent is legitimate, the
+published figure is correct, and the control as written asserts its own premise.** Three
+cells, one variable each, in a scratch worktree outside the repository.
 
-**R572. (closure) Dead code: `_last_commit_touching` at
-`tests/test_report_carried.py:2133` has no caller.** `cmd grep -rn "_last_commit_touching"
-tests scripts`; `out` one line, the definition. It outlived `_report_anchor` and
-`test_the_anchor_fallback_cannot_be_taken_in_this_repository`, its only two consumers.
-**Closed when** it is deleted or a caller exists.
+```
+cell   ONE VARIABLE: delete `patch.setattr(froude, "DIMENSIONS", broken)` at :115.
+cmd    python -m pytest tests/verification/rung4/test_froude_scaling.py -q
+out    20 passed; the DECLARED-TABLE check misses 0; the ROUND TRIP misses 7
+judge  IDENTICAL to the unmutated run. The injection changes nothing. The table half
+       reads `broken[quantity]` directly at :116 and never goes through the module; the
+       round-trip half at :121 computes `(values * factor) / factor`, which returns its
+       input for any finite non-zero factor whatever DIMENSIONS holds.
+```
 
-**R573. (closure, and the one a later reader meets first) `docs/closure/F2.md:206-214` now
-misattributes the red CI job and publishes a `cmd` that collects nothing.** Section 3 says
-the nested cause of the red `lint, unit and guards` job is
-`test_the_whole_suite_line_is_about_a_commit_that_exists`, gives the command to reproduce
-it, and quotes the retired rule on its `rule` line. At `0a660ce` that test does not exist
-and the red is `two_digit_step_number`. BP0 is explicit: when a decision rule changes,
-every figure citing it is regenerated or withdrawn in the same commit. **Closed when**
-section 3 states the red as it is at the current head, or records that its account is as
-of `2c48a4f` and names what the red is now.
+```
+cell   ONE VARIABLE: gut the SHIPPED assertion at :59 to `derived == approx(derived)`.
+cmd    the same run
+out    20 passed; the DECLARED-TABLE check misses 0
+judge  the counter certifies a COPY of the assertion, not the assertion. "A gate carries
+       its own failure" requires breaking the property and confirming the assertion goes
+       red; this one would report full sensitivity for a test that checks nothing.
+```
 
-**R574. (closure) `docs/milestones/F2a.md` carries no row for anything DR1 defers, so the
-freeze has no ledger.** `cmd grep -n "batch 15" docs/milestones/F2a.md`, and the same for
-"backstop", "whole-suite", "untranscribed", "DR0" and "DR1"; `out` (no output) for every
-one of the six. Three rows are needed: (i) the 22 untranscribed reviewer entries, batches
-15 and 16, with the corpus-agreement test named as the reporter; (ii) the transcription
-backstop's return, carrying R562's constraint; (iii) the suite-line existence check from
-R568. **Closed when** the three rows exist. A freeze without a ledger is a deletion.
+```
+cell   ONE VARIABLE: make `to_model_scale` multiply instead of divide, in floatfea/.
+cmd    the same run
+out    12 failed, 8 passed -- AND the counter still printed "the ROUND TRIP misses 7"
+judge  the control does not touch `to_full_scale` or `to_model_scale`. Its equality is a
+       statement about IEEE division, not about `test_the_ROUND_TRIP_returns_the_input`.
+```
 
-**R575. (closure) `scripts/run_floatsim_design_waves.py:22-27` gives an incomplete reason
-for skipping heading 45, and the constraint that actually binds is the expensive one.** The
-hardcoded-argument claim is TRUE: the pilot study script in the pinned HSP worktree
-constructs its wave at heading zero, at line 262. But lines 25-31 of that same file record
-that `platform12_bem.nc` was solved at heading 0 ONLY, and that the other case needs the
-BEM re-solved at about 190 minutes. A heading parameter alone does not buy heading 45; a
-database does. **Closed when** the docstring says which constraint binds. Recorded because
-DQ0's scope depends on it, not because of the prose.
+**The number it publishes is right, and I measured it the honest way so the repair is not
+mistaken for a retraction:** composing the SHIPPED `to_full_scale` and `to_model_scale`
+under a real module-level injection gives **7 of 7 missed**. So `docs/load-interchange-v1.md`
+sec.2.1's "measured, 7 of 7 planted exponent errors survived it" is true; its evidence is
+not the thing it names.
 
-**Not a finding, recorded so it is not re-litigated:** `290ffbd` adds a script, not
-apparatus. It is not a guard, scanner, meta-test, detector or report generator, so DR1 does
-not reach it, and its refusal to run in the production worktree plus the `git hash-object`
-check is the right shape for the incident it follows.
+**The shipped gate itself does carry its failure**, and that is worth recording in the same
+breath: `DIMENSIONS["moment"]` length 2 -> 3 in the module reddens
+`test_the_derived_exponents_match_the_DECLARED_table`; `TIME_EXPONENT` 0.5 -> 1.0 reddens
+four tests. The defect is in the counter, not in the gate.
+
+**Closed when** the counter injects through the module -- compose `to_full_scale` and
+`to_model_scale` for the round-trip half, and run the shipped table assertion (or call the
+shipped test function) for the table half -- so that both figures move when the thing they
+name moves. The equality on the round-trip control may stay if it does; keep the sentence
+that says the blindness is by construction, because that is the claim being made
+load-bearing and it is the right claim.
+
+**R579 (a, blocking). The converter cannot express the two composite channels the schema
+marks REQUIRED, and scaling one of them silently under-scales half of it.
+`floatfea/io/froude.py:96-128`.** This is the case I built to break the step, and it passed
+when it should have refused.
+
+```
+cell   the schema's own required arrays. /loads/<body>/radiation/mu[N,6] -- force in
+       columns 0-2, moment in 3-5. /joints/<id>/lam[N,n_rows] -- yaw_locked is 4 rows,
+       three force and one moment.
+cmd    to_full_scale(np.ones((2,6)), "force", 50.0)
+out    [125000, 125000, 125000, 125000, 125000, 125000]
+cmd    the dimensionally correct result
+out    [125000, 125000, 125000, 6250000, 6250000, 6250000]
+judge  the moment columns come out SHORT by exactly lambda = 50. Scaling the same array
+       as "moment" makes the force columns LONG by 50. No name in DIMENSIONS is correct
+       for either array, and no call raises. The API takes one quantity per array, and
+       the two channels the record must carry are not one quantity.
+```
+
+Nothing calls this yet, which is why the harm is latent rather than realised -- and it is
+still (a), because `mu` is the first array the converter will be handed and the failure is
+silent, not loud. `CLAUDE.md`: "a wrong answer that looks right is worse than a crash."
+
+**Closed when** `to_full_scale` refuses an array whose declared quantity does not cover it
+-- either a composite quantity (`wrench`, force rows plus moment rows, with the row map
+declared) or an explicit refusal for `mu` and `lam` by name. A silent single-exponent
+result for a mixed-dimension array must not be reachable.
+
+**R580 (d, blocking). 25 tests are red at `2dc6a99`, locally and in CI, up from one at
+verdict 68. R570 is not answered at its site and the report records it as answered.**
+
+```
+cmd  python -m pytest -q 2>&1 | tail -1
+out  25 failed, 2729 passed, 2 warnings in 572.15s
+cmd  gh run view 36440843564 --log-failed | tail -1      (c78d895, code-identical)
+out  25 failed, 913 passed in 290.29s
+```
+
+The root causes, measured rather than taken from the report:
+
+```
+claim  R570's site was never touched, and the text still says twelve
+cmd    grep -rn "twelve are unbuilt" tests/
+out    tests/test_report_guard_states.py:628
+cmd    git log --oneline -S "twelve are unbuilt" -- tests/test_report_guard_states.py
+out    85541e1    -- which is BEFORE verdict 68. e500ea0 did not touch it.
+cmd    python -m pytest tests/test_report_guard_states.py -q -s -k corpus_and_the_states
+out    23 entries awaiting transcription
+judge  the finding was "twelve is 22"; the answer is neither twelve nor 22, it is 23, and
+       the sentence still reads twelve. `docs/reports/F2/step-7.md:887-895` declares all
+       nine sites ANSWERED with "the text moved with the rewrite". The text did not move.
+       Ten of the 25 reds are this, and seven more are guard states whose nested run fails
+       on exactly these ten. That is 17 of 25 from one unanswered item.
+```
+
+```
+claim  the remaining reds are not the `Answers:` class the report attributes them to
+cmd    python -m pytest "tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]" -q
+out    the nested log names R570-:616 .. :624 and R575-:27, 16 failed, 167 passed
+cmd    grep -n "test_the_answered_verdict_is_the_NEWEST_one" (in the failure list)
+out    not present -- the Answers header is CORRECT at this commit
+judge  `Answers: verdict 68 @ 83c7ba5` names the latest verdict, so my instruction 1b is
+       satisfied and that class of red is genuinely closed. The report's section 5 predicts
+       "this revision closes them"; the revision landed and the count went 12 -> 25. Six
+       more are the absent CI section, which DU1 addresses and which this verdict's bolded
+       `Reviewed commit` line should let the generator produce. Two are unsourced numbers
+       in the report's own prose.
+```
+
+**Closed when** `tests/test_report_guard_states.py:628` states a count that is true at the
+commit publishing it -- or, better under BI3, states no count at all and points at
+`test_the_corpus_and_the_states_agree`, which prints it -- and the whole suite is green at
+the answering commit. The nine sites R570 named are closed site by site, not in a table
+that says they moved.
+
+**R581 (a, blocking, one line). `floatfea/io/froude.py:98` -- the lambda guard is defeated
+by nan, inf and subnormals.**
+
+```
+cmd  froude_factor("force", lam) for lam in {nan, inf, 1e-300, -0.0}
+out  nan    -> returned nan     (no raise)
+     inf    -> returned inf     (no raise)
+     1e-300 -> returned 0.0     (no raise) -- annihilates every scaled array
+     -0.0   -> raised ValueError
+judge  `if lam <= 0.0` is False for nan, so a nan scale propagates silently into every
+       quantity in the record. The module's own test asserts the guard for 0.0 and stops
+       there. "Never let a validation failure degrade to a warning" -- this one degrades
+       to nothing at all.
+```
+
+**Closed when** the guard is `if not math.isfinite(lam) or lam <= 0.0` (or equivalent) and
+the counter names nan among the refused values.
 
 ## Closure items
 
-R568, R569, R570, R571, R572, R573, R574, R575. Eight: prose, dead code, a stale artifact
-section and a ledger row. None of them is (a), (b) or (c). Fix them once in one closure
-commit and do not re-review them item by item. **R574 is the one I would not let slide
-into F3** -- it is what makes the freeze reversible rather than a deletion.
+None of these blocks. Fix the list once, in the step's closure commit, and do not
+re-review them item by item.
+
+* **C1. `tests/test_report_carried.py:2195-2198` -- the R568 repair published two numbers
+  that were stale within two commits.** "24 commits behind HEAD" is 32
+  (`git rev-list --count 41a200c..HEAD`); "the tree reports 1 failed" is 25; "203 passed"
+  is 183 collected in that module now. CP2's exact species, in the prose written around the
+  fix. And the whole block is a narrative claim about the repository in the source tree,
+  which CW0 says is a test, a triple, or deleted -- it is none of the three. **Closed when**
+  the block carries no measured number, or the numbers are in `claim:`/`cmd:`/`ctl:`/`out:`
+  form that `tests/test_tree_prose_consistent.py` evaluates.
+* **C2. `docs/closure/F2.md:206-224` is wrong again, one commit after being repaired.** It
+  names `two_digit_step_number` as the red and `391e375` deleted that state; its `cmd`
+  prints `7 failed`, not `1 failed`. **Closed when** section 3 says what is red at the
+  closing commit and records that the account is as of a named commit.
+* **C3. `docs/milestones/F2a.md`'s ledger row says "46 entries, 24 built, 22 unbuilt at
+  this commit"; it is 23 at `2dc6a99`.** Same shape, and the row is the ledger R574 asked
+  for, so it is worth getting right. **Closed when** the row cites the reporter instead of
+  a frozen count.
+* **C4. Three dangling references to the deleted state.**
+  `tests/test_report_guard_states.py:212-221` still holds a `REQUIREMENT_CHANGED` entry
+  keyed `two_digit_step_number` -- dead data with a present-tense reason for a state that
+  does not exist -- and `tests/test_report_carried.py:174, :748` are comments describing
+  what the state does. R561 and R571 were both this; this is the third and fourth. **Closed
+  when** the entry and the two comments are removed or rewritten in the past tense.
+* **C5. `floatfea/io/froude.py:88` -- "Every quantity the interchange schema carries, by
+  dimensions" is false.** The schema carries `area[P]` twice (panels, plate patches) and
+  `froude_factor("area", 50)` raises. The raise is the right behaviour; the sentence is
+  wrong, and it is the sentence that would stop someone checking. **Closed when** it says
+  what the table is -- the quantities DR4(c) declared plus the ones needed so far -- or
+  `area` is added.
+* **C6. `floatfea/io/froude.py:5-6` and `:30-32` state facts about the tree with no triple.**
+  "Nothing downstream of the reader multiplies anything by lambda" (true only because
+  nothing calls the module at all) and the named test citation. CW0. **Closed when** each is
+  a triple or deleted.
+* **C7. `tests/verification/rung4/test_froude_scaling.py` is not on the ladder.**
+  `docs/verification/README.md` rung 4 lists V4.1-V4.6, all load-mapping; nothing there
+  mentions Froude scaling, and the test carries no gate id. It reddens the ladder job, and
+  a reader cannot tell from the ladder what rung 4 now asserts. **Closed when** the README
+  carries a row for it.
+* **C8. `docs/reports/F2/step-7.md:803-804` -- the X-brace sentence, which the implementer
+  reported against itself.** I confirmed it independently: `CLUSTER_ANGLES_DEG =
+  [0, 90, 180, 270]`, so the arms lie along +/-x and +/-y and it is the ZERO-degree heading
+  that runs along an arm. It is a BG0 failure -- a causal sentence with no isolating cell --
+  and it is also one of the two number-sourcing reds. **On the deferral: reporting it the
+  day it was known is right and I am not asking for a revision.** But withdrawing one
+  sentence is a one-line deletion, not a revision, and the sentence is currently keeping a
+  test red; DU2/DU3 defer revisions, not retractions. **Closed when** the sentence is struck
+  -- in F3's first commit if that is the plan, but say in the strike that the arms are
+  axial, because the same belief is in `docs/milestones/F3.md:25` and R576 turns on it.
+* **C9. The corrected DQ2 gimbal measurement is not in the repository.** The implementer
+  found its own first measurement wrong -- rank over all four constraint rows including the
+  translational rows' `-skew(arm_a)` coupling, rather than the rotational row alone -- and
+  corrected it before reporting: 16 of 16 two-rotation gimbals, worst released-moment leak
+  2.75e-15 relative. **That is the discipline this arrangement is for, and it is the
+  strongest thing in this round.** Nothing in `floatfea/` depends on either number and
+  neither is published, so there is no stale figure. **Closed when** the corrected
+  measurement is written down where F5-prep's DJ0 verification will read it, with the cell
+  that distinguishes the two ranks -- otherwise the wrong one is the one somebody re-derives.
 
 ## Tolerances touched
 
 **None.**
 
 ```
-cmd  git diff d877c91..HEAD -- floatfea/tolerances.py
+cmd  git diff 0a660ce..HEAD -- floatfea/tolerances.py
 out  (no output)
-cmd  git diff d877c91..HEAD -- floatfea
-out  (no output)
-cmd  git diff d877c91..HEAD -- tests/conftest.py "tests/**/conftest.py"
+cmd  git diff 0a660ce..HEAD -- tests/conftest.py "tests/**/conftest.py"
 out  (no output)
 cmd  git ls-files -- tests/conftest.py "tests/**/conftest.py"
 out  tests/conftest.py        -- CI0: the pathspec resolves; the instruction is not broken
-cmd  git diff d877c91..HEAD -- .github
+cmd  git diff 0a660ce..HEAD -- .github
 out  (no output)
-cmd  git show --stat for each of the four commits
-out  77d55c6 and 85541e1 touch tests/ only; 290ffbd touches docs/ and scripts/ only;
-     0a660ce touches docs/SUPERVISOR.md alone. No commit touches both the reviews tree and
-     tests/ or floatfea/, and the one commit that edits my own instructions is standalone
-     and cites its directive.
 ```
 
-## Corpus this round
+The new module imports one existing entry, `ROUNDOFF_IDENTITY = 1e-14`, at three sites.
+**That use is inside the entry's declared class and inside its recorded basis, measured
+rather than assumed:**
 
-**No new entries, deliberately, and the reason is written down rather than left as an
-omission.** DE2 forbids new corpus files for apparatus species and freezes the existing
-apparatus corpora as a list; DR1 sends batch 15 and later apparatus entries to
-`docs/milestones/F2a.md` untranscribed. This diff touches no element, no gate on a physical
-quantity and no platform model, so an element batch taken here would measure nothing about
-it. **The element batch is deferred to the DP2/DQ4 verdict, where it can be measured
-against the new mode pairing instead of the old one.**
+```
+rule   the entry's class is "relative agreement for a property EXACT in exact arithmetic,
+       dimensionless in every use", basis "worst measured across its sites 4.93 ULP"
+cmd    the shipped round trip over all 15 quantities at lambda = 50, worst relative
+       residual
+out    1.0327e-16 (angular_acceleration) = 0.47 ULP, 96.8x of headroom
+judge  the new site is an order tighter than the entry's recorded worst, so the basis
+       sentence is not falsified by it and BD1's "set by the tightest member" is not
+       triggered. The other use, `abs=ROUNDOFF_IDENTITY` on an exponent equality, is an
+       exactness comparison on a dimensionless integer-or-half -- correct form.
+```
 
-**The standing measurement, which is the only number that says whether any of this works:**
-46 corpus entries, 24 built, **22 unbuilt** -- twelve from before verdict 67, nine from
-batch 16, and one created by this commit's own state deletion. New entries put in front of
-the implementer's checks this round: **zero, so no coverage was measured.** That is a gap in
-this round's record, not a clean bill.
+Two form notes, neither blocking: `LAMBDA = 50.0` and the three exponents carry
+`not-a-tolerance` markers with reasons, which is the right shape; and the counter for this
+gate is R578's subject, not a `tolerances.py` counter, because no value was added.
 
-## A criterion collision, once, for Xabier and not for another round
+## My own instructions (4b)
 
-**CA2 -- a red CI is a HOLD -- and the three-verdict cap cannot both be obeyed in a
-post-closure tree loop, and this is the fifth round where they meet.** The red is a
-process-harness state whose green depends on a condition outside itself: a report answering
-the newest verdict. So CI is red for the whole interval between any verdict and its
-answering report. Obeying CA2 there means the gate is red by construction during exactly the
-interval it exists to cover -- the same defect the `Answers:` header rule was introduced to
-fix at the outer level -- and obeying the cap means a reviewer writes PASS on a red tree,
-which is what CA2 exists to prevent. I resolved it by the cap, with the item carried by
-name, and I think that is right for THIS round only: the red is pre-existing, measured,
-falling, and fully attributed. **It is not a precedent I can keep applying.** One of two
-things should be decided above me -- either the nested harness gets the `Answers:` rule the
-outer level has, which is a guard edit and therefore post-freeze, or the state is deleted
-now under DR1 and the property goes on the frozen list. Either is cheap. Doing neither means
-the next verdict inherits the same collision with one more round of precedent behind it.
+```
+cmd  git diff 0a660ce..HEAD -- .claude docs/SUPERVISOR.md
+out  docs/SUPERVISOR.md | 38 ++++++  -- additive only, zero deletions
+cmd  git show --stat c78d895
+out  docs/SUPERVISOR.md alone, a standalone `process:` commit citing DU1
+```
+
+**Not a STOP-class finding.** DU1 adds two format rules about my output and removes no
+guard; I read the diff line by line. I have complied with both in this verdict: the judged
+commit is restated bolded and backticked above, and every blocking finding heads
+`**R<n> (<class>, blocking)**`. No commit in this range touches both my instructions and
+`floatfea/` or `tests/`.
+
+## Corpus this round (BE3)
+
+**`tests/corpus/froude_scale_boundary.txt`, batch 17, committed separately at `b9dd027`.**
+Not an apparatus corpus -- its surfaces are `floatfea/io/reader.py` and
+`floatfea/io/froude.py` -- so DE2 and DR1 do not reach it and it is not deferred to 4a.
+
+**37 new entries, none of them seen by the implementer. 20 of the 37 are already violated
+by the shipped code or the shipped checks; 17 are met.** That is the coverage measurement,
+and it is the implementer's own count that it replaces: DS2's counter reports 7 of 7
+planted shapes caught, and 7 of 7 is coverage of the seven rows DR4(c) wrote.
+
+The three that carry the most: `reader_scale_model_accepted` (R577),
+`froude_mu_scaled_as_force` (R579), `counter_injection_is_inert` (R578). The 17 met are
+worth as much as the 20 missed -- every unknown-quantity entry raises, which is the right
+behaviour and is the strongest thing about the module.
+
+**The standing measurement.** `cmd grep -h "^id=" tests/corpus/*.txt | wc -l`; `out` 1162
+entries across 18 files. Of the apparatus corpus, 23 entries remain untranscribed and are
+ledgered in `docs/milestones/F2a.md` under DR1 -- one more than the ledger says, because
+`391e375` deleted another built state (C3). **Verdict 68 measured zero new entries and said
+so; this round measured 37, and 20 of them came back red.** That is the only number here
+that says whether any of this works, and this round it says the boundary was not checked
+by anything outside the hand that wrote it.
+
+## On the criterion, once, and it is not a disagreement
+
+CZ0 is the right rule and it did work this round: six of verdict 68's eight items were
+prose, they were fixed in one commit, and I have not re-reviewed them individually. Two
+notes rather than an objection.
+
+**First, a STOP is not one of CZ0's four heads and should not be read as an exception to
+it.** CZ0 governs what consumes a review round; "the locked plan is wrong" ends the round
+structure rather than spending one. I am flagging the seam because a reader comparing
+R576 against (a)-(d) will not find it there.
+
+**Second, and this is the one I would put in front of Xabier: a prose finding that keeps a
+test red is not a prose finding.** C8's X-brace sentence and C1's stale numbers are exactly
+the class CZ0 demoted -- and `test_every_number_in_prose_is_sourced_in_its_own_section` is
+red on both, so the tree cannot be green while they stand. Under CZ0 they are closure items
+that wait for the closure commit; under CZ0 (d) the tree they keep red is blocking. That is
+not a contradiction to resolve in a verdict, but it does mean "fix the closure list once, at
+the end" and "get to green" are the same deadline for a subset of the list, and the report
+should not plan around them as if they were not.
+
+I am not asking for a ruling to proceed. This goes to Xabier through the implementer and
+does not become another round.
 
 ## Next step opens when
 
-Step 7 is closed and stays closed. Nothing here reopens it, and nothing here gates DP2 or
-DQ4.
+**Step 7 is closed and stays closed. Nothing here reopens it.** This verdict is about the
+tree, and about a plan locked at the commit it judges.
 
-1. **R567 is BLOCKING and carried by name.** The post-DP2/DQ4 report carries it in its
-   `Carried` section and either shows
-   `test_the_guard_survives_the_state[two_digit_step_number]` green in CI at its own commit
-   -- which a revision answering the newest verdict should produce on its own -- or records
-   that the state was deleted under DR1 with the reason at the site. Repairing it is refused
-   by the freeze.
-2. **The eight closure items land in one commit**, R574 included, and are not re-reviewed
-   individually.
-3. **The next verdict is requested after DP2 and DQ4 land** (DR1): not per commit and not
-   per directive. Under DR1 this verdict counts against that step's cap, so two rounds
-   remain before the cap closes it. Spend them on the element.
-4. **`Answers: verdict 68 @ 0a660ce`** is the header the next report carries. This is the
-   latest verdict as of this commit.
+1. **F3's plan reopens (R576).** It is not executed against in the meantime -- and it has
+   not been, which I verified: no code was written against a substitute layout source.
+   DJ1 gets a source that exists, the arm directions as measured, and DJ2 gets a decision
+   on heading 45. **Per DK0 the re-lock does not restart the verdict count.**
+2. **R577, R578, R579 and R581 are answered in `floatfea/` and in the rung-4 module.** They
+   are one commit's work between them and none needs new apparatus: R577 is a check in an
+   existing validator with a new `Fault` member, R578 is a change of what the counter calls,
+   R579 is a refusal, R581 is one predicate.
+3. **R580 clears when the suite is green at the answering commit**, with R570's nine sites
+   closed site by site rather than declared moved in a table.
+4. **The nine closure items land in one commit** and are not re-reviewed individually.
+5. **`Answers: verdict 69 @ 2dc6a99`** is the header the next report carries. This is the
+   latest verdict as of this commit, and `2dc6a99` is the commit it judged; the stamped
+   header on this file is my corpus commit `b9dd027`, per R513.
+6. **One round remains against the cap** before it closes the next step (DR1: verdict 68
+   was the first, this is the second). Spend it on `floatfea/` -- the element and the
+   boundary -- not on the harness.
