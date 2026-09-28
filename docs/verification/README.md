@@ -86,7 +86,12 @@ a paired mass-and-strength check made from both looks self-consistent while
 being wrong in the direction that matters. *Gate G3.3.*
 
 **V3.2 Model definition round-trip.** YAML in, model built, YAML out, no loss.
-*Gate G3.2.*
+The layout source is `data/platform/platform12_deck.yaml`, written only by
+`scripts/export_platform_deck.py` (DV0), and the gate has two halves: the emitted
+file re-validates to the deck it was dumped from, and the **committed bytes** still
+reproduce a deck built from HSP at the pin. The second half is what a
+self-regenerating golden cannot do. *Gate G3.2;
+`tests/verification/rung3/test_platform_deck_export.py`.*
 
 ## Rung 4 — The loads are the loads
 
