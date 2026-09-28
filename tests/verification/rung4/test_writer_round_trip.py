@@ -53,7 +53,7 @@ import pytest
 
 h5py = pytest.importorskip("h5py")
 
-from floatfea.io.reader import validate  # noqa: E402
+from floatfea.io.reader import Fault, FlrValidationError, validate  # noqa: E402
 from floatfea.tolerances import (  # noqa: E402
     INTERCHANGE_CHANNEL_DRIFT_ULP,
     INTERCHANGE_CHANNEL_DRIFT_ULP_COUNTER,
@@ -175,14 +175,42 @@ def test_the_fixture_exists_and_is_writer_produced() -> None:
         assert f["time/t"].shape == (N + 1,)
 
 
-def test_the_validator_ACCEPTS_real_writer_output() -> None:
+def test_real_writer_output_is_REFUSED_only_for_its_SCALE() -> None:
     """The positive control G1.2 never had: writer output, not a hand-built dict.
 
     A validator tested only against fixtures it was written beside can encode the
-    same misreading of the spec twice and stay green.
+    same misreading of the spec twice and stay green. That property is what this
+    test is for, and it is intact.
+
+    **THIS ASSERTED ACCEPTANCE UNTIL R577, AND ACCEPTANCE WAS THE WRONG
+    DIRECTION.** FloatSim runs at model scale and its writer correctly declares
+    `scale: "model"`. The reader analyses full scale unconditionally, so it must
+    refuse that record rather than read its numbers as metres and newtons. The test
+    that asserted the opposite was G1.2 vouching for the confusion the scale field
+    exists to prevent.
+
+    **The refusal is asserted to be SCALE_NOT_FULL and nothing else**, which is a
+    STRONGER statement than the old acceptance: `_validate_scale` runs last, so
+    reaching it means every other check -- units, provenance, gravity, integrator,
+    time base, inertia, rotation bounds, load alignment, joints -- passed on real
+    writer output. If any of them had broken, the fault raised here would not be
+    this one.
+
+    What is NOT covered, and where it returns: there is no record-level converter
+    yet, so nothing asserts that a CONVERTED real record validates. Building one
+    means a channel-to-quantity map over the whole schema, which is F4's load
+    mapping and not this step's. The accept side is covered meanwhile by
+    `test_a_CONVERTED_record_is_ACCEPTED_when_it_carries_its_provenance` in
+    `test_validator_matrix.py`, on a hand-built record carrying the converter's own
+    provenance fields.
     """
-    with h5py.File(FIXTURE, "r") as f:
+    with h5py.File(FIXTURE, "r") as f, pytest.raises(FlrValidationError) as raised:
         validate(f)
+    assert raised.value.fault is Fault.SCALE_NOT_FULL, (
+        f"real writer output was refused for {raised.value.fault.name}, not for its "
+        "scale. Every check before the scale check passed on this record until now, "
+        "so this is a regression in one of them rather than the boundary working."
+    )
 
 
 @pytest.mark.parametrize("body, k", [("bodyA", 0), ("bodyB", 1)])

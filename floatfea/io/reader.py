@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import json
 from enum import Enum
-from typing import Any, Final
+from typing import Any, Final, NoReturn
 
 import numpy as np
 
@@ -49,6 +49,9 @@ _REQUIRED_UNITS: Final[frozenset[str]] = frozenset({"length", "mass", "time", "f
 _REQUIRED_INTEGRATOR: Final[frozenset[str]] = frozenset(
     {"scheme", "rho_inf", "alpha_m", "alpha_f", "beta", "gamma", "dt", "mu_treatment"}
 )
+
+SCALES: Final[frozenset[str]] = frozenset({"full", "model"})
+"""The enumeration `docs/load-interchange-v1.md` sec.2 declares for `scale`."""
 
 
 class Fault(Enum):
@@ -72,6 +75,9 @@ class Fault(Enum):
     JACOBIAN_EVAL_MISSING = "missing jacobian_evaluation"
     MU_WARMUP = "record lies inside the mu warm-up region"
     UNKNOWN_BODY = "load or joint references a body absent from /bodies"
+    SCALE_MISSING = "missing or unrecognised scale"
+    SCALE_NOT_FULL = "record declares model scale and carries no conversion"
+    SCALE_PROVENANCE_INCOMPLETE = "converted record without its Froude provenance"
 
 
 class FlrValidationError(ValueError):
@@ -108,7 +114,13 @@ class FlrValidationError(ValueError):
         return f"FlrValidationError(fault={self.fault!r}, detail={self.detail!r})"
 
 
-def _reject(fault: Fault, detail: str) -> None:
+def _reject(fault: Fault, detail: str) -> NoReturn:
+    """Every rejection goes through here, and it never returns.
+
+    `NoReturn` rather than `None` so a type checker knows a `_reject` call ends the
+    branch. Without it, code after a rejection is analysed as reachable and the
+    narrowing a preceding `isinstance` guard established is discarded.
+    """
     raise FlrValidationError(fault=fault, detail=detail)
 
 
@@ -191,7 +203,84 @@ def validate(handle: Any) -> dict[str, Any]:
     _validate_kinematics(handle)
     _validate_loads(handle, meta)
     _validate_joints(handle)
+
+    # SCALE IS CHECKED LAST, AND THE ORDER IS LOAD-BEARING HERE even though the
+    # docstring above says order is readability. A model-scale record is otherwise
+    # well-formed -- FloatSim writes correct records at the scale it runs at -- so
+    # refusing it first would mask every other fault behind the one that is not a
+    # defect in the record. Last means a SCALE refusal is proof that everything
+    # else passed, which is what `test_real_writer_output_is_REFUSED_only_for_its_SCALE`
+    # rests on.
+    _validate_scale(meta)
     return meta
+
+
+def _validate_scale(meta: dict[str, Any]) -> None:
+    """`scale` constrains the reader (DU0), so the reader is where it is enforced.
+
+    `docs/load-interchange-v1.md` sec.2.1: the field is "declared, never a factor to
+    apply". What that forbids is a consumer multiplying a record by a scale it
+    assumes. This function is the enforcement: everything downstream of it reads SI
+    at full scale unconditionally, so a record that is not full scale must not reach
+    it. `|g|` cannot stand in for this check -- gravity is 9.81 at both scales, which
+    is the whole basis of Froude similitude.
+
+    A model-scale record is not *wrong*; it is unanalysable by this tool until
+    `floatfea.io.froude` has converted it, and the conversion is required to leave
+    its own evidence. So the three refusals are: an undeclared or unrecognised
+    scale, a model-scale record, and a converted record that does not say what was
+    applied to it.
+    """
+    scale = meta.get("scale")
+    if scale not in SCALES:
+        _reject(
+            Fault.SCALE_MISSING,
+            f"got {scale!r}; the schema enumerates {sorted(SCALES)}. An undeclared "
+            "scale is read by everything downstream as full-scale SI, which is an "
+            "assumed unit -- the thing CLAUDE.md forbids assuming.",
+        )
+
+    if scale == "model":
+        _reject(
+            Fault.SCALE_NOT_FULL,
+            "this reader analyses full scale only. A model-scale record is "
+            "converted at the I/O boundary by floatfea.io.froude, which sets "
+            "scale='full', source_scale='model' and froude_lambda; it is not "
+            "scaled here and it is not read as though it were already full scale.",
+        )
+
+    source = meta.get("source_scale")
+    if source is not None and source != scale:
+        if source not in SCALES:
+            _reject(
+                Fault.SCALE_PROVENANCE_INCOMPLETE,
+                f"source_scale is {source!r}; the schema enumerates {sorted(SCALES)}",
+            )
+        lam = meta.get("froude_lambda")
+        if not isinstance(lam, (int, float)) or isinstance(lam, bool):
+            _reject(
+                Fault.SCALE_PROVENANCE_INCOMPLETE,
+                f"a record converted from {source!r} to {scale!r} declares no "
+                f"numeric froude_lambda (got {lam!r}). Without it the conversion "
+                "cannot be undone or checked, and the record is indistinguishable "
+                "from one measured at full scale.",
+            )
+        value = float(lam)
+        if not np.isfinite(value) or value <= 0.0:
+            _reject(
+                Fault.SCALE_PROVENANCE_INCOMPLETE,
+                f"froude_lambda is {lam!r}; a scale factor must be finite and " "positive",
+            )
+        assumptions = meta.get("assumptions") or []
+        if not any("FROUDE-SCALED" in str(a) for a in assumptions):
+            _reject(
+                Fault.SCALE_PROVENANCE_INCOMPLETE,
+                "a converted record carries no FROUDE-SCALED sentence in its "
+                "assumptions block. CLAUDE.md requires a transformation in use to "
+                "be recorded there and surfaced in the run log, so that a result "
+                "computed under it can never be mistaken for one measured "
+                "directly. floatfea.io.froude.assumption_record writes it.",
+            )
 
 
 def _validate_time(handle: Any) -> None:

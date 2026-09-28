@@ -16,19 +16,28 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+import floatfea.io.froude as froude
 from floatfea.io.froude import (
+    COMPOSITE_BLOCKS,
     DIMENSIONS,
     LENGTH_EXPONENT,
     MASS_EXPONENT,
     TIME_EXPONENT,
     Dimensions,
     assumption_record,
-    froude_factor,
     provenance,
-    to_full_scale,
-    to_model_scale,
 )
-from floatfea.tolerances import ROUNDOFF_IDENTITY
+
+# R578. The counter injects by patching `froude.DIMENSIONS`, so anything it wants
+# to measure the sensitivity of must reach the module at CALL time. A `from ...
+# import` binds the object at import time and the injection slides underneath it,
+# which is exactly how the first version of this counter came to report full
+# sensitivity for a test it never ran.
+froude_factor = froude.froude_factor
+to_full_scale = froude.to_full_scale
+to_model_scale = froude.to_model_scale
+
+from floatfea.tolerances import ROUNDOFF_IDENTITY  # noqa: E402
 
 DECLARED = {
     "length": 1.0,
@@ -55,7 +64,7 @@ def test_the_derived_exponents_match_the_DECLARED_table() -> None:
     quantity's dimensions are wrong, a row here disagrees.
     """
     for quantity, declared in DECLARED.items():
-        derived = DIMENSIONS[quantity].froude_exponent()
+        derived = froude.DIMENSIONS[quantity].froude_exponent()
         assert derived == pytest.approx(declared, abs=ROUNDOFF_IDENTITY), (
             f"{quantity}: DR4(c) declares lambda^{declared:g} and the dimensional "
             f"derivation gives lambda^{derived:g}. One of the three bases or this "
@@ -71,7 +80,7 @@ def test_every_quantity_the_SCHEMA_carries_has_dimensions() -> None:
     """
     with pytest.raises(ValueError, match="unknown quantity"):
         froude_factor("bending_stiffness_nobody_declared", LAMBDA)
-    with pytest.raises(ValueError, match="must be positive"):
+    with pytest.raises(ValueError, match="finite and positive"):
         froude_factor("length", 0.0)
 
 
@@ -85,7 +94,7 @@ def test_the_ROUND_TRIP_returns_the_input(quantity: str) -> None:
     """
     rng = np.random.default_rng(20260928)
     values = rng.standard_normal(64) * 1e3
-    back = to_model_scale(to_full_scale(values, quantity, LAMBDA), quantity, LAMBDA)
+    back = froude.to_model_scale(froude.to_full_scale(values, quantity, LAMBDA), quantity, LAMBDA)
     worst = float(np.max(np.abs(back - values))) / float(np.max(np.abs(values)))
     assert (
         worst <= ROUNDOFF_IDENTITY
@@ -95,37 +104,53 @@ def test_the_ROUND_TRIP_returns_the_input(quantity: str) -> None:
 def test_a_WRONG_EXPONENT_on_any_ONE_quantity_reddens(capsys, monkeypatch) -> None:
     """DS2's counter. One quantity at a time, and the round trip cannot see it.
 
-    Each of DR4(c)'s seven rows is perturbed by one in the length dimension --
-    the smallest change that alters an exponent -- and the declared-table
-    comparison must redden for that row. The round-trip test is run against the
-    same perturbation to measure how blind it is: it passes every time, because
-    `lambda**n` composed with `lambda**-n` is the identity for any `n`.
-    """
-    import floatfea.io.froude as froude
+    **R578 rewrote this. The figure it publishes was right and its evidence was
+    not.** The first version perturbed a local dict, read that dict directly for
+    the table half, and computed `(values * factor) / factor` inline for the round
+    trip. Three cells refuted it: deleting the injection changed nothing, gutting
+    the SHIPPED assertion to a tautology still reported full sensitivity, and
+    making `to_model_scale` multiply instead of divide reddened twelve tests while
+    this control still printed "the ROUND TRIP misses 7". It measured IEEE
+    division, not the code it named.
 
+    It now injects through the module and runs the SHIPPED code on both halves:
+    the table half calls the shipped test function, the round-trip half composes
+    the shipped `to_full_scale` and `to_model_scale`. Both figures move when the
+    thing they name moves.
+    """
     survived_table: list[str] = []
     survived_round_trip: list[str] = []
     for quantity in DECLARED:
-        broken = dict(DIMENSIONS)
+        broken = dict(froude.DIMENSIONS)
         original = broken[quantity]
         broken[quantity] = Dimensions(
             length=original.length + 1.0, time=original.time, mass=original.mass
         )
         with monkeypatch.context() as patch:
             patch.setattr(froude, "DIMENSIONS", broken)
-            derived = broken[quantity].froude_exponent()
-            if derived == pytest.approx(DECLARED[quantity], abs=ROUNDOFF_IDENTITY):
+
+            # THE TABLE HALF: run the shipped assertion, not a copy of it.
+            try:
+                test_the_derived_exponents_match_the_DECLARED_table()
+            except AssertionError:
+                pass
+            else:
                 survived_table.append(quantity)
+
+            # THE ROUND-TRIP HALF: compose the shipped functions, which resolve
+            # `DIMENSIONS` at call time and therefore see the injection.
             values = np.array([1.0, -2.5, 1e4])
-            factor = froude.froude_factor(quantity, LAMBDA)
-            back = (values * factor) / factor
+            back = froude.to_model_scale(
+                froude.to_full_scale(values, quantity, LAMBDA), quantity, LAMBDA
+            )
             worst = float(np.max(np.abs(back - values))) / float(np.max(np.abs(values)))
             if worst <= ROUNDOFF_IDENTITY:
                 survived_round_trip.append(quantity)
 
     with capsys.disabled():
         print(
-            f"\n  one exponent perturbed, {len(DECLARED)} quantities:"
+            f"\n  one exponent perturbed, {len(DECLARED)} quantities, injected"
+            f" through the module:"
             f"\n    the DECLARED-TABLE check misses  {len(survived_table)}"
             f"\n    the ROUND TRIP misses            {len(survived_round_trip)}"
         )
@@ -136,9 +161,146 @@ def test_a_WRONG_EXPONENT_on_any_ONE_quantity_reddens(capsys, monkeypatch) -> No
     )
     assert len(survived_round_trip) == len(DECLARED), (
         "the round trip caught a wrong exponent, which it cannot do by "
-        "construction -- so this control is measuring something other than what "
-        "it says, and the claim that the round trip is blind would be unfounded."
+        "construction -- scaling up and back down composes `lambda**n` with "
+        "`lambda**-n`, which returns the input for ANY n. If this equality ever "
+        "fails, the round trip is measuring something other than the inverse and "
+        "the claim that it is blind would be unfounded."
     )
+
+
+def test_the_COUNTER_ITSELF_reddens_when_the_shipped_assertion_is_gutted(
+    monkeypatch,
+) -> None:
+    """R578's own control: the counter must fail if the gate it measures stops asserting.
+
+    The defect R578 found was a counter that certified a COPY of the assertion, so
+    it would have reported full sensitivity for a gate that checked nothing. This
+    replaces the shipped table assertion with a tautology and requires the counter
+    to notice -- if it does not, it is measuring a copy again.
+    """
+    import sys
+
+    module = sys.modules[__name__]
+
+    def tautology() -> None:
+        assert True
+
+    with monkeypatch.context() as patch:
+        patch.setattr(module, "test_the_derived_exponents_match_the_DECLARED_table", tautology)
+        survived = []
+        for quantity in DECLARED:
+            broken = dict(froude.DIMENSIONS)
+            original = broken[quantity]
+            broken[quantity] = Dimensions(
+                length=original.length + 1.0, time=original.time, mass=original.mass
+            )
+            with monkeypatch.context() as inner:
+                inner.setattr(froude, "DIMENSIONS", broken)
+                try:
+                    module.test_the_derived_exponents_match_the_DECLARED_table()
+                except AssertionError:
+                    pass
+                else:
+                    survived.append(quantity)
+
+    assert len(survived) == len(DECLARED), (
+        "the table half was replaced by a tautology and the counter still reported "
+        f"only {len(survived)} of {len(DECLARED)} missed. It is not running the "
+        "shipped assertion."
+    )
+
+
+def test_a_MIXED_DIMENSION_array_is_REFUSED_not_half_scaled(capsys) -> None:
+    """R579. `mu[N,6]` and `lam[N,n_rows]` stack force with moment.
+
+    Scaling either as one quantity leaves half the columns wrong by exactly
+    `lambda`, and the old API did it without raising. The composite carries the
+    column map; the scalar call refuses.
+    """
+    mu = np.ones((2, 6))
+    with pytest.raises(ValueError, match="composite width"):
+        froude.to_full_scale(mu, "force", LAMBDA)
+    with pytest.raises(ValueError, match="composite width"):
+        froude.to_full_scale(mu, "moment", LAMBDA)
+
+    scaled = np.asarray(froude.to_full_scale(mu, "wrench", LAMBDA))
+    force_factor = froude.froude_factor("force", LAMBDA)
+    moment_factor = froude.froude_factor("moment", LAMBDA)
+    assert np.allclose(scaled[:, 0:3], force_factor, rtol=ROUNDOFF_IDENTITY)
+    assert np.allclose(scaled[:, 3:6], moment_factor, rtol=ROUNDOFF_IDENTITY)
+
+    # the counter: how wrong the silent path WAS, so the refusal is not cosmetic
+    silent = np.asarray(mu) * force_factor
+    ratio = float(moment_factor / force_factor)
+    with capsys.disabled():
+        print(
+            f"\n  mu[N,6] scaled as 'force' at lambda = {LAMBDA:g}: the moment "
+            f"columns come out short by a factor of {ratio:g}"
+            f"\n    correct {moment_factor:g}   silent {silent[0, 3]:g}"
+        )
+    assert ratio == pytest.approx(LAMBDA, rel=ROUNDOFF_IDENTITY), (
+        "the under-scaling factor must be exactly lambda -- moment is length times "
+        "force, so the two exponents differ by exactly the length base."
+    )
+
+    # a composite name has no single factor, and saying so is the point
+    with pytest.raises(ValueError, match="composite"):
+        froude.froude_factor("wrench", LAMBDA)
+    # the declared width is not inferred from the data
+    with pytest.raises(ValueError, match="occupies 6 columns"):
+        froude.to_full_scale(np.ones((2, 4)), "wrench", LAMBDA)
+
+
+@pytest.mark.parametrize("kind,width", [("yaw_locked", 4), ("hinge", 5)])
+def test_the_JOINT_MULTIPLIER_layout_follows_the_JOINT(kind: str, width: int) -> None:
+    """`lam[N,n_rows]` is three force rows plus the rotational lock rows.
+
+    `yaw_locked` locks three translations and one rotation (4 rows); `hinge` locks
+    three and two (5). Verified against the assembled 12-buoy deck: 16 of 16 joints
+    are `yaw_locked`, 64 rows, every one a two-rotation gimbal.
+    """
+    name = f"joint_multiplier_{kind}"
+    blocks = COMPOSITE_BLOCKS[name]
+    assert blocks[-1][1] == width
+    assert blocks[0] == (0, 3, "force"), "the three translational rows carry force"
+    assert blocks[1][2] == "moment", "the rotational lock rows carry moment"
+
+    scaled = np.asarray(froude.to_full_scale(np.ones((3, width)), name, LAMBDA))
+    assert np.allclose(scaled[:, 0:3], froude.froude_factor("force", LAMBDA))
+    assert np.allclose(scaled[:, 3:width], froude.froude_factor("moment", LAMBDA))
+
+
+def test_a_NON_FINITE_or_UNREPRESENTABLE_scale_is_REFUSED(capsys) -> None:
+    """R581. `lam <= 0.0` is False for nan, so nan propagated into every channel.
+
+    The counter is the list of values the old predicate admitted. `1e-300` is the
+    one that shows why a guard on lambda alone is not enough: it is finite and
+    positive, and `lambda**3` underflows to exactly zero, which annihilates every
+    value it multiplies.
+    """
+    refused: list[str] = []
+    admitted: list[str] = []
+    for lam in (float("nan"), float("inf"), -float("inf"), 0.0, -0.0, -1.0, 1e-300, 1e300):
+        try:
+            froude.froude_factor("force", lam)
+        except ValueError:
+            refused.append(repr(lam))
+        else:
+            admitted.append(repr(lam))
+
+    with capsys.disabled():
+        print(f"\n  scales refused: {len(refused)} of 8")
+
+    assert not admitted, (
+        f"these scales were accepted and should not be: {admitted}. A validation "
+        "failure must not degrade to a warning, and returning nan degrades it past "
+        "a warning to nothing at all."
+    )
+    # not-a-tolerance: an EXACT equality. `force` derives to lambda^3, and
+    # `50.0**3.0` and `50.0**3` are the same IEEE double, so there is nothing here
+    # to be close about -- a comparison with any tolerance would hide a changed
+    # exponent behind it.
+    assert froude.froude_factor("force", LAMBDA) == LAMBDA**3
 
 
 def test_the_ASSUMPTIONS_record_names_the_scale_and_the_bases() -> None:

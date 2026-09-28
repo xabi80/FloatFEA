@@ -52,7 +52,13 @@ def _good_meta() -> dict[str, Any]:
         "gravity": [0.0, 0.0, -9.81],
         "water_density": 1025.0,
         "water_depth": 200.0,
-        "scale": "model",
+        # R577. THIS WAS `"model"`, AND THE POSITIVE CONTROL IS AN ASSERTION.
+        # `_good_meta()` is the fixture whose docstring is "A minimal record that
+        # MUST validate", so G1.2 was asserting that a model-scale record is
+        # well-formed and acceptable to a reader that analyses full scale
+        # unconditionally. The refusal and the fixture are the same statement read
+        # in two directions, and they disagreed.
+        "scale": "full",
         "time_convention": "exp_minus_i_omega_t",
         "integrator": {
             "scheme": "generalized_alpha",
@@ -223,6 +229,61 @@ def _m_unknown_body(h):
     g.attrs["time_alignment"] = "state_n"
 
 
+# SCALE has THREE raise sites and each gets its own mutation, per the
+# PROVENANCE_MISSING lesson recorded above: covering a fault is not covering the
+# conditions that raise it.
+def _m_scale_absent(h):
+    import json
+
+    m = _good_meta()
+    m.pop("scale")
+    h.attrs["meta"] = json.dumps(m)
+
+
+def _m_scale_unrecognised(h):
+    import json
+
+    m = _good_meta()
+    m["scale"] = "Full"  # the enumeration is exact; a near miss is not a match
+    h.attrs["meta"] = json.dumps(m)
+
+
+def _m_scale_model(h):
+    import json
+
+    m = _good_meta()
+    m["scale"] = "model"
+    h.attrs["meta"] = json.dumps(m)
+
+
+def _m_scale_converted_without_lambda(h):
+    import json
+
+    m = _good_meta()
+    m["source_scale"] = "model"
+    m["assumptions"] = ["FROUDE-SCALED from model scale to full scale"]
+    h.attrs["meta"] = json.dumps(m)
+
+
+def _m_scale_converted_without_assumptions(h):
+    import json
+
+    m = _good_meta()
+    m["source_scale"] = "model"
+    m["froude_lambda"] = 50.0
+    h.attrs["meta"] = json.dumps(m)
+
+
+def _m_scale_converted_with_nonfinite_lambda(h):
+    import json
+
+    m = _good_meta()
+    m["source_scale"] = "model"
+    m["froude_lambda"] = float("nan")
+    m["assumptions"] = ["FROUDE-SCALED from model scale to full scale"]
+    h.attrs["meta"] = json.dumps(m)
+
+
 MATRIX: list[tuple[Fault, Callable[[Any], None]]] = [
     (Fault.SCHEMA_VERSION, _m_schema),
     (Fault.UNITS_MISSING, _m_units),
@@ -244,7 +305,48 @@ MATRIX: list[tuple[Fault, Callable[[Any], None]]] = [
     (Fault.JACOBIAN_EVAL_MISSING, _m_jacobian),
     (Fault.MU_WARMUP, _m_mu_warmup),
     (Fault.UNKNOWN_BODY, _m_unknown_body),
+    (Fault.SCALE_MISSING, _m_scale_absent),
+    (Fault.SCALE_MISSING, _m_scale_unrecognised),
+    (Fault.SCALE_NOT_FULL, _m_scale_model),
+    (Fault.SCALE_PROVENANCE_INCOMPLETE, _m_scale_converted_without_lambda),
+    (Fault.SCALE_PROVENANCE_INCOMPLETE, _m_scale_converted_without_assumptions),
+    (Fault.SCALE_PROVENANCE_INCOMPLETE, _m_scale_converted_with_nonfinite_lambda),
 ]
+
+
+def test_a_CONVERTED_record_is_ACCEPTED_when_it_carries_its_provenance(
+    tmp_path,
+) -> None:
+    """The other direction of R577: the refusal must not be a blanket one.
+
+    A record converted from model scale by `floatfea.io.froude` declares
+    `scale: "full"` truthfully, and it says what was applied to it. That record is
+    analysable and must validate — otherwise the refusal is not "model scale is not
+    full scale", it is "converted data is unwelcome", and the converter would have
+    no purpose. The provenance fields come from the converter itself rather than
+    being typed here, so the reader and the writer cannot drift apart.
+    """
+    import json
+
+    from floatfea.io.froude import assumption_record, provenance
+
+    lam = 50.0
+    meta = _good_meta()
+    fields = provenance(lam)
+    meta["scale"] = fields["scale"]
+    meta["source_scale"] = fields["source_scale"]
+    meta["froude_lambda"] = fields["froude_lambda"]
+    meta["assumptions"] = [assumption_record(lam)]
+
+    path = tmp_path / "converted.flr"
+    _write_good(path, meta)
+    with h5py.File(path, "r") as h:
+        out = validate(h)
+    assert out["scale"] == "full"
+    assert out["source_scale"] == "model"
+    assert out["froude_lambda"] == lam
+    assert any("FROUDE-SCALED" in a for a in out["assumptions"])
+    assert json.dumps(out)  # the metadata survives as JSON, which is how it is stored
 
 
 def test_the_well_formed_record_is_ACCEPTED(tmp_path) -> None:
