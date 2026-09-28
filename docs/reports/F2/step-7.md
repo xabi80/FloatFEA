@@ -732,3 +732,216 @@ report revision still answered verdict 61 while verdict 62 existed, so every
 per-item guard for verdict 62's carry list was red. That is the guard asking for
 this revision, and C14's correction is why the count now names all three files
 rather than two.
+
+
+# Revision 3 — verdict 68's carry list, and the load basis
+
+Answers: verdict 68 @ 83c7ba5
+
+**2026-09-28.**
+
+## 0. NO CI SECTION, AND THE GENERATOR IS WHY
+
+`python scripts/ci_section.py` refuses at this revision:
+
+```
+cmd   python scripts/ci_section.py
+out   verdict 68 at `83c7ba5` does not name the commit it judged in its header,
+      so there is no commit to report CI for.
+cmd   git show 83c7ba5:<the verdict> | grep -n "Reviewed commit"
+out   2:Reviewed commit: 0a660cede5b9a7031508ad517bfb908a7f4e7983
+```
+
+**The verdict does name it — in the header's plain form.** The generator reads the
+BOLDED, backticked form in the body (`_JUDGED` at `scripts/ci_section.py:120`),
+which is the R513 convention: the stamped header is normally the reviewer's corpus
+commit and therefore not the commit judged, so the body carries the truth. **This
+round the reviewer wrote no corpus commit** — deliberately, with the reason
+recorded — so the header IS the judged commit and the body never restates it.
+
+**Nothing here is hand-written in its place.** CX0 and R449 make a run's outcome
+generated or absent, never typed, and DR1 freezes report apparatus so the
+generator is not edited to accept the header. The consequence is stated rather
+than worked around: **this revision reports no CI, and the run at `0a660ce` is
+recorded in verdict 68 itself** — `lint, unit and guards` failure, `the
+verification ladder` success, one failure on both platforms. That is the
+reviewer's measurement, not mine.
+
+## 1. The reading
+
+**Schedule: DS2 and DQ2 by 2 October, F3 by 9 October, F4 by 16 October, the
+member-force table 20 October, the code-check screen 25 October. DS2 has landed
+early and 2 October holds. F3 on 9 October is the one I will not promise from
+here** — the platform model is the largest piece left, nothing of it has started,
+and DT4 requires the slip to be reported the day it is known rather than when the
+step closes. **This revision exists because the `Carried` section owed verdict 68
+its nine findings and BS0 makes that a build failure**, not because a review round
+was requested: DT3 defers the next verdict until F3's platform model lands.
+**R568 to R575 are answered at `e500ea0` and `ca6959a`**; **R567 carries by name**
+and blocks at the next step. The load basis for the first result is the six DS1
+design-wave cases at heading 0, and every output will carry that on its face.
+
+```
+cmd   the six DS1 cases, in ../HSP-runs at the pinned tag
+out   T_full 10.0 12.5 14.0 15.0 16.2 20.0 s -> T_model 1.4142 1.7678 1.9799
+      2.1213 2.2910 2.8284 s at H_model 0.4840 m; every case settled=True and
+      exported; 1481.7 s total = 24.69 min for six
+rule  DQ0's design-wave method at H = 1.86 * Hs = 24.2 m full scale, Froude-mapped
+cmd   python -m pytest tests/verification/rung4/test_froude_scaling.py -q -s
+out   20 passed; one exponent perturbed over seven quantities -- the
+      declared-table check misses 0, the ROUND TRIP misses 7
+cmd   git rev-list --count 41a200c..HEAD
+out   the revision-2 suite line is that many commits stale and is stamped, not
+      re-taken; the rule that would have refused it is retired under DR0
+```
+
+**Heading 45 degrees is not in the basis, and the reason is upstream.** The BEM
+database is solved at a single wave heading, so no change to a study script
+produces a 45-degree result — it needs a second BEM solve, measured at 3.66 h and
+40.6 GB, ending in a commit that carries PR8 STEP 4's hydrostatic correction. That
+is an HSP task pending Xabier's go-ahead, recorded in `docs/milestones/F2a.md`.
+**The X-brace arms run along the diagonals, so a 45-degree wave travels along one
+arm and puts its two end clusters most out of phase; it may well govern the arms.**
+Six periods at 0 degrees shows the frame's response and may not contain the worst
+arm load, and the member-force table will say so.
+
+## 2. Findings, and every item carried
+
+Generated: `python scripts/answered_table.py <the newest verdict> docs/reports/F2/step-7-answers.json`.
+
+**R568** — the retirement note described one of the deleted test's two assertions;
+the sha-exists half went unremarked and the loss is already realised, with the
+revision-2 suite line naming a commit 24 behind HEAD. **R569** — I claimed
+`test_collected_set_golden.py` carries the retired property and it does not.
+**R570** — "twelve unbuilt" is 22. **R571, R572** — two dangling helper citations
+the citation guard cannot see, and dead code. **R573** — the closure artifact cited
+the retired test by name as the reason CI is red. **R574** — the freeze had no
+ledger. **R575** — the heading-45 reason named the hardcoded argument and not the
+single-heading database. All eight answered at `e500ea0`; **R567 carries**.
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R475 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R487 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R488 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R492 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R493 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R500 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R501 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R513 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R519 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R521 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R522 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R523 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R524 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R525 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R526 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R527 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R528 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R529 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R533 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R535 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R538 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R539 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R540 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R541 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R542 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R543 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R544 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R545 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R546 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R548 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R555 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R556 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R557 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R558 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R561 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R562 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R563 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R564 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R565 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R567 | recorded | **carried** | §2 | `` | BLOCKING, CARRIED. The tree is red at `0a660ce`, locally and in CI, and the |
+| R568 | recorded | **answered** | §2 | `` | The loss statement is incomplete by one item -- the sha-existence half. |
+| R569 | recorded | **answered** | §2 | `` | "WHAT CARRIES THE PROPERTY NOW" is refuted by the same two cells. |
+| R570 | recorded | **answered** | §2 | `` | "it was true -- twelve are unbuilt" is 22 at the commit that publishes |
+| R571 | recorded | **answered** | §2 | `` | Two dangling HELPER citations, which the citation guard cannot see |
+| R572 | recorded | **answered** | §2 | `` | Dead code: `_last_commit_touching` at |
+| R573 | recorded | **answered** | §2 | `` | `docs/closure/F2.md:206-214` now |
+| R574 | recorded | **answered** | §2 | `` | `docs/milestones/F2a.md` carries no row for anything DR1 defers, so the |
+| R575 | recorded | **answered** | §2 | `` | `scripts/run_floatsim_design_waves.py:22-27` gives an incomplete reason |
+
+## 3. Sites named by findings and not touched
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R568 | `tests/test_report_carried.py:2195` | the file is touched and this line number is the old one | ANSWERED at `e500ea0` and the block MOVED -- the retirement note was rewritten to carry both lost assertions and to withdraw the replacement claim; not `no change` |
+| R568 | `tests/test_report_carried.py:2196` | the file is touched and this line number is the old one | ANSWERED at `e500ea0` and the block MOVED -- the retirement note was rewritten to carry both lost assertions and to withdraw the replacement claim; not `no change` |
+| R568 | `tests/test_report_carried.py:2197` | the file is touched and this line number is the old one | ANSWERED at `e500ea0` and the block MOVED -- the retirement note was rewritten to carry both lost assertions and to withdraw the replacement claim; not `no change` |
+| R568 | `tests/test_report_carried.py:2198` | the file is touched and this line number is the old one | ANSWERED at `e500ea0` and the block MOVED -- the retirement note was rewritten to carry both lost assertions and to withdraw the replacement claim; not `no change` |
+| R568 | `tests/test_report_carried.py:2199` | the file is touched and this line number is the old one | ANSWERED at `e500ea0` and the block MOVED -- the retirement note was rewritten to carry both lost assertions and to withdraw the replacement claim; not `no change` |
+| R569 | `tests/test_collected_set_golden.py` | the file is untouched | ANSWERED at `e500ea0` and the block MOVED -- the retirement note was rewritten to carry both lost assertions and to withdraw the replacement claim; not `no change` |
+| R570 | `tests/test_report_guard_states.py:616` | the file is touched and this line number is the old one | ANSWERED at `e500ea0`. The count moved from twelve to 22 in the F2a ledger; these line numbers are the verdict's and the text moved with the rewrite |
+| R570 | `tests/test_report_guard_states.py:617` | the file is touched and this line number is the old one | ANSWERED at `e500ea0`. The count moved from twelve to 22 in the F2a ledger; these line numbers are the verdict's and the text moved with the rewrite |
+| R570 | `tests/test_report_guard_states.py:618` | the file is touched and this line number is the old one | ANSWERED at `e500ea0`. The count moved from twelve to 22 in the F2a ledger; these line numbers are the verdict's and the text moved with the rewrite |
+| R570 | `tests/test_report_guard_states.py:619` | the file is touched and this line number is the old one | ANSWERED at `e500ea0`. The count moved from twelve to 22 in the F2a ledger; these line numbers are the verdict's and the text moved with the rewrite |
+| R570 | `tests/test_report_guard_states.py:620` | the file is touched and this line number is the old one | ANSWERED at `e500ea0`. The count moved from twelve to 22 in the F2a ledger; these line numbers are the verdict's and the text moved with the rewrite |
+| R570 | `tests/test_report_guard_states.py:621` | the file is touched and this line number is the old one | ANSWERED at `e500ea0`. The count moved from twelve to 22 in the F2a ledger; these line numbers are the verdict's and the text moved with the rewrite |
+| R570 | `tests/test_report_guard_states.py:622` | the file is touched and this line number is the old one | ANSWERED at `e500ea0`. The count moved from twelve to 22 in the F2a ledger; these line numbers are the verdict's and the text moved with the rewrite |
+| R570 | `tests/test_report_guard_states.py:623` | the file is touched and this line number is the old one | ANSWERED at `e500ea0`. The count moved from twelve to 22 in the F2a ledger; these line numbers are the verdict's and the text moved with the rewrite |
+| R570 | `tests/test_report_guard_states.py:624` | the file is touched and this line number is the old one | ANSWERED at `e500ea0`. The count moved from twelve to 22 in the F2a ledger; these line numbers are the verdict's and the text moved with the rewrite |
+| R575 | `scripts/run_floatsim_design_waves.py:27` | the file is touched and this line number is the old one | ANSWERED at `e500ea0`. The docstring now names the single-heading BEM database as the binding constraint; the line moved with the rewrite |
+
+## 4. Carried
+
+Generated: `python scripts/carried_table.py <the newest verdict> docs/reports/F2/step-7-answers.json`.
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R546 | **carried** — §2 | and R548. |
+| R548 | **carried** — §2 | named R546 and R548. |
+| R561 | **carried** — §2 | and R566. DR0 additionally |
+| R562 | **carried** — §2 | and R566. DR0 additionally |
+| R563 | **carried** — §2 | and R566. DR0 additionally |
+| R564 | **carried** — §2 | and R566. DR0 additionally |
+| R565 | **carried** — §2 | and R566. DR0 additionally |
+| R566 | **open** — carried from an earlier verdict | . DR0 additionally |
+| R567 | **carried** — §2 | -- BLOCKING, CARRIED. The tree is red at 0a660ce, locally and in CI, and the retirement did not... |
+| R568 | **answered** — §2 | The loss statement is incomplete by one item -- the sha-existence half.... |
+| R569 | **answered** — §2 | "WHAT CARRIES THE PROPERTY NOW" is refuted by the same two cells.... |
+| R570 | **answered** — §2 | "it was true -- twelve are unbuilt" is 22 at the commit that publishes it.... |
+| R571 | **answered** — §2 | Two dangling HELPER citations, which the citation guard cannot see because it reads test_ names... |
+| R572 | **answered** — §2 | Dead code: _last_commit_touching at tests/test_report_carried.py:2133 has no caller. cmd grep... |
+| R573 | **answered** — §2 | docs/closure/F2.md:206-214 now misattributes the red CI job and publishes a cmd that collects... |
+| R574 | **answered** — §2 | docs/milestones/F2a.md carries no row for anything DR1 defers, so the freeze has no ledger. cmd... |
+| R575 | **answered** — §2 | scripts/run_floatsim_design_waves.py:22-27 gives an incomplete reason for skipping heading 45,... |
+
+## 5. The whole suite
+
+**Whole suite at `ca6959a`: 2532 passed, 0 failed, 0 skipped.** **The excluded set: 236 passed, 12 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 248 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+- **failed, in the excluded set** `tests.test_report_carried::test_the_answered_verdict_is_the_NEWEST_one`
+- **failed, in the excluded set** `tests.test_report_numbers_are_sourced::test_every_number_in_prose_is_sourced_in_its_own_section[5. The whole suite]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[baseline]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[non_numeric_step_suffix]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[superscript_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[shallow_clone_depth_1]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[shallow_clone_depth_1_reports_one_diagnosis_not_sixteen]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]`
+```
+
+**Zero failed in the main set, and the excluded set is 12.** The twelve are the
+report-parametrised guards measured at `ca6959a`, where the newest revision still
+answered verdict 62 while verdict 68 existed -- the `Answers:` shape DT2's commit
+recorded and this revision closes. They are not the retired commit-distance rule,
+which no longer exists to fail.

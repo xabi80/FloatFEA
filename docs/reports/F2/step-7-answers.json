@@ -1,11 +1,10 @@
 {
  "_": [
-  "POINTERS ONLY (CH4). A state from the generator's fixed list and a",
-  "section of this report.",
+  "POINTERS ONLY (CH4).",
   "",
-  "Revision 2 answers the SIXTY-SECOND verdict, a HOLD carrying R541,",
-  "R542 and R543 as blocking. All three are answered; the closure items",
-  "C14 to C19 are in section 1 and the closure artifact."
+  "Revision 3 answers the SIXTY-EIGHTH verdict, a PASS on the DR0",
+  "retirement with nine findings. R568 to R575 are answered in the",
+  "closure commit e500ea0 and in ca6959a; R567 carries by name."
  ],
  "answered": {
   "R475": {
@@ -81,7 +80,7 @@
    "where": "\u00a72"
   },
   "R533": {
-   "state": "later",
+   "state": "carried",
    "where": "\u00a72"
   },
   "R535": {
@@ -97,20 +96,108 @@
    "where": "\u00a72"
   },
   "R540": {
-   "state": "answered",
+   "state": "carried",
    "where": "\u00a72"
   },
   "R541": {
-   "state": "answered",
-   "where": "\u00a71"
+   "state": "carried",
+   "where": "\u00a72"
   },
   "R542": {
-   "state": "answered",
-   "where": "\u00a71"
+   "state": "carried",
+   "where": "\u00a72"
   },
   "R543": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R544": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R545": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R546": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R548": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R555": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R556": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R557": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R558": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R561": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R562": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R563": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R564": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R565": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R567": {
+   "state": "carried",
+   "where": "\u00a72"
+  },
+  "R568": {
    "state": "answered",
-   "where": "\u00a71"
+   "where": "\u00a72"
+  },
+  "R569": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R570": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R571": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R572": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R573": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R574": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R575": {
+   "state": "answered",
+   "where": "\u00a72"
   }
  }
 }
