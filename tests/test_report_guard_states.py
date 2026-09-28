@@ -108,7 +108,14 @@ STATES: dict[str, list[tuple[str, str]]] = {
         ("copy_report", str(NEXT)),
         ("empty_verdict", str(NEXT)),
     ],
-    "two_digit_step_number": [("copy_report", "10"), ("copy_verdict", "10")],
+    # DELETED (DT2). This state copied the report and verdict to step 10 and
+    # required the nested guard GREEN. It has been red for five rounds and the
+    # cause is not the state: the nested harness has no `Answers:` rule, so a
+    # copied verdict is always newer than the report that answers it, and every
+    # green-requiring state is red for the whole interval between a verdict and
+    # its answering report. Adding that rule is guard work and DR1 forbids it, so
+    # a state with no permitted fix is deleted rather than left red. Its corpus
+    # row stays as the record; it returns with the `Answers:` rule.
     "non_numeric_step_suffix": [("copy_report", "5b")],
     "reports_directory_renamed_away": [("rename_reports", "")],
     # --- the twenty-ninth verdict's eleven ---------------------------------
