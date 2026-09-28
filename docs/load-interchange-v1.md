@@ -47,6 +47,7 @@ which sources can actually be separated.
   gravity                   [gx, gy, gz]     -- 9.81 from FloatSim, not 9.80665
   water_density, water_depth
   scale                     "full" | "model" -- declared, never a factor to apply
+                            (DU0: this constrains the READER -- see below)
   assumptions[]             free-text records of any fallback applied
   integrator                REQUIRED -- v1.2, see sec.4.1
     scheme                  "generalized_alpha"
@@ -115,6 +116,43 @@ which sources can actually be separated.
 /diagnostics                      OPTIONAL -- FloatSim computes no per-step
                                   residual today (G1.0 sec.3)
 ```
+
+### 2.1 `scale` constrains the reader, and the converter is the boundary (DU0)
+
+**The line above says `scale` is "declared, never a factor to apply", and
+`floatfea/io/froude.py` applies a factor. Both are correct, and this section is
+the ruling that says why** — a reader who finds only one of them will conclude the
+other is a defect.
+
+**What the line forbids** is a *consumer* multiplying a record by a scale it
+assumes: a record declaring `model` must be read as model scale, full stop. That
+is the property the line protects, and it is why `scale` is an enumerated
+declaration rather than a number.
+
+**What it does not forbid** is a converter producing a record that genuinely *is*
+full scale and declaring itself so. `CLAUDE.md` § Conventions puts unit conversion
+at the I/O boundary and nowhere else, and that converter *is* the boundary. After
+it runs, `scale: "full"` is a true statement and no consumer applies anything
+further.
+
+**What travels with the conversion, so it can never be mistaken for a
+measurement:**
+
+| field | what it carries |
+|---|---|
+| `scale` | `"full"` — true after conversion |
+| `source_scale` | `"model"` — what the simulation actually ran at |
+| `froude_lambda` | the scale factor applied |
+| `froude_bases` | length `λ¹`, time `λ^½`, mass `λ³` |
+| `froude_exponents` | every derived exponent, so a reader can check any one |
+| `assumptions[]` | a sentence stating the run was executed at model scale and that **no quantity in the record was measured at full scale** |
+
+**And DR4(c)'s round-trip requirement is WITHDRAWN as specified.** It asked for a
+round trip in which a wrong exponent reddens. A round trip composes `λⁿ` with
+`λ⁻ⁿ` and returns its input for *any* `n`, right or wrong — measured, 7 of 7
+planted exponent errors survived it. **The declared-table comparison carries the
+exponent claim (7 of 7 caught); the round trip carries only the claim that the
+inverse inverts.** Both ship and the test says which does what.
 
 ## 3. Rotation parameterisation is a required field
 
