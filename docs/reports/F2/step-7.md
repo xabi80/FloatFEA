@@ -962,27 +962,125 @@ Answers: verdict 69 @ 4ff1008
 
 **2026-09-28.**
 
-## 0. CI, for the commit under review
+## 0. CI at `2dc6a99`, the commit verdict 69 judged — conclusion **FAILURE**
 
-```
-cmd   python scripts/ci_section.py
-out   no CI run at 2dc6a99dcaf8f48fd5fc0201284c688cd8af501e. A commit that was never pushed has no run, and a report cannot publish a table for it.
-```
+<!-- generated: scripts/ci_section.py -->
 
-**The generator is right and nothing is hand-written in its place.** The chain it
-walks now resolves -- this revision's `Answers:` header names verdict 69, and the
-format correction at `4ff1008` made the verdict's bolded judged-commit line
-parseable, which is what DU1 was for. What it resolves TO is a commit with no run,
-because `2dc6a99` was never pushed: the F3 branch was rebased onto F2's head this
-turn and `origin/F3` still stands at `6186eb4`, so publishing a run for it would
-need a force-push of a branch that has already been pushed.
+Generated: `python scripts/ci_section.py`, anchored on verdict 69 at `2dc6a99` through the report's own `Answers:` line. Run `36455024518`, event `workflow_dispatch`, conclusion **failure**.
 
-**That decision is not mine to take and the consequence is stated rather than
-worked around.** CX0 and R449 make a run's outcome generated or absent, never
-typed, so this revision reports no CI and the four CI guards stay red until the
-branch reaches the remote. The reviewer had already recorded the same absence for
-verdict 69 itself -- `origin/F3` is `6186eb4`, not CK2 -- and measured the tree
-instead at the code-identical `c78d895`.
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 1728 | 0 | 0 |
+| CI determinism -- leg (6) | 134 | 0 | 0 |
+| CI determinism -- leg (10) | 134 | 0 | 0 |
+| CI determinism -- leg (5) | 134 | 0 | 0 |
+| CI determinism -- leg (2) | 134 | 0 | 0 |
+| lint, unit and guards | 913 | 25 | 0 |
+| CI determinism -- leg (9) | 134 | 0 | 0 |
+| CI determinism -- leg (8) | 134 | 0 | 0 |
+| CI determinism -- leg (7) | 134 | 0 | 0 |
+| CI determinism -- leg (1) | 134 | 0 | 0 |
+| CI determinism -- leg (4) | 134 | 0 | 0 |
+| CI determinism -- leg (3) | 134 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 13 jobs, 1 not green.**
+
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 23.**
+
+- `tests/test_report_carried.py::test_a_blocking_item_is_not_routed_to_4a` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_CI_SECTION` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_reported_CI_counts_are_not_all_zero` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:616]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:617]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:618]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:619]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:620]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:621]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:622]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:623]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:624]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R575-scripts/run_floatsim_design_waves.py:27]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 0a. Runs since the commit verdict 69 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 69 at `2dc6a99` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `36454702501` | push | `772f01e` | conclusion **failure** |
+| `36455024518` | workflow_dispatch | `2dc6a99` | conclusion **failure** |
+
+**Run `36454702501`, conclusion **failure**: 12 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_report_carries_a_CI_SECTION` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_reported_CI_counts_are_not_all_zero` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+**Run `36455024518`, conclusion **failure**: 23 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_a_blocking_item_is_not_routed_to_4a` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_CI_SECTION` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_reported_CI_counts_are_not_all_zero` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:616]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:617]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:618]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:619]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:620]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:621]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:622]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:623]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:624]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R575-scripts/run_floatsim_design_waves.py:27]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+**THE RUN IS A `workflow_dispatch`, AND THAT IS WHY.** Revision 4 first published
+no CI section at all, because `2dc6a99` had never been pushed -- the F3 branch was
+rebased onto F2's head and `origin/F3` still stood at `6186eb4`. DV3 authorised the
+force-push, and the push alone did NOT produce this run: GitHub runs the workflow on
+the push event's head, so `772f01e` got a run and the commit verdict 69 judged did
+not. Pushing a fresh branch at `2dc6a99` triggered nothing either -- a new ref at an
+already-pushed commit carries no new commits. The run above was dispatched against a
+branch at that exact commit, which is why it carries the ten determinism legs a push
+run does not.
+
+**It confirms the reviewer's own measurement independently**: the verification ladder
+green at 1728, and `lint, unit and guards` 913 passed / 25 failed -- the same 25 the
+verdict reported from its own machine.
+
+**The general lesson, recorded because it will recur:** the CI section can only be
+generated if the judged commit was a branch head WHEN IT WAS PUSHED. The push has to
+happen before the verdict, not after.
 
 ## 1. The reading
 
