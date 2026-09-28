@@ -719,6 +719,13 @@ than as live items, and none is open or blocking.
 - **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
 ```
 
+**THIS FIGURE IS STALE AND IS STAMPED RATHER THAN RE-TAKEN (R568).** It was
+measured at `41a200c`, which is now **24 commits behind HEAD**, and it reports
+`0 failed` while the tree at HEAD reports `1 failed`. The rule that used to refuse
+a line in this condition is retired under DR0, and the retirement note in
+`tests/test_report_carried.py` records that this exact loss is realised here. Step
+7 is closed, so the line is marked rather than regenerated.
+
 **Zero failed in the main set.** The excluded set is **42** and was 13 at
 revision 1's commit, and the jump is this revision: at `41a200c` the newest
 report revision still answered verdict 61 while verdict 62 existed, so every

@@ -268,7 +268,9 @@ def _seed_older_verdict(work: Path, reviews: Path) -> None:
     what this produces: the distance from a descendant to the anchor is zero, the
     guard passes correctly, and the control that expects red fails.
 
-    `_older_ancestor` below is what that state uses instead. This function stays
+    The helper that selected a real ancestor is deleted with the state it served
+    (DR0); its name is not written out because the citation guard reads only
+    `test_*` names and would not catch it. This function stays
     because the other two states need only *a second commit on the path*, which
     is what it honestly provides, and its docstring now says which is which.
     """

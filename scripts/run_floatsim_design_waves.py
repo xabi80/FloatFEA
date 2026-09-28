@@ -19,11 +19,16 @@ it is not.
 WHAT IS NOT DONE HERE, and it is not an oversight:
 
 * **`platform_bem.py run` is never invoked.** See above.
-* **Heading 45 degrees is not run.** `platform_rao_pilot.run_case` constructs its
-  wave with `heading_deg=0.0` hardcoded, so the second heading needs either a
-  parameter in HSP's study script -- an HSP change -- or a FloatFEA-side
-  integration loop that re-implements the validated adaptive-settle logic. Both
-  are decisions rather than edits, so this runs the 0-degree set and says so.
+* **Heading 45 degrees is not run, and the hardcoded argument is NOT the binding
+  constraint (R575).** `platform_rao_pilot.run_case` does construct its wave with
+  `heading_deg=0.0` hardcoded, and the first version of this note stopped there --
+  which made the obstacle look like three lines in a study script. The real one is
+  upstream of that: **the BEM database is solved at a single wave heading.**
+  Diffraction at 45 degrees is not in `platform12_bem.nc`, so no change to the
+  study script produces a 45-degree result; it needs a BEM solve at the second
+  heading, which is 3.66 h and 40.6 GB measured, and which must end in a commit
+  carrying PR8 STEP 4's hydrostatic correction. That is an HSP task under HSP's
+  review, not an edit from here.
 * **`.flr` records are not written.** `floatfea/export/` is a stub; the converter
   is later work. What each case writes is the solve-state window the converter
   will read: time, all 102 DOF, and accelerations, through HSP's own

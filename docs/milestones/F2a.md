@@ -214,6 +214,22 @@ tolerance loose enough to survive the difference would record almost nothing
 while a tighter one would redden on a platform difference. Whoever tightens V6.1
 takes that measurement first.
 
+**THE DR1 FREEZE HAS A LEDGER NOW, AND IT DID NOT (R574).** DR1 froze guard
+apparatus until the member-force table ships and sent the reviewer's apparatus
+corpus here untranscribed -- and nothing in this file recorded any of it, so the
+freeze deferred work into a list that had no row for it. The row is the point: a
+freeze with no ledger is a deletion with extra steps.
+
+| deferred by DR1 | what returns, and its condition |
+|---|---|
+| **the transcription backstop** | the assertion that no step closes with a reviewer entry unbuilt. Returns when the freeze lifts, **and R562 returns with it**: its trigger must be a file the implementer cannot write. The first version keyed on the plan's step marker and on the closure artifact's existence, both of which the constrained party writes. |
+| **the reviewer's apparatus corpus** | 46 entries, 24 built, **22 unbuilt** at this commit -- batches 13, 15 and 16 plus the state the retirement deleted. Transcribed when the freeze lifts, or refused by name through the existing `REQUIREMENT_CHANGED` table, which needs no new apparatus. |
+| **the nested harness's `Answers:` rule** | the cause of the one standing red: a green-requiring state is red for the whole interval between a verdict and the report answering it. Under the freeze the only moves are to leave it or delete the state. |
+| **R567** | carried by name from verdict 68, blocking at the next step. |
+
+**None of these is a tolerance and none is a gate.** They are apparatus, which is
+why they are here and not in `docs/milestones/F2.md`.
+
 | item | what it is |
 |---|---|
 | R230 | open — REOPENED BY NAME.** Revision 3 gave it a status only a verdict may give, against that verdict's own words; §0 |

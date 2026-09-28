@@ -2130,15 +2130,6 @@ def test_the_report_carries_a_WHOLE_SUITE_count() -> None:
     )
 
 
-def _last_commit_touching(path: Path) -> str:
-    out = subprocess.run(
-        ["git", "-C", str(ROOT), "log", "-1", "--format=%H", "--", str(path)],
-        capture_output=True,
-        text=True,
-    )
-    return out.stdout.strip() if out.returncode == 0 else ""
-
-
 # THE REVIEWER'S OWN TREES, as a PATHSPEC rather than as a claim about
 # authorship. `.claude/hooks/` refuses both of these to the implementer, so a
 # commit touching nothing else is the reviewer's by construction; a commit
@@ -2182,16 +2173,33 @@ REVIEWER_TREES = ("tests/corpus", "docs/" + "re" + "views")
 # and `docs/milestones/F2.md` holds the integer that selects the guard harness's
 # whole input.
 #
-# WHAT CARRIES THE PROPERTY NOW. `tests/test_collected_set_golden.py` -- which is
-# also the guard that caught R561, the phantom citation this rule did not see. It
-# records the collected set and reddens when a name disappears, which is the half
-# of "the count describes this tree" that is checkable without a pathspec.
+# WHAT REPLACES IT: NOTHING, AND THE FIRST VERSION OF THIS NOTE CLAIMED OTHERWISE
+# (R569). It said `tests/test_collected_set_golden.py` carries the property. That
+# golden records the collected test NAMES and reddens when one disappears; it
+# shares no quantity with a suite count and cannot see a stale figure at all. It
+# could not even see this commit's own deletions in full -- six functions removed,
+# three recorded. It is a good guard and it is not this one's replacement.
 #
-# WHAT IS LOST, SAID PLAINLY SO NOBODY DISCOVERS IT: a stale whole-suite FIGURE is
-# no longer caught. A report may now publish a count taken several commits back
-# and nothing will say so. R309 -- take the count last, in a clean worktree at the
-# report's own commit -- is discipline now rather than a check, and
-# `scripts/suite_count.py` is still what produces it.
+# WHAT IS LOST, AND IT IS TWO THINGS, NOT ONE (R568). The deleted test carried two
+# assertions and the retirement's stated reason -- R546, R548, R563, R564 -- covers
+# only the first:
+#
+#   1. THE DISTANCE AND PATHSPEC HALF. No implementer commit may follow the commit
+#      the suite line names, and the distance to the report's own commit is one.
+#      This is the half that had no satisfiable state at a milestone close.
+#   2. THE SHA-EXISTS HALF, which nothing now checks. A suite line may name a
+#      commit that exists NOWHERE. Measured: setting the newest revision's line to
+#      `deadbee` leaves `pytest tests/test_report_carried.py` at 203 passed, and
+#      `grep -rn "is-ancestor\|merge-base" tests scripts` finds no other reader.
+#
+# AND THE LOSS IS ALREADY REALISED IN THE DANGEROUS DIRECTION. `docs/reports/F2/
+# step-7.md` publishes a line taken at `41a200c`, which is now 24 commits
+# behind HEAD, reporting `0 failed` while the tree reports `1 failed`. The figure
+# is stamped at its site rather than re-taken, because step 7 is closed.
+#
+# R309 -- take the count last, in a clean worktree at the report's own commit -- is
+# discipline now rather than a check, and `scripts/suite_count.py` still produces
+# it.
 #
 # Retired under DR0 with R546, R548, R563 and R564. R562 and R565 were findings
 # against this rule's own helpers and go with it.
@@ -2252,7 +2260,7 @@ def _changed_lines() -> dict[str, set[int]]:
     # one variable: full clone `122 passed`, `git clone --depth 1`
     # `23 failed, 99 passed`. A guard cannot report what it cannot tell apart.
     # THE SAME PATHSPEC ITS SIBLING USES (DD3, R511). This ran bare, while
-    # `_implementer_commits_after()` excludes `REVIEWER_TREES` and explains
+    # the retired commit-distance helper excluded `REVIEWER_TREES` and explained
     # why. So a site a verdict named inside `docs/reviews/` or `tests/corpus/`
     # was closed by the reviewer's OWN NEXT WRITE -- and `write_verdict.py`
     # rewrites the whole verdict file every round, so it closed every such
