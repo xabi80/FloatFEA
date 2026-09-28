@@ -87,7 +87,7 @@ invocation asks me to rule on each.
 
 ## Findings
 
-**R576 (plan, blocking). F3's locked plan is wrong at its first executable step, in three
+**R576. (plan, blocking) F3's locked plan is wrong at its first executable step, in three
 independent places. `docs/milestones/F3.md:24-26`, `:70`, `:77`, `:152-158`.**
 
 The implementer reported the first of these against itself and stopped rather than
@@ -135,7 +135,7 @@ and what in it), states the arm directions as measured, and DJ2 either drops hea
 records the BEM solve as a precondition with an owner. This is a plan re-lock; per DK0 it
 does not restart the verdict count.
 
-**R577 (a, blocking). `floatfea/io/reader.py::validate` enforces nothing from `scale`.
+**R577. (a, blocking) `floatfea/io/reader.py::validate` enforces nothing from `scale`.
 This is the direct answer to the invocation's question 1, and the answer is no.**
 
 DU0 re-locked `docs/load-interchange-v1.md` sec.2.1 to say the field "constrains the
@@ -180,7 +180,7 @@ that sets the provenance fields); rejects `scale: "full"` carrying `source_scale
 `froude_lambda`; and `_good_meta()` declares what a well-formed record actually is. The
 fault needs a name in `Fault` beside the eight that are there.
 
-**R578 (b, blocking). The DS2 counter's injection is inert, and its round-trip control
+**R578. (b, blocking) The DS2 counter's injection is inert, and its round-trip control
 cannot fail. `tests/verification/rung4/test_froude_scaling.py:95-141`.**
 
 This is the invocation's question 2, and the ruling is: **the intent is legitimate, the
@@ -232,7 +232,7 @@ name moves. The equality on the round-trip control may stay if it does; keep the
 that says the blindness is by construction, because that is the claim being made
 load-bearing and it is the right claim.
 
-**R579 (a, blocking). The converter cannot express the two composite channels the schema
+**R579. (a, blocking) The converter cannot express the two composite channels the schema
 marks REQUIRED, and scaling one of them silently under-scales half of it.
 `floatfea/io/froude.py:96-128`.** This is the case I built to break the step, and it passed
 when it should have refused.
@@ -260,7 +260,7 @@ silent, not loud. `CLAUDE.md`: "a wrong answer that looks right is worse than a 
 declared) or an explicit refusal for `mu` and `lam` by name. A silent single-exponent
 result for a mixed-dimension array must not be reachable.
 
-**R580 (d, blocking). 25 tests are red at `2dc6a99`, locally and in CI, up from one at
+**R580. (d, blocking) 25 tests are red at `2dc6a99`, locally and in CI, up from one at
 verdict 68. R570 is not answered at its site and the report records it as answered.**
 
 ```
@@ -307,7 +307,7 @@ commit publishing it -- or, better under BI3, states no count at all and points 
 the answering commit. The nine sites R570 named are closed site by site, not in a table
 that says they moved.
 
-**R581 (a, blocking, one line). `floatfea/io/froude.py:98` -- the lambda guard is defeated
+**R581. (a, blocking, one line) `floatfea/io/froude.py:98` -- the lambda guard is defeated
 by nan, inf and subnormals.**
 
 ```
