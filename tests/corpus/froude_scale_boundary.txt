@@ -1,0 +1,109 @@
+# CORPUS: what the I/O SCALE BOUNDARY must rule on -- the scale field the
+# reader sees, and the converter in floatfea/io/froude.py.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Written at the
+# sixty-ninth verdict on F2 (HEAD 2dc6a99), against DS2 as it landed at
+# ca6959a and against docs/load-interchange-v1.md sec.2.1 as re-locked at
+# 74ec3bf.
+#
+# WHY THIS FILE EXISTS (BE3). DS2 shipped a converter, a seven-row declared
+# table, and one counter. Every row of that table and every case of that
+# counter was written by the same hand as the module, so the coverage it
+# demonstrates is coverage of the cases that hand thought of. DR4(c) declares
+# seven quantities out of the fifteen entries in DIMENSIONS; the counter
+# perturbs each by +1 in the length dimension; and nothing outside the module
+# was asked what the boundary owes. These are cases the author did not run.
+#
+# This is NOT an apparatus corpus. It is about a module under floatfea/ and
+# about the shipped reader, so the DE2 freeze on apparatus corpora does not
+# reach it and DR1 does not defer it.
+#
+# WHAT A PASSING SCAN MEANS. For each entry the named call is made against the
+# shipped code at the reviewed commit and the outcome compared with expect.
+# A passing scan means every measured outcome equals its expectation. It does
+# NOT mean the shipped suite runs the entry -- in_suite records that
+# separately, and the number of entries whose expectation is already violated
+# IS the coverage measurement.
+#
+# expect=raise    the call must refuse. A silent default here is the assumed
+#                 unit that CLAUDE.md sec. Non-negotiables forbids
+# expect=reject   the reader must reject the record, not warn and continue
+# expect=hold     the shipped behaviour is correct and must stay
+# expect=redden   a check claiming to detect this must go red on it
+#
+# FIELDS
+#   id          stable name
+#   surface     reader | converter | counter
+#   case        the call or the mutation, in words
+#   expect      as above
+#   measured    what the shipped code did at 2dc6a99, by this reviewer
+#   in_suite    yes | no -- whether any shipped test exercises this entry
+#
+# --------------------------------------------------------------------------
+# A. THE READER AND THE SCALE FIELD. Section 2.1 as re-locked says the field
+# constrains the READER. Every entry here asks what that constraint is.
+
+id=reader_scale_model_accepted surface=reader case=validate_a_record_declaring_scale_model_while_no_conversion_is_applied_anywhere expect=reject measured=ACCEPTED in_suite=no
+id=reader_scale_model_is_the_POSITIVE_CONTROL surface=reader case=the_G12_matrix_well_formed_fixture_declares_scale_model_and_is_ASSERTED_to_validate expect=reject measured=ACCEPTED_and_ASSERTED_accepted in_suite=yes
+id=reader_scale_unknown_enum surface=reader case=validate_a_record_whose_scale_is_the_string_banana expect=reject measured=ACCEPTED in_suite=no
+id=reader_scale_absent surface=reader case=validate_a_record_with_no_scale_key_at_all expect=reject measured=ACCEPTED in_suite=no
+id=reader_scale_wrong_case surface=reader case=validate_a_record_whose_scale_is_MODEL_uppercase expect=reject measured=ACCEPTED in_suite=no
+id=reader_scale_is_a_number surface=reader case=validate_a_record_whose_scale_is_the_float_50_rather_than_an_enum expect=reject measured=ACCEPTED in_suite=no
+id=reader_scale_full_without_provenance surface=reader case=a_record_declaring_scale_full_with_no_source_scale_and_no_froude_lambda_is_indistinguishable_from_a_converted_one expect=reject measured=ACCEPTED in_suite=no
+id=reader_units_mm_g_deg surface=reader case=units_block_declares_length_mm_mass_g_angle_deg_while_the_arrays_are_unchanged expect=reject measured=ACCEPTED_only_the_KEYS_are_checked in_suite=no
+id=reader_units_imperial surface=reader case=units_block_declares_ft_slug_lbf expect=reject measured=ACCEPTED_only_the_KEYS_are_checked in_suite=no
+id=reader_gravity_cannot_stand_in_for_scale surface=reader case=gravity_is_9.81_at_BOTH_scales_so_GRAVITY_MISMATCH_cannot_detect_a_model_scale_record expect=hold measured=confirmed_the_gravity_check_passes_on_a_model_scale_record in_suite=no
+
+# --------------------------------------------------------------------------
+# B. THE LAMBDA GUARD. froude_factor refuses a lambda at or below zero. That
+# predicate is false for nan, and true for nothing else that is not positive.
+
+id=froude_lambda_nan surface=converter case=froude_factor_force_with_lam_nan expect=raise measured=RETURNED_nan_silently in_suite=no
+id=froude_lambda_inf surface=converter case=froude_factor_force_with_lam_inf expect=raise measured=RETURNED_inf_silently in_suite=no
+id=froude_lambda_subnormal surface=converter case=froude_factor_force_with_lam_1e-300 expect=raise measured=RETURNED_0.0_which_annihilates_the_record in_suite=no
+id=froude_lambda_negative_zero surface=converter case=froude_factor_force_with_lam_negative_zero expect=raise measured=raised_ValueError in_suite=no
+id=froude_lambda_one surface=converter case=froude_factor_force_with_lam_1.0_a_record_already_at_full_scale expect=hold measured=returned_1.0 in_suite=no
+
+# --------------------------------------------------------------------------
+# C. COMPOSITE CHANNELS. The schema marks two REQUIRED arrays whose columns do
+# not share a dimension: the radiation mu array, N by 6, and the joint lam
+# array, N by n_rows. The converter takes one quantity name for a whole array.
+
+id=froude_mu_scaled_as_force surface=converter case=to_full_scale_of_mu_N_by_6_with_quantity_force expect=raise measured=RETURNED_with_the_moment_columns_SHORT_by_exactly_lambda_50x in_suite=no
+id=froude_mu_scaled_as_moment surface=converter case=to_full_scale_of_mu_N_by_6_with_quantity_moment expect=raise measured=RETURNED_with_the_force_columns_LONG_by_exactly_lambda in_suite=no
+id=froude_lam_multipliers_yaw_locked surface=converter case=to_full_scale_of_joint_lam_N_by_4_three_force_rows_and_one_moment_row expect=raise measured=no_name_in_DIMENSIONS_can_be_correct_for_this_array in_suite=no
+id=froude_quantity_named_mu surface=converter case=froude_factor_mu expect=raise measured=raised_ValueError in_suite=no
+id=froude_quantity_named_lam surface=converter case=froude_factor_lam expect=raise measured=raised_ValueError in_suite=no
+
+# --------------------------------------------------------------------------
+# D. QUANTITIES THE SCHEMA CARRIES. The DIMENSIONS docstring says the table is
+# every quantity the interchange schema carries. Both the panels group and the
+# plate patches group carry an area array.
+
+id=froude_quantity_area surface=converter case=froude_factor_area_a_channel_the_schema_carries_twice expect=raise measured=raised_ValueError_so_the_BEHAVIOUR_is_right_and_the_DOCSTRING_is_wrong in_suite=no
+id=froude_quantity_added_mass surface=converter case=froude_factor_added_mass expect=raise measured=raised_ValueError in_suite=no
+id=froude_quantity_stiffness surface=converter case=froude_factor_stiffness_mooring_N_per_m expect=raise measured=raised_ValueError in_suite=no
+id=froude_quantity_damping surface=converter case=froude_factor_damping_N_s_per_m expect=raise measured=raised_ValueError in_suite=no
+id=froude_quantity_energy surface=converter case=froude_factor_energy expect=raise measured=raised_ValueError in_suite=no
+id=froude_quantity_second_moment_of_area surface=converter case=froude_factor_second_moment_of_area expect=raise measured=raised_ValueError in_suite=no
+id=froude_quantity_tension surface=converter case=froude_factor_tension_a_channel_name_rather_than_a_physics_name expect=raise measured=raised_ValueError in_suite=no
+
+# --------------------------------------------------------------------------
+# E. THE EDGES OF THE API.
+
+id=froude_bool_input surface=converter case=to_full_scale_of_python_True_with_quantity_force expect=raise measured=RETURNED_125000.0_because_bool_is_an_int_subclass in_suite=no
+id=froude_dimensions_mutable_at_runtime surface=converter case=DIMENSIONS_is_annotated_Final_and_is_a_plain_dict_so_a_caller_inserts_a_quantity_and_froude_factor_honours_it expect=raise measured=INSERTED_and_HONOURED in_suite=no
+id=froude_float32_scalar surface=converter case=to_full_scale_of_a_numpy_float32_scalar expect=hold measured=returned_float64_with_the_correct_value in_suite=no
+
+# --------------------------------------------------------------------------
+# F. THE GATE AND ITS OWN FAILURE. Break the claimed property and the
+# ASSERTION must go red -- not a copy of the assertion.
+
+id=counter_injection_is_inert surface=counter case=delete_the_monkeypatch_setattr_line_from_the_DS2_counter_and_rerun expect=redden measured=IDENTICAL_20_passed_0_of_7_and_7_of_7_unchanged in_suite=no
+id=counter_does_not_exercise_the_shipped_assertion surface=counter case=replace_the_shipped_declared_table_assertion_with_derived_equals_derived_then_rerun_the_counter expect=redden measured=GREEN_20_passed_the_counter_still_reports_the_table_check_misses_0 in_suite=no
+id=counter_roundtrip_control_cannot_fail surface=counter case=make_to_model_scale_MULTIPLY_so_the_shipped_round_trip_reddens_then_read_the_counter expect=redden measured=the_counter_still_printed_ROUND_TRIP_misses_7_while_12_of_20_tests_failed in_suite=no
+id=counter_roundtrip_figure_is_right_when_measured_honestly surface=counter case=compose_the_SHIPPED_to_full_scale_and_to_model_scale_under_a_real_module_level_injection expect=hold measured=7_of_7_so_the_PUBLISHED_figure_is_correct_and_its_evidence_is_not in_suite=no
+id=real_defect_moment_exponent surface=converter case=DIMENSIONS_moment_length_2_to_3_in_the_shipped_module expect=redden measured=test_the_derived_exponents_match_the_DECLARED_table_FAILED in_suite=yes
+id=real_defect_time_base surface=converter case=TIME_EXPONENT_0.5_to_1.0_in_the_shipped_module expect=redden measured=4_tests_FAILED_including_the_bases_guard in_suite=yes
+id=real_defect_inverse_broken surface=converter case=to_model_scale_multiplies_instead_of_dividing expect=redden measured=12_of_20_FAILED in_suite=yes
