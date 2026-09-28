@@ -1,0 +1,3 @@
+# This rung has no tests yet. The marker is read by scripts/run_rung.sh:
+# a directory declared empty must carry it, so a rung whose tests go missing
+# is distinguishable from one nobody has written.

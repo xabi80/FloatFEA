@@ -1,0 +1,256 @@
+# CORPUS: CI sections the report guard (CE1) must rule on.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. Written at the thirty-first verdict on F2, the
+# sixth verdict on step 5 (HEAD a59521e).
+#
+# WHY THIS FILE EXISTS (BE3). CE1 exists because CI was red at three
+# consecutive reviewed commits and no report revision said so. The answer is
+# two tests in `tests/test_report_carried.py`:
+# `test_the_report_carries_a_CI_SECTION` and
+# `test_the_reported_CI_counts_are_not_all_zero`. Their own docstring says the
+# required shape is
+#
+#   "a table of `| job | passed | failed | skipped |`, taken from `gh run view`
+#    at the commit the report is written on -- not a sentence about the laptop"
+#
+# Everything after the comma in that sentence is asserted by nothing. The two
+# tests check that SOME table with three numeric rows and one nonzero entry
+# exists under a heading containing `CI`. An ABSENT record is caught. A FALSE
+# one is not, and a false CI record is the same failure as an absent one with a
+# reassurance attached.
+#
+# FORMAT
+#   id=<name> state=<what the newest revision's CI section says>
+#   expect=<refused|allowed> measured=<what the shipped tests did at a59521e>
+#
+# WHAT A PASSING SCAN MEANS. Apply the state to `docs/reports/F2/step-5.md` in
+# a scratch clone, run `pytest tests/test_report_carried.py -k "CI_SECTION or
+# CI_counts"`, compare with `expect`. It does not mean the guard is complete.
+#
+# MEASURED AT a59521e by the reviewer, in a `git clone --local` scratch tree
+# with the shipped tests unchanged: 4 entries, 1 agrees, 3 do not.
+#
+# The ground truth for these rows is run 34408014924, which finished
+# `guards and meta-tests` at 386 passed / 4 failed and `ladder 4` at
+# 72 passed / 13 failed.
+
+id=the_shipped_section_0_table_unmodified state=the_nine_job_rows_as_revision_5_publishes_them expect=allowed measured=allowed_2_passed
+id=a_red_run_reported_as_all_green state=guards_row_rewritten_390_0_0_and_ladder4_row_rewritten_85_0_0_contradicting_run_34408014924_on_both expect=refused measured=allowed_2_passed_nothing_compares_the_table_with_the_run
+id=no_run_id_and_an_invented_green_table state=the_line_naming_run_34408014924_deleted_and_every_row_reported_green expect=refused measured=allowed_2_passed_the_run_id_is_prose_and_is_read_by_nothing
+id=three_rows_of_a_table_about_something_else state=the_job_table_replaced_by_a_table_headed_thing_a_b_c_with_rows_alpha_1_0_0_beta_2_0_0_gamma_3_0_0 expect=refused measured=allowed_2_passed_the_row_regex_reads_any_name_followed_by_three_integers
+
+# ==========================================================================
+# ADDED AT THE FORTY-EIGHTH VERDICT (step 5, HEAD d8ac843). SEVEN ENTRIES,
+# all aimed at the two guards CU3 asked for and b83d776 wrote:
+#
+#   tests/test_report_carried.py::test_every_CI_RUN_the_report_names_carries_its_conclusion
+#   tests/test_report_carried.py::test_a_GREEN_JOB_TABLE_does_not_stand_under_a_FAILED_run
+#
+# The first scans the newest revision paragraph by paragraph for a run id
+# with no conclusion beside it. Its pattern is
+#
+#   _RUN_ID = re.compile(r"(?<![\d.])(\d{9,12})(?![\d.])")
+#
+# and its docstring records that an earlier `\b...\b` version matched
+# 526231496888 inside 199.526231496888, so the lookarounds were tightened to
+# reject a digit or a DOT on either side. The dot on the RIGHT is the hole:
+# a run id at the end of a sentence is followed by a full stop, which is the
+# most ordinary way anyone writes one.
+#
+# FORMAT
+#   id=<name> state=<one paragraph inserted under the section 0a heading>
+#   expect=<refused|allowed> measured=<what the shipped tests did at d8ac843>
+#
+# WHAT A PASSING SCAN MEANS. Insert the paragraph into the newest revision of
+# docs/reports/F2/step-5.md in a scratch clone at d8ac843 and run
+#   pytest tests/test_report_carried.py -k "CI_RUN or GREEN_JOB_TABLE" -q
+# then compare with expect. It does not mean the guards are complete.
+#
+# MEASURED AT d8ac843 by the reviewer, in a git clone --local scratch tree
+# with the shipped tests unchanged: 7 entries, 2 agree, 5 do not. The two
+# that agree are the two where the run id is followed by whitespace or a
+# backtick. The implementer count of planted shapes is not the coverage
+# number; this is.
+#
+id=run_id_ends_a_sentence state=paragraph_reads_The_dispatch_for_this_round_was_run_35479925335_FULLSTOP expect=refused measured=allowed_2_passed_the_lookahead_rejects_a_trailing_dot_so_the_id_is_never_seen
+id=run_id_immediately_before_a_period_in_a_list_item state=bullet_reads_STAR_The_push_run_for_this_round_is_35479506950_FULLSTOP expect=refused measured=allowed_2_passed_same_trailing_dot
+id=run_id_13_digits state=paragraph_names_run_3547992533512_and_no_conclusion expect=refused measured=allowed_2_passed_the_pattern_is_9_to_12_digits_and_github_ids_are_not_bounded_at_12
+id=run_id_with_thousands_separators state=paragraph_names_run_35_COMMA_479_COMMA_925_COMMA_335_and_no_conclusion expect=refused measured=allowed_2_passed_no_9_digit_run_survives_the_split
+id=the_word_conclusion_is_in_the_COMMAND_and_never_in_the_OUTPUT state=paragraph_is_cmd_gh_run_view_35479506950_dashdashjson_conclusion_status_then_out_I_did_not_paste_it expect=refused measured=allowed_2_passed_the_CONCLUSION_regex_matches_the_gh_flag_so_naming_the_command_satisfies_the_guard_without_naming_the_result
+id=run_id_ends_a_sentence_inside_backticks state=paragraph_reads_The_push_run_for_this_round_is_BACKTICK_35479506950_BACKTICK_FULLSTOP expect=refused measured=refused_1_failed_the_backtick_breaks_the_dot_adjacency
+id=control_run_id_then_a_space state=paragraph_reads_The_push_run_for_this_round_is_35479506950_SPACE expect=refused measured=refused_1_failed_this_is_the_shape_the_guard_was_written_against
+#
+# AND ONE SHAPE THE SECOND GUARD CANNOT SEE, recorded rather than planted.
+# test_a_GREEN_JOB_TABLE_does_not_stand_under_a_FAILED_run returns early
+# when every conclusion it finds in section 0 is success or skipped, which
+# is the case at d8ac843, so on this report it asserts nothing. The runs
+# that DID conclude failure this round are named in section 0a, which
+# _ci_section() does not return. There is no state for it in
+# tests/test_report_guard_states.py either, so the guard has no negative
+# control at this commit. A guard that cannot be shown to fail is the thing
+# this repository keeps rediscovering.
+
+# ==========================================================================
+# ADDED AT THE FORTY-NINTH VERDICT (step 5, HEAD d5d85ed). TWELVE ENTRIES.
+#
+# CV3 rewrote both guards and wrote the seven shapes above into
+# `_CI_SHAPES` in `tests/test_report_carried.py`. I re-measured all seven
+# against the shipped `runs_without_a_conclusion` at d5d85ed: 7 of 7
+# refused, and the two allow-shapes allowed. That claim holds.
+#
+# What is new is the OTHER side of the rewrite. `_CONCLUSION` used to be
+# `conclusion\s+\**([A-Za-z_]+)` and is now a bare list of conclusion
+# VALUES matched anywhere in the paragraph. That closes the shape where the
+# word `conclusion` came only from the `gh` flag and opens one where any
+# occurrence of `success`, `failure`, `skipped` or `cancelled` -- in a jq
+# filter, in a grep needle, in a negation, or about a different job -- is
+# accepted as the run's result.
+#
+# ALSO RECORDED, and it is not a shape: NOTHING IN THE REPOSITORY READS
+# THIS FILE. `tests/test_report_carried.py:1038` says the seven shapes are
+# written out "so a change to either one shows up as a disagreement". A
+# change to this file shows up nowhere; `grep -rn report_ci_section tests/`
+# returns three comments and no read.
+#
+# FORMAT as above.
+#
+# MEASURED AT d5d85ed by the reviewer, against the shipped
+# `runs_without_a_conclusion` applied directly: 12 entries, 3 refused, 9
+# allowed. Of the 9, four are shapes the guard should catch (the first
+# four below) and one -- `comma_list_of_three_digit_numbers` -- is a FALSE
+# POSITIVE in the other direction.
+#
+id=conclusion_value_only_inside_a_jq_filter state=paragraph_names_run_35479925335_and_shows_gh_run_list_dashdashjson_conclusion_dashdashjq_select_conclusion_EQEQ_success_with_the_output_never_pasted expect=refused measured=allowed_the_value_success_inside_the_COMMAND_satisfies_the_new_regex_which_is_R412_shape_one_level_up
+id=conclusion_value_only_inside_a_grep_needle state=paragraph_is_cmd_gh_run_view_35489487935_dashdashlog_failed_PIPE_grep_dash_c_failure_then_out_not_pasted expect=refused measured=allowed_the_word_failure_in_the_needle_satisfies_the_regex
+id=the_result_is_negated state=paragraph_reads_Run_35479925335_was_not_a_failure_as_far_as_I_could_tell expect=refused measured=allowed_the_regex_reads_the_value_and_not_the_polarity
+id=an_unrelated_skipped_rescues_a_naked_run_id state=paragraph_reads_Run_35479925335_DASH_the_determinism_legs_were_skipped_and_nothing_else_is_said expect=refused measured=allowed_any_conclusion_word_anywhere_in_the_paragraph_counts_and_this_reports_own_0a_mixes_ids_and_the_word_skipped_freely
+id=comma_list_of_three_digit_numbers state=paragraph_reads_Counts_across_the_corpus_COLON_100_COMMA_200_COMMA_300_COMMA_400_and_nothing_else expect=allowed measured=refused_the_THOUSANDS_strip_joins_them_into_100200300400_which_is_twelve_digits_and_demands_a_conclusion_FALSE_POSITIVE
+id=run_id_with_spaces_as_separators state=paragraph_names_run_35_SPACE_479_SPACE_925_SPACE_335_and_no_result expect=refused measured=allowed_only_commas_are_stripped
+id=run_id_broken_across_a_line_with_a_hyphen state=paragraph_names_run_354799_HYPHEN_newline_25335_and_no_result expect=refused measured=allowed
+id=run_id_followed_by_a_decimal_fraction state=paragraph_reads_The_dispatch_was_run_35479925335_FULLSTOP_0_seconds_long_and_no_result expect=refused measured=allowed_the_right_lookahead_rejects_FULLSTOP_then_a_digit_which_is_the_carve_out_for_the_tolerance_value
+id=run_id_preceded_by_a_dot_in_a_decimal state=paragraph_reads_0_FULLSTOP_35479925335_is_the_run_and_no_result_is_given expect=allowed measured=allowed_this_is_the_carve_out_working
+id=an_eight_digit_id state=paragraph_names_run_35479925_and_no_result expect=allowed measured=allowed_github_ids_are_nine_digits_or_more
+id=control_a_workflow_url_with_no_result state=paragraph_is_https_COLON_SLASH_SLASH_github_FULLSTOP_com_SLASH_x_SLASH_y_SLASH_actions_SLASH_runs_SLASH_35479925335_shows_what_happened expect=refused measured=refused
+id=control_an_id_inside_a_fenced_block_with_no_result state=fenced_block_containing_gh_run_view_35479925335_and_nothing_else expect=refused measured=refused
+
+# ----------------------------------------------------------------------
+# ADDED AT THE FIFTIETH VERDICT (HEAD ab698c0), 20 UNSEEN ENTRIES.
+#
+# CW3/R444 rewrote `_CONCLUSION` from "a bare value anywhere in the
+# paragraph" to "the word `conclusion` and a value within twelve characters
+# of it, on a line that is not a command", and added `_COMMANDISH` and
+# `_joined`. The twelve entries above were re-measured at ab698c0: the four
+# R412-one-level-up shapes are all refused now and the comma-list false
+# positive is gone. These twenty are new.
+#
+# MEASURED AT ab698c0 by the reviewer, calling the shipped
+# `runs_without_a_conclusion` directly: 20 entries, the guard rules
+# correctly on 15.
+#
+# THE SUBSTANTIVE MISS IS THAT THE GUARD DECIDES PER PARAGRAPH AND NOT PER
+# RUN. One conclusion anywhere in a paragraph satisfies every run id in it,
+# so a report naming three runs and stating one result passes -- which is
+# the shape this round's own 0a would have had if two of its three runs had
+# been left without a result. R412 was "a run named with no result"; this is
+# that shape with a neighbour.
+#
+# FORMAT as above.
+
+id=conclusion_stated_for_a_DIFFERENT_run_in_the_same_paragraph state=paragraph_reads_Run_35489487935_had_conclusion_success_FULLSTOP_Run_35545894507_is_also_named_here expect=refused measured=allowed_ONE_conclusion_satisfies_EVERY_id_in_the_paragraph_the_guard_is_per_paragraph_not_per_run
+id=two_runs_one_conclusion state=paragraph_reads_Runs_35479925335_and_35489487935_COLON_conclusion_success expect=refused measured=allowed_same_per_paragraph_defect_with_both_ids_naked_but_for_one_word
+id=run_id_with_underscores_as_separators state=paragraph_names_run_35_UNDERSCORE_479_UNDERSCORE_925_UNDERSCORE_335_and_no_result expect=refused measured=allowed_joined_strips_comma_space_hyphen_and_endash_and_not_underscore
+id=conclusion_word_and_value_split_by_a_newline state=paragraph_reads_Run_35479925335_event_push_conclusion_NEWLINE_STARSTAR_success_STARSTAR_on_both_jobs expect=allowed measured=refused_the_line_split_puts_the_value_on_a_second_line_and_the_regex_is_applied_per_line_FALSE_POSITIVE
+id=conclusion_of_a_job_not_the_run state=paragraph_reads_Run_35479925335_COLON_the_ladder_job_conclusion_was_success_SEMICOLON_the_run_itself_is_not_stated expect=allowed_or_refused_by_a_rule_that_says_which measured=refused_a_JOB_conclusion_satisfies_the_RUN_requirement_and_nothing_distinguishes_them
+id=the_word_conclusion_far_from_its_value state=paragraph_reads_Run_35479925335_the_conclusion_of_the_whole_exercise_after_a_long_argument_nobody_wanted_was_success expect=refused measured=refused_the_twelve_character_window_holds
+id=conclusion_value_inside_a_yaml_snippet_no_pipe state=two_lines_Run_35479925335_then_conclusion_COLON_success expect=allowed measured=allowed
+id=a_result_word_with_no_run_word_and_no_conclusion state=paragraph_reads_35479925335_finished_green_and_everything_passed expect=refused measured=refused
+id=value_only_in_a_markdown_table_row state=paragraph_names_run_35479925335_then_a_table_PIPE_job_PIPE_conclusion_PIPE_with_a_row_PIPE_ladder_PIPE_success_PIPE expect=refused measured=refused_the_pipe_makes_the_row_COMMANDISH
+id=commandish_line_that_also_carries_the_real_result state=one_line_cmd_gh_run_view_35479925335_dashdashjson_conclusion_ARROW_conclusion_STARSTAR_failure_STARSTAR expect=allowed_the_result_IS_pasted measured=refused_the_line_is_COMMANDISH_so_a_genuine_result_on_the_same_line_is_discarded
+id=conclusion_spelled_as_a_verb state=paragraph_reads_Run_35479925335_concluded_COLON_success expect=refused_or_allowed_by_a_stated_rule measured=refused_the_regex_wants_the_noun
+id=run_id_in_a_url_query_string state=paragraph_reads_See_QUESTION_run_UNDERSCORE_id_EQ_35479925335_for_what_happened expect=refused measured=refused
+id=thirteen_digit_id_with_a_conclusion state=paragraph_reads_Run_3547992533512_had_conclusion_success expect=allowed measured=allowed
+id=conclusion_value_more_than_twelve_chars_after_the_word state=paragraph_reads_Run_35479925335_conclusion_COMMA_as_reported_by_the_API_COMMA_success expect=refused measured=refused
+id=conclusion_inside_an_inline_code_span state=paragraph_reads_Run_35479925335_COMMA_BACKTICK_conclusion_EQ_success_BACKTICK expect=allowed measured=allowed_the_twelve_char_window_spans_the_equals
+id=em_dash_separated_conclusion state=paragraph_names_run_35479925335_and_the_conclusion_EMDASH_success expect=allowed measured=allowed
+id=id_split_by_a_markdown_bold_marker state=paragraph_reads_Run_STARSTAR_35479925335_STARSTAR_and_no_result expect=refused measured=refused
+id=no_run_id_at_all_but_a_conclusion state=paragraph_reads_conclusion_success_and_no_run_named expect=allowed measured=allowed
+id=run_id_as_part_of_a_longer_token state=paragraph_reads_Artifact_a35479925335b_was_produced_SEMICOLON_no_result_given expect=refused measured=refused_the_left_lookbehind_only_excludes_digits_and_dots_so_a_letter_prefixed_token_is_still_an_id
+id=the_generated_section_line_at_this_commit state=Generated_COLON_python_scripts_ci_section_FULLSTOP_py_anchored_on_verdict_49_at_ed67a7d_FULLSTOP_Run_BACKTICK_35489487935_BACKTICK_event_push_conclusion_STARSTAR_success_STARSTAR expect=allowed measured=allowed_the_shape_the_report_actually_uses_still_passes
+
+# ==========================================================================
+# ADDED AT THE FIFTY-FIRST VERDICT ON F2 (reviewed commit 6170263), 11 new
+# entries, unseen by the implementer.
+#
+# WHAT CHANGED UNDER THESE. CX0 answered R449 by GENERATING sections 0 and 0a
+# and by exempting them, plus sections 11 and 12, from the two run-id guards.
+# The exemption is keyed on the HEADING -- `^##+ (?:0[a-z]?|1[12])\.` in
+# `_GENERATED_SECTIONS` -- and the word `Generated:` in the provenance line.
+# Both are typed by hand. Nothing in the suite re-runs `gh` and compares.
+#
+# WHAT A PASSING SCAN MEANS. For each entry, apply the described edit to the
+# newest revision and run the three guards in tests/test_report_carried.py:
+# test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS,
+# test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph, and
+# test_every_CI_RUN_the_report_names_carries_its_conclusion. Compare with
+# expect. MEASURED AT 6170263 by the reviewer, applying each edit to the
+# revision text in memory and calling the three predicates directly.
+#
+# THE COMMITTED TABLE AT THIS COMMIT IS FAITHFUL -- I re-ran
+# `python scripts/ci_section.py --rounds` and it reproduces both rows. These
+# entries measure what would have caught it if it were not.
+# ==========================================================================
+
+# --- THE CONTENT OF A GENERATED SECTION IS NOT CHECKED AGAINST gh. ---
+id=a_0a_row_hand_edited_from_no_result_to_conclusion_success shape=the_cancelled_push_run_row_rewritten_to_read_conclusion_success expect=caught_this_is_R449_with_one_word_changed measured=MISSED_by_all_three_guards_the_row_is_still_a_conclusion_form_and_the_run_id_is_still_tabled
+id=a_0a_row_hand_edited_from_failure_to_success_with_its_failing_list_left_below shape=the_dispatch_failure_row_rewritten_to_success_while_the_fifteen_failing_test_bullets_stay_underneath_it expect=caught_the_row_and_the_block_under_it_now_contradict_each_other measured=MISSED_nothing_cross_checks_a_row_against_the_failing_name_block_generated_from_the_same_run
+id=an_invented_run_id_added_as_a_0a_table_row shape=a_row_for_run_99999999999_at_head_deadbee_reading_conclusion_success expect=caught_no_such_run_exists measured=MISSED_ROUNDS_ROW_accepts_any_nine_digit_id_and_asks_only_that_the_outcome_cell_be_a_conclusion_or_no_result
+id=every_0a_row_deleted_and_the_header_kept shape=the_0a_table_reduced_to_its_header_and_separator_with_no_rows_at_all expect=caught_a_round_that_produced_runs_must_show_them measured=MISSED_ROUNDS_HEADER_in_zero_is_satisfied_by_the_header_line_alone_so_a_whole_round_of_runs_can_be_suppressed
+id=control_section_0a_deleted_entirely shape=the_0a_heading_table_and_provenance_line_removed expect=caught measured=caught_test_the_ROUNDS_SECTION_is_the_GENERATORS_fails_on_the_missing_header
+
+# --- THE EXEMPTION IS KEYED ON A HEADING THE IMPLEMENTER WRITES. ---
+id=prose_about_runs_under_a_0b_heading shape=a_hand_written_paragraph_under_a_heading_reading_double_hash_0b_dot_what_the_runs_mean_naming_a_real_run_with_a_false_story expect=caught_the_paragraph_is_prose measured=MISSED_the_exemption_regex_is_0_bracket_a_to_z_question_so_0b_through_0z_are_all_read_as_generated
+id=an_invented_run_id_under_a_0b_heading shape=the_same_paragraph_also_naming_run_99999999999 expect=caught measured=MISSED_for_the_same_reason_and_the_id_need_not_exist
+id=a_false_CI_sentence_in_the_section_11_reason_column shape=an_untouched_sites_row_whose_why_it_was_left_cell_reads_run_35559285688_concluded_success_ladder_green expect=caught_the_reason_column_is_hand_written_prose expect_note=the_report_itself_says_the_reason_column_is_mine measured=MISSED_651a524_added_sections_11_and_12_to_the_exemption_so_this_channel_opened_this_round
+id=a_false_CI_sentence_in_the_section_12_subject_column shape=a_Carried_row_whose_subject_cell_carries_run_35561482997_concluded_success expect=caught measured=MISSED_same_exemption
+
+# --- THE GENERATOR ITSELF, AND WHAT IT CANNOT SEE. ---
+id=a_red_run_at_a_commit_that_was_force_pushed_away shape=run_35561482997_event_push_head_2bd9e89_conclusion_failure_at_the_combined_docs_plus_guard_commit_that_was_split_into_651a524_and_6170263 expect=recorded_as_a_run_this_round_or_the_rewrite_declared_in_the_report expect_note=the_commit_object_is_still_reachable_and_gh_run_list_still_returns_it measured=MISSED_rounds_runs_filters_on_git_log_judged_dot_dot_HEAD_so_a_rewritten_head_drops_out_of_BOTH_the_report_section_and_the_generated_invocation_and_the_report_nowhere_mentions_the_rewrite
+id=the_Generated_provenance_line_is_itself_typed shape=a_hand_written_0a_section_that_opens_with_the_literal_string_Generated_colon_backtick_python_scripts_ci_section_py_backtick expect=caught_provenance_must_be_earned measured=MISSED_the_guard_asserts_the_STRING_is_present_and_nothing_re_runs_the_generator_or_compares_its_output
+
+# ==========================================================================
+# ADDED AT THE FIFTY-SECOND VERDICT (HEAD b21760b), entries 55-65.
+#
+# CY3 answered R462 with ci_table_defects() plus _gh_outcome(), and R463 by
+# moving the generated/hand-written split from a HEADING NUMBER to a MARKER
+# LINE the generator writes. Both are real improvements and the generated
+# sections reproduce: I re-ran --rounds, --history and --commits at b21760b
+# and each matched the committed text plus the rows that did not yet exist.
+#
+# These entries measure the CLASS rather than the eleven shapes the
+# implementer transcribed from my last round. Every one was run against the
+# shipped ci_table_defects(), runs_without_a_conclusion() and _RUN_ID via
+# _generated_text()/_hand_written(), with the lookup injected.
+# ==========================================================================
+
+# --- THE MARKER IS A STRING ANYONE CAN TYPE, SO R463 MOVED HOUSE. ---
+id=prose_about_runs_under_a_heading_that_types_the_generated_marker shape=a_hand_written_paragraph_naming_a_real_run_with_a_false_story_whose_section_opens_with_the_literal_marker_line expect=caught_a_generator_emits_that_line_and_prose_claiming_it_is_claiming_reproducibility measured=MISSED_the_marker_is_matched_by_a_regex_over_the_committed_text_and_nothing_re_runs_any_generator_so_one_typed_line_buys_the_whole_section_the_exemption_R463_used_to_buy_with_a_heading_number
+id=an_invented_run_id_inside_a_section_that_types_the_marker shape=the_same_section_also_naming_run_99999999999 expect=caught measured=MISSED_ci_table_defects_only_inspects_lines_matching_the_four_column_ROUNDS_ROW_so_a_run_id_in_prose_inside_a_marked_section_is_checked_by_nothing
+id=a_prose_section_marked_generated_by_a_script_that_does_not_exist shape=a_section_whose_marker_names_scripts_no_such_script_py_followed_by_a_sentence_naming_a_real_run expect=caught_the_named_generator_must_at_least_exist expect_note=the_regex_captures_the_script_name_in_group_one_and_the_capture_is_discarded measured=MISSED
+
+# --- THE ROW IS CHECKED ON ITS OUTCOME CELL ONLY. ---
+id=a_0a_row_whose_head_column_names_a_commit_the_run_was_not_at shape=the_green_row_for_run_35563850428_rewritten_to_read_head_deadbee_with_the_conclusion_left_correct expect=caught_this_is_the_ORIGINAL_CE1_defect_a_table_published_for_a_different_commit_than_the_one_it_describes measured=MISSED_ROUNDS_ROW_reads_the_event_and_head_columns_as_a_negated_pipe_class_and_ci_table_defects_compares_only_the_outcome_cell
+id=a_0a_row_whose_event_column_is_falsified shape=the_workflow_dispatch_row_rewritten_to_read_push expect=caught_a_dispatch_the_implementer_triggered_is_not_a_push_run_and_the_distinction_decides_whether_CI_ran_on_its_own measured=MISSED_same_reason
+id=a_0a_row_stating_two_outcomes_at_once shape=an_outcome_cell_reading_conclusion_failure_followed_by_a_gloss_reading_effectively_success expect=caught_or_at_least_not_certified measured=MISSED_ci_table_defects_asks_only_that_the_gh_word_be_IN_the_cell_so_any_gloss_appended_after_it_passes
+
+# --- COMPLETENESS IS NOT CHECKED, ONLY NON-EMPTINESS. ---
+id=the_two_non_green_rows_deleted_and_the_green_one_kept shape=a_0a_table_carrying_only_the_row_for_the_run_that_succeeded_with_both_failure_rows_and_their_failing_test_blocks_removed expect=caught_this_is_every_0a_row_deleted_with_one_row_left_behind_to_satisfy_the_non_empty_rule measured=MISSED_the_implementer_closed_the_zero_row_case_I_handed_over_and_not_the_class_ci_table_defects_never_asks_gh_which_runs_EXIST_in_the_window
+id=a_0a_table_copied_forward_from_the_previous_round_unchanged shape=the_previous_revision_0a_table_republished_verbatim_under_the_current_verdict_number_while_three_new_runs_go_unlisted expect=caught measured=MISSED_every_row_is_individually_true_and_nothing_compares_the_row_set_with_a_fresh_render
+id=the_head_not_in_current_history_label_stripped_from_a_row shape=a_row_for_a_run_at_a_force_pushed_away_commit_with_the_head_not_in_current_history_annotation_deleted_from_the_head_cell expect=caught_the_label_is_the_whole_of_CY0_answer_to_R461 measured=MISSED_the_head_cell_is_not_read_at_all_so_the_one_annotation_that_makes_a_rewrite_visible_can_be_deleted_by_hand_without_reddening_anything
+
+# --- PROSE INSIDE A GENERATED SECTION. ---
+id=a_false_narrative_paragraph_appended_inside_the_generated_0a_section shape=two_sentences_added_after_the_last_generated_line_and_before_the_next_heading_saying_both_failures_were_the_same_report_staleness_guard_and_the_ladder_was_green_in_each expect=caught_the_generated_span_should_be_the_generator_output_and_nothing_else measured=MISSED_the_span_runs_from_the_heading_before_the_marker_to_the_NEXT_HEADING_so_any_text_a_hand_adds_anywhere_inside_it_is_exempt_from_every_CI_rule
+
+# --- CONTROLS, AND THEY MUST STAY CAUGHT. ---
+id=control_a_real_failure_row_rewritten_to_conclusion_success shape=the_row_for_run_35659133236_at_1796183_edited_from_failure_to_success expect=caught measured=caught_ci_table_defects_reports_the_table_says_success_and_gh_says_failure
+id=control_a_naked_run_id_in_a_plain_paragraph_outside_any_marked_section shape=a_sentence_reading_run_35660198114_was_fine_under_a_heading_with_no_marker expect=caught measured=caught_by_the_run_id_rule_over_hand_written_text

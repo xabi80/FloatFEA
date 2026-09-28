@@ -1,0 +1,52 @@
+# CORPUS: prose shapes the report's "every number is sourced" check must catch.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the thirty-sixth verdict on F2, the eleventh
+# verdict on step 5 (HEAD bf00121).
+#
+# WHY THIS FILE EXISTS (BE3). `tests/test_report_numbers_are_sourced.py`
+# arrived at CI2 with the right diagnosis -- nine rounds of refuted figures had
+# one shape, a number with no command near it -- and with a corpus of zero: its
+# exemption list is the set of forms its author thought of, checked against the
+# report its author wrote. A scanner verified against inputs its own author
+# designed catches what its author thought of.
+#
+# WHAT THE CHECK DOES, in its own words: a number in prose is sourced when the
+# same number appears inside a fenced block or a table OF THE SAME SECTION;
+# some numeric tokens are exempt BY FORM -- item numbers, section references,
+# shas, dates, versions, directives, rung and step numbers. The exemption is
+# applied to a WINDOW of 24 characters before and 12 after the number, not to
+# the token, so any figure standing near an exempt form is exempt with it.
+#
+# FORMAT
+#   id=<name> prose=<the line, as the report would carry it> require=<flag|exempt>
+#   measured=<what `_unsourced()` returned at bf00121>
+#
+#   require=flag    the check must report this number as unsourced
+#   require=exempt  the number is genuinely not a figure and must be ignored
+#
+# WHAT A PASSING SCAN MEANS. For each entry, hand the prose line to the shipped
+# `_unsourced()` in a section with no fenced block carrying the number, and
+# compare what it returns with `require=`. A passing scan means the check
+# separates a figure from a token by the FORM OF THE FIGURE, not by what
+# happens to be standing beside it.
+#
+# THE MEASUREMENT THAT PROMPTED IT. Of the whole newest revision at bf00121 the
+# check flags nothing, and exactly one real figure in it -- the whole-suite
+# count `1889` in section 7, the headline number of the round -- is exempt only
+# because the commit sha `7254dfc` sits ten characters to its left. Deleting
+# the sha pattern from the exemption tuple flags it. That number is TRUE; I ran
+# the suite and got 1889. It is unsourced by this check's own definition and
+# passes anyway.
+# ------------------------------------------------------------------------
+
+id=numbers_a_bare_figure_in_prose_with_no_command_anywhere prose=The_headroom_is_47x require=flag measured=flag_47_reported_the_check_does_what_it_says_on_the_shape_it_was_written_for_CONTROL
+id=numbers_a_figure_standing_next_to_an_item_number prose=At_R311_the_headroom_is_47x require=flag measured=exempt_nothing_reported_the_R311_in_the_window_exempts_the_figure_beside_it_and_a_report_names_an_item_number_in_almost_every_sentence_it_writes
+id=numbers_a_figure_standing_next_to_a_commit_sha prose=At_7254dfc_the_suite_is_1889_passed require=flag measured=exempt_nothing_reported_and_this_is_not_hypothetical_it_is_section_7_of_the_report_under_review_verbatim
+id=numbers_a_figure_standing_next_to_a_CI_run_id prose=Run_34523398136_published_4056_passed_for_that_job require=flag measured=exempt_nothing_reported_an_eleven_digit_run_id_is_all_hex_characters_so_it_matches_the_sha_pattern_and_carries_the_figure_beside_it_out_of_scope_which_is_precisely_where_CI_figures_are_written
+id=numbers_a_figure_standing_next_to_a_rung_or_ladder_number prose=Ladder_4_lost_4056_passed_rows require=flag measured=exempt_nothing_reported
+id=numbers_a_figure_standing_next_to_a_directive_code prose=BP0_moved_the_figure_to_4056_rows require=flag measured=exempt_nothing_reported
+id=numbers_a_figure_that_is_a_SUBSTRING_of_an_unrelated_fenced_number prose=The_spread_is_1p336x_in_a_section_whose_fenced_block_prints_11p3365e_9 require=flag measured=exempt_nothing_reported_the_sourced_test_is_a_substring_test_over_the_concatenated_fenced_and_table_lines_so_a_figure_is_sourced_by_any_longer_number_that_contains_it
+id=numbers_a_figure_repeated_from_a_real_command_block_in_the_same_section_CONTROL prose=The_spread_is_1p336x_in_a_section_whose_fenced_block_carries_cmd_and_out_1p336x require=exempt measured=exempt_nothing_reported_CONTROL_this_is_the_shape_the_rule_is_for_and_it_is_admitted
+id=numbers_a_four_digit_count_alone_in_a_sentence_CONTROL prose=The_count_is_4056 require=flag measured=flag_4056_reported_CONTROL

@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 
 from floatfea.model.local_axes import DegenerateMemberOrientation, member_local_axes
-from floatfea.tolerances import MEMBER_ORIENTATION_DEGENERACY
+from floatfea.tolerances import MEMBER_ORIENTATION_DEGENERACY, ROUNDOFF_IDENTITY
 
 # The real spar: vertical, full-scale submerged length (docs/milestones/F1.md sec.8).
 _SPAR_BOTTOM = np.array([0.0, 0.0, -72.87])
@@ -67,9 +67,9 @@ def test_orientation_node_admits_the_vertical_spar() -> None:
     x, y, z = member_local_axes(
         _SPAR_BOTTOM, _SPAR_TOP, orientation_node=np.array([1.0, 0.0, -72.87])
     )
-    np.testing.assert_allclose(x, [0.0, 0.0, 1.0], atol=1e-12)
-    np.testing.assert_allclose(z, [1.0, 0.0, 0.0], atol=1e-12)
-    np.testing.assert_allclose(y, np.cross(z, x), atol=1e-12)
+    np.testing.assert_allclose(x, [0.0, 0.0, 1.0], atol=ROUNDOFF_IDENTITY)
+    np.testing.assert_allclose(z, [1.0, 0.0, 0.0], atol=ROUNDOFF_IDENTITY)
+    np.testing.assert_allclose(y, np.cross(z, x), atol=ROUNDOFF_IDENTITY)
 
 
 def test_triad_is_right_handed_and_orthonormal() -> None:
@@ -77,18 +77,16 @@ def test_triad_is_right_handed_and_orthonormal() -> None:
     x, y, z = member_local_axes(np.zeros(3), np.array([50.0, 0.0, 0.0]))
     for v in (x, y, z):
         assert np.isclose(np.linalg.norm(v), 1.0)
-    assert np.isclose(np.dot(x, y), 0.0, atol=1e-12)
-    assert np.isclose(np.dot(y, z), 0.0, atol=1e-12)
-    assert np.isclose(np.dot(z, x), 0.0, atol=1e-12)
-    np.testing.assert_allclose(np.cross(z, x), y, atol=1e-12)
+    assert np.isclose(np.dot(x, y), 0.0, atol=ROUNDOFF_IDENTITY)
+    assert np.isclose(np.dot(y, z), 0.0, atol=ROUNDOFF_IDENTITY)
+    assert np.isclose(np.dot(z, x), 0.0, atol=ROUNDOFF_IDENTITY)
+    np.testing.assert_allclose(np.cross(z, x), y, atol=ROUNDOFF_IDENTITY)
 
 
 def test_collinear_orientation_node_is_refused() -> None:
     """An orientation node on the member axis is degenerate however it arrived."""
     with pytest.raises(DegenerateMemberOrientation):
-        member_local_axes(
-            _SPAR_BOTTOM, _SPAR_TOP, orientation_node=np.array([0.0, 0.0, -10.0])
-        )
+        member_local_axes(_SPAR_BOTTOM, _SPAR_TOP, orientation_node=np.array([0.0, 0.0, -10.0]))
 
 
 def test_roll_does_not_rescue_a_vertical_member() -> None:
@@ -96,3 +94,31 @@ def test_roll_does_not_rescue_a_vertical_member() -> None:
     for which that reference does not exist. Documented in local_axes."""
     with pytest.raises(DegenerateMemberOrientation):
         member_local_axes(_SPAR_BOTTOM, _SPAR_TOP, roll_rad=np.pi / 4)
+
+
+def test_a_NON_FINITE_roll_is_REFUSED(capsys) -> None:
+    """R88. `nan` and `inf` used to sail through and fail as a singular matrix.
+
+    Measured before the guard: `rotation_matrix(roll_rad=nan)` RETURNED, with a
+    matrix of NaN and only a numpy RuntimeWarning; the failure surfaced at solve
+    time as `RuntimeError: Factor is exactly singular`, which names a mechanism
+    where the cause is an input field. `CLAUDE.md` Non-negotiables: the reader
+    rejects bad records, and a validation failure does not get to degrade.
+
+    The degeneracy guard twenty lines above refuses a near-parallel member loudly
+    and explains why there is no silent fallback; this is the same class of bad
+    input reaching the same construction.
+    """
+    import numpy as np
+    import pytest
+
+    from floatfea.element.transform import rotation_matrix
+
+    a, b = np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0])
+    for bad in (float("nan"), float("inf"), float("-inf")):
+        with pytest.raises(ValueError, match="not.*finite"):
+            rotation_matrix(a, b, roll_rad=bad)
+
+    # The meta-test: a guard that refuses everything is not a guard.
+    r = rotation_matrix(a, b, roll_rad=0.7)
+    assert np.isfinite(r).all(), "a finite roll must still build a rotation"

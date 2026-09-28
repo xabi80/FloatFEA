@@ -1,0 +1,54 @@
+# CORPUS: configurations the one-interpreter guard (CE0) must rule on.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. Written at the thirty-first verdict on F2, the
+# sixth verdict on step 5 (HEAD a59521e).
+#
+# WHY THIS FILE EXISTS (BE3). CE0 answers a real defect: `onexc=` arrived in
+# 3.12, `requires-python` was a floor, the runner was 3.11.16, the implementer
+# was 3.13, and the one test that measured the shallow-clone repair was the one
+# test that could not run where the shallow clone was found. The answer is
+# `tests/test_the_pinned_interpreter.py`, whose central claim is
+#
+#   "No file uses an API newer than the pin. Measured by type-checking at the
+#    pinned version and at the running one and taking the difference."
+#
+# That claim had a corpus of one -- the `onexc` call its author had already
+# seen. A detector has a reach, and a reach is measured or it is assumed.
+#
+# FORMAT
+#   id=<name> state=<what is changed in a scratch clone> expect=<refused|allowed>
+#   measured=<what the shipped tests did at a59521e>
+#
+#   expect=refused   the configuration is one CE0 exists to stop; some test in
+#                    tests/test_the_pinned_interpreter.py must go red.
+#   expect=allowed   the configuration is correct and every test must pass. A
+#                    corpus with no `allowed` row cannot show the guard is
+#                    usable, which is worse than any miss.
+#
+# WHAT A PASSING SCAN MEANS. Apply the state to a scratch clone, run
+# `pytest tests/test_the_pinned_interpreter.py -q`, compare with `expect`.
+# A passing scan means every row agrees. IT DOES NOT MEAN the guard is complete;
+# it means these configurations are no longer untested.
+#
+# MEASURED AT a59521e by the reviewer, on Python 3.13.11 / Windows, in a
+# `git clone --local` scratch tree with the shipped tests unchanged:
+# 9 entries, 4 agree, 5 do not.
+#
+# THE ONE THAT MATTERS MOST is pin_equals_running_with_a_3_12_only_keyword,
+# because `pinned == running` is the configuration of ALL NINE CI jobs. Two
+# cells, one variable moved, everything else held:
+#   pin ">=3.11,<3.12", running 3.13, onexc reinstated -> 1 failed  (caught)
+#   pin ">=3.13,<3.14", running 3.13, onexc reinstated -> 1 passed in 0.01s
+# The guard is inert exactly where the pin is honoured, which is where CE0 is
+# trying to arrive.
+
+id=shipped_tree_unmodified state=nothing_changed expect=allowed measured=allowed_2_passed_1_deselected
+id=one_ci_job_pinned_to_3_12 state=first_setup_python_block_in_ci_yml_changed_to_python_version_3_12 expect=refused measured=refused_test_every_ci_job_runs_the_pinned_version_1_failed
+id=requires_python_pins_3_1_while_every_job_runs_3_11 state=requires_python_set_to_ge_3_1_lt_3_2_ci_yml_untouched expect=refused measured=refused_test_requires_python_pins_one_minor_version_1_failed
+id=pin_3_11_running_3_13_with_the_onexc_call_reinstated state=tests_test_report_guard_states_py_onerror_changed_back_to_onexc_pyproject_untouched expect=refused measured=refused_1_error_appears_at_the_pinned_3_11_and_not_at_3_13_Unexpected_keyword_argument_onexc
+id=pin_equals_running_with_a_3_12_only_keyword_present state=same_onexc_call_reinstated_AND_requires_python_set_to_ge_3_13_lt_3_14_so_the_pin_equals_the_running_interpreter_which_is_the_configuration_of_every_ci_job expect=refused measured=allowed_1_passed_in_0_01s_the_guard_returns_at_the_pinned_equals_running_branch_and_asserts_nothing
+id=mypy_refuses_the_version_string_it_is_given state=_mypy_errors_invoked_with_a_version_mypy_rejects_so_the_subprocess_exits_nonzero_and_writes_nothing_to_stdout expect=refused measured=allowed_returns_an_empty_set_the_return_code_is_never_read_so_mypy_did_not_run_is_indistinguishable_from_the_tree_is_clean
+id=a_ci_job_with_no_setup_python_step_at_all state=a_tenth_job_appended_to_ci_yml_with_checkout_and_a_pytest_run_and_no_actions_setup_python expect=refused measured=allowed_2_passed_the_findall_only_sees_jobs_that_declare_a_version
+id=ci_job_python_version_from_a_matrix_expression state=first_setup_python_block_changed_to_python_version_dollar_matrix_py expect=refused measured=allowed_2_passed_the_regex_matches_no_digits_and_the_job_disappears_from_the_check
+id=tool_mypy_python_version_disagrees_with_requires_python state=pyproject_tool_mypy_python_version_set_to_3_9_while_requires_python_still_pins_3_11 expect=refused measured=allowed_2_passed_the_third_site_that_names_a_python_version_is_read_by_nothing

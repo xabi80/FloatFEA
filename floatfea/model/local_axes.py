@@ -22,6 +22,8 @@ there, and that is the point — it forces the choice to be written down.
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 from numpy.typing import NDArray
 
@@ -113,6 +115,21 @@ def member_local_axes(
     z_raw = reference - float(np.dot(reference, x_hat)) * x_hat
     z_hat = z_raw / float(np.linalg.norm(z_raw))
     y_hat: NDArray[np.float64] = np.cross(z_hat, x_hat)
+
+    # A NON-FINITE ROLL IS A BAD RECORD, AND IT IS REFUSED HERE (R88). `nan` and
+    # `inf` sailed past the degeneracy guard twenty lines above, produced a
+    # rotation matrix full of NaN with only a numpy RuntimeWarning, and surfaced
+    # at solve time as `RuntimeError: Factor is exactly singular` -- a message
+    # that names a mechanism where the cause is an input field. `CLAUDE.md`
+    # Non-negotiables: the reader rejects bad records, and a validation failure
+    # does not get to degrade into a crash somewhere else.
+    if not math.isfinite(roll_rad):
+        raise ValueError(
+            f"member ({a} -> {b}) has roll_rad = {roll_rad}, which is not "
+            "finite. A non-finite roll produces a rotation matrix of NaN that "
+            "assembles and factorises without complaint and fails as a singular "
+            "matrix much later. This is an input error, not a numerical one."
+        )
 
     if roll_rad != 0.0:
         c, s = float(np.cos(roll_rad)), float(np.sin(roll_rad))

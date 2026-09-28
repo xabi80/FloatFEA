@@ -1,0 +1,81 @@
+# CORPUS: acceleration fields the product `M . a` must be verified against --
+# G4.2 / V4.2, and DP3's planned `M . a` test.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the sixty-fifth verdict on F2, reviewed commit
+# c9a8736.
+#
+# WHY THIS FILE EXISTS (BE3). Every F2 check on the consistent mass reads `M`
+# through a quadratic form (`v^T M v`, `Phi^T M Phi`) or through an eigenproblem
+# (`eigh(k, m)`). Not one reads `M . a`, and `M . a` is the only product inertia
+# relief forms. The R541 sign defect lived through fifteen review rounds inside
+# that gap: it is identically invisible in `a^T M a` and identically invisible in
+# `M . a` for a rigid TRANSLATION, and it is 22% of the nodal load in `M . a` for
+# a rigid ROTATION at the model builder's own L/D = 2 limit.
+#
+# The shapes below are the ones a check written by the hand that writes the
+# check would not choose: the vacuous ones, the far-centre ones, the slender
+# ones where the defect is real and below any engineering threshold, the
+# non-rigid ones V4.2 never asks for, and the one where the DEFECTIVE matrix
+# blows up so that a relative counter fires for arithmetic rather than for the
+# sign it claims to detect.
+#
+# WHAT A PASSING SCAN MEANS. For each entry, build `M . a` from the shipped
+# element and compare it against `integral_0^L N^T rho a(x) dx` with shape
+# functions transcribed independently of `floatfea.element.beam`. The two are
+# the same object by construction, so a passing scan means the comparison is at
+# round-off on EVERY entry -- and, separately, that `ma_sign_rel` below is
+# reproduced by the check's own counter at the entry's own operating point.
+#
+# A SCAN THAT PASSES ON ma08 ALONE HAS MEASURED NOTHING. `ma08` is a rigid
+# translation and the defect is 2.7e-16 there: a counter registered on a
+# translation is a counter that cannot fail. `ma12` is the complement -- a
+# non-rigid field that is 29% wrong in the product and 2.7e-16 in the quadratic
+# form -- so the blind subspace is `{c3 = 0}` and not merely the rigid one.
+#
+# Fields
+#   section, L, L_over_D   the member; steel S355, E=2.1e11, nu=0.3, rho=7850
+#   phi                    12 E I / (kappa G A L^2), shipped `shear_parameter`
+#   a                      the nodal acceleration vector, in the xy bending
+#                          plane DOF (v_A, rz_A, v_B, rz_B)
+#   ma_sign_rel            max|M_def . a - M_cor . a| / max|M_cor . a|, where
+#                          M_def carries R541's `+` and M_cor the shipped `-`.
+#                          THIS IS THE COUNTER, and it is only a counter where
+#                          it is large.
+#   quad_sign_rel          the same defect seen through `a^T M a`. Round-off
+#                          here is the measurement of F2's blindness.
+#   f2_gate_catches        does any shipped F2 gate redden at this entry
+#
+# THE DECISION BOUNDARY, SOLVED RATHER THAN SAMPLED (D = 0.6 m, t = 12 mm,
+# rotation about node A). The R541 sign defect in `M . a` falls below
+#   10%   at L/D =   3.860
+#    5%   at L/D =   5.367
+#    1%   at L/D =  15.612
+#    0.1% at L/D =  48.604
+#   0.01% at L/D = 153.454
+# so a test parametrised only over slender platform members has a counter that
+# passes vacuously, and any threshold quoted without its L/D is not a number.
+#
+# COVERAGE AT THIS COMMIT: 12 entries, all unseen. `f2_gate_catches` is no on
+# 11 of 12. The one exception, ma10, is caught by arithmetic blow-up within
+# 1e-7 of phi = 1 -- the DEFECTIVE coefficient matrix has determinant
+# L(1 - phi)/6 and is singular there -- and not by the sign, which is the same
+# false-reason catch `g24_consistent_mass_members.txt` records.
+#
+# Measured on Windows, Python 3.13, at c9a8736, through the shipped
+# `floatfea.element.beam` functions, with the comparison matrix transcribed by
+# hand from beam.py's module comment and integrated at 10 Gauss points.
+# ---------------------------------------------------------------------------
+id=ma01_tube600_LD2_rot_nodeA section=circular_tube,D=0.6,t=0.012 L=1.2 L_over_D=2.0000 phi=1.76547000 a=rigid_rotation_z_about_node_A ma_sign_rel=2.2238e-01 quad_sign_rel=1.3e-16 f2_gate_catches=no note="the model builder's own L/D limit, F2.md section 5i"
+id=ma02_tube600_LD2_rot_10m section=circular_tube,D=0.6,t=0.012 L=1.2 L_over_D=2.0000 phi=1.76547000 a=rigid_rotation_z_about_x_eq_10m ma_sign_rel=1.9388e-02 quad_sign_rel=2.0e-16 f2_gate_catches=no note="same member, centre moved: the counter drops 11x on geometry the member never saw"
+id=ma03_tube600_LD2_rot_100m section=circular_tube,D=0.6,t=0.012 L=1.2 L_over_D=2.0000 phi=1.76547000 a=rigid_rotation_z_about_x_eq_100m ma_sign_rel=1.8759e-03 quad_sign_rel=0.0e+00 f2_gate_catches=no note="a platform member far from the motion centre: translation dominates and the counter is 118x weaker than ma01"
+id=ma04_tube600_LD3p33_rot section=circular_tube,D=0.6,t=0.012 L=2.0 L_over_D=3.3333 phi=0.63556920 a=rigid_rotation_z_about_node_A ma_sign_rel=1.6735e-01 quad_sign_rel=7.1e-16 f2_gate_catches=no note="intermediate span"
+id=ma05_tube600_LD6p67_rot section=circular_tube,D=0.6,t=0.012 L=4.0 L_over_D=6.6667 phi=0.15889230 a=rigid_rotation_z_about_node_A ma_sign_rel=3.6078e-02 quad_sign_rel=4.9e-16 f2_gate_catches=no note="intermediate span"
+id=ma06_tube600_LD50_rot section=circular_tube,D=0.6,t=0.012 L=30.0 L_over_D=50.0000 phi=0.00282475 a=rigid_rotation_z_about_node_A ma_sign_rel=9.4475e-04 quad_sign_rel=5.9e-16 f2_gate_catches=no note="slender: the defect is real and under 0.1 percent"
+id=ma07_tube600_LD200_rot section=circular_tube,D=0.6,t=0.012 L=120.0 L_over_D=200.0000 phi=0.00017655 a=rigid_rotation_z_about_node_A ma_sign_rel=5.8861e-05 quad_sign_rel=7.4e-16 f2_gate_catches=no note="very slender: a test that lives only here cannot see R541 at all"
+id=ma08_tube600_LD2_translation section=circular_tube,D=0.6,t=0.012 L=1.2 L_over_D=2.0000 phi=1.76547000 a=rigid_translation_y ma_sign_rel=2.7222e-16 quad_sign_rel=0.0e+00 f2_gate_catches=no note="VACUOUS BY CONSTRUCTION: the sentence withdrawn from docs/closure/F2.md is TRUE on this entry and only on this entry"
+id=ma09_tube300_LD2_rot section=circular_tube,D=0.3,t=0.008 L=0.6 L_over_D=2.0000 phi=1.74211333 a=rigid_rotation_z_about_node_A ma_sign_rel=2.2633e-01 quad_sign_rel=3.9e-16 f2_gate_catches=no note="a second section at the same L/D: the counter is a function of phi, not of size"
+id=ma10_tube300_phi_unity_rot section=circular_tube,D=0.3,t=0.008 L=0.791934845805 L_over_D=2.6398 phi=1.00000000 a=rigid_rotation_z_about_node_A ma_sign_rel=3.1945e+11 quad_sign_rel=7.9e+07 f2_gate_catches=yes note="HOLE: caught for the wrong reason. The DEFECTIVE T is singular at phi=1, so a relative counter reports 3e+11 from arithmetic blow-up and certifies nothing about the sign"
+id=ma11_tube600_LD2_rot_noNodalRot section=circular_tube,D=0.6,t=0.012 L=1.2 L_over_D=2.0000 phi=1.76547000 a=rotation_translations_only_nodal_rotations_dropped ma_sign_rel=1.4809e-01 quad_sign_rel=2.5e-02 f2_gate_catches=no note="NOT a rigid field: leaves the c3=0 subspace, so this is the one shape the quadratic form can also see"
+id=ma12_tube600_LD2_quadratic section=circular_tube,D=0.6,t=0.012 L=1.2 L_over_D=2.0000 phi=1.76547000 a=nonrigid_a_of_x_equals_x_squared ma_sign_rel=2.9182e-01 quad_sign_rel=2.7e-16 f2_gate_catches=no note="NOT a rigid field and STILL invisible in the quadratic form: the blind subspace is {c3=0}, wider than the rigid one, and V4.2 never asks for a non-rigid a"

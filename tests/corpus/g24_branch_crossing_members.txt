@@ -1,0 +1,90 @@
+# CORPUS: members at which the k-th DISCRETE eigenvalue is not the k-th
+# FLEXURAL mode -- G2.4 / V2.5 positivity-and-falling assertion, batch 12.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the sixty-third verdict on F2, the second and
+# closing verdict on step 7 (HEAD 36b5899).
+#
+# WHY THIS FILE EXISTS (BE3, scoped by DE2 to the element). Batch 11 swept Phi
+# through the SINGULAR parametrisation and found R541. This is a different axis
+# and a different phenomenon: the element is CORRECT on every entry here, and
+# the CHECK is what breaks.
+#
+# `test_the_SHIPPED_element_approaches_its_OWN_continuum` now asserts, over
+# n = 4..128 and modes 1..3, that the error against
+# `timoshenko_pinned_pinned(mode, ...)` is POSITIVE at every mesh and FALLS at
+# every refinement. Its docstring and `docs/milestones/F2.md` section 141 say
+# that on the corrected element this is "exact theory rather than a measurement
+# that happened to come out that way", and the assertion failure message says a
+# red here means the shear term sign is wrong again.
+#
+# It is exact theory only while the first three eigenvalues of the discrete
+# pencil are all FLEXURAL. The pinned-pinned Timoshenko continuum has a second
+# spectral branch, and as a member gets stubby that branch descends below the
+# third flexural root. Rayleigh-Ritz is not violated -- the discrete value
+# still converges to a continuum eigenvalue FROM ABOVE, measured: at
+# D=1.0 t=0.05 L=2 the third discrete eigenvalue falls 1144.4, 1106.9, 1105.65
+# Hz over n = 4, 16, 128 onto a continuum root at 1105.6 that is not the third
+# flexural root of 1671.06. The k-th discrete eigenvalue and the k-th flexural
+# root stop being the same object, and the assertion compares them anyway.
+#
+# WHAT A PASSING SCAN MEANS. For each entry: (1) the DN1 energy identity
+# `q^T k q` against the interpolated field own strain energy must be at
+# round-off, which is the statement that the ELEMENT is correct; and (2) the
+# G2.4 assertion must either be green, or go red with a diagnosis naming the
+# branch crossing rather than the element. A passing scan is 20 of 20 on (1)
+# and 20 of 20 on (2). At this commit it is 20 of 20 on (1) and 10 of 20 on (2).
+#
+# Fields
+#   ld            L/D. `docs/milestones/F2.md` section 5i admits L/D >= 2.
+#   phi           12 E I / (kappa G A L^2) for the WHOLE member, from the
+#                 shipped `shear_parameter`, plane xy
+#   cross         the lowest mode index in 1..3 whose n=128 discrete value is
+#                 more than 1% from its flexural root -- the first mode the
+#                 second branch has displaced. 0 = no crossing.
+#   neg_modes     modes for which the shipped `errors[n][mode] > 0` is FALSE at
+#                 some mesh in 4..128
+#   rise_modes    modes for which `after < before` is FALSE at some refinement
+#   err3_n128     signed relative error of the 3rd eigenvalue at n = 128
+#   energy_gap    the DN1 identity at this member, worst over 24 nodal vectors.
+#                 ROUND-OFF ON EVERY ENTRY: the element is right everywhere here.
+#   g24_false_red yes if the shipped assertion would report this defect-free
+#                 member as a defective element
+#
+# COVERAGE AT THIS COMMIT: 20 entries, all unseen by the implementer.
+# `energy_gap` <= 2.3e-15 on 20 of 20 -- the element is correct on every entry,
+# measured, and the DN1 check ships green on all of them. `g24_false_red=yes` on
+# 10 of 20, and EVERY ONE of the eight members at the builder own L/D = 2
+# admission limit is one of them. The ten split as: eight branch crossings at
+# L/D = 2, one more at L/D = 1 below the limit, and one at L/D = 1000 which is
+# NOT a crossing but the eigensolver round-off floor -- DN0 own refuted
+# hypothesis, showing up on the single entry where it IS the mechanism. The
+# shipped checks catch 0 of 20 as defects, which is correct: there is no defect
+# here. What they do not carry is the bound on their own claim.
+#
+# NOTHING HERE IS RED AT THIS COMMIT and nothing here blocks: the assertion is
+# parametrised on one geometry, D=0.3 t=0.008 L=30, and none of these members is
+# in it. This is what F3 walks into the moment the platform model puts a real
+# brace into this test.
+
+id=bc01 D=0.3    t=0.008  L=30.0   ld=100.00   phi=6.968e-04 cross=0 neg_modes=- rise_modes=- err3_n128=+1.177e-06 energy_gap=1.41e-15 g24_false_red=no note=the_shipped_geometry_the_control
+id=bc02 D=0.3    t=0.008  L=6.0    ld=20.00    phi=1.742e-02 cross=0 neg_modes=- rise_modes=- err3_n128=+2.489e-05 energy_gap=1.99e-15 g24_false_red=no
+id=bc03 D=0.3    t=0.008  L=1.5    ld=5.00     phi=2.787e-01 cross=0 neg_modes=- rise_modes=- err3_n128=+1.391e-04 energy_gap=1.44e-15 g24_false_red=no
+id=bc04 D=0.3    t=0.008  L=0.6    ld=2.00     phi=1.742e+00 cross=3 neg_modes=3 rise_modes=3 err3_n128=-3.549e-01 energy_gap=8.23e-16 g24_false_red=yes note=batch_11_L_over_D_2_member_now_on_the_corrected_element
+id=bc05 D=0.6    t=0.012  L=12.0   ld=20.00    phi=1.765e-02 cross=0 neg_modes=- rise_modes=- err3_n128=+2.517e-05 energy_gap=1.22e-15 g24_false_red=no
+id=bc06 D=0.6    t=0.012  L=3.0    ld=5.00     phi=2.825e-01 cross=0 neg_modes=- rise_modes=- err3_n128=+1.398e-04 energy_gap=1.07e-15 g24_false_red=no
+id=bc07 D=0.6    t=0.012  L=1.2    ld=2.00     phi=1.765e+00 cross=3 neg_modes=3 rise_modes=3 err3_n128=-3.595e-01 energy_gap=1.09e-15 g24_false_red=yes note=the_DN1_probe_section_at_the_admission_limit
+id=bc08 D=1.0    t=0.05   L=8.0    ld=8.00     phi=1.039e-01 cross=0 neg_modes=- rise_modes=- err3_n128=+8.956e-05 energy_gap=1.28e-15 g24_false_red=no
+id=bc09 D=1.0    t=0.05   L=2.0    ld=2.00     phi=1.663e+00 cross=3 neg_modes=3 rise_modes=3 err3_n128=-3.383e-01 energy_gap=1.06e-15 g24_false_red=yes
+id=bc10 D=1.0    t=0.05   L=1.0    ld=1.00     phi=6.652e+00 cross=2 neg_modes=2,3 rise_modes=2,3 err3_n128=-3.432e-01 energy_gap=1.49e-15 g24_false_red=yes note=below_the_admission_limit_recorded_so_the_trend_has_a_far_end
+id=bc11 D=2.0    t=0.5    L=4.0    ld=2.00     phi=1.148e+00 cross=3 neg_modes=3 rise_modes=3 err3_n128=-1.882e-01 energy_gap=5.47e-16 g24_false_red=yes note=thick_wall_so_kappa_and_J_are_not_the_thin_tube_limit
+id=bc12 D=2.0    t=0.5    L=10.0   ld=5.00     phi=1.837e-01 cross=0 neg_modes=- rise_modes=- err3_n128=+1.183e-04 energy_gap=1.82e-15 g24_false_red=no
+id=bc13 D=2.0    t=0.02   L=4.0    ld=2.00     phi=1.801e+00 cross=3 neg_modes=2,3 rise_modes=2,3 err3_n128=-3.648e-01 energy_gap=5.35e-16 g24_false_red=yes note=D_over_t_100_the_thinnest_wall_at_the_limit
+id=bc14 D=0.1    t=0.004  L=100.0  ld=1000.00  phi=6.786e-06 cross=0 neg_modes=- rise_modes=1 err3_n128=+3.259e-08 energy_gap=1.50e-15 g24_false_red=yes note=NOT_a_branch_crossing__mode_1_RISES_from_4.65e-09_at_n64_to_2.29e-08_at_n128__the_eigensolver_floor_DN0_hypothesised_on_the_one_entry_where_it_IS_the_mechanism
+id=bc15 D=0.1    t=0.004  L=0.5    ld=5.00     phi=2.714e-01 cross=0 neg_modes=- rise_modes=- err3_n128=+1.378e-04 energy_gap=2.27e-15 g24_false_red=no
+id=bc16 D=1.5    t=0.1    L=3.0    ld=2.00     phi=1.609e+00 cross=3 neg_modes=3 rise_modes=3 err3_n128=-3.263e-01 energy_gap=8.95e-16 g24_false_red=yes
+id=bc17 D=1.5    t=0.1    L=6.0    ld=4.00     phi=4.022e-01 cross=0 neg_modes=- rise_modes=- err3_n128=+1.561e-04 energy_gap=7.72e-16 g24_false_red=no note=L_over_D_4_is_the_last_clean_rung_above_the_limit
+id=bc18 D=1.5    t=0.1    L=15.0   ld=10.00    phi=6.435e-02 cross=0 neg_modes=- rise_modes=- err3_n128=+6.726e-05 energy_gap=7.21e-16 g24_false_red=no
+id=bc19 D=4.0    t=0.04   L=8.0    ld=2.00     phi=1.801e+00 cross=3 neg_modes=2,3 rise_modes=2,3 err3_n128=-3.648e-01 energy_gap=5.20e-16 g24_false_red=yes note=a_column_sized_member_the_scale_F3_platform_actually_carries
+id=bc20 D=0.05   t=0.002  L=0.1    ld=2.00     phi=1.696e+00 cross=3 neg_modes=3 rise_modes=3 err3_n128=-3.455e-01 energy_gap=2.15e-15 g24_false_red=yes note=the_same_L_over_D_2_at_one_eightieth_the_size__Phi_is_section_independent_to_first_order_and_the_crossing_follows_Phi_not_the_size

@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "floatfea"
 version = "0.1.0"
 description = "Structural finite element analysis of the FloatSim floating platform"
-requires-python = ">=3.11"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "numpy>=1.26",
     "scipy>=1.11",
@@ -41,6 +41,31 @@ exclude = ["tests*", "docs*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers --strict-config"
+
+# CF4: AN UNEXPECTED PASS IS A FAILURE, everywhere, not only inside a ladder
+# rung. `CLAUDE.md` forbids `xfail` in the same sentence as `skip`, and pytest's
+# default lets a test marked `xfail(strict=False)` pass silently when it
+# succeeds -- so a rung whose only test was marked that way exited 0 and
+# reported OK. Setting it here makes the rule the runner's, one line, rather
+# than something each caller has to remember to pass.
+xfail_strict = true
+
+# AM5: an empty parameter set is an ERROR, not a skip.
+#
+# pytest's default (`skip`) is a vacuous-control generator with a very common
+# mechanism: a parametrized test whose parameters are DISCOVERED rather than
+# written silently becomes a no-op the moment discovery returns nothing, and the
+# run stays green.
+#
+# It happened here. `test_closure_evidence_exists.py` resolved the repo root one
+# directory too shallow, its glob found no closure artifacts, and FOUR parametrized
+# tests reported SKIPPED while checking nothing -- in the module written to stop
+# exactly that class of failure. Only its own meta-test caught it.
+#
+# `fail_at_collect` makes the empty set red at collection. Any test whose parameters come from a glob, a
+# directory walk, or an enum should also assert non-emptiness directly; this is the
+# backstop for the ones that forget.
+empty_parameter_set_mark = "fail_at_collect"
 markers = [
     "rung1: solver is a solver -- rigid-body modes, patch test, unit scaling",
     "rung2: element is the element it claims to be -- cantilever, torsion, modes",
@@ -62,17 +87,17 @@ markers = [
 
 [tool.black]
 line-length = 100
-target-version = ["py311"]
+target-version = ["py313"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "NPY"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
 strict = true
 warn_unreachable = true
 disallow_untyped_defs = true

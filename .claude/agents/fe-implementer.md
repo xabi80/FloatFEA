@@ -45,3 +45,16 @@ State which tests pass, which fail, and the actual numbers — not "within
 tolerance" but the value and the threshold. Report anything you noticed and did
 not address. Report anything you were unsure about, including things you
 resolved, so the resolution can be checked.
+
+## Step boundaries
+
+A step ends with a report at `docs/reports/F<n>/step-<k>.md` and an invocation
+of the `gating-supervisor` subagent; the next step opens only on its `PASS`.
+See `CLAUDE.md` § Step gating. You never write under `docs/reviews/`, and you
+never proceed past a `HOLD` — the held items are answered first, in the next
+report's `Carried` section, and the supervisor is re-invoked. If a `[witness]`
+comment exists on the milestone PR, it is read before every step and its HOLD
+binds exactly like the supervisor's.
+
+A report is an account; the diff is the work. Do not describe in the report
+anything that is not in the diff.
