@@ -273,3 +273,36 @@ diff was correct.
 
 **It is not a substitute for the PR witness.** If the PR channel ever runs, both
 apply and the stricter finding stands, exactly as the step-level rule says.
+
+## The apparatus freeze (DR1)
+
+**Absolute, until the member-force table ships.** No new guard, no guard edit, and
+no guard fix except deletion. **A guard that fails false is DELETED, with the
+reason recorded at the site — not repaired.**
+
+Earned by measurement, not by impatience. Four of the last five verdicts on F2
+step 7 went to the report-carry apparatus rather than to the platform, and the
+rule at the centre of them produced a finding against *itself* in four consecutive
+rounds: no satisfiable state at a milestone close (R546), a hardcoded milestone
+path that no F3 report could clear (R564), three anchor states needing different
+distance rules from each other (R563), and distance zero never rejected at all
+(R548). Each repair moved the defect instead of closing it. It is retired under
+DR0 and `tests/test_collected_set_golden.py` carries what remains checkable.
+
+**Reviewer corpus.** Batch 15 and any later apparatus corpus go to
+`docs/milestones/F2a.md` **untranscribed**. The count is reported by the
+corpus-agreement meta-test so the debt stays visible; the backstop that asserted
+it zero at a step close is deleted, because it was failing *true* against a
+decision already taken. It returns when the freeze lifts.
+
+**When the next verdict is requested.** Post-closure verdicts count against the
+next step's cap. **The next verdict is requested only after DP2 and DQ4 have
+landed** — the `f0` mode pairing and the `M.a` test. Not after each apparatus
+commit, and not per directive.
+
+**Why this is worth the risk, said plainly.** The freeze trades away the chance of
+catching a new apparatus defect for the certainty of reaching a first result. F2's
+one real element defect was found by the reviewer reading physics, and the
+milestone witness found its blast radius by reading physics. Neither came from the
+report-carry apparatus. What that apparatus has produced lately is findings about
+itself.
