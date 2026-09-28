@@ -117,3 +117,46 @@ the verification set, confirm nothing moved, note it in the milestone closure
 artifact. An unexplained change in FE results after re-pinning is a finding
 about FloatSim, and it is one of the more valuable things this tool will
 produce.
+
+## `HSP-stable` is read-only from FloatFEA (DS0)
+
+**It was written to once, and this section exists because of that.** A
+`platform_bem.py run` invoked from FloatFEA regenerated
+`studies/platform-12buoy/platform12_bem.nc` in the production worktree,
+overwriting the file commit `e1010fe` had corrected. FloatSim's own restoring-PSD
+gate then refused the database with 24 negative restoring eigenvalues, and that
+looked like an upstream physics defect. It was not. `e1010fe` — *"M11b PR8 STEP 4:
+correct platform hydrostatic C (single-body tiled)"* — had already diagnosed and
+fixed `PLATFORM-HYDROSTATIC-C-INDEFINITE`: Capytaine's
+`compute_hydrostatic_stiffness` on the **combined** 12-body assembly returns a
+spurious `C15 = rho*g*V*(z_CoG - z_CoB)` coupling that the **single**-body compute
+does not have. `platform_bem.py` reproduces the PR7 half and not the PR8
+correction.
+
+Two things were nearly lost: a production worktree, and the project's credibility
+in reporting an upstream defect that did not exist.
+
+**Three rules, and the second is the one with teeth.**
+
+**One: runs go in `../HSP-runs`, never `../HSP-stable`.** A second worktree at the
+same tag, created with `git worktree add --detach ../HSP-runs floatfea-ref-1`.
+`scripts/run_floatsim_design_waves.py` refuses to proceed if its runs directory
+resolves to the production worktree, and refuses if the worktree is not at
+`hsp_pin.HSP_TAG`.
+
+**Two: the database is hash-checked before every run.** `git hash-object` on the
+file against `git ls-files -s`'s recorded blob. A mismatch **aborts before
+anything runs**, and the message says why: the committed database carries a
+correction the generator does not reproduce, so a regenerated file is silently a
+different physical model.
+
+**Three: `platform_bem.py run` is never invoked from FloatFEA.** Regenerating it
+costs 3.66 h and 40.6 GB — measured, against a README estimate of 42 min and
+12.7 GB — and produces a database FloatSim will refuse. If a BEM ever genuinely
+needs regenerating, that is an HSP task under HSP's review, ending in a commit
+that carries the correction.
+
+**And one note for HSP, which is not ours to fix.** `platform_bem.py run`
+overwrites a corrected artifact with no marker and no warning. A reader of that
+script cannot tell that a later commit amended its output. That is worth a guard
+upstream; nothing here depends on it.
