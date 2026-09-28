@@ -306,3 +306,41 @@ one real element defect was found by the reviewer reading physics, and the
 milestone witness found its blast radius by reading physics. Neither came from the
 report-carry apparatus. What that apparatus has produced lately is findings about
 itself.
+
+## How a verdict is written so the parsers can read it (DU1)
+
+Two rules about the reviewer's own output. **No parser changes; this is the format
+side of a mismatch that cost six red guards.**
+
+**One: always restate the judged commit in the body, bolded and backticked, even
+when it equals the header.**
+
+```
+**Reviewed commit: `0a660ce`.**
+```
+
+`scripts/ci_section.py` reads that form and not the header's plain
+`Reviewed commit: <40 chars>`, because under R513 the stamped header is normally
+the reviewer's *corpus* commit and therefore not the commit judged. **Verdict 68
+wrote no corpus commit — deliberately — so its header was the judged commit and
+its body never restated it, and the generator refused to produce a CI section at
+all.** The convention that makes the header untrustworthy is exactly what made it
+trustworthy that round, and no parser can tell the difference. Restating it always
+costs one line and removes the case.
+
+**Two: a blocking finding's class and its blocking status go INSIDE the
+parentheses.**
+
+```
+**R567. (d, blocking) ...**          not    **R567. (d) -- BLOCKING, ...**
+```
+
+`tests/test_report_carried.py`'s `_blocking()` matches
+`^\*\*(R\d+)\.?\s*\(([^)]*)\)` and requires `block` within the captured group.
+Verdict 68 put `BLOCKING` outside the parentheses, so the guard parsed no blocking
+finding and reported — correctly — that the heading format had changed and the
+check would pass on anything.
+
+**Neither of these is a judgement about content**, and neither narrows what the
+reviewer may find or say. They are the shape the existing readers expect, recorded
+here because the alternative was editing two parsers during an apparatus freeze.
