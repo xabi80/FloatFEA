@@ -954,3 +954,261 @@ report-parametrised guards measured at `ca6959a`, where the newest revision stil
 answered verdict 62 while verdict 68 existed -- the `Answers:` shape DT2's commit
 recorded and this revision closes. They are not the retired commit-distance rule,
 which no longer exists to fail.
+
+
+# Revision 4 — verdict 69's STOP, and the four code findings answered
+
+Answers: verdict 69 @ 4ff1008
+
+**2026-09-28.**
+
+## 0. CI, for the commit under review
+
+```
+cmd   python scripts/ci_section.py
+out   no CI run at 2dc6a99dcaf8f48fd5fc0201284c688cd8af501e. A commit that was never pushed has no run, and a report cannot publish a table for it.
+```
+
+**The generator is right and nothing is hand-written in its place.** The chain it
+walks now resolves -- this revision's `Answers:` header names verdict 69, and the
+format correction at `4ff1008` made the verdict's bolded judged-commit line
+parseable, which is what DU1 was for. What it resolves TO is a commit with no run,
+because `2dc6a99` was never pushed: the F3 branch was rebased onto F2's head this
+turn and `origin/F3` still stands at `6186eb4`, so publishing a run for it would
+need a force-push of a branch that has already been pushed.
+
+**That decision is not mine to take and the consequence is stated rather than
+worked around.** CX0 and R449 make a run's outcome generated or absent, never
+typed, so this revision reports no CI and the four CI guards stay red until the
+branch reaches the remote. The reviewer had already recorded the same absence for
+verdict 69 itself -- `origin/F3` is `6186eb4`, not CK2 -- and measured the tree
+instead at the code-identical `c78d895`.
+
+## 1. The reading
+
+**The schedule first, because it moved. F3's plan puts its close at 10 October and
+that date is gone**, and not because the work slipped: verdict 69 is a STOP at the
+plan's *first executable step*, so nothing of the platform model can begin until
+DJ1 reopens and re-locks. DT4 requires slippage to be reported the day it is known
+and this is that day. Two consecutive steps have not closed carrying blocking
+items, so the escalation CZ0 describes is not yet triggered, but the choice it
+names is already visible and it is the supervisor's: **slip the date, or reduce
+scope.** What is unblocked meanwhile is the section module — G3.3's exact
+hollow-section formulae need no layout — and it is what I will build while DJ1 is
+open. **R576 carries and is the only open blocking item**; R577, R578, R579, R581
+and R570 are answered below, R567 was withdrawn by the verdict itself, and the
+remaining reds at verdict 69 were the report-parametrised guards waiting on this
+revision.
+
+```
+claim  the platform's four cluster arms are AXIAL, not diagonal, which is R576's
+       second strand and is also the sentence struck from section 1 of revision 3
+cmd    grep -n "CLUSTER_ANGLES_DEG =" ../HSP-runs/studies/platform-12buoy/platform_common.py
+out    34:CLUSTER_ANGLES_DEG = np.array([0.0, 90.0, 180.0, 270.0])  # C4-a
+rule   two crossing arms along +/-x and +/-y, so the ZERO-degree heading runs
+       along one arm and 45 degrees runs between them
+claim  DJ1's source does not exist, which is R576's first strand
+cmd    find ../HSP-runs ../HSP-stable -name "*.yaml" -o -name "*.yml"
+out    two 3-buoy-cluster decks, one semisub example, one orcaflex fixture --
+       none of them the 12-buoy platform, whose deck is built in Python
+claim  all 16 joints are two-rotation gimbals, so DJ0's assumption holds and F3's
+       builder has no model to refuse on that ground
+cmd    python scripts/measure_platform_joints.py
+out    two-rotation gimbals: 16 of 16
+out    worst released-moment leak at the joint point : 2.753e-15
+rule   DJ0 -- two free moments released, the locked-axis moment transmitted,
+       measured on the REACTION at the joint point rather than on the joint's name
+cell   ONE VARIABLE, |attach_a|: at 0.0000 m (4 joints) the rank over all four
+       constraint rows is 1; at 1.6890 m (12 joints) it is 3; the rank over the
+       lock row is 1 in both. The first moves with the offset and is therefore the
+       moment of the constraint FORCE about the reference point, not a joint moment
+```
+
+## 2. Findings, and every item carried
+
+Generated: `python scripts/answered_table.py <the newest verdict> docs/reports/F2/step-7-answers.json`.
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R475 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R487 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R488 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R492 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R493 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R500 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R501 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R513 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R519 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R521 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R522 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R523 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R524 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R525 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R526 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R527 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R528 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R529 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R533 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R535 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R538 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R539 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R540 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R541 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R542 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R543 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R544 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R545 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R546 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R548 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R555 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R556 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R557 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R558 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R561 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R562 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R563 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R564 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R565 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R567 | carried | **withdrawn** | §2 | `` | carried from an earlier verdict |
+| R568 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R569 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R570 | carried | **answered** | §2 | `tests/test_report_guard_states.py:616-624` | carried from an earlier verdict |
+| R571 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R572 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R573 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R574 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R575 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R576 | recorded | **carried** | §1 | `docs/milestones/F3.md` | F3's locked plan is wrong at its first executable step, in three |
+| R577 | recorded | **answered** | §2 | `floatfea/io/reader.py` | `floatfea/io/reader.py::validate` enforces nothing from `scale`. |
+| R578 | recorded | **answered** | §2 | `tests/verification/rung4/test_froude_scaling.py` | The DS2 counter's injection is inert, and its round-trip control |
+| R579 | recorded | **answered** | §2 | `floatfea/io/froude.py` | The converter cannot express the two composite channels the schema |
+| R580 | recorded | **answered** | §3 | `tests/test_report_guard_states.py` | 25 tests are red at `2dc6a99`, locally and in CI, up from one at |
+| R581 | recorded | **answered** | §2 | `floatfea/io/froude.py` | `floatfea/io/froude.py:98` -- the lambda guard is defeated |
+
+## 3. Sites named by findings and not touched
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R576 | `../HSP-runs/studies/platform-12buoy/platform_common.py` | the file is untouched | **no change** -- it is the evidence, not the defect, and `../HSP-runs` is read-only from FloatFEA under DS0. It is the file whose `CLUSTER_ANGLES_DEG = [0, 90, 180, 270]` refutes DJ1's "two diagonal arms". |
+| R576 | `docs/milestones/F3.md` | the file is untouched | **no change, and deliberately.** R576 is the STOP and it is a PLAN finding. A plan changes only in a standalone `plan:` commit citing the directive that asked for it, and no directive has. Editing the locked plan to answer a finding against it is the implementer re-locking its own plan. |
+| R576 | `docs/milestones/F3.md:24` | the file is untouched | **no change, and deliberately.** R576 is the STOP and it is a PLAN finding. A plan changes only in a standalone `plan:` commit citing the directive that asked for it, and no directive has. Editing the locked plan to answer a finding against it is the implementer re-locking its own plan. |
+| R576 | `docs/milestones/F3.md:25` | the file is untouched | **no change, and deliberately.** R576 is the STOP and it is a PLAN finding. A plan changes only in a standalone `plan:` commit citing the directive that asked for it, and no directive has. Editing the locked plan to answer a finding against it is the implementer re-locking its own plan. |
+| R576 | `docs/milestones/F3.md:26` | the file is untouched | **no change, and deliberately.** R576 is the STOP and it is a PLAN finding. A plan changes only in a standalone `plan:` commit citing the directive that asked for it, and no directive has. Editing the locked plan to answer a finding against it is the implementer re-locking its own plan. |
+| R576 | `scripts/run_floatsim_design_waves.py` | the file is untouched | **no change.** The script is correct; what it records -- a single-heading BEM database -- is what makes DJ2's 45-degree heading unreachable. The finding is against the plan that locked the heading, not against the script that reports the constraint. |
+| R577 | `docs/load-interchange-v1.md` | the file is untouched | **no change.** The schema sentence is right and DU0 re-locked it one commit before this verdict. The defect was that nothing enforced it, which is fixed in `floatfea/io/reader.py`, not here. |
+| R577 | `scripts/run_floatsim_design_waves.py:57` | the file is untouched | **no change.** Line 57 is a docstring naming the study's Froude scale, and it is accurate. The verdict cites it as evidence that the converter had no caller in `floatfea/`, which is answered by `_validate_scale` rather than by editing the citation. |
+| R578 | `docs/load-interchange-v1.md` | the file is untouched | **no change, and this is the site I looked at hardest.** Its sentence -- "measured, 7 of 7 planted exponent errors survived it" -- is TRUE; the verdict re-measured it through the shipped functions and got the same 7 of 7. The defect was the counter's evidence, not the schema's claim, so correcting the sentence would have replaced a true statement with a different true statement and left the counter blind. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:95` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:96` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:97` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:107` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:108` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:110` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:111` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:112` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:113` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:114` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:115` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:122` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:123` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:124` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:125` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:126` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:127` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:129` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:130` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:131` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:132` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:133` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:134` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:135` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:136` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:137` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R578 | `tests/verification/rung4/test_froude_scaling.py:138` | the file is touched and this line number is the old one | TOUCHED -- the whole counter is rewritten at `902301b`. The line numbers the verdict cites (95-141) are the old ones and do not survive the rewrite; this is `no change` only in the sense that those exact lines no longer exist. |
+| R579 | `CLAUDE.md` | the file is untouched | **no change.** It is quoted -- "a wrong answer that looks right is worse than a crash" -- as the reason the silent half-scaling is (a) rather than latent. The governing file is not edited to answer a finding it governs. |
+| R579 | `floatfea/io/froude.py:100` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:101` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:102` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:103` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:104` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:105` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:106` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:107` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:109` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:110` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:111` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:112` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:113` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:119` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:120` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:121` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:122` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:123` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R579 | `floatfea/io/froude.py:124` | the file is touched and this line number is the old one | TOUCHED at `902301b`: `COMPOSITE_BLOCKS`, `_refuse_uncovered` and the shared `_scale` body. `no change` does not apply. |
+| R580 | `docs/reports/F2/step-7.md:887` | the file is touched and this line number is the old one | **no change at those exact lines.** 892-895 are revision 3's answer-table rows, which are generated output for a round that has closed. They are superseded by this revision's own generated tables rather than edited in place -- rewriting a past round's generated table would make the report disagree with the commit that produced it. |
+| R580 | `docs/reports/F2/step-7.md:888` | the file is touched and this line number is the old one | **no change at those exact lines.** 892-895 are revision 3's answer-table rows, which are generated output for a round that has closed. They are superseded by this revision's own generated tables rather than edited in place -- rewriting a past round's generated table would make the report disagree with the commit that produced it. |
+| R580 | `docs/reports/F2/step-7.md:889` | the file is touched and this line number is the old one | **no change at those exact lines.** 892-895 are revision 3's answer-table rows, which are generated output for a round that has closed. They are superseded by this revision's own generated tables rather than edited in place -- rewriting a past round's generated table would make the report disagree with the commit that produced it. |
+| R580 | `docs/reports/F2/step-7.md:890` | the file is touched and this line number is the old one | **no change at those exact lines.** 892-895 are revision 3's answer-table rows, which are generated output for a round that has closed. They are superseded by this revision's own generated tables rather than edited in place -- rewriting a past round's generated table would make the report disagree with the commit that produced it. |
+| R580 | `docs/reports/F2/step-7.md:891` | the file is touched and this line number is the old one | **no change at those exact lines.** 892-895 are revision 3's answer-table rows, which are generated output for a round that has closed. They are superseded by this revision's own generated tables rather than edited in place -- rewriting a past round's generated table would make the report disagree with the commit that produced it. |
+| R580 | `docs/reports/F2/step-7.md:892` | the file is touched and this line number is the old one | **no change at those exact lines.** 892-895 are revision 3's answer-table rows, which are generated output for a round that has closed. They are superseded by this revision's own generated tables rather than edited in place -- rewriting a past round's generated table would make the report disagree with the commit that produced it. |
+| R580 | `docs/reports/F2/step-7.md:893` | the file is touched and this line number is the old one | **no change at those exact lines.** 892-895 are revision 3's answer-table rows, which are generated output for a round that has closed. They are superseded by this revision's own generated tables rather than edited in place -- rewriting a past round's generated table would make the report disagree with the commit that produced it. |
+| R580 | `docs/reports/F2/step-7.md:894` | the file is touched and this line number is the old one | **no change at those exact lines.** 892-895 are revision 3's answer-table rows, which are generated output for a round that has closed. They are superseded by this revision's own generated tables rather than edited in place -- rewriting a past round's generated table would make the report disagree with the commit that produced it. |
+| R580 | `docs/reports/F2/step-7.md:895` | the file is touched and this line number is the old one | **no change at those exact lines.** 892-895 are revision 3's answer-table rows, which are generated output for a round that has closed. They are superseded by this revision's own generated tables rather than edited in place -- rewriting a past round's generated table would make the report disagree with the commit that produced it. |
+
+## 4. Carried
+
+Generated: `python scripts/carried_table.py <the newest verdict> docs/reports/F2/step-7-answers.json`.
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R562 | **carried** — §2 | 's constraint travelling with the backstop. This was the one verdict 68 would not |
+| R567 | **withdrawn** — §2 | blocking by name and listed R568-R575 as closure items. The |
+| R568 | **answered** — §2 | as closure items. The |
+| R569 | **answered** — §2 | ANSWERED. The claim that test_collected_set_golden.py carries the retired |
+| R570 | **answered** — §2 | NOT ANSWERED. The site was never touched. This is the one the report gets |
+| R571 | **answered** — §2 | ANSWERED, both sites. tests/test_report_guard_states.py:268-273 no longer |
+| R572 | **answered** — §2 | ANSWERED. cmd grep -rn "_last_commit_touching" tests scripts; out (no |
+| R573 | **answered** — §2 | ANSWERED, AND RE-BROKEN BY THE NEXT COMMIT. docs/closure/F2.md:206-224 was |
+| R574 | **answered** — §2 | ANSWERED. The four-row ledger is in docs/milestones/F2a.md, including |
+| R575 | **answered** — §2 | as closure items. The |
+| R576 | **carried** — §1 | F3's locked plan is wrong at its first executable step, in three independent places.... |
+| R577 | **answered** — §2 | floatfea/io/reader.py::validate enforces nothing from scale. This is the direct answer to the... |
+| R578 | **answered** — §2 | The DS2 counter's injection is inert, and its round-trip control cannot fail.... |
+| R579 | **answered** — §2 | The converter cannot express the two composite channels the schema marks REQUIRED, and scaling... |
+| R580 | **answered** — §3 | 25 tests are red at 2dc6a99, locally and in CI, up from one at verdict 68. R570 is not answered... |
+| R581 | **answered** — §2 | floatfea/io/froude.py:98 -- the lambda guard is defeated by nan, inf and subnormals. cmd... |
+
+## 5. The whole suite
+
+**Whole suite at `4ff1008`: 2552 passed, 0 failed, 0 skipped.** **The excluded set: 200 passed, 22 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 222 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+- **failed, in the excluded set** `tests.test_report_carried::test_a_blocking_item_is_not_routed_to_4a`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_a_CI_SECTION`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_CI_section_is_about_the_REVIEWED_commit`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_reported_CI_counts_are_not_all_zero`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:616]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R570-tests/test_report_guard_states.py:617]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R573-docs/closure/F2.md:206]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R575-scripts/run_floatsim_design_waves.py:27]`
+- **failed, in the excluded set** `tests.test_report_numbers_are_sourced::test_every_number_in_prose_is_sourced_in_its_own_section[0. NO CI SECTION, AND THE GENERATOR IS W]`
+- **failed, in the excluded set** `tests.test_report_numbers_are_sourced::test_every_number_in_prose_is_sourced_in_its_own_section[1. The reading]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[baseline]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[non_numeric_step_suffix]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[superscript_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[shallow_clone_depth_1]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[shallow_clone_depth_1_reports_one_diagnosis_not_sixteen]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]`
+```

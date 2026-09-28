@@ -2,9 +2,12 @@
  "_": [
   "POINTERS ONLY (CH4).",
   "",
-  "Revision 3 answers the SIXTY-EIGHTH verdict, a PASS on the DR0",
-  "retirement with nine findings. R568 to R575 are answered in the",
-  "closure commit e500ea0 and in ca6959a; R567 carries by name."
+  "Revision 4 answers the SIXTY-NINTH verdict, a STOP. R576 is the STOP",
+  "and it is a PLAN finding: it carries, and F3 is not worked against",
+  "until the plan reopens and re-locks. R577, R578, R579 and R581 are",
+  "answered in floatfea/ and the rung-4 module at 902301b; R570 and the",
+  "nine closure items at e4d5895; R580 clears with the suite at this",
+  "commit. R567 was WITHDRAWN by the verdict, not by me."
  ],
  "answered": {
   "R475": {
@@ -164,7 +167,7 @@
    "where": "\u00a72"
   },
   "R567": {
-   "state": "carried",
+   "state": "withdrawn",
    "where": "\u00a72"
   },
   "R568": {
@@ -177,7 +180,8 @@
   },
   "R570": {
    "state": "answered",
-   "where": "\u00a72"
+   "where": "\u00a72",
+   "site": "tests/test_report_guard_states.py:616-624"
   },
   "R571": {
    "state": "answered",
@@ -198,6 +202,36 @@
   "R575": {
    "state": "answered",
    "where": "\u00a72"
+  },
+  "R576": {
+   "state": "carried",
+   "where": "\u00a71",
+   "site": "docs/milestones/F3.md"
+  },
+  "R577": {
+   "state": "answered",
+   "where": "\u00a72",
+   "site": "floatfea/io/reader.py"
+  },
+  "R578": {
+   "state": "answered",
+   "where": "\u00a72",
+   "site": "tests/verification/rung4/test_froude_scaling.py"
+  },
+  "R579": {
+   "state": "answered",
+   "where": "\u00a72",
+   "site": "floatfea/io/froude.py"
+  },
+  "R580": {
+   "state": "answered",
+   "where": "\u00a73",
+   "site": "tests/test_report_guard_states.py"
+  },
+  "R581": {
+   "state": "answered",
+   "where": "\u00a72",
+   "site": "floatfea/io/froude.py"
   }
  }
 }
