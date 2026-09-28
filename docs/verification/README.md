@@ -93,6 +93,17 @@ being wrong in the direction that matters. *Gate G3.3.*
 This rung is where the project's real risk lives. An equilibrium error does not
 crash anything; it produces a plausible answer that is wrong.
 
+**V4.0 The scale boundary.** A record declaring `scale: "model"` is refused by the
+reader; a record declaring `"full"` after conversion carries `source_scale`,
+`froude_lambda` and the FROUDE-SCALED sentence, or it is refused. The Froude
+exponents are derived from three bases and pinned against the declared table, and
+an array stacking channels of different dimensions — `mu[N,6]`, `lam[N,n_rows]` —
+is refused under a single quantity rather than half-scaled. This rung is
+dimensional rather than equilibrium, and it is FIRST because every residual above
+it is measured in units this row establishes. *Gate G1.2 (the reader's refusals);
+`tests/verification/rung4/test_froude_scaling.py` and
+`tests/verification/rung4/test_validator_matrix.py`.*
+
 **V4.1 Self-equilibrium residual.** For every load case, the sum of applied
 loads including d'Alembert inertia, as a fraction of total applied load
 magnitude, below tolerance. Reported per case in the run log. Never averaged

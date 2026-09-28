@@ -800,10 +800,19 @@ database is solved at a single wave heading, so no change to a study script
 produces a 45-degree result — it needs a second BEM solve, measured at 3.66 h and
 40.6 GB, ending in a commit that carries PR8 STEP 4's hydrostatic correction. That
 is an HSP task pending Xabier's go-ahead, recorded in `docs/milestones/F2a.md`.
-**The X-brace arms run along the diagonals, so a 45-degree wave travels along one
-arm and puts its two end clusters most out of phase; it may well govern the arms.**
-Six periods at 0 degrees shows the frame's response and may not contain the worst
-arm load, and the member-force table will say so.
+**THIS SENTENCE IS STRUCK (C8). It said the X-brace arms run along the diagonals,
+so a 45-degree wave travels along one arm and puts its two end clusters most out of
+phase. The arms are AXIAL, not diagonal**, and the reviewer confirmed it
+independently: `CLUSTER_ANGLES_DEG = [0, 90, 180, 270]`, hubs at (+/-50, 0) and
+(0, +/-50) m full scale. So it is the ZERO-degree heading that runs along an arm --
+the heading the basis already contains -- and the causal clause was reasoning from
+a geometry the repository does not have. A BG0 failure: a "so" with no cell.
+
+**No replacement claim about which heading governs is written here**, because none
+has been measured. Six periods at 0 degrees shows the frame's response; whether it
+contains the worst arm load is open, and the member-force table will say which
+heading it was computed at rather than which heading governs. The same false belief
+is in `docs/milestones/F3.md:25` ("two diagonal arms") and is R576's third strand.
 
 ## 2. Findings, and every item carried
 

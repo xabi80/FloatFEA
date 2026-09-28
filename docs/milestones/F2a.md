@@ -223,7 +223,7 @@ freeze with no ledger is a deletion with extra steps.
 | deferred by DR1 | what returns, and its condition |
 |---|---|
 | **the transcription backstop** | the assertion that no step closes with a reviewer entry unbuilt. Returns when the freeze lifts, **and R562 returns with it**: its trigger must be a file the implementer cannot write. The first version keyed on the plan's step marker and on the closure artifact's existence, both of which the constrained party writes. |
-| **the reviewer's apparatus corpus** | 46 entries, 24 built, **22 unbuilt** at this commit -- batches 13, 15 and 16 plus the state the retirement deleted. Transcribed when the freeze lifts, or refused by name through the existing `REQUIREMENT_CHANGED` table, which needs no new apparatus. |
+| **the reviewer's apparatus corpus** | batches 13, 15, 16 and 17, plus the states the retirement and DT2 deleted. **No count is recorded in this row, and C3 is why:** the figure was `22 unbuilt at this commit` and it was 23 one commit later, because a batch lands or a state is deleted and nothing regenerates a ledger. `test_the_corpus_and_the_states_agree` prints the count at the commit that runs it, which is the only place it can be true. Transcribed when the freeze lifts, or refused by name through the existing `REQUIREMENT_CHANGED` table, which needs no new apparatus. |
 | **the nested harness's `Answers:` rule** | the cause of the one standing red: a green-requiring state is red for the whole interval between a verdict and the report answering it. Under the freeze the only moves are to leave it or delete the state. |
 | **R567** | carried by name from verdict 68, blocking at the next step. |
 

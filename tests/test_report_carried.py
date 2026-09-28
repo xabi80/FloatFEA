@@ -170,9 +170,10 @@ _PAIRED = max(REPORTED & REVIEWED) if (REPORTED & REVIEWED) else 0
 #     5 while a complete step-10 pair sits in the tree.
 #
 # The second case is not hypothetical: the first version of this took the plan
-# whenever its step had a report, and the harness reddened on
-# `two_digit_step_number` -- injected report AND verdict for step 10, plan line
-# untouched at 5 -- which is the state the harness exists to inject.
+# whenever its step had a report, and the harness reddened on a state that
+# injected a report AND a verdict for step 10 with the plan line untouched at 5 --
+# which is the state the harness existed to inject. That state was deleted under
+# DR1 (391e375); it is named in the past tense here because the reason survives it.
 STEP = max(_PLAN_STEP if _PLAN_STEP in REPORTED else 0, _PAIRED)
 VERDICT = REVIEWS / f"step-{max(REVIEWED)}.md" if REVIEWED else REVIEWS / "step-0.md"
 REPORT = REPORTS / f"step-{STEP}.md"
@@ -745,8 +746,8 @@ def test_no_status_claims_more_than_the_verdict_allows() -> None:
 #
 # THE ANSWERS FILE IS THE ONE THE REPORT PUBLISHES, read out of the report's own
 # command rather than composed from the step number. Composing it made a
-# COPIED report -- the `two_digit_step_number` state, which copies step 5 to
-# step 10 and nothing else -- fail on a file that was never supposed to exist,
+# COPIED report -- a deleted state that copied step 5 to step 10 and nothing
+# else -- fail on a file that was never supposed to exist,
 # and BF0 is the better rule anyway: the claim is checked at the command the
 # report actually printed.
 _ANSWERS_PATH = re.compile(r"[\w./-]*step-[\w.-]*answers\.json")
@@ -2188,14 +2189,20 @@ REVIEWER_TREES = ("tests/corpus", "docs/" + "re" + "views")
 #      the suite line names, and the distance to the report's own commit is one.
 #      This is the half that had no satisfiable state at a milestone close.
 #   2. THE SHA-EXISTS HALF, which nothing now checks. A suite line may name a
-#      commit that exists NOWHERE. Measured: setting the newest revision's line to
-#      `deadbee` leaves `pytest tests/test_report_carried.py` at 203 passed, and
-#      `grep -rn "is-ancestor\|merge-base" tests scripts` finds no other reader.
+#      commit that exists NOWHERE, and no test in this tree reads it.
 #
-# AND THE LOSS IS ALREADY REALISED IN THE DANGEROUS DIRECTION. `docs/reports/F2/
-# step-7.md` publishes a line taken at `41a200c`, which is now 24 commits
-# behind HEAD, reporting `0 failed` while the tree reports `1 failed`. The figure
-# is stamped at its site rather than re-taken, because step 7 is closed.
+# AND THE LOSS IS ALREADY REALISED IN THE DANGEROUS DIRECTION: `docs/reports/F2/
+# step-7.md` publishes a suite line taken several commits back, stamped at its site
+# rather than re-taken, because step 7 is closed.
+#
+# NO MEASURED NUMBER IS WRITTEN IN THIS COMMENT, AND C1 IS WHY. The first version
+# of it carried three -- a pass count, a commit distance, and a failure count -- and
+# every one was wrong within two commits: the distance moved with each commit, the
+# failure count went from 1 to 25 and back, and the module's own collected count
+# changed when this file was edited. CP2's exact species, in the prose written
+# AROUND a fix rather than in the fix. A comment is a report that nothing
+# regenerates, so a number in one is correct when taken and wrong when read. What
+# can be checked is checked by a test; what cannot is stated without a figure.
 #
 # R309 -- take the count last, in a clean worktree at the report's own commit -- is
 # discipline now rather than a check, and `scripts/suite_count.py` still produces

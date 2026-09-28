@@ -209,14 +209,6 @@ REQUIREMENT_CHANGED: dict[str, tuple[str, str]] = {
         "instead of passing. `fetch-depth: 0` removes the state from CI; it "
         "does not make the state harmless where it occurs",
     ),
-    "two_digit_step_number": (
-        "green",
-        "require=named_fail, measured against CB2's guard. A step-10 report and "
-        "a step-10 verdict are a COHERENT pair -- `int(stem.split('-')[1])` "
-        "reads `10` correctly and the carry comparison resolves -- so the "
-        "repaired guard is green. The failure the reviewer measured was the "
-        "module-scope read, not the two-digit number",
-    ),
 }
 
 
@@ -624,13 +616,19 @@ def test_the_corpus_and_the_states_agree(capsys) -> None:
 
 # THE TRANSCRIPTION BACKSTOP IS DELETED (DR1). Its name is not written out, because
 # the citation guard reads this file for names that no longer exist. It asserted that
-# no step may close
-# with a reviewer corpus entry unbuilt, and it was true -- twelve are unbuilt. DR1
-# rules that batch 15 and any later apparatus corpus go to `docs/milestones/F2a.md`
-# UNTRANSCRIBED until the member-force table ships, which makes the assertion a
-# permanent red on a decision already taken. Deleted rather than repaired, with the
-# count still REPORTED by the corpus-agreement test above, so the debt stays
-# visible. It goes back when the freeze lifts.
+# no step may close with a reviewer corpus entry unbuilt. DR1 rules that batch 15 and
+# any later apparatus corpus go to `docs/milestones/F2a.md` UNTRANSCRIBED until the
+# member-force table ships, which makes the assertion a permanent red on a decision
+# already taken. Deleted rather than repaired, with the debt still REPORTED by the
+# corpus-agreement test above. It goes back when the freeze lifts.
+#
+# NO COUNT IS WRITTEN HERE, AND R570 IS WHY (BI3). This comment said "twelve are
+# unbuilt". Twelve was verdict 67's figure; it was 22 one commit later, 23 after the
+# state deletion, and it moves again every time the reviewer adds a batch or a state
+# is deleted. Nothing regenerates a comment, so any number written here is a figure
+# that is correct when taken and wrong when read. The count is printed by
+# `test_the_corpus_and_the_states_agree` above, at the commit that runs it, which is
+# the only place it can be true.
 
 
 BUILT_ENTRIES = [e for e in ENTRIES if e[0] in STATES]
