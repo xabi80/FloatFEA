@@ -91,9 +91,20 @@ The layout source is `data/platform/platform12_deck.yaml`, written only by
 asserted where, with neither half conditional**:
 
 * `tests/verification/rung3/test_platform_deck_export.py` asserts, everywhere and
-  always, that the committed file round-trips through a parse-and-re-emit cycle,
-  carries the platform's own topology, declares its provenance and its scale, and
-  has its four arms on the axes.
+  always, that the committed file matches **three recorded digests** written by the
+  generator — a content hash over canonical JSON, a text hash that is the only one
+  able to see a re-emission with sorted keys, and the body and joint orders — and
+  that its header agrees with what it contains, every coordinate is finite, the
+  topology is 17 bodies and 16 `yaw_locked` joints, the four arms are on the axes,
+  and **the 16 joint points are coplanar**, which is what DW1's planar frame rests
+  on. A twelve-mutation counter in the same module requires each of those to bite.
+
+  **The parse-and-re-emit comparison is NOT the gate and no longer carries its id
+  (R583, C17).** It was, and it was green on 11 of 11 injected mutations — including
+  the reordering its own docstring claimed — because a round trip of a file against
+  itself is a statement about the YAML library. It is kept, under a name that says
+  what it checks, and this row was left describing it for one round after it stopped
+  being the gate.
 * `python scripts/export_platform_deck.py --check` rebuilds the deck from HSP at the
   pin and compares against the committed bytes. **That needs a second repository at
   a specific tag, so it is a procedure with a command rather than a test**, and its

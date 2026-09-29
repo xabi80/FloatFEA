@@ -45,6 +45,12 @@ from floatfea import hsp_pin  # noqa: E402
 HSP_RUNS = ROOT.parent / "HSP-runs"
 STUDY = HSP_RUNS / "studies" / "platform-12buoy"
 OUT = ROOT / "data" / "platform" / "platform12_deck.yaml"
+_IMPORT_DIRS = (
+    "studies/platform-12buoy",
+    "studies/cluster-3buoy-rigid",
+)
+"""The directories `build_deck` puts on `sys.path`. Kept beside the preflight so
+the refusal and the insertion cannot drift apart (R588)."""
 DIGEST = ROOT / "tests" / "goldens" / "platform_deck_digest.txt"
 
 
@@ -92,8 +98,39 @@ def _preflight() -> str:
             f"{HSP_RUNS} is at the pin but its worktree is DIRTY:\n{dirty}\n"
             "The deck built from it is not the deck at "
             f"{hsp_pin.HSP_TAG}, and the header would name that tag regardless. "
-            "Commit, stash or revert there first. Untracked files are ignored -- "
-            "they cannot change what the study imports."
+            "Commit, stash or revert there first."
+        )
+
+    # R588. THE SENTENCE THAT USED TO BE HERE SAID UNTRACKED FILES "cannot change
+    # what the study imports", AND IT WAS FALSE. `build_deck` puts three directories
+    # on `sys.path` and the study imports `platform_common` and `cluster_common` as
+    # BARE NAMES, so an untracked `platform_common.py` in the directory inserted last
+    # -- and therefore searched first -- is imported in preference to the tracked one,
+    # with `--untracked-files=no` reporting a clean worktree throughout. The flag was
+    # doing the work of a threshold, which is why this is a gate finding and not a
+    # tidy-up.
+    #
+    # Untracked files ELSEWHERE still cannot affect the import, so the refusal is
+    # scoped to the directories that go on `sys.path` and to `.py` files, rather than
+    # refusing on any stray file in a large worktree.
+    shadowing = [
+        line
+        for line in _git(
+            "status", "--porcelain", "--untracked-files=all", cwd=HSP_RUNS
+        ).splitlines()
+        if line.startswith("??")
+        and line.strip().endswith(".py")
+        and any(part in line for part in _IMPORT_DIRS)
+    ]
+    if shadowing:
+        listed = "\n".join(shadowing)
+        raise SystemExit(
+            f"{HSP_RUNS} is at the pin and tracked-clean, but carries UNTRACKED "
+            f"Python modules on the import path:\n{listed}\n"
+            "The study imports `platform_common` and `cluster_common` by bare name "
+            "from these directories, so an untracked module of the same name is "
+            "imported in preference to the tracked one and the deck exported is not "
+            "the deck at the pin. Remove them or commit them."
         )
     return head
 
@@ -135,8 +172,16 @@ def digest(raw: dict[str, Any], body: str = "") -> str:
       reordering by construction, which is exactly why the second line exists.
     * `body_order` and `joint_order` are the sequences as the FILE carries them, so
       a dropped or swapped body reddens by name rather than as an opaque hash.
-    * `body_sha256` is over the document AS EMITTED, and it is the only line that can
-      see a mapping re-emitted with `sort_keys=True`. Two earlier attempts could not:
+    * `body_sha256` is over the document's text with **newlines normalised to LF**,
+      and it is the only line that can see a mapping re-emitted with
+      `sort_keys=True`. It does NOT see a line-ending change: `Path.read_text`
+      translates CRLF to LF on the way in, so a file rewritten with CRLF hashes
+      identically (R589). That is deliberate rather than a gap -- `core.autocrlf`
+      rewrites line endings on checkout, and a digest that noticed would fail on
+      every Windows clone -- but the first version of this sentence said "AS
+      EMITTED" and the assertion's message said "bytes", and a reader would have
+      believed both. Two earlier attempts at the ordering case could not see it
+      either:
       the content hash is order-blind by construction, and a test that re-emits the
       file's OWN parsed content always reproduces it, because `safe_load` hands the
       keys back in the order the file listed them. A RECORDED hash is the only side

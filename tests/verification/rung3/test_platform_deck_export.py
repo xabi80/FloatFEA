@@ -218,8 +218,8 @@ def test_the_file_PARSES_and_re_emits_stably() -> None:
     assert yaml.safe_load(yaml.safe_dump(raw, sort_keys=False)) == raw
 
 
-def test_G3_2_the_file_matches_its_RECORDED_BYTE_digest() -> None:
-    """The file as emitted, hashed. This is what catches REORDERING.
+def test_G3_2_the_file_matches_its_RECORDED_TEXT_digest() -> None:
+    """The document's LF-normalised text, hashed. This is what catches REORDERING.
 
     A YAML mapping is unordered, so re-emitting with `sort_keys=True` leaves the
     CONTENT identical — every value the same, the same canonical hash, the same list
@@ -235,12 +235,22 @@ def test_G3_2_the_file_matches_its_RECORDED_BYTE_digest() -> None:
     comparison reproduces whatever the file says, sorted or not. **A recorded hash
     is the only side of the comparison the file cannot supply itself**, which is the
     same reason `--check` against HSP is the strongest half of this gate.
+
+    **WHAT THIS DIGEST DOES NOT SEE, said here rather than left for someone to trip
+    over (R589).** It hashes the text after `Path.read_text` has normalised newlines,
+    so a file rewritten with CRLF and nothing else changed hashes IDENTICALLY and all
+    nine checks in this module stay green. The reviewer found that by rewriting the
+    committed YAML with CRLF. **The behaviour is right and is not being changed:**
+    `core.autocrlf` rewrites line endings on checkout, so a digest that noticed would
+    fail on every Windows clone of this repository. What was wrong was the two
+    sentences -- this docstring said "the file as emitted" and the assertion said
+    "bytes" -- and a reader would have believed both.
     """
     # the BODY, not the whole file: the header carries a date and would make this
     # digest change on a re-export that altered nothing about the model.
     _, body = _split(_text())
     assert hashlib.sha256(body.encode()).hexdigest() == _golden()["body_sha256"], (
-        "the deck YAML's bytes do not match the recorded digest. If the content "
+        "the deck YAML's text does not match the recorded digest. If the content "
         "digest still matches, then no VALUE changed and only the file's form did -- "
         "a re-emission with different settings, or a hand-edit that round-trips. "
         "The generator is the only sanctioned writer."
@@ -376,7 +386,7 @@ def test_a_MUTATED_deck_reddens_at_least_one_assertion(name: str, monkeypatch, t
         test_the_deck_YAML_has_the_platforms_OWN_topology,
         test_the_arms_are_AXIAL_which_is_what_R576_turned_on,
         test_the_JOINT_POINTS_are_COPLANAR_which_the_planar_frame_rests_on,
-        test_G3_2_the_file_matches_its_RECORDED_BYTE_digest,
+        test_G3_2_the_file_matches_its_RECORDED_TEXT_digest,
     ]
     import sys
 

@@ -451,10 +451,26 @@ def test_the_parse_found_something_to_check() -> None:
     assert CARRIED.strip(), (
         "the newest report revision has no Carried section, so there is nothing " "to check against"
     )
-    assert len(EXPECTED) >= 5, (
-        f"only {EXPECTED} expected; the verdict carries more than that and the "
-        "pattern is missing most of them"
-    )
+    # THE `len(EXPECTED) >= 5` FLOOR IS DELETED (R586), NOT REPAIRED.
+    #
+    # It asserted that a verdict carries at least five items, and it had no
+    # satisfiable state for two verdicts running: verdict 70 declared four findings
+    # and verdict 71 declares four, so the floor failed while the parse SUCCEEDED
+    # and returned the true count. Eight tests went red on it -- this one, plus
+    # seven guard states whose nested run includes it -- and CI's `guards and
+    # meta-tests` step with them, at a commit whose verification ladder was green in
+    # every rung.
+    #
+    # A floor on how many findings a verdict must have is a claim about the
+    # REVIEWER's output, not about this repository, and a PASS or a HOLD that closes
+    # a step on the cap is exactly when a verdict is small. R546 was the same shape:
+    # a guard with no satisfiable state is deleted rather than loosened, because
+    # loosening it to `>= 4` would only move the number at which it next fails
+    # falsely.
+    #
+    # The two assertions above are kept and they are what the meta-test is for: zero
+    # parsed findings is a parse failure, and a report with no Carried section has
+    # nothing to check against. Neither has a threshold.
 
 
 # A PARAMETRISED TEST WITH AN EMPTY LIST IS A COLLECTION ERROR, and this repo
