@@ -500,7 +500,21 @@ def _build(tmp: Path, state: str) -> Path:
             # measures the shallow-clone repair was the one state that could not
             # run where the shallow clone was found. The handler ignores its
             # third argument, so it fits either signature.
-            shutil.rmtree(work / ".git", onerror=_force_remove)
+            #
+            # AND `.git` IS NOT ALWAYS A DIRECTORY (C10/R585). In a `git worktree`
+            # checkout it is a 76-byte FILE holding `gitdir: ...`, and
+            # `scripts/suite_count.py` builds exactly that kind of tree -- so
+            # `rmtree` raised `NotADirectoryError [WinError 267]` there and this
+            # state, plus two others, reported a guard failure that was the
+            # harness's own. CI is unaffected: `actions/checkout` produces a real
+            # directory, and guards were 1000 passed at the reviewed commit. The
+            # red was invented by the measuring tool, which is the worst place for
+            # one to come from.
+            copied = work / ".git"
+            if copied.is_dir():
+                shutil.rmtree(copied, onerror=_force_remove)
+            elif copied.exists():
+                copied.unlink()
             shutil.move(str(shallow / ".git"), str(work / ".git"))
     return work
 
