@@ -2,236 +2,64 @@
  "_": [
   "POINTERS ONLY (CH4).",
   "",
-  "Revision 4 answers the SIXTY-NINTH verdict, a STOP. R576 is the STOP",
-  "and it is a PLAN finding: it carries, and F3 is not worked against",
-  "until the plan reopens and re-locks. R577, R578, R579 and R581 are",
-  "answered in floatfea/ and the rung-4 module at 902301b; R570 and the",
-  "nine closure items at e4d5895; R580 clears with the suite at this",
-  "commit. R567 was WITHDRAWN by the verdict, not by me."
+  "Revision 5 answers the SEVENTIETH verdict, a PASS that closed step 7 on",
+  "the cap and carried three items forward. All three are answered: R582 at",
+  "63046e5, R583 and R584 at b5602d6, C10/R585 at 475c224.",
+  "",
+  "THE `Answers:` SHA IS THE VERDICT'S OWN COMMIT, 1b895db, and not the",
+  "commit it judged. `VERDICT_TEXT` is read AT that commit, so naming the",
+  "judged commit makes every generator read the PREVIOUS verdict -- which is",
+  "what happened on the first attempt at this revision and produced a table",
+  "for verdict 69 inside a revision answering verdict 70."
  ],
  "answered": {
-  "R475": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R487": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R488": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R492": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R493": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R500": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R501": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R513": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R519": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R521": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R522": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R523": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R524": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R525": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R526": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R527": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R528": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R529": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R533": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R535": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R538": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R539": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R540": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R541": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R542": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R543": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R544": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R545": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R546": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R548": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R555": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R556": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R557": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R558": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R561": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R562": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R563": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R564": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R565": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
   "R567": {
-   "state": "withdrawn",
-   "where": "\u00a72"
-  },
-  "R568": {
-   "state": "answered",
-   "where": "\u00a72"
-  },
-  "R569": {
-   "state": "answered",
-   "where": "\u00a72"
-  },
-  "R570": {
-   "state": "answered",
-   "where": "\u00a72",
-   "site": "tests/test_report_guard_states.py:616-624"
-  },
-  "R571": {
-   "state": "answered",
-   "where": "\u00a72"
-  },
-  "R572": {
-   "state": "answered",
-   "where": "\u00a72"
-  },
-  "R573": {
-   "state": "answered",
-   "where": "\u00a72"
-  },
-  "R574": {
-   "state": "answered",
-   "where": "\u00a72"
-  },
-  "R575": {
-   "state": "answered",
+   "state": "carried",
    "where": "\u00a72"
   },
   "R576": {
-   "state": "carried",
-   "where": "\u00a71",
-   "site": "docs/milestones/F3.md"
+   "state": "answered",
+   "where": "\u00a72"
   },
   "R577": {
    "state": "answered",
-   "where": "\u00a72",
-   "site": "floatfea/io/reader.py"
+   "where": "\u00a72"
   },
   "R578": {
    "state": "answered",
-   "where": "\u00a72",
-   "site": "tests/verification/rung4/test_froude_scaling.py"
+   "where": "\u00a72"
   },
   "R579": {
    "state": "answered",
-   "where": "\u00a72",
-   "site": "floatfea/io/froude.py"
+   "where": "\u00a72"
   },
   "R580": {
    "state": "answered",
-   "where": "\u00a73",
-   "site": "tests/test_report_guard_states.py"
+   "where": "\u00a72"
   },
   "R581": {
    "state": "answered",
+   "where": "\u00a72"
+  },
+  "R582": {
+   "state": "answered",
    "where": "\u00a72",
-   "site": "floatfea/io/froude.py"
+   "site": "docs/milestones/F3.md"
+  },
+  "R583": {
+   "state": "answered",
+   "where": "\u00a72",
+   "site": "tests/verification/rung3/test_platform_deck_export.py"
+  },
+  "R584": {
+   "state": "answered",
+   "where": "\u00a72",
+   "site": "scripts/export_platform_deck.py"
+  },
+  "R585": {
+   "state": "answered",
+   "where": "\u00a72",
+   "site": "scripts/suite_count.py"
   }
  }
 }

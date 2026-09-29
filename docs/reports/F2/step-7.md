@@ -1319,3 +1319,257 @@ These three were already among the reds at the reviewed commit -- section 0's
 generated CI table is where that count lives -- so they are not introduced by this
 round's work. What is new is knowing that they are conditional on the environment
 rather than simply red.
+
+
+# Revision 5 — verdict 70's three carried items, answered
+
+Answers: verdict 70 @ 1b895db
+
+**2026-09-28.**
+
+## 0. CI, for the commit under review
+
+## 0. CI at `2e24459`, the commit verdict 70 judged — conclusion **SUCCESS**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 70 at `2e24459` through the report's own `Answers:` line. Run `36462874787`, event `push`, conclusion **success**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 1750 | 0 | 0 |
+| lint, unit and guards | 1000 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 0 not green.**
+
+**Failing tests named in the log: 0.**
+
+## 0a. Runs since the commit verdict 70 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 70 at `2e24459` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `36462874787` | push | `2e24459` | conclusion **success** |
+
+## 1. The reading
+
+**Schedule, and it is the plan's own table rather than a figure taken here:**
+
+```
+cmd    grep -n "^\*\*Schedule:" -A 2 docs/milestones/F3.md
+out    F3 closes **13 October** (DV, three days right of DM -- the re-plan R576
+       cost). Downstream: F4 19 October, the member-force table 23 October, the
+       code-check screen 28 October. F2's DO3 witness runs at the table.
+```
+
+**The escalation was answered by scope, not by slipping the date — and the escalation was answered by scope, not by
+slipping the date (DW0).** The first result is the 16-member superstructure; the 12
+buoy spar columns are deferred until after the table with their return condition in
+`docs/milestones/F2a.md`, and every output will say `superstructure only; buoy spars
+not assessed` on its face. **All three items verdict 70 carried are answered** —
+R582 at `63046e5`, R583 and R584 at `b5602d6`, C10/R585 at `475c224` — and nothing
+is carried blocking into the model work. **13 October holds as of today**, and the
+model skeleton is the next thing built; F3's computed date is reported the moment it
+stands up rather than when the step closes.
+
+**R567 IS REPORTED `carried`, NOT `withdrawn`, AND THAT IS A FINDING ABOUT THE
+VERDICT FILE.** Verdict 69 withdrew it explicitly. The file no longer contains that
+text:
+
+```
+claim  the verdict file holds ONE ROUND, not an accumulating record
+cmd    line count and R567 mentions in the verdict file, at four commits
+out    83c7ba5  397 lines  R567 x3
+out    4314118  508 lines  R567 x2
+out    4ff1008  508 lines  R567 x2
+out    1b895db  538 lines  R567 x0
+cmd    the verdict file's top-level headings at HEAD
+out    one set of sections -- CI, Carried, Findings, the rulings, Closure items,
+       Tolerances, What I built to break it, Corpus, My own instructions, On the
+       criterion, Carried for the next step, Next step opens when -- with no
+       per-verdict sections and no round numbers
+rule   `test_no_status_claims_more_than_the_verdict_allows` reads "the WHOLE review
+       file, every round of it, because a withdrawal ruled two verdicts ago is
+       still a withdrawal"
+judge  that premise is false, so the guard cannot see any withdrawal older than the
+       current round, and verdicts 61 to 69 exist only in git history
+```
+
+**The guard is right about the rule and I have not touched it.** A report says what
+it did; whether an item is gone is the verdict's to say. `carried` is the strongest
+status the file supports. **Twelve reds traced to this one cell** — the guard itself,
+two vocabulary-corpus rows that report it through the harness, and nine guard states
+whose nested run includes it — which is why one status word was worth this much
+prose.
+
+**And the next step's report has nowhere to go that the guards can see.**
+
+```
+claim  the report and review guards are hardcoded to F2
+cmd    grep -n "^REVIEWS = \|^REPORTS = " tests/test_report_carried.py
+out    67:REVIEWS = ROOT / "docs" / "reviews" / "F2"
+out    68:REPORTS = ROOT / "docs" / "reports" / "F2"
+judge  F3's first step report under docs/reports/F3/ would be invisible to every
+       guard, which would go on reading this file forever. Re-pointing them is a
+       guard edit and DR1 permits only deletion, so it is the supervisor's call and
+       it is not made here. This revision therefore lands in step 7's file, which
+       is what verdicts 54 and 55 did for the same reason and for which DD1 is the
+       recorded precedent.
+```
+
+## 2. Findings, and every item carried
+
+Generated: `python scripts/answered_table.py <the newest verdict> docs/reports/F2/step-7-answers.json`.
+
+**R582** — the re-lock reached §0 and not the executable sections. §2, §3 and §4 are
+rewritten at `63046e5`, and DW1's two measurements were taken *before* the rewrite
+because DW1 made the geometry conditional on them: the 16 joint points are coplanar
+to `0.000e+00 m` at `z = 24.6685 m` full scale, the platform's reference point is
+`10.3315 m` above that plane and the hubs' are exactly on it. So the frame is planar,
+the 51.056 m inclined member was the platform end alone, and **the hubs need no rigid
+link at all**. §3 now also records that each hub carries **three** cluster arms —
+four tripods, twelve cluster arms, which no earlier plan sentence stated.
+
+**R583** — the assertion carrying G3.2's id could not fail. Three digest lines
+replace it and the module's own counter runs twelve mutations through the shipped
+checks. **Two earlier attempts at the reordering case failed and the reason is at the
+site:** the content hash is order-blind by construction, and a test that re-emits the
+file's own parsed content is self-referential. A recorded hash is the only side of
+that comparison the file cannot supply itself.
+
+**R584** — the preflight accepted a dirty pinned worktree and `--check` sliced the
+provenance header off both sides. Both fixed, both with an isolating cell.
+
+**R585 / C10** — `.git` is a 76-byte file in a `git worktree`, so the harness crashed
+there and invented three reds. **My own sentence about it was wrong**: I wrote that
+the clean worktree is the environment CI runs in, and CI refutes it.
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R567 | carried | **carried** | §2 | `` | carried from an earlier verdict |
+| R576 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R577 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R578 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R579 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R580 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R581 | carried | **answered** | §2 | `` | carried from an earlier verdict |
+| R582 | recorded | **answered** | §2 | `docs/milestones/F3.md` | The F3 re-lock repaired §0 and left §3 and §4 carrying the |
+| R583 | recorded | **answered** | §2 | `tests/verification/rung3/test_platform_deck_export.py` | The half of G3.2 that runs in CI carries the gate id on the one |
+| R584 | recorded | **answered** | §2 | `scripts/export_platform_deck.py` | The other half of G3.2 claims "rebuilt from HSP AT THE PIN and |
+| R585 | recorded | **answered** | §2 | `scripts/suite_count.py` | The three environment-sensitive reds have ONE diagnosis, it is not the |
+
+## 3. Sites named by findings and not touched
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R583 | `CLAUDE.md` | the file is untouched | **no change.** Quoted as the rule the finding is measured against -- a gate must carry its own failure. The governing file is not edited to answer a finding it governs. |
+| R583 | `tests/verification/rung3/test_platform_deck_export.py:81` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the assertion carrying G3.2's id is replaced by three digest checks and a twelve-mutation counter, so the cited line numbers are the old ones and do not survive the rewrite. |
+| R583 | `tests/verification/rung3/test_platform_deck_export.py:87` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the assertion carrying G3.2's id is replaced by three digest checks and a twelve-mutation counter, so the cited line numbers are the old ones and do not survive the rewrite. |
+| R583 | `tests/verification/rung3/test_platform_deck_export.py:88` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the assertion carrying G3.2's id is replaced by three digest checks and a twelve-mutation counter, so the cited line numbers are the old ones and do not survive the rewrite. |
+| R584 | `scripts/export_platform_deck.py:55` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:56` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:57` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:58` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:59` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:60` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:61` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:62` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:63` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:64` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:65` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:66` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:67` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:68` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:69` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:70` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:71` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:72` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:73` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:74` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:75` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:76` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R584 | `scripts/export_platform_deck.py:77` | the file is touched and this line number is the old one | TOUCHED at `b5602d6`, and **no change at that exact line**: the preflight refuses a dirty pinned worktree and `--check` compares every header line except `#   exported`, so the file moved and the cited numbers are the old ones. |
+| R585 | `scripts/suite_count.py` | the file is untouched | **no change, and the fix is at the OTHER site.** The crash was in the harness's `_build`, which `rmtree`s a `.git` that `suite_count.py` legitimately creates as a FILE. Repairing the measuring script would have made the harness's assumption true by accident; `tests/test_report_guard_states.py` now handles both shapes (`475c224`). |
+| R585 | `suite_count.py` | the file is untouched | **no change** -- the same site, cited by bare name in the verdict's prose. See the `scripts/suite_count.py` row above. |
+
+## 4. Carried
+
+Generated: `python scripts/carried_table.py <the newest verdict> docs/reports/F2/step-7-answers.json`.
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R582 | **answered** — §2 | The F3 re-lock repaired §0 and left §3 and §4 carrying the withdrawn text verbatim.... |
+| R583 | **answered** — §2 | The half of G3.2 that runs in CI carries the gate id on the one assertion in the module that... |
+| R584 | **answered** — §2 | The other half of G3.2 claims "rebuilt from HSP AT THE PIN and compared" and measures neither... |
+| R585 | **answered** — §2 | The three environment-sensitive reds have ONE diagnosis, it is not the guard, and the report's... |
+
+## 5. The whole suite
+
+**Whole suite at `475c224`: 2573 passed, 2 failed, 0 skipped.** **The excluded set: 271 passed, 10 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 281 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+- **failed** `tests.test_report_vocabulary_corpus::test_the_guard_rules_on_the_spelling[legitimate_open_row]`
+- **failed** `tests.test_report_vocabulary_corpus::test_the_guard_rules_on_the_spelling[two_spaces_before_the_item_number]`
+- **failed, in the excluded set** `tests.test_report_carried::test_no_status_claims_more_than_the_verdict_allows`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[baseline]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[non_numeric_step_suffix]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[superscript_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[answers_header_names_an_older_verdict_commit]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]`
+```
+
+**Two reds, and BOTH are guards whose assumptions no longer hold rather than defects
+in the tree.** Neither is in `floatfea/` and neither is on the verification ladder.
+
+```
+claim  red 1 -- a report may not claim a ruling its verdict file cannot back
+cmd    python -m pytest tests/test_report_carried.py::test_no_status_claims_more_than_the_verdict_allows -q
+out    ['R567'] are reported as withdrawn and no verdict in step-7.md withdraws them
+judge  verdict 69 DID withdraw it; the file holds one round, so the text is gone.
+       Answered in this revision by reporting `carried`, which is the strongest
+       status the file supports. Section 1 carries the measurement.
+claim  red 2 -- a meta-test requires at least five findings and verdict 70 has four
+cmd    python -m pytest tests/test_report_carried.py::test_the_parse_found_something_to_check -q
+out    only ['R582', 'R583', 'R584', 'R585'] expected; assert 4 >= 5
+rule   `len(EXPECTED) >= 5`, a floor on how many findings a verdict must have
+judge  the parse did NOT fail -- it found all four, and four is the true count. The
+       floor assumes a verdict is always large, which a PASS closing a step on the
+       cap is not. It fails FALSELY, and under DR1 the only permitted move on a
+       guard is deletion, which is not mine to take on a check with a real job.
+```
+
+**And two structural blocks on the next step's report, reported rather than worked
+around.** First, the report and review guards are hardcoded to one milestone:
+
+```
+cmd    grep -n "^REVIEWS = \|^REPORTS = " tests/test_report_carried.py
+out    67:REVIEWS = ROOT / "docs" / "reviews" / "F2"
+out    68:REPORTS = ROOT / "docs" / "reports" / "F2"
+judge  F3's first step report under docs/reports/F3/ would be invisible to every
+       guard, which would go on reading this file. Re-pointing them is a guard edit
+       and DR1 permits only deletion, so this revision lands in step 7's file --
+       which is what verdicts 54 and 55 did for the same reason, and DD1 is the
+       recorded precedent for it.
+```
+
+Second, **the `Answers:` sha is the verdict's OWN commit and not the commit it
+judged**, because `VERDICT_TEXT` is read at that commit. Naming `2e24459` made every
+generator read verdict 69 inside a revision answering verdict 70, and it cost three
+rebuilds before it was found. The header names `1b895db`. This is C13 and it is worth
+a sentence in the next verdict's closing instructions rather than a third discovery.
+
