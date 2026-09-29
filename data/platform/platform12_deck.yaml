@@ -10,7 +10,7 @@
 #   source         studies/platform-12buoy/platform_rao_pilot.py
 #   bodies         17
 #   joints         16
-#   exported       2026-09-28
+#   exported       2026-09-29
 #
 # SCALE: this deck is at MODEL scale. Nothing here is full scale and nothing
 # in this file applies a factor. floatfea.io.froude converts at the I/O
