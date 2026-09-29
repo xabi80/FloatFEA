@@ -1,0 +1,126 @@
+# CORPUS: the PLATFORM MODEL F3 is about to build, and the half of gate G3.2
+# that is supposed to protect the deck it is built from.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Written at the
+# seventy-first verdict on F2/F3, against the judged commit 4708cc2, the gate as
+# it landed at b5602d6, and the plan as it re-locked at 63046e5.
+#
+# IN SCOPE UNDER DE2. "Corpus rounds target the element, the gates, and -- from
+# F3 -- the platform model." This file is the platform model and a gate. It is
+# not an apparatus corpus, so the DR1 deferral to docs/milestones/F2a.md does
+# not reach it and nothing here is transcribed anywhere.
+#
+# WHY IT EXISTS SEPARATELY FROM platform_deck_source.txt (batch 18). Batch 18
+# was about the committed FILE. This is about the MODEL: the sixteen-member
+# planar frame section 3.2 now names, the rigid links section 3.3 now implies,
+# and the scope reduction section 3.4 now records. The frame has not been built.
+# Every entry below is a shape the plan and the gates can be asked about before
+# there is any code to blame, which is the only moment at which asking is cheap.
+#
+# AND BECAUSE THE COVERAGE FIGURE FOR THE NEW GATE WAS MEASURED AGAINST TWELVE
+# MUTATIONS WRITTEN BY THE SAME HAND AS THE GATE. The rung-3 module carries a
+# twelve-entry table and an ablation showing that removing two digest gates
+# leaves exactly two of the twelve uncaught. I reproduced that ablation exactly.
+# Then I ran thirty-three mutations that table does not contain, and the same
+# ablation leaves seventeen of thirty-three uncaught. Both numbers are correct.
+# Only one of them is about the gate.
+#
+# WHAT A PASSING SCAN MEANS. For each entry the mutation is applied to a copy of
+# the committed YAML, the named surface is run against it, and the outcome is
+# compared with expect. A passing scan means every measured outcome equals its
+# expectation. Entries with expect=caught and measured=NOT_CAUGHT ARE the
+# coverage measurement. Entries with expect=explain are questions about the
+# model, closed by an answer and not by a test.
+#
+# FIELDS
+#   id        stable name
+#   surface   suite   -- tests/verification/rung3/test_platform_deck_export.py
+#             named   -- the same suite with the three digest gates ABLATED, so
+#                        only an assertion naming the property can catch it
+#             check   -- python scripts/export_platform_deck.py --check
+#             deck    -- a property of the exported model, no mutation
+#             plan    -- a question the locked plan must answer before the frame
+#                        is built
+#   case      the mutation or the question, in words
+#   expect    caught | uncaught_and_accepted | hold | explain
+#   measured  what happened at 4708cc2, run by this reviewer
+#
+# --------------------------------------------------------------------------
+# A. MUTATIONS THAT TWELVE-ENTRY TABLE DOES NOT CONTAIN. Thirty-three were run;
+# the twenty-nine below are the ones batch 18 did not already record. Two of the
+# thirty-three are caught by nothing shipped.
+
+id=mut_crlf_line_endings surface=suite case=the_whole_file_rewritten_with_CRLF_and_no_other_change expect=caught measured=NOT_CAUGHT_all_nine_checks_green_because_Path.read_text_translates_newlines_so_the_BYTE_digest_is_not_over_bytes
+id=mut_header_source_path_falsified surface=suite case=the_header_source_line_changed_from_platform_rao_pilot.py_to_other_thing.py expect=caught measured=NOT_CAUGHT_the_header_test_asserts_five_things_and_source_is_not_one_of_them
+id=mut_one_inertia_number_times_1e6 surface=suite case=a_single_inertia_component_on_one_body_scaled_by_a_million expect=caught measured=CAUGHT_content_and_byte_only_no_named_assertion_reads_inertia
+id=mut_every_mass_set_to_zero surface=suite case=all_17_masses_set_to_0.0 expect=caught measured=CAUGHT_content_and_byte_only_a_massless_deck_passes_every_named_assertion
+id=mut_a_mass_made_negative surface=suite case=buoy1_mass_set_to_minus_28.67 expect=caught measured=CAUGHT_content_and_byte_only_nothing_shipped_asserts_mass_is_positive
+id=mut_gravity_changed_to_32_2 surface=suite case=environment_gravity_9.81_to_32.2_which_is_ft_per_s2 expect=caught measured=CAUGHT_content_and_byte_only
+id=mut_wave_heading_0_to_45 surface=suite case=waves_heading_0.0_to_45.0_the_heading_DV2_left_pending expect=caught measured=CAUGHT_content_and_byte_only
+id=mut_entire_simulation_block_deleted surface=suite case=the_top-level_simulation_mapping_removed expect=caught measured=CAUGHT_content_and_byte_only
+id=mut_a_joint_axis_flipped_to_x surface=suite case=joint_0_axis_changed_to_1_0_0 expect=caught measured=CAUGHT_content_and_byte_only_the_topology_test_reads_type_not_axis
+id=mut_whole_deck_scaled_by_lambda_50 surface=suite case=every_coordinate_multiplied_by_50_so_a_MODEL_scale_file_holds_full_scale_numbers expect=caught measured=CAUGHT_content_and_byte_only_the_header_scale_declaration_still_reads_MODEL
+id=mut_whole_model_rotated_45_deg surface=suite case=every_coordinate_rotated_45_degrees_about_z_so_the_arms_go_diagonal expect=caught measured=CAUGHT_content_byte_and_AXIAL_which_is_the_case_R576_turned_on
+id=mut_all_four_hub_arms_scaled_1_1 surface=named case=all_four_hub_radii_times_1.1_so_50_m_becomes_55_m_still_equal_still_axial expect=caught measured=CAUGHT_only_because_COPLANAR_reads_an_absolute_z_the_AXIAL_test_cannot_see_a_uniformly_wrong_radius_and_nothing_shipped_asserts_50_m
+id=mut_three_hub_arms_scaled_1_1_one_left surface=named case=hub1_hub2_hub3_radii_times_1.1_hub4_left_at_50_m expect=caught measured=CAUGHT_AXIAL_and_COPLANAR
+id=mut_hub1_and_hub3_positions_swapped surface=named case=hub1_and_hub3_reference_points_exchanged_names_unchanged expect=caught measured=CAUGHT_COPLANAR_only_ORDER_cannot_see_it_because_no_name_moved_and_AXIAL_cannot_because_both_stay_axial
+id=mut_whole_plane_lifted_uniformly_1m surface=named case=every_body_z_raised_by_1.0_model_so_the_joint_plane_moves_50_m_at_full_scale expect=caught measured=NOT_CAUGHT_by_any_named_assertion_COPLANAR_asserts_a_SPREAD_so_a_uniformly_wrong_datum_is_invisible_and_only_the_digests_see_it
+id=mut_joint_attach_not_coincident_by_1mm surface=named case=joint_0_attach_a_x_moved_0.001_model_so_the_two_ends_name_different_points expect=caught measured=CAUGHT_COPLANAR
+id=mut_one_body_renamed_buoy12_to_buoy13 surface=named case=buoy12_renamed_in_the_body_list_and_in_its_joint expect=caught measured=CAUGHT_ORDER
+id=mut_an_extra_18th_body_appended surface=named case=a_duplicate_of_buoy1_appended_under_the_name_ghost expect=caught measured=CAUGHT_ORDER_HEADER_and_TOPOLOGY
+id=mut_body_list_reversed surface=named case=the_17_body_entries_emitted_in_reverse_order_values_unchanged expect=caught measured=CAUGHT_ORDER
+id=mut_joint_list_reversed surface=named case=the_16_joint_entries_emitted_in_reverse_order_values_unchanged expect=caught measured=CAUGHT_ORDER
+id=mut_header_hsp_commit_falsified surface=suite case=25de7ce_replaced_by_deadbee_in_the_header expect=caught measured=CAUGHT_HEADER
+id=mut_header_joints_16_to_99 surface=suite case=the_header_joint_count_falsified_bodies_left_correct expect=caught measured=CAUGHT_HEADER
+id=mut_header_MODEL_lowercased surface=suite case=MODEL_scale_to_model_scale_a_case_change_only expect=caught measured=CAUGHT_HEADER_by_exact_substring_so_it_also_reddens_on_a_harmless_edit
+id=mut_header_do_not_hand_edit_removed surface=suite case=the_DO_NOT_HAND-EDIT_sentence_replaced_by_the_word_generated expect=caught measured=CAUGHT_HEADER
+id=mut_comment_appended_at_end_of_body surface=suite case=a_hand_annotation_comment_added_after_the_last_document_line expect=caught measured=CAUGHT_BYTE_only
+id=mut_comment_inserted_inside_body surface=suite case=a_comment_line_inserted_immediately_after_the_bodies_key expect=caught measured=CAUGHT_BYTE_only
+id=mut_trailing_blank_line_added surface=suite case=one_newline_appended_to_the_file expect=caught measured=CAUGHT_BYTE_only_and_this_is_the_gate_being_STRICTER_than_the_model_needs
+id=mut_re_emitted_default_flow_style_true surface=suite case=the_document_re-emitted_in_flow_style_same_values_same_order expect=caught measured=CAUGHT_BYTE_only
+id=mut_re_emitted_indent_4 surface=suite case=the_document_re-emitted_with_indent_4_same_values_same_order expect=caught measured=CAUGHT_BYTE_only
+
+# --------------------------------------------------------------------------
+# B. THE ABLATION, RUN FOUR WAYS. The first row is the figure the commit message
+# publishes and it reproduces exactly. The rest are the same cell against inputs
+# its author did not write, which is the whole of BE3.
+
+id=abl_authors_twelve_all_checks surface=suite case=the_twelve_shipped_mutations_against_all_eight_shipped_checks expect=hold measured=0_of_12_missed_so_every_shape_the_old_gate_missed_now_reddens
+id=abl_authors_twelve_content_and_byte_removed surface=named case=the_twelve_shipped_mutations_with_the_CONTENT_and_BYTE_digests_removed_from_the_check_list expect=hold measured=exactly_2_of_12_missed_every_mass_times_ten_and_re_emitted_with_sort_keys_True_which_is_the_published_figure_reproduced_independently
+id=abl_authors_twelve_all_three_digests_removed surface=named case=the_twelve_shipped_mutations_with_CONTENT_BYTE_and_ORDER_removed expect=explain measured=3_of_12_missed_the_third_is_two_bodies_swapped_in_order_which_the_published_ablation_does_not_report_because_it_removed_only_two
+id=abl_these_thirtythree_content_and_byte_removed surface=named case=the_thirty-three_mutations_in_section_A_and_batch_18_with_CONTENT_and_BYTE_removed expect=explain measured=17_of_33_missed_so_the_exactly_two_figure_is_a_property_of_the_twelve-entry_table_and_not_of_the_gate
+id=abl_these_thirtythree_all_three_digests_removed surface=named case=the_same_thirty-three_with_all_three_digest_gates_removed expect=explain measured=20_of_33_missed_so_13_of_33_are_caught_by_an_assertion_that_NAMES_the_property_and_the_other_20_only_by_an_opaque_hash
+id=abl_these_thirtythree_only_the_digests surface=suite case=the_same_thirty-three_with_ONLY_the_three_digest_gates_kept expect=explain measured=6_of_33_missed_and_all_six_are_header_edits_because_the_BYTE_digest_covers_the_body_and_not_the_header
+
+# --------------------------------------------------------------------------
+# C. THE MODEL THE PLAN NOW DESCRIBES. Every number below I measured from the
+# exported deck myself, at 4708cc2, before reading the report. These are the
+# questions, and they are the half of this file worth reading first: the frame
+# has not been built and the cheapest moment to ask is now.
+
+id=plan_is_the_buoy_MASS_in_the_model surface=plan case=section_3.2_item_5_says_attach_EACH_BODY_remainder_mass_by_rigid_link_and_section_3.4_says_the_first_result_is_the_platform_body_and_the_4_hub_bodies expect=explain measured=the_12_buoy_bodies_are_344.04_of_402.04_kg_model_which_is_85.6_percent_of_the_deck_mass_and_the_plan_says_both_that_it_is_in_and_that_it_is_out
+id=plan_cluster_arm_free_end surface=plan case=each_of_the_12_cluster_arms_runs_hub_node_to_a_buoy_JOINT_point_and_if_the_buoy_body_is_out_that_end_carries_nothing expect=explain measured=twelve_25_m_cantilevers_with_bare_tips_and_no_shipped_sentence_says_what_is_at_the_tip
+id=plan_cluster_arm_section_basis_vs_reduced_scope surface=plan case=F1_line_425_sized_the_180_mm_wall_from_a_5.93_MN_tip_load_over_25_m_giving_M_148.2_MN.m expect=explain measured=if_the_buoy_is_deferred_the_arm_carries_only_its_own_steel_so_the_member-force_table_for_the_member_whose_section_is_the_one_recorded_number_in_the_model_is_computed_without_the_load_that_sized_it
+id=plan_rigid_link_lengths surface=deck case=the_four_rigid_links_section_3.3_implies_have_three_different_lengths expect=explain measured=hubs_0.000_m_platform_10.3315_m_buoys_84.4519_m_and_only_the_first_two_are_named_in_the_plan
+id=plan_16_members_no_bracing surface=plan case=4_hub_arms_plus_12_cluster_arms_is_16_and_nothing_connects_adjacent_buoy_joints_or_adjacent_hubs expect=explain measured=the_frame_is_four_three-legged_stars_on_four_radial_spokes_so_in_plan_it_is_a_tree_and_not_a_braced_frame_and_a_tree_has_no_redundancy_to_redistribute
+id=plan_planar_frame_out_of_plane_path surface=plan case=all_16_members_are_horizontal_at_one_elevation_and_every_load_case_is_a_wave expect=explain measured=z_spread_0.000e+00_m_so_a_vertical_load_at_a_buoy_joint_is_carried_only_by_bending_and_torsion_of_the_cluster_and_hub_arms_with_no_axial_path_at_all
+id=plan_vertical_datum_unstated surface=deck case=the_joint_plane_is_at_z_0.4933695679797303_model_which_is_24.668478_m_full_scale_above_the_deck_origin expect=explain measured=carried_from_batch_18_still_unstated_and_the_plan_now_prints_24.6685_m_in_three_places_without_saying_what_z_zero_is
+id=plan_platform_reference_is_off_the_plane surface=deck case=the_platform_reference_point_is_at_z_0.700_model_which_is_35.000_m_full_and_10.3315_m_above_the_joint_plane expect=hold measured=reproduced_exactly_the_planar_frame_ruling_is_correct_and_the_51.056_m_11.6747_deg_vector_is_the_platform_mass_reference_to_joint_and_not_a_member
+id=plan_hubs_need_no_rigid_link surface=deck case=each_hub_reference_point_is_exactly_on_the_joint_plane_so_its_link_is_zero_length expect=hold measured=reproduced_all_four_hubs_z_minus_joint_z_is_0.0_exactly
+id=plan_three_cluster_arms_at_120 surface=deck case=each_hub_carries_three_cluster_arms_and_the_angular_gaps_are_equal expect=hold measured=reproduced_3_arms_per_hub_gaps_120.0_120.0_120.0_degrees_on_all_four_hubs_so_four_tripods_and_twelve_cluster_arms
+id=plan_in_plane_member_lengths_exact surface=deck case=centre_to_hub_and_hub_to_buoy_joint_at_full_scale expect=hold measured=reproduced_50.000000_m_and_25.000000_m_with_dz_0.000e+00_on_all_sixteen
+id=plan_L_over_r_table surface=plan case=the_slenderness_table_in_section_2_for_r_0.822709_m expect=hold measured=60.774830_and_30.387415_so_60.77_and_30.39_as_printed_and_the_earlier_60.78_is_gone
+id=plan_hub_arm_section_unrecorded surface=plan case=section_3.2_item_4_says_the_hub_arm_takes_F1_section_if_one_is_recorded_otherwise_sized_to_the_body_mass_and_marked_preliminary expect=explain measured=F1_line_389_records_only_the_cluster_arm_so_four_of_sixteen_members_will_be_preliminary_and_the_plan_does_not_say_which_branch_is_expected
+id=plan_buoy_spar_label_understates_the_deferral surface=plan case=every_output_is_to_carry_superstructure_only_buoy_spars_not_assessed expect=explain measured=under_the_reading_that_the_buoy_bodies_are_out_the_label_says_the_columns_are_not_stress-checked_where_the_fact_is_that_85.6_percent_of_the_deck_mass_is_not_in_the_model_and_those_are_different_statements
+
+# --------------------------------------------------------------------------
+# D. THE GENERATOR AND THE PREFLIGHT, after R584. The dirty-worktree refusal and
+# the header comparison both landed and I verified both. These are what is left.
+
+id=chk_check_passes_at_the_judged_commit surface=check case=the_committed_YAML_and_the_committed_digest_against_a_deck_rebuilt_from_HSP-runs_at_floatfea-ref-1 expect=hold measured=exit_0_HSP_floatfea-ref-1_at_25de7ce_bodies_17_joints_16_round_trip_9_top-level_keys_digest_matches_header_included_run_by_this_reviewer_on_a_second_reading_of_the_tree
+id=chk_untracked_module_shadowing surface=check case=the_preflight_runs_git_status_with_untracked-files_no_and_build_deck_prepends_HSP_RUNS_and_two_study_directories_to_sys.path expect=caught measured=NOT_CAUGHT_an_untracked_platform_common.py_dropped_into_studies_cluster-3buoy-rigid_shadows_the_tracked_one_because_that_path_is_inserted_last_and_therefore_searched_first_and_the_comment_at_the_site_asserts_untracked_files_cannot_change_what_the_study_imports
+id=chk_exported_prefix_is_a_blind_channel surface=check case=comparable_drops_every_line_beginning_hash_three_spaces_exported_from_BOTH_sides expect=caught measured=NOT_CAUGHT_arbitrary_text_on_a_line_with_that_prefix_is_invisible_to_check_and_to_the_header_test_alike
+id=chk_digest_is_written_by_the_same_script_as_the_file surface=check case=main_writes_the_YAML_and_the_digest_in_one_invocation expect=uncaught_and_accepted measured=correct_and_this_is_what_a_golden_IS_the_defence_against_regenerating_it_to_match_is_the_git_diff_and_the_reviewer_not_a_test_which_is_the_CJ0_boundary_and_the_docstring_says_so
+id=chk_check_output_not_recorded_at_the_judged_commit surface=check case=docs_verification_README_says_the_procedure_output_goes_in_the_step_report_as_a_triple expect=caught measured=NOT_CAUGHT_revision_5_of_the_report_carries_no_check_triple_the_cells_are_in_the_commit_message_at_b5602d6_instead_so_the_stronger_half_of_G3.2_has_no_recorded_result_at_4708cc2_until_this_verdict
+id=chk_readme_still_describes_the_retired_gate surface=check case=docs_verification_README_lines_93_to_96_state_what_the_always-run_half_of_G3.2_asserts expect=caught measured=NOT_CAUGHT_it_still_says_the_committed_file_round-trips_through_a_parse-and-re-emit_cycle_which_is_the_assertion_R583_ruled_vacuous_and_which_no_longer_carries_the_gate_id_and_it_does_not_mention_the_digests_at_all
