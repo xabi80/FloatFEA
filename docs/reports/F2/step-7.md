@@ -1827,3 +1827,303 @@ state in which the implementer creates one. So this revision is still step 7's, 
 transition wants the reviewer's next verdict written into F3's tree in the same round
 the marker advances.
 
+
+# Revision 7 — verdict 72's six findings, and the reactions
+
+Answers: verdict 72 @ 5ef2e3d
+
+**2026-09-30.**
+
+## 0. CI, for the commit under review
+
+## 0. CI at `6c09932`, the commit verdict 72 judged — conclusion **SUCCESS**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 72 at `6c09932` through the report's own `Answers:` line. Run `36693879464`, event `workflow_dispatch`, conclusion **success**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint, unit and guards | 925 | 0 | 0 |
+| CI determinism -- leg (5) | 134 | 0 | 0 |
+| the verification ladder | 1799 | 0 | 0 |
+| CI determinism -- leg (7) | 134 | 0 | 0 |
+| CI determinism -- leg (6) | 134 | 0 | 0 |
+| CI determinism -- leg (4) | 134 | 0 | 0 |
+| CI determinism -- leg (3) | 134 | 0 | 0 |
+| CI determinism -- leg (1) | 134 | 0 | 0 |
+| CI determinism -- leg (8) | 134 | 0 | 0 |
+| CI determinism -- leg (2) | 134 | 0 | 0 |
+| CI determinism -- leg (10) | 134 | 0 | 0 |
+| CI determinism -- leg (9) | 134 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 13 jobs, 0 not green.**
+
+**Failing tests named in the log: 0.**
+
+## 0a. Runs since the commit verdict 72 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 72 at `6c09932` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `36693879464` | workflow_dispatch | `6c09932` | conclusion **success** |
+
+## 1. The reading
+
+**Schedule: F3 13 October, F4 19 October, the member-force table 23 October, the
+code-check screen 28 October — unchanged, and the 6–8 October figure I gave last
+round is WITHDRAWN.** It rested on "every F3 gate is measured green", and C28 is
+right that the sentence did not hold: R590 showed the mass gate was a tautology and
+R592 that the inertia decrement was wrong, so two halves of the mass-properties gate
+were not measuring
+what I said they were. Both are repaired here and the repair was one round, not one
+day. **All six findings are answered** and DY0–DY7 have landed in seven standalone
+commits, one path class each.
+
+```
+claim  the gate R590 found vacuous now reddens on the defect it could not see
+cmd    ONE VARIABLE: ARM_WALL 0.180 -> 0.001, nothing else touched
+out    before the rewrite: 32 passed -- a section wrong by 180x, green
+out    after:  5 failed, 38 passed
+out    AssertionError: the builder uses t = 0.001; F1:389 records 0.18 m
+rule   DY1b -- member section properties equal F1's recorded values
+claim  a misplaced remainder reddens the CoG comparison
+cmd    ONE VARIABLE: the remainder point, +5 m in z
+out    11 failed, 32 passed
+out    AssertionError: platform: the model's CoG is [-9.06e-17 1.86e-16 2.50e+00]
+       from the deck's [0. 0. 35.]
+out    restored: 43 passed
+rule   DY1a -- T_G from nodal coordinates only, against the ASSEMBLED matrix
+```
+
+**R591 was the one that changed the model, and my own proposed fix for R587 was
+wrong before it.** DX0 ruled that the buoys enter as joint reactions rather than mass
+— adding their masses would have double-counted every one, since the gimbal reaction
+already carries each buoy's inertia — and DY0 then withdrew "size members to the body
+mass" outright, because it consumed the whole body and left nothing at the CoG.
+
+```
+claim  a member carrying its own steel cannot be right either
+cmd    4 * 50 m * basis.tube_area(2.5, 0.180) * basis.RHO_STEEL
+out    2059.7 t against the platform body's 1250.0 t deck mass -- 1.65x it
+rule   DY0b asked for the directive's ~2060 t confirmed or corrected
+claim  f = 0.5 is admissible for all five bodies and lands where DY0c predicted
+cmd    build_superstructure()
+out    platform  rho_eq 2382.0 kg/m^3  m_r 625.0 t  r_r z 45.3315  link 20.6630 m
+out    hub1..4   rho_eq 7622.4 kg/m^3  m_r 750.0 t  r_r z 24.6685  link  0.0000 m
+rule   DY0c predicted r_r about 20.66 m above the joint plane, rho_eq about 2380
+judge  none is above steel; the hubs at 7622.4 are close enough that f = 0.6 would
+       exceed it, which is why DY0e asks for the figure rather than a yes or no
+```
+
+**DY7: the reactions exist, they are perturbations, and that is the finding F4 needs.**
+`scripts/report_joint_reactions.py` runs one case and reads `res.lam` directly.
+
+```
+claim  the DS1 export carries no reaction data at all
+cmd    python scripts/report_joint_reactions.py
+out    6 case files, 21 columns; columns naming a multiplier, reaction or joint: 0
+out    buoys represented: 3 of 12 -- ['buoy1', 'buoy4', 'buoy7']
+claim  the solve has all 64, and they are physically coherent
+out    16 joints x 4 rows; at t = 30.000 s, joints 2 and 3 mirror exactly
+       (+/-3.6977e-02 Fy, -/+2.6670e-04 Mz), and so do 5/15, 6/14 and 7/13 across y
+rule   a 0-degree heading on a symmetric platform must produce that symmetry
+claim  THE REACTIONS ARE PERTURBATIONS ABOUT EQUILIBRIUM, NOT TOTALS
+out    the largest buoy-joint Fz is 0.6581 N
+out    a buoy weighs 28.67 * 9.81 = 281.3 N; the ratio is 2.34e-03
+rule   the study builds with `solve_equilibrium=False` and `xi` is displacement from
+       the reference
+judge  a member-force table built from these alone would understate every arm by
+       three orders of magnitude, so F4's export must carry the equilibrium reaction
+       as well as the history
+```
+
+**And the equilibrium identity DY7 asks for does not close from what is available.**
+The inertia term is the Cummins operator — infinite-frequency added mass, a
+convolution over the radiation kernel, and the hydrostatic restoring — so closing it
+needs the per-body added-mass matrix and the memory state at that step, and neither is
+exported. That is DX1's gap one level deeper, and the report prints `|R + A|` labelled
+as the part that is available rather than a residual that would look like the answer.
+
+## 2. Findings, and every item carried
+
+Generated: `python scripts/answered_table.py <the newest verdict> docs/reports/F2/step-7-answers.json`.
+
+**R590** — the mass gate was `x == approx(x)`. `T_G` now comes from nodal coordinates
+only and is formed against the assembled matrix; the deck's values are read from the
+YAML; no test computes the remainder as a complement; and the member-only mass is
+asserted to be `f · M_b` from the element matrices.
+
+**R591** — answered by DY0's ruling and the rewrite above. The CoG gate now compares
+the model's centre of gravity against the deck's declared one, which is what the old
+version did not: it compared the members' centroid to the body node, a different
+quantity.
+
+**R592** — the full tensor is decremented, with `J_mem` from the assembled matrix.
+Fixing that exposed a second error of mine in the same line: I took `J_mem` about the
+member centroid where DY0c needs it about `G`. With the wrong reference the platform's
+inertia residual was `1.067e-02`; about `G` it is `3.375e-36`.
+
+**R593** — `MASS_PROPERTY_AGREEMENT` is declared in `floatfea/tolerances.py` with its
+round-off derivation. It is set from the derivation (`36 · eps = 7.994e-15`) rather
+than from the measurement (`2.2119e-15`), so a body with more nodes does not breach it
+for no defect, and it carries a counter.
+
+**R594** — acknowledged, and it was my error. `de67ba5` changed `docs/SUPERVISOR.md`
+in a commit that also touched `tests/`. One path class per commit from here; DY8b is
+followed in the seven commits of this round.
+
+**R595** — `buoy_joint_nodes` is keyed by `(body, node)`.
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R586 | recorded | **NOT ANSWERED** |  | `` | Eight tests are red at the judged commit and CI at the judged commit |
+| R587 | recorded | **NOT ANSWERED** |  | `` | The re-locked plan says both that the twelve buoy bodies are in the |
+| R588 | recorded | **NOT ANSWERED** |  | `` | The preflight that makes G3.2's "at the pin" true ignores untracked |
+| R589 | recorded | **NOT ANSWERED** |  | `` | The digest that now carries G3.2 is named for the file's bytes and is not |
+| R590 | recorded | **answered** | §2 | `floatfea/model/platform.py` | G3.1a's mass half cannot fail. The remainder is DEFINED as the |
+| R591 | recorded | **answered** | §2 | `floatfea/model/platform.py` | The built platform body's centre of gravity is 10.3315 m below the |
+| R592 | recorded | **answered** | §2 | `floatfea/model/platform.py` | `remainder_inertia` subtracts the members' contribution from `Izz` |
+| R593 | recorded | **answered** | §2 | `floatfea/tolerances.py` | `_NEGLIGIBLE_FRACTION = 1e-12` is a comparison epsilon in `floatfea/` |
+| R594 | recorded | **answered** | §2 | `docs/SUPERVISOR.md` | `de67ba5` changes `docs/SUPERVISOR.md` in a commit that also touches `tests/`. |
+| R595 | recorded | **answered** | §2 | `floatfea/model/platform.py` | `Superstructure.buoy_joint_nodes` maps a buoy name to a node index |
+
+**4 finding(s) with no row in the answers file: ['R586', 'R587', 'R588', 'R589'].**
+
+## 3. Sites named by findings and not touched
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R586 | `test_report_carried.py:270` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the `>= 5` floor is DELETED with the reason at the site. |
+| R586 | `test_report_carried.py:271` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the `>= 5` floor is DELETED with the reason at the site. |
+| R586 | `test_report_carried.py:272` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the `>= 5` floor is DELETED with the reason at the site. |
+| R586 | `test_report_carried.py:273` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the `>= 5` floor is DELETED with the reason at the site. |
+| R586 | `tests/test_report_carried.py:454` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the `>= 5` floor is DELETED with the reason at the site, so the cited numbers are the old ones. |
+| R586 | `tests/test_report_carried.py:455` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the `>= 5` floor is DELETED with the reason at the site, so the cited numbers are the old ones. |
+| R586 | `tests/test_report_carried.py:456` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the `>= 5` floor is DELETED with the reason at the site, so the cited numbers are the old ones. |
+| R586 | `tests/test_report_carried.py:457` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the `>= 5` floor is DELETED with the reason at the site, so the cited numbers are the old ones. |
+| R587 | `docs/milestones/F1.md:425` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct; recomputed with exact formulae and they reproduce. |
+| R587 | `docs/milestones/F1.md:426` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct; recomputed with exact formulae and they reproduce. |
+| R587 | `docs/milestones/F1.md:427` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct; recomputed with exact formulae and they reproduce. |
+| R587 | `docs/milestones/F1.md:428` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct; recomputed with exact formulae and they reproduce. |
+| R587 | `docs/milestones/F1.md:429` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct; recomputed with exact formulae and they reproduce. |
+| R587 | `docs/milestones/F1.md:430` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct; recomputed with exact formulae and they reproduce. |
+| R587 | `docs/milestones/F1.md:431` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct; recomputed with exact formulae and they reproduce. |
+| R587 | `docs/milestones/F1.md:432` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct; recomputed with exact formulae and they reproduce. |
+| R587 | `docs/milestones/F1.md:433` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct; recomputed with exact formulae and they reproduce. |
+| R587 | `docs/milestones/F3.md:101` | the file is touched and this line number is the old one | TOUCHED at `8b14de3` and again at `56d6810`, and **no change at that exact line**: sections 0, 3.2, 3.3, 3.4 and 3.5 are rewritten under DX0 and DY0. |
+| R587 | `docs/milestones/F3.md:302` | the file is touched and this line number is the old one | TOUCHED at `8b14de3` and again at `56d6810`, and **no change at that exact line**: sections 0, 3.2, 3.3, 3.4 and 3.5 are rewritten under DX0 and DY0. |
+| R588 | `../HSP-runs/studies/platform-12buoy/platform_rao_pilot.py` | the file is untouched | **no change** -- it is the evidence and `../HSP-runs` is read-only under DS0. Its bare-name imports are what make an untracked module shadowing possible, and the refusal belongs in the preflight that exports from it. |
+| R588 | `README.md:97` | the file is untouched | **no change.** Cited as where a reader would look for the import contract; the refusal is in the preflight where it is executable rather than in prose (CW0). |
+| R588 | `scripts/export_platform_deck.py:89` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the false sentence is gone and `_IMPORT_DIRS` plus the untracked-module refusal replace it. |
+| R589 | `docs/verification/README.md` | the file is untouched | TOUCHED at `f14fad2` as C17, and **no change at that exact line**: the rung-3 row now names the three digests and the coplanarity assertion instead of the retired parse-and-re-emit cycle. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:221` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:222` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:223` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:224` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:225` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:226` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:227` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:228` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:229` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:230` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:231` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:232` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:233` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:234` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:235` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:236` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:237` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:238` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:239` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:240` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:241` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:242` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:243` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:244` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:245` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:246` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:247` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. |
+| R590 | `docs/milestones/F3.md:309` | the file is touched and this line number is the old one | TOUCHED at `56d6810`, a standalone `plan:` commit, and **no change at that exact line**: section 0 gains DY0 and section 5's G3.1a row is rewritten, so the cited numbers are the old ones. |
+| R590 | `tests/verification/rung3/test_platform_skeleton.py:112` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the whole gate is rewritten around DY1 -- `T_G` from nodal coordinates against the assembled matrix, the deck's values from the YAML, no remainder computed as a complement -- so the cited numbers do not survive it. |
+| R590 | `tests/verification/rung3/test_platform_skeleton.py:114` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the whole gate is rewritten around DY1 -- `T_G` from nodal coordinates against the assembled matrix, the deck's values from the YAML, no remainder computed as a complement -- so the cited numbers do not survive it. |
+| R590 | `tests/verification/rung3/test_platform_skeleton.py:116` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the whole gate is rewritten around DY1 -- `T_G` from nodal coordinates against the assembled matrix, the deck's values from the YAML, no remainder computed as a complement -- so the cited numbers do not survive it. |
+| R590 | `tests/verification/rung3/test_platform_skeleton.py:117` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the whole gate is rewritten around DY1 -- `T_G` from nodal coordinates against the assembled matrix, the deck's values from the YAML, no remainder computed as a complement -- so the cited numbers do not survive it. |
+| R590 | `tests/verification/rung3/test_platform_skeleton.py:124` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the whole gate is rewritten around DY1 -- `T_G` from nodal coordinates against the assembled matrix, the deck's values from the YAML, no remainder computed as a complement -- so the cited numbers do not survive it. |
+| R591 | `../HSP-runs/floatsim/driver.py` | the file is untouched | **no change** -- it is the EVIDENCE and `../HSP-runs` is read-only under DS0. Its lines 203-209 state that the deck's `reference_point` IS the CoG, which is what makes the CoG comparison meaningful and is now recorded in the assumptions block. |
+| R591 | `docs/milestones/F3.md:271` | the file is touched and this line number is the old one | TOUCHED at `56d6810`, a standalone `plan:` commit, and **no change at that exact line**: DY0's record replaces the mass-sizing rule that put the model's CoG 10.3315 m below the declared one, so the cited numbers are the old ones. |
+| R591 | `docs/milestones/F3.md:272` | the file is touched and this line number is the old one | TOUCHED at `56d6810`, a standalone `plan:` commit, and **no change at that exact line**: DY0's record replaces the mass-sizing rule that put the model's CoG 10.3315 m below the declared one, so the cited numbers are the old ones. |
+| R591 | `docs/milestones/F3.md:273` | the file is touched and this line number is the old one | TOUCHED at `56d6810`, a standalone `plan:` commit, and **no change at that exact line**: DY0's record replaces the mass-sizing rule that put the model's CoG 10.3315 m below the declared one, so the cited numbers are the old ones. |
+| R591 | `docs/milestones/F3.md:274` | the file is touched and this line number is the old one | TOUCHED at `56d6810`, a standalone `plan:` commit, and **no change at that exact line**: DY0's record replaces the mass-sizing rule that put the model's CoG 10.3315 m below the declared one, so the cited numbers are the old ones. |
+| R591 | `docs/milestones/F3.md:275` | the file is touched and this line number is the old one | TOUCHED at `56d6810`, a standalone `plan:` commit, and **no change at that exact line**: DY0's record replaces the mass-sizing rule that put the model's CoG 10.3315 m below the declared one, so the cited numbers are the old ones. |
+| R591 | `tests/verification/rung3/test_platform_skeleton.py:147` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the CoG assertion now compares the model's centre of gravity against the deck's declared one instead of comparing the members' centroid to the body node. |
+| R591 | `tests/verification/rung3/test_platform_skeleton.py:151` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the CoG assertion now compares the model's centre of gravity against the deck's declared one instead of comparing the members' centroid to the body node. |
+| R591 | `tests/verification/rung3/test_platform_skeleton.py:152` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the CoG assertion now compares the model's centre of gravity against the deck's declared one instead of comparing the members' centroid to the body node. |
+| R591 | `tests/verification/rung3/test_platform_skeleton.py:162` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the CoG assertion now compares the model's centre of gravity against the deck's declared one instead of comparing the members' centroid to the body node. |
+| R592 | `CLAUDE.md` | the file is untouched | **no change.** Quoted as the rule the finding is measured against. The governing file is not edited to answer a finding it governs. |
+| R592 | `tests/verification/rung3/test_platform_skeleton.py:165` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the inertia assertion is the full tensor against the deck's, and a separate test asserts that `J_mem` differs from the centroid form by exactly the parallel-axis shift. |
+| R592 | `tests/verification/rung3/test_platform_skeleton.py:170` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the inertia assertion is the full tensor against the deck's, and a separate test asserts that `J_mem` differs from the centroid form by exactly the parallel-axis shift. |
+| R592 | `tests/verification/rung3/test_platform_skeleton.py:175` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the inertia assertion is the full tensor against the deck's, and a separate test asserts that `J_mem` differs from the centroid form by exactly the parallel-axis shift. |
+| R592 | `tests/verification/rung3/test_platform_skeleton.py:176` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the inertia assertion is the full tensor against the deck's, and a separate test asserts that `J_mem` differs from the centroid form by exactly the parallel-axis shift. |
+| R592 | `tests/verification/rung3/test_platform_skeleton.py:186` | the file is touched and this line number is the old one | TOUCHED at `106ff69`, and **no change at that exact line**: the inertia assertion is the full tensor against the deck's, and a separate test asserts that `J_mem` differs from the centroid form by exactly the parallel-axis shift. |
+| R593 | `CLAUDE.md` | the file is untouched | **no change**, for the same reason: it is the rule that every tolerance lives in `floatfea/tolerances.py`, and the answer is to move the value there. |
+| R593 | `floatfea/model/platform.py:61` | the file is touched and this line number is the old one | TOUCHED at `ecebd78`, and **no change at that exact line**: `_NEGLIGIBLE_FRACTION` is gone with the sizing rule it served, and the admissibility check now reads `MASS_PROPERTY_AGREEMENT` from `tolerances.py`. |
+| R593 | `floatfea/model/platform.py:62` | the file is touched and this line number is the old one | TOUCHED at `ecebd78`, and **no change at that exact line**: `_NEGLIGIBLE_FRACTION` is gone with the sizing rule it served, and the admissibility check now reads `MASS_PROPERTY_AGREEMENT` from `tolerances.py`. |
+| R593 | `floatfea/model/platform.py:63` | the file is touched and this line number is the old one | TOUCHED at `ecebd78`, and **no change at that exact line**: `_NEGLIGIBLE_FRACTION` is gone with the sizing rule it served, and the admissibility check now reads `MASS_PROPERTY_AGREEMENT` from `tolerances.py`. |
+| R593 | `floatfea/model/platform.py:64` | the file is touched and this line number is the old one | TOUCHED at `ecebd78`, and **no change at that exact line**: `_NEGLIGIBLE_FRACTION` is gone with the sizing rule it served, and the admissibility check now reads `MASS_PROPERTY_AGREEMENT` from `tolerances.py`. |
+| R593 | `floatfea/model/platform.py:65` | the file is touched and this line number is the old one | TOUCHED at `ecebd78`, and **no change at that exact line**: `_NEGLIGIBLE_FRACTION` is gone with the sizing rule it served, and the admissibility check now reads `MASS_PROPERTY_AGREEMENT` from `tolerances.py`. |
+| R594 | `CLAUDE.md` | the file is untouched | **no change.** It is the rule I broke -- the reviewer's instructions change only in a standalone `process:` commit -- and the answer is the commit discipline in this round, not an edit to the rule. |
+| R594 | `docs/SUPERVISOR.md` | the file is untouched | **no change in this round.** It was changed at `de67ba5` in a commit that also touched `tests/`, which is the finding. The content was additive and removed no assertion, verified line by line by the reviewer; the defect is the commit shape and no history is rewritten (DY5). |
+| R594 | `tests/test_report_carried.py` | the file is untouched | TOUCHED at `f14fad2`, and **no change at that exact line** -- it is cited as the other path class `de67ba5` touched, and the answer is that the seven commits of this round carry one path class each. |
+| R595 | `CLAUDE.md` | the file is untouched | **no change**, quoted as the rule rather than edited. |
+
+## 4. Carried
+
+Generated: `python scripts/carried_table.py <the newest verdict> docs/reports/F2/step-7-answers.json`.
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R586 | **open** — blocking, and not answered in this round | Eight tests are red at the judged commit and CI at the judged commit has conclusion failure.... |
+| R587 | **open** — blocking, and not answered in this round | The re-locked plan says both that the twelve buoy bodies are in the model and that they are... |
+| R588 | **open** — blocking, and not answered in this round | The preflight that makes G3.2's "at the pin" true ignores untracked files, and the comment... |
+| R589 | **open** — blocking, and not answered in this round | The digest that now carries G3.2 is named for the file's bytes and is not over the file's... |
+| R590 | **answered** — §2 | G3.1a's mass half cannot fail. The remainder is DEFINED as the residual, so the assertion... |
+| R591 | **answered** — §2 | The built platform body's centre of gravity is 10.3315 m below the one the deck declares, and... |
+| R592 | **answered** — §2 | remainder_inertia subtracts the members' contribution from Izz alone, so the built bodies carry... |
+| R593 | **answered** — §2 | _NEGLIGIBLE_FRACTION = 1e-12 is a comparison epsilon in floatfea/ outside... |
+| R594 | **answered** — §2 | de67ba5 changes docs/SUPERVISOR.md in a commit that also touches tests/. cmd git log... |
+| R595 | **answered** — §2 | Superstructure.buoy_joint_nodes maps a buoy name to a node index that is only meaningful inside... |
+
+## 5. The whole suite
+
+**Whole suite at `56d6810`: 2621 passed, 1 failed, 0 skipped.** **The excluded set: 202 passed, 2 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 204 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+- **failed** `tests.test_plan_matches_tolerances::test_every_declared_tolerance_appears_in_the_plan[MASS_PROPERTY_AGREEMENT]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[answers_header_names_an_older_verdict_commit]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]`
+```
+
+**The one main-set red is answered at `ec2413f` and is not in this line.** It was
+`test_every_declared_tolerance_appears_in_the_plan[MASS_PROPERTY_AGREEMENT]`: a new
+tolerance has to be named in the plan as well as declared, and the guard was right to
+say so. The row is added, and the table's heading changed with it -- it read "every
+tolerance THIS PLAN fixes" while the guard reads `docs/milestones/F2.md` by a hardcoded
+path and requires every constant, so an F3 tolerance now sits in a closed milestone's
+plan. **That is the same defect class as R564 and DX2's second ruling** and I have not
+re-pointed the guard: DR1 permits only deletion without a directive, DX2's exception was
+a single named one, and re-pointing a second guard unasked is the shape R594 was about.
+
+**The two excluded-set reds are the interval pair**, both
+`test_the_answered_verdict_is_the_NEWEST_one` through the nested harness, which this
+revision closes.

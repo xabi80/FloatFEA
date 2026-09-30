@@ -2,34 +2,45 @@
  "_": [
   "POINTERS ONLY (CH4).",
   "",
-  "Revision 6 answers the SEVENTY-FIRST verdict, a HOLD whose one cause was",
-  "a guard floor with no satisfiable state. All four findings are answered:",
-  "R586 and R588 and R589 and C17 at f14fad2, R587 at 8b14de3 as a plan",
-  "commit, and DX2's process rulings at de67ba5.",
+  "Revision 7 answers the SEVENTY-SECOND verdict, a HOLD with six findings.",
+  "All six are answered across seven standalone commits, one path class",
+  "each per DY8b: 8a6b478 tolerances, ecebd78 floatfea, 106ff69 tests,",
+  "b8bca73 the verdict writer, 6db5ba9 the reaction report, 56d6810 the",
+  "plan, and this revision.",
   "",
-  "THE `Answers:` SHA IS THE VERDICT'S OWN COMMIT, 7bd86e8, per DX2's third",
+  "THE `Answers:` SHA IS THE VERDICT'S OWN COMMIT, 5ef2e3d, per DX2's third",
   "ruling. `VERDICT_TEXT` is read AT that commit."
  ],
  "answered": {
-  "R586": {
+  "R590": {
    "state": "answered",
    "where": "\u00a72",
-   "site": "tests/test_report_carried.py"
+   "site": "floatfea/model/platform.py"
   },
-  "R587": {
+  "R591": {
    "state": "answered",
    "where": "\u00a72",
-   "site": "docs/milestones/F3.md"
+   "site": "floatfea/model/platform.py"
   },
-  "R588": {
+  "R592": {
    "state": "answered",
    "where": "\u00a72",
-   "site": "scripts/export_platform_deck.py"
+   "site": "floatfea/model/platform.py"
   },
-  "R589": {
+  "R593": {
    "state": "answered",
    "where": "\u00a72",
-   "site": "tests/verification/rung3/test_platform_deck_export.py"
+   "site": "floatfea/tolerances.py"
+  },
+  "R594": {
+   "state": "answered",
+   "where": "\u00a72",
+   "site": "docs/SUPERVISOR.md"
+  },
+  "R595": {
+   "state": "answered",
+   "where": "\u00a72",
+   "site": "floatfea/model/platform.py"
   }
  }
 }
