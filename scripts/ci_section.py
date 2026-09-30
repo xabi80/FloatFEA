@@ -69,7 +69,40 @@ _PYTEST = re.compile(r"^(?=.*\bin \d+\.\d+s)(.*)$")
 _COUNT = re.compile(r"(\d+) (passed|failed|error|errors|skipped|xfailed|xpassed)")
 
 
-_PLAN = ROOT / "docs" / "milestones" / "F2.md"
+def _active_plan() -> Path:
+    """The plan carrying the step marker.
+
+    **THIS WAS `ROOT / "docs" / "milestones" / "F2.md"`, HARDCODED.** The step marker
+    moving to F3 made this generator refuse with "F2.md carries no
+    `<!-- step-under-execution: N -->` line", so no CI section could be produced for
+    any F3 report at all.
+
+    It is the FOURTH file found with this defect: `tests/test_report_carried.py` (DX2),
+    `tests/test_plan_matches_tolerances.py` and `tests/test_report_guard_states.py`
+    (C40, R601a), and this one. Each kept working while quietly describing the wrong
+    milestone, and each broke at the same event. Fixed the same way as the others, so
+    all four read one thing.
+    """
+    milestones = ROOT / "docs" / "milestones"
+    carrying = [
+        plan
+        for plan in sorted(milestones.glob("F*.md"))
+        if re.search(
+            r"<!--\s*step-under-execution:\s*(\d+)\s*-->",
+            plan.read_text(encoding="utf-8", errors="replace"),
+        )
+    ]
+    return carrying[0] if len(carrying) == 1 else milestones / "F2.md"
+
+
+_PLAN = _active_plan()
+MILESTONE = _PLAN.stem
+"""The milestone under execution, from whichever plan carries the step marker.
+
+Two more paths below were hardcoded to `F2` beside `_PLAN`, and fixing only the
+plan left the generator reading `docs/reports/F2/step-1.md` -- a file that does
+not exist -- and reporting that the newest revision had no `Answers:` line. A
+hardcoded milestone is not one constant; it is however many the file has."""
 _STEP_LINE = re.compile(r"<!--\s*step-under-execution:\s*(\d+)\s*-->")
 
 
@@ -97,7 +130,7 @@ def step_under_execution() -> int:
 
 
 STEP = step_under_execution()
-REPORT = ROOT / "docs" / "reports" / "F2" / f"step-{STEP}.md"
+REPORT = ROOT / "docs" / "reports" / MILESTONE / f"step-{STEP}.md"
 
 # THE VERDICT PATH IS NOT THE STEP'S. A report answers the newest verdict,
 # and at a step boundary that verdict is in the PREVIOUS step's file -- the
@@ -105,13 +138,17 @@ REPORT = ROOT / "docs" / "reports" / "F2" / f"step-{STEP}.md"
 # because that is where the reviewer wrote it. Following the plan's number
 # here would look for a file that does not exist and report it as a missing
 # verdict, which is a different and misleading failure.
-_REVIEWS = ROOT / "docs" / ("re" + "views") / "F2"
+_REVIEWS = ROOT / "docs" / ("re" + "views") / MILESTONE
 _REVIEWED = sorted(
     int(m.group(1))
     for q in _REVIEWS.glob("step-*.md")
     if (m := re.fullmatch(r"step-0*([0-9]+)", q.stem))
 )
-VERDICT_IN_REPO = "docs/" + "re" + "views/F2/step-" + str(_REVIEWED[-1]) + ".md"
+VERDICT_IN_REPO = "docs/" + "re" + "views/" + MILESTONE + "/step-" + str(_REVIEWED[-1]) + ".md"
+"""A FOURTH hardcoded `F2` in the same file. Each one had to be found by the
+generator failing differently: first "F2.md carries no step marker", then "the
+newest revision has no Answers line" from a report path that does not exist, then
+"the verdict file cannot be read at that commit" from this one."""
 
 _ANSWERS = re.compile(r"^Answers:\s*verdict\s*(\d+)\s*@\s*(\S+)", re.MULTILINE)
 # The verdict names the commit it JUDGED in bold in its header. The plain

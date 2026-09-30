@@ -249,3 +249,349 @@ than discovered.** `REPORTS` and `REVIEWS` follow the plan carrying
 before the reviewer can write one. The report-parametrised guards are therefore red
 between this commit and that verdict, and the generated tables arrive with revision 2.
 The forced order is the reviewer's own: report and marker first, verdict second.
+
+
+# Revision 2 — verdict 74's two findings
+
+Answers: verdict 74 @ 8ac9ce8
+
+**2026-09-30.**
+
+## 0. CI, for the commit under review
+
+## 0. CI at `228bdfb`, the commit verdict 74 judged — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 74 at `228bdfb` through the report's own `Answers:` line. Run `36743792702`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint, unit and guards | 835 | 37 | 0 |
+| the verification ladder | 1816 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 1 not green.**
+
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 35.**
+
+- `tests/test_report_carried.py::test_a_blocking_item_is_not_routed_to_4a` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_guard_reads_the_step_being_worked_on` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_parse_found_something_to_check` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_report_does_not_say_CLOSED` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
+- `tests/test_report_carried.py::test_there_are_pointers_to_resolve` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[(none)]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_CI_SECTION` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_reported_CI_counts_are_not_all_zero` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_R507_cases_rule_as_measured[frames.txt]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_diff_the_site_check_needs_is_available` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[newest_report_has_no_verdict_yet]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[newest_verdict_file_present_but_empty]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[shallow_clone_depth_1]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_a_sha_that_is_not_a_commit]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[two_reports_ahead_of_the_newest_verdict]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_file_is_a_directory]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[two_digit_step_number_discriminating]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[shallow_clone_depth_1_reports_one_diagnosis_not_sixteen]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number_beside_the_unpadded_one]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_an_older_verdict_commit]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_a_report_commit_messaged_docs_that_also_edits_the_guards_measuring_it]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF]` (lint, unit and guards)
+
+## 0a. Runs since the commit verdict 74 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 74 at `228bdfb` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `36743792702` | push | `228bdfb` | conclusion **failure** |
+| `36743819045` | workflow_dispatch | `228bdfb` | conclusion **failure** |
+
+**Run `36743792702`, conclusion **failure**: 35 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_a_blocking_item_is_not_routed_to_4a` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_guard_reads_the_step_being_worked_on` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_parse_found_something_to_check` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_report_does_not_say_CLOSED` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
+- `tests/test_report_carried.py::test_there_are_pointers_to_resolve` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[(none)]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_CI_SECTION` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_reported_CI_counts_are_not_all_zero` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_R507_cases_rule_as_measured[frames.txt]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_diff_the_site_check_needs_is_available` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[newest_report_has_no_verdict_yet]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[newest_verdict_file_present_but_empty]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[shallow_clone_depth_1]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_a_sha_that_is_not_a_commit]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[two_reports_ahead_of_the_newest_verdict]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_file_is_a_directory]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[two_digit_step_number_discriminating]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[shallow_clone_depth_1_reports_one_diagnosis_not_sixteen]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number_beside_the_unpadded_one]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_an_older_verdict_commit]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_a_report_commit_messaged_docs_that_also_edits_the_guards_measuring_it]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF]` (lint, unit and guards)
+
+**Run `36743819045`, conclusion **failure**: 35 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_a_blocking_item_is_not_routed_to_4a` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_guard_reads_the_step_being_worked_on` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_parse_found_something_to_check` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_report_does_not_say_CLOSED` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
+- `tests/test_report_carried.py::test_there_are_pointers_to_resolve` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[(none)]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_CI_SECTION` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_reported_CI_counts_are_not_all_zero` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_R507_cases_rule_as_measured[frames.txt]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_diff_the_site_check_needs_is_available` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[newest_report_has_no_verdict_yet]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[newest_verdict_file_present_but_empty]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[shallow_clone_depth_1]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_a_sha_that_is_not_a_commit]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[two_reports_ahead_of_the_newest_verdict]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_file_is_a_directory]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[two_digit_step_number_discriminating]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[shallow_clone_depth_1_reports_one_diagnosis_not_sixteen]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number_beside_the_unpadded_one]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_an_older_verdict_commit]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_a_report_commit_messaged_docs_that_also_edits_the_guards_measuring_it]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF]` (lint, unit and guards)
+
+## 1. The reading
+
+**Schedule unchanged: F3 13 October, F4 19 October, the member-force table 23 October,
+the code-check screen 28 October.** Both findings are answered. **R600 is the third
+round running in which I shipped a gate that compares something with itself**, and the
+third in which the cell I published appeared to prove otherwise — R590 was the mass,
+R596 the inertia, R600 the geometry. The pattern is not that these comparisons are
+hard. It is that I build the expected side out of whatever is nearest, and what is
+nearest is the thing under test.
+
+```
+claim  the geometry gate was blind to every geometric defect the reviewer tried
+out    every tip +3 m, the plan centre +3 m, all coordinates x1.02, the arm labels
+       permuted, the frame rotated 30 degrees -- all 48 passed
+judge  `expected_pairs` read `body.model.nodes[...]` for both sides. Its docstring
+       said "from the DECK's joints"; `BodyModel` carried no deck coordinate, so it
+       could not have read one.
+
+claim  the gate reads the deck now, and each mutation reddens
+cmd    ONE VARIABLE each, baseline 52 passed
+out    every tip +3 m, the node moved WITH the length   -> 5 failed
+out    the plan centre moved to (3, 0, z)               -> 1 failed, and it is DZ2
+out    every in-plane coordinate x1.02, a typed radius  -> 1 failed, and it is DZ2
+out    the arm labels permuted onto each other's joints -> 4 failed
+out    restored                                          -> 52 passed
+rule   the expected set comes from `deck_joint_points` and `deck_joint_owner`, both
+       filled from the deck and untouchable by the model construction
+```
+
+**And my previous cell (ii) was mis-attributed**, which the reviewer caught and I
+reproduced: the edit sat *after* `length = math.dist(start, end)`, so what reddened
+was `member.length` disagreeing with the coordinates, not the geometry. The table
+above moves the tip before the node is built, which is the honest form.
+
+**The label permutation needed its own assertion and it is the one that matters
+most.** A permutation leaves the endpoint-pair set unchanged — the frame really does
+join the same points — so the pair check passes and should. What it corrupts is which
+buoy each node belongs to, and `buoy_joint_nodes` is keyed off those labels. **F4
+applies each buoy's gimbal reaction through that map**, so a permutation would put
+buoy1's reaction at buoy2's node and every member force downstream would be wrong in
+silence.
+
+**R601(a) was C40's shape, and C40 was ledgered rather than fixed on a reading that
+the marker move falsified.** The harness hardcoded `docs/milestones/F2.md`; the marker
+moving made the regex miss, `_step()` returned 0, and all twenty-four states died on
+`FileNotFoundError` before planting anything — 24 of the 37 reds. It reads the active
+plan now, the same way `test_report_carried.py` has since DX2.
+
+## 2. The measurement the reviewer added, and what it settles
+
+**DZ5's slack against `f`, one variable**, which DZ5 did not ask for and which is the
+most useful thing in the round after R600:
+
+```
+out    f      0.5          0.4          0.3          0.2          0.1          0
+out    slack  -2.6770e+08  -1.7858e+08  -1.1487e+08  -6.7051e+07  -2.9819e+07  0.0
+rule   a rigid body's principal moments satisfy I_i + I_j >= I_k
+judge  THE SPLIT DOES NOT CREATE THE VIOLATION, IT INHERITS IT. The deck's J_G sits
+       exactly ON the lamina boundary -- slack 0.0000e+00 -- so any mass moved off
+       the plane pushes it over, the slack is linear in `f`, and no admissible `f`
+       removes it. f = 0 is the only value with zero slack and it is the value that
+       puts no mass on the members at all.
+judge  `admissible()` is True at every `f`, so DY0d's ladder never descends: it tests
+       PSD, which is a weaker condition than realisability. That is a real gap in
+       DY0d and it is recorded rather than patched, because changing what `admissible`
+       means is a decision about the model, not a repair.
+```
+
+## 3. Findings
+
+Generated: `python scripts/answered_table.py <the newest verdict> <the answers file>`.
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R600 | recorded | **answered** | §1 | `tests/verification/rung3/test_platform_skeleton.py` | DZ2's geometry gate builds its expected endpoint-pair set from the |
+| R601 | recorded | **answered** | §1 | `tests/test_report_guard_states.py` | CI is RED at the reviewed commit -- `37 failed, 835 passed` in |
+
+## 4. Sites named by findings and not touched
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R600 | `CLAUDE.md` | the file is untouched | **no change.** Quoted as the rule the finding is measured against. The governing file is not edited to answer a finding it governs. |
+| R600 | `floatfea/model/platform.py:551` | the file is touched and this line number is the old one | TOUCHED at `1c0785e`, and **no change at that exact line**: `Superstructure` now carries `deck_joint_points` and `deck_joint_owner`, so a gate has something to read that the model construction cannot influence. |
+| R600 | `floatfea/model/platform.py:552` | the file is touched and this line number is the old one | TOUCHED at `1c0785e`, and **no change at that exact line**: `Superstructure` now carries `deck_joint_points` and `deck_joint_owner`, so a gate has something to read that the model construction cannot influence. |
+| R600 | `floatfea/model/platform.py:553` | the file is touched and this line number is the old one | TOUCHED at `1c0785e`, and **no change at that exact line**: `Superstructure` now carries `deck_joint_points` and `deck_joint_owner`, so a gate has something to read that the model construction cannot influence. |
+| R600 | `platform.py:551` | the file is touched and this line number is the old one | **no change** -- the same site as above, cited by bare name in the verdict's prose. See the `floatfea/model/platform.py` row. |
+| R600 | `platform.py:552` | the file is touched and this line number is the old one | **no change** -- the same site as above, cited by bare name in the verdict's prose. See the `floatfea/model/platform.py` row. |
+| R600 | `platform.py:553` | the file is touched and this line number is the old one | **no change** -- the same site as above, cited by bare name in the verdict's prose. See the `floatfea/model/platform.py` row. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:326` | the file is touched and this line number is the old one | TOUCHED at `8df625a`, and **no change at that exact line**: `expected_pairs` reads the deck rather than the model, and a new assertion ties each buoy to the node the deck puts it at -- which is what the label permutation reddens. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:334` | the file is touched and this line number is the old one | TOUCHED at `8df625a`, and **no change at that exact line**: `expected_pairs` reads the deck rather than the model, and a new assertion ties each buoy to the node the deck puts it at -- which is what the label permutation reddens. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:335` | the file is touched and this line number is the old one | TOUCHED at `8df625a`, and **no change at that exact line**: `expected_pairs` reads the deck rather than the model, and a new assertion ties each buoy to the node the deck puts it at -- which is what the label permutation reddens. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:339` | the file is touched and this line number is the old one | TOUCHED at `8df625a`, and **no change at that exact line**: `expected_pairs` reads the deck rather than the model, and a new assertion ties each buoy to the node the deck puts it at -- which is what the label permutation reddens. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:340` | the file is touched and this line number is the old one | TOUCHED at `8df625a`, and **no change at that exact line**: `expected_pairs` reads the deck rather than the model, and a new assertion ties each buoy to the node the deck puts it at -- which is what the label permutation reddens. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:343` | the file is touched and this line number is the old one | TOUCHED at `8df625a`, and **no change at that exact line**: `expected_pairs` reads the deck rather than the model, and a new assertion ties each buoy to the node the deck puts it at -- which is what the label permutation reddens. |
+| R601 | `F2.md` | the file is untouched | **no change, and deliberately.** The marker is GONE from it, which is the whole point of DY8c: exactly one plan carries `<!-- step-under-execution -->` and F2 is closed. What was wrong was four files reading this path regardless. |
+| R601 | `docs/reports/F2/step-0.md` | the file is untouched | **no change -- this file has never existed.** It is the path the broken harness constructed when `_step()` returned 0, and the `FileNotFoundError` it raised is the symptom the finding names, not a file to create. |
+| R601 | `test_report_carried.py` | the file is untouched | **no change** -- cited by bare name as the file DX2 already fixed, and it is the template the other three now follow. See the `tests/test_report_carried.py` row. |
+| R601 | `tests/test_plan_matches_tolerances.py:34` | the file is untouched | **no change, and it is the one of the four still hardcoded.** It does not fail false: it reads `docs/milestones/F2.md` for the tolerance TABLE, which is a real file that really holds the table, so nothing breaks. The reviewer ruled leave it and I ledgered it as C40; the F3 tolerance sitting in a closed milestone's table is the visible cost and the heading says so. |
+| R601 | `tests/test_report_carried.py` | the file is untouched | **no change.** DX2 re-pointed it at the plan carrying the step marker, so it followed the marker to F3 without an edit -- which is why it is the only one of the four that did not break. |
+
+## 5. Carried
+
+Generated: `python scripts/carried_table.py <the newest verdict> <the answers file>`.
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R596 | **open** — carried from an earlier verdict | and R599 are closed. Closure items C12, C14, C18 to C32, the open |
+| R598 | **open** — carried from an earlier verdict | and R599 are closed. Closure items C12, C14, C18 to C32, the open |
+| R599 | **open** — carried from an earlier verdict | are closed. Closure items C12, C14, C18 to C32, the open |
+| R600 | **answered** — §1 | DZ2's geometry gate builds its expected endpoint-pair set from the BUILT MODEL, not from the... |
+| R601 | **answered** — §1 | CI is RED at the reviewed commit -- 37 failed, 835 passed in lint, unit and guards -- and it... |
+
+## 6. The whole suite
+
+**Whole suite at `8df625a`: 2632 passed, 0 failed, 0 skipped.** **The excluded set: 136 passed, 47 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 183 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+- **failed, in the excluded set** `tests.test_report_carried::test_the_parse_found_something_to_check`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R596]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R598]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R599]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R600]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R601]`
+- **failed, in the excluded set** `tests.test_report_carried::test_a_report_does_not_say_CLOSED`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_Carried_table_is_what_the_generator_produces`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_generator_would_catch_a_row_under_the_wrong_number`
+- **failed, in the excluded set** `tests.test_report_carried::test_there_are_pointers_to_resolve`
+- **failed, in the excluded set** `tests.test_report_carried::test_a_carried_row_points_at_a_section_that_discusses_it[(none)]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_a_CI_SECTION`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_CI_section_is_about_the_REVIEWED_commit`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_reported_CI_counts_are_not_all_zero`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-CLAUDE.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-docs/reports/F3/step-1.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-floatfea/model/platform.py:551]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-floatfea/model/platform.py:552]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-floatfea/model/platform.py:553]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-platform.py:551]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-platform.py:552]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-platform.py:553]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-tests/verification/rung3/test_platform_skeleton.py:326]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-tests/verification/rung3/test_platform_skeleton.py:334]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-tests/verification/rung3/test_platform_skeleton.py:335]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-tests/verification/rung3/test_platform_skeleton.py:339]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-tests/verification/rung3/test_platform_skeleton.py:340]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R600-tests/verification/rung3/test_platform_skeleton.py:343]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R601-F2.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R601-docs/reports/F2/step-0.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R601-test_report_carried.py]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R601-tests/test_plan_matches_tolerances.py:34]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R601-tests/test_report_carried.py]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[baseline]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[newest_report_has_no_verdict_yet]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[non_numeric_step_suffix]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[superscript_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[answers_header_names_a_sha_that_is_not_a_commit]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[answers_header_names_an_older_verdict_commit]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF]`
+```
+
+**Zero failed and zero skipped in the MAIN set.** The excluded set is 47, and every
+one is the interval state this revision closes: the line is taken at `8df625a`, where
+the report still answered verdict 73 while verdict 74 existed, so
+`_verdict_text_at("52de940")` found no F3 verdict at that sha and fell back to the
+working copy — comparing a report against a verdict it predates. The reviewer predicted
+that exact number's cause in its hand-back.
+
+**AND A FOURTH FILE WAS FOUND HARDCODED TO `F2` WHILE BUILDING THIS REVISION.**
+`scripts/ci_section.py` carried the milestone in FOUR places — the plan path, the report
+path, the reviews directory and the verdict path used by `git show` — and each had to be
+found by the generator failing differently:
+
+```
+cmd    python scripts/ci_section.py, four times, after each repair
+out    F2.md carries no `<!-- step-under-execution: N -->` line
+out    the newest revision of the report has no `Answers: verdict N @ <sha>` line
+out    the verdict file cannot be read at that commit
+out    ## 0. CI at `228bdfb`, the commit verdict 74 judged -- conclusion FAILURE
+judge  a hardcoded milestone is not one constant; it is however many the file has. That
+       makes five files in the family: `test_report_carried.py` (DX2),
+       `test_plan_matches_tolerances.py` and `test_report_guard_states.py` (C40, R601a),
+       and this one. C40 ledgered the pattern on the reading that none failed false;
+       the marker move falsified that for three of them within one commit.
+```

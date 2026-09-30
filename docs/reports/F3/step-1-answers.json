@@ -1,0 +1,23 @@
+{
+ "_": [
+  "POINTERS ONLY (CH4).",
+  "",
+  "Revision 2 answers the SEVENTY-FOURTH verdict, F3 step 1's first, a HOLD",
+  "with two blocking findings. R600 at 1c0785e and 8df625a; R601a at 8df625a;",
+  "R601b clears with this revision.",
+  "",
+  "THE `Answers:` SHA IS THE VERDICT'S OWN COMMIT, 8ac9ce8, per DX2."
+ ],
+ "answered": {
+  "R600": {
+   "state": "answered",
+   "where": "\u00a71",
+   "site": "tests/verification/rung3/test_platform_skeleton.py"
+  },
+  "R601": {
+   "state": "answered",
+   "where": "\u00a71",
+   "site": "tests/test_report_guard_states.py"
+  }
+ }
+}

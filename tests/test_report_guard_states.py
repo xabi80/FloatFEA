@@ -75,6 +75,18 @@ def _active_plan() -> Path:
 
 
 _PLAN = _active_plan()
+MILESTONE = _PLAN.stem
+"""The milestone under execution.
+
+**R601a WAS FIXED INCOMPLETELY AND THIS IS THE REST OF IT.** Pointing `_PLAN` at the
+active plan made `_step()` return 1 instead of 0, so the states stopped dying on
+`FileNotFoundError` -- and then thirteen of them came back CLEAN, because the harness
+went on PLANTING into `docs/reports/F2/` while the guard it runs now reads F3. A
+planted defect in a directory nobody reads is not a planted defect, and
+`assert code != 0` is what said so.
+
+Every path the harness builds derives from this name, so the place it plants and the
+place the guard reads cannot drift apart again."""
 
 
 def _step() -> int:
@@ -111,7 +123,7 @@ def _verdict_step() -> int:
     """
     steps = [
         int(q.stem.split("-")[1])
-        for q in (ROOT / "docs" / ("re" + "views") / "F2").glob("step-*.md")
+        for q in (ROOT / "docs" / ("re" + "views") / MILESTONE).glob("step-*.md")
         if q.stem.split("-")[1].isdigit()
     ]
     return max(steps) if steps else STEP
@@ -131,7 +143,7 @@ copy of step 5's. A state that cannot be built reports as a failure of the
 thing it was built to test.
 """
 # THE VERDICT FILE, WHICH IS NOT step-{STEP} AT A BOUNDARY (see _verdict_step).
-REVIEW_PATH = "docs/re" + f"views/F2/step-{VERDICT_STEP}.md"
+REVIEW_PATH = "docs/re" + f"views/{MILESTONE}/step-{VERDICT_STEP}.md"
 
 # How each state is built, relative to a COPY of the repository. A state is a
 # mutation of `docs/reports/F2/` or `docs/reviews/F2/` and nothing else.
@@ -345,7 +357,8 @@ def _build(tmp: Path, state: str) -> Path:
             shutil.copytree(src, dst, dirs_exist_ok=True)
         else:
             shutil.copy2(src, dst)
-    reports, reviews = work / "docs/reports/F2", work / "docs/reviews/F2"
+    reports = work / "docs/reports" / MILESTONE
+    reviews = work / ("docs/re" + "views") / MILESTONE
     for action, arg in STATES[state]:
         if action == "copy_report":
             shutil.copy2(reports / REPORT_NAME, reports / f"step-{arg}.md")
@@ -452,7 +465,7 @@ def _build(tmp: Path, state: str) -> Path:
             # always committed before anyone reads it, so committing it here
             # is also what the real occurrence looks like.
             for args in (
-                ["add", f"docs/reports/F2/{REPORT_NAME}"],
+                ["add", f"docs/reports/{MILESTONE}/{REPORT_NAME}"],
                 [
                     "-c",
                     "user.name=harness",
@@ -488,7 +501,11 @@ def _build(tmp: Path, state: str) -> Path:
                 encoding="utf-8",
             )
             for args in (
-                ["add", "tests/test_report_carried.py", f"docs/reports/F2/{REPORT_NAME}"],
+                [
+                    "add",
+                    "tests/test_report_carried.py",
+                    f"docs/reports/{MILESTONE}/{REPORT_NAME}",
+                ],
                 [
                     "-c",
                     "user.name=harness",
