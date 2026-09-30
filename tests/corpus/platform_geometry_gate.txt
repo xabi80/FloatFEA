@@ -1,0 +1,89 @@
+# CORPUS: the FRAME GEOMETRY, the analytic path, and what G3.1a can still not see.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Batch 22, written at
+# the SEVENTY-FOURTH verdict, the FIRST on F3 step 1, against the judged commit
+# 228bdfb: the builder at floatfea/model/platform.py and its gate at
+# tests/verification/rung3/test_platform_skeleton.py, both as they landed in
+# 88fc1d3 (DZ1, DZ2).
+#
+# IN SCOPE UNDER DE2: the element, the gates, and -- from F3 -- the platform
+# model. This is the platform model and the gate that is supposed to prove it.
+# Not apparatus, so the DR1 deferral to docs/milestones/F2a.md does not reach it
+# and nothing here is transcribed.
+#
+# WHY A SEPARATE FILE FROM platform_skeleton_builder.txt (batch 21). Batch 21 was
+# written against the PRE-DZ1 gate, which asserted the assembled matrix against
+# the deck. That gate is gone: DZ1 replaced it with a hand-computed analytic path
+# compared BOTH ways, and DZ2 added a geometry assertion that did not exist. The
+# surface changed, so the measurements have to be retaken rather than carried --
+# a corpus row measured against a rule that has moved is BP0 in corpus form.
+#
+# THE SURFACE.
+#   gate     python -m pytest tests/verification/rung3/test_platform_skeleton.py
+#            unmutated BASELINE at 228bdfb: 48 passed, 0.44s, -p no:randomly.
+#            Every measured= count below is from that command after the one
+#            edit the case= names, with the tree restored between entries.
+#   rung3    the same, widened to tests/verification/rung3 -- baseline 213 passed.
+#   deck     a property of the built model or of the committed deck, no mutation.
+#   plan     a question the locked plan or a ruling has to answer.
+#
+# WHAT A PASSING SCAN MEANS. It does NOT mean the gate is sound. Each expect= is
+# the reviewer prediction and each measured= is what the shipped suite did. An
+# entry reading expect=uncaught measured=CONFIRMED_... is a MISS: the defect is
+# real, the suite is green on it, and the row is the evidence. expect=vacuous
+# marks a mutation that is numerically a no-op on THIS model, so it measures
+# nothing about the gate and is not counted either way -- recorded because a
+# vacuous mutation counted as a catch is how a coverage number becomes a lie.
+#
+# ONE VARIABLE PER ENTRY. Where an entry says the whole frame moved, every node
+# moved CONSISTENTLY -- the coordinates, the member lengths and the first moments
+# all agree with each other afterwards. That is the distinction the round turns
+# on: a mutation applied AFTER math.dist leaves member.length disagreeing with
+# the coordinates, and the mass gate reddens on the disagreement rather than on
+# the geometry. Both forms are below, separately.
+
+# --------------------------------------------------------------------------
+# A. THE GEOMETRY GATE (DZ2). Does it compare the frame with the DECK.
+
+id=geom_every_tip_out_3m_consistent surface=gate case=every_member_end_point_moved_plus_3_m_in_x_in__member_geometry_BEFORE_math_dist_so_lengths_and_first_moments_follow expect=uncaught measured=CONFIRMED_48_passed_and_213_passed_in_rung3_no_test_reddened_this_is_R597_own_cell_and_DZ2_does_not_see_it
+id=geom_tip_out_3m_after_math_dist surface=gate case=the_same_plus_3_m_applied_inside__build_body_at_b_equals_node_end_so_member_length_still_says_50_m expect=caught_in_the_WRONG_quantity measured=CONFIRMED_20_failed_28_passed_reproducing_the_report_cell_ii_exactly_and_test_DZ2_is_NOT_among_the_20_the_reds_are_MASS_and_A_and_B_and_MEMBER_ONLY_fraction_reacting_to_length_versus_coordinate_disagreement
+id=geom_plan_centre_displaced surface=gate case=the_platform_plan_centre_moved_from_0_0_z_to_3_0_z_so_four_hub_arms_are_53_m_and_47_m_instead_of_50_m expect=uncaught measured=CONFIRMED_48_passed_the_centre_is_read_from_the_built_model_on_both_sides_of_the_comparison
+id=geom_radius_two_percent_long surface=gate case=every_in_plane_coordinate_scaled_by_1.02_which_is_what_a_typed_nominal_radius_instead_of_the_deck_joint_point_looks_like expect=uncaught measured=CONFIRMED_48_passed_and_this_is_the_case_DJ1_no_coordinate_is_typed_rule_and_platform.py_551_553_exist_for
+id=geom_frame_rotated_30_deg surface=gate case=every_joint_point_rotated_30_degrees_about_z_while_the_bodies_mass_references_stay_put expect=uncaught_by_the_geometry_gate measured=CONFIRMED_DZ2_green_on_all_five_bodies_4_failed_and_all_four_are_test_the_chosen_FRACTION_is_asserted_not_inferred_because_the_f_ladder_descended_to_0.1_on_the_hubs_whose_message_reads_that_is_admissible_and_it_is_a_SIZING_FINDING_update_it_with_the_reason
+id=geom_x_and_y_transposed surface=gate case=x_and_y_swapped_on_every_node_a_reflection_of_the_whole_frame expect=uncaught_by_the_geometry_gate measured=CONFIRMED_DZ2_green_4_failed_all_of_them_the_f_ladder_test_at_f_equals_0_same_mechanism_as_the_rotation
+id=geom_platform_arm_labels_permuted surface=gate case=the_four_platform_arm_labels_reversed_against_their_tips_so_platform_hub1_arm_ends_at_hub4_joint_count_and_pair_set_unchanged expect=uncaught measured=CONFIRMED_48_passed
+id=geom_hub_cluster_labels_rotated surface=gate case=inside_each_hub_every_cluster_arm_label_rotated_onto_the_NEXT_buoy_joint_so_buoy4_arm_ends_at_buoy5_point expect=uncaught measured=CONFIRMED_48_passed_and_buoy_joint_nodes_is_keyed_off_those_labels_so_F4_would_apply_each_buoy_reaction_at_its_neighbour_node
+id=geom_duplicated_member_count_kept surface=gate case=the_last_member_of_each_body_re_pointed_onto_the_first_member_line_16_members_16_labels_4_lines_drawn_twice expect=caught measured=CONFIRMED_5_failed_one_per_body_on_the_DUPLICATE_PAIR_assertion_which_is_the_half_of_DZ2_that_has_content
+id=geom_chain_instead_of_star surface=gate case=member_i_starts_at_member_i_minus_1_tip_so_each_body_is_a_chain_rather_than_a_star_from_its_centre expect=caught measured=CONFIRMED_5_failed_on_the_pair_set_and_the_star_assertion
+id=geom_node_dedup_key_coarsened surface=gate case=the_builder_node_dedup_key_rounded_to_3_places_instead_of_9_six_orders_coarser expect=vacuous measured=CONFIRMED_48_passed_and_it_measures_nothing_the_nearest_two_distinct_nodes_on_this_frame_are_20.66_m_apart_so_no_grid_between_1e_9_and_1e_3_m_merges_anything
+
+# --------------------------------------------------------------------------
+# B. THE ANALYTIC PATH (DZ1). Is it independent, and of what.
+
+id=elem_torsional_rotary_x2 surface=gate case=rho_ip_l_equals_rho_times_I_y_plus_I_z_times_ll_scaled_by_2_in_beam.py expect=caught measured=CONFIRMED_10_failed_A_and_B_on_all_five_bodies_platform_absolute_residual_4.960883e_09_to_4.230312e_05_kg.m2_which_is_1.5225e_18_to_1.2983e_04_relative_the_report_own_figures_reproduce
+id=elem_bending_rotary_x2 surface=gate case=bending_mass_called_with_2.0_times_rho_I_in_BOTH_planes expect=caught measured=CONFIRMED_10_failed_A_and_B_on_all_five_bodies
+id=elem_axial_translational_x1.1 surface=gate case=rho_a_l_equals_rho_A_ll_scaled_by_1.1 expect=caught measured=CONFIRMED_16_failed_A_on_five_MASS_on_three_MEMBER_ONLY_fraction_on_five_B_on_one
+id=elem_both_bending_planes_read_I_z surface=gate case=my_equals_bending_mass_rho_A_rho_I_z_so_the_two_bending_planes_share_one_second_moment expect=vacuous measured=CONFIRMED_48_passed_and_it_measures_nothing_because_a_circular_tube_has_I_y_equal_I_z_by_the_Section_validator_own_refusal
+id=ref_polar_replaced_by_J surface=gate case=the_ANALYTIC_reference_polar_changed_from_section.I_y_plus_section.I_z_to_section.J expect=vacuous measured=CONFIRMED_48_passed_because_Section_post_init_REQUIRES_J_equals_I_y_plus_I_z_for_a_circular_shape_so_the_substitution_beam.py_own_docstring_warns_about_is_indistinguishable_on_every_section_this_model_contains
+id=ref_across_term_uses_I_y_only surface=deck case=the_analytic_reference_at_test_platform_skeleton.py_162_164_applies_section.I_y_to_BOTH_across_directions_while_the_element_applies_I_z_in_one_plane_and_I_y_in_the_other expect=explain measured=CONFIRMED_by_reading_identical_on_every_circular_tube_and_WRONG_the_first_time_a_section_with_I_y_not_equal_I_z_enters_which_would_read_as_an_element_defect_rather_than_a_reference_defect
+id=rem_inertia_perturbed surface=gate case=remainder_inertia_plus_1e7_times_identity_AFTER_the_deficit_is_computed expect=caught_by_B_only measured=CONFIRMED_5_failed_all_of_them_B_and_A_is_GREEN_which_is_what_makes_asserting_B_worth_doing_rather_than_a_second_circular_assertion
+id=rem_point_moved_5m surface=gate case=remainder_point_plus_0_0_5_after_the_placement_rule expect=caught_by_B_only measured=CONFIRMED_6_failed_five_B_plus_the_first_moment_placement_test_and_A_is_GREEN
+id=rem_mass_five_percent_high surface=gate case=remainder_mass_equals_1.05_times_1_minus_f_times_deck_mass expect=caught measured=CONFIRMED_10_failed_MASS_on_five_and_B_on_five
+id=rho_eq_ten_percent_high surface=gate case=density_equals_1.1_times_line_mass_over_section.A_so_the_element_carries_more_than_the_split_allotted expect=caught measured=CONFIRMED_20_failed
+id=proj_coupling_block_negated surface=gate case=rigid_properties_translation_rotation_coupling_negated_after_the_projection_which_inverts_the_SIGN_of_every_CoG_this_function_reports expect=uncaught measured=CONFIRMED_48_passed_and_the_reason_is_domain_blindness_not_reach_the_full_body_CoG_offset_is_identically_zero_on_all_five_bodies_so_there_is_nothing_for_a_sign_error_to_show_against_R596_CoG_half_survives_DZ1
+id=deck_inertia_read_at_twice surface=gate case=deck_inertia_read_as_2.0_times_the_YAML_value_in__build_body expect=uncaught_and_CORRECTLY_so measured=CONFIRMED_48_passed_the_deck_IS_the_reference_for_both_halves_and_DV0_records_that_G3.1a_and_G3.1b_COINCIDE_so_a_wrong_deck_is_outside_this_gate_by_construction_and_only_G3.2_digests_stand_between_it_and_the_result
+
+# --------------------------------------------------------------------------
+# C. THE DECK BODY INERTIAS, AND THE ABLATION DZ5 DOES NOT CARRY.
+
+id=dz5_slack_against_f surface=deck case=the_J_r_triangle_inequality_slack_recomputed_over_the_whole_MASS_FRACTION_LADDER_one_variable_f_everything_else_held expect=explain measured=platform_f_0.5_minus_2.6770e_08_f_0.4_minus_1.7858e_08_f_0.3_minus_1.1487e_08_f_0.2_minus_6.7051e_07_f_0.1_minus_2.9819e_07_f_0.0_EXACTLY_0.0000e_00_and_hub1_minus_1.0153e_06_minus_8.1222e_05_minus_6.0917e_05_minus_4.0611e_05_minus_2.0306e_05_0.0000e_00
+id=dz5_the_cause_is_the_boundary surface=deck case=whether_the_split_creates_the_violation_or_inherits_it expect=explain measured=INHERITED_the_deck_own_J_G_sits_EXACTLY_ON_the_lamina_boundary_slack_0.0000e_00_so_subtracting_any_planar_member_set_from_it_drives_the_remainder_off_the_boundary_and_the_slack_is_LINEAR_in_f_vanishing_only_at_f_equals_0_where_the_members_carry_no_mass_at_all_no_admissible_f_removes_it
+id=dz5_admissibility_is_PSD_not_realisability surface=plan case=DY0d_admits_a_body_when_J_r_has_no_eigenvalue_below_minus_tol_and_the_shipped_J_r_is_PSD_min_eigenvalue_2.7305e_09_on_the_platform_while_violating_the_triangle_inequality expect=explain measured=CONFIRMED_admissible_returns_True_for_every_body_at_every_f_on_the_ladder_so_the_ladder_never_descends_and_the_model_ships_a_remainder_that_is_a_valid_PSD_tensor_and_not_the_inertia_of_any_real_mass_distribution_which_DZ5_labels_and_no_assertion_reads
+
+# --------------------------------------------------------------------------
+# D. QUESTIONS, closed by an answer and not by a test.
+
+id=q_only_z_is_gated surface=plan case=of_the_three_coordinates_of_every_member_node_which_is_compared_against_the_deck expect=explain measured=z_ALONE_test_every_MEMBER_node_is_in_the_joint_plane_reads_superstructure.joint_plane_z_which_comes_from_the_deck_own_joint_elevations_so_a_node_out_of_plane_reddens_while_x_and_y_are_compared_only_with_themselves
+id=q_what_would_make_DZ2_fail surface=plan case=verdict_73_condition_asked_for_a_shipped_assertion_comparing_each_built_member_node_to_the_deck_joint_point_it_came_from_and_the_deck_is_read_in_build_superstructure_where_joints_is_in_scope expect=explain measured=BodyModel_carries_no_deck_joint_coordinate_and_neither_does_Superstructure_so_expected_pairs_STRUCTURALLY_cannot_read_the_deck_today_and_its_unused_superstructure_argument_is_where_that_was_meant_to_come_from
+id=q_the_grid_is_a_tolerance_in_disguise surface=plan case=expected_pairs_rounds_every_coordinate_to_MASS_PROPERTY_AGREEMENT_times_the_body_extent_which_is_5.1e_12_m_on_the_platform_and_2.5e_12_m_on_a_hub expect=explain measured=the_grid_cannot_reject_round_off_because_both_sides_of_the_comparison_read_the_SAME_float_and_round_identically_and_it_cannot_admit_a_real_displacement_either_because_no_comparison_against_an_independent_number_happens_at_all_so_the_grid_size_is_currently_unobservable
