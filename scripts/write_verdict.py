@@ -22,6 +22,11 @@ IT DOES NOT REFUSE TO OVERWRITE A PASS, and this docstring said it did (DQ3).
 The deleted claim was that it "refuses to overwrite a PASS with anything but a
 fresh review of a changed report". No such check exists in this file.
 
+AND IT NO LONGER OVERWRITES ANYTHING (DX2, DY6). Each round is prepended and the
+earlier rounds are kept verbatim below a separator, because a guard reads the
+whole file for rulings made in earlier rounds and the overwrite made that guard's
+premise false. The reason is at the write site.
+
 THE REPAIR THEN WROTE A SECOND FALSE COUNT, AND A PLACEHOLDER (C31, C32). It
 said "the two refusals" one paragraph after deleting a false claim, when the grep
 gives four -- CP2 is exactly the rule that a repair carries no new numeric claim
@@ -75,8 +80,48 @@ def main() -> int:
     out = root / f"docs/reviews/F{args.milestone}/step-{args.step}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     header = f"# Review — F{args.milestone} step {args.step}\nReviewed commit: {sha()}\n"
-    out.write_text(header + body.lstrip())
-    print(f"wrote {out.relative_to(root)}  ({m.group(1)} @ {sha()[:10]})")
+
+    # THE FILE ACCUMULATES. IT USED TO BE OVERWRITTEN (DX2, R567).
+    #
+    # This line was `out.write_text(header + body.lstrip())`, so each round replaced
+    # the whole file and every earlier round survived only in git history. Measured
+    # across four commits, the file went 397 -> 508 -> 508 -> 538 lines while
+    # mentions of one withdrawn item went 3 -> 2 -> 2 -> 0.
+    #
+    # That broke a guard whose premise is stated in its own docstring:
+    # `test_no_status_claims_more_than_the_verdict_allows` reads "the WHOLE review
+    # file, every round of it, because a withdrawal ruled two verdicts ago is still a
+    # withdrawal". Verdict 69 withdrew R567; two rounds later the text was gone, so a
+    # report reporting that withdrawal truthfully went red, and twelve tests failed on
+    # the one status cell.
+    #
+    # THE PRIOR ROUNDS ARE PRESERVED VERBATIM, newest first, below a separator. Not
+    # merged, not summarised, not re-stamped: whatever the previous round said is what
+    # stays on the page, because a record the current reviewer can edit is not a
+    # record. The new round's own header goes at the top, so the parsers that read the
+    # first `Reviewed commit:` line still find the current one.
+    previous = out.read_text(encoding="utf-8") if out.is_file() else ""
+    rounds = header + body.lstrip()
+    if previous.strip():
+        rounds += (
+            "\n\n---\n\n"
+            "<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under\n"
+            "     DX2: each round is added and no prior round is rewritten or removed. -->\n\n"
+            + previous.strip()
+            + "\n"
+        )
+    # UTF-8 EXPLICITLY, ON BOTH SIDES. The original write used the platform default,
+    # which is cp1252 here, and the header carries an em dash -- so the file was
+    # written in cp1252 and the accumulation's read-back raised
+    # `UnicodeDecodeError: 'utf-8' codec can't decode byte 0x97`. A round-trip that
+    # cannot read what it wrote loses every earlier round, which is the failure this
+    # change exists to prevent.
+    out.write_text(rounds, encoding="utf-8")
+    kept = len(previous.strip().splitlines())
+    print(
+        f"wrote {out.relative_to(root)}  ({m.group(1)} @ {sha()[:10]}); "
+        f"{kept} lines of earlier rounds preserved"
+    )
     return 0
 
 
