@@ -82,11 +82,6 @@ DECK_YAML: Final[Path] = (
 
 MIN_LENGTH_OVER_DIAMETER: Final[float] = 2.0
 MAX_LENGTH_OVER_GYRATION: Final[float] = 300.0
-_NEGLIGIBLE_FRACTION: Final[float] = 1e-12
-"""not-a-tolerance: the fraction of a body's own mass or inertia below which a
-remainder is reported as zero. It is a REPORTING threshold on a quantity that is
-zero by construction when a member is mass-sized -- nothing is judged close enough
-to anything -- and the finding it gates is a sentence, not a pass or a fail."""
 """F3 § 2's builder limits, verbatim, and neither is a tolerance.
 
 not-a-tolerance: they are properties of the model the tool ACCEPTS, declared in the
