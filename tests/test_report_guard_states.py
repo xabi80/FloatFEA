@@ -39,8 +39,42 @@ ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "tests" / "corpus" / "report_guard_states.txt"
 GUARD = "tests/test_report_carried.py"
 
-_PLAN = ROOT / "docs" / "milestones" / "F2.md"
 _STEP_LINE = re.compile(r"<!--\s*step-under-execution:\s*(\d+)\s*-->")
+
+
+def _active_plan() -> Path:
+    """The plan carrying the step marker (R601a).
+
+    **THIS WAS `ROOT / "docs" / "milestones" / "F2.md"`, HARDCODED, AND THE MARKER
+    MOVING TO F3 BROKE EVERY STATE IN THIS FILE.** The regex missed, `_step()`
+    returned 0, and all twenty-four states died on
+    `FileNotFoundError: docs/reports/F2/step-0.md` before a single defect was planted
+    -- 24 of the 37 reds at `228bdfb`, in the guards step, with the verification
+    ladder green in every rung.
+
+    It is C40's shape, and C40 was LEDGERED rather than fixed on the reading that the
+    guard did not fail false. That reading was true only until the marker moved, which
+    is the one event C40 was ledgered for. It fails false now, so under CZ0 it is
+    fixed -- by the same move DX2 made in `test_report_carried.py`, so that the two
+    read the same thing.
+
+    Falls back to F2 rather than raising, because this runs at import and a raise at
+    import is R234: the module fails to collect and the suite reports one error having
+    run nothing.
+    """
+    milestones = ROOT / "docs" / "milestones"
+    try:
+        carrying = [
+            plan
+            for plan in sorted(milestones.glob("F*.md"))
+            if _STEP_LINE.search(plan.read_text(encoding="utf-8", errors="replace"))
+        ]
+    except OSError:
+        return milestones / "F2.md"
+    return carrying[0] if len(carrying) == 1 else milestones / "F2.md"
+
+
+_PLAN = _active_plan()
 
 
 def _step() -> int:

@@ -324,22 +324,44 @@ def test_G3_1a_B_the_ANALYTIC_path_agrees_with_the_DECK(superstructure, index: i
 
 
 def expected_pairs(superstructure, body: BodyModel) -> set[frozenset[tuple[float, ...]]]:
-    """The undirected endpoint pairs this body must have, from the DECK's joints.
+    """The undirected endpoint pairs this body must have, FROM THE DECK.
 
-    Built from the deck's own joint coordinates and the body's centre node, so it is
-    independent of what the builder actually made. Coordinates are rounded to a
-    grid fine enough that round-off cannot move a node between cells and coarse
-    enough that the deck's own values land on one -- `MASS_PROPERTY_AGREEMENT` times
-    the body extent, which is the same scale the CoG comparison uses.
+    **THE FIRST VERSION OF THIS READ THE MODEL'S OWN NODES FOR BOTH SIDES (R600).**
+    Its docstring said "from the DECK's joints" and "independent of what the builder
+    actually made"; it read `body.model.nodes[...]` for the centre and every tip, it
+    never used its `superstructure` argument, and `BodyModel` carried no deck
+    coordinate, so it could not have read one. The assertion was `X == X`. Measured
+    against it, all at `48 passed`: every tip moved 3 m, the plan centre moved 3 m,
+    every in-plane coordinate scaled by 1.02, the arm labels permuted onto each
+    other's joints, and the whole frame rotated 30 degrees about z.
+
+    **The label permutation is the one that matters most**, because
+    `buoy_joint_nodes` is keyed off those labels: F4 would have applied each buoy's
+    reaction at its neighbour's node, and nothing would have said so.
+
+    What it reads now is `superstructure.deck_joint_points` and `deck_joint_owner`,
+    both filled from the deck's joints, neither of which any part of the model
+    construction can influence. The OWNERSHIP comes from the deck too, and not from
+    `buoy_joint_nodes`, because that map is keyed off the member labels -- which is
+    exactly what a permutation corrupts, so reading it would put the label back on
+    both sides of the comparison.
+    The platform's centre is the only point not taken from there, because it is not a
+    joint: it is the plan centre `(0, 0, joint_plane_z)`.
     """
     extent = body_extent(body)
     grid = MASS_PROPERTY_AGREEMENT * extent
+    deck = superstructure.deck_joint_points
 
-    def cell(point: np.ndarray) -> tuple[float, ...]:
+    def cell(point) -> tuple[float, ...]:
         return tuple(round(float(c) / grid) * grid for c in point)
 
-    centre = np.asarray(body.model.nodes[body.centre_node].xyz, dtype=np.float64)
-    tips = [np.asarray(body.model.nodes[m.node_b].xyz, dtype=np.float64) for m in body.members]
+    if body.name == "platform":
+        centre = (0.0, 0.0, superstructure.joint_plane_z)
+        tips = [deck[name] for name in sorted(deck) if name.startswith("hub")]
+    else:
+        centre = deck[body.name]
+        owner = superstructure.deck_joint_owner
+        tips = [deck[name] for name in sorted(deck) if owner[name] == body.name]
     return {frozenset({cell(centre), cell(tip)}) for tip in tips}
 
 
@@ -577,6 +599,39 @@ def test_a_SLENDER_member_is_REFUSED() -> None:
     check_limits("just inside", MAX_LENGTH_OVER_GYRATION * r, section)
     with pytest.raises(ValueError, match="L/r"):
         check_limits("slender", 1.01 * MAX_LENGTH_OVER_GYRATION * r, section)
+
+
+@pytest.mark.parametrize("index", range(1, BODIES))
+def test_DZ2_each_BUOY_lands_on_the_node_the_DECK_puts_it_at(superstructure, index: int) -> None:
+    """R600's hardest case: the arm LABELS permuted onto each other's joints.
+
+    A permutation leaves the endpoint-pair SET unchanged, so the pair check passes
+    and should -- the frame really does join the same points. What it corrupts is
+    WHICH BUOY each node belongs to, and `buoy_joint_nodes` is keyed off exactly
+    those labels. **F4 applies each buoy's gimbal reaction through that map**, so a
+    permutation would put buoy1's reaction at buoy2's node and every member force
+    downstream would be wrong with nothing saying so.
+
+    This is the assertion that ties the two together: the node `buoy_joint_nodes`
+    gives for a buoy must sit at the coordinate the DECK gives for that buoy.
+    """
+    body = superstructure.bodies[index]
+    extent = body_extent(body)
+    for buoy, (owner, node_index) in superstructure.buoy_joint_nodes.items():
+        if owner != body.name:
+            continue
+        built = np.asarray(body.model.nodes[node_index].xyz, dtype=np.float64)
+        expected = np.asarray(superstructure.deck_joint_points[buoy], dtype=np.float64)
+        offset = float(np.max(np.abs(built - expected)))
+        assert offset <= MASS_PROPERTY_AGREEMENT * extent, (
+            f"{buoy} is mapped to a node at {built} and the deck puts that buoy's "
+            f"joint at {expected} -- {offset:.4f} m apart. F4 applies this buoy's "
+            "reaction through that map, so the load would land on the wrong node."
+        )
+        assert superstructure.deck_joint_owner[buoy] == owner, (
+            f"{buoy} is mapped to body {owner!r} and the deck attaches it to "
+            f"{superstructure.deck_joint_owner[buoy]!r}."
+        )
 
 
 def test_the_BUOY_NODE_MAP_names_its_body(superstructure) -> None:
