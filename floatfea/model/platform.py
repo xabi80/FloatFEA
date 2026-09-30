@@ -187,6 +187,32 @@ class Superstructure:
     froude_lambda: float
     joint_plane_z: float
     buoy_joint_nodes: dict[str, tuple[str, int]]
+    deck_joint_owner: dict[str, str]
+    """Which body each joint attaches TO, from the deck (`body_a` -> `body_b`).
+
+    Carried beside the points so a gate can work out which tips belong to which body
+    WITHOUT reading the builder's member labels -- those labels are what a permutation
+    corrupts, and `buoy_joint_nodes` is keyed off them, so using them to select the
+    expected set would put the label on both sides of the comparison again.
+    """
+
+    deck_joint_points: dict[str, tuple[float, float, float]]
+    """Every joint's point at FULL SCALE, keyed by the joint's own body_a.
+
+    **Carried so a gate can check the built geometry against something that is not
+    the built geometry (R600).** The first DZ2 gate read the model's own nodes for
+    both sides of its comparison and asserted `X == X`: its docstring said "from the
+    DECK's joints", its `superstructure` argument was unused, and `BodyModel` carried
+    no deck coordinate at all, so it could not have read one. Measured: every tip
+    moved 3 m, the plan centre moved 3 m, every coordinate scaled by 1.02, the arm
+    labels permuted onto each other's joints, and the whole frame rotated 30 degrees
+    -- all `48 passed`.
+
+    The keys are `body_a` of each joint, so `hub1` is the hub-platform joint at hub1
+    and `buoy1` is the buoy-hub joint at buoy1. The platform's own centre is not a
+    joint and is not in here; it is the plan centre `(0, 0, z)` and the gate builds
+    it from `joint_plane_z`.
+    """
     assumptions: tuple[str, ...]
     label: str
 
@@ -618,6 +644,10 @@ def build_superstructure(path: Path | None = None, froude_lambda: float = 50.0) 
         froude_lambda=froude_lambda,
         joint_plane_z=z,
         buoy_joint_nodes=buoy_nodes,
+        deck_joint_points={
+            j["body_a"]: (j["point"][0], j["point"][1], j["point"][2]) for j in joints
+        },
+        deck_joint_owner={j["body_a"]: j["body_b"] for j in joints},
         label=(
             "buoy spar columns not assessed as members; "
             "buoy loads applied as joint reactions; "
