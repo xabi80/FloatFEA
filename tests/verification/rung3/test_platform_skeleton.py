@@ -1,8 +1,21 @@
 """V3.1a / G3.1a: the superstructure's mass properties, per body, never on the sum.
 
-`docs/milestones/F3.md` § 5: "Per-body mass, CoG and inertia tensor from the FE mesh
-against the model definition. **Reported and asserted PER BODY, never on the sum** — a
-global total that matches while individual bodies do not is a failure."
+**WHAT THIS GATE IS FOR (DZ0), and the row it used to quote said something else.**
+`docs/milestones/F3.md` § 5 previously read "G3.1a's per-body mass check is the gate
+that proves the sizing". It does not and cannot: the model is CONSTRUCTED to carry the
+deck's properties, so reproducing them proves nothing about the sizing. The row now
+states the two things the gate does establish, and this module is organised around
+them:
+
+* **(1)** the assembled model reproduces FloatSim's rigid-body mass properties per
+  body — the precondition for inertia-relief equilibrium with FloatSim's loads. That
+  is `..._B_the_ANALYTIC_path_agrees_with_the_DECK`.
+* **(2)** the element mass matrices, the geometry and the assembly agree with an
+  INDEPENDENT analytic path. That is `..._A_the_ANALYTIC_path_agrees_with_the_ASSEMBLED_matrix`,
+  and it is the half with content.
+
+Per body, never on the sum — a global total that matches while individual bodies do
+not is a failure, so there is deliberately no test that adds the five bodies up.
 
 WHY THIS FILE WAS REWRITTEN, AND IT IS THE MOST IMPORTANT THING IN IT (R590). The
 first version's mass assertion was `x == approx(x)`. The builder defined
