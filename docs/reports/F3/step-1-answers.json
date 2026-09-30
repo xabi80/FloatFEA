@@ -6,7 +6,11 @@
   "with two blocking findings. R600 at 1c0785e and 8df625a; R601a at 8df625a;",
   "R601b clears with this revision.",
   "",
-  "THE `Answers:` SHA IS THE VERDICT'S OWN COMMIT, 8ac9ce8, per DX2."
+  "THE `Answers:` SHA IS THE VERDICT'S OWN COMMIT, 8ac9ce8, per DX2.",
+  "",
+  "Revision 3 answers the SEVENTY-FIFTH verdict. R602 at eb8e165 -- and my",
+  "diagnosis of it was WRONG, the check is live and my own prose broke the",
+  "anchor. R603 at 1d623c1. C56(i) at 086a2c7."
  ],
  "answered": {
   "R600": {
@@ -15,6 +19,16 @@
    "site": "tests/verification/rung3/test_platform_skeleton.py"
   },
   "R601": {
+   "state": "answered",
+   "where": "\u00a71",
+   "site": "tests/test_report_guard_states.py"
+  },
+  "R602": {
+   "state": "answered",
+   "where": "\u00a71",
+   "site": "docs/reports/F3/step-1.md"
+  },
+  "R603": {
    "state": "answered",
    "where": "\u00a71",
    "site": "tests/test_report_guard_states.py"

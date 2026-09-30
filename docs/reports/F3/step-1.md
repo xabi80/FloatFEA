@@ -612,3 +612,400 @@ rule   a revision states the colour of the tree it is published on, not only the
 ```
 
 Revision 3 §0 carries that run per job, and its three reds are R602's and R603's subject.
+
+# Revision 3 — verdict 75's two findings, and the provenance check
+
+Answers: verdict 75 @ 2f068c4
+
+**2026-09-30.**
+
+## 0. CI at `b2e59b0`, the commit verdict 75 judged — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 75 at `b2e59b0` through the report's own `Answers:` line. Run `36756429195`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint, unit and guards | 905 | 3 | 0 |
+| the verification ladder | 1820 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 1 not green.**
+
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 3.**
+
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_a_sha_that_is_not_a_commit]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_an_older_verdict_commit]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]` (lint, unit and guards)
+
+## 0a. Runs since the commit verdict 75 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 75 at `b2e59b0` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `36756429195` | push | `b2e59b0` | conclusion **failure** |
+| `36762795666` | push | `086a2c7` | conclusion **failure** |
+
+**Run `36756429195`, conclusion **failure**: 3 failing test name(s) in the log.**
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_a_sha_that_is_not_a_commit]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_an_older_verdict_commit]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]` (lint, unit and guards)
+
+**Run `36762795666`, conclusion **failure**: 8 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 1. The reading
+
+**Schedule unchanged: F3 13 October, F4 19 October, the member-force table 23 October,
+the code-check screen 28 October.** Both findings are answered and C56(i) is built.
+This is round 3, the last for this step.
+
+**R600 and R601 were answered in revision 2 and verdict 75 closed both.** R600 is
+"ANSWERED. Closed, site by site, and the closing cell goes red." R601's two named causes
+are answered and verified, its closing condition is not met, and the residue is the two
+findings below -- R602 and R603 -- which the verdict states are not double-counted against
+it. Their rows in the Carried table point here because this is where that disposition is
+written.
+
+**AND CI SAYS BOTH REPAIRS HOLD, which is the only place it could have said so**, because
+R603 was invisible on this machine by construction:
+
+```
+claim  run 36762795666, conclusion failure, is red for a cause that is not theirs
+rule   R602 and R603 are answered only if the three states they name run green ON CI
+cmd    gh run view <that run> --log-failed | grep -oE "FAILED tests/[^ ]+" | sort -u
+out    test_the_answered_verdict_is_the_NEWEST_one
+out    the_guard_survives_the_state[baseline]
+out    the_guard_survives_the_state[draft_suffix_beside_a_step_report]
+out    the_guard_survives_the_state[non_numeric_step_suffix]
+out    the_guard_survives_the_state[step_number_is_the_empty_string]
+out    the_guard_survives_the_state[superscript_digit_step_number]
+out    the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]
+out    the_guard_survives_the_state[zero_padded_step_number]
+cmd    the same log, counting the CalledProcessError and exit-128 signature
+out    0
+judge  none of the three states named by R602 and R603 is in that list and the
+       exit-128 signature is gone, so both repairs hold where they had to. The
+       seven states that ARE red are one cause and it is not theirs: at that
+       commit the report still answered verdict 74 while verdict 75 existed, so
+       the harness planted into a tree whose baseline was already red. That is
+       this revision's own subject and it closes with this commit.
+```
+
+**R602 — MY DIAGNOSIS WAS WRONG, AND MY OWN PROSE WAS THE DEFECT.** I reported the
+state as requiring a detection DR0 retired. The check is live at
+`tests/test_report_carried.py:320` — `git cat-file -e` on the answered sha — and it
+fires. I had crossed two different quantities: the retirement note is about the
+whole-suite line's sha in the deleted distance test, not the header's.
+
+```
+claim  the harness's anchor found a sentence about the header instead of the header
+cmd    grep -n on the report for the header literal, before the fix
+out    3     the revision-1 header
+out    256   the revision-2 header
+out    589   a quoted error message carrying the same literal -- the LAST hit
+rule   `bad_answers_sha` anchors on the last occurrence of that literal, so the
+       header it edits is whichever line that is
+judge  revision 2 quoted `ci_section.py`'s own error message, which contains that
+       literal, so the LAST occurrence became prose. The harness mangled the prose,
+       the real header survived, and the nested run was correctly clean.
+cmd    grep -c on the report for the header literal, and which lines
+out    3, each one a revision header, and none of them in prose
+judge  I WROTE THIS DEFECT AGAIN IN THIS SECTION. The first draft of the block
+       above pasted four grep hits verbatim, every one of them after revision 3's
+       own header, and the three states went red locally -- the same anchor, the
+       same cause, in the paragraph describing it. The literal is named and not
+       quoted now, which is the only form that does not move the anchor.
+cmd    the state, after describing the message instead of quoting it
+out    1 passed
+```
+
+**And `b2e59b0`'s commit message states the opposite and is corrected here:** it says
+the state "expects a check the repository decided to give up". False. The check is
+live, the control is good, and deleting the state would have deleted a working control.
+
+**R603 — the seeding commit had no git identity, so it worked only on my machine.**
+`_seed_older_verdict` committed without `-c user.name` / `-c user.email` while the two
+adjacent sites in `_build` carry them; the identity came from this repository's own
+`.git/config`, which `_build` copies. `actions/checkout` writes none.
+
+```
+out    CI at b2e59b0: 3 failed -- two of them CalledProcessError, exit 128
+out    locally:        1 failed -- the same two states green
+judge  the gap between my run and CI's was the finding, and R601a is what let those
+       states get far enough to reach the seeding at all
+```
+
+## 2. C56(i) — the provenance check, for the shape this step produced three times
+
+R590, R596 and R600 were one defect wearing three faces: the expected side of a
+comparison built out of the thing under test. Each was found by a reviewer, not by a
+test. The reviewer's answer to my asking for a mechanical check was that it is
+**provenance, not detection** — and that the shape was still reachable.
+
+```
+cell   ONE VARIABLE at a time, baseline 53 passed
+out    a tip +3 m, provenance intact         -> 9 failed, both DZ2 tests
+out    a tip +3 m AND the provenance broken  -> 2 failed, and C56 is one of them
+out    the provenance broken ALONE           -> 53 passed
+out    restored                               -> 53 passed
+rule   `expected_pairs` reads `deck_joint_points`; C56 re-reads the deck through
+       `_full_scale_deck`, the same function the builder used, and requires equality
+judge  the second row is what the test is for. With the expected side rebuilt from the
+       model, DZ2's buoy-node check goes quiet and C56 is what still says the points a
+       gate compares against are not the deck's. The third row changes no value, so
+       nothing reddens and nothing should -- what is protected is the NEXT geometry
+       defect, after the provenance has been quietly broken.
+```
+
+## 3. Two things I am not fixing, and why
+
+**DZ7a resolves nowhere.** The reviewer grepped the tree and found no `DZ7a`; the
+one-path-class-per-commit discipline is **DY8b**, which appears once, in a verdict
+file, and is in neither `F3.md` nor `CLAUDE.md`. I have been citing an identifier that
+does not exist in five commit messages. The discipline itself was followed — on the
+substance the reviewer ruled the ordering right — but the citation was invented, and
+recording that is worth more than quietly switching to the real one.
+
+**`tests/test_plan_matches_tolerances.py` stays hardcoded to F2** and stays ledgered
+as C40. It is the one of the five in that family that does **not** fail false: it reads
+`docs/milestones/F2.md` for the tolerance table, which is a real file that really holds
+the table. The visible cost is an F3 tolerance sitting in a closed milestone's table,
+and that table's heading says so.
+
+## 4. The closure list
+
+`C51`, `C53` and `C54` are repairs and they landed at `127c7b1`, with their checks in that
+commit message. The rest are measurements and they are here.
+
+**`C50` — TWO OF MY FOUR CELLS DID NOT REPRODUCE, AND THE REVIEWER'S NUMBERS ARE RIGHT.**
+I published `5 failed` and `1 failed` for two mutations that give `9 failed`. Both of mine
+understated the detection, which is the safe direction and does not touch what R600 turned
+on, but neither was the number the described edit produces. Re-measured here, one variable
+each, at this commit:
+
+```
+claim  the two cells whose counts the reviewer could not reproduce
+cmd    edit floatfea/model/platform.py, run tests/verification/rung3/test_platform_skeleton.py
+out    baseline, unmutated                                  -> 53 passed
+out    every tip +3 m in x, the node moved WITH it          -> 9 failed, 44 passed
+out    every in-plane deck coordinate x1.02                 -> 9 failed, 44 passed
+out    restored                                             -> 53 passed
+rule   each mutation is applied in `_member_geometry`, BEFORE the node is built and
+       before `length = math.dist(start, end)`, so what reddens is the geometry and
+       not a member length disagreeing with its own coordinates
+judge  both failures are the same two test functions -- the member-geometry check and
+       the buoy-node check -- and `9 = 5 + 4` is those two, not one of them. My `5`
+       was one test function's parametrisations read as the run; my `1` was the four
+       platform arms scaled rather than every in-plane coordinate.
+```
+
+**`C55` — THE DZ2 GRID'S THREE NUMBERS, MEASURED HERE RATHER THAN QUOTED.** The verdict
+carried them and the report did not. Two reproduce exactly and the third does not, because
+it is not one number:
+
+```
+claim  the grid the cell comparison rounds to, per body
+cmd    MASS_PROPERTY_AGREEMENT * body_extent(body), for the five bodies
+out    MASS_PROPERTY_AGREEMENT = 1.0000e-13
+out    platform   extent    51.056247 m   grid 5.1056e-12 m
+out    hub1       extent    25.000000 m   grid 2.5000e-12 m
+out    hub2       extent    25.000000 m   grid 2.5000e-12 m
+out    hub3       extent    25.000000 m   grid 2.5000e-12 m
+out    hub4       extent    25.000000 m   grid 2.5000e-12 m
+
+claim  the baseline offset the gate is asked to tolerate
+cmd    max over every deck joint point of its distance to the nearest built node
+out    0.0000e+00 m
+
+claim  the smallest single-coordinate shift that moves a cell
+cmd    bisect the shift of one hub joint point, per axis, until `expected_pairs` changes
+out    hub1 x  +3.3218e-12 m      hub1 y  +2.5528e-12 m
+out    hub2 x  +2.5498e-12 m      hub2 y  +3.3218e-12 m
+out    hub3 x  +1.7728e-12 m      hub3 y  +2.5467e-12 m
+out    hub4 x  +2.5620e-12 m      hub4 y  +1.7728e-12 m
+out    smallest over the eight   +1.7728e-12 m
+out    largest  over the eight   +3.3218e-12 m
+out    one full grid, which always moves a cell   5.1056e-12 m
+rule   `cell(p) = round(p / grid) * grid`, so a coordinate is detected once it crosses
+       the nearest cell boundary
+judge  THE DETECTION THRESHOLD IS NOT A CONSTANT and the verdict's single
+       `+7.1054e-13 m` is one coordinate's distance to its own boundary, not the
+       gate's. It ranges over the eight platform tips and it can be arbitrarily small
+       for a coordinate that happens to sit on a boundary. The number that is a
+       property of the GATE is the grid: a shift of one full grid always moves a cell,
+       and the baseline offset is exactly zero, so the whole grid is headroom.
+```
+
+**`C56` — ONE BUILT, THREE RECORDED.** (i) is the provenance assertion in §2, built at
+`086a2c7`. (ii) the deck reader scaling every joint point: DZ2 tests the builder against
+the reader and cannot test the reader; verdict 74's own closing condition accepted reading
+through `_full_scale_deck`, so this is recorded and was not asked for. (iii) the four hub
+joints shifted together so the plan centre is no longer their centroid: the builder types
+`(0, 0, joint_plane_z)` and nothing pins that origin to a deck fact. **This one is a real
+gap and it is recorded rather than patched**, because choosing which deck fact pins the
+origin is a model decision and belongs in the plan. (iv) the four platform arm labels
+reversed against their tips: **carried by name into the step that ships the member-force
+table**, where a row named for the wrong arm is the cost.
+
+**`C57` — recorded, not a work item.** The corpus row is correct about the guard and no
+longer reproducible through the harness, and the apparatus corpora are frozen under DE2
+and DR1. See R602: the harness state it describes is live, and what changed is the report
+the harness reads.
+
+## 5. Findings
+
+Generated: `python scripts/answered_table.py <the newest verdict> <the answers file>`.
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R600 | recorded | **answered** | §1 | `tests/verification/rung3/test_platform_skeleton.py` | DZ2's geometry gate builds its expected endpoint-pair set from the |
+| R601 | recorded | **answered** | §1 | `tests/test_report_guard_states.py` | CI is RED at the reviewed commit -- `37 failed, 835 passed` in |
+| R602 | recorded | **answered** | §1 | `docs/reports/F3/step-1.md` | `answers_header_names_a_sha_that_is_not_a_commit` is red, and the |
+| R603 | recorded | **answered** | §1 | `tests/test_report_guard_states.py` | `_seed_older_verdict` runs `git commit` with no author identity while |
+
+## 6. Sites named by findings and not touched
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R600 | `CLAUDE.md` | the file is untouched | **no change.** Quoted as the rule, not edited to answer a finding it governs. |
+| R600 | `floatfea/model/platform.py:551` | the file is untouched | TOUCHED at `1c0785e`, and **no change at that exact line**: the deck's joint points and owners are carried now. |
+| R600 | `floatfea/model/platform.py:552` | the file is untouched | TOUCHED at `1c0785e`, and **no change at that exact line**: the deck's joint points and owners are carried now. |
+| R600 | `floatfea/model/platform.py:553` | the file is untouched | TOUCHED at `1c0785e`, and **no change at that exact line**: the deck's joint points and owners are carried now. |
+| R600 | `platform.py:551` | the file is untouched | **no change** -- the same site, cited by bare name in the verdict's prose. |
+| R600 | `platform.py:552` | the file is untouched | **no change** -- the same site, cited by bare name in the verdict's prose. |
+| R600 | `platform.py:553` | the file is untouched | **no change** -- the same site, cited by bare name in the verdict's prose. |
+| R600 | `tests/test_report_carried.py:320` | the file is untouched | **no change** -- cited as the file holding the live sha-exists check, which is what my R602 diagnosis got wrong. Nothing there needed changing. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:326` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:327` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:328` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:329` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:330` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:331` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:332` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:333` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:334` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:335` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:336` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:337` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:338` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:339` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:340` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:341` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:342` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R600 | `tests/verification/rung3/test_platform_skeleton.py:343` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `086a2c7`, and **no change at that exact line**: `expected_pairs` reads the deck, the buoy-node assertion is added, and C56's provenance check with it. |
+| R601 | `F2.md` | the file is untouched | **no change, deliberately.** The marker is gone from it, which is DY8c's point: exactly one plan carries it and F2 is closed. |
+| R601 | `docs/reports/F2/step-0.md` | the file is untouched | **no change -- it has never existed.** It is the path the broken harness constructed when `_step()` returned 0. |
+| R601 | `test_report_carried.py` | the file is untouched | **no change** -- cited by bare name as the file DX2 fixed, and the template the other three follow. |
+| R601 | `tests/test_plan_matches_tolerances.py:34` | the file is untouched | **no change, and it is the one still hardcoded.** It does not fail false -- it reads F2.md for a table that really is there -- so it stays ledgered as C40. |
+| R601 | `tests/test_report_carried.py` | the file is untouched | **no change.** DX2 re-pointed it at the plan carrying the marker, so it followed to F3 without an edit. |
+| R601 | `tests/test_report_guard_states.py:42` | the file is touched and this line number is the old one | TOUCHED at `8df625a` and `1d623c1`, and **no change at that exact line**: `_PLAN` reads the active plan and every harness path derives from one `MILESTONE`. |
+| R602 | `scripts/ci_section.py` | the file is untouched | **no change.** Its error message is the text revision 2 quoted, and the message is correct -- what was wrong was quoting a string containing the harness's anchor literal into a report the harness reads. |
+| R602 | `tests/test_report_carried.py:309` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:310` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:311` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:312` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:313` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:314` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:315` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:316` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:317` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:318` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:319` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:320` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:321` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:322` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:323` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:324` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:325` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:326` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:2259` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_carried.py:2260` | the file is untouched | **no change, and this is the site that refuted me.** Lines 309-326 hold the LIVE `git cat-file -e` check on the answered sha; 2259-2260 is the retirement note about a different quantity. I crossed the two and reported a live control as retired. |
+| R602 | `tests/test_report_guard_states.py:392` | the file is touched and this line number is the old one | **no change.** Lines 392-399 are `bad_answers_sha`'s `rindex` anchor, which is doing exactly what it says; the defect was in the report it read. |
+| R602 | `tests/test_report_guard_states.py:393` | the file is touched and this line number is the old one | **no change.** Lines 392-399 are `bad_answers_sha`'s `rindex` anchor, which is doing exactly what it says; the defect was in the report it read. |
+| R602 | `tests/test_report_guard_states.py:394` | the file is touched and this line number is the old one | **no change.** Lines 392-399 are `bad_answers_sha`'s `rindex` anchor, which is doing exactly what it says; the defect was in the report it read. |
+| R602 | `tests/test_report_guard_states.py:395` | the file is touched and this line number is the old one | **no change.** Lines 392-399 are `bad_answers_sha`'s `rindex` anchor, which is doing exactly what it says; the defect was in the report it read. |
+| R602 | `tests/test_report_guard_states.py:396` | the file is touched and this line number is the old one | **no change.** Lines 392-399 are `bad_answers_sha`'s `rindex` anchor, which is doing exactly what it says; the defect was in the report it read. |
+| R602 | `tests/test_report_guard_states.py:397` | the file is touched and this line number is the old one | **no change.** Lines 392-399 are `bad_answers_sha`'s `rindex` anchor, which is doing exactly what it says; the defect was in the report it read. |
+| R602 | `tests/test_report_guard_states.py:398` | the file is touched and this line number is the old one | **no change.** Lines 392-399 are `bad_answers_sha`'s `rindex` anchor, which is doing exactly what it says; the defect was in the report it read. |
+| R602 | `tests/test_report_guard_states.py:399` | the file is touched and this line number is the old one | **no change.** Lines 392-399 are `bad_answers_sha`'s `rindex` anchor, which is doing exactly what it says; the defect was in the report it read. |
+| R603 | `tests/test_report_guard_states.py:329` | the file is touched and this line number is the old one | **no change at `tests/test_report_guard_states.py:329`** -- it is the `for message in (...)` loop header. R603 named the whole `_seed_older_verdict` block; `1d623c1` deletes exactly ONE line in it -- pre-image `:334`, the `git commit` argv -- and rewrites it to carry `-c user.name` and `-c user.email`. cmd `git show 1d623c1 --numstat -- tests/test_report_guard_states.py` -> `20	1`, and the single `^-` line is that argv, so this line survives the fix byte for byte and only its NUMBER moved. |
+| R603 | `tests/test_report_guard_states.py:330` | the file is touched and this line number is the old one | **no change at `tests/test_report_guard_states.py:330`** -- it is the `if message.endswith(...)` branch. R603 named the whole `_seed_older_verdict` block; `1d623c1` deletes exactly ONE line in it -- pre-image `:334`, the `git commit` argv -- and rewrites it to carry `-c user.name` and `-c user.email`. cmd `git show 1d623c1 --numstat -- tests/test_report_guard_states.py` -> `20	1`, and the single `^-` line is that argv, so this line survives the fix byte for byte and only its NUMBER moved. |
+| R603 | `tests/test_report_guard_states.py:331` | the file is touched and this line number is the old one | **no change at `tests/test_report_guard_states.py:331`** -- it is the `path.write_text(real, ...)` that restores the real verdict. R603 named the whole `_seed_older_verdict` block; `1d623c1` deletes exactly ONE line in it -- pre-image `:334`, the `git commit` argv -- and rewrites it to carry `-c user.name` and `-c user.email`. cmd `git show 1d623c1 --numstat -- tests/test_report_guard_states.py` -> `20	1`, and the single `^-` line is that argv, so this line survives the fix byte for byte and only its NUMBER moved. |
+| R603 | `tests/test_report_guard_states.py:335` | the file is touched and this line number is the old one | **no change at `tests/test_report_guard_states.py:335`** -- it is the `check=True,` argument of the `subprocess.run` that follows. R603 named the whole `_seed_older_verdict` block; `1d623c1` deletes exactly ONE line in it -- pre-image `:334`, the `git commit` argv -- and rewrites it to carry `-c user.name` and `-c user.email`. cmd `git show 1d623c1 --numstat -- tests/test_report_guard_states.py` -> `20	1`, and the single `^-` line is that argv, so this line survives the fix byte for byte and only its NUMBER moved. |
+| R603 | `tests/test_report_guard_states.py:336` | the file is touched and this line number is the old one | **no change at `tests/test_report_guard_states.py:336`** -- it is the close paren of that `subprocess.run`. R603 named the whole `_seed_older_verdict` block; `1d623c1` deletes exactly ONE line in it -- pre-image `:334`, the `git commit` argv -- and rewrites it to carry `-c user.name` and `-c user.email`. cmd `git show 1d623c1 --numstat -- tests/test_report_guard_states.py` -> `20	1`, and the single `^-` line is that argv, so this line survives the fix byte for byte and only its NUMBER moved. |
+
+## 7. Carried
+
+Generated: `python scripts/carried_table.py <the newest verdict> <the answers file>`.
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R596 | **not classified in this verdict** — carried in from an earlier one | are closed. Closure items C12, C14, C18 to C32, the open |
+| R598 | **not classified in this verdict** — carried in from an earlier one | are closed. Closure items C12, C14, C18 to C32, the open |
+| R599 | **not classified in this verdict** — carried in from an earlier one | are closed. Closure items C12, C14, C18 to C32, the open |
+| R600 | **answered** — §1 | DZ2's geometry gate builds its expected endpoint-pair set from the BUILT MODEL, not from the... |
+| R601 | **answered** — §1 | CI is RED at the reviewed commit -- 37 failed, 835 passed in lint, unit and guards -- and it... |
+| R602 | **answered** — §1 | answers_header_names_a_sha_that_is_not_a_commit is red, and the stated diagnosis is refuted:... |
+| R603 | **answered** — §1 | _seed_older_verdict runs git commit with no author identity while the other two commit sites in... |
+
+## 8. The whole suite
+
+**Whole suite at `127c7b1`: 2633 passed, 0 failed, 0 skipped.** **The excluded set: 171 passed, 13 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 184 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+**AND THE ORDERING, WHICH I BROKE.** The line is generated in a clean worktree at
+`127c7b1` and is reproducible there; the guard-state reds that R602's own section
+reintroduced were found AFTER it ran, so the edit that fixed them is not in the tree the
+count describes. Every edit since is in `docs/reports/F3/step-1.md` and nothing else:
+
+```
+claim  the only file edited after the count was taken is this report
+cmd    git status --porcelain, before this revision was committed
+out    M docs/reports/F3/step-1-answers.json
+out    M docs/reports/F3/step-1.md
+rule   R309: the count is a measurement of the tree the report is committed from, and
+       an edit after it is an edit the number does not describe
+cmd    the three files the count EXCLUDES, run in place after that edit
+out    291 passed
+judge  the excluded files are the only tests that read this report, they are reported
+       separately by rule, and they are green in place. The 2633 cannot have moved: no
+       test outside those three reads `docs/reports/`. That is an argument and not a
+       measurement of the committed tree, and C43 already ledgers that this line is one
+       commit early.
+```
+
+```
+- **failed, in the excluded set** `tests.test_report_carried::test_the_answered_verdict_is_the_NEWEST_one`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_Carried_table_is_what_the_generator_produces`
+- **failed, in the excluded set** `tests.test_report_carried::test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_CI_RUN_the_report_names_carries_its_conclusion`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[baseline]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[non_numeric_step_suffix]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[superscript_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]`
+```
