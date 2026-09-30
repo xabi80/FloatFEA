@@ -1464,7 +1464,55 @@ DETECTION_THRESHOLD_BAND_COUNTER: Final[float] = 0.25
 # entry in this file and must say so in its comment.
 # ---------------------------------------------------------------------------
 
-# (no entries yet -- F3)
+# CLASS: STRUCTURAL -- relative agreement for a property that is EXACT in exact
+# arithmetic. G3.1a compares the rigid-body projection of the assembled mass
+# matrix against the deck's own mass, CoG and inertia tensor. In exact arithmetic
+# the two agree identically: the model is BUILT to carry those properties, so any
+# difference is the arithmetic and nothing else. It is dimensionless in every use
+# -- each comparison is relative to the quantity being compared -- so one entry
+# governs kilograms, metres and kilogram-metres-squared alike.
+#
+# THE DERIVATION, because R593 found a bare `1e-12` in `floatfea/model/platform.py`
+# whose own docstring claimed it was not a tolerance while a test asserted on
+# exactly that predicate. It is a tolerance and it belongs here.
+#
+# The quantity is `T_G.T @ M @ T_G`: a triple product over the body's DOF, where
+# `M` is itself an assembly of element matrices. Two error sources, and the second
+# dominates:
+#
+#   1. the triple product accumulates O(n_dof) roundings. The largest body here is
+#      the platform at n_dof = 36 -- a centre node, four hub-arm tips and the
+#      remainder node -- so 36 * eps = 7.994e-15.
+#   2. CANCELLATION in the coupling and inertia blocks. The off-diagonal terms are
+#      differences of products of order m*L and m*L^2 -- for the platform,
+#      1.25e6 * 50 = 6.3e7 and 1.25e6 * 2500 = 3.1e9 -- which cancel to zero or to
+#      a much smaller residual. A cancellation from 3.1e9 to a residual compared
+#      relatively against 6.25e9 loses no digits, but the CoG block cancels from
+#      6.3e7 to exactly zero on a symmetric body, and a relative comparison there
+#      is against the surviving magnitude rather than against the cancelled one.
+#
+# So the floor is set by (1) scaled for the cancellation in (2). Measured across the
+# five bodies of F3's skeleton -- mass, CoG and the full inertia tensor, each
+# relative to the quantity compared -- the worst residual is 2.2119e-15, which is
+# BELOW 36 * eps rather than above it: the cancellation costs less than the
+# accumulation, and the accumulation is the binding term.
+#
+# `1e-13` is 36 * eps with a factor of ~12 of headroom, and ~45 over the worst
+# measurement. It is set from the derivation rather than from the measurement, so a
+# body with more nodes does not breach it for no defect.
+#
+# WHY NOT `ROUNDOFF_IDENTITY` (1e-14): it is barely above 36 * eps = 7.994e-15, so a
+# body with five more DOF would breach it with nothing wrong. BD1 says an entry is
+# set by its tightest member; this quantity's tightest member is a 36-DOF triple
+# product over an assembled matrix, which is not the same quantity as an
+# element-level identity -- hence its own entry rather than a second use of that
+# one.
+#
+# It carries a counter: `test_G3_1a_a_MISPLACED_remainder_reddens` moves the
+# remainder node and requires the CoG comparison to fail, so the entry is known
+# to be tight enough to see a real defect and not merely loose enough to pass.
+# Set: 2026-09-30, F3 (DY3, answering R593)
+MASS_PROPERTY_AGREEMENT: Final[float] = 1e-13
 
 
 # ---------------------------------------------------------------------------
