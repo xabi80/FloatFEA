@@ -1573,3 +1573,257 @@ generator read verdict 69 inside a revision answering verdict 70, and it cost th
 rebuilds before it was found. The header names `1b895db`. This is C13 and it is worth
 a sentence in the next verdict's closing instructions rather than a third discovery.
 
+
+# Revision 6 — verdict 71's four findings, and the skeleton
+
+Answers: verdict 71 @ 7bd86e8
+
+**2026-09-29.**
+
+## 0. CI, for the commit under review
+
+## 0. CI at `4708cc2`, the commit verdict 71 judged — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 71 at `4708cc2` through the report's own `Answers:` line. Run `36523001390`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 1767 | 0 | 0 |
+| lint, unit and guards | 913 | 8 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 1 not green.**
+
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 8.**
+
+- `tests/test_report_carried.py::test_the_parse_found_something_to_check` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 0a. Runs since the commit verdict 71 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 71 at `4708cc2` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `36523001390` | push | `4708cc2` | conclusion **failure** |
+| `36654231979` | push | `863c1aa` | conclusion **failure** |
+
+**Run `36523001390`, conclusion **failure**: 8 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_parse_found_something_to_check` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+**Run `36654231979`, conclusion **failure**: 3 failing test name(s) in the log.**
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_an_older_verdict_commit]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]` (lint, unit and guards)
+
+## 1. The reading
+
+**Schedule: F3's computed date is 6–8 October, ahead of the 13 October target, and
+DX3 asked for it the moment the skeleton built — which it now does.** The basis is
+that every F3 gate is measured green: G3.1a, G3.1b (coincident with it under DV0),
+G3.2, G3.3, and R486 on every real member. What remains is shipping R486 as an
+assertion with its three counters registered, verdict 71's closure list, and the
+review rounds. **The risk is not implementation, it is plan reopenings** — the plan
+reopened three times in the preceding stretch (R576, R587, and the DW/DX re-locks)
+and each cost about a round; if none reopens, 6–8 October, and if one does, 13
+October still holds. All four of verdict 71's findings are answered and nothing
+carries blocking into the remaining work.
+
+```
+claim  the superstructure builds, five bodies and sixteen members
+cmd    python -m pytest tests/verification/rung3/test_platform_skeleton.py -q
+out    32 passed
+out    platform  4 arms  member 1250.0 t  deck 1250.0 t  remainder    +0.0 t  link 10.3315 m
+out    hub1..4   3 arms  member  772.4 t  deck 1500.0 t  remainder  +727.6 t  link  0.0000 m
+rule   G3.1a -- per body, never on the sum; the assembled rigid mass matrix read
+       from the matrix rather than from the builder's arithmetic
+claim  R486's element-local residual holds on every REAL member
+out    16 members, worst residual 3.5283e-19 against RIGID_MODE_EXACTNESS 1e-15
+out    headroom 2834.3x
+rule   element_rigid_residual(k_local, L) <= RIGID_MODE_EXACTNESS
+claim  the near-vertical band R486 was found in is not reachable on this platform
+out    all 16 members are horizontal -- the frame is planar at the joint plane --
+       so the 2.87-degrees-from-vertical case cannot arise here
+judge  that is a fact about this platform and not a gap in the gate, and it is why
+       the band F3 section 5 asks to be measured first has nothing to measure
+```
+
+**THE BUOYS ENTER AS JOINT REACTIONS AND MY OWN RECOMMENDATION WOULD HAVE
+DOUBLE-COUNTED THEM.** R587 was right that omitting the buoys removed the load the
+one designed section was sized for. My proposed fix — twelve lumped buoy masses —
+was wrong: each buoy's weight, buoyancy, wave force and inertia already reach the
+cluster-arm tip through the gimbal reaction, which FloatSim computes, so a mass
+beside it counts the buoy twice. DX0 ruled it, and the plan's executable sections now
+say so -- the mass rule reads "each MODELLED body", the scope section says the buoys'
+loads are not deferred, and a new section carries where the reactions come from.
+
+**AND THE REACTIONS EXIST UPSTREAM, WHICH MAKES F4'S FIRST ITEM AN EXPORT RATHER
+THAN A RECONSTRUCTION (DX1).**
+
+```
+claim  FloatSim computes all 64 multipliers every step and retains the history
+cmd    grep -n "lam" ../HSP-runs/floatsim/solver/newmark.py
+out    :132-137 lam: (N+1, m) "the PHYSICAL constraint force at step n (N on
+       translational rows, N*m on rotational rows; dt-free)"
+out    :370 lam_hist = np.empty((n_samples, m_con)) when constraints are supplied
+claim  the study computes them and never reads them, and the export drops them
+out    platform_rao_pilot.py:284 res = integrate_cummins(...), then only res.t,
+       res.xi and res.xi_ddot
+out    the DS1 case files carry 21 columns: t, platform HEAVE only, and
+       surge/sway/heave for THREE buoys; zero columns matching
+       lam/multiplier/reaction/constraint/joint
+judge  9 of 12 buoys absent and no external force for any body, so
+       `lambda = F_ext - M a` is not evaluable from this file for anything. The
+       identity DX1 asks for is F4's first test and it needs the export first.
+```
+
+## 2. Findings, and every item carried
+
+Generated: `python scripts/answered_table.py <the newest verdict> docs/reports/F2/step-7-answers.json`.
+
+**R586** — the `len(EXPECTED) >= 5` floor is **deleted, not loosened**. It had no
+satisfiable state for two verdicts running and the reviewer measured that it fails
+against its own verdict too; the parse succeeded both times and returned the true
+count. That one statement was eight reds and the red CI step at a commit whose ladder
+was green in every rung. The two assertions above it are kept and neither has a
+threshold.
+
+**R587** — answered by DX0's ruling in a standalone `plan:` commit, above.
+
+**R588** — my sentence "untracked files cannot change what the study imports" was
+false: `build_deck` puts three directories on `sys.path` and the study imports
+`platform_common` and `cluster_common` as bare names, so a file in the directory
+inserted last is searched first. The cell is tracked-clean at `0` dirty lines with
+the export refused.
+
+**R589** — the digest cannot see a CRLF rewrite, because `Path.read_text` normalises
+newlines. **The behaviour is right and is unchanged** — a digest that noticed would
+fail on every Windows clone — and what was wrong was the docstring saying "as
+emitted" and the message saying "bytes". Both corrected, the test renamed.
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R586 | recorded | **answered** | §2 | `tests/test_report_carried.py` | Eight tests are red at the judged commit and CI at the judged commit |
+| R587 | recorded | **answered** | §2 | `docs/milestones/F3.md` | The re-locked plan says both that the twelve buoy bodies are in the |
+| R588 | recorded | **answered** | §2 | `scripts/export_platform_deck.py` | The preflight that makes G3.2's "at the pin" true ignores untracked |
+| R589 | recorded | **answered** | §2 | `tests/verification/rung3/test_platform_deck_export.py` | The digest that now carries G3.2 is named for the file's bytes and is not |
+
+## 3. Sites named by findings and not touched
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R586 | `test_report_carried.py:270` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the `>= 5` floor is DELETED with the reason at the site, so the cited numbers are the old ones. The two assertions above it are kept -- deletion of the statement, not of the test. |
+| R586 | `test_report_carried.py:271` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the `>= 5` floor is DELETED with the reason at the site, so the cited numbers are the old ones. The two assertions above it are kept -- deletion of the statement, not of the test. |
+| R586 | `test_report_carried.py:272` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the `>= 5` floor is DELETED with the reason at the site, so the cited numbers are the old ones. The two assertions above it are kept -- deletion of the statement, not of the test. |
+| R586 | `test_report_carried.py:273` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the `>= 5` floor is DELETED with the reason at the site, so the cited numbers are the old ones. The two assertions above it are kept -- deletion of the statement, not of the test. |
+| R587 | `docs/milestones/F1.md:425` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE the finding rests on -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct. Recomputed here with exact hollow-section formulae and they reproduce. The defect was a scope ruling that would not have applied that load, not the record of it. |
+| R587 | `docs/milestones/F1.md:426` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE the finding rests on -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct. Recomputed here with exact hollow-section formulae and they reproduce. The defect was a scope ruling that would not have applied that load, not the record of it. |
+| R587 | `docs/milestones/F1.md:427` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE the finding rests on -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct. Recomputed here with exact hollow-section formulae and they reproduce. The defect was a scope ruling that would not have applied that load, not the record of it. |
+| R587 | `docs/milestones/F1.md:428` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE the finding rests on -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct. Recomputed here with exact hollow-section formulae and they reproduce. The defect was a scope ruling that would not have applied that load, not the record of it. |
+| R587 | `docs/milestones/F1.md:429` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE the finding rests on -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct. Recomputed here with exact hollow-section formulae and they reproduce. The defect was a scope ruling that would not have applied that load, not the record of it. |
+| R587 | `docs/milestones/F1.md:430` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE the finding rests on -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct. Recomputed here with exact hollow-section formulae and they reproduce. The defect was a scope ruling that would not have applied that load, not the record of it. |
+| R587 | `docs/milestones/F1.md:431` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE the finding rests on -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct. Recomputed here with exact hollow-section formulae and they reproduce. The defect was a scope ruling that would not have applied that load, not the record of it. |
+| R587 | `docs/milestones/F1.md:432` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE the finding rests on -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct. Recomputed here with exact hollow-section formulae and they reproduce. The defect was a scope ruling that would not have applied that load, not the record of it. |
+| R587 | `docs/milestones/F1.md:433` | the file is untouched | **no change.** Lines 425-433 are the EVIDENCE the finding rests on -- the 5.93 MN tip load, M = 148.2 MN.m, W = 0.696 m^3 demand against 0.710 supplied -- and they are correct. Recomputed here with exact hollow-section formulae and they reproduce. The defect was a scope ruling that would not have applied that load, not the record of it. |
+| R587 | `docs/milestones/F3.md:101` | the file is touched and this line number is the old one | TOUCHED at `8b14de3`, a standalone `plan:` commit, and **no change at that exact line**: sections 3.2, 3.3, 3.4 and the new 3.5 are rewritten under DX0, so the cited numbers are the old ones. |
+| R588 | `../HSP-runs/studies/platform-12buoy/platform_rao_pilot.py` | the file is untouched | **no change** -- it is the evidence, and `../HSP-runs` is read-only from FloatFEA under DS0. It is the file whose bare-name imports make an untracked module shadowing possible, and the refusal belongs in the preflight that exports from it. |
+| R588 | `README.md:97` | the file is touched and this line number is the old one | **no change.** Cited as where a reader would look for the import contract. The refusal is in the preflight, where it is executable, rather than in prose that nothing checks -- CW0. |
+| R588 | `scripts/export_platform_deck.py:89` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the false sentence is gone and `_IMPORT_DIRS` plus the untracked-module refusal replace it, so the cited numbers are the old ones. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:223` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:224` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:225` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:226` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:227` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:228` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:229` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:230` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:231` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:232` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:233` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:234` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:235` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:236` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:239` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:240` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:241` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:242` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:244` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:245` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:246` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+| R589 | `tests/verification/rung3/test_platform_deck_export.py:247` | the file is touched and this line number is the old one | TOUCHED at `f14fad2`, and **no change at that exact line**: the test is renamed to `..._RECORDED_TEXT_digest`, the docstring states that a CRLF rewrite is invisible and why that is deliberate, and the message says text rather than bytes. The BEHAVIOUR is unchanged on purpose -- a digest that noticed line endings would fail on every Windows clone. |
+
+## 4. Carried
+
+Generated: `python scripts/carried_table.py <the newest verdict> docs/reports/F2/step-7-answers.json`.
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R586 | **answered** — §2 | Eight tests are red at the judged commit and CI at the judged commit has conclusion failure.... |
+| R587 | **answered** — §2 | The re-locked plan says both that the twelve buoy bodies are in the model and that they are... |
+| R588 | **answered** — §2 | The preflight that makes G3.2's "at the pin" true ignores untracked files, and the comment... |
+| R589 | **answered** — §2 | The digest that now carries G3.2 is named for the file's bytes and is not over the file's... |
+
+## 5. The whole suite
+
+**Whole suite at `863c1aa`: 2608 passed, 0 failed, 0 skipped.** **The excluded set: 199 passed, 2 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 201 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[answers_header_names_an_older_verdict_commit]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]`
+```
+
+**Zero failed and zero skipped in the main set, and the excluded set is TWO** — down
+from eight at the reviewed commit, and the eight had one cause: the `>= 5` floor R586
+deleted.
+
+**Both remaining reds are `test_the_answered_verdict_is_the_NEWEST_one` reached through
+the nested harness**, which is the ordinary interval red: this revision answers the
+newest verdict, so the pair clears at the commit that publishes this revision and reds
+again at the next one. It is not a defect and it is not the class
+R586 removed.
+
+```
+claim  the two reds are the interval pair and nothing else
+cmd    python scripts/suite_count.py
+out    failed, in the excluded set:
+       test_the_guard_survives_the_state[answers_header_names_an_older_verdict_commit]
+       test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]
+cmd    python -m pytest "tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]" -q
+out    the nested log names test_the_answered_verdict_is_the_NEWEST_one
+judge  neither is in floatfea/ and neither is on the verification ladder
+```
+
+**And the step marker has not moved, which is the one thing left open in the
+mechanism.** DX2's paths now follow the plan, so F3's first step report would be read
+— the cell proves it both ways. What has not happened is the move itself, because it
+would point the guards at a review tree only the reviewer can create, and there is no
+state in which the implementer creates one. So this revision is still step 7's, and the
+transition wants the reviewer's next verdict written into F3's tree in the same round
+the marker advances.
+

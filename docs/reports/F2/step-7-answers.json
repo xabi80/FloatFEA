@@ -2,64 +2,34 @@
  "_": [
   "POINTERS ONLY (CH4).",
   "",
-  "Revision 5 answers the SEVENTIETH verdict, a PASS that closed step 7 on",
-  "the cap and carried three items forward. All three are answered: R582 at",
-  "63046e5, R583 and R584 at b5602d6, C10/R585 at 475c224.",
+  "Revision 6 answers the SEVENTY-FIRST verdict, a HOLD whose one cause was",
+  "a guard floor with no satisfiable state. All four findings are answered:",
+  "R586 and R588 and R589 and C17 at f14fad2, R587 at 8b14de3 as a plan",
+  "commit, and DX2's process rulings at de67ba5.",
   "",
-  "THE `Answers:` SHA IS THE VERDICT'S OWN COMMIT, 1b895db, and not the",
-  "commit it judged. `VERDICT_TEXT` is read AT that commit, so naming the",
-  "judged commit makes every generator read the PREVIOUS verdict -- which is",
-  "what happened on the first attempt at this revision and produced a table",
-  "for verdict 69 inside a revision answering verdict 70."
+  "THE `Answers:` SHA IS THE VERDICT'S OWN COMMIT, 7bd86e8, per DX2's third",
+  "ruling. `VERDICT_TEXT` is read AT that commit."
  ],
  "answered": {
-  "R567": {
-   "state": "carried",
-   "where": "\u00a72"
-  },
-  "R576": {
+  "R586": {
    "state": "answered",
-   "where": "\u00a72"
+   "where": "\u00a72",
+   "site": "tests/test_report_carried.py"
   },
-  "R577": {
-   "state": "answered",
-   "where": "\u00a72"
-  },
-  "R578": {
-   "state": "answered",
-   "where": "\u00a72"
-  },
-  "R579": {
-   "state": "answered",
-   "where": "\u00a72"
-  },
-  "R580": {
-   "state": "answered",
-   "where": "\u00a72"
-  },
-  "R581": {
-   "state": "answered",
-   "where": "\u00a72"
-  },
-  "R582": {
+  "R587": {
    "state": "answered",
    "where": "\u00a72",
    "site": "docs/milestones/F3.md"
   },
-  "R583": {
-   "state": "answered",
-   "where": "\u00a72",
-   "site": "tests/verification/rung3/test_platform_deck_export.py"
-  },
-  "R584": {
+  "R588": {
    "state": "answered",
    "where": "\u00a72",
    "site": "scripts/export_platform_deck.py"
   },
-  "R585": {
+  "R589": {
    "state": "answered",
    "where": "\u00a72",
-   "site": "scripts/suite_count.py"
+   "site": "tests/verification/rung3/test_platform_deck_export.py"
   }
  }
 }
