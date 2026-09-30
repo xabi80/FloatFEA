@@ -197,8 +197,22 @@ def main(argv: list[str] | None = None) -> int:
             f"{np.max(np.abs(r + a)):>13.4e}"
         )
 
-    weight = 28.67 * 9.81
-    buoy_fz = float(np.max(np.abs([lam[i * rows + 2] for i in range(12)])))
+    # C38: THE BUOY JOINTS ARE NOT THE FIRST TWELVE. The joint order is interleaved --
+    # three buoy joints then a hub->platform joint, four times over -- so `range(12)`
+    # took in joints 3, 7 and 11, which are hub->platform, and left out buoy10, buoy11
+    # and buoy12 entirely. Selected by NAME instead.
+    buoy_rows = [
+        i for i, joint in enumerate(joints) if joint.model_dump()["body_a"].startswith("buoy")
+    ]
+    assert len(buoy_rows) == 12, f"expected 12 buoy joints, found {len(buoy_rows)}"
+    buoy_fz = float(np.max(np.abs([lam[i * rows + 2] for i in buoy_rows])))
+
+    # C39: THE BUOY WEIGHT WAS TYPED. Read from the deck and from the frames module,
+    # so a deck whose buoys are a different mass cannot leave a stale figure here.
+    from floatfea.io.frames import GRAVITY_MAGNITUDE
+
+    buoy_mass = float(next(b for b in deck.bodies if b.name.startswith("buoy")).mass)
+    weight = buoy_mass * GRAVITY_MAGNITUDE
     print(
         "\n  WHAT THIS DOES NOT CLOSE, AND IT IS NOT A DEFECT IN THE NUMBERS."
         "\n  DY7 asks for `reactions + inertia relief - applied` with the residual. The"
@@ -212,7 +226,8 @@ def main(argv: list[str] | None = None) -> int:
         "\n  AND THE REACTIONS ARE PERTURBATIONS, NOT TOTALS. The study builds with"
         "\n  `solve_equilibrium=False` and `xi` is displacement from the reference, so"
         f"\n  `lam` is the reaction ABOUT the equilibrium state. The largest buoy-joint Fz"
-        f"\n  is {buoy_fz:.4f} N against a buoy weight of 28.67 * 9.81 = {weight:.1f} N,"
+        f"\n  is {buoy_fz:.4f} N against a buoy weight of {buoy_mass:g} * "
+        f"{GRAVITY_MAGNITUDE:g} = {weight:.1f} N,"
         f"\n  a ratio of {buoy_fz / weight:.2e}, which is what says so. Member forces need"
         "\n  static PLUS dynamic, so F4's export has to carry the equilibrium reaction as"
         "\n  well as the history."
