@@ -1,4 +1,562 @@
-# Review � F2 step 7
+# Review — F2 step 7
+Reviewed commit: 8b4b6879d45a690a04f358971175fcceedec4521
+Verdict: PASS
+Tests: 2931 passed, 2 failed, 0 skipped   (my own run at `d838d77`, `python -m pytest -q`, 1338.59s, one invocation, no split)
+
+## Round of 2026-09-30 -- SEVENTY-THIRD verdict on F2/F3
+
+**Reviewed commit: `d838d77`.**
+
+**THIS IS THE THIRD ROUND OF THIS STEP AND IT CLOSES IT (CZ0).** The verdict letter is
+PASS because the cap says so, and the substance of this round is a HOLD's: four blocking
+findings, R596 to R599, carry by name into F3 step 1 and block there before any new work.
+I am not softening them and I am not asking for a fourth round.
+
+**WHAT THE ROUND GOT RIGHT, FIRST, because most of it is right.** DY0 to DY7 landed in
+eight standalone commits, one path class each. R591 is genuinely and completely answered
+-- the CoG assertion now names the deck's declared point instead of the body node, and the
+10.3315 m error is gone. R592 is answered and the implementer found and reported a second
+error of its own inside the fix, which is the behaviour this whole arrangement exists to
+produce. R595 is answered. DY7's script is the best thing in the diff: it refuses twice to
+produce a plausible number and says exactly why, which is worth more than a table would
+have been. R594 is acknowledged and the eight commits obey DY8b.
+
+**AND THE ONE THING THAT IS NOT.** R590 was that a gate could not fail. The repair
+rebuilt the model well and moved the vacuity rather than removing it -- and it moved it
+into a second quantity. The implementer asked me to rule on exactly this and reported the
+mass half honestly; the finding is larger than the report says.
+
+## The ruling asked for first: the two reds are a guard FAILING FALSE (R599)
+
+**I rule with the implementer, and DR1's permitted repair is DELETION, not a name.**
+
+## CI, for the commit under review (CA2)
+
+```
+cmd  gh run list --commit d838d77 --json name,conclusion,workflowName,event
+out  36696844153  CI  workflow_dispatch  completed  failure
+out  2 failed, 1032 passed in the `lint, unit and guards` step; the verification
+     ladder GREEN in every rung
+cmd  gh run list --commit 6c09932 (the previous round's judged commit, dispatched)
+out  36693879464  success
+judge RED, and the two reds are the two I rule on in R599. The diagnosis in verdict
+      72 -- that a docs-only push is path-ignored and `workflow_dispatch` is the one
+      route left -- was right, the implementer took it, and C31 is closed by the
+      measurement rather than by argument. The ladder being green at the judged commit
+      on a machine neither of us controls is the thing I could not get last round.
+cmd  python -m pytest -q            (mine, at `d838d77`)
+out  2 failed, 2931 passed, 2 warnings in 1338.59s
+judge my run and CI agree on the failure set exactly, which is the first time this
+      step that they have been comparable at all.
+```
+
+**A note on the whole-suite figure.** The report's is `2621 passed, 1 failed` at
+`56d6810`; mine is `2931 passed, 2 failed` at `d838d77`. The report names its commit so
+nothing it says is false, but 310 tests separate the two, and several guards are
+parametrised over the report's own rows -- so the count grows as the report is written and
+a figure taken two commits early is not a figure about the tree under review. Closure item
+C33; it is not why anything here blocks.
+
+## Carried
+
+Verdict 72 carried six blocking items -- R590 to R595 -- and closure items C12, C14,
+C18 to C25, C26 to C32. The report's header reads `Answers: verdict 72 @ 5ef2e3d`, which
+is my own verdict commit and the latest verdict, so instruction 1b is satisfied and DX2's
+third ruling was followed.
+
+```
+cmd  python scripts/check_carried.py --verdict docs/reviews/F2/step-7.md --report docs/reports/F2/step-7.md
+out  check_carried: all 10 findings carried        exit 0
+```
+
+**I re-measured all six rather than reading the report.**
+
+* **R590 -- PARTIALLY ANSWERED, and the unanswered part is R596.** The mass half now has
+  real content and I measured it: a ten percent error in the element axial mass block
+  turns 12 tests red. That content is exactly what R590 said was the only non-trivial
+  part of the old pair, now merged into one test. What R590's `Closed when` asked for --
+  *"the mass half compares a quantity the deck constrains"* -- is not what landed, and the
+  implementer says so in the report. Under DY0 every body is mass-sized by construction,
+  so the hub-versus-platform distinction R590's condition rested on no longer exists; the
+  condition was overtaken by a model change I accept. **The division the implementer asks
+  me to rule on is SOUND for the mass and the section.** `test_the_section_is_F1s_RECORDED_section`
+  really is what sees a wall error, and I confirmed both of the implementer's cells:
+  `ARM_WALL` 0.180 -> 0.001 gives `5 failed, 38 passed`, all five in the section test and
+  none in a mass-property assertion; `ARM_OUTER_DIAMETER` 2.5 -> 2.6, a four percent
+  change, also gives 5 failed. **The vacuity was not removed, it was moved into the
+  inertia and the CoG**, and that is R596. Open, renumbered.
+
+* **R591 -- ANSWERED at `ecebd78` and `106ff69`. Closed.**
+
+```
+cmd  remainder_point + [0, 0, 5] applied after the placement rule, shipped tests re-run
+out  11 failed, 32 passed -- CoG x5, inertia x5, and the first-moment placement test
+judge the implementer's cell reproduces exactly. The CoG assertion names the offset and
+      the point it is measured from. This is the finding I most wanted answered and it is.
+```
+
+* **R592 -- ANSWERED at `ecebd78`, and the implementer's self-report is correct.**
+  `inertia_about` is a separate function from `rigid_properties` and the reference point
+  is `G`. `test_J_mem_is_taken_ABOUT_G_and_not_about_the_member_centroid` asserts the
+  parallel-axis difference and refuses to pass on a body whose shift is zero, which is a
+  gate carrying its own failure. Closed. **But the figure quoted for it is not a
+  measurement of accuracy** -- see R598.
+
+* **R593 -- ANSWERED IN SUBSTANCE, NOT SITE BY SITE.** The `:468` comparison R593's
+  condition named is gone: all three uses of `_NEGLIGIBLE_FRACTION` were deleted at
+  `ecebd78`, which is better than moving the constant and is what the data supported.
+
+```
+cmd  grep -n "_NEGLIGIBLE_FRACTION" floatfea/model/platform.py
+out  85:_NEGLIGIBLE_FRACTION: Final[float] = 1e-12      -- the declaration, and nothing else
+cmd  git diff 5ef2e3d..HEAD -- floatfea/model/platform.py | grep NEGLIGIBLE
+out  three deleted lines, no added line
+judge the tolerance-shaped comparison is gone. The DECLARATION is still there, dead, with
+      a docstring that describes a builder DY0 withdrew ("when a member is mass-sized"),
+      and R593's condition also said "the :61-65 docstring stops saying the finding it
+      gates is not a pass or a fail" -- that half was not done. A dead literal decides
+      nothing, so this is not (b) and I am not holding on it: closure item C34.
+```
+
+  **And a second thing at the same site, which is a real code defect rather than prose.**
+  `floatfea/model/platform.py:86-89` is `_NEGLIGIBLE_FRACTION`'s docstring and `:90-97` is
+  a second bare string immediately after it -- the justification for
+  `MIN_LENGTH_OVER_DIAMETER` and `MAX_LENGTH_OVER_GYRATION`, which now documents nothing
+  at all because a module-level string only attaches to the assignment above it. The two
+  builder limits have silently lost their recorded reason. Closure item C35, and deleting
+  the dead constant closes both.
+
+* **R594 -- ANSWERED. Closed, and verified rather than accepted.**
+
+```
+cmd  git diff 5ef2e3d..HEAD -- .claude docs/SUPERVISOR.md
+out  (no output)
+cmd  git show --stat --format="" b8bca73
+out  scripts/write_verdict.py     -- one file, a standalone `process:` commit
+judge my own instructions are untouched this round. `write_verdict.py` is my tool and not
+      my instructions, its change is additive, it removes no guard, and I read it line by
+      line: earlier rounds are preserved verbatim, newest first, and both sides are
+      explicit UTF-8. The latent cp1252 bug the implementer found would have silently
+      discarded every earlier round on the first em dash, so that catch is the difference
+      between DY6 working and DY6 looking like it worked. Closed.
+```
+
+* **R595 -- ANSWERED at `ecebd78`. Closed.** `buoy_joint_nodes` is keyed by
+  `(body, node)` and `test_the_BUOY_NODE_MAP_names_its_body` reads it.
+
+## Findings
+
+**R596. (c, blocking) The CoG and INERTIA halves of G3.1a are algebraic identities of the
+construction and cannot fail. The remainder position is solved to make the CoG comparison
+close, and its rotary inertia is defined as the inertia comparison own deficit, so both
+close. A 100 percent error in every element rotary inertia is undetectable at ANY
+tolerance. `floatfea/model/platform.py:450` and `:486` against
+`tests/verification/rung3/test_platform_skeleton.py:151` and `:172`; plan row
+`docs/milestones/F3.md` G3.1a.**
+
+This is R590 one level on. I am not repeating R590 reading; I ran the mutations.
+
+```
+rule   worst <= MASS_PROPERTY_AGREEMENT * max|deck_inertia|, per body
+cmd    beam.bending_mass: rho_i -> 2.0 * rho_i, shipped tests re-run unmodified
+out    43 passed
+cmd    beam.local_mass: rho * (I_y + I_z) -> 3.0 * rho * (I_y + I_z), torsion block
+out    43 passed
+cmd    _build_body reads 2.0 * the deck inertia
+out    43 passed
+cmd    rigid_projection: the translation-rotation coupling block negated
+out    43 passed
+cmd    CONTROL -- remainder_inertia overwritten with zeros after the deficit is computed
+out    5 failed, one per body
+judge  the assertion is not inert. It is a consistency check of `body_mass_matrix`
+       against the scalar arithmetic in `_build_body`, and that is ALL it is, because
+       `remainder_inertia = deck_inertia - inertia_member - parallel` and
+       `inertia_member` is read from the SAME assembled matrix the test then reads.
+       The comparison reduces to deck_inertia == deck_inertia. There is no arrangement
+       of the deck, the element or the section that breaks it.
+```
+
+**AND THE PUBLISHED RESIDUAL SAYS SO, WHICH IS WHY THIS IS NOT A READING.**
+
+```
+cmd    the gate own printed line, at `d838d77`, unmodified
+out    platform  inertia residual 2.1092e-26 of 6.250000e+09 = 3.375e-36 relative
+out    hub1..4                    2.98e-08 to 5.96e-08        = 9.5e-17 to 1.9e-16
+cmd    numpy.spacing(6.25e9)
+out    9.5367e-07
+judge  the platform residual is NINETEEN ORDERS OF MAGNITUDE below one bit of the
+       quantity being differenced. That is not round-off -- round-off on a 6.25e9
+       subtraction is about 1e-06 absolute, which is what the hubs show. It is the
+       arithmetic signature of the same floating-point numbers being subtracted and
+       added back.
+rule   INVERT THE DECISION RULE AND SOLVE, rather than sampling one side of it
+cmd    MASS_PROPERTY_AGREEMENT 1e-13 -> 1e-30 WITH the bending rotary inertia doubled
+out    9 failed -- and the platform inertia assertion PASSES, residual still 3.375e-36.
+       The nine reds are the hubs and the CoG failing on their own round-off at 1e-17,
+       not on the defect.
+judge  NO value of this tolerance detects a 100 percent rotary-inertia error on the
+       platform. There is no threshold to solve for, which is what a vacuous gate is.
+```
+
+**The CoG half is the same shape in a milder form.** `remainder_point` at `:450` is solved
+from the first-moment equation, so the quantity the assertion inspects is identically zero
+and carries neither a sign nor an operating point. That is why the negated coupling block
+above passes: a comparison whose expected value is exactly zero has nothing for a sign
+error to show against. The real content of the placement rule is asserted DIRECTLY and
+well by `test_the_REMAINDER_is_placed_to_match_the_first_MOMENT` -- 11 red under the +5 m
+cell -- so the CoG gate is not adding a check, it is restating one.
+
+**Why this is (c) and not a closure item.** CZ0 third head is *what a gate claims, on which
+quantity, at what threshold.* The G3.1a row in `docs/milestones/F3.md` was edited THIS STEP
+to read *"All three are asserted since DY1/DY2; the narrowing that reported the inertia
+rather than asserting it is withdrawn"*, and the same row concedes that the narrowing first
+reason -- the deck superstructure inertias satisfy the lamina identity exactly and are
+typed placeholders -- *"remains true"*. A narrowing that published an honest measurement
+has been replaced by an assertion that cannot fail, against a placeholder the plan still
+calls a placeholder. The narrowing was the better artifact.
+
+**Why I am NOT escalating this to a STOP, on the record so the choice can be argued with.**
+DY0c construction is not wrong. Building a model that reproduces the deck mass, CoG and
+inertia is a legitimate and probably necessary thing to do, and the alternative is a model
+that does not reproduce them. What is wrong is one row of the gate table calling the
+reproduction a proof, and that is repairable without reopening DY0. The verification ladder
+is green on CI at the judged commit. Nothing downstream is uninterpretable: the mass half
+has measured content, the section gate has measured content, and the placement rule has a
+direct test that reddens. A STOP would halt the project against 31 October over a claim
+boundary. If the technical supervisor reads it the other way that is a decision above me,
+and I have written down exactly what it turns on.
+
+**Closed when** EITHER (i) the inertia comparison is against a quantity the deck constrains
+independently of the remainder. I am describing the predicate and not writing it: a BOUND
+rather than an identity is the honest form -- for instance that `J_r` is positive definite,
+and that the members own contribution is a stated FRACTION of `J_b(G)`, published per body
+and per component, with the direction of the inequality recorded. OR (ii) the site and the
+plan row say in one sentence that mass, CoG and inertia are reproduced BY CONSTRUCTION,
+name what the three tests actually check -- the consistency of `inertia_about` with
+`rigid_properties` and of the assembled matrix with the scalars in `_build_body`, which is
+real and worth keeping -- and G3.1a claim is re-scoped to that. Either is acceptable. What
+is not acceptable is a published assertion that cannot fail. The tolerance sentence *"the
+entry is known to be tight enough to see a real defect"* is corrected in the same commit,
+per BP0.
+
+**R597. (c, blocking) Nothing in the tree connects a built member node to the deck joint
+point it came from, so the frame GEOMETRY is ungated -- and the rewrite lost a detection
+the old CoG test had. `floatfea/model/platform.py:557` claims otherwise in prose, with no
+test and no triple.**
+
+```
+cmd    every member whose label ends in "1" has its far end moved +3 m in x, inside the
+       builder, AFTER the deck is read -- four arms 3 m too long
+out    43 passed; and 1765 passed across tests/unit and tests/verification
+cmd    the last member of each body re-pointed onto the FIRST member line -- the count
+       stays 16, the labels stay unique, four arms are duplicated and four are gone
+out    43 passed; and 1765 passed across tests/unit and tests/verification
+cmd    the last member of each body REMOVED -- 11 members instead of 16
+out    2 failed: `test_the_skeleton_is_FIVE_bodies_and_SIXTEEN_members` and
+       `test_the_BUOY_NODE_MAP_names_its_body`. NEITHER IS G3.1a -- mass, CoG and
+       inertia are green on all five bodies.
+rule   `floatfea/model/platform.py:557` -- "Every coordinate comes from the deck own
+       joint points. Nothing is typed, and no nominal radius is used -- DJ1 rule"
+judge  a CW0 claim about the code, in a docstring, with no test and no triple beside it.
+       And verdict 72 recorded that the PRE-DY1 CoG test caught a dropped member; the
+       rewrite is better in every other respect and it lost that. The second cell is the
+       one that matters: a materially wrong frame, counts and labels intact, and the
+       whole unit and verification suite green at 1765 passed.
+```
+
+**Closed when** a shipped assertion compares each built member node to the deck joint point
+it came from -- the deck is read in the same function and both are exact decimals, so this
+is cheap -- OR the sentence at `:557` is deleted, DJ1 provenance is stated in the plan as
+unasserted, and G3.1a reach is written without it. **Both halves, per the site-by-site
+rule in CLAUDE.md.**
+
+**R598. (b, blocking) `MASS_PROPERTY_AGREEMENT` names a counter that does not exist, and
+its published worst measurement is 11.6x high. `floatfea/tolerances.py:1511` and `:1500`.**
+
+```
+rule   every citation resolves; a counter is a test
+cmd    git grep -n "MISPLACED_remainder"
+out    floatfea/tolerances.py:1511:# It carries a counter: `test_G3_1a_a_MISPLACED_remainder_reddens` moves the
+out    one line, and it is the comment itself
+judge  a phantom. `tests/test_counters_are_injected.py` cannot see it -- `REGISTERED` is
+       a hand-written list and this entry is not on it, and that file own docstring says
+       "a constant with no counter registered here is not covered at all" -- so the guard
+       silence is not evidence. The sentence that follows, "so the entry is known to be
+       tight enough to see a real defect and not merely loose enough to pass", is
+       unsupported twice: the test is absent, AND R596 inversion cell shows that on the
+       platform no value of this entry sees the defect.
+rule   tolerances.py:1500 -- "Measured across the five bodies of F3 skeleton -- mass, CoG
+       and the full inertia tensor, each relative to the quantity compared -- the worst
+       residual is 2.2119e-15", and "about 45 over the worst measurement"
+cmd    that same measurement reproduced at `d838d77`: rigid_properties(body_mass_matrix)
+       against deck_mass, deck_cog and deck_inertia, per body, relative to each
+out    platform  mass 0.0000e+00  cog 5.3218e-18  inertia 3.3747e-36
+out    hub1      mass 0.0000e+00  cog 1.1642e-17  inertia 9.5367e-17
+out    hub2      mass 1.5522e-16  cog 4.4238e-17  inertia 1.9073e-16
+out    hub3      mass 0.0000e+00  cog 2.0955e-17  inertia 9.5367e-17
+out    hub4      mass 1.5522e-16  cog 8.1491e-18  inertia 9.5367e-17
+out    WORST = 1.9073e-16 at hub2 inertia; 1e-13 / worst = 524.29x
+judge  the published figure is 11.6x high and the headroom is 524x, not 45x.
+```
+
+**What DOES hold, checked rather than assumed, because the entry is mostly right.**
+`eps = 2.220446e-16` and `36 * eps = 7.993606e-15` exactly as written; `1e-13 / (36 eps) =
+12.51x`, so the "factor of about 12" is right; `n_dof = 36` for a six-node body, correct;
+`1.25e6 * 50 = 6.3e7` and `1.25e6 * 2500 = 3.1e9`, correct; `ROUNDOFF_IDENTITY = 1e-14` and
+the reason for not reusing it is sound. **The CLASS line is right and the form is right** --
+it is an exactness entry, dimensionless, relative to the quantity compared in every use, one
+entry governing kilograms, metres and kilogram-metres-squared alike, and **setting it from
+the derivation rather than from the measurement is the correct choice for the correct
+reason.** I am not asking the value to move. What is wrong is the measurement published
+beside the derivation, and that the entry offers the platform 3.375e-36 as evidence about
+arithmetic when it is evidence about cancellation.
+
+**Closed when** the counter exists at a path this entry names and reddens when the defect it
+declares is injected -- OR the counter sentence is deleted and the entry states that it has
+none and why, which for an exactness entry is defensible and is what I expect; **AND** the
+`2.2119e-15` figure and the "about 45" that depends on it are regenerated by a committed
+script at the commit that publishes them, or moved to the step report and replaced here by a
+single number and a pointer (BI3).
+
+**R599. (d, blocking -- RULED, and the permitted repair is DELETION) The two red
+guard-states are the guard FAILING FALSE. `tests/test_report_guard_states.py:713-743`.**
+
+The implementer is right, did not touch it, and was right not to. This is my call to make.
+
+```
+cmd    python -m pytest tests/test_report_guard_states.py -q -k "answers_header_names_an_older_verdict_commit or guard_state_declared_GREEN"
+out    2 failed: "the guard failed through [test_the_answered_verdict_is_the_NEWEST_one,
+       test_the_generator_would_catch_a_row_under_the_wrong_number,
+       test_the_CI_section_is_about_the_REVIEWED_commit], none of which is a named
+       reporter. A failure nobody can locate is half a report."
+out    the nested run inside the harness: 3 failed, 160 passed -- and one of the three
+       prints "the CI section first commit is `6c09932` and the verdict judged `4708cc2`"
+judge  the planted defect is detected THREE TIMES and every one of the three reporters
+       names the commit and the file. The assertion own message -- "a failure nobody can
+       locate" -- is FALSE about this state, and that is what failing false means. The
+       criterion is written beside the tuple in the implementer own words: "the right
+       answer for an anonymous collapse and the wrong one for a test that names the
+       commit and the file." All three qualify.
+```
+
+**AND THE WHITELIST IS UNSOUND IN BOTH DIRECTIONS, which is why a name is the wrong
+repair.** If the only reporter is unlisted, the state goes red with nothing wrong -- what
+happened here. If a LISTED reporter fires for an unrelated reason, the state goes green
+while the real reporter is absent -- which is R516, recorded in the comment three lines
+above the failure, where a state "had been certifying nothing". A closed list of reporters
+inside a suite that grows cannot be right in either direction, and adding a name has now
+been the repair three times: R516, CI1 two, and this. **DR1 is absolute and specific about
+exactly this shape: a guard that fails false is DELETED, with the reason recorded at the
+site, not repaired.**
+
+**What is deleted is the `named` tuple and the assertion at `:713-743`, not the two
+states.** The states are good -- they plant a real defect and `assert code != 0` at `:712`
+keeps the property that matters, that the guard reddens. Locatability survives where it is
+done properly: `_assert_diagnosis` names the expected reporter PER STATE instead of
+whitelisting a whole suite, and neither failing state is in `DIAGNOSIS`, so deleting the
+whitelist costs them nothing they had.
+
+**Closed when** `tests/test_report_guard_states.py:713-743` is gone, the reason is at the
+site naming R599 and DR1, and `python -m pytest -q` reports `0 failed`. Do not add a name.
+Do not delete the two states. Do not extend `DIAGNOSIS` to cover them -- that is an
+extension and DR1 forbids it.
+
+## Closure items
+
+Named, with the file and what would close each. **Fixed once, in the closure commit for
+this step, and not re-reviewed item by item.** C12, C14, C18 to C25 and C26 to C32 carry
+forward except where noted.
+
+**C31 is CLOSED by measurement.** Verdict 72 said CI could never, by construction, confirm
+a fix for a red that a report revision causes. `workflow_dispatch` at `d838d77` did it. The
+route is real and the implementer is the one who has it.
+
+**C33. The whole-suite figure in the report is two commits early.**
+`docs/reports/F2/step-7.md` publishes `2621 passed, 1 failed` at `56d6810`; my run at the
+report own commit `d838d77` is `2931 passed, 2 failed`. The report names its commit so it
+states nothing false, but 310 tests separate the two and several guards are parametrised
+over the report own rows, so the number grows as the report is written. Closed when the
+report either publishes a figure at its own commit or says in one line why it cannot and
+what the gap is.
+
+**C34. `_NEGLIGIBLE_FRACTION` is a dead literal with a false docstring.**
+`floatfea/model/platform.py:85-89`. All three uses were deleted at `ecebd78`, which is the
+right answer. The declaration remains, and its docstring describes a builder DY0 withdrew
+(quote, when a member is mass-sized). The R593 condition also asked for that docstring to
+stop saying the finding it gates is not a pass or a fail, and that half was not done.
+Closed by deleting lines 85 to 89.
+
+**C35. The two builder limits have lost their recorded reason, and it pre-dates this step.**
+`floatfea/model/platform.py:90-97` is a bare string immediately after the
+`_NEGLIGIBLE_FRACTION` docstring, so the justification for `MIN_LENGTH_OVER_DIAMETER` and
+`MAX_LENGTH_OVER_GYRATION` now documents nothing -- a module-level string attaches only to
+the assignment directly above it. Present at `5ef2e3d` too, so this round did not cause it.
+Deleting C34 closes C35 as a side effect, which is why they are listed together.
+
+**C36. The DY7 symmetry row pairs the wrong joints.** `docs/reports/F2/step-7.md`, the DY7
+block. The report says joints 5/15, 6/14 and 7/13 mirror across y. I re-ran the script at
+`--duration 30.0` and got the exact published figures for joints 2 and 3, so the numbers
+are real; the pairing is not.
+
+```
+cmd  python scripts/report_joint_reactions.py --duration 30.0
+out  5 buoy4  Fy -4.0503e-02 Fx -1.3037e-01   13 buoy10 Fy +4.0503e-02 Fx -1.3037e-01
+out  6 buoy5  Fy -3.4939e-02 Fx +2.8571e-01   15 buoy12 Fy +3.4939e-02 Fx +2.8571e-01
+out  7 buoy6  Fy +7.9455e-02 Fx +1.9953e-01   14 buoy11 Fy -7.9455e-02 Fx +1.9953e-01
+judge the mirror pairs are (5,13), (6,15) and (7,14). Under the published pairing 5/15,
+      Fy is -4.0503e-02 against +3.4939e-02 and Fx is -1.3037e-01 against +2.8571e-01,
+      which is not a mirror in either component. THE CLAIM IS TRUE AND ITS EVIDENCE ROW
+      IS WRONG -- the symmetry does hold, exactly, on the right pairs.
+```
+
+**C37. The DY7 command row does not produce the DY7 output row.** Same block. The `cmd` is
+`python scripts/report_joint_reactions.py`, whose default is `--duration 40.0`, and the
+`out` rows are at `t = 30.000 s`. I measured both: the default gives `t = 40.000 s` and a
+different set of numbers. Closed by writing the invocation that was actually run.
+
+**C38. The buoy Fz maximum in the reaction script is taken over the wrong joint set, and
+the published number survives it by luck.** `scripts/report_joint_reactions.py`, the closing
+block, `for i in range(12)`.
+
+```
+cmd  the deck joint order, read from platform12_deck.yaml
+out  1-3 buoy/hub1, 4 hub1/platform, 5-7 buoy/hub2, 8 hub2/platform, 9-11 buoy/hub3,
+     12 hub3/platform, 13-15 buoy/hub4, 16 hub4/platform
+judge range(12) takes joints 1 to 12, which INCLUDES three hub-platform joints and
+      EXCLUDES buoy10, buoy11 and buoy12. It is a maximum over a set that is not the set
+      it is named for, which is the assertion-domain shape.
+cmd  the same run, all sixteen joints inspected
+out  the true buoy-joint maximum Fz at t = 30 s is 6.5806e-01 at joints 10 and 11, which
+     ARE inside range(12); the three hub-platform Fz are 3.83e-01, 1.62e-01 and 4.85e-01,
+     all below it; the three omitted buoy joints are 5.28e-01 and 5.32e-01 twice
+judge the published 0.6581 N and the ratio 2.34e-03 are CORRECT at this operating point.
+      The defect is latent rather than a wrong figure, and the conclusion it carries --
+      that the reactions are perturbations about equilibrium, so a member-force table
+      built from them alone understates every arm by three orders of magnitude -- stands.
+      That conclusion is the most valuable thing in the round and I am not disturbing it.
+```
+
+Closed by selecting the buoy joints by name, which the builder already does elsewhere.
+
+**C39. The buoy weight in the reaction script is typed.** Same file: `weight = 28.67 *
+9.81`, while `deck.bodies` is in scope and `buoy1` carries `mass: 28.67`. The value is
+right -- I read the deck -- but it is typed into a script whose whole argument is that
+nothing in it is reconstructed. Closed by reading the mass from the deck and g from `basis`.
+
+**C40. `tests/test_plan_matches_tolerances.py` is a THIRD guard hardcoded to a closed
+milestone path, and my ruling is to LEAVE IT.** The implementer reported this against itself
+and deferred it correctly: an F3 tolerance now sits in the closed F2 plan and the table
+heading had to change to stay true. That heading change is honest and I accept it. The guard
+does not fail false -- it passes, and what it checks, that every declared tolerance appears
+in a plan table, is real. Re-pointing it is a guard edit, which DR1 forbids without a
+directive, and deleting it would remove a real check to fix a cosmetic one. Recorded so the
+debt stays visible and the F3 plan can carry the re-point when the freeze lifts. This is the
+same shape as R564 and the second DX2 ruling, now in a third guard, and the PATTERN is worth
+Xabier attention rather than another round of mine.
+
+**C41. The G3.1a plan row and two test docstrings overstate what is checked.** Covered by
+the R596 closing condition; listed here so the closure commit does not miss the prose half.
+
+**C42. DY6 encoding fix is INCOMPLETE and it broke my own tool on this very verdict.**
+`scripts/write_verdict.py:103`. The write side is explicit UTF-8 now; the read side is
+too, and that is the problem -- the file already in the tree was written by the OLD
+`write_text` and its header carries one cp1252 byte.
+
+```
+cmd  python scripts/write_verdict.py --milestone 2 --step 7 < the body of this verdict
+out  UnicodeDecodeError: utf-8 codec can not decode byte 0x97 in position 9
+cmd  the file bytes inspected
+out  b"# Review  F2 step 7
+..." -- byte 9 is a lone cp1252 em dash
+out  14 non-ascii bytes in all: one 0x97, and 0xc2 0xa7 x5 and 0xe2 0x80 0x94, which
+     are VALID UTF-8 and came from my verdict body
+judge the file is MIXED -- a cp1252 header from the old tool and a UTF-8 body from me --
+      so no single-encoding read can open it. This is precisely the failure the report
+      says DY6 prevents, recurring on the transition file, and it stopped the verdict
+      being written at all. I repaired it by replacing that ONE byte with U+2014 encoded
+      as UTF-8, verified the result decodes and that both earlier rounds survive
+      unchanged at 1550 lines, and then the tool ran and accumulated correctly.
+```
+
+Closed by `errors="replace"` or a cp1252 fallback on the read at `:103`, so the next
+reviewer does not have to hand-patch a file to write a verdict. It will not recur on this
+file, which is why it is a closure item and not a hold -- but it would recur on
+`docs/reviews/F3/step-1.md` if any pre-DY6 verdict is ever appended to.
+
+## Tolerances touched
+
+```
+cmd  git diff 5ef2e3d..HEAD -- floatfea/tolerances.py
+out  one entry ADDED, nothing changed, nothing removed, nothing widened
+```
+
+| | |
+|---|---|
+| constant | `MASS_PROPERTY_AGREEMENT` |
+| old | did not exist; the section read "(no entries yet -- F3)" |
+| new | `1e-13` |
+| form | EXACTNESS. Dimensionless, relative to the quantity compared in every use, one entry over kilograms, metres and kilogram-metres-squared. Correct form, and I checked it is not an absolute tolerance on a dimensional quantity. |
+| derivation | `36 * eps = 7.993606e-15`, verified; `1e-13` is `12.51x` it, verified; `n_dof = 36` for a six-node body, verified. Set from the derivation rather than from the measurement, with the reason stated, and I agree with that choice. |
+| counter | **NAMED AND ABSENT.** `test_G3_1a_a_MISPLACED_remainder_reddens` does not exist. R598. |
+| justification | the `docs/milestones/F2.md:1383` table row, present and matching, plus the entry own comment. That comment measurement figure is 11.6x high. R598. |
+| widened? | No. Nothing in this file was loosened. `_NEGLIGIBLE_FRACTION` moved the other way: three uses deleted and no replacement threshold. |
+
+**And the entry is the RIGHT decision.** R593 asked for a comparison epsilon to be either
+deleted or promoted properly. Both happened: the epsilon went, and the quantity that does
+need a threshold got a declared entry with a class line and a derivation. The two defects in
+it are a phantom citation and a stale figure, not the value.
+
+## Carried for the next step
+
+**R596, R597, R598 and R599 carry BY NAME into `docs/reports/F3/step-1.md` and stay
+BLOCKING there.** They are answered before any new F3 step-1 work and the answers go in that
+report Carried section. Closure items C12, C14, C18 to C25, C26 to C30 and C32 to C41 go
+into this step closure commit as one list.
+
+**Schedule, and the escalation the rule asks for.** F3 closes 13 October. The platform
+skeleton is the first executable thing in it and it builds, which is the good news. This
+step closes carrying four blocking items. If F3 step 1 also closes carrying blocking items,
+`CLAUDE.md` requires the choice to be stated to Xabier -- slip the date or reduce scope --
+and I am flagging now that R596 is the item most likely to force it, because its honest
+repair is a decision about what G3.1a is FOR rather than a code change.
+
+## Next step opens when
+
+**It opens now, and it opens with a debt.** PASS is the cap ruling. The conditions, in this
+order:
+
+1. **R599 first, in its own commit, because everything else is measured against a green
+   suite.** Delete `tests/test_report_guard_states.py:713-743`. Do not add a name.
+2. **R596, R597 and R598 before any new F3 step-1 work.** Each answered site by site with
+   its diff hunk, or the site named and the reason it was left given.
+3. **The closure list once, in one commit.**
+4. Then DY8c: `docs/reports/F3/step-1.md`, the step-marker move, and the F3 skeleton.
+
+**And yes, my next verdict is on the F3 tree, at `docs/reviews/F3/step-1.md`**, and the
+three-verdict count restarts there. The four carried items are already in F3 territory --
+`floatfea/model/platform.py`, `tests/verification/rung3/` and `floatfea/tolerances.py` --
+so the carry is natural rather than a straddle. `docs/reviews/F2/step-7.md` is CLOSED at
+this verdict, and under DD1 nothing later written about the tree reopens it.
+
+## The adversarial corpus (BE3)
+
+`tests/corpus/platform_mass_property_gate.txt`, batch 21, committed separately at
+`8b4b687`. **24 entries, all new this round. Sixteen carry a mutation; the shipped suite
+caught 7 and MISSED 9.** The nine misses are the measurements behind R596, R597 and R598.
+The other eight are `expect=explain` entries about published figures and claims.
+
+The number that matters: **9 of 16 unseen mutation shapes are green under the shipped
+suite**, against 23 of 31 missed in batch 20. Fewer are missed than last round, and the ones
+still missed have moved inward -- they are in the gate now rather than around it, which is
+why three of them are blocking findings rather than corpus rows.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F2 step 7
 Reviewed commit: e5e2015e18dd27034197b56cadd404662514ddbf
 Verdict: HOLD
 
