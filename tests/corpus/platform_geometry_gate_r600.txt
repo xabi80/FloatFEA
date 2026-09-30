@@ -1,0 +1,89 @@
+# CORPUS: the FRAME GEOMETRY GATE AFTER R600 -- what reading the deck bought,
+# and the shapes it still cannot see.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Batch 23, written at
+# the SEVENTY-FIFTH verdict, round 2 on F3 step 1, against the judged commit
+# b2e59b0: floatfea/model/platform.py with deck_joint_points and
+# deck_joint_owner (1c0785e), and tests/verification/rung3/
+# test_platform_skeleton.py with expected_pairs reading them plus the new
+# test_DZ2_each_BUOY_lands_on_the_node_the_DECK_puts_it_at (8df625a).
+#
+# IN SCOPE UNDER DE2: the element, the gates, and -- from F3 -- the platform
+# model. This is the platform model and the gate that proves it. Not apparatus,
+# so DR1 deferral to docs/milestones/F2a.md does not reach it and nothing here
+# is transcribed.
+#
+# WHY A SEPARATE FILE FROM platform_geometry_gate.txt (batch 22). Batch 22 was
+# measured against a gate that compared the built model with itself. R600 changed
+# the quantity compared -- the expected endpoint-pair set now comes from
+# superstructure.deck_joint_points -- so every measured= in batch 22 describes a
+# rule that has moved. A corpus row kept across a rule change is BP0 in corpus
+# form, so the rows are retaken here rather than edited there. Batch 22 stays as
+# the record of what the circular gate did.
+#
+# THE SURFACE.
+#   gate     python -m pytest tests/verification/rung3/test_platform_skeleton.py
+#            unmutated BASELINE at b2e59b0: 52 passed, 0.42s. Every measured=
+#            count below is that command after the one edit case= names, taken in
+#            a git worktree at b2e59b0 outside the repository and restored
+#            between entries.
+#   deck     a property of the built model or of the committed deck, no mutation.
+#   thresh   a solved boundary: the decision rule inverted rather than sampled.
+#   plan     a question the locked plan or a ruling has to answer.
+#
+# WHAT A PASSING SCAN MEANS. It does NOT mean the gate is sound. Each expect= is
+# the reviewer prediction before the run and each measured= is what the shipped
+# suite did. expect=uncaught with measured=CONFIRMED_52_passed is a MISS: the
+# defect is real, the suite is green on it, and the row is the evidence.
+#
+# ONE VARIABLE PER ENTRY, and batch 22 last lesson is carried forward: where an
+# entry says a point moved, the coordinates, the member lengths and the first
+# moments all agree with each other afterwards. A mutation applied AFTER
+# length = math.dist(start, end) reddens the MASS gate on the disagreement rather
+# than the geometry gate on the geometry, and that is a different detection.
+#
+# THE COVERAGE NUMBER THIS BATCH REPORTS. Sixteen entries carry a mutation.
+# ELEVEN CAUGHT, FIVE MISSED. Against batch 22 nine of seventeen on the same
+# surface before R600. The five misses are four distinct shapes, and none of them
+# is the expected side being the built model, which is what batch 22 was entirely
+# about.
+
+# --------------------------------------------------------------------------
+# A. WHAT R600 BOUGHT. Every one of these was 48 passed in batch 22.
+
+id=r600_tip_out_3m_node_and_length surface=gate case=every_member_end_point_moved_plus_3_m_in_x_inside__build_body_with_the_length_recomputed_from_the_moved_end_so_coordinates_and_lengths_agree expect=caught measured=CONFIRMED_9_failed_43_passed_5x_test_DZ2_the_bodys_MEMBER_GEOMETRY_is_what_the_deck_implies_and_4x_test_DZ2_each_BUOY_lands_on_the_node_the_DECK_puts_it_at
+id=r600_tip_out_3m_platform_arms_only surface=gate case=the_four_platform_arm_end_points_only_moved_plus_3_m_in_x_in__member_geometry_before_math_dist expect=caught measured=CONFIRMED_1_failed_51_passed_and_the_one_is_test_DZ2_the_bodys_MEMBER_GEOMETRY_on_the_platform_the_buoy_test_is_untouched_because_the_buoys_hang_off_the_hub_bodies
+id=r600_tip_out_3m_cluster_arms_only surface=gate case=the_twelve_cluster_arm_end_points_only_moved_plus_3_m_in_x_in__member_geometry_before_math_dist expect=caught measured=CONFIRMED_8_failed_44_passed_4x_DZ2_pair_set_and_4x_the_buoy_node_test
+id=r600_plan_centre_displaced surface=gate case=the_platform_plan_centre_moved_from_0_0_z_to_3_0_z_so_the_four_hub_arms_are_53_m_and_47_m_instead_of_50_m expect=caught measured=CONFIRMED_1_failed_51_passed_and_it_is_test_DZ2_the_bodys_MEMBER_GEOMETRY_this_row_reproduces_the_report_own_published_cell_exactly
+id=r600_radius_two_percent_long_geometry_only surface=gate case=every_in_plane_coordinate_of_every_member_end_scaled_by_1.02_in__member_geometry_which_is_what_a_typed_nominal_radius_instead_of_the_deck_joint_point_looks_like expect=caught measured=CONFIRMED_9_failed_43_passed_5x_DZ2_pair_set_and_4x_the_buoy_node_test_NOT_the_1_failed_the_report_publishes_for_this_description
+id=r600_radius_two_percent_long_with_lengths surface=gate case=the_same_1.02_scale_applied_where_member_length_follows_it_so_the_mass_gates_see_it_too expect=caught measured=CONFIRMED_25_failed_27_passed_5x_DZ2_4x_buoy_4x_MASS_4x_A_4x_B_4x_MEMBER_ONLY_fraction
+id=r600_frame_rotated_30_deg surface=gate case=every_member_end_point_rotated_30_degrees_about_z_in__member_geometry_while_the_deck_joint_points_stay_put expect=caught measured=CONFIRMED_13_failed_39_passed_5x_DZ2_pair_set_4x_buoy_node_test_and_4x_test_the_chosen_FRACTION_is_asserted_not_inferred_this_is_one_of_the_two_cells_the_implementer_reported_getting_no_clean_result_from
+id=r600_x_and_y_transposed surface=gate case=x_and_y_swapped_on_every_member_end_point_in__member_geometry_a_reflection_of_the_frame expect=caught_on_four_of_five_bodies measured=CONFIRMED_12_failed_40_passed_4x_DZ2_pair_set_4x_buoy_node_test_4x_f_ladder_and_DZ2_is_GREEN_ON_THE_PLATFORM_because_its_four_hub_joints_are_symmetric_under_the_swap_so_the_reflection_maps_the_pair_set_onto_itself_a_geometric_symmetry_of_this_deck_and_not_a_hole_in_the_assertion
+id=r600_cluster_labels_rotated_within_the_hub surface=gate case=inside_each_hub_every_cluster_arm_label_rotated_onto_the_NEXT_buoy_joint_so_hub2_buoy4_arm_ends_at_buoy5_point_with_the_pair_set_and_the_count_unchanged expect=caught measured=CONFIRMED_4_failed_48_passed_and_all_four_are_test_DZ2_each_BUOY_lands_on_the_node_the_DECK_puts_it_at_the_pair_check_passes_and_should_because_a_permutation_joins_the_same_points
+id=r600_cluster_swapped_across_hubs surface=gate case=each_hub_takes_the_NEXT_hub_three_buoy_joints_so_the_labels_are_right_and_the_coordinates_belong_to_another_tripod expect=caught measured=CONFIRMED_12_failed_40_passed_4x_DZ2_pair_set_4x_buoy_node_test_4x_f_ladder
+id=r600_joint_plane_z_offset surface=gate case=joint_plane_z_taken_0.5_m_above_the_single_elevation_the_deck_joints_share expect=caught measured=CONFIRMED_9_failed_43_passed_5x_DZ2_pair_set_and_4x_buoy_node_test_this_detection_is_NEW_because_deck_joint_points_carries_the_deck_own_z_while_every_built_node_carries_joint_plane_z
+
+# --------------------------------------------------------------------------
+# B. THE SHAPES STILL UNSEEN. Each is one edit and each is 52 passed.
+
+id=r600_miss_platform_arm_labels_reversed surface=gate case=the_four_platform_arm_labels_reversed_against_their_tips_so_platform_hub1_arm_ends_at_hub4_joint expect=uncaught measured=CONFIRMED_52_passed_the_new_buoy_node_test_is_parametrised_over_range_1_BODIES_so_it_never_looks_at_the_platform_and_nothing_ties_a_platform_arm_LABEL_to_a_deck_hub_joint_the_cost_today_is_a_member_force_row_named_for_the_wrong_arm_because_the_only_functional_reader_of_member_labels_in_floatfea_is_the_buoy_map_built_off_the_HUB_bodies
+id=r600_miss_deck_reader_scaled surface=gate case=the_deck_READER_scales_every_joint_point_by_1.02_so_both_sides_of_the_comparison_move_together expect=uncaught measured=CONFIRMED_52_passed_DZ2_now_tests_the_BUILDER_against_the_READER_and_cannot_test_the_reader_the_gate_docstring_claim_is_narrower_than_this_and_is_ACCURATE_it_says_neither_map_can_be_influenced_by_the_MODEL_CONSTRUCTION
+id=r600_miss_deck_joint_points_from_built_nodes surface=gate case=deck_joint_points_overwritten_in_the_Superstructure_constructor_with_the_coordinates_of_the_BUILT_nodes_R600_exact_shape_at_a_NEW_site expect=uncaught measured=CONFIRMED_52_passed_this_is_the_mechanical_answer_to_the_implementer_own_question_about_the_recurring_pattern_the_cheapest_check_is_PROVENANCE_and_not_detection_expected_pairs_re_reads_the_deck_through__full_scale_deck_and_asserts_deck_joint_points_equals_it_which_is_one_rung_3_assertion_and_not_apparatus
+id=r600_miss_plan_centre_not_the_deck_centroid surface=gate case=the_deck_four_hub_joints_all_shifted_plus_3_m_in_x_so_the_frame_plan_centre_is_no_longer_their_centroid_while_the_builder_keeps_0_0_joint_plane_z expect=uncaught measured=CONFIRMED_52_passed_the_platform_centre_is_the_ONE_point_expected_pairs_does_not_take_from_the_deck_and_the_docstring_says_so_honestly_the_CoG_gate_cannot_supply_it_because_the_remainder_is_placed_to_make_the_first_moment_match
+id=r600_miss_grid_coarsened_twelve_orders surface=thresh case=the_DZ2_rounding_grid_changed_from_MASS_PROPERTY_AGREEMENT_times_extent_to_1e12_times_it_so_the_cells_are_5.1_m_wide expect=uncaught measured=CONFIRMED_52_passed_the_grid_is_a_REAL_threshold_now_that_the_two_sides_have_different_provenance_and_nothing_asserts_its_SIZE_verdict_74_ruled_it_untestable_and_it_is_now_testable_and_unmeasured
+
+# --------------------------------------------------------------------------
+# C. SOLVED BOUNDARIES AND DECK FACTS. No mutation; these are measurements.
+
+id=r600_baseline_offset_is_exactly_zero surface=deck case=the_worst_max_abs_built_minus_deck_over_all_sixteen_member_tips_and_the_four_hub_centres_at_b2e59b0 expect=exactly_zero measured=CONFIRMED_0.0_m_both_sides_trace_to_the_same_float_so_the_pair_check_is_bit_exact_in_practice_this_is_the_number_verdict_74_ruling_3_asked_to_be_published_beside_the_grid
+id=r600_detection_threshold_platform surface=thresh case=the_smallest_positive_displacement_of_the_platform_hub1_arm_tip_in_x_that_moves_it_to_a_different_grid_cell_solved_by_walking_ULPs_from_x_equals_50.0 expect=picometre_scale measured=CONFIRMED_plus_7.1054e_13_m_which_is_100_ULPs_of_50.0_against_a_grid_of_5.1056e_12_m_and_a_frame_extent_of_51.056247_m
+id=r600_detection_threshold_hub surface=thresh case=the_same_solved_on_hub1_buoy1_arm_at_x_equals_75.0_and_on_hub1_buoy2_arm_at_x_equals_37.50000000000001 expect=picometre_scale measured=CONFIRMED_plus_1.2648e_12_m_at_89_ULPs_and_plus_1.2506e_12_m_at_176_ULPs_against_a_hub_grid_of_2.5000e_12_m
+id=r600_buoy_map_cannot_go_vacuous surface=deck case=whether_the_new_buoy_node_test_can_read_green_on_an_empty_or_short_buoy_joint_nodes_map_since_it_iterates_the_map_and_skips_every_entry_whose_owner_is_not_this_body expect=guarded_by_a_sibling measured=CONFIRMED_test_the_BUOY_NODE_MAP_names_its_body_asserts_len_mapping_equals_12_in_the_same_file_so_the_domain_cannot_empty_silently_assertion_domain_blindness_checked_and_clear
+id=r600_scale_boundary_refuses_rather_than_defaults surface=deck case=build_superstructure_called_at_froude_lambda_1_and_at_500_instead_of_50 expect=refused_at_both measured=CONFIRMED_lam_1_ValueError_platform_hub1_arm_L_over_D_0.400_is_below_2_and_lam_500_ValueError_L_over_r_607.7_exceeds_300_and_at_lam_50_the_DZ2_pair_set_agrees_on_all_five_bodies_so_the_gate_form_is_scale_invariant_and_the_unsupported_case_raises
+
+# --------------------------------------------------------------------------
+# D. QUESTIONS FOR THE PLAN, not mutations.
+
+id=r600_plan_platform_tips_selected_by_name_prefix surface=plan case=expected_pairs_selects_the_platform_expected_tips_as_the_deck_joint_keys_that_startswith_hub_rather_than_by_the_deck_own_ownership_relation_body_b_equals_platform expect=answer_in_the_plan measured=the_ownership_map_IS_carried_and_IS_used_for_the_hub_bodies_and_is_not_used_for_the_platform_so_a_deck_that_ever_names_a_body_beginning_with_hub_that_is_not_a_hub_platform_joint_changes_the_expected_set_without_changing_the_deck_topology
+id=r600_plan_what_pins_the_origin surface=plan case=which_deck_fact_is_supposed_to_pin_the_frame_plan_centre_to_the_origin_given_that_DW1_makes_the_frame_planar_but_nothing_read_here_makes_it_CENTRED expect=answer_in_the_plan measured=DJ1_says_no_coordinate_is_typed_and_0_0_joint_plane_z_is_typed_the_candidate_deck_facts_are_the_centroid_of_the_four_hub_platform_joints_or_the_platform_body_own_reference_point_projected_to_the_joint_plane_and_neither_is_read
