@@ -64,8 +64,60 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-REVIEWS = ROOT / "docs" / "reviews" / "F2"
-REPORTS = ROOT / "docs" / "reports" / "F2"
+_STEP_LINE = re.compile(r"<!--\s*step-under-execution:\s*(\d+)\s*-->")
+_MILESTONES = ROOT / "docs" / "milestones"
+
+
+def _active_plan() -> tuple[Path | None, int]:
+    """The plan carrying the step marker, and the step. `(None, 0)` if unclear.
+
+    THE MILESTONE IS READ FROM THE PLAN, NOT HARDCODED (DX2). `_PLAN` used to be
+    `docs/milestones/F2.md` and `REPORTS`/`REVIEWS` used to be `docs/*/F2`, which
+    meant F3's first step report would be invisible to every guard in this module --
+    and nothing would go RED, because the guards would go on reading F2's last step
+    and finding it green. A check that silently stops checking is worse than one that
+    fails, and R564 already named this shape once.
+
+    EXACTLY ONE plan may carry the marker, and that is what makes this
+    self-enforcing: the milestone cannot advance without the previous plan's marker
+    being removed, so there is no state in which two plans both claim to be under
+    execution and the guards pick one.
+
+    RETURNS a sentinel rather than raising, because this runs at import and a raise
+    at import is R234 -- the module fails to collect and the suite reports one error
+    instead of running. `test_the_plan_names_the_step_under_execution` carries the
+    message.
+    """
+    try:
+        plans = sorted(_MILESTONES.glob("F*.md"))
+    except OSError:
+        return None, 0
+    carrying: list[tuple[Path, int]] = []
+    for plan in plans:
+        try:
+            text = plan.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        m = _STEP_LINE.search(text)
+        if m:
+            carrying.append((plan, int(m.group(1))))
+    if len(carrying) != 1:
+        return None, 0
+    return carrying[0]
+
+
+_PLAN, _PLAN_STEP_NUMBER = _active_plan()
+MILESTONE = _PLAN.stem if _PLAN is not None else "F2"
+"""The milestone under execution, from whichever plan carries the step marker."""
+
+
+def _plan_step() -> int:
+    """The step the plan says is under execution, or 0 if it says nothing."""
+    return _PLAN_STEP_NUMBER
+
+
+REVIEWS = ROOT / "docs" / "reviews" / MILESTONE
+REPORTS = ROOT / "docs" / "reports" / MILESTONE
 
 
 def _steps(where: Path) -> set[int]:
@@ -106,25 +158,6 @@ def _step_files(where: Path) -> dict[int, list[str]]:
         if m:
             out.setdefault(int(m.group(1)), []).append(n)
     return out
-
-
-_PLAN = ROOT / "docs" / "milestones" / "F2.md"
-_STEP_LINE = re.compile(r"<!--\s*step-under-execution:\s*(\d+)\s*-->")
-
-
-def _plan_step() -> int:
-    """The step the plan says is under execution, or 0 if it says nothing.
-
-    RETURNS 0 rather than raising: this runs at import, and a raise at import
-    is R234 -- the module fails to collect and the suite reports one error
-    instead of running. `test_the_plan_names_the_step_under_execution` is the
-    named test that carries the message.
-    """
-    try:
-        m = _STEP_LINE.search(_PLAN.read_text(encoding="utf-8", errors="replace"))
-    except OSError:
-        return 0
-    return int(m.group(1)) if m else 0
 
 
 # THE NEWEST REPORT AND THE NEWEST COMPLETE PAIR ARE DIFFERENT NUMBERS, and
@@ -429,11 +462,30 @@ def test_the_plan_names_the_step_under_execution() -> None:
     A raise at import is R234: the module does not collect and `pytest -q`
     reports one error having run none of the file.
     """
+    # EXACTLY ONE PLAN CARRIES THE MARKER, and this is asserted before the step
+    # number because both failures return the same sentinel and the diagnosis
+    # differs (DX2). Zero means nothing is under execution; two means the
+    # milestone advanced without the previous plan's marker being removed, and
+    # `MILESTONE` -- and therefore every path in this module -- would be picked
+    # from whichever plan sorted first.
+    carrying = [
+        plan.name
+        for plan in sorted(_MILESTONES.glob("F*.md"))
+        if _STEP_LINE.search(plan.read_text(encoding="utf-8", errors="replace"))
+    ]
+    assert len(carrying) == 1, (
+        f"{len(carrying)} plans carry a `<!-- step-under-execution: N -->` line "
+        f"({carrying}); exactly one must. With none, nothing is under execution "
+        "and the guards have no report to read. With two, the milestone advanced "
+        "without the previous plan's marker being removed, and REPORTS/REVIEWS "
+        "would follow whichever plan sorts first -- which is how a guard comes to "
+        "read a closed milestone's last step and report green while checking "
+        "nothing."
+    )
     assert _plan_step() > 0, (
-        f"{_PLAN} carries no `<!-- step-under-execution: N -->` line, so the "
-        "guards fell back to the newest complete report/verdict pair. That is "
-        "the behaviour DB2 replaced, and it makes the step boundary "
-        "permanently red."
+        f"{_PLAN} carries no readable step number, so the guards fell back to the "
+        "newest complete report/verdict pair. That is the behaviour DB2 replaced, "
+        "and it makes the step boundary permanently red."
     )
     assert _plan_step() in REPORTED, (
         f"the plan says step {_plan_step()} is under execution and there is no "

@@ -274,6 +274,21 @@ diff was correct.
 **It is not a substitute for the PR witness.** If the PR channel ever runs, both
 apply and the stricter finding stands, exactly as the step-level rule says.
 
+## The `Answers:` sha is the VERDICT'S OWN COMMIT (DX2, C13)
+
+**The next report's header names the commit the verdict TEXT is final at -- the
+reviewer's own verdict commit -- and never the commit the verdict judged.**
+
+`VERDICT_TEXT` is read AT the commit the header names. Naming the judged commit makes
+every generator read the PREVIOUS verdict: the carried table comes out with the wrong
+round's rows, the answered table with the wrong subjects, the sites table with the
+wrong sites. Two consecutive hand-backs proposed the judged commit, and the second
+cost three rebuilds of one revision before the cause was found.
+
+So a closing instruction reads `Answers: verdict <n> @ <the verdict's own commit>`.
+The commit the verdict judged is stated separately, in the body, bolded and backticked
+per DU1 -- it is what CI is reported for, and the two are different commits.
+
 ## The apparatus freeze (DR1)
 
 **Absolute, until the member-force table ships.** No new guard, no guard edit, and
@@ -306,6 +321,34 @@ one real element defect was found by the reviewer reading physics, and the
 milestone witness found its blast radius by reading physics. Neither came from the
 report-carry apparatus. What that apparatus has produced lately is findings about
 itself.
+
+## The verdict file ACCUMULATES (DX2)
+
+**Each round is appended under a dated heading. No prior round is ever rewritten or
+removed.**
+
+This is not housekeeping. `tests/test_report_carried.py::test_no_status_claims_more_than_the_verdict_allows`
+states its premise in its own docstring -- *"the WHOLE review file, every round of it,
+because a withdrawal ruled two verdicts ago is still a withdrawal"* -- and that premise
+was false of the file:
+
+```
+claim  the verdict file held ONE ROUND, not an accumulating record
+out    83c7ba5  397 lines  R567 x3
+out    4314118  508 lines  R567 x2
+out    4ff1008  508 lines  R567 x2
+out    1b895db  538 lines  R567 x0
+judge  verdict 69 withdrew R567 explicitly and the text was gone two rounds later,
+       so the guard could not see any withdrawal older than the current round, and
+       a report reporting the withdrawal truthfully went red. Twelve reds traced to
+       that one status cell.
+```
+
+**The rule is here rather than in the guard deliberately.** Making the file accumulate
+makes the guard's premise true; loosening the guard would remove the one check that
+stops a report retiring its own findings. The mechanical cause is
+`scripts/write_verdict.py`, which uses `write_text` rather than appending -- **that is
+the reviewer's tool to change, and this entry is the requirement, not the patch.**
 
 ## How a verdict is written so the parsers can read it (DU1)
 
