@@ -624,7 +624,9 @@ def build_superstructure(path: Path | None = None, froude_lambda: float = 50.0) 
         joint_plane_z=z,
         buoy_joint_nodes=buoy_nodes,
         label=(
-            "buoy spar columns not assessed as members; " "buoy loads applied as joint reactions"
+            "buoy spar columns not assessed as members; "
+            "buoy loads applied as joint reactions; "
+            "platform mass properties as in FloatSim; see DZ5 finding"
         ),
         assumptions=(
             "the deck's `reference_point` IS the body's CoG. FloatSim's own "
@@ -645,5 +647,14 @@ def build_superstructure(path: Path | None = None, froude_lambda: float = 50.0) 
             "the frame is a tree -- nothing joins adjacent hubs or adjacent buoy "
             "joints -- so each body is statically determinate and there is no "
             "redundancy. This is an observation about the platform.",
+            "the deck's body inertias are kept AS FLOATSIM HAS THEM, because "
+            "inertia-relief equilibrium with FloatSim's loads requires it, and they "
+            "are physically inconsistent: every body's J_G satisfies the LAMINA "
+            "identity exactly -- triangle-inequality slack 0.0000e+00 -- and the "
+            "platform's is M * 50^2 * (1, 1, 2) exactly, giving a radius of gyration "
+            "about z of 70.711 m against 50 m arms and a 51.056 m extent. The "
+            "remainder inertia the split leaves is PSD but violates the triangle "
+            "inequality by -2.6770e+08 kg.m^2 on the platform and -1.0153e+06 on "
+            "each hub. See the DZ5 finding.",
         ),
     )
