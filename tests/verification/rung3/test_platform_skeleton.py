@@ -411,7 +411,9 @@ def test_C56_the_DECK_POINTS_really_come_from_the_DECK(superstructure) -> None:
     assert float(to_full_scale(1.0, "length", lam)) == lam
 
     raw = yaml.safe_load(DECK_YAML.read_bytes().decode("utf-8"))
-    reference = {body["name"]: [float(c) for c in body["reference_point"]] for body in raw["bodies"]}
+    reference = {
+        body["name"]: [float(c) for c in body["reference_point"]] for body in raw["bodies"]
+    }
     fresh = {
         joint["body_a"]: (
             [
@@ -436,8 +438,7 @@ def test_C56_the_DECK_POINTS_really_come_from_the_DECK(superstructure) -> None:
             "compares against are not the deck's."
         )
         assert owners[name] == owner, (
-            f"{name} is recorded as attaching to {owners[name]!r} and the deck says "
-            f"{owner!r}."
+            f"{name} is recorded as attaching to {owners[name]!r} and the deck says " f"{owner!r}."
         )
 
 
