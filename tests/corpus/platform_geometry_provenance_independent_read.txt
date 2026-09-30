@@ -1,0 +1,103 @@
+# CORPUS: THE PROVENANCE ASSERTION AFTER IT STOPPED READING THROUGH THE BUILDER
+# -- is the second path independent, or was the circularity only moved?
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Batch 25, written at
+# the SEVENTY-SEVENTH verdict on F3 step 1, against the closure commit 8e4238d:
+# test_C56_the_DECK_POINTS_really_come_from_the_DECK no longer calls
+# _full_scale_deck at all. It reads DECK_YAML.read_bytes(), yaml.safe_load, the
+# body's own reference_point plus the joint's attach_a_body, times lambda, with
+# one assertion holding to_full_scale(1.0, "length", lam) == lam.
+#
+# WHY A NEW FILE AND NOT MORE ROWS IN batch 24. Batch 24 was measured against a
+# C56 that re-read THROUGH the builder's own reader. 8e4238d changed the rule --
+# what the expected side is derived from -- so every batch-24 row measured
+# against the old path is a figure taken against a decision rule that moved.
+# BP0 in corpus form: batch 24 stays as the record of what the through-the-
+# builder version reached, and this file records what the independent read
+# reaches. Batch 24's row memoise_the_reader_and_shift_the_cached_deck was its
+# headline MISS; it is re-measured here as entry 1 and it is now caught.
+#
+# IN SCOPE UNDER DE2: the element, the gates, and -- from F3 -- the platform
+# model. This is the platform model and the gate that proves it, so DR1's
+# deferral to docs/milestones/F2a.md does not reach it.
+#
+# THE SURFACE.
+#   gate     python -m pytest tests/verification/rung3/test_platform_skeleton.py
+#            -p no:randomly. Unmutated BASELINE at 8e4238d: 53 passed, 0.53s.
+#   rung     python -m pytest tests/verification/rung3. Unmutated BASELINE at
+#            8e4238d: 218 passed, 10.36s. Used where the question is whether a
+#            shape is caught SOMEWHERE in the rung rather than by C56.
+#            Every measured= below is one of those two commands after the one
+#            edit case= names, taken in two git worktrees at 8e4238d outside
+#            this repository and restored between entries.
+#   basis    a mutation of the Froude length exponent, which is the one thing
+#            the test's hand-written scale shares a meaning with.
+#   file     a mutation of the committed deck YAML rather than of any code.
+#   reach    a property of the gate or of the model, no mutation, not counted.
+#   plan     a question the locked plan or a ruling has to answer.
+#
+# WHAT A PASSING SCAN MEANS. It does NOT mean the gate is sound. Each expect= is
+# the reviewer's prediction before the run, each measured= is what the shipped
+# suite did. expect=uncaught with measured=CONFIRMED_green is a MISS: the defect
+# is real, the suite is green on it, and the row is the evidence.
+#
+# A DETECTION BY A BUILDER REFUSAL IS RECORDED AS ONE AND NAMED AS ONE. Six of
+# these mutations never reach an assertion: build_superstructure raises on
+# coplanarity, on topology or on slenderness at fixture setup, and the module
+# reports 2 passed and 51 errors. That is red and the shape is caught. It is NOT
+# a measurement of what C56 reaches, and a row that folded the two together
+# would over-credit the gate this batch is about.
+#
+# THE COVERAGE NUMBER THIS BATCH REPORTS. Thirteen entries carry a mutation.
+# TWELVE CAUGHT, ONE GREEN -- and the one green is green CORRECTLY, because the
+# mutation moves no value. ZERO REAL MISSES. Against six of eleven with three
+# real misses in batch 24, eleven of sixteen in batch 23, nine of seventeen in
+# batch 22. The carve-out is stated rather than folded in: a row green because
+# nothing moved is not a detection the suite made and not a defect it let
+# through.
+#
+# WHAT THE ZERO RESTS ON, SO NOBODY READS IT AS THE GATE BEING COMPLETE. It
+# rests on THREE independent links and each is measured below: (i) the deck FILE
+# is pinned by a content digest in test_platform_deck_export.py, (ii) C56 pins
+# the carried points to an independent read of that file, (iii) the builder
+# refuses a deck that is non-planar, mis-topologised or over-slender. Remove any
+# one and rows here go green. The residual shared surface between the two paths
+# is the CONSTANT DECK_YAML and the yaml library -- not the arithmetic, which is
+# duplicated, and not the reader, which is no longer shared.
+#
+# ONE VARIABLE PER ENTRY.
+
+# A. THE SHAPE BATCH 24 FOUND, RE-MEASURED AGAINST THE REPAIR.
+
+id=memoise_the_builders_reader_and_shift_the_cached_deck surface=gate case=_full_scale_deck_given_a_module_level_cache_keyed_on_path_and_lambda_and_every_cached_joint_point_shifted_plus_3_m_in_x_inside_the_cached_object_so_the_builder_and_any_re_read_share_one_wrong_object expect=caught_by_C56_only measured=1_failed_52_passed_and_the_single_red_is_test_C56_the_DECK_POINTS_really_come_from_the_DECK_batch_24_measured_53_passed_on_this_same_edit_so_the_repair_closed_it_and_DZ2_is_silent_correctly_because_its_expected_side_comes_from_deck_joint_points_and_both_sides_move_together
+id=memoise_the_builders_reader_no_value_moved surface=gate case=the_same_module_level_cache_with_setdefault_and_nothing_shifted_so_the_builder_returns_a_shared_object_whose_values_are_all_correct expect=green_correctly measured=53_passed_GREEN_CORRECTLY_the_mutation_moves_no_value_so_there_is_no_defect_to_detect_this_row_is_the_control_that_says_entry_1_reddens_on_the_SHIFT_and_not_on_the_cache
+
+# B. THE ARITHMETIC THE TEST NOW DUPLICATES. A composition error would be green
+#    if the duplication were a silent-agreement hazard. None of these is.
+
+id=builder_composes_to_full_scale_r_plus_unscaled_a surface=gate case=the_builder_scales_the_reference_point_and_adds_the_body_fixed_attachment_UNSCALED_rather_than_scaling_their_sum expect=caught measured=2_passed_51_errors_ValueError_the_joint_points_span_2_elevations_this_builder_makes_a_PLANAR_frame_CAUGHT_BY_THE_BUILDERS_COPLANARITY_REFUSAL_AT_FIXTURE_SETUP_not_by_C56_because_twelve_of_sixteen_attachments_are_purely_z
+id=builder_uses_r_minus_a surface=gate case=the_sign_of_the_body_fixed_attachment_flipped_in_the_builder_only expect=caught measured=2_passed_51_errors_the_same_coplanarity_refusal_CAUGHT_UPSTREAM_OF_C56
+id=builder_scales_the_joint_point_by_lambda_squared surface=gate case=the_joint_point_multiplied_by_lam_a_second_time_after_to_full_scale expect=caught measured=2_passed_51_errors_the_same_coplanarity_refusal_CAUGHT_UPSTREAM_OF_C56
+id=builder_uses_attach_b_body_instead_of_attach_a_body surface=gate case=the_builder_zips_the_body_a_reference_point_against_attach_b_body_which_the_deck_also_carries_and_which_is_nonzero_for_joint_0_so_this_is_a_key_a_reader_could_plausibly_reach_for expect=caught measured=2_passed_51_errors_and_test_C56_is_among_the_named_errors_CAUGHT
+id=one_joint_point_plus_1_mm_in_z surface=gate case=joints_0_point_index_2_plus_0_001_after_the_builder_has_scaled_it_one_coordinate_of_one_joint expect=caught measured=2_passed_51_errors_ValueError_the_joint_points_span_2_elevations_24_668478398986515_and_24_669478398986517_CAUGHT_BY_THE_COPLANARITY_REFUSAL
+id=raw_reference_swaps_x_and_y surface=gate case=raw_reference_returns_the_reference_point_with_x_and_y_exchanged_for_every_body_which_is_IN_PLANE_and_leaves_z_and_therefore_coplanarity_untouched expect=caught_by_C56 measured=5_failed_48_passed_and_test_C56_is_one_of_the_five_beside_the_four_test_the_chosen_FRACTION_is_asserted_not_inferred_parametrisations_NEITHER_DZ2_TEST_REDDENS_so_C56_is_a_detection_DZ2_is_not_and_this_is_the_row_that_says_the_duplicated_arithmetic_is_load_bearing
+id=deck_joint_owner_rotated_by_one_joint surface=gate case=deck_joint_owner_built_from_the_NEXT_joints_body_b_modulo_the_joint_count_so_every_joint_is_recorded_against_its_neighbours_owner_and_no_coordinate_moves expect=caught measured=9_failed_44_passed_test_C56_plus_four_test_DZ2_each_BUOY_lands_on_the_node_the_DECK_puts_it_at_plus_four_test_DZ2_the_bodys_MEMBER_GEOMETRY_is_what_the_deck_implies_CAUGHT_and_C56_s_owner_clause_carries_weight
+
+# C. THE RESIDUAL SHARED SURFACE, AND WHETHER ANYTHING ELSE PINS IT.
+
+id=the_deck_FILE_shifted_0_06_m_in_x surface=file case=every_body_reference_point_in_the_committed_deck_yaml_moved_plus_0_06_m_in_x_which_is_3_m_at_full_scale_no_code_touched_at_all_so_BOTH_the_builder_and_the_independent_read_see_the_same_wrong_file expect=green_in_the_module_and_caught_in_the_rung measured=THE_MODULE_GIVES_53_passed_C56_IS_BLIND_TO_THIS_BY_CONSTRUCTION_AND_MUST_BE_but_the_RUNG_gives_4_failed_214_passed_test_G3_2_the_committed_deck_matches_its_CONTENT_digest_and_test_G3_2_the_file_matches_its_RECORDED_TEXT_digest_and_test_the_HEADER_agrees_with_what_the_file_CONTAINS_and_test_the_arms_are_AXIAL_which_is_what_R576_turned_on_CAUGHT_ONE_TEST_OVER_and_this_is_the_answer_to_whether_the_circularity_was_only_moved_the_shared_constant_names_a_file_that_is_digest_pinned
+id=a_seventeenth_joint_duplicating_body_a surface=file case=a_17th_joint_appended_to_the_deck_reusing_the_first_joints_body_a_with_its_attach_a_body_x_plus_7_m_which_is_the_shape_that_distinguishes_the_OLD_count_assertion_on_the_joint_LIST_from_the_NEW_one_on_a_dict_keyed_by_body_a_because_both_sides_collapse_a_duplicate_key_identically expect=uncaught_by_the_count_assertion measured=2_passed_51_errors_ValueError_expected_4_hub_platform_joints_and_12_buoy_hub_joints_got_4_and_13_the_topology_is_not_the_platform_this_builder_describes_CAUGHT_BY_THE_BUILDERS_TOPOLOGY_REFUSAL_so_the_repair_DID_replace_a_joint_count_check_with_a_distinct_key_count_and_that_weakening_is_UNREACHABLE_at_this_builder_recorded_rather_than_claimed_harmless_in_case_the_refusal_ever_moves
+
+# D. THE LENGTH-BASIS BRIDGE -- the one assertion the repair added to hold the
+#    hand-written scale to the module's declared basis. Can it be the detection?
+
+id=LENGTH_EXPONENT_1_0_to_2_0 surface=basis case=the_froude_length_exponent_changed_from_1_0_to_2_0_which_is_the_mutation_the_bridge_assertions_own_comment_names expect=caught_by_the_bridge measured=2_passed_51_errors_ValueError_platform_hub1_arm_L_over_r_equals_3038_7_exceeds_300_the_slenderness_ceiling_THE_BRIDGE_NEVER_RUNS_the_builder_refuses_at_fixture_setup_first_so_for_THIS_mutation_the_bridge_is_not_the_detection_and_a_sentence_crediting_it_with_one_would_be_unmeasured
+id=LENGTH_EXPONENT_1_0_to_1_0000001 surface=basis case=the_same_exponent_perturbed_by_1e_7_instead_of_doubled_small_enough_that_the_slenderness_ratio_moves_by_a_factor_1_0000009_and_the_builder_still_accepts_the_platform expect=caught_by_the_bridge measured=1_failed_52_passed_and_the_single_red_is_test_C56_failing_at_test_platform_skeleton_py_line_411_on_the_bridge_assertion_AssertionError_50_000019560118865_equals_50_0_SO_THE_BRIDGE_IS_THE_SOLE_DETECTION_HERE_it_carries_its_own_failure_and_the_docstrings_claim_holds_at_a_perturbation_the_builder_accepts
+
+# E. REACH AND FACTS. No mutation, so not counted either way.
+
+id=the_bridge_is_vacuous_at_lambda_1 surface=reach case=the_bridge_compares_the_scale_factor_for_a_unit_length_against_lambda_and_at_lambda_1_that_holds_for_EVERY_exponent_so_a_build_parametrised_at_lambda_1_would_carry_the_assertion_and_certify_nothing expect=n_a measured=the_comparison_at_lambda_1_0_is_True_with_the_exponent_at_1_0_and_still_True_with_the_exponent_at_7_0_while_at_lambda_50_0_with_exponent_7_0_it_is_False_the_module_fixture_builds_at_lambda_50_0_so_the_bridge_is_not_vacuous_TODAY_and_nothing_in_the_tree_states_that_it_depends_on_lambda_not_being_one
+id=Superstructure_records_no_source_path surface=reach case=C56_compares_the_carried_points_against_a_read_of_the_CONSTANT_DECK_YAML_while_build_superstructure_takes_a_path_argument_and_accepts_any_deck_so_the_assertion_is_about_the_default_build_and_not_about_the_builder expect=n_a measured=the_Superstructure_dataclass_has_eight_fields_assumptions_bodies_buoy_joint_nodes_deck_joint_owner_deck_joint_points_froude_lambda_joint_plane_z_label_and_NONE_of_them_is_the_path_it_was_built_from_so_a_build_from_another_deck_cannot_be_checked_by_this_assertion_even_in_principle
+id=a_lint_error_gates_the_whole_guards_job surface=reach case=the_closure_commits_own_shape_a_ruff_E501_line_too_long_101_over_100_at_tests_verification_rung3_test_platform_skeleton_py_414_on_a_line_the_C59_repair_introduced expect=n_a measured=CI_run_36781142834_at_8e4238d_job_lint_unit_and_guards_FAILED_at_step_6_of_14_in_23_s_and_steps_7_to_10_black_and_mypy_and_unit_tests_and_guards_and_meta_tests_were_SKIPPED_so_the_guard_suite_including_the_one_C60_repointed_did_not_run_on_CI_at_this_commit_the_verification_ladder_is_a_separate_job_with_no_needs_by_R335_and_CM2_and_it_ran_green_with_rung_3_at_218_collected_0_failed
+id=the_arithmetic_is_duplicated_on_both_sides surface=plan case=the_deck_to_point_mapping_is_now_written_twice_once_in_the_builders_reader_and_once_inside_the_test_and_a_legitimate_change_to_that_mapping_has_to_be_made_in_both_places_where_the_natural_second_edit_is_a_copy_of_the_first expect=n_a measured=OPEN_the_duplication_is_EXERCISED_today_twelve_of_sixteen_joints_carry_a_nonzero_attach_a_body_and_every_composition_mutation_in_section_B_reddens_so_it_is_not_a_silent_agreement_hazard_at_this_deck_what_is_unstated_is_the_RULE_verdict_76_asked_for_whether_a_provenance_assertion_may_re_read_through_the_code_under_test_at_all_CJ0_says_it_for_the_harness_and_the_locked_F3_plan_still_does_not_say_it_for_the_model
