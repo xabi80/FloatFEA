@@ -365,6 +365,45 @@ def expected_pairs(superstructure, body: BodyModel) -> set[frozenset[tuple[float
     return {frozenset({cell(centre), cell(tip)}) for tip in tips}
 
 
+def test_C56_the_DECK_POINTS_really_come_from_the_DECK(superstructure) -> None:
+    """**PROVENANCE, which is the shape this step has produced three times.**
+
+    R590, R596 and R600 were all one defect wearing three faces: the expected side of
+    a comparison built out of the thing under test. Each was found by a reviewer, not
+    by a test, and the reviewer measured that the shape is still REACHABLE -- with
+    `deck_joint_points` overwritten from the built nodes, the whole module gives
+    `52 passed`.
+
+    So this reads the deck AGAIN, through the same function the builder used, and
+    requires the carried points to match it. A gate whose expected side can be
+    rebuilt from the model is not a gate, and this is the one assertion that says so
+    rather than trusting that nobody will do it.
+
+    It is a rung-3 assertion about the model, not a guard about a report, so DR1's
+    apparatus freeze does not reach it.
+    """
+    from floatfea.model.platform import DECK_YAML, _full_scale_deck
+
+    fresh = _full_scale_deck(DECK_YAML, superstructure.froude_lambda)
+    carried = superstructure.deck_joint_points
+    owners = superstructure.deck_joint_owner
+    assert len(carried) == len(fresh["joints"]) == 16
+
+    for joint in fresh["joints"]:
+        name = joint["body_a"]
+        assert name in carried, f"{name} is not in the carried deck points"
+        offset = float(np.max(np.abs(np.asarray(carried[name]) - np.asarray(joint["point"]))))
+        assert offset == 0.0, (
+            f"{name}'s carried point is {carried[name]} and a fresh read of the deck "
+            f"gives {joint['point']} -- {offset:.4e} m apart. The points a gate "
+            "compares against are not the deck's."
+        )
+        assert owners[name] == joint["body_b"], (
+            f"{name} is recorded as attaching to {owners[name]!r} and the deck says "
+            f"{joint['body_b']!r}."
+        )
+
+
 @pytest.mark.parametrize("index", range(BODIES))
 def test_DZ2_the_bodys_MEMBER_GEOMETRY_is_what_the_deck_implies(superstructure, index: int) -> None:
     """R597. Member count, the endpoint-pair set, no duplicates, and a tree.
