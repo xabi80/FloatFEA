@@ -1,0 +1,148 @@
+# CORPUS: the PLATFORM SKELETON BUILDER and gate G3.1a, as they landed.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Written at the
+# SEVENTY-SECOND verdict on F2/F3, against the judged commit 6c09932, the
+# builder as it landed at 863c1aa (floatfea/model/platform.py) and its gate at
+# the same commit (tests/verification/rung3/test_platform_skeleton.py).
+#
+# IN SCOPE UNDER DE2. "Corpus rounds target the element, the gates, and -- from
+# F3 -- the platform model." This is the platform model and the gate that is
+# supposed to prove it. It is not an apparatus corpus, so the DR1 deferral to
+# docs/milestones/F2a.md does not reach it and nothing here is transcribed.
+#
+# WHY IT IS A SEPARATE FILE FROM platform_model_skeleton.txt (batch 19). Batch 19
+# was written BEFORE the frame existed: its entries are questions the plan and
+# the deck could be asked while there was no code to blame. This file is written
+# AFTER, and every entry below is run against shipped code.
+#
+# WHY IT EXISTS AT ALL. The evidence shipped for G3.1a is 32 passing tests on one
+# deck and one set of sections -- the deck the builder was written from and the
+# sections the plan records. No entry in it perturbs either. A gate measured only
+# on the input its own author designed is measuring the input.
+#
+# THE SURFACE, AND WHAT IT IS NOT.
+#   skeleton  python -m pytest tests/verification/rung3/test_platform_skeleton.py
+#             with floatfea.model.platform.DECK_YAML repointed at a mutated copy,
+#             or CLUSTER_ARM_WALL / HUB_ARM_OUTER_DIAMETER rebound -- the same
+#             module surface the gate runs on, called through the shipped tests.
+#   builder   floatfea.model.platform.build_superstructure alone: does it REFUSE.
+#   deck      a property of the committed deck or of the built model, no mutation.
+#   plan      a question the locked plan or a ruling must answer.
+#
+#   G3.2 IS NOT THE SURFACE HERE AND THE DISTINCTION IS LOAD-BEARING. The three
+#   digests in tests/verification/rung3/test_platform_deck_export.py catch a HAND
+#   EDIT of the committed YAML, and verdict 71 ruled that they cannot catch a deck
+#   that changed because HSP changed -- one re-run of the generator moves the file
+#   and the digest together. Every deck mutation below stands for that case: the
+#   upstream deck legitimately says something different, the digest is green
+#   because the generator wrote it, and G3.1a is the only thing left reading the
+#   numbers. Where a mutation would ALSO have been caught by G3.2 on the committed
+#   file, the measured field says so.
+#
+# WHAT A PASSING SCAN MEANS. For each entry the named surface is run and the
+# outcome is compared with expect. A passing scan means every measured outcome
+# equals its expectation. Entries with expect=caught and measured=NOT_CAUGHT ARE
+# the coverage measurement; they are not defects in this file. Entries with
+# expect=explain are questions, closed by an answer and not by a test.
+#
+# FIELDS
+#   id        stable name
+#   surface   skeleton | builder | deck | plan
+#   case      the mutation or the question, in words
+#   expect    caught | refused | uncaught_and_accepted | explain
+#   measured  what happened at 6c09932, run by this reviewer
+#
+# --------------------------------------------------------------------------
+# A. THE SECTION. DJ1 and F3 section 3.2 both say the G3.1a per-body mass check
+# is "the gate that proves the sizing". The cluster arm is the ONE member in this
+# model with a recorded section and a recorded basis (F1.md:389, 425-433). If the
+# gate proves the sizing, moving that section has to redden something.
+
+id=sec_cluster_wall_180_baseline surface=skeleton case=the_recorded_wall_t_equals_0.180_m_unchanged expect=uncaught_and_accepted measured=32_passed_the_clean_control_so_the_harness_can_tell_green_from_red
+id=sec_cluster_wall_halved surface=skeleton case=cluster_arm_wall_0.180_to_0.090_m_so_each_arm_weighs_133_t_instead_of_257 expect=caught measured=NOT_CAUGHT_32_passed_the_hub_remainder_absorbed_the_difference_exactly
+id=sec_cluster_wall_quartered surface=skeleton case=cluster_arm_wall_0.180_to_0.045_m expect=caught measured=NOT_CAUGHT_32_passed
+id=sec_cluster_wall_1mm surface=skeleton case=cluster_arm_wall_0.180_to_0.001_m_a_section_wrong_by_180x expect=caught measured=NOT_CAUGHT_32_passed_member_mass_per_hub_falls_from_7.723983e5_to_4.622182e3_kg_and_the_remainder_rises_to_1.495378e6
+id=sec_cluster_wall_400mm surface=skeleton case=cluster_arm_wall_0.180_to_0.400_m_so_three_arms_OUTWEIGH_their_hub expect=caught measured=NOT_CAUGHT_32_passed_with_a_negative_remainder_reported_as_a_finding_and_nothing_asserting_on_it
+id=sec_hub_arm_diameter_2.5_baseline surface=skeleton case=HUB_ARM_OUTER_DIAMETER_left_at_the_assumed_2.5_m expect=uncaught_and_accepted measured=32_passed
+id=sec_hub_arm_diameter_6m surface=skeleton case=HUB_ARM_OUTER_DIAMETER_2.5_to_6.0_m_which_moves_the_platform_arm_EI_by_more_than_an_order_of_magnitude expect=caught measured=NOT_CAUGHT_32_passed_the_mass_is_reproduced_by_construction_at_any_diameter_so_only_the_wall_moves
+id=sec_hub_arm_diameter_1m surface=builder case=HUB_ARM_OUTER_DIAMETER_2.5_to_1.0_m_so_1250_t_over_four_50_m_members_needs_a_solid_rod expect=refused measured=REFUSED_size_to_mass_raises_without_a_solid_section_and_the_fixture_errors_29_of_32
+id=sec_hub_arm_diameter_0.9m surface=builder case=HUB_ARM_OUTER_DIAMETER_2.5_to_0.9_m expect=refused measured=REFUSED_same_path
+id=sec_the_sized_tube_stands_for_a_TRUSS surface=plan case=F1.md:390_records_the_50_m_platform_arm_as_TRIANGULATED_depth_undecided_and_the_builder_substitutes_a_2.5_m_tube_of_equal_MASS_whose_EI_and_whose_Izz_about_the_centre_are_properties_of_the_substitution_and_not_of_the_truss expect=explain measured=marked_preliminary_which_is_what_DJ1_requires_and_no_test_asserts_the_mark_and_no_output_table_exists_yet_to_carry_it
+
+# --------------------------------------------------------------------------
+# B. THE BODY MASS. The G3.1a row reads "per-body mass ... from the FE mesh
+# against the model definition". The deck IS the model definition (DV0). So
+# moving a deck mass has to redden the mass half, or that half is not reading
+# the deck.
+
+id=mass_hub_deck_third surface=skeleton case=every_hub_body_mass_12.0_to_4.0_model_scale_so_three_257_t_arms_outweigh_a_500_t_hub_by_54.5_percent expect=caught measured=NOT_CAUGHT_32_passed_four_NEGATIVE_remainder_findings_emitted_and_no_test_reads_them
+id=mass_hub_deck_x5 surface=skeleton case=every_hub_body_mass_12.0_to_60.0_so_the_lumped_remainder_becomes_85_percent_of_the_body expect=caught measured=NOT_CAUGHT_32_passed
+id=mass_platform_deck_x2 surface=skeleton case=platform_body_mass_10.0_to_20.0_model_scale expect=uncaught_and_accepted measured=32_passed_and_this_one_is_correct_the_arms_are_RESIZED_to_the_new_mass_by_DJ1_so_the_model_follows_the_deck
+id=mass_platform_deck_x10 surface=builder case=platform_body_mass_10.0_to_100.0_so_12500_t_over_four_50_m_2.5_m_tubes expect=refused measured=REFUSED_a_tube_of_outer_diameter_2.5_m_cannot_reach_area_7.961783_m2_without_a_solid_section
+id=mass_the_gate_is_an_identity surface=skeleton case=remainder_is_DEFINED_as_deck_mass_minus_member_mass_at_platform.py:417_and_the_gate_asserts_member_mass_plus_remainder_equals_deck_mass expect=caught measured=NOT_CAUGHT_the_assertion_reduces_to_x_equals_x_and_its_only_non_trivial_content_the_assembled_matrix_against_A_L_rho_is_the_separate_test_immediately_below_it
+id=mass_a_body_the_steel_does_not_fit_in surface=skeleton case=F3_section_3.3_names_this_outcome_to_avoid_G3.1a_passing_on_a_body_whose_steel_does_not_fit_inside_its_own_mass_and_forbids_clamping_the_remainder expect=caught measured=NOT_CAUGHT_nothing_clamps_so_the_letter_holds_and_the_gate_passes_anyway_because_the_remainder_is_the_residual
+id=mass_no_test_asserts_the_NEGATIVE_finding surface=skeleton case=the_sizing_finding_F3_section_3.3_requires_is_emitted_at_platform.py:420-427_and_no_shipped_test_asserts_that_it_fires expect=caught measured=NOT_CAUGHT_two_finding_shapes_are_asserted_lamina_and_rotary_inertia_and_the_negative_remainder_is_not_one_of_them
+
+# --------------------------------------------------------------------------
+# C. THE CENTRE OF GRAVITY. FloatSim states the convention in its own driver:
+# ../HSP-runs/floatsim/driver.py:207-209 "assumes the deck reference_point IS
+# the body frame origin and the CoG (no explicit CoG-offset field in the deck)",
+# and it calls rigid_body_mass_matrix with cog_offset_body=None. So the deck DOES
+# declare a CoG per body, and the G3.1a CoG half has a referent.
+
+id=cog_platform_reference_lifted_65m surface=skeleton case=platform_reference_point_z_0.7_to_2.0_model_which_moves_the_declared_CoG_from_35.0_m_to_100.0_m_full_scale expect=caught measured=NOT_CAUGHT_32_passed_and_the_link_length_becomes_75.3315_m
+id=cog_platform_reference_moved_50m_in_plan surface=skeleton case=platform_reference_point_x_0.0_to_1.0_model_which_moves_the_declared_CoG_50_m_in_PLAN_where_the_gate_does_look expect=caught measured=NOT_CAUGHT_32_passed_because_the_offset_is_measured_from_the_body_NODE_and_never_from_the_deck
+id=cog_the_built_platform_is_10m_low surface=deck case=the_platform_remainder_mass_is_9.313226e-10_kg_so_the_whole_1250_t_sits_on_the_arms_at_z_24.6685_m_while_the_deck_declares_the_body_at_z_35.0_m expect=caught measured=NOT_CAUGHT_the_whole_body_CoG_is_10.3315_m_below_the_deck_and_the_gate_reads_the_MEMBERS_centroid_about_the_body_node_which_is_a_symmetry_check
+id=cog_the_gate_does_bite_on_a_dropped_member surface=skeleton case=one_of_the_three_hub1_cluster_arms_removed_before_the_matrix_is_read expect=caught measured=CAUGHT_offset_5.4127e0_m_against_a_threshold_of_2.5e-13_so_the_assertion_is_not_vacuous_it_is_about_a_different_quantity
+id=cog_no_vertical_comparison_exists surface=skeleton case=nothing_compares_any_body_z_centroid_against_the_deck_and_for_the_platform_the_rigid_link_that_would_have_carried_it_has_zero_mass_on_its_far_end expect=caught measured=NOT_CAUGHT_the_z_component_of_the_recovered_offset_is_0.000e+00_by_construction_all_members_being_coplanar
+
+# --------------------------------------------------------------------------
+# D. THE INERTIA TENSOR, which the G3.1a row locks and this commit narrowed. THE
+# STATED REASON FOR THE NARROWING IS TRUE AND IT IS NOT THE ONLY REASON.
+
+id=inertia_lamina_identity_is_real surface=deck case=platform_10_10_20_and_every_hub_0.5_0.5_1.0_so_Ixx_plus_Iyy_minus_Izz_is_0.0_exactly_while_every_buoy_reads_47.886_a_relative_420 expect=explain measured=CONFIRMED_independently_from_the_committed_YAML_the_lamina_reading_is_correct_and_the_five_modelled_bodies_are_typed_round_numbers
+id=inertia_remainder_decrements_only_Izz surface=deck case=platform.py:438-439_copies_the_deck_tensor_and_subtracts_member_Izz_from_entry_2_2_alone_so_Ixx_Iyy_and_every_off_diagonal_keep_the_full_deck_value_while_the_members_also_carry_theirs expect=caught measured=NOT_CAUGHT_the_built_platform_Ixx_is_3.125000e9_plus_6.542588e8_equals_20.9_percent_over_the_deck_and_each_hub_is_1.562500e8_plus_8.045815e7_equals_51.5_percent_over
+id=inertia_would_be_red_for_ANY_deck_value surface=plan case=because_the_remainder_never_decrements_Ixx_the_FE_total_exceeds_the_deck_Ixx_by_the_members_contribution_whatever_the_deck_says_so_a_DERIVED_inertia_would_not_make_the_assertion_pass_either expect=explain measured=MEASURED_the_placeholder_is_a_true_reason_and_a_second_independent_reason_a_builder_defect_sits_behind_it
+id=inertia_the_only_assertion_is_x_equals_x surface=skeleton case=test_G3_1a_the_bodys_INERTIA_is_reported_defines_deck_izz_as_member_izz_plus_remaining_and_then_asserts_member_izz_plus_remaining_approx_deck_izz expect=caught measured=NOT_CAUGHT_it_cannot_fail_for_any_deck_any_section_or_any_geometry
+id=inertia_the_printed_deck_figure_is_not_the_decks surface=skeleton case=the_test_prints_deck_6.250897e9_for_the_platform_and_3.130228e8_per_hub_labelled_deck expect=caught measured=NOT_CAUGHT_the_committed_deck_gives_6.250000e9_and_3.125000e8_so_the_published_figure_is_1.000144x_and_1.001673x_of_it
+id=inertia_the_split_is_not_exact surface=skeleton case=the_docstring_says_the_split_is_exact_so_no_inertia_is_invented_or_lost_and_remaining_was_formed_from_the_builder_rod_formula_m_L2_over_3_while_the_test_adds_back_the_ASSEMBLED_matrix_entry_5_5 expect=caught measured=NOT_CAUGHT_8.97e5_kg.m2_invented_for_the_platform_and_5.23e5_per_hub_rod_formula_1.041667e9_against_assembled_1.042564e9
+id=inertia_Izz_halved surface=skeleton case=platform_deck_Izz_20.0_to_10.0_model expect=caught measured=CAUGHT_the_lamina_finding_stops_firing_and_the_count_of_five_reddens
+id=inertia_Izz_x100 surface=skeleton case=platform_deck_Izz_20.0_to_2000.0 expect=caught measured=CAUGHT_same_route
+id=inertia_Ixx_zeroed surface=skeleton case=platform_deck_Ixx_10.0_to_0.0 expect=caught measured=CAUGHT_by_the_ixx_greater_than_zero_guard_in_the_same_predicate
+id=inertia_a_DERIVED_platform_inertia surface=skeleton case=platform_deck_Izz_20.0_to_21.0_which_breaks_the_lamina_identity_the_way_a_real_three_dimensional_body_would expect=caught measured=CAUGHT_and_this_is_the_intended_signal_the_docstring_names_the_test_reddens_so_G3.1a_can_be_widened
+id=inertia_a_DERIVED_hub_inertia surface=skeleton case=every_hub_deck_Izz_1.0_to_1.1 expect=caught measured=CAUGHT_same_route
+id=inertia_off_diagonal_Ixy_introduced surface=skeleton case=platform_deck_Ixy_0.0_to_3.0_model_a_product_of_inertia_no_symmetric_lamina_has expect=caught measured=NOT_CAUGHT_32_passed_the_lamina_predicate_reads_only_the_three_diagonals_and_the_remainder_carries_Ixy_through_unchanged
+id=inertia_negligible_fraction_is_an_epsilon surface=skeleton case=_NEGLIGIBLE_FRACTION_1e-12_at_platform.py:61_decides_whether_abs_Ixx_plus_Iyy_minus_Izz_is_zero_and_that_decision_is_asserted_on_by_a_shipped_test expect=caught measured=NOT_CAUGHT_its_own_docstring_says_the_finding_it_gates_is_a_sentence_not_a_pass_or_a_fail_and_one_grep_for_LAMINA_in_the_rung3_module_refutes_that
+id=inertia_the_epsilon_has_no_measured_margin surface=skeleton case=the_identity_holds_to_0.0_exactly_on_all_five_bodies_so_the_1e-12_is_never_exercised_and_the_smallest_lamina_deviation_it_fails_to_see_is_1e-12_relative_which_is_unmeasured expect=explain measured=inverting_the_decision_rule_gives_a_boundary_nothing_in_the_tree_states
+
+# --------------------------------------------------------------------------
+# E. GEOMETRY AND TOPOLOGY. These are the refusals, and they work.
+
+id=topo_non_coplanar_joint surface=builder case=one_buoy_joint_attach_z_lifted_0.01_model_so_the_joint_points_span_two_elevations expect=refused measured=REFUSED_the_joint_points_span_2_elevations_and_a_non_planar_deck_is_refused_rather_than_flattened
+id=topo_a_hub_with_four_cluster_arms surface=builder case=a_thirteenth_buoy_hub_joint_added_onto_hub1 expect=refused measured=REFUSED_expected_4_hub_platform_joints_and_12_buoy_hub_joints_got_4_and_13
+id=topo_one_hub_arm_shortened_to_40m surface=skeleton case=the_hub1_platform_joint_and_the_hub1_reference_pulled_in_to_0.8_model_so_one_arm_is_40_m_and_three_are_50 expect=caught measured=CAUGHT_3_failed_the_planar_and_CoG_reads_bite_and_the_min_over_four_radii_used_for_sizing_stops_matching_the_member_own_lengths
+id=topo_hub_reference_off_the_joint_plane surface=builder case=hub1_reference_point_z_0.4933695679797303_to_1.0_model_so_the_zero_length_link_F3_section_3.1_relies_on_is_no_longer_zero expect=refused measured=REFUSED_at_the_fixture_29_of_32_error_out_which_is_a_refusal_and_not_a_silent_link
+id=topo_cluster_angles_120_to_100 surface=skeleton case=the_three_hub1_buoy_references_placed_at_0_100_200_degrees_instead_of_0_120_240 expect=caught measured=CAUGHT_1_failed_the_CoG_symmetry_read_is_what_catches_it
+id=topo_joint_type_renamed_to_ball surface=skeleton case=every_joint_type_yaw_locked_to_ball_in_the_deck_the_BUILDER_reads expect=caught measured=NOT_CAUGHT_by_the_builder_32_passed_and_CAUGHT_by_G3.2_at_test_platform_deck_export.py:206_on_the_committed_file_while_F3_section_1_says_the_F3_builder_refuses_the_model_rather_than_idealising_it_and_it_does_not
+id=topo_buoy_joint_node_map_is_ambiguous surface=deck case=Superstructure.buoy_joint_nodes_is_dict_str_int_and_its_twelve_values_are_1_2_3_repeated_four_times_because_each_hub_is_its_own_Model expect=caught measured=NOT_CAUGHT_a_consumer_applying_the_twelve_reactions_F3_section_3.2_item_6_cannot_resolve_which_model_node_1_belongs_to_from_the_mapping_alone
+id=topo_members_partition surface=skeleton case=16_labels_platform_hubN_arm_and_hubN_buoyM_arm_all_distinct_and_no_member_in_two_bodies expect=uncaught_and_accepted measured=CONFIRMED_independently_4_plus_3_plus_3_plus_3_plus_3_and_len_set_equals_16
+id=topo_no_buoy_mass_entered surface=skeleton case=the_bodies_dict_is_read_only_at_platform_and_hub1_to_hub4_and_the_twelve_buoy_entries_are_used_for_geometry_only expect=uncaught_and_accepted measured=CONFIRMED_no_buoy_mass_and_no_buoy_inertia_reaches_any_BodyModel_so_the_DX0_double_count_is_not_present
+
+# --------------------------------------------------------------------------
+# F. SCALE AND R486.
+
+id=scale_froude_lambda_x1000 surface=builder case=froude_lambda_50_to_50000_a_unit_system_scaled_by_a_thousand_in_length expect=refused measured=REFUSED_by_size_to_mass_1.250e15_kg_over_four_50000_m_members_needs_more_than_a_2.5_m_tube_which_is_the_right_refusal_for_the_wrong_reason_no_slenderness_limit_was_reached
+id=r486_worst_residual_on_real_members surface=deck case=element_rigid_residual_k_local_L_over_all_16_shipped_members_against_RIGID_MODE_EXACTNESS_1e-15 expect=explain measured=REPRODUCED_independently_worst_3.5283e-19_on_hub2_buoy5_arm_headroom_2834.3x_four_distinct_values_7.18521e-20_9.67305e-20_1.98839e-19_3.528257e-19
+id=r486_not_yet_an_assertion surface=plan case=F3_section_5_locks_the_ceiling_as_an_assertion_with_dropped_flip_wrong_dof_index_and_rotational_block_registered_and_with_the_builder_refusing_a_platform_that_fails_it expect=explain measured=MEASURED_not_asserted_no_test_in_the_rung3_module_calls_element_rigid_residual_and_the_builder_has_no_such_refusal
+id=r486_the_near_vertical_band_is_unreachable surface=plan case=F3_section_5_says_a_platform_frame_is_mostly_near_vertical_members_so_this_gate_is_measured_there_first_and_DW1_measured_all_16_members_horizontal expect=explain measured=CONFIRMED_the_2.87_degrees_from_vertical_case_R486_was_found_in_cannot_arise_on_this_frame_so_the_F3_gate_is_narrower_than_the_F3_section_5_sentence_describes
+
+# --------------------------------------------------------------------------
+# G. QUESTIONS, closed by an answer and not by a test.
+
+id=q_what_carries_the_platform_rotary_inertia surface=plan case=a_zero_mass_point_with_5.208333e9_kg.m2_of_Izz_is_representable_in_a_mass_matrix_and_is_not_a_point_mass_so_which_object_in_the_assembled_model_holds_it_and_does_inertia_relief_read_it expect=explain measured=the_builder_reports_the_situation_and_the_rigid_link_that_would_carry_it_is_not_yet_assembled_anywhere
+id=q_is_reporting_enough surface=plan case=F3_section_3.3_says_report_a_sizing_finding_rather_than_clamping_and_says_nothing_about_whether_a_finding_nothing_asserts_on_is_a_report expect=explain measured=six_findings_are_produced_two_shapes_are_asserted_and_the_NEGATIVE_remainder_shape_is_not
+id=q_which_of_DJ1_or_G3.1a_gives surface=plan case=mass_sizing_the_hub_arms_to_the_full_platform_deck_mass_leaves_a_zero_remainder_which_puts_the_body_CoG_at_the_members_centroid_and_not_at_the_deck_reference expect=explain measured=both_are_locked_and_the_builder_satisfied_DJ1_and_this_verdict_holds_on_the_gate_that_should_have_said_so
+id=q_the_hub_body_is_three_rods surface=plan case=the_test_docstring_says_the_hub_3_rods_x_4_kg_are_real_design_figures_so_if_the_hub_body_IS_its_three_cluster_arms_the_remainder_should_be_near_zero_and_it_is_48.5_percent_of_the_body expect=explain measured=727.6_t_of_1500_t_per_hub_is_lumped_at_the_hub_node_and_no_gate_reads_the_fraction
+id=q_G3.1b_coincides surface=plan case=DV0_says_G3.1a_and_G3.1b_coincide_on_this_model_because_the_exported_deck_IS_the_FloatSim_body_definition_so_a_defect_in_the_deck_is_invisible_to_both expect=explain measured=CONFIRMED_by_reading_the_plan_and_nothing_in_the_tree_states_it_at_the_gate
+id=q_the_preliminary_mark_propagates surface=plan case=DV0_says_a_member_force_row_carries_preliminary_wherever_a_preliminary_section_affects_the_row_and_that_is_a_requirement_on_an_output_table expect=explain measured=BodyModel.preliminary_returns_the_four_hub_arms_and_no_test_asserts_it_and_no_table_exists
