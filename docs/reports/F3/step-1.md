@@ -670,9 +670,18 @@ Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 75 at `b
 
 ## 1. The reading
 
-**Schedule unchanged: F3 13 October, F4 19 October, the member-force table 23 October,
-the code-check screen 28 October.** Both findings are answered and C56(i) is built.
-This is round 3, the last for this step.
+**Schedule unchanged**, and the dates are below rather than in this sentence, because
+C60's repair made the guard that reads this report read it for the first time and a date
+in prose is a number with no command behind it. Both findings are answered and C56(i) is
+built. This is round 3, the last for this step.
+
+```
+rule   the dates this step is measured against, DZ7c, unchanged
+out    F3 13 October, F4 19 October, the member-force table 23 October,
+out    the code-check screen 28 October
+judge  DZ7c's reduce-scope branch is not triggered: the step closed PASS carrying no
+       blocking item, so nothing slips and nothing is cut.
+```
 
 **R600 and R601 were answered in revision 2 and verdict 75 closed both.** R600 is
 "ANSWERED. Closed, site by site, and the closing cell goes red." R601's two named causes
@@ -711,6 +720,13 @@ state as requiring a detection DR0 retired. The check is live at
 `tests/test_report_carried.py:320` — `git cat-file -e` on the answered sha — and it
 fires. I had crossed two different quantities: the retirement note is about the
 whole-suite line's sha in the deleted distance test, not the header's.
+
+```
+claim  the check is live at the line I name, and it is the one I said was retired
+cmd    sed -n '320p' tests/test_report_carried.py
+out    out = subprocess.run(["git", "cat-file", "-e", ANSWERED], cwd=ROOT, capture_output=True)
+rule   a claim about what a line of this repository contains is checked by reading it
+```
 
 ```
 claim  the harness's anchor found a sentence about the header instead of the header
@@ -782,7 +798,19 @@ substance the reviewer ruled the ordering right — but the citation was invente
 recording that is worth more than quietly switching to the real one.
 
 **`tests/test_plan_matches_tolerances.py` stays hardcoded to F2** and stays ledgered
-as C40. It is the one of the five in that family that does **not** fail false: it reads
+as C40.
+
+```
+claim  the hardcoded line, and that what it reads is a file that really holds the table
+cmd    sed -n '34p' tests/test_plan_matches_tolerances.py
+out    PLAN = ROOT / "docs" / "milestones" / "F2.md"
+cmd    grep -c 'MASS_PROPERTY_AGREEMENT' docs/milestones/F2.md
+out    2
+rule   C60 fixed the fifth file in this family because it fails false -- it measures a
+       closed milestone. This one does not: it reads a real file for a real table, so
+       C40 stays a ledger line rather than a work item.
+```
+ It is the one of the five in that family that does **not** fail false: it reads
 `docs/milestones/F2.md` for the tolerance table, which is a real file that really holds
 the table. The visible cost is an F3 tolerance sitting in a closed milestone's table,
 and that table's heading says so.
@@ -866,6 +894,17 @@ table**, where a row named for the wrong arm is the cost.
 longer reproducible through the harness, and the apparatus corpora are frozen under DE2
 and DR1. See R602: the harness state it describes is live, and what changed is the report
 the harness reads.
+
+```
+claim  the row is still a correct description of the guard it names
+cmd    sed -n '99p' tests/corpus/report_guard_states.txt
+out    id=answers_header_names_a_sha_that_is_not_a_commit
+out    state=newest_report_revision_Answers_header_reads_deadbee
+out    require=named_fail  measured=named_fail_1_failed_121_passed
+rule   the apparatus corpora are frozen under DE2 and DR1, so a row that is right about
+       the guard and stale about the harness is recorded and not edited -- which is
+       the whole of C57
+```
 
 ## 5. Findings
 
@@ -961,9 +1000,9 @@ Generated: `python scripts/carried_table.py <the newest verdict> <the answers fi
 
 | item | status | the verdict's own subject |
 |---|---|---|
-| R596 | **not classified in this verdict** — carried in from an earlier one | are closed. Closure items C12, C14, C18 to C32, the open |
-| R598 | **not classified in this verdict** — carried in from an earlier one | are closed. Closure items C12, C14, C18 to C32, the open |
-| R599 | **not classified in this verdict** — carried in from an earlier one | are closed. Closure items C12, C14, C18 to C32, the open |
+| R596 | **not classified in this verdict** — carried in from an earlier one | no clause this generator can cut -- see the verdict's Carried section |
+| R598 | **not classified in this verdict** — carried in from an earlier one | no clause this generator can cut -- see the verdict's Carried section |
+| R599 | **not classified in this verdict** — carried in from an earlier one | no clause this generator can cut -- see the verdict's Carried section |
 | R600 | **answered** — §1 | DZ2's geometry gate builds its expected endpoint-pair set from the BUILT MODEL, not from the... |
 | R601 | **answered** — §1 | CI is RED at the reviewed commit -- 37 failed, 835 passed in lint, unit and guards -- and it... |
 | R602 | **answered** — §1 | answers_header_names_a_sha_that_is_not_a_commit is red, and the stated diagnosis is refuted:... |
@@ -988,10 +1027,25 @@ rule   R309: the count is a measurement of the tree the report is committed from
 cmd    the three files the count EXCLUDES, run in place after that edit
 out    291 passed
 judge  the excluded files are the only tests that read this report, they are reported
-       separately by rule, and they are green in place. The 2633 cannot have moved: no
-       test outside those three reads `docs/reports/`. That is an argument and not a
+       separately by rule, and they are green in place. That is an argument and not a
        measurement of the committed tree, and C43 already ledgers that this line is one
        commit early.
+cmd    grep -rln 'docs/reports' tests/ --include=*.py
+out    tests/test_ci_workflow_is_wellformed.py
+out    tests/test_report_carried.py
+out    tests/test_report_guard_states.py
+out    tests/test_tree_prose_consistent.py
+out    tests/verification/rung3/test_tolerance_counter_cases.py
+out    tests/verification/rung4/test_writer_round_trip.py
+judge  C61, R607: THE SENTENCE ABOVE SAID "no test outside those three reads
+       `docs/reports/`" AND ONE GREP REFUTES IT -- four files outside the three name
+       that path, one of them in live code. The reviewer read all four: `:97` asserts
+       `docs/reports/**` is in the workflow's `paths-ignore` and reads
+       `.github/workflows`; `test_tree_prose_consistent.py` says the path is NOT in its
+       scope; the rung3 and rung4 hits are docstring mentions. So no test outside the
+       three reads this report's CONTENTS and the conclusion holds. The claim is
+       reduced to that. BF0's own species, inside a paragraph correctly labelled an
+       argument.
 ```
 
 ```

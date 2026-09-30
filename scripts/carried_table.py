@@ -189,9 +189,33 @@ def subject(item: str, verdict_text: str, by_block: dict[str, str]) -> str:
     text = " ".join(text.split())
     if not text:
         return "carried, and the verdict says nothing further about it here"
+    if not block and not _starts_a_sentence(text):
+        # C63, R609. C51 stopped the STATUS over-claiming and left the subject
+        # beside it a mid-sentence fragment: three rows read "are closed."
+        # under a status declining to say whether the item was closed. The cut
+        # is at the last finding number in a list, which is not where a clause
+        # begins, and no amount of separator handling makes it one. So the row
+        # points at the line instead of printing a piece of it -- a pointer a
+        # reader can follow, rather than a sentence starting in the middle.
+        #
+        # NOT A LINE NUMBER, WHICH WAS THE OTHER OPTION R609 OFFERED. A first
+        # version printed one and two readers of the same file disagreed about
+        # it -- 1637 from this script, 1703 from the guard that re-runs it --
+        # because a line number depends on how the file's newlines are decoded.
+        # A pointer that moves with its reader is worse than no pointer.
+        return "no clause this generator can cut -- see the verdict's Carried section"
     if len(text) > SUBJECT_CHARS:
         text = text[:SUBJECT_CHARS].rsplit(" ", 1)[0] + "..."
     return text
+
+
+def _starts_a_sentence(text: str) -> bool:
+    """Does this read as the beginning of a clause, or the middle of one?
+
+    Cheap and deliberate: a capital, a digit or an opening quote. "are closed."
+    is none of those, which is the whole of what R609 found.
+    """
+    return bool(text) and (text[0].isupper() or text[0].isdigit() or text[0] in "\"'(")
 
 
 def rows(

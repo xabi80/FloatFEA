@@ -39,7 +39,37 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-REPORTS = ROOT / "docs" / "reports" / "F2"
+
+# THE FIFTH FILE HARDCODED TO F2, AND IT IS THIS ONE (C60, R606). `CLAUDE.md` names
+# this guard as what enforces BF0 "most of this mechanically" -- a number in prose
+# must appear in a command block or table of its own section -- and it read
+# `docs/reports/F2` , so it has been green on a closed milestone's newest step report
+# and has never read an F3 report. R601a fixed three files this way and DX2 fixed a
+# fourth; the helper is duplicated rather than shared because a module for it would be
+# new apparatus under DR1, and `tests/test_report_guard_states.py:45` carries the twin.
+_STEP_MARKER = re.compile(r"<!--\s*step-under-execution:\s*(\d+)\s*-->")
+
+
+def _active_milestone() -> str:
+    """The stem of the plan carrying the step marker, or F2 if that is not readable.
+
+    Falls back rather than raising: this runs at import, and a raise at import is
+    R234 -- the module fails to collect and the suite reports one error having run
+    nothing.
+    """
+    milestones = ROOT / "docs" / "milestones"
+    try:
+        carrying = [
+            plan
+            for plan in sorted(milestones.glob("F*.md"))
+            if _STEP_MARKER.search(plan.read_text(encoding="utf-8", errors="replace"))
+        ]
+    except OSError:
+        return "F2"
+    return carrying[0].stem if len(carrying) == 1 else "F2"
+
+
+REPORTS = ROOT / "docs" / "reports" / _active_milestone()
 
 
 def _newest_report() -> Path:
