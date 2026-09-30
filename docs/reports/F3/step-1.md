@@ -586,7 +586,11 @@ found by the generator failing differently:
 ```
 cmd    python scripts/ci_section.py, four times, after each repair
 out    F2.md carries no `<!-- step-under-execution: N -->` line
-out    the newest revision of the report has no `Answers: verdict N @ <sha>` line
+out    the newest revision of the report has no `Answers:` header line
+       (the generator's message names the full pattern; it is not quoted here,
+        because the harness anchors on that literal with `rindex` and quoting it
+        made the last occurrence in this file a SENTENCE ABOUT the header rather
+        than the header -- R602, and it was my own prose that broke the control)
 out    the verdict file cannot be read at that commit
 out    ## 0. CI at `228bdfb`, the commit verdict 74 judged -- conclusion FAILURE
 judge  a hardcoded milestone is not one constant; it is however many the file has. That
