@@ -171,7 +171,14 @@ def subject(item: str, verdict_text: str, by_block: dict[str, str]) -> str:
         # A carry line often lists several numbers before saying anything --
         # "R225-R228, R232, R233 -- carried". Drop the rest of the list so the
         # subject starts where the sentence does.
-        after = re.sub(r"^(,?\s*R\d+(\s*-+\s*R\d+)?)+\s*(--|-|:)?\s*", "", after)
+        #
+        # THE SEPARATOR IS NOT ALWAYS A COMMA (C51). It was `,?` alone, so
+        # "R596, R598 and R599 are closed" left R596's subject reading "and
+        # R599 are closed" -- a fragment of the sentence that says the item is
+        # closed, published beside a row claiming it is open.
+        after = re.sub(
+            r"^(\s*(,|and\b|&)?\s*R\d+(\s*-+\s*R\d+)?)+\s*(--|-|:)?\s*", "", after
+        )
     if not block and len(after.strip(" ,-:")) < 8:
         # THE STRIP ATE THE SENTENCE. A carry line that is mostly a list
         # of numbers leaves nothing after the last of them, and a row
@@ -211,7 +218,13 @@ def rows(
         elif classes.get(item) == "blocking":
             status = "**open** — blocking, and not answered in this round"
         else:
-            status = "**open** — carried from an earlier verdict"
+            # NOT A STATUS THIS SCRIPT CAN READ (C51). It said "open" here, and
+            # three findings the verdict had explicitly CLOSED were published as
+            # open in the report's own table. The verdict's disposition lives in
+            # a sentence, not in a heading -- there is nothing here to parse --
+            # so the row says where the item came from and stops, and the
+            # subject beside it is the verdict's own words.
+            status = "**not classified in this verdict** — carried in from an earlier one"
         out.append(f"| {item} | {status} | {subject(item, verdict_text, by_block)} |")
     return out
 

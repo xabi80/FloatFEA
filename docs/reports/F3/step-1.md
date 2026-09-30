@@ -257,8 +257,6 @@ Answers: verdict 74 @ 8ac9ce8
 
 **2026-09-30.**
 
-## 0. CI, for the commit under review
-
 ## 0. CI at `228bdfb`, the commit verdict 74 judged — conclusion **FAILURE**
 
 <!-- generated: scripts/ci_section.py -->
@@ -599,3 +597,18 @@ judge  a hardcoded milestone is not one constant; it is however many the file ha
        and this one. C40 ledgered the pattern on the reading that none failed false;
        the marker move falsified that for three of them within one commit.
 ```
+
+**Added in the closure commit (C54).** This revision's CI section is anchored on the
+commit verdict 74 judged, which is `228bdfb`, and that is by design -- the sha is not an
+argument to the generator. The consequence the reviewer names is real: a reader of this
+revision cannot see that the tree it was written on is red. It is, and here is the line.
+
+```
+claim  this revision's OWN commit `b2e59b0` has a run, and that run is red
+cmd    gh run list --json databaseId,headSha,conclusion,status,event --limit 40
+out    36756429195  b2e59b0  push  completed  failure
+rule   a revision states the colour of the tree it is published on, not only the
+       colour of the tree it was written about
+```
+
+Revision 3 §0 carries that run per job, and its three reds are R602's and R603's subject.
