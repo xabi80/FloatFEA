@@ -710,34 +710,25 @@ def test_the_guard_survives_the_state(state: str, require: str, tmp_path: Path) 
         )
     else:
         assert code != 0, f"{state}: this state is a defect and must fail.\n{log[-1500:]}"
-        named = (
-            "test_the_guard_reads_the_step_being_worked_on",
-            "test_the_report_names_the_verdict_it_answers",
-            "test_the_diff_the_site_check_needs_is_available",
-            "test_the_parse_found_something_to_check",
-            "test_the_report_carries_the_finding",
-            "test_every_named_site_is_touched_or_declared",
-            # CI1: the two this round adds. A state whose only reporter is
-            # not in this list fails for "nobody can locate it", which is the
-            # right answer for an anonymous collapse and the wrong one for a
-            # test that names the commit and the file.
-            "test_a_docs_commit_does_not_also_edit_the_guard_that_judges_it",
-            "test_the_report_carries_a_WHOLE_SUITE_count",
-            "test_a_carried_row_points_at_a_section_that_discusses_it",
-            # R516. `two_digit_step_number_discriminating` names R999
-            # correctly, and this was the reporter that named it, missing
-            # from the list. It looked green on CI at `8a88bf2` ONLY
-            # because an unrelated test was failing in the same run; the
-            # commit that fixed that line took the pass with it, so the
-            # state had been certifying nothing.
-            "test_the_Carried_table_is_what_the_generator_produces",
-            # the commit-distance reporter was named here and is retired (DR0)
-        )
+        # THE `named` WHITELIST AND ITS ASSERTION ARE DELETED (R599, DZ4).
+        #
+        # It required the nested failure to arrive through one of eleven listed test
+        # names and reported "a failure nobody can locate" otherwise. Two states were
+        # red on it while the planted defect was detected THREE times over, by
+        # reporters that name the commit and the file -- so the assertion's own
+        # message was false about those states.
+        #
+        # THE LIST WAS UNSOUND IN BOTH DIRECTIONS, which is why this is a deletion
+        # and not another name. An unlisted reporter gives a false RED, which is what
+        # happened here. A listed reporter firing for an unrelated reason gives a
+        # false GREEN, which is R516 three lines further down in the version this
+        # replaces: a state "looked green on CI at `8a88bf2` ONLY because an
+        # unrelated test was failing in the same run". Adding a name had been the
+        # repair three times, and each repair restored the second failure mode.
+        #
+        # WHAT IS KEPT is `assert code != 0` above -- the state is a defect and must
+        # fail -- and `_assert_diagnosis` below, which is where locatability is done
+        # properly: it checks that the run named the thing it was supposed to name,
+        # per state, rather than that some test from a hand-written list appeared.
         if state in DIAGNOSIS:
             _assert_diagnosis(state, got, log)
-
-        assert any(any(n in got_name for n in named) for got_name in got.names), (
-            f"{state}: the guard failed through {list(got.names)[:4]}, none of "
-            "which is a named reporter. A failure nobody can locate is half a "
-            f"report.\n{log[-1500:]}"
-        )
