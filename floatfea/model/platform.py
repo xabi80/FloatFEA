@@ -30,10 +30,33 @@ loudly rather than silently producing a frame the deck does not have.
 WHAT IT REFUSES. A member outside `L/D >= 2` or `L/r <= 300` (F3 § 2), on MEMBER
 length. Not a warning and not a clamp.
 
-WHAT IT REPORTS RATHER THAN REFUSING. A body whose members outweigh it. F3 § 3.3:
-"report it as a sizing finding, not a clamp to zero. A negative remainder is
-information about the section, and clamping it would make G3.1a pass on a body whose
-steel does not fit inside its own mass."
+THE MEMBERS ARE STIFFNESS EQUIVALENTS, NOT MASS MODELS (DY0). This is the ruling
+that replaced "size the members to reproduce the body's mass", and the arithmetic is
+why:
+
+    claim  four 50 m platform arms at F1's section, in steel, outweigh their body
+    out    4 x 50 m x 1.311929 m^2 x 7850 kg/m^3 = 2059.7 t
+    out    the platform body's deck mass is 1250.0 t -- the members are 1.65x it
+    judge  so a member carrying its own steel mass cannot be right, and sizing the
+           SECTION to the mass cannot be right either: it made the members consume
+           the entire body and left nothing at the CoG, which put the model's centre
+           of gravity 10.3315 m below the one the deck declares (R591).
+
+So each member takes F1's recorded section for its STIFFNESS, and the mass splits:
+
+    members    f * M_b as a uniform line mass, through an equivalent density
+               rho_eq = f * M_b / (L_b * A). Rotary inertia follows as rho_eq * I,
+               which keeps the two consistent by construction.
+    remainder  (1 - f) * M_b at the point that makes the combined first moment equal
+               the deck's, on a rigid link to the body's centre node.
+
+`f = 0.5` by default, descended per body if the remainder mass or its inertia tensor
+comes out negative.
+
+WHAT IT REPORTS RATHER THAN REFUSING. An equivalent density above steel, and an `f`
+below the default. Both are sizing findings under F3 § 3.3 -- reported, not clamped,
+because a body whose members cannot be made light enough is information about the
+section rather than a number to force.
 """
 
 from __future__ import annotations
@@ -47,10 +70,11 @@ import numpy as np
 from numpy.typing import NDArray
 
 from floatfea import basis
-from floatfea.assemble.system import BeamElement
+from floatfea.assemble.system import BeamElement, assemble_mass_dense
 from floatfea.io.froude import to_full_scale
-from floatfea.model.material import S355, Section
+from floatfea.model.material import S355, Material, Section
 from floatfea.model.nodes import Model, Node
+from floatfea.tolerances import MASS_PROPERTY_AGREEMENT
 
 DECK_YAML: Final[Path] = (
     Path(__file__).resolve().parents[2] / "data" / "platform" / "platform12_deck.yaml"
@@ -72,25 +96,32 @@ number is close enough to another, which is why they are not in
 describes at all; `L/r <= 300` is the slenderness ceiling.
 """
 
-CLUSTER_ARM_OUTER_DIAMETER: Final[float] = 2.5
-CLUSTER_ARM_WALL: Final[float] = 0.180
-"""`docs/milestones/F1.md:389` — the one RECORDED section, and its basis is at
-`F1.md:425-433`: the joint delivers 5.93 MN at the rod tip, over 25 m that is
-M = 148.2 MN·m, demand W = 0.696 m³ against 0.710 supplied. F1's own caveat travels
-with it: the order check makes the section "plausible rather than comfortable".
+ARM_OUTER_DIAMETER: Final[float] = 2.5
+ARM_WALL: Final[float] = 0.180
+"""`docs/milestones/F1.md:389` — the one RECORDED section, used for BOTH member
+types (DY0a). Its basis is at `F1.md:425-433`: the joint delivers 5.93 MN at the rod
+tip, over 25 m that is M = 148.2 MN·m, demand W = 0.696 m³ against 0.710 supplied.
+F1's own caveat travels with it: the order check makes the section "plausible rather
+than comfortable".
 
 not-a-tolerance: a designed geometry, cited to its source. Nothing is compared
 against it.
 """
 
-HUB_ARM_OUTER_DIAMETER: Final[float] = 2.5
-"""The outer diameter assumed when sizing a hub arm to its body's mass.
+MASS_FRACTION_LADDER: Final[tuple[float, ...]] = (0.5, 0.4, 0.3, 0.2, 0.1, 0.0)
+"""The fractions of a body's mass the members may carry, most first (DY0c, DY0d).
 
-`docs/milestones/F1.md:390` records the platform cross-truss arm as "50 m span,
-TRIANGULATED, depth undecided" — so there is no recorded tubular section for it, and
-DJ1's rule applies: sized to reproduce the body's mass and marked `preliminary`. The
-diameter is carried over from the cluster arm so that one number is assumed rather
-than two; the wall follows from the mass.
+**0.5 is the default and its reason is physical:** a truss with its bottom chord in
+the joint plane carries about half its mass there, and the in-plane members are the
+STIFFNESS equivalent of that truss rather than a model of its steel.
+
+The ladder is descended per body when `f` is inadmissible — a negative remainder, or
+a remainder inertia tensor with a negative eigenvalue — and `f = 0` is always
+admissible because it puts the whole body mass at the remainder and asks the members
+to carry none.
+
+not-a-tolerance: a set of candidate model parameters, and the chosen value is
+asserted per body rather than compared against anything.
 """
 
 
@@ -109,26 +140,43 @@ class Member:
 
 @dataclass(frozen=True)
 class BodyModel:
-    """One FloatSim body as a free-free structural model."""
+    """One FloatSim body as a free-free structural model.
+
+    `centre_node` is the body's own structural node; `remainder_node` is where the
+    lumped remainder sits, joined to the centre by a rigid link. They coincide when
+    the link is zero-length, which is the case for every hub (DW1: a hub's mass
+    reference is already on the joint plane).
+    """
 
     name: str
     model: Model
     members: tuple[Member, ...]
+    material: Material
+    mass_fraction: float
+    equivalent_density: float
     remainder_mass: float
     remainder_inertia: NDArray[np.float64]
+    remainder_point: NDArray[np.float64]
+    centre_node: int
     remainder_node: int
     link_length: float
     deck_mass: float
+    deck_cog: NDArray[np.float64]
+    deck_inertia: NDArray[np.float64]
     member_mass: float
     findings: tuple[str, ...] = field(default_factory=tuple)
 
     @property
     def elements(self) -> list[BeamElement]:
-        """The members as assembler input."""
+        """The members as assembler input, with the body's EQUIVALENT density."""
         return [
-            BeamElement(node_a=m.node_a, node_b=m.node_b, section=m.section, material=S355)
+            BeamElement(node_a=m.node_a, node_b=m.node_b, section=m.section, material=self.material)
             for m in self.members
         ]
+
+    @property
+    def total_member_length(self) -> float:
+        return sum(m.length for m in self.members)
 
     @property
     def preliminary(self) -> tuple[str, ...]:
@@ -143,7 +191,7 @@ class Superstructure:
     bodies: tuple[BodyModel, ...]
     froude_lambda: float
     joint_plane_z: float
-    buoy_joint_nodes: dict[str, int]
+    buoy_joint_nodes: dict[str, tuple[str, int]]
     assumptions: tuple[str, ...]
     label: str
 
@@ -156,32 +204,61 @@ class Superstructure:
         return tuple(f for b in self.bodies for f in b.findings)
 
 
-def size_to_mass(target_mass: float, count: int, length: float, d_outer: float) -> Section:
-    """A circular tube of `d_outer` whose `count` members of `length` weigh `target_mass`.
+def rigid_projection(
+    coords: NDArray[np.float64], about: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """`T_G`: the six rigid motions about `about`, from NODAL COORDINATES ONLY.
 
-    DJ1: "any member without a recorded section is sized to reproduce its body's
-    mass and marked `preliminary`". This is that sizing, and it is exact rather than
-    iterated: the area follows from the mass, and the wall from the area.
-
-    Raises rather than returning a degenerate tube, because a target mass that needs
-    a wall thicker than the radius is a statement about the body, not a section to
-    build.
+    DY1a. Nothing from the builder enters this matrix -- it is a function of the node
+    positions and the reference point, so `T_G.T @ M @ T_G` reads the ASSEMBLED matrix
+    rather than any intermediate the builder computed.
     """
-    if target_mass <= 0.0 or count <= 0 or length <= 0.0:
-        raise ValueError(f"cannot size to mass {target_mass} over {count} members of {length} m")
-    area = target_mass / (count * length * basis.RHO_STEEL)
-    # A = pi/4 (D_o^2 - D_i^2)  =>  D_i = sqrt(D_o^2 - 4A/pi)
-    inner_sq = d_outer**2 - 4.0 * area / math.pi
-    if inner_sq <= 0.0:
-        raise ValueError(
-            f"a tube of outer diameter {d_outer} m cannot reach area {area:.6f} m^2 "
-            f"without a solid section; the body mass {target_mass:.3e} kg over "
-            f"{count} members of {length} m needs a larger diameter. Sizing is "
-            "refused rather than clamped to solid, because a solid rod is a "
-            "different member and would be reported as a tube."
+    n = len(coords)
+    t = np.zeros((6 * n, 6), dtype=np.float64)
+    for i, point in enumerate(coords):
+        d = point - about
+        t[6 * i : 6 * i + 3, 0:3] = np.eye(3)
+        t[6 * i : 6 * i + 3, 3:6] = np.array(
+            [[0.0, d[2], -d[1]], [-d[2], 0.0, d[0]], [d[1], -d[0], 0.0]]
         )
-    thickness = (d_outer - math.sqrt(inner_sq)) / 2.0
-    return Section.circular_tube(d_outer, thickness)
+        t[6 * i + 3 : 6 * i + 6, 3:6] = np.eye(3)
+    return t
+
+
+def inertia_about(
+    mass_matrix: NDArray[np.float64], coords: NDArray[np.float64], about: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """The inertia tensor about `about`, with NO shift to the centroid.
+
+    This is what DY0c's `J_mem(G)` means and it is not what `rigid_properties`
+    returns. The distinction cost a 1.07% error in the platform's inertia: the
+    members' own centroid is in the joint plane, 10.33 m below G, so an inertia
+    reported about the member centroid is not an inertia about G, and subtracting it
+    from `J_b(G)` mixes two reference points.
+    """
+    t = rigid_projection(coords, about)
+    return np.array((t.T @ mass_matrix @ t)[3:6, 3:6], dtype=np.float64)
+
+
+def rigid_properties(
+    mass_matrix: NDArray[np.float64], coords: NDArray[np.float64], about: NDArray[np.float64]
+) -> tuple[float, NDArray[np.float64], NDArray[np.float64]]:
+    """`(mass, CoG offset from `about`, inertia tensor about the CoG)`.
+
+    Read off the 6x6 rigid projection: `[0:3, 0:3]` is `m I`, the coupling block is
+    `-m skew(c)`, and `[3:6, 3:6]` is the inertia about `about`. The inertia is then
+    shifted to the centroid by the parallel-axis theorem so the returned tensor is
+    about the CoG, which is what the deck declares its own about.
+    """
+    t = rigid_projection(coords, about)
+    m6 = t.T @ mass_matrix @ t
+    mass = float(m6[0, 0])
+    if mass <= 0.0:
+        return 0.0, np.zeros(3), np.zeros((3, 3))
+    centroid = np.array([m6[1, 5], m6[2, 3], m6[0, 4]], dtype=np.float64) / mass
+    about_ref = np.array(m6[3:6, 3:6], dtype=np.float64)
+    shift = mass * (float(centroid @ centroid) * np.eye(3) - np.outer(centroid, centroid))
+    return mass, centroid, about_ref - shift
 
 
 def check_limits(label: str, length: float, section: Section) -> None:
@@ -268,11 +345,217 @@ def raw_reference(raw: dict[str, Any], name: str) -> list[float]:
     raise KeyError(f"no body named {name!r} in the deck")
 
 
+def _member_geometry(
+    joints: list[dict[str, Any]], hub_joints: list[dict[str, Any]], z: float
+) -> dict[str, list[tuple[str, tuple[float, float, float], tuple[float, float, float]]]]:
+    """Per body, its members as `(label, start, end)` in the joint plane.
+
+    Separated from the mass work so the geometry is decided once and the `f` ladder
+    can rebuild a body without re-deriving where its members are.
+    """
+    buoy_joints = [j for j in joints if j["body_a"].startswith("buoy")]
+    out: dict[str, list[tuple[str, tuple[float, float, float], tuple[float, float, float]]]] = {}
+    centre = (0.0, 0.0, z)
+    out["platform"] = [
+        (
+            f"platform:{j['body_a']}_arm",
+            centre,
+            (j["point"][0], j["point"][1], z),
+        )
+        for j in sorted(hub_joints, key=lambda j: j["body_a"])
+    ]
+    for hub in sorted(j["body_a"] for j in hub_joints):
+        node = next((j["point"][0], j["point"][1], z) for j in hub_joints if j["body_a"] == hub)
+        cluster = sorted((j for j in buoy_joints if j["body_b"] == hub), key=lambda j: j["body_a"])
+        if len(cluster) != 3:
+            raise ValueError(
+                f"{hub} carries {len(cluster)} cluster arms; the platform is four "
+                "tripods of three, and a hub with another count is not this model."
+            )
+        out[hub] = [
+            (
+                f"{hub}:{j['body_a']}_arm",
+                node,
+                (j["point"][0], j["point"][1], z),
+            )
+            for j in cluster
+        ]
+    return out
+
+
+def _build_body(
+    name: str,
+    geometry: list[tuple[str, tuple[float, float, float], tuple[float, float, float]]],
+    body: dict[str, Any],
+    fraction: float,
+    section: Section,
+    preliminary: bool,
+    basis_note: str,
+) -> BodyModel:
+    """One body at one `f`, with its remainder placed to match the deck's CoG.
+
+    No admissibility decision is taken here: this builds the body and reports what it
+    came to, and `build_superstructure` descends the ladder on the result. Keeping the
+    two apart is what lets the chosen `f` be asserted rather than inferred.
+    """
+    deck_mass = float(body["mass"])
+    deck_cog = np.asarray(body["reference_point"], dtype=np.float64)
+    deck_inertia = np.asarray(body["inertia"], dtype=np.float64)
+
+    model = Model()
+    node_of: dict[tuple[float, ...], int] = {}
+
+    def node(point: tuple[float, ...], label: str) -> int:
+        key = tuple(round(c, 9) for c in point)
+        if key not in node_of:
+            node_of[key] = model.nodes.add(Node(point[0], point[1], point[2], name=label))
+        return node_of[key]
+
+    centre_node = node(geometry[0][1], f"{name}_centre")
+    members: list[Member] = []
+    for label, start, end in geometry:
+        a = node(start, f"{name}_centre" if start == geometry[0][1] else f"{label}_a")
+        b = node(end, f"{label}_tip")
+        length = math.dist(start, end)
+        check_limits(label, length, section)
+        members.append(
+            Member(
+                node_a=a,
+                node_b=b,
+                section=section,
+                label=label,
+                length=length,
+                preliminary=preliminary,
+                section_basis=basis_note,
+            )
+        )
+
+    total_length = sum(m.length for m in members)
+    member_mass = fraction * deck_mass
+    line_mass = member_mass / total_length if total_length > 0.0 else 0.0
+    density = line_mass / section.A
+    material = Material(
+        E=S355.E, nu=S355.nu, rho=density, fy=S355.fy, name=f"{S355.name}-equivalent"
+    )
+
+    # The remainder goes where it makes the combined first moment equal the deck's.
+    first_moment = np.zeros(3, dtype=np.float64)
+    for member in members:
+        midpoint = (
+            np.asarray(model.nodes[member.node_a].xyz) + np.asarray(model.nodes[member.node_b].xyz)
+        ) / 2.0
+        first_moment += (member.length * line_mass) * midpoint
+    remainder_mass = (1.0 - fraction) * deck_mass
+    if remainder_mass > 0.0:
+        remainder_point = (deck_mass * deck_cog - first_moment) / remainder_mass
+    else:
+        # f = 1 leaves nothing to place; the point is the CoG so the link is defined.
+        remainder_point = deck_cog.copy()
+
+    remainder_node = node(tuple(float(c) for c in remainder_point), f"{name}_remainder")
+    link_length = math.dist(
+        np.asarray(model.nodes[centre_node].xyz).tolist(), remainder_point.tolist()
+    )
+
+    # J_mem ABOUT G, FROM THE ASSEMBLED MATRIX (DY2). Not a rod formula: the element
+    # mass matrix carries rotary inertia as `rho_eq * I`, which a line-mass formula
+    # omits, and R592 was exactly the discrepancy that omission produced.
+    provisional = BodyModel(
+        name=name,
+        model=model,
+        members=tuple(members),
+        material=material,
+        mass_fraction=fraction,
+        equivalent_density=density,
+        remainder_mass=remainder_mass,
+        remainder_inertia=np.zeros((3, 3)),
+        remainder_point=remainder_point,
+        centre_node=centre_node,
+        remainder_node=remainder_node,
+        link_length=link_length,
+        deck_mass=deck_mass,
+        deck_cog=deck_cog,
+        deck_inertia=deck_inertia,
+        member_mass=member_mass,
+    )
+    member_only = assemble_mass_dense(model, provisional.elements)
+    inertia_member = inertia_about(member_only, model.nodes.coords(), deck_cog)
+
+    offset = remainder_point - deck_cog
+    parallel = remainder_mass * (float(offset @ offset) * np.eye(3) - np.outer(offset, offset))
+    remainder_inertia = deck_inertia - inertia_member - parallel
+
+    findings: list[str] = []
+    if density > basis.RHO_STEEL:
+        findings.append(
+            f"{name}: the equivalent density is {density:.1f} kg/m^3, ABOVE steel at "
+            f"{basis.RHO_STEEL:g}. The members are stiffness equivalents so a density "
+            "above steel is not impossible, but it means this body's mass does not fit "
+            "inside F1's section at the chosen fraction and the section or the fraction "
+            "is the thing to look at."
+        )
+    if fraction < MASS_FRACTION_LADDER[0]:
+        findings.append(
+            f"{name}: the mass fraction is {fraction:g} rather than the default "
+            f"{MASS_FRACTION_LADDER[0]:g}, because the default left a negative "
+            "remainder mass or a remainder inertia with a negative eigenvalue. "
+            "Reported as a sizing finding (DY0d), not a clamp."
+        )
+
+    return BodyModel(
+        name=name,
+        model=model,
+        members=tuple(members),
+        material=material,
+        mass_fraction=fraction,
+        equivalent_density=density,
+        remainder_mass=remainder_mass,
+        remainder_inertia=remainder_inertia,
+        remainder_point=remainder_point,
+        centre_node=centre_node,
+        remainder_node=remainder_node,
+        link_length=link_length,
+        deck_mass=deck_mass,
+        deck_cog=deck_cog,
+        deck_inertia=deck_inertia,
+        member_mass=member_mass,
+        findings=tuple(findings),
+    )
+
+
+def admissible(body: BodyModel) -> bool:
+    """`m_r >= 0` and no eigenvalue of `J_r` below `-tol` (DY0d)."""
+    if body.remainder_mass < 0.0:
+        return False
+    if body.remainder_mass == 0.0 and not np.any(body.remainder_inertia):
+        return True
+    scale = max(float(np.max(np.abs(body.deck_inertia))), 1.0)
+    eigenvalues = np.linalg.eigvalsh((body.remainder_inertia + body.remainder_inertia.T) / 2.0)
+    return bool(np.min(eigenvalues) >= -MASS_PROPERTY_AGREEMENT * scale)
+
+
+def body_mass_matrix(body: BodyModel) -> NDArray[np.float64]:
+    """The ASSEMBLED global mass matrix: members plus the lumped remainder.
+
+    The remainder is a 6x6 block at its own node -- translational mass on the
+    diagonal and `J_r` in the rotational block. The rigid link to the centre node is
+    a KINEMATIC constraint and does not change the rigid-body mass properties, which
+    is why it does not appear here and why `rigid_properties` on this matrix is the
+    right thing for G3.1a to read.
+    """
+    mass = assemble_mass_dense(body.model, body.elements)
+    base = 6 * body.remainder_node
+    for i in range(3):
+        mass[base + i, base + i] += body.remainder_mass
+    mass[base + 3 : base + 6, base + 3 : base + 6] += body.remainder_inertia
+    return mass
+
+
 def build_superstructure(path: Path | None = None, froude_lambda: float = 50.0) -> Superstructure:
     """The five-body superstructure at full scale, or a refusal.
 
-    Every coordinate comes from the deck's own joint points. Nothing is typed, and
-    no nominal radius is used — DJ1's rule, and the reason the deck export exists.
+    Every coordinate comes from the deck's own joint points. Nothing is typed, and no
+    nominal radius is used -- DJ1's rule, and the reason the deck export exists.
     """
     deck = _full_scale_deck(path or DECK_YAML, froude_lambda)
     bodies, joints = deck["bodies"], deck["joints"]
@@ -289,7 +572,8 @@ def build_superstructure(path: Path | None = None, froude_lambda: float = 50.0) 
     # THE PLANE IS THE EXACT VALUE, NOT A ROUNDED ONE. A first version took
     # `round(z, 9)` for the set-membership check and then used the ROUNDED number as
     # the plane, so every node was up to 5e-10 m off the joint points it came from --
-    # a discrepancy invented by the check rather than present in the deck.
+    # a discrepancy invented by the check rather than present in the deck, and the
+    # CoG gate caught it.
     elevations = {j["point"][2] for j in joints}
     if len(elevations) != 1:
         raise ValueError(
@@ -299,77 +583,40 @@ def build_superstructure(path: Path | None = None, froude_lambda: float = 50.0) 
         )
     z = elevations.pop()
 
+    section = Section.circular_tube(ARM_OUTER_DIAMETER, ARM_WALL)
+    geometry = _member_geometry(joints, hub_joints, z)
+
     built: list[BodyModel] = []
-    buoy_nodes: dict[str, int] = {}
-
-    # ---------------------------------------------------------------- platform
-    model = Model()
-    centre = model.nodes.add(Node(0.0, 0.0, z, name="centre"))
-    hub_nodes: dict[str, int] = {}
-    for joint in sorted(hub_joints, key=lambda j: j["body_a"]):
-        px, py, _pz = joint["point"]
-        hub_nodes[joint["body_a"]] = model.nodes.add(
-            Node(px, py, z, name=f"{joint['body_a']}_node")
+    for name in ["platform", *sorted(j["body_a"] for j in hub_joints)]:
+        preliminary = name == "platform"
+        note = (
+            "docs/milestones/F1.md:389 for the SECTION (stiffness); F1.md:390 records "
+            "this arm as a TRIANGULATED truss of undecided depth, so the tube is a "
+            "stiffness equivalent and the member is marked preliminary"
+            if preliminary
+            else "docs/milestones/F1.md:389, basis at F1.md:425-433"
         )
-    platform_mass = bodies["platform"]["mass"]
-    hub_arm_length = min(math.dist((0.0, 0.0), (j["point"][0], j["point"][1])) for j in hub_joints)
-    hub_arm_section = size_to_mass(
-        platform_mass, len(hub_joints), hub_arm_length, HUB_ARM_OUTER_DIAMETER
-    )
-    members: list[Member] = []
-    for name, node in hub_nodes.items():
-        length = math.dist(model.nodes[centre].xyz.tolist(), model.nodes[node].xyz.tolist())
-        label = f"platform:{name}_arm"
-        check_limits(label, length, hub_arm_section)
-        members.append(
-            Member(
-                node_a=centre,
-                node_b=node,
-                section=hub_arm_section,
-                label=label,
-                length=length,
-                preliminary=True,
-                section_basis=(
-                    "sized to reproduce the platform body's deck mass (DJ1); "
-                    "F1.md:390 records this arm as a TRIANGULATED truss of undecided "
-                    "depth, so no tubular section is on record"
-                ),
+        for fraction in MASS_FRACTION_LADDER:
+            candidate = _build_body(
+                name, geometry[name], bodies[name], fraction, section, preliminary, note
             )
-        )
-    built.append(_finish("platform", model, members, bodies["platform"], centre, z))
-
-    # ---------------------------------------------------------------- the hubs
-    for hub in sorted(hub_nodes):
-        model = Model()
-        node = model.nodes.add(Node(*_point_of(hub_joints, hub), name=f"{hub}_node"))
-        cluster = sorted((j for j in buoy_joints if j["body_b"] == hub), key=lambda j: j["body_a"])
-        if len(cluster) != 3:
+            if admissible(candidate):
+                built.append(candidate)
+                break
+        else:  # pragma: no cover - f = 0 is always admissible
             raise ValueError(
-                f"{hub} carries {len(cluster)} cluster arms; the platform is four "
-                "tripods of three, and a hub with another count is not this model."
+                f"{name}: no fraction in {MASS_FRACTION_LADDER} is admissible, which "
+                "cannot happen because f = 0 puts the whole body mass at the "
+                "remainder and asks the members to carry none."
             )
-        section = Section.circular_tube(CLUSTER_ARM_OUTER_DIAMETER, CLUSTER_ARM_WALL)
-        members = []
-        for joint in cluster:
-            tip = model.nodes.add(
-                Node(joint["point"][0], joint["point"][1], z, name=f"{joint['body_a']}_joint")
-            )
-            buoy_nodes[joint["body_a"]] = tip
-            length = math.dist(model.nodes[node].xyz.tolist(), model.nodes[tip].xyz.tolist())
-            label = f"{hub}:{joint['body_a']}_arm"
-            check_limits(label, length, section)
-            members.append(
-                Member(
-                    node_a=node,
-                    node_b=tip,
-                    section=section,
-                    label=label,
-                    length=length,
-                    preliminary=False,
-                    section_basis="docs/milestones/F1.md:389, basis at F1.md:425-433",
-                )
-            )
-        built.append(_finish(hub, model, members, bodies[hub], node, z))
+
+    # DY4: keyed by (body, node), because twelve buoys map onto node indices 1, 2, 3
+    # across five separate models and an index alone does not say which model.
+    buoy_nodes: dict[str, tuple[str, int]] = {}
+    for hub_body in built[1:]:
+        for member in hub_body.members:
+            buoy = member.label.split(":")[1].removesuffix("_arm")
+            buoy_nodes[buoy] = (hub_body.name, member.node_b)
 
     return Superstructure(
         bodies=tuple(built),
@@ -380,12 +627,18 @@ def build_superstructure(path: Path | None = None, froude_lambda: float = 50.0) 
             "buoy spar columns not assessed as members; " "buoy loads applied as joint reactions"
         ),
         assumptions=(
-            "body mass and inertia are taken at the deck's `reference_point`; the "
-            "deck declares no `cog` and no `inertia_reference_point`, and the schema "
-            "enumerates both, so this is the only consistent reading rather than a "
-            "chosen convention.",
+            "the deck's `reference_point` IS the body's CoG. FloatSim's own "
+            "`driver.py:203-209` states it -- \"the deck's reference_point IS the body "
+            'frame origin and the CoG (no explicit CoG-offset field in the deck)" -- '
+            "so the referent is declared upstream rather than in the deck, and G3.1a "
+            "compares against it on that basis.",
             f"FROUDE-SCALED from model scale to full scale at lambda = "
             f"{froude_lambda:g} by floatfea.io.froude.",
+            "the in-plane members are STIFFNESS equivalents of a truss with depth, not "
+            "mass models (DY0). Steel density is not used for member mass: four 50 m "
+            "platform arms at F1's section in steel weigh 2059.7 t against a 1250.0 t "
+            "body. The mass splits by fraction instead, and the members carry it as a "
+            "uniform line mass through an equivalent density.",
             "no buoy mass is in the model: each buoy's inertia reaches the arm tip "
             "through its gimbal reaction, and a lumped buoy mass beside it would "
             "double-count.",
@@ -393,99 +646,4 @@ def build_superstructure(path: Path | None = None, froude_lambda: float = 50.0) 
             "joints -- so each body is statically determinate and there is no "
             "redundancy. This is an observation about the platform.",
         ),
-    )
-
-
-def _point_of(joints: list[dict[str, Any]], body: str) -> tuple[float, float, float]:
-    for joint in joints:
-        if joint["body_a"] == body:
-            return (joint["point"][0], joint["point"][1], joint["point"][2])
-    raise KeyError(body)
-
-
-def _finish(
-    name: str,
-    model: Model,
-    members: list[Member],
-    body: dict[str, Any],
-    node: int,
-    plane_z: float,
-) -> BodyModel:
-    """Attach the remainder mass, and report a body its members outweigh."""
-    member_mass = sum(m.section.A * m.length * basis.RHO_STEEL for m in members)
-    deck_mass = body["mass"]
-    remainder = deck_mass - member_mass
-
-    findings: list[str] = []
-    if remainder < 0.0:
-        findings.append(
-            f"{name}: its members weigh {member_mass:.6e} kg and the deck gives the "
-            f"body {deck_mass:.6e} kg, so the remainder is {remainder:.6e} kg -- "
-            f"NEGATIVE by {abs(remainder) / deck_mass:.1%}. Reported rather than "
-            "clamped to zero (F3 section 3.3): clamping would make G3.1a pass on a "
-            "body whose steel does not fit inside its own mass."
-        )
-
-    # The remainder sits at the deck's reference point, on a rigid link from `node`.
-    reference = body["reference_point"]
-    link = math.dist(reference, model.nodes[node].xyz.tolist())
-
-    # n members radiating from `node` in the plane, each a uniform rod: about the
-    # vertical axis through the node, sum of m_i L_i^2 / 3.
-    member_izz = sum(
-        (m.section.A * m.length * basis.RHO_STEEL) * m.length**2 / 3.0 for m in members
-    )
-    remaining = body["inertia"].copy()
-    remaining[2][2] -= member_izz
-    deck_izz = float(body["inertia"][2][2])
-    if remaining[2][2] < 0.0:
-        findings.append(
-            f"{name}: its members' Izz about the body node is {member_izz:.6e} "
-            f"kg.m^2 and the deck gives {deck_izz:.6e}, so the remaining Izz is "
-            "negative. Reported, not clamped."
-        )
-
-    # A REMAINDER OF ZERO MASS CARRYING ROTARY INERTIA IS NOT A POINT MASS, and it is
-    # what mass-sizing a member to its body produces. Representable in a mass matrix,
-    # but it says the sized TUBE does not represent the body's real mass
-    # distribution -- F1.md:390 records the platform arm as a TRIANGULATED truss,
-    # whose mass sits in chords far from the centroid and therefore delivers more Izz
-    # for the same mass.
-    if abs(remainder) <= _NEGLIGIBLE_FRACTION * deck_mass and remaining[2][2] > 0.0:
-        findings.append(
-            f"{name}: the remainder mass is {remainder:.3e} kg -- zero to within "
-            f"{_NEGLIGIBLE_FRACTION:g} of the deck mass -- while the remaining Izz is "
-            f"{remaining[2][2]:.6e} kg.m^2. Matching both the deck's mass and its Izz "
-            "therefore needs rotary inertia with no mass attached. The members "
-            f"deliver {member_izz:.6e} against the deck's {deck_izz:.6e}, a factor of "
-            f"{deck_izz / member_izz:.4f}, so a mass-sized tube under-represents this "
-            "body's mass distribution by that factor."
-        )
-
-    # AND THE DECK'S OWN INERTIA FOR THIS BODY MAY BE A PLACEHOLDER, which G3.1a has
-    # to know before it asserts against it.
-    ixx, iyy = float(body["inertia"][0][0]), float(body["inertia"][1][1])
-    if ixx > 0.0 and abs(ixx + iyy - deck_izz) <= _NEGLIGIBLE_FRACTION * deck_izz:
-        findings.append(
-            f"{name}: the deck's inertia satisfies Ixx + Iyy = Izz exactly "
-            f"({ixx:.6e} + {iyy:.6e} = {deck_izz:.6e}), the perpendicular-axis "
-            "identity for a LAMINA. A real three-dimensional body does not satisfy "
-            "it -- the buoys in this same deck do not -- so this body's inertia is a "
-            "typed placeholder rather than a derived figure "
-            "(`platform_common.py:159,178`; HSP's own `platform-geometry.md:46` flags "
-            "the hub value as Q2). G3.1a's MASS and CoG halves assert against real "
-            "design figures; its INERTIA half would assert against this."
-        )
-
-    return BodyModel(
-        name=name,
-        model=model,
-        members=tuple(members),
-        remainder_mass=remainder,
-        remainder_inertia=remaining,
-        remainder_node=node,
-        link_length=link,
-        deck_mass=deck_mass,
-        member_mass=member_mass,
-        findings=tuple(findings),
     )
