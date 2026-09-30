@@ -330,8 +330,27 @@ def _seed_older_verdict(work: Path, reviews: Path) -> None:
         if message.endswith("the real verdict"):
             path.write_text(real, encoding="utf-8")
         subprocess.run(["git", "-C", str(work), "add", REVIEW_PATH], check=True)
+        # AN IDENTITY, LIKE THE TWO ADJACENT COMMIT SITES IN `_build` (R603). This one
+        # had none, so it worked here and only here: the identity sits in THIS
+        # repository's `.git/config`, which `_build` copies into the scratch tree.
+        # `actions/checkout` writes none, so on CI the commit exits 128 and two states
+        # fail for a reason that has nothing to do with what they plant. It passed
+        # unnoticed until R601a let those states get far enough to reach the seeding.
         subprocess.run(
-            ["git", "-C", str(work), "commit", "-q", "--no-verify", "-m", message],
+            [
+                "git",
+                "-C",
+                str(work),
+                "-c",
+                "user.name=harness",
+                "-c",
+                "user.email=harness@localhost",
+                "commit",
+                "-q",
+                "--no-verify",
+                "-m",
+                message,
+            ],
             check=True,
         )
 
