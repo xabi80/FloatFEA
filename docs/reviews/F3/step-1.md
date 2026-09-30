@@ -1,4 +1,174 @@
 # Review — F3 step 1
+Reviewed commit: 359bda33c33c88544ebe9552c23c093234856531
+Verdict: HOLD
+Tests: 2866 passed, 0 failed, 0 skipped   (my own run at `359bda3`, `python -m pytest -q`, 1415.93s, one invocation, no split, no exclusion, exit 0 -- and `8 failed, 2858 passed` at the reviewed commit `8e4238d`; BOTH are true and the reason is this round's subject)
+
+## Round of 2026-09-30 -- SEVENTY-EIGHTH verdict. A CORRECTION TO MY OWN VERDICT 77, AND NO NEW COMMIT IS REVIEWED.
+
+**This round reviews nothing the implementer wrote.** It exists because verdict 77's R611
+carried a closing condition that is both unnecessary and harmful, and I am the one who wrote
+it. `CLAUDE.md` Â§ "Every claim carries its command" applies to a verdict as much as to a
+report, and "a wrong reason in the tree outlives the red" is the sentence I used on the
+implementer two rounds ago. So this is a page, not a round: **nothing new is asked of the
+implementer here and the work list gets SHORTER.**
+
+**F3 step 1 remains CLOSED at PASS (DD1, verdict 76).** The verdict remains **HOLD**, on
+R612 and R613 alone.
+
+## What verdict 77 got wrong
+
+**Writing verdict 77 cleared the red verdict 77 was about.** I measured the eight failures at
+`8e4238d` twice and they were real. What I did not check before publishing a closing
+condition is what my own commit would do to them.
+
+```
+cmd    for each commit, the guard's three inputs, taken without moving HEAD:
+       git log -1 --format=%h <commit> -- docs/reviews/F3/step-1.md
+       git log -1 --format=%h <commit> -- docs/reports/F3/step-1.md
+       git merge-base --is-ancestor <report> <verdict>
+out    at 8e4238d : verdict 78e9583 | report 8e4238d | report is ancestor: NO
+out    at d305253 : verdict 78e9583 | report 8e4238d | report is ancestor: NO
+out    at 359bda3 : verdict 359bda3 | report 8e4238d | report is ancestor: YES
+rule   tests/test_report_carried.py:394-400 -- if the newest verdict commit DESCENDS from
+       the newest report commit, the guard returns early and the report legitimately
+       predates the verdict
+cmd    python -m pytest tests/test_report_carried.py tests/test_report_guard_states.py -q
+out    at 8e4238d (twice, in isolation, tree clean)   8 failed, 202 passed
+out    at 359bda3, after verdict 77 was committed     0 failed, and 256 passed across the
+                                                      four files that read docs/reviews/
+cmd    python -m pytest -q      (mine, WHOLE TREE, at 359bda3, clean, one invocation)
+out    2866 passed, 2 warnings in 1415.93s (0:23:35), exit 0 -- 0 failed, 0 skipped
+judge  **THE RED IS SELF-CLEARING AND MY OWN COMMIT IS WHAT CLEARS IT.** It was red at the
+       reviewed commit and at my corpus commit; the moment a newer verdict exists the
+       ancestry exemption re-applies, and the report is once again allowed to name an older
+       verdict because that is the legitimate step boundary. Nothing the implementer does is
+       required, and nothing it does could be verified against those eight tests now.
+judge  AND MY CLOSING CONDITION WOULD HAVE MADE THINGS WORSE. Verdict 77 asked for the
+       newest `Answers:` line to name verdict 76. I measured that state myself in the same
+       verdict -- `33 failed, 214 passed` -- and then wrote it into the condition anyway.
+       The two halves of R611 contradict each other, and the cell is the half that is right.
+```
+
+## Carried
+
+* **R611 -- WITHDRAWN AS A BLOCKING ITEM, and its closing condition is withdrawn with it.**
+  The red was real at `8e4238d` and it justified the HOLD at that commit; it is gone at
+  `359bda3` for a reason that has nothing to do with a repair. **Do not bump the `Answers:`
+  header to verdict 76** -- measured, that state is `33 failed`. What survives is not
+  mechanical and is not a work item on its own: the closure commit edited
+  `docs/reports/F3/step-1.md` and no header in that file declares which verdict its edits
+  answer. The next report or revision names the newest verdict at the time it is written, as
+  it always must, and that discharges it.
+* **R612 -- STILL OPEN, STILL BLOCKING.** Unchanged and confirmed at `359bda3`:
+
+```
+cmd  python -m ruff check floatfea tests
+out  Found 1 error.        (E501, tests/verification/rung3/test_platform_skeleton.py:414)
+cmd  python -m black --check floatfea tests
+out  1 file would be reformatted, 88 files would be left unchanged.
+judge the two commits since 8e4238d touch only `tests/corpus/*.txt` and `docs/reviews/`, so
+      neither lint gate could have moved and neither did. **CI has no run at `359bda3`, which
+      is not pushed, so the newest CI result is still the red one at `8e4238d`** -- where
+      `lint, unit and guards` died at step 6 of 14 and never reached the guard suite. That is
+      unavailable-at-HEAD plus red-at-the-last-run, and neither of those is green.
+```
+
+* **R613 -- STILL OPEN, STILL BLOCKING, and it carries by name into step 2.** Nothing in this
+  round touches `docs/milestones/F3.md`, so Â§ 5 still instructs a first measurement in a band
+  that contains none of the sixteen real members (`max |dz| = 0.0` exactly, 90.0 degrees from
+  vertical on every one) while Â§ 3.1 of the same document measures the frame planar.
+* **C59 (R605) -- closed in verdict 77 and nothing here reopens it.** The path is independent,
+  the duplication is exercised and load-bearing, and the one shared surface is digest-pinned.
+  That ruling stands unchanged.
+* **C58, C60, C61, C62, C63, C64 -- met, as ruled in verdict 77.** **C65 to C73** are closure
+  items and hold nothing. **C40, C56(iii), C56(iv), C57** carry forward as recorded.
+
+## Findings
+
+**R614. (closure, and it is against MY OWN verdict) Verdict 77's R611 published a closing
+condition it had already refuted in its own cell, and this round is the correction.**
+`docs/reviews/F3/step-1.md`, verdict 77's R611 block.
+
+```
+judge  the defect is CP2's, in the place CP2 was written for: the attention went to the thing
+       being measured, and the prose written AROUND it inherited none of the discipline. The
+       measurement was right twice over -- `8 failed` at the commit, `33 failed` under the
+       obvious repair -- and the sentence that turned them into an instruction was checked
+       against neither.
+judge  AND THE GENERAL FORM IS WORTH MORE THAN THE INSTANCE: **a reviewer's closing condition
+       is a claim about the repository and it should carry the command that would refute it.**
+       Verdict 77's other two conditions do -- R612 names two commands, R613 names a plan
+       section and a measurement. R611's did not, and it is the one that was wrong.
+```
+
+**Closed when** nothing; it is closed by this round being on the page.
+
+**R615. (closure) The guard that caught the closure commit can only catch it inside one
+window, and that window is shut by the next verdict.** `tests/test_report_carried.py:394-400`.
+
+```
+rule   the exemption: the report commit is an ancestor of the newest verdict commit
+judge  so the state "the report was edited AFTER the newest verdict and its header was not
+       moved" is visible only between that edit and the next verdict commit. After it, the
+       same tree reads green. The exemption is CORRECT -- it is the legitimate boundary DX2
+       and item 1b exist for, and `33 failed` is what removing it would cost -- but it means
+       **a report edited by a closure commit is checked for at most as long as it takes a
+       reviewer to answer, and never again.** The eight reds this round is correcting are the
+       only time the mechanism will ever have said so.
+judge  DR1 FORBIDS EXTENDING IT AND I AM NOT ASKING. Recorded as a standing cost in the same
+       class as R610, and the mitigation available under the freeze is a reviewer reading the
+       commit -- which is how it was found.
+```
+
+**Closed when** it is ledgered alongside R610 as a standing cost, or `docs/milestones/F2a.md`
+carries it as a frozen list entry. No code change either way.
+
+## Tolerances touched
+
+```
+cmd  git diff 8e4238d..359bda3 --stat -- floatfea
+out  (no output)
+cmd  git diff 8e4238d..359bda3 --stat
+out  docs/reviews/F3/step-1.md                                       | 581
+out  tests/corpus/platform_geometry_provenance_independent_read.txt  |  87
+```
+
+**None.** Nothing under `floatfea/` has changed since `8e4238d`, and the only two files
+touched since are my own verdict and my own corpus batch. No tolerance, no golden, no
+parametrisation and no assertion moved in this round, by me or by anyone.
+
+## Next step opens when
+
+**Step 2 does not open yet. F3 step 1 remains CLOSED at PASS (DD1, verdict 76); what is held
+is the TREE.** The list is now TWO items and R611 is not one of them.
+
+1. **R612 closed** -- `ruff check floatfea tests` and `black --check floatfea tests` clean, by
+   reformatting `tests/verification/rung3/test_platform_skeleton.py:414` and not by moving
+   `line-length`; and CI's `lint, unit and guards` job reaches `guards and meta-tests` and
+   succeeds at the commit that ships it. **Paste the `gh run list` line.** The guard suite
+   has not run on CI since `1b3fb73`.
+2. **R613 closed** -- `docs/milestones/F3.md` Â§ 5 no longer instructs a first measurement
+   whose subject is empty on the real platform, and no longer says the frame is mostly
+   near-vertical. One sentence; under DK0 it buys no rounds. **R613 carries by name into
+   step 2's `Carried` section and stays blocking there until Â§ 5 is edited.**
+3. **R611 is withdrawn.** Do not spend a line on it and do not touch the `Answers:` header
+   for its sake. The next report names the newest verdict when it is written, which by then
+   is this one.
+4. **Then one verdict** recording the tree green. That verdict opens step 2.
+
+**Schedule unchanged.** F3 closes 13 October; F4 19 October; the member-force table
+23 October; the code-check screen 28 October. Two items, one a line wrap and one a sentence,
+and I have no measurement that contradicts the dates. R613 is the only one that could move
+them, and only if it is answered with a new gate instead of a correction; **if that is the
+choice, say so the day it is made.**
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F3 step 1
 Reviewed commit: 8e4238d654c2fbf9ebc5ab401cfe08d04b44d3a3
 Verdict: HOLD
 Tests: 2858 passed, 8 failed, 0 skipped   (my own run at `8e4238d`, `python -m pytest -q`, 1304.15s, one invocation, no split, no exclusion; 2866 collected)
