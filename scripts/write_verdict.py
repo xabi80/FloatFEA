@@ -100,7 +100,28 @@ def main() -> int:
     # stays on the page, because a record the current reviewer can edit is not a
     # record. The new round's own header goes at the top, so the parsers that read the
     # first `Reviewed commit:` line still find the current one.
-    previous = out.read_text(encoding="utf-8") if out.is_file() else ""
+    # C42: THE UTF-8 FIX WAS INCOMPLETE AND IT BROKE THIS TOOL ON THE VERY VERDICT
+    # THAT FOUND IT. Making both sides UTF-8 fixed new files; it did nothing for a file
+    # already on disk with a cp1252 header from the old `write_text` and a UTF-8 body
+    # appended after. No single-encoding read can open that, so the reviewer's write
+    # crashed and the earlier rounds were unreachable — the exact loss the accumulation
+    # exists to prevent, reintroduced by its own repair.
+    #
+    # The fallback decodes a legacy file byte-for-byte rather than failing, and what is
+    # written back is UTF-8, so a mixed file is repaired by the next round that touches
+    # it. `latin-1` is the fallback because it maps every byte to a code point and
+    # therefore cannot raise; the alternative is losing a round to an encoding.
+    previous = ""
+    if out.is_file():
+        raw = out.read_bytes()
+        try:
+            previous = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            previous = raw.decode("latin-1")
+            print(
+                f"note: {out.name} was not valid UTF-8; decoded as latin-1 and it is "
+                "rewritten as UTF-8 below (C42)."
+            )
     rounds = header + body.lstrip()
     if previous.strip():
         rounds += (
