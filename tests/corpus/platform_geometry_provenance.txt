@@ -1,0 +1,109 @@
+# CORPUS: THE GEOMETRY GATE'S PROVENANCE SURFACE -- what C56(i) bought, and
+# the shapes that walk past it.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Batch 24, written at
+# the SEVENTY-SIXTH verdict, round 3 on F3 step 1, against the judged commit
+# 1b3fb73: floatfea/model/platform.py unchanged since 1c0785e, and
+# tests/verification/rung3/test_platform_skeleton.py carrying
+# test_C56_the_DECK_POINTS_really_come_from_the_DECK (086a2c7) beside the two
+# DZ2 tests.
+#
+# IN SCOPE UNDER DE2: the element, the gates, and -- from F3 -- the platform
+# model. This is the platform model and the gate that proves it. Not apparatus,
+# so DR1's deferral to docs/milestones/F2a.md does not reach it and nothing
+# here is transcribed.
+#
+# WHY A SEPARATE FILE FROM platform_geometry_gate_r600.txt (batch 23). Batch 23
+# was measured against a module with two DZ2 tests and no provenance
+# assertion. 086a2c7 added a THIRD test and a new quantity -- the carried deck
+# points against a fresh read of the deck -- so the surface has a rule batch 23
+# did not measure against. A corpus row kept across a rule change is BP0 in
+# corpus form. Batch 23 stays as the record of what the gate did with two
+# tests; this file is the record of what the third one reaches.
+#
+# THE SURFACE.
+#   gate     python -m pytest tests/verification/rung3/test_platform_skeleton.py
+#            unmutated BASELINE at 1b3fb73: 53 passed, 0.52s. Every measured=
+#            count below is that command after the one edit case= names, taken
+#            in a git worktree at 1b3fb73 outside the repository and restored
+#            between entries.
+#   deck     a property of the built model or of the committed deck, no mutation.
+#   symm     a mutation drawn from a SYMMETRY of the layout, so that a set-valued
+#            comparison is invariant under it by construction. The platform's
+#            four hubs sit at 90 degrees and each hub's three cluster arms at
+#            120, and both of those are exact.
+#   thresh   a solved boundary: the decision rule inverted rather than sampled.
+#   plan     a question the locked plan or a ruling has to answer.
+#
+# WHAT A PASSING SCAN MEANS. It does NOT mean the gate is sound. Each expect= is
+# the reviewer's prediction before the run and each measured= is what the
+# shipped suite did. expect=uncaught with measured=CONFIRMED_53_passed is a
+# MISS: the defect is real, the suite is green on it, and the row is the
+# evidence.
+#
+# ONE VARIABLE PER ENTRY, and batch 23's lesson is carried forward: where an
+# entry says a point moved, the coordinates, the member lengths and the first
+# moments all agree with each other afterwards. A mutation applied AFTER
+# length = math.dist(start, end) reddens the MASS gate on the disagreement
+# rather than the geometry gate on the geometry, and that is a different
+# detection.
+#
+# THE COVERAGE NUMBER THIS BATCH REPORTS. Eleven entries carry a mutation.
+# SIX CAUGHT, FIVE GREEN -- and of the five green, TWO ARE GREEN CORRECTLY
+# because the mutation moves no value, so THREE ARE REAL MISSES. Against
+# eleven of sixteen in batch 23 and nine of seventeen in batch 22 on the
+# neighbouring surface. The two-of-five carve-out is stated rather than folded
+# into the numerator: a row that is green because nothing moved is not a
+# detection the suite made, and it is not a defect it let through either.
+#
+# THE THREE MISSES ARE THREE SHAPES AND ONE OF THEM IS NEW TO THE RECORD.
+# (1) C56(iv), the label with no deck anchor, measured here in its sharpest
+# form: the tip COORDINATE SET is bit-identical and only the label-to-tip
+# assignment moves, so no set-valued comparison can see it at all.
+# (2) NEW -- the fresh read made circular by a CACHE. The provenance assertion
+# re-reads the deck through the same function the builder used, so anything
+# that makes that function return a shared object makes the new check
+# circular. With the cached deck also shifted 3 m, every member tip in the
+# frame is 3 m wrong and the whole module is green, C56 included. That is the
+# shape R600 named, at the very assertion built to close it, and no row in
+# batch 22 or 23 reaches it.
+# (3) the carried z taken from the model rather than the deck, which is
+# VACUOUS on this deck only because the joint z spread is exactly zero.
+
+# --------------------------------------------------------------------------
+# A. WHAT THE THIRD TEST BOUGHT. The provenance surface, which batch 23 could
+#    only record as reachable.
+
+id=prov_map_from_built_nodes surface=gate case=deck_joint_points_rebuilt_in_the_Superstructure_constructor_from_the_BUILT_member_tip_nodes_same_sixteen_keys_coordinates_from_body_model_nodes expect=uncaught measured=CONFIRMED_53_passed_and_this_is_CORRECT_rather_than_a_miss_the_built_tips_ARE_the_deck_points_when_the_builder_is_right_so_no_value_moves_the_row_is_here_because_batch_23_recorded_this_shape_as_the_one_to_close_and_the_closing_is_conditional
+id=prov_map_from_built_nodes_and_tip_out_3m surface=gate case=the_same_rebuild_AND_every_member_end_point_moved_plus_3_m_in_x_in_member_geometry_before_math_dist_so_the_expected_side_follows_the_defect expect=caught measured=CONFIRMED_1_failed_52_passed_and_the_ONE_is_test_C56_the_DECK_POINTS_really_come_from_the_DECK_both_DZ2_tests_go_GREEN_on_a_frame_that_is_3_m_wrong_so_the_new_assertion_is_the_only_detection_left_standing
+id=prov_keys_rotated_one_step surface=gate case=deck_joint_points_keyed_correctly_but_each_key_carrying_the_NEXT_joint_name_deck_point_so_every_coordinate_is_a_real_deck_coordinate_at_the_wrong_name expect=caught measured=CONFIRMED_10_failed_43_passed_C56_plus_both_DZ2_tests
+id=prov_owner_rotated_across_hubs surface=gate case=deck_joint_owner_rotated_so_each_buoy_joint_is_recorded_as_attaching_to_the_NEXT_hub_with_every_POINT_left_exactly_as_the_deck_gives_it expect=caught measured=CONFIRMED_9_failed_44_passed_C56_owner_clause_plus_both_DZ2_tests_the_owner_half_of_the_assertion_carries_weight_on_its_own
+
+# --------------------------------------------------------------------------
+# B. THE SYMMETRIES OF THE LAYOUT ITSELF. A set-valued comparison is invariant
+#    under these by construction, so they measure which assertion is really
+#    load bearing rather than which one happens to redden.
+
+id=symm_tripod_rotated_exactly_120 surface=symm case=each_hub_three_cluster_arm_tips_rotated_exactly_120_degrees_about_that_hub_own_node_so_the_tip_SET_of_every_tripod_maps_onto_itself_and_each_buoy_lands_on_its_neighbour_joint expect=caught measured=CONFIRMED_4_failed_49_passed_and_the_four_are_ALL_test_DZ2_each_BUOY_lands_on_the_node_the_DECK_puts_it_at_the_pair_set_comparison_is_BLIND_to_this_by_construction_so_the_buoy_node_test_added_at_8df625a_is_the_single_detection
+id=symm_frame_rotated_exactly_90 surface=symm case=every_in_plane_coordinate_rotated_exactly_90_degrees_about_z_which_is_the_four_fold_symmetry_of_the_hub_layout_so_the_platform_own_tip_set_maps_onto_itself expect=caught measured=CONFIRMED_12_failed_41_passed_C56_untouched_because_no_carried_point_moved_caught_through_the_HUB_bodies_whose_centres_come_from_the_deck_keyed_on_body_name_and_do_not_rotate_with_the_frame
+id=symm_frame_mirrored_in_x surface=symm case=every_in_plane_coordinate_reflected_x_to_minus_x_which_maps_the_platform_four_hub_tips_onto_each_other_and_is_not_a_rotation_so_it_is_a_different_element_of_the_layout_symmetry_group expect=caught measured=CONFIRMED_10_failed_43_passed_same_mechanism_as_the_90_degree_row_the_hub_centres_are_what_catch_it
+id=symm_platform_arm_labels_reversed surface=symm case=the_four_platform_arm_LABELS_reversed_against_their_tips_hub1_arm_ending_at_hub4_joint_and_so_on_with_the_tip_coordinate_SET_bit_identical_and_only_the_assignment_moved expect=uncaught measured=CONFIRMED_53_passed_THIS_IS_C56_iv_IN_ITS_SHARPEST_FORM_no_coordinate_changes_at_all_so_no_set_valued_comparison_can_see_it_and_the_buoy_node_test_is_parametrised_over_range_1_BODIES_and_never_looks_at_the_platform
+
+# --------------------------------------------------------------------------
+# C. THE FRESH READ, WHICH IS FRESH ONLY BECAUSE NOTHING CACHES IT. The shape
+#    R600 named, one level up from where 086a2c7 closed it.
+
+id=prov_full_scale_deck_memoised surface=gate case=full_scale_deck_given_a_module_level_cache_keyed_on_path_and_lambda_so_the_C56_fresh_read_returns_the_very_object_the_builder_used_no_value_changed expect=uncaught measured=CONFIRMED_53_passed_and_nothing_should_redden_here_no_value_moved_the_row_exists_because_it_is_the_PRECONDITION_for_the_next_one
+id=prov_memoised_deck_and_every_joint_point_out_3m surface=gate case=the_same_cache_AND_every_deck_joint_point_shifted_plus_3_m_in_x_inside_the_cached_object_so_the_builder_and_the_C56_fresh_read_both_see_the_moved_deck expect=uncaught measured=CONFIRMED_53_passed_THE_WHOLE_FRAME_IS_3_M_WRONG_AND_THE_MODULE_IS_GREEN_including_C56_both_DZ2_tests_and_the_buoy_node_test_C56_reads_the_deck_through_the_SAME_FUNCTION_the_builder_used_so_a_shared_return_makes_the_provenance_check_circular_which_is_the_R600_shape_at_the_very_assertion_built_to_close_it
+id=prov_carried_z_from_joint_plane_not_the_deck surface=gate case=deck_joint_points_third_component_taken_from_joint_plane_z_instead_of_the_deck_own_third_component_so_the_carried_z_is_the_model_own_number expect=uncaught measured=CONFIRMED_53_passed_VACUOUS_ON_THIS_DECK_the_two_are_bit_identical_today_because_the_joint_z_spread_is_exactly_0_000e_00_so_the_C56_offset_is_0_0_and_passes_the_row_is_a_latent_provenance_break_that_this_deck_geometry_hides_and_a_non_planar_deck_would_expose
+
+# --------------------------------------------------------------------------
+# D. DECK FACTS AND SOLVED BOUNDARIES. No mutation, so these are not counted
+#    either way.
+
+id=deck_baseline_offset_is_exactly_zero surface=deck case=the_worst_infinity_norm_between_a_built_member_tip_and_its_own_deck_joint_point_over_all_sixteen_tips_and_five_bodies expect=n_a measured=0_0000e_00_m_EXACTLY_both_sides_trace_to_the_same_float_so_the_cell_rounding_in_expected_pairs_is_bit_exact_in_practice_and_the_whole_grid_is_headroom
+id=thresh_the_cell_grid_per_body surface=thresh case=MASS_PROPERTY_AGREEMENT_times_body_extent_which_is_the_grid_both_sides_of_the_pair_comparison_round_to expect=n_a measured=MASS_PROPERTY_AGREEMENT_1_0000e_13_platform_extent_51_056247_m_grid_5_1056e_12_m_hub1_to_hub4_extent_25_000000_m_grid_2_5000e_12_m
+id=thresh_detection_is_a_coordinate_property_not_a_gate_property surface=thresh case=the_smallest_shift_of_one_coordinate_that_moves_it_into_a_different_cell_solved_as_the_distance_from_that_coordinate_to_its_own_cell_boundary_rather_than_sampled expect=n_a measured=NOT_A_CONSTANT_over_the_platform_body_twelve_hub_tip_coordinates_it_runs_from_0_0000e_00_m_at_hub1_y_equals_0_0_and_3_0616e_15_m_at_hub2_x_which_sit_ON_a_boundary_up_to_1_4360e_12_m_at_the_shared_z_the_verdict_75_figure_7_1054e_13_m_was_hub1_x_50_0_walked_in_ULPs_and_the_exact_boundary_distance_there_is_7_7781e_13_m_so_neither_that_number_nor_the_report_range_1_7728e_12_to_3_3218e_12_is_a_property_of_the_GATE
+id=plan_what_deck_fact_pins_the_plan_centre surface=plan case=the_builder_types_centre_0_0_joint_plane_z_and_C56_iii_records_that_nothing_pins_that_origin_to_a_deck_fact_the_candidates_are_the_centroid_of_the_four_hub_platform_joints_or_the_platform_body_own_reference_point_projected_to_the_joint_plane expect=n_a measured=OPEN_the_implementer_calls_this_a_model_decision_for_the_plan_rather_than_a_repair_and_the_reviewer_agrees_it_is_not_a_step_1_repair_F3_md_section_3_2_names_the_centre_as_the_platform_plan_centre_on_the_joint_plane_and_does_not_say_which_deck_fact_that_is
+id=plan_which_step_ships_the_member_force_table surface=plan case=C56_iv_is_carried_by_name_into_the_step_that_ships_the_member_force_table_and_the_schedule_names_23_October_for_that_table_but_no_step_number expect=n_a measured=OPEN_F3_md_line_14_gives_the_date_and_section_0_DY0_gives_the_f_sensitivity_check_to_that_step_without_numbering_it_so_a_carried_by_name_item_has_no_numbered_container_yet
