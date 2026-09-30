@@ -93,6 +93,90 @@ def assembled_properties(body: BodyModel) -> tuple[float, np.ndarray, np.ndarray
     return rigid_properties(body_mass_matrix(body), body.model.nodes.coords(), body.deck_cog)
 
 
+def body_extent(body: BodyModel) -> float:
+    """`l_b`: the largest node distance from the deck's CoG (DZ1c).
+
+    The normalising length for the CoG and inertia comparisons. Using it rather
+    than 1.0 m is what R598 was about: a CoG offset divided by one metre reported
+    11.6x worse agreement than the body's own scale gives.
+    """
+    coords = body.model.nodes.coords()
+    return float(np.max(np.linalg.norm(coords - body.deck_cog, axis=1)))
+
+
+def analytic_properties(body: BodyModel) -> tuple[float, np.ndarray, np.ndarray]:
+    """Mass, CoG offset from the deck's CoG, and inertia about the CoG — BY HAND.
+
+    **THE INDEPENDENT PATH (DZ1). It never touches the assembled mass matrix.** Its
+    inputs are the node coordinates and connectivity, the line mass and section, and
+    the remainder's mass, position and `J_r` read off the model's lumped-mass input.
+    It does not recompute the remainder, because recomputing it is what made the old
+    comparison circular: the builder set `remainder = deck - member - parallel` and
+    the gate added the same two terms back, so the assertion was `deck == deck` and
+    the platform's diagonal came out BIT-IDENTICAL (R596).
+
+    WHICH ROTARY TERMS, CITED RATHER THAN ASSUMED. `floatfea/element/beam.py`'s
+    `local_mass` carries, per unit length:
+
+    * axial and transverse translation at `rho * A` (`:346`);
+    * torsion at `rho * (I_y + I_z)` — the POLAR second moment, and its docstring
+      says why it is not `rho * J`: "`J` is the St-Venant torsion CONSTANT, which is
+      a stiffness property; the rotary inertia of the cross-section about the member
+      axis is its polar second moment" (`:332-336`, `:351`);
+    * bending rotary inertia at `rho * I` through `bending_mass`'s `rho_i`.
+
+    So a member of length `L` about its own centre carries
+
+        J = m (L^2/12) (1 - e e^T)  +  rho_eq L [ J_p e e^T + I (1 - e e^T) ]
+
+    with `J_p = I_y + I_z`. The first term is the line mass; the second is the
+    section's own rotary inertia. **If the element ever omits one of these the
+    residual is a FINDING, not a reason to tune this reference.**
+    """
+    section = body.members[0].section
+    line_mass = body.member_mass / body.total_member_length
+    polar = section.I_y + section.I_z
+
+    parts: list[tuple[float, np.ndarray, np.ndarray]] = []
+    for member in body.members:
+        start = np.asarray(body.model.nodes[member.node_a].xyz, dtype=np.float64)
+        end = np.asarray(body.model.nodes[member.node_b].xyz, dtype=np.float64)
+        length = member.length
+        axis = (end - start) / length
+        along = np.outer(axis, axis)
+        across = np.eye(3) - along
+        mass = line_mass * length
+        own = mass * (length**2 / 12.0) * across + body.equivalent_density * length * (
+            polar * along + section.I_y * across
+        )
+        parts.append((mass, (start + end) / 2.0, own))
+
+    # the remainder, READ OFF the model's lumped-mass input and not recomputed
+    parts.append((body.remainder_mass, body.remainder_point, body.remainder_inertia))
+
+    total = sum(m for m, _, _ in parts)
+    centroid = sum(m * c for m, c, _ in parts) / total
+    inertia = np.zeros((3, 3), dtype=np.float64)
+    for mass, centre, own in parts:
+        d = centre - centroid
+        inertia += own + mass * (float(d @ d) * np.eye(3) - np.outer(d, d))
+    return total, centroid - body.deck_cog, inertia
+
+
+def _report_residual(label: str, residual: float, scale: float) -> str:
+    """DZ1d: below one ULP of the scale, say so rather than printing a number.
+
+    R596's `3.375e-36` was published as an accuracy result. It was the signature of
+    exact cancellation -- thirty orders below `numpy.spacing(6.25e9)` -- and a number
+    that small is evidence that nothing was compared, not that the comparison was
+    tight.
+    """
+    ulp = float(np.spacing(scale))
+    if residual <= ulp:
+        return f"{label}: <= 1 ULP of {scale:.4e}"
+    return f"{label}: {residual / scale:.4e} relative"
+
+
 def test_the_skeleton_is_FIVE_bodies_and_SIXTEEN_members(superstructure) -> None:
     """The platform and four hubs, four hub arms and twelve cluster arms."""
     assert len(superstructure.bodies) == BODIES
@@ -148,52 +232,147 @@ def test_G3_1a_the_bodys_MASS_matches_the_deck(superstructure, index: int) -> No
 
 
 @pytest.mark.parametrize("index", range(BODIES))
-def test_G3_1a_the_bodys_CoG_matches_the_deck(superstructure, index: int) -> None:
-    """Per body: the model's centre of gravity is where the deck says it is.
+def test_G3_1a_A_the_ANALYTIC_path_agrees_with_the_ASSEMBLED_matrix(
+    superstructure, index: int, capsys
+) -> None:
+    """(A). The gate's real content: two independent routes to the same properties.
 
-    THIS IS THE ASSERTION R591 SHOWED WAS MISSING. The old version compared the
-    members' centroid to the body's own node, which is a different quantity: it
-    caught a dropped member and said nothing about the platform's CoG sitting
-    10.3315 m below the point the deck declares. FloatSim's `driver.py:203-209`
-    states that the deck's `reference_point` IS the CoG, so that point is the
-    referent and this is what compares against it.
+    `analytic_properties` computes mass, CoG and inertia from node coordinates, the
+    line mass and the section, never touching the assembled matrix.
+    `assembled_properties` projects the assembled matrix. **A disagreement is a
+    defect in the element mass matrix, the geometry or the assembly** — which is what
+    DZ0 says G3.1a is for, and what the version this replaces could not see:
+
+    ```
+    cell   ONE VARIABLE: `rho_ip_l = rho * (I_y + I_z) * ll` scaled by 2 in beam.py
+    out    unmutated           (A) inertia residual 1.5225e-18
+    out    torsional rotary x2 (A) inertia residual 1.2983e-04
+    out    restored            (A) inertia residual 1.5225e-18
+    ```
+
+    Fourteen orders, against a tolerance of `1e-13`.
     """
     body = superstructure.bodies[index]
-    _, offset, _ = assembled_properties(body)
-    scale = max(float(np.max(np.abs(body.deck_cog))), body.link_length, 1.0)
-    assert float(np.max(np.abs(offset))) <= MASS_PROPERTY_AGREEMENT * scale, (
-        f"{body.name}: the model's CoG is {offset} from the deck's "
-        f"{body.deck_cog}, which is {float(np.max(np.abs(offset))) / scale:.3e} of "
-        f"the {scale:.3f} m scale it is compared against."
+    analytic_m, analytic_c, analytic_j = analytic_properties(body)
+    assembled_m, assembled_c, assembled_j = assembled_properties(body)
+    extent = body_extent(body)
+    mass_scale = body.deck_mass
+    inertia_scale = body.deck_mass * extent**2
+
+    with capsys.disabled():
+        print(
+            f"\n  {body.name:<9} (A) "
+            + _report_residual("mass", abs(analytic_m - assembled_m), mass_scale)
+            + "; "
+            + _report_residual("CoG", float(np.max(np.abs(analytic_c - assembled_c))), extent)
+            + "; "
+            + _report_residual(
+                "inertia", float(np.max(np.abs(analytic_j - assembled_j))), inertia_scale
+            )
+        )
+
+    assert abs(analytic_m - assembled_m) <= MASS_PROPERTY_AGREEMENT * mass_scale
+    assert float(np.max(np.abs(analytic_c - assembled_c))) <= MASS_PROPERTY_AGREEMENT * extent
+    assert (
+        float(np.max(np.abs(analytic_j - assembled_j))) <= MASS_PROPERTY_AGREEMENT * inertia_scale
+    ), (
+        f"{body.name}: the analytic inertia and the assembled one disagree by "
+        f"{float(np.max(np.abs(analytic_j - assembled_j))):.6e} kg.m^2. One of the "
+        "element mass matrix, the geometry or the assembly is wrong -- the reference "
+        "is not tuned to match (DZ1b)."
     )
 
 
 @pytest.mark.parametrize("index", range(BODIES))
-def test_G3_1a_the_bodys_full_INERTIA_TENSOR_matches_the_deck(
-    superstructure, index: int, capsys
-) -> None:
-    """Per body: all six independent components, not just `Izz`.
+def test_G3_1a_B_the_ANALYTIC_path_agrees_with_the_DECK(superstructure, index: int) -> None:
+    """(B). The model carries FloatSim's rigid-body properties, per body.
 
-    R592 was that only `Izz` was decremented, so the members' contribution to `Ixx`
-    and `Iyy` — 20.9% of the platform's and 51.5% of each hub's — was double-counted,
-    and the figure printed as the deck's was `6.250897e9` against a real
-    `6.250000e9`. DY2 requires the full tensor, with `J_mem` taken about `G` from the
-    assembled matrix.
+    DZ0(1): this is the precondition for inertia-relief equilibrium with FloatSim's
+    loads, and it is what the results depend on. It is largely closed by
+    construction -- the remainder is placed to close it -- and it is asserted anyway,
+    because the placement rule could be wrong and this is where that shows.
     """
     body = superstructure.bodies[index]
-    _, _, inertia = assembled_properties(body)
-    scale = float(np.max(np.abs(body.deck_inertia)))
-    worst = float(np.max(np.abs(inertia - body.deck_inertia)))
-    with capsys.disabled():
-        print(
-            f"\n  {body.name:<9} inertia residual {worst:.4e} of {scale:.6e} "
-            f"= {worst / scale:.3e} relative"
-        )
-    assert worst <= MASS_PROPERTY_AGREEMENT * scale, (
-        f"{body.name}: the assembled inertia differs from the deck's by "
-        f"{worst:.6e} kg.m^2, {worst / scale:.3e} relative.\n"
-        f"assembled:\n{inertia}\ndeck:\n{body.deck_inertia}"
+    analytic_m, analytic_c, analytic_j = analytic_properties(body)
+    extent = body_extent(body)
+    assert abs(analytic_m - body.deck_mass) <= MASS_PROPERTY_AGREEMENT * body.deck_mass
+    assert float(np.max(np.abs(analytic_c))) <= MASS_PROPERTY_AGREEMENT * extent, (
+        f"{body.name}: the model's CoG is {analytic_c} from the deck's "
+        f"{body.deck_cog}, which is {float(np.max(np.abs(analytic_c))) / extent:.3e} "
+        f"of the body's {extent:.3f} m extent."
     )
+    scale = body.deck_mass * extent**2
+    assert float(np.max(np.abs(analytic_j - body.deck_inertia))) <= MASS_PROPERTY_AGREEMENT * scale
+
+
+# ---------------------------------------------------------------------------
+# DZ2 / R597. The geometry, which the properties gate does not see.
+# ---------------------------------------------------------------------------
+
+
+def expected_pairs(superstructure, body: BodyModel) -> set[frozenset[tuple[float, ...]]]:
+    """The undirected endpoint pairs this body must have, from the DECK's joints.
+
+    Built from the deck's own joint coordinates and the body's centre node, so it is
+    independent of what the builder actually made. Coordinates are rounded to a
+    grid fine enough that round-off cannot move a node between cells and coarse
+    enough that the deck's own values land on one -- `MASS_PROPERTY_AGREEMENT` times
+    the body extent, which is the same scale the CoG comparison uses.
+    """
+    extent = body_extent(body)
+    grid = MASS_PROPERTY_AGREEMENT * extent
+
+    def cell(point: np.ndarray) -> tuple[float, ...]:
+        return tuple(round(float(c) / grid) * grid for c in point)
+
+    centre = np.asarray(body.model.nodes[body.centre_node].xyz, dtype=np.float64)
+    tips = [np.asarray(body.model.nodes[m.node_b].xyz, dtype=np.float64) for m in body.members]
+    return {frozenset({cell(centre), cell(tip)}) for tip in tips}
+
+
+@pytest.mark.parametrize("index", range(BODIES))
+def test_DZ2_the_bodys_MEMBER_GEOMETRY_is_what_the_deck_implies(superstructure, index: int) -> None:
+    """R597. Member count, the endpoint-pair set, no duplicates, and a tree.
+
+    **The properties gate does not see any of this.** Measured before DZ2 existed:
+    four member tips moved +3 m gave `1765 passed` across `tests/unit` and
+    `tests/verification`, and four of sixteen members duplicated onto another line
+    gave `1765 passed` too. A dropped member was caught by the count alone -- a
+    detection the pre-DY1 CoG test had and the rewrite lost.
+    """
+    body = superstructure.bodies[index]
+    expected_count = 4 if body.name == "platform" else 3
+    assert len(body.members) == expected_count
+
+    extent = body_extent(body)
+    grid = MASS_PROPERTY_AGREEMENT * extent
+
+    def cell(index_: int) -> tuple[float, ...]:
+        point = np.asarray(body.model.nodes[index_].xyz, dtype=np.float64)
+        return tuple(round(float(c) / grid) * grid for c in point)
+
+    pairs = [frozenset({cell(m.node_a), cell(m.node_b)}) for m in body.members]
+
+    assert len(set(pairs)) == len(pairs), (
+        f"{body.name} has duplicate members: {len(pairs)} members occupy "
+        f"{len(set(pairs))} distinct endpoint pairs, so at least one line is drawn "
+        "twice and its mass is counted twice."
+    )
+    assert set(pairs) == expected_pairs(superstructure, body), (
+        f"{body.name}'s members do not join the points the deck's joints imply. "
+        "A moved tip lands here."
+    )
+
+    # a tree: every member touches the centre, and the tips are all distinct
+    centre = cell(body.centre_node)
+    assert all(centre in pair for pair in pairs), (
+        f"{body.name} has a member not touching its centre node, so the body is not "
+        "the star the frame requires."
+    )
+    tips = {next(iter(pair - {centre})) for pair in pairs}
+    assert (
+        len(tips) == expected_count
+    ), f"{body.name} has {len(tips)} distinct tips for {expected_count} members."
 
 
 @pytest.mark.parametrize("index", range(BODIES))
