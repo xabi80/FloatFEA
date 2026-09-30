@@ -1492,14 +1492,23 @@ DETECTION_THRESHOLD_BAND_COUNTER: Final[float] = 0.25
 #      is against the surviving magnitude rather than against the cancelled one.
 #
 # So the floor is set by (1) scaled for the cancellation in (2). Measured across the
-# five bodies of F3's skeleton -- mass, CoG and the full inertia tensor, each
-# relative to the quantity compared -- the worst residual is 2.2119e-15, which is
-# BELOW 36 * eps rather than above it: the cancellation costs less than the
-# accumulation, and the accumulation is the binding term.
+# five bodies of F3's skeleton, over BOTH comparisons G3.1a makes -- the analytic
+# path against the assembled matrix, and the analytic path against the deck -- with
+# mass normalised by `M_b`, the CoG by `l_b` and the inertia by `M_b * l_b^2`
+# (DZ1c), the worst residual is 1.5522e-16, at hub2's mass. That is BELOW 36 * eps:
+# the cancellation costs less than the accumulation, and the accumulation binds.
 #
-# `1e-13` is 36 * eps with a factor of ~12 of headroom, and ~45 over the worst
-# measurement. It is set from the derivation rather than from the measurement, so a
+# `1e-13` is 36 * eps with a factor of ~12 of headroom, and ~644 over the worst
+# measurement. It is set from the DERIVATION rather than from the measurement, so a
 # body with more nodes does not breach it for no defect.
+#
+# TWO FIGURES HERE WERE WRONG AND R598 FOUND THEM. The first version published
+# `2.2119e-15` as the worst residual and claimed ~45x of headroom. That figure
+# divided a CoG offset by 1.0 m instead of by the body's own extent, which inflated
+# it by an order of magnitude; `l_b` normalisation is what DZ1c fixed. The
+# directive's own correction, `1.9073e-16`, was measured against the PRE-DZ1 gate --
+# the figure above is re-measured at this commit, on the analytic path that
+# replaced it, and the two differ because the quantity did.
 #
 # WHY NOT `ROUNDOFF_IDENTITY` (1e-14): it is barely above 36 * eps = 7.994e-15, so a
 # body with five more DOF would breach it with nothing wrong. BD1 says an entry is
@@ -1508,9 +1517,18 @@ DETECTION_THRESHOLD_BAND_COUNTER: Final[float] = 0.25
 # element-level identity -- hence its own entry rather than a second use of that
 # one.
 #
-# It carries a counter: `test_G3_1a_a_MISPLACED_remainder_reddens` moves the
-# remainder node and requires the CoG comparison to fail, so the entry is known
-# to be tight enough to see a real defect and not merely loose enough to pass.
+# ITS COUNTER IS THE REPORT'S MUTATION SECTION, AND THE TEST THIS ONCE CITED NEVER
+# EXISTED (R598). The citation read `test_G3_1a_a_MISPLACED_remainder_reddens`, which
+# `git grep` finds in exactly one place -- this comment. Naming a test that does not
+# exist is worse than naming none: it reads as evidence and `test_counters_are_injected`
+# cannot see it, because that file's registry is hand-written.
+#
+# What the entry is actually measured against is the four mutations in the step
+# report's DZ6 section, each with the mutated code line, the red output and the
+# restore. The one that binds this entry: scaling the element's torsional rotary term
+# moves the analytic-versus-assembled inertia residual from 1.5e-18 to 1.3e-04,
+# fourteen orders above this floor. Demonstrations live in the report (DY1), not in a
+# test written to be cited.
 # Set: 2026-09-30, F3 (DY3, answering R593)
 MASS_PROPERTY_AGREEMENT: Final[float] = 1e-13
 
