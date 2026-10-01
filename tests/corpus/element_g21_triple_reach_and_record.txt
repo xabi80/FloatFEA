@@ -1,0 +1,103 @@
+# CORPUS: THE THREE-CLAUSE G2.1 REFUSAL -- WHAT THE TRIPLE REACHES, WHERE THE
+# CLEAN SIDE SITS OVER THE WHOLE ADMISSIBLE BAND, AND WHICH PUBLISHED FIGURES
+# REPRODUCE AT THE COMMIT THAT PUBLISHES THEM.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Batch 30, written at
+# the EIGHTY-THIRD verdict, the THIRD and last round on F3 step 2, against the
+# judged commit b105de1: element_rigid_residual, seventh_over_epsilon and
+# element_lambda_min_over_epsilon in floatfea/element/rigid.py, the three
+# clauses of check_rigid_modes in floatfea/model/platform.py, the eight cells in
+# tests/verification/rung3/test_platform_rigid_modes.py, and the RIGID_MODE_BOUND
+# entry in floatfea/tolerances.py as it stands after 8ed0fd4.
+#
+# IN SCOPE UNDER DE2: the element, the gates, and the platform model. Section E
+# is the one report-guard shape, in scope because it is the only RED in the tree
+# at this commit and nothing else in the corpus describes it.
+#
+# WHAT A PASSING SCAN MEANS. Every expect=caught row names something the tree
+# must reject -- a mutation the shipped TRIPLE must refuse
+# (element_rigid_residual <= RIGID_MODE_EXACTNESS, seventh_over_epsilon >=
+# RIGID_MODE_BOUND, element_lambda_min_over_epsilon >= -RIGID_MODE_BOUND), or a
+# published figure that some check must notice does not reproduce. A scan passes
+# when every such row reads measured=CAUGHT. TEN ROWS PREDICT caught AND FIVE
+# READ CAUGHT. The five that do not are all of one kind and it is not the
+# element: they are FIGURES -- a printed diagnostic in a report, an operating
+# point in a tolerance entry, a detection edge taken at the best of sixteen
+# members, a command cited for figures it does not print, and a pointer column
+# that makes its own guard vacuous. Nothing in this repository re-takes a
+# figure, which is what every one of them has in common.
+#
+# expect=blind is NOT a failure: it is a reach boundary measured rather than
+# assumed, and three of them are recorded so that no later reader mistakes this
+# triple for a general element check.
+#
+# expect= is the prediction written before the run; measured= is what the shipped
+# functions, the shipped test and the shipped guard did. EVERY FIGURE HERE WAS
+# TAKEN BY THE REVIEWER AT b105de1, in a scratch harness under the session
+# scratch directory, importing the shipped functions and writing nothing into
+# the working tree. The working tree was clean before this file and the verdict,
+# and those are the only two paths written.
+
+# --------------------------------------------------------------------------
+# A. MUTATIONS THROUGH THE SHIPPED TRIPLE, one at a time, into k_local for
+#    platform:hub1_arm at L = 50 m. NONE of these is a sign negation, so none
+#    of them is in batch 29 or in the committed cells: this section asks what
+#    the triple reaches BESIDES the sign class it was extended for.
+
+id=g21_xz_bending_flip_OMITTED surface=element case=the_2_4_8_10_block_written_as_ky_instead_of_flip_at_ky_at_flip_the_sign_pattern_V2_4_exists_for_and_the_one_the_element_comment_names_as_invisible_to_planar_cases expect=caught measured=CAUGHT_residual_3.198e-03_against_1e-15_builder_REFUSED_while_seventh_over_eps_stays_9.3791e+11_and_lambda_min_over_eps_stays_minus_2.1425e-03_so_the_RESIDUAL_clause_alone_carries_this_shape
+id=g21_bending_y_block_ZEROED surface=element case=the_2_4_8_10_block_set_to_zero_so_the_member_has_no_stiffness_in_one_bending_plane_a_SEVENTH_zero_mode_by_construction expect=caught measured=CAUGHT_seventh_over_eps_4.3528e-04_against_199.526_builder_REFUSED_while_the_residual_stays_8.721e-20_so_the_SEVENTH_clause_alone_carries_it_and_this_is_the_mechanism_class_the_clause_was_written_for
+id=g21_torsion_block_ZEROED surface=element case=the_3_9_torsional_2x2_set_to_zero_a_fully_RELEASED_connection_rather_than_a_nearly_released_one expect=caught measured=CAUGHT_seventh_over_eps_4.8647e-02_builder_REFUSED_residual_8.721e-20_lambda_min_over_eps_minus_4.1859e-03_both_blind
+id=g21_ANTISYMMETRIC_perturbation surface=element case=k_plus_1e-3_times_max_abs_k_times_a_random_ANTISYMMETRIC_matrix_which_both_spectral_clauses_symmetrise_away_before_they_look expect=caught measured=CAUGHT_residual_3.446e-03_builder_REFUSED_and_the_two_spectral_clauses_read_EXACTLY_their_clean_values_9.3791e+11_and_minus_2.1425e-03_because_each_takes_k_plus_k_T_over_2_first_so_the_residual_is_the_ONLY_clause_that_sees_a_non_symmetric_stiffness
+id=g21_stiffness_built_at_TWICE_the_member_length surface=element case=local_stiffness_evaluated_at_2L_and_checked_against_the_geometry_at_L_an_inconsistent_span_which_is_the_shape_a_scaling_or_unit_slip_in_the_builder_would_produce expect=caught measured=CAUGHT_residual_5.117e-04_builder_REFUSED_because_the_rigid_vectors_are_built_from_the_length_passed_in_so_the_two_disagree_and_this_is_the_one_mutation_here_that_a_WHOLE_MODEL_error_rather_than_an_element_error_would_produce
+id=g21_shear_parameter_DROPPED surface=element case=phi_set_to_zero_in_both_bending_planes_so_the_element_is_Euler_Bernoulli_where_the_section_is_stocky_enough_to_need_Timoshenko expect=blind measured=NOT_CAUGHT_residual_3.824e-20_seventh_over_eps_9.3791e+11_lambda_min_over_eps_minus_3.0536e-02_ALL_THREE_CLAUSES_ACCEPT_and_the_platform_builds_which_is_consistent_with_the_recorded_F2_measurement_that_the_dropped_shear_parameter_is_outside_this_gate_and_is_recorded_here_so_no_reader_takes_G2_1_for_a_general_element_check
+id=g21_axial_EA_DOUBLED surface=element case=the_0_6_axial_2x2_multiplied_by_two_a_pure_MAGNITUDE_error_in_one_stiffness_term_with_no_sign_no_coupling_and_no_mode_moved expect=blind measured=NOT_CAUGHT_residual_4.361e-20_seventh_over_eps_4.6896e+11_lambda_min_over_eps_minus_1.0713e-03_ALL_THREE_ACCEPT_so_the_triple_is_a_check_on_STRUCTURE_rigid_modes_mode_position_and_sign_and_not_on_the_VALUE_of_any_stiffness_which_is_what_G3_1a_and_the_member_force_table_are_for
+id=g21_the_same_member_in_MILLIMETRES surface=element case=D_o_2500_mm_t_180_mm_L_50000_mm_with_E_in_N_per_mm2_the_identical_physical_member_under_a_unit_system_scaled_by_a_thousand_which_is_NOT_a_defect expect=blind measured=ACCEPTED_correctly_but_the_CLEAN_reading_moves_from_minus_2.1425e-03_in_SI_to_minus_5.1951e-02_a_factor_of_24_and_the_residual_moves_8.721e-20_to_3.824e-20_so_the_band_margin_the_tolerance_entry_publishes_is_a_figure_about_SI_and_a_sixth_of_it_is_spent_by_one_change_of_unit_and_INTERNAL_SI_is_a_CLAUDE_md_non_negotiable_so_this_is_a_property_of_the_figure_and_not_a_live_defect
+
+# --------------------------------------------------------------------------
+# B. THE NEW SEVENTH-MODE BOUNDARY CELL, which is the round's work. Does the
+#    hardcoded edge survive a machine the implementer does not control, and can
+#    the cell degrade into a pass that certifies nothing?
+
+id=g21_seventh_edge_REPRODUCES_independently surface=gate case=bisect_the_retained_torsion_fraction_for_the_crossing_of_RIGID_MODE_BOUND_in_an_independent_harness_and_compare_with_the_2.127342e-10_the_cell_hardcodes expect=explain measured=2.1273422e-10_ratio_1.0000001_to_the_committed_figure_so_the_hardcoded_edge_is_not_an_artifact_of_the_machine_it_was_written_on
+id=g21_seventh_cell_printed_RATIOS_reproduce surface=gate case=run_the_shipped_cell_and_compare_its_printed_seventh_over_eps_at_half_and_twice_the_edge_with_the_report expect=explain measured=9.9762e+01_and_3.9905e+02_EXACTLY_as_published_and_the_ratios_to_the_bound_are_0.5000_and_2.0000_so_the_quantity_is_linear_in_the_retained_fraction_and_a_two_fold_bracket_in_the_DECISION_quantity_is_a_solved_boundary_rather_than_a_sample
+id=g21_seventh_cell_printed_LAMBDA_MIN_does_not_reproduce surface=record case=the_report_section_3_publishes_lam_min_over_eps_minus_1.579e-03_at_half_the_edge_and_the_shipped_cell_prints_its_own_value_for_the_same_input expect=caught measured=NOT_CAUGHT_the_cell_prints_minus_2.331e-04_and_the_report_publishes_minus_1.579e-03_a_factor_of_6.8_while_the_twice_the_edge_row_minus_1.680e-03_agrees_to_four_figures_so_ONE_of_six_published_fields_comes_from_a_cell_that_is_not_the_shipped_test_and_the_margin_on_that_field_is_1e5x_so_no_assertion_moves
+id=g21_seventh_cell_cannot_degrade_to_a_vacuous_pass surface=gate case=ask_what_happens_to_the_cell_if_the_element_changes_and_the_edge_moves_away_from_the_hardcoded_2.127342e-10 expect=explain measured=IT_REDDENS_the_cell_asserts_seventh_over_eps_BELOW_the_bound_on_one_side_and_AT_OR_ABOVE_it_on_the_other_so_an_edge_that_moves_by_more_than_two_fold_in_either_direction_fails_one_of_the_two_which_is_the_one_property_a_hardcoded_figure_in_a_test_usually_does_not_have
+id=g21_seventh_cell_carries_its_own_failure surface=gate case=remove_the_seventh_clause_from_check_rigid_modes_and_ask_whether_the_new_cell_goes_red expect=explain measured=IT_GOES_RED_BY_CONSTRUCTION_the_same_cell_asserts_that_the_residual_and_the_signed_clause_are_SATISFIED_on_both_inputs_so_with_the_seventh_clause_gone_nothing_raises_and_the_pytest_raises_fails_no_separate_negative_control_is_needed_and_this_is_the_first_cell_in_this_family_where_that_is_true
+
+# --------------------------------------------------------------------------
+# C. THE CLEAN SIDE, OVER THE WHOLE ADMISSIBLE BAND AND NOT OVER THE SIXTEEN.
+#    A refusal that fires on a legitimate deck is worse than one that cannot
+#    fire, and the refusal applies to every deck the builder is ever given.
+#    60000 random admissible points plus 200 Nelder-Mead restarts per quantity,
+#    D_o 0.05 to 20 m, t over D_o 0.0005 to 0.49, L constrained to L over D at
+#    least 2 and L over r at most 300.
+
+id=g21_band_worst_clean_RESIDUAL surface=refusal case=the_largest_element_rigid_residual_over_the_admissible_band_against_the_1e-15_ceiling_the_refusal_inherits expect=explain measured=1.956747e-17_at_D_o_0.2286_t_over_D_o_0.00383_L_0.4743_which_is_51.1x_INSIDE_the_ceiling_so_the_inherited_ceiling_does_NOT_false_refuse_anywhere_measured_and_what_R624_is_about_is_the_COUNTER_side_of_the_window_and_not_the_clean_side
+id=g21_band_smallest_clean_SEVENTH surface=refusal case=the_smallest_seventh_over_epsilon_over_the_same_band_against_the_199.526_floor expect=explain measured=3.850549e+10_at_D_o_0.3056_t_over_D_o_0.3823_L_23.54_L_over_r_299.9_which_is_1.93e+08x_ABOVE_the_floor_so_the_seventh_clause_has_eight_decades_of_clean_room_over_the_band_and_this_is_the_first_time_that_clause_has_been_swept_over_anything_but_the_sixteen
+id=g21_band_worst_clean_LAMBDA_MIN_with_nu_free surface=refusal case=the_same_band_with_POISSONS_RATIO_a_free_variable_from_minus_0.99_to_0.499_because_the_refusal_holds_for_any_material_a_deck_declares_and_nothing_in_Material_constrains_nu expect=explain measured=minus_1.353920e+00_at_D_o_0.1193_t_over_D_o_0.001278_L_9.383_nu_minus_0.9418_margin_147.4x_so_an_unphysical_Poisson_ratio_buys_an_attacker_almost_nothing_and_the_margin_is_a_property_of_the_arithmetic_rather_than_of_steel
+id=g21_band_worst_clean_LAMBDA_MIN_near_the_entrys_own_point surface=refusal case=refine_a_grid_around_the_operating_point_the_RIGID_MODE_BOUND_entry_publishes_1.468_m_and_0.3864_and_4.634_m_in_S355 expect=explain measured=minus_1.372438e+00_at_D_o_1.48121_t_over_D_o_0.351624_L_4.35596_margin_145.4x_WORSE_than_both_published_grids_minus_1.202245_and_minus_1.332560_so_three_independent_searches_now_agree_the_band_worst_is_order_minus_1.4_and_the_margin_is_order_145x_and_none_of_the_three_is_a_bound
+id=g21_the_entrys_published_OPERATING_POINT_does_not_carry_its_figure surface=tolerance_record case=evaluate_element_lambda_min_over_epsilon_at_exactly_the_D_o_1.468_t_over_D_o_0.3864_L_4.634_the_entry_names_in_S355 expect=caught measured=NOT_CAUGHT_it_reads_minus_5.207773e-02_margin_3831.3x_and_NOT_the_minus_1.332560e+00_and_149.7x_the_entry_publishes_beside_it_so_the_one_figure_a_later_reader_could_check_the_reuse_against_cannot_be_reproduced_from_the_entry
+id=g21_the_quantity_SCATTERS_so_four_figures_cannot_locate_it surface=tolerance_record case=1331_points_in_a_plus_minus_5e-4_RELATIVE_box_around_that_published_point expect=explain measured=the_values_span_minus_1.077133e+00_to_EXACTLY_0.000000e+00_with_minus_5.207773e-02_at_the_centre_so_this_is_a_round_off_scatter_functional_and_an_operating_point_rounded_to_four_significant_figures_cannot_carry_its_own_value_WHICH_IS_THE_MECHANISM_OF_THE_ROW_ABOVE_the_figure_is_not_wrong_and_the_coordinates_are_unusable
+
+# --------------------------------------------------------------------------
+# D. THE THREE COUNTER DETECTION EDGES, which step 3 will choose an injection
+#    size from. Two sets of three numbers for one quantity ship in this tree.
+#    Bisected here, per member, with the injection shapes taken from
+#    scripts/rigid_counter_response.py and its own injected function.
+
+id=g21_counter_edges_WORST_over_the_sixteen surface=counter case=bisect_each_of_dropped_flip_and_wrong_dof_index_and_rotational_block_for_the_size_at_which_the_residual_crosses_1e-15_and_take_the_LARGEST_over_the_sixteen_members_which_is_the_size_a_counter_must_exceed_to_redden_EVERY_member expect=explain measured=5.285599e-14_and_1.094071e-15_and_2.642868e-12_which_reproduces_the_LOCKED_PLANs_three_figures_5.286e-14_and_1.094e-15_and_2.643e-12_EXACTLY_so_the_plan_is_RIGHT_and_the_C89_accusation_against_it_is_withdrawn
+id=g21_counter_edges_in_the_TEST_COMMENT_are_the_BEST_member surface=counter case=compare_the_three_edges_the_rung_3_test_comment_and_the_report_section_5_publish_as_the_detection_edges_with_the_per_member_bisection expect=caught measured=NOT_CAUGHT_2.735459e-14_and_1.057143e-15_and_6.837686e-13_are_EXACTLY_the_MINIMUM_over_the_sixteen_the_EASIEST_member_to_detect_on_so_a_size_chosen_just_above_2.735459e-14_for_dropped_flip_reddens_ONE_member_and_not_the_worst_which_needs_5.285599e-14_and_this_is_the_same_best_member_shape_R627_found_in_the_margin_one_quantity_over
+id=g21_counter_weakest_response_at_the_conventions_size surface=counter case=the_smallest_response_over_the_sixteen_at_SIZE_1e-8_of_max_abs_k_e expect=explain measured=1.891891e-10_and_9.140177e-09_and_3.783782e-12_which_reproduces_the_locked_plans_1.892e-10_and_9.140e-09_and_3.784e-12_exactly_so_every_figure_in_that_plan_block_that_is_a_MEASUREMENT_reproduces_and_what_C88_is_about_is_the_citation
+id=g21_counter_reach_at_the_DECLARED_size surface=counter case=how_many_of_the_sixteen_each_counter_reddens_at_RIGID_MODE_EXACTNESS_COUNTER_DEFECT_1e-14 expect=explain measured=dropped_flip_0_of_16_worst_response_3.656327e-16_and_wrong_dof_index_16_of_16_worst_9.459456e-15_and_rotational_block_0_of_16_worst_1.464442e-17_which_reproduces_the_test_comments_three_responses_exactly_so_the_refusal_to_register_two_of_the_three_at_the_inherited_size_is_confirmed_by_an_independent_run
+id=g21_the_cited_command_prints_none_of_them surface=record case=run_the_scripts_rigid_counter_response_py_the_locked_plan_section_5_names_as_the_producer_of_every_figure_below_it expect=caught measured=NOT_CAUGHT_it_prints_1851_distinct_elements_over_the_RIGID_BODY_CORPUS_and_a_per_frame_lambda_6_split_and_not_one_of_the_sixteen_member_figures_the_plan_attributes_to_it_so_those_figures_are_right_and_NO_COMMITTED_COMMAND_REGENERATES_THEM_which_is_the_BI3_shape_in_a_locked_plan_rather_than_in_a_tolerance_comment
+
+# --------------------------------------------------------------------------
+# E. THE ONE RED IN THE TREE AT THIS COMMIT, and it is not the element. In
+#    scope because nothing else in the corpus describes it and because two
+#    verdicts have now mis-attributed it.
+
+id=g21_pointer_resolution_is_VACUOUS_as_shipped surface=report_guard case=the_newest_revision_of_the_step_2_report_and_the_section_each_item_points_at expect=caught measured=NOT_CAUGHT_by_the_pointer_resolution_all_52_section_pointers_in_the_newest_revision_are_section_9_and_section_9_is_a_bulleted_list_naming_EVERY_item_so_a_pointer_at_it_resolves_for_all_of_them_and_the_guard_passes_235_while_the_NEGATIVE_CONTROL_in_the_guard_state_harness_is_the_only_thing_that_reports_it_which_it_does_as_a_RED
+id=g21_the_answers_json_is_the_data_side_of_it surface=report_guard case=the_step_2_answers_json_and_the_where_field_of_each_answered_item expect=explain measured=every_item_R610_through_R628_carries_where_set_to_section_9_so_the_shipped_report_is_ALREADY_IN_THE_PLANTED_STATE_and_the_planted_copy_and_the_healthy_copy_are_indistinguishable_to_the_guard_which_is_why_the_control_cannot_fail
+id=g21_the_planting_is_not_a_no_op_CONTROL surface=report_guard case=apply_the_harness_own_substitution_of_section_N_to_section_9_over_the_newest_revision_and_ask_whether_the_text_changes expect=explain measured=IT_DOES_CHANGE_the_section_7_and_5_and_4_and_3_and_2_and_1_occurrences_in_prose_are_rewritten_so_the_action_does_build_a_state_and_the_defect_is_in_what_the_GUARD_asks_of_a_pointer_rather_than_in_the_harness_failing_to_plant
+id=g21_seven_of_eight_planted_states_were_a_cascade_and_this_one_was_not surface=report_guard case=compare_the_eight_guard_survives_the_state_failures_at_c4d4817_with_the_failures_at_b105de1 expect=explain measured=seven_cleared_when_the_answering_revision_landed_and_this_one_did_not_and_the_baseline_state_is_GREEN_here_so_it_is_NOT_the_step_boundary_cascade_verdicts_81_and_82_ruled_the_whole_group_by_CLASS_and_an_independent_red_was_inside_it_for_two_rounds
