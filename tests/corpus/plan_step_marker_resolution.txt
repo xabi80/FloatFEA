@@ -1,0 +1,100 @@
+# CORPUS: WHICH MILESTONE, AND WHICH STEP, THE REPORT GUARDS DECIDE THEY READ
+# -- the one input three guards share, and it is a regex over docs/milestones/F*.md.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Batch 26, written at
+# the SEVENTY-NINTH verdict on F3 step 1, against 7b44545.
+#
+# WHY THIS SURFACE AND WHY NOW. C60 (R606) was the FIFTH file found hardcoded to
+# F2, and the repair replaced the hardcoding with a resolution: the plan carrying
+# the step-under-execution marker names the milestone, and every path the guard
+# builds comes from it. R601a did the same to a fourth file and DX2 to a third.
+# So a constant that was wrong in five places became a computation performed in
+# three, from one regex, with a FALLBACK TO F2 when the computation is ambiguous
+# -- and F2 is a closed milestone whose newest report is frozen, which is the
+# exact state C60 was fixing. Nothing in this repository had measured what that
+# resolution does off its nominal input. That is what this file is.
+#
+#   tests/test_report_carried.py:67,85-106,459-484   the resolver AND the only
+#                                                    assertion over it
+#   tests/test_report_guard_states.py:42,44-74,106   a duplicate resolver
+#   tests/test_report_numbers_are_sourced.py:50,53-72  a third duplicate
+#
+# IN SCOPE UNDER DE2 AND DR1. This is not new apparatus and asks for none: the
+# assertion that covers most of it already exists and already carries this exact
+# reasoning in its own message -- that this is how a guard comes to read a closed
+# milestone's last step and report green while checking nothing. What the corpus
+# measures is how far that sentence reaches.
+#
+# THE SURFACE, AND HOW EVERY measured= BELOW WAS TAKEN.
+#   how   docs/milestones/ is copied to a scratch directory OUTSIDE this
+#         repository, every existing marker is stripped, the shape is planted,
+#         and the SHIPPED code is pointed at the copy: _MILESTONES, _PLAN and
+#         _PLAN_STEP_NUMBER rebound, then
+#         test_the_plan_names_the_step_under_execution called directly. No file
+#         in the repository is written and the tree is clean at every row.
+#   why   planting a second marker in docs/milestones/ for real would put an
+#         untracked plan in the implementer's tree, and the reviewer's harness
+#         does not live in the repository.
+#   note  the step-NUMBER half must be measured with _PLAN_STEP_NUMBER rebound
+#         as well. Rebinding only _MILESTONES leaves the step number reading the
+#         REAL F3 marker, so shape 12 came back green on the first pass and is
+#         caught on the second. The first pass was the reviewer's own defect and
+#         it is recorded because it is the mistake a reader would repeat.
+#
+#   resolve  what plan and what step the three surfaces select.
+#   gate     what test_the_plan_names_the_step_under_execution does.
+#   reach    a property of the resolution, no defect planted, not counted.
+#
+# WHAT A PASSING SCAN MEANS. Nothing about whether the guards are sound. Each
+# expect= is the reviewer's prediction before the run; measured= is what the
+# shipped code did. expect=uncaught with measured=GREEN is a MISS: the state
+# misdirects a guard, the suite is green on it, and the row is the evidence.
+#
+# THE COVERAGE NUMBER THIS BATCH REPORTS. EIGHTEEN entries, ELEVEN carry a state
+# that misdirects or blinds a guard. TEN CAUGHT, ONE MISS -- the last entry.
+# Seven entries are controls or reach rows and are counted neither way. Against
+# twelve of thirteen in batch 25, six of eleven in batch 24, eleven of sixteen in
+# batch 23.
+#
+# WHAT THE TEN RESTS ON, so nobody reads it as the resolution being safe: ONE
+# assertion, in ONE of the three files, over the number of PLANS. Nine of the ten
+# catches are that clause or its step-number sibling. The other two files have no
+# assertion at all over their own fallback and are covered only because the
+# sibling runs in the same pytest invocation -- which the guards CI step does and
+# the ladder job does not.
+#
+# ONE VARIABLE PER ENTRY.
+
+# A. THE TWO STATES THE EXISTING ASSERTION WAS WRITTEN FOR.
+
+id=zero_plans_carry_a_numeric_marker surface=gate case=every_marker_in_docs_milestones_stripped_so_nothing_declares_a_step_under_execution expect=caught measured=RED_0_plans_carry_a_step_under_execution_line_exactly_one_must_and_the_message_names_both_diagnoses_while_all_three_resolvers_fall_back_to_F2_and_to_step_0
+id=two_plans_carry_it_F3_and_a_new_F4 surface=gate case=F3_keeps_its_marker_and_a_freshly_written_F4_md_gains_one_which_is_the_ordinary_milestone_advance expect=caught measured=RED_2_plans_carry_it_F3_md_F4_md_and_the_message_names_the_consequence_a_guard_reading_a_closed_milestones_last_step_and_reporting_green
+
+# B. SHAPES THE REGEX ADMITS THAT A READER WOULD NOT CALL A MARKER.
+
+id=marker_QUOTED_inside_a_fenced_block_in_a_second_plan surface=gate case=F2a_md_the_frozen_apparatus_list_quotes_the_marker_convention_inside_a_triple_backtick_block_as_documentation expect=caught_with_the_wrong_diagnosis measured=RED_2_plans_carry_it_F2a_md_F3_md_CAUGHT_but_the_message_says_the_milestone_advanced_without_the_previous_plans_marker_being_removed_which_is_not_what_happened_the_regex_has_no_block_awareness
+id=marker_split_across_two_lines surface=reach case=the_marker_written_with_a_newline_between_the_colon_and_the_digit_because_backslash_s_in_the_regex_matches_a_newline expect=matches_and_resolves measured=GREEN_resolves_F3_step_1_CORRECTLY_recorded_because_it_is_the_mechanism_the_previous_entry_relies_on_a_plan_that_merely_MENTIONS_the_marker_across_a_line_break_becomes_a_carrier
+id=marker_in_F2_figures_md_a_GENERATED_file surface=gate case=the_canonical_render_F2_figures_md_gains_a_marker_it_matches_the_F_star_md_glob_and_is_not_a_plan expect=caught measured=RED_2_plans_carry_it_F2_figures_md_F3_md_the_glob_does_not_distinguish_a_plan_from_a_generated_file_in_the_same_directory
+id=marker_in_a_non_F_file surface=reach case=docs_milestones_README_md_carries_the_marker_and_F3_keeps_its_own expect=ignored_correctly measured=GREEN_resolves_F3_step_1_the_F_star_md_glob_excludes_it_which_is_the_right_answer_and_the_control_for_the_F2_figures_row
+id=the_number_sits_after_the_closing_arrow surface=gate case=the_comment_closes_before_the_digit_so_the_number_is_outside_it expect=caught measured=RED_0_plans_carry_it_the_regex_requires_the_digits_inside_the_comment
+id=the_number_is_the_word_one surface=gate case=the_marker_value_spelled_out_as_a_word_instead_of_a_digit expect=caught measured=RED_0_plans_carry_it
+id=the_html_comment_is_never_closed surface=gate case=the_marker_line_has_no_closing_arrow_at_all expect=caught measured=RED_0_plans_carry_it_the_regex_requires_the_arrow
+id=tabs_instead_of_spaces_around_the_number surface=reach case=tab_characters_between_the_comment_open_the_key_the_number_and_the_arrow expect=matches measured=GREEN_resolves_F3_step_1_backslash_s_covers_tabs_no_defect_this_is_a_control_row
+
+# C. THE STEP NUMBER, WHICH IS A SECOND DECISION AND A SECOND FALLBACK.
+
+id=step_number_written_with_a_leading_zero surface=reach case=the_marker_value_is_zero_one expect=resolves_to_1 measured=GREEN_the_int_cast_makes_it_1_resolves_F3_step_1_no_defect_control_row
+id=step_number_is_zero surface=gate case=the_marker_value_is_0_which_the_regex_matches_and_which_names_no_report expect=caught measured=RED_the_plan_carries_no_readable_step_number_CAUGHT_ONLY_WHEN_THE_STEP_NUMBER_GLOBAL_IS_REBOUND_TOO_see_the_note_in_the_header
+id=two_markers_in_ONE_file_the_HIGHER_number_first surface=gate case=the_value_7_on_one_line_and_1_on_the_next_inside_F3_md expect=caught measured=RED_the_plan_says_step_7_is_under_execution_and_there_is_no_step_7_md_under_docs_reports_F3_CAUGHT_BY_A_CONSEQUENCE_the_missing_report_file_and_not_by_any_count_of_markers
+id=F10_and_F2_both_carry_it_and_sorted_is_LEXICAL surface=gate case=a_future_F10_md_and_F2_md_both_carrying_a_numeric_marker_so_the_sorted_glob_puts_F10_before_F2 expect=caught measured=RED_2_plans_carry_it_F10_md_F2_md_the_two_plan_clause_fires_before_the_lexical_order_can_matter_recorded_because_that_order_is_the_tie_break_the_resolvers_use_if_the_clause_is_ever_relaxed
+
+# D. THE STATE THAT IS ACTUALLY IN THE TREE, AS A CONTROL.
+
+id=the_live_tree_F2s_marker_is_PROSE_and_F3s_is_a_NUMBER surface=reach case=no_mutation_F2_md_line_10_reads_moved_to_F3_at_step_1_DY8c_in_the_marker_position_and_F3_md_line_9_carries_the_digit expect=green_correctly measured=GREEN_resolves_F3_step_1_and_this_is_the_ONLY_reason_the_count_is_one_the_previous_plans_marker_was_EDITED_INTO_PROSE_rather_than_DELETED_so_the_nominal_state_depends_on_that_edit_not_matching_backslash_d
+id=one_plan_one_numeric_marker surface=reach case=no_mutation_beyond_the_strip_and_replant_the_nominal_shape expect=green_correctly measured=GREEN_resolves_F3_step_1_the_baseline_every_row_here_is_measured_against
+id=the_marker_names_a_plan_whose_reports_directory_does_not_exist surface=gate case=F9_md_written_with_a_marker_before_docs_reports_F9_exists_which_is_the_state_between_locking_a_plan_and_writing_its_first_report expect=caught measured=RED_AssertionError_no_numbered_step_report_under_docs_reports_F9_raised_at_MODULE_IMPORT_so_it_is_a_COLLECTION_ERROR_rather_than_a_failure_which_is_the_R234_shape_the_same_modules_own_fallback_docstring_says_it_avoids
+
+# E. THE MISS.
+
+id=a_STALE_marker_ABOVE_the_live_one_whose_number_names_an_EXISTING_report surface=gate case=F3_md_carries_the_value_1_on_one_line_and_7_on_the_next_which_is_what_advancing_a_step_by_ADDING_a_marker_line_instead_of_EDITING_one_produces expect=uncaught measured=GREEN_SILENT_MISS_the_regex_search_returns_the_FIRST_match_so_all_three_resolvers_report_step_1_while_the_plans_own_later_line_says_7_and_every_report_guard_reads_docs_reports_F3_step_1_md_the_exactly_one_clause_counts_PLANS_and_not_MARKERS_so_it_cannot_see_this_the_higher_number_first_row_is_the_same_edit_in_the_other_order_and_is_red_only_because_step_7_md_does_not_exist_yet
