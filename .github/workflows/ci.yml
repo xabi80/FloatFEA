@@ -367,10 +367,21 @@ jobs:
       # asserts the same thing in the suite, where it runs without a binary.
       - name: actionlint
         uses: raven-actions/actionlint@v2
+      # `scripts/` IS LINTED TOO (EB3, C75b). The pathspec was `floatfea tests`,
+      # so `write_verdict.py`, `ci_section.py`, `check_carried.py`, `suite_count.py`
+      # and the rest were never linted by anything -- C75 was one of them going
+      # unformatted in a closure commit and being found by a reviewer rather than by
+      # CI. Both were already clean at the commit that added them here: `ruff check
+      # scripts` passed and `black --check scripts` left 21 files unchanged.
+      #
+      # `mypy` IS NOT EXTENDED, AND THE REASON IS A COUNT: `mypy scripts` gives 56
+      # errors in 16 files at that commit, so adding it would make the lint job red
+      # on work nobody has done. Ledgered rather than silently omitted. `run_rung.sh`
+      # is shell and is ledgered too -- `actionlint` above does not read it.
       - name: ruff
-        run: ruff check floatfea tests
+        run: ruff check floatfea tests scripts
       - name: black --check
-        run: black --check floatfea tests
+        run: black --check floatfea tests scripts
       - name: mypy
         run: mypy floatfea
       - name: unit tests
