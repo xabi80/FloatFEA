@@ -59,10 +59,48 @@ def _newest_report_carried(report: Path) -> tuple[str, set[str]]:
     return section, set(_MENTION.findall(section))
 
 
+def _active_step() -> tuple[str, int]:
+    """`(milestone, step)` from whichever plan carries the step marker.
+
+    **THE DEFAULTS BELOW WERE `docs/reviews/F2/step-4.md` AND
+    `docs/reports/F2/step-4.md`, HARDCODED (EA2).** They named a milestone that
+    closed and a step inside it, so every invocation without both flags checked
+    whether F2 step 4's report carried F2 step 4's findings -- which it does, and
+    always will. The answer was true and about nothing.
+
+    This is the SIXTH site with the shape, and the fifth fix of it:
+    `tests/test_report_carried.py` (DX2), `tests/test_plan_matches_tolerances.py`
+    and `tests/test_report_guard_states.py` (C40, R601a), `scripts/ci_section.py`,
+    `tests/test_report_numbers_are_sourced.py` (C60, R606), and this one. The
+    resolver is duplicated rather than shared because a module for it would be new
+    apparatus under DR1, and EA2 asks for no new helper module.
+
+    Falls back to F2 step 4 rather than raising, so that a tree with no marker --
+    between milestones -- fails the way it did before rather than crashing.
+    """
+    milestones = ROOT / "docs" / "milestones"
+    carrying = [
+        (plan, m)
+        for plan in sorted(milestones.glob("F*.md"))
+        for m in [
+            re.search(
+                r"<!--\s*step-under-execution:\s*(\d+)\s*-->",
+                plan.read_text(encoding="utf-8", errors="replace"),
+            )
+        ]
+        if m
+    ]
+    if len(carrying) != 1:
+        return "F2", 4
+    plan, marker = carrying[0]
+    return plan.stem, int(marker.group(1))
+
+
 def main(argv: list[str] | None = None) -> int:
+    milestone, step = _active_step()
     ap = argparse.ArgumentParser()
-    ap.add_argument("--verdict", default="docs/reviews/F2/step-4.md")
-    ap.add_argument("--report", default="docs/reports/F2/step-4.md")
+    ap.add_argument("--verdict", default=f"docs/reviews/{milestone}/step-{step}.md")
+    ap.add_argument("--report", default=f"docs/reports/{milestone}/step-{step}.md")
     args = ap.parse_args(argv)
 
     verdict, report = ROOT / args.verdict, ROOT / args.report

@@ -176,9 +176,7 @@ def subject(item: str, verdict_text: str, by_block: dict[str, str]) -> str:
         # "R596, R598 and R599 are closed" left R596's subject reading "and
         # R599 are closed" -- a fragment of the sentence that says the item is
         # closed, published beside a row claiming it is open.
-        after = re.sub(
-            r"^(\s*(,|and\b|&)?\s*R\d+(\s*-+\s*R\d+)?)+\s*(--|-|:)?\s*", "", after
-        )
+        after = re.sub(r"^(\s*(,|and\b|&)?\s*R\d+(\s*-+\s*R\d+)?)+\s*(--|-|:)?\s*", "", after)
     if not block and len(after.strip(" ,-:")) < 8:
         # THE STRIP ATE THE SENTENCE. A carry line that is mostly a list
         # of numbers leaves nothing after the last of them, and a row

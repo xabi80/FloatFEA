@@ -144,6 +144,20 @@ _REVIEWED = sorted(
     for q in _REVIEWS.glob("step-*.md")
     if (m := re.fullmatch(r"step-0*([0-9]+)", q.stem))
 )
+if not _REVIEWED:
+    # EA2'S DRY RUN: `_REVIEWED[-1]` WAS A BARE `IndexError` AT IMPORT. Moving
+    # the step marker to a scratch F4 made this module raise `IndexError: list
+    # index out of range` with no message, from a line whose own docstring is
+    # about this file failing in four different ways and each one having to be
+    # found that way. A milestone with no verdict yet is the expected state
+    # between a marker move and the first review, so it refuses by saying so.
+    raise SystemExit(
+        f"ci_section: no numbered verdict under {_REVIEWS}, so there is no "
+        f"reviewed commit to anchor on. {MILESTONE} carries the step marker "
+        "and has not been reviewed yet -- the CI section is written at the "
+        "first revision that answers a verdict, and there is none."
+    )
+
 VERDICT_IN_REPO = "docs/" + "re" + "views/" + MILESTONE + "/step-" + str(_REVIEWED[-1]) + ".md"
 """A FOURTH hardcoded `F2` in the same file. Each one had to be found by the
 generator failing differently: first "F2.md carries no step marker", then "the
