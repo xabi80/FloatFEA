@@ -31,7 +31,18 @@ import pytest
 from floatfea import tolerances
 
 ROOT = Path(__file__).resolve().parents[1]
-PLAN = ROOT / "docs" / "milestones" / "F2.md"
+# EVERY LOCKED PLAN, NOT ONE OF THEM (EG0, closing C40). This was
+# `ROOT / "docs" / "milestones" / "F2.md"`, hardcoded, and it was the ONE member of
+# that family that did not fail false -- it read a real file for a table that is
+# really there. What it could not do is accept a tolerance declared by a LATER
+# milestone: F3's `PLATFORM_RIGID_MODE_EXACTNESS` would have had to be written into
+# a closed plan's table to satisfy `test_every_declared_tolerance_appears_in_the_plan`,
+# which is the wrong home and is what C40 and C60 were the cost of.
+#
+# The rule a tolerance has to meet is "some locked plan fixes its value", not "F2
+# does", so the union is what is read. F2.md states all 49 of F2's; F3.md states
+# F3's.
+PLANS = sorted((ROOT / "docs" / "milestones").glob("F*.md"))
 
 # `NAME = value` or `NAME` followed by `= value` inside a backticked span, which
 # is how the plan writes them. The name must be a declared tolerance, so prose
@@ -47,14 +58,15 @@ def _declared() -> dict[str, float]:
     }
 
 
-def _stated_in_plan() -> list[tuple[int, str, str]]:
-    """`(line number, name, literal)` for every tolerance the plan gives a value."""
+def _stated_in_plan() -> list[tuple[str, int, str, str]]:
+    """`(plan name, line, name, literal)` for every tolerance a plan gives a value."""
     known = _declared()
-    out: list[tuple[int, str, str]] = []
-    for n, line in enumerate(PLAN.read_text(encoding="utf-8").splitlines(), 1):
-        for name, literal in _STATED.findall(line):
-            if name in known:
-                out.append((n, name, literal))
+    out: list[tuple[str, int, str, str]] = []
+    for plan in PLANS:
+        for n, line in enumerate(plan.read_text(encoding="utf-8").splitlines(), 1):
+            for name, literal in _STATED.findall(line):
+                if name in known:
+                    out.append((plan.name, n, name, literal))
     return out
 
 
@@ -71,7 +83,7 @@ def test_the_plan_states_at_least_one_tolerance_value() -> None:
         "stating them or the pattern stopped matching; both make the check "
         "below vacuous."
     )
-    names = {name for _, name, _ in stated}
+    names = {name for _, _, name, _ in stated}
     assert len(names) >= 3, (
         f"only {sorted(names)} matched. The plan states more tolerances than "
         "that, so the pattern is missing most of them."
@@ -79,15 +91,15 @@ def test_the_plan_states_at_least_one_tolerance_value() -> None:
 
 
 @pytest.mark.parametrize(
-    "line, name, literal",
+    "plan, line, name, literal",
     _stated_in_plan(),
     ids=lambda v: str(v) if not isinstance(v, str) else v,
 )
-def test_the_plan_and_the_code_agree(line: int, name: str, literal: str) -> None:
+def test_the_plan_and_the_code_agree(plan: str, line: int, name: str, literal: str) -> None:
     shipped = getattr(tolerances, name)
     stated = float(literal)
     assert stated == shipped, (
-        f"docs/milestones/F2.md:{line} states {name} = {literal}, and "
+        f"docs/milestones/{plan}:{line} states {name} = {literal}, and "
         f"floatfea/tolerances.py ships {shipped!r}. A tolerance moves with a "
         "plan edit or it does not move: the plan is the locked artifact, and a "
         "value that has drifted from it is a decision nobody reviewed."
@@ -103,9 +115,10 @@ def test_every_declared_tolerance_appears_in_the_plan(name: str) -> None:
     artifact a tolerance is supposed to move with. Both directions together mean
     the set of declared tolerances and the set the plan fixes are the same set.
     """
-    stated = {n for _, n, _ in _stated_in_plan()}
+    stated = {n for _, _, n, _ in _stated_in_plan()}
     assert name in stated, (
-        f"{name} is declared in floatfea/tolerances.py and docs/milestones/F2.md "
-        "does not state its value. A tolerance the plan does not name is one no "
-        "reopen has to approve. Add it to the plan's tolerance table."
+        f"{name} is declared in floatfea/tolerances.py and no plan under "
+        "docs/milestones/ states its value. A tolerance no plan names is one no "
+        "reopen has to approve. Add it to the tolerance table of the milestone "
+        "that declares it."
     )

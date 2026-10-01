@@ -43,7 +43,12 @@ from floatfea.element.rigid import (
     seventh_over_epsilon,
 )
 from floatfea.model.platform import build_superstructure, check_rigid_modes
-from floatfea.tolerances import RIGID_MODE_BOUND, RIGID_MODE_EXACTNESS
+from floatfea.tolerances import (
+    PLATFORM_RIGID_MODE_EXACTNESS,
+    PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT,
+    RIGID_MODE_BOUND,
+    RIGID_MODE_EXACTNESS,
+)
 
 MEMBERS = 16
 """What the deck produces, asserted by `test_the_skeleton_is_FIVE_bodies_and_SIXTEEN_members`
@@ -93,18 +98,20 @@ def test_G2_1_every_MEMBER_annihilates_its_six_RIGID_motions(capsys) -> None:
     with capsys.disabled():
         print(
             f"  worst element rigid residual {worst:.4e} on {worst_label}, "
-            f"ceiling {RIGID_MODE_EXACTNESS:g}, margin "
-            f"{RIGID_MODE_EXACTNESS / worst if worst else float('inf'):.2f}x"
+            f"ceiling {PLATFORM_RIGID_MODE_EXACTNESS:g}, margin "
+            f"{PLATFORM_RIGID_MODE_EXACTNESS / worst if worst else float('inf'):.2f}x"
         )
-    # expected: RIGID_MODE_EXACTNESS, floatfea/tolerances.py, which is a pure
+    # expected: PLATFORM_RIGID_MODE_EXACTNESS, floatfea/tolerances.py, a pure
     # number because the residual is dimensionless and relative to the quantity
-    # compared. The left side is the shipped `element_rigid_residual`, tied to
-    # rung 1's independent copy by `test_G2_1_the_SHIPPED_residual_agrees_with_RUNG_ONEs`
-    # below -- not to itself.
-    assert worst <= RIGID_MODE_EXACTNESS, (
+    # compared. NOT `RIGID_MODE_EXACTNESS`, which was measured on the retired
+    # assembled form and which two of the three counters cannot cross (R624, EG0):
+    # the two ceilings have different subjects and F3 section 7 states both. The
+    # left side is the shipped `element_rigid_residual`, tied to rung 1's
+    # independent copy by `test_G2_1_the_SHIPPED_residual_agrees_with_RUNG_ONEs`.
+    assert worst <= PLATFORM_RIGID_MODE_EXACTNESS, (
         f"{worst_label}: the element-local rigid residual is {worst:.6e}, above "
-        f"{RIGID_MODE_EXACTNESS:g}. The member's own stiffness does not annihilate the "
-        "six rigid motions about its midpoint."
+        f"{PLATFORM_RIGID_MODE_EXACTNESS:g}. The member's own stiffness does not "
+        "annihilate the six rigid motions about its midpoint."
     )
 
 
@@ -316,6 +323,127 @@ def test_the_REFUSAL_rejects_a_SUNK_seventh_mode(capsys) -> None:
     check_rigid_modes(label, above, length)
 
 
+def _injected(k: np.ndarray, kind: str, size: float) -> np.ndarray:
+    """The three counter shapes, at `scripts/rigid_counter_response.py`'s sites."""
+    out = k.copy()
+    big = float(np.abs(k).max())
+    if kind == "dropped_flip":
+        out[1, 5] -= size * big
+        out[5, 1] = out[1, 5]
+    elif kind == "wrong_dof_index":
+        out[0, 7] += size * big
+        out[7, 0] = out[0, 7]
+    elif kind == "rotational_block":
+        out[3, 3] += size * big
+    else:  # pragma: no cover - a typo in a parametrisation, not a state
+        raise AssertionError(f"unknown counter {kind!r}")
+    return out
+
+
+COUNTERS = ("dropped_flip", "wrong_dof_index", "rotational_block")
+
+
+@pytest.mark.parametrize("kind", COUNTERS)
+def test_EG0_the_THREE_COUNTERS_redden_every_member(kind: str, capsys) -> None:
+    """EG0(b): 16 of 16, per counter. Not "some member".
+
+    The ceiling exists so that these three can cross it on EVERY member, which is
+    what makes the gate a gate rather than a statement about the luckiest element.
+    `RIGID_MODE_EXACTNESS` could not do that: two of the three sit below it at the
+    declared injection, which is R624.
+    """
+    rows = member_stiffnesses()
+    responses = [
+        (
+            element_rigid_residual(
+                _injected(k, kind, PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT), length
+            ),
+            lab,
+        )
+        for lab, k, length in rows
+    ]
+    weakest, weakest_at = min(responses)
+    reddened = sum(1 for r, _ in responses if r > PLATFORM_RIGID_MODE_EXACTNESS)
+
+    # The detection edge, per member, so the figure is the WORST and not the best.
+    edges = []
+    for lab, k, length in rows:
+        lo, hi = 0.0, 1.0e-6
+        for _ in range(200):
+            mid = (lo + hi) / 2
+            if (
+                element_rigid_residual(_injected(k, kind, mid), length)
+                > PLATFORM_RIGID_MODE_EXACTNESS
+            ):
+                hi = mid
+            else:
+                lo = mid
+        edges.append((hi, lab))
+    worst_edge, worst_edge_at = max(edges)
+    best_edge, _ = min(edges)
+
+    with capsys.disabled():
+        print(
+            f"  {kind}: {reddened}/{len(rows)} reddened, weakest {weakest:.4e} "
+            f"= {weakest / PLATFORM_RIGID_MODE_EXACTNESS:.1f}x the ceiling; "
+            f"edge worst {worst_edge:.6e} on {worst_edge_at}, best {best_edge:.6e}, "
+            f"spread {worst_edge / best_edge:.2f}x"
+        )
+
+    # expected: PLATFORM_RIGID_MODE_EXACTNESS, and the injection size
+    # PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT, both from floatfea/tolerances.py. The
+    # count is the thing asserted: EVERY member, because a counter that reddens one
+    # of sixteen leaves fifteen ungated.
+    assert reddened == len(rows), (
+        f"{kind} at {PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT:g} reddens {reddened} of "
+        f"{len(rows)} members; the weakest is {weakest:.6e} on {weakest_at}, against "
+        f"a ceiling of {PLATFORM_RIGID_MODE_EXACTNESS:g}. A counter that does not "
+        "reach every member leaves the rest of them ungated (EG0(b))."
+    )
+
+
+def test_EG0_the_CEILING_is_the_window_it_claims_to_be(capsys) -> None:
+    """The derivation, re-run: the ceiling is inside the window on both sides.
+
+    EG0(c) asks that this be measured on both machines and that the step STOP if
+    either clean worst comes within `2x` of the ceiling. This is the assertion that
+    makes CI the second machine.
+    """
+    rows = member_stiffnesses()
+    clean = max(element_rigid_residual(k, length) for _, k, length in rows)
+    weakest = min(
+        element_rigid_residual(
+            _injected(k, kind, PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT), length
+        )
+        for kind in COUNTERS
+        for _, k, length in rows
+    )
+    with capsys.disabled():
+        print(
+            f"  window ({clean:.6e}, {weakest:.6e}) width "
+            f"{weakest / clean:.2f}x; ceiling {PLATFORM_RIGID_MODE_EXACTNESS:g} sits "
+            f"{PLATFORM_RIGID_MODE_EXACTNESS / clean:.2f}x above the floor and "
+            f"{weakest / PLATFORM_RIGID_MODE_EXACTNESS:.2f}x below the roof"
+        )
+    # expected: the two edges, measured here, and the shipped constant between
+    # them. The constant is NOT re-derived and compared with itself: the assertion
+    # is that it lies inside a window whose edges are measured from the members.
+    assert clean < PLATFORM_RIGID_MODE_EXACTNESS < weakest, (
+        f"the ceiling {PLATFORM_RIGID_MODE_EXACTNESS:g} is not inside the window "
+        f"({clean:.6e}, {weakest:.6e}) the sixteen members leave."
+    )
+    assert PLATFORM_RIGID_MODE_EXACTNESS / clean >= 2.0, (
+        # not-a-tolerance: EG0(c)'s REPORTING condition, not a comparison the
+        # model depends on. The directive asks that the step STOP and report if
+        # either machine's clean worst comes within a factor of two of the
+        # ceiling; nothing is accepted or rejected by this number -- the ceiling
+        # is, and it is declared -- and widening this would widen no gate.
+        f"EG0(c): the clean worst {clean:.6e} is within 2x of the ceiling "
+        f"{PLATFORM_RIGID_MODE_EXACTNESS:g} -- {PLATFORM_RIGID_MODE_EXACTNESS / clean:.2f}x. "
+        "STOP and report; do not move the ceiling."
+    )
+
+
 def test_G3_1b_the_DECK_the_model_reads_IS_the_one_G3_2_GATES() -> None:
     """G3.1b, and its COINCIDENCE with G3.1a stated rather than implied (DV0).
 
@@ -358,17 +486,44 @@ def test_G3_1b_the_DECK_the_model_reads_IS_the_one_G3_2_GATES() -> None:
 #
 # F3 § 5 asks for `dropped_flip`, `wrong_dof_index` and `rotational_block`
 # registered against this gate. At the size the F2 constant declares --
-# `RIGID_MODE_EXACTNESS_COUNTER_DEFECT = 1e-14` of `max|k_e|` -- TWO OF THE THREE
+# `PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT = 1e-14` of `max|k_e|` -- TWO OF THE THREE
 # DO NOT REDDEN IT on the real platform's members:
 #
-#     dropped_flip      worst response 3.6563e-16  = 0.366x the ceiling   NO
-#     wrong_dof_index   worst response 9.4595e-15  = 9.459x the ceiling   yes
-#     rotational_block  worst response 1.4644e-17  = 0.0146x the ceiling  NO
+#     dropped_flip      worst response 3.6563e-16  = 0.366x that ceiling   NO
+#     wrong_dof_index   worst response 9.4595e-15  = 9.459x that ceiling   yes
+#     rotational_block  worst response 1.4644e-17  = 0.0146x that ceiling  NO
 #
-# That constant's own entry pre-registered this: "that counter's size will be
-# bisected against THAT gate rather than assumed from this one." Bisected here,
-# the detection edges are `2.735459e-14`, `1.057143e-15` and `6.837686e-13`, so
-# the inherited size sits BELOW two of them.
+# That constant's own entry pre-registered it: "that counter's size will be
+# bisected against THAT gate rather than assumed from this one."
+#
+# THE EDGES PUBLISHED HERE WERE THE BEST MEMBER, NOT THE WORST (EG1, R630).
+# `2.735459e-14 / 1.057143e-15 / 6.837686e-13` are the edges of the member that
+# reddens FIRST; a size just above the first of them reddens one member and not
+# the worst, which needs 1.93x more. Against the retired `1e-15` ceiling the worst
+# over the sixteen is `5.285599e-14 / 1.094071e-15 / 2.642868e-12`, which is what
+# the locked plan's section 5 states -- right to the digit. I reported the plan as
+# wrong and it was my own figures that were.
+#
+# AND BOTH SETS ARE MEASURED AGAINST A CEILING THIS COMMIT RETIRED (BP0). An edge
+# is a property of the RULE as much as of the member, and the rule moved from
+# `RIGID_MODE_EXACTNESS = 1e-15` to `PLATFORM_RIGID_MODE_EXACTNESS = 1.154338e-18`.
+# Against the ceiling that now ships, the worst edge over the sixteen is
+#
+#     dropped_flip      6.266629e-17   on platform:hub4_arm   (spread 2.14x)
+#     wrong_dof_index   1.262927e-18   on hub4:buoy12_arm     (spread 1.03x)
+#     rotational_block  3.088842e-15   on platform:hub4_arm   (spread 3.93x)
+#
+# produced by `test_EG0_the_THREE_COUNTERS_redden_every_member` below, which
+# bisects per member and prints the worst, the best and the spread at every run --
+# so no figure here has to be re-taken by hand when the platform moves. The two
+# older sets are kept as the record of what was published under the old rule, each
+# labelled with the rule it was measured against, which is what BP0 asks instead
+# of a silent replacement.
+#
+# EG0 ANSWERED R624: the gate has its own ceiling now,
+# `PLATFORM_RIGID_MODE_EXACTNESS`, and the three counters are registered against
+# it below. The refusal keeps `RIGID_MODE_EXACTNESS` and hosts no counter, because
+# over the admissible band the window is empty.
 #
 # Registering them needs an injection size this gate can see, and declaring one
 # is a decision rather than a repair: `CLAUDE.md` puts every numerical tolerance
