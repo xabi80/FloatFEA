@@ -2,15 +2,12 @@
  "_": [
   "POINTERS ONLY (CH4).",
   "",
-  "Revision 2 answers the EIGHTY-SECOND verdict, round 2 of 3 on step 2.",
-  "R625 and R626 are answered at c4d4817 and 8ed0fd4; R627 at 8ed0fd4;",
-  "R628 is this header.",
-  "",
-  "R624 is `open` and it is WITH XABIER: the ceiling is the variable, and",
-  "both halves of its answer -- a tolerance value and a scope statement",
-  "about F3 section 5 -- are decisions rather than work.",
-  "",
-  "Every pointer is section 9, where each disposition is written."
+  "Revision 3 answers the EIGHTY-THIRD verdict. R629: every pointer here was",
+  "`\u00a79`, and `\u00a79` names every item -- so the shipped report was ALREADY in the",
+  "state `guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF`",
+  "plants, and the control could not fail. Each item now points at the section",
+  "that does its work, and `\u00a79` keeps only the ones whose disposition is all",
+  "there is to say."
  ],
  "answered": {
   "R610": {
@@ -71,23 +68,23 @@
   },
   "R624": {
    "state": "open",
-   "where": "\u00a79"
+   "where": "\u00a75"
   },
   "R625": {
    "state": "answered",
-   "where": "\u00a79"
+   "where": "\u00a74"
   },
   "R626": {
    "state": "answered",
-   "where": "\u00a79"
+   "where": "\u00a73"
   },
   "R627": {
    "state": "answered",
-   "where": "\u00a79"
+   "where": "\u00a72"
   },
   "R628": {
    "state": "answered",
-   "where": "\u00a79"
+   "where": "\u00a71"
   }
  }
 }

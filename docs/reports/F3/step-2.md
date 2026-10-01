@@ -1093,11 +1093,14 @@ Generated: `python scripts/carried_table.py <the verdict> <the answers file>`.
 | R621 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
 | R622 | **later** — §9 | LATER, and correctly so. It was written as F4's to answer and the report routes it there.... |
 | R623 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
-| R624 | **open** — §9 | THE CEILING THE NEW GATE AND THE NEW REFUSAL ASSERT AGAINST IS INHERITED FROM A DIFFERENT... |
-| R625 | **answered** — §9 | THE SHIPPED REFUSAL ACCEPTS AN INDEFINITE ELEMENT STIFFNESS. THREE SIGN ERRORS, EACH INJECTED... |
-| R626 | **answered** — §9 | THE REFUSAL IS A GATE HALF AND NOTHING COMMITTED SHOWS IT EVER REFUSES. ITS SIBLING IN THE SAME... |
-| R627 | **answered** — §9 | A THIRD READING OF RIGID_MODE_BOUND SHIPS IN TWO ASSERTIONS AND ITS OWN ENTRY STILL SAYS TWO --... |
-| R628 | **answered** — §9 | THE REPORT IN THE TREE ANSWERS VERDICT 80. THIS ROUND HAD NO REPORT, AND ITS FIGURES LIVED IN... |
+| R624 | **open** — §5 | THE CEILING THE NEW GATE AND THE NEW REFUSAL ASSERT AGAINST IS INHERITED FROM A DIFFERENT... |
+| R625 | **answered** — §4 | THE SHIPPED REFUSAL ACCEPTS AN INDEFINITE ELEMENT STIFFNESS. THREE SIGN ERRORS, EACH INJECTED... |
+| R626 | **answered** — §3 | THE REFUSAL IS A GATE HALF AND NOTHING COMMITTED SHOWS IT EVER REFUSES. ITS SIBLING IN THE SAME... |
+| R627 | **answered** — §2 | A THIRD READING OF RIGID_MODE_BOUND SHIPS IN TWO ASSERTIONS AND ITS OWN ENTRY STILL SAYS TWO --... |
+| R628 | **answered** — §1 | THE REPORT IN THE TREE ANSWERS VERDICT 80. THIS ROUND HAD NO REPORT, AND ITS FIGURES LIVED IN... |
+| R629 | **open** — blocking, and not answered in this round | ONE TEST IS RED AT THE JUDGED COMMIT ON BOTH MACHINES, IT IS NOT THE STEP-BOUNDARY CLASS, AND... |
+| R630 | **open** — blocking, and not answered in this round | THE THREE DETECTION EDGES PUBLISHED IN THE SOURCE TREE AS "THE DETECTION EDGES" ARE THE BEST OF... |
+| R631 | **open** — blocking, and not answered in this round | THE RIGID_MODE_BOUND ENTRY'S NEW MARGIN IS PUBLISHED WITH AN OPERATING POINT THAT DOES NOT... |
 
 ## 8. The closure list, not worked in this round
 
