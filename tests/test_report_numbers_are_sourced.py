@@ -99,7 +99,16 @@ def _newest_report() -> Path | None:
 
 REPORT = _newest_report()
 TEXT = REPORT.read_text(encoding="utf-8", errors="replace") if REPORT is not None else ""
-BODY = TEXT[TEXT.rindex("# Revision ") :] if "# Revision " in TEXT else TEXT
+_REVISIONS = [m.start() for m in re.finditer(r"^# Revision \d+", TEXT, re.MULTILINE)]
+"""Every revision heading, ANCHORED (R637).
+
+This was `TEXT.rindex("# Revision ")`, a SUBSTRING search, so a sentence in the
+report quoting the anchor moved it: in F3 step 3's revision 2 that left this
+guard -- the one `CLAUDE.md` names as the mechanical half of BF0 -- reading 22
+lines of 937, with its own vacuity alarm the only thing that would have fired.
+Three other readers in this repository already anchor on `^# Revision \\d+`."""
+
+BODY = TEXT[_REVISIONS[-1] :] if _REVISIONS else TEXT
 
 # A number, at its widest: digits with separators and an optional exponent.
 # A number, at its widest, ENDING IN A DIGIT. Allowing a trailing comma made

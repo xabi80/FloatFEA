@@ -362,6 +362,37 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 # written here before it happened: that gate needed a
 # ceiling of this shape -- which was derived from THAT quantity's own
 # measurements, not inherited from here.
+#
+# AND IT WIDENS 100x WITH EVERY MEASUREMENT GREEN (R638). Measured, not argued:
+#
+#   1e-15 -> 1e-13, nothing else changed:  2 failed, 1914 passed, and BOTH reds
+#       are string comparisons against a markdown table --
+#       `test_the_plan_and_the_code_agree[F2.md-1417]` and `[F3.md-677]`.
+#       NOT ONE MEASUREMENT OBJECTS.
+#   and MY OWN run is starker: over `tests/verification` and `tests/unit` alone --
+#       the ladder and the measurements -- `1e-15 -> 1e-13` gives
+#       `1802 passed, 0 failed`. NOTHING in the measuring half of the suite
+#       objects at all; the reviewer's two reds are the only two in the whole
+#       tree and both are markdown-table string comparisons.
+#   the boundary, SOLVED rather than sampled: 1e-15 -> 1e-11 reddens exactly one
+#       test, `test_the_REFUSAL_rejects_a_LIFTED_rigid_mode`, whose residual is
+#       `3.783782e-12`. So every ceiling below `3.783782e-12` is accepted:
+#       `3784x` of silent headroom on the PRODUCTION path.
+#
+# For contrast the gate's ceiling, `PLATFORM_RIGID_MODE_EXACTNESS`, reddens at
+# `8.7x`. The two are guarded three orders of magnitude apart and the weaker one is
+# the one `check_rigid_modes` refuses real decks on.
+#
+# WHY THIS IS RECORDED HERE RATHER THAN CLOSED. Closing it needs a `REGISTERED` row
+# in `tests/test_counters_are_injected.py` for this constant, whose two cells reach
+# `floatfea.model.platform`'s namespace rather than a test module's -- the refusal
+# reads `platform.RIGID_MODE_EXACTNESS`, so the ceiling cell has to widen it there
+# -- and a declared size for the `1.0e-8` injection that
+# `test_the_REFUSAL_rejects_a_LIFTED_rigid_mode` currently carries as a local
+# literal. That is a new constant and a new row, in the last round of a step
+# closing under DZ7c, on a weakness in a value no commit of this step touched. It
+# is CARRIED INTO F4 by name and the measurement above is what a reader needs in
+# the meantime: this ceiling is not guarded at the strength the gate's is.
 # Set: 2026-09-13, F2; quantity re-normalised and reason re-measured
 # 2026-09-25 (R475); assertion dropped 2026-09-26 (DI0, R530)
 RIGID_MODE_EXACTNESS: Final[float] = 1e-15

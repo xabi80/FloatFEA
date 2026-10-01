@@ -542,7 +542,26 @@ def _build(tmp: Path, state: str) -> Path:
             # stayed green: the resolution resolved and said nothing.
             report = reports / REPORT_NAME
             text = report.read_text(encoding="utf-8", errors="replace")
-            head = text.rindex("# Revision ")
+            # ANCHORED, BECAUSE A SUBSTRING MATCHES PROSE (R637). This was
+            # `rindex("# Revision ")`, which binds to the LAST occurrence anywhere in the
+            # file -- including a sentence in the report that QUOTES the anchor. In F3 step
+            # 3's revision 2 that sentence sat 21 lines from the end, so the region this read
+            # was 22 lines of 937: the plant reached 2 of 33 pointer tokens and zero Carried
+            # rows, and the repair defeated itself through its own prose. R602 was the same
+            # species one level out -- report prose containing a literal a harness anchors on.
+            #
+            # `^# Revision \d+` with MULTILINE is what `tests/test_report_carried.py:247`,
+            # `scripts/check_carried.py:51` and `scripts/ci_section.py:182` already use: a
+            # heading is a line that starts with it and carries a number, which prose quoting
+            # it does not.
+            marks = [m.start() for m in re.finditer(r"^# Revision \d+", text, re.MULTILINE)]
+            if not marks:
+                raise AssertionError(
+                    f"{report} carries no `# Revision N` heading, so this state "
+                    "cannot be planted. That is a defect in the report, not in "
+                    "the harness, and it is reported rather than worked around."
+                )
+            head = marks[-1]
             body = re.sub(r"\u00a7\s*\d+[a-z]?", "\u00a79", text[head:])
             report.write_text(text[:head] + body, encoding="utf-8")
         # THE `suite_line_at_an_older_ancestor` ACTION IS DELETED (DR0). It

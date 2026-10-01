@@ -403,6 +403,79 @@ def test_EG0_the_THREE_COUNTERS_redden_every_member(kind: str, capsys) -> None:
     )
 
 
+def _worst_edge(kind: str) -> float:
+    """The per-member detection edge for `kind`, worst over the sixteen."""
+    worst = 0.0
+    for _, k, length in member_stiffnesses():
+        lo, hi = 0.0, 1.0e-4
+        for _ in range(200):
+            mid = (lo + hi) / 2
+            if element_rigid_residual(_injected(k, kind, mid), length) > (
+                PLATFORM_RIGID_MODE_EXACTNESS
+            ):
+                hi = mid
+            else:
+                lo = mid
+        worst = max(worst, hi)
+    return worst
+
+
+def test_R639_the_INJECTION_SIZE_cannot_be_raised(capsys) -> None:
+    """The counter size is the SMALLEST defect the gate must fail, not any defect.
+
+    **EVERY OTHER ASSERTION IN THIS FILE GETS EASIER AS THE INJECTION GROWS**, so
+    raising `PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT` from `1.0e-14` to
+    `1.0e-6` left `262 passed` -- eight decades with nothing objecting. The locked
+    plan already declares what the size is for: "the smallest defect the gate must
+    still fail ... clears the binding per-member edge `3.088842e-15` by `3.24x`"
+    (`docs/milestones/F3.md`). This is that sentence as an assertion.
+
+    THE BOUND IS AGAINST THE BINDING EDGE OVER ALL THREE COUNTERS, not per counter.
+    A first version asserted `size <= 10 * edge` inside the per-counter test and
+    failed on two of three: the edges span five decades -- `1.262927e-18` for
+    `wrong_dof_index` to `3.088842e-15` for `rotational_block` -- so no single
+    shared size can sit within one multiple of all three. What the plan's sentence
+    means, and what is asserted here, is that the size clears the WORST of them and
+    does not tower over it.
+
+    The repository ships the same guard for a sibling constant in
+    `test_the_counter_DEFECT_SIZE_cannot_be_raised`.
+    """
+    edges = {kind: _worst_edge(kind) for kind in COUNTERS}
+    binding_kind = max(edges, key=lambda k: edges[k])
+    binding = edges[binding_kind]
+    over = PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT / binding
+    with capsys.disabled():
+        for kind, edge in edges.items():
+            print(f"  {kind:<18} worst edge {edge:.6e}")
+        print(
+            f"  binding: {binding_kind} at {binding:.6e}; the declared size "
+            f"{PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT:g} clears it by {over:.2f}x"
+        )
+
+    # expected: the binding per-member edge, measured here from the sixteen
+    # members, and the declared size from floatfea/tolerances.py. The ceiling the
+    # edges are solved against is PLATFORM_RIGID_MODE_EXACTNESS, so this moves with
+    # the gate rather than with a literal.
+    assert over >= 1.0, (
+        f"the declared injection {PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT:g} is "
+        f"BELOW the binding edge {binding:.6e} ({binding_kind}), so that counter "
+        "cannot redden every member."
+    )
+    assert over <= 10.0, (
+        # not-a-tolerance: a headroom bound on a DECLARED size, not a comparison the
+        # model depends on. Ten is the order the plan's own "3.24x" sits comfortably
+        # inside; nothing is accepted or rejected by this number except the size,
+        # which is declared in floatfea/tolerances.py. It exists so that size cannot
+        # rise for decades with every other assertion in this file getting easier.
+        f"the declared injection {PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT:g} is "
+        f"{over:.1f}x the binding edge {binding:.6e} ({binding_kind}). A size far "
+        "above the edge it must clear stops being the SMALLEST defect the gate must "
+        "fail, and can then rise for decades with every other assertion in this file "
+        "getting easier (R639)."
+    )
+
+
 def test_EG0_the_CEILING_is_the_window_it_claims_to_be(capsys) -> None:
     """The derivation, re-run: the ceiling is inside the window on both sides.
 
