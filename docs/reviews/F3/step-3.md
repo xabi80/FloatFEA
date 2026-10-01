@@ -1,4 +1,803 @@
 # Review — F3 step 3
+Reviewed commit: 95f62936b03955a91cd879c56529d9483b5e9baf
+Verdict: HOLD
+**Reviewed commit: `95f6293`.**  (HEAD of F3 and pushed. For once the stamp above agrees with it: I committed no corpus batch this round, so HEAD at write time IS the judged commit. That coincidence is the whole of the deadlock and it is ruled below.)
+Tests: 2889 passed, 28 failed, 0 skipped   (MY OWN run, clean worktree at `95f6293`, one invocation, no exclusion, 659.34s. CI at the same commit names the SAME 28 by id. The working tree with the uncommitted revision 2 in it reads `2867 passed, 16 failed, 1 skipped` -- a different tree, and not the number anything is decided on.)
+
+## Round of 2026-10-01 -- EIGHTY-FIFTH verdict, ROUND 2 OF 3 ON STEP 3.
+
+**THE DEADLOCK HAS AN ANSWER, IT IS ONE LINE, AND IT IS MINE.** Nothing in
+`scripts/ci_section.py`, nothing in `tests/test_report_carried.py` and nothing in
+`scripts/write_verdict.py` needs to change. Both machines already resolve the
+JUDGED commit, with the identical regex and the identical comment, and
+`write_verdict.py` says so in its own docstring: the body names the commit it
+judged, the stamp does not. **Verdict 84 wrote that sha under the label
+`Judged commit:`, which no machine reads.** The line both machines DO read is the
+bolded `Reviewed commit` line, and this verdict carries it at the top of this
+round. Revision 3 regenerates section 0 with `python scripts/ci_section.py` and no
+arguments.
+
+**R633 IS ANSWERED AND IT IS THE BEST REPAIR OF THIS STEP.** I did not accept the
+`37 passed`: I rebuilt both BX0 cells by hand and planted the OLD body back to
+check the cells still discriminate. They do. The gate ceiling is now guarded in
+both directions by a measurement.
+
+**R634 IS ANSWERED.** Two sentences corrected, the `ACCURACY` class restored, and
+the refusal it now claims is exercised by `pytest.raises` on all three clauses at
+solved boundaries. I checked the code and not the sentence.
+
+**R632 IS NOT ANSWERED, AND I HAVE TO WITHDRAW A SENTENCE OF MY OWN.** At the
+reviewed commit the ValueError is unchanged on both machines. In the draft that
+would fix it, the state plants ONE line of 937 and passes on eight reds that have
+nothing to do with pointers -- measured by ablation, identical with the plant
+removed. And my verdict-84 line "none, and none is possible" about
+`RIGID_MODE_EXACTNESS` was wrong. Had the implementer written it into
+`tolerances.py` as my closing condition asked, a false sentence would have landed
+in the authoritative tolerance file on my authority.
+
+**AND I BROKE SOMETHING.** `RIGID_MODE_EXACTNESS` -- the ceiling the PRODUCTION
+BUILDER refuses on -- can be widened a hundredfold with `1914 passed`, and the
+counter injection size can be raised EIGHT DECADES with `262 passed`. Both
+measured at this commit, both boundaries solved rather than sampled. R633 gave the
+gate's ceiling three counters and left the refusal's ceiling with none, and the
+locked plan's own section 7 row declares an upper bound that nothing asserts.
+
+## THE TREE AT 95f6293, MEASURED
+
+```
+cmd    git rev-parse HEAD && git rev-parse F3 && git rev-parse origin/F3
+out    95f62936b03955a91cd879c56529d9483b5e9baf   all three -- pushed, HEAD of F3
+cmd    git status --porcelain --untracked-files=all
+out    M docs/reports/F3/step-3-answers.json
+out    M docs/reports/F3/step-3.md
+judge  REVISION 2 IS UNCOMMITTED, as the hand-back says. So the report AT the
+       reviewed commit is revision 1, which answers verdict 83 while verdict 84
+       exists. Item 1b of my instructions fails at this commit -- and it fails
+       for the deadlock's reason rather than for a reporting failure, so I rule
+       the deadlock and not the header.
+cmd    git log --oneline 6c4e651..HEAD --name-only
+out    95f6293  floatfea/tolerances.py, tests/test_counters_are_injected.py,
+out             tests/verification/rung3/test_platform_rigid_modes.py
+cmd    git diff 6c4e651..HEAD --stat -- .claude docs/SUPERVISOR.md CLAUDE.md
+out    (no output)
+judge  ITEM 4b PASSES BY ABSENCE, verified by the diff and not by the subject
+       line. NO STOP-CLASS PROCESS FINDING.
+cmd    git diff 6c4e651..HEAD -- tests/conftest.py "tests/**/conftest.py"
+out    (no output)
+cmd    git ls-files -- tests/conftest.py "tests/**/conftest.py"
+out    tests/conftest.py        CI0: the pathspec resolves to a real file
+cmd    git ls-files | grep -i conftest
+out    tests/conftest.py, and tests/test_supervisor_conftest_pathspec.py
+judge  ONE CONFTEST, UNCHANGED, AND I READ IT LINE BY LINE AGAIN (CH2). No
+       pytest_runtest_makereport, no pytest_ignore_collect, no
+       pytest_collection_modifyitems that removes an item, no outcome written.
+       No rung carries its own conftest and no plugin is loaded from tests/.
+cmd    python -m pytest -q, clean worktree at 95f6293
+out    28 failed, 2889 passed in 659.34s
+```
+
+## CI AT THE REVIEWED COMMIT, FROM gh AND NOT FROM THE PASTE (CA2)
+
+```
+cmd    gh run list --commit 95f6293... --json conclusion,status,databaseId
+out    36907599744  completed  FAILURE
+cmd    gh run view 36907599744 --json jobs, job by job
+out    the verification ladder            SUCCESS   13 steps
+out    lint, unit and guards              FAILURE   14 steps
+out    CI determinism -- leg              skipped    0 steps
+out    CI determinism -- ten legs agree   skipped    0 steps
+cmd    the ladder job's steps
+out    ladder 1, 2, 3, 6, 4, 5 -- ALL SUCCESS. "ladder 3 -- the model is the
+out    platform" is green, and that is where the new ceiling, the three new
+out    counter cells and the registry rows live.
+cmd    the lint job's steps
+out    actionlint SUCCESS, ruff SUCCESS, black --check SUCCESS, mypy SUCCESS,
+out    unit tests SUCCESS, and "guards and meta-tests" FAILURE
+judge  NOT CK2: fourteen and thirteen real steps, real durations, no spending
+       annotation, no runner-never-started. The two skipped jobs are CK0's
+       workflow_dispatch gate, unavailable BY DECLARATION, as at verdicts 79 to
+       84. Lint and types are GREEN on a machine neither of us controls, and
+       "guards and meta-tests" is seen to have RUN rather than been skipped
+       behind an earlier red (CZ1 iii), so I did not re-run them.
+cmd    gh run view 36907599744 --log-failed, the FAILED ids, deduplicated
+out    28 -- and my own run names the SAME 28
+judge  CI IS RED AT THE REVIEWED COMMIT AND I RECORD IT AS RED.
+```
+
+**THE EG3(i) TRACE, EACH ID MATCHED BY NAME TO THE STATE'S OWN LIST RATHER THAN
+BY FAMILY.** This is EG3 state (2), verdict written and answering report not yet:
+
+```
+out    12 x test_every_named_site_is_touched_or_declared[R632-*, R633-*, R634-*]
+out          -> state (2): each names a SITE of verdict 84
+out     5 x test_the_report_carries_the_finding[R632 .. R636]
+out          -> state (2): each names a FINDING of verdict 84
+out     1 x test_the_CI_section_is_about_the_REVIEWED_commit     -> (2), named
+out     1 x test_the_Carried_table_is_what_the_generator_produces -> (2), named
+out     1 x test_the_generator_would_catch_a_row_under_the_wrong_number -> (2)
+out     7 x test_the_guard_survives_the_state[baseline plus six planted]
+out          -> the cascade: baseline is RED and each cascading state's own
+out             failure line is `assert 1 == 0` off that baseline
+out     1 x test_the_guard_survives_the_state[guard_state_every_Carried_pointer
+out         _names_the_Carried_SECTION_ITSELF]
+out          -> NOT THE BOUNDARY. ValueError: substring not found, at
+out             tests/test_report_guard_states.py:545, on CI and on my machine.
+rule   EG3(i): the waiver applies only if EVERY red traces BY NAME to the
+       step-boundary cause, and a red that does not match is CZ1 (iv) unchanged
+judge  27 OF 28 ARE STATE (2) OR ITS CASCADE. THE TWENTY-EIGHTH IS R632,
+       UNCHANGED FROM VERDICT 84, AT THE SAME LINE, ON BOTH MACHINES. It is
+       CZ1 (iv) and it blocks.
+```
+
+**EG3(ii) IS CLEARED, AND I REPRODUCED THE FIGURE RATHER THAN TAKING IT.**
+
+```
+claim  report section F: a clean worktree at 8368c51 gives 26 failed, 190 passed
+cmd    git worktree add --detach <scratch> 8368c51, then python -m pytest
+         tests/test_report_carried.py tests/test_report_numbers_are_sourced.py -q
+out    26 failed, 190 passed in 4.63s
+judge  EXACT. State (2) measured AT the verdict commit, which is the half no
+       verdict in this milestone had ever taken. EG3(ii) is SATISFIED, and the
+       condition earned itself again: it is what put the 26 on the page.
+```
+
+## THE RULING ON C105 -- IT IS NOT A DEADLOCK, AND THE DEFECT IS MINE
+
+The hand-back asked which line is authoritative and offered to carry either
+answer. **The judged commit, and nothing changes to get it.** I checked the ground
+rather than the argument, and the ground is that both machines already encode the
+implementer's reading, in the same regex:
+
+```
+cmd    scripts/ci_section.py:171 and tests/test_report_carried.py:2019
+out    _JUDGED = re.compile(r"\*\*Reviewed commit:\s*`([0-9a-f]{7,40})`")
+out    -- in BOTH files, byte-identical, each with a comment saying the plain
+out    `Reviewed commit:` line is the DIFF BASE, the reviewer's corpus commit,
+out    and that only the judged one was ever a pushed head so only it has a run
+cmd    scripts/write_verdict.py, the last paragraph of its docstring
+out    "The `Reviewed commit:` stamp is taken from HEAD, which is structurally
+out    NOT the reviewed commit whenever the reviewer commits its corpus first --
+out    as it is instructed to. THE BODY NAMES THE COMMIT IT JUDGED; that line
+out    does not. Recorded here rather than fixed, because changing what the stamp
+out    reads is a change to the reviewer's own tooling and goes through a
+out    directive, not through this edit."
+cmd    grep -n the bolded form in docs/reviews/F3/step-3.md
+out    (no output)
+cmd    python scripts/ci_section.py
+out    verdict 84 at `8368c51` does not name the commit it judged in its header,
+out    so there is no commit to report CI for.
+rule   CO1: the generator refuses rather than guessing, and its refusal names the
+       line it could not find
+judge  THE GENERATOR IS NOT CONFUSED AND THE GUARD IS NOT KEYED TO THE WRONG
+       LINE. THE DATA IS MALFORMED AND I MALFORMED IT. Verdict 84 wrote
+       `Judged commit:   a647492e...` -- unbolded, unquoted, under a label
+       neither file reads -- so `_JUDGED` matched nothing, `ci_section.py`
+       refused, and the guard fell back to `_reviewed_commit()`, which is the
+       corpus commit `6c4e651`, which has no run. Both halves of the apparent
+       disagreement are one missing line.
+```
+
+**(1) THE AUTHORITATIVE LINE IS THE JUDGED COMMIT.** The implementer's reading is
+correct for exactly the reason given: it is the only commit that is ever a pushed
+head, therefore the only one with a run, therefore the only one whose run
+describes the tree under review. **No guard change. No generator change. No tool
+change. Nothing to carry.**
+
+**(2) THE FORM IS THE BOLDED, BACKTICK-QUOTED `Reviewed commit` LINE IN THE
+VERDICT BODY**, which is where `write_verdict.py` says it belongs. **This verdict
+carries it**, as its second line. `scripts/ci_section.py` with no arguments will
+now resolve `95f6293`, which has run `36907599744`, and
+`test_the_CI_section_is_about_the_REVIEWED_commit` reads the same sha through the
+same pattern. They cannot disagree: it is one regex in two files.
+
+**(3) C105's STATED CAUSE IS WITHDRAWN -- `re.search` IS CORRECT.** I wrote that
+the generator resolves the OLDEST line in the accumulating file. It does not:
+
+```
+cmd    scripts/write_verdict.py, the comment at the write site
+out    "THE PRIOR ROUNDS ARE PRESERVED VERBATIM, NEWEST FIRST, below a separator
+out    ... The new round's own header goes at the top, so the parsers that read
+out    the first `Reviewed commit:` line still find the current one."
+cmd    grep -n "^# Review" docs/reviews/F3/step-2.md
+out    1 (verdict 83), 377 (verdict 82), 784 (verdict 81)
+judge  THE FILE IS NEWEST-FIRST, SO THE FIRST MATCH IS THE NEWEST ROUND'S BY
+       DESIGN. What happened in step-2.md is that verdict 81 wrote the bolded
+       line and 82, 83 and 84 did not, so the only match in the file belonged to
+       an older round. `findall(...)[-1]` would have made it WORSE: it would pin
+       every future round to the OLDEST header. The defect was a missing line in
+       three consecutive verdicts of mine, and the one mechanism that catches it
+       is the generator refusing -- which it does, by name.
+```
+
+**(4) DO NOT ANCHOR ON THE PLAIN STAMP.** It is the diff base and is read as such
+at `tests/test_report_carried.py:2328` and `:2396`, and `write_verdict.py` rules a
+change to what it stamps a directive-level matter. I am not taking that change:
+this round is the demonstration that it is not needed. **C105 is CLOSED by this
+ruling**, and what is left of it is one regenerated section 0 in revision 3.
+
+## Carried
+
+Verdict 84 named three blocking items and nine closure items. Every one is below.
+
+* **R632 -- NOT ANSWERED. SAME LINE, SAME ERROR, BOTH MACHINES, AT THE REVIEWED
+  COMMIT -- and the draft that would fix it makes the state certify nothing.
+  R637.** The DATA half of the condition landed and landed well:
+  `docs/reports/F3/step-3-answers.json` now spreads its 22 rows over sections A,
+  B, C, D, E, 9a, 9b and 9c instead of 14 of them at one section. That is a real
+  repair and I am not taking it back. The GUARD half did not land.
+* **R633 -- ANSWERED at `95f6293`, branch (i), which was the harder and the right
+  one. I rebuilt both cells rather than accepting `37 passed`.**
+
+```
+cmd    python -m pytest tests/test_counters_are_injected.py
+         tests/verification/rung3/test_platform_rigid_modes.py -q
+out    37 passed in 49.94s        reproduced exactly
+cmd    both BX0 cells, per registered row, driven by hand through
+         _gate_cell and _ceiling_cell on the SHIPPED bodies
+out    element rigid residual -- dropped flip      gate=True  ceiling=True
+out    element rigid residual -- wrong dof index   gate=True  ceiling=True
+out    element rigid residual -- rotational block  gate=True  ceiling=True
+cmd    NON-VACUITY 1: plant the PRE-R633 body back -- compute the response and
+         compare it with the ceiling inline, never calling the gate
+out    dropped_flip gate=False, wrong_dof_index gate=False,
+out    rotational_block gate=False       -- REJECTED, all three
+cmd    NON-VACUITY 2: plant R197's shape -- call the gate, inject 1.0e-2 instead
+         of the declared size, twelve decades too large
+out    dropped_flip ceiling=False, wrong_dof_index ceiling=False,
+out    rotational_block ceiling=False    -- REJECTED, all three
+rule   gate cell: the counter must FAIL with the gate replaced by a no-op.
+       ceiling cell: it must FAIL with the ceiling widened past its injection.
+judge  THE CELLS DISCRIMINATE FOR THESE ROWS AND I MEASURED IT ON PLANTED BODIES
+       RATHER THAN ON THE SHIPPED ONES. `_counter_reddens_the_gate` resolves
+       `test_G2_1_every_MEMBER_annihilates_its_six_RIGID_motions` through the
+       module global, so the no-op substitution reaches it; `match="rigid
+       residual"` is the only assertion in that gate carrying the string, so the
+       raise cannot be a different one; and `counter_response(kind) * WIDEN` is
+       derived from the DECLARED constant, which is why cell two still rejects an
+       injection that departs from it.
+cmd    AND THE CONSEQUENCE, which is what the registration was FOR: widen
+         PLATFORM_RIGID_MODE_EXACTNESS and run the two files
+out    1.154338e-18 -> 1.0e-17   (8.7x):    2 failed, 35 passed
+out    1.154338e-18 -> 1.0e-14   (8700x):  13 failed, 24 passed, and all three
+out                                        new counter tests are among them
+judge  THE GATE'S CEILING IS NOW GUARDED BY A MEASUREMENT IN BOTH DIRECTIONS.
+       Before this commit the registry held no row for it at all. R633 CLOSED.
+```
+
+* **R634 -- ANSWERED at `95f6293`. Clauses (1) and (2) landed; clause (3) is
+  superseded by my own withdrawal below. I checked the code, not the sentence.**
+
+```
+cmd    floatfea/tolerances.py:330-340 and :355-359, as they now read
+out    "IT ASSERTED NOTHING BETWEEN DI0 AND F3 STEP 2, AND IT ASSERTS AGAIN NOW"
+out    "`check_rigid_modes` refuses the production build on this value"
+out    "its CLASS line above saying ACCURACY is right again"
+cmd    does anything make that refusal RAISE, or is it a sentence?
+out    tests/verification/rung3/test_platform_rigid_modes.py:272 pytest.raises
+out       ValueError match="INDEFINITE"            (three negation shapes)
+out    :274 pytest.raises ValueError match="rigid residual"   <- THIS constant
+out    :318 pytest.raises ValueError match="first flexible mode"
+out    :224 test_the_REFUSAL_accepts_every_real_member, the other side
+rule   a gate carries its own failure
+judge  THE SENTENCE IS BACKED BY A TEST AND NOT BY PROSE, at a boundary solved
+       from both sides, and the ACCURACY class is correctly restored. CLOSED.
+```
+
+* **MY OWN VERDICT-84 SENTENCE IS WITHDRAWN, AND THE IMPLEMENTER WAS RIGHT NOT TO
+  COPY IT.** R634's third clause asked the entry to say "no counter is registered
+  against it and why -- the band window is empty", and my Tolerances table said
+  "**none, and none is possible**". The second half is false:
+
+```
+cmd    the shipped refusal counter at tests/verification/rung3/
+         test_platform_rigid_modes.py:260 -- bad[3,3] += 1.0e-8 * max|k_e| --
+         evaluated on platform:hub1_arm
+out    residual 3.783782e-12 = 3783.8x the 1e-15 ceiling, and :274 asserts the
+out    ValueError on it
+cmd    bisect the smallest injection the 1e-15 refusal detects, worst of the 16
+out    dropped_flip 2.7355e-14   wrong_dof_index 1.0571e-15
+out    rotational_block 6.8377e-13
+judge  A COUNTER AGAINST `RIGID_MODE_EXACTNESS` IS POSSIBLE AND ONE IS ALREADY
+       SHIPPED. What is impossible is REUSING THE SHARED DECLARED SIZE 1.0e-14:
+       at that size dropped_flip reddens 0/16 and rotational_block 0/16 against
+       1e-15, which is exactly R624 and exactly why the two ceilings are
+       separate. The LOCKED PLAN states it correctly at docs/milestones/F3.md:684
+       -- "no counter is registered against the refusal", with the empty-band
+       reason -- and my gloss overreached that sentence. Withdrawn. What replaces
+       it is R638, which is the consequence nobody had measured.
+```
+
+* **R635 -- recorded, ledgered, still NOT blocking, and I accept the ledger.**
+  Section E records the measurements and routes the EG0(c)-versus-entry conflict to
+  Xabier unparaphrased, which is what I asked for. No work this round.
+* **R631 and R626's residue -- OPEN, LEDGERED to `docs/closure/F3.md` section 4
+  under DZ7c, accepted, unchanged. They do NOT carry as blocking into F4.**
+* **R624, R630 -- CLOSED at verdict 84 and staying closed.** This round's diff does
+  not reach them.
+* **R629 -- its DATA half is now genuinely fixed; its GUARD half is R637.** It is
+  the ancestor of both R632 and R637 and this is its third shape.
+* **R636 -- my own result, not a finding.** The report routes it to section 9a as
+  "carried as an earlier report records it", which is false: it was first stated in
+  verdict 84. Closure, C110.
+* **C101 -- STILL OPEN, and the report says it is closed.** `docs/closure/F3.md:154`
+  and `docs/reports/F3/step-3.md:534` both still read "five decades"; neither file
+  is touched by `95f6293`. Revision 2 section D says "Corrected in both". The
+  acknowledgement is right and the correction has not happened. Closure.
+* **C102 -- STILL OPEN AND IT HAS A THIRD SITE NOW.** The backwards phrasing C102
+  named has been copied into `floatfea/tolerances.py:356-357` by this very commit.
+  The number itself is right for its operating point -- the admissible band, not
+  the sixteen; on the sixteen it is `2834.3x`, which I measured -- and the sentence
+  reads as though the ceiling were inside the residual rather than above it.
+* **C103 -- ANSWERED in section D**, with the directory, the six filenames, the 21
+  columns and the false ground struck. The blocker stands on the ground that holds.
+  Closure, pending the escalation itself reaching Xabier.
+* **C104 -- ANSWERED in section D** by a triple naming the commit, the false figure
+  and the true one, with no number outside a triple. Closed.
+* **C105 -- CLOSED by the ruling above, with its stated cause withdrawn.**
+* **C106, C107, C108, C109 -- untouched, still closure, not re-reviewed.**
+* **C88 -- still open, its timing condition still missed, ruled at verdict 84.**
+* **C86, C90 to C98, C100, C74, C76, C78, C82, C85, R610, R615 -- carried
+  unchanged, no work asked.**
+* **C40, C75, C75b, C99 -- CLOSED and staying closed.** `ruff`, `black --check` and
+  `mypy` all SUCCEEDED on CI at this commit.
+* **R611 and R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to
+  R621, R623, R625, R627, R628 closed as ruled at 79 to 83. R622 is F4. C89 stays
+  withdrawn. C58 to C73, C56(iii), C56(iv), C57 -- as ruled at 77 to 83.** This
+  step's diff touches none of them.
+
+## Findings
+
+**R637. (d AND c, BLOCKING) R632 IS UNCHANGED AT THE REVIEWED COMMIT, AND THE
+DRAFT THAT WOULD FIX IT MAKES THE STATE CERTIFY NOTHING. THE SAME SUBSTRING IDIOM
+MAKES A SECOND GUARD READ 22 LINES OF A 937-LINE REPORT. THIS IS R629's DEFECT IN
+ITS THIRD SHAPE, AND IT IS NOW MEASURED BY ABLATION RATHER THAN ARGUED.**
+
+```
+cmd    git show 95f6293:docs/reports/F3/step-3.md | grep -c "^# Revision "
+out    0
+cmd    gh run view 36907599744 --log-failed | grep -i "substring not found"
+out    >  head = text.rindex("# Revision ")
+out    E  ValueError: substring not found
+out    tests/test_report_guard_states.py:545: ValueError
+judge  HALF ONE: AT THE REVIEWED COMMIT NOTHING MOVED. Verdict 84's symptom, the
+       same line, on CI and on my own run. The commit message's `1 passed` was
+       measured on the UNCOMMITTED tree, which is a different tree.
+```
+
+```
+cmd    the working tree, where revision 2 exists: every occurrence of the
+         substring the plant action searches for
+out    line   7   the revision-1 heading
+out    line 636   the revision-2 heading
+out    line 697   inside prose, quoted, followed by a right parenthesis
+out    line 916   inside prose: "...carries a `# Revision ` heading and S9 is split."
+cmd    rindex takes the LAST, so what region does the plant actually mutate?
+out    character 82868 -> line 916. TWENTY-TWO lines of 937.
+cmd    difflib over the planted report against the original
+out    ONE changed line, @@ -925 +925 @@, a single S4 -> S9 in a ledger bullet
+out    about R626
+cmd    count the section pointers the state CLAIMS to move, and the ones it reaches
+out    33 pointer tokens in revision 2; 2 reachable from line 916; 1 changed;
+out    ZERO in the Carried table
+rule   the state's own name is every_Carried_pointer_names_the_Carried_SECTION_ITSELF
+judge  THE PLANT MOVES 1 POINTER OF 33 AND NONE OF THEM IS A CARRIED ROW. The
+       report's own ANSWER to R632 -- the sentence in section 9a that quotes the
+       literal heading string -- is what redirects `rindex` away from the heading
+       that same sentence says it added. The fix defeats itself through its own
+       prose, which is a shape I have not seen before in this repository.
+```
+
+```
+cmd    THE ABLATION (BG0). Build the same scratch state with the plant action
+         REMOVED and nothing else changed, then run the guard
+out    WITH the plant:     exit 1, 174 collected, 8 failed
+out    WITHOUT the plant:  exit 1, 174 collected, 8 failed
+out    and THE EIGHT NAMES ARE IDENTICAL:
+out      test_the_Carried_table_is_what_the_generator_produces
+out      test_the_generator_would_catch_a_row_under_the_wrong_number
+out      test_the_CI_section_is_about_the_REVIEWED_commit
+out      test_the_report_carries_a_WHOLE_SUITE_count
+out      test_every_named_site_is_touched_or_declared[R633-...:317, :318, :319]
+out      test_every_named_site_is_touched_or_declared[R634-docs/closure/F3.md]
+cmd    what the state asserts, and whether it is in DIAGNOSIS
+out    `assert code != 0` and nothing more. The state is NOT in DIAGNOSIS, so no
+out    reporter is required to NAME the planted defect.
+rule   a gate carries its own failure: if the thing it claims were false, would
+       this go red?
+judge  NO. ONE VARIABLE MOVED AND THE VERDICT DID NOT CHANGE. The state passes on
+       eight reds it did not cause, none of which is a pointer check, and it would
+       read `passed` with the plant action DELETED OUTRIGHT. This is R516's
+       recorded failure mode -- "a state looked green ONLY because an unrelated
+       test was failing in the same run" -- and EG3 institutionalises a red
+       baseline at every step boundary, which is precisely when this state runs.
+       So the vacuity is not occasional; it is structural at the moment of use.
+```
+
+```
+cmd    grep the tree for every reader of the revision heading
+out    ANCHORED, digit-required, CORRECT:
+out      tests/test_report_carried.py:247        ^# Revision \d+   (MULTILINE)
+out      scripts/check_carried.py:51            ^# Revision \d+   (MULTILINE)
+out      scripts/ci_section.py:182              ^# Revision \d+   (MULTILINE)
+out    NAIVE SUBSTRING, both wrong:
+out      tests/test_report_guard_states.py:545      text.rindex("# Revision ")
+out      tests/test_report_numbers_are_sourced.py:102  TEXT.rindex("# Revision ")
+cmd    the second one's consequence on the working tree
+out    test_the_report_parsed_into_sections FAILED -- "no fenced block in the
+out    whole revision"; BODY is 22 lines of 937, so EVERY number in revisions 1
+out    and 2 is outside the domain of the guard CLAUDE.md names as the mechanical
+out    half of BF0
+rule   assertion domain blindness: check that the collection the assertion
+       inspects can actually contain the failure
+judge  THE SECOND GUARD IS THE WORSE ONE, because its own vacuity alarm is the
+       only thing that fired and the obvious repair is to silence the alarm. Three
+       readers in this tree already get it right with the same two-token change.
+```
+
+**Closed when** all three, and the first decides it: **(i)** the ablation is RUN by
+the implementer and reported -- build
+`guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF` with the plant
+action removed and show the nested outcome DIFFERS from the planted one by NAME and
+not by exit code; if it does not differ, the state is deleted under DR1 with its
+vacuity recorded, standing in my corpus row as what was measured. **(ii)**
+`tests/test_report_guard_states.py:545` and
+`tests/test_report_numbers_are_sourced.py:102` read the anchored
+`^# Revision \d+` that the other three readers use, so a sentence quoting the
+heading cannot be mistaken for one, and `test_the_report_parsed_into_sections` is
+shown to parse the whole of the newest revision with its fenced-block count pasted.
+**(iii)** at the answering commit `python -m pytest -q` reads `0 failed` apart from
+EG3 state (1), and a pushed CI run at that sha reads the same. **No new apparatus
+in any branch:** (i) is a measurement, (ii) is two regexes replacing two substring
+calls on existing lines.
+
+**R638. (b AND c, BLOCKING) `RIGID_MODE_EXACTNESS` IS THE CEILING THE PRODUCTION
+BUILDER REFUSES REAL DECKS ON, AND IT CAN BE WIDENED A HUNDREDFOLD WITH EVERY
+MEASUREMENT IN THE TREE GREEN. THE ONLY THING THAT NOTICES IS TWO STRING
+COMPARISONS AGAINST A MARKDOWN TABLE. THE BOUNDARY IS SOLVED, NOT SAMPLED.**
+
+```
+cmd    in a scratch worktree, set RIGID_MODE_EXACTNESS 1e-15 -> 1e-13 (100x),
+         nothing else, then run the plan guard, the literal guard, the counter
+         registry, rung 1, rung 3, the unit tests and the regression goldens
+out    2 failed, 1914 passed in 167.12s
+out    FAILED test_the_plan_and_the_code_agree[F2.md-1417-RIGID_MODE_EXACTNESS-1e-15]
+out    FAILED test_the_plan_and_the_code_agree[F3.md-677-RIGID_MODE_EXACTNESS-1e-15]
+judge  BOTH REDS ARE BOOKKEEPING: each compares the float literal in a plan table
+       with the float literal in the code. NOT ONE MEASUREMENT OBJECTS. Edit two
+       markdown rows and a hundredfold widening of the production refusal is
+       green -- which is the shape BG1 was created for, in this file's own words:
+       "`RESULTANT_EXACTNESS` once shipped with `ceiling < counter` as its only
+       guard -- two literals compared in `tolerances.py` -- and could be widened a
+       hundredfold with the suite green."
+cmd    INVERT THE RULE AND SOLVE IT. The binding measurement is
+         test_the_REFUSAL_rejects_a_LIFTED_rigid_mode, whose injected residual is
+out    3.783782e-12 on platform:hub1_arm
+cmd    confirm by stepping just past it: 1e-15 -> 1e-11
+out    1 failed, 1625 passed -- and the single failure IS that test
+judge  SO EVERY CEILING BELOW 3.783782e-12 IS ACCEPTED BY EVERY MEASUREMENT IN
+       THE TREE: 3784x OF SILENT HEADROOM, at the operating point
+       platform:hub1_arm with the shipped sections, on the one ceiling whose
+       subject is "every deck a reader could write". Compare the GATE's ceiling,
+       measured above: it reddens at 8.7x. The two are guarded nearly three orders
+       of magnitude apart and the weaker one is the one on the production path.
+```
+
+```
+cmd    tests/test_counters_are_injected.py, what the registry says about this
+out    test_there_is_something_to_check's docstring: "A constant with no counter
+out    registered here is not covered at all"
+cmd    grep RIGID_MODE_EXACTNESS tests/test_counters_are_injected.py, excluding
+         the PLATFORM_ name
+out    one COMMENT line at :190, and no row
+cmd    and the completeness bound, after this step's repair
+out    :363   assert len(REGISTERED) >= 7, with exactly 7 rows
+judge  THE BOUND IS STILL THE CURRENT COUNT. `>= 4` with four rows could not see
+       a fifth constant; `>= 7` with seven cannot see an eighth. It detects a
+       DELETION and never an OMISSION, which is the FORM R633 found and not only
+       the number -- I asked for `>= 5`, the number moved and the form did not.
+       I am not asking for a new guard for that; I am recording that the guard
+       cannot be the reason this is caught next time.
+cmd    and the injection size that would be the missing row's counter
+out    tests/verification/rung3/test_platform_rigid_modes.py:260
+out      bad[3, 3] += 1.0e-8 * big
+rule   CLAUDE.md section Tolerances: every numerical tolerance lives in
+       floatfea/tolerances.py, "no exceptions, no local literals", and the same
+       rule applies to anything functioning as a tolerance under another name
+judge  THE COUNTER SIZE IS A LOCAL LITERAL IN A TEST. Every other counter in this
+       repository is a declared `*_COUNTER_DEFECT` constant.
+       tests/test_no_tolerance_literals.py cannot see it because its domain is
+       values reaching a COMPARISON and this one reaches an INJECTION -- the
+       assertion-domain shape, inside the guard written for exactly this rule.
+```
+
+**Closed when** `RIGID_MODE_EXACTNESS` has a row in
+`tests/test_counters_are_injected.py`'s `REGISTERED` with both BX0 cells green --
+whose counter is the body that ALREADY EXISTS, since
+`test_the_REFUSAL_rejects_a_LIFTED_rigid_mode` calls `check_rigid_modes` and
+already raises under `pytest.raises`, so it is a counter in BX0's sense today --
+and whose injection size `1.0e-8` is DECLARED in `floatfea/tolerances.py` as that
+constant's counter-defect rather than left at
+`tests/verification/rung3/test_platform_rigid_modes.py:260`; **and** the widening
+is re-measured after the row lands, so the `3784x` above is replaced by the factor
+the registry now refuses. **No new apparatus:** one row in an existing list, one
+constant declaration, one literal replaced by a name. **If instead the decision is
+that this constant stays unregistered**, then the measured consequence -- `100x`,
+`1914 passed`, the solved edge `3.783782e-12`, `3784x` -- goes into the entry at
+`floatfea/tolerances.py` and into `docs/closure/F3.md` beside it, because a reader
+deciding whether `1e-15` may move is entitled to know that nothing in the tree
+would stop them.
+
+**R639. (b, BLOCKING) THE COUNTER INJECTION SIZE CAN BE RAISED EIGHT DECADES WITH
+THE WHOLE REGISTRY AND BOTH EG0 CELLS GREEN, AND THE LOCKED PLAN DECLARES AN UPPER
+BOUND THAT NOTHING ASSERTS.**
+
+```
+cmd    at 95f6293's code, PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT
+         1.0e-14 -> 1.0e-6, nothing else, then the registry and all of rung 3
+out    262 passed in 54.43s
+judge  EIGHT DECADES AND NOT ONE ASSERTION OBJECTS -- not the two BX0 cells, not
+       test_EG0_the_THREE_COUNTERS_redden_every_member, not
+       test_EG0_the_CEILING_is_the_window_it_claims_to_be, not the three new
+       counter tests. Every one of them gets EASIER as the injection grows: 16/16
+       is more true, the window's roof rises with it, and the widened ceiling the
+       ceiling cell uses is itself computed from the raised size.
+cmd    what the LOCKED PLAN declares this value to be
+out    docs/milestones/F3.md:668 -- "The size the three counters inject at, AND
+out    THE SMALLEST DEFECT THE GATE MUST STILL FAIL ... it clears the binding
+out    per-member edge 3.088842e-15 by 3.24x"
+rule   the counter-case is a DETECTION THRESHOLD and not one arbitrary
+       perturbation
+judge  THE PLAN'S OWN SENTENCE IS THE ASSERTION THAT IS MISSING. Verdict 84
+       verified the LOWER side -- 12/16 at 3.050e-15, 16/16 at 3.100e-15, so
+       1.0e-14 clears a solved boundary by 3.24x -- and never asked the other
+       direction. At 1.0e-6 the gate's advertised detection floor is eight decades
+       coarser, every "850x of detection" figure in F3 becomes wrong, and the
+       suite says nothing. My own corpus batch 31 has the same blind spot: its
+       entry `counter_defect_size_boundary_SOLVED` solves the LOWER edge only.
+```
+
+**Closed when** the `3.24x` clearance the locked plan declares is asserted rather
+than stated. `test_EG0_the_THREE_COUNTERS_redden_every_member` already bisects
+`worst_edge` per kind, so one assertion inside that existing test --
+the declared injection no greater than a named clearance times `worst_edge` --
+closes it, with the clearance named in `floatfea/tolerances.py` beside the value.
+**No new apparatus:** the quantity is already computed by the test that would
+assert it, and **the repository already ships this assertion for a sibling
+constant** --
+`tests/verification/rung1/test_corpus_configurations.py::test_the_counter_DEFECT_SIZE_cannot_be_raised`
+does exactly this for `PATCH_TEST_EXACTNESS_COUNTER_DEFECT`, so the precedent and
+the wording both exist and neither is new.
+
+**R640. (NOT A FINDING -- A HAZARD I CREATED AND SHOULD RECORD, because the next
+person to run the suite in a worktree will hit it.)** Three harness states commit
+into the parent repository when the suite runs inside a `git worktree` checkout.
+
+```
+cmd    run python -m pytest -q in a `git worktree add --detach` checkout, then
+         git log --oneline -3 in that checkout
+out    e9b2219  docs: step-3 revision 99 -- and the guard that judges it
+out    3d0f3de  harness: the report, re-committed with an older Answers sha
+out    899e077  harness: the report, re-committed with an older Answers sha
+cmd    ls -la .git in that checkout
+out    -rw-r--r--  76 bytes -- a FILE holding `gitdir: ...`, not a directory
+rule   _build copies ROOT to tmp and then runs `git -C <copy> add` and `commit`
+judge  THE COPY'S `.git` IS A POINTER, SO THE COMMIT LANDS IN THE SOURCE
+       WORKTREE. The harness already records this exact hazard for `rmtree`
+       (C10/R585: ".git IS NOT ALWAYS A DIRECTORY ... scripts/suite_count.py
+       builds exactly that kind of tree") and fixed it there and not here.
+       UNREACHABLE ON CI, where actions/checkout produces a real directory, and
+       THE MAIN REPOSITORY IS UNTOUCHED -- git rev-parse HEAD is 95f6293 and
+       F3 == origin/F3, both checked after every experiment. Closure item C111:
+       the copy's `.git` is replaced by a real directory, or `_build` refuses
+       when it is a file.
+```
+
+## Closure items
+
+Named, not re-reviewed, none of them holding anything. Absorb the whole list in one
+commit and verify it AFTER the commit exists (CZ1).
+
+* **C101.** Still open. "five decades tighter" at `docs/closure/F3.md:154` and
+  `docs/reports/F3/step-3.md:534`; neither file is touched by `95f6293`, and
+  revision 2 section D says "Corrected in both". **Closes when** both sites carry
+  the measured ratio and R636's detection gain replaces the sentence.
+* **C102.** Still open, THIRD SITE. `docs/closure/F3.md:69`,
+  `docs/milestones/F3.md:677` and now `floatfea/tolerances.py:356-357` all read
+  "`51.1x` inside the clean worst". The figure is right for the admissible band and
+  reads backwards; on the sixteen shipped members it is `2834.3x`, which I measured.
+  **Closes when** one sweep's worst and that sweep's margin sit in the same cell at
+  all three sites, with the direction of the inequality stated.
+* **C103.** Answered in section D. **Closes when** the escalation itself reaches
+  Xabier on the ground that holds.
+* **C104.** Answered in section D by a triple. Closed.
+* **C105.** CLOSED by the ruling above; its stated cause is withdrawn.
+* **C106, C107, C108, C109.** Carried unchanged from verdict 84.
+* **C110.** Section 9a routes R636 as "carried as an earlier report records it".
+  R636 was first stated in verdict 84. **Closes when** the row says so.
+* **C111.** The harness commits into a `git worktree` parent. R640 above.
+  **Closes when** the scratch copy's `.git` is a real directory, or `_build`
+  refuses when it is a file.
+* **C112.** Section H declares R632's eleven `tests/test_report_guard_states.py`
+  sites left with a boilerplate reason about step 1 and step 2. The file IS
+  untouched -- I checked -- and the reason given is not the true one: verdict 84's
+  R632 named `:539` to `:546` and `:777` and its condition required the plant
+  action changed. **Closes when** those rows say what is true about verdict 84's
+  finding, site by site.
+* **C113.** Section 9a still carries 17 items, 12 of them reading "carried as an
+  earlier report records it". The pointer repair is real and substantial and this
+  is its residue. **Closes when** a pointer at section 9a names a disposition a
+  reader can check, or 9a is split again.
+* **C114.** `RIGID_MODE_EXACTNESS`'s audit trailer at `floatfea/tolerances.py:365-366`
+  still ends "assertion dropped 2026-09-26 (DI0, R530)" with no line recording that
+  it asserts again from F3 step 2. **Closes when** the trailer carries that date.
+* **C88** -- still open, its one timing condition still missed; ruled at verdict 84.
+* **C86, C90 to C98, C100** -- carried unchanged.
+* **C74, C76, C78, C82, C85, R610, R615** -- ledger lines, carried unchanged.
+* **C89** -- withdrawn and staying withdrawn. **C40, C75, C75b, C99** -- CLOSED.
+
+## Tolerances touched
+
+```
+cmd  git diff 6c4e651..95f6293 --numstat -- floatfea/tolerances.py
+out  25  6
+cmd  the same diff, lines matching a NAME = value declaration
+out  (no output) -- NOT ONE VALUE LINE CHANGED, in either direction
+cmd  git diff 6c4e651..95f6293 -- "tests/regression/*" tests/conftest.py
+out  (no output) -- no golden moved, no parametrisation loosened, no conftest
+judge  NO TOLERANCE WAS TOUCHED AS A VALUE THIS ROUND. What moved is one
+       ASSERTION -- `len(REGISTERED) >= 4` to `>= 7`, strictly stronger -- and
+       three counters that previously asserted themselves now run their gate,
+       which I verified on planted bodies rather than on the shipped ones. Every
+       change is in the tightening direction. MY FINDINGS ARE NOT THAT ANYTHING
+       WAS WIDENED: they are that two constants CAN BE widened, and I measured by
+       how much.
+```
+
+| constant | value | form | counter | justification located |
+|---|---|---|---|---|
+| `PLATFORM_RIGID_MODE_EXACTNESS` | `1.154338e-18`, UNCHANGED | relative and dimensionless; the element-local residual is homogenised, so span, orientation and reference point leave the quantity; correct form | **now genuinely registered** -- three rows, both BX0 cells green, and I measured the cells REJECTING two planted defective bodies. Widening it `8.7x` reddens 2 tests, `8700x` reddens 13 including the three counters | `floatfea/tolerances.py:369-421`, `docs/milestones/F3.md:667`, and the derivation re-run by `test_EG0_the_CEILING_is_the_window_it_claims_to_be` at every run rather than typed (BI3). **R633's false sentence is now true, measured.** |
+| `PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT` | `1.0e-14`, UNCHANGED | a fraction of `max abs k_e`, dimensionless; correct form | it IS the counter -- and **R639**: its LOWER boundary is solved at `3.24x` and its UPPER side is asserted by nothing. `1.0e-6` reads `262 passed` | `floatfea/tolerances.py:423-446` and `docs/milestones/F3.md:668`, whose "the smallest defect the gate must still fail" is the sentence R639 asks to be made an assertion. |
+| `RIGID_MODE_EXACTNESS` | `1e-15`, UNCHANGED | relative and dimensionless; correct form | **NONE, and my "none is possible" is WITHDRAWN.** One exists at `tests/verification/rung3/test_platform_rigid_modes.py:260`, `3783.8x` above the ceiling, unregistered and written as a local literal. **R638**: `1e-13` reads `1914 passed`; the solved edge is `3.783782e-12`, so `3784x` | its own entry at `floatfea/tolerances.py:330-367`, corrected this round and now TRUE about the refusal (**R634 closed**) -- and carrying `51.1x` in the backwards phrasing C102 named, which is C102's third site. |
+| `RIGID_MODE_BOUND` | `199.526231496888`, UNCHANGED | unchanged | unchanged | unchanged. **R631** is its open residue, ledgered under DZ7c. |
+
+## My own instructions (4b), read line by line
+
+```
+cmd  git diff 6c4e651..95f6293 --stat -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  (no output)
+cmd  git log --oneline 6c4e651..95f6293 -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  (no output)
+judge  NO STOP-CLASS PROCESS FINDING, verified by the diff and not by the subject
+       line. The one commit in this round touches floatfea/tolerances.py,
+       tests/test_counters_are_injected.py and
+       tests/verification/rung3/test_platform_rigid_modes.py and nothing else.
+       Nothing changed what I read, what I must carry, or what I may write.
+```
+
+## The adversarial corpus (BE3)
+
+**NO BATCH 32, and I am saying so rather than leaving the section absent.** EG4(e)
+pauses general batches after F3 step 3, verdict 84 recorded batch 31 as the last
+general batch, and the measurement that justified stopping was batch 31's own: 26
+entries, all unseen, 14 predicting `caught`, 1 reading caught, and thirteen of the
+fourteen misses records rather than reachable defects.
+
+```
+cmd  grep -c "^id=" tests/corpus/platform_ceiling_and_counter_registration.txt
+out  26        unchanged this round
+cmd  git diff 6c4e651..95f6293 --stat -- tests/corpus
+out  (no output)
+```
+
+**AND THE METHOD LESSON, which is worth more than a batch.** R638 and R639 are both
+shapes batch 31 did not contain, and they share one cause: **batch 31 solved every
+boundary from the side that makes the gate look strong.** Its entry
+`ceiling_window_counter_edge_SOLVED` solved how far the GATE's ceiling may RISE;
+its entry `counter_defect_size_boundary_SOLVED` solved how far the injection may
+FALL. Neither asked how far the REFUSAL's ceiling may rise, nor how far the
+injection may rise -- and those are the two directions that WEAKEN a gate. "Invert
+the decision rule and solve" was applied to one edge of each pair, and two of this
+round's three blocking findings came from inverting the direction and nothing else.
+
+If Xabier would rather those three shapes be carried as corpus DATA than as
+findings that close, that is a one-line directive and I will write batch 32 against
+the two surfaces EG4(e) keeps open.
+
+Every mutation this round was applied in scratch worktrees and a scratch harness
+under the session scratch directory. `floatfea/tolerances.py` in the working tree
+was restored and verified unchanged, the main repository's `HEAD` is `95f6293`,
+`F3 == origin/F3`, and the only paths modified in it are the implementer's own two
+uncommitted report files. The only path I have written in this repository is this
+verdict.
+
+## On the criterion
+
+**I ruled under CZ0 and I have no complaint about the criterion.** Of my four
+numbered items, one is (d) measured on two machines and (c) by ablation, two are
+(b) on tolerance values and the form of their counters, one is explicitly not a
+finding. Fourteen closure items are named and I will not re-review them. No round
+was spent on prose.
+
+**One thing on the record, because it cuts against my own last round.** Verdict 84
+spent its strength on three sentences and said the element was "right and I could
+not break it". The element still is. But two of this round's three blocking
+findings are widenings I could have measured in that round with the same four
+commands, and I did not take them because the step's new code was a gate and I
+checked the new gate. **The constant that turned out easiest to widen was the old
+one that nothing in the diff touched.** The question that catches it is "diff the
+step, then ask what the step's change makes POSSIBLE", and it is not in my
+instructions. I am not asking for apparatus; I am recording that the reading was
+available and I did not take it.
+
+## Next step opens when
+
+**Step 3 is HELD. This is round 2 of 3: the next verdict CLOSES the step whatever
+it says, and any blocking item still open then carries BY NAME into F4's `Carried`
+and stays blocking there.** The conditions, in the order that unblocks the most:
+
+1. **LAND REVISION 3.** The deadlock is ruled and needs nothing carried: the bolded
+   `Reviewed commit` line naming `95f6293` is in this verdict's body, so
+   `python scripts/ci_section.py` with no arguments resolves `95f6293` and run
+   `36907599744`, and the guard reads the same sha through the same regex. Section
+   0 and 0a must be the GENERATOR'S OUTPUT: at `95f6293` the generator refuses, so
+   revision 2's section 0 carries a `Generated:` line for a command that cannot
+   produce it. Regenerate, do not edit. `SUITE_LINE_PLACEHOLDER` at the end of
+   section J is unfilled.
+2. **R637**, all three clauses: the ablation run and reported BY NAME; both
+   `rindex("# Revision ")` sites changed to the anchored form, at
+   `tests/test_report_guard_states.py:545` and
+   `tests/test_report_numbers_are_sourced.py:102`, with the fenced-block count of
+   the newest revision pasted to show the parse reaches it; and `pytest -q` plus a
+   pushed CI run at the answering sha reading `0 failed` apart from EG3 state (1).
+3. **R638**: a `REGISTERED` row for `RIGID_MODE_EXACTNESS` with both cells green,
+   its injection declared in `floatfea/tolerances.py` rather than left at
+   `tests/verification/rung3/test_platform_rigid_modes.py:260`, and the widening
+   re-measured afterwards -- OR the measured consequence written into the entry and
+   into `docs/closure/F3.md`. Either way the entry stops being silent about it.
+4. **R639**: the plan's declared `3.24x` clearance asserted inside
+   `test_EG0_the_THREE_COUNTERS_redden_every_member`, which already computes
+   `worst_edge`.
+5. **The closure list absorbed in ONE commit**, verified AFTER it exists (CZ1):
+   `ruff check floatfea tests`, `black --check floatfea tests`, `mypy floatfea`,
+   `pytest -q` at that commit, then `gh run list` at its own sha with the job-level
+   conclusions, so the lint job's `guards and meta-tests` step is seen to have RUN.
+
+**What does NOT hold, stated so no round is spent asking:** R635, R631 and R626's
+residue stay LEDGERED and I accept the ledger; the EG4 preview stays BLOCKED on the
+ground that holds and that is correct -- fix the stated ground, do not work around
+it; C105 is CLOSED by my ruling and needs no work beyond regenerating section 0;
+R633 and R634 are CLOSED and I will not reopen them. **Do not touch
+`scripts/ci_section.py`, `scripts/write_verdict.py` or
+`tests/test_report_carried.py:2019` for the deadlock -- the answer was a line in my
+verdict and it is now written.**
+
+**Schedule.** F3 closes **13 October**; F4 19 October; the member-force table 23
+October; the code-check screen 28 October. **I have no measurement that contradicts
+any of them.** The ladder is green on CI at this commit, all six rungs including
+ladder 3, which is the measurement that would. Step 3 is now on its second HOLD and
+closes at the next verdict; item 2 is two regexes and a measurement, item 3 is one
+row and one declaration, item 4 is one assertion in a test that already computes
+the quantity. **If round 3 closes carrying blocking items, that is the second
+consecutive step to do so and CZ0 requires the choice stated to Xabier: slip 13
+October, or reduce F3's scope.** I do not expect it to come to that. I still do not
+endorse pulling F4 to 16 October, for verdict 84's reason: the EB6 expected side is
+unmeasured.
+
+**One sentence for the implementer.** The three repairs are right and two of them
+are better than what I asked for -- the counter now depends on the gate it defends
+and I proved that by planting the old body back rather than by reading the diff.
+What I found instead is that F3 gave the NEW ceiling three counters and left the
+OLD one -- the one your builder refuses real decks on -- open by `3784x`; and the
+deadlock you refused to engineer around was a line I failed to write, which was
+exactly the right call to make.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F3 step 3
 Reviewed commit: 6c4e6516f5a07c0f75db67c897c9258b60b3288d
 Verdict: HOLD
 Judged commit: a647492e99b59eec16b0b3faf2489867d2aab596  (HEAD of F3 and pushed; the stamp above is HEAD at write time, which is corpus batch 31 at 6c4e651 -- the tool records that limitation in its own docstring)
