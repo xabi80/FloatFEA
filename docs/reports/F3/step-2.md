@@ -729,3 +729,575 @@ rule   the first is the legitimate step boundary; the second is this line, which
        did not exist when that run was taken
 judge  nothing outside the excluded set is red, which is the first count above.
 
+# Revision 2 — verdict 82's three findings, and the figure I had wrong
+
+Answers: verdict 82 @ 86e161b
+
+**2026-10-01.**
+
+## 0. CI at `29570e1`, the commit verdict 82 judged — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 82 at `29570e1` through the report's own `Answers:` line. Run `36861000264`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint, unit and guards | 1186 | 9 | 0 |
+| the verification ladder | 1826 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 1 not green.**
+
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 9.**
+
+- `tests/test_report_carried.py::test_the_guard_reads_the_step_being_worked_on` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF]` (lint, unit and guards)
+
+## 0a. Runs since the commit verdict 82 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 82 at `29570e1` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `36861000264` | push | `29570e1` | conclusion **failure** |
+| `36867957796` | push | `c4d4817` | conclusion **failure** |
+
+**Run `36861000264`, conclusion **failure**: 9 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_guard_reads_the_step_being_worked_on` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF]` (lint, unit and guards)
+
+**Run `36867957796`, conclusion **failure**: 68 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R624]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R625]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R626]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R616-docs/milestones/F3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:311]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:312]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:313]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:314]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:315]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:316]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:317]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:318]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:319]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:316]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:317]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:318]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:319]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:320]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:321]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:322]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:323]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:324]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:325]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:326]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:327]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:328]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-tests/verification/rung3/test_platform_rigid_modes.py:99]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-tolerances.py:347]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-tolerances.py:348]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-tolerances.py:349]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-tolerances.py:350]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-tolerances.py:351]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R624-tolerances.py:352]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:106]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:107]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:108]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:109]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:110]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:111]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:112]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:113]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:114]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:117]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:118]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:119]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-io/reader.py:314]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-rigid.py:100]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-rigid.py:101]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-rigid.py:102]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R625-test_consistent_mass.py:497]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R626-test_platform_skeleton.py:696]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R626-test_platform_skeleton.py:698]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R626-test_platform_skeleton.py:705]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R626-test_platform_skeleton.py:707]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R626-tests/verification/rung3/test_platform_rigid_modes.py:26]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R626-tests/verification/rung3/test_platform_rigid_modes.py:224]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF]` (lint, unit and guards)
+
+## 1. The reading
+
+**Schedule unchanged, and 13 October still holds** — the dates are in revision 1's
+§7 and nothing has moved them. Round 2 of 3 on this step. **R625, R626 and R627 are
+answered; R628 is this header; R624 is open and it is with Xabier**, because its
+answer is a tolerance value plus a scope statement about F3 § 5 and neither is
+work.
+
+**R628.** Revision 1's header named the wrong verdict. One line.
+
+```
+claim  which verdict the header named, and which was newest
+out    revision 1 named   verdict 80 @ 7e5f3fb
+out    newest at the time verdict 81, then verdict 82 @ 86e161b
+rule   instruction 1b: the report answers the newest verdict, by that
+       verdict's own commit (DX2)
+judge  revision 1 was written before 81 existed and was not re-headed when
+       it did. This revision names 82.
+```
+
+## 2. R627 — and the margin I published was the BEST member
+
+`RIGID_MODE_BOUND`'s entry said "READ IN TWO DIRECTIONS" while three readings
+shipped. The third is R625's signed floor on `lambda_min`, and it is the same
+window's lower edge with the sign kept rather than a second decision — the entry
+says so now, with both margins, because the two sites have different subjects.
+
+```
+claim  the two margins, and which site each one belongs to
+cmd    element_lambda_min_over_epsilon over the sixteen shipped members
+out    worst clean -7.145911e-02   margin 2792.2x      the GATE's number
+cmd    the same over 20400 admissible (D_o, t/D_o, L) points, D_o 0.05-20 m,
+       t/D_o 0.0005-0.49, L/D >= 2, L/r <= 300
+out    worst clean -1.332560e+00   margin 149.7x       the REFUSAL's number
+out    at D_o = 1.468 m, t/D_o = 0.3864, L = 4.634 m
+rule   lambda_min(k_hat) >= -RIGID_MODE_BOUND * ||k_hat|| * eps
+judge  MY "93000x OF CLEAN MARGIN" WAS THE BEST MEMBER, 560x optimistic. The
+       gate prints 2792x, and the refusal's own number appeared nowhere until
+       now. A sampled worst is not a proven bound either: the reviewer's grid
+       found -1.202245e+00 and mine found WORSE, so the entry claims two decades
+       on the grids tried rather than a theorem.
+```
+
+## 3. R626 — the seventh-mode clause, and the figure I had wrong
+
+Revision 1 §3 said the seventh-mode shape was injected "at `1e-8` of `max|k_e|`",
+in a row beside three that really were. **That is wrong twice** and it is the
+clearest false figure I have published this milestone:
+
+```
+claim  what the seventh-mode shape actually is, and where its edge is
+cmd    bisect a RETAINED torsion fraction for the edge
+out    the edge                     2.127342e-10
+out    half the edge   7th/eps 9.9762e+01  residual 8.721e-20  lam_min/eps -1.579e-03
+out    twice the edge  7th/eps 3.9905e+02  residual 8.721e-20  lam_min/eps -1.680e-03
+out    the bound 199.526; the residual ceiling 1e-15
+rule   seventh_over_epsilon(k_local, L) >= RIGID_MODE_BOUND
+judge  it is a retained FRACTION, not an added perturbation of a size, and the
+       edge is 9.67 decades below the `1e-8` I wrote. The cell I ran in revision
+       1 collapsed the mode through an eigendecomposition; I then wrote it into a
+       table whose other three rows shared one size, and the size migrated onto
+       it. BELOW the edge the refusal fires and ABOVE it does not, with the other
+       two clauses satisfied on both sides -- so the refusal is the position of
+       the mode, which is what the clause is for.
+```
+
+`test_the_REFUSAL_rejects_a_SUNK_seventh_mode` is that cell, committed. R626's
+other two clauses were answered at `c4d4817`.
+
+## 4. R625 — answered, and the reviewer found more than I did
+
+My four shapes reproduced exactly. The reviewer then refused two more negation
+shapes, a negative Young's modulus that `Material` itself does not refuse, and showed
+`build_superstructure()` refusing when `local_stiffness` is wrapped — so the
+clause is on the production path and not only in the gate. Its negative control
+shows all three `pytest.raises` cells failing without the clause.
+
+## 5. R624 — open, with Xabier, and NOT step-2 work
+
+The ceiling is the variable, not the counter size. A window exists over the
+sixteen members and none over the whole admissible band, so the gate's subject and
+the refusal's subject cannot share one constant — which is a tolerance value under
+CZ0(b) plus a scope statement about F3 § 5. Both are decisions. Revision 1 §5's
+three options are withdrawn: all three move the wrong variable, and the reviewer
+refuses (c) on its face because a runtime-derived injection size passes the counter
+meta-test's second cell vacuously.
+
+## 6. Findings answered
+
+Generated: `python scripts/answered_table.py <the verdict> <the answers file>`.
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R610 | carried | **carried** | §9 | `` | carried from an earlier verdict |
+| R611 | carried | **withdrawn** | §9 | `` | carried from an earlier verdict |
+| R612 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R613 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R614 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R615 | carried | **carried** | §9 | `` | carried from an earlier verdict |
+| R616 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R617 | carried | **withdrawn** | §9 | `` | carried from an earlier verdict |
+| R618 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R619 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R620 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R621 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R622 | carried | **later** | §9 | `` | carried from an earlier verdict |
+| R623 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R624 | recorded | **open** | §9 | `` | THE CEILING THE NEW GATE AND THE NEW REFUSAL ASSERT AGAINST IS INHERITED FROM A DIFFERENT QUANTI |
+| R625 | recorded | **answered** | §9 | `` | THE SHIPPED REFUSAL ACCEPTS AN INDEFINITE ELEMENT STIFFNESS. THREE SIGN ERRORS, EACH INJECTED AL |
+| R626 | recorded | **answered** | §9 | `` | THE REFUSAL IS A GATE HALF AND NOTHING COMMITTED SHOWS IT EVER REFUSES. ITS SIBLING IN THE SAME  |
+| R627 | recorded | **answered** | §9 | `` | A THIRD READING OF `RIGID_MODE_BOUND` SHIPS IN TWO ASSERTIONS AND ITS OWN ENTRY STILL SAYS TWO - |
+| R628 | recorded | **answered** | §9 | `` | THE REPORT IN THE TREE ANSWERS VERDICT 80. THIS ROUND HAD NO REPORT, AND ITS FIGURES LIVED IN AN |
+
+## 6a. Sites named by findings and not touched
+
+Generated: `python scripts/untouched_sites.py`.
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R616 | `docs/milestones/F3.md` | the file is untouched | TOUCHED in this step at `d8ea3a3`, the step marker, and **no change at that exact line**. Section 5 itself was re-locked at `3709cc6` under EB0. |
+| R624 | `F2.md` | the file is untouched | **no change.** A closed milestone's locked plan. §5 is where this step says what would be needed to add a row to its tolerance table and why that is not the implementer's call. |
+| R624 | `floatfea/model/platform.py:311` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
+| R624 | `floatfea/model/platform.py:312` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
+| R624 | `floatfea/model/platform.py:313` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
+| R624 | `floatfea/model/platform.py:314` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
+| R624 | `floatfea/model/platform.py:315` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
+| R624 | `floatfea/model/platform.py:316` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
+| R624 | `floatfea/model/platform.py:317` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
+| R624 | `floatfea/model/platform.py:318` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
+| R624 | `floatfea/model/platform.py:319` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
+| R624 | `floatfea/tolerances.py:316` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `floatfea/tolerances.py:317` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `floatfea/tolerances.py:318` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `floatfea/tolerances.py:319` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `floatfea/tolerances.py:320` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `floatfea/tolerances.py:321` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `floatfea/tolerances.py:322` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `floatfea/tolerances.py:323` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `floatfea/tolerances.py:324` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `floatfea/tolerances.py:325` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `floatfea/tolerances.py:326` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `floatfea/tolerances.py:327` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `floatfea/tolerances.py:328` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R624 | `scripts/write_verdict.py` | the file is untouched | **no change in step 2.** C72 was answered at `6246fbd` under EB2. |
+| R624 | `tests/verification/rung3/test_platform_rigid_modes.py:99` | the file is touched and this line number is the old one | TOUCHED at `c4d4817` and `8ed0fd4` -- the PSD gate cell, the three indefinite refusal cells, the lifted-mode cell and the sunk-seventh boundary cell -- and **no change at that exact line**. |
+| R624 | `tolerances.py:347` | the file is touched and this line number is the old one | **no change** -- the same site as `floatfea/tolerances.py`, cited by bare name. See that row. |
+| R624 | `tolerances.py:348` | the file is touched and this line number is the old one | **no change** -- the same site as `floatfea/tolerances.py`, cited by bare name. See that row. |
+| R624 | `tolerances.py:349` | the file is touched and this line number is the old one | **no change** -- the same site as `floatfea/tolerances.py`, cited by bare name. See that row. |
+| R624 | `tolerances.py:350` | the file is touched and this line number is the old one | **no change** -- the same site as `floatfea/tolerances.py`, cited by bare name. See that row. |
+| R624 | `tolerances.py:351` | the file is touched and this line number is the old one | **no change** -- the same site as `floatfea/tolerances.py`, cited by bare name. See that row. |
+| R624 | `tolerances.py:352` | the file is touched and this line number is the old one | **no change** -- the same site as `floatfea/tolerances.py`, cited by bare name. See that row. |
+| R625 | `CLAUDE.md` | the file is untouched | **no change.** Quoted as the rule a finding is measured against. The governing file is not edited to answer a finding it governs, and when it does change it is a standalone `process:` commit citing a directive -- `9c26ffe` for EB1 and EB4. |
+| R625 | `floatfea/element/rigid.py:106` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:107` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:108` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:109` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:110` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:111` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:112` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:113` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:114` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:115` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:116` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:117` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:118` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `floatfea/element/rigid.py:119` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R625 | `io/reader.py:314` | the file is untouched | **no change.** Cited as the one place in `floatfea/` that already tested an eigenvalue sign -- on inertia -- which is the contrast R625 was framed against, not a site to edit. |
+| R625 | `rigid.py:100` | the file is untouched | **no change** -- the same site as `floatfea/element/rigid.py`, cited by bare name. See that row. |
+| R625 | `rigid.py:101` | the file is untouched | **no change** -- the same site as `floatfea/element/rigid.py`, cited by bare name. See that row. |
+| R625 | `rigid.py:102` | the file is untouched | **no change** -- the same site as `floatfea/element/rigid.py`, cited by bare name. See that row. |
+| R625 | `rigid.py:103` | the file is untouched | **no change** -- the same site as `floatfea/element/rigid.py`, cited by bare name. See that row. |
+| R625 | `test_consistent_mass.py:497` | the file is untouched | **no change.** Cited as a site that clips a spectrum at zero, which is the class R625 belongs to. Rung 2 is not in this step's scope and nothing there is asserted to be wrong. |
+| R626 | `scripts/rigid_counter_response.py` | the file is untouched | **no change.** It is the script this step's injection sites are taken from; it measures and does not assert, and this round reads it. |
+| R626 | `test_platform_skeleton.py:696` | the file is untouched | **no change** -- the same site as `tests/verification/rung3/test_platform_skeleton.py`, cited by bare name. See that row. |
+| R626 | `test_platform_skeleton.py:698` | the file is untouched | **no change** -- the same site as `tests/verification/rung3/test_platform_skeleton.py`, cited by bare name. See that row. |
+| R626 | `test_platform_skeleton.py:705` | the file is untouched | **no change** -- the same site as `tests/verification/rung3/test_platform_skeleton.py`, cited by bare name. See that row. |
+| R626 | `test_platform_skeleton.py:707` | the file is untouched | **no change** -- the same site as `tests/verification/rung3/test_platform_skeleton.py`, cited by bare name. See that row. |
+| R626 | `tests/verification/rung3/test_platform_rigid_modes.py:26` | the file is touched and this line number is the old one | TOUCHED at `c4d4817` and `8ed0fd4` -- the PSD gate cell, the three indefinite refusal cells, the lifted-mode cell and the sunk-seventh boundary cell -- and **no change at that exact line**. |
+| R626 | `tests/verification/rung3/test_platform_rigid_modes.py:131` | the file is touched and this line number is the old one | TOUCHED at `c4d4817` and `8ed0fd4` -- the PSD gate cell, the three indefinite refusal cells, the lifted-mode cell and the sunk-seventh boundary cell -- and **no change at that exact line**. |
+| R626 | `tests/verification/rung3/test_platform_rigid_modes.py:224` | the file is touched and this line number is the old one | TOUCHED at `c4d4817` and `8ed0fd4` -- the PSD gate cell, the three indefinite refusal cells, the lifted-mode cell and the sunk-seventh boundary cell -- and **no change at that exact line**. |
+| R627 | `CLAUDE.md` | the file is untouched | **no change.** Quoted as the rule a finding is measured against. The governing file is not edited to answer a finding it governs, and when it does change it is a standalone `process:` commit citing a directive -- `9c26ffe` for EB1 and EB4. |
+| R627 | `floatfea/element/rigid.py:135` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R627 | `floatfea/element/rigid.py:136` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R627 | `floatfea/element/rigid.py:137` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R627 | `floatfea/element/rigid.py:138` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R627 | `floatfea/element/rigid.py:139` | the file is untouched | TOUCHED in this round at `c4d4817` and `8ed0fd4` -- the signed PSD half, and the sentence R625's cell refuted deleted -- and **no change at that exact line**: the numbers a verdict named are from before those hunks. |
+| R627 | `floatfea/model/platform.py:328` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
+| R627 | `floatfea/model/platform.py:344` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
+| R627 | `floatfea/tolerances.py:389` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:390` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:391` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:392` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:393` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:394` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:395` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:396` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:397` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:398` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:399` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:400` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:401` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:402` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:403` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:404` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `floatfea/tolerances.py:405` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` for R627, COMMENT ONLY: `26 0` by numstat and no `NAME = value` line in the diff. **No change at that exact line**. |
+| R627 | `rigid.py` | the file is untouched | **no change** -- the same site as `floatfea/element/rigid.py`, cited by bare name. See that row. |
+| R627 | `tests/test_plan_matches_tolerances.py` | the file is untouched | **no change, deliberately.** It is the one of the family that does not fail false -- it reads `docs/milestones/F2.md` for a table that is really there -- and it is ledgered as C40. §5 explains why this step did not move it: doing so is one of the three options a new tolerance would force. |
+| R628 | `CLAUDE.md` | the file is untouched | **no change.** Quoted as the rule a finding is measured against. The governing file is not edited to answer a finding it governs, and when it does change it is a standalone `process:` commit citing a directive -- `9c26ffe` for EB1 and EB4. |
+| R628 | `docs/reports/F3/step-2.md` | the file is untouched | TOUCHED by this revision, which is the file the finding is about. **No change at that exact line**: revision 1 is left as the record of what it claimed and revision 2 corrects it in its own revision, which is how a published figure is withdrawn here. |
+| R628 | `docs/reports/F3/step-2.md:3` | the file is untouched | TOUCHED by this revision, which is the file the finding is about. **No change at that exact line**: revision 1 is left as the record of what it claimed and revision 2 corrects it in its own revision, which is how a published figure is withdrawn here. |
+
+## 7. Carried
+
+Generated: `python scripts/carried_table.py <the verdict> <the answers file>`.
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R610 | **carried** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R611 | **withdrawn** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R612 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R613 | **answered** — §9 | ANSWERED at 3709cc6, and the STOP IS LIFTED. Verified line by line rather than taken from the... |
+| R614 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R615 | **carried** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R616 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R617 | **withdrawn** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R618 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R619 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R620 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R621 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R622 | **later** — §9 | LATER, and correctly so. It was written as F4's to answer and the report routes it there.... |
+| R623 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R624 | **open** — §9 | THE CEILING THE NEW GATE AND THE NEW REFUSAL ASSERT AGAINST IS INHERITED FROM A DIFFERENT... |
+| R625 | **answered** — §9 | THE SHIPPED REFUSAL ACCEPTS AN INDEFINITE ELEMENT STIFFNESS. THREE SIGN ERRORS, EACH INJECTED... |
+| R626 | **answered** — §9 | THE REFUSAL IS A GATE HALF AND NOTHING COMMITTED SHOWS IT EVER REFUSES. ITS SIBLING IN THE SAME... |
+| R627 | **answered** — §9 | A THIRD READING OF RIGID_MODE_BOUND SHIPS IN TWO ASSERTIONS AND ITS OWN ENTRY STILL SAYS TWO --... |
+| R628 | **answered** — §9 | THE REPORT IN THE TREE ANSWERS VERDICT 80. THIS ROUND HAD NO REPORT, AND ITS FIGURES LIVED IN... |
+
+## 8. The closure list, not worked in this round
+
+```
+rule   the reviewer asked that no round be spent on these; they go in the
+       step's closure commit
+out    C86  a rigid.py docstring claim
+out    C88  EB0's section 5 figures are not produced by the command it cites
+out    C89  its bisected edges do not reproduce as "worst over the sixteen":
+out         the solve gives 2.735459e-14 / 1.057143e-15 / 6.837686e-13
+out    C90  the residual is dimensionless but NOT unit-invariant
+out    C91  a mis-cited test line
+out    C92  a "seven negative eigenvalues" count that does not reproduce
+out    C93  a module docstring saying two quantities while three ship
+out    C94  a grep sentence its own grep refutes
+out    C95  non-finite and zero-matrix shapes, each measured unreachable
+out    C96  Material accepts a negative Young's modulus
+out    carried: C74, C76, C78, C82, C85, and the ledger lines R610, R615
+judge  C88 and C89 are against a paragraph I wrote into the locked plan under
+       EB0, which is the uncomfortable one: the figures were right when taken
+       and the rule they were taken under was not the gate's.
+```
+
+The reviewer asked that no round be spent on these and they go in the step's
+closure commit: **C86**, **C88** and **C89** against EB0's own § 5 text — its
+figures are not produced by the command it cites, and its bisected edges do not
+reproduce as "worst over the sixteen" — **C90** the residual is dimensionless but
+not unit-invariant, **C91** a mis-cited test line, **C92** a "seven negative
+eigenvalues" count that does not reproduce under the shipped homogeniser, **C93**
+a module docstring saying "two quantities" while three ship, **C94** a grep
+sentence its own grep refutes, **C95** four non-finite and zero-matrix shapes,
+each measured unreachable, **C96** `Material` accepting a negative Young's modulus. **C74**,
+**C76**, **C78**, **C82**, **C85** and the ledger lines **R610**, **R615** carry.
+
+## 9. Where each carried item stands
+
+Every row of §7 points here.
+
+* **R610** — carried as revision 1 §9 records it, unchanged by this round.
+* **R611** — carried as revision 1 §9 records it, unchanged by this round.
+* **R612** — carried as revision 1 §9 records it, unchanged by this round.
+* **R613** — carried as revision 1 §9 records it, unchanged by this round.
+* **R614** — carried as revision 1 §9 records it, unchanged by this round.
+* **R615** — carried as revision 1 §9 records it, unchanged by this round.
+* **R616** — carried as revision 1 §9 records it, unchanged by this round.
+* **R617** — carried as revision 1 §9 records it, unchanged by this round.
+* **R618** — carried as revision 1 §9 records it, unchanged by this round.
+* **R619** — carried as revision 1 §9 records it, unchanged by this round.
+* **R620** — carried as revision 1 §9 records it, unchanged by this round.
+* **R621** — carried as revision 1 §9 records it, unchanged by this round.
+* **R622** — carried as revision 1 §9 records it, unchanged by this round.
+* **R623** — carried as revision 1 §9 records it, unchanged by this round.
+* **R624** — **open, and with Xabier.** The ceiling is the variable; the answer is a tolerance value plus a scope statement about F3 § 5. Not step-2 work.
+* **R625** — answered at `c4d4817` — the signed PSD clause, in the gate and in the builder's refusal, reusing `RIGID_MODE_BOUND`. §4.
+* **R626** — answered at `c4d4817` and `8ed0fd4` — the refusal is solved from both sides, and the seventh-mode clause has its own boundary cell. §3.
+* **R627** — answered at `8ed0fd4` — the entry declares the third reading and both margins. No value moved. §2.
+* **R628** — answered by this revision's header, which names verdict 82 at its own commit. §1.
+
+## 10. Tolerances touched
+
+**One entry's COMMENT, no value.** `RIGID_MODE_BOUND`'s entry gained its third
+reading and two margins (R627).
+
+```
+cmd    git diff 86e161b..HEAD -- floatfea/tolerances.py --numstat
+out    26 0
+cmd    the same diff, grepped for a changed `NAME = value` line
+out    (no output)
+rule   a tolerance moves with a plan edit or it does not move
+judge  nothing moved. What was wrong was the entry describing two readings while
+       three shipped, which is a claim about the code and not a value.
+```
+
+## 11. The whole suite
+
+**Whole suite at `8ed0fd4`: 2650 passed, 0 failed, 0 skipped.** **The excluded set: 197 passed, 103 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 300 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R624]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R625]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R626]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R627]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R628]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_Carried_table_is_what_the_generator_produces`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_generator_would_catch_a_row_under_the_wrong_number`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_CI_section_is_about_the_REVIEWED_commit`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R616-docs/milestones/F3.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:311]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:312]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:313]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:314]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:315]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:316]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:317]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:318]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/model/platform.py:319]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:316]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:317]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:318]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:319]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:320]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:321]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:322]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:323]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:324]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:325]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:326]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:327]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-floatfea/tolerances.py:328]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-tests/verification/rung3/test_platform_rigid_modes.py:99]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-tolerances.py:347]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-tolerances.py:348]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-tolerances.py:349]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-tolerances.py:350]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-tolerances.py:351]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R624-tolerances.py:352]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-CLAUDE.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:106]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:107]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:108]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:109]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:110]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:111]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:112]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:113]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:114]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:115]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:116]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:117]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:118]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-floatfea/element/rigid.py:119]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-io/reader.py:314]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-rigid.py:100]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-rigid.py:101]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-rigid.py:102]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-rigid.py:103]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R625-test_consistent_mass.py:497]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R626-test_platform_skeleton.py:696]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R626-test_platform_skeleton.py:698]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R626-test_platform_skeleton.py:705]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R626-test_platform_skeleton.py:707]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R626-tests/verification/rung3/test_platform_rigid_modes.py:26]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R626-tests/verification/rung3/test_platform_rigid_modes.py:131]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R626-tests/verification/rung3/test_platform_rigid_modes.py:224]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-CLAUDE.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/element/rigid.py:135]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/element/rigid.py:136]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/element/rigid.py:137]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/element/rigid.py:138]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/element/rigid.py:139]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/model/platform.py:328]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:389]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:390]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:391]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:392]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:393]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:394]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:395]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:396]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:397]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:398]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:399]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:400]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:401]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:402]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:403]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:404]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-floatfea/tolerances.py:405]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R627-rigid.py]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R628-CLAUDE.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R628-docs/reports/F3/step-2.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R628-docs/reports/F3/step-2.md:3]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[baseline]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[non_numeric_step_suffix]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[superscript_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF]`
+```
+
+**THE EXCLUDED SET'S 103 REDS ARE THE STATE THIS REVISION CLEARS**, and they are the
+second half of the circularity verdict 81 ruling 4 names. The count is taken in a
+clean worktree at `8ed0fd4` — *before* this revision exists — so every one of them
+asserts that the newest verdict is unanswered. The reviewer measured the same class
+at its own verdict commit, and its figure is in the block below rather than quoted
+here.
+
+```
+cmd    python -m pytest tests/test_report_carried.py
+         tests/test_report_numbers_are_sourced.py -q, in place, with this revision
+out    1 failed, 263 passed
+out    FAILED test_the_report_carries_a_WHOLE_SUITE_count
+out    the reviewer, at its own verdict commit 86e161b: 105 failed, 162 passed
+rule   CZ1's reusable half: a check whose input is the commit itself cannot be
+       measured before the commit exists
+judge  the one that remains is THIS LINE, which did not exist when the count was
+       taken. Nothing outside the excluded set is red, which is the first count
+       above, and the 103 go green as this revision lands -- not with time.
+```
+

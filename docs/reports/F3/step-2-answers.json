@@ -2,67 +2,17 @@
  "_": [
   "POINTERS ONLY (CH4).",
   "",
-  "F3 step 2's first report. It answers the EIGHTIETH verdict, the newest",
-  "in F3 step 1's accumulating file, and carries every finding that file",
-  "declares -- 24 by `scripts/check_carried.py`'s count -- per ED1.",
+  "Revision 2 answers the EIGHTY-SECOND verdict, round 2 of 3 on step 2.",
+  "R625 and R626 are answered at c4d4817 and 8ed0fd4; R627 at 8ed0fd4;",
+  "R628 is this header.",
   "",
-  "Every pointer is section 9, which is where each item's disposition is",
-  "written. Section 8 is the generated table and a pointer at it would",
-  "resolve for every item by construction."
+  "R624 is `open` and it is WITH XABIER: the ceiling is the variable, and",
+  "both halves of its answer -- a tolerance value and a scope statement",
+  "about F3 section 5 -- are decisions rather than work.",
+  "",
+  "Every pointer is section 9, where each disposition is written."
  ],
  "answered": {
-  "R596": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
-  "R598": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
-  "R599": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
-  "R600": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
-  "R601": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
-  "R602": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
-  "R603": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
-  "R604": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
-  "R605": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
-  "R606": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
-  "R607": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
-  "R608": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
-  "R609": {
-   "state": "answered",
-   "where": "\u00a79"
-  },
   "R610": {
    "state": "carried",
    "where": "\u00a79"
@@ -116,6 +66,26 @@
    "where": "\u00a79"
   },
   "R623": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R624": {
+   "state": "open",
+   "where": "\u00a79"
+  },
+  "R625": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R626": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R627": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R628": {
    "state": "answered",
    "where": "\u00a79"
   }
