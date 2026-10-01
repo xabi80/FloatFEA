@@ -238,6 +238,9 @@ def test_G3_1a_the_bodys_MASS_matches_the_deck(superstructure, index: int) -> No
     body = superstructure.bodies[index]
     mass, _, _ = assembled_properties(body)
     deck_mass, _, _ = deck_properties(body)
+    # expected: data/platform/platform12_deck.yaml, bodies[].mass, through
+    # `_full_scale_deck`'s mass scaling. NOT from the assembled matrix, which is
+    # the object under test -- R590 was this assertion comparing it with itself.
     assert mass == pytest.approx(deck_mass, rel=MASS_PROPERTY_AGREEMENT), (
         f"{body.name}: the assembled matrix gives {mass:.6e} kg against the deck's "
         f"{deck_mass:.6e}."
@@ -284,6 +287,11 @@ def test_G3_1a_A_the_ANALYTIC_path_agrees_with_the_ASSEMBLED_matrix(
             )
         )
 
+    # expected: `analytic_properties`, the closed-form element formulae of DZ1 --
+    # per-member line mass and the parallel-axis shift, summed in Python. It never
+    # reads the assembled matrix, `assemble_mass_dense`, or any element matrix, which
+    # is what makes this DZ0(2) rather than a restatement. R596 was this assertion
+    # comparing the assembled matrix with itself.
     assert abs(analytic_m - assembled_m) <= MASS_PROPERTY_AGREEMENT * mass_scale
     assert float(np.max(np.abs(analytic_c - assembled_c))) <= MASS_PROPERTY_AGREEMENT * extent
     assert (
@@ -308,6 +316,10 @@ def test_G3_1a_B_the_ANALYTIC_path_agrees_with_the_DECK(superstructure, index: i
     body = superstructure.bodies[index]
     analytic_m, analytic_c, analytic_j = analytic_properties(body)
     extent = body_extent(body)
+    # expected: data/platform/platform12_deck.yaml -- bodies[].mass,
+    # bodies[].reference_point and bodies[].inertia -- carried on `BodyModel` as
+    # `deck_mass`, `deck_cog` and `deck_inertia`. This is DZ0(1): FloatSim's own
+    # rigid-body properties, not anything the model computed.
     assert abs(analytic_m - body.deck_mass) <= MASS_PROPERTY_AGREEMENT * body.deck_mass
     assert float(np.max(np.abs(analytic_c))) <= MASS_PROPERTY_AGREEMENT * extent, (
         f"{body.name}: the model's CoG is {analytic_c} from the deck's "
@@ -429,6 +441,10 @@ def test_C56_the_DECK_POINTS_really_come_from_the_DECK(superstructure) -> None:
     owners = superstructure.deck_joint_owner
     assert len(carried) == len(fresh) == 16
 
+    # expected: data/platform/platform12_deck.yaml itself -- joints[].body_a,
+    # joints[].body_b, joints[].attach_a_body and the owning body's
+    # reference_point -- parsed here and scaled here. Not through
+    # `_full_scale_deck`, which is the builder's own reader (C59, R605).
     for name, (point, owner) in fresh.items():
         assert name in carried, f"{name} is not in the carried deck points"
         offset = float(np.max(np.abs(np.asarray(carried[name]) - np.asarray(point))))
@@ -470,6 +486,10 @@ def test_DZ2_the_bodys_MEMBER_GEOMETRY_is_what_the_deck_implies(superstructure, 
         f"{len(set(pairs))} distinct endpoint pairs, so at least one line is drawn "
         "twice and its mass is counted twice."
     )
+    # expected: `expected_pairs`, built from `deck_joint_points` and
+    # `deck_joint_owner`, which `test_C56_the_DECK_POINTS_really_come_from_the_DECK`
+    # ties to an independent read of the deck FILE. NOT from `body.model.nodes` --
+    # R600 was this assertion reading the built model for both sides.
     assert set(pairs) == expected_pairs(superstructure, body), (
         f"{body.name}'s members do not join the points the deck's joints imply. "
         "A moved tip lands here."
@@ -500,6 +520,10 @@ def test_G3_1a_the_MEMBER_ONLY_mass_is_the_declared_FRACTION(superstructure, ind
     member_only = assemble_mass_dense(body.model, body.elements)
     mass = float(rigid_properties(member_only, body.model.nodes.coords(), body.deck_cog)[0])
     expected = body.mass_fraction * body.deck_mass
+    # expected: `f` from MASS_FRACTION_LADDER, asserted separately in
+    # `test_the_chosen_FRACTION_is_asserted_not_inferred`, times
+    # data/platform/platform12_deck.yaml bodies[].mass. Both factors are inputs; the
+    # member mass on the left is the only thing under test here.
     assert mass == pytest.approx(expected, rel=MASS_PROPERTY_AGREEMENT), (
         f"{body.name}: the element matrices give {mass:.6e} kg of member mass and "
         f"f = {body.mass_fraction:g} of the deck's {body.deck_mass:.6e} is "
