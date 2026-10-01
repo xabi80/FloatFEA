@@ -1,4 +1,411 @@
 # Review — F3 step 2
+Reviewed commit: 6b3642a599b78c5d867869f041bc2801cbda1acc
+Verdict: HOLD
+Judged commit: c4d48173792770066c9f525f08930a7a5bbc428c  (HEAD of F3 and pushed when I read it; the stamp above is HEAD at write time, which is corpus batch 29 at 6b3642a -- the tool records that limitation in its own docstring)
+Tests: 2843 passed, 68 failed, 0 skipped   (my own run, ONE invocation, clean tree, 651.91s -- not the 317-test subset the hand-back quotes)
+
+## Round of 2026-10-01 -- EIGHTY-SECOND verdict, ROUND 2 OF 3 ON STEP 2, AND IT COUNTS
+
+**The hand-back asked which side of EB4 this round falls on, so I rule it first.** EB4 exempts "a verdict spent on a STOP or blocker whose resolution belongs to the supervisor or to the user", and counts a verdict "when it judges implementer work done for that step". This round judges one commit of implementer work for step 2; R624 consumed one paragraph and the rest went to the code. **It counts. Round 2 of 3. One round remains.**
+
+**R625 IS ANSWERED AND THE FIX IS BETTER THAN THE ONE I MEASURED.** I accepted no row of it. I re-ran the cell, added two negation shapes the committed test does not carry, swept 20400 clean admissible points for a false refusal, solved the detection boundary at two sites, took the negative control, and drove the refusal from `build_superstructure` rather than from a test. Every one of those says the clause is right.
+
+**R626 IS ANSWERED IN PART, AND WHAT IS MISSING IS THE CLAUSE THAT NEVER HAD EVIDENCE.** Two of the three clauses now have a committed cell showing them raise. The SEVENTH-MODE clause still has none, and it is the clause whose only published shape is the one I refuted last round. No boundary in the new cells is solved; all five sit decades from the threshold they are about.
+
+**AND THE REPORT IN THE TREE ANSWERS VERDICT 80.** That is item 1b of my own instructions and it is not a formality this time: 68 tests are red at the judged commit, on CI and on my machine, and every one of them says the newest verdict is unanswered.
+
+## THE THREE RULINGS THE HAND-BACK ASKED FOR
+
+**1. `-RIGID_MODE_BOUND` IS THE RIGHT COMPARAND AND IT IS NOT A SECOND DECISION WEARING ONE NAME. MEASURED, IN FOUR CELLS, NOT ARGUED.**
+
+The constant is already declared two-sided in its own entry. `floatfea/tolerances.py:390-405` says "THIS CONSTANT IS READ IN TWO DIRECTIONS" -- a floor on `lambda_7`, a ceiling on `lambda_6` -- and calls them "the two sides of the same window", the window being where an eigenvalue of the homogenised matrix stops being round-off. A signed floor on `lambda_min` is the lower edge of that same window with the sign kept. One decision, not two, and I would have ruled the same way.
+
+```
+cmd    can a CLEAN admissible member fall below the floor? D_o 0.05..20 m,
+       t/D_o 0.0005..0.49, L constrained to L/D >= 2 and L/r <= 300, S355,
+       20400 points, then a refined grid around the worst corner
+out    worst clean   -1.170315e+00   at D_o 4.4  t 0.88    L 58.19   L/r 45.4
+out    refined       -1.202245e+00   at D_o 4.0  t 0.2607  L 266.34  L/r 201
+out    clean points that would be REFUSED                            0
+rule   element_lambda_min_over_epsilon(k_local, L) >= -RIGID_MODE_BOUND
+judge  NO FALSE REFUSAL ANYWHERE IN THE BAND. The margin at the worst
+       admissible point is 166x.
+cmd    does it degrade with slenderness? hold the section, sweep L/r from 1 to
+       1e7 -- seven decades past the admissible edge -- then L/D from 2 to 1e-4
+out    L/r sweep   stays within -6.1292e-01 .. -5.6999e-07, no trend
+out    L/D sweep   stays within -7.3380e-01
+judge  the S-homogenisation removes the length scaling, so this quantity has no
+       runaway direction. That is WHY the reuse is safe, and it is the cell.
+cmd    for which floors F is the outcome unchanged on every clean point and on
+       every sign shape?
+out    ANY F in (1.2023, 9.3791e+11) -- 11.9 decades. The shipped 199.526 sits
+out    166x above the clean worst and 4.701e+09x below the weakest defect.
+judge  THE VALUE IS NOT LOAD-BEARING HERE. That is the strongest argument for
+       the reuse, and it is why R627 below is about the RECORD and not the
+       number: nothing in this assertion asks for 199.526 specifically, so
+       nothing is gained by minting a constant and nothing is lost if the
+       lambda_7 side ever moves this one.
+cmd    how small a SIGN error does it read? bisect, worst over the sixteen
+out    torsional block scaled by -a    a = 2.127350e-10 of its own magnitude
+out    axial block scaled by -a        a = 9.599513e-16
+judge  so it is not only a catcher of whole negations: a torsional stiffness
+       negative at two ten-billionths of its own size is already refused.
+```
+
+**What I do not accept is the record as it stands, and that is R627.** The entry enumerates its readings and names R540 as the finding for a reading that shipped without being written there. A third reading now ships in two places and the entry still says two.
+
+**2. "STILL PASSES" RATHER THAN BIT-IDENTICAL IS RIGHT, AND I REPRODUCED THE DOUBLES THAT REFUTE THE STRONGER FORM.**
+
+```
+cmd    repr(seventh_over_epsilon(k, L)) clean and under each shape, hub1_arm
+out    clean                        937911510493.6768
+out    torsion sub-block negated    937911510493.6768
+out    axial sub-block negated      937911510493.677
+out    THE WHOLE matrix negated     937911510493.677
+out    bending-z negated            937911510493.6768
+out    bending-y negated            937911510493.6768
+out    the residual is identical to the last bit in all six, 8.721077547984348e-20
+rule   what the cell has to carry is that the shape PASSES THE OTHER TWO
+       CEILINGS, so a refusal can only have come from the signed clause
+judge  CONFIRMED on exactly the two shapes the hand-back names. A bit-identity
+       assertion would have been a claim about the eigensolver inside a cell
+       whose subject is detection -- and it would have been FALSE. The weakening
+       is the correct reading and I would have made the same one.
+```
+
+**3. YES -- PUBLISH THE CORRECTION IMMEDIATELY, IN ITS OWN REVISION, AND DO NOT WAIT FOR R624.** The revision is owed for three independent reasons and none of them depends on R624: item 1b of my instructions, `CLAUDE.md` section Step gating, and the 68 red tests whose single cause is its absence. A revision can say "R624 is with Xabier, unanswered" in one line, and for the dependency list that IS the answer -- the guard asks for each site to be touched or DECLARED, which is what declaring it does. **Withholding the revision did the opposite of protecting section 5: it left every figure of this round outside the repository, in an agent message, which is the one place BF0 says a number may not live.** The four rows I was asked to accept are now reproduced above; they are good; and had I not reproduced them, nothing in the tree would carry them.
+
+## THE TREE AT c4d4817, MEASURED
+
+```
+cmd    git rev-parse HEAD && git rev-parse origin/F3
+out    c4d48173792770066c9f525f08930a7a5bbc428c   both -- pushed, HEAD of F3
+cmd    git status --porcelain --untracked-files=all
+out    (no output, before any work of mine)
+cmd    git log --oneline 4add9d5..HEAD --name-only
+out    c4d4817  floatfea/element/rigid.py
+out             floatfea/model/platform.py
+out             tests/verification/rung3/test_platform_rigid_modes.py
+judge  ONE COMMIT, three files, one path class. It touches neither docs/reviews/
+       nor .claude/ nor docs/SUPERVISOR.md nor CLAUDE.md, so there is NO
+       STOP-class process finding this round.
+cmd    git diff 4add9d5..HEAD --stat
+out    rigid.py 40 +, platform.py 26 +, the rung-3 gate 109 +   169 +, 6 -
+cmd    python -m pytest -q
+out    68 failed, 2843 passed, 2 warnings in 651.91s (0:10:51)
+cmd    python -m ruff check floatfea tests scripts
+out    All checks passed!
+cmd    python -m black --check floatfea tests scripts
+out    112 files would be left unchanged
+cmd    python -m mypy floatfea
+out    Success: no issues found in 30 source files
+cmd    python -m pytest tests/verification/rung3/test_platform_rigid_modes.py -q
+out    11 passed in 1.12s
+cmd    grep -n "Answers:" docs/reports/F3/step-2.md
+out    3:Answers: verdict 80 @ 7e5f3fb
+cmd    git log --oneline -1 -- docs/reviews/F3/
+out    4add9d5  the EIGHTY-FIRST verdict -- the newest verdict commit
+judge  ITEM 1b FAILS. The header names verdict 80; the newest is 81. R628.
+```
+
+**AND THE COLLECTED TOTAL IS NOT COMPARABLE ACROSS A VERDICT BOUNDARY, recorded so that 3100 -> 2843 is not read as tests disappearing.**
+
+```
+cmd    python -m pytest --collect-only -q | tail -1
+out    2911 tests collected          (verdict 81 measured 3109 at 29570e1)
+cmd    python -m pytest tests/test_report_carried.py --collect-only -q | tail -1
+out    205 tests collected
+cmd    the site parametrisation, called directly: len(_sites_by_finding())
+out    59, over findings R610..R626 read from the NEWEST verdict file
+judge  that guard parametrises over the newest verdict -- it read step-1.md with
+       twenty-four findings before and reads step-2.md now -- so the collected
+       count is a function of the verdict. A total compared across that boundary
+       is not like-for-like; 2911 is the number at this commit.
+```
+
+## CI, AT THE JUDGED COMMIT, FROM gh AND NOT FROM THE PASTE (CA2)
+
+```
+cmd    gh run list --commit c4d4817... --json conclusion,status,workflowName,databaseId,event,headSha
+out    CI  36867957796  push  completed  FAILURE   headSha c4d4817...
+cmd    gh run view 36867957796 --json jobs, job by job with runner and duration
+out    the verification ladder            success   13 steps   3m08s
+out    lint, unit and guards              FAILURE   14 steps   12m02s
+out    CI determinism -- leg              skipped    0 steps
+out    CI determinism -- ten legs agree   skipped    0 steps
+judge  THE JOBS RAN. Not CK2: no empty runner with a two-second duration and a
+       spending annotation. The two skipped jobs are the workflow_dispatch gate
+       under CK0, unavailable BY DECLARATION, as at verdicts 79, 80 and 81.
+cmd    the step list of the failing job
+out    actionlint, ruff, black --check, mypy and unit tests ALL SUCCESS, none
+out    skipped; step 10 "guards and meta-tests" FAILURE
+cmd    gh run view 36867957796 --log-failed, grouped by test function
+out    test_every_named_site_is_touched_or_declared[R616..R626-<site>]  most of it
+out    3 x test_the_report_carries_the_finding
+out    1 x test_the_CI_section_is_about_the_REVIEWED_commit
+out    1 x test_the_Carried_table_is_what_the_generator_produces
+out    1 x test_the_generator_would_catch_a_row_under_the_wrong_number
+out    8 x test_the_guard_survives_the_state[baseline and seven planted states]
+out    68 failed, 923 passed in 684.23s
+cmd    my own whole-suite run at the same commit
+out    THE SAME SET, BY NAME. 68 failed, 2843 passed.
+judge  LADDER GREEN. The ladder job is the one that would say a rung is red, and
+       rung 3 -- including the five new cells -- passed on a machine neither
+       party controls. That is the CA2 measurement that matters here.
+```
+
+**THE RED IS NOT (d), AND I RULE IT BY HAND FOR THE SECOND VERDICT RUNNING.** Every one of the 68 is the state verdict 81 enumerated as "verdict written, answering report not yet": each names a finding or a site of the newest verdict and asserts the report answers it. Reading that as (d) makes every step boundary permanently red -- the no-exit `CLAUDE.md` records at DD1 as costing two verdicts, neither about the work. **But the premise of that ruling is that the ANSWERING REPORT clears them, and no answering report was written** -- so this red is not self-clearing, it is the measured cost of R628, and the one action that turns 68 red into green is the revision.
+
+## Carried
+
+* **R624 -- OPEN, BLOCKING, AND WITH XABIER. RECORDED AS AWAITING A RULING, NOT AS IGNORED.** I agree with the routing: both closes I offered are decisions rather than work -- (i) a ceiling derived for the quantity it bounds, or (ii) a written separation of the subject of the gate from the subject of the refusal, which is a scope statement about F3 section 5. Nothing in `c4d4817` moves it: `git diff 4add9d5..HEAD -- floatfea/tolerances.py` is EMPTY and `RIGID_MODE_EXACTNESS` stands at `1e-15`. **Under EB4 the round that resolves it costs step 2 nothing; this round was not that round.**
+* **R625 -- ANSWERED at `c4d4817`, verified independently rather than accepted.** Seven cells, all mine, at this commit:
+
+```
+cmd    each shape alone into k_local on platform:hub1_arm, L = 50 m, then
+       floatfea.model.platform.check_rigid_modes
+out    clean                        lambda_min/eps -2.1425e-03   accepted
+out    torsion sub-block negated    lambda_min/eps -9.3791e+11   REFUSED
+out    axial sub-block negated      lambda_min/eps -4.5035e+15   REFUSED
+out    THE WHOLE matrix negated     lambda_min/eps -4.5035e+15   REFUSED
+out    bending-z sub-block negated  lambda_min/eps -1.8003e+13   REFUSED
+out    bending-y sub-block negated  lambda_min/eps -1.8003e+13   REFUSED
+judge  the last two are NOT in the committed set and are refused anyway. The
+       residual reads 8.7211e-20 and seventh/eps reads 9.379115e+11 on all six,
+       so in every case the refusal came from the new clause alone.
+cmd    Material(E = -2.1e+11) -- which Material does NOT refuse at construction
+       -- through local_stiffness for a real member
+out    residual 8.7211e-20 PASSES, seventh/eps 9.3791e+11 PASSES,
+out    lambda_min/eps -4.5035e+15 REFUSED
+judge  SO THE CLAUSE CLOSES A CONSTRUCTIBLE INPUT CLASS, not only a hand-negated
+       matrix. Before c4d4817 that material built the platform.
+cmd    replace floatfea.model.platform.local_stiffness with a negating wrapper
+       and call build_superstructure()
+out    whole negated    -> ValueError, platform:hub1_arm, -4.503527e+15
+out    torsion negated  -> ValueError, platform:hub1_arm, -9.379115e+11
+out    restored         -> builds
+judge  THE REFUSAL IS ON THE PRODUCTION PATH and not only in a test, which is
+       the half F3 section 5 actually asks for.
+cmd    the negative control: reimplement the check WITHOUT the third clause and
+       run the three committed shapes through it
+out    NO RAISE on any of the three
+judge  so all three pytest.raises(INDEFINITE) cells FAIL if the clause goes.
+       THE CELL CARRIES ITS OWN FAILURE -- which is what makes the three new
+       tests evidence rather than decoration.
+```
+
+  **R625 closes here and carries no further.** The refuted sentence is gone by deletion, so **C87 closes with it.**
+* **R626 -- ANSWERED IN PART. STILL OPEN AND STILL BLOCKING on two of the sites its condition named.** What landed is real and I checked it site by site: `check_rigid_modes` is imported, called and asserted to raise at `tests/verification/rung3/test_platform_rigid_modes.py:242` and `:261`; `test_the_REFUSAL_accepts_every_real_member` is the other side; and the `rotational_block` claim at `:257-259` holds -- `scripts/rigid_counter_response.py:88-89` is `out[3, 3] += size * big`, the identical shape. What did not land is in Findings.
+* **R627 is NEW and is the only new blocking item.** See Findings.
+* **C86 -- STILL OPEN, now in two halves.** The sentence still does not name the quantity the agreement test covers, and the module docstring opens "Two quantities about one 12x12 local stiffness matrix" while three ship.
+* **C87 -- CLOSED at `c4d4817`**, by deletion, which is the route I named.
+* **C88, C89 -- STILL OPEN against my own section 5, and I am not re-reviewing them.** The hand-back restates the bisected-edge figures; I did not re-measure them this round and they stay on the closure list as the previous round left them.
+* **C90, C91 -- STILL OPEN, closure.** Nothing this round touches either.
+* **C74, C76, C78, C82, C85, R610, R615 -- carried unchanged, no work asked, one line each.**
+* **C75 and C75b -- closed at verdict 81 and still closed.** `ruff`, `black --check` and `mypy floatfea` are clean here, and the first two SUCCEEDED on CI at this commit.
+* **R611, R617 withdrawn and staying withdrawn. R616 and R613 closed at 81. R612 closed at 79. R614, R618, R619, R620, R621, R623 closed. R622 is F4.**
+* **C58 to C64, C65 to C73, C40, C56(iii), C56(iv), C57 -- as ruled at verdicts 77, 79, 80 and 81.** This commit touches none of them.
+
+## Findings
+
+**R626. (c, STILL OPEN) TWO OF THE THREE CLAUSES CAN NOW BE SEEN TO FAIL. THE THIRD STILL CANNOT, AND NO BOUNDARY IS SOLVED.** The condition read: "for each half, one input just inside and one just outside, with the boundary solved rather than sampled". Site by site:
+
+```
+cmd    grep -n "pytest.raises" tests/verification/rung3/test_platform_rigid_modes.py
+out    :242   match="INDEFINITE"        the signed clause        DONE
+out    :261   match="rigid residual"    the residual clause      DONE
+out    nothing for the SEVENTH clause
+cmd    grep -rn "first flexible mode" tests/ --include=*.py
+out    tests/verification/rung3/test_platform_rigid_modes.py:131  the GATE print
+out    no raise, no match, no cell anywhere in tests/ for the rung-3 refusal
+rule   a gate carries its own failure -- break the claimed property and confirm
+       the assertion goes red
+judge  ONE OF THE THREE CLAUSES OF A SHIPPED REFUSAL STILL HAS NO COMMITTED
+       DEMONSTRATION THAT IT CAN FIRE, and it is the clause whose only ever
+       published shape is the one I refuted last round.
+cmd    how far past its threshold does each committed input sit?
+out    the three negation cells      4.70e+09x or more past the floor
+out    the LIFTED rigid mode cell    3.78e+03x past the ceiling (3.7838e-12
+out                                  against 1e-15)
+out    the acceptance cell           2.79e+03x inside the floor
+judge  so NO cell is just inside or just outside anything. The committed evidence
+       says the clauses fire on a gross defect; it does not say what they detect.
+       A counter that is one arbitrary perturbation and not a detection threshold
+       is incomplete, and all three of these are the former.
+```
+
+**I have solved two of the three boundaries so no round is spent measuring them:** the torsional block scaled by `-a` crosses the floor at `a = 2.127350e-10` of its own magnitude, worst over the sixteen (`5.319381e-11` best), and the axial block at `a = 9.599513e-16`. For the seventh clause the boundary is already published -- the retained-torsion fraction `2.127342e-10` from verdict 81 -- and a shape that fires it is the torsional block scaled by `1e-12`, which reads `seventh/eps 9.3750e-01` against `199.526` and raises. **A reading worth having beside them:** on the TORSION site the signed clause and the seventh clause cross at the same `a` to six figures, because for a negated torsion block the seventh eigenvalue IS the minimum one; the reach the signed clause ADDS is on the axial and the two bending sites, where `seventh/eps` never moves off `9.3791e+11`.
+
+**Closed when** `tests/verification/rung3/test_platform_rigid_modes.py` carries (i) a cell that makes the SEVENTH clause raise, and (ii) for each of the three clauses an input just inside and one just outside its own solved boundary -- 0.9x and 1.1x of the edge is enough, and the edges are in the paragraph above. **Not new apparatus:** it is a verification test of shipped `floatfea/` behaviour in the file class that already holds exactly this, and DR1 freezes guards and meta-tests, not rung tests.
+
+**R627. (b, blocking) A THIRD READING OF `RIGID_MODE_BOUND` SHIPS IN TWO ASSERTIONS AND ITS OWN ENTRY STILL SAYS TWO -- WHICH IS THE R540 SHAPE, IN THE SAME CONSTANT, NAMED IN THE SAME ENTRY. AND THE MARGIN PUBLISHED FOR IT IS TAKEN AT THE WRONG END OF THE WRONG SUBJECT.** This is not a complaint about the reuse; ruling 1 above says the reuse is right. It is that `CLAUDE.md` makes `tolerances.py` the sole home of every tolerance and its justification, and the justification for this reading lives in a `rigid.py` docstring instead.
+
+```
+cmd    sed -n 390,405p floatfea/tolerances.py
+out    "THIS CONSTANT IS READ IN TWO DIRECTIONS, and until R540 only one of them
+out     was written down in the file CLAUDE.md makes the sole home of every
+out     tolerance" -- then the lambda_7 floor and the lambda_6 ceiling
+cmd    grep -n "RIGID_MODE_BOUND" floatfea/ tests/verification/rung3/ -r
+out    floatfea/model/platform.py:328   the seventh clause          direction 1
+out    floatfea/model/platform.py:344   the SIGNED floor            direction 3
+out    test_platform_rigid_modes.py:~186 the signed gate cell       direction 3
+out    git diff 4add9d5..HEAD -- floatfea/tolerances.py             EMPTY
+judge  THE THIRD DIRECTION IS NOWHERE IN THE ENTRY. The quantity also differs
+       from the one the entry declares -- the entry is on `K / max|K|` assembled,
+       this is the element-local S-homogenised matrix over its Frobenius norm --
+       and nothing in the suite can see either difference.
+cmd    would any guard notice? read tests/test_plan_matches_tolerances.py
+out    both directions check NAMES and VALUES; neither reads how many assertions
+out    a constant has, or in which quantity
+judge  so the entry and a reader are the whole mechanism, which is exactly what
+       R540 established and what this repeats.
+```
+
+**And the margin that justifies the form is quoted at the best member of the narrowest subject:**
+
+```
+cmd    element_lambda_min_over_epsilon over the sixteen, both ends
+out    worst  -7.1459e-02 on hub1:buoy3_arm   margin 2792x
+out    best   -2.1425e-03 on platform:hub4_arm  margin 9.313e+04x
+cmd    the same over the admissible band the REFUSAL applies to
+out    worst  -1.202245e+00                   margin 166x
+rule   a margin is quoted at the worst case of the subject asserted, and a ratio
+       carries its operating point
+judge  THE COMMIT MESSAGE PUBLISHES "93000x of clean margin on the near side",
+       which is the BEST member -- 560x optimistic against the refusal subject.
+       The gate cell prints 2.792e+03x, which is right for the GATE. The number
+       that justifies a REFUSAL over every deck is 166x, and it appears nowhere.
+```
+
+**Closed when**, site by site: **(i)** the `RIGID_MODE_BOUND` entry at `floatfea/tolerances.py:389-405` records the third direction -- a signed floor on `lambda_min` of the element-local homogenised matrix, as the lower edge of the window it already declares -- with TWO NUMBERS and a pointer, not a table (BI3): the clean worst over the admissible band, `-1.202245e+00`, `166x`, and that the outcome is unchanged for any floor in `(1.2023, 9.3791e+11)`, so the value is not load-bearing for this direction; **(ii)** `floatfea/element/rigid.py:135-139` either labels its published range as the sixteen members or carries the band figure, and points at the entry for the justification rather than being it. **No value moves and nothing is widened.** Registering a counter in the new quantity is NOT required here -- the detection edges in R626 are that counter, and registering them is step 3 work alongside R624.
+
+**R628. (ITEM 1b, AND I AM NOT DRESSING IT AS A CZ0 HEAD) THE REPORT IN THE TREE ANSWERS VERDICT 80. THIS ROUND HAD NO REPORT, AND ITS FIGURES LIVED IN AN AGENT MESSAGE.** Item 1b of my instructions is one comparison and it fails: `docs/reports/F3/step-2.md:3` reads `Answers: verdict 80 @ 7e5f3fb`; the newest verdict is 81 at `4add9d5`. The item exists because every `Carried` claim in a report answering a superseded round is about the wrong list -- and here the `Carried` section is literally about verdict 80, while the work in `c4d4817` answers verdict 81.
+
+```
+cmd    the 68 failures, by what each asserts
+out    test_every_named_site_is_touched_or_declared[R624-..., R625-..., R626-...]
+out            every site the NEWEST verdict names, unanswered
+out    test_the_report_carries_the_finding   R624, R625, R626 -- three, by name
+out    test_the_CI_section_is_about_the_REVIEWED_commit
+out    test_the_Carried_table_is_what_the_generator_produces
+out    test_the_generator_would_catch_a_row_under_the_wrong_number
+out    8 x test_the_guard_survives_the_state   cascading off the same baseline
+rule   CLAUDE.md section Step gating: the report carries a Carried section
+       answering each open item from the previous review, or declaring it
+judge  THE GUARDS ASK FOR EXACTLY WHAT THE HAND-BACK CONTAINS. "Site touched or
+       DECLARED" is satisfied by a declaration, so R624 being with Xabier is not
+       what blocked the revision -- one line declaring it would have cleared the
+       site and most of the 68 with it.
+```
+
+**This is not (a), (b), (c) or (d) and I am not calling it one.** It is the precondition on reading the report at all, and it is why the verdict below also records what I could NOT check: whether the report would have stated these figures correctly, with their rules and their operating points, is unmeasurable on an absent revision -- and the one figure of this round that IS in the repository, the commit message, got its margin from the best member of the wrong subject (R627).
+
+**Closed when** `docs/reports/F3/step-2.md` carries `Answers: verdict 81 @ 4add9d5`, a `Carried` section naming R624 (declared, with Xabier), R625 and R626 with the sites each touched, and the section 3 fourth row corrected or withdrawn. **It is one revision and it does not wait on R624.**
+
+## Closure items
+
+Named, not re-reviewed, none of them holding anything. Fix the list once in the step closure commit and verify it AFTER it exists (CZ1).
+
+* **C92.** `floatfea/element/rigid.py:110` -- "seven negative eigenvalues" is a measurement in the source tree that does not reproduce. Measured with the SHIPPED homogeniser on `platform:hub1_arm`: clean 1, torsion negated 3, axial negated 3, whole negated 9. The commit message says 2 / 5 / 5 / 7 and verdict 81 said 0 / 1 / 1 / 6. Three triples for one quantity, because it counts eigenvalues that scatter about zero at round-off -- it is not a decision quantity and nothing asserts on it. **Closes when** the sentence says the matrix is indefinite, or gives the count with the command that produces it (CW0).
+* **C93.** `floatfea/element/rigid.py:3-9` -- "Two quantities about one 12x12 local stiffness matrix" while three ship. Same file, one line. Folded with C86.
+* **C94.** `tests/verification/rung3/test_platform_rigid_modes.py:195-198` -- "NO COMMITTED TEST SHOWED IT RAISING -- a grep over `tests/` returned two comment lines, no import and no `pytest.raises`" is refuted by its own grep at this commit, in the file that contains it. Written as history, read as present. **Closes when** it says "before this commit" or goes.
+* **C95.** `floatfea/element/rigid.py:81-95` and the two ratios -- a NON-FINITE `k_local` passes all three clauses, and `element_rigid_residual` returns EXACTLY `0.000000e+00` on it, because `max(0.0, nan)` is `0.0` and every comparison against `nan` is `False`; the zero matrix and `k * 1e-300` raise `ZeroDivisionError` rather than refusing; `check_limits` ACCEPTS a `nan` length while `check_rigid_modes` crashes on one. **I measured the reachability before listing it and that is why it is here and not above:** `Section(A=nan, ...)` is refused by the `J = I_y + I_z` check, `Section.circular_tube(nan, t)` by the `I_y != I_z` check (a `nan` fails every equality), a `nan` length raises `LinAlgError` -- which subclasses `ValueError`, so it is refused, by a crash rather than a message -- and the shipped deck YAML carries no `nan` or `inf` token. **Latent, not live.** No new apparatus is asked for under CZ0; it is recorded so the next person to touch these three functions knows.
+* **C96.** `floatfea/model/material.py` -- `Material(E=-2.1e+11)` constructs without complaint and `Material(E=0.0)` raises `ZeroDivisionError` from the shear modulus rather than a validation error. The new clause catches both at the element, which is a second line of defence standing in for a first.
+* **C86, C88, C89, C90, C91, C74, C76, C78, C82, C85, R610, R615** -- carried unchanged, see `## Carried`.
+
+## Tolerances touched
+
+```
+cmd  git diff 4add9d5..HEAD -- floatfea/tolerances.py
+out  no output
+cmd  git diff 4add9d5..HEAD --stat -- floatfea
+out  floatfea/element/rigid.py     40 +      one new function
+out  floatfea/model/platform.py    26 +      one new clause
+cmd  git diff 4add9d5..HEAD -- tests/conftest.py "tests/**/conftest.py"
+out  no output
+cmd  git ls-files -- tests/conftest.py "tests/**/conftest.py"
+out  tests/conftest.py             CI0: the pathspec resolves to a real file, as it must
+cmd  git ls-files | grep conftest
+out  tests/conftest.py             one conftest in the tree; no rung carries its own
+cmd  grep -rn "pytest_runtest_makereport\|pytest_ignore_collect\|pytest_collection_modifyitems" tests/
+out  no output
+judge  NO CONFTEST AND NO PLUGIN CHANGED, so nothing new can rewrite what
+       scripts/run_rung.sh reads, and the CH2/CI0 reading has nothing to read.
+```
+
+**NO VALUE MOVED. NO GOLDEN, NO PARAMETRISATION, NO `_COUNTER` AND NO ASSERTION WAS LOOSENED, and one assertion was ADDED** -- which is the direction this section rarely gets to record.
+
+| constant | value | what asserted it before | what asserts it now | justification located |
+|---|---|---|---|---|
+| `RIGID_MODE_BOUND` | `199.526231496888`, unchanged | the rung-3 gate at `:125`, `platform.py:328`, rung 1 on the assembled `K / max abs K` | **and now a THIRD reading**: a SIGNED floor on `lambda_min` of the element-local S-homogenised matrix, at `platform.py:344` and in the new gate cell | `floatfea/element/rigid.py:135-144` -- a docstring, which `CLAUDE.md` does not allow to be the home of a tolerance justification, publishing a range taken over the sixteen while the clause is a refusal over every deck. **R627.** My own measurements for the entry: clean worst over the band `-1.202245e+00`, `166x`; outcome invariant for any floor in `(1.2023, 9.3791e+11)`; detection edges `2.127350e-10` torsion and `9.599513e-16` axial. |
+| `RIGID_MODE_EXACTNESS` | `1e-15`, unchanged | the rung-3 gate at `:99` and `platform.py:319` | the same, plus the new `rejects_a_LIFTED_rigid_mode` cell | unchanged, and still what **R624** is held on. |
+
+## My own instructions (4b), read line by line
+
+```
+cmd  git diff 4add9d5..HEAD --stat -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  (no output)
+cmd  git log --oneline 4add9d5..HEAD --name-only
+out  one commit, three files, all under floatfea/ and tests/
+judge  NOTHING IN MY OWN INSTRUCTIONS CHANGED THIS ROUND, and the one commit does
+       not mix a process path with a code path. No STOP-class process finding.
+       Verified by the diff being empty rather than by the commit subject.
+```
+
+## The adversarial corpus (BE3)
+
+`tests/corpus/element_psd_half_reach.txt`, batch 29, committed separately from this verdict at `6b3642a`. **THIRTY-TWO ENTRIES, ALL THIRTY-TWO UNSEEN.** In scope under DE2: the element, the gates and the platform model.
+
+**THIRTEEN ROWS PREDICT `caught`. EIGHT READ CAUGHT, FIVE NOT CAUGHT -- and all seven sign-mutation rows in section A are among the caught.** That is the first batch this milestone whose headline section goes entirely the right way; batch 28 was four of eleven, 27 was four of eleven, 26 ten of eleven. Four of the seven are shapes the committed test does not carry: the two bending blocks negated, a `Material` with `E = -2.1e+11`, and `local_stiffness` itself replaced by a negating wrapper so `build_superstructure` is the thing asked to refuse.
+
+**The five not caught are the honest remainder and each is routed:** two are NaN shapes whose UNREACHABILITY from the shipped path I measured rather than assumed (C95); two are the missing record of the third reading (R627); one is the seventh clause with no committed failure cell (R626).
+
+```
+cmd  grep -c "^id=" tests/corpus/element_psd_half_reach.txt
+out  32
+cmd  grep -rn "element_psd_half_reach" tests/ scripts/ --include=*.py
+out  (no output) -- named by no .py, so it adds no parametrised case
+cmd  python -m pytest tests/test_collected_set_golden.py tests/test_marker_exemption_corpus.py
+       tests/test_report_vocabulary_corpus.py tests/test_tree_prose_consistent.py
+       tests/test_ci_ladder_gating.py -q        with batch 29 in the tree
+out  298 passed in 138.81s          exit 0
+judge  THE CORPUS COMMIT REDDENS NOTHING, measured and not reasoned -- the same
+       298 as batch 28.
+```
+
+Every mutation was applied in a scratch harness under the session scratch directory, importing the shipped functions; nothing in the working tree was written. `git status --porcelain --untracked-files=all` was empty before I began, and the only paths I have written in this repository are that corpus file and this verdict.
+
+## On the criterion
+
+**I was asked to rule under CZ0 and I did, and I have no complaint about the criterion this round.** Two blocking findings, each squarely inside a head: R627 is the form of a tolerance and where its justification lives; R626 is what a gate clause claims and whether it can fail. R628 is item 1b of my own instructions and I have said so rather than borrowing a CZ0 head for it. Five closure items are a list, including one against a docstring count and one against a latent NaN path I measured myself before deciding it does not block -- which is the discipline CZ0 asks for, applied to my own findings.
+
+**The one thing I want recorded for Xabier, and this is the second verdict running that it has cost a ruling: CZ1 needs the first-report carve-out in verdict 81 ruling 4.** I have now applied it by hand twice. It is four lines, it narrows nothing, and without it the red at every step boundary has to be adjudicated in prose by whoever happens to be reading. **And one sharpening from this round:** the carve-out as I wrote it assumes state (2) clears itself at the answering report. If no answering report is written, it does not clear, and the clause should say that the state is cleared BY THE REPORT and not by time -- so that 68 red with no revision in sight is read as what it is.
+
+## Next step opens when
+
+**Step 2 stays OPEN. R625 is answered and answered well; the element is sound and the refusal is on the production path.** Three items, and two of them are small.
+
+1. **R628 FIRST, and on its own, because everything else is read through it.** `docs/reports/F3/step-2.md` revised to `Answers: verdict 81 @ 4add9d5`, with R624 DECLARED as with Xabier, R625 and R626 answered site by site, and section 3 fourth row corrected or withdrawn. **It does not wait on R624 and it clears 68 red tests.** Do that one first, as the hand-back offered.
+2. **R627 -- the third reading goes into the entry that already enumerates its readings**, with the band figure and the insensitivity window, two numbers and a pointer rather than a table. No value moves. The docstring stops being the home of the justification.
+3. **R626 -- the seventh clause gets a cell that shows it raising, and each of the three clauses gets its own solved boundary from both sides.** Every edge is measured and written above; nothing has to be re-derived.
+
+**R624 remains with Xabier and is not step 2 work.** If it is answered by deriving `RIGID_MODE_EXACTNESS` for the element-local quantity, the window is the one I published last round; if by separating the two subjects in writing, the empty-window measurement goes beside the refusal. **Either way, say which the day it is decided**, because R627 lands in the same file and the two edits are cheaper together than apart -- though R627 does not depend on it and must not wait for it.
+
+**Do NOT spend a round on anything under `## Closure items`.** Fix the list once in the closure commit. **I will not re-review it item by item**, and under CZ0 I have not re-reviewed C88 or C89 against my own section 5 this round either.
+
+**CZ1, as verdict 81 ruled it and as I apply it again.** Verify the closure commit after it exists. If the only red at that commit is the step-pairing class and the states cascading off it, record it with the `FAILED` list pasted and proceed; any other red is CZ1 (iv) unchanged.
+
+**Schedule.** F3 closes 13 October; F4 19 October; the member-force table 23 October; the code-check screen 28 October. **I have no measurement that contradicts any of them**, and the ladder job is green on CI at this commit, which is the one that would. The three items above are a revision, a paragraph and one test function; none is a day of work. **DZ7c is not triggered and I am not asking for a slip.** The thing that would move the date is R624 waiting on a round rather than on a ruling -- so route it, and do not hold step 2 shut behind it.
+
+**This is round 2 of 3 on step 2 (EB4).** One round remains. **At the third verdict step 2 closes**, and anything still blocking carries by name into step 3 and blocks there -- which for R624 is where it was always going to land.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F3 step 2
 Reviewed commit: cb03e0a14f5a6d57b0289778c46cfcff16a5020c
 Verdict: HOLD
 Tests: 3100 passed, 9 failed, 0 skipped   (my own run at the reviewed commit, `python -m pytest -q`, ONE invocation, no split, no exclusion, clean tree, 629.76s -- and NOT the report's subset count)
