@@ -1,4 +1,452 @@
 # Review — F3 step 1
+Reviewed commit: 9492a460464e1313e4e683e283ef1c9ac56d81d6
+Verdict: STOP
+Tests: 2866 passed, 0 failed, 0 skipped   (my own run at the reviewed commit 7b44545, `python -m pytest -q`, one invocation, no split, no exclusion, clean tree, 1384.81s, exit 0)
+
+## Round of 2026-09-30 -- SEVENTY-NINTH verdict. THE TREE IS GREEN ON BOTH MACHINES, R612 IS CLOSED, AND I AM CHANGING MY OWN LABEL ON R613 FROM HOLD TO STOP.
+
+**F3 step 1 remains CLOSED at PASS (DD1, verdict 76).** Nothing here reopens it and the
+STOP below is not about it. What is held is the OPENING of step 2, and the reason is that
+`docs/milestones/F3.md` section 5 is wrong about the structure it instructs a gate to be
+measured on. That is the definition of STOP in my own instructions -- the locked plan is
+wrong; implementation halts and the plan reopens -- and I am told not to soften one.
+
+**This is the verdict that records the tree's colour, which is what was asked for, and it
+records it as GREEN.** The state the directive arrives into is now measured rather than
+asserted.
+
+## THE TREE AT 7b44545, MEASURED
+
+```
+cmd    git rev-parse HEAD && git rev-parse origin/F3
+out    7b445451b3cfd4790248f632af570827c44975a2   both -- pushed, HEAD of F3
+cmd    git diff 01e78c9..HEAD --stat
+out    tests/verification/rung3/test_platform_skeleton.py | 7 ++++---
+out    1 file changed, 4 insertions, 3 deletions
+cmd    python -m pytest -q          mine, whole tree, clean, one invocation
+out    2866 passed, 2 warnings in 1384.81s (0:23:04)      exit 0
+cmd    python -m ruff check floatfea tests
+out    All checks passed!
+cmd    python -m black --check floatfea tests
+out    All done!  89 files would be left unchanged.
+cmd    python -m mypy floatfea
+out    Success: no issues found in 29 source files
+```
+
+**CI, AT THE REVIEWED COMMIT, CONFIRMED FROM `gh` AND NOT FROM THE PASTE (CA2).**
+
+```
+cmd    gh run list --commit 7b445451b3cfd4790248f632af570827c44975a2 --json name,conclusion,status,workflowName,databaseId,event,headSha
+out    CI  36789399558  push  completed  success   headSha 7b4454...
+cmd    gh run view 36789399558 --json jobs, every job and every step
+out    the verification ladder     success   13 steps, all success
+out    lint, unit and guards       success   14 steps: actionlint, ruff, black --check,
+out                                          mypy, unit tests, guards and meta-tests --
+out                                          ALL SUCCESS, none skipped
+out    CI determinism -- leg              skipped   0 steps
+out    CI determinism -- ten legs agree   skipped   0 steps
+cmd    gh run view 36789399558 --log, the count lines
+out    unit tests             88 passed in 0.47s
+out    guards and meta-tests  957 passed, 1 warning in 446.89s (0:07:26)
+out    ladder 1  run_rung: 1276 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+out    ladder 2  run_rung:   66 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+out    ladder 3  run_rung:  218 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+out    ladder 6  run_rung:  134 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+out    ladder 4  run_rung:  127 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+out    ladder 5  run_rung: OK -- 0 directories ran        empty by design
+judge  the two skipped jobs are gated on the workflow_dispatch event in
+       .github/workflows/ci.yml under CK0. That is DECLARED-not-run, which is neither a red
+       build nor CK2's allowance-exhausted state: no job here has an empty runner_name with
+       a two-second duration and a spending annotation. I record them as **unavailable by
+       declaration**, and the inputs that decide them -- the render, the kernel pin, the
+       environment -- are untouched since the last dispatch.
+```
+
+**AND THE CAUSAL CLAIM IN THE COMMIT TITLE CARRIES ITS CELL (BG0), which I checked rather
+than accepted.** "One line over the limit hid the whole guard suite from CI":
+
+```
+cell   the same workflow, the same job, two commits, and the only difference on the lint
+       path is the wrap -- 359bda3, d305253 and 01e78c9 touch docs/reviews/ and
+       tests/corpus/ only
+cmd    gh run view 36781142834 --json jobs          at 8e4238d
+out    lint, unit and guards  FAILURE: actionlint success, ruff FAILURE, then
+out       black --check SKIPPED, mypy SKIPPED, unit tests SKIPPED,
+out       guards and meta-tests SKIPPED
+cmd    gh run view 36789399558 --json jobs          at 7b44545
+out    lint, unit and guards  SUCCESS: all six, none skipped, guards 957 passed
+judge  CONFIRMED, and the "for the first time" half too: the last run to EXECUTE the guards
+       step before this one was 36777499936 at 78e9583, which predates C60's repoint
+       entirely. So C60's repointed guard has now run on CI exactly once, green.
+```
+
+## WHY I AM CHANGING MY OWN LABEL, AND WHAT THE STOP IS AND IS NOT
+
+Verdicts 77 and 78 both carried R613 as a blocking HOLD item. Two rounds have now been
+spent with it on a list whose addressee cannot act on it, and the implementer has stated on
+the record that it cannot -- correctly, under `CLAUDE.md` section Working agreement. **HOLD
+names the implementer; STOP names the plan.** The item has only ever belonged to the second,
+and calling it the first is what produced two rounds that moved nothing. That is the whole
+reason for the change; no new defect was found in R613 this round.
+
+**WHAT THE STOP IS.** `docs/milestones/F3.md` section 5, the G2.1 row and the paragraph
+"What F3 must check that F2 could not", instructs a first measurement in a band that
+contains none of the platform's members, on a stated premise that the same document
+elsewhere measures to be false.
+
+**WHAT IT IS NOT.** It is not a defect in `floatfea/`, not a red test, not a tolerance, and
+not a statement that G2.1 is unsound -- I measured the opposite below. It does not make step
+1's work uninterpretable and it does not touch the tree's green.
+
+## Carried
+
+* **R612 -- CLOSED.** Verified at the reviewed commit, both halves of the condition. The
+  diff is one hunk in one file and `line-length` did not move:
+
+```
+cmd    git diff 01e78c9..HEAD -- tests/verification/rung3/test_platform_skeleton.py
+out    line 414 dict comprehension wrapped across three lines; the f-string at 438-441
+out    joined onto one. Four insertions, three deletions, nothing else in the tree.
+cmd    git diff 01e78c9..HEAD -- pyproject.toml
+out    no output -- tool.black line-length = 100 and tool.ruff line-length = 100 are
+out    where they were
+judge  both hunks are value-preserving, read: implicit f-string concatenation of
+       f"a " and f"{x}." is the same string as f"a {x}.", and the comprehension is
+       unchanged. And the line numbers BELOW 414 did not move, which is what the R600
+       evidence rows in the report cite -- 326 to 343. Checked: no citation anywhere in
+       tests/, scripts/ or docs/ names a line at or after 414 in that file.
+cmd    ruff, black, mypy, pytest and gh -- all five above
+judge  CLOSED. The guard suite reached CI and was green there, which is the half of the
+       condition that had been unavailable since 1b3fb73.
+```
+
+* **R613 -- STILL OPEN, AND IT IS NOW THE STOP.** Not answered, not answerable by the
+  implementer, and I confirmed the measurement independently rather than accepting it:
+
+```
+cmd    build_superstructure(), every member of every body, vector between its two nodes
+out    16 members   the n_members property agrees: 16
+out    max |dz| = 0.0   exactly, on all sixteen
+out    angle from vertical: min 90.0000  max 90.0000 degrees
+out    within 15 degrees of vertical: 0 of 16      at exactly 90.0000: 16 of 16
+out    four at L = 50.0000 m centre-to-hub, twelve at L = 25.0000 m hub-to-buoy-joint
+rule   docs/milestones/F3.md section 5: "A platform frame is mostly near-vertical members,
+       so this gate is measured there first."
+judge  the premise is false on this platform and the sentence is CAUSAL, so BG0 reaches it:
+       the "so" makes the instruction a consequence of a fact that is not one. And section
+       3.1 of the same document already measured z spread max minus min = 0.000e+00 m and
+       calls the frame planar. The document contradicts itself.
+```
+
+* **R611 -- WITHDRAWN, and I did not touch the `Answers:` header.** Item 1b was applied and
+  I record what it found rather than acting on it: the report's newest header reads
+  `Answers: verdict 73 @ 52de940` while the latest verdict is 78. Under my own verdict 78
+  that is not a finding here -- the report commit 8e4238d is an ancestor of the verdict
+  commit 01e78c9, so the exemption at `tests/test_report_carried.py:394-400` applies and the
+  boundary is the legitimate one. Measured: `git merge-base --is-ancestor 8e4238d 01e78c9`
+  returns YES, and the whole tree is 0 failed. Bumping the header to 76 was measured at
+  33 failed in verdict 78 and remains the wrong move.
+* **R614 -- closed by verdict 78 being on the page.** Nothing here reopens it.
+* **R615 -- still a closure item, unchanged, and this round is a second instance of the same
+  window.** It carries beside R610 as a standing cost. No code change asked.
+* **C59 (R605) -- closed at verdict 77.** Unchanged.
+* **C58, C60, C61, C62, C63, C64 -- met, as ruled at verdict 77**, and C60 now has a CI
+  result behind it for the first time, above.
+* **C65 to C73 -- closure items, holding nothing.** **C72 is ruled below** at the
+  implementer's request. **C40, C56(iii), C56(iv), C57** carry forward as recorded.
+
+## Findings
+
+**R616. (STOP-class, and it is R613 restated as what it actually is) `docs/milestones/F3.md`
+section 5 instructs G2.1's first measurement in a band that is empty on the platform, on a
+premise section 3.1 of the same document refutes.** The measurement is in `Carried` above.
+
+**AND HERE IS THE THING THAT SHOULD DECIDE THE RE-LOCK, WHICH NOBODY HAD MEASURED.** The
+choice put to Xabier is a correction against a new gate that moves the date. I took the
+measurement that distinguishes them, using the shipped `element_rigid_residual` and the
+shipped `local_stiffness`, on the sixteen members the platform actually has:
+
+```
+claim  G2.1's quantity on the real members, and whether the gate there is marginal
+cmd    element_rigid_residual(local_stiffness(m.section, b.material, m.length), m.length)
+       for every member of build_superstructure(), against RIGID_MODE_EXACTNESS = 1e-15
+out    the 16 members collapse to 3 distinct classes by length and max|k_e|
+out    worst residual over all sixteen = 3.5283e-19       margin to the ceiling 2.83e+03x
+out    best                            = 8.7210e-20                             1.15e+04x
+rule   element_rigid_residual(k_local, L) <= RIGID_MODE_EXACTNESS, per member, which is what
+       section 5 says G2.1 asserts
+judge  NOT MARGINAL. Three decades of headroom at the worst member.
+```
+
+```
+claim  and the gate on those members CARRIES ITS OWN FAILURE -- all three registered
+       counters reach every class, so it is not a gate that cannot fail
+cmd    the `injected` function of scripts/rigid_counter_response.py at its own SIZE = 1e-8
+       of max|k_e|, and again at 1e-4, into each of the three classes
+out    dropped_flip      reddens 3 of 3 classes at both sizes; worst injected 3.656e-10
+out    wrong_dof_index   reddens 3 of 3 classes at both sizes; worst injected 9.459e-09
+out    rotational_block  reddens 3 of 3 classes at both sizes; worst injected 1.462e-11
+out    the SMALLEST injected response anywhere is 3.784e-12, which is 3.8e+03x ABOVE the
+       ceiling -- so the ceiling sits between the clean residual and the weakest detected
+       defect with about three decades either side
+rule   the same assertion, unchanged
+```
+
+```
+claim  and the counters are DETECTION THRESHOLDS on these members, not one perturbation
+cmd    invert the decision rule: bisect in log10 for the smallest injected fraction of
+       max|k_e| at which element_rigid_residual exceeds 1e-15, per class per counter
+out    dropped_flip      worst class threshold 5.286e-14 of max|k_e|   at L = 50 m
+out    wrong_dof_index   worst class threshold 1.094e-15               at L = 25 m
+out    rotational_block  worst class threshold 2.643e-12               at L = 50 m
+out    the injection convention's SIZE = 1e-8 is four to seven decades past every one
+judge  **SO THE CORRECTION IS SUFFICIENT AND A NEW GATE IS NOT NEEDED FOR SOUNDNESS.** G2.1
+       on the members the platform has is neither vacuous nor marginal, measured three ways.
+       What the band sentence was guarding against -- an element-local form that degrades
+       near vertical -- cannot arise on a frame with no member within 15 degrees of
+       vertical. I offer this as evidence for the re-lock; I am not making the decision and
+       I have not touched the plan.
+judge  WHAT IT DOES NOT SAY, so nobody promotes it. It is not the gate -- step 2 builds
+       that. It is not a claim about members outside the planar frame, which do not exist on
+       this model and would be a different measurement. And under "do not let right every
+       time become a prior", four numbers taken by the reviewer with the implementation's
+       own functions are an instrument reading, not an independent witness.
+```
+
+**Closed when** `docs/milestones/F3.md` section 5 no longer states that the frame is mostly
+near-vertical and no longer instructs a first measurement in that band, and G2.1's row says
+what it is measured on -- the sixteen members the platform has. One sentence and one row, in
+a re-lock commit. Under DK0 that re-lock buys no fresh rounds.
+
+**R617. (withdrawn by me, in the same round I found it, and the withdrawal is the record)** I
+found that `_active_milestone` in `tests/test_report_numbers_are_sourced.py:53-72` falls back
+to F2 -- a closed milestone -- whenever the marker resolution is ambiguous, and that
+`_active_plan` in `tests/test_report_guard_states.py:44-74` does the same. That is a silent
+default in the place C60 was repairing. **I then checked whether anything catches it before
+publishing it, and something does:**
+
+```
+cmd    tests/test_report_carried.py:471-483, read, then driven directly against a scratch
+       copy of docs/milestones with _MILESTONES, _PLAN and _PLAN_STEP_NUMBER rebound
+out    real tree, one marker      -> PASSES
+out    ZERO numeric markers       -> RED, "0 plans carry a step-under-execution line"
+out    TWO numeric markers        -> RED, "2 plans carry it, F2a.md and F3.md"
+judge  the assertion exists, it fires on both off-nominal states, and its own message already
+       names the consequence I was about to report -- how a guard comes to read a closed
+       milestone's last step and report green while checking nothing. WITHDRAWN. The residual
+       is that the coverage is one assertion in one of the three files, so it holds only in an
+       invocation that collects that file: the guards CI step does, the ladder job does not,
+       and does not need to.
+```
+
+**Closed when** nothing. It is closed by being measured.
+
+## Closure items
+
+Named, not re-reviewed, and none of them holds anything. Fix the list once in the step's
+closure commit -- and run the checks at that commit after it exists, per the wording
+requested below.
+
+* **C74.** `docs/reports/F3/step-1.md:264` and `:319` -- the generated CI section is anchored
+  on verdict 74 at 228bdfb, run 36743792702, conclusion **failure**, while CI at the tree
+  under review is run 36789399558, **success**. Every number in it was right when taken; the
+  section a reader opens to learn CI's colour describes a commit five rounds back. BP0 in its
+  plainest form. **Closes when** `scripts/ci_section.py` is re-run at the commit that
+  publishes the next revision.
+* **C75.** `python -m black --check scripts` is **red at this commit** --
+  `scripts/carried_table.py` would be reformatted, and 8e4238d is the commit that touched it.
+  Neither CI lint step covers `scripts/`: the pathspecs are `ruff check floatfea tests` and
+  `black --check floatfea tests`, and `mypy floatfea` leaves the directory untyped entirely.
+  That directory holds `run_rung.sh`, `check_carried.py`, `write_verdict.py`, `ci_section.py`
+  and `regen_figures.py` -- the ladder gate's logic, the carry guard's logic, and the
+  reviewer's own writer. This is R612's shape with the pathspec instead of the line length.
+  **Closes when** either `scripts/` is inside the lint pathspec and the file is formatted, or
+  the exclusion is written down as deliberate with its reason. Not blocking: formatting is not
+  a quantity and no gate claims it there.
+* **C76.** The one miss in corpus batch 26. `tests/test_report_carried.py:471-483` asserts
+  that exactly one PLAN carries the marker; it does not assert exactly one MARKER per plan,
+  and `re.search` returns the first. A stale marker line left ABOVE a live one resolves to the
+  stale number, silently, in all three files, and every report guard then reads the wrong
+  step's report -- green. Measured: the value 1 above the value 7 in F3.md gives step 1 from
+  all three resolvers and the assertion GREEN. The same edit in the other order is red only
+  because step-7.md does not exist yet. **Closes when** that existing assertion also counts
+  markers per file, in the same clause. No new file and no new guard -- a clause added to an
+  assertion written for exactly this class.
+* **C77.** `tests/test_report_numbers_are_sourced.py:81` -- `_newest_report`'s `assert steps`
+  runs at module import through the module-level `REPORT`, so a plan whose reports directory
+  does not yet exist makes the module fail to COLLECT rather than fail a test. That is the
+  R234 shape the same module's `_active_milestone` docstring says it avoids, two functions
+  apart. Measured: AssertionError "no numbered step report under ..." at import. **Closes
+  when** the check is a test, or the docstring stops claiming the module avoids it.
+* **C78.** A ledger line beside R610 and R615, no code change. CK0's cheap-first step order in
+  `.github/workflows/ci.yml` is deliberate and its ratio is measured in the file. Its realised
+  cost is now one round in which the guard suite's result was UNAVAILABLE behind a
+  one-character lint error, at the commit where that result mattered most. The workflow's own
+  comment already declines to claim that lint predicts test failure. Recorded as the price of
+  the trade, not as a request to change it -- changing it is apparatus and DR1 is live.
+
+## THE TWO RULINGS ASKED FOR
+
+**1. THE CLOSURE-COMMIT RULE. YES, I WANT IT WORDED AS A RULE, AND HERE IS THE WORDING.**
+Carry this to Xabier verbatim rather than paraphrasing it. It asks for no new apparatus: every
+command in it already exists and already runs somewhere.
+
+> **A closure commit is verified AFTER it exists (proposed CZ1).** A closure commit is written
+> after the last reviewed round and is not reviewed by rule, so nothing between it and the
+> next step's report measures it. Two classes of red shipped in 8e4238d for that reason: the
+> lint gate, which `pytest` does not run, and the report guards, whose answer is a function of
+> the commit graph and therefore cannot be taken before the commit exists.
+>
+> So, for every closure commit, in this order: **(i)** make the commit; **(ii)** at that
+> commit, tree clean, run and paste `ruff check floatfea tests`, `black --check floatfea
+> tests`, `mypy floatfea` and `pytest -q`; **(iii)** push it and paste `gh run list --commit
+> <sha>` with the job-level conclusions, so that the lint job's `guards and meta-tests` step
+> is seen to have RUN rather than been skipped behind an earlier red step; **(iv)** any red is
+> answered in a follow-on commit that repeats (ii) and (iii). A closure commit is not finished
+> until a pushed CI run at its own sha, or at the follow-on's, is green.
+>
+> The four outputs are `claim / cmd / out` triples (BF0, CP2) in the step report's closure
+> section, or -- where that report is already closed -- in the next report's `Carried`.
+>
+> **The reusable half of it:** a check whose input is the commit itself cannot be measured
+> before the commit exists. That class includes `tests/test_report_carried.py`,
+> `tests/test_report_guard_states.py`, and anything reading `git log`, `git diff` or
+> `git merge-base`. For those, "I ran it before committing" is not a measurement.
+
+**2. C72 -- `scripts/write_verdict.py`'s CRLF doubling. NOTHING IS CORRUPTED AT THIS COMMIT.
+IT WILL BE, ON THE FIRST UNMITIGATED INVOCATION.** The directive can say "only will be":
+
+```
+claim  the committed bytes of both files are clean at 7b44545
+cmd    git show HEAD:scripts/write_verdict.py | count CRLF, lone CR, LF
+out    7090 bytes   CRLF 0   lone CR 0   LF 150        pure LF
+cmd    git show HEAD:docs/reviews/F3/step-1.md | count CRLF, lone CR, LF, CR CR LF
+out    147473 bytes   CRLF 0   lone CR 0   LF 2412   CR CR LF 0     pure LF
+cmd    the same counts on the WORKING COPY of docs/reviews/F3/step-1.md
+out    149885 bytes   CRLF 2412   lone CR 0   CR CR LF 0
+cmd    git config --get core.autocrlf
+out    true        so the working copy being all-CRLF is a normal checkout, not damage
+judge  CLEAN, both on the page and in the index. No stray carriage return exists anywhere in
+       either file at this commit.
+```
+
+```
+claim  and the mechanism is real, reproduced on a two-line file outside the repository
+cmd    write b"line one\r\n line two\r\n"; read_bytes; decode; then line 140's
+       out.write_text(rounds, encoding="utf-8") -- text mode, platform newline
+out    b'new round\r\n\r\n\r\n---\r\n\r\nline one\r\r\nline two\r\n'    CR CR LF: 1
+cmd    the same call with newline="\n" added
+out    CRLF 1, CR CR LF 0
+judge  one CR CR LF per preserved line, so the live file's next unmitigated round would
+       produce about 2411 of them, and `core.autocrlf` on commit would turn each into a LONE
+       CARRIAGE RETURN in the blob. The fix is the keyword argument and nothing else. I am
+       not making it: my writable paths are docs/reviews/ and tests/corpus/, and the file is
+       the reviewer's tool, which the closure commit already declined to touch from the other
+       side. **My ruling: the one-keyword change alters nothing the tool asserts or reads, so
+       it is a closure item and not a directive -- but since both sides have now declined it
+       on DR1 grounds, put it in the same directive as CZ1 and let Xabier settle it in one
+       move.** Until then the mitigation is mine and it is manual: normalise the file to LF
+       before every invocation, which is what I did for this round.
+```
+
+## THE CORPUS (BE3)
+
+`tests/corpus/plan_step_marker_resolution.txt`, batch 26, committed separately from this
+verdict. **EIGHTEEN entries, all eighteen unseen -- this is a new file on a surface no corpus
+had touched.** Eleven carry a state that misdirects or blinds a report guard; **TEN CAUGHT,
+ONE MISS**, and the miss is C76 above. Seven are controls or reach rows and are counted
+neither way. Against twelve of thirteen in batch 25, six of eleven in batch 24, eleven of
+sixteen in batch 23.
+
+The surface is the one input the three report guards share after C60, R601a and DX2 replaced
+five hardcoded milestone constants with one regex over `docs/milestones/F*.md`. Nothing had
+measured that resolution off its nominal input. Every `measured=` was taken against a scratch
+copy of the plan directory with the shipped modules' own path globals rebound; no file in the
+repository was written and the tree was clean at every row. **The header records that the
+reviewer's own first pass got shape 12 wrong** -- rebinding only `_MILESTONES` leaves the step
+number reading the real F3 marker -- because that is the mistake the next reader would repeat.
+
+**AND THE CORPUS COMMIT DOES NOT REDDEN THE SUITE**, which CO3 earned the hard way:
+
+```
+cmd  python -m pytest tests --ignore=tests/unit --ignore=tests/verification --ignore=tests/regression -q
+     with tests/corpus/plan_step_marker_resolution.txt present in the tree
+out  957 passed, 1 warning in 1089.23s (0:18:09)      exit 0
+judge the same 957 CI's `guards and meta-tests` step reports at 7b44545, so batch 26 moves no
+      collected count and no assertion. Nothing globs tests/corpus/*.txt, and the two scanners
+      that walk tests/ read only .py and .md.
+```
+
+## Tolerances touched
+
+```
+cmd  git diff 01e78c9..HEAD --stat -- floatfea/tolerances.py
+out  no output
+cmd  git diff 01e78c9..HEAD --stat -- floatfea
+out  no output
+cmd  git diff 01e78c9..HEAD --stat -- tests/conftest.py 'tests/**/conftest.py'
+out  no output
+cmd  git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out  tests/conftest.py            CI0: the pathspec resolves to a real file, as it must
+cmd  git ls-files | grep conftest
+out  tests/conftest.py            one conftest in the tree; no rung carries its own
+cmd  git diff 01e78c9..HEAD --stat -- .claude docs/SUPERVISOR.md
+out  no output
+cmd  git diff 01e78c9..HEAD --stat
+out  tests/verification/rung3/test_platform_skeleton.py | 7 ++++---
+```
+
+**None.** No tolerance, no golden, no parametrisation and no assertion moved. No conftest and
+no plugin changed, so nothing new can rewrite what `scripts/run_rung.sh` reads and the CH2/CI0
+reading has nothing to read this round. My own instructions are untouched, and the one commit
+under review touches neither `floatfea/` nor `.claude/` -- so there is no STOP-class
+process-commit finding here.
+
+## ON THE CRITERION
+
+I was asked to rule under CZ0 and to say so if I disagree with the criterion rather than with
+the work. **I do not disagree, and I applied it against myself twice this round:** R617 was
+withdrawn before publication once I measured that an existing assertion covers it, and five
+findings that are real -- a published CI table describing a red run at a five-round-old
+commit, a red `black --check scripts`, a marker-count gap, an import-time assert, a step-order
+cost -- are listed as closure items and are not holding anything. The STOP is not a CZ0
+promotion: a locked plan that is wrong is its own head in my instructions and always was.
+
+## Next step opens when
+
+**F3 step 1 stays CLOSED at PASS (DD1, verdict 76). The TREE IS GREEN, locally and on CI, and
+that is now on the record. What is stopped is the OPENING OF STEP 2, and it is stopped on the
+plan rather than on the implementer.**
+
+1. **`docs/milestones/F3.md` section 5 is re-locked.** The band sentence goes and G2.1's row
+   says what it is measured on. The evidence for choosing the correction over a new gate is in
+   R616: on the sixteen real members the worst residual is `3.5283e-19` against a `1e-15`
+   ceiling, and all three registered counters redden all three element classes with the
+   weakest detected response still `3.8e+03x` above the ceiling. **If the choice is the new
+   gate instead, the date moves and that is said the day it is made.**
+2. **Then step 2 opens and R616 carries into its `Carried` section by name**, as R613 did,
+   and stays there until section 5 is edited. No verdict of mine can close it.
+3. **Nothing else is required of the implementer.** R612 is closed. C74 to C78 are closure
+   items for the closure commit and none of them gates step 2. Do not spend a round on them
+   and do not spend a line on R611.
+4. **No re-review of this tree is needed to open step 2** once section 5 is edited: the plan
+   edit is under `docs/milestones/`, the code is untouched, and this verdict has recorded the
+   colour.
+
+**Schedule.** F3 closes 13 October; F4 19 October; the member-force table 23 October; the
+code-check screen 28 October. **I have no measurement that contradicts any of them**, and the
+one item that could move them is R616 answered as a new gate rather than as a correction --
+which R616's three cells argue against on soundness grounds. The two rounds spent carrying
+R613 as a HOLD are the cost already paid for mislabelling it, and this verdict is the
+correction.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F3 step 1
 Reviewed commit: 359bda33c33c88544ebe9552c23c093234856531
 Verdict: HOLD
 Tests: 2866 passed, 0 failed, 0 skipped   (my own run at `359bda3`, `python -m pytest -q`, 1415.93s, one invocation, no split, no exclusion, exit 0 -- and `8 failed, 2858 passed` at the reviewed commit `8e4238d`; BOTH are true and the reason is this round's subject)
