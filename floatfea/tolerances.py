@@ -327,8 +327,18 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 # whenever the corpus grows, which is the defect DB1 and DC0 spent two rounds
 # on. `1e-15` is a decade boundary above the measured worst.
 #
-# AND NOTHING ASSERTS THIS CONSTANT ANY MORE (DI0, R530). Claim A was dropped
-# as an F2 gate: a large minority of the corpus's distinct elements did not
+# IT ASSERTED NOTHING BETWEEN DI0 AND F3 STEP 2, AND IT ASSERTS AGAIN NOW
+# (R634). `floatfea/model/platform.py`'s `check_rigid_modes` refuses the
+# production build on this value -- the residual half of G2.1's refusal, whose
+# subject is every deck a reader could write rather than the sixteen members of
+# the shipped platform. The sentence below that said "it bounds nothing" was
+# written when that was true and was left standing by the commit seventy-three
+# lines of which added the refusal. What is NOT asserted on it any more is the
+# GATE: that took its own ceiling, `PLATFORM_RIGID_MODE_EXACTNESS`, in F3 step 3,
+# because two of three counters could not cross this one.
+#
+# The history below is kept because it is why the two ceilings are separate.
+# Claim A was dropped as an F2 gate: a large minority of the corpus's distinct elements did not
 # redden under at least one of the element-local form's three counters, and
 # DG2 was pre-registered for exactly that.
 #
@@ -342,12 +352,15 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 # is asserted per frame by the corpus test" -- named an assertion deleted in
 # the same commit that wrote it, which is the R514 shape a second time.
 #
-# The constant is kept because the diagnostic and the closure artifact both
-# read it as the scale the retired quantity was measured against. Its CLASS
-# line above still says ACCURACY and that is now wrong in spirit: it bounds
-# nothing. It is left rather than retired-with-a-marker because F3 asserts the
-# element-local check on every real platform member, and that gate needs a
-# ceiling of this shape -- which will be derived from THAT quantity's own
+# The constant is kept because `check_rigid_modes` refuses on it, and its CLASS
+# line above saying ACCURACY is right again: it bounds the residual half of the
+# builder's refusal, `51.1x` inside the clean worst over the admissible band. The
+# sentence here said "it bounds nothing", which was true from DI0 until F3 step 2
+# and is what R634 found still standing afterwards.
+#
+# F3's gate did NOT inherit it, which is the other half of the same story and was
+# written here before it happened: that gate needed a
+# ceiling of this shape -- which was derived from THAT quantity's own
 # measurements, not inherited from here.
 # Set: 2026-09-13, F2; quantity re-normalised and reason re-measured
 # 2026-09-25 (R475); assertion dropped 2026-09-26 (DI0, R530)

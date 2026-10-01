@@ -30,6 +30,7 @@ are sound, and the refusal says no other deck can produce one that is not.
 
 from __future__ import annotations
 
+import contextlib
 import sys
 from pathlib import Path
 
@@ -442,6 +443,75 @@ def test_EG0_the_CEILING_is_the_window_it_claims_to_be(capsys) -> None:
         f"{PLATFORM_RIGID_MODE_EXACTNESS:g} -- {PLATFORM_RIGID_MODE_EXACTNESS / clean:.2f}x. "
         "STOP and report; do not move the ceiling."
     )
+
+
+@contextlib.contextmanager
+def injected_members(kind: str, size: float):
+    """Replace `member_stiffnesses` with one that perturbs every member.
+
+    A module-level swap, because `tests/test_counters_are_injected.py`'s two cells
+    patch module attributes and a fixture is resolved by pytest.
+    """
+    clean = member_stiffnesses
+
+    def perturbed() -> list[tuple[str, np.ndarray, float]]:
+        return [(lab, _injected(k, kind, size), L) for lab, k, L in clean()]
+
+    globals()["member_stiffnesses"] = perturbed
+    try:
+        yield
+    finally:
+        globals()["member_stiffnesses"] = clean
+
+
+def _counter_reddens_the_gate(kind: str, capsys) -> None:
+    """Inject `kind` and require THE GATE FUNCTION to redden; then that it passes.
+
+    **IT CALLS THE GATE (R633).** The first version of this file measured the
+    response itself and compared it with the ceiling inline, so BX0's gate cell --
+    which replaces the gate with a no-op and requires the counter to fail --
+    passed on all three: the counter was asserting itself, which is R163 and R173.
+    Resolved at call time through the module global, so the no-op substitution
+    reaches it.
+    """
+    with (
+        injected_members(kind, PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT),
+        pytest.raises(AssertionError, match="rigid residual"),
+    ):
+        test_G2_1_every_MEMBER_annihilates_its_six_RIGID_motions(capsys)
+
+    # And undefected it passes, so the failure above is the injection.
+    test_G2_1_every_MEMBER_annihilates_its_six_RIGID_motions(capsys)
+
+
+def test_a_DROPPED_FLIP_reddens_the_gate(capsys) -> None:
+    """A sign dropped from the shear-moment coupling `k[1, 5]`."""
+    _counter_reddens_the_gate("dropped_flip", capsys)
+
+
+def test_a_WRONG_DOF_INDEX_reddens_the_gate(capsys) -> None:
+    """A coupling written to `k[0, 7]`, across nodes and across DOF kinds."""
+    _counter_reddens_the_gate("wrong_dof_index", capsys)
+
+
+def test_a_ROTATIONAL_BLOCK_reddens_the_gate(capsys) -> None:
+    """A torsional diagonal `k[3, 3]` inflated, which lifts a rigid rotation."""
+    _counter_reddens_the_gate("rotational_block", capsys)
+
+
+def counter_response(kind: str) -> float:
+    """The worst response at this commit, so the meta-test's widened ceiling is
+    measured rather than typed. A literal there would be stale the first time the
+    platform's sections or lengths moved."""
+    worst = 0.0
+    for _, k, length in member_stiffnesses():
+        worst = max(
+            worst,
+            element_rigid_residual(
+                _injected(k, kind, PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT), length
+            ),
+        )
+    return worst
 
 
 def test_G3_1b_the_DECK_the_model_reads_IS_the_one_G3_2_GATES() -> None:

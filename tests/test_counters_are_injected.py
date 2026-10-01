@@ -61,6 +61,9 @@ import test_corpus_configurations as CORPUS  # noqa: E402
 import test_exempt_pair_responses as GOLDEN  # noqa: E402
 import test_rigid_body_modes as RIGID  # noqa: E402
 
+sys.path.insert(0, str(ROOT / "tests" / "verification" / "rung3"))
+import test_platform_rigid_modes as PLATFORM  # noqa: E402
+
 # not-a-tolerance: how far past the counter's own declared injection the ceiling
 # cell widens. Nothing is accepted or rejected by comparison with it -- it is a
 # deliberate over-widening, and any factor above one exercises the cell. Ten is
@@ -177,6 +180,42 @@ REGISTERED = [
     # counter registered against a gate that does not assert cannot redden it,
     # and both cells here failed at the commit that retired it -- which is
     # this meta-test doing its job for the second round running.
+    # THE THREE ELEMENT-LOCAL COUNTERS, BACK UP IN F3 AS THIS FILE SAID THEY
+    # WOULD BE (R633, EG0(b)). The note above records that the residual pair left
+    # this registry under DI0 because claim A became a diagnostic, and that "in F3
+    # the element-local check becomes an assertion on every real platform member
+    # and its counters are registered here again, against that gate". This is that.
+    #
+    # They are registered against `PLATFORM_RIGID_MODE_EXACTNESS` and NOT against
+    # `RIGID_MODE_EXACTNESS`: at the older ceiling two of the three cannot cross
+    # at the declared injection -- `0.366x` and `0.0146x` of it -- which is R624.
+    #
+    # The widened ceiling is `counter_response(kind) * WIDEN`, measured at this
+    # commit, because the response is a property of the frame.
+    (
+        "element rigid residual -- dropped flip",
+        lambda: PLATFORM.test_a_DROPPED_FLIP_reddens_the_gate(_Capsys),
+        PLATFORM,
+        "test_G2_1_every_MEMBER_annihilates_its_six_RIGID_motions",
+        "PLATFORM_RIGID_MODE_EXACTNESS",
+        PLATFORM.counter_response("dropped_flip") * WIDEN,
+    ),
+    (
+        "element rigid residual -- wrong dof index",
+        lambda: PLATFORM.test_a_WRONG_DOF_INDEX_reddens_the_gate(_Capsys),
+        PLATFORM,
+        "test_G2_1_every_MEMBER_annihilates_its_six_RIGID_motions",
+        "PLATFORM_RIGID_MODE_EXACTNESS",
+        PLATFORM.counter_response("wrong_dof_index") * WIDEN,
+    ),
+    (
+        "element rigid residual -- rotational block",
+        lambda: PLATFORM.test_a_ROTATIONAL_BLOCK_reddens_the_gate(_Capsys),
+        PLATFORM,
+        "test_G2_1_every_MEMBER_annihilates_its_six_RIGID_motions",
+        "PLATFORM_RIGID_MODE_EXACTNESS",
+        PLATFORM.counter_response("rotational_block") * WIDEN,
+    ),
 ]
 
 
@@ -317,7 +356,11 @@ def test_there_is_something_to_check() -> None:
     # It goes back UP in F3, where the element-local check becomes an
     # assertion on every real platform member and its three counters are
     # registered against that gate.
-    assert len(REGISTERED) >= 4, (
+    # SEVEN SINCE F3 STEP 3 (R633): the three element-local counters are
+    # registered against `PLATFORM_RIGID_MODE_EXACTNESS`. The bound said `>= 4`
+    # while four shipped, so a fifth constant with a callable gate would have
+    # been invisible to it -- which is what R633 found.
+    assert len(REGISTERED) >= 7, (
         f"only {[r[0] for r in REGISTERED]} registered -- every counter with a "
         "callable gate belongs here, and an exemption is a hole in the guard "
         "written for exactly this"
