@@ -1,0 +1,97 @@
+# CORPUS: THE NEW GATE CEILING, ITS WINDOW, AND WHETHER THE THREE COUNTERS ARE
+# REGISTERED ANYWHERE THAT PROVES THEY ARE NOT SELF-ASSERTING.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Batch 31, written at
+# the EIGHTY-FOURTH verdict, round 1 on F3 step 3, against the judged commit
+# a647492: PLATFORM_RIGID_MODE_EXACTNESS and
+# PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT in floatfea/tolerances.py, the
+# three new cells in tests/verification/rung3/test_platform_rigid_modes.py, the
+# REGISTERED list in tests/test_counters_are_injected.py, the widened plan glob
+# in tests/test_plan_matches_tolerances.py, and the plant actions in
+# tests/test_report_guard_states.py.
+#
+# IN SCOPE UNDER DE2: the element, the gates, the platform model. Section E is
+# the report-guard harness, in scope because it is the only RED at this commit
+# that is not the step boundary. EG4e pauses batches AFTER this step, so this is
+# the last general batch; F4's load-mapping gate and EB6's label-provenance gate
+# continue.
+#
+# WHAT A PASSING SCAN MEANS. Every expect=caught row names something the tree
+# must reject or must notice -- a mutation the shipped gate must redden
+# (element_rigid_residual <= PLATFORM_RIGID_MODE_EXACTNESS on all sixteen
+# members, each of the three counters reddening 16/16 at
+# PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT, and the shipped ceiling lying
+# inside the window the members leave with at least 2x on the clean side), or a
+# claim in the source tree or an artifact that some check must notice is false.
+# A scan passes when every such row reads measured=CAUGHT. FOURTEEN ROWS PREDICT
+# caught AND ONE READS CAUGHT. The thirteen that do not are of two kinds and
+# NEITHER IS THE ELEMENT: eight are sentences in floatfea/, tests/ and docs/
+# that no check reads, and five are reach boundaries of the new ceiling and of
+# two guards that nothing in the tree measures because nothing was asked to.
+#
+# expect=blind is NOT a failure: it is a reach boundary measured rather than
+# assumed, recorded so that no later reader takes this ceiling for a property of
+# the formulation rather than of one section at one length.
+#
+# expect= is the prediction written before the run; measured= is what the shipped
+# functions, the shipped tests and the shipped guards did. EVERY FIGURE HERE WAS
+# TAKEN BY THE REVIEWER AT a647492, in a scratch harness under the session
+# scratch directory, importing the shipped functions and writing nothing into the
+# working tree. The working tree was clean before this file and the verdict, and
+# those are the only two paths written.
+
+# --------------------------------------------------------------------------
+# A. THE WINDOW AS A DECISION RULE. Invert it and solve, on both edges, rather
+#    than sampling the side the shipped figures already report.
+
+id=ceiling_window_clean_edge_SOLVED surface=gate case=solve_for_the_smallest_ceiling_the_shipped_assertions_still_accept_given_the_clean_worst_3.528257e-19_and_the_2x_clause expect=explain measured=7.056514e-19_so_the_shipped_1.154338e-18_sits_1.64x_above_the_lowest_green_value_and_the_2x_clause_is_the_binding_one_on_that_side_rather_than_the_strict_inequality
+id=ceiling_window_counter_edge_SOLVED surface=gate case=solve_for_the_largest_ceiling_the_shipped_assertions_still_accept_given_the_weakest_counter_response expect=explain measured=just_under_3.776640e-18_so_the_CONSTANT_CAN_BE_WIDENED_3.27x_WITH_EVERY_SHIPPED_ASSERTION_GREEN_and_the_total_green_interval_is_5.35x_wide_which_is_a_strongly_pinned_constant_and_is_the_right_reading_of_a_10.70x_window
+id=ceiling_roof_is_guarded_at_ONE_x_not_TWO surface=gate case=ask_which_assertion_binds_the_counter_side_and_at_what_factor_given_that_EG0c_puts_a_2x_clause_only_on_the_clean_side expect=caught measured=NOT_CAUGHT_the_16_of_16_count_binds_the_roof_and_it_binds_at_1x_while_the_floor_is_bound_at_2x_so_the_two_sides_of_a_symmetric_window_are_guarded_asymmetrically_and_a_3.27x_drift_of_the_rotational_block_response_reddens_with_no_margin_warning_first
+id=counter_defect_size_boundary_SOLVED surface=gate case=lower_the_injection_size_toward_the_binding_per_member_edge_3.088842e-15_and_find_where_16_of_16_stops_holding expect=explain measured=at_3.100e-15_still_16_of_16_and_at_3.050e-15_it_is_12_of_16_so_the_declared_1.0e-14_clears_a_SOLVED_boundary_by_3.24x_and_the_counter_size_is_a_measured_decision_rather_than_an_inherited_one
+
+# --------------------------------------------------------------------------
+# B. WHAT THE NEW CEILING BUYS, AND WHAT IT COSTS. The gain is the strongest
+#    thing in this step and the report does not state it in these terms.
+
+id=ceiling_detection_gain_over_the_retired_value surface=gate case=bisect_the_worst_over_sixteen_detection_edge_for_each_counter_against_1e-15_and_against_1.154338e-18_and_take_the_ratio expect=explain measured=dropped_flip_5.285599e-14_to_6.266629e-17_a_gain_of_843.5x_and_wrong_dof_index_1.094071e-15_to_1.262927e-18_866.3x_and_rotational_block_2.642868e-12_to_3.088842e-15_855.6x_so_the_gate_now_detects_defects_about_850x_SMALLER_and_that_is_the_substantive_result_of_EG0
+id=ceiling_is_a_property_of_ONE_WALL_THICKNESS surface=gate case=hold_the_sixteen_member_geometry_and_move_the_arm_wall_through_the_legal_range_150_to_250_mm_and_ask_where_the_clean_worst_lands_against_the_ceiling expect=caught measured=NOT_CAUGHT_the_clean_worst_scatters_from_0.08x_of_the_ceiling_at_180_mm_to_0.87x_at_170_mm_and_0.78x_at_185_mm_so_TWO_of_TEN_legal_thicknesses_land_INSIDE_EG0c_s_2x_STOP_BAND_and_F1_s_own_order_check_brackets_exactly_that_range_with_t_about_175_mm_closing_it_and_180_mm_the_buildable_number
+id=ceiling_trips_the_2x_clause_on_a_DIFFERENT_STEEL_GRADE surface=gate case=E_changed_from_210_GPa_to_200_GPa_with_the_section_and_the_lengths_held expect=caught measured=NOT_CAUGHT_clean_worst_7.786002e-19_is_0.67x_the_ceiling_so_only_1.48x_inside_and_the_shipped_clause_asserts_at_least_2x_so_a_grade_change_puts_the_gate_in_its_own_STOP_condition_while_the_directive_says_do_not_move_the_ceiling_and_the_tolerance_entry_says_re_derive_it_which_are_two_instructions_that_disagree
+id=ceiling_SURVIVES_the_millimetre_unit_system surface=gate case=the_identical_physical_platform_with_D_o_2500_mm_and_t_180_mm_and_L_50000_and_25000_mm_and_E_in_N_per_mm2_which_is_NOT_a_defect expect=blind measured=ACCEPTED_correctly_clean_worst_3.797983e-19_is_0.33x_the_ceiling_and_the_weakest_counter_3.786201e-18_is_3.28x_so_the_ceiling_is_still_inside_the_window_and_unlike_the_RIGID_MODE_BOUND_band_figure_this_one_does_not_move_a_decade_under_a_thousand_fold_change_of_length_unit
+id=ceiling_blind_to_the_WHOLE_MATRIX_NEGATED surface=element case=negate_k_local_entirely_and_read_the_residual_against_the_NEW_tighter_ceiling expect=blind measured=NOT_CAUGHT_BY_THIS_CLAUSE_8.7211e-20_clean_and_8.7211e-20_negated_against_1.154338e-18_so_tightening_the_residual_ceiling_by_866x_buys_nothing_against_a_sign_error_and_the_signed_clause_R625_added_is_still_the_only_thing_that_sees_it_which_is_worth_recording_beside_a_ceiling_change_advertised_as_a_sensitivity_gain
+id=band_clean_worst_BEATEN_A_THIRD_TIME surface=record case=sweep_the_clean_element_rigid_residual_over_40000_admissible_D_o_and_t_over_D_o_and_L_points_and_compare_with_the_5.287607e-18_the_closure_artifact_publishes_for_the_refusal_s_subject expect=caught measured=NOT_CAUGHT_1.872454e-17_at_D_o_1.1791_and_t_over_D_o_0.011654_and_L_2.4762_which_is_3.54x_worse_than_the_published_figure_and_agrees_with_the_1.956747e-17_of_verdict_83_so_the_published_one_grid_worst_has_now_been_beaten_twice
+id=band_window_is_EMPTY_independently_confirmed surface=gate case=over_the_same_40000_points_compare_the_worst_clean_reading_with_the_weakest_counter_response_at_the_declared_1e-14_injection expect=explain measured=EMPTY_CONFIRMED_clean_worst_1.872454e-17_is_ABOVE_the_weakest_counter_1.569787e-19_by_119.3x_so_the_two_subjects_two_ceilings_decision_is_sound_on_an_independent_grid_and_the_report_s_1.571633e-19_agrees_with_mine_to_three_figures
+
+# --------------------------------------------------------------------------
+# C. THE REGISTRATION. The constant's own entry names a file; the file does not
+#    name the constant. This is the section that matters.
+
+id=counters_NOT_in_the_injection_guard surface=record case=grep_PLATFORM_RIGID_MODE_EXACTNESS_across_the_tree_and_look_for_a_row_in_the_REGISTERED_list_of_tests_test_counters_are_injected_py expect=caught measured=NOT_CAUGHT_there_is_no_row_and_the_file_is_untouched_by_this_step_and_REGISTERED_still_holds_FOUR_entries_while_floatfea_tolerances_py_line_354_opens_the_new_entry_with_hosts_the_three_element_local_counters_registered_in_tests_test_counters_are_injected_py_which_is_false_at_this_commit
+id=the_registry_completeness_guard_CANNOT_SEE_IT surface=gate case=ask_whether_test_there_is_something_to_check_would_notice_a_counter_defect_constant_with_no_row expect=caught measured=NOT_CAUGHT_it_asserts_only_that_len_REGISTERED_is_at_least_4_and_there_are_exactly_4_so_the_one_meta_test_whose_docstring_says_a_constant_with_no_counter_registered_here_is_not_covered_at_all_is_itself_unable_to_count_the_constants_it_is_protecting
+id=the_new_counter_FAILS_the_gate_cell_if_registered surface=gate case=build_the_REGISTERED_row_by_hand_and_run_both_BX0_cells_against_test_EG0_the_THREE_COUNTERS_redden_every_member expect=explain measured=THE_CEILING_CELL_PASSES_for_all_three_kinds_True_True_True_and_THE_GATE_CELL_FAILS_for_all_three_False_False_False_because_the_counter_reimplements_r_greater_than_PLATFORM_RIGID_MODE_EXACTNESS_inline_rather_than_calling_test_G2_1_every_MEMBER_annihilates_its_six_RIGID_motions_so_neutering_the_gate_leaves_it_passing_and_registration_is_a_code_change_rather_than_a_one_line_table_addition
+id=the_injected_SHAPES_are_a_copy_with_no_tie surface=record case=compare_the_injected_helper_at_tests_verification_rung3_test_platform_rigid_modes_py_line_326_with_scripts_rigid_counter_response_py_lines_82_to_92_and_ask_what_would_notice_a_drift expect=caught measured=NOT_CAUGHT_the_two_bodies_are_equivalent_today_1_5_minus_and_0_7_plus_and_3_3_plus_and_the_test_docstring_says_at_the_script_s_sites_but_nothing_imports_the_script_and_nothing_compares_them_so_the_only_statement_that_the_gate_and_the_published_sweep_inject_the_same_defect_is_a_sentence
+
+# --------------------------------------------------------------------------
+# D. THE PLAN GUARD, widened from one file to a glob, and what the glob reaches.
+
+id=plan_glob_reaches_an_UNLOCKED_skeleton surface=gate case=enumerate_the_files_the_sorted_docs_milestones_glob_actually_returns_and_ask_which_of_them_are_locked_plans expect=caught measured=NOT_CAUGHT_it_returns_F1_md_and_F2_md_and_F2_figures_md_and_F2a_md_and_F3_md_and_two_of_those_five_are_not_locked_plans_because_F2a_md_opens_SKELETON_PLAN_Not_locked_Nothing_here_is_built_and_F2_figures_md_opens_GENERATED_do_not_edit_so_a_tolerance_value_written_into_either_would_satisfy_test_every_declared_tolerance_appears_in_the_plan
+id=plan_glob_hole_is_LATENT_not_LIVE surface=gate case=count_which_file_each_of_the_59_matched_rows_comes_from_at_this_commit expect=explain measured=F2_md_56_rows_and_F3_md_3_rows_and_ZERO_from_F1_md_or_F2a_md_or_F2_figures_md_so_the_widened_domain_is_empty_today_and_the_guard_still_binds_every_one_of_the_51_declared_tolerances_to_a_locked_plan_which_is_why_this_is_a_hole_rather_than_a_breach
+id=plan_guard_still_CARRIES_ITS_OWN_FAILURE surface=gate case=ask_whether_the_widened_guard_can_still_redden_when_a_shipped_value_and_its_plan_row_disagree expect=explain measured=YES_test_the_plan_and_the_code_agree_compares_the_float_literal_with_getattr_tolerances_name_per_matched_row_and_now_names_the_plan_file_in_its_message_so_a_drift_between_F3_md_s_table_and_the_shipped_1.154338e-18_reddens_with_the_file_named_which_is_the_half_of_C40_that_was_worth_closing
+
+# --------------------------------------------------------------------------
+# E. THE REPORT-GUARD HARNESS. One red at this commit is not the step boundary,
+#    and it is the same site verdict 83 named.
+
+id=pointer_state_CRASHES_on_a_FIRST_REVISION_report surface=gate case=run_the_planted_state_guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF_at_this_commit_where_the_newest_report_has_no_Revision_heading expect=caught measured=CAUGHT_AS_A_HARD_ERROR_ValueError_substring_not_found_at_tests_test_report_guard_states_py_545_because_the_plant_action_calls_text_rindex_on_the_literal_hash_Revision_and_docs_reports_F3_step_3_md_contains_ZERO_such_headings_while_step_2_md_contains_ONE_so_the_state_cannot_be_BUILT_let_alone_measured_and_this_will_recur_at_every_first_revision_report
+id=pointer_state_crash_is_NOT_the_step_boundary_cascade surface=gate case=separate_the_nine_FAILED_ids_at_this_commit_by_CAUSE_rather_than_by_family expect=explain measured=EIGHT_are_state_1_because_test_the_guard_reads_the_step_being_worked_on_fails_with_step_3_has_a_report_and_no_verdict_yet_and_seven_planted_states_fail_with_assert_1_equals_0_off_that_baseline_and_THE_NINTH_fails_inside_the_plant_action_with_a_ValueError_independent_of_whether_any_verdict_exists_so_EG3i_s_trace_does_not_cover_it_on_the_clause_s_first_use
+id=R629_was_closed_on_the_DATA_HALF_only surface=record case=read_0d911ce_and_compare_what_it_changed_with_the_two_alternatives_verdict_83_s_closing_condition_offered expect=caught measured=NOT_CAUGHT_it_changed_docs_reports_F3_step_2_answers_json_and_step_2_md_and_touched_neither_the_pointer_resolution_in_tests_test_report_carried_py_nor_deleted_the_state_so_the_vacuity_was_removed_from_ONE_REPORT_rather_than_from_the_guard_and_step_3_s_own_answers_file_puts_FOURTEEN_of_TWENTY_TWO_rows_back_at_section_9_which_is_a_bulleted_list_naming_every_item
+
+# --------------------------------------------------------------------------
+# F. SENTENCES IN THE TREE AND IN THE ARTIFACTS THAT ONE COMMAND REFUTES.
+#    CW0's class, and this step put the contradiction into one file.
+
+id=tolerances_entry_says_NOTHING_ASSERTS_a_live_refusal surface=record case=read_floatfea_tolerances_py_line_330_and_lines_345_to_348_then_grep_RIGID_MODE_EXACTNESS_in_floatfea expect=caught measured=NOT_CAUGHT_the_entry_says_AND_NOTHING_ASSERTS_THIS_CONSTANT_ANY_MORE_and_that_it_bounds_nothing_while_floatfea_model_platform_py_319_raises_ValueError_on_residual_greater_than_RIGID_MODE_EXACTNESS_in_the_production_builder_and_THIS_STEP_S_OWN_COMMIT_wrote_check_rigid_modes_keeps_RIGID_MODE_EXACTNESS_seventy_three_lines_below_it_in_the_same_file
+id=closure_artifact_FIVE_DECADES surface=record case=divide_1e-15_by_1.154338e-18_and_compare_with_the_claim_in_docs_closure_F3_md_line_154_and_in_docs_reports_F3_step_3_md_section_11 expect=caught measured=NOT_CAUGHT_the_ratio_is_866.3x_which_is_2.94_decades_and_both_places_say_five_decades_tighter_while_the_DIRECTION_of_the_claim_is_correct_and_independently_verified_so_what_is_wrong_is_only_the_magnitude_and_nothing_in_the_tree_reads_the_word_five
+id=closure_artifact_REFUSAL_COLUMN_PAIRS_TWO_SWEEPS surface=record case=read_the_refusal_column_of_docs_closure_F3_md_section_3_and_divide_1e-15_by_the_clean_worst_it_states expect=caught measured=NOT_CAUGHT_it_states_5.287607e-18_and_51.1x_inside_in_the_same_cell_and_1e-15_over_5.287607e-18_is_189x_while_51.1x_belongs_to_the_1.956747e-17_of_verdict_83_s_own_sweep_so_the_cell_pairs_a_figure_from_one_grid_with_a_margin_from_another
+id=report_says_the_SIX_CASES_HAVE_NEVER_BEEN_RUN surface=record case=list_the_directory_the_hand_back_and_the_step_report_both_say_does_not_exist expect=caught measured=NOT_CAUGHT_the_floatfea_design_waves_directory_EXISTS_under_studies_platform_12buoy_and_holds_SIX_csv_files_for_T10s_and_T12.5s_and_T14s_and_T15s_and_T16.2s_and_T20s_at_full_H24.2m_head0_dated_27_September_which_is_what_the_locked_plan_s_own_DV2_records_as_run_and_settled_and_exported_in_1481.7_s
+id=the_EG4_blocker_is_TRUE_on_its_OTHER_ground surface=explain case=count_the_columns_of_one_of_those_six_files_and_grep_the_header_for_lam_or_reaction_or_constraint_or_multiplier_or_force_or_moment expect=explain measured=21_COLUMNS_t_s_and_platform_heave_m_and_platform_heave_acc_mps2_and_surge_sway_heave_plus_acceleration_for_buoy1_clusterA_and_buoy4_clusterB_and_buoy7_clusterC_and_ZERO_matches_for_any_reaction_like_name_so_the_preview_genuinely_cannot_read_gimbal_reactions_from_the_export_and_the_BLOCKED_conclusion_STANDS_on_a_ground_that_holds_while_the_other_ground_it_was_given_does_not
