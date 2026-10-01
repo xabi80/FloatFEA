@@ -168,7 +168,7 @@ def test_G3_1b_the_DECK_the_model_reads_IS_the_one_G3_2_GATES() -> None:
 
     **AND THIS DOES NOT RE-HASH THE DECK.** A first version did, and it was two
     defects in one: it duplicated
-    `test_platform_deck_export.py::test_the_committed_deck_matches_its_digest`,
+    `test_platform_deck_export.py::test_G3_2_the_committed_deck_matches_its_CONTENT_digest`,
     which already asserts `content_sha(raw) == golden["content_sha256"]`, and it
     hashed the RAW BYTES where that test hashes canonical JSON -- so it failed on
     a correct tree, because the committed file is CRLF on this platform and the
@@ -184,7 +184,7 @@ def test_G3_1b_the_DECK_the_model_reads_IS_the_one_G3_2_GATES() -> None:
     from . import test_platform_deck_export as export_gate
 
     # expected: `DECK_YAML` in tests/verification/rung3/test_platform_deck_export.py,
-    # which is the path `test_the_committed_deck_matches_its_digest` hashes against
+    # which is the path `test_G3_2_the_committed_deck_matches_its_CONTENT_digest` hashes against
     # the golden, and which `scripts/export_platform_deck.py` writes as `OUT`. Not
     # read from the model's own constant.
     assert MODELS_DECK.resolve() == export_gate.DECK_YAML.resolve(), (
