@@ -1,0 +1,100 @@
+# CORPUS: THE SIGNED PSD HALF OF THE ELEMENT-LOCAL G2.1 REFUSAL -- ITS REACH,
+# ITS BLIND BAND, AND WHAT THE THREE-PART REFUSAL STILL CANNOT SEE.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Batch 29, written at
+# the EIGHTY-SECOND verdict, the SECOND round on F3 step 2, against the judged
+# commit c4d4817: element_lambda_min_over_epsilon in floatfea/element/rigid.py,
+# the third clause of check_rigid_modes in floatfea/model/platform.py, and the
+# five cells added to tests/verification/rung3/test_platform_rigid_modes.py.
+#
+# IN SCOPE UNDER DE2: the element, the gates, and the platform model. Not
+# apparatus, so nothing here is transcribed to docs/milestones/F2a.md.
+#
+# WHAT A PASSING SCAN MEANS. Every expect=caught row names a defect the shipped
+# TRIPLE must reject -- element_rigid_residual(k_local, L) <= RIGID_MODE_EXACTNESS,
+# seventh_over_epsilon(k_local, L) >= RIGID_MODE_BOUND, and
+# element_lambda_min_over_epsilon(k_local, L) >= -RIGID_MODE_BOUND, asserted by
+# the rung-3 gate and refused by check_rigid_modes. A scan passes when every such
+# row reads measured=CAUGHT. At this commit EVERY MUTATION ROW IN SECTION A IS
+# CAUGHT, which is the first batch in this milestone where the mutation rows go
+# that way. The expect=caught rows that are NOT caught are three unreachable
+# shapes in section E, two record rows in section D and one gate gap in section
+# F; reachability is MEASURED in E rather than assumed.
+#
+# expect= is the prediction written before the run; measured= is what the shipped
+# triple did. EVERY FIGURE HERE WAS TAKEN BY THE REVIEWER AT c4d4817, in a
+# scratch harness under the session scratch directory, importing the shipped
+# functions and mutating nothing in the working tree. The tree was clean before
+# and after; the only paths written are this file and the verdict.
+
+# --------------------------------------------------------------------------
+# A. THE SIGN CLASS THE SHIPPED HALF NOW READS. Three of these are the shapes
+#    batch 28 found accepted; four are NOT in the set the committed test
+#    carries, so this batch is not a transcription of what the fix was written
+#    against.
+
+id=psd_torsion_subblock_negated surface=element case=rows_and_cols_3_and_9_of_the_torsional_2x2_all_negated_on_platform_hub1_arm_L_50_m expect=caught measured=CAUGHT_lambda_min_over_eps_minus_9.3791e+11_against_the_floor_minus_199.526_builder_REFUSED_while_the_residual_stays_8.7211e-20_and_seventh_over_eps_stays_9.379115e+11
+id=psd_axial_subblock_negated surface=element case=entries_0_0_and_0_6_and_6_0_and_6_6_all_negated_so_the_member_has_NEGATIVE_axial_stiffness expect=caught measured=CAUGHT_lambda_min_over_eps_minus_4.5035e+15_builder_REFUSED_the_other_two_halves_unchanged
+id=psd_whole_matrix_negated surface=element case=local_stiffness_returns_minus_k_the_sign_convention_inversion_CLAUDE_md_non_negotiables_name expect=caught measured=CAUGHT_lambda_min_over_eps_minus_4.5035e+15_builder_REFUSED_and_nine_of_the_twelve_homogenised_eigenvalues_are_negative
+id=psd_bending_z_subblock_negated surface=element case=the_1_5_7_11_bending_block_negated_a_shape_the_committed_test_does_NOT_carry expect=caught measured=CAUGHT_lambda_min_over_eps_minus_1.8003e+13_builder_REFUSED_residual_8.7211e-20_and_seventh_over_eps_9.379115e+11_both_blind
+id=psd_bending_y_subblock_negated surface=element case=the_2_4_8_10_bending_block_negated_the_plane_whose_sign_pattern_planar_cases_cannot_see_V2_4 expect=caught measured=CAUGHT_lambda_min_over_eps_minus_1.8003e+13_builder_REFUSED
+id=psd_negative_E_material surface=element case=Material_E_minus_2.1e11_which_Material_does_NOT_refuse_at_construction_passed_to_local_stiffness_for_a_real_member expect=caught measured=CAUGHT_lambda_min_over_eps_minus_4.5035e+15_REFUSED_and_BEFORE_c4d4817_this_input_passed_BOTH_halves_residual_8.7211e-20_and_seventh_over_eps_9.3791e+11_so_the_new_half_closes_a_CONSTRUCTIBLE_input_class_and_not_only_a_hand_negated_matrix
+id=psd_reaches_the_PRODUCTION_path surface=builder case=replace_floatfea_model_platform_local_stiffness_with_a_negating_wrapper_and_call_build_superstructure expect=caught measured=CAUGHT_build_superstructure_RAISES_ValueError_naming_platform_hub1_arm_for_both_the_whole_negation_and_the_torsion_negation_and_BUILDS_again_when_restored_so_the_refusal_is_on_the_path_the_model_is_built_on_and_not_only_in_a_test
+
+# --------------------------------------------------------------------------
+# B. THE DETECTION BOUNDARY, SOLVED RATHER THAN SAMPLED. Every committed
+#    refusal input sits decades past its threshold, so the committed evidence
+#    does not say how SMALL a sign error this half reads. Bisected here.
+
+id=psd_boundary_torsion_negative surface=element case=torsional_2x2_replaced_by_minus_a_times_itself_bisect_for_the_a_at_which_lambda_min_over_eps_crosses_minus_199.526_worst_over_the_sixteen_members expect=explain measured=2.127350e-10_of_the_blocks_own_magnitude_at_the_worst_member_and_5.319381e-11_at_the_best_so_a_torsional_stiffness_that_is_NEGATIVE_at_two_ten_billionths_of_its_own_size_is_already_refused
+id=psd_boundary_axial_negative surface=element case=the_same_bisection_on_the_axial_2x2 expect=explain measured=9.599513e-16_worst_and_2.511145e-16_best_which_is_a_few_ulp_so_on_the_axial_site_the_half_is_sensitive_to_the_last_bits
+id=psd_boundary_coincides_with_the_seventh_half_on_TORSION_ONLY surface=element case=compare_the_torsion_edge_above_with_the_seventh_mode_halfs_own_bisected_edge_2.127342e-10_from_batch_28 expect=explain measured=THE_SAME_NUMBER_to_six_figures_because_for_a_negated_torsion_block_the_seventh_eigenvalue_IS_the_minimum_one_so_on_the_torsion_site_the_signed_half_adds_NO_reach_the_reach_it_adds_is_on_the_AXIAL_and_the_two_BENDING_sites_where_seventh_over_eps_never_moves_from_9.3791e+11
+id=psd_committed_inputs_are_sampled_not_solved surface=gate case=how_far_past_its_threshold_does_each_committed_refusal_input_sit expect=explain measured=the_three_negation_cells_sit_4.70e+09x_or_more_past_the_floor_and_the_lifted_rigid_mode_cell_3.78e+03x_past_the_ceiling_and_the_acceptance_cell_2.79e+03x_inside_so_NO_committed_cell_is_just_inside_or_just_outside_anything
+
+# --------------------------------------------------------------------------
+# C. THE CLEAN SIDE. A refusal that can fire on a legitimate deck is worse
+#    than one that cannot fire at all, so the question asked first was whether
+#    any CLEAN admissible member reads below the floor.
+
+id=psd_clean_worst_over_the_sixteen surface=element case=lambda_min_over_eps_over_the_sixteen_members_of_the_shipped_deck expect=explain measured=minus_7.1459e-02_on_hub1_buoy3_arm_to_minus_2.1425e-03_margin_2.792e+03x_to_the_floor_which_is_the_figure_the_new_gate_cell_prints_and_the_figure_the_rigid_py_docstring_publishes
+id=psd_clean_worst_over_the_ADMISSIBLE_BAND surface=element case=D_o_0.05_to_20_m_and_t_over_D_o_0.0005_to_0.49_with_L_constrained_to_L_over_D_at_least_2_and_L_over_r_at_most_300_on_S355_20400_points expect=explain measured=WORST_minus_1.170315e+00_at_D_o_4.4_t_0.88_L_58.19_L_over_r_45.4_margin_170x_and_ZERO_of_the_20400_clean_points_would_be_refused
+id=psd_clean_worst_refined surface=element case=refine_the_grid_around_that_corner_D_o_0.5_to_20_and_t_over_D_o_0.05_to_0.49_forty_lengths_each expect=explain measured=minus_1.202245e+00_at_D_o_4.0_t_0.2607_L_266.34_L_over_r_201_margin_166x_so_the_margin_over_the_SUBJECT_THE_REFUSAL_CLAIMS_is_166x_and_not_the_2.79e+03x_the_sixteen_give_a_factor_of_17_between_the_published_figure_and_the_asserted_one
+id=psd_clean_does_not_degrade_with_slenderness surface=element case=hold_the_section_and_sweep_L_over_r_from_1_to_1e7_seven_decades_past_the_admissible_edge expect=explain measured=the_reading_stays_between_minus_6.1292e-01_and_minus_5.6999e-07_with_no_trend_so_the_S_homogenisation_removes_the_length_scaling_and_no_amount_of_slenderness_produces_a_false_refusal
+id=psd_clean_does_not_degrade_below_the_L_over_D_refusal surface=element case=sweep_L_over_D_from_2_down_to_1e-4_which_the_OTHER_refusal_rejects_anyway expect=explain measured=the_reading_stays_within_minus_7.3380e-01_so_even_a_member_check_limits_rejects_cannot_false_trigger_this_one
+
+# --------------------------------------------------------------------------
+# D. IS THE CONSTANT DOING ANY WORK? The question the hand-back asked -- is
+#    minus_RIGID_MODE_BOUND a second decision wearing one name -- is a
+#    sensitivity question and it is measurable.
+
+id=psd_floor_value_is_insensitive_over_twelve_decades surface=tolerance case=for_which_floors_F_does_every_clean_point_pass_and_every_sign_shape_above_fail expect=explain measured=ANY_F_in_1.2023_to_9.3791e+11_gives_the_IDENTICAL_outcome_on_all_20400_clean_points_and_all_five_sign_shapes_which_is_11.9_decades_the_shipped_199.526_sits_166x_above_the_clean_worst_and_4.701e+09x_below_the_weakest_defect_so_the_VALUE_is_not_load_bearing_here_and_what_is_missing_is_the_READING_not_the_number
+id=psd_third_reading_is_not_in_the_constants_entry surface=tolerance case=does_floatfea_tolerances_py_record_that_RIGID_MODE_BOUND_is_now_read_as_a_SIGNED_FLOOR_on_lambda_min expect=caught measured=NOT_CAUGHT_the_entry_at_lines_390_to_405_says_THIS_CONSTANT_IS_READ_IN_TWO_DIRECTIONS_and_names_R540_as_the_finding_for_a_reading_that_was_not_written_down_while_a_THIRD_reading_ships_at_platform_py_344_and_at_the_new_gate_cell_and_the_entry_still_says_two
+id=psd_no_guard_can_see_a_new_reading surface=tree case=would_any_committed_guard_notice_a_constant_acquiring_a_new_reading expect=uncaught measured=CONFIRMED_NONE_test_plan_matches_tolerances_py_checks_NAMES_and_VALUES_in_both_directions_and_nothing_reads_how_many_assertions_a_constant_has_or_in_which_quantity_so_the_only_mechanism_for_the_R540_shape_is_the_entry_and_the_reading_of_it
+id=psd_counter_in_the_right_quantity_is_not_registered surface=tolerance case=is_there_a_registered_counter_for_the_signed_reading expect=caught measured=NOT_CAUGHT_tests_test_counters_are_injected_py_registers_rigid_body_seventh_under_the_bound_against_the_rung_ONE_assembled_gate_and_the_only_counter_evidence_for_the_signed_half_is_a_100_percent_negation_which_is_one_arbitrary_perturbation_and_not_a_detection_threshold_the_threshold_is_section_B_above
+
+# --------------------------------------------------------------------------
+# E. WHAT THE TRIPLE STILL CANNOT SEE. Three of these are NaN or underflow
+#    shapes; their REACHABILITY is measured rather than argued, and that is
+#    what keeps them off the blocking list.
+
+id=psd_misses_a_doubled_bending_block surface=element case=the_1_5_7_11_block_multiplied_by_2_a_wrong_stiffness_that_is_still_PSD_and_still_annihilates_every_rigid_motion expect=uncaught measured=ACCEPTED_residual_1.744e-19_seventh_over_eps_9.3789e+11_lambda_min_over_eps_minus_1.1819e-03_so_a_magnitude_defect_in_local_stiffness_is_outside_what_all_three_halves_assert_and_the_sentence_that_no_other_deck_can_produce_an_unsound_member_is_about_rigid_modes_and_sign_only
+id=psd_misses_a_uniform_rescaling surface=element case=the_whole_matrix_times_1e-30 expect=uncaught measured=ACCEPTED_and_CORRECTLY_residual_3.934e-19_lambda_min_over_eps_minus_4.3742e-01_because_the_homogenised_quantity_is_scale_invariant_by_construction_this_row_is_the_control_that_says_the_other_rows_are_not_measuring_scale
+id=psd_misses_a_NaN_ENTRY_and_the_residual_reads_EXACTLY_ZERO surface=element case=a_single_NaN_written_into_k_local_0_0_with_the_section_and_the_length_both_finite expect=caught measured=NOT_CAUGHT_all_three_halves_accept_element_rigid_residual_returns_EXACTLY_0.000000e+00_because_max_of_0.0_and_nan_is_0.0_in_Python_and_both_ratios_are_nan_and_every_comparison_against_nan_is_False_so_a_non_finite_matrix_produces_the_most_passing_value_available
+id=psd_NaN_is_NOT_REACHABLE_from_the_shipped_path surface=builder case=can_a_NaN_reach_k_local_through_Section_or_through_length_or_through_the_deck expect=explain measured=NO_ON_ALL_THREE_Section_A_nan_is_refused_by_the_J_equals_I_y_plus_I_z_check_and_circular_tube_nan_by_the_I_y_not_equal_I_z_check_because_nan_fails_every_equality_a_NaN_LENGTH_raises_LinAlgError_which_is_a_SUBCLASS_of_ValueError_so_it_is_refused_though_by_a_crash_rather_than_by_a_message_and_the_shipped_deck_YAML_carries_no_nan_or_inf_token_so_the_row_above_is_a_latent_shape_and_not_a_live_defect
+id=psd_the_ZERO_matrix_raises_ZeroDivisionError surface=element case=the_12x12_zero_matrix_and_k_times_1e-300_where_the_homogenised_norm_underflows expect=explain measured=element_lambda_min_over_epsilon_raises_ZeroDivisionError_rather_than_refusing_and_seventh_over_epsilon_returns_nan_and_inf_respectively_so_a_nonzero_norm_k_hat_times_eps_is_assumed_in_all_three_halves_UNREACHABLE_for_the_same_reason_as_the_row_above
+id=psd_check_limits_ACCEPTS_a_NaN_length surface=builder case=check_limits_with_length_nan_on_a_real_section expect=caught measured=NOT_CAUGHT_ACCEPTED_because_nan_below_2.0_is_False_and_nan_above_300_is_False_so_the_two_refusals_in_the_same_module_DISAGREE_about_a_NaN_length_one_accepts_it_and_the_other_crashes_on_it_unreachable_from_the_shipped_deck_as_measured_above
+id=psd_misses_an_asymmetric_k_as_a_class surface=element case=flip_the_sign_of_k_1_5_WITHOUT_flipping_k_5_1_so_the_matrix_is_no_longer_symmetric expect=caught measured=CAUGHT_BUT_NOT_BY_SYMMETRY_the_residual_half_reads_1.011e-03_and_refuses_while_eigvalsh_reads_only_the_lower_triangle_and_the_signed_half_symmetrises_first_so_NO_half_tests_symmetry_itself_and_a_one_sided_flip_is_caught_only_because_it_also_lifts_a_rigid_mode
+
+# --------------------------------------------------------------------------
+# F. DOES THE NEW CELL CARRY ITS OWN FAILURE?
+
+id=psd_negative_control_on_the_new_assertion surface=gate case=reimplement_check_rigid_modes_with_the_THIRD_clause_deleted_and_run_the_three_committed_negation_shapes_through_it expect=explain measured=NO_RAISE_on_any_of_the_three_so_all_three_pytest_raises_INDEFINITE_cells_would_FAIL_and_the_new_assertion_is_load_bearing_rather_than_passing_beside_a_refusal_that_was_already_there
+id=psd_the_SEVENTH_half_still_has_no_failure_cell surface=gate case=does_any_committed_test_make_the_rung_3_refusal_seventh_mode_clause_raise expect=caught measured=NOT_CAUGHT_the_file_carries_exactly_two_pytest_raises_matching_INDEFINITE_and_rigid_residual_and_the_only_shape_ever_published_for_the_seventh_clause_is_the_report_section_3_row_that_batch_28_refuted_so_one_of_the_three_halves_of_the_refusal_has_no_committed_demonstration_that_it_can_fail
+id=psd_the_acceptance_cell_cannot_be_empty surface=gate case=could_test_the_REFUSAL_accepts_every_real_member_pass_on_zero_members expect=explain measured=YES_IN_ISOLATION_it_loops_with_no_count_assertion_but_test_there_are_SIXTEEN_members_to_check_in_the_SAME_module_asserts_len_rows_equals_MEMBERS_16_and_sixteen_distinct_labels_so_the_empty_parse_is_caught_by_a_sibling_in_the_same_file_rather_than_by_the_cell_itself
+
+# --------------------------------------------------------------------------
+# G. QUESTIONS, closed by an answer and not by a test.
+
+id=q_which_subject_does_the_published_clean_RANGE_describe surface=plan case=the_rigid_py_docstring_publishes_minus_2.1425e-03_to_minus_7.1e-02_over_the_SIXTEEN_while_the_clause_it_justifies_is_a_refusal_over_EVERY_deck expect=explain measured=OPEN_the_band_figure_is_minus_1.202245e+00_a_166x_margin_rather_than_2.79e+03x_and_the_two_differ_by_17x_which_is_the_difference_between_the_subject_of_a_gate_and_the_subject_of_a_refusal_the_same_split_R624_is_held_on
+id=q_is_a_negative_E_material_supposed_to_reach_an_element_at_all surface=builder case=Material_accepts_E_minus_2.1e11_without_complaint_and_Material_with_E_zero_raises_ZeroDivisionError_from_the_shear_modulus_rather_than_a_validation_error expect=explain measured=OPEN_the_element_level_refusal_now_catches_both_which_is_a_second_line_of_defence_and_not_a_first_one_recorded_here_because_the_class_is_material_validation_and_not_G2_1
