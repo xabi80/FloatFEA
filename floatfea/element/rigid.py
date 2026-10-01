@@ -100,8 +100,16 @@ def seventh_over_epsilon(k_local: NDArray[np.float64], length: float) -> float:
 
     THE ABSOLUTE VALUE IS IN THE NAME BECAUSE IT IS IN THE BODY. The spectrum is
     sorted by magnitude, so a negative seventh is reported by its size and its
-    sign is lost here; what that costs, and why the residual half is the thing
-    that catches a structural sign flip, is in rung 1's copy.
+    sign is lost here.
+
+    **AND NOTHING ELSE CAUGHT THAT, WHICH IS R625.** A sentence here used to say
+    the residual half catches a structural sign flip. It does not: negating a
+    symmetric sub-block leaves every rigid motion annihilated, so on
+    `platform:hub1_arm` the residual stays `8.7211e-20` and this ratio stays
+    `9.3791e+11` with the torsion block negated, with the axial block negated,
+    and with THE WHOLE MATRIX negated -- seven negative eigenvalues, accepted by
+    both halves. `element_lambda_min_over_epsilon` below is the half that reads
+    the sign.
 
     Homogenised with `S` rather than by `max|k|`, which is the whole difference
     between the element-local form and the assembled one: with the rotational
@@ -113,3 +121,31 @@ def seventh_over_epsilon(k_local: NDArray[np.float64], length: float) -> float:
     w = np.sort(np.abs(np.linalg.eigvalsh(khat)))
     unit = float(np.linalg.norm(khat)) * float(np.finfo(np.float64).eps)
     return float(w[RIGID] / unit)
+
+
+def element_lambda_min_over_epsilon(k_local: NDArray[np.float64], length: float) -> float:
+    """`lambda_min(k_hat) / (||k_hat|| * eps)` -- SIGNED, which is the whole point.
+
+    A correct element stiffness is positive semi-definite: it stores energy, it
+    does not release it. Neither `element_rigid_residual` nor
+    `seventh_over_epsilon` can see a violation, because both are blind to sign --
+    the first by construction, since a negated symmetric sub-block still
+    annihilates every rigid motion, and the second because it sorts `|lambda|`.
+
+    So this is reported signed and compared against `-RIGID_MODE_BOUND`: at
+    round-off a defect-free element reads a small negative number, and anything
+    structural is decades below it. Measured over the real platform's members the
+    clean reading is `-2.1425e-03` to `-7.1e-02` units, and the three negation
+    shapes read `-9.3791e+11` and `-4.5035e+15`.
+
+    NO NEW CONSTANT. `RIGID_MODE_BOUND` already says how far from the arithmetic
+    floor a mode has to be before its position is a statement about the structure
+    rather than about double precision, and that is exactly the question here with
+    the sign kept.
+    """
+    s = element_homogeniser(length)
+    khat = k_local / np.outer(s, s)
+    khat = (khat + khat.T) / 2.0
+    smallest = float(np.linalg.eigvalsh(khat).min())
+    unit = float(np.linalg.norm(khat)) * float(np.finfo(np.float64).eps)
+    return smallest / unit

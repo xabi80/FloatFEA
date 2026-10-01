@@ -72,7 +72,11 @@ from numpy.typing import NDArray
 from floatfea import basis
 from floatfea.assemble.system import BeamElement, assemble_mass_dense
 from floatfea.element.beam import local_stiffness
-from floatfea.element.rigid import element_rigid_residual, seventh_over_epsilon
+from floatfea.element.rigid import (
+    element_lambda_min_over_epsilon,
+    element_rigid_residual,
+    seventh_over_epsilon,
+)
 from floatfea.io.froude import to_full_scale
 from floatfea.model.material import S355, Material, Section
 from floatfea.model.nodes import Model, Node
@@ -297,7 +301,9 @@ def check_rigid_modes(label: str, k_local: NDArray[np.float64], length: float) -
         `RIGID_MODE_EXACTNESS`;
       * there is no SEVENTH mode down at the arithmetic floor -- the first
         flexible mode sits at least `RIGID_MODE_BOUND` units of
-        `||k_hat|| * eps` above it.
+        `||k_hat|| * eps` above it;
+      * and the matrix is POSITIVE SEMI-DEFINITE, which neither of the other two
+        can see (R625).
 
     WHY THE BUILDER AND NOT ONLY THE GATE. F3 § 5 asks for both, and they answer
     different questions. The gate says the sixteen members this deck produces are
@@ -326,6 +332,22 @@ def check_rigid_modes(label: str, k_local: NDArray[np.float64], length: float) -
             "SEVENTH mode at the arithmetic floor -- one rigid motion too many, which "
             "is a defect -- or the conditioning makes the question unanswerable in "
             "double precision. Both are refusals (F3 § 5, G2.1)."
+        )
+    # THE THIRD HALF, AND THE TWO ABOVE WERE BLIND TO IT (R625). Negating a
+    # symmetric sub-block leaves every rigid motion annihilated and leaves
+    # `|lambda_7|` where it was, so the residual and the seventh-mode ratio both
+    # read EXACTLY their clean values with the whole matrix negated -- seven
+    # negative eigenvalues, accepted by both. A stiffness that releases energy is
+    # not a stiffness, and nothing in this repository rejected one: every spectral
+    # read takes an absolute value or clips at zero.
+    smallest = element_lambda_min_over_epsilon(k_local, length)
+    if smallest < -RIGID_MODE_BOUND:
+        raise ValueError(
+            f"{label}: the smallest eigenvalue of the homogenised stiffness is "
+            f"{smallest:.6e} units of ||k_hat||*eps, below -{RIGID_MODE_BOUND:g}. The "
+            "element is INDEFINITE -- it releases energy under some displacement -- "
+            "which the rigid residual and the seventh-mode ratio cannot see because "
+            "both are blind to sign. The platform is refused (F3 section 5, G2.1, R625)."
         )
 
 

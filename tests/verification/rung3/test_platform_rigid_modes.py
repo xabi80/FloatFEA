@@ -34,10 +34,15 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from floatfea.element.beam import local_stiffness
-from floatfea.element.rigid import element_rigid_residual, seventh_over_epsilon
-from floatfea.model.platform import build_superstructure
+from floatfea.element.rigid import (
+    element_lambda_min_over_epsilon,
+    element_rigid_residual,
+    seventh_over_epsilon,
+)
+from floatfea.model.platform import build_superstructure, check_rigid_modes
 from floatfea.tolerances import RIGID_MODE_BOUND, RIGID_MODE_EXACTNESS
 
 MEMBERS = 16
@@ -155,6 +160,106 @@ def test_G2_1_the_SHIPPED_residual_agrees_with_RUNG_ONEs() -> None:
         f"the shipped residual and rung 1's disagree by {worst:.6e} on the real "
         "platform's members. One formula, two implementations, and they have drifted."
     )
+
+
+def test_G2_1_every_MEMBER_is_POSITIVE_SEMI_DEFINITE(capsys) -> None:
+    """G2.1's third half (R625), and the one the other two are blind to.
+
+    A correct element stiffness stores energy. Negating a symmetric sub-block
+    leaves every rigid motion annihilated and leaves `|lambda_7|` exactly where it
+    was, so the residual and the seventh-mode ratio accept an INDEFINITE matrix --
+    including the whole matrix negated. This reads the sign.
+    """
+    rows = member_stiffnesses()
+    over = [(element_lambda_min_over_epsilon(k, length), label) for label, k, length in rows]
+    smallest, label = min(over)
+    with capsys.disabled():
+        print(
+            f"  smallest lambda_min/eps {smallest:.4e} on {label}, floor "
+            f"-{RIGID_MODE_BOUND:g}, margin {abs(RIGID_MODE_BOUND / smallest):.3e}x"
+        )
+    # expected: -RIGID_MODE_BOUND, floatfea/tolerances.py, reused and not a new
+    # constant: it already says how far from the arithmetic floor a mode must sit
+    # before its position is a statement about the structure. The left side is
+    # SIGNED, which is the entire difference from `seventh_over_epsilon`.
+    assert smallest >= -RIGID_MODE_BOUND, (
+        f"{label}: the smallest eigenvalue of the homogenised stiffness is "
+        f"{smallest:.6e} units of ||k_hat||*eps, below -{RIGID_MODE_BOUND:g}. The "
+        "element is indefinite."
+    )
+
+
+# --------------------------------------------------------------------------
+# THE BUILDER'S REFUSAL, SOLVED FROM BOTH SIDES (R626).
+#
+# `check_rigid_modes` is half of what F3 section 5 asserts and NO COMMITTED TEST
+# SHOWED IT RAISING -- a grep over `tests/` returned two comment lines, no import
+# and no `pytest.raises`. Its sibling `check_limits`, eight lines away in the same
+# module, is solved at both boundaries from both sides, which is the standard this
+# meets now.
+# --------------------------------------------------------------------------
+
+_NEGATED = {
+    "the torsion sub-block": (3, 9),
+    "the axial sub-block": (0, 6),
+    "the WHOLE matrix": tuple(range(12)),
+}
+
+
+def _negate(k: np.ndarray, rows: tuple[int, ...]) -> np.ndarray:
+    out = k.copy()
+    idx = np.array(rows)
+    out[np.ix_(idx, idx)] = -out[np.ix_(idx, idx)]
+    return out
+
+
+def test_the_REFUSAL_accepts_every_real_member() -> None:
+    """The other side: on the platform as built, nothing is refused."""
+    for label, k, length in member_stiffnesses():
+        check_rigid_modes(label, k, length)
+
+
+@pytest.mark.parametrize("what", sorted(_NEGATED))
+def test_the_REFUSAL_rejects_an_INDEFINITE_member(what: str, capsys) -> None:
+    """R625's three shapes, each refused by name, at the builder's own boundary."""
+    label, k, length = member_stiffnesses()[0]
+    bad = _negate(k, _NEGATED[what])
+    with capsys.disabled():
+        print(
+            f"  {what} negated: residual {element_rigid_residual(bad, length):.4e}, "
+            f"seventh/eps {seventh_over_epsilon(bad, length):.4e}, "
+            f"lambda_min/eps {element_lambda_min_over_epsilon(bad, length):.4e}"
+        )
+    # expected: RIGID_MODE_EXACTNESS and RIGID_MODE_BOUND, the two ceilings the
+    # OTHER halves assert against -- and the claim is that this shape PASSES both
+    # of them, so a refusal can only have come from the signed half. Asserted as
+    # "still passes", not as "bit-identical": the eigensolver returns the last bits
+    # differently on a negated matrix (`937911510493.677` against
+    # `...493.6768` for two of the three shapes), and R625 is about detection, not
+    # about reproducing a double.
+    assert element_rigid_residual(bad, length) <= RIGID_MODE_EXACTNESS
+    assert seventh_over_epsilon(bad, length) >= RIGID_MODE_BOUND
+    with pytest.raises(ValueError, match="INDEFINITE"):
+        check_rigid_modes(label, bad, length)
+
+
+def test_the_REFUSAL_rejects_a_LIFTED_rigid_mode(capsys) -> None:
+    """The residual half's own boundary, from both sides, at the refusal."""
+    label, k, length = member_stiffnesses()[0]
+    check_rigid_modes(label, k, length)
+    bad = k.copy()
+    big = float(np.abs(k).max())
+    bad[3, 3] += 1.0e-8 * big
+    with capsys.disabled():
+        print(
+            f"  a torsional diagonal +1e-8 of max|k_e|: residual "
+            f"{element_rigid_residual(bad, length):.4e}"
+        )
+    # expected: RIGID_MODE_EXACTNESS, the ceiling the residual half asserts
+    # against. The injection site is `scripts/rigid_counter_response.py`'s
+    # `rotational_block`, so this is that script's shape and not a new one.
+    with pytest.raises(ValueError, match="rigid residual"):
+        check_rigid_modes(label, bad, length)
 
 
 def test_G3_1b_the_DECK_the_model_reads_IS_the_one_G3_2_GATES() -> None:
