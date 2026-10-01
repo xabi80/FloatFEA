@@ -1,0 +1,94 @@
+# CORPUS: WHAT THE ELEMENT-LOCAL G2.1 GATE AND ITS SHIPPED REFUSAL CANNOT SEE.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea,
+# nothing here is test code, nothing here is a test name. Batch 28, written at
+# the EIGHTY-FIRST verdict, the FIRST on F3 step 2, against the judged commit
+# 29570e1: floatfea/element/rigid.py and the check_rigid_modes refusal in
+# floatfea/model/platform.py (d0fb2a6), and the gate
+# tests/verification/rung3/test_platform_rigid_modes.py (d0fb2a6, a772128).
+#
+# IN SCOPE UNDER DE2: the element, the gates, and -- from F3 -- the platform
+# model. This is all three. Not apparatus, so nothing here is transcribed to
+# docs/milestones/F2a.md.
+#
+# WHAT A PASSING SCAN MEANS. Every expect=caught row names a defect that the
+# shipped pair -- element_rigid_residual(k_local, L) <= RIGID_MODE_EXACTNESS
+# and seventh_over_epsilon(k_local, L) >= RIGID_MODE_BOUND, asserted by the
+# gate and refused by the builder -- must reject. A scan passes when every such
+# row reads measured=CAUGHT. SIX OF TEN MUTATIONS READ NOT_CAUGHT at this
+# commit, and three of those six are sign errors that leave the element
+# stiffness INDEFINITE. expect= is the prediction written before the run;
+# measured= is what the shipped pair did.
+#
+# EVERY FIGURE HERE WAS TAKEN BY THE REVIEWER AT 29570e1, in a scratch harness
+# under the session scratch directory, importing the shipped functions and
+# mutating nothing in the working tree. The tree was clean before and after.
+
+# --------------------------------------------------------------------------
+# A. SIGN ERRORS. A SYMMETRIC SUB-BLOCK NEGATED STILL ANNIHILATES EVERY RIGID
+#    MOTION -- a rigid rotation has theta_A == theta_B, so the torsion block
+#    cancels whatever its sign -- and the spectral half sorts the ABSOLUTE
+#    eigenvalues, so a large NEGATIVE seventh reads as a large positive one.
+#    Both halves pass.
+
+id=sign_torsion_subblock_negated surface=element case=k_local_rows_and_cols_3_and_9_of_the_torsional_2x2_all_negated_on_platform_hub1_arm_L_50_m expect=caught measured=NOT_CAUGHT_residual_8.721e-20_unchanged_and_seventh_over_eps_9.3791e+11_unchanged_builder_ACCEPTED_while_lambda_min_of_the_homogenised_matrix_is_minus_2.2951e+06
+id=sign_axial_subblock_negated surface=element case=k_local_entries_0_0_and_0_6_and_6_0_and_6_6_all_negated_so_the_member_has_NEGATIVE_axial_stiffness expect=caught measured=NOT_CAUGHT_residual_8.721e-20_seventh_over_eps_9.3791e+11_builder_ACCEPTED_one_negative_eigenvalue
+id=sign_whole_matrix_negated surface=element case=local_stiffness_returns_minus_k_a_whole_sign_convention_inversion_of_the_kind_CLAUDE_md_non_negotiables_names expect=caught measured=NOT_CAUGHT_residual_8.721e-20_seventh_over_eps_9.3791e+11_builder_ACCEPTED_SIX_negative_eigenvalues
+id=sign_torsion_diagonals_only surface=element case=k_local_3_3_and_9_9_negated_but_the_off_diagonals_3_9_and_9_3_left_alone_so_the_block_no_longer_cancels expect=caught measured=CAUGHT_by_the_RESIDUAL_half_2.083e-04_against_1e-15_the_spectral_half_still_reads_9.3791e+11_and_misses_it
+id=sign_nothing_in_the_tree_rejects_an_indefinite_element surface=tree case=is_there_any_assertion_in_the_repository_that_an_element_stiffness_is_positive_semidefinite expect=uncaught measured=CONFIRMED_NONE_every_spectral_read_in_rung1_and_rung3_takes_np_abs_and_rung2_test_consistent_mass_py_497_and_747_clip_with_np_clip_0_0_None_which_discards_the_sign_the_only_eigenvalue_sign_test_in_floatfea_is_on_INERTIA_at_io_reader_py_314
+
+# --------------------------------------------------------------------------
+# B. THE SPECTRAL HALF AND ITS OPERATING POINT. It is a check against TOTAL
+#    loss of a stiffness, not against degradation, and the boundary is
+#    bisected rather than sampled.
+
+id=spectral_torsion_removed_entirely surface=element case=the_torsional_2x2_set_to_zero_a_genuine_SEVENTH_rigid_mode expect=caught measured=CAUGHT_seventh_over_eps_4.8647e-02_against_199.526_builder_REFUSED_and_the_residual_half_does_NOT_see_it_8.721e-20
+id=spectral_torsion_retained_1e-9 surface=element case=the_torsional_2x2_scaled_by_1e-9_a_member_with_a_billionth_of_its_torsional_stiffness expect=caught measured=NOT_CAUGHT_seventh_over_eps_9.3791e+02_still_4.70x_above_199.526_builder_ACCEPTED
+id=spectral_torsion_retained_1e-12 surface=element case=the_torsional_2x2_scaled_by_1e-12 expect=caught measured=CAUGHT_seventh_over_eps_9.3750e-01_builder_REFUSED
+id=spectral_boundary_bisected surface=element case=invert_the_rule_and_solve_for_the_retained_torsion_fraction_at_which_seventh_over_eps_crosses_RIGID_MODE_BOUND expect=explain measured=2.127342e-10_so_the_torsional_stiffness_must_be_reduced_by_9.67_DECADES_before_this_half_fires_which_is_the_operating_point_the_4.70e+09x_margin_does_not_state
+id=spectral_insensitive_to_all_three_residual_counters surface=element case=dropped_flip_and_wrong_dof_index_and_rotational_block_each_injected_at_1e-13_and_1e-8_and_1e-4_and_1e-1_and_1.0_of_max_abs_k_e_fifteen_runs expect=uncaught measured=CONFIRMED_GREEN_IN_ALL_FIFTEEN_smallest_seventh_over_eps_ever_reached_5.6978e+11_against_199.526_so_no_perturbation_of_any_size_at_these_three_sites_can_redden_this_half
+id=spectral_report_seventh_mode_shape_at_1e-8 surface=report case=the_step_report_section_3_cell_lists_a_fourth_shape_seventh_mode_REFUSED_injected_alone_at_1e-8_of_max_abs_k_e expect=explain measured=UNVERIFIABLE_no_such_shape_exists_in_the_repository_and_no_1e-8_of_max_abs_k_e_perturbation_at_the_torsional_block_can_reach_the_bound_rotational_block_at_1e-8_reads_9.3791e+11_green
+
+# --------------------------------------------------------------------------
+# C. THE CEILING IS INHERITED, AND ITS OWN ENTRY SAYS IT MUST NOT BE. The
+#    RIGID_MODE_EXACTNESS entry in floatfea/tolerances.py reads: F3 asserts the
+#    element-local check on every real platform member, and that gate needs a
+#    ceiling of this shape -- which will be derived from THAT quantity own
+#    measurements, not inherited from here.
+
+id=ceiling_headroom_over_the_whole_admissible_section_space surface=element case=1680_admissible_section_and_length_points_D_o_0.2_to_6_m_t_over_D_o_0.005_to_0.2_length_constrained_to_L_over_D_at_least_2_and_L_over_r_at_most_300 expect=explain measured=WORST_CLEAN_RESIDUAL_1.620063e-17_at_D_o_0.20_t_0.0010_L_0.400_so_the_refusal_residual_half_sits_61.73x_INSIDE_its_own_threshold_at_every_member_a_deck_can_describe_and_cannot_fire_on_any_of_them
+id=ceiling_smallest_seventh_over_the_same_space surface=element case=the_same_1680_points_against_RIGID_MODE_BOUND_199.526 expect=explain measured=SMALLEST_3.849230e+10_at_D_o_0.50_t_0.0250_L_50.451_L_over_r_300.0_which_is_1.929e+08x_inside_the_bound
+id=counter_dropped_flip_at_the_declared_size surface=element case=dropped_flip_injected_at_RIGID_MODE_EXACTNESS_COUNTER_DEFECT_1e-14_of_max_abs_k_e_worst_over_the_sixteen_shipped_members expect=caught measured=NOT_CAUGHT_3.656327e-16_which_is_0.3656x_the_ceiling_bisected_detection_edge_2.735459e-14
+id=counter_rotational_block_at_the_declared_size surface=element case=rotational_block_injected_at_1e-14_worst_over_the_sixteen expect=caught measured=NOT_CAUGHT_1.464442e-17_which_is_0.01464x_the_ceiling_bisected_detection_edge_6.837686e-13
+id=counter_wrong_dof_index_at_the_declared_size surface=element case=wrong_dof_index_injected_at_1e-14_worst_over_the_sixteen expect=caught measured=CAUGHT_9.459456e-15_which_is_9.459x_the_ceiling_bisected_detection_edge_1.057143e-15
+id=ceiling_window_over_the_sixteen_members surface=element case=solve_for_the_set_of_ceilings_C_that_pass_the_defect_free_sixteen_and_redden_all_three_counters_at_the_declared_1e-14 expect=explain measured=A_WINDOW_EXISTS_AND_IS_41.51x_WIDE_3.5283e-19_to_1.4644e-17_so_NO_NEW_CONSTANT_AND_NO_NEW_INJECTION_SIZE_IS_NEEDED_and_the_three_options_a_b_and_c_in_the_step_report_all_move_the_wrong_variable
+id=ceiling_window_over_the_whole_admissible_band surface=element case=the_same_solve_over_L_over_D_2_to_L_over_r_300_on_the_F1_recorded_section_194_points expect=explain measured=THE_WINDOW_IS_EMPTY_worst_clean_5.287607e-18_must_be_BELOW_C_and_the_weakest_rotational_block_response_1.571633e-19_must_be_ABOVE_C_so_no_ceiling_lets_the_REFUSAL_carry_a_counter_guarantee_across_the_domain_it_applies_to
+id=clean_residual_worsens_at_stubby_proportions surface=element case=localise_the_clean_residual_across_L_over_D_from_2_to_the_slenderness_limit_on_the_F1_section expect=explain measured=3.7829e-18_at_L_over_D_5_against_8.7211e-20_at_L_over_D_20_a_43x_spread_and_10.7x_the_worst_of_the_sixteen_so_a_ceiling_derived_from_the_sixteen_members_is_not_a_ceiling_for_the_refusal
+
+# --------------------------------------------------------------------------
+# D. FORM. Is the quantity what the comment at the assertion says it is?
+
+id=form_residual_not_invariant_under_a_unit_change surface=element case=the_same_member_in_MILLIMETRES_A_x1e6_I_and_J_x1e12_E_over_1e6_L_x1000_a_consistent_unit_system_scaled_by_a_thousand expect=explain measured=THE_RESIDUAL_MOVES_1.1110x_at_L_50_m_and_3.9264x_at_L_25_m_and_2.5417x_at_L_5_m_so_it_is_dimensionless_but_NOT_unit_invariant_and_the_pure_number_claim_in_the_gate_comment_passes_only_because_the_margin_is_2834x_a_3.93x_sensitivity_consumes_a_tenth_of_the_41.51x_window
+id=form_seventh_is_invariant_under_the_same_change surface=element case=seventh_over_epsilon_under_the_same_x1000_unit_change expect=explain measured=RATIO_1.000000_at_all_three_lengths_exactly_invariant_which_the_residual_is_not
+id=form_four_ULP_lengths_map_onto_four_residuals surface=skeleton case=the_sixteen_members_take_lengths_50.0_and_25.0_and_25.000000000000004_and_25.000000000000007_one_to_three_ULP_apart expect=explain measured=CONFIRMED_BIJECTION_8.721078e-20_and_9.673052e-20_and_1.988390e-19_and_3.528257e-19_with_counts_4_7_4_1_so_the_four_distinct_lengths_sentence_in_the_plan_is_TRUE_at_full_precision_and_only_looks_false_rounded
+
+# --------------------------------------------------------------------------
+# E. THE REFUSAL AS SHIPPED CODE: what is tied to what, and what is tested.
+
+id=tie_only_the_residual_is_compared_with_rung_one surface=tree case=does_test_G2_1_the_SHIPPED_residual_agrees_with_RUNG_ONEs_tie_BOTH_quantities_the_module_docstring_says_rung_one_keeps_its_own_copy expect=uncaught measured=ONLY_THE_RESIDUAL_the_rung_one_seventh_over_epsilon_takes_ONE_argument_k_and_homogenises_by_max_abs_K_while_the_shipped_one_takes_k_local_and_length_and_homogenises_by_S_so_they_are_DIFFERENT_FUNCTIONS_and_nothing_compares_them
+id=tie_residual_bodies_are_not_textually_identical surface=tree case=are_the_two_element_rigid_residual_bodies_the_same_text expect=explain measured=NO_the_loops_are_written_differently_rung_one_indexes_by_DOF_PER_NODE_and_the_shipped_one_by_6_times_node_but_the_arithmetic_order_coincides_and_the_agreement_is_0.000e+00_on_all_sixteen
+id=refusal_has_no_committed_failure_cell surface=tree case=does_any_committed_test_show_check_rigid_modes_RAISING expect=uncaught measured=CONFIRMED_NONE_grep_over_tests_returns_two_comment_lines_and_no_import_no_call_and_no_pytest_raises_while_the_sibling_refusal_check_limits_in_the_same_module_is_tested_on_both_sides_of_both_boundaries_at_test_platform_skeleton_py_696_to_707
+id=refusal_placement_after_the_loop_is_equivalent surface=builder case=check_rigid_modes_is_called_after_the_body_equivalent_material_exists_rather_than_in_the_member_loop_and_the_comment_claims_only_rho_differs expect=explain measured=CONFIRMED_max_abs_k_equivalent_minus_k_S355_over_the_sixteen_is_0.000000e+00_local_stiffness_reads_E_G_A_J_I_y_I_z_and_kappa_and_never_rho_so_the_placement_is_the_right_one_and_the_claim_holds
+id=gate_subject_cannot_be_empty surface=gate case=is_the_member_count_asserted_against_something_other_than_the_rows_under_test expect=explain measured=YES_MEMBERS_16_is_a_module_constant_and_test_there_are_SIXTEEN_members_to_check_asserts_len_rows_against_it_and_also_that_sixteen_labels_are_distinct_so_an_empty_or_duplicated_parse_cannot_pass
+
+# --------------------------------------------------------------------------
+# F. THE DISCRIMINATOR THE SIGN ROWS POINT AT, measured so that closing them
+#    needs no new constant.
+
+id=fix_signed_lambda_min_separates_clean_from_the_sign_defects surface=element case=read_lambda_min_of_the_homogenised_symmetric_matrix_over_the_same_unit_of_norm_k_hat_times_eps_instead_of_the_magnitude_sorted_seventh expect=explain measured=CLEAN_reads_minus_0.0715_to_minus_0.0021_over_the_sixteen_and_minus_0.7908_to_plus_0.0001_over_the_whole_admissible_band_while_the_three_sign_defects_read_minus_9.379e+11_and_minus_4.504e+15_and_minus_4.504e+15_so_the_EXISTING_RIGID_MODE_BOUND_199.526_used_as_a_floor_on_lambda_min_passes_every_clean_case_by_252x_and_refuses_all_three_by_4.70e+09x_or_more
+
+# --------------------------------------------------------------------------
+# G. QUESTIONS, closed by an answer and not by a test.
+
+id=q_does_the_gate_subject_match_the_refusal_subject surface=plan case=the_gate_asserts_on_the_sixteen_members_this_deck_produces_while_the_refusal_applies_to_every_deck_so_they_have_DIFFERENT_subjects_and_share_one_ceiling expect=explain measured=OPEN_the_41.51x_window_exists_for_the_gate_subject_and_is_EMPTY_for_the_refusal_subject_which_is_the_decision_F3_section_5_has_to_state_rather_than_the_counter_size
+id=q_what_defect_class_is_the_residual_half_FOR surface=plan case=no_deck_can_move_the_residual_because_the_61.73x_headroom_holds_over_the_whole_admissible_space_so_the_only_thing_that_can_redden_it_is_a_code_defect_in_local_stiffness expect=explain measured=OPEN_if_the_subject_is_a_code_defect_then_the_counter_sizes_are_the_whole_specification_of_the_gate_and_two_of_the_three_declared_ones_are_blind
