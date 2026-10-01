@@ -545,7 +545,20 @@ def _build_body(
 
 
 def admissible(body: BodyModel) -> bool:
-    """`m_r >= 0` and no eigenvalue of `J_r` below `-tol` (DY0d)."""
+    """`m_r >= 0` and no eigenvalue of `J_r` below `-tol` (DY0d).
+
+    **PSD, AND NOT REALISABILITY, BY DECISION (EA3).** The remainder's `J_r` is
+    PSD at every `f` on the ladder and violates the triangle inequality at every
+    `f > 0` -- the slack is linear in `f` and reaches zero only at `f = 0`, which
+    puts no mass on the members at all. That is inherited from the deck, whose own
+    `J_G` sits exactly on the lamina boundary, not created by the split (DZ5).
+
+    So requiring realisability here would force `f = 0`, which is worse for member
+    forces than an unrealisable remainder: it would leave the arms massless. The
+    weaker test is the intended one. The slack is not hidden -- it is reported in
+    `findings` with both figures -- and this docstring claims PSD only, which is
+    what the two lines below compute.
+    """
     if body.remainder_mass < 0.0:
         return False
     if body.remainder_mass == 0.0 and not np.any(body.remainder_inertia):
