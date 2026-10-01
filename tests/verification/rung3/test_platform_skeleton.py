@@ -488,8 +488,13 @@ def test_DZ2_the_bodys_MEMBER_GEOMETRY_is_what_the_deck_implies(superstructure, 
     )
     # expected: `expected_pairs`, built from `deck_joint_points` and
     # `deck_joint_owner`, which `test_C56_the_DECK_POINTS_really_come_from_the_DECK`
-    # ties to an independent read of the deck FILE. NOT from `body.model.nodes` --
-    # R600 was this assertion reading the built model for both sides.
+    # ties to an independent read of the deck FILE -- plus, for the platform body
+    # alone, the typed plan centre `(0, 0, joint_plane_z)` (C84, R623: this comment
+    # named only the two deck fields and that is not the whole expected side).
+    # `joint_plane_z` is the deck's own joint elevation, so nothing here is
+    # circular; what is unpinned is the centre's x and y, which is C56(iii).
+    # NOT from `body.model.nodes` -- R600 was this assertion reading the built
+    # model for both sides.
     assert set(pairs) == expected_pairs(superstructure, body), (
         f"{body.name}'s members do not join the points the deck's joints imply. "
         "A moved tip lands here."

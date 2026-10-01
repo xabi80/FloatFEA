@@ -71,10 +71,16 @@ from numpy.typing import NDArray
 
 from floatfea import basis
 from floatfea.assemble.system import BeamElement, assemble_mass_dense
+from floatfea.element.beam import local_stiffness
+from floatfea.element.rigid import element_rigid_residual, seventh_over_epsilon
 from floatfea.io.froude import to_full_scale
 from floatfea.model.material import S355, Material, Section
 from floatfea.model.nodes import Model, Node
-from floatfea.tolerances import MASS_PROPERTY_AGREEMENT
+from floatfea.tolerances import (
+    MASS_PROPERTY_AGREEMENT,
+    RIGID_MODE_BOUND,
+    RIGID_MODE_EXACTNESS,
+)
 
 DECK_YAML: Final[Path] = (
     Path(__file__).resolve().parents[2] / "data" / "platform" / "platform12_deck.yaml"
@@ -282,6 +288,47 @@ def rigid_properties(
     return mass, centroid, about_ref - shift
 
 
+def check_rigid_modes(label: str, k_local: NDArray[np.float64], length: float) -> None:
+    """F3 § 5's G2.1 refusal, on the MEMBER'S OWN stiffness. Not a warning.
+
+    Two halves, both element-local, both dimensionless:
+
+      * the six rigid motions about the member's midpoint are annihilated, to
+        `RIGID_MODE_EXACTNESS`;
+      * there is no SEVENTH mode down at the arithmetic floor -- the first
+        flexible mode sits at least `RIGID_MODE_BOUND` units of
+        `||k_hat|| * eps` above it.
+
+    WHY THE BUILDER AND NOT ONLY THE GATE. F3 § 5 asks for both, and they answer
+    different questions. The gate says the sixteen members this deck produces are
+    sound; the refusal says that no OTHER deck can produce a member that is not,
+    because `build_superstructure` will not return one. A gate alone would leave
+    the guarantee attached to one input file.
+
+    An UNRESOLVABLE seventh mode is refused, not passed: at that conditioning the
+    question cannot be answered in double precision, and a builder that answers
+    anyway is worse than one that stops.
+    """
+    residual = element_rigid_residual(k_local, length)
+    if residual > RIGID_MODE_EXACTNESS:
+        raise ValueError(
+            f"{label}: the element-local rigid residual is {residual:.6e}, above "
+            f"{RIGID_MODE_EXACTNESS:g}. The member's own stiffness does not annihilate "
+            "the six rigid motions about its midpoint, so every force this model "
+            "reports from it carries that error. The platform is refused rather than "
+            "analysed (F3 § 5, G2.1)."
+        )
+    over = seventh_over_epsilon(k_local, length)
+    if over < RIGID_MODE_BOUND:
+        raise ValueError(
+            f"{label}: the first flexible mode sits at {over:.6e} units of "
+            f"||k_hat||*eps, below {RIGID_MODE_BOUND:g}. Either the element has a "
+            "SEVENTH mode at the arithmetic floor -- one rigid motion too many, which "
+            "is a defect -- or the conditioning makes the question unanswerable in "
+            "double precision. Both are refusals (F3 § 5, G2.1)."
+        )
+
+
 def check_limits(label: str, length: float, section: Section) -> None:
     """F3 § 2's two refusals, on MEMBER length. Not a warning, not a clamp."""
     # D_o is recovered from the area and the second moment rather than passed in, so
@@ -459,6 +506,18 @@ def _build_body(
         E=S355.E, nu=S355.nu, rho=density, fy=S355.fy, name=f"{S355.name}-equivalent"
     )
 
+    # G2.1 ON EVERY MEMBER THIS BODY OWNS, HERE AND NOT IN THE LOOP ABOVE, because
+    # the body's equivalent material is what the member is finally built with and it
+    # is not known until the total length is. Only `rho` differs from S355 and the
+    # rigid-mode quantities do not read it, so the refusal would land identically in
+    # the loop -- it is placed here so that what is checked is what is shipped.
+    for member in members:
+        check_rigid_modes(
+            member.label,
+            local_stiffness(member.section, material, member.length),
+            member.length,
+        )
+
     # The remainder goes where it makes the combined first moment equal the deck's.
     first_moment = np.zeros(3, dtype=np.float64)
     for member in members:
@@ -549,15 +608,35 @@ def admissible(body: BodyModel) -> bool:
 
     **PSD, AND NOT REALISABILITY, BY DECISION (EA3).** The remainder's `J_r` is
     PSD at every `f` on the ladder and violates the triangle inequality at every
-    `f > 0` -- the slack is linear in `f` and reaches zero only at `f = 0`, which
-    puts no mass on the members at all. That is inherited from the deck, whose own
-    `J_G` sits exactly on the lamina boundary, not created by the split (DZ5).
+    `f > 0`, reaching zero slack only at `f = 0`, which puts no mass on the
+    members at all. That is inherited from the deck, whose own `J_G` sits exactly
+    on the lamina boundary, not created by the split (DZ5).
+
+    **IT IS NOT LINEAR IN `f` ON THE PLATFORM (C80, R618).** This said it was.
+    `slack/f` runs `-5.354e+08, -4.464e+08, -3.829e+08, -3.353e+08, -2.982e+08`
+    over `f = 0.5 ... 0.1` -- a `1.80x` spread -- so the quantity is not
+    proportional to `f` there. It is exactly linear on the four hubs, at
+    `-2.03055e+06` per unit `f`, which is probably where the claim came from. The
+    RULING is unaffected: slack is negative at every rung with `f > 0` and
+    exactly zero at `f = 0` on all five bodies, which is the whole of what
+    "requiring realisability would force `f = 0`" needs.
+
+    Every figure in this docstring is produced by the sweep in F3 step 2's report
+    (C83, R620), which rebuilds each body at each rung of `MASS_FRACTION_LADDER`
+    through `_build_body` and takes the slack from `remainder_inertia`. A figure
+    in a docstring is a report nothing regenerates, so the derivation lives where
+    rule regenerates it and this entry carries the numbers it needs and a pointer.
 
     So requiring realisability here would force `f = 0`, which is worse for member
     forces than an unrealisable remainder: it would leave the arms massless. The
-    weaker test is the intended one. The slack is not hidden -- it is reported in
-    `findings` with both figures -- and this docstring claims PSD only, which is
+    weaker test is the intended one, and this docstring claims PSD only, which is
     what the two lines below compute.
+
+    **THE SLACK IS REPORTED IN `assumptions`, NOT `findings` (C81, R619).** This
+    said `findings`, and `Superstructure.findings` and every body's `findings` are
+    `()` at the shipped configuration -- so the sentence pointed a reader at an
+    empty tuple. The entry carrying both figures is the last one in
+    `Superstructure.assumptions`.
     """
     if body.remainder_mass < 0.0:
         return False
