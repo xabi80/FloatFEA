@@ -262,6 +262,60 @@ def test_the_REFUSAL_rejects_a_LIFTED_rigid_mode(capsys) -> None:
         check_rigid_modes(label, bad, length)
 
 
+def _retained_torsion(k: np.ndarray, fraction: float) -> np.ndarray:
+    """The torsional sub-block scaled down: a NEARLY RELEASED connection.
+
+    The shape the seventh-mode clause exists for, and it is not a perturbation of
+    a size: scaling the torsion stiffness toward zero sinks the first flexible
+    mode into the round-off band while leaving every rigid motion annihilated and
+    the matrix positive semi-definite. The other two clauses are silent on it.
+    """
+    out = k.copy()
+    idx = np.array([3, 9])
+    out[np.ix_(idx, idx)] = out[np.ix_(idx, idx)] * fraction
+    return out
+
+
+def test_the_REFUSAL_rejects_a_SUNK_seventh_mode(capsys) -> None:
+    """The seventh-mode clause, raising, at its own boundary from both sides (R626).
+
+    **THE OTHER TWO CLAUSES ARE SILENT HERE**, which is why this clause exists and
+    why no counter shape reaches it: the residual stays at its clean value and
+    `lambda_min` stays at round-off, so a refusal can only have come from the
+    seventh-mode comparison.
+
+    THE BOUNDARY IS SOLVED, not stepped past by decades. The report's first
+    version claimed this shape at `1e-8 of max|k_e|`, which is wrong twice: it is
+    a retained FRACTION rather than an added perturbation, and the edge is
+    `2.127342e-10`, 9.67 decades below `1e-8`.
+    """
+    label, k, length = member_stiffnesses()[0]
+    edge = 2.127342e-10
+    below, above = _retained_torsion(k, edge * 0.5), _retained_torsion(k, edge * 2.0)
+    with capsys.disabled():
+        for tag, kk in (("half the edge", below), ("twice the edge", above)):
+            print(
+                f"  {tag:<15} 7th/eps {seventh_over_epsilon(kk, length):.4e}  "
+                f"residual {element_rigid_residual(kk, length):.3e}  "
+                f"lambda_min/eps {element_lambda_min_over_epsilon(kk, length):.3e}"
+            )
+
+    # expected: RIGID_MODE_BOUND, and the OTHER two ceilings, which this shape
+    # leaves satisfied on both sides of the edge -- asserted, not described.
+    for kk in (below, above):
+        assert element_rigid_residual(kk, length) <= RIGID_MODE_EXACTNESS
+        assert element_lambda_min_over_epsilon(kk, length) >= -RIGID_MODE_BOUND
+
+    assert seventh_over_epsilon(below, length) < RIGID_MODE_BOUND
+    with pytest.raises(ValueError, match="first flexible mode"):
+        check_rigid_modes(label, below, length)
+
+    # And above the edge it is accepted, so the refusal is the position of the
+    # mode and not the shape of the mutation.
+    assert seventh_over_epsilon(above, length) >= RIGID_MODE_BOUND
+    check_rigid_modes(label, above, length)
+
+
 def test_G3_1b_the_DECK_the_model_reads_IS_the_one_G3_2_GATES() -> None:
     """G3.1b, and its COINCIDENCE with G3.1a stated rather than implied (DV0).
 
