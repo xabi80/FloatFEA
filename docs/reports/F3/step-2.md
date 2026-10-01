@@ -159,9 +159,20 @@ out    dropped_flip      3.6563e-16  = 0.366x the ceiling    NO
 out    wrong_dof_index   9.4595e-15  = 9.459x the ceiling    yes
 out    rotational_block  1.4644e-17  = 0.0146x the ceiling   NO
 cmd    invert the rule and bisect each one for its detection edge
-out    dropped_flip      2.735459e-14
-out    wrong_dof_index   1.057143e-15
-out    rotational_block  6.837686e-13
+out    WITHDRAWN (EG1, R630): the three figures published here were the BEST
+out    member's edges, not the worst -- 2.735459e-14 / 1.057143e-15 /
+out    6.837686e-13. A size just above the first reddens ONE member and not the
+out    worst, which needs 1.93x more.
+out    the worst over the sixteen, against this 1e-15 ceiling:
+out    dropped_flip      5.285599e-14
+out    wrong_dof_index   1.094071e-15
+out    rotational_block  2.642868e-12
+out    which is what docs/milestones/F3.md section 5 states, right to the digit.
+out    I reported the plan as wrong and it was my own figures that were.
+out    AND BOTH SETS ARE AGAINST A CEILING EG0 HAS NOW RETIRED (BP0): against
+out    PLATFORM_RIGID_MODE_EXACTNESS = 1.154338e-18 the worst edges are
+out    6.266629e-17 / 1.262927e-18 / 3.088842e-15, printed per run by
+out    test_EG0_the_THREE_COUNTERS_redden_every_member.
 rule   a counter must redden the gate it defends, and
        `tests/test_counters_are_injected.py`'s two cells both require that
 judge  THE DECLARED SIZE SITS BELOW TWO OF THE THREE EDGES. This is not a

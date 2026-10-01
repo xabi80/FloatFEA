@@ -1,0 +1,106 @@
+{
+ "_": [
+  "POINTERS ONLY (CH4).",
+  "",
+  "F3 step 3's report. It answers the EIGHTY-THIRD verdict, which closed",
+  "step 2 on the three-round cap and carried four items.",
+  "",
+  "R624 answered at 47daa3d (EG0); R630 at 47daa3d (EG1), with its own",
+  "figures withdrawn under BP0; R629 at 0d911ce. R626's residue and R631",
+  "are `carried` and are LEDGERED in docs/closure/F3.md section 4, which",
+  "is EG2 reduced in scope under DZ7c.",
+  "",
+  "Pointers name the section that does the work, not one section for all",
+  "-- R629 is the reason that matters."
+ ],
+ "answered": {
+  "R610": {
+   "state": "carried",
+   "where": "\u00a79"
+  },
+  "R611": {
+   "state": "withdrawn",
+   "where": "\u00a79"
+  },
+  "R612": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R613": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R614": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R615": {
+   "state": "carried",
+   "where": "\u00a79"
+  },
+  "R616": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R617": {
+   "state": "withdrawn",
+   "where": "\u00a79"
+  },
+  "R618": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R619": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R620": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R621": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R622": {
+   "state": "later",
+   "where": "\u00a79"
+  },
+  "R623": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R624": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R625": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R626": {
+   "state": "carried",
+   "where": "\u00a710"
+  },
+  "R627": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R628": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R629": {
+   "state": "answered",
+   "where": "\u00a71"
+  },
+  "R630": {
+   "state": "answered",
+   "where": "\u00a75"
+  },
+  "R631": {
+   "state": "carried",
+   "where": "\u00a710"
+  }
+ }
+}
