@@ -137,7 +137,17 @@ def main() -> int:
     # `UnicodeDecodeError: 'utf-8' codec can't decode byte 0x97`. A round-trip that
     # cannot read what it wrote loses every earlier round, which is the failure this
     # change exists to prevent.
-    out.write_text(rounds, encoding="utf-8")
+    #
+    # AND `newline="\n"`, WHICH IS THE OTHER HALF OF THE SAME ROUND-TRIP (C72, EB2).
+    # The read above is `read_bytes().decode()`, so a line already ending `\r\n` keeps
+    # its `\r` in `previous`; the write was in text mode, where Python translates every
+    # `\n` to the platform terminator. So each preserved line gained one carriage
+    # return per round -- `\r\n`, then `\r\r\n`, then `\r\r\r\n` -- and read back with
+    # universal newlines the file came out double-spaced, doubling again every round.
+    # One verdict file had already accumulated 576 of them before anyone read it that
+    # way. The reviewer was normalising to LF by hand before every invocation; this
+    # removes the need and the chance of forgetting.
+    out.write_text(rounds, encoding="utf-8", newline="\n")
     kept = len(previous.strip().splitlines())
     print(
         f"wrote {out.relative_to(root)}  ({m.group(1)} @ {sha()[:10]}); "
