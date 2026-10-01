@@ -72,18 +72,33 @@ def _active_milestone() -> str:
 REPORTS = ROOT / "docs" / "reports" / _active_milestone()
 
 
-def _newest_report() -> Path:
+def _newest_report() -> Path | None:
+    """The highest-numbered step report of the active milestone, or None.
+
+    **IT ASSERTED HERE, AND THAT MADE A MISSING DIRECTORY A COLLECTION ERROR
+    (EA2, C77).** EA2's dry run moved the step marker to a scratch F4 and this
+    module raised `AssertionError: no numbered step report under
+    docs/reports/F4` at import -- before F4's first report exists, which is
+    every tree between the marker move and the first report. That is R234, the
+    shape this module's own docstring says it avoids: the suite reports one
+    error having run nothing, and the twenty-odd checks in here say nothing at
+    all rather than saying what is wrong.
+
+    It returns None instead, and `test_the_report_parsed_into_sections` is
+    where the absence is reported -- by name, with the directory in the
+    message. That test already refuses an empty parse, so a missing report and
+    an unparseable one fail in the same place for the same reason.
+    """
     steps = []
     for q in REPORTS.glob("step-*.md"):
         m = re.fullmatch(r"step-(0|[1-9][0-9]*)", q.stem)
         if m:
             steps.append((int(m.group(1)), q))
-    assert steps, f"no numbered step report under {REPORTS}"
-    return max(steps)[1]
+    return max(steps)[1] if steps else None
 
 
 REPORT = _newest_report()
-TEXT = REPORT.read_text(encoding="utf-8", errors="replace")
+TEXT = REPORT.read_text(encoding="utf-8", errors="replace") if REPORT is not None else ""
 BODY = TEXT[TEXT.rindex("# Revision ") :] if "# Revision " in TEXT else TEXT
 
 # A number, at its widest: digits with separators and an optional exponent.
@@ -152,7 +167,17 @@ SECTIONS = _sections()
 
 
 def test_the_report_parsed_into_sections() -> None:
-    """A parse that finds nothing agrees with everything."""
+    """A parse that finds nothing agrees with everything.
+
+    AND THIS IS WHERE A MISSING REPORT IS REPORTED (EA2, C77), rather than at
+    import. The two faults are one sentence apart and fail in one place.
+    """
+    assert REPORT is not None, (
+        f"no numbered step report under {REPORTS}, which is the active "
+        "milestone's report directory. Every check in this file reads that "
+        "report, so there is nothing here to measure -- and at a marker move "
+        "this is the expected state until the first report is written."
+    )
     assert len(SECTIONS) > 3, f"{REPORT.name}'s newest revision parsed to {len(SECTIONS)} sections"
     assert any(_split(lines)[0] for _, lines in SECTIONS), (
         "no fenced block in the whole revision, so every number would be "
