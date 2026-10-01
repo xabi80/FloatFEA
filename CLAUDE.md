@@ -221,6 +221,49 @@ before the commit exists. That class includes `tests/test_report_carried.py`,
 `tests/test_report_guard_states.py`, and anything reading `git log`, `git diff` or
 `git merge-base`. For those, "I ran it before committing" is not a measurement.
 
+### CZ1's carve-out for a step's own boundary red (EG3)
+
+*Adopted by directive EG3 in the reviewer's wording, unparaphrased. Proposed in the
+eighty-first verdict's ruling 4 and sharpened in the eighty-third; the reviewer
+applied it by hand three times before it was written down.*
+
+> **CZ1 step (iii) does not apply to the boundary red a step's own report creates, on EITHER side of the verdict.** Two states, both designed, both self-clearing, and neither is a defect:
+>
+> **(1) Report written, verdict not yet.** The only failures are `tests/test_report_carried.py::test_the_guard_reads_the_step_being_worked_on` and the planted states that cascade off its baseline. The verdict clears them.
+>
+> **(2) Verdict written, answering report not yet.** The only failures are `test_every_named_site_is_touched_or_declared`, `test_the_report_carries_the_finding`, `test_the_CI_section_is_about_the_REVIEWED_commit`, `test_the_Carried_table_is_what_the_generator_produces` and `test_the_generator_would_catch_a_row_under_the_wrong_number`, each naming a finding or a site of the newest verdict. The answering report clears them.
+>
+> In either state the run is recorded as RED WITH ITS CAUSE NAMED -- the full `FAILED` list pasted, and the sentence saying which of the two states it is -- and work proceeds. **Any failure outside the state's own list is CZ1 (iv) unchanged**, and "only those" is a claim that carries the `FAILED` list as its command. The reviewer measures state (1) clearing at its verdict commit; the implementer measures state (2) clearing at the report commit.
+
+**And the sharpening, which is the eighty-third verdict's own sentence:**
+
+> the first-report carve-out should say that state (2) is cleared BY THE ANSWERING REPORT and not by time -- if no answering report is written the state does not clear, and a tree red with no revision in sight must read as what it is.
+
+**Two conditions on it, from EG3:**
+
+**(i) The waiver is conditional on the trace, and the trace is pasted.** The
+pre-invocation green requirement is waived only if EVERY red traces by name to the
+step-boundary cause. Not "the failures look like the boundary set" -- each `FAILED`
+id is matched to the state's own list, and a red that does not match is CZ1 (iv)
+unchanged. The eighty-third verdict is why the condition is worded that way: eight
+planted states were ruled as one cascade by class across two verdicts, and the
+eighth was a real defect (R629) sitting inside a group nobody was reading
+individually.
+
+**(ii) The verdict commit is measured too.** After the verdict commit exists, the
+report-guard files are run AT that commit and the counts pasted in the next
+revision. State (2) is the half no verdict in this milestone had ever measured,
+because the reviewer runs at the judged commit before writing.
+
+### Corpus batches pause until 28 October (EG4(e))
+
+Recorded here because it changes what a round may spend. Batches pause after F3
+step 3, except mutation work on **F4's load-mapping gate** and **EB6's
+label-provenance gate** -- the two surfaces where a miss would reach a member
+force. The coverage measurements that justified the spend are in the verdicts:
+4 of 11, then 8 of 13, then 5 of 10, with the last round's misses all outside the
+element.
+
 ### The reviewer's own instructions are not edited inside a step
 
 `.claude/agents/`, `.claude/hooks/` and `docs/SUPERVISOR.md` define what the
