@@ -1,4 +1,553 @@
 # Review — F3 step 1
+Reviewed commit: ec713d275b270ab499ccb04eb0a5277d00be02e5
+Verdict: STOP
+Tests: 2868 passed, 0 failed, 0 skipped   (my own run at the reviewed commit, `python -m pytest -q`, one invocation, no split, no exclusion, clean tree, 1326.42s, exit 0)
+
+## Round of 2026-09-30 -- EIGHTIETH verdict. THE FOUR EA COMMITS ARE SOUND AND NOTHING IN THEM BLOCKS. THE STOP IS R616, UNCHANGED, AND IT IS STILL NOT THE IMPLEMENTER'S TO ANSWER.
+
+**Reviewed commit: `df2c170`.**
+
+**F3 step 1 remains CLOSED at PASS (DD1, verdict 76).** Nothing here reopens it. What is held
+is the OPENING of step 2, and it is held on exactly one thing: `docs/milestones/F3.md`
+section 5, which is R616. Nothing in the four EA commits touches section 5, so nothing in
+them could have changed that, and nothing in them did.
+
+**WHAT I RULED ON THIS ROUND.** Four commits, one path class each, after verdict 79's judged
+commit. I read every line of the diff before the hand-back, ran the suite myself, took the
+CI result from `gh` rather than from the paste, and measured the three things the hand-back
+asked me to rule plus the one number it declined to assert a cause for. I also attacked
+G3.1a with twelve planted defects, which is where the one new thing this round found came
+from.
+
+**MY ANSWER, IN ONE LINE EACH.** EA0: the implementer is right and the directive is wrong --
+the detection is live and I proved the planted state depends on it. EA2's four remaining
+sites: the implementer is right, and a ruling of mine already on the frozen list says so.
+The dry run: the tree is clean of it, measured with `--untracked-files=all`. The delta: it
+is EA4 and only EA4, two new citation cases, and the implementer's own suspicion is refuted.
+
+## THE TREE AT df2c170, MEASURED
+
+```
+cmd    git rev-parse HEAD && git rev-parse origin/F3
+out    df2c170b598d5d93d050988ac24891199a36ca1b   both -- pushed, HEAD of F3
+cmd    git status --porcelain --untracked-files=all
+out    (no output, before any work of mine)
+cmd    git log --oneline 7b44545..df2c170 --stat
+out    ecf8e70  tests/test_report_numbers_are_sourced.py       30 +, 5 -
+out    db6a099  scripts/carried_table.py, check_carried.py, ci_section.py   55 +, 5 -
+out    3d818b6  floatfea/model/platform.py                     14 +, 1 -
+out    df2c170  tests/verification/rung3/test_platform_skeleton.py   24 +, 0 -
+judge  one path class per commit, as stated. No commit touches both floatfea/ and
+       docs/reviews/, and no commit touches .claude/ or docs/SUPERVISOR.md.
+cmd    python -m pytest -q
+out    2868 passed, 2 warnings in 1326.42s (0:22:06)      exit 0
+cmd    python -m ruff check floatfea tests scripts
+out    All checks passed!          (I added scripts/ to the pathspec myself)
+cmd    python -m black --check floatfea tests
+out    89 files would be left unchanged
+cmd    python -m black --check scripts
+out    21 files would be left unchanged           C75 is CLOSED, measured here
+cmd    python -m mypy floatfea
+out    Success: no issues found in 29 source files
+```
+
+**CI, AT THE REVIEWED COMMIT, FROM `gh` AND NOT FROM THE PASTE (CA2).**
+
+```
+cmd    gh run list --commit df2c170b598d5d93d050988ac24891199a36ca1b --json name,conclusion,status,workflowName,databaseId,event,headSha
+out    CI  36801064334  push  completed  success   headSha df2c170...
+cmd    gh run view 36801064334 --json jobs, every job and every step
+out    the verification ladder     success   13 steps, all success
+out    lint, unit and guards       success   14 steps: actionlint, ruff, black --check,
+out                                          mypy, unit tests, guards and meta-tests --
+out                                          ALL SUCCESS, none skipped
+out    CI determinism -- leg              skipped   0 steps
+out    CI determinism -- ten legs agree   skipped   0 steps
+cmd    gh run view 36801064334 --log, the count lines
+out    unit tests             88 passed in 0.68s
+out    guards and meta-tests  959 passed, 1 warning in 584.93s (0:09:44)
+out    ladder 1, 2, 3, 6, 4   run_rung: OK -- 1 directory ran, each
+out    ladder 5               run_rung: OK -- 0 directories ran    empty by design
+judge  GREEN on both machines. The two skipped jobs are the `workflow_dispatch` gate
+       under CK0 -- unavailable BY DECLARATION, which is neither red nor CK2: no job
+       here has an empty runner_name with a two-second duration and a spending
+       annotation. Same state verdict 79 recorded, same reason.
+```
+
+## Carried
+
+* **R616 -- STILL OPEN, STILL THE STOP, AND UNTOUCHED BY THIS ROUND.** `docs/milestones/F3.md`
+  section 5 is byte-identical since verdict 79: `git diff 7b44545..df2c170 -- docs/` returns
+  the verdict file and nothing else. It is not the implementer's and no verdict of mine can
+  close it. It carries by name into step 2 the moment step 2 opens.
+* **R612 -- closed at verdict 79.** Unchanged, and the lint path is green again at this commit
+  including `scripts/`.
+* **R611 -- item 1b applied, and the answer is the same as verdict 79's.** There is no new
+  report revision this round, so there is no new `Answers:` claim to check. The newest
+  revision still reads `Answers: verdict 75 @ 2f068c4`:
+
+```
+cmd    grep -n "^Answers:" docs/reports/F3/step-1.md | tail -1
+out    618:Answers: verdict 75 @ 2f068c4        (Revision 3, the newest)
+cmd    git log -1 --format=%h -- docs/reports/F3/step-1.md
+out    8e4238d
+cmd    git merge-base --is-ancestor 8e4238d 7e32070
+out    YES -- the report commit precedes the verdict commits 77, 78 and 79
+judge  the exemption at tests/test_report_carried.py:394-400 applies and the whole tree is
+       0 failed. This is the legitimate boundary, not a report ignoring a verdict. Bumping
+       the header was measured at 33 failed in verdict 78 and is still the wrong move. NOT a
+       finding, recorded because item 1b says to compare and say so.
+```
+
+* **R613, R614, R617 -- as recorded at verdict 79.** R613 is R616. R617 stays withdrawn.
+* **R615 and R610 -- closure items, unchanged.** This round is a third instance of R615's
+  window and I am not spending a line on it beyond saying so.
+* **C74 -- STILL OPEN.** The report was not revised in these four commits, so the generated CI
+  section still anchors on verdict 74 at 228bdfb, a failed run. It closes when
+  `scripts/ci_section.py` is re-run at the commit publishing the next revision.
+* **C75 -- CLOSED.** `python -m black --check scripts` is `21 files would be left unchanged` at
+  `df2c170`, measured above. `db6a099` reformatted `scripts/carried_table.py`, which the step's
+  closure commit `8e4238d` had broken. **The PATHSPEC half is NOT closed and I am not asking for
+  it again**: `ruff check floatfea tests`, `black --check floatfea tests`, `mypy floatfea` still
+  leave `scripts/` outside CI. That stays a closure item (C75b below).
+* **C76 -- STILL OPEN.** The marker-count-per-file clause is not in the tree.
+  `tests/test_report_carried.py:471-483` still asserts one PLAN and not one MARKER, and
+  `re.search` still returns the first. Unchanged and holding nothing.
+* **C77 -- ANSWERED by `ecf8e70`, with one correction below (C79).** Verified: the module
+  imports and reports instead of failing to collect.
+* **C78 -- ledger line, unchanged.** No code change asked.
+* **C58 to C64, C59/R605, C65 to C73, C40, C56(iii), C56(iv), C57** -- as ruled at verdicts 77
+  and 79. Nothing in these four commits touches any of them.
+
+## THE FOUR RULINGS THE HAND-BACK ASKED FOR
+
+**1. EA0 -- THE IMPLEMENTER IS RIGHT AND THE DIRECTIVE IS WRONG. DO NOT DELETE THE STATE.**
+I did not take this on the reading of the code. I ran the ablation, in a `git clone` under the
+session scratch directory, and the state turns out to depend on the detection exactly as it
+should:
+
+```
+claim  the `git cat-file -e` detection is live, and the planted state measures it
+cmd    tests/test_report_carried.py:320, read at df2c170
+out    out = subprocess.run(["git", "cat-file", "-e", ANSWERED], cwd=ROOT, capture_output=True)
+out    assert out.returncode == 0, ...   -- live, three lines of message beneath it
+cmd    python -m pytest "tests/test_report_guard_states.py::test_the_guard_survives_the_state[answers_header_names_a_sha_that_is_not_a_commit]" -q
+out    1 passed in 10.18s
+cell   THE ABLATION, one variable. In a clone at df2c170, plant the bad sha by hand
+       (`Answers: verdict 28 @ deadbee`) and run the guard; then neuter the ONE assert
+       above to `assert True` and run it again. Nothing else changed.
+out    detection live:  154 failed, 192 passed -- and FAILED ... test_the_report_names_the_verdict_it_answers
+out    detection inert: 153 failed, 193 passed -- and that name is NO LONGER among the failures
+rule   `_assert_diagnosis` at tests/test_report_guard_states.py requires
+       `test_the_report_names_the_verdict_it_answers` to be among the failed names and
+       `test_the_diff_the_site_check_needs_is_available` NOT to be. The first clause goes red
+       the moment the detection is removed.
+judge  CONFIRMED, measured rather than argued. The state is a WORKING negative control whose
+       green is a function of the detection. Deleting it under EA0 would have deleted the one
+       thing in the tree that measures that this detection fires and fires by name. The
+       implementer invoked the directive clause that my verdict governs where it differs, and
+       that was the correct call. **EA0 is withdrawn on my authority; the premise it rests on
+       is a diagnosis that was already refuted.**
+```
+
+**2. EA2's FOUR REMAINING SITES -- THE IMPLEMENTER IS RIGHT TO HAVE DECLINED, A RULING OF MINE
+ALREADY SAYS SO, AND THE MEASUREMENT IS WORSE THAN THE READING CLAIMED.** Routing them does not
+give two vacuous and two red. It gives FOUR RED, and two of those are collection errors:
+
+```
+claim  what each of the four does when its hardcoded F2 path is routed at F3
+cell   one clone at df2c170, the F2.md and F2_figures.md literals replaced by F3 in each file
+       in turn, nothing else touched, `pytest <that file> -q`
+out    tests/test_plan_figures.py            ERROR during collection -- docs/milestones/F3_figures.md does not exist
+out    tests/test_plan_matches_tolerances.py ERROR during collection -- "Empty parameter set in
+                                            test_the_plan_and_the_code_agree at line 81"
+out    tests/test_figure_local_check.py      1 failed, 21 passed
+out    tests/test_ci_canonical_environment.py 1 failed, 3 passed -- test_the_plan_and_the_workflow_name_THE_SAME_kernel
+cmd    grep -c "{{fig:" docs/milestones/F3.md docs/milestones/F2.md ; grep -c "Q8" on both
+out    F3.md 0 and F2.md 60 for figures; F3.md 0 and F2.md 3 for Q8
+judge  the reading is right in its conclusion and wrong in its words: NOTHING here would have
+       gone vacuous, because this tree refuses an empty parameter set at COLLECTION. That is a
+       guard working. Correction recorded as C82.
+```
+
+**AND THE AUTHORITY FOR LEAVING THEM IS ALREADY WRITTEN DOWN, which the hand-back did not cite:**
+
+```
+cmd    grep -n "hardcoded to a CLOSED milestone" docs/milestones/F2a.md
+out    :230  "...`tests/test_plan_matches_tolerances.py:34`, which forced F3's
+out          MASS_PROPERTY_AGREEMENT into a closed milestone's table ... **The reviewer ruled:
+out          leave them alone** -- neither fails false, re-pointing is a guard edit DR1 forbids
+out          ... **Return condition:** one `process:` commit re-pointing all three at the
+out          active plan, when the freeze lifts."
+cmd    grep -n "MASS_PROPERTY_AGREEMENT" docs/milestones/F2.md
+out    :1398  "...so F3's `MASS_PROPERTY_AGREEMENT` has to be in a closed milestone's plan"
+out    :1416  | `MASS_PROPERTY_AGREEMENT` | `MASS_PROPERTY_AGREEMENT = 1e-13` |
+judge  so F3's one tolerance row lives in F2.md DELIBERATELY, and routing
+       test_plan_matches_tolerances.py at F3.md would not merely redden it -- it would take
+       away the guard's only live subject. The four are a different class from the four that
+       broke at the marker move, exactly as the hand-back says. **Declining was right. DR1 and
+       my own ruling on the frozen list both say so, and the return condition is a `process:`
+       commit when the freeze lifts, not a step commit now.** The one site of the three in that
+       F2a row that HAS since moved is the guard-state harness `_PLAN` (R601a), so that row is
+       stale by one site; that is prose on the frozen list and I am not asking for it.
+```
+
+**3. THE F4 DRY RUN -- THE TREE IS CLEAN OF IT, AND I RE-RAN IT MYSELF OUTSIDE THE REPOSITORY.**
+
+```
+claim  nothing from the dry run survives in the repository
+cmd    git ls-files docs/milestones/
+out    F1.md  F2.md  F2_figures.md  F2a.md  F3.md          no F4.md is tracked
+cmd    git status --porcelain --untracked-files=all
+out    (no output)                                         no F4.md is untracked either
+cmd    git diff 7b44545..df2c170 --stat -- docs/
+out    docs/reviews/F3/step-1.md | 448 +      -- the verdict commit, and nothing else
+cmd    grep -rn "step-under-execution" docs/milestones/
+out    F2.md:10 moved to F3 at step 1 (DY8c)   -- non-numeric, so it does not resolve
+out    F3.md:9  <!-- step-under-execution: 1 -->
+judge  CLEAN. `docs/milestones/F3.md` is untouched since 7b44545 and exactly one plan carries a
+       numeric marker.
+```
+
+```
+claim  and the dry run's own conclusion holds, re-measured in MY clone rather than taken
+cell   in a clone at df2c170: F3.md marker made non-numeric, a scratch F4.md created with
+       `<!-- step-under-execution: 1 -->`, no docs/reports/F4 and no docs/reviews/F4
+out    tests/test_report_numbers_are_sourced.py   1 failed, 2 passed -- NOT a collection error
+out                                               the failure names the directory, at :175
+out    python scripts/ci_section.py               refuses: "ci_section: no numbered verdict
+out                                               under ...docs/reviews/F4 ... F4 carries the
+out                                               step marker and has not been reviewed yet"
+out    python scripts/check_carried.py (no flags) "check_carried: ...docs/reviews/F4/step-1.md
+out                                               or ...docs/reports/F4/step-1.md missing"
+out    tests/test_report_carried.py               20 failed, 84 passed, 1 skipped -- COLLECTED,
+out                                               every failure carrying its own message
+out    tests/test_report_guard_states.py          24 tests collected
+judge  CONFIRMED on all five resolvers: each resolves to F4 or refuses by saying so, and none
+       dies at import. The two fixes do what the commits claim. One correction to what the
+       claim SAYS is recorded as C79.
+```
+
+**4. THE `2866 -> 2868` DELTA -- LOCALISED, AND THE IMPLEMENTER'S OWN SUSPICION IS REFUTED.**
+
+```
+claim  which commit adds the two, and what the two are
+cmd    git checkout <each commit> ; python -m pytest --collect-only, in a clone
+out    7b44545  2866 tests collected        9492a46  2866        7e32070  2866
+out    ecf8e70  2866                        db6a099  2866        3d818b6  2866
+out    df2c170  2868
+cmd    diff of the collected id lists at ecf8e70 and df2c170
+out    + tests/test_collected_set_golden.py::test_every_test_name_cited_in_prose_exists[tests/verification/rung3/test_platform_skeleton.py:test_C56_the_DECK_POINTS_really_come_from_the_DECK]
+out    + tests/test_collected_set_golden.py::test_every_test_name_cited_in_prose_exists[tests/verification/rung3/test_platform_skeleton.py:test_the_chosen_FRACTION_is_asserted_not_inferred]
+judge  ALL OF IT IS EA4 AND NONE OF IT IS THE VERDICT. The two new cases are the two test names
+       the new `# expected:` comments CITE, picked up by the citation guard, and both are green
+       because both names exist -- which is the guard doing its job on this very commit. The
+       stated suspicion, that verdict 79's findings added parametrisations to
+       `test_report_carried.py`, is refuted: 7e32070 collects 2866, the same as 7b44545.
+       `test_collected_set_golden` stays green because it is ONE-DIRECTIONAL by design -- its
+       own docstring says a new test is not the failure mode -- which is why no golden moved.
+       The guards subset moves 957 -> 959 for the same two cases, and CI reports exactly that.
+```
+
+## WHAT I VERIFIED MECHANICALLY, BECAUSE THE HAND-BACK ASKED ME TO CHECK TWO CLAIMS
+
+```
+claim  EA4 is comments only -- no assertion, threshold or quantity changed
+cmd    git diff 7b44545..df2c170 -- tests/verification/rung3/test_platform_skeleton.py | grep "^[-+]" | grep -v "^[-+][-+]" | grep -v "^+ *#"
+out    (no output)
+judge  CONFIRMED. Twenty-four inserted lines, every one of them a comment, zero deletions.
+claim  EA3 changes no logic -- `admissible` is byte-identical below the docstring
+cmd    `git show <sha>:floatfea/model/platform.py` at 7b44545 and at df2c170, the function body
+       sliced from after the closing docstring quotes to the next top-level def, compared
+out    identical below docstring: True   383 bytes at both commits
+judge  CONFIRMED.
+claim  and every file and field the six new comments name exists
+cmd    the deck YAML parsed; the two cited test names grepped for their `def`
+out    bodies[] carries mass, reference_point, inertia; joints[] carries body_a, body_b,
+out    attach_a_body -- all present in data/platform/platform12_deck.yaml
+out    test_the_chosen_FRACTION_is_asserted_not_inferred at :535 and
+out    test_C56_the_DECK_POINTS_really_come_from_the_DECK at :383 both exist
+judge  EVERY CITATION RESOLVES. And the independence each comment claims is true as stated: I
+       followed `deck_mass`/`deck_cog`/`deck_inertia` back through `_full_scale_deck` to the
+       YAML, `analytic_properties` through its own closed form with the remainder READ rather
+       than recomputed, and `expected_pairs` to `deck_joint_points`/`deck_joint_owner`.
+```
+
+## Findings
+
+**R618. (closure, `floatfea/model/platform.py:552`) THE NEW EA3 DOCSTRING SAYS THE SLACK IS
+LINEAR IN `f`. IT IS NOT, ON THE ONE BODY WHERE IT MATTERS MOST.** The sentence is "the slack is
+linear in `f` and reaches zero only at `f = 0`". The second half is true. The first is false on
+the platform and true on the four hubs:
+
+```
+claim  the triangle-inequality slack of `J_r` against `f`, every body, every rung of the ladder
+cmd    _build_body for each body at each f in MASS_FRACTION_LADDER, slack = a + b - c on the
+       sorted eigenvalues of (J_r + J_r.T)/2
+out    platform  f 0.5 -2.676969e+08   0.4 -1.785774e+08   0.3 -1.148723e+08
+out              f 0.2 -6.705114e+07   0.1 -2.981931e+07   0.0  0.000000e+00
+out    slack/f   -5.354e+08  -4.464e+08  -3.829e+08  -3.353e+08  -2.982e+08   a 1.80x spread
+out    hub1..4   -2.030550e+06 per unit f at all five rungs, to six figures -- LINEAR
+rule   the docstring sentence itself, read as a statement about the shipped ladder
+judge  the platform is the body the figure `-2.6770e+08` in `assumptions` is quoted for, and it
+       is the non-linear one. The RULING the sentence supports is unaffected and I measured it
+       separately: slack is negative at all 25 rungs with f > 0 and exactly zero at f = 0 on all
+       five bodies, so requiring realisability really would force `f = 0`. It is the word
+       "linear" that is wrong, and it is wrong in a docstring that exists to be the recorded
+       reason.
+```
+
+**Closed when** the word goes, or the sentence carries the sweep above as a `claim/cmd/out`
+triple at the site. Either is one edit.
+
+**R619. (closure, `floatfea/model/platform.py:558`) THE SAME DOCSTRING SENDS THE READER TO
+`findings`, AND `findings` IS EMPTY.** "The slack is not hidden -- it is reported in `findings`
+with both figures."
+
+```
+claim  which container holds the sentence with the two slack figures
+cmd    build_superstructure(); print s.findings, each body.findings, and which tuple holds the
+       substring "triangle"
+out    Superstructure.findings = ()        every body.findings = ()   at the shipped f = 0.5
+out    in findings: False     in assumptions: True     in label: False
+judge  the sentence is the last entry of `assumptions`, not of `findings`, and `findings` is the
+       empty tuple at the shipped configuration -- it fills only when the density exceeds steel
+       or the ladder drops a rung, and neither happens. A reader who follows this docstring to
+       the container it names finds nothing at all, which is the opposite of what the sentence
+       promises. The EA3 commit message makes the same mistake in its own triple, where the
+       `cmd` reads "read floatfea/model/platform.py, the body findings" -- a `cmd` that cannot
+       be run and that names the wrong tuple.
+```
+
+**Closed when** the word `findings` becomes `assumptions` in that sentence, or the two figures
+are also put in `findings`. One word, and I prefer the word.
+
+**R620. (closure, `floatfea/model/platform.py:548-561`) THE EA3 DOCSTRING INTRODUCES THREE
+QUANTITATIVE CLAIMS ABOUT THE WHOLE LADDER AND CARRIES NO CELL FOR ANY OF THEM.** "PSD at every
+`f` on the ladder", "violates the triangle inequality at every `f > 0`", "linear in `f`". CW0 is
+exactly this: a claim about this repository written in a docstring is a test, a triple, or
+deleted. Two of the three are true, one is R618, and the commit that published them measured
+none of them -- the commit's own triples measure what the docstring USED to say and what
+`assumptions` contains. I took the sweep because it costs one loop; that it was not taken is the
+finding, and under CZ0 it is a closure item rather than a hold.
+
+**Closed when** the three sentences either carry the ladder sweep as a triple at the site, or
+are reduced to the shipped configuration, which is the one `assumptions` already measures.
+
+**R621. (closure, `tests/test_report_numbers_are_sourced.py:169-180` and `ecf8e70`'s message)
+THE C77 REPAIR IS RIGHT AND ITS DESCRIPTION OVERSTATES IT BY TWENTY.** The commit says "the
+twenty-two others are reported as what they are rather than buried in a collection error".
+
+```
+claim  what the module actually does in the state the repair is for
+cell   the F4 state built in a clone: marker on a scratch F4.md, no docs/reports/F4
+out    1 failed, 2 passed in 0.13s
+judge  with no report, `TEXT` is "" and `_sections()` returns ONE entry, `(preamble)`, so the two
+       parametrised tests run once each and PASS VACUOUSLY. Twenty-two checks are not reported;
+       two are, and they are empty. What the repair genuinely buys is real and worth having --
+       a NAMED failure carrying the directory instead of a collection error that runs nothing --
+       and the suite is red either way, so no gate is weakened. The number is what is wrong.
+```
+
+**Closed when** the sentence says what the measurement says. I am not asking for a non-vacuity
+assertion: that would be new apparatus, and DR1 is live.
+
+**R622. (closure for F3, AND THE ONE THING IN THIS ROUND F4 HAS TO ANSWER) EA4's SIX COMMENTS
+ARE TRUE, AND THE INDEPENDENCE THEY RECORD DOES NOT REACH A DEFECT IN THE DECK. I MEASURED
+ELEVEN.** This is my adversarial case for the step and it is the corpus, batch 27.
+
+```
+claim  what the six annotated assertions see when the defect is in the deck INPUT
+cell   one clone at df2c170, one field of data/platform/platform12_deck.yaml changed per run,
+       `pytest tests/verification/rung3/test_platform_skeleton.py -q`, baseline 53 passed
+out    every body mass x1.05                     53 passed     invisible
+out    the platform mass x1.05 alone             53 passed     invisible
+out    every inertia component x1.05             53 passed     invisible
+out    the platform Izz halved                   53 passed     invisible
+out    one joint attach point +3 m IN PLANE      53 passed     invisible
+out    one joint attach point +3 m IN Z          2 passed, 51 errors   CAUGHT, by the builder
+out    two buoy joint labels swapped IN THE DECK 53 passed     invisible
+out    hub1 reference_point +3 m                 53 passed     invisible
+out    element bending rotary inertia dropped    10 failed, 43 passed  CAUGHT, by G3.1a A and B
+out    element torsion rho(I_y+I_z) -> rho J     53 passed     NULL: I_y+I_z == J == 1.775958412028696
+out                                                            exactly for the tube, so no bit moved
+out    MASS_EXPONENT 3.0 -> 2.0                  53 passed at rung 3; 4 failed at rung 4 + unit
+rule   the six `# expected:` comments, read as EA4 asks: the named source must not be read from
+       the object under test
+judge  EVERY COMMENT IS TRUE AND THE GATE FAMILY IS STILL BLIND TO ALL EIGHT. The reason is one
+       shape: the expected side and the measured side both DESCEND FROM THE DECK FILE, so a
+       defect in the deck moves them together. That is a different circularity from the one EA4
+       closes, and the module's own docstring already says the model is constructed to carry the
+       deck's properties -- so this is REACH, declared, and not a defect. **I am not holding
+       anything on it and I am not asking for a guard.**
+judge  WHAT IT MEANS FOR F4, WHICH IS WHY IT IS WRITTEN DOWN. `buoy_joint_nodes` is keyed off the
+       deck's `body_a` labels. R600's docstring says a label permutation is "the one that matters
+       most, because F4 would have applied each buoy's reaction at its neighbour's node, and
+       nothing would have said so". Measured: planted in the BUILDER it is caught; planted in the
+       DECK EXPORT it is invisible, 53 passed. The only defence today is provenance -- the file
+       is generated and its header forbids a hand edit -- and provenance is not a gate. The
+       corpus carries two `plan` rows asking F4 for one expected side that does not descend from
+       the deck label, the geometric cluster angle being the obvious candidate.
+```
+
+**Closed when** F3 closes with this recorded in the closure artifact as the gate family's reach,
+and F4's plan answers the two `plan` rows. Nothing is asked of the implementer inside this step.
+
+**R623. (closure, `tests/verification/rung3/test_platform_skeleton.py:489-492`) THE DZ2 COMMENT
+NAMES TWO SOURCES AND THE PLATFORM's CENTRE COMES FROM NEITHER.** The comment says the expected
+side is built from `deck_joint_points` and `deck_joint_owner`. For the four hubs that is exactly
+true. For the platform, `expected_pairs` uses the typed plan centre `(0.0, 0.0,
+superstructure.joint_plane_z)`; the function's own docstring says so two lines above, and
+`joint_plane_z` does come from the deck's joint elevations, so nothing is circular. The one-line
+comment is what a reader checks against, and it omits the one point that is not a joint.
+
+**Closed when** the comment says "and the typed plan centre for the platform", four words.
+
+## Closure items
+
+Named, not re-reviewed, none of them holding anything. They are the findings above plus what
+carries. Fix the list once in the step's closure commit, and verify it AFTER it exists (CZ1).
+
+* **C79 = R621.** `ecf8e70`'s "twenty-two others" is `1 failed, 2 passed`. Wording.
+* **C80 = R618.** `floatfea/model/platform.py:552` -- "linear in `f`" is false on the platform.
+* **C81 = R619.** `floatfea/model/platform.py:558` -- `findings` should read `assumptions`.
+* **C82 = ruling 2 above.** The hand-back's "two vacuous and two red" is four red, two of them
+  collection errors. Wording, in the next report.
+* **C83 = R620.** The three ladder claims in the EA3 docstring carry no cell at the site.
+* **C84 = R623.** The DZ2 comment omits the platform's typed plan centre.
+* **C75b.** The `scripts/` LINT PATHSPEC, which `db6a099` explicitly declines and says so. CI
+  still runs `ruff check floatfea tests`, `black --check floatfea tests`, `mypy floatfea`, so
+  `run_rung.sh`, `check_carried.py`, `write_verdict.py` and `ci_section.py` are unlinted and
+  untyped. **Closes when** either the pathspec covers `scripts/` or the exclusion is written down
+  as deliberate with its reason. Not blocking: formatting is not a quantity and no gate claims it
+  there. Second instance of the same ledger line.
+* **C85.** `scripts/check_carried.py:62` and `scripts/ci_section.py:147` are the two
+  resolvers in the tree that NOTHING collects. No test imports either module -- `_ci_section()`
+  in `tests/test_report_carried.py:987` reads the report, not the script -- so the new
+  `_active_step()` and the new `SystemExit` are measured only by a hand invocation. Both are
+  correct today; I ran both. **Closes when** the closure artifact records that these two paths
+  are reviewer-and-hook-only and are not under test, so nobody later mistakes the green suite for
+  coverage of them. No new apparatus: a sentence, not a test.
+* **C74, C76, C78, R610, R615** -- carried unchanged from verdict 79, see `## Carried`.
+
+## Tolerances touched
+
+```
+cmd  git diff 7b44545..df2c170 -- floatfea/tolerances.py
+out  no output
+cmd  git diff 7b44545..df2c170 --stat -- floatfea
+out  floatfea/model/platform.py | 15 +++++++++++++-  -- the docstring only, verified above
+cmd  git diff 7b44545..df2c170 -- tests/conftest.py "tests/**/conftest.py"
+out  no output
+cmd  git ls-files -- tests/conftest.py "tests/**/conftest.py"
+out  tests/conftest.py            CI0: the pathspec resolves to a real file, as it must
+cmd  git ls-files | grep conftest
+out  tests/conftest.py            one conftest in the tree; no rung carries its own
+```
+
+**None.** No tolerance, no golden, no parametrisation and no assertion value moved. No
+`_COUNTER` moved. No conftest and no plugin changed, so nothing new can rewrite what
+`scripts/run_rung.sh` reads and the CH2/CI0 reading has nothing to read this round.
+
+## My own instructions (4b), and the commit classes
+
+```
+cmd  git diff 7b44545..df2c170 --stat -- .claude docs/SUPERVISOR.md
+out  no output
+cmd  git log --oneline 7b44545..df2c170 --name-only, every commit
+out  ecf8e70 tests/ only; db6a099 scripts/ only; 3d818b6 floatfea/ only; df2c170 tests/ only
+judge  my own instructions are untouched, no commit mixes a `process:` path into a step commit,
+       and no commit touches both `floatfea/` and `docs/reviews/`. **There is no STOP-class
+       process finding here.** The STOP is the plan, and only the plan.
+```
+
+## The adversarial corpus (BE3)
+
+`tests/corpus/platform_deck_input_reach.txt`, batch 27, committed separately from this verdict.
+**TWENTY entries, all twenty unseen -- a new file on a surface no corpus has touched.** In scope
+under DE2: the platform model and the gate that proves it, not apparatus.
+
+Eleven entries carry a mutation. **TWO CAUGHT, EIGHT INVISIBLE, ONE NULL BY AN EXACT
+IDENTITY -- 2 + 8 + 1 = 11 -- and one of the eight is caught a rung higher than the gate under
+review.** The eight are the R622 shape and they
+are reach rather than misses -- `expect=uncaught` is the prediction written before each run, and
+the row records what the shipped suite did. Against ten of eleven in batch 26, twelve of
+thirteen in batch 25, six of eleven in batch 24.
+
+Every mutation was applied in a `git clone` of this repository under the session scratch
+directory and restored between entries. The working tree was never written to:
+`git status --porcelain --untracked-files=all` is empty before and after, and the only path I
+wrote in this repository is the corpus file and this verdict.
+
+**AND THE CORPUS COMMIT REDDENS NOTHING, measured two ways.** Nothing globs
+`tests/corpus/*.txt` -- each of the six corpus readers names one file by name -- and the
+citation guard scans only `.py` prose inside backticks (`tests/test_collected_set_golden.py`
+`_citations`, `rglob("*.py")` over `tests/` and `scripts/`), so a `.txt` file adds no
+parametrised case. And it was measured rather than reasoned:
+
+```
+cmd  python -m pytest tests --ignore=tests/unit --ignore=tests/verification --ignore=tests/regression -q
+     with tests/corpus/platform_deck_input_reach.txt present in the tree
+out  959 passed, 1 warning in 1153.45s (0:19:13)      exit 0
+judge the same 959 CI reports for `guards and meta-tests` at df2c170, so batch 27 moves no
+      collected count and no assertion.
+```
+
+## On the criterion, and one thing above me
+
+I was asked to rule under CZ0 and I did. **Nothing in these four commits is (a), (b), (c) or
+(d).** No defect in `floatfea/` -- I attacked it twelve ways and the two detections that fired
+fired correctly. No tolerance and no counter. No gate assertion: EA4 is comments, EA3 is
+byte-identical below a docstring. No red test, locally or on CI. Seven findings, every one a
+closure item, and I have put them in a list instead of spending a round on them.
+
+**THE ONE THING I WANT RECORDED FOR XABIER, and I say it once.** This is the FIFTH verdict after
+the step closed at PASS, and under `docs/SUPERVISOR.md` post-closure verdicts count against the
+NEXT step's cap. So step 2 has arrived at its three-verdict cap already consumed, before its
+first line is written, and every one of those five rounds has been about either the tree's colour
+or a plan sentence the implementer is forbidden to edit. The mechanism is working exactly as
+written and the arithmetic is still wrong: the cap exists to stop review consuming a step, and
+here it is consuming a step that has not started, on a blocker whose addressee is not in the
+loop. **The decision I would like from Xabier is one line: do post-closure rounds spent on a
+STOP against the plan count against the next step, or against nothing?** I am not asking for a
+fourth round, I am not softening the STOP, and this does not change anything I ruled above.
+
+## Next step opens when
+
+**F3 step 1 stays CLOSED at PASS (DD1, verdict 76). The four EA commits are SOUND: the tree is
+green on both machines at `df2c170`, nothing in them blocks, and I have ruled every departure
+from the directive in the implementer's favour.** What is stopped is the OPENING OF STEP 2, and
+it is stopped on the plan.
+
+1. **`docs/milestones/F3.md` section 5 is re-locked.** R616, unchanged and untouched by these
+   four commits: the band sentence goes and G2.1's row says what it is measured on. The evidence
+   for choosing the correction over a new gate is in verdict 79's R616 and I have not restated
+   its figures here, because restating a measurement I am not re-taking is BP0 in miniature.
+2. **Then step 2 opens and R616 carries into its `Carried` section by name**, and stays there
+   until section 5 is edited. No verdict of mine can close it.
+3. **Nothing else is required of the implementer, and specifically: do not spend a round on EA0,
+   on the four hardcoded sites, or on any item in `## Closure items`.** EA0 is withdrawn.
+   The four sites stay as they are until DR1 lifts, which is my own ruling on the frozen list and
+   not a new one. The closure list is fixed once, in the closure commit, verified after it exists
+   per CZ1.
+4. **No re-review of this tree is needed to open step 2** once section 5 is edited: the plan edit
+   is under `docs/milestones/`, and this verdict has recorded the colour of the code at
+   `df2c170`. If `floatfea/`, `tests/` or `scripts/` moves again before step 2 opens, that
+   condition lapses and the same reading applies to whatever moved.
+
+**Schedule.** F3 closes 13 October; F4 19 October; the member-force table 23 October; the
+code-check screen 28 October. **I have no measurement that contradicts any of them.** The one
+item that could move them is still R616 answered as a new gate rather than as a correction. Five
+post-closure rounds have now been spent, none of them on the platform model until this one, and
+R622 is the first thing in those five that F4 will actually have to answer.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F3 step 1
 Reviewed commit: 9492a460464e1313e4e683e283ef1c9ac56d81d6
 Verdict: STOP
 Tests: 2866 passed, 0 failed, 0 skipped   (my own run at the reviewed commit 7b44545, `python -m pytest -q`, one invocation, no split, no exclusion, clean tree, 1384.81s, exit 0)
