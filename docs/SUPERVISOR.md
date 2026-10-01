@@ -387,3 +387,44 @@ check would pass on anything.
 **Neither of these is a judgement about content**, and neither narrows what the
 reviewer may find or say. They are the shape the existing readers expect, recorded
 here because the alternative was editing two parsers during an apparatus freeze.
+
+### A closure commit is verified after it exists (CZ1)
+
+*Adopted by directive EB1, in the reviewer's wording, unparaphrased. It was
+proposed in the seventy-ninth verdict after the closure commit `8e4238d` shipped
+two reds that the implementer's loop could not see.*
+
+**A closure commit is verified AFTER it exists (CZ1).** A closure commit is written
+after the last reviewed round and is not reviewed by rule, so nothing between it and the
+next step's report measures it. Two classes of red shipped in 8e4238d for that reason: the
+lint gate, which `pytest` does not run, and the report guards, whose answer is a function of
+the commit graph and therefore cannot be taken before the commit exists.
+
+So, for every closure commit, in this order: **(i)** make the commit; **(ii)** at that
+commit, tree clean, run and paste `ruff check floatfea tests`, `black --check floatfea
+tests`, `mypy floatfea` and `pytest -q`; **(iii)** push it and paste `gh run list --commit
+<sha>` with the job-level conclusions, so that the lint job's `guards and meta-tests` step
+is seen to have RUN rather than been skipped behind an earlier red step; **(iv)** any red is
+answered in a follow-on commit that repeats (ii) and (iii). A closure commit is not finished
+until a pushed CI run at its own sha, or at the follow-on's, is green.
+
+The four outputs are `claim / cmd / out` triples (BF0, CP2) in the step report's closure
+section, or -- where that report is already closed -- in the next report's `Carried`.
+
+**The reusable half of it:** a check whose input is the commit itself cannot be measured
+before the commit exists. That class includes `tests/test_report_carried.py`,
+`tests/test_report_guard_states.py`, and anything reading `git log`, `git diff` or
+`git merge-base`. For those, "I ran it before committing" is not a measurement.
+
+### Round counting across a step boundary (EB4)
+
+*Recorded by directive EB4, answering the question raised in the eightieth
+verdict: five verdicts were spent after F3 step 1 closed at PASS, on a STOP
+against the locked plan, and under the rule as it stood step 2 would have opened
+with its three rounds already spent before its first line.*
+
+**A verdict spent on a STOP or blocker whose resolution belongs to the supervisor
+or to the user counts against NO step.** Post-closure verdicts count against the
+next step only when they judge implementer work done for that step. A step
+therefore opens with its full three rounds, counted from its first report.
+
