@@ -30,10 +30,42 @@ fi
 root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 cd "$root" || exit 0
 
-# Newest report by (milestone, step) — sort numerically on the step number.
-report=$(ls docs/reports/F*/step-*.md 2>/dev/null \
-  | awk -F'[/-]' '{ m=$2; sub(/^F/,"",m); s=$NF; sub(/\.md$/,"",s); printf "%03d %03d %s\n", m, s, $0 }' \
-  | sort | tail -1 | awk '{print $3}')
+# Newest report by (milestone, step) — sort numerically on both.
+#
+# THE MILESTONE IS `$3`, AND IT WAS `$2` FOR THE WHOLE OF F3 (EC0). The field
+# separator is `[/-]`, so on `docs/reports/F3/step-1.md` the fields are `docs`,
+# `reports`, `F3`, `step`, `1.md` — `$2` is the literal string `reports`, which
+# `sub(/^F/,"",m)` does not touch and `%03d` prints as `000`. Every report
+# therefore ranked at milestone 0 and the sort fell back to the step number
+# alone, so `docs/reports/F2/step-7.md` beat `docs/reports/F3/step-1.md` on
+# `7 > 1`.
+#
+# WHAT THAT COST: this hook spent all of F3 anchored on F2 step 7's verdict and
+# its reviewed commit `8b4b687`, comparing `floatfea`/`tests` against an F2-era
+# tree. Seven verdicts were written on F3 step 1 and the hook read none of them,
+# because the condition it blocks on — "changed since the verdict" — could only
+# be cleared by reverting F3's work. The `check_carried.py` call below was
+# comparing F2 step 7's report against its own verdict for the same reason.
+#
+# AND IT FAILS LOUDLY RATHER THAN RANKING AT ZERO. A path this cannot read a
+# milestone from is the defect's own shape, so printing `000` for it is what let
+# the defect survive: the ranking stayed plausible. `F2a` and the like rank on
+# their integer part, which is what `m+0` takes.
+ranked=$(ls docs/reports/F*/step-*.md 2>/dev/null \
+  | awk -F'[/-]' '{
+      m=$3; sub(/^F/,"",m);
+      if (m !~ /^[0-9]/) {
+        printf "cannot read a milestone number from %s (field 3 is %s)\n", $0, $3 > "/dev/stderr";
+        exit 2
+      }
+      s=$NF; sub(/\.md$/,"",s);
+      printf "%03d %03d %s\n", m+0, s+0, $0
+    }' 2>&1) || {
+  printf '{"decision":"block","reason":"require-verdict: %s. The newest-report ranking refuses a path it cannot read a milestone from rather than ranking it at zero (EC0)."}\n' \
+    "$(printf '%s' "$ranked" | grep -F 'cannot read a milestone' | tr -d '\r' | tr '\n' ' ' | sed 's/"/\\"/g')"
+  exit 2
+}
+report=$(printf '%s\n' "$ranked" | sort | tail -1 | awk '{print $3}')
 [ -z "$report" ] && exit 0   # no reports yet: gating not active
 
 review=${report/docs\/reports/docs\/reviews}
