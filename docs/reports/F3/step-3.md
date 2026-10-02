@@ -1511,6 +1511,14 @@ section 7 and `PLAN.md` G4.6 — two locked documents I had cited without re-rea
 one of which predicted in advance the sentence I would write. The measurements in it
 stand; the conclusion is withdrawn.
 
+**Six slips of mine in this revision, all caught before the reviewer read them except
+the last, which was caught after the commit and is answered in a follow-on (CZ1 (iv)):**
+a line range off by one in the plan; three triples whose commands printed something
+other than what I pasted; one `out` line carrying two commands' results; and a `black`
+count taken on a wider pathspec than the `cmd` beside it named. Every one is the class
+CP2 describes -- the prose written *around* a fix inheriting none of the discipline
+applied *to* it.
+
 ## 2. R645 — EJ4's STOP is withdrawn, site by site
 
 The condition names two files and four clauses. Each clause, with the hunk.
@@ -1610,10 +1618,20 @@ out    floatfea/tolerances.py | 3 ++-
 out    1 file changed, 2 insertions(+), 1 deletion(-)
 cmd    git show d978636 | grep -c "^[-+].*Final\[float\]"
 out    0        no value line changed, in either direction
-cmd    (ii) at d978636, tree clean: ruff / black / mypy
+cmd    (ii) at d978636, tree clean -- ruff check floatfea tests
 out    All checks passed!
+cmd    black --check floatfea tests        (CZ1 (ii)'s own pathspec)
+out    91 files would be left unchanged.
+cmd    black --check floatfea tests scripts   (EB3's wider one, what CI runs)
 out    112 files would be left unchanged.
+cmd    mypy floatfea
 out    Success: no issues found in 30 source files
+judge  AND THE FIRST VERSION OF THIS BLOCK PASTED `112` UNDER A `cmd` LINE READING
+       only "ruff / black / mypy", with no pathspec. `112` is EB3's wider set; CZ1
+       (ii) names `floatfea tests`, which is `91`. The figure was real and it was
+       under a command that does not produce it, which is the same defect as the
+       three triples above and the sixth of mine this revision. Both are stated now
+       because both are run -- CI uses the wider one.
 cmd    (ii) pytest -q, clean clone at d978636 under the LOCAL temp
 out    8 failed, 2953 passed, 2 warnings in 1243.27s (0:20:43)
 out    the eight are test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW and the seven
