@@ -217,9 +217,6 @@ STATES: dict[str, list[tuple[str, str]]] = {
         ("docs_commit_touching_guards", "")
     ],
     # --- the thirty-sixth verdict's two ------------------------------------
-    "guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF": [
-        ("pointers_all_at_carried", "")
-    ],
     # RETIRED WITH THE RULE IT EXERCISED (DR0). This state made the whole-suite
     # line name an older ancestor and required the commit-distance rule to redden.
     # That rule is gone, so the state asserts nothing and its corpus row stays as
@@ -247,6 +244,35 @@ ENTRIES = _entries()
 # Each entry maps to the outcome the REPAIRED guard produces, so the direction
 # is asserted rather than merely excused. A bare string here silently indexed to
 # its first character and asserted the right thing by accident.
+# DELETED: `guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF`
+# AND ITS `pointers_all_at_carried` PLANT (EI1, DR1).
+#
+# It passed with the plant and passed without it, measured by ablation three times
+# -- one variable, the plant action writing nothing, everything else held:
+#
+#     WITH the plant, as shipped         1 passed
+#     WITHOUT the plant (ablated)        1 passed
+#     restored                           1 passed
+#
+# and the last of those was taken AFTER the two real defects behind it were fixed,
+# so the vacuity is not explained by either. Its only assertion was `code != 0`,
+# and EG3's carve-out guarantees a red baseline at exactly the moment this state
+# runs, so that assertion can never discriminate. A state that would read `passed`
+# with its plant deleted outright is not a control; `CLAUDE.md` says such a guard
+# is fixed or deleted, three repairs failed, and EI1 rules deletion.
+#
+# IT IS NOT ADDED TO `REQUIREMENT_CHANGED`. That would be a declaration about what
+# a repaired guard must do, which no measurement here supports.
+#
+# THE TWO REAL FIXES IT SURFACED STAY: report sections are NUMBERED, so the
+# Carried section has an id its own guard can find -- which is what
+# `test_a_carried_row_points_at_a_section_that_discusses_it` needs and what the
+# letter headings had hidden. The plant's own Carried-number discovery goes with
+# the plant, because it had no other caller.
+#
+# The defect class -- every Carried pointer naming one section that contains every
+# item -- now has NO PLANTED STATE. `docs/closure/F3.md` records that.
+
 REQUIREMENT_CHANGED: dict[str, tuple[str, str]] = {
     "shallow_clone_depth_1": (
         "named_fail",
@@ -536,56 +562,6 @@ def _build(tmp: Path, state: str) -> Path:
                 ],
             ):
                 subprocess.run(["git", "-C", str(work), *args], capture_output=True, check=True)
-        elif action == "pointers_all_at_carried":
-            # Every pointer moved to the Carried section, which contains every
-            # item by construction. The reviewer did exactly this and the file
-            # stayed green: the resolution resolved and said nothing.
-            report = reports / REPORT_NAME
-            text = report.read_text(encoding="utf-8", errors="replace")
-            # ANCHORED, BECAUSE A SUBSTRING MATCHES PROSE (R637). This was
-            # `rindex("# Revision ")`, which binds to the LAST occurrence anywhere in the
-            # file -- including a sentence in the report that QUOTES the anchor. In F3 step
-            # 3's revision 2 that sentence sat 21 lines from the end, so the region this read
-            # was 22 lines of 937: the plant reached 2 of 33 pointer tokens and zero Carried
-            # rows, and the repair defeated itself through its own prose. R602 was the same
-            # species one level out -- report prose containing a literal a harness anchors on.
-            #
-            # `^# Revision \d+` with MULTILINE is what `tests/test_report_carried.py:247`,
-            # `scripts/check_carried.py:51` and `scripts/ci_section.py:182` already use: a
-            # heading is a line that starts with it and carries a number, which prose quoting
-            # it does not.
-            marks = [m.start() for m in re.finditer(r"^# Revision \d+", text, re.MULTILINE)]
-            if not marks:
-                raise AssertionError(
-                    f"{report} carries no `# Revision N` heading, so this state "
-                    "cannot be planted. That is a defect in the report, not in "
-                    "the harness, and it is reported rather than worked around."
-                )
-            head = marks[-1]
-            # THE CARRIED SECTION'S OWN NUMBER, NOT A HARDCODED 9. This wrote
-            # `§9` whatever the report's headings were, so the state's name --
-            # "names the Carried SECTION ITSELF" -- was true only of a report whose
-            # Carried section happened to be 9. In F3 step 3 it is not, so the
-            # plant moved every pointer to a REAL section that names every item,
-            # which resolves and says nothing: the state passed with and without
-            # the plant, measured by ablation.
-            #
-            # Discovered the way `test_a_carried_row_points_at_a_section_that_
-            # discusses_it` discovers it, so the plant and the guard cannot
-            # disagree about which section is Carried.
-            carried = re.search(r"^##+\s*(\d+[a-z]?)\.\s*Carried", text[head:], re.MULTILINE)
-            if carried is None:
-                raise AssertionError(
-                    f"{report}: the newest revision has no NUMBERED `## N. Carried` "
-                    "heading, so the section this state points every row at cannot "
-                    "be identified. A lettered heading hides it from the guard too."
-                )
-            body = re.sub(r"\u00a7\s*\d+[a-z]?", f"\u00a7{carried.group(1)}", text[head:])
-            report.write_text(text[:head] + body, encoding="utf-8")
-        # THE `suite_line_at_an_older_ancestor` ACTION IS DELETED (DR0). It
-        # rewrote the whole-suite line to name an older ancestor so the
-        # commit-distance rule would redden. That rule is retired; there is
-        # nothing left for the action to provoke.
         elif action == "shallow":
             # A REAL SHALLOW CLONE, not `fetch --depth 1` on a full one. The
             # first version ran the fetch against `origin` and changed nothing,
