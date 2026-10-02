@@ -1,0 +1,66 @@
+# CORPUS: ways a buoy LABEL can be wrong while every coordinate in the file is a
+# real buoy position -- EB6's label-provenance gate (docs/milestones/F4.md
+# sec.2.2 and sec.5), the surface EG4(e) keeps open while batches are paused.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the eighty-eighth verdict on F3, reviewed commit
+# bf21c37.
+#
+# WHY THIS FILE EXISTS (BE3). buoy_joint_nodes is how every gimbal reaction
+# reaches the frame, so a label that names the wrong node moves a reaction of
+# order 1 N to 30 N onto the wrong member while the model stays geometrically
+# legal. The plan names its expected side as
+# HSP-stable/studies/platform-12buoy/platform_common.py:51-58, buoy_centers,
+# with CLUSTER_ANGLES_DEG at :34 as a declared second side. Every citation
+# resolves -- checked line by line at this commit.
+#
+# THE GEOMETRY, MEASURED RATHER THAN ASSUMED. The reviewer own run, rebuilding
+# the centres from the four constants at :33-36 independently of the function;
+# the reproduction is confirmed by closest_cross_cluster_gap = 0.619657 m
+# against the 0.620 m in platform-geometry.md sec.3.6.
+#
+#   * the twelve centres admit EXACTLY ONE non-identity isometry that maps the
+#     SET onto itself: the reflection y -> -y. All 360 integer-degree rotations
+#     and their reflections were enumerated; no rotation but the identity
+#     preserves the set. That reflection permutes the labels in five pairs,
+#     [0,2,1,9,11,10,6,8,7,3,5,4], and displaces labels by up to 2.866025 m.
+#   * a single transposition of two labels displaces them by between 0.619657 m
+#     (the six nearest-neighbour pairs) and 2.866025 m (the diameter). So a
+#     POSITION tolerance below 0.619657 m detects every single transposition,
+#     and at or above it the six nearest pairs go silent. Both directions are
+#     stated because EH4 asks for both: that is the ceiling, not a floor.
+#   * a cyclic cluster relabel, k -> k+3, displaces by up to 1.414214 m; an
+#     intra-cluster relabel, b -> b+1, by up to 0.866025 m; a 90 deg rotation of
+#     the whole platform by up to 2.121320 m.
+#
+# WHAT A PASSING SCAN MEANS. For each entry the gate either REDDENS or is
+# recorded as unable to see it, per label and not per set. An entry marked
+# expect=redden that passes is a miss. An entry marked expect=blind is a
+# measured limit of the gate as the plan specifies it, and the plan must say so
+# rather than claim coverage it does not have. The point of the file is that a
+# set comparison, a count, a per-body resultant and a nearest-match lookup each
+# read green on at least one entry below.
+#
+# AWAITING A GATE: no shipped check reads this file at bf21c37 -- EB6 does not
+# exist yet. The coverage number for this batch is therefore 0 of 18, recorded
+# rather than dressed up; it stays 0 until EB6 is written.
+
+id=mirror_y_whole_platform defect=export_reflected_about_the_x_axis set_invariant=yes labels_moved=10 max_disp_m=2.866025 expect=redden blind_to=set_comparison,CLUSTER_ANGLES_DEG_side,per_body_resultant note=the one global isometry this geometry admits; a y-sign error anywhere in the frame chain produces it and every coordinate in the file is still a real buoy centre
+id=cluster_cyclic_relabel_k_plus_3 defect=cluster_index_off_by_one set_invariant=yes labels_moved=12 max_disp_m=1.414214 expect=redden blind_to=set_comparison,count,CLUSTER_ANGLES_DEG_side note=k=3c+b with c read one too high; the four clusters sit 90 deg apart so the point set is untouched
+id=intra_cluster_relabel_b_plus_1 defect=buoy_index_rotated_within_its_cluster set_invariant=yes labels_moved=12 max_disp_m=0.866025 expect=redden blind_to=set_comparison,count,CLUSTER_ANGLES_DEG_side note=BUOY_ANGLES_DEG is 0,120,240 and identical per cluster, so b cycles invisibly to anything set-based
+id=transpose_nearest_pair defect=two_labels_swapped set_invariant=yes labels_moved=2 max_disp_m=0.619657 expect=redden blind_to=set_comparison,any_position_tolerance_at_or_above_0.62_m note=the smallest displacement a label defect can produce in this model; it is the number a position tolerance has to sit under
+id=transpose_diametral_pair defect=two_labels_swapped set_invariant=yes labels_moved=2 max_disp_m=2.866025 expect=redden blind_to=set_comparison note=the easy end of the same shape, kept so the file spans the range instead of sampling one side of it
+id=authority_cluster_angles_permuted defect=the_expected_side_itself_is_permuted set_invariant=yes labels_moved=8 max_disp_m=1.414214 expect=blind blind_to=both_declared_sides note=CLUSTER_ANGLES_DEG is an INPUT to buoy_centers in the same file and the same read, so permuting it moves both sides together and leaves the second side content set-invariant; a sub-expression is not an independent witness
+id=rotate_whole_platform_90 defect=frame_rotated_by_one_cluster_pitch set_invariant=no labels_moved=12 max_disp_m=2.121320 expect=redden blind_to=nothing_measured note=recorded to refute the stated reason for the second side -- NO rotation preserves the set, so the per-label centres side sees every rotation and the cluster-angle side is not what catches this
+id=rotate_whole_platform_30 defect=frame_rotated_by_a_non_symmetry set_invariant=no labels_moved=12 max_disp_m=unmeasured expect=redden blind_to=nothing_measured note=the same family at an angle that is not a multiple of any pitch in the model
+id=three_of_twelve_exported defect=only_the_DS1_columns_are_mapped set_invariant=n/a labels_moved=0 max_disp_m=0.0 expect=redden blind_to=per_label_loop_over_PRESENT_labels note=the DS1 export carries 21 columns and three buoys; a gate that iterates over what the file contains passes on three rows and certifies nine it never saw -- an empty-parameter-set shape with a non-empty set
+id=duplicate_label_buoy7_twice defect=one_label_twice_and_one_absent set_invariant=no labels_moved=1 max_disp_m=unmeasured expect=redden blind_to=assertions_over_a_deduplicated_mapping note=assertion domain blindness -- a dict keyed by label keeps the last write, so the duplicate is gone before any list the assertion inspects is built
+id=label_absent_eleven_of_twelve defect=one_buoy_missing_entirely set_invariant=no labels_moved=0 max_disp_m=0.0 expect=redden blind_to=per_label_loop_over_PRESENT_labels,total_resultant note=the eleven that remain are each correct, and a sum over bodies is short by one buoy reaction rather than wrong at any row
+id=expected_read_from_the_export defect=the_gate_reads_its_expected_side_from_the_object_under_test set_invariant=n/a labels_moved=0 max_disp_m=0.0 expect=redden blind_to=every_other_entry_in_this_file note=EA4 own prohibition; it is here because it is the one defect that makes the other seventeen vacuous, and a passing suite cannot distinguish it from a working gate
+id=expected_read_from_HSP_runs defect=authority_taken_from_the_runs_worktree set_invariant=n/a labels_moved=0 max_disp_m=0.0 expect=redden blind_to=path_class_checks note=HSP-runs is writable and is where a permuted study would live; HSP-stable is the read-only pin, and which of the two the gate opened is a provenance question no pass can answer
+id=node_coordinates_right_map_wrong defect=buoy_joint_nodes_shuffled set_invariant=yes labels_moved=12 max_disp_m=2.866025 expect=redden blind_to=coordinate_comparisons_that_walk_NODES note=the coordinates compare clean because the comparison enumerates nodes; what is wrong is the label-to-node map, which is the thing EB6 is named for
+id=froude_scaled_coordinates defect=expected_side_at_full_scale_against_a_model_scale_export set_invariant=no labels_moved=12 max_disp_m=unmeasured expect=redden blind_to=tolerances_relative_to_a_ratio_of_both_sides note=lambda=50; a gate whose tolerance is relative to its own expected magnitude cannot see a uniform scaling of both sides, and the I/O boundary is the only place a conversion is allowed
+id=arm_radius_read_as_buoy_radius defect=CLUSTER_ARM_RADIUS_confused_with_BUOY_RADIUS set_invariant=no labels_moved=12 max_disp_m=unmeasured expect=redden blind_to=angle_only_checks note=the second declared side is an ANGLE array, so it is blind to every radial defect by construction; this is the radial half the two declared sides do not cover between them
+id=permuted_export_as_counter_case defect=the_counter_case_the_plan_declares set_invariant=yes labels_moved=12 max_disp_m=unmeasured expect=redden blind_to=nothing_measured note=sec.2.2 says the permuted export must redden the gate and that the counter-case is constructed rather than asserted; the entry exists so the construction is measured against a corpus it did not come from
+id=clean_case_unpermuted defect=none set_invariant=yes labels_moved=0 max_disp_m=0.0 expect=pass blind_to=n/a note=the negative control, here so that a gate which rejects everything is distinguishable from a gate that works -- a validator refusing all eighteen would otherwise score seventeen
