@@ -7,7 +7,10 @@
   "",
   "SECTIONS ARE NUMBERED, not lettered. Revision 2's letters meant `## I. Carried`",
   "had no numeric id, so the guard could not identify the Carried section at all --",
-  "the third instance of the R629/R632 family and the one that explains them."
+  "the third instance of the R629/R632 family and the one that explains them.",
+  "",
+  "R643 is answered by section 12's suite line, which is the finding itself;",
+  "R644 by EJ2 at 66af185. Both are verdict 86's."
  ],
  "answered": {
   "R610": {
@@ -123,6 +126,14 @@
    "where": "\u00a73"
   },
   "R640": {
+   "state": "answered",
+   "where": "\u00a79a"
+  },
+  "R643": {
+   "state": "answered",
+   "where": "\u00a712"
+  },
+  "R644": {
    "state": "answered",
    "where": "\u00a79a"
   }

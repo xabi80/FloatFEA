@@ -952,49 +952,39 @@ SUITE_LINE_PLACEHOLDER
 
 # Revision 3 — verdict 85 answered, and F3 closes
 
-Answers: verdict 85 @ f2fa598
+Answers: verdict 86 @ 3b5e36b
 
 **2026-10-01.**
 
-## 0. CI at `95f6293`, the commit verdict 85 judged — conclusion **FAILURE**
+## 0. CI at `b7c05e7`, the commit verdict 86 judged — conclusion **FAILURE**
 
 <!-- generated: scripts/ci_section.py -->
 
-Generated: `python scripts/ci_section.py`, anchored on verdict 85 at `95f6293` through the report's own `Answers:` line. Run `36907599744`, event `push`, conclusion **failure**.
+Generated: `python scripts/ci_section.py`, anchored on verdict 86 at `b7c05e7` through the report's own `Answers:` line. Run `36964000628`, event `push`, conclusion **failure**.
 
 | job | passed | failed | skipped |
 |---|---|---|---|
-| lint, unit and guards | 954 | 28 | 0 |
-| the verification ladder | 1847 | 0 | 0 |
-| CI determinism -- leg | 0 | 0 | 0 |
+| lint, unit and guards | 966 | 17 | 1 |
+| the verification ladder | 1848 | 0 | 0 |
 | CI determinism -- ten legs agree | 0 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
 
 **Job conclusions: 4 jobs, 1 not green.**
 
 - lint, unit and guards (failure)
 
-**Failing tests named in the log: 28.**
+**Failing tests named in the log: 17.**
 
-- `tests/test_report_carried.py::test_the_report_carries_the_finding[R632]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_report_carries_the_finding[R633]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_report_carries_the_finding[R634]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_report_carries_the_finding[R635]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_report_carries_the_finding[R636]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one` (lint, unit and guards)
 - `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
 - `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R624->4]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R630->4]` (lint, unit and guards)
 - `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R632-docs/reports/F3/step-3-answers.json]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R632-docs/reports/F3/step-3.md]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R632-step-3.md]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R632-tests/test_report_guard_states.py:777]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-docs/milestones/F3.md]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-floatfea/tolerances.py:354]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-floatfea/tolerances.py:355]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
 - `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:317]` (lint, unit and guards)
 - `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:318]` (lint, unit and guards)
 - `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:319]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R634-docs/closure/F3.md]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R634-floatfea/model/platform.py:320]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
@@ -1002,88 +992,18 @@ Generated: `python scripts/ci_section.py`, anchored on verdict 85 at `95f6293` t
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF]` (lint, unit and guards)
 
-## 0a. Runs since the commit verdict 85 judged
+## 0a. Runs since the commit verdict 86 judged
 
 <!-- generated: scripts/ci_section.py -->
 
-Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 85 at `95f6293` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 86 at `b7c05e7` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
 
 | run | event | head | outcome |
 |---|---|---|---|
-| `36907599744` | push | `95f6293` | conclusion **failure** |
-| `36946993856` | push | `3fdfc79` | conclusion **failure** |
-| `36955859422` | push | `24e8bb2` | conclusion **failure** |
 | `36964000628` | push | `b7c05e7` | conclusion **failure** |
-
-**Run `36907599744`, conclusion **failure**: 28 failing test name(s) in the log.**
-- `tests/test_report_carried.py::test_the_report_carries_the_finding[R632]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_report_carries_the_finding[R633]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_report_carries_the_finding[R634]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_report_carries_the_finding[R635]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_report_carries_the_finding[R636]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R632-docs/reports/F3/step-3-answers.json]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R632-docs/reports/F3/step-3.md]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R632-step-3.md]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R632-tests/test_report_guard_states.py:777]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-docs/milestones/F3.md]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-floatfea/tolerances.py:354]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-floatfea/tolerances.py:355]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:317]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:318]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:319]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R634-docs/closure/F3.md]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R634-floatfea/model/platform.py:320]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF]` (lint, unit and guards)
-
-**Run `36946993856`, conclusion **failure**: 17 failing test name(s) in the log.**
-- `tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
-- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R624->4]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R630->4]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:317]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:318]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:319]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
-
-**Run `36955859422`, conclusion **failure**: 17 failing test name(s) in the log.**
-- `tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
-- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R624->4]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R630->4]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
-- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:317]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:318]` (lint, unit and guards)
-- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:319]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
-- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+| `36969962460` | push | `aec96e0` | conclusion **failure** |
+| `36997601588` | push | `c9902d3` | **no result** (status `in_progress`) |
 
 **Run `36964000628`, conclusion **failure**: 17 failing test name(s) in the log.**
 - `tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one` (lint, unit and guards)
@@ -1096,6 +1016,16 @@ Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 85 at `9
 - `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:317]` (lint, unit and guards)
 - `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:318]` (lint, unit and guards)
 - `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R633-tests/test_counters_are_injected.py:319]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+**Run `36969962460`, conclusion **failure**: 8 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
@@ -1254,39 +1184,48 @@ judge  drafted from step 2's figure. The commit is pushed, so this triple is the
 
 | item | site | what the diff says | why it was left |
 |---|---|---|---|
-| R632 | `docs/reports/F3/step-2.md` | the file is untouched | TOUCHED at this step for EG1: section 5's withdrawn figures, marked `WITHDRAWN` in place rather than replaced. **No change at that exact line**; step 2 is closed and its report stays the record of what it claimed. |
-| R632 | `tests/test_report_guard_states.py:539` | the file is touched and this line number is the old one | **no change, and nothing is owed here.** This site was named by a finding ANSWERED IN STEP 1 and the verdicts closed it there; step 2's diff is the G2.1 gate and the closure corrections, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:540` | the file is touched and this line number is the old one | **no change, and nothing is owed here.** This site was named by a finding ANSWERED IN STEP 1 and the verdicts closed it there; step 2's diff is the G2.1 gate and the closure corrections, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:541` | the file is touched and this line number is the old one | **no change, and nothing is owed here.** This site was named by a finding ANSWERED IN STEP 1 and the verdicts closed it there; step 2's diff is the G2.1 gate and the closure corrections, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:542` | the file is touched and this line number is the old one | **no change, and nothing is owed here.** This site was named by a finding ANSWERED IN STEP 1 and the verdicts closed it there; step 2's diff is the G2.1 gate and the closure corrections, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:543` | the file is touched and this line number is the old one | **no change, and nothing is owed here.** This site was named by a finding ANSWERED IN STEP 1 and the verdicts closed it there; step 2's diff is the G2.1 gate and the closure corrections, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:544` | the file is touched and this line number is the old one | **no change, and nothing is owed here.** This site was named by a finding ANSWERED IN STEP 1 and the verdicts closed it there; step 2's diff is the G2.1 gate and the closure corrections, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:777` | the file is touched and this line number is the old one | **no change, and nothing is owed here.** This site was named by a finding ANSWERED IN STEP 1 and the verdicts closed it there; step 2's diff is the G2.1 gate and the closure corrections, which do not reach it. |
-| R633 | `floatfea/tolerances.py:354` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` and `47daa3d` -- the third reading, and two DECLARATIONS, no value widened -- and **no change at that exact line**. |
-| R633 | `floatfea/tolerances.py:355` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` and `47daa3d` -- the third reading, and two DECLARATIONS, no value widened -- and **no change at that exact line**. |
-| R633 | `tests/test_counters_are_injected.py` | the file is untouched | TOUCHED at `95f6293` for R633 -- three registry rows and the bound raised to seven -- and **no change at that exact line**. |
-| R633 | `tests/test_counters_are_injected.py:317` | the file is untouched | TOUCHED at `95f6293` for R633 -- three registry rows and the bound raised to seven -- and **no change at that exact line**. |
-| R633 | `tests/test_counters_are_injected.py:318` | the file is untouched | TOUCHED at `95f6293` for R633 -- three registry rows and the bound raised to seven -- and **no change at that exact line**. |
-| R633 | `tests/test_counters_are_injected.py:319` | the file is untouched | TOUCHED at `95f6293` for R633 -- three registry rows and the bound raised to seven -- and **no change at that exact line**. |
-| R634 | `floatfea/model/platform.py:319` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
-| R634 | `floatfea/model/platform.py:320` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
-| R634 | `floatfea/tolerances.py:330` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` and `47daa3d` -- the third reading, and two DECLARATIONS, no value widened -- and **no change at that exact line**. |
-| R634 | `floatfea/tolerances.py:345` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` and `47daa3d` -- the third reading, and two DECLARATIONS, no value widened -- and **no change at that exact line**. |
-| R634 | `floatfea/tolerances.py:346` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` and `47daa3d` -- the third reading, and two DECLARATIONS, no value widened -- and **no change at that exact line**. |
-| R634 | `floatfea/tolerances.py:347` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` and `47daa3d` -- the third reading, and two DECLARATIONS, no value widened -- and **no change at that exact line**. |
-| R634 | `floatfea/tolerances.py:348` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` and `47daa3d` -- the third reading, and two DECLARATIONS, no value widened -- and **no change at that exact line**. |
-| R634 | `floatfea/tolerances.py:403` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` and `47daa3d` -- the third reading, and two DECLARATIONS, no value widened -- and **no change at that exact line**. |
-| R637 | `R634-docs/closure/F3.md` | the file is untouched | TOUCHED at `a647492`, `31cd0db` and `3fdfc79`; **no change at that exact line**. |
-| R637 | `scripts/check_carried.py:51` | the file is untouched | **no change in step 2.** Its defaults were routed through the marker resolver in `db6a099` under EA2. |
-| R637 | `scripts/ci_section.py:182` | the file is untouched | **no change in step 2.** Re-pointed and given its refusal in `db6a099` under EA2; the line a step-1 finding named predates that hunk. |
-| R637 | `tests/test_report_carried.py:247` | the file is untouched | **no change, and nothing is owed here.** This site was named by a finding ANSWERED IN STEP 1 and the verdicts closed it there; step 2's diff is the G2.1 gate and the closure corrections, which do not reach it. |
-| R638 | `F2.md` | the file is untouched | **no change.** A closed milestone's plan, and EG0 is precisely about not writing an F3 tolerance into it. |
-| R638 | `tests/test_counters_are_injected.py` | the file is untouched | TOUCHED at `95f6293` for R633 -- three registry rows and the bound raised to seven -- and **no change at that exact line**. |
-| R638 | `tests/test_no_tolerance_literals.py` | the file is untouched | **no change.** Cited as the guard whose domain is comparisons rather than injections, which is why it could not see the `1.0e-8` literal R638 names. That reach is recorded, not altered. |
-| R638 | `tests/verification/rung3/test_platform_rigid_modes.py:260` | the file is touched and this line number is the old one | TOUCHED at `47daa3d` -- the new ceiling, the 16/16 assertions and the window check -- and **no change at that exact line**. |
-| R639 | `docs/milestones/F3.md:668` | the file is touched and this line number is the old one | TOUCHED at `47daa3d` -- section 7, F3's own tolerance table -- and at this step for the step marker. **No change at that exact line**; section 5 was re-locked at `3709cc6` and EG1 confirms its figures were right. |
-| R639 | `tests/verification/rung1/test_corpus_configurations.py` | the file is untouched | **no change.** Cited as the precedent `test_the_counter_DEFECT_SIZE_cannot_be_raised`, which R639's assertion is modelled on. Rung 1 is F2 apparatus and frozen under DR1. |
-| R640 | `scripts/suite_count.py` | the file is untouched | **no change.** Cited as the generator of the whole-suite line; it measures and does not assert, and this round reads it. |
+| R632 | `docs/reports/F3/step-2.md` | the file is untouched | **no change.** Step 2 is closed; EG1's withdrawal was marked in place at `a647492` and its report stays the record of what it claimed. |
+| R632 | `tests/test_report_guard_states.py` | the file is untouched | TOUCHED at `3fdfc79` (the anchor, the plant's Carried-number discovery) and `b7c05e7` (EI1's deletion); **no change at that exact line**. |
+| R632 | `tests/test_report_guard_states.py:539` | the file is untouched | TOUCHED at `3fdfc79` (the anchor, the plant's Carried-number discovery) and `b7c05e7` (EI1's deletion); **no change at that exact line**. |
+| R632 | `tests/test_report_guard_states.py:540` | the file is untouched | TOUCHED at `3fdfc79` (the anchor, the plant's Carried-number discovery) and `b7c05e7` (EI1's deletion); **no change at that exact line**. |
+| R632 | `tests/test_report_guard_states.py:541` | the file is untouched | TOUCHED at `3fdfc79` (the anchor, the plant's Carried-number discovery) and `b7c05e7` (EI1's deletion); **no change at that exact line**. |
+| R632 | `tests/test_report_guard_states.py:542` | the file is untouched | TOUCHED at `3fdfc79` (the anchor, the plant's Carried-number discovery) and `b7c05e7` (EI1's deletion); **no change at that exact line**. |
+| R632 | `tests/test_report_guard_states.py:543` | the file is untouched | TOUCHED at `3fdfc79` (the anchor, the plant's Carried-number discovery) and `b7c05e7` (EI1's deletion); **no change at that exact line**. |
+| R632 | `tests/test_report_guard_states.py:544` | the file is untouched | TOUCHED at `3fdfc79` (the anchor, the plant's Carried-number discovery) and `b7c05e7` (EI1's deletion); **no change at that exact line**. |
+| R632 | `tests/test_report_guard_states.py:545` | the file is untouched | TOUCHED at `3fdfc79` (the anchor, the plant's Carried-number discovery) and `b7c05e7` (EI1's deletion); **no change at that exact line**. |
+| R632 | `tests/test_report_guard_states.py:546` | the file is untouched | TOUCHED at `3fdfc79` (the anchor, the plant's Carried-number discovery) and `b7c05e7` (EI1's deletion); **no change at that exact line**. |
+| R632 | `tests/test_report_guard_states.py:777` | the file is untouched | TOUCHED at `3fdfc79` (the anchor, the plant's Carried-number discovery) and `b7c05e7` (EI1's deletion); **no change at that exact line**. |
+| R633 | `docs/milestones/F3.md` | the file is untouched | **no change.** F3 is CLOSED; its plan is the record. |
+| R633 | `floatfea/tolerances.py:354` | the file is touched and this line number is the old one | TOUCHED at `b7c05e7`, `aec96e0` and `c9902d3`, comments only, no value; **no change at that exact line**. |
+| R633 | `floatfea/tolerances.py:355` | the file is touched and this line number is the old one | TOUCHED at `b7c05e7`, `aec96e0` and `c9902d3`, comments only, no value; **no change at that exact line**. |
+| R633 | `tests/test_counters_are_injected.py` | the file is untouched | TOUCHED at `95f6293` for R633; **no change at that exact line**. |
+| R633 | `tests/test_counters_are_injected.py:317` | the file is untouched | TOUCHED at `95f6293` for R633; **no change at that exact line**. |
+| R633 | `tests/test_counters_are_injected.py:318` | the file is untouched | TOUCHED at `95f6293` for R633; **no change at that exact line**. |
+| R633 | `tests/test_counters_are_injected.py:319` | the file is untouched | TOUCHED at `95f6293` for R633; **no change at that exact line**. |
+| R633 | `tests/verification/rung3/test_platform_rigid_modes.py` | the file is untouched | TOUCHED at `95f6293`, `3fdfc79` and `24e8bb2`; **no change at that exact line**. |
+| R634 | `floatfea/model/platform.py:319` | the file is untouched | **no change at that exact line.** `check_rigid_modes` is cited as what makes `RIGID_MODE_EXACTNESS` assert again (R634) and as the namespace R638's registry cells must reach. |
+| R634 | `floatfea/model/platform.py:320` | the file is untouched | **no change at that exact line.** `check_rigid_modes` is cited as what makes `RIGID_MODE_EXACTNESS` assert again (R634) and as the namespace R638's registry cells must reach. |
+| R634 | `floatfea/tolerances.py:330` | the file is touched and this line number is the old one | TOUCHED at `b7c05e7`, `aec96e0` and `c9902d3`, comments only, no value; **no change at that exact line**. |
+| R634 | `floatfea/tolerances.py:345` | the file is touched and this line number is the old one | TOUCHED at `b7c05e7`, `aec96e0` and `c9902d3`, comments only, no value; **no change at that exact line**. |
+| R634 | `floatfea/tolerances.py:346` | the file is touched and this line number is the old one | TOUCHED at `b7c05e7`, `aec96e0` and `c9902d3`, comments only, no value; **no change at that exact line**. |
+| R634 | `floatfea/tolerances.py:347` | the file is touched and this line number is the old one | TOUCHED at `b7c05e7`, `aec96e0` and `c9902d3`, comments only, no value; **no change at that exact line**. |
+| R634 | `floatfea/tolerances.py:348` | the file is touched and this line number is the old one | TOUCHED at `b7c05e7`, `aec96e0` and `c9902d3`, comments only, no value; **no change at that exact line**. |
+| R634 | `floatfea/tolerances.py:403` | the file is touched and this line number is the old one | TOUCHED at `b7c05e7`, `aec96e0` and `c9902d3`, comments only, no value; **no change at that exact line**. |
+| R637 | `R634-docs/closure/F3.md` | the file is untouched | **no change at that exact line** -- and this row is C119 itself: the item prefix `R634-` is parsed as part of the path by `scripts/untouched_sites.py`. EJ3 routes it to F4 step 1's first commit. |
+| R637 | `scripts/check_carried.py:51` | the file is untouched | **no change.** One of the three readers already anchoring correctly, cited as the form R637 adopts. |
+| R637 | `scripts/ci_section.py:182` | the file is untouched | **no change.** The same, and its `_JUDGED` pattern is what verdict 86's bold line satisfies. |
+| R637 | `tests/test_report_carried.py:247` | the file is untouched | TOUCHED at `24e8bb2` for R641; **no change at that exact line**. |
+| R637 | `tests/test_report_guard_states.py:545` | the file is untouched | TOUCHED at `3fdfc79` (the anchor, the plant's Carried-number discovery) and `b7c05e7` (EI1's deletion); **no change at that exact line**. |
+| R637 | `tests/test_report_numbers_are_sourced.py:102` | the file is untouched | TOUCHED at `3fdfc79` for R637's anchor; **no change at that exact line**. |
+| R638 | `F2.md` | the file is untouched | **no change.** A closed milestone's plan; the plan guard reads every locked plan since `47daa3d`, which is why F3's tolerances live in F3.md. |
+| R638 | `tests/test_counters_are_injected.py` | the file is untouched | TOUCHED at `95f6293` for R633; **no change at that exact line**. |
+| R638 | `tests/test_no_tolerance_literals.py` | the file is untouched | **no change.** Cited as the guard whose domain is comparisons rather than injections, which is why it cannot see the `1.0e-8` literal R638 names. Recorded reach, not a defect. |
+| R638 | `tests/verification/rung3/test_platform_rigid_modes.py:260` | the file is untouched | TOUCHED at `95f6293`, `3fdfc79` and `24e8bb2`; **no change at that exact line**. |
+| R639 | `docs/milestones/F3.md:668` | the file is untouched | **no change.** F3 is CLOSED; its plan is the record. |
+| R639 | `tests/verification/rung1/test_corpus_configurations.py` | the file is untouched | **no change.** Cited as the precedent `test_the_counter_DEFECT_SIZE_cannot_be_raised`, which R639's assertion is modelled on. Rung 1 is F2 apparatus, frozen under DR1. |
+| R640 | `scripts/suite_count.py` | the file is untouched | TOUCHED at `b7c05e7` for EI0's two halves; **no change at that exact line**. |
+| R643 | `docs/reports/F3/step-3.md:1354` | the file is touched and this line number is the old one | **this report**, and R643's site IS its suite line -- section 12 carries it now, measured in a clean clone outside the synced tree. |
+| R643 | `tests/test_report_carried.py` | the file is untouched | TOUCHED at `24e8bb2` for R641; **no change at that exact line**. |
 
 ## 9. Carried
 
@@ -1323,9 +1262,13 @@ judge  drafted from step 2's figure. The commit is pushed, so this triple is the
 | R638 | **carried** — §4 | RIGID_MODE_EXACTNESS IS THE CEILING THE PRODUCTION BUILDER REFUSES REAL DECKS ON, AND IT CAN BE... |
 | R639 | **answered** — §3 | THE COUNTER INJECTION SIZE CAN BE RAISED EIGHT DECADES WITH THE WHOLE REGISTRY AND BOTH EG0... |
 | R640 | **answered** — §9a | Three harness states commit into the parent repository when the suite runs inside a git... |
+| R643 | **answered** — §12 | test_the_report_carries_a_WHOLE_SUITE_count IS RED AT THE REVIEWED COMMIT AND STAYS RED WITH... |
+| R644 | **answered** — §9a | EH1's two lists are short by one name on the state-(2) side and have one name on the wrong... |
 
 ## 9a. Answered in F3
 
+* **R643** — answered by §12's suite line, which IS the finding: the line was the thing missing, and it survived revision 2 landing, which is why verdict 86 ruled it CZ1 (iv) rather than the boundary.
+* **R644** — adopted at `66af185` under EJ2: `test_the_answered_verdict_is_the_NEWEST_one` moves to state (2) and `test_a_carried_row_points_at_a_section_that_discusses_it` is added to it.
 * **R612** — carried as an earlier report records it.
 * **R613** — carried as an earlier report records it.
 * **R614** — carried as an earlier report records it.
