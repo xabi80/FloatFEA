@@ -818,7 +818,14 @@ def test_no_status_claims_more_than_the_verdict_allows() -> None:
 # else -- fail on a file that was never supposed to exist,
 # and BF0 is the better rule anyway: the claim is checked at the command the
 # report actually printed.
-_ANSWERS_PATH = re.compile(r"[\w./-]*step-[\w.-]*answers\.json")
+# THE LEADING SEGMENT CANNOT CONTAIN A HYPHEN (R641). The prefix class was
+# `[\w./-]*`, which swallows the `R632-` of a pytest parametrisation id -- so the
+# generated CI section's own FAILED list, which prints
+# `test_every_named_site_is_touched_or_declared[R632-docs/reports/F3/step-3-answers.json]`,
+# was read as a path and this guard opened `R632-docs/reports/...`. A directory
+# segment in this repository never contains a hyphen before `step-`, and an item
+# prefix always does.
+_ANSWERS_PATH = re.compile(r"[\w./]*step-[\w.-]*answers\.json")
 
 
 def _answers_path() -> Path:

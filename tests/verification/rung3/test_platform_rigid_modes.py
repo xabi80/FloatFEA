@@ -56,19 +56,33 @@ MEMBERS = 16
 in the sibling module. Named here so an empty parametrisation cannot pass."""
 
 
+_CLEAN_ROWS: list[tuple[str, np.ndarray, float]] | None = None
+
+
 def member_stiffnesses() -> list[tuple[str, np.ndarray, float]]:
     """`(label, k_local, length)` for every member of the real platform.
 
     A MODULE-LEVEL FUNCTION, AND NOT A FIXTURE, so the counters below can replace
     it. The two cells in `tests/test_counters_are_injected.py` patch a module
     attribute; a fixture is resolved by pytest and cannot be reached that way.
+
+    **BUILT ONCE (R642).** It rebuilt the whole five-body superstructure on every
+    call, and the counter bodies, the two BX0 cells and the bisections call it
+    hundreds of times -- which took the suite from 90 seconds to past thirty
+    minutes on the half that excludes the report guards. The build is
+    deterministic, so one build serves every reader; the counters replace this
+    FUNCTION rather than the cache, so their swap is unaffected.
     """
+    global _CLEAN_ROWS
+    if _CLEAN_ROWS is not None:
+        return _CLEAN_ROWS
     s = build_superstructure()
-    return [
+    _CLEAN_ROWS = [
         (m.label, local_stiffness(m.section, b.material, m.length), m.length)
         for b in s.bodies
         for m in b.members
     ]
+    return _CLEAN_ROWS
 
 
 def test_there_are_SIXTEEN_members_to_check() -> None:
@@ -370,7 +384,10 @@ def test_EG0_the_THREE_COUNTERS_redden_every_member(kind: str, capsys) -> None:
     edges = []
     for lab, k, length in rows:
         lo, hi = 0.0, 1.0e-6
-        for _ in range(200):
+        # 60, not 200: a bisection on a float64 is exact after ~53 halvings, so
+        # the extra 140 were pure cost in a loop that runs per member per
+        # counter (R642).
+        for _ in range(60):
             mid = (lo + hi) / 2
             if (
                 element_rigid_residual(_injected(k, kind, mid), length)
@@ -408,7 +425,10 @@ def _worst_edge(kind: str) -> float:
     worst = 0.0
     for _, k, length in member_stiffnesses():
         lo, hi = 0.0, 1.0e-4
-        for _ in range(200):
+        # 60, not 200: a bisection on a float64 is exact after ~53 halvings, so
+        # the extra 140 were pure cost in a loop that runs per member per
+        # counter (R642).
+        for _ in range(60):
             mid = (lo + hi) / 2
             if element_rigid_residual(_injected(k, kind, mid), length) > (
                 PLATFORM_RIGID_MODE_EXACTNESS
