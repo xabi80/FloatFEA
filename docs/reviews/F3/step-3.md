@@ -1,4 +1,701 @@
 # Review — F3 step 3
+Reviewed commit: b7c05e7714ab030780ddd3992dc269738513be6a
+Verdict: PASS
+**Reviewed commit: `b7c05e7`.**  (HEAD of F3, pushed, `F3 == origin/F3`. I committed no corpus batch this round, so HEAD at write time IS the judged commit.)
+Tests: 2901 passed, 18 failed, 1 skipped   (MY OWN run, ONE invocation, no exclusion, clean clone at `b7c05e7`, 1245.47s. ONE of the 18 is MY OWN artifact and I withdraw it below: CI at the same commit names SEVENTEEN and not that one. The tree's red set is 17.)
+
+## Round of 2026-10-01 -- EIGHTY-SIXTH verdict, ROUND 3 OF 3 ON STEP 3. THE STEP CLOSES AND F3 CLOSES.
+
+**THE SUITE LINE IS NOT A BLOCKER ON THE TREE, IT IS A BLOCKER ON ONE MACHINE, AND I
+MEASURED WHICH.** The whole suite runs at this commit in ONE invocation in 20m45s and
+the main half is GREEN. The reason the implementer could not take it is the filesystem,
+not the suite: same commit, same selection, same machine, only the location moved --
+`216.86s` in a clone under the local temp against `399.16s` in the OneDrive-synced
+working tree, `1.84x`. At that factor the whole tree is ~38 minutes where the
+background limit is 30. **The figure is below, the commands are named, and revision 3
+may carry it.**
+
+**THE THREE REPAIRS ARE RIGHT AND I MEASURED EVERY ONE IN THE DIRECTION THAT WEAKENS
+IT (EH4).** R639's bound turns eight decades into `3.09x`; EH2(c)'s roof turns `8.7x`
+of silent ceiling rise into `1.63x`; R638's recorded figures reproduce EXACTLY at the
+commit that publishes them, which is the first CP3 pass this milestone has had on a
+figure that mattered. I also ran the two-variable attack neither of us had: both
+constants moved together, the rung stays green at ceiling `x1.63` AND injection `x3.0`.
+
+**ONE RED BLOCKS AND IT CARRIES: `test_the_report_carries_a_WHOLE_SUITE_count`.** It is
+red at `b7c05e7` and it is still red with revision 3 in the tree, because
+`SUITE_LINE_PLACEHOLDER` is still at `docs/reports/F3/step-3.md:1354`. It is CZ1 (iv)
+and it is (d). Three blocking items carry into F4 by name.
+
+## THE TREE AT b7c05e7, MEASURED
+
+```
+cmd    git rev-parse HEAD && git rev-parse F3 && git rev-parse origin/F3
+out    b7c05e7714ab030780ddd3992dc269738513be6a   all three
+cmd    git status --porcelain --untracked-files=all
+out    M docs/reports/F3/step-3.md
+judge  REVISION 3 IS UNCOMMITTED, as the hand-back says. At the reviewed commit the
+       report is revision 2 and its header reads `Answers: verdict 84 @ 8368c51`,
+       so ITEM 1b FAILS AT THIS COMMIT -- and it fails differently from last round:
+       FIVE commits landed after verdict 85, TWO of them edited the report file, and
+       the header was not moved. That is what
+       `test_the_answered_verdict_is_the_NEWEST_one` says in words:
+       "the report at `3fdfc79` is newer than the verdict at `f2fa598` and names
+       `8368c51`". I rule the substance on revision 3 as it stands in the working
+       tree, which DOES read `Answers: verdict 85 @ f2fa598`, and I record the
+       commit's own state as red.
+cmd    git log --oneline 95f6293..HEAD --name-only
+out    b7c05e7  docs/closure/F3.md, scripts/suite_count.py,
+out             tests/test_report_guard_states.py
+out    24e8bb2  docs/reports/F3/step-3-answers.json, tests/test_report_carried.py,
+out             tests/verification/rung3/test_platform_rigid_modes.py
+out    3fdfc79  docs/closure/F3.md, docs/milestones/F3.md, the report + answers,
+out             floatfea/tolerances.py, tests/test_report_guard_states.py,
+out             tests/verification/rung3/test_platform_rigid_modes.py
+out    4e91284  CLAUDE.md, docs/SUPERVISOR.md          <- AND NOTHING ELSE
+out    31cd0db  docs/closure/F3.md, the report + answers, floatfea/tolerances.py,
+out             tests/test_report_guard_states.py,
+out             tests/test_report_numbers_are_sourced.py,
+out             tests/verification/rung3/test_platform_rigid_modes.py
+cmd    git diff 95f6293..HEAD -- tests/conftest.py "tests/**/conftest.py"
+out    (no output)
+cmd    git ls-files -- tests/conftest.py "tests/**/conftest.py"
+out    tests/conftest.py        CI0: the pathspec resolves to a real file
+cmd    grep -nE "pytest_runtest_makereport|pytest_ignore_collect|
+         pytest_collection_modifyitems|hookwrapper|items.remove|pytest_plugins"
+         tests/conftest.py
+out    53: pytest_collection_modifyitems  -- AND I READ IT (CH2). It adds a rung
+out    marker from the directory and sorts by rung. It REMOVES NOTHING, writes no
+out    outcome, and there is no makereport hook, no ignore_collect, no plugin
+out    loaded from tests/, and no rung carries its own conftest.
+cmd    python -m pytest -q, clean clone at b7c05e7, one invocation
+out    18 failed, 2901 passed, 1 skipped in 1245.47s (0:20:45)
+```
+
+## CI AT THE REVIEWED COMMIT, FROM gh AND NOT FROM THE PASTE (CA2)
+
+```
+cmd    gh run list --commit b7c05e7714... --json databaseId,conclusion,status
+out    36964000628  completed  FAILURE
+cmd    gh run view 36964000628 --json jobs, job by job
+out    the verification ladder            SUCCESS   13 steps  04:18:48 -> 04:22:10
+out    lint, unit and guards              FAILURE   14 steps  04:18:48 -> 04:29:33
+out    CI determinism -- leg              skipped    0 steps
+out    CI determinism -- ten legs agree   skipped    0 steps
+cmd    the lint job's steps, by number and conclusion
+out    5 actionlint SUCCESS, 6 ruff SUCCESS, 7 black --check SUCCESS, 8 mypy
+out    SUCCESS, 9 unit tests SUCCESS, 10 "guards and meta-tests" FAILURE
+judge  NOT CK2: thirteen and fourteen real steps, real durations, no spending
+       annotation, no runner-never-started. The two skipped jobs are CK0's
+       workflow_dispatch gate, UNAVAILABLE BY DECLARATION, as at verdicts 79 to 85.
+       `ruff`, `black --check` and `mypy` are GREEN on a machine neither of us
+       controls, and "guards and meta-tests" is SEEN TO HAVE RUN rather than been
+       skipped behind an earlier red (CZ1 iii), so I did not re-run them.
+       THE LADDER IS GREEN AT THIS COMMIT, ALL SIX RUNGS. NO LOW RUNG IS RED, SO
+       NOTHING HERE IS A STOP.
+cmd    gh run view 36964000628 --log-failed, the FAILED ids, deduplicated
+out    17
+judge  CI IS RED AT THE REVIEWED COMMIT AND I RECORD IT AS RED.
+```
+
+**MY EIGHTEENTH RED IS MINE AND I WITHDRAW IT.**
+`test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` failed in my clone and does not fail
+on CI. One variable, everything else held:
+
+```
+cmd    the failure text, in my clone
+out    run 36900722535: `gh run view` returns nothing -- no such run
+cmd    gh run view 36900722535 --json databaseId,conclusion,headSha, in the REAL
+         repository
+out    {"conclusion":"failure","databaseId":36900722535,
+out     "headSha":"a647492e99b59eec16b0b3faf2489867d2aab596"}   -- it exists
+cmd    git remote set-url origin https://github.com/xabi80/FloatFEA.git in the
+         clone, then re-run that test and its sibling
+out    2 passed in 0.82s
+rule   verify the reference: the reference has been wrong more often than the thing
+       measured
+judge  MY CLONE'S `origin` WAS A LOCAL PATH, SO `gh` COULD NOT RESOLVE THE
+       REPOSITORY. The red is an artifact of my own apparatus, it is withdrawn, and
+       the authoritative set is CI's 17. Recorded rather than quietly dropped,
+       because a reviewer's instrument has been the defect more than once this
+       milestone.
+```
+
+**THE EG3(i) TRACE, ALL 17 MATCHED BY NAME, NOT BY FAMILY.** This is EG3 state (2),
+verdict written and the answering report not committed:
+
+```
+out     3 x test_every_named_site_is_touched_or_declared[R633-tests/
+out           test_counters_are_injected.py:317, :318, :319]  -> (2), named
+out     1 x test_the_Carried_table_is_what_the_generator_produces  -> (2), named
+out     1 x test_the_generator_would_catch_a_row_under_the_wrong_number -> (2)
+out     1 x test_the_CI_section_is_about_the_REVIEWED_commit      -> (2), named
+out     1 x test_the_answered_verdict_is_the_NEWEST_one           -> on EH1's list
+out     7 x test_the_guard_survives_the_state[baseline + non_numeric_step_suffix,
+out           superscript_digit_step_number, draft_suffix_beside_a_step_report,
+out           step_number_is_the_empty_string,
+out           verdict_amended_after_the_commit_the_report_answers,
+out           zero_padded_step_number]
+out           -> the cascade: baseline RED, each cascading state's own line
+out     2 x test_a_carried_row_points_at_a_section_that_discusses_it[R624->4,
+out           R630->4]
+out           -> ON NEITHER LIST. MEASURED TO BE STATE (2) ANYWAY, see below.
+out     1 x test_the_report_carries_a_WHOLE_SUITE_count
+out           -> ON NEITHER LIST AND NOT CLEARED BY THE ANSWERING REPORT. CZ1 (iv).
+rule   EG3(i): the waiver applies only if EVERY red traces BY NAME to the
+       step-boundary cause, and a red that does not match is CZ1 (iv) unchanged
+judge  16 OF 17 ARE THE BOUNDARY OR ITS CASCADE. THE SEVENTEENTH IS R643 AND IT
+       BLOCKS.
+```
+
+**AND I DID NOT RULE THE TWO UNLISTED ONES BY CLASS, WHICH IS WHAT EG3(i) EXISTS TO
+STOP. I RAN THEM AGAINST THE ANSWERING REPORT.**
+
+```
+cmd    python -m pytest tests/test_report_carried.py::test_a_carried_row_points_at_a
+         _section_that_discusses_it ::test_the_report_carries_a_WHOLE_SUITE_count
+         ::test_the_answered_verdict_is_the_NEWEST_one
+         ::test_the_CI_section_is_about_the_REVIEWED_commit -q
+         IN THE WORKING TREE, where revision 3 exists
+out    1 failed, 31 passed in 0.42s
+out    the 28 pointer parametrisations: ALL PASS -- [R624->4] and [R630->4] gone
+out    test_the_answered_verdict_is_the_NEWEST_one: PASSES (names verdict 85)
+out    test_the_CI_section_is_about_the_REVIEWED_commit: PASSES (section 0 resolves
+out      `95f6293`, so verdict 85's condition 1 IS met by revision 3)
+out    the one failure: test_the_report_carries_a_WHOLE_SUITE_count
+rule   EG3's sharpening: state (2) is cleared BY THE ANSWERING REPORT, not by time
+judge  THE TWO POINTER ROWS ARE STATE (2) IN SUBSTANCE AND EH1'S LIST IS SHORT BY
+       A NAME. The suite line is NOT: it survives the answering report, which is the
+       discriminator the carve-out is built on. One command separated a cascade from
+       a defect, which is exactly what the eighty-third verdict asked for.
+```
+
+**EG3(ii) IS CLEARED AND I TOOK IT AT THE VERDICT COMMIT.** The report-guard files run
+at `b7c05e7` in a clean clone: `18 failed, 221 passed, 1 skipped in 185.64s`, pasted in
+full below as the guards half.
+
+## MY RULING ON THE SUITE LINE -- THE ONE THING THE HAND-BACK ASKED FOR
+
+**(1) THE IMPEDIMENT IS REAL ON THAT MACHINE AND IT IS NOT A PROPERTY OF THE SUITE.**
+I measured the cause with one variable moved:
+
+```
+claim  the main half cannot be measured on this machine
+cmd    python -m pytest tests/verification tests/unit -q, clean clone at b7c05e7
+         under the LOCAL temp
+out    1802 passed in 216.86s (0:03:36)
+cmd    the SAME selection, the SAME commit, the SAME machine, in the OneDrive-synced
+         working tree
+out    1802 passed in 399.16s (0:06:39)
+cell   one variable: the filesystem location. Same interpreter, same commit, same
+       1802 tests, same ordering, same selection.
+rule   a causal claim carries its ablation
+judge  1.84x. THE WORKING TREE IS INSIDE A SYNCED FOLDER. At that factor my 20m45s
+       whole-tree run is ~38 minutes in the working tree and the 30-minute
+       background limit is hit, twice, exactly as reported. `--half main` lands at
+       ~32 minutes, which is why it stopped and why mine did not. THE REMEDY IS NOT
+       APPARATUS: run `scripts/suite_count.py` from a clone outside the synced
+       folder. I am not asking for a code change and none is needed.
+```
+
+**(2) THE FIGURE, AND IT IS STRONGER THAN `--half main`.** My run has NO exclusion, so
+it is the whole tree in one invocation -- which is the property R309 exists to assert,
+and `--half main` deliberately gives up:
+
+```
+cmd    python -m pytest -q, clean clone at b7c05e7, ONE invocation, no --ignore
+out    18 failed, 2901 passed, 1 skipped in 1245.47s (0:20:45)
+       and MINUS my own withdrawn artifact: 17 failed, 2902 passed, 1 skipped
+cmd    python -m pytest tests/test_report_carried.py
+         tests/test_report_numbers_are_sourced.py
+         tests/test_report_guard_states.py -q, same clean clone, same commit
+out    18 failed, 221 passed, 1 skipped in 185.64s        <- the guards half
+cmd    the arithmetic, stated so it can be refused: 2920 collected in total, 240 in
+         the three report-parametrised files
+out    THE MAIN HALF IS 2680 passed, 0 failed, 0 skipped -- DERIVED, not run
+judge  EVERY ONE OF THE 18 REDS IS IN ONE OF THE THREE REPORT-PARAMETRISED FILES.
+       So the main half is GREEN at `b7c05e7` and the derivation cannot be hiding a
+       failure: there is none outside those files to hide.
+```
+
+**(3) WHAT REVISION 3 MAY CARRY.** The whole-tree line, with both commands named --
+mine and CI's -- and every failure named test by test. `_SUITE` at
+`tests/test_report_carried.py:2182` matches
+``Whole suite at `<sha>`: <n> passed, <n> failed, <n> skipped``, which my line has;
+`test_the_report_carries_a_WHOLE_SUITE_count` asserts `passed > 100`; and
+`test_every_FAILING_test_in_the_whole_suite_line_is_NAMED` needs one
+``- **failed** `<id>` `` bullet per failure, so all of them are listed. **The sha the
+line names is `b7c05e7`, not the revision-3 commit, and that is correct** -- the
+commit-distance rule is retired under DR0 and the line names the commit the count was
+taken at. The guards half goes beside it as its own line, at `b7c05e7`.
+
+**(4) I RULE AGAINST TAKING THE LINE FROM THE CI SECTION'S JOB COUNTS.** EI0(b) makes
+CI the cross-check and it is a good one, but no CI job is the whole suite in one
+invocation: the work is split across two jobs, two more are skipped, and the lint job's
+own count is of a partition. R309's subject is precisely that seven correct subsets
+cannot see a failure in an eighth. A cross-check, yes. The line, no.
+
+**(5) AND THE IMPLEMENTER'S GUARDS FIGURE IS ONE COMMIT STALE, WHICH IS CP3's OWN
+SUBJECT.** The hand-back pastes ``The report-guard set at `24e8bb2`: 222 passed, 18
+failed, 1 skipped``. At `b7c05e7` it is `221 passed`, because `b7c05e7` DELETED a
+parametrised state. The number was right when taken and describes a different tree from
+the one revision 3 ships at. Do not paste it; paste the `b7c05e7` one.
+
+## Carried
+
+Verdict 85 named three blocking items (R637, R638, R639), one non-finding (R640), and
+fourteen closure items. Every one is below.
+
+* **R637 -- ANSWERED, all three clauses, and clause (i) landed on the branch I named.**
+
+```
+cmd    clause (ii): git diff 95f6293..HEAD, the two rindex sites
+out    tests/test_report_numbers_are_sourced.py:102 -> _REVISIONS = [m.start() for
+out      m in re.finditer(r"^# Revision \d+", TEXT, re.MULTILINE)]; BODY = the LAST
+out    tests/test_report_guard_states.py:545 -> the whole plant action is DELETED,
+out      so the substring call is gone with it
+judge  BOTH SITES CLOSED, one by the anchored form the other three readers use and
+       one by deletion. The anchored guard found a real defect on its first run --
+       the report says `1 failed, an unsourced figure in the ledger section it had
+       been blind to` -- which is a repair proving itself rather than describing
+       itself.
+cmd    clause (i): the ablation, re-run at the CURRENT commit per my condition
+out    WITH the plant 1 passed / WITHOUT 1 passed / restored 1 passed
+judge  IT DOES NOT DIFFER, SO MY CONDITION'S OWN SECOND BRANCH APPLIES: the state is
+       deleted under DR1 with its vacuity recorded. EI1 does that, the record is at
+       `docs/closure/F3.md` section 4b and in a 29-line note at
+       tests/test_report_guard_states.py:247, and the implementer declined to add it
+       to `REQUIREMENT_CHANGED` on the correct ground that no measurement supports a
+       declaration about what the repaired guard must do. I ACCEPT THE DELETION.
+cmd    AND THE THING THAT DECIDES IT FOR ME, which neither of us planned: does the
+         live assertion the state was supposed to guard still fail on real data?
+out    YES, TWICE, ON CI AT THIS COMMIT --
+out    test_a_carried_row_points_at_a_section_that_discusses_it[R624->4] and
+out    [R630->4]: "R624 points at 4 and that section never mentions it"
+rule   a gate carries its own failure: if the thing it claims were false, would this
+       go red?
+judge  THE TREE SUPPLIED THE NEGATIVE CONTROL THE PLANTED STATE COULD NOT. What is
+       lost is narrower than "the class has no control": the shipped assertion is
+       demonstrably able to fail, and what has no plant is the `section !=
+       carried_heading` clause specifically. `docs/closure/F3.md` section 4b states
+       exactly that and no more, which is the honest version. R637 CLOSED.
+cmd    clause (iii): pytest -q and CI at the answering sha read 0 failed apart from
+         EG3 state (1)
+out    NOT MET -- 17 reds at b7c05e7, 16 of them the boundary and ONE not. R643.
+```
+
+* **R638 -- NOT CLOSED, BY A DECISION I OFFERED, AND THE RECORD IS TRUE. IT CARRIES
+  INTO F4 BY NAME.** My condition's second branch was "the measured consequence goes
+  into the entry and into `docs/closure/F3.md` beside it". It did. And I did not take
+  the figures on trust -- CP3 says a figure is pasted from a run after the last edit,
+  and this entry's figures were first measured one commit earlier, so I re-measured all
+  of them at `b7c05e7`:
+
+```
+cmd    RIGID_MODE_EXACTNESS 1e-15 -> 1e-13 in a scratch clone, then
+         python -m pytest tests/verification tests/unit -q
+out    1802 passed, 0 failed in 214.55s      the entry's own claim, EXACT
+cmd    the unmutated control, same scope, same clone
+out    1802 passed in 216.86s                so the 1802 is the whole scope, not a
+out                                          subset that happened to pass
+cmd    the boundary, SOLVED: 1e-15 -> 1e-11
+out    1 failed, 1801 passed -- and the single failure IS
+out    test_the_REFUSAL_rejects_a_LIFTED_rigid_mode, residual 3.783782e-12
+rule   BP0/CP3: a figure carries the rule it was measured against, from a run after
+       the last edit to the thing it describes
+judge  EVERY FIGURE IN `floatfea/tolerances.py:366-396` AND IN `docs/closure/F3.md`
+       SECTION 4a IS TRUE AT THE COMMIT THAT PUBLISHES IT. `3784x` of silent headroom
+       on the production refusal, and NOTHING in the measuring half of the suite
+       objects to a hundredfold widening. This is the first time this milestone that
+       a republished figure survived my re-measurement unchanged, and it is the one
+       that most needed to.
+judge  SO THE GAP IS REAL, IT IS RECORDED WHERE A READER DECIDING WHETHER `1e-15` MAY
+       MOVE WILL SEE IT, AND IT IS NOT CLOSED. It carries into F4 as blocking.
+```
+
+* **R639 -- ANSWERED, AND I SOLVED THE BOUNDARY IN BOTH DIRECTIONS RATHER THAN
+  ACCEPTING `3.24x`.** The assertion is inside the file that computes the quantity,
+  with no new apparatus and the sibling precedent named.
+
+```
+cmd    PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT swept in a scratch clone, running
+         tests/verification/rung3/test_platform_rigid_modes.py AND
+         tests/test_counters_are_injected.py at each value
+out    1.0e-14  over 3.24x   38 passed          the shipped value, and the plan's
+out                                             own declared clearance, reproduced
+out    3.0e-14  over 9.71x   38 passed          STILL GREEN
+out    3.2e-14  over 10.36x  1 failed, 37 passed -- and the ONE failure is
+out                          test_R639_the_INJECTION_SIZE_cannot_be_raised
+out    1.0e-6   over 3.2e+08x  1 failed  (verdict 85 measured 262 passed here)
+out    1.0e-16  over 0.03x     6 failed -- R639, the window check, and
+out                            test_a_ROTATIONAL_BLOCK_reddens_the_gate
+rule   the counter-case is a detection threshold, not one arbitrary perturbation;
+       and EH4: solve the edge that WEAKENS the gate
+judge  EIGHT DECADES BECAME 3.09x, SOLVED, AND THE GUARD FAILS ON BOTH SIDES. The
+       `<= 10.0` is a headroom bound on a DECLARED size, carries its
+       not-a-tolerance justification, and nothing in the model is accepted or
+       rejected by it. R639 CLOSED.
+```
+
+* **R640 -- recorded, not a finding, unchanged, and NOW ON A COMMITTED CODE PATH.**
+  See C115: `scripts/suite_count.py --half guards` reaches it by construction.
+* **R635 -- ruled by EH2 and the ruling is ASSERTED, not described. This is the best
+  thing in the round and I measured it in the weakening direction.**
+
+```
+cmd    in a scratch clone, raise PLATFORM_RIGID_MODE_EXACTNESS and run
+         tests/verification/rung3/test_platform_rigid_modes.py
+out    1.154338e-18  (shipped, 1.00x)  20 passed
+out    1.5e-18       (1.30x)           20 passed
+out    1.88e-18      (1.63x)           20 passed
+out    1.89e-18      (1.64x)           1 failed -- and it is
+out                  test_EG0_the_CEILING_is_the_window_it_claims_to_be
+out    1.0e-17       (8.7x)            3 failed
+rule   EH2(c): both edges guarded at 2x, floor and roof. The weakest counter
+       response 3.776640e-18 over 1.89e-18 is 2.00
+judge  VERDICT 85 MEASURED THIS CEILING'S SILENT RISE AT 8.7x. IT IS NOW 1.63x, AND
+       THE 2x ROOF IS WHERE THE REDNESS COMES FROM. The claim "both edges are guarded
+       at 2x" in `floatfea/tolerances.py:453-473`, in `docs/milestones/F3.md:659-676`
+       and in the report is TRUE, and I checked the ASSERTION rather than the
+       sentence -- which is what the implementer says they got wrong first and fixed
+       in the same commit as the text.
+```
+
+```
+cmd    AND THE ATTACK NEITHER OF US HAD RUN: move BOTH constants together
+out    ceiling 1.88e-18 (its roof) + injection 3.0e-14  ->  20 passed
+out    ceiling 1.88e-18             + injection 5.0e-14  ->  1 failed (R639)
+out    ceiling 1.88e-18             + injection 1.0e-13  ->  1 failed (R639)
+rule   invert the decision rule and solve -- in TWO variables, because each guard's
+       threshold is computed from the other's constant
+judge  THE RESIDUAL JOINT ENVELOPE IS CEILING x1.63 AND INJECTION x3.0 AT ONCE, with
+       the rung green. Before this round it was x8.7 and x10^8. That is the number
+       the entry should carry the next time this is touched, and it is a MEASUREMENT
+       rather than a finding: nothing is wrong, and the envelope is no longer large
+       enough to hide a defect of the shapes the three counters inject.
+```
+
+* **R631, R626's residue -- OPEN, LEDGERED to `docs/closure/F3.md` section 4 under
+  DZ7c, accepted, unchanged. They do NOT carry as blocking into F4.**
+* **R624, R630, R632, R633, R634 -- CLOSED at verdicts 84 and 85 and staying closed.**
+  This round's diff does not reopen them.
+* **R636 -- closure C110, still open:** section 9a routes it as "carried as an earlier
+  report records it" and it was first stated in verdict 84.
+* **R641, R642 -- the implementer's own numbering, both accepted.** R641's regex is
+  correct for the case it names and I checked the guard it feeds: 32 site
+  parametrisations collect at `b7c05e7` and EVERY ONE resolves to a real path, so no
+  phantom reaches the gate. R642's caching is sound and I read it for the one way it
+  could have gone wrong -- see C116 for the residue, and note the rung-3 file now runs
+  in `1.09s` against verdict 85's `49.94s` for the pair.
+* **C101 -- CLOSED.** `docs/closure/F3.md:208` now reads ``866.3x` tighter, which is
+  `2.94` decades`, and `1e-15 / 1.154338e-18 = 866.3`. The other site is revision 1's
+  prose and the report corrects it in revision 3 section 6 as a triple, which is the
+  right place for a claim about a closed revision.
+* **C105 -- CLOSED by verdict 85's ruling, and the evidence that it was the right
+  ruling is that `test_the_CI_section_is_about_the_REVIEWED_commit` passes against
+  revision 3 with no tool change at all.**
+* **C103 -- open, pending the escalation reaching Xabier. C104 -- closed.**
+* **C102, C106 to C114, C88, C86, C90 to C98, C100, C74, C76, C78, C82, C85, R610,
+  R615 -- carried unchanged, no work asked, not re-reviewed.**
+* **C40, C75, C75b, C99 -- CLOSED and staying closed.** `ruff`, `black --check` and
+  `mypy` all SUCCEEDED on CI at this commit.
+* **R611, R617, C89 withdrawn and staying withdrawn. R612 to R614, R616, R618 to R621,
+  R623, R625, R627, R628 closed as ruled at 79 to 85. R622 is F4.**
+
+## Findings
+
+**R643. (d, BLOCKING, CARRIES INTO F4) `test_the_report_carries_a_WHOLE_SUITE_count`
+IS RED AT THE REVIEWED COMMIT AND STAYS RED WITH THE ANSWERING REPORT IN THE TREE.
+THAT IS THE DISCRIMINATOR THE CARVE-OUT IS BUILT ON, SO IT IS NOT THE BOUNDARY.**
+
+```
+cmd    git show b7c05e7:docs/reports/F3/step-3.md | tail -3
+out    ## 11. The whole suite
+out    SUITE_LINE_PLACEHOLDER
+cmd    the same token in the WORKING TREE, where revision 3 exists
+out    docs/reports/F3/step-3.md:1354   SUITE_LINE_PLACEHOLDER
+cmd    python -m pytest tests/test_report_carried.py::test_the_report_carries_a
+         _WHOLE_SUITE_count -q, in the working tree
+out    1 failed -- "the newest revision carries no whole-suite line"
+rule   EG3's sharpening: state (2) is cleared BY THE ANSWERING REPORT. This one is
+       not, and CZ1 (iv) is unchanged for anything the answering report does not
+       clear
+judge  VERDICT 85 NAMED THIS PLACEHOLDER AS CONDITION 1 AND IT IS STILL THERE, so it
+       is a second-round miss and not a first sighting. I accept entirely that the
+       implementer refused to hand-assemble it -- that refusal is correct and is the
+       reason I have a clean number to give. What I cannot do is call the red
+       anything other than red.
+```
+
+**Closed when** the newest revision of `docs/reports/F3/step-3.md` carries a line
+matching `_SUITE` with the three counts and the commit, every failing id named in a
+``- **failed** `<id>` `` bullet, and the figure taken from a run rather than assembled.
+The run exists: **`18 failed, 2901 passed, 1 skipped in 1245.47s` at `b7c05e7`, one
+invocation, clean clone, no exclusion**, with the guards half beside it at **`18
+failed, 221 passed, 1 skipped in 185.64s`** and the seventeen CI ids as the
+cross-check. Both commands are named in my section above and may be cited as the
+source. **No new apparatus, no tool change, and no estimate.**
+
+**R644. (NOT BLOCKING -- a correction to MY OWN instructions, stated once and sent out
+of the loop.)** EH1's two lists are short by one name on the state-(2) side and have
+one name on the wrong side. I wrote them, and the measurement is above:
+
+```
+out    test_the_answered_verdict_is_the_NEWEST_one is on STATE (1)'s list and it is
+out      a STATE (2) failure: it fails exactly when a verdict exists and the report
+out      has not answered it. "the report at 3fdfc79 is newer than the verdict at
+out      f2fa598 and names 8368c51".
+out    test_a_carried_row_points_at_a_section_that_discusses_it is on NEITHER list
+out      and is a state (2) failure: red on two rows at b7c05e7, all 28
+out      parametrisations green with revision 3 in the tree.
+judge  EG3(i) SURVIVES THIS UNHARMED -- it is why I ran the two unlisted ones
+       individually instead of ruling them by family, and the eighty-third verdict's
+       lesson is the only reason the suite-line red was separated from them. But a
+       list that is wrong makes the trace harder every round. THIS LEAVES THE LOOP
+       and goes to Xabier through the implementer as a one-line directive; it is not
+       another round and no step is held on it.
+```
+
+## Closure items
+
+Named, not re-reviewed, none of them holding anything. Absorb the whole list in ONE
+commit and verify it AFTER the commit exists (CZ1).
+
+* **C115.** `scripts/suite_count.py --half guards` runs the guard-state harness through
+  `_worktree()`, and a `git worktree` checkout has a `.git` that is a FILE -- which is
+  precisely R640/C111. The harness commits into the suite-count worktree WHILE the
+  count is being taken, so that half's figure is measured on a tree that moves during
+  the run. My own guards figure was taken in a clone with a real `.git` directory.
+  **Closes when** C111's fix lands (`_build` refuses when `.git` is a file, or the copy
+  gets a real directory) -- the hazard is now on a committed code path and no longer
+  only in a reviewer's scratch harness.
+* **C116.** `member_stiffnesses`'s cache at
+  `tests/verification/rung3/test_platform_rigid_modes.py:59` is never invalidated. I
+  checked the way it could have gone wrong and it has not: `_injected`, `_negate`,
+  `_retained_torsion` and `test_the_REFUSAL_rejects_a_LIFTED_rigid_mode` all
+  `k.copy()`, no caller mutates the returned list, and the counters replace the module
+  FUNCTION rather than the cache, so both BX0 cells still reach them -- which the five
+  injection sizes above confirm by rejecting three of them. The residue is that a
+  future test patching `build_superstructure` would be SILENTLY VACUOUS. **Closes
+  when** the cache keys on something, or the docstring says the function must not be
+  patched upstream.
+* **C117.** `--half` accepts only the exact two-token form:
+  `if len(argv) >= 3 and argv[1] == "--half"`. So `--half=main`, a bare `main`, and
+  `--half` with no value ALL fall through silently to `both`, which is the path that
+  does not finish. "An unsupported case raises, it never defaults." **Closes when** an
+  unrecognised argument exits non-zero.
+* **C118.** A published revision is being rewritten and a sentence is DOUBLING. Take
+  the R629 sentence in revision 1 section 1 -- the one beginning "verdict 83" and
+  ending "was answered at `0d911ce`" -- and count its occurrences per commit with
+  `git show <sha>:docs/reports/F3/step-3.md | grep -o <that sentence> | wc -l`:
+  `95f6293` gives **1**; `31cd0db`, `3fdfc79`, `24e8bb2` and `b7c05e7` give **3**; the
+  working tree with revision 3 in it gives **6**. The paragraph now carries the
+  sentence three times in a row. Whatever edits the report is APPENDING where it means
+  to replace, and the count doubles every round it is left. **Closes when** the
+  paragraph has one copy and the editing step is a replace.
+* **C119.** `scripts/untouched_sites.py` has R641's defect, unfixed. Revision 3 section
+  8 carries the row `| R637 | R634-docs/closure/F3.md |` -- a pytest parametrisation id
+  read as a path and attributed to the wrong finding. I checked the GUARD's own
+  extractor and it is clean, so this is prose rather than a gate. **Closes when** that
+  generator anchors the same way `_ANSWERS_PATH` now does.
+* **C120.** The deleted state's corpus row at
+  `tests/corpus/report_guard_states.txt:164` now falls into `AWAITING_TRANSCRIPTION`,
+  where it reads as an untranscribed WORK ITEM rather than as a control deleted for
+  vacuity. Those are different statements and the count
+  `test_the_corpus_and_the_states_agree` prints no longer distinguishes them. **Closes
+  when** the printed line separates "not yet built" from "built, measured vacuous,
+  deleted" -- or, if that is apparatus, when `docs/milestones/F2a.md` carries it as a
+  row.
+* **C121.** The tree says two different things about R638's disposition at one commit.
+  `docs/closure/F3.md:139` and `floatfea/tolerances.py:394` say **"it carries into F4
+  by name"**; `docs/reports/F3/step-3.md:1300` says **"the registry row is backlog, not
+  an F4 carry"**. **I rule: R638 CARRIES INTO F4 BY NAME AND STAYS BLOCKING THERE.**
+  CZ0's sentence is explicit, verdict 85 said so, and the two source-tree sites are the
+  ones that are right. If EH3 says otherwise that is a directive-level conflict and it
+  goes to Xabier; it is not settled by a report line. **Closes when** the report's
+  section 9b row reads what the other two sites read.
+* **C122.** `floatfea/tolerances.py:371-375` carries a measurement I did not ask for --
+  `1802 passed, 0 failed` over `tests/verification` and `tests/unit` -- without its
+  command, in a file BI3 says must not hold a regenerated table. The number is TRUE (I
+  reproduced it exactly) and it IS in a proper triple in `docs/closure/F3.md` section
+  4a. **Closes when** the entry keeps the one number it needs and points at section 4a
+  for the rest, per BI3's own remedy.
+* **C123.** Revision 3 section 10 is headed "EH6 -- not started" while the hand-back
+  says EH6/EI3 is "scripts-only and started". **Closes when** the two agree.
+* **C113 is still open** and section 9a still carries twelve rows reading "carried as
+  an earlier report records it".
+* **C102, C103, C106 to C112, C114, C88, C86, C90 to C98, C100, C74, C76, C78, C82,
+  C85, R610, R615** -- carried unchanged. **C89** withdrawn. **C40, C75, C75b, C99,
+  C101, C104, C105** -- CLOSED.
+
+## Tolerances touched
+
+```
+cmd  git diff 95f6293..HEAD --numstat -- floatfea/tolerances.py
+out  52  0
+cmd  the same diff, lines matching a NAME: Final[float] = value declaration
+out  (no output) -- NOT ONE VALUE LINE CHANGED, in either direction
+cmd  git diff 95f6293..HEAD -- "tests/regression/*" tests/conftest.py
+out  (no output) -- no golden moved, no parametrisation loosened, no conftest
+judge  NO TOLERANCE WAS TOUCHED AS A VALUE THIS ROUND, and the file grew by 52 lines
+       of comment and nothing else. What moved is TWO ASSERTIONS, both strictly
+       tightening: a roof on the window and an upper bound on the injection. I solved
+       both edges myself rather than taking either.
+```
+
+| constant | value | form | counter | justification located |
+|---|---|---|---|---|
+| `PLATFORM_RIGID_MODE_EXACTNESS` | `1.154338e-18`, UNCHANGED | relative and dimensionless; the element-local residual is homogenised, so span, orientation and reference point leave the quantity; correct form | three rows, both BX0 cells green. **AND THE ROOF IS NOW ASSERTED (EH2(c))**: the silent rise fell from `8.7x` to `1.63x`. Solved: `1.88e-18` green, `1.89e-18` red, and the red is `test_EG0_the_CEILING_is_the_window_it_claims_to_be` at `weakest/ceiling = 2.00` | `floatfea/tolerances.py:453-473` and `docs/milestones/F3.md:659-676`; the window is re-measured every run by `test_EG0_the_CEILING_is_the_window_it_claims_to_be` rather than typed (BI3). **EH2(a) and (b) are the change rule and they are prose, correctly -- nothing in them is a number.** |
+| `PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT` | `1.0e-14`, UNCHANGED | a fraction of `max abs k_e`, dimensionless; correct form | it IS the counter, and **R639 IS CLOSED**: the upper edge is now solved at `3.09x` where it was eight decades. `3.0e-14` green, `3.2e-14` red, `1.0e-16` red on the lower side | `floatfea/tolerances.py:423-446`, `docs/milestones/F3.md:668`, and the clearance now PRODUCED by `test_R639_the_INJECTION_SIZE_cannot_be_raised` rather than stated in a comment. |
+| `RIGID_MODE_EXACTNESS` | `1e-15`, UNCHANGED | relative and dimensionless; correct form | **STILL NONE, AND THE GAP IS NOW WRITTEN WHERE IT WILL BE READ.** `1e-13` gives `1802 passed, 0 failed` over the measuring half; the solved edge is `3.783782e-12`; `3784x`. Every figure RE-MEASURED BY ME at `b7c05e7` and exact | its own entry at `floatfea/tolerances.py:330-397` and `docs/closure/F3.md` section 4a. **R638 carries into F4 by name.** |
+| `RIGID_MODE_BOUND` | `199.526231496888`, UNCHANGED | unchanged | unchanged | unchanged. **R631** is its open residue, ledgered under DZ7c. |
+
+**The residual joint envelope, because it is the number the next person needs:** both
+constants moved together, ceiling `x1.63` AND injection `x3.0` at once, the rung stays
+green at `20 passed`; `x1.63` with `x5.0` reddens. Measured at `b7c05e7` in a scratch
+clone.
+
+## My own instructions (4b), read line by line
+
+```
+cmd  git diff 95f6293..HEAD --stat -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  CLAUDE.md 42 ++++++, docs/SUPERVISOR.md 42 ++++++, 84 insertions(+), 0 (-)
+cmd  git log --oneline 95f6293..HEAD -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  4e91284 process: CP3, the carve-out's two lists, and boundaries solved both ways
+cmd  git show 4e91284 --name-only
+out  CLAUDE.md, docs/SUPERVISOR.md     AND NOTHING ELSE
+judge  NO STOP-CLASS PROCESS FINDING. A STANDALONE `process:` COMMIT, touching no
+       `floatfea/` and no `tests/`, citing EH0, EH1 and EH4 by name. I read all 84
+       added lines: three new sections -- EH1's corrected carve-out lists, EH4's
+       both-directions rule, CP3's pasting order -- all ADDITIVE, nothing deleted, no
+       guard weakened, and all three are my own wording unparaphrased. The EH1 and
+       CP3 blocks appear in both files and EH4 appears in both.
+       `b7c05e7` is ALSO labelled `process:` and touches none of these three paths,
+       which I verified by the pathspec and not by the subject line.
+```
+
+## The adversarial corpus (BE3)
+
+**NO BATCH 32, and I am saying so rather than leaving the section absent.**
+
+```
+cmd  git diff 95f6293..HEAD --stat -- tests/corpus
+out  (no output)
+cmd  grep -c "^id=" tests/corpus/platform_ceiling_and_counter_registration.txt
+out  26        unchanged
+```
+
+**New entries this round: 0. So there is no coverage measurement this round, and that
+is a cost I am naming rather than hiding.** EG4(e) pauses general batches after F3 step
+3 and excepts only F4's load-mapping gate and EB6's label-provenance gate; neither is
+in this step's diff, and the G2.1 ceiling is not on the exception list. Verdict 85
+recorded batch 31 as the last general batch. **My standing instruction says add unseen
+entries at every review; CLAUDE.md's EG4(e) is the project instruction and it
+governs.** The last three measurements, for the record of what the pause is spending:
+4 of 11, 8 of 13, 5 of 10, with the final round's misses all outside the element.
+
+**AND THE METHOD NOTE, which is this round's only transferable lesson.** Verdict 85's
+closing paragraph said the question that catches a silent widening is "diff the step,
+then ask what the step's change makes POSSIBLE". The two best measurements this round
+came from a second question that is not in my instructions either: **move TWO constants
+at once when each guard's threshold is computed from the other's constant.** Each of
+this round's two new assertions is strong alone -- `1.63x` and `3.09x` -- and jointly
+they still admit `1.63x` times `3.0x` with the rung green, because raising the ceiling
+raises the detection edges the injection bound is measured against. A one-at-a-time
+sweep cannot see that, and both of ours were one-at-a-time.
+
+Every mutation this round was applied in scratch CLONES under the session scratch
+directory -- clones and not worktrees, deliberately, because C111 is open and a
+worktree has a `.git` that is a file. The main repository's `HEAD` is `b7c05e7`,
+`F3 == origin/F3`, and the only path modified in it is the implementer's own
+uncommitted `docs/reports/F3/step-3.md`. The only path I have written in this
+repository is this verdict.
+
+## On the criterion
+
+**I ruled under CZ0 and I have no complaint about the criterion.** One blocking item,
+(d), measured on two machines and separated from a sixteen-red cascade by one command.
+Nine closure items named and not re-reviewed. One item -- R644 -- is a correction to my
+own instructions and I have put it under its own heading and sent it out of the loop
+rather than holding anything on it. No round was spent on prose.
+
+**One thing on the record against myself.** Verdict 85 asked for R638 either closed or
+recorded, and offered the recording branch in good faith. The implementer took it, the
+record is true, and I re-measured every figure in it. But the effect of my own offer is
+that **the ceiling the production builder refuses real decks on leaves F3 with `3784x`
+of silent headroom**, and the thing standing between a reader and a hundredfold
+widening is still two string comparisons against a markdown table. That was my
+decision, not theirs. It is why R638 carries into F4 as blocking rather than as a
+ledger line, and why I will not accept a second recording of it.
+
+## Carried for the next step -- F4's `Carried` section, BY NAME, BLOCKING THERE
+
+1. **R643 -- the whole-suite line.** The figure exists and is in this verdict. The
+   newest revision of `docs/reports/F3/step-3.md` carries it, with every failing id
+   named, or F4's first report does under `Carried` with the commands pasted.
+2. **R638 -- `RIGID_MODE_EXACTNESS` has no registered counter and widens `100x` with
+   the measuring half of the suite green.** A `REGISTERED` row whose two cells reach
+   `floatfea.model.platform`'s namespace, and the `1.0e-8` injection at
+   `tests/verification/rung3/test_platform_rigid_modes.py:260` declared in
+   `floatfea/tolerances.py` as that constant's counter-defect. Then the widening is
+   re-measured and `3784x` is replaced by what the registry refuses. **C121 settles
+   that this is a carry and not a backlog row.**
+3. **R637's clause (iii), which is the same object as R643:** `pytest -q` and a pushed
+   CI run at the answering sha reading `0 failed` apart from EG3's two states.
+
+**Not carried, stated so no round is spent asking:** R631, R626's residue and R635 stay
+LEDGERED and I accept the ledger; R639, R637 clauses (i) and (ii), R624, R630, R632,
+R633, R634, C101, C104, C105 are CLOSED and I will not reopen them; R622 is F4's own;
+the EG4 preview stays blocked on the ground that holds.
+
+## Next step opens when
+
+**STEP 3 IS CLOSED AND F3 IS CLOSED.** This was round 3 of 3 under CZ0 and the step
+closes on the cap, with three items carried by name above. F4 may open. The specific
+conditions on F4's first turn, in the order that unblocks the most:
+
+1. **LAND REVISION 3 WITH THE SUITE LINE.** The number is in this verdict, taken at
+   `b7c05e7` in one invocation with no exclusion, with the guards half beside it and
+   CI's seventeen ids as the cross-check. Nothing is estimated and nothing is
+   assembled. Run `scripts/suite_count.py` from a clone OUTSIDE the synced folder next
+   time -- that is the whole of the impediment and it is measured, not guessed.
+2. **THE CLOSURE COMMIT, ONE OF THEM, VERIFIED AFTER IT EXISTS (CZ1).** Nine closure
+   items, then at that commit: `ruff check floatfea tests`, `black --check floatfea
+   tests`, `mypy floatfea`, `pytest -q`, then `gh run list` at its own sha with the
+   job-level conclusions so the lint job's `guards and meta-tests` step is seen to have
+   RUN. C118 first, because it doubles every round it is left.
+3. **F4's `Carried` carries R643, R638 and R637(iii) BY NAME and they block there.**
+4. **R644 goes to Xabier as a one-line directive** with the two measured names. It does
+   not become a round.
+
+**Schedule.** F3 closes **13 October** and it closes TODAY, 1 October, twelve days
+inside the date. F4 19 October; the member-force table 23 October; the code-check
+screen 28 October. **I have no measurement that contradicts any of them**, and the
+ladder is green on CI at this commit, all six rungs including ladder 3. **CZ0's
+escalation clause is now LIVE and I am stating it rather than noting it:** step 2 closed
+carrying four items and step 3 closes carrying three, which is two consecutive steps, so
+the choice goes to Xabier -- **slip a date, or reduce scope.** My own reading is that
+neither is needed yet, and the reason is specific: all three carried items are bounded
+work whose closing conditions are already measured, and none of them is on F4's critical
+path. **What I would watch instead is EH6.** It is the critical path, it is
+scripts-only, it needs six FloatSim runs in the HSP-runs worktree, and nobody has timed
+one. I still do not endorse pulling F4 to 16 October, for verdict 84's reason: the EB6
+expected side is unmeasured.
+
+**One sentence for the implementer.** The three repairs are right, the refusal to
+hand-assemble the suite line was the correct call and is the reason I have a clean
+number to hand you, and the single best thing in the round is that you wrote "both
+edges guarded at 2x", noticed it was text ahead of code, and shipped the assertion in
+the same commit -- which is CW0 working as intended, applied by you to yourself, before
+I got there.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F3 step 3
 Reviewed commit: 95f62936b03955a91cd879c56529d9483b5e9baf
 Verdict: HOLD
 **Reviewed commit: `95f6293`.**  (HEAD of F3 and pushed. For once the stamp above agrees with it: I committed no corpus batch this round, so HEAD at write time IS the judged commit. That coincidence is the whole of the deadlock and it is ruled below.)
