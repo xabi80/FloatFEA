@@ -1719,6 +1719,7 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 
 
 
+
 <!-- generated: scripts/answered_table.py -->
 
 | item | class | state | where | site | the verdict's own subject |
@@ -1763,8 +1764,12 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 | R651 | recorded | **answered** | §13 | `` | RED.) THE |
 | R652 | recorded | **answered** | §13 | `` | `docs/closure/F3.md` SECTION 6b PUBLISHES |
 | R653 | recorded | **answered** | §13 | `` | THE MOMENT EJ4's RESIDUAL IS ASSERTED IN |
+| R654 | recorded | **answered** | §14 | `` | TRACE SHORT BY ONE.) SECTION 14's `8 failed, |
+| R655 | recorded | **answered** | §14 | `` | THE |
+| R656 | recorded | **answered** | §14 | `` | `scripts/ci_section.py` CANNOT RECORD THE THIRD CA2 STATE, WHICH CA2 REQUIRES TO BE |
 
 ## 8. Sites named by findings and not touched
+
 
 
 
@@ -1872,6 +1877,7 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 
 
 
+
 <!-- generated: scripts/carried_table.py -->
 
 | item | status | the verdict's own subject |
@@ -1916,6 +1922,9 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 | R651 | **answered** — §13 | RED.) THE 316 passed FIGURE IS VOID: THE EDIT THAT PUBLISHED IT CAME AFTER THE RUN THAT... |
 | R652 | **answered** — §13 | docs/closure/F3.md SECTION 6b PUBLISHES "STATE (2) DID NOT MATERIALISE" IN THE COMMIT WHERE IT... |
 | R653 | **answered** — §13 | THE MOMENT EJ4's RESIDUAL IS ASSERTED IN tests/.) C131's FIX IS RIGHT AND IT LEAVES THE SCHEME... |
+| R654 | **answered** — §14 | TRACE SHORT BY ONE.) SECTION 14's 8 failed, 336 passed IS VOID AND THE TRUE FIGURE AT THE... |
+| R655 | **answered** — §14 | THE MECHANISM IS PUBLISHED FALSELY IN THREE PLACES, AND THE COMMIT THAT PUBLISHES IT CARRIES... |
+| R656 | **answered** — §14 | scripts/ci_section.py CANNOT RECORD THE THIRD CA2 STATE, WHICH CA2 REQUIRES TO BE RECORDED.... |
 
 ## 9a. Answered in F3
 
@@ -2262,21 +2271,43 @@ judge  the retracted `429x` is gone from the comment and the gap is recorded ins
 
 ## 14. This revision CANNOT be green, and neither state is a defect in the work
 
-**Verdict 89 judged `727b9fa`, a report-only commit, and CI is configured never to run
-on one.** So the report has two possible states and exactly one red in each, and the two
-reds are mutually exclusive. I measured both rather than picking the one that reads
-better.
+**Verdict 89 judged `727b9fa`, which has no CI run, so § 0 for it cannot be generated.**
+The report has two possible states, exactly one red in each, and the two are mutually
+exclusive. I measured both rather than picking the one that reads better.
+
+**THE FIRST VERSION OF THIS SENTENCE SAID "CI IS CONFIGURED NEVER TO RUN ON A
+REPORT-ONLY COMMIT", AND THAT IS FALSE (R655).** The refutation is a generated table
+four lines above it in this same file:
 
 ```
-cmd    git diff --name-only c40d24d..727b9fa
-out    docs/reports/F3/step-3.md            -- the only file
-cmd    sed -n '/paths-ignore:/,/workflow_dispatch:/p' .github/workflows/ci.yml
-out    - "docs/reports/**"
-out    - "docs/reviews/**"
-cmd    gh run list --commit 727b9fa2ff3f379f9625181d6c6b5b8566f75fdf
-out    (no output) -- NO RUN, and there can never be one
-rule   `test_the_CI_section_is_about_the_REVIEWED_commit`, and `ci_section.py`'s own
-       refusal to publish a table for a commit with no run
+claim  a report-only commit cannot have a CI run
+cmd    git diff --name-only bf21c37^..bf21c37
+out    docs/reports/F3/step-3.md            -- report-only, one file
+cmd    gh run list --commit <bf21c37, full sha>
+out    completed  success                   -- IT HAS ONE
+judge  REFUTED by the commit § 0 of this very revision is a table FOR. I published, four
+       lines apart, a generated table proving a report-only commit ran and a sentence
+       saying that cannot happen. The reviewer's verdict 89 said "structurally incapable
+       of carrying a run" and mine inherited it; both are withdrawn.
+
+claim  the real mechanism
+cmd    for b6a65f2 and cae39ac -- each touching scripts/ or docs/milestones/, both
+         paths CI runs on -- gh run list with the full sha
+out    no run        no run
+cmd    git diff --name-only d978636..bf21c37      -- the push that carried all three
+out    docs/closure/F3.md, docs/milestones/F4.md, docs/reports/F3/step-3-answers.json,
+out    docs/reports/F3/step-3.md, scripts/report_joint_reactions.py
+rule   a run attaches to the PUSHED HEAD sha, and `paths-ignore` is evaluated over the
+       PUSH's UNION of changed files -- never over the commit's own file list
+judge  so `b6a65f2` and `cae39ac` have no run because they were not pushed heads: they
+       rode in the push headed by `bf21c37`, whose union carries three non-ignored
+       paths. `727b9fa` and `c09aef4` have no run because each was pushed ALONE with a
+       union of one ignored file. **CZ1 (iv) is what forces that**: it requires the
+       closure commit pushed and measured first, which leaves the answering report in a
+       lone push.
+judge  **AND THE FIX NEEDS NOTHING FROM ANYONE:** push the step's final report revision
+       as the HEAD of a push that also carries at least one file CI runs on. That is
+       exactly what `bf21c37` did, and why verdict 88 had a green § 0.
 ```
 
 **STATE A -- the `Answers:` line names verdict 89, as the newest-verdict guard wants:**
@@ -2297,16 +2328,24 @@ judge  SECTION 0 IS UNPRODUCIBLE. And the generator's reason is wrong in a way w
 ships:**
 
 ```
-cmd    the three report-guard files, working tree, state B
-out    8 failed, 336 passed in 135.77s
+cmd    the three report-guard files AT THE COMMITTED SHA `c09aef4`, taken by verdict
+         90 rather than by me
+out    9 failed, 337 passed
 out    1 x test_the_answered_verdict_is_the_NEWEST_one
-out    7 x test_the_guard_survives_the_state[baseline, non_numeric_step_suffix,
+out    8 x test_the_guard_survives_the_state[baseline, non_numeric_step_suffix,
 out        superscript_digit_step_number, draft_suffix_beside_a_step_report,
 out        step_number_is_the_empty_string,
 out        verdict_amended_after_the_commit_the_report_answers,
-out        zero_padded_step_number]
+out        zero_padded_step_number,
+out        answers_header_names_a_sha_that_is_not_a_commit]
 out        -> cascade off the red baseline, whose own failure line is that same test
-rule   EG3(i): every red traces by name
+rule   EG3(i): every red traces by name, and the trace must be of the COMMITTED tree
+judge  **MY FIRST VERSION SAID `8 failed, 336 passed` AND IT WAS VOID (R654).** It was
+       taken in the working tree, and §§ 13 and 14 are themselves parsed by two of these
+       three files -- so writing this section changed what it measures and added a ninth
+       red, `answers_header_names_a_sha_that_is_not_a_commit`, which my trace did not
+       name. **This is R651 again, one section later, in the revision that answers
+       R651**, and it is now R637 clause (iii)'s object.
 judge  ONE CAUSE, and section 0 and 0a are generable and internally consistent. This is
        the state with the smaller red and the honest one: the report DOES answer verdict
        89 -- its three findings are section 13 -- and what it cannot do is NAME it
@@ -2353,4 +2392,22 @@ out    10 guards and meta-tests         FAILURE
 rule   CZ1 (iii): the `guards and meta-tests` step is SEEN TO HAVE RUN
 judge  it ran, and its red is the eight of section 12 -- answered at `727b9fa`, which
        is the CZ1 (iv) follow-on. The ladder is green, so no low rung is red.
+```
+
+**R656 -- the generator cannot express the one state the rule commands be recorded.**
+
+```
+cmd    sed -n 279,290p scripts/ci_section.py
+out    `run_for()` raises SystemExit when there are zero runs; `never_started()` at
+out    :288 handles CK2's case
+rule   CA2 requires a run's state be RECORDED, including unavailable
+judge  so the generator implements red, green and never-started, and REFUSES
+       "unavailable" -- which is why § 0 cannot be written for a commit with no run at
+       all. This is not new apparatus: it is an existing generator that cannot express
+       a legal input, so DR1 freezes it and it is named and sent to Xabier rather than
+       repaired. Its message also misdiagnoses itself -- `git merge-base --is-ancestor
+       727b9fa origin/F3` exits 0, so "a commit that was never pushed" is wrong about
+       the one case it fired on.
+judge  `docs/closure/F3.md` § 6d carries it, together with the negative control verdict
+       90 found at its own commit and a conflict between DR1 and CZ0 that is Xabier's.
 ```
