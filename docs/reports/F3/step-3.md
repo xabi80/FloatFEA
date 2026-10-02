@@ -1445,46 +1445,42 @@ judge  and the figure I had been citing as a baseline -- `1802 passed in 89.71s`
 
 ---
 
-# Revision 4 — verdict 87: the STOP withdrawn, and the lint gate green
+# Revision 4 — verdict 87's two reds, and verdict 88's closure list
 
-Answers: verdict 87 @ 69456c7
+Answers: verdict 88 @ 3f45007
 
 **2026-10-02.**
 
-## 0. CI at `6083a87`, the commit verdict 87 judged — conclusion **FAILURE**
+## 0. CI at `bf21c37`, the commit verdict 88 judged — conclusion **SUCCESS**
 
 <!-- generated: scripts/ci_section.py -->
 
-Generated: `python scripts/ci_section.py`, anchored on verdict 87 at `6083a87` through the report's own `Answers:` line. Run `36998118365`, event `push`, conclusion **failure**.
+Generated: `python scripts/ci_section.py`, anchored on verdict 88 at `bf21c37` through the report's own `Answers:` line. Run `37009523830`, event `push`, conclusion **success**.
 
 | job | passed | failed | skipped |
 |---|---|---|---|
 | the verification ladder | 1848 | 0 | 0 |
-| lint, unit and guards | 0 | 0 | 0 |
+| lint, unit and guards | 1070 | 0 | 0 |
 | CI determinism -- leg | 0 | 0 | 0 |
 | CI determinism -- ten legs agree | 0 | 0 | 0 |
 
-**Job conclusions: 4 jobs, 1 not green.**
-
-- lint, unit and guards (failure)
+**Job conclusions: 4 jobs, 0 not green.**
 
 **Failing tests named in the log: 0.**
 
-## 0a. Runs since the commit verdict 87 judged
+## 0a. Runs since the commit verdict 88 judged
 
 <!-- generated: scripts/ci_section.py -->
 
-Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 87 at `6083a87` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 88 at `bf21c37` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
 
 | run | event | head | outcome |
 |---|---|---|---|
-| `36998118365` | push | `6083a87` | conclusion **failure** |
-| `37001891163` | push | `d978636` | conclusion **failure** |
+| `37009523830` | push | `bf21c37` | conclusion **success** |
+| `37013452200` | push | `c40d24d` | conclusion **failure** |
 
-**Run `36998118365`, conclusion **failure**: 0 failing test name(s) in the log.**
-
-**Run `37001891163`, conclusion **failure**: 8 failing test name(s) in the log.**
-- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+**Run `37013452200`, conclusion **failure**: 8 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
@@ -1718,6 +1714,8 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 ## 7. Findings answered
 
 
+
+
 <!-- generated: scripts/answered_table.py -->
 
 | item | class | state | where | site | the verdict's own subject |
@@ -1763,6 +1761,8 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 ## 8. Sites named by findings and not touched
 
 
+
+
 <!-- generated: scripts/untouched_sites.py -->
 
 | item | site | what the diff says | why it was left |
@@ -1778,9 +1778,10 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 | R632 | `tests/test_report_guard_states.py:545` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R632 | `tests/test_report_guard_states.py:546` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R632 | `tests/test_report_guard_states.py:777` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R632 | `tolerances.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R633 | `docs/milestones/F3.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
-| R633 | `floatfea/tolerances.py:354` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
-| R633 | `floatfea/tolerances.py:355` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R633 | `floatfea/tolerances.py:354` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R633 | `floatfea/tolerances.py:355` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R633 | `tests/test_counters_are_injected.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R633 | `tests/test_counters_are_injected.py:317` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R633 | `tests/test_counters_are_injected.py:318` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
@@ -1788,12 +1789,13 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 | R633 | `tests/verification/rung3/test_platform_rigid_modes.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R634 | `floatfea/model/platform.py:319` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R634 | `floatfea/model/platform.py:320` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
-| R634 | `floatfea/tolerances.py:330` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
-| R634 | `floatfea/tolerances.py:345` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
-| R634 | `floatfea/tolerances.py:346` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
-| R634 | `floatfea/tolerances.py:347` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
-| R634 | `floatfea/tolerances.py:348` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
-| R634 | `floatfea/tolerances.py:403` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py:330` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py:345` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py:346` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py:347` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py:348` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py:403` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R637 | `CLAUDE.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R637 | `R634-docs/closure/F3.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R637 | `scripts/check_carried.py:51` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
@@ -1803,10 +1805,13 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 | R637 | `tests/test_report_numbers_are_sourced.py:102` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R638 | `CLAUDE.md` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4 step 1's opening. `docs/milestones/F4.md` § 4 carries it. |
 | R638 | `F2.md` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4 step 1's opening. `docs/milestones/F4.md` § 4 carries it. |
+| R638 | `floatfea/tolerances.py` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4 step 1's opening. `docs/milestones/F4.md` § 4 carries it. |
 | R638 | `tests/test_counters_are_injected.py` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4 step 1's opening. `docs/milestones/F4.md` § 4 carries it. |
 | R638 | `tests/test_no_tolerance_literals.py` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4 step 1's opening. `docs/milestones/F4.md` § 4 carries it. |
 | R638 | `tests/verification/rung3/test_platform_rigid_modes.py:260` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4 step 1's opening. `docs/milestones/F4.md` § 4 carries it. |
+| R638 | `tolerances.py` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4 step 1's opening. `docs/milestones/F4.md` § 4 carries it. |
 | R639 | `docs/milestones/F3.md:668` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R639 | `floatfea/tolerances.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R639 | `tests/verification/rung1/test_corpus_configurations.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R640 | `scripts/suite_count.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R643 | `docs/reports/F3/step-3.md:1354` | the file is touched and this line number is the old one | TOUCHED in this revision. **No change at that exact line number**: `:1354` is revision 3's suite line, which verdict 87 reads as answered and which stays the record of what that revision measured. |
@@ -1819,14 +1824,40 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 | R645 | `PLAN.md:331` | the file is untouched | **no change, and a change here would be the defect.** A LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed. |
 | R645 | `PLAN.md:332` | the file is untouched | **no change, and a change here would be the defect.** A LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed. |
 | R645 | `docs/load-interchange-v1.md:670` | the file is untouched | **no change, and a change here would be the defect.** `:670` is the schema's own sentence about what adding these channels would look like to a reader who had not read the table. Quoted in § 2, not edited. |
+| R645 | `scripts/report_joint_reactions.py:217` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:218` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:219` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:220` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:221` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:222` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:223` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:224` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:225` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:226` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:227` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:228` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:229` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:230` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:231` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:232` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R645 | `scripts/report_joint_reactions.py:233` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
 | R645 | `scripts/report_joint_reactions.py:234` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
 | R646 | `docs/load-interchange-v1.md:87` | the file is untouched | **no change.** `:87` and `:88` are the schema's declarations of `mu[N,6]` and `A_inf`, quoted as the proof that EJ4(b) needed nothing new. Editing them would be reopening v1. |
 | R646 | `docs/load-interchange-v1.md:88` | the file is untouched | **no change.** `:87` and `:88` are the schema's declarations of `mu[N,6]` and `A_inf`, quoted as the proof that EJ4(b) needed nothing new. Editing them would be reopening v1. |
+| R647 | `floatfea/tolerances.py` | the file is untouched | TOUCHED at `d978636` -- the 126-column comment wrapped at 100, and **no change at that exact line number** now: the wrap moved what followed it. No value changed in either direction. |
+| R647 | `floatfea/tolerances.py:398` | the file is untouched | TOUCHED at `d978636` -- the 126-column comment wrapped at 100, and **no change at that exact line number** now: the wrap moved what followed it. No value changed in either direction. |
 | R648 | `docs/reports/F3/step-3.md:585` | the file is touched and this line number is the old one | TOUCHED in this revision -- § 0a regenerated and revision 4 written. **No change at that exact line number**: `:585` is revision 2's ruling that the red was CZ1 (iv), which the verdict credits and which stays as written. |
 | R648 | `scripts/ci_section.py` | the file is untouched | **no change.** It is RUN, not edited -- § 0a is regenerated by it. R648 asks for its output, not a change to it. |
 | R648 | `tests/test_report_carried.py` | the file is untouched | **no change, and verdict 88 is why that was right.** R648's condition is that this file READ `0 failed`, not that it be edited; R649 then ruled the guard did not fail false, so DR1's fix-or-delete never applied. |
 | R648 | `tests/test_report_guard_states.py` | the file is untouched | **no change, and verdict 88 is why that was right.** Its planted states cascade off the baseline; regenerating § 0a cleared all of them, and R649 ruled the guard correct. |
+| R649 | `tests/test_report_carried.py:1343` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R649 | `tests/test_report_carried.py:1344` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R650 | `docs/reports/F3/step-3.md:1932` | the file is touched and this line number is the old one | TOUCHED in this closure commit: § 12 carries the three measurements, taken independently of `buoy_centers()`, and the one count the reviewer and I disagree on. **No change at that exact line number**: the verdict read the pre-closure file and the revision grew above those lines. |
+| R650 | `docs/reports/F3/step-3.md:1933` | the file is touched and this line number is the old one | TOUCHED in this closure commit: § 12 carries the three measurements, taken independently of `buoy_centers()`, and the one count the reviewer and I disagree on. **No change at that exact line number**: the verdict read the pre-closure file and the revision grew above those lines. |
+| R650 | `docs/reports/F3/step-3.md:1934` | the file is touched and this line number is the old one | TOUCHED in this closure commit: § 12 carries the three measurements, taken independently of `buoy_centers()`, and the one count the reviewer and I disagree on. **No change at that exact line number**: the verdict read the pre-closure file and the revision grew above those lines. |
 ## 9. Carried
+
+
 
 
 <!-- generated: scripts/carried_table.py -->
@@ -2101,6 +2132,49 @@ judge  the `9 failed` is revision 3's stale 0a row and its cascade, at a commit 
        revision 4 did not exist. At `bf21c37` the same selection is `0 failed` and the
        whole tree is green, which is the state this report's own commit describes.
        Clause (iii) carries into F4 step 1 by name, with this as its baseline.
+```
+
+**CZ1 (ii) AT THE CLOSURE COMMIT `c40d24d`, AND IT FOUND A RED NOTHING EARLIER COULD
+SEE.** This is the rule's own subject: a check whose input is the commit graph cannot be
+measured before the commit exists.
+
+```
+cmd    ruff check floatfea tests scripts ; black --check floatfea tests scripts ;
+         mypy floatfea, at c40d24d with the tree clean
+out    All checks passed!   /   112 files would be left unchanged.   /   Success: no
+out    issues found in 30 source files
+cmd    pytest -q, clean clone at c40d24d under the LOCAL temp
+out    8 failed, 3000 passed, 2 warnings in 544.11s (0:09:04)
+cmd    the eight traced BY NAME (EG3(i)), with the baseline's own failure text read
+         rather than assumed
+out    1 x test_the_answered_verdict_is_the_NEWEST_one
+out        -> "the report at `c40d24d` is newer than the verdict at `3f45007` and
+out           names `69456c7`. Written with the newest verdict available, it must
+out           answer that one."
+out    7 x test_the_guard_survives_the_state[baseline, non_numeric_step_suffix,
+out        superscript_digit_step_number, draft_suffix_beside_a_step_report,
+out        step_number_is_the_empty_string,
+out        verdict_amended_after_the_commit_the_report_answers,
+out        zero_padded_step_number]
+out        -> each cascading off the red baseline, whose own failure line is the SAME
+out           assertion above
+rule   EG3(i): every red traces by name, and "only those" carries the FAILED list as
+       its command. EH1/R644 file `test_the_answered_verdict_is_the_NEWEST_one` under
+       state (2)
+judge  ONE CAUSE, and it is real rather than a boundary artefact: verdict 88 landed at
+       `3f45007` while this revision's `Answers:` line still named verdict 87, and the
+       closure commit made the report NEWER than the verdict it did not name. The fix
+       is not cosmetic -- the revision genuinely answers verdict 88 now, R649 and R650
+       in this section and C130 to C134 above -- so the line names 88 and sections 0
+       and 0a are regenerated to verdict 88's judged commit `bf21c37`.
+judge  AND THE REVIEWER MEASURED THE OTHER HALF: at `3f45007` the three report-guard
+       files read `326 passed, 0 failed`, so state (2) had not materialised at the
+       verdict commit. It materialised at MY closure commit, which is the one place
+       EG3 says the implementer measures it.
+cmd    the same files after the follow-on, working tree
+out    316 passed, 0 failed
+cmd    python scripts/check_carried.py
+out    check_carried: all 17 findings carried      exit 0
 ```
 
 **And one figure of the reviewer's that I could not reproduce, reported rather than
