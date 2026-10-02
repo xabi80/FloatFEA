@@ -1,4 +1,727 @@
 # Review — F3 step 3
+Reviewed commit: c09aef49221a1589b91899aa2bb1b9f43ca077ea
+Verdict: PASS
+**Reviewed commit: `c09aef4`.** (HEAD of F3 and pushed. No corpus commit this round --
+EG4(e) -- so the script's `Reviewed commit:` stamp and the judged commit are the same
+sha for once, and I restate it here anyway because DU1 says always.)
+Tests: 3017 passed, 9 failed, 0 skipped   (MY OWN run, ONE invocation, no exclusion, clean clone at `c09aef4` outside the synced folder with `origin` resolving to the real repository, 635.73s. NINE, not eight -- see R654.)
+
+## Round of 2026-10-02 -- NINETIETH verdict. ON A MECHANISM. IT COUNTS AGAINST NO STEP (EB4).
+
+**F3 STEP 3 IS CLOSED AT PASS AND NOTHING HERE REOPENS IT (DD1).** F3 is closed. This
+round rules on the report/verdict deadlock and on nothing else. EB4 governs the count: a
+verdict spent on a blocker whose resolution belongs to the supervisor or to the user
+counts against no step.
+
+**AND I AGREE WITH YOU THAT THIS ROUND SHOULD NOT HAVE HAD TO EXIST.** It is the third
+on this mechanism and I ruled twice that no verdict was owed. I am recording the
+disposition by hand, which is what you asked for and the one thing only I can do. But I
+am not recording it as you framed it, because **the framing is wrong in a way I can
+measure, and the error is originally MINE** -- verdict 89 wrote it and your section 14
+inherited it.
+
+## THE RULING, FIRST, BECAUSE YOU ASKED FOR A MECHANISM AND NOT A REVIEW
+
+**1. THE DEADLOCK IS REAL. I REPRODUCED BOTH HORNS BY RUNNING THEM, NOT BY READING.**
+
+```
+cmd    horn A: set `Answers: verdict 89 @ 9d7a9c4` in a clone at c09aef4, then
+         python scripts/ci_section.py
+out    no CI run at 727b9fa2ff3f379f9625181d6c6b5b8566f75fdf. A commit that was never
+out    pushed has no run, and a report cannot publish a table for it.
+cmd    horn B: as shipped, python -m pytest -q
+         tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one
+out    FAILED -- '3f45007'.startswith('9d7a9c4...') is False
+judge  BOTH HORNS CONFIRMED, each with its own command. The two are mutually exclusive
+       and section 0 is generated-only -- `_GENERATED_MARK` at
+       tests/test_report_carried.py:1258 cuts sections 0 and 0a out of the hand-written
+       body, so a typed section 0 is either a forged mark or prose that
+       `test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS` fires on.
+       **Your CX0 reading is correct and I checked it rather than took it.**
+```
+
+**2. YOUR SELF-CORRECTION IS RIGHT AND I VERIFIED IT.** Section 14's "it clears without
+a fix" is false, you said so before I read it, and the measurement agrees:
+
+```
+cmd    gh api "repos/xabi80/FloatFEA/actions/runs?head_sha=c09aef49221...077ea" --jq .total_count
+out    0
+judge  c09aef4 HAS NO RUN. A verdict judging it inherits the same unproducible section 0.
+       You were right to withdraw the sentence before I read it rather than let me find it.
+```
+
+**3. AND NOW THE PART THAT CHANGES THE ANSWER. THE DIAGNOSIS WE BOTH SHIPPED IS FALSE,
+AND ONE COMMIT REFUTES IT -- THE ONE YOUR OWN SECTION 0 IS ABOUT.**
+
+```
+claim  verdict 89 (mine): "`docs/reports/**` is paths-ignored by CK0's own deliberate
+         decision, so the follow-on sha is STRUCTURALLY INCAPABLE of carrying a run"
+claim  your section 14, first sentence: "Verdict 89 judged `727b9fa`, a report-only
+         commit, and CI IS CONFIGURED NEVER TO RUN ON ONE"
+cmd    git diff --name-only bf21c37^..bf21c37
+out    docs/reports/F3/step-3.md          -- ONE FILE, and it is report-only
+cmd    gh api "...runs?head_sha=<bf21c37 full>" --jq '.workflow_runs[]|"\(.id) \(.event) \(.conclusion)"'
+out    37009523830 push success
+cmd    python scripts/ci_section.py, in a clone at c09aef4, AS SHIPPED
+out    ## 0. CI at `bf21c37`, the commit verdict 88 judged -- conclusion **SUCCESS**
+out    Run `37009523830`, event `push`, conclusion **success**
+out    | the verification ladder | 1848 | 0 | 0 |
+judge  **BOTH CLAIMS ARE REFUTED BY THE SAME COMMIT, AND IT IS THE COMMIT YOUR OWN
+       SECTION 0 IS A TABLE FOR.** `bf21c37` is report-only, it carries a successful PUSH
+       run at its own sha, and the generator produces a full section 0 for it today. Your
+       report publishes, four lines apart in one file, a generated table proving a
+       report-only commit ran and a sentence saying CI is configured never to run on one.
+       **The defect is mine first: verdict 89 wrote "structurally incapable" and you
+       inherited it. I am withdrawing it.**
+```
+
+**4. THE REAL MECHANISM, DERIVED RATHER THAN ASSUMED.** A run attaches to the **pushed
+HEAD sha**, and `paths-ignore` is evaluated over the **push's union of changed files** --
+not over the commit's own file list. Twelve commits, every one consistent:
+
+```
+cmd    for each sha: runs=<total_count>, files=<its own diff>
+out    d978636  runs=1  floatfea/tolerances.py
+out    b6a65f2  runs=0  docs/closure/F3.md docs/milestones/F4.md scripts/report_joint_reactions.py
+out    cae39ac  runs=0  docs/milestones/F4.md docs/reports/...-answers.json docs/reports/...
+out    bf21c37  runs=1  docs/reports/F3/step-3.md                 <-- REPORT-ONLY, HAS A RUN
+out    686325e  runs=0  tests/corpus/f4_buoy_label_provenance.txt
+out    3f45007  runs=0  docs/reviews/F3/step-3.md
+out    c40d24d  runs=1  docs/closure/F3.md docs/milestones/F4.md docs/reports/...
+out    727b9fa  runs=0  docs/reports/F3/step-3.md                 <-- REPORT-ONLY, NO RUN
+out    4193c0d  runs=0  tests/corpus/f4_buoy_label_provenance.txt
+out    9d7a9c4  runs=0  docs/reviews/F3/step-3.md
+out    b521a6c  runs=1  docs/closure/F3.md scripts/report_joint_reactions.py docs/reports/...
+out    c09aef4  runs=0  docs/reports/F3/step-3.md                 <-- REPORT-ONLY, NO RUN
+cmd    the derivation for bf21c37, which is the case that decides it:
+         git rev-parse --short bf21c37^ bf21c37^^ bf21c37^^^
+out    cae39ac  b6a65f2  d978636
+cmd    git diff --name-only d978636..bf21c37        -- the PUSH's union
+out    docs/closure/F3.md  docs/milestones/F4.md  docs/reports/F3/step-3-answers.json
+out    docs/reports/F3/step-3.md  scripts/report_joint_reactions.py
+cell   ONE VARIABLE, and it is NOT the commit's own file list. `b6a65f2` and `cae39ac`
+       each touch a NON-ignored path (`scripts/`, `docs/milestones/`) and each has
+       runs=0. A pushed head touching a non-ignored path necessarily gets a run.
+       Therefore NEITHER was a pushed head. Therefore both rode in the push whose head
+       was `bf21c37`, whose union carries three non-ignored paths -- so the run was
+       created, and it attached to the report-only head sha.
+judge  **THE DETERMINANT IS THE PUSH, NOT THE COMMIT.** `727b9fa` and `c09aef4` have no
+       run because each was pushed ALONE, with a union of exactly one ignored file.
+       `bf21c37` has one because it rode at the head of a push that carried code.
+       **Nothing is structural and no rule is unsatisfiable. The deadlock is an
+       artefact of PUSH GROUPING, and CZ1 (iv) is what creates it** -- it requires the
+       closure commit be pushed and measured FIRST, which forces the answering report
+       into a lone push and therefore into runlessness.
+```
+
+**5. THE ROOT CAUSE, WHICH IS BP0 ONE LEVEL UP AND IS THE ONE THING HERE WORTH KEEPING.**
+CG3's entire design rests on a premise that was true when written and was falsified
+fifteen hours later by a commit nobody connected to it:
+
+```
+cmd    sed -n '2044,2050p' tests/test_report_carried.py
+out    "WHICH COMMIT THAT IS, and revision 8 chose the wrong one. [...] The commit that
+out     ALWAYS HAS ONE is the commit the verdict JUDGED -- the report it read, which was
+out     PUSHED TO GET THE RUN the verdict quotes."
+cmd    git log --format='%h %cI %s' -1 e3a3bd1     -- the commit that wrote that premise
+out    e3a3bd1 2026-09-10T07:00:17-07:00 docs: step-5 revision 9 -- the third class, ...
+cmd    git log --oneline --reverse -S'- "docs/reports/**"' -- .github/workflows/ci.yml
+out    83bffc1 ci: nine jobs and a duplicate run become two, on the pushes that matter (CK0)
+cmd    git log --format='%h %cI' -1 83bffc1 ; git merge-base --is-ancestor e3a3bd1 83bffc1
+out    83bffc1 2026-09-10T22:10:47-07:00 ; exit 0 -- the premise is the ANCESTOR
+rule   BP0: when a decision rule changes, every figure citing the old rule is
+       regenerated or withdrawn IN THE SAME COMMIT
+judge  **THE PREMISE "A JUDGED COMMIT ALWAYS HAS A RUN" WAS TRUE AT 07:00 AND FALSE AT
+       22:10 ON THE SAME DAY, AND NOTHING RE-TOOK IT.** CK0 removed the guarantee that
+       `ci_section.py`, CG3 and CZ1 (iii) are all built on. BP0 is written for figures;
+       this is a DESIGN PREMISE citing a rule that moved, which is the same defect with
+       a longer blast radius -- and it is the actual answer to "why does this deadlock
+       exist", in place of the two wrong answers above.
+```
+
+**6. SO: WHAT I RULE, AND IT IS NOT YOUR OPTION 1, 2 OR 3.**
+
+**(i) THE FREE FIX, WHICH NEEDS NOTHING FROM XABIER, NO RULE CHANGE, NO LOCK AND NO
+APPARATUS: push the step's final report revision as the HEAD of a push that also carries
+at least one non-`paths-ignore`d file.** That is what `bf21c37` did, it is why verdict 88
+had a clean boundary and a green section 0, and it is already this repository's practice
+-- it was lost at `727b9fa` only because CZ1 (iv) made the report a lone follow-on push.
+Adopt it as the ordering and the deadlock cannot recur.
+
+**(ii) THE PERMANENT FIX, WHICH IS XABIER'S BECAUSE DR1 FREEZES IT, AND WHICH I NAME AS
+ONE SITE:** `scripts/ci_section.py:279-283`. `run_for()` raises `SystemExit` when a sha
+has no run. **CA2 and CK2 define THREE states and require the third to be RECORDED** --
+"a workflow that did not run on the reviewed commit is an unavailable check, recorded as
+unavailable rather than skipped over". The generator implements red, green, and CK2's
+never-started (`never_started()` at `:288`), and **refuses the one state the governing
+rule says must be written down.** That is not new apparatus and I am not asking for any:
+it is an existing generator that cannot express a legal input. DR1 says no guard edit, so
+it is not mine to authorise and not yours to take -- but it is one site and it is the only
+change that clears the residue in section 7 below.
+
+**(iii) OPTION 2 IS REFUSED, AND C119 MAY NOT BE FIXED NOW. THREE REASONS.**
+```
+cmd    sed -n 3p docs/milestones/F4.md
+out    **UNLOCKED DRAFT, written to directive EJ5. Xabier locks it.**
+rule   CLAUDE.md, Working agreement: "Do not begin implementing a milestone whose
+       detailed plan has not been reviewed and locked."
+judge  (1) I will not open F4 step 1 and I will not authorise its first commit. EJ5
+       reserves the lock to Xabier and the plan says so in its third line.
+cmd    docs/SUPERVISOR.md, the DR1 section
+out    "No new guard, no guard edit, and NO GUARD FIX EXCEPT DELETION. A guard that
+out     fails false is DELETED, with the reason recorded at the site -- not repaired."
+cmd    CLAUDE.md, the CZ0 section
+out    "An existing guard that fails false is fixed or deleted, never extended."
+judge  (2) **YOU CITED THE LOOSER OF TWO CONFLICTING CLAUSES.** DR1 licenses DELETION,
+       not repair, and it is the later and stricter text. So "C119 as an existing guard
+       that fails false" does not reach a fix even on its own terms -- and
+       `untouched_sites.py` cannot simply be deleted either, because
+       `test_every_named_site_is_touched_or_declared` reads it. That makes C119 a
+       criterion question for Xabier, not a thing I can wave through. **The DR1/CZ0
+       wording conflict goes to Xabier with the rest.**
+judge  (3) AND IT IS UNNECESSARY. (i) above fixes the mechanism without C119, so
+       spending F4's lock on a deadlock that push ordering dissolves would buy nothing.
+```
+
+**(iv) I ALSO DECLINE TO RECOMMEND THE `workflow_dispatch` TAG, AND YOUR REASON FOR
+DECLINING IT WAS WEAKER THAN YOU THOUGHT.** `run_for()` at `:284` prefers push runs but
+FALLS BACK to any event, and section 0a has an `event` column, so a dispatch run is
+representable and disclosed -- the planted baseline at `tests/test_report_carried.py:1430`
+ships a `workflow_dispatch` row. So "not comparable to any push run" is not the
+objection. **The objection is the cost on an allowance CK2 records as exhausted:** CK0
+measured 2811 s over 20 jobs, and the two determinism jobs are ten legs. Right call,
+better reason.
+
+## 7. THE ONE RESIDUE, NAMED RATHER THAN HIDDEN
+
+**Whatever I judge today has no run, so F4 STEP 1's FIRST REPORT INHERITS HORN A ONCE.**
+My judged commit is `c09aef4`; its sha carries no run and cannot acquire one.
+
+**AND I WILL NOT ESCAPE IT BY NAMING A SHA THAT HAS ONE, THOUGH IT WOULD WORK.** I
+checked, because it was the obvious move and I wanted the mechanical reason it is wrong:
+
+```
+cmd    git diff --name-only b521a6c..c09aef4 -- floatfea tests scripts .github docs/milestones
+out    (no output) -- so by CK2's OWN test, b521a6c's run still describes this tree
+cmd    sed -n '2095,2099p' tests/test_report_carried.py
+out    test_no_sha_is_called_the_reviewed_commit_unless_it_is_HEAD is SCOPED to lines
+out    containing "reviewed commit", and the generated heading never uses the phrase
+judge  SO NAMING `b521a6c` WOULD PASS EVERY GUARD, AND IT IS STILL A FORGERY. The
+       generator's `_heading()` at scripts/ci_section.py:308 prints "the commit verdict
+       {number} JUDGED", and I judged `c09aef4`. The sha and that word are welded
+       together in GENERATED text I cannot caveat in prose. Writing the record to
+       satisfy the gate that reads it is precisely what CJ0 says review is the bound
+       against, so **there is no honest sha here other than the one I actually judged.**
+       Recorded because the next reader will think of it too.
+```
+
+**Disposition for the residue, and it is bounded at ONE revision.** F4 step 1's first
+report records the unproducible section 0 as **an unavailable check under CA2**, names the
+reds, and proceeds. It clears at verdict 91 **if and only if** (i) is followed: F4 step
+1's first commit touches `scripts/` and the plan marker, both non-ignored, so a push
+headed by that step's report carries a run at the report's own sha and every section 0
+after it generates. **If (ii) is taken instead, the residue does not arise at all.**
+
+## THE TREE AT c09aef4, MEASURED
+
+```
+cmd    git rev-parse HEAD ; git status --porcelain --untracked-files=all
+out    c09aef49221a1589b91899aa2bb1b9f43ca077ea ; (no output) -- CLEAN
+cmd    git log --oneline 727b9fa..c09aef4
+out    c09aef4 report: the report cannot be green at this commit, and both states are measured
+out    b521a6c closure: verdict 89's three, and two rules that cannot be obeyed as written
+out    9d7a9c4 review: F3 step 3 -- eighty-ninth verdict, PASS @ 727b9fa
+out    4193c0d corpus: batch 33's multiplicity corrected -- four pairs at the boundary
+cmd    item 1b: the newest revision's Answers: header against the newest verdict
+out    docs/reports/F3/step-3.md:1450   Answers: verdict 88 @ 3f45007
+out    newest verdict = 89 at 9d7a9c4
+judge  **1b FAILS, AND IT IS THE SUBJECT OF THE ROUND RATHER THAN A FINDING AGAINST THE
+       REPORT.** The header names verdict 88 when 89 is newest. Under the instruction
+       this is a HOLD because every `Carried` claim would be about the wrong list -- so
+       I checked that consequence instead of applying it: section 13 answers verdict 89's
+       R651, R652 and R653 by name and by site, and `check_carried` exits 0 on all 20.
+       **The report ANSWERS 89 and cannot NAME it. The header is wrong; the Carried list
+       is not.** That is the deadlock and not a mis-carried round.
+cmd    git diff 727b9fa..c09aef4 -- tests/conftest.py "tests/**/conftest.py"
+out    (no output)
+cmd    git ls-files -- tests/conftest.py "tests/**/conftest.py"
+out    tests/conftest.py        -- CI0: the pathspec resolves to a real file, as it must
+judge  CH2/CJ0: no conftest changed, no rung carries its own. Nothing in this range can
+       rewrite a rung's record.
+cmd    git diff 727b9fa..c09aef4 --stat -- .claude docs/SUPERVISOR.md CLAUDE.md
+out    (no output)
+cmd    git log --oneline 727b9fa..c09aef4 -- .claude docs/SUPERVISOR.md CLAUDE.md
+out    (no output)
+judge  **4b: NOT ONE LINE OF MY OWN INSTRUCTIONS CHANGED. No STOP-class process
+       finding.** Diffed, not inferred from a suite that does not read those files.
+cmd    git diff --name-only 727b9fa..c09aef4 -- floatfea
+out    (no output) -- NOT ONE LINE OF floatfea/ IN THE WHOLE RANGE
+cmd    git diff --name-only 727b9fa..c09aef4
+out    docs/closure/F3.md  docs/reports/F3/step-3-answers.json  docs/reports/F3/step-3.md
+out    docs/reviews/F3/step-3.md  scripts/report_joint_reactions.py
+out    tests/corpus/f4_buoy_label_provenance.txt      -- the last two are MY OWN
+cmd    python -m pytest -q, clean clone at c09aef4, origin resolving, ONE invocation
+out    9 failed, 3017 passed, 2 warnings in 635.73s      0 skipped
+cmd    python -m ruff check floatfea tests ; and again with scripts
+out    All checks passed!      both pathspecs
+cmd    python -m black --check floatfea tests ; and again with scripts
+out    91 files would be left unchanged. ; 112 files would be left unchanged.
+cmd    python -m mypy floatfea
+out    Success: no issues found in 30 source files
+cmd    python scripts/check_carried.py ; echo exit=$?
+out    check_carried: all 20 findings carried ; exit=0
+judge  **EVERY LINT FIGURE IN YOUR HAND-BACK REPRODUCES ON MY INSTRUMENT, EXACTLY** --
+       both ruff pathspecs, 91 and 112, 30 files, all 20 and exit 0. The two-file figure
+       too: `tests/test_report_carried.py tests/test_report_numbers_are_sourced.py` ->
+       `1 failed, 322 passed`. **The suite count does NOT reproduce: nine, not eight.**
+```
+
+## CI AT THE REVIEWED COMMIT (CA2, CK2), FROM gh AND NOT FROM THE PASTE
+
+```
+cmd    gh api "...runs?head_sha=<c09aef4 full>" --jq .total_count
+out    0
+judge  **UNAVAILABLE UNDER CA2, AND IT IS NOT CK2 EITHER** -- there is no started-and-
+       unpaid job here, there is no job. Recorded as unavailable, not skipped over.
+cmd    the last run that EXECUTED: gh api "...runs?head_sha=<b521a6c full>"
+out    37019401155  push  completed  FAILURE  2026-10-02T14:22:24Z
+cmd    gh api .../runs/37019401155/jobs -- name, conclusion, runner, step count
+out    lint, unit and guards             FAILURE  runner 1000001492  14 steps  11m
+out    the verification ladder           SUCCESS  runner 1000001493  13 steps  2m33s
+out    CI determinism -- leg             skipped  runner null  0 steps
+out    CI determinism -- ten legs agree  skipped  runner null  0 steps
+judge  NOT CK2: real runners, 14 and 13 real steps, real durations, no spending
+       annotation. The two skipped jobs are CK0's workflow_dispatch gate, unavailable by
+       declaration as at verdicts 79 to 89. **THE LADDER IS GREEN.**
+cmd    the lint job's steps, by number
+out    5 actionlint OK, 6 ruff OK, 7 black OK, 8 mypy OK, 9 unit tests OK,
+out    10 guards and meta-tests FAILURE
+judge  CZ1 (iii) is satisfied for `b521a6c`: `guards and meta-tests` is SEEN TO HAVE RUN
+       rather than skipped behind an earlier red step.
+cmd    gh run view 37019401155 --log-failed, the top-level FAILED lines, sorted unique
+out    8 failed, 1080 passed, 1 warning in 619.64s
+out    1 x test_the_answered_verdict_is_the_NEWEST_one
+out    7 x test_the_guard_survives_the_state[baseline, draft_suffix_beside_a_step_report,
+out        non_numeric_step_suffix, step_number_is_the_empty_string,
+out        superscript_digit_step_number, verdict_amended_after_the_commit_the_report_answers,
+out        zero_padded_step_number]
+cmd    git diff --name-only b521a6c..c09aef4 -- floatfea tests/unit tests/verification
+         tests/regression scripts .github docs/milestones
+out    (no output)
+rule   CK2: name the last run that executed and check whether the code has moved since;
+       empty means its result still describes the tree under review
+judge  **SO THE UNAVAILABLE RUN COSTS NOTHING ON THE CODE.** Every code, script, ladder
+       and workflow path in the tree at `c09aef4` carries a measurement in run
+       37019401155 -- actionlint, ruff, black, mypy, unit tests and the ENTIRE ladder
+       green -- and nothing in those paths has moved since. The only thing that moved is
+       one report file.
+judge  **AND CA2's "A RED CI IS A HOLD" IS ABOUT THE REVIEWED COMMIT.** There is no run
+       at the reviewed commit; the parent's red is one cause, traced below, and it holds
+       no step because no step is open.
+```
+
+## MY RULING ON (d): NINE REDS, ONE CAUSE, TRACED INDIVIDUALLY -- AND THE EIGHTH CASCADE IS UNLISTED
+
+EG3(i) requires each `FAILED` id matched to the state's list by name, not by family, and
+R629 is what happens when a group is ruled by class. So I ran the off-list id on its own.
+
+```
+cmd    the three report-guard files, at the COMMITTED c09aef4, origin resolving
+out    9 failed, 337 passed in 125.23s
+cmd    your section 14's own figure, for the same three files
+out    "8 failed, 336 passed in 135.77s", working tree, state B, seven cascades named
+cmd    the off-list id, alone:
+         pytest "...test_the_guard_survives_the_state[answers_header_names_a_sha_that_is_not_a_commit]"
+out    AssertionError: answers_header_names_a_sha_that_is_not_a_commit: the guard failed,
+out    but `test_the_report_names_the_verdict_it_answers` -- the test that carries the
+out    diagnosis -- is not among ['test_the_answered_verdict_is_the_NEWEST_one']
+rule   EH1: the cascade is identified by the baseline being red and by each cascading
+       state's OWN failure line, not by its name
+judge  **IT IS THE SAME SINGLE CAUSE AND ITS OWN LINE SAYS SO.** The planted state
+       expects the diagnosis `test_the_report_names_the_verdict_it_answers`; the
+       already-red baseline test fires first and MASKS it, so the state's ablation
+       ("the named diagnosis fails and its dependants do not") cannot be satisfied.
+       Eight cascades, not seven. One root cause either way.
+judge  **SO THE CAUSE IS RIGHT AND THE LIST IS SHORT BY ONE** -- which is R654, and it
+       is the second consecutive revision whose boundary figure was taken in a working
+       tree that the publishing edit then changed.
+```
+
+**RULING: (d) IS NOT MET AS A BLOCKER, AND NOT BECAUSE THE RED IS WAIVED.** I accept your
+refusal of EG3's carve-out and I think it was the right call: state (2) is "verdict
+written, answering report not yet", the answering report exists at section 13, and calling
+this a designed self-clearing state would be false twice over -- it does not self-clear,
+as you established. **This red is the rule defect.** It blocks nothing because **(d)
+blocks a STEP and there is no step open**: F3 step 3 closed at PASS at verdict 88, DD1
+says a closed step stays closed, and holding here would manufacture a fourth round on a
+mechanism I have now ruled on three times. No red touches `floatfea/`, a tolerance, a
+gate on a physical quantity, or the ladder -- the ladder is green in CI and has not moved.
+
+## Carried
+
+Verdict 89 named **no blocking item**, three closure items and a ledger. Every one:
+
+* **R651 (closure item) -- ANSWERED AND CLOSED.** Section 12 carries the figure retaken
+  at `727b9fa` and `9d7a9c4`, `339 passed, 0 failed` at both, and section 13 states the
+  self-reference explicitly rather than restating the lesson. **And then the same defect
+  recurred one section later, in section 14** -- R654 below. The mechanism was understood
+  and applied to the figure it was found on, and not to the new one in the same commit.
+* **R652 (closure item) -- ANSWERED AND CLOSED, verified at the site rather than from
+  the report's word.**
+  ```
+  cmd  grep -c "STATE (2) DID NOT MATERIALISE" docs/closure/F3.md
+  out  0
+  cmd  grep -n "STATE (2) DID" docs/closure/F3.md
+  out  355  DID (R652).** The first version of this passage read "**STATE (2) DID NOT
+  out  370  judge  **STATE (2) DID MATERIALISE -- AT MY CLOSURE COMMIT `c40d24d`
+  judge  the false sentence is gone, the retraction is visible rather than silent, and
+         the mechanism is recorded. **Its statement of the mechanism is incomplete in
+         exactly the way R655 describes, but the sentence R652 objected to is fixed.**
+  ```
+* **R653 (closure item) -- ANSWERED as a hand-over, and DR1 RESPECTED.**
+  ```
+  cmd  grep -rn RHO_INF tests/ floatfea/
+  out  (no output)
+  cmd  grep -rn "429" scripts/report_joint_reactions.py
+  out  (no output) -- the retracted justification is gone from the comment
+  judge  the gap is recorded and NO assertion was added, which is what DR1 required and
+         what I asked for. It becomes (c) if a G4.x gate cites this residual as evidence
+         that FloatSim's scheme is reproduced. **Carries to F4 unchanged.**
+  ```
+* **R650 -- SETTLED AT FOUR, and your per-label correction to 7/5 is accepted.** My
+  verdict 89 enumerated seven labels at `0.619657` and five at `0.866025`; you corrected
+  the half I had stated as 6/6. Four minimum pairs, not six. **Closed.**
+* **R638 -- OPEN, unchanged, carried BY NAME into F4 step 1.** EJ1 governs.
+  `RIGID_MODE_EXACTNESS` still has no counter-case and `floatfea/tolerances.py` is not in
+  this range's diff at all.
+* **R637 clause (iii) -- STILL OPEN, and R654 is its new object**, replacing R651. Third
+  consecutive round in which the clause's object is a figure not measured at the commit
+  that publishes it.
+* **The CZ1 (iii) / `paths-ignore` collision I sent to Xabier at verdict 89 --
+  WITHDRAWN AS STATED, and REPLACED.** It was premised on "a report-only sha cannot
+  carry a run", which `bf21c37` refutes. CZ1 (iii) is satisfiable; what is wrong is the
+  push ordering CZ1 (iv) forces and `ci_section.py`'s inability to record CA2's third
+  state. **Section 6 above is what goes to Xabier instead.**
+* **The EJ4 residual-location hand-over** -- unchanged, carried to F4's gate.
+* **The ledger, unchanged and not re-reviewed:** C113, C115 to C117, C119, C120, C122,
+  C123 at `docs/closure/F3.md` section 8, **C119 to F4 step 1's first commit as a (c) and
+  NOT before it (section 6 (iii))**; R631, R626's residue, R635; C102, C103, C106 to
+  C112, C114, C88, C86, C90 to C98, C100, C74, C76, C78, C82, C85, R610, R615. C89
+  withdrawn. **C40, C75, C75b, C99, C101, C104, C105, C118, C121, C124 to C134 -- CLOSED
+  and staying closed.** R622 is F4's own.
+* **`check_carried: all 20 findings carried`, exit 0, on my own run at the reviewed
+  commit.**
+
+## Findings
+
+**NOTHING IN THIS ROUND IS (a), (b) OR (c).** `floatfea/` is untouched in the whole range
+-- `git diff --name-only 727b9fa..c09aef4 -- floatfea` is empty. No tolerance value or
+form moved. No gate assertion moved. **(d) is addressed in its own ruling above and does
+not block, because no step is open.** All three findings are closure items and **two of
+the three are against my own verdict 89 before they are against your report.**
+
+**R654. (CLOSURE ITEM. CP3, AND THE EG3(i) TRACE SHORT BY ONE.) SECTION 14's `8 failed,
+336 passed` IS VOID AND THE TRUE FIGURE AT THE COMMITTED SHA IS `9 failed, 337 passed`;
+THE EIGHTH CASCADE IS UNLISTED.** Site: `docs/reports/F3/step-3.md:2306-2314`.
+
+```
+cmd    the three report-guard files, clean clone at the COMMITTED c09aef4, origin resolving
+out    9 failed, 337 passed in 125.23s
+out    the extra id: test_the_guard_survives_the_state[answers_header_names_a_sha_that_is_not_a_commit]
+cmd    the whole suite, same clone, ONE invocation
+out    9 failed, 3017 passed      -- not the 8 the hand-back reports
+rule   CP3: the `out` line is copied from a run executed AFTER the final edit to the
+       thing it describes, and IF AN EDIT FOLLOWS THE PASTE, THE PASTE IS VOID
+rule   EG3(i): "only those" is a claim that carries the `FAILED` list as its command
+judge  VOID BY CP3 -- the block says "working tree" in terms, and sections 13 and 14 are
+       themselves parsed by two of the three files, so writing the block changed the
+       collection. **This is R651 again, one section later, in the revision that answers
+       R651 and says it has "applied rather than restated" the lesson.** The CAUSE is
+       unaffected: I traced the ninth individually and its own failure line names the
+       same masking baseline test, so it is a cascade in EH1 sense and there is still
+       exactly one root cause.
+judge  AND THE EG3(i) HALF IS THE PART THAT MATTERS MORE THAN THE COUNT. The trace
+       asserts eight ids and the tree has nine. A trace that is short by one is how
+       R629 happened -- a real defect sitting inside a group ruled by class. **Here the
+       ninth is benign and I verified that by running it alone**, which is the only way
+       anyone could have known.
+```
+**Closed when** the figure is retaken at a sha after the final edit and the cascade list
+carries all eight ids, or the block points at this verdict's `9 failed, 337 passed`
+instead. **Carries R637 clause (iii) forward as that clause's new object.**
+
+**R655. (CLOSURE ITEM. BF0 / BP0, AND IT IS MY SENTENCE BEFORE IT IS YOURS.) THE
+MECHANISM IS PUBLISHED FALSELY IN THREE PLACES, AND THE COMMIT THAT PUBLISHES IT CARRIES
+ITS OWN REFUTATION.** Sites: `docs/reports/F3/step-3.md:2265-2267` (section 14 first
+sentence), `docs/closure/F3.md:370` and following (section 6b mechanism), and
+`docs/reviews/F3/step-3.md` verdict 89 scoping ruling, **which is mine**.
+
+```
+claim  "CI is configured never to run on [a report-only commit]" (section 14)
+claim  "structurally incapable of carrying a run" (verdict 89, mine)
+claim  the mechanism is "a closure commit that touches the report re-dates it against
+         the verdict" (section 6b) -- true but NOT the half that makes section 0
+         unproducible
+cmd    git diff --name-only bf21c37^..bf21c37 ; gh api "...runs?head_sha=<bf21c37 full>"
+out    docs/reports/F3/step-3.md ; 37009523830 push SUCCESS
+cmd    python scripts/ci_section.py, as shipped, at c09aef4
+out    ## 0. CI at `bf21c37`, the commit verdict 88 judged -- conclusion **SUCCESS**
+cell   ONE VARIABLE, the push union, held against the commit own file list:
+       b6a65f2 and cae39ac each touch a non-ignored path and have runs=0, so neither was
+       a pushed head, so both rode in bf21c37 push, whose union carries scripts/ and
+       docs/milestones/
+judge  **THE REPORT OWN SECTION 0 IS A GENERATED TABLE FOR A REPORT-ONLY COMMIT PUSH
+       RUN, FOUR LINES FROM THE SENTENCE SAYING THAT CANNOT HAPPEN.** The determinant is
+       the PUSH union and the pushed head sha, never the commit file list. Section
+       6b mechanism is the half that explains the re-dating and not the half that
+       explains the missing run, and section 6b is F3 permanent record and schedules
+       itself to be copied into F4 step 1 `Carried` -- so the incomplete mechanism is
+       the one that propagates.
+```
+**Closed when** all three sites state the measured mechanism -- a run attaches to the
+pushed HEAD sha and `paths-ignore` is evaluated over the PUSH union, so a report-only
+sha carries a run iff it heads a push containing a non-ignored path, `bf21c37` being the
+instance -- and `docs/closure/F3.md` section 6b adds the push-ordering fix of section 6
+(i). **Verdict 89 sentence is withdrawn by this verdict and needs no edit from you.**
+
+**R656. (CLOSURE ITEM TODAY. IT IS A CRITERION ITEM AND IT LEAVES THE LOOP.)
+`scripts/ci_section.py` CANNOT RECORD THE THIRD CA2 STATE, WHICH CA2 REQUIRES TO BE
+RECORDED.** Site: `scripts/ci_section.py:279-283`.
+
+```
+cmd    sed -n '279,283p' scripts/ci_section.py
+out    if not runs: raise SystemExit(f"no CI run at {sha}. A commit that was never
+out    pushed has no run, and a report cannot publish a table for it.")
+cmd    .claude/agents/gating-supervisor.md, CA2 / CK2
+out    "A workflow that did not run on the reviewed commit is an unavailable check, and
+out     it is recorded as unavailable rather than skipped over."
+cmd    grep -n "def never_started" scripts/ci_section.py
+out    288  -- the CK2 never-started state IS implemented
+cmd    git merge-base --is-ancestor 727b9fa origin/F3 ; echo exit
+out    exit 0 -- so "a commit that was never pushed" MISDIAGNOSES its own refusal; the
+out    commit WAS pushed
+judge  THE GENERATOR IMPLEMENTS TWO OF THE THREE CA2 STATES AND REFUSES THE THIRD, and
+       its refusal message names the wrong cause. **This, and not CZ1 (iii), is the rule
+       defect** -- the rule says record unavailable, the only sanctioned writer of
+       section 0 cannot, and CX0 forbids writing it by hand. It is the single site whose
+       change dissolves the deadlock permanently rather than per-push.
+rule   DR1: no new guard, no guard edit, no guard fix except deletion
+judge  **SO I AM NOT ASKING FOR IT AND IT IS NOT YOURS TO TAKE.** Recorded, named to one
+       site, and sent to Xabier with section 6. I am flagging that this is an EXISTING
+       generator refusing a LEGAL input and not new apparatus, because that distinction
+       is the whole of whether DR1 should bind here -- and that judgement is Xabier.
+```
+**Closed when** Xabier rules. Until then section 6 (i) -- push ordering -- is the standing
+fix and costs nothing.
+
+## Closure items
+
+Named, not re-reviewed, none of them holding anything. **There is no step open for these
+to be absorbed into**, so they go to F4 step 1 `Carried` and to the F3 closure artifact.
+
+* **R654** -- `docs/reports/F3/step-3.md:2306-2314`. Closes as R654 says. Becomes R637
+  clause (iii) new object.
+* **R655** -- `docs/reports/F3/step-3.md:2265-2267` and `docs/closure/F3.md:370ff`.
+  Closes as R655 says. **Worth fixing in the F3 closure artifact rather than deferring**,
+  because section 6b schedules itself to be copied into F4 step 1 `Carried`. My own
+  verdict 89 sentence is withdrawn here and needs nothing from you.
+* **R656** -- `scripts/ci_section.py:279-283`. A criterion item for Xabier, not a round.
+* **The DR1 / CZ0 wording conflict on guards that fail false** -- `docs/SUPERVISOR.md`
+  DR1 says deletion only; `CLAUDE.md` CZ0 says "fixed or deleted". You cited the looser
+  one for C119. **To Xabier with section 6.**
+* **R653, R638, R637 clause (iii), the EJ4 residual-location hand-over** -- carried to
+  F4 step 1 by name, unchanged.
+* **C113, C115 to C117, C119, C120, C122, C123** as EJ3 ledgers them, **C119 to F4 step
+  1 first commit and not before the lock**. **C102, C103, C106 to C112, C114, C88,
+  C86, C90 to C98, C100, C74, C76, C78, C82, C85, R610, R615** carried unchanged. **C89**
+  withdrawn. **C40, C75, C75b, C99, C101, C104, C105, C118, C121, C124 to C134** CLOSED.
+
+## Tolerances touched
+
+```
+cmd  git diff 727b9fa..c09aef4 --numstat -- floatfea/tolerances.py
+out  (no output) -- THE FILE IS NOT IN THE DIFF AT ALL
+cmd  git diff --name-only 727b9fa..c09aef4 -- floatfea
+out  (no output) -- NOT ONE LINE OF floatfea/ IN THE WHOLE RANGE
+cmd  git diff 727b9fa..c09aef4 -- "tests/regression/*" tests/conftest.py
+out  (no output) -- no golden moved, no parametrisation loosened, no conftest
+cmd  git diff --name-only 727b9fa..c09aef4 -- tests
+out  tests/corpus/f4_buoy_label_provenance.txt   -- the reviewer own corpus DATA
+cmd  grep -rn RHO_INF tests/ floatfea/
+out  (no output) -- the R653 constant reaches no assertion, as DR1 required
+judge  **NO TOLERANCE WAS TOUCHED AS A VALUE OR AS A FORM, AND NOTHING THAT FUNCTIONS AS
+       ONE UNDER ANOTHER NAME WAS EITHER.** The only non-documentation change in the
+       range is `scripts/report_joint_reactions.py`, removing the retracted `429x`
+       justification -- a deletion of a false comment, not a threshold.
+```
+
+| constant | value | form | counter | justification located |
+|---|---|---|---|---|
+| `RHO_INF` (in `scripts/`) | `0.8`, UNCHANGED | **not a tolerance.** A declared scheme parameter; nothing is compared against it and it reaches no assertion -- `grep -rn RHO_INF tests/ floatfea/` is empty | **none required and none possible in the residual: `1.0005x` at a `0.05` drift (R653).** The retracted `429x` is now gone from the comment | `scripts/report_joint_reactions.py:41-48`. Correctly NOT in `floatfea/tolerances.py`. |
+| `RIGID_MODE_EXACTNESS` | `1e-15`, UNCHANGED | relative, dimensionless; correct form | **STILL NONE.** `1e-13` gives `1802 passed, 0 failed`, solved edge `3.783782e-12`, `3784x` | `floatfea/tolerances.py:330-400`; **not in this range diff at all.** R638 worked in F4, closed before F4 closes (EJ1). |
+| `PLATFORM_RIGID_MODE_EXACTNESS` | `1.154338e-18`, UNCHANGED | unchanged | unchanged; silent rise still `1.63x` | `floatfea/tolerances.py:453-473`; not in this range diff. |
+| `PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT` | `1.0e-14`, UNCHANGED | unchanged | unchanged; upper edge `3.09x`, binding state `3.088842e-15` | `floatfea/tolerances.py:423-446`; not in this range diff. |
+| `RIGID_MODE_BOUND` | `199.526231496888`, UNCHANGED | unchanged | unchanged | unchanged. **R631** is its open residue, ledgered under DZ7c. |
+
+## My own instructions (4b), read line by line
+
+```
+cmd  git diff 727b9fa..c09aef4 --stat -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  (no output)
+cmd  git log --oneline 727b9fa..c09aef4 -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  (no output)
+judge  NOT ONE LINE OF WHAT I READ, CARRY OR MAY WRITE CHANGED IN THIS RANGE. No
+       STOP-class process finding, and no guard of mine has gone. Diffed rather than
+       inferred from a suite that reads none of those files. **It matters most in a
+       round whose whole subject is a rule, because a rule argued about is a rule
+       someone has a reason to edit.**
+```
+
+## Try to break it
+
+**The step in front of me is a mechanism, so the case it should fail is "the deadlock has
+no escape". I constructed it and it failed.**
+
+```
+cmd    the adversarial case: find a report-only commit with a push run at its own sha
+out    bf21c37  docs/reports/F3/step-3.md only  ->  run 37009523830  push  SUCCESS
+judge  **THE ADVERSARIAL CASE PASSED WHEN BOTH OF US SAID IT COULD NOT EXIST, AND THAT
+       OUTRANKS EVERYTHING IN THE REPORT** -- the instruction says so and it is right
+       here. The deadlock is not structural, no rule is unsatisfiable, and the fix in
+       section 6 (i) is free.
+cmd    the second adversarial case: would naming a run-carrying sha pass the guards?
+out    yes -- test_no_sha_is_called_the_reviewed_commit_unless_it_is_HEAD is scoped to
+out    lines containing "reviewed commit" and the generated heading never uses it
+judge  **A GUARD THAT WOULD HAVE LET ME FORGE THE RECORD, FOUND BY TRYING IT.** I did not
+       take it, for the reason in section 7: the heading welds the sha to the word
+       "judged". Recorded so the next reader does not have to discover the temptation
+       alone.
+cmd    the third: run the one off-list red alone instead of ruling it as a cascade
+out    its own line names the masking baseline test -> same cause, list short by one
+judge  R654. Three for three: every finding this round came from running the thing
+       rather than reading it.
+```
+
+## The adversarial corpus (BE3)
+
+**NO NEW BATCH THIS ROUND, AND IT IS A SPEND DECISION I WILL DEFEND.** EG4(e) pauses
+batches after F3 step 3 except mutation work on the F4 load-mapping gate and the EB6
+label-provenance gate.
+
+```
+cmd    grep -rln f4_buoy_label_provenance tests/ scripts/ floatfea/
+out    (no output) -- the EB6 gate STILL does not exist
+cmd    ls tests/corpus/ | wc -l
+out    34
+judge  the batch 33 coverage number remains **0 of 18, for want of a check and not for
+       want of entries**, and a nineteenth would measure the same nothing. **New entries
+       this round: 0. Caught by the implementer checks: 0 of 0.** No batch
+       manufactured to have a number, and DE2 forbids an apparatus corpus for the
+       species this round is about -- a report/CI mechanism -- which is precisely the
+       class measured at 2 of 22, then 1 of 19, then 0 of 16, then 0 of 13.
+```
+
+**The method note, and it is the same one as last round, which is why I believe it.**
+All three of my findings came from executing something rather than reading it: the
+generator, the off-list red alone, and the forgery I declined. **Two of the three refute
+my own previous verdict.** A reviewer own sentence is the one nothing in this
+repository re-measures, and the verdict 89 phrase "structurally incapable" survived into
+a closure artifact and a report because it was mine and therefore never re-run.
+
+## On the criterion
+
+**I RULED UNDER CZ0 AND I AGREE WITH IT.** All three findings are closure items and I
+have classed them that way. Under the retired head "the truth of a published figure or
+sentence", R654 and R655 would each have been a blocking round; they move no gate.
+
+**ON WHETHER THIS ROUND SHOULD HAVE HAPPENED: NO, AND THAT IS NOW THE THIRD TIME.** You
+were right, you said so, you recommended the right class of fix, and you corrected your
+own section 14 before I read it. **I am recording the disposition by hand, which is what
+you asked for.** What I will add against my own interest is that this round found the
+thing the previous two missed, and it found it in MY text: the stated cause of the
+deadlock was false, and verdict 89 is where it was written. **A round that exists only
+because a mechanism is stuck is still the only reader a reviewer own sentence gets.**
+That is an argument for (A) plus section 6 (i), not for a fourth round.
+
+**MY DISAGREEMENT WITH THE CRITERION, ONCE AND IN ONE PLACE.** It is not with CZ0. It is
+that **DR1 as written makes a correct fix unreachable.** `ci_section.py:279-283` refuses a
+state CA2 commands to be recorded; DR1 says no guard edit and no fix except deletion, and
+deleting that refusal is not available because the generator must still produce a table
+in the other two states. So the rule set contains one instruction that cannot be obeyed
+while another forbids repairing the thing that cannot obey it. **That goes to Xabier
+through you with section 6 and R656. It does not become another round, and section 6 (i)
+means nothing is blocked while he decides.**
+
+## Next step opens when
+
+**F3 STEP 3 IS CLOSED AT PASS (DD1), F3 IS CLOSED, AND F4 IS OPEN -- VERDICT 88 OPENED IT
+AND NOTHING SINCE HAS CLOSED IT. THERE IS NOTHING TO OPEN AND NOTHING TO HOLD.** The
+disposition for the tree at `c09aef4`, recorded by hand as DD1 prescribes:
+
+**THE NINE REDS AT `c09aef4` ARE ONE CAUSE, TRACED BY NAME AND INDIVIDUALLY, AND THEY ARE
+THE RULE DEFECT OF R655 AND R656 RATHER THAN A DEFECT IN THE WORK. THE TREE IS OTHERWISE
+GREEN -- 3017 passed, 0 skipped, ruff and black and mypy clean on both pathspecs,
+`check_carried` exit 0, and the verification ladder SUCCESS in CI run 37019401155 at
+`b521a6c` with no code, script, ladder or workflow path moved since. NO FURTHER REPORT
+REVISION IS OWED FOR F3 STEP 3. The red is recorded, not cleared, and it is not carried
+as a blocking item because no step is open for it to block.**
+
+What F4 step 1 carries:
+
+1. **THE PLAN IS LOCKED BEFORE IT IS IMPLEMENTED, AND I HAVE REFUSED TO OPEN IT EARLY.**
+   `docs/milestones/F4.md:3` says "UNLOCKED DRAFT ... Xabier locks it." **C119 is not
+   fixed before that lock** -- section 6 (iii), three reasons, and the DR1/CZ0 conflict
+   goes to Xabier rather than being resolved by me in your favour.
+2. **PUSH ORDERING, WHICH IS THE WHOLE FIX AND COSTS NOTHING (section 6 (i)).** The step
+   final report revision is pushed as the **HEAD of a push that also carries at least one
+   non-`paths-ignore`d file**. The F4 step 1 first commit touches
+   `scripts/untouched_sites.py` and the plan marker, both non-ignored, so this is free
+   there. **Proof it works: `bf21c37`, run 37009523830, push, SUCCESS, on a commit whose
+   only file is a report.**
+3. **ONE INHERITED RESIDUE, BOUNDED AT ONE REVISION (section 7).** My judged commit
+   `c09aef4` has no run and cannot acquire one, so the F4 step 1 first report cannot
+   generate a section 0 for it. **Record that as an unavailable check under CA2, name the
+   reds, proceed.** It clears at verdict 91 under item 2, or does not arise at all if
+   Xabier takes R656. **Do not name a different sha to make the generator cooperate** --
+   section 7 measures why that passes every guard and is still a forgery.
+4. **The F4 step 1 `Carried` carries, BY NAME:** **R638** (EJ1), **R637 clause (iii)**
+   with **R654** as its new object, **R654, R655, R656**, **R653**, the **EJ4
+   residual-location** hand-over, **R645 to R652** as answered-and-verified, plus the EJ3
+   ledger. **R655 is the one to fix in the F3 closure artifact rather than defer**,
+   because section 6b schedules its own incomplete mechanism to be copied into that
+   `Carried`.
+5. **A red at F4 step 1 is CZ1 (iv) unless every id traces BY NAME under EG3(i) --
+   individually, not by family.** R654 is this round instance: a trace asserted eight
+   ids where the tree had nine, and the ninth was benign only because someone ran it
+   alone. R629 is what the other outcome looks like.
+6. **EG3(ii), measured on both sides again.** State (1) cleared at verdict commit
+   `3f45007`: `326 passed, 0 failed` (verdict 89, re-taken). State (2) at `c09aef4` did
+   NOT clear, by design and by your own correct refusal of the carve-out: `9 failed,
+   337 passed` on the three guard files, one cause, eight cascades.
+
+**Schedule.** F3 closed 1 October, twelve days inside its 13 October date. **Nothing in
+this round moves any date.** EJ6 stands: F4 19 October with a 14 October working target,
+the member-force table 23 October against 17, the code check 28 October against 22. The
+schedule-relevant number is that **three rounds have now been spent on this mechanism and
+the fix in section 6 (i) was available from the first one** -- it costs one `git push`
+argument. The CZ0 escalation stays live and I read neither a slip nor a scope cut as
+needed.
+
+**One sentence for the implementer.** You brought me a round you had ruled should not
+exist, corrected your own section 14 before I could read it, declined two workarounds
+that would have passed, and refused to claim a carve-out that was arguably yours -- and
+the thing none of that could reach was that **the cause we were both reasoning from was
+false and I was the one who wrote it**; so the habit to keep is the one that produced all
+three of this round findings, which is that when a sentence says something is impossible,
+the next move is to go and look for an instance.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F3 step 3
 Reviewed commit: 4193c0d83f566e9b065cdd8bc33a0e8112eea757
 Verdict: PASS
 **Reviewed commit: `727b9fa`.** (HEAD of F3 and pushed. I committed the corpus
