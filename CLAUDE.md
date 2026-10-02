@@ -243,11 +243,26 @@ applied it by hand three times before it was written down.*
 and was short by two names on each side. The reviewer's wording, adopted
 unparaphrased:
 
-> *state (1)'s list is `test_the_guard_reads_the_step_being_worked_on` and
-> `test_the_answered_verdict_is_the_NEWEST_one`, plus the planted states that cascade
-> off a red baseline; state (2)'s is the five named plus the same cascade. In both
-> states the cascade is identified by the baseline being red and by each cascading
-> state's own failure line, not by its name.*
+> *state (1)'s list is `test_the_guard_reads_the_step_being_worked_on`, plus the
+> planted states that cascade off a red baseline; state (2)'s is the five named, plus
+> `test_the_answered_verdict_is_the_NEWEST_one`, plus
+> `test_a_carried_row_points_at_a_section_that_discusses_it`, plus the same cascade.
+> In both states the cascade is identified by the baseline being red and by each
+> cascading state's own failure line, not by its name.*
+
+**R644, adopted by directive EJ2 — the reviewer withdrew two placements of its own,
+and the measurement is why.** At `b7c05e7`, with eighteen reds traced individually
+rather than by family:
+
+* `test_the_answered_verdict_is_the_NEWEST_one` was filed under **state (1)** and is
+  a state (2) failure. It fires when a verdict is newer than the report, which is
+  state (2) by definition.
+* `test_a_carried_row_points_at_a_section_that_discusses_it` was on **neither** list
+  and is a state (2) failure — red on two rows at that commit, and all twenty-eight
+  parametrisations green with the answering revision in the tree.
+
+Both were found by running the two off-list ids on their own instead of ruling them
+as part of a sixteen-red cascade, which is the discipline EG3(i) exists to force.
 
 **Any red not on the list still blocks** — EH1 restates that, and it is CZ1 (iv)
 unchanged.
