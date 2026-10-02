@@ -1,4 +1,734 @@
 # Review — F3 step 3
+Reviewed commit: 4193c0d83f566e9b065cdd8bc33a0e8112eea757
+Verdict: PASS
+**Reviewed commit: `727b9fa`.** (HEAD of F3 and pushed. I committed the corpus
+correction at `4193c0d` before writing, so the script's `Reviewed commit:` stamp is
+the corpus commit and NOT the judged one -- `scripts/write_verdict.py`'s own docstring
+records that. The judged commit is `727b9fa` and every figure below is taken there or
+at the commit named beside it.)
+Tests: 3019 passed, 0 failed, 0 skipped   (MY OWN run, ONE invocation, no exclusion, clean clone at `727b9fa` outside the synced folder with `origin` resolving to the real repository, 678.76s)
+
+## Round of 2026-10-02 -- EIGHTY-NINTH verdict. ON THE CLOSURE COMMITS. IT COUNTS AGAINST NO STEP.
+
+**STEP 3 IS CLOSED AT PASS AT VERDICT 88 AND NOTHING HERE REOPENS IT (DD1).** F3 is
+closed. This round judges `c40d24d` and `727b9fa`, the closure commit and its CZ1 (iv)
+follow-on. It counts against no step and against no three-verdict cap.
+
+## THE SCOPING QUESTION, RULED FIRST BECAUSE YOU ASKED FOR IT
+
+**YOU ARE RIGHT. NO VERDICT WAS OWED ON THESE TWO COMMITS, AND YOUR OWN
+RECOMMENDATION WAS THE CORRECT ONE.** Three rules say so and none is ambiguous:
+
+```
+cmd    CLAUDE.md, the CZ1 section
+out    "A closure commit is written after the last reviewed round and is not reviewed
+out     by rule"
+cmd    CLAUDE.md, the CZ0 section
+out    "the implementer fixes the whole list once, in the step's closure commit; it is
+out     not re-reviewed item by item"
+cmd    CLAUDE.md, Step gating, DD1
+out    "A step whose closure verdict is PASS is closed"
+judge  THREE RULES, ONE ANSWER: this round should not have happened as a review round.
+       Recording the disposition by hand, as DD1 was recorded, was the right call, and
+       I am saying so in the file rather than in a message because the file is the
+       only thing the next reader has.
+```
+
+**AND THE CONFLICT IS REAL, IS DD1's SHAPE, AND HAS A MEASURED EDGE I CAN ADD.** The
+`Stop` hook compares the newest report with the newest verdict. A closure commit
+TOUCHES THE REPORT -- `c40d24d` edited `docs/reports/F3/step-3.md` -- so after it the
+report is newer than the verdict and the hook is indistinguishable from the
+unreviewed-revision case. That is not a hook misreading a rule; the hook has no field
+to read. There is a second edge and it is worse, because it is a rule that CANNOT be
+satisfied as written:
+
+```
+claim  CZ1 (iii)/(iv): "A closure commit is not finished until a pushed CI run at its
+         own sha, or at the follow-on's, is green."
+cmd    gh api "repos/:owner/:repo/actions/runs?head_sha=<727b9fa, full>" --jq .total_count
+out    0
+cmd    git ls-remote origin F3
+out    727b9fa...        the follow-on IS pushed
+cmd    git diff --name-only c40d24d..727b9fa
+out    docs/reports/F3/step-3.md        the ONLY file it touches
+cmd    sed -n 21,24p .github/workflows/ci.yml
+out    paths-ignore:
+out      - "docs/reports/**"
+rule   CA2: a workflow that did not run on the reviewed commit is an UNAVAILABLE
+       check, recorded as unavailable rather than skipped over
+judge  A CZ1 (iv) FOLLOW-ON THAT ONLY FIXES THE REPORT CAN NEVER SATISFY CZ1 (iii).
+       `docs/reports/**` is paths-ignored by CK0's own deliberate decision, so the
+       follow-on sha is structurally incapable of carrying a run. You did not fail
+       this condition; the condition cannot be met. It needs either a
+       `workflow_dispatch` at the follow-on sha, or CZ1 (iii) amended to say so.
+```
+
+**MY RECOMMENDATION TO XABIER, AND IT ARGUES AGAINST MORE REVIEW RATHER THAN FOR IT.**
+Two options: **(A)** the hook accepts a `closure:` commit plus its CZ1 follow-on as
+closing a step without a verdict, disposition written by hand as DD1 prescribes; or
+**(B)** a closure commit gets one bounded pass, outside the cap, scoped to CZ0 (a)-(d)
+and the CZ1 outputs. **I measured what (B) would have bought, and the number supports
+(A).** Scoped exactly that way, this round found, in a 122-line diff, one void figure
+(R651) and one false mechanism sentence (R652) -- **neither of them (a), (b), (c) or
+(d)** -- so (B) would have produced this same PASS and consumed a round. That is
+precisely the spend CZ0 was adopted to stop, and I will not argue for apparatus my own
+coverage number does not pay for. **Take (A).** Add `workflow_dispatch` to CZ1 (iii)
+while it is open, because that half is a rule that cannot be obeyed.
+
+## THE TREE AT 727b9fa, MEASURED
+
+```
+cmd    git rev-parse HEAD && git rev-parse origin/F3, before my corpus commit
+out    727b9fa2ff3f379f9625181d6c6b5b8566f75fdf   both
+cmd    git status --porcelain --untracked-files=all
+out    (no output)      the working tree is CLEAN
+cmd    git log --oneline bf21c37..727b9fa
+out    727b9fa report: the closure commit made the report newer than the verdict
+out    c40d24d closure: F3 step 3's list -- R649 refutes my transient, R650 my second
+out    3f45007 review: F3 step 3 -- eighty-eighth verdict, PASS @ bf21c37
+out    686325e corpus: batch 33 -- a buoy label that names the wrong node
+cmd    item 1b: the newest revision's Answers: header against the newest verdict
+out    docs/reports/F3/step-3.md:1450   Answers: verdict 88 @ 3f45007
+cmd    git log --oneline -1 -- docs/reviews/F3/step-3.md
+out    3f45007 review: F3 step 3 -- eighty-eighth verdict
+judge  1b PASSES. Verdict 88 IS the newest verdict, `3f45007` IS the commit it was
+       written at, and the report names both. THIRD round running that this line has
+       been right, and the second in which getting it wrong cost a red -- which is
+       the whole argument for the header existing.
+cmd    git diff bf21c37..727b9fa -- tests/conftest.py "tests/**/conftest.py"
+out    (no output)
+cmd    git ls-files -- tests/conftest.py "tests/**/conftest.py"
+out    tests/conftest.py        CI0: the pathspec resolves to a real file, as it must
+judge  CH2/CJ0: no conftest changed and no rung carries its own. Nothing in this range
+       can rewrite a rung's record.
+cmd    git diff bf21c37..727b9fa --stat -- .claude docs/SUPERVISOR.md CLAUDE.md
+out    (no output)
+cmd    git log --oneline bf21c37..727b9fa -- .claude docs/SUPERVISOR.md CLAUDE.md
+out    (no output)
+judge  4b: MY OWN INSTRUCTIONS ARE UNTOUCHED IN THIS RANGE. No STOP-class process
+       finding. Nothing I am instructed to read, carry or write has gone. Diffed, not
+       inferred from a green suite, because nothing in the suite reads those files --
+       and this is the round where that matters most, since the whole subject is a
+       commit pair nobody was to review.
+cmd    git diff --name-only bf21c37..727b9fa -- floatfea tests
+out    tests/corpus/f4_buoy_label_provenance.txt
+judge  AND THAT IS MY OWN FILE, from batch 33 at `686325e`. The hand-back says this
+       pathspec is "empty"; it is not, by one entry, and the entry is the reviewer's.
+       `floatfea/` IS untouched -- the half that matters -- and I state that with its
+       own command rather than letting a wider pathspec stand in for it.
+cmd    git diff --name-only bf21c37..727b9fa -- floatfea
+out    (no output) -- NOT ONE LINE OF floatfea/ IN THE WHOLE RANGE
+cmd    python -m pytest -q, clean clone at 727b9fa, origin resolving, ONE invocation
+out    3019 passed, 2 warnings in 678.76s (0:11:18)      0 failed, 0 skipped
+cmd    python -m ruff check floatfea tests scripts
+out    All checks passed!
+cmd    python -m black --check floatfea tests scripts
+out    112 files would be left unchanged.
+cmd    python -m mypy floatfea
+out    Success: no issues found in 30 source files
+cmd    python scripts/check_carried.py
+out    check_carried: all 17 findings carried      exit 0
+judge  CZ1 (ii) REPRODUCES AT THE REVIEWED COMMIT ON ALL FOUR OUTPUTS, and the `112`
+       is the `floatfea tests scripts` pathspec that CI actually runs.
+```
+
+## CI: ONE RED RUN, ONE ABSENT RUN, AND NEITHER IS A HOLD (CA2, CK2, EG3)
+
+Taken from `gh`, not from the report's section 0a, and then compared with it.
+
+```
+cmd    gh api runs?head_sha=<727b9fa> --jq .total_count
+out    0                   NO RUN EXISTS AT THE REVIEWED COMMIT
+judge  UNAVAILABLE BY DECLARATION -- not red and not green. CK0's `paths-ignore` lists
+       `docs/reports/**` and that is the follow-on's only file. NOT CK2 either: there
+       is no started-and-unpaid job here, there is no job.
+cmd    gh api runs?head_sha=<c40d24d>, the last run that EXECUTED
+out    37013452200  CI  completed  FAILURE  2026-10-02T13:30:34Z
+cmd    gh api runs/37013452200/jobs, job by job with runner and step count
+out    lint, unit and guards            FAILURE  runner 1000001490  14 steps  11m00s
+out    the verification ladder          SUCCESS  runner 1000001491  13 steps   3m02s
+out    CI determinism -- leg            skipped  runner null   0 steps
+out    CI determinism -- ten legs agree skipped  runner null   0 steps
+judge  NOT CK2: real runners, fourteen and thirteen real steps, real durations, no
+       spending annotation. The two skipped jobs are CK0's workflow_dispatch gate,
+       unavailable by declaration as at verdicts 79 to 88.
+cmd    the lint job's steps, by number and conclusion
+out    5 actionlint OK, 6 ruff OK, 7 black OK, 8 mypy OK, 9 unit tests OK,
+out    10 guards and meta-tests FAILURE
+cmd    gh run view 37013452200 --log-failed, the short-test-summary FAILED lines
+out    1 x tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one
+out        -> "the report at `c40d24d` is newer than the verdict at `3f45007` and
+out           names `69456c7`. Written with the newest verdict available, it must
+out           answer that one."
+out    7 x tests/test_report_guard_states.py::test_the_guard_survives_the_state[
+out        baseline, non_numeric_step_suffix, superscript_digit_step_number,
+out        draft_suffix_beside_a_step_report, step_number_is_the_empty_string,
+out        verdict_amended_after_the_commit_the_report_answers,
+out        zero_padded_step_number]
+out    8 failed, 1064 passed, 1 warning in 621.63s
+rule   EG3(i): the waiver is conditional on the trace, and EVERY red traces BY NAME to
+       the step-boundary cause or it is CZ1 (iv) unchanged
+judge  EVERY ONE OF THE EIGHT TRACES, AND I TRACED THEM FROM gh RATHER THAN FROM THE
+       PASTE. `test_the_answered_verdict_is_the_NEWEST_one` is EJ2/R644's state (2)
+       entry, and its MESSAGE is the discriminator: the report is newer than the
+       verdict, which is state (2) by definition. The seven planted states are the
+       cascade, identified EG3/EH1's way -- the baseline red with its own failure line
+       (`baseline: expected a clean run`) and each state's own line -- and NOT by
+       family, because R629 is what happens when a group is ruled by class.
+       **THIS IS STATE (2), WAIVED, WITH ITS TRACE PASTED.**
+cmd    the decisive check instead of the inference: do the eight CLEAR at the
+         follow-on with no code change?  clean clone at 727b9fa, origin resolving
+out    339 passed in 119.39s      0 failed      all eight green
+judge  CONFIRMED BY MEASUREMENT AND NOT BY ATTRIBUTION. One baseline cause, eight
+       reds, zero code, all eight self-clearing at the answering report. **State (2)
+       cleared BY THE ANSWERING REPORT rather than by time, which is the eighty-third
+       verdict's own sharpening.**
+cmd    git diff --name-only c40d24d..727b9fa -- tests floatfea scripts .github
+out    (no output)
+cmd    git diff --name-only bf21c37..727b9fa -- floatfea tests/unit tests/verification
+         tests/regression .github
+out    (no output)
+judge  SO THE UNAVAILABLE RUN COSTS NOTHING. Every code and script path in the tree at
+       `727b9fa` carries a green CI measurement at `bf21c37` (run 37009523830, success
+       on every job and step) or at `c40d24d` (green on actionlint, ruff, black, mypy,
+       unit tests and the ENTIRE ladder job). The only things that moved since the
+       last green run are documentation, one script, my corpus file and my verdict --
+       and the script is covered by `c40d24d`'s own run.
+cmd    the report's section 0a against gh, row by row and name by name
+out    37009523830 bf21c37 success / success    37013452200 c40d24d failure / failure
+out    the eight names in the 0a table == the eight in the log
+judge  SECTION 0a AGREES WITH gh ON EVERY ROW AND EVERY NAME. The row for `727b9fa` is
+       ABSENT rather than wrong, admissible for the reason verdict 88 checked rather
+       than assumed. **The report publishes its own red, accurately, which is the
+       behaviour R648 was about.**
+```
+
+**RULING ON (d): THE TREE IS NOT RED AT THE REVIEWED COMMIT ON EITHER INSTRUMENT.**
+`3019 passed, 0 failed, 0 skipped` on mine. The only executed CI run is red on eight
+tests that all trace by name to a designed, self-clearing boundary state, and I
+watched them clear. CA2's "a red CI is a HOLD" is about the reviewed commit; this red
+is at the parent, it is EG3-waived, and the waiver's condition is met with its trace
+pasted.
+
+## R650: THE COUNT, SETTLED -- YOU ARE RIGHT AND I WAS WRONG TWICE
+
+You asked me to settle it. I re-enumerated from the four constants rather than
+re-reading my own verdict, and **your figure is exact, including the four pairs.**
+
+```
+claim  verdict 88: "per-label nearest neighbour, all twelve: six at 0.619657, six at
+         0.866025", and "at or above it the six nearest-neighbour pairs go silent"
+cmd    rebuild the twelve centres from CLUSTER_ARM_RADIUS, CLUSTER_ANGLES_DEG,
+         BUOY_ANGLES_DEG and BUOY_RADIUS at platform_common.py:33-36, independently of
+         buoy_centers(); enumerate all 66 pairs and every per-label nearest neighbour
+out    0.619657 m  x 4   all cross-cluster, (1,3) (2,9) (5,6) (6,10)
+out    0.866025 m  x12   all intra-cluster
+out    1.008935 m  x 4   all cross-cluster
+out    per-label nearest neighbour: SEVEN labels at 0.619657, FIVE at 0.866025
+out    label 6 is in TWO of the four minimum pairs -- (5,6) and (6,10)
+rule   EH4: the boundary is solved in BOTH directions, including the one that weakens
+judge  **SETTLED IN YOUR FAVOUR. FOUR, NOT SIX.** Your three bands match mine to every
+       digit, and so do your four pairs and their cross-cluster character.
+judge  AND MY LINE WAS WRONG IN ITS OTHER HALF TOO, WHICH YOU DID NOT CATCH BECAUSE
+       YOU ONLY CHECKED THE PAIRS: the per-label count is 7/5, not 6/6. Both my
+       numbers were six and neither is. The arithmetic reason is label 6 sitting in
+       two of the four minimum pairs, so four pairs touch seven labels, not eight.
+cmd    the boundary solved in both directions, which is the figure the lock needs
+out    STRICTLY BELOW 0.619657 m     all 66 single transpositions detected
+out    AT OR ABOVE 0.619657 m        FOUR go silent
+out    AT OR ABOVE 0.866025 m        SIXTEEN go silent -- the four, plus all twelve
+out                                  intra-cluster at the next band
+judge  THE BOUNDARY `0.619657 m` IS UNCHANGED AND IT IS THE LOAD-BEARING NUMBER. Only
+       the multiplicity moved; your reading of the direction is right -- it makes the
+       gate LESS blind, not more -- and NO CONCLUSION IN R650 OR DQ9 MOVES. The step
+       from 4 to 16 at the second band is the new number for the lock: the cost of a
+       position tolerance is not smooth, it QUADRUPLES at 0.866025 m.
+cmd    git log --oneline -1 -- tests/corpus/f4_buoy_label_provenance.txt
+out    4193c0d corpus: batch 33's multiplicity corrected
+judge  **MY CORPUS HEADER CARRIED MY WRONG FIGURE IN TWO PLACES AND I HAVE CORRECTED
+       IT AT ITS OWN COMMIT**, separately from this verdict, with the re-enumeration
+       and the reason neither count is six. That file is mine and so was the error.
+```
+
+**R650 IS ANSWERED AND CLOSED AT BOTH SITES, AND THE WAY YOU ANSWERED IT IS THE
+POINT.** `docs/milestones/F4.md:262` now reads "**No second side** --
+`CLUSTER_ANGLES_DEG` is withdrawn as one (R650, DQ9)"; section 2.2's sentence is
+withdrawn with the three measurements that refute it; DQ9 at `:78-93` carries the open
+question of whether an independent source exists, naming the BEM mesh and
+`body_labels` as candidates. That is option three of the three I offered. **You
+re-measured instead of adopting, and you published the disagreement rather than the
+convenient number.** Every citation at those sites resolves at the lines given.
+
+## R649: ANSWERED, AND THE ROOT CAUSE YOU FOUND IS WORTH MORE THAN MY FINDING WAS
+
+```
+cmd    sed -n 137,199p scripts/suite_count.py
+out    137  def _worktree(sha: str):  """A clean worktree at `sha`..."""
+out    146  git -C <ROOT> worktree add --detach <tmp> <sha>
+out    180  with _worktree(sha) as tree:          the main half
+out    199  with _worktree(sha) as tree:          the excluded set
+judge  **CONFIRMED AT THE CODE, AND YOUR DIAGNOSIS IS RIGHT.** `suite_count.py` builds
+       its own clean worktree at the sha, so files copied into a clone's working tree
+       never reach the measurement. Your `cmp ... IDENTICAL` lines were true about
+       files nothing read, and the cell compared a run against your copied-in
+       revision 4 with a suite run at the COMMITTED revision 3. Two variables, and the
+       one you named was not the one that moved.
+judge  **A RITUAL THAT CANNOT FAIL IS THE SAME DEFECT AS A TRIPLE WHOSE COMMAND CANNOT
+       FAIL, ONE LEVEL UP** -- your sentence, and the transferable lesson of the round.
+       It generalises past `cmp`: any verification step whose subject is not the
+       subject the measurement reads is decoration.
+cmd    git show b6a65f2:docs/reports/F3/step-3.md -- which revision is newest there
+out    Revision 3, and its 0a table carries the stale row for the run at `c9902d3`
+judge  C130 IS CLOSED SITE BY SITE AS ITS CONDITION NAMED. The transient paragraph is
+       replaced by the real cause; the FAILED line now carries its MESSAGE as well as
+       its id, which was the field separating the two causes; the run id is redacted
+       for `test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS`, and that
+       redaction is declared rather than silent. The guard is untouched -- checked,
+       not assumed.
+```
+
+## TRY TO BREAK IT: C131's FIX REMOVES THE DETECTOR I USED TO JUSTIFY CALLING IT A CLOSURE ITEM
+
+You asked me to check the classification. **The classification is right. The argument I
+attached to it at verdict 88 is now false, and it is false BECAUSE of your fix.**
+
+```
+claim  verdict 88: "a drift of `0.05` raises the residual by `429x`, so the staleness
+         would be LOUD. That is why the duplication is a closure item and not a
+         finding about the figure."
+cmd    import scripts/report_joint_reactions.py, set m.RHO_INF, then solve_one(
+         1.979899, 15.0, 0.01) and discrete_residual() -- ONE VARIABLE, the constant,
+         which AFTER the fix moves the SOLVE and the RECONSTRUCTION together
+out    RHO_INF=0.8   discrete_worst_N 1.276461e-04  mu_inf 4.058901e+00  lam (1501,64)
+out    RHO_INF=0.75  discrete_worst_N 1.277047e-04  mu_inf 4.058943e+00  lam (1501,64)
+out    RHO_INF=0.5   discrete_worst_N 1.281217e-04  mu_inf 4.059076e+00  lam (1501,64)
+cell   ONE VARIABLE PER ROW. Same case, same duration, same window, same dt.
+rule   a gate carries its own failure: break the claimed property and confirm the
+       number moves
+judge  **IT DOES NOT MOVE. `1.0005x` for the 0.05 drift and `1.004x` for 0.3 -- NOT
+       `429x`.** My `429x` measured a sensitivity to a MISMATCH between two copies,
+       and your fix makes a mismatch unconstructible. The control row reproduces
+       verdict 88's own `1.276464e-04` to six digits, so the cell reads the same
+       quantity I read then.
+judge  **AND THAT IS THE CORRECT BEHAVIOUR, SO DO NOT UNDO IT.** The residual is a
+       consistency check between the reconstruction and the solve; it SHOULD be
+       invariant when the scheme parameter moves consistently. It remains sensitive to
+       a wrong reconstruction -- verdict 88's mismatch row is `5.480551e-02` (`429x`),
+       the un-lagged `mu` `1.246333e-01`, the Jacobian at the wrong point
+       `1.190193e-02`. Two to three decades, unchanged by the fix.
+judge  **WHAT IS GONE IS A WITNESS NOBODY DESIGNED AND NOBODY REPLACED.** Before the
+       fix, the residual accidentally policed "the two copies agree". After it: one
+       copy, unpoliced. Nothing in the tree asserts `RHO_INF == 0.8`, the study's own
+       value; the only link is the comment. **I retract the `429x` justification. The
+       fix stands and the gap is R653.**
+```
+
+**THE CLASSIFICATION, WHICH IS WHAT YOU ASKED: `RHO_INF` IS A REPRODUCIBILITY
+CONSTANT AND NOT A TOLERANCE. YOU CLASSED IT RIGHT.** Three reasons, and the third is
+the one that settles it because it is the repository's own treatment and not my
+reading:
+
+```
+cmd    grep -rn "RHO_INF\|rho_inf" --include=*.py floatfea/ tests/
+out    floatfea/io/reader.py:50  {"scheme", "rho_inf", "alpha_m", "alpha_f", "beta",
+out                               "gamma", "dt", "mu_treatment"}
+out    tests/verification/rung4/test_validator_matrix.py:65   "rho_inf": 0.9,
+judge  THIS REPOSITORY ALREADY TREATS `rho_inf` AS A DECLARED SCHEME FIELD of the
+       interchange record, carried in the file beside `beta` and `gamma`, with a
+       rung-4 validator case exercising it at `0.9`. A scheme parameter the schema
+       declares is not a tolerance; it is an input.
+judge  SECOND: nothing is COMPARED against it. It is not a threshold, an epsilon, a
+       convergence cutoff, a tier boundary, nor "a factor introduced to make two
+       numbers agree" -- it parametrises the integrator whose answer is then measured.
+judge  THIRD: it reaches no gate. `grep -rln report_joint_reactions tests/ floatfea/`
+       returns only `tests/corpus/platform_mass_property_gate.txt`, a corpus DATA
+       file, so no shipped assertion reads this script at all.
+cmd    sed -n 291p ../HSP-runs/studies/platform-12buoy/platform_rao_pilot.py
+out    rho_inf=0.8,
+judge  AND THE CITATION RESOLVES AT THE EXACT LINE. Every citation resolves, checked
+       mechanically rather than read.
+```
+
+## EJ4(c), AUDITED ARITHMETICALLY RATHER THAN READ
+
+```
+cmd    ls ../HSP-runs/studies/platform-12buoy/floatfea_design_waves/
+out    six files: case_T10s / T12.5s / T14s / T15s / T16.2s / T20s, all _full_H24.2m
+judge  ALL SIX CASES ARE BACKED BY REAL EXPORT FILES. The citation resolves.
+cmd    recompute every derived figure in section 6a (v) from its own published inputs:
+         T_model = T_full/sqrt(50), ratio = discrete/|lam|max, the two worst-of
+         selections, the window fraction, the lam row count
+out    all six T_model            match to < 5e-7
+out    all six ratios             match to < 0.6%
+out    worst discrete 1.530698e-04 at T=15      as published
+out    worst ratio    3.96e-06     at T=20      as published
+out    1.00 s / 1.979899 s = 0.505076            published 0.505
+out    40.0/0.01 + 1 = 4001 rows                 published (4001, 64) = 16 joints x 4
+judge  **EVERY FIGURE IN EJ4(c) IS INTERNALLY CONSISTENT, ALL SIX CASES, NO EXCEPTION.**
+       The condition holds, the worst ratio is `3.96e-06`, `res.lam` lacks nothing,
+       and there is no STOP. I agree there is no STOP.
+cmd    the ratio's operating point, which is the thing a bare ratio loses
+out    |lam|max spans 1.6598e+01 to 8.8910e+01 N across the six -- a 5.36x spread
+judge  A RATIO CARRIES ITS OPERATING POINT AND THIS ONE DOES: the table publishes the
+       denominator per case, so `3.96e-06` reads as "smallest reaction scale of the
+       six" rather than "worst physics". **You also declined to attribute a cause to
+       the non-monotonicity, which is correct -- BG0 would need a cell and there is
+       none.**
+cmd    git -C ../HSP-runs status --porcelain --untracked-files=no
+out    (no output) -- NOT ONE TRACKED FILE MODIFIED
+cmd    ls -l --time-style=+%Y-%m-%dT%H:%M on the six export CSVs
+out    all six dated 2026-09-27, five days before this round
+judge  "WRITING NOTHING INTO THE REPOSITORY OR HSP-runs" HOLDS, and the stronger
+       non-negotiable holds with it: HSP is untouched as a tracked tree. The six CSVs
+       are EJ4(a)'s export and predate the closure round.
+```
+
+## Carried
+
+Verdict 88 named **no blocking item** -- nothing in it was (a), (b), (c) or (d) -- two
+closure items, five numbered closure items, two carried-by-name findings and a ledger.
+Every one of them:
+
+* **R649 (closure item) -- ANSWERED AND CLOSED.** Section 12's transient paragraph is
+  replaced by the real cause, the FAILED line carries its message, and the root cause
+  of the invalid cell is confirmed at `scripts/suite_count.py:137-199` on my own read.
+  The guard is untouched.
+* **R650 (closure item) -- ANSWERED AND CLOSED AT BOTH SITES, and the count is settled
+  AGAINST ME.** `docs/milestones/F4.md:262` withdraws the second side; section 2.2's
+  sentence is withdrawn with its three refuting measurements; DQ9 at `:78-93` carries
+  the open question with the BEM mesh and `body_labels` named as candidates. Four
+  pairs, not six. My corpus header is corrected at `4193c0d`.
+* **C130 -- CLOSED**, site by site as its condition named. See R649 above.
+* **C131 -- CLOSED, and the classification is CORRECT.** One constant at
+  `scripts/report_joint_reactions.py:49`, both call sites at `:144` and `:171`, the
+  citation resolving at `platform_rao_pilot.py:291`. You took the "read from one
+  place" branch rather than the "comment carries its command" branch, which is the
+  stronger of the two. **My `429x` justification for classing it a closure item is
+  RETRACTED -- R653 replaces it**, and that is a hand-over, not a reopening.
+* **C132 -- CLOSED.** Section 6a (v) carries its `cmd` line, all six design-wave
+  cases, `|mu|_inf` at the value the script currently prints (`4.0278e+00` at T=14,
+  not verdict 87's `4.085851`), and the window limitation stated as `0.505` of a
+  period in both section 6a (v) and section 6b.
+* **C133 -- CLOSED.** `docs/milestones/F4.md` section 1 points at
+  `docs/closure/F3.md` section 6a (i) and carries neither `568.98 N` nor "identically
+  `0`", with a parenthesis saying why. Three other sections of that file already
+  declined to restate a figure; now four do.
+* **C134 -- ANSWERED as its condition allowed.** The three measurements each carry the
+  commit they belong to in section 12, and the CZ1 (ii) block adds a fourth at
+  `c40d24d`. The figure measured at the commit the report describes is **R651 below --
+  the mechanism worked and the number it produced is void**, which is a different
+  failure from the one C134 named.
+* **R638 -- OPEN, unchanged, carried BY NAME into F4 step 1.** EJ1 governs: worked in
+  F4, closed before F4 closes, does not block F4's opening. `RIGID_MODE_EXACTNESS`
+  still has no counter-case, and `floatfea/tolerances.py` is not in this range's diff
+  at all.
+* **R637 clause (iii) -- its object C134 is answered; the clause is MET for the first
+  time and then broken again in the same commit.** Section 12 now names a commit
+  beside each figure. R651 is the one figure in that block NOT measured at the commit
+  it describes, so the clause carries into F4 step 1 with R651 as its new object.
+* **The ledger, unchanged and not re-reviewed:** C113, C115 to C117, C119, C120, C122,
+  C123 at `docs/closure/F3.md` section 8, C119 to F4 step 1's first commit as a (c);
+  R631, R626's residue, R635; C102, C103, C106 to C112, C114, C88, C86, C90 to C98,
+  C100, C74, C76, C78, C82, C85, R610, R615. C89 withdrawn. **C40, C75, C75b, C99,
+  C101, C104, C105, C118, C121, C124 to C129 -- CLOSED and staying closed.** R622 is
+  F4's own.
+* **`check_carried: all 17 findings carried`, exit 0, on my own run at the reviewed
+  commit.** The Carried table at `docs/reports/F3/step-3.md:1877-1904` has R649 and
+  R650 answered with their sections, and R638 and R635 carried.
+
+## Findings
+
+**NOTHING IN THIS ROUND IS (a), (b), (c) OR (d).** `floatfea/` is untouched in the
+entire range -- `git diff --name-only bf21c37..727b9fa -- floatfea` is empty. No
+tolerance value or form moved. No gate assertion moved, and the one file changed under
+`scripts/` is read by no shipped assertion. The tree is green at the reviewed commit
+on my instrument, and the only CI red traces by name to a waived, self-clearing
+boundary state. **All three findings below are closure items and I hold on none of
+them. Two of the three are corrections of my own verdict 88.**
+
+**R651. (CLOSURE ITEM. CP3, IN THE COMMIT THAT ANSWERS A CZ1 (iv) RED.) THE
+`316 passed` FIGURE IS VOID: THE EDIT THAT PUBLISHED IT CAME AFTER THE RUN THAT
+MEASURED IT, AND THE TRUE FIGURE AT THE COMMITTED TREE IS `339`.** Site:
+`docs/reports/F3/step-3.md:2174-2175` -- `cmd the same files after the follow-on,
+working tree / out 316 passed, 0 failed`.
+
+```
+cmd    git show c40d24d:docs/reports/F3/step-3.md | grep -c "CZ1 (ii) AT THE CLOSURE
+         COMMIT" ; git diff --numstat c40d24d..727b9fa
+out    0 at c40d24d -- the ENTIRE CZ1 (ii) block, INCLUDING the `316` line, is ADDED
+out      at 727b9fa; the commit adds 98 lines and removes 24
+cmd    the same three files, clean clone at the COMMITTED 727b9fa, origin resolving
+out    339 passed in 119.39s      0 failed
+rule   CP3: the `out` line is copied from a run executed AFTER the final edit to the
+       thing it describes, and IF AN EDIT FOLLOWS THE PASTE, THE PASTE IS VOID
+judge  VOID BY CP3's OWN TEST. These three files are parametrised over the report, so
+       writing the block that reports the figure CHANGES the figure. `316` was true of
+       a working tree that stopped existing when the block was added; `339` is the
+       tree at the sha. **The CONCLUSION is unaffected -- `0 failed` either way and
+       state (2) is cleared -- so this is the figure and not the finding.**
+judge  AND NO GUARD CAN SEE IT, WHICH IS WHY IT IS MINE. `316` sits inside a command
+       block, so `test_report_numbers_are_sourced` is satisfied; CLAUDE.md says in
+       terms that what it cannot see is "a number that is sourced to a command that
+       was never run at that commit". This is that number, and this is the reading.
+```
+**Closed when** the line reads the figure at the commit that publishes it, or is
+withdrawn and section 12 points at this verdict's `339` instead. **It is a
+self-referential measurement, so the only stable form is the one taken at the sha
+after the commit exists** -- CZ1 (ii) on exactly the file CZ1 (ii) was written for,
+and the second reason R637 clause (iii) carries.
+
+**R652. (CLOSURE ITEM. BP0 / BF0.) `docs/closure/F3.md` SECTION 6b PUBLISHES
+"STATE (2) DID NOT MATERIALISE" IN THE COMMIT WHERE IT MATERIALISED, ATTRIBUTES THE
+MEASUREMENT TO A RUN THE REVIEWER NEVER MADE, AND DRAWS AN INFERENCE FOR F4 FROM IT.**
+Sites: `docs/closure/F3.md:355-368`, and the same attribution at
+`docs/reports/F3/step-3.md:2170-2173`.
+
+```
+cmd    sed -n 355,368p docs/closure/F3.md
+out    "EG3(ii)'s baseline, measured by the reviewer at its OWN verdict commit
+out     `3f45007`" ... "out 326 passed, 0 failed" ... "judge **STATE (2) DID NOT
+out     MATERIALISE.** Verdict 88 creates no boundary red, so any red at F4 step 1's
+out     first commit is CZ1 (iv) unchanged and NOT a waived state."
+cmd    grep -n "326" over the whole of verdict 88
+out    (no output). Verdict 88's only guard-file figure is `287 passed` for TWO files
+out    at `bf21c37`; its item 5 states an EXPECTATION for the verdict commit, not a
+out    measurement -- and it COULD not have measured `3f45007`, because a verdict is
+out    written before it is committed.
+cmd    the three files, clean clone at 3f45007, origin resolving -- MY run, taken now
+out    326 passed in 121.10s      0 failed
+judge  THE NUMBER IS RIGHT AND I HAVE NOW ACTUALLY TAKEN IT. The ATTRIBUTION is wrong,
+       and it is not etiquette: EG3(ii) assigns the two halves to two different
+       parties precisely so each is taken by someone, and a figure credited to the
+       reviewer is one nobody is obliged to re-take.
+judge  AND THE CONCLUSION DRAWN FROM IT IS FALSE AS PUBLISHED. State (2) materialised
+       at `c40d24d`, the very commit carrying this sentence -- eight reds, in CI,
+       which I read from `gh`. The mechanism is the transferable part and section 6b
+       records its opposite: **a closure commit that touches the report file re-dates
+       the report against the verdict and MANUFACTURES state (2).** That is what
+       happened, and it will happen at every closure commit that edits a report.
+judge  THE REPORT CORRECTS IT AT `727b9fa:2170-2173`; THE CLOSURE ARTIFACT DOES NOT.
+       Section 6b is F3's permanent record and it says of itself that this figure is
+       "to be pasted in F4 step 1's `Carried`", so the false sentence is SCHEDULED to
+       be copied forward. The error leans STRICT -- it tells F4 a red is never waived
+       -- so nothing unsafe follows from it, and that is why it is a closure item and
+       not more.
+```
+**Closed when** `docs/closure/F3.md` section 6b records that state (2) DID materialise,
+at `c40d24d`, with the eight ids and the mechanism; the `326` is attributed to whoever
+ran it, which per this verdict is me and now; and the inference about F4 step 1's first
+commit is restated as what it is -- a red at F4 step 1 must still trace by name under
+EG3(i), which is true for a different reason than the one given.
+
+**R653. (CLOSURE ITEM TODAY. IT BECOMES (c) THE MOMENT EJ4's RESIDUAL IS ASSERTED IN
+`tests/`.) C131's FIX IS RIGHT AND IT LEAVES THE SCHEME CONSTANT WITH NO WITNESS: THE
+RESIDUAL IS NOW BLIND TO `RHO_INF` BY `1.0005x`, AND MY `429x` ARGUMENT IS
+RETRACTED.** Sites: `scripts/report_joint_reactions.py:41-49` and `:171`, and verdict
+88's own judge line claiming `429x` in `docs/reviews/F3/step-3.md`.
+
+Measured in "Try to break it" above: `0.8 -> 1.276461e-04`, `0.75 -> 1.277047e-04`,
+`0.5 -> 1.281217e-04`. One variable, three rows, and the control reproduces verdict
+88's own figure to six digits. The `429x` was a sensitivity to a mismatch between two
+copies; unifying them makes a mismatch unconstructible. **The residual stays sensitive
+to a wrong reconstruction -- two to three decades, four ways -- and is specifically and
+correctly invariant to the scheme parameter moving consistently.** What has no witness
+is the reproducibility claim: nothing in the tree asserts `RHO_INF == 0.8`, the study's
+value at `platform_rao_pilot.py:291`, and the only link is a comment.
+**Closed when**, at F4's lock or at the step that writes the gate, one of two things:
+the value is READ from the study file so the reproduction is mechanical; or the gate's
+claim is written to say what it covers -- consistency of the reconstruction with the
+solve, NOT that the scheme reproduces FloatSim's. **If a G4.x gate ships describing
+this residual as evidence that FloatSim's integration scheme is reproduced, that is
+(c) and I will block on it then.** This is a hand-over to F4; it does not reopen C131,
+and the fix must NOT be undone to restore an accidental detector.
+
+## Closure items
+
+Named, not re-reviewed, none of them holding anything. **There is no step open for
+these to be absorbed into**, so they go where F3's closure artifact and F4 step 1's
+`Carried` can carry them.
+
+* **R651** -- `docs/reports/F3/step-3.md:2174-2175`. Closes as R651 says. Carries with
+  R637 clause (iii) as that clause's new object.
+* **R652** -- `docs/closure/F3.md:355-368`, and the attribution at
+  `docs/reports/F3/step-3.md:2170-2173`. Closes as R652 says. **Worth fixing in F3's
+  closure artifact rather than deferring, because section 6b schedules itself to be
+  copied into F4 step 1's `Carried`.**
+* **R653** -- `scripts/report_joint_reactions.py:41-49`. Closes at F4's lock or at the
+  gate. A hand-over, not a repair.
+* **The CZ1 (iii) / `paths-ignore` collision**, measured in the scoping ruling above:
+  a report-only follow-on sha cannot carry a CI run, so CZ1 (iii) is unsatisfiable for
+  it as written. **This is a criterion item and goes to Xabier with the scoping
+  ruling, not into a round.**
+* **A residual's location is not reported (EJ4 hand-over).** `discrete_residual`
+  returns `max(abs(resid))` over the DOF vector and the table publishes that against
+  `|lam|max`. "A residual destroys information" -- report sign and location, or ratio
+  and phase, alongside a norm. Six cases, six max-norms, and no statement of WHICH dof
+  or which body binds. **Closes when** F4's gate on this quantity reports the argmax
+  with the norm, so a future failure localises before it is blamed. Not blocking: the
+  figure is a report figure today and no assertion reads it.
+* **C113, C115 to C117, C119, C120, C122, C123** -- as EJ3 ledgers them, C119 to F4
+  step 1's first commit as a (c). **C102, C103, C106 to C112, C114, C88, C86, C90 to
+  C98, C100, C74, C76, C78, C82, C85, R610, R615** -- carried unchanged. **C89**
+  withdrawn. **C40, C75, C75b, C99, C101, C104, C105, C118, C121, C124 to C134** --
+  CLOSED.
+
+## Tolerances touched
+
+```
+cmd  git diff bf21c37..727b9fa --numstat -- floatfea/tolerances.py
+out  (no output) -- THE FILE IS NOT IN THE DIFF AT ALL
+cmd  git diff --name-only bf21c37..727b9fa -- floatfea
+out  (no output) -- NOT ONE LINE OF floatfea/ IN THE WHOLE RANGE
+cmd  git diff bf21c37..727b9fa -- "tests/regression/*" tests/conftest.py
+out  (no output) -- no golden moved, no parametrisation loosened, no conftest
+cmd  git diff --name-only bf21c37..727b9fa -- tests
+out  tests/corpus/f4_buoy_label_provenance.txt   -- the reviewer's own corpus DATA
+judge  NO TOLERANCE WAS TOUCHED AS A VALUE OR AS A FORM, AND NOTHING THAT FUNCTIONS AS
+       ONE UNDER ANOTHER NAME WAS EITHER. The only non-documentation change in the
+       range is `scripts/report_joint_reactions.py`, and the constant it introduces is
+       ruled above to be a reproducibility constant and not a tolerance -- with the
+       schema's own treatment of `rho_inf` at `floatfea/io/reader.py:50` as the
+       deciding evidence rather than my reading.
+```
+
+| constant | value | form | counter | justification located |
+|---|---|---|---|---|
+| `RHO_INF` (new, in `scripts/`) | `0.8`, NEW | **not a tolerance.** A declared scheme parameter of the generalised-alpha integrator: nothing is compared against it, it reaches no assertion, and `floatfea/io/reader.py:50` carries `rho_inf` as an interchange scheme field beside `beta` and `gamma` | **none required, and none possible in the residual: `1.0005x` at a `0.05` drift (R653).** The `429x` I cited at verdict 88 measured a mismatch the fix makes unconstructible | `scripts/report_joint_reactions.py:41-48`, citing `platform_rao_pilot.py:291`, which resolves at that exact line. Correctly NOT in `floatfea/tolerances.py`. |
+| `RIGID_MODE_EXACTNESS` | `1e-15`, UNCHANGED | relative, dimensionless; correct form | **STILL NONE.** Unchanged since `b7c05e7`: `1e-13` gives `1802 passed, 0 failed`, solved edge `3.783782e-12`, `3784x` | `floatfea/tolerances.py:330-400`; **not in this range's diff at all.** R638 worked in F4, closed before F4 closes (EJ1). |
+| `PLATFORM_RIGID_MODE_EXACTNESS` | `1.154338e-18`, UNCHANGED | unchanged | unchanged; silent rise still `1.63x` | `floatfea/tolerances.py:453-473`; not in this range's diff. |
+| `PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT` | `1.0e-14`, UNCHANGED | unchanged | unchanged; upper edge `3.09x`, binding state `3.088842e-15` | `floatfea/tolerances.py:423-446`; not in this range's diff. |
+| `RIGID_MODE_BOUND` | `199.526231496888`, UNCHANGED | unchanged | unchanged | unchanged. **R631** is its open residue, ledgered under DZ7c. |
+
+## My own instructions (4b), read line by line
+
+```
+cmd  git diff bf21c37..727b9fa --stat -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  (no output)
+cmd  git log --oneline bf21c37..727b9fa -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  (no output)
+judge  NOT ONE LINE OF WHAT I READ, CARRY OR MAY WRITE CHANGED IN THIS RANGE. No
+       STOP-class process finding. Diffed rather than inferred from a green suite,
+       because nothing in the suite reads those files -- and this is the round where
+       that matters most, since the entire subject is a commit pair nobody was to
+       review.
+```
+
+## The adversarial corpus (BE3)
+
+**NO NEW BATCH THIS ROUND, AND THE REASON IS A SPEND DECISION I WILL DEFEND.** EG4(e)
+pauses batches after F3 step 3 except mutation work on F4's load-mapping gate and
+EB6's label-provenance gate. EB6 still does not exist -- `grep -rln
+f4_buoy_label_provenance tests/ scripts/ floatfea/` is empty -- so batch 33's coverage
+number is still **0 of 18, for want of a check and not for want of entries**, and a
+nineteenth entry would measure the same nothing. **New entries this round: 0. Caught
+by the implementer's checks: 0 of 0.** Recorded rather than dressed up, and no batch
+manufactured to have a number.
+
+**What I did to that file instead is the corpus work of this round.** `4193c0d`
+corrects the header's multiplicity in two places, with the re-enumeration and with the
+arithmetic reason neither count is six. **Correcting my own planted-shape header is
+worth more than an entry, because every entry in that file is read against it** --
+`transpose_nearest_pair` cites `any_position_tolerance_at_or_above_0.62_m` as what it
+is blind to, which is exactly the figure that was wrong.
+
+**The method note, the one thing here I would carry to another project.** Both of my
+own findings came from re-taking a measurement at the commit that PUBLISHES it rather
+than at the commit it was taken at. `316` was correct when run and void when
+committed; `326` was correct and credited to a run that never happened. **Neither is
+detectable by reading.** And the lesson generalises past figures, in your words rather
+than mine: a ritual that cannot fail is the same defect as a triple whose command
+cannot fail, one level up. `cmp ... IDENTICAL` on files `suite_count.py` never reads is
+that defect; so is a figure measured on a tree the commit does not contain.
+
+## On the criterion
+
+**I RULED UNDER CZ0 AND I AGREE WITH IT, INCLUDING WHERE IT COSTS ME.** All three of
+my findings are closure items, I have classed them that way, and two of them correct
+my own previous verdict rather than the work. Under the retired blocking head "the
+truth of a published figure or sentence", R651 and R652 would each have been a
+blocking round; under CZ0 they are two lines in a list, and **that is the right call**
+-- neither moves a gate, and the coverage measurement over the rounds that spent on
+that head went down, not up.
+
+**My disagreement is with CZ1, not with CZ0, and it is one sentence.** CZ1 (iii)
+cannot be satisfied by a report-only follow-on, because `docs/reports/**` is in CI's
+`paths-ignore` by CK0's own decision. Measured above -- zero runs at a pushed sha --
+it is a rule that reads as a condition while being unmeetable. It needs
+`workflow_dispatch` named in it, or the clause narrowed. **That leaves the loop and
+goes to Xabier through you; it does not become another round.**
+
+**On whether this round should have happened: no.** I ruled that at the top, in your
+favour, and said which fix the number supports -- **(A), the hook learns to accept a
+closure commit, disposition recorded by hand as DD1 was.** I will add the one thing
+that complicates it, honestly, because it argues the other way: your own CZ1 loop
+found one of this commit pair's three defects and missed two, and both misses are
+figures about the commit itself -- the exact class CZ1 (ii) exists for, and the exact
+class an unreviewed closure commit will keep shipping. **I still say (A).** A closure
+commit that occasionally ships a void figure is the trade CZ0 already made on purpose,
+and the alternative costs a round per step to find things that move no gate.
+
+## Next step opens when
+
+**F3 STEP 3 IS CLOSED AT PASS (DD1), F3 IS CLOSED, AND F4 IS OPEN -- VERDICT 88 OPENED
+IT AND THIS ROUND DOES NOT CLOSE IT AGAIN.** The closure commits are verified: CZ1
+(ii)'s four outputs reproduce on my instrument at `727b9fa`, the tree is
+`3019 passed, 0 failed, 0 skipped` in one invocation, every code and script path
+carries a green CI measurement at `bf21c37` or `c40d24d`, and the one red run is EG3
+state (2) with its trace pasted and its clearing watched. **There is nothing to open
+and nothing to hold.** What F4 step 1 carries:
+
+1. **THE PLAN IS LOCKED BEFORE IT IS IMPLEMENTED.** `docs/milestones/F4.md` is an
+   unlocked draft and says so. **R650 goes to the lock as DQ9 with the count settled
+   at FOUR**, and with three numbers in front of it: `0.619657 m` as the boundary,
+   FOUR transpositions silent at or above it, and **SIXTEEN** silent at or above
+   `0.866025 m` -- the cost is not smooth, it quadruples at the second band.
+2. **F4 step 1's FIRST commit** carries C119 and the `step-under-execution` marker
+   move -- added to F4.md and removed from F3.md in that one commit, so exactly one
+   plan carries it and no report guard goes blind.
+3. **F4 step 1's `Carried` carries, BY NAME:** **R638** (EJ1), **R637 clause (iii)**
+   with **R651** as its new object, **R651, R652, R653**, and **R645 to R650** as
+   answered-and-verified, plus EJ3's ledger. **R652 is the one to fix in F3's closure
+   artifact rather than defer**, because section 6b schedules its own false sentence
+   to be copied into that very `Carried`.
+4. **EG3(ii) IS NOW MEASURED ON BOTH SIDES, BY ME, AT BOTH COMMITS, FOR THE FIRST TIME
+   IN THIS MILESTONE.** State (1) cleared at the verdict commit `3f45007`:
+   `326 passed, 0 failed`. State (2) cleared at the report commit `727b9fa`:
+   `339 passed, 0 failed`. **Neither figure is an expectation and neither is
+   attributed to a run that did not happen.** The mechanism to write down is that a
+   closure commit touching the report MANUFACTURES state (2): expect it, name it,
+   clear it.
+5. **A red at F4 step 1 is CZ1 (iv) unless every id traces by name under EG3(i).**
+   That remains true -- but for the reason in EG3's own text, and not for section 6b's
+   reason, which R652 refutes.
+6. **R653 before any G4.x gate claims the residual reproduces FloatSim's scheme.** The
+   residual is a reconstruction-consistency check and is blind to the scheme constant
+   by `1.0005x`. Say what it covers, or read the constant from the study.
+
+**Schedule.** F3 closed 1 October, twelve days inside its 13 October date, and
+**nothing in this round moves any date.** EJ6 stands: F4 19 October with a 14 October
+working target, the member-force table 23 October against 17, the code check 28
+October against 22. The one schedule-relevant number is that this round consumed
+review capacity on two commits no rule asked to be reviewed, which is the throughput
+cost of the hook conflict and the strongest practical argument for (A). CZ0's
+escalation stays live -- two consecutive steps closed carrying items -- and I read
+neither a slip nor a scope cut as needed.
+
+**One sentence for the implementer.** You handed me a round you had ruled should not
+exist, said so, recommended the right fix, and then used it to hand back two things I
+had got wrong -- the pair count, which you refused to adopt and re-measured, and a
+`429x` argument your own fix had quietly invalidated; **the two defects I found are
+both figures about the commit that publishes them, which neither of us can catch by
+reading and only one of us can catch by running**, so the habit to keep is the one
+that produced all four of this round's corrections: when a number describes the tree,
+take it again after the last edit, at the sha.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F3 step 3
 Reviewed commit: 686325e659d7b0439d8a57a854a450e871442a42
 Verdict: PASS
 **Reviewed commit: `bf21c37`.** (HEAD of F3 and pushed when I began. I committed corpus
