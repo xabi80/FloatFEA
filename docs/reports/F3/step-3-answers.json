@@ -14,7 +14,11 @@
   "Verdict 88 (PASS) added R649 and R650; both are answered in section 12 -- R649",
   "because my transient diagnosis was refuted and the correction belongs beside the",
   "figure it corrects, R650 because the measurement that withdrew the second",
-  "expected side is there, including one count the reviewer and I disagree on."
+  "expected side is there, including one count the reviewer and I disagree on.",
+  "",
+  "Verdict 89 (PASS) added R651, R652 and R653. All three point at section 13, which",
+  "is their own section: R651's correction is in 12 and R652's and R653's repairs are",
+  "outside the report, so 13 is the section that discusses all three."
  ],
  "answered": {
   "R610": {
@@ -164,6 +168,18 @@
   "R650": {
    "state": "answered",
    "where": "§12"
+  },
+  "R651": {
+   "state": "answered",
+   "where": "§13"
+  },
+  "R652": {
+   "state": "answered",
+   "where": "§13"
+  },
+  "R653": {
+   "state": "answered",
+   "where": "§13"
   }
  }
 }

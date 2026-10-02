@@ -41,11 +41,31 @@ from floatfea import hsp_pin  # noqa: E402
 # C131 (CW0). `rho_inf` was written twice -- passed to the integrator in
 # `solve_one` and re-declared in `discrete_residual` with a comment asserting the
 # two agreed. A comment is not a mechanism: ONE constant, both call sites, so
-# they cannot disagree. The value is the study's own, at
-# `../HSP-runs/studies/platform-12buoy/platform_rao_pilot.py:291`, and the
-# reviewer measured that a 0.05 drift makes the residual 429x louder -- so this
-# is a reproducibility constant, not a tolerance, and it does not belong in
-# `floatfea/tolerances.py`.
+# they cannot disagree. The value is the study's own:
+#   cmd: sed -n 291p ../HSP-runs/studies/platform-12buoy/platform_rao_pilot.py
+#   out: rho_inf=0.8,
+#
+# IT IS A REPRODUCIBILITY CONSTANT AND NOT A TOLERANCE, so it does not belong in
+# `floatfea/tolerances.py`. The repository's own evidence, not a reading:
+#   cmd: grep -n rho_inf floatfea/io/reader.py
+#   out: 50: {"scheme", "rho_inf", "alpha_m", "alpha_f", "beta", "gamma", ...}
+#   cmd: grep -n rho_inf tests/verification/rung4/test_validator_matrix.py
+#   out: 65: "rho_inf": 0.9,
+# -- a declared interchange SCHEME FIELD, exercised at another value, compared
+# against nothing.
+#
+# THE JUSTIFICATION THIS COMMENT FIRST CARRIED IS RETRACTED (R653). It said a
+# 0.05 drift makes the residual "429x louder". That figure measured a MISMATCH
+# BETWEEN TWO COPIES, and the single constant above makes a mismatch
+# unconstructible; varying this value moves the residual by about 1.0005x. The
+# behaviour is correct and must not be undone -- the residual stays sensitive to a
+# wrong RECONSTRUCTION by two to three decades -- but an accidental witness went
+# with the duplication and nothing replaced it:
+#   cmd: grep -rn RHO_INF tests/ floatfea/
+#   out: (no output) -- nothing asserts this value
+# No assertion is added here: DR1 freezes apparatus through F6. R653 carries the
+# gap, and it becomes a gate finding if a G4.x gate ever cites this residual as
+# evidence that FloatSim's scheme is reproduced.
 RHO_INF = 0.8
 
 HSP_RUNS = ROOT.parent / "HSP-runs"

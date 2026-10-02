@@ -1716,6 +1716,7 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 
 
 
+
 <!-- generated: scripts/answered_table.py -->
 
 | item | class | state | where | site | the verdict's own subject |
@@ -1757,8 +1758,12 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 | R648 | recorded | **answered** | §5 | `` | THE REPORT'S SECTION 0a RECORDS A COMPLETED FAILURE AS |
 | R649 | recorded | **answered** | §12 | `` | THE NINE REDS AT `b6a65f2` WERE NOT A TRANSIENT. THEY WERE R648, |
 | R650 | recorded | **answered** | §12 | `` | THE MOMENT EB6 IS WRITTEN.) EB6's SECOND |
+| R651 | recorded | **answered** | §13 | `` | RED.) THE |
+| R652 | recorded | **answered** | §13 | `` | `docs/closure/F3.md` SECTION 6b PUBLISHES |
+| R653 | recorded | **answered** | §13 | `` | THE MOMENT EJ4's RESIDUAL IS ASSERTED IN |
 
 ## 8. Sites named by findings and not touched
+
 
 
 
@@ -1860,6 +1865,7 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 
 
 
+
 <!-- generated: scripts/carried_table.py -->
 
 | item | status | the verdict's own subject |
@@ -1901,6 +1907,9 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 | R648 | **answered** — §5 | THE REPORT'S SECTION 0a RECORDS A COMPLETED FAILURE AS no result, EIGHT REDS TRACE TO IT, AND... |
 | R649 | **answered** — §12 | THE NINE REDS AT b6a65f2 WERE NOT A TRANSIENT. THEY WERE R648, AND THE GUARD WAS RIGHT. Four... |
 | R650 | **answered** — §12 | THE MOMENT EB6 IS WRITTEN.) EB6's SECOND EXPECTED SIDE DOES NOT DO WHAT THE PLAN SAYS IT DOES,... |
+| R651 | **answered** — §13 | RED.) THE 316 passed FIGURE IS VOID: THE EDIT THAT PUBLISHED IT CAME AFTER THE RUN THAT... |
+| R652 | **answered** — §13 | docs/closure/F3.md SECTION 6b PUBLISHES "STATE (2) DID NOT MATERIALISE" IN THE COMMIT WHERE IT... |
+| R653 | **answered** — §13 | THE MOMENT EJ4's RESIDUAL IS ASSERTED IN tests/.) C131's FIX IS RIGHT AND IT LEAVES THE SCHEME... |
 
 ## 9a. Answered in F3
 
@@ -2171,8 +2180,18 @@ judge  AND THE REVIEWER MEASURED THE OTHER HALF: at `3f45007` the three report-g
        files read `326 passed, 0 failed`, so state (2) had not materialised at the
        verdict commit. It materialised at MY closure commit, which is the one place
        EG3 says the implementer measures it.
-cmd    the same files after the follow-on, working tree
-out    316 passed, 0 failed
+cmd    the same files AT THE COMMITTED SHA -- `727b9fa` and again at the verdict
+         commit `9d7a9c4`, taken by verdict 89 rather than by me
+out    339 passed, 0 failed       at both
+judge  **MY FIRST VERSION OF THIS LINE SAID `316 passed` AND IT WAS VOID (R651).** I
+       took it in the working tree BEFORE writing this block, and these three files
+       are parametrised over this report -- so writing the block changed the thing it
+       measures. `grep -c` for this block at `c40d24d` is `0`: it did not exist there.
+       The figure's conclusion was right and the figure was not of the committed tree.
+       **No guard can see this**, because the number is already inside a command
+       block; CLAUDE.md assigns the class to the reviewer and the reviewer caught it.
+judge  the repair carries no new number outside a triple (CP2), which is why the
+       replacement cites the two shas it was taken at and names who took it.
 cmd    python scripts/check_carried.py
 out    check_carried: all 17 findings carried      exit 0
 ```
@@ -2195,4 +2214,42 @@ judge  everything else in R650 reproduces exactly -- gap `0.619657 m` against
        `CLUSTER_ANGLES_DEG` set-invariant under it. Only the count of silent pairs
        differs, and my figure makes the gate LESS blind than the verdict's, not more.
        Recorded for the reviewer to rule; the conclusion is unaffected either way.
+```
+
+## 13. Verdict 89's findings
+
+All three are mine, all three are **figures or sentences about the commit that publishes
+them**, and that is the class CLAUDE.md assigns to the reviewer because no guard can see
+it.
+
+| finding | what it was | where it is answered |
+|---|---|---|
+| R651 | a count taken in the working tree before the edit that changed it, so it was void at the committed sha | § 12, with the figure retaken at two shas |
+| R652 | a passage publishing "state (2) did not materialise" in the commit where it materialised, crediting a run that could not have been made | `docs/closure/F3.md` § 6b |
+| R653 | a justification whose cell my own fix had invalidated, and a witness that went with the duplication | `scripts/report_joint_reactions.py` head, and `docs/closure/F3.md` § 6c |
+
+```
+claim  R651's replacement is itself taken at a sha and not in the working tree
+cmd    the three report-guard files at 727b9fa and again at 9d7a9c4 (verdict 89's run)
+out    339 passed, 0 failed       at both
+judge  and THIS section changes the collection again, so the figure for the commit that
+       carries it is taken after it exists -- pasted in the commit message, not here,
+       because a number describing a tree cannot be written into that tree and stay
+       true. That is R651's lesson applied rather than restated.
+
+claim  R652's passage now says what its own commit did
+cmd    grep -c "STATE (2) DID NOT MATERIALISE" docs/closure/F3.md
+out    0
+judge  replaced with the three-row table and the mechanism: a closure commit that
+       touches the report RE-DATES it against the verdict and manufactures state (2).
+       The inference the section schedules for F4 step 1 was right on a false premise,
+       and it is recorded that way rather than quietly corrected.
+
+claim  R653: nothing in the tree asserts the constant, and no assertion is added
+cmd    grep -rn RHO_INF tests/ floatfea/
+out    (no output)
+rule   DR1: no new apparatus through F6
+judge  the retracted `429x` is gone from the comment and the gap is recorded instead.
+       It becomes a gate finding if a G4.x gate cites this residual as evidence that
+       FloatSim's scheme is reproduced.
 ```
