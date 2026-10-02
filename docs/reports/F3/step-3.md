@@ -689,7 +689,7 @@ Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 84 at `a
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[guard_state_every_Carried_pointer_names_the_Carried_SECTION_ITSELF]` (lint, unit and guards)
 
-## A. R632 — the state could not plant, and the pointers were one section again
+## 1. R632 — the state could not plant, and the pointers were one section again
 
 ```
 claim  the harness could not build its state at all
@@ -710,7 +710,7 @@ judge  WORSE THAN R629, WHICH I HAD JUST FIXED. There it planted and could not
        everything.
 ```
 
-## B. R633 — the counter was asserting itself
+## 2. R633 — the counter was asserting itself
 
 ```
 claim  the registry rows did not exist, and the counter did not depend on the gate
@@ -731,7 +731,7 @@ judge  AND THE REGISTRY'S BOUND WAS `>= 4` WITH FOUR ROWS, so a fifth constant
        with a callable gate was invisible to the meta-test. `>= 7` now.
 ```
 
-## C. R634 — two sentences, seventy-three lines above my own refusal
+## 3. R634 — two sentences, seventy-three lines above my own refusal
 
 ```
 claim  what the entry said, and what the code does
@@ -746,7 +746,7 @@ judge  F3 step 2's own commit added the refusal and left both sentences standing
        under a column headed "the refusal", which is how the reviewer found it.
 ```
 
-## D. Four figures of mine, and the mechanism behind all four
+## 4. Four figures of mine, and the mechanism behind all four
 
 ```
 claim  C101: "`866.3x` tighter, which is `2.94` decades" is wrong
@@ -781,7 +781,7 @@ judge  FOUR SLIPS IN ONE SESSION -- "93000x", "1281", "all 5", "five decades" --
        on my own authority.
 ```
 
-## E. Ledgered, and one that needs a directive
+## 5. Ledgered, and one that needs a directive
 
 **R635 is not a round's work and I am not treating it as one.** The window is
 guarded asymmetrically, and EG0(c)'s own stop clause lands inside its own band at
@@ -802,7 +802,7 @@ judge  all three are legal sections and F1's order check brackets that thickness
 ``` R626's residue and R631 stay ledgered in
 `docs/closure/F3.md` § 4 under DZ7c.
 
-## F. EG3(ii), which this revision owes
+## 6. EG3(ii), which this revision owes
 
 ```
 claim  the report-guard files AT the verdict commit, which no verdict had measured
@@ -816,39 +816,39 @@ judge  this is state (2) -- verdict written, answering report not yet -- and it 
        judged commit BEFORE writing. This revision is what clears it.
 ```
 
-## G. Findings answered
+## 7. Findings answered
 
 <!-- generated: scripts/answered_table.py -->
 
 | item | class | state | where | site | the verdict's own subject |
 |---|---|---|---|---|---|
-| R610 | carried | **carried** | §E | `` | carried from an earlier verdict |
-| R611 | carried | **withdrawn** | §9c | `` | carried from an earlier verdict |
-| R612 | carried | **answered** | §9a | `` | carried from an earlier verdict |
-| R613 | carried | **answered** | §9a | `` | carried from an earlier verdict |
-| R614 | carried | **answered** | §9a | `` | carried from an earlier verdict |
-| R615 | carried | **carried** | §E | `` | carried from an earlier verdict |
-| R616 | carried | **answered** | §9a | `` | carried from an earlier verdict |
-| R617 | carried | **withdrawn** | §9c | `` | carried from an earlier verdict |
-| R618 | carried | **answered** | §9a | `` | carried from an earlier verdict |
-| R621 | carried | **answered** | §9a | `` | carried from an earlier verdict |
-| R622 | carried | **later** | §9c | `` | carried from an earlier verdict |
-| R623 | carried | **answered** | §9a | `` | carried from an earlier verdict |
-| R624 | carried | **answered** | §D | `` | carried from an earlier verdict |
-| R625 | carried | **answered** | §9a | `` | carried from an earlier verdict |
-| R626 | carried | **carried** | §E | `` | carried from an earlier verdict |
-| R627 | carried | **answered** | §9a | `` | carried from an earlier verdict |
-| R628 | carried | **answered** | §9a | `` | carried from an earlier verdict |
-| R629 | carried | **answered** | §9a | `` | carried from an earlier verdict |
-| R630 | carried | **answered** | §D | `` | carried from an earlier verdict |
-| R631 | carried | **carried** | §E | `` | carried from an earlier verdict |
-| R632 | recorded | **answered** | §A | `` | ONE OF THE NINE REDS IS NOT THE STEP-BOUNDARY CLASS. THE PLANT |
-| R633 | recorded | **answered** | §B | `` | THE NEW ENTRY'S FIRST SENTENCE SAYS ITS THREE COUNTERS ARE |
-| R634 | recorded | **answered** | §C | `` | `floatfea/tolerances.py` SAYS NOTHING ASSERTS |
-| R635 | recorded | **carried** | §E | `` | THE WINDOW |
-| R636 | recorded | **answered** | §9a | `` | What the new ceiling BUYS. The report justifies the change by what |
+| R610 | carried | **carried** | §5 | `` | carried from an earlier verdict |
+| R611 | carried | **withdrawn** | §10c | `` | carried from an earlier verdict |
+| R612 | carried | **answered** | §10a | `` | carried from an earlier verdict |
+| R613 | carried | **answered** | §10a | `` | carried from an earlier verdict |
+| R614 | carried | **answered** | §10a | `` | carried from an earlier verdict |
+| R615 | carried | **carried** | §5 | `` | carried from an earlier verdict |
+| R616 | carried | **answered** | §10a | `` | carried from an earlier verdict |
+| R617 | carried | **withdrawn** | §10c | `` | carried from an earlier verdict |
+| R618 | carried | **answered** | §10a | `` | carried from an earlier verdict |
+| R621 | carried | **answered** | §10a | `` | carried from an earlier verdict |
+| R622 | carried | **later** | §10c | `` | carried from an earlier verdict |
+| R623 | carried | **answered** | §10a | `` | carried from an earlier verdict |
+| R624 | carried | **answered** | §4 | `` | carried from an earlier verdict |
+| R625 | carried | **answered** | §10a | `` | carried from an earlier verdict |
+| R626 | carried | **carried** | §5 | `` | carried from an earlier verdict |
+| R627 | carried | **answered** | §10a | `` | carried from an earlier verdict |
+| R628 | carried | **answered** | §10a | `` | carried from an earlier verdict |
+| R629 | carried | **answered** | §10a | `` | carried from an earlier verdict |
+| R630 | carried | **answered** | §4 | `` | carried from an earlier verdict |
+| R631 | carried | **carried** | §5 | `` | carried from an earlier verdict |
+| R632 | recorded | **answered** | §1 | `` | ONE OF THE NINE REDS IS NOT THE STEP-BOUNDARY CLASS. THE PLANT |
+| R633 | recorded | **answered** | §2 | `` | THE NEW ENTRY'S FIRST SENTENCE SAYS ITS THREE COUNTERS ARE |
+| R634 | recorded | **answered** | §3 | `` | `floatfea/tolerances.py` SAYS NOTHING ASSERTS |
+| R635 | recorded | **carried** | §5 | `` | THE WINDOW |
+| R636 | recorded | **answered** | §10a | `` | What the new ceiling BUYS. The report justifies the change by what |
 
-## H. Sites named by findings and not touched
+## 8. Sites named by findings and not touched
 
 <!-- generated: scripts/untouched_sites.py -->
 
@@ -876,39 +876,43 @@ judge  this is state (2) -- verdict written, answering report not yet -- and it 
 | R634 | `floatfea/model/platform.py:320` | the file is untouched | TOUCHED in this step -- the G2.1 refusal `check_rigid_modes`, and C80, C81 and C83 in `admissible`'s docstring -- and **no change at that exact line**: the numbers a step-1 finding named are from before those hunks. |
 | R634 | `floatfea/tolerances.py:403` | the file is touched and this line number is the old one | TOUCHED at `8ed0fd4` and `47daa3d` -- the third reading, and two DECLARATIONS, no value widened -- and **no change at that exact line**. |
 
-## I. Carried
+## 9. Carried
 
 <!-- generated: scripts/carried_table.py -->
 
 | item | status | the verdict's own subject |
 |---|---|---|
-| R610 | **carried** — §E | no clause this generator can cut -- see the verdict's Carried section |
-| R611 | **withdrawn** — §9c | no clause this generator can cut -- see the verdict's Carried section |
-| R612 | **answered** — §9a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
-| R613 | **answered** — §9a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
-| R614 | **answered** — §9a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
-| R615 | **carried** — §E | no clause this generator can cut -- see the verdict's Carried section |
-| R616 | **answered** — §9a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
-| R617 | **withdrawn** — §9c | no clause this generator can cut -- see the verdict's Carried section |
-| R618 | **answered** — §9a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
-| R621 | **answered** — §9a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
-| R622 | **later** — §9c | no clause this generator can cut -- see the verdict's Carried section |
-| R623 | **answered** — §9a | no clause this generator can cut -- see the verdict's Carried section |
-| R624 | **answered** — §D | ANSWERED at 47daa3d, and I re-derived it rather than accepting it. The |
-| R625 | **answered** — §9a | no clause this generator can cut -- see the verdict's Carried section |
-| R626 | **carried** — §E | 's residue -- OPEN, LEDGERED to the same place, same ruling. The two |
-| R627 | **answered** — §9a | no clause this generator can cut -- see the verdict's Carried section |
-| R628 | **answered** — §9a | no clause this generator can cut -- see the verdict's Carried section |
-| R629 | **answered** — §9a | NOT CLOSED. IT CHANGED SHAPE AND IT IS RED ON BOTH MACHINES. R632. The |
-| R630 | **answered** — §D | ANSWERED at 47daa3d, verified line by line, and answered better than I |
-| R631 | **carried** — §E | OPEN, LEDGERED to docs/closure/F3.md section 4, and I ACCEPT the ledger |
-| R632 | **answered** — §A | ONE OF THE NINE REDS IS NOT THE STEP-BOUNDARY CLASS. THE PLANT ACTION CANNOT BUILD ITS STATE... |
-| R633 | **answered** — §B | THE NEW ENTRY'S FIRST SENTENCE SAYS ITS THREE COUNTERS ARE REGISTERED IN... |
-| R634 | **answered** — §C | floatfea/tolerances.py SAYS NOTHING ASSERTS RIGID_MODE_EXACTNESS AND THAT IT BOUNDS NOTHING,... |
-| R635 | **carried** — §E | THE WINDOW IS GUARDED ASYMMETRICALLY, AND EG0(c)'s 2x CLAUSE FIRES ON ROUTINE LEGAL CHANGES... |
-| R636 | **answered** — §9a | What the new ceiling BUYS. The report justifies the change by what the old ceiling could not... |
+| R610 | **carried** — §10b | no clause this generator can cut -- see the verdict's Carried section |
+| R611 | **withdrawn** — §10c | no clause this generator can cut -- see the verdict's Carried section |
+| R612 | **answered** — §10a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
+| R613 | **answered** — §10a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
+| R614 | **answered** — §10a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
+| R615 | **carried** — §10b | no clause this generator can cut -- see the verdict's Carried section |
+| R616 | **answered** — §10a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
+| R617 | **withdrawn** — §10c | no clause this generator can cut -- see the verdict's Carried section |
+| R618 | **answered** — §10a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
+| R621 | **answered** — §10a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
+| R622 | **later** — §10c | no clause this generator can cut -- see the verdict's Carried section |
+| R623 | **answered** — §10a | no clause this generator can cut -- see the verdict's Carried section |
+| R624 | **answered** — §4 | ANSWERED at 47daa3d, and I re-derived it rather than accepting it. The |
+| R625 | **answered** — §10a | no clause this generator can cut -- see the verdict's Carried section |
+| R626 | **carried** — §10b | 's residue -- OPEN, LEDGERED to the same place, same ruling. The two |
+| R627 | **answered** — §10a | no clause this generator can cut -- see the verdict's Carried section |
+| R628 | **answered** — §10a | no clause this generator can cut -- see the verdict's Carried section |
+| R629 | **answered** — §10a | NOT CLOSED. IT CHANGED SHAPE AND IT IS RED ON BOTH MACHINES. R632. The |
+| R630 | **answered** — §4 | ANSWERED at 47daa3d, verified line by line, and answered better than I |
+| R631 | **carried** — §10b | OPEN, LEDGERED to docs/closure/F3.md section 4, and I ACCEPT the ledger |
+| R632 | **answered** — §1 | ONE OF THE NINE REDS IS NOT THE STEP-BOUNDARY CLASS. THE PLANT ACTION CANNOT BUILD ITS STATE... |
+| R633 | **answered** — §2 | THE NEW ENTRY'S FIRST SENTENCE SAYS ITS THREE COUNTERS ARE REGISTERED IN... |
+| R634 | **answered** — §3 | floatfea/tolerances.py SAYS NOTHING ASSERTS RIGID_MODE_EXACTNESS AND THAT IT BOUNDS NOTHING,... |
+| R635 | **carried** — §10b | THE WINDOW IS GUARDED ASYMMETRICALLY, AND EG0(c)'s 2x CLAUSE FIRES ON ROUTINE LEGAL CHANGES... |
+| R636 | **answered** — §10a | What the new ceiling BUYS. The report justifies the change by what the old ceiling could not... |
+| R637 | **open** — blocking, and not answered in this round | R632 IS UNCHANGED AT THE REVIEWED COMMIT, AND THE DRAFT THAT WOULD FIX IT MAKES THE STATE... |
+| R638 | **open** — blocking, and not answered in this round | RIGID_MODE_EXACTNESS IS THE CEILING THE PRODUCTION BUILDER REFUSES REAL DECKS ON, AND IT CAN BE... |
+| R639 | **open** — blocking, and not answered in this round | THE COUNTER INJECTION SIZE CAN BE RAISED EIGHT DECADES WITH THE WHOLE REGISTRY AND BOTH EG0... |
+| R640 | **open** — recordable at 4a in the verdict's own classification | Three harness states commit into the parent repository when the suite runs inside a git... |
 
-## 9a. Answered in an earlier step or round of F3
+## 10a. Answered in an earlier step or round of F3
 
 * **R612** — carried as an earlier report records it.
 * **R613** — carried as an earlier report records it.
@@ -917,31 +921,31 @@ judge  this is state (2) -- verdict written, answering report not yet -- and it 
 * **R618** — carried as an earlier report records it.
 * **R621** — carried as an earlier report records it.
 * **R623** — carried as an earlier report records it.
-* **R624** — answered at `47daa3d`, verified independently by the reviewer. §D.
+* **R624** — answered at `47daa3d`, verified independently by the reviewer. §4.
 * **R625** — carried as an earlier report records it.
 * **R627** — carried as an earlier report records it.
 * **R628** — carried as an earlier report records it.
 * **R629** — carried as an earlier report records it.
 * **R630** — answered at `47daa3d`; three labelled sets, the shipped one printed per run.
-* **R632** — answered in §A — the report carries a `# Revision ` heading and §9 is split.
-* **R633** — answered in §B — the three counters are registered and the bodies call the gate.
-* **R634** — answered in §C — both sentences corrected.
+* **R632** — answered in §1 — the report carries a `# Revision ` heading and §9 is split.
+* **R633** — answered in §2 — the three counters are registered and the bodies call the gate.
+* **R634** — answered in §3 — both sentences corrected.
 * **R636** — carried as an earlier report records it.
 
-## 9b. Ledgered, carried as a measurement rather than a defect
+## 10b. Ledgered, carried as a measurement rather than a defect
 
 * **R610** — carried as an earlier report records it.
 * **R615** — carried as an earlier report records it.
 * **R626** — **ledgered.** `docs/closure/F3.md` §4 under DZ7c.
 * **R631** — **ledgered.** The figure is right; the operating point does not reproduce.
-* **R635** — **ledgered, and it needs a directive.** EG0(c) and the entry disagree. §E.
+* **R635** — **ledgered, and it needs a directive.** EG0(c) and the entry disagree. §5.
 
-## 9c. Withdrawn or routed to a later milestone
+## 10c. Withdrawn or routed to a later milestone
 
 * **R611** — carried as an earlier report records it.
 * **R617** — carried as an earlier report records it.
 * **R622** — carried as an earlier report records it.
 
-## J. The whole suite
+## 11. The whole suite
 
 SUITE_LINE_PLACEHOLDER

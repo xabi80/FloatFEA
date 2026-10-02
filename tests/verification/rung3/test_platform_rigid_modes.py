@@ -506,6 +506,18 @@ def test_EG0_the_CEILING_is_the_window_it_claims_to_be(capsys) -> None:
         f"the ceiling {PLATFORM_RIGID_MODE_EXACTNESS:g} is not inside the window "
         f"({clean:.6e}, {weakest:.6e}) the sixteen members leave."
     )
+    assert weakest / PLATFORM_RIGID_MODE_EXACTNESS >= 2.0, (
+        # not-a-tolerance: EH2(c)'s REPORTING condition on the ROOF, the mirror of
+        # the floor guard below. R635 found the window guarded at 2x on the floor
+        # and 1x on the roof, which let EG0(c)'s own clause fire at t = 170 mm,
+        # t = 185 mm and E = 200 GPa -- all legal sections. Nothing is accepted or
+        # rejected by this number; the ceiling is, and it is declared.
+        f"EH2(c): the weakest counter response {weakest:.6e} is within 2x of the "
+        f"ceiling {PLATFORM_RIGID_MODE_EXACTNESS:g} -- "
+        f"{weakest / PLATFORM_RIGID_MODE_EXACTNESS:.2f}x. STOP and report; do not move "
+        "the ceiling on fixed inputs (EH2(a)), and re-derive it in a `plan:` commit if "
+        "an input changed (EH2(b))."
+    )
     assert PLATFORM_RIGID_MODE_EXACTNESS / clean >= 2.0, (
         # not-a-tolerance: EG0(c)'s REPORTING condition, not a comparison the
         # model depends on. The directive asks that the step STOP and report if

@@ -449,6 +449,27 @@ RIGID_MODE_EXACTNESS: Final[float] = 1e-15
 # `(D_o, t/D_o, L)` points the equivalent window is EMPTY -- the clean worst
 # `5.287607e-18` is already above the weakest counter response `1.571633e-19` --
 # so one constant cannot serve both subjects. F3 section 5 states both.
+#
+# WHEN THIS VALUE MAY MOVE, AND WHEN IT MAY NOT (EH2). The window is a measurement
+# on inputs, so the rule has to say which inputs:
+#
+#   (a) ON FIXED INPUTS, IT IS NEVER MOVED. EG0(c)'s stop condition governs the
+#       same deck, section and material: the ceiling is not moved to turn a red
+#       green on inputs that have not changed. That is the whole of the
+#       widen-a-tolerance prohibition applied to this entry.
+#   (b) A CHANGE OF INPUT IS A RE-DERIVATION, not a justification. If the section
+#       thickness, `E`, or the member geometry changes, the ceiling is re-derived
+#       by the SAME rule -- the geometric centre of the window measured on the new
+#       inputs -- in a `plan:` commit that records the old window and the new one.
+#       Without that commit the STOP stands.
+#   (c) BOTH EDGES ARE GUARDED AT 2x, floor and roof. The window is `10.70x` wide,
+#       so both hold at `3.27x`; guarding only the floor was the asymmetry R635
+#       found, and it let EG0(c)'s own clause fire at `t = 170 mm`, `t = 185 mm`
+#       and `E = 200 GPa` -- all legal sections.
+#
+# NO CODE PATH DERIVES THIS AT RUNTIME. `test_EG0_the_CEILING_is_the_window_it_
+# claims_to_be` measures the window and asserts the shipped constant lies inside
+# it; it does not compute a ceiling and compare the result with itself.
 # Set: 2026-10-01, F3 step 3 (EG0, answering R624)
 PLATFORM_RIGID_MODE_EXACTNESS: Final[float] = 1.154338e-18
 

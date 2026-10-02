@@ -562,7 +562,25 @@ def _build(tmp: Path, state: str) -> Path:
                     "the harness, and it is reported rather than worked around."
                 )
             head = marks[-1]
-            body = re.sub(r"\u00a7\s*\d+[a-z]?", "\u00a79", text[head:])
+            # THE CARRIED SECTION'S OWN NUMBER, NOT A HARDCODED 9. This wrote
+            # `§9` whatever the report's headings were, so the state's name --
+            # "names the Carried SECTION ITSELF" -- was true only of a report whose
+            # Carried section happened to be 9. In F3 step 3 it is not, so the
+            # plant moved every pointer to a REAL section that names every item,
+            # which resolves and says nothing: the state passed with and without
+            # the plant, measured by ablation.
+            #
+            # Discovered the way `test_a_carried_row_points_at_a_section_that_
+            # discusses_it` discovers it, so the plant and the guard cannot
+            # disagree about which section is Carried.
+            carried = re.search(r"^##+\s*(\d+[a-z]?)\.\s*Carried", text[head:], re.MULTILINE)
+            if carried is None:
+                raise AssertionError(
+                    f"{report}: the newest revision has no NUMBERED `## N. Carried` "
+                    "heading, so the section this state points every row at cannot "
+                    "be identified. A lettered heading hides it from the guard too."
+                )
+            body = re.sub(r"\u00a7\s*\d+[a-z]?", f"\u00a7{carried.group(1)}", text[head:])
             report.write_text(text[:head] + body, encoding="utf-8")
         # THE `suite_line_at_an_older_ancestor` ACTION IS DELETED (DR0). It
         # rewrote the whole-suite line to name an older ancestor so the
