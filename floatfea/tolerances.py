@@ -395,7 +395,8 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 # `REGISTERED` row, a declared size for the `1.0e-8` injection at
 # `tests/verification/rung3/test_platform_rigid_modes.py:260`, and cells reaching
 # this module's namespace rather than a test module's. It does not block F4's
-# opening. The measurement above is what a reader needs until then: this ceiling is not guarded at the strength the gate's is.
+# opening. The measurement above is what a reader needs until then: this ceiling
+# is not guarded at the strength the gate's is.
 # Set: 2026-09-13, F2; quantity re-normalised and reason re-measured
 # 2026-09-25 (R475); assertion dropped 2026-09-26 (DI0, R530)
 RIGID_MODE_EXACTNESS: Final[float] = 1e-15
