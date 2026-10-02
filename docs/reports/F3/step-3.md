@@ -1175,8 +1175,8 @@ out    every ceiling below 3.783782e-12 is accepted: 3784x of silent headroom
 rule   a tolerance is guarded by a counter-case that reddens when it is widened
 judge  the gate's own ceiling reddens at 8.7x, so the two are guarded three orders
        apart and the weaker one is on the PRODUCTION path. EH3 rules this recorded
-       and ledgered: the registry row is backlog for after 28 October and it does
-       not block F4. The entry and `docs/closure/F3.md` section 4a carry it.
+       and ledgered; EJ1 then revised EH3: it is WORKED IN F4 and closed before
+       F4 closes (C121 settled), and it does not block F4's opening. The entry and `docs/closure/F3.md` section 4a carry it.
 ```
 
 ## 5. EH2, and one place I wrote text ahead of code
