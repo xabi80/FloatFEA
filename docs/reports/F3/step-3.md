@@ -1224,7 +1224,7 @@ judge  drafted from step 2's figure. The commit is pushed, so this triple is the
 | R639 | `docs/milestones/F3.md:668` | the file is untouched | **no change.** F3 is CLOSED; its plan is the record. |
 | R639 | `tests/verification/rung1/test_corpus_configurations.py` | the file is untouched | **no change.** Cited as the precedent `test_the_counter_DEFECT_SIZE_cannot_be_raised`, which R639's assertion is modelled on. Rung 1 is F2 apparatus, frozen under DR1. |
 | R640 | `scripts/suite_count.py` | the file is untouched | TOUCHED at `b7c05e7` for EI0's two halves; **no change at that exact line**. |
-| R643 | `docs/reports/F3/step-3.md:1354` | the file is touched and this line number is the old one | **this report**, and R643's site IS its suite line -- section 12 carries it now, measured in a clean clone outside the synced tree. |
+| R643 | `docs/reports/F3/step-3.md:1354` | the file is touched and this line number is the old one | **ANSWERED, and no change at that exact line.** The site is where `SUITE_LINE_PLACEHOLDER` stood in the tree verdict 86 read. The placeholder is gone -- section 12 carries the measured line -- but the fix was not made AT line 1354: the revision grew above it, so that number no longer locates the placeholder and nothing was edited there. |
 | R643 | `tests/test_report_carried.py` | the file is untouched | TOUCHED at `24e8bb2` for R641; **no change at that exact line**. |
 
 ## 9. Carried
