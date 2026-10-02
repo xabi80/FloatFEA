@@ -2,140 +2,155 @@
  "_": [
   "POINTERS ONLY (CH4).",
   "",
-  "Revision 3 answers the EIGHTY-FIFTH verdict and closes F3 step 3 on the",
-  "three-round cap. R637 at section 2, R639 at 3, R638 ledgered at 4 per EH3.",
+  "Revision 4 answers the EIGHTY-SEVENTH verdict. R645 at section 2, R646 at 3,",
+  "R647 at 4, R648 at 5.",
   "",
-  "SECTIONS ARE NUMBERED, not lettered. Revision 2's letters meant `## I. Carried`",
-  "had no numeric id, so the guard could not identify the Carried section at all --",
-  "the third instance of the R629/R632 family and the one that explains them.",
-  "",
-  "R643 is answered by section 12's suite line, which is the finding itself;",
-  "R644 by EJ2 at 66af185. Both are verdict 86's."
+  "EVERY OTHER POINTER MOVED TO ITS LEDGER SECTION, and that is not tidying.",
+  "`_section_bodies()` reads the newest revision only, so revision 3's section",
+  "numbers do not exist for revision 4's rows: R637 pointed at section 2, which",
+  "is now R645's. Each state's ledger section names every item that points at",
+  "it -- 9a answered, 9b carried or open, 9c withdrawn or routed."
  ],
  "answered": {
   "R610": {
    "state": "carried",
-   "where": "\u00a79b"
+   "where": "§9b"
   },
   "R611": {
    "state": "withdrawn",
-   "where": "\u00a79c"
+   "where": "§9c"
   },
   "R612": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R613": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R614": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R615": {
    "state": "carried",
-   "where": "\u00a79b"
+   "where": "§9b"
   },
   "R616": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R617": {
    "state": "withdrawn",
-   "where": "\u00a79c"
+   "where": "§9c"
   },
   "R618": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R621": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R622": {
    "state": "later",
-   "where": "\u00a79c"
+   "where": "§9c"
   },
   "R623": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R624": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R625": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R626": {
    "state": "carried",
-   "where": "\u00a79b"
+   "where": "§9b"
   },
   "R627": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R628": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R629": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R630": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R631": {
    "state": "carried",
-   "where": "\u00a79b"
+   "where": "§9b"
   },
   "R632": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R633": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R634": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R635": {
    "state": "carried",
-   "where": "\u00a79b"
+   "where": "§9b"
   },
   "R636": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R637": {
    "state": "answered",
-   "where": "\u00a72"
+   "where": "§9a"
   },
   "R638": {
    "state": "carried",
-   "where": "\u00a74"
+   "where": "§9b"
   },
   "R639": {
    "state": "answered",
-   "where": "\u00a73"
+   "where": "§9a"
   },
   "R640": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
   },
   "R643": {
    "state": "answered",
-   "where": "\u00a712"
+   "where": "§9a"
   },
   "R644": {
    "state": "answered",
-   "where": "\u00a79a"
+   "where": "§9a"
+  },
+  "R645": {
+   "state": "answered",
+   "where": "§2"
+  },
+  "R646": {
+   "state": "answered",
+   "where": "§3"
+  },
+  "R647": {
+   "state": "answered",
+   "where": "§4"
+  },
+  "R648": {
+   "state": "answered",
+   "where": "§5"
   }
  }
 }

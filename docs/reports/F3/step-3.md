@@ -1442,3 +1442,595 @@ judge  and the figure I had been citing as a baseline -- `1802 passed in 89.71s`
        suite unrunnable is NOT supported for the main half: R642's cache is a real
        repair (the rung-3 file went 49.94s -> 1.09s) and it was not the cause.
 ```
+
+---
+
+# Revision 4 — verdict 87: the STOP withdrawn, and the lint gate green
+
+Answers: verdict 87 @ 69456c7
+
+**2026-10-02.**
+
+## 0. CI at `6083a87`, the commit verdict 87 judged — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 87 at `6083a87` through the report's own `Answers:` line. Run `36998118365`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 1848 | 0 | 0 |
+| lint, unit and guards | 0 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 1 not green.**
+
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 0.**
+
+## 0a. Runs since the commit verdict 87 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 87 at `6083a87` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `36998118365` | push | `6083a87` | conclusion **failure** |
+| `37001891163` | push | `d978636` | conclusion **failure** |
+
+**Run `36998118365`, conclusion **failure**: 0 failing test name(s) in the log.**
+
+**Run `37001891163`, conclusion **failure**: 8 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 1. The reading
+
+**The step this report is measured against is F3 step 3, which is CLOSED at PASS
+(DD1, verdict 86). Verdict 87 holds F4 step 1's first commit on two reds, and this
+revision answers them.** Measured against EJ6's dates: F4 is committed for 19 Oct with
+a working target of 14 Oct, and **both hold**. Where EJ4's export stands, precisely:
+(a) and (b) are answered — one case run, `res.lam` layout confirmed, the per-body
+residual formed (sections 3 and 11a); (c)'s five remaining cases and the full-scale v1
+write are next, then (d)'s preview. EJ4's own working targets were export 6 Oct and
+preview 8 Oct, and both still hold with four days of slack. No slippage to report
+today.
+
+**And the one thing I got wrong is the one that cost schedule.** EJ4's STOP was a false
+sentence in a closure artifact, refuted by reading `docs/load-interchange-v1.md`
+section 7 and `PLAN.md` G4.6 — two locked documents I had cited without re-reading, and
+one of which predicted in advance the sentence I would write. The measurements in it
+stand; the conclusion is withdrawn.
+
+## 2. R645 — EJ4's STOP is withdrawn, site by site
+
+The condition names two files and four clauses. Each clause, with the hunk.
+
+```
+claim  (i) the static reaction is zero BY CONSTRUCTION, with the ablation as proof
+cmd    the ablation, re-run by me rather than taken from the verdict
+out    solve_equilibrium=False |xi0|_inf = 0.000000e+00
+out    solve_equilibrium=True  |xi0|_inf = 0.000000e+00
+out    |xi0_true - xi0_false|_inf = 0.000000e+00
+out    CumminsLHS fields: ['C', 'M_plus_Ainf']
+out    diag(C) hub1 = [0. 0. 0. 0. 0. 0.]
+out    structural bodies ['hub1'..'hub4', 'platform'] weight = 568.98 N
+cell   ONE VARIABLE: solve_equilibrium. Deck, database, dt and both overrides held.
+rule   a causal claim carries its ablation (BG0)
+judge  verdict 87's figures reproduce on my instrument to the digit. In
+       `docs/closure/F3.md` section 6a (i).
+
+claim  (ii) gravity and hydrostatic are section 7 decisions, and G4.6 routes them
+cmd    grep -n "load channel" docs/load-interchange-v1.md ; sed -n 670p ; sed -n 303p
+         PLAN.md ; sed -n 326,332p PLAN.md
+out    :618 gravity -> "Computed in FloatFEA from the FE mass distribution"   F1 s.3
+out    :619 hydrostatic -> "Recomputed in FloatFEA from hull geometry, on the MEAN
+out         wetted surface"                                            Q1, **G4.6**
+out    :670 "BOTH WOULD READ AS IMPROVEMENTS TO SOMEONE WHO HAD NOT READ THIS TABLE"
+out    PLAN.md:303 "Inertial loads distributed by the FE mass matrix."
+judge  in section 6a (ii). The decision was taken at Q1 and F1 section 3.
+
+claim  (iii) the export sentence is DELETED, because that reaction is 0
+cmd    git grep -c "has to carry the equilibrium reaction" -- docs/closure/F3.md
+out    docs/closure/F3.md:1      the (iii) clause DECLARING it deleted, and only that
+cmd    the same needle over scripts/
+out    scripts: (no match)
+rule   a triple is scoped to its claim, or its output is about something else
+judge  AND MY FIRST VERSION OF THIS TRIPLE WAS WRONG, which is worth more than the
+       finding: I wrote an UNSCOPED `git grep -n` and pasted `:291 ... and nothing
+       else`. The real unscoped output is `:271` -- the line had moved under me --
+       plus the verdict, which quotes the sentence, plus this report's own `cmd`
+       line. Three errors in one paste, in the revision answering CP2's own class.
+judge  gone from section 6a and from `scripts/report_joint_reactions.py`. Section 6's
+       writer bullet asked for the same channel and it is gone from there too: the
+       writer now carries `res.lam`, the per-body external force and `mu[N,6]`.
+
+claim  (iv) the "inventing the static part" sentence is WITHDRAWN
+cmd    git grep -n "Inventing the static part" -- docs/closure scripts floatfea
+         tests docs/milestones
+out    (no output)
+judge  SCOPED DELIBERATELY, and the scope is the claim. Unscoped it matches
+       `docs/reviews/F3/step-3.md:223`, where the verdict quotes the sentence in order
+       to rule on it, and this report's own `cmd` line. Neither is the sentence being
+       asserted, and a needle that matches its own paste is not a check.
+judge  in section 6a (iv), with why it was a misreading: *never invent a load
+       distribution* governs a record with no strip resolution, not a reconstruction
+       `PLAN.md:303` instructs with G4.3 and G4.6 as its gates.
+```
+
+## 3. R646 — the residual the script said it could not form, formed
+
+```
+claim  the script now carries the discrete residual instead of the sentence
+cmd    git diff --stat -- scripts/report_joint_reactions.py
+out    the 18-line claim paragraph is replaced by `discrete_residual()`, which
+out    rebuilds `mu` by pushing `res.xi_dot` through `RadiationConvolution(setup
+out    .kernel)` and forms `A_eff a - G^T lam - rhs` on the system
+out    `newmark.py:414-437` solves
+cmd    python scripts/report_joint_reactions.py --period 1.9799 --duration 40.0
+out    |mu|_inf over the window                          4.027764e+00 N
+out    worst |A_eff a - G^T lam - rhs| over 100 steps  1.257436e-04 N
+out    wall time 8m52.688s, synced tree, T = 1.9799 s model (14 s full), dt 0.01
+rule   reproduce the solver's discretisation, not the textbook one (R646)
+judge  **EJ4(a)'s WINDOW QUESTION, ANSWERED AGAINST MYSELF.** 100 steps at dt 0.01 is
+       1.00 s, and the model-scale period is 1.9799 s, so the window is **0.505 of one
+       period** -- less than a cycle, and too thin to carry the words "worst over the
+       window". I used it because it is the verdict's window and comparability was
+       worth more than width for THIS figure. It is NOT the window the six cases get:
+       that is `DQ6` in F4's plan, and the export will use a whole number of periods
+       after the HalfCosineRamp(duration=10.0) has run out, measured rather than
+       assumed. Recorded as a limitation of this figure, not as a result.
+judge  `1.257436e-04 N` IS VERDICT 87's FIGURE TO EVERY DIGIT, formed by a second
+       implementation from the same two quantities, which is the strongest thing
+       that can be said for it. `|mu|_inf` differs -- `4.027764e+00` here against
+       the verdict's `4.085851e+00` -- because the maximum is taken over this
+       script's 100-step window and not over the verdict's; the residual, which is
+       the figure under test, is window-independent at this amplitude.
+judge  the startup convention is the integrator's, not a choice here: `xi_dot_0` is
+       pushed BEFORE the loop and `mu_0 = 0` (`newmark.py:384-391`). CW0: the
+       paragraph that claimed the identity could not be closed is deleted, and what
+       replaces it is a measurement.
+```
+
+## 4. R647 — the lint gate, and CZ1 (ii) and (iii) in order
+
+```
+claim  line 398 is wrapped at 100 columns and no tolerance value moved
+cmd    git show d978636 --stat
+out    floatfea/tolerances.py | 3 ++-
+out    1 file changed, 2 insertions(+), 1 deletion(-)
+cmd    git show d978636 | grep -c "^[-+].*Final\[float\]"
+out    0        no value line changed, in either direction
+cmd    (ii) at d978636, tree clean: ruff / black / mypy
+out    All checks passed!
+out    112 files would be left unchanged.
+out    Success: no issues found in 30 source files
+cmd    (ii) pytest -q, clean clone at d978636 under the LOCAL temp
+out    8 failed, 2953 passed, 2 warnings in 1243.27s (0:20:43)
+out    the eight are test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW and the seven
+out    test_the_guard_survives_the_state states that cascade off it -- the SAME set
+out    CI's step 10 reports, which is the agreement CA2 wants and did not have
+cmd    (iii) gh run list --commit d978636 ; then the lint job's steps by number
+out    the run at `d978636`  completed  FAILURE
+out    5 actionlint SUCCESS   6 ruff SUCCESS   7 black SUCCESS   8 mypy SUCCESS
+out    9 unit tests SUCCESS   10 guards and meta-tests FAILURE
+rule   CZ1 (iii): the `guards and meta-tests` step is SEEN TO HAVE RUN
+judge  **IT RAN.** That is what the wrap bought, and it is the whole point of the
+       rule: at `6083a87` steps 7 to 10 were SKIPPED behind ruff, so CI gave no
+       reading on the suite at all. Step 10 is now the only red and its cause is
+       R648 -- `8 failed, 1017 passed in 637.33s`, every failure the CI table or a
+       state cascading off it. CI and my clone now agree exactly.
+judge  CZ1 (iv) applies and this revision is the follow-on: the red is answered in
+       section 5 and re-measured after this commit exists.
+```
+
+## 5. R648 — section 0a regenerated, and one fix clears eight
+
+```
+claim  the eight reds are one cause and section 0a is the fix
+cmd    gh run view <the run at d978636> --log-failed, the FAILED lines
+out    1 x test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+out        -> the run at `c9902d3`: the table said no result, status in_progress;
+out           gh says failure
+out    7 x test_the_guard_survives_the_state[baseline, non_numeric_step_suffix,
+out        superscript_digit_step_number, draft_suffix_beside_a_step_report,
+out        step_number_is_the_empty_string,
+out        verdict_amended_after_the_commit_the_report_answers,
+out        zero_padded_step_number]
+out        -> each cascading off the red baseline, whose own failure line is the
+out           SAME test inside the planted clone
+rule   EG3(i): every red traces by name; a red not on a carve-out list is CZ1 (iv)
+judge  NOT the boundary, and the verdict ruled it that way. The run the table called
+       `no result` is `c9902d3`'s -- the run that would have shown R647. A guard
+       built to catch "the CI record in the report not being the CI record" caught
+       exactly that, on the one row where it mattered.
+judge  section 0a above is regenerated by `python scripts/ci_section.py --rounds`
+       as the LAST edit before this commit (CP3), after R647's run completed.
+```
+
+## 6. The closure items
+
+Absorbed in one commit, as the verdict asks, and verified after it exists (CZ1).
+
+| item | disposition |
+|---|---|
+| C124 | **closed** — the closure artifact's headings are in numeric order; section 8 moved after 7, nothing renumbered |
+| C125 | **closed** — a naming collision, not a wrong figure: the two counts are of different selections, and the selection is now named at every use |
+| C126 | **withdrawn** — the two halves were taken under different machine loads, so the ratio is not one. Verdict 86's figure stands alone |
+| C127 | **closed by section 3**, which is also R646's site: the claim paragraph is deleted and a measurement replaces it |
+| C128 | **closed** — revision 3's section 10 read "EH6 — not started"; EH6/EI3 is `scripts/`-only, it started, and section 3 is what it produced |
+| C129 | **closed by section 10** — EJ5's plan draft and EJ6's dates |
+| C113, C115, C116, C117, C120, C122, C123 | **ledgered** at `docs/closure/F3.md` section 8, per EJ3 |
+| C119 | **routed** to F4 step 1's first commit, per EJ3. `docs/milestones/F4.md` section 2.4 carries it |
+
+```
+claim  C124: the closure artifact's headings are in numeric order
+cmd    grep -o "^## [0-9ab]*" docs/closure/F3.md | tr -d '#'
+out    1 2 3 4 4a 4b 5 6 6a 7 8
+judge  the command here was `grep -n ... | cut -d. -f1` in the first version of this
+       block, which keeps the `13:##` prefix and so prints something the pasted line
+       is not. `grep -o` is what produces the output above.
+rule   a reader following the numbers reads them in order
+
+claim  C125: my count was a different selection, not a wrong number
+cmd    python -m pytest <the THREE report-guard files> --collect-only -q | tail -1
+out    281 tests collected
+cmd    the same with tests/test_report_numbers_are_sourced.py added -- FOUR files
+out    320 tests collected
+rule   a figure names its selection or it is not a figure
+judge  the verdict's figure and mine are both right about different sets, so there
+       was never a disagreement to resolve.
+
+claim  C126: the location ratio I published cannot be reproduced
+cmd    the two halves, as I took them -- different machine loads, not back to back
+out    67.49s against "over thirteen minutes", from which I wrote a ratio
+rule   a ratio whose numerator and denominator come from different loads is not one
+judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to back on
+       one machine; section 12 carries the one I took that way myself.
+```
+## 7. Findings answered
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R610 | carried | **carried** | §9b | `` | carried from an earlier verdict |
+| R611 | carried | **withdrawn** | §9c | `` | carried from an earlier verdict |
+| R612 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R613 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R614 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R615 | carried | **carried** | §9b | `` | carried from an earlier verdict |
+| R616 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R617 | carried | **withdrawn** | §9c | `` | carried from an earlier verdict |
+| R618 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R621 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R622 | carried | **later** | §9c | `` | carried from an earlier verdict |
+| R623 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R624 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R625 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R626 | carried | **carried** | §9b | `` | carried from an earlier verdict |
+| R627 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R628 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R629 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R630 | carried | **answered** | §9a | `` | carried from an earlier verdict |
+| R631 | carried | **carried** | §9b | `` | carried from an earlier verdict |
+| R632 | recorded | **answered** | §9a | `` | ONE OF THE NINE REDS IS NOT THE STEP-BOUNDARY CLASS. THE PLANT |
+| R633 | recorded | **answered** | §9a | `` | THE NEW ENTRY'S FIRST SENTENCE SAYS ITS THREE COUNTERS ARE |
+| R634 | recorded | **answered** | §9a | `` | `floatfea/tolerances.py` SAYS NOTHING ASSERTS |
+| R635 | recorded | **carried** | §9b | `` | THE WINDOW |
+| R636 | recorded | **answered** | §9a | `` | What the new ceiling BUYS. The report justifies the change by what |
+| R637 | recorded | **answered** | §9a | `` | R632 IS UNCHANGED AT THE REVIEWED COMMIT, AND THE |
+| R638 | recorded | **carried** | §9b | `` | `RIGID_MODE_EXACTNESS` IS THE CEILING THE PRODUCTION |
+| R639 | recorded | **answered** | §9a | `` | THE COUNTER INJECTION SIZE CAN BE RAISED EIGHT DECADES WITH |
+| R640 | recorded | **answered** | §9a | `` | Three harness states commit |
+| R643 | recorded | **answered** | §9a | `` | `test_the_report_carries_a_WHOLE_SUITE_count` |
+| R644 | recorded | **answered** | §9a | `` | EH1's two lists are short by one name on the state-(2) side and have |
+| R645 | recorded | **answered** | §2 | `` | to (d), AND IT OUTRANKS EVERYTHING ELSE IN THIS |
+| R646 | recorded | **answered** | §3 | `` | EJ4(b) IS ANSWERED, NOT BLOCKED: THE RESIDUAL CLOSES TO |
+| R647 | recorded | **answered** | §4 | `` | `ruff check floatfea tests` IS RED AT THE REVIEWED COMMIT AND IN |
+| R648 | recorded | **answered** | §5 | `` | THE REPORT'S SECTION 0a RECORDS A COMPLETED FAILURE AS |
+
+## 8. Sites named by findings and not touched
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R632 | `docs/reports/F3/step-2.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R632 | `tests/test_report_guard_states.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R632 | `tests/test_report_guard_states.py:539` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R632 | `tests/test_report_guard_states.py:540` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R632 | `tests/test_report_guard_states.py:541` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R632 | `tests/test_report_guard_states.py:542` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R632 | `tests/test_report_guard_states.py:543` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R632 | `tests/test_report_guard_states.py:544` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R632 | `tests/test_report_guard_states.py:545` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R632 | `tests/test_report_guard_states.py:546` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R632 | `tests/test_report_guard_states.py:777` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R633 | `docs/milestones/F3.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R633 | `floatfea/tolerances.py:354` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R633 | `floatfea/tolerances.py:355` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R633 | `tests/test_counters_are_injected.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R633 | `tests/test_counters_are_injected.py:317` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R633 | `tests/test_counters_are_injected.py:318` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R633 | `tests/test_counters_are_injected.py:319` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R633 | `tests/verification/rung3/test_platform_rigid_modes.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R634 | `floatfea/model/platform.py:319` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R634 | `floatfea/model/platform.py:320` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R634 | `floatfea/tolerances.py:330` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R634 | `floatfea/tolerances.py:345` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R634 | `floatfea/tolerances.py:346` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R634 | `floatfea/tolerances.py:347` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R634 | `floatfea/tolerances.py:348` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R634 | `floatfea/tolerances.py:403` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R637 | `CLAUDE.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R637 | `R634-docs/closure/F3.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R637 | `scripts/check_carried.py:51` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R637 | `scripts/ci_section.py:182` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R637 | `tests/test_report_carried.py:247` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R637 | `tests/test_report_guard_states.py:545` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R637 | `tests/test_report_numbers_are_sourced.py:102` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R638 | `CLAUDE.md` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4's opening. `docs/milestones/F4.md` section 4 carries it. |
+| R638 | `F2.md` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4's opening. `docs/milestones/F4.md` section 4 carries it. |
+| R638 | `tests/test_counters_are_injected.py` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4's opening. `docs/milestones/F4.md` section 4 carries it. |
+| R638 | `tests/test_no_tolerance_literals.py` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4's opening. `docs/milestones/F4.md` section 4 carries it. |
+| R638 | `tests/verification/rung3/test_platform_rigid_modes.py:260` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4's opening. `docs/milestones/F4.md` section 4 carries it. |
+| R639 | `docs/milestones/F3.md:668` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R639 | `tests/verification/rung1/test_corpus_configurations.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R640 | `scripts/suite_count.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R643 | `docs/reports/F3/step-3.md:1354` | the file is touched and this line number is the old one | TOUCHED in this revision. **No change at that exact line number**: `:1354` is revision 3's suite line, which verdict 87 reads as answered and which stays the record of what that revision measured. |
+| R643 | `tests/test_report_carried.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R645 | `PLAN.md:326` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
+| R645 | `PLAN.md:327` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
+| R645 | `PLAN.md:328` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
+| R645 | `PLAN.md:329` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
+| R645 | `PLAN.md:330` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
+| R645 | `PLAN.md:331` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
+| R645 | `PLAN.md:332` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
+| R645 | `docs/load-interchange-v1.md:670` | the file is untouched | **no change, and a change here would be the defect.** `:670` is the schema's own sentence about what adding these channels would look like to a reader who had not read the table. It is quoted in section 2, not edited. |
+| R645 | `scripts/report_joint_reactions.py:234` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R646 | `docs/load-interchange-v1.md:87` | the file is untouched | **no change.** `:87` and `:88` are the schema's declarations of `mu[N,6]` and `A_inf`, quoted as the proof that EJ4(b) needed nothing new. Editing them would be reopening v1. |
+| R646 | `docs/load-interchange-v1.md:88` | the file is untouched | **no change.** `:87` and `:88` are the schema's declarations of `mu[N,6]` and `A_inf`, quoted as the proof that EJ4(b) needed nothing new. Editing them would be reopening v1. |
+| R648 | `docs/reports/F3/step-3.md:585` | the file is touched and this line number is the old one | TOUCHED in this revision -- section 0a regenerated, and revision 4 appended. **No change at that exact line number**: `:585` is revision 2's ruling that the red was CZ1 (iv), which the verdict credits and which stays as written. |
+| R648 | `scripts/ci_section.py` | the file is untouched | **no change.** It is RUN, not edited -- section 0a is regenerated by it as the last edit before this commit (CP3). R648 asks for its output, not a change to it. |
+| R648 | `tests/test_report_carried.py` | the file is untouched | **no change, and this one matters.** R648's condition is that this file READ `0 failed`, not that it be edited. Editing a guard to clear its own red is what DR1 forbids and what the deleted vacuous state cost. |
+| R648 | `tests/test_report_guard_states.py` | the file is untouched | **no change, and this one matters.** R648's condition is that this file READ `0 failed`, not that it be edited. Its seven planted states cascade off the baseline; regenerating section 0a clears all of them. |
+
+## 9. Carried
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R610 | **carried** — §9b | no clause this generator can cut -- see the verdict's Carried section |
+| R611 | **withdrawn** — §9c | no clause this generator can cut -- see the verdict's Carried section |
+| R612 | **answered** — §9a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
+| R613 | **answered** — §9a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
+| R614 | **answered** — §9a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
+| R615 | **carried** — §9b | no clause this generator can cut -- see the verdict's Carried section |
+| R616 | **answered** — §9a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
+| R617 | **withdrawn** — §9c | no clause this generator can cut -- see the verdict's Carried section |
+| R618 | **answered** — §9a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
+| R621 | **answered** — §9a | R611, R617 withdrawn and staying withdrawn. R612, R613, R614, R616, R618 to R621, |
+| R622 | **later** — §9c | no clause this generator can cut -- see the verdict's Carried section |
+| R623 | **answered** — §9a | no clause this generator can cut -- see the verdict's Carried section |
+| R624 | **answered** — §9a | ANSWERED at 47daa3d, and I re-derived it rather than accepting it. The |
+| R625 | **answered** — §9a | no clause this generator can cut -- see the verdict's Carried section |
+| R626 | **carried** — §9b | 's residue -- OPEN, LEDGERED to the same place, same ruling. The two |
+| R627 | **answered** — §9a | no clause this generator can cut -- see the verdict's Carried section |
+| R628 | **answered** — §9a | no clause this generator can cut -- see the verdict's Carried section |
+| R629 | **answered** — §9a | NOT CLOSED. IT CHANGED SHAPE AND IT IS RED ON BOTH MACHINES. R632. The |
+| R630 | **answered** — §9a | ANSWERED at 47daa3d, verified line by line, and answered better than I |
+| R631 | **carried** — §9b | OPEN, LEDGERED to docs/closure/F3.md section 4, and I ACCEPT the ledger |
+| R632 | **answered** — §9a | ONE OF THE NINE REDS IS NOT THE STEP-BOUNDARY CLASS. THE PLANT ACTION CANNOT BUILD ITS STATE... |
+| R633 | **answered** — §9a | THE NEW ENTRY'S FIRST SENTENCE SAYS ITS THREE COUNTERS ARE REGISTERED IN... |
+| R634 | **answered** — §9a | floatfea/tolerances.py SAYS NOTHING ASSERTS RIGID_MODE_EXACTNESS AND THAT IT BOUNDS NOTHING,... |
+| R635 | **carried** — §9b | THE WINDOW IS GUARDED ASYMMETRICALLY, AND EG0(c)'s 2x CLAUSE FIRES ON ROUTINE LEGAL CHANGES... |
+| R636 | **answered** — §9a | What the new ceiling BUYS. The report justifies the change by what the old ceiling could not... |
+| R637 | **answered** — §9a | R632 IS UNCHANGED AT THE REVIEWED COMMIT, AND THE DRAFT THAT WOULD FIX IT MAKES THE STATE... |
+| R638 | **carried** — §9b | RIGID_MODE_EXACTNESS IS THE CEILING THE PRODUCTION BUILDER REFUSES REAL DECKS ON, AND IT CAN BE... |
+| R639 | **answered** — §9a | THE COUNTER INJECTION SIZE CAN BE RAISED EIGHT DECADES WITH THE WHOLE REGISTRY AND BOTH EG0... |
+| R640 | **answered** — §9a | Three harness states commit into the parent repository when the suite runs inside a git... |
+| R643 | **answered** — §9a | test_the_report_carries_a_WHOLE_SUITE_count IS RED AT THE REVIEWED COMMIT AND STAYS RED WITH... |
+| R644 | **answered** — §9a | EH1's two lists are short by one name on the state-(2) side and have one name on the wrong... |
+| R645 | **answered** — §2 | to (d), AND IT OUTRANKS EVERYTHING ELSE IN THIS ROUND. EJ4's STOP IS WITHDRAWN.) F4's LOAD... |
+| R646 | **answered** — §3 | EJ4(b) IS ANSWERED, NOT BLOCKED: THE RESIDUAL CLOSES TO 1.257436e-04 N FROM QUANTITIES ALREADY... |
+| R647 | **answered** — §4 | ruff check floatfea tests IS RED AT THE REVIEWED COMMIT AND IN CI, AND black, mypy, unit tests... |
+| R648 | **answered** — §5 | THE REPORT'S SECTION 0a RECORDS A COMPLETED FAILURE AS no result, EIGHT REDS TRACE TO IT, AND... |
+
+## 9a. Answered in F3
+
+R612 R613 R614 R616 R618 R621 R623 R624 R625 R627 R628 R629 R630 R632 R633 R634 R636 R637 R639 R640 R643 R644
+
+Each was closed in an earlier revision of this step or of F3's earlier steps and is
+not reopened here; verdict 87's own `Carried` section confirms the set.
+
+## 9b. Open or ledgered — not correctness, except R638
+
+R610 R615 R626 R631 R635 R638
+
+**R638 is the one that is not margin characterisation.** `RIGID_MODE_EXACTNESS` has no
+counter-case. Its figures are not restated here (EI4): they are in
+`docs/closure/F3.md` section 4a and in `floatfea/tolerances.py`'s entry, both
+regenerated at the commit that publishes them. EJ1 moves its sequencing, not its
+substance — worked in F4, closed before F4 closes, not blocking F4's opening, and
+`docs/milestones/F4.md` section 4 carries it. The other rows are margin
+characterisation ledgered under DZ7c in `docs/milestones/F2a.md`.
+
+## 9c. Withdrawn or routed to a later milestone
+
+R611 R617 R622
+
+## 10. EJ5 and EJ6 — F4's plan draft and the dates
+
+**EJ5.** `docs/milestones/F4.md` is written as an **unlocked draft** for Xabier to
+lock. Three steps, no more: load mapping, solve, member forces.
+
+```
+claim  the draft carries no second step marker, which would blind every report guard
+cmd    grep -rn "step-under-execution" docs/milestones/
+out    docs/milestones/F2.md:10  moved to F3 at step 1 (DY8c)
+out    docs/milestones/F3.md:9   3
+rule   `_active_plan()` returns (None, 0) unless EXACTLY ONE plan carries the marker
+judge  F4.md deliberately has none. The marker moves in F4 step 1's first commit,
+       together with its removal from F3.md -- EA2's dry run made real.
+cmd    python -m pytest tests/test_plan_matches_tolerances.py -q
+out    111 passed in 0.51s
+judge  no value is restated in F4.md, so no tolerance can drift from it. F4's own
+       tolerances say WHICH STEP MEASURES THEM and none is declared in
+       `floatfea/tolerances.py` until that measurement exists.
+```
+
+**EB6's expected side, which the draft names rather than describes.** Read-only, and
+the line numbers are the grep's and not mine:
+
+```
+claim  the expected side exists at the lines the plan cites
+cmd    grep -n "^def buoy_centers\|^CLUSTER_ARM_RADIUS\|^CLUSTER_ANGLES_DEG\
+         |^BUOY_ANGLES_DEG\|^BUOY_RADIUS" platform_common.py, in HSP-stable
+out    33:CLUSTER_ARM_RADIUS = 1.0
+out    34:CLUSTER_ANGLES_DEG = np.array([0.0, 90.0, 180.0, 270.0])
+out    35:BUOY_ANGLES_DEG = cc.BUOY_ANGLES_DEG
+out    36:BUOY_RADIUS = cc.CLUSTER_RADIUS
+out    51:def buoy_centers() -> NDArray[np.float64]:
+cmd    sed -n 51,58p, to find where the function ends
+out    58:    return np.asarray(out, dtype=np.float64)
+rule   a cited line range is checked, not counted by eye
+judge  AND I HAD IT WRONG BY ONE LINE. The plan as committed at `b6a65f2` said
+       `:51-57`, which stops on the `out.append` and leaves the `return` outside the
+       range. Corrected to `:51-58` in this revision's commit. The docstring at `:52`
+       is what carries `buoy k = 3c+b`, which is the ordering EB6 is about.
+```
+
+The cluster angle (`:34`) is the second, independent side: a consistent rotation of
+all twelve centres is caught by it where the centres alone cannot see it. The permuted
+export must redden the gate, and that counter-case is constructed, not asserted.
+
+**The plan also records the one thing F3 got wrong about F4's scope**, at its
+section 1: the static part is FloatFEA's to build, not FloatSim's to export, and the
+additive HSP writer carries `res.lam`, the per-body external force and `mu[N,6]` —
+**not** an equilibrium reaction, because that reaction is `0`.
+
+**DQ4 and DQ5 are written as questions for the lock, not as answers.** EJ5 names them
+in one clause each; the draft proposes a reading for each and says what is still open,
+because inventing the rest would be me locking my own plan.
+
+**What F4 step 1's report carries, from verdict 87 condition 4**, recorded here so the
+list is not reconstructed from memory:
+
+| carried into F4 step 1 | how |
+|---|---|
+| R638 | by name — worked in F4, closed before F4 closes (EJ1) |
+| R637 clause (iii) | its object is now R648 and no longer R643 |
+| R645, R646, R647, R648 | this revision's four findings |
+| C124, C125, C126, C127, C128, C129 | the closure list, plus EJ3's ledger |
+| C119 | in that step's FIRST commit, as EJ3 routes it |
+
+**EJ6 — the dates, confirmed:**
+
+| item | committed | working target |
+|---|---|---|
+| F4 | 19 Oct | 14 Oct |
+| member-force table | 23 Oct | 17 Oct |
+| code check | 28 Oct | 22 Oct |
+
+## 11. Tolerances touched
+
+```
+cmd    git diff 6083a87..HEAD -- floatfea/tolerances.py
+out    one comment line wrapped at 100 columns (R647), and nothing else
+cmd    the same diff, lines matching a NAME: Final[float] = value declaration
+out    (no output) -- NOT ONE VALUE LINE CHANGED, in either direction
+cmd    git diff 6083a87..HEAD --name-only -- floatfea tests
+out    floatfea/tolerances.py
+judge  no tolerance moved, no assertion moved, no golden moved, no conftest. The
+       only change under `floatfea/` is R647's wrap; `tests/` is untouched.
+```
+
+## 11a. EJ0 — the design-wave case in both locations
+
+```
+claim  a FloatSim case is faster outside the OneDrive-synced tree
+cmd    scripts/report_joint_reactions.py --period 1.9799 --duration 40.0 --dt 0.01,
+         synced working tree
+out    real 8m52.688s
+cmd    the SAME script, byte-identical (cmp), in a clone under the local temp with
+         HSP-runs COPIED there -- 333M, tag floatfea-ref-1 -- not a junction
+out    real 8m24.957s
+rule   EJ0: time one design-wave case in both locations and report the ratio
+judge  **1.055x, and the answer is that location barely matters for a solve.** That
+       is the opposite of the suite result and the reason is the access pattern: the
+       OneDrive penalty is on many small files -- pytest collection, `git` -- and a
+       case reads one `.nc` once and then computes. A repository move would buy the
+       suite and would buy the cases almost nothing.
+judge  AND THIS IS NOT A CONTROLLED CELL, which C126 is the reason for saying.
+       Each half ran with one concurrent pytest, neither on an idle machine. I am
+       reporting it because the ratio is near 1: the noise would have to be larger
+       than the whole effect to reverse the conclusion, which is not the property
+       the withdrawn 12x had. A controlled pair is owed if the figure is ever used
+       for a decision.
+judge  the junction attempt is recorded because it would have been the wrong
+       measurement: pointing a local clone at the SYNCED HSP-runs leaves the inputs
+       where they were, so it would have measured nothing and looked like a result.
+```
+
+## 12. The whole suite
+
+**Whole suite at `b6a65f2`: 2680 passed, 0 failed, 0 skipped.** **The excluded set: 272 passed, 9 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 281 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+**The main half is GREEN and the nine are all in the excluded set.** Traced
+individually, as EG3(i) requires:
+
+```
+cmd    the three files in a clean clone at b6a65f2 under the LOCAL temp, origin
+         set to the real repository so gh resolves; suite_count.py's own list
+out    1 x test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+out    8 x test_the_guard_survives_the_state[baseline, non_numeric_step_suffix,
+out        superscript_digit_step_number, draft_suffix_beside_a_step_report,
+out        step_number_is_the_empty_string,
+out        verdict_amended_after_the_commit_the_report_answers,
+out        zero_padded_step_number,
+out        guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state
+out        _actually_REDDENS_CONTROL]
+rule   EG3(i): every red traces BY NAME, and a red not on the list still blocks
+judge  the eight states cascade off the red baseline, whose own failure line names
+       the SAME first test -- so all nine are ONE cause and the cause is the first
+       bullet.
+cmd    git diff --name-only d978636 -- tests floatfea
+out    (empty)
+judge  which is why the main half is attributable: nothing under `tests/` or
+       `floatfea/` has moved since the commit CI measured green on steps 7 to 9.
+```
+
+**AND THE CAUSE IS A TRANSIENT, WHICH I REPORT RATHER THAN RE-RUN AWAY (new).**
+
+```
+claim  test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW failed on a report defect
+cmd    the same test, same commit, same clone, run ALONE immediately afterwards
+out    1 passed in 1.52s
+cmd    gh run view <the run at d978636> --json conclusion -q .conclusion, in that clone
+out    failure                 -- gh resolves there, and agrees with the table
+cmd    the same test in the working tree
+out    1 passed in 1.51s
+cell   ONE VARIABLE: whether the test runs alone or inside the full excluded set
+rule   a guard that goes red without its subject changing is failing false
+judge  **IT IS THE ONLY TEST IN THE SUITE THAT REACHES THE NETWORK**, its own
+       docstring says so, and the excluded set runs it ONCE AT TOP LEVEL PLUS ONCE
+       INSIDE EACH OF THE PLANTED CLONES -- so one pass of that file makes nine `gh`
+       round trips in a few seconds. The row content is right in all three readings
+       above; what failed is the call. Section 0a's regeneration DID clear R648: the
+       table agrees with `gh` for every row, measured three ways.
+judge  I am NOT fixing it. DR1 freezes apparatus, and an existing guard that fails
+       false is fixed or deleted and never extended -- which is a decision for the
+       reviewer, not a change I make inside a step. Recorded as a finding with its
+       cell, which is what I can do.
+```
