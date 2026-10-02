@@ -1717,6 +1717,8 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 
 
 
+
+
 <!-- generated: scripts/answered_table.py -->
 
 | item | class | state | where | site | the verdict's own subject |
@@ -1763,6 +1765,8 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 | R653 | recorded | **answered** | §13 | `` | THE MOMENT EJ4's RESIDUAL IS ASSERTED IN |
 
 ## 8. Sites named by findings and not touched
+
+
 
 
 
@@ -1861,6 +1865,8 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 | R650 | `docs/reports/F3/step-3.md:1933` | the file is touched and this line number is the old one | TOUCHED in this closure commit: § 12 carries the three measurements, taken independently of `buoy_centers()`, and the one count the reviewer and I disagree on. **No change at that exact line number**: the verdict read the pre-closure file and the revision grew above those lines. |
 | R650 | `docs/reports/F3/step-3.md:1934` | the file is touched and this line number is the old one | TOUCHED in this closure commit: § 12 carries the three measurements, taken independently of `buoy_centers()`, and the one count the reviewer and I disagree on. **No change at that exact line number**: the verdict read the pre-closure file and the revision grew above those lines. |
 ## 9. Carried
+
+
 
 
 
@@ -2252,4 +2258,99 @@ rule   DR1: no new apparatus through F6
 judge  the retracted `429x` is gone from the comment and the gap is recorded instead.
        It becomes a gate finding if a G4.x gate cites this residual as evidence that
        FloatSim's scheme is reproduced.
+```
+
+## 14. This revision CANNOT be green, and neither state is a defect in the work
+
+**Verdict 89 judged `727b9fa`, a report-only commit, and CI is configured never to run
+on one.** So the report has two possible states and exactly one red in each, and the two
+reds are mutually exclusive. I measured both rather than picking the one that reads
+better.
+
+```
+cmd    git diff --name-only c40d24d..727b9fa
+out    docs/reports/F3/step-3.md            -- the only file
+cmd    sed -n '/paths-ignore:/,/workflow_dispatch:/p' .github/workflows/ci.yml
+out    - "docs/reports/**"
+out    - "docs/reviews/**"
+cmd    gh run list --commit 727b9fa2ff3f379f9625181d6c6b5b8566f75fdf
+out    (no output) -- NO RUN, and there can never be one
+rule   `test_the_CI_section_is_about_the_REVIEWED_commit`, and `ci_section.py`'s own
+       refusal to publish a table for a commit with no run
+```
+
+**STATE A -- the `Answers:` line names verdict 89, as the newest-verdict guard wants:**
+
+```
+cmd    set Answers: verdict 89 @ 9d7a9c4, then python scripts/ci_section.py
+out    no CI run at 727b9fa2ff3f379f9625181d6c6b5b8566f75fdf. A commit that was never
+out    pushed has no run, and a report cannot publish a table for it.
+cmd    the report-guard file, in that state
+out    FAILED test_the_CI_section_is_about_the_REVIEWED_commit
+judge  SECTION 0 IS UNPRODUCIBLE. And the generator's reason is wrong in a way worth
+       recording: `727b9fa` WAS pushed -- `git merge-base --is-ancestor 727b9fa
+       origin/F3` succeeds -- so "never pushed" misdiagnoses `paths-ignore` as a missing
+       push. A hand-written section 0 is not an option: CX0 requires it generated.
+```
+
+**STATE B -- the `Answers:` line stays at verdict 88, which is what this revision
+ships:**
+
+```
+cmd    the three report-guard files, working tree, state B
+out    8 failed, 336 passed in 135.77s
+out    1 x test_the_answered_verdict_is_the_NEWEST_one
+out    7 x test_the_guard_survives_the_state[baseline, non_numeric_step_suffix,
+out        superscript_digit_step_number, draft_suffix_beside_a_step_report,
+out        step_number_is_the_empty_string,
+out        verdict_amended_after_the_commit_the_report_answers,
+out        zero_padded_step_number]
+out        -> cascade off the red baseline, whose own failure line is that same test
+rule   EG3(i): every red traces by name
+judge  ONE CAUSE, and section 0 and 0a are generable and internally consistent. This is
+       the state with the smaller red and the honest one: the report DOES answer verdict
+       89 -- its three findings are section 13 -- and what it cannot do is NAME it
+       without making section 0 unproducible.
+judge  **I am NOT claiming EG3's carve-out for this.** R644 files this test under state
+       (2), but state (2) is "verdict written, answering report not yet" and the
+       answering report exists. This red is the rule defect, not the designed boundary,
+       and calling it a waived state would be the kind of sentence this report keeps
+       having to retract.
+judge  **IT IS BOUNDED AND IT CLEARS WITHOUT A FIX.** The next verdict will judge a
+       commit that touches non-ignored paths and therefore has a run, at which point
+       naming it costs nothing. Nothing needs to change in the work for that to happen.
+```
+
+**And one measurement trap I nearly published**, which is the reason the figures above
+all carry full shas:
+
+```
+claim  there is no CI run at the closure commit c40d24d
+cmd    gh run list --commit c40d24d
+out    (no output)
+cmd    gh run list --commit c40d24dc4390...  -- the FULL sha
+out    <the run at c40d24d>  completed  failure   (id redacted: a run id outside
+out    the generated sections is refused by the report's own CI rules)
+cell   ONE VARIABLE: short sha against full sha, same command, same run
+rule   a command that answers "nothing" for a bad argument instead of failing is not a
+       measurement
+judge  `gh run list --commit` SILENTLY RETURNS NOTHING FOR AN ABBREVIATED SHA. I had
+       already written "neither commit has a run" from the short form and it was false
+       for two of three. Every `gh run list --commit` in this report uses the full sha
+       for that reason.
+```
+
+**CZ1 (iii) for the closure commit `c40d24d`, which this answers:**
+
+```
+cmd    gh run view <the run at c40d24d> --json jobs, by job then by step
+out    lint, unit and guards            FAILURE
+out    the verification ladder          SUCCESS
+out    CI determinism -- leg            skipped      (CK0's workflow_dispatch gate)
+out    CI determinism -- ten legs agree skipped      (same)
+out    9 unit tests                     SUCCESS
+out    10 guards and meta-tests         FAILURE
+rule   CZ1 (iii): the `guards and meta-tests` step is SEEN TO HAVE RUN
+judge  it ran, and its red is the eight of section 12 -- answered at `727b9fa`, which
+       is the CZ1 (iv) follow-on. The ladder is green, so no low rung is red.
 ```
