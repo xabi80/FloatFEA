@@ -38,6 +38,16 @@ sys.path.insert(0, str(ROOT))
 
 from floatfea import hsp_pin  # noqa: E402
 
+# C131 (CW0). `rho_inf` was written twice -- passed to the integrator in
+# `solve_one` and re-declared in `discrete_residual` with a comment asserting the
+# two agreed. A comment is not a mechanism: ONE constant, both call sites, so
+# they cannot disagree. The value is the study's own, at
+# `../HSP-runs/studies/platform-12buoy/platform_rao_pilot.py:291`, and the
+# reviewer measured that a 0.05 drift makes the residual 429x louder -- so this
+# is a reproducibility constant, not a tolerance, and it does not belong in
+# `floatfea/tolerances.py`.
+RHO_INF = 0.8
+
 HSP_RUNS = ROOT.parent / "HSP-runs"
 STUDY = HSP_RUNS / "studies" / "platform-12buoy"
 EXPORT = STUDY / "floatfea_design_waves"
@@ -131,7 +141,7 @@ def solve_one(period_s: float, duration_s: float, dt: float) -> tuple:
         xi_dot0=setup.xi_dot0,
         duration=duration_s,
         dt=dt,
-        rho_inf=0.8,
+        rho_inf=RHO_INF,
         constraints=setup.constraints,
         external_force=ext,
         state_force=setup.state_force,
@@ -158,7 +168,7 @@ def discrete_residual(res, setup, ext, window: int = 100) -> dict[str, float]:
     from floatsim.hydro.retardation import RadiationConvolution
 
     h = float(res.t[1] - res.t[0])
-    rho_inf = 0.8  # the value `solve_one` passes; every coefficient follows from it
+    rho_inf = RHO_INF  # every alpha/beta/gamma below follows from it
     alpha_m = (2.0 * rho_inf - 1.0) / (rho_inf + 1.0)
     alpha_f = rho_inf / (rho_inf + 1.0)
     beta = 0.25 * (1.0 - alpha_m + alpha_f) ** 2

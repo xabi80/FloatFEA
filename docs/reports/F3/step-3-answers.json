@@ -9,7 +9,12 @@
   "`_section_bodies()` reads the newest revision only, so revision 3's section",
   "numbers do not exist for revision 4's rows: R637 pointed at section 2, which",
   "is now R645's. Each state's ledger section names every item that points at",
-  "it -- 9a answered, 9b carried or open, 9c withdrawn or routed."
+  "it -- 9a answered, 9b carried or open, 9c withdrawn or routed.",
+  "",
+  "Verdict 88 (PASS) added R649 and R650; both are answered in section 12 -- R649",
+  "because my transient diagnosis was refuted and the correction belongs beside the",
+  "figure it corrects, R650 because the measurement that withdrew the second",
+  "expected side is there, including one count the reviewer and I disagree on."
  ],
  "answered": {
   "R610": {
@@ -151,6 +156,14 @@
   "R648": {
    "state": "answered",
    "where": "§5"
+  },
+  "R649": {
+   "state": "answered",
+   "where": "§12"
+  },
+  "R650": {
+   "state": "answered",
+   "where": "§12"
   }
  }
 }

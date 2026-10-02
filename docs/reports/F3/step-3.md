@@ -1717,6 +1717,7 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 ```
 ## 7. Findings answered
 
+
 <!-- generated: scripts/answered_table.py -->
 
 | item | class | state | where | site | the verdict's own subject |
@@ -1756,74 +1757,77 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 | R646 | recorded | **answered** | §3 | `` | EJ4(b) IS ANSWERED, NOT BLOCKED: THE RESIDUAL CLOSES TO |
 | R647 | recorded | **answered** | §4 | `` | `ruff check floatfea tests` IS RED AT THE REVIEWED COMMIT AND IN |
 | R648 | recorded | **answered** | §5 | `` | THE REPORT'S SECTION 0a RECORDS A COMPLETED FAILURE AS |
+| R649 | recorded | **answered** | §12 | `` | THE NINE REDS AT `b6a65f2` WERE NOT A TRANSIENT. THEY WERE R648, |
+| R650 | recorded | **answered** | §12 | `` | THE MOMENT EB6 IS WRITTEN.) EB6's SECOND |
 
 ## 8. Sites named by findings and not touched
+
 
 <!-- generated: scripts/untouched_sites.py -->
 
 | item | site | what the diff says | why it was left |
 |---|---|---|---|
-| R632 | `docs/reports/F3/step-2.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:539` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:540` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:541` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:542` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:543` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:544` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:545` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:546` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R632 | `tests/test_report_guard_states.py:777` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R633 | `docs/milestones/F3.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R633 | `floatfea/tolerances.py:354` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R633 | `floatfea/tolerances.py:355` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R633 | `tests/test_counters_are_injected.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R633 | `tests/test_counters_are_injected.py:317` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R633 | `tests/test_counters_are_injected.py:318` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R633 | `tests/test_counters_are_injected.py:319` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R633 | `tests/verification/rung3/test_platform_rigid_modes.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R634 | `floatfea/model/platform.py:319` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R634 | `floatfea/model/platform.py:320` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R634 | `floatfea/tolerances.py:330` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R634 | `floatfea/tolerances.py:345` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R634 | `floatfea/tolerances.py:346` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R634 | `floatfea/tolerances.py:347` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R634 | `floatfea/tolerances.py:348` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R634 | `floatfea/tolerances.py:403` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R637 | `CLAUDE.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R637 | `R634-docs/closure/F3.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R637 | `scripts/check_carried.py:51` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R637 | `scripts/ci_section.py:182` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R637 | `tests/test_report_carried.py:247` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R637 | `tests/test_report_guard_states.py:545` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R637 | `tests/test_report_numbers_are_sourced.py:102` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R638 | `CLAUDE.md` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4's opening. `docs/milestones/F4.md` section 4 carries it. |
-| R638 | `F2.md` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4's opening. `docs/milestones/F4.md` section 4 carries it. |
-| R638 | `tests/test_counters_are_injected.py` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4's opening. `docs/milestones/F4.md` section 4 carries it. |
-| R638 | `tests/test_no_tolerance_literals.py` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4's opening. `docs/milestones/F4.md` section 4 carries it. |
-| R638 | `tests/verification/rung3/test_platform_rigid_modes.py:260` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4's opening. `docs/milestones/F4.md` section 4 carries it. |
-| R639 | `docs/milestones/F3.md:668` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R639 | `tests/verification/rung1/test_corpus_configurations.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R640 | `scripts/suite_count.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
+| R632 | `docs/reports/F3/step-2.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R632 | `tests/test_report_guard_states.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R632 | `tests/test_report_guard_states.py:539` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R632 | `tests/test_report_guard_states.py:540` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R632 | `tests/test_report_guard_states.py:541` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R632 | `tests/test_report_guard_states.py:542` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R632 | `tests/test_report_guard_states.py:543` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R632 | `tests/test_report_guard_states.py:544` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R632 | `tests/test_report_guard_states.py:545` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R632 | `tests/test_report_guard_states.py:546` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R632 | `tests/test_report_guard_states.py:777` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R633 | `docs/milestones/F3.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R633 | `floatfea/tolerances.py:354` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R633 | `floatfea/tolerances.py:355` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R633 | `tests/test_counters_are_injected.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R633 | `tests/test_counters_are_injected.py:317` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R633 | `tests/test_counters_are_injected.py:318` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R633 | `tests/test_counters_are_injected.py:319` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R633 | `tests/verification/rung3/test_platform_rigid_modes.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/model/platform.py:319` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/model/platform.py:320` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py:330` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py:345` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py:346` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py:347` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py:348` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R634 | `floatfea/tolerances.py:403` | the file is touched and this line number is the old one | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R637 | `CLAUDE.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R637 | `R634-docs/closure/F3.md` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R637 | `scripts/check_carried.py:51` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R637 | `scripts/ci_section.py:182` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R637 | `tests/test_report_carried.py:247` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R637 | `tests/test_report_guard_states.py:545` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R637 | `tests/test_report_numbers_are_sourced.py:102` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R638 | `CLAUDE.md` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4 step 1's opening. `docs/milestones/F4.md` § 4 carries it. |
+| R638 | `F2.md` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4 step 1's opening. `docs/milestones/F4.md` § 4 carries it. |
+| R638 | `tests/test_counters_are_injected.py` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4 step 1's opening. `docs/milestones/F4.md` § 4 carries it. |
+| R638 | `tests/test_no_tolerance_literals.py` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4 step 1's opening. `docs/milestones/F4.md` § 4 carries it. |
+| R638 | `tests/verification/rung3/test_platform_rigid_modes.py:260` | the file is untouched | **no change, and none is owed in F3.** EJ1 routes R638 to F4: worked there, closed before F4 closes, not blocking F4 step 1's opening. `docs/milestones/F4.md` § 4 carries it. |
+| R639 | `docs/milestones/F3.md:668` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R639 | `tests/verification/rung1/test_corpus_configurations.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R640 | `scripts/suite_count.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
 | R643 | `docs/reports/F3/step-3.md:1354` | the file is touched and this line number is the old one | TOUCHED in this revision. **No change at that exact line number**: `:1354` is revision 3's suite line, which verdict 87 reads as answered and which stays the record of what that revision measured. |
-| R643 | `tests/test_report_carried.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; revision 4's diff is R645's prose, R646's function and F4's plan draft, which do not reach it. |
-| R645 | `PLAN.md:326` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
-| R645 | `PLAN.md:327` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
-| R645 | `PLAN.md:328` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
-| R645 | `PLAN.md:329` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
-| R645 | `PLAN.md:330` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
-| R645 | `PLAN.md:331` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
-| R645 | `PLAN.md:332` | the file is untouched | **no change, and a change here would be the defect.** This is a LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed doing. |
-| R645 | `docs/load-interchange-v1.md:670` | the file is untouched | **no change, and a change here would be the defect.** `:670` is the schema's own sentence about what adding these channels would look like to a reader who had not read the table. It is quoted in section 2, not edited. |
-| R645 | `scripts/report_joint_reactions.py:234` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
+| R643 | `tests/test_report_carried.py` | the file is untouched | **no change at this site.** The finding was answered at an earlier revision of this step and verdict 87's own `Carried` section records it closed; this revision's diff is R645's prose, R646's function, F4's plan draft and verdict 88's closure list, none of which reach it. |
+| R645 | `PLAN.md:326` | the file is untouched | **no change, and a change here would be the defect.** A LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed. |
+| R645 | `PLAN.md:327` | the file is untouched | **no change, and a change here would be the defect.** A LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed. |
+| R645 | `PLAN.md:328` | the file is untouched | **no change, and a change here would be the defect.** A LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed. |
+| R645 | `PLAN.md:329` | the file is untouched | **no change, and a change here would be the defect.** A LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed. |
+| R645 | `PLAN.md:330` | the file is untouched | **no change, and a change here would be the defect.** A LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed. |
+| R645 | `PLAN.md:331` | the file is untouched | **no change, and a change here would be the defect.** A LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed. |
+| R645 | `PLAN.md:332` | the file is untouched | **no change, and a change here would be the defect.** A LOCKED document the verdict quotes as the authority for R645 -- G4.6, gravity from the FE mass distribution and buoyancy from the hull geometry. Editing it is reopening a lock, which is what R645 says I wrongly proposed. |
+| R645 | `docs/load-interchange-v1.md:670` | the file is untouched | **no change, and a change here would be the defect.** `:670` is the schema's own sentence about what adding these channels would look like to a reader who had not read the table. Quoted in § 2, not edited. |
+| R645 | `scripts/report_joint_reactions.py:234` | the file is touched and this line number is the old one | TOUCHED at `b6a65f2`: the eighteen-line claim paragraph this line sat in is deleted and `discrete_residual()` replaces it. **No change at that exact line number** because the line no longer exists. |
 | R646 | `docs/load-interchange-v1.md:87` | the file is untouched | **no change.** `:87` and `:88` are the schema's declarations of `mu[N,6]` and `A_inf`, quoted as the proof that EJ4(b) needed nothing new. Editing them would be reopening v1. |
 | R646 | `docs/load-interchange-v1.md:88` | the file is untouched | **no change.** `:87` and `:88` are the schema's declarations of `mu[N,6]` and `A_inf`, quoted as the proof that EJ4(b) needed nothing new. Editing them would be reopening v1. |
-| R648 | `docs/reports/F3/step-3.md:585` | the file is touched and this line number is the old one | TOUCHED in this revision -- section 0a regenerated, and revision 4 appended. **No change at that exact line number**: `:585` is revision 2's ruling that the red was CZ1 (iv), which the verdict credits and which stays as written. |
-| R648 | `scripts/ci_section.py` | the file is untouched | **no change.** It is RUN, not edited -- section 0a is regenerated by it as the last edit before this commit (CP3). R648 asks for its output, not a change to it. |
-| R648 | `tests/test_report_carried.py` | the file is untouched | **no change, and this one matters.** R648's condition is that this file READ `0 failed`, not that it be edited. Editing a guard to clear its own red is what DR1 forbids and what the deleted vacuous state cost. |
-| R648 | `tests/test_report_guard_states.py` | the file is untouched | **no change, and this one matters.** R648's condition is that this file READ `0 failed`, not that it be edited. Its seven planted states cascade off the baseline; regenerating section 0a clears all of them. |
-
+| R648 | `docs/reports/F3/step-3.md:585` | the file is touched and this line number is the old one | TOUCHED in this revision -- § 0a regenerated and revision 4 written. **No change at that exact line number**: `:585` is revision 2's ruling that the red was CZ1 (iv), which the verdict credits and which stays as written. |
+| R648 | `scripts/ci_section.py` | the file is untouched | **no change.** It is RUN, not edited -- § 0a is regenerated by it. R648 asks for its output, not a change to it. |
+| R648 | `tests/test_report_carried.py` | the file is untouched | **no change, and verdict 88 is why that was right.** R648's condition is that this file READ `0 failed`, not that it be edited; R649 then ruled the guard did not fail false, so DR1's fix-or-delete never applied. |
+| R648 | `tests/test_report_guard_states.py` | the file is untouched | **no change, and verdict 88 is why that was right.** Its planted states cascade off the baseline; regenerating § 0a cleared all of them, and R649 ruled the guard correct. |
 ## 9. Carried
+
 
 <!-- generated: scripts/carried_table.py -->
 
@@ -1864,6 +1868,8 @@ judge  WITHDRAWN. Verdict 86's clone-against-synced figure was taken back to bac
 | R646 | **answered** — §3 | EJ4(b) IS ANSWERED, NOT BLOCKED: THE RESIDUAL CLOSES TO 1.257436e-04 N FROM QUANTITIES ALREADY... |
 | R647 | **answered** — §4 | ruff check floatfea tests IS RED AT THE REVIEWED COMMIT AND IN CI, AND black, mypy, unit tests... |
 | R648 | **answered** — §5 | THE REPORT'S SECTION 0a RECORDS A COMPLETED FAILURE AS no result, EIGHT REDS TRACE TO IT, AND... |
+| R649 | **answered** — §12 | THE NINE REDS AT b6a65f2 WERE NOT A TRANSIENT. THEY WERE R648, AND THE GUARD WAS RIGHT. Four... |
+| R650 | **answered** — §12 | THE MOMENT EB6 IS WRITTEN.) EB6's SECOND EXPECTED SIDE DOES NOT DO WHAT THE PLAN SAYS IT DOES,... |
 
 ## 9a. Answered in F3
 
@@ -2029,26 +2035,90 @@ judge  which is why the main half is attributable: nothing under `tests/` or
        `floatfea/` has moved since the commit CI measured green on steps 7 to 9.
 ```
 
-**AND THE CAUSE IS A TRANSIENT, WHICH I REPORT RATHER THAN RE-RUN AWAY (new).**
+**THE CAUSE WAS NOT A TRANSIENT. IT WAS R648, UNFIXED, AND THE GUARD WAS RIGHT
+(R649).** I published a transient diagnosis in this section and verdict 88 refuted it.
+The correction, with the message my first version left out — which is the field that
+separates the two causes:
 
 ```
-claim  test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW failed on a report defect
-cmd    the same test, same commit, same clone, run ALONE immediately afterwards
-out    1 passed in 1.52s
-cmd    gh run view <the run at d978636> --json conclusion -q .conclusion, in that clone
-out    failure                 -- gh resolves there, and agrees with the table
-cmd    the same test in the working tree
-out    1 passed in 1.51s
-cell   ONE VARIABLE: whether the test runs alone or inside the full excluded set
-rule   a guard that goes red without its subject changing is failing false
-judge  **IT IS THE ONLY TEST IN THE SUITE THAT REACHES THE NETWORK**, its own
-       docstring says so, and the excluded set runs it ONCE AT TOP LEVEL PLUS ONCE
-       INSIDE EACH OF THE PLANTED CLONES -- so one pass of that file makes nine `gh`
-       round trips in a few seconds. The row content is right in all three readings
-       above; what failed is the call. Section 0a's regeneration DID clear R648: the
-       table agrees with `gh` for every row, measured three ways.
-judge  I am NOT fixing it. DR1 freezes apparatus, and an existing guard that fails
-       false is fixed or deleted and never extended -- which is a decision for the
-       reviewer, not a change I make inside a step. Recorded as a finding with its
-       cell, which is what I can do.
+claim  the nine reds were a transient gh call, not a report defect
+cmd    git worktree add --detach <tmp> b6a65f2 ; then, in it,
+         pytest tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh
+         _FOR_EVERY_ROW -q
+out    # Revision 3                      <- the newest revision IN THAT TREE
+out    E AssertionError: run <the one at c9902d3>: the table says `**no result**
+out      (status `in_progress`)`, gh says `failure`
+out      (the id is redacted here: a run id outside the generated sections is
+out       refused by test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS)
+out    1 failed in 4.37s
+rule   `tests/test_report_carried.py:1343-1368` returns None on a failed `gh` call and
+       prints "gh run view returns nothing -- no such run". A TRANSIENT CANNOT PRODUCE
+       THE MESSAGE ABOVE.
+judge  REFUTED, and by my own run. At `b6a65f2` the newest revision is **revision 3**,
+       whose section 0a still carries the stale row for the run at `c9902d3`. The subject was
+       red, the guard said so, and my fix -- regenerating 0a at `cae39ac` -- is what
+       cleared all nine.
+```
+
+**And the reason my cell was invalid is worth more than the finding, because it was a
+ritual that proved nothing:**
+
+```
+claim  the suite figure was taken on "this exact tree", the three copied files
+       having compared IDENTICAL first
+cmd    grep -n "worktree" scripts/suite_count.py
+out    137  def _worktree(sha: str):   -- its docstring: a clean worktree at sha
+out    146  git -C <ROOT> worktree add --detach <tmp> <sha>
+out    180  with _worktree(sha) as tree:          <- the main half
+out    199  with _worktree(sha) as tree:          <- the excluded set
+cell   ONE VARIABLE, the two runs I compared: I ran the test ALONE in a clone whose
+       report I had OVERWRITTEN with revision 4, and compared it with a suite run that
+       `_worktree` had taken at the COMMITTED `b6a65f2` -- revision 3. Two variables,
+       and the one I named was not the one that moved.
+rule   BG0: one variable moved, everything else held, or the sentence is rewritten as
+       the bare measurement with no cause attached
+judge  `suite_count.py` BUILDS ITS OWN CLEAN WORKTREE AT THE SHA, so copying files
+       into the clone never reached the measurement. The `cmp` lines that said
+       IDENTICAL were true about files nothing read. A ritual that cannot fail is the
+       same defect as a triple whose command cannot fail, one level up -- and I built
+       it in the revision correcting three of those.
+judge  THE GUARD STAYS. Verdict 88 rules it did not fail false, DR1's "fixed or
+       deleted" does not apply, and I have not touched it.
+```
+
+**C134 — the three measurements, each with the commit it belongs to**, because the
+suite line above is at `b6a65f2` and two commits have landed since:
+
+```
+cmd    scripts/suite_count.py, clean worktree at b6a65f2 (the line above)
+out    main 2680 passed 0 failed; excluded set 272 passed 9 failed
+cmd    the three report-guard files, clone at bf21c37, origin resolving
+out    287 passed, 0 failed
+cmd    the reviewer's own whole-suite run, one invocation, clone at bf21c37
+out    3006 passed, 0 failed, 0 skipped in 867.91s
+rule   R637 clause (iii): the figure is measured at the commit it describes
+judge  the `9 failed` is revision 3's stale 0a row and its cascade, at a commit where
+       revision 4 did not exist. At `bf21c37` the same selection is `0 failed` and the
+       whole tree is green, which is the state this report's own commit describes.
+       Clause (iii) carries into F4 step 1 by name, with this as its baseline.
+```
+
+**And one figure of the reviewer's that I could not reproduce, reported rather than
+adopted:** verdict 88's R650 says six nearest-neighbour pairs go silent at the
+boundary. I count **four**.
+
+```
+cmd    rebuild the twelve centres from the four constants, enumerate all 66 pairs,
+         count how many sit at the minimum distance
+out    0.619657 m  x4        <- the minimum, all four cross-cluster: (1,3) (2,9)
+out                             (5,6) (6,10)
+out    0.866025 m  x12       <- the next band, all intra-cluster
+out    1.008935 m  x4
+rule   EH4: the boundary is solved in both directions
+judge  everything else in R650 reproduces exactly -- gap `0.619657 m` against
+       `0.620`, only the identity rotation preserves the set, `y -> -y` does with
+       label map [0,2,1,9,11,10,6,8,7,3,5,4] and `2.866025 m` of displacement, and
+       `CLUSTER_ANGLES_DEG` set-invariant under it. Only the count of silent pairs
+       differs, and my figure makes the gate LESS blind than the verdict's, not more.
+       Recorded for the reviewer to rule; the conclusion is unaffected either way.
 ```
