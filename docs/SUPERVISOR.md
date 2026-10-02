@@ -446,6 +446,19 @@ applied it by hand three times before it was written down.*
 
 > the first-report carve-out should say that state (2) is cleared BY THE ANSWERING REPORT and not by time -- if no answering report is written the state does not clear, and a tree red with no revision in sight must read as what it is.
 
+**The two lists, corrected (EH1).** The clause above was written from one observation
+and was short by two names on each side. The reviewer's wording, adopted
+unparaphrased:
+
+> *state (1)'s list is `test_the_guard_reads_the_step_being_worked_on` and
+> `test_the_answered_verdict_is_the_NEWEST_one`, plus the planted states that cascade
+> off a red baseline; state (2)'s is the five named plus the same cascade. In both
+> states the cascade is identified by the baseline being red and by each cascading
+> state's own failure line, not by its name.*
+
+**Any red not on the list still blocks** — EH1 restates that, and it is CZ1 (iv)
+unchanged.
+
 **Two conditions on it, from EG3:**
 
 **(i) The waiver is conditional on the trace, and the trace is pasted.** The
@@ -470,3 +483,32 @@ label-provenance gate** -- the two surfaces where a miss would reach a member
 force. The coverage measurements that justified the spend are in the verdicts:
 4 of 11, then 8 of 13, then 5 of 10, with the last round's misses all outside the
 element.
+
+### Every boundary is solved in BOTH directions (EH4)
+
+**A boundary is solved in both directions, including the two that WEAKEN a gate: the
+ceiling falls toward the clean value, and the injection rises until a clean case
+trips.** This applies from F4's load-mapping gates on; the corpus pause above
+otherwise stands.
+
+Earned on one measurement. Corpus batch 31 solved every boundary from the side that
+makes a gate look strong -- how far the gate's ceiling may RISE, how far the
+injection may FALL -- and never the two that weaken it. Two of the next round's
+three blocking findings came from inverting the direction and nothing else: a
+production ceiling that widens `100x` with the measuring half of the suite green,
+and an injection size that rises eight decades with every assertion getting easier.
+
+**A figure is pasted from the run that produced the artifact it is pasted into, and
+the pasting is the LAST edit (CP3).** Where a commit message, a report section or a
+tolerance comment carries an `out` line, that line is copied from a run executed
+after the final edit to the thing it describes -- not from a remembered run and not
+from a previous round. The consequence is an ordering and not a new check: generate,
+edit, re-run, paste, commit -- **and if an edit follows the paste, the paste is void.**
+Earned three times in one session on figures that were each correct when taken.
+
+*Adopted by directive EH0 in the reviewer's wording, unparaphrased, proposed in the
+eighty-fifth verdict. BF0 says the figure carries its command; BP0 says it carries
+its rule; CP2 says a repair's numbers carry theirs. **None of them says WHEN the
+output is taken**, and the four figures that went wrong in one session -- `93000x`,
+`1281`, `all 5`, `five decades` -- were each correct when first measured and
+described a tree that had moved underneath them.*
