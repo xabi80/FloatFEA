@@ -1,4 +1,664 @@
 # Review — F3 step 3
+Reviewed commit: 6426ca430b0405843c6ea2d322e87051d157b09d
+Verdict: PASS
+**Reviewed commit: `6426ca4`.** (HEAD of F3 and pushed -- `git ls-remote origin F3` resolves
+to it. No corpus commit this round, EG4(e), so the script's `Reviewed commit:` stamp and the
+judged commit are the same sha, and DU1 says restate it anyway.)
+Tests: 3114 passed, 0 failed, 0 skipped   (MY OWN run, ONE invocation, no exclusion, no
+deselection, in a clean clone of `https://github.com/xabi80/FloatFEA.git` outside the OneDrive
+tree with `origin` resolving, 556.59s. **Nine reds to zero, and it reproduces in CI.**)
+
+## Round of 2026-10-02 -- NINETY-SECOND verdict. ON A MECHANISM. IT COUNTS AGAINST NO STEP (EB4).
+
+**F3 STEP 3 IS CLOSED AT PASS AND NOTHING HERE REOPENS IT (DD1).** F3 is closed, F4's plan is
+an unlocked draft, F4 step 1 is not open. No step is open, nothing here holds one.
+
+**THE ANSWER TO THE QUESTION YOU ACTUALLY ASKED IS: NOTHING. MAKE NO FURTHER REPORT COMMIT.**
+I found no blocking item and three closure items, and under CZ0 a closure item does not consume
+a round. **And I did not stop at "nothing to answer" -- I measured whether the loop settles,
+because you were entitled to an answer and not a reassurance.** Section 1.
+
+## 1. THE LOOP SETTLES, AND IT SETTLES GREEN. MEASURED, NOT REASONED.
+
+You said each verdict you answer produces a report commit that needs the next one. **That is
+true of a report commit and it is NOT true of a verdict commit, and nobody in ninety-one
+rounds had measured which.** I built the state and ran it.
+
+```
+claim  a verdict commit on top of `6426ca4`, with NO answering report, leaves the
+         report guards GREEN
+cmd    in a scratch clone at 6426ca4: prepend a stub NINETY-SECOND verdict to
+         docs/reviews/F3/step-3.md, commit it, then run the three report-guard files
+out    434 passed in 61.20s          0 failed
+cmd    the same again with a stub that DECLARES A NEW FINDING `**R660. (CLOSURE ITEM.)`
+         carrying two sites, and a full Carried list
+out    434 passed in 61.92s          0 failed
+cell   ONE VARIABLE, and it is which of the report and the verdict is the later commit.
+       `tests/test_report_carried.py:397-403` returns early when the newest verdict commit
+       descends from the newest report commit -- and every finding-bearing guard in that
+       module reads `_verdict_text_at(ANSWERED)`, the verdict file AS IT STOOD at the sha
+       the report's answered-verdict header names, which my commit does not change.
+judge  **EG3 STATE (2) DOES NOT ARISE AT THIS BOUNDARY.** The state (2) reds are the reds of
+       a report that is NEWER than the verdict and names an older one -- which is what
+       `5c9bc52` was, after a closure commit landed on top of verdict 90. A verdict landing
+       on top of a report that already names the newest verdict reddens nothing.
+```
+
+**AND THE STOP HOOK AGREES, MEASURED THE SAME WAY, IN BOTH DIRECTIONS (EH4).**
+
+```
+cmd    the two conditions `.claude/hooks/require-verdict.sh:155-170` actually evaluates,
+         with the stub verdict committed and no further report commit
+out    reviewed=6426ca430b0405843c6ea2d322e87051d157b09d
+out    report UNCHANGED  -> check_carried SKIPPED by the hook
+out    no block from the rework test
+cmd    then a commit touching ONLY `docs/closure/F3.md`
+out    report UNCHANGED  -> check_carried SKIPPED ; no block from the rework test
+cmd    then a commit touching `docs/reports/F3/step-3.md`
+out    BLOCK from the rework test -- a new verdict is required
+cmd    and the two tests that read the closure artifact, after a closure-only edit
+out    229 passed, 1 warning in 168.85s
+judge  **SO THE LOOP SETTLES IF AND ONLY IF NOTHING FURTHER TOUCHES
+       `docs/reports/F3/step-3.md`, `floatfea/` OR `tests/`.** `docs/closure/F3.md` is
+       OUTSIDE the hook's pathspec at `:167` and outside `check_carried`'s trigger at
+       `:156`, so the one closure item below that is worth fixing in F3 CAN be fixed in a
+       standalone closure commit **without** needing a verdict. The report site cannot, and
+       must not be touched.
+judge  I solved it from the weakening side too, which is the half EH4 exists for: the
+       condition that would re-open the requirement is a touch on the report, and I
+       confirmed it fires rather than assuming it would.
+```
+
+**ONE THING I OWE YOU AGAINST MYSELF.** `scripts/check_carried.py` exits **1** on the
+finding-bearing stub -- `the newest report's Carried section omits R660; verdict declares 27
+findings; 26 are carried` -- and **nothing runs it**: not `pytest`, not CI
+(`grep -n check_carried .github/workflows/ci.yml` gives one comment line and no invocation),
+and not the hook in this state. So a finding in a milestone's LAST verdict is carried by
+discipline alone. **That is the recorded design, not a defect** -- item 1b in my own
+instructions says in terms that the guard reads the verdict the report CLAIMS to answer
+rather than the newest one, and that the compensating check is my eye. I have done it (section
+2). **The mitigation is the one verdict 91 used and I use it again: every open item is named in
+`## Next step opens when` so F4 step 1's `Carried` must carry it.** I record the gap because it
+has never been written down and it is the reason that list has to be exact.
+
+## 2. ITEM 1b -- IT PASSES, FOR THE FIRST TIME IN FOUR ROUNDS
+
+```
+cmd    grep -n for the answered-verdict header, anchored at line start, over
+         docs/reports/F3/step-3.md. THE NEEDLE IS NOT QUOTED HERE, for the reason
+         section 5 gives: a verdict is a document a report may quote.
+out    3     verdict 83 @ 580b183
+out    638   verdict 84 @ 8368c51
+out    955   verdict 86 @ 3b5e36b
+out    1450  verdict 91 @ 3a8731d        <- the newest revision, naming the NEWEST verdict
+cmd    git log --oneline -1 3a8731d
+out    3a8731d review: F3 step 3 -- ninety-first verdict, PASS @ 5c9bc52
+judge  **THE HEADER NAMES THE LATEST VERDICT. ONE COMPARISON, AND IT PASSES.** Every
+       `Carried` claim in the report is therefore about the right list, which is the premise
+       the whole section rests on and which no machine checks.
+```
+
+## 3. THE TREE AT `6426ca4`, MEASURED
+
+```
+cmd    git rev-parse HEAD ; git status --porcelain --untracked-files=all
+out    6426ca430b0405843c6ea2d322e87051d157b09d ; (no output) -- CLEAN
+cmd    git ls-remote origin F3
+out    6426ca430b0405843c6ea2d322e87051d157b09d  refs/heads/F3   -- PUSHED
+cmd    git log --oneline 3a8731d..HEAD
+out    6426ca4 closure: verdict 91 -- the deadlock ends, and my prose had neutered a guard
+cmd    git diff --numstat 3a8731d..HEAD
+out    12 6    docs/closure/F3.md
+out    18 1    docs/reports/F3/step-3-answers.json
+out    176 31  docs/reports/F3/step-3.md
+cmd    git diff --name-only 3a8731d..HEAD -- floatfea tests scripts .github
+out    (no output) -- NOT ONE LINE OF CODE, TEST, SCRIPT OR WORKFLOW IN THE RANGE
+cmd    git diff 3a8731d..HEAD -- floatfea/tolerances.py
+out    (no output) -- diffed SEPARATELY, per instruction 4
+cmd    git diff 3a8731d..HEAD -- tests/conftest.py "tests/**/conftest.py"
+out    (no output)
+cmd    git ls-files -- tests/conftest.py "tests/**/conftest.py"
+out    tests/conftest.py        -- CI0: the pathspec resolves to a real file, as it must
+judge  CH2/CJ0: no conftest changed and no rung carries its own. Nothing in this range can
+       rewrite a rung's record, and I checked rather than inferred it from a green suite.
+cmd    python -m pytest -q, clean GitHub clone at 6426ca4 outside OneDrive, ONE invocation
+out    3114 passed, 2 warnings in 556.59s (0:09:16)      0 failed, 0 skipped, exit 0
+cmd    the three report-guard files at the COMMITTED 6426ca4
+out    434 passed in 60.09s
+cmd    python -m ruff check floatfea tests scripts
+out    All checks passed!
+cmd    python -m black --check floatfea tests scripts
+out    112 files would be left unchanged.
+cmd    python -m mypy floatfea
+out    Success: no issues found in 30 source files
+cmd    PYTHONPATH=. python scripts/check_carried.py ; echo exit=$?
+out    check_carried: all 26 findings carried ; exit=0
+judge  **EVERY FIGURE IN YOUR HAND-BACK REPRODUCES ON MY INSTRUMENT, EXACTLY, INCLUDING
+       `434 passed, 0 failed` AND `all 26`.** Nine reds at `5c9bc52` to zero at `6426ca4`.
+```
+
+## CI AT THE REVIEWED COMMIT (CA2, CK2), FROM `gh` AND NOT FROM THE PASTE
+
+```
+cmd    gh run list --commit 6426ca430b0405843c6ea2d322e87051d157b09d --json ...
+out    37033441823  CI  push  completed  **success**
+judge  **IT WAS `in_progress` WHEN YOU INVOKED AND I DID NOT TAKE YOUR WORD FOR IT. A RUN
+       THAT HAS NOT FINISHED IS NOT A PASS; THIS ONE FINISHED AND IT IS GREEN.**
+cmd    gh run view 37033441823 --json jobs -- name, conclusion, step count
+out    the verification ladder            SUCCESS   13 steps   16:22:08 -> 16:25:37
+out    lint, unit and guards              SUCCESS   14 steps   16:22:08 -> 16:28:06
+out    CI determinism -- leg              skipped    0 steps
+out    CI determinism -- ten legs agree   skipped    0 steps
+cmd    the ladder job's steps, by number
+out    5 ladder 1, 6 ladder 2, 7 ladder 3, 8 ladder 6, 9 ladder 4, 10 ladder 5 -- ALL SUCCESS
+cmd    sum the per-rung lines the ladder job printed
+out    1276 + 66 + 245 + 134 + 127 = 1848 collected, 0 failed, 0 errored, 0 skipped
+judge  **THE LADDER IS GREEN AT THE REVIEWED COMMIT'S OWN SHA, ALL SIX RUNGS, 1848/0.** No
+       low rung is red, so nothing here is STOP-class.
+cmd    the lint job's steps, by number
+out    5 actionlint OK, 6 ruff OK, 7 black OK, 8 mypy OK, 9 unit tests OK,
+out    10 guards and meta-tests **SUCCESS**
+out    the step outputs: All checks passed / 112 files would be left unchanged /
+out    Success: no issues found in 30 source files / 88 passed / 1178 passed, 0 failed
+judge  **CZ1 (iii) IS SATISFIED AT `6426ca4`'s OWN SHA AND `guards and meta-tests` IS SEEN
+       TO HAVE RUN AND PASSED**, not skipped behind an earlier red step. The push ordering is
+       standing practice and this is its third consecutive success.
+judge  `1178` against `5c9bc52`'s `1084 + 9`: **+85 parametrisations, and they are accounted
+       for** -- three new findings add rows to the site and Carried parametrisations. Recorded
+       because an unexplained count jump is how a silently narrowed collection reads.
+cmd    sed -n '/^on:/,/^jobs:/p' .github/workflows/ci.yml ; grep -n "if: github.event_name"
+out    paths-ignore: "docs/reports/**", "docs/reviews/**" -- and nothing else
+out    :90  if: github.event_name == 'workflow_dispatch'
+judge  **NOT CK2.** The two skipped jobs are skipped BY DECLARATION on a push, measured at the
+       workflow rather than inferred from zero steps; the two that ran have real durations and
+       13 and 14 steps. No spending annotation. **There is no unavailable check this round and
+       no red one.**
+```
+
+## 5. R657 AND R658 RE-MEASURED AT `6426ca4` -- YOUR CLAIM HOLDS AND MY OWN WORDING DOES NOT
+
+You asked me to check for another collision of the class. I did it twice: by enumeration, and
+by ablation. **The enumeration says your fix is complete. The ablation says my verdict 91
+sentence about R658 is now false, and your commit is what made it false.**
+
+```
+cmd    grep -n for the answered-verdict needle over docs/reports/F3/step-3.md, and the same
+         over docs/closure/F3.md
+out    report: 4 lines -- 3, 638, 955, 1450, ALL of them real revision headers
+out    closure: (no output)
+cmd    python: rindex of that needle over the report, char offset to line
+out    rindex -> line 1450, and the line is the newest revision's header
+judge  **THE TRIGGER IS GONE AND THE LOCATOR LANDS ON THE HEADER.** Your figure reproduces.
+cmd    grep -rn for rindex and for first-match index/find over tests/ and scripts/
+out    `tests/test_report_guard_states.py:439` and `:498` are the ONLY last-match locators
+out    over the report; every other one in the tree reads the workflow or the plan
+cmd    the other needles that pick ONE site: the revision heading over the report; the
+         anchored answered-verdict header within the newest revision; the generated-mark
+         comment; the verdict's own reviewed-commit line; the plan's step marker
+out    4 / 1 / 20, none of them quoted in prose / headers only / exactly one numeric marker,
+out    `docs/milestones/F3.md:9`, with F2's non-numeric and F4 declaring none
+judge  **NO OTHER COLLISION OF THAT CLASS EXISTS IN EITHER FILE**, and `docs/closure/F3.md`
+       is parsed by no needle at all -- the only test that reads it reads existence
+       (`tests/verification/rung3/test_closure_evidence_exists.py`).
+judge  **ONE LATENT ONE, AND IT IS MINE, AND IT IS INERT.** The judged-commit locator at
+       `tests/test_report_carried.py:2026` and `scripts/ci_section.py:171` is unanchored, and
+       `docs/reviews/F3/step-3.md:25` -- verdict 91's own cmd line -- quotes the bold
+       judged-commit literal. It cannot bite: the search is FIRST-match and a prepended
+       verdict's real header is always line 4. I record it because it is the same shape and
+       because I am the only reader of my own file.
+```
+
+**AND NOW THE ABLATION, WHICH IS THE PART YOU DID NOT TAKE.**
+
+```
+rule   my own instruction: a gate carries its own failure -- break the claimed property and
+       confirm the assertion goes red
+cmd    at 6426ca4, the three states as shipped
+out    answers_header_names_a_sha_that_is_not_a_commit                          1 passed
+out    answers_header_names_an_older_verdict_commit                             1 passed
+out    guard_state_declared_GREEN_..._while_the_state_actually_REDDENS_CONTROL  1 passed
+cmd    R657's site: patch the `bad_answers_sha` plant at `:439` to write NOTHING, one
+         variable, everything else held
+out    FAILED -- nested run `368 passed`, exit 0, `assert 0 != 0`
+cmd    R658's site: patch the `older_answers_sha` plant at `:498` to append a NEUTRAL line
+         instead of rewriting the header, so the harness's re-commit still has content and
+         every other variable including that commit is held
+out    both states FAILED -- nested `368 passed`, `assert 0 != 0`
+cell   ONE VARIABLE in each, the plant writing nothing. **FAIL WITHOUT IT, PASS WITH IT.**
+judge  **ALL THREE CONTROLS DISCRIMINATE AT `6426ca4`.** Your sentence "the states resume
+       working" is TRUE and now measured. I measured it because a state that passes is not a
+       state that discriminates, and that distinction is the whole of R658.
+judge  **SO MY VERDICT 91's R658 WORDING IS WRONG AT THIS COMMIT AND YOUR COMMIT REPUBLISHED
+       IT.** "Two negative controls pass with the plant and without it" was measured at
+       `5c9bc52`, where the trigger was present; at `6426ca4` it is false. R660 below is that,
+       and the sentence is mine first. **R658's vacuity was never a second defect -- it was
+       the SAME trigger reaching a second site, which is why verdict 91 could say one remedy
+       covers both and why removing the trigger restored all three at once.**
+```
+
+**AND THE FRAGILITY, SOLVED FROM THE WEAKENING SIDE (EH4), WHICH IS WHY BOTH FINDINGS STAY
+OPEN RATHER THAN BEING WITHDRAWN.**
+
+```
+cmd    the injection direction: at 6426ca4, append ONE line of prose quoting the needle to
+         the end of the report, commit it, re-run the three states
+out    rindex -> line 2560 (the injected line)
+out    answers_header_names_a_sha_that_is_not_a_commit                          1 FAILED
+out    answers_header_names_an_older_verdict_commit                             1 passed
+out    guard_state_declared_GREEN_..._while_the_state_actually_REDDENS_CONTROL  1 passed
+judge  **ONE LINE OF REPORT PROSE, ANYWHERE, DISABLES THREE NEGATIVE CONTROLS AND ONLY ONE
+       OF THEM SAYS SO.** That is the smallest injection measured and it is one line. The
+       loud one is R657, the two silent ones are R658, and the split reproduces from a fresh
+       commit -- so it is a property of the locator and not of one round's text.
+judge  **R657 AND R658 THEREFORE STAY OPEN AND CARRY BY NAME INTO F4 STEP 1**, exactly as you
+       recorded. You fixed the trigger and said in terms that you had not fixed the
+       fragility; I confirm both halves of that sentence, and the remedy is still the one
+       anchored match at each of the two sites, still gated on the DR1/CZ0 ruling that is
+       Xabier's.
+```
+
+## 6. Try to break it
+
+```
+cmd    case 1: is there a second collision of the R657 class left in the report or the
+         closure artifact?
+out    no. Four header lines, zero in the closure artifact, two last-match locators in the
+out    whole tree and both now land on the header.
+judge  the case I was asked to construct FAILED TO BREAK IT, and I say so plainly.
+cmd    case 2: do the restored controls DISCRIMINATE, or do they merely pass?
+out    all three fail with their plant suppressed and pass with it
+judge  **this is the case that mattered and it is the one the report asserts without
+       measuring.** It came out in your favour, and the measurement is now on the record.
+cmd    case 3: invert it -- how little does it take to break them again?
+out    one line of prose; three controls disabled; one red
+judge  the adversarial case SUCCEEDED here, and it is why nothing is withdrawn.
+cmd    case 4: does writing this verdict redden the tree or re-arm the Stop hook?
+out    434 passed with a stub verdict, with and without a declared finding; hook silent
+judge  **THE CASE I CONSTRUCTED AGAINST MY OWN ROUND CAME OUT IN YOUR FAVOUR TOO.** Section 1.
+cmd    case 5: can a closure-artifact repair be made without re-opening the verdict
+         requirement?
+out    yes -- outside the hook's pathspec at `:167`, and 229 passed on the two tests that
+out    read that file
+judge  so the one closure item worth fixing inside F3 is reachable without another round.
+```
+
+## The adversarial corpus (BE3)
+
+**NO NEW BATCH, AND THE MEASUREMENT IS THE INVERSE OF LAST ROUND'S.**
+
+```
+cmd    ls tests/corpus/ | wc -l ; git diff --name-only 3a8731d..HEAD -- tests/corpus
+out    34 ; (no output)
+cmd    grep -rln label_provenance tests/ scripts/ floatfea/
+out    (no output) -- the EB6 gate still does not exist, and no F4 load-mapping gate exists
+rule   EG4(e): batches pause after F3 step 3 except mutation work on F4's load-mapping gate
+       and EB6's label-provenance gate
+judge  **New entries this round: 0. Caught by the implementer's checks: 0 of 0.** Neither
+       exempt gate exists; a thirty-fifth file would measure the same nothing.
+cmd    the three corpus rows verdict 91 measured as unexercised -- lines 99, 137 and 148 of
+         tests/corpus/report_guard_states.txt -- re-measured by ablation at 6426ca4
+out    99   require=named_fail  -> EXERCISED. fails with the plant suppressed
+out    137  require=named_fail  -> EXERCISED. fails with the plant suppressed
+out    148  require=fail        -> EXERCISED. fails with the plant suppressed
+judge  **COVERAGE ON THAT SPECIES IS 3 OF 3 RESTORED, FROM 0 OF 3 ONE ROUND AGO, AND ONE LINE
+       OF PROSE TAKES IT BACK TO 0 OF 3 WITH ONE RED.** That is this round's number and it is
+       a sensitivity rather than a state, which is the stronger thing to know. The rows are
+       not edited: EG4(e) pauses batches and the restoration needed no new entry.
+judge  **THE SHAPE WORTH A ROW IS RECORDED FOR THE FIRST POST-28-OCTOBER BATCH** -- "one line
+       of report prose disables N controls and only one reddens" -- and is not written now,
+       because writing it now is a batch and EG4(e) says no.
+```
+
+## Carried
+
+Verdict 91 named **two blocking items**, three closure items, two hand-overs to Xabier and a
+ledger. Every one, with its status:
+
+* **R657 -- OPEN, BLOCKING, UNCHANGED, CARRIES BY NAME INTO F4 STEP 1.**
+  ```
+  cmd  git diff --name-only 3a8731d..HEAD -- tests floatfea scripts
+  out  (no output) -- `tests/test_report_guard_states.py:439` is untouched, which is what
+  out  DR1 required of you while the ruling is open
+  cmd  the ablation at 6426ca4 (section 5)
+  out  the control DISCRIMINATES today; one line of prose disables it again
+  judge  **the trigger is removed and the fragility is not.** You said exactly that, in
+         section 14 and in the commit message. Still (d)-class, still answerable only under
+         the DR1/CZ0 ruling. **Not withdrawn.**
+  ```
+* **R658 -- OPEN, BLOCKING, UNCHANGED, CARRIES BY NAME INTO F4 STEP 1 -- with its wording
+  corrected by R660.** Same one-line remedy at `:498`; the two states discriminate today and
+  the one-line injection shows they are the silent half of the same locator.
+* **R659 -- ANSWERED AND CLOSED AT BOTH NAMED SITES.** A closing condition that names sites is
+  closed site by site, so each:
+  ```
+  cmd  site 1, docs/reports/F3/step-3.md section 14
+  out  "-> EIGHT cascade off the red baseline. THE NINTH DOES NOT -- see below." replaces
+  out  "cascade off the red baseline, whose own failure line is that same test", and the new
+  out  block carries the cell, `9 failed, 340 passed -> 1 failed, 348 passed`
+  cmd  site 2, docs/closure/F3.md section 6d, the `c09aef4` table row
+  out  "fails -- and **NOT as a cascade** (R659, withdrawn): verdict 91's controlled cell
+  out  clears the other eight in one move and leaves this one, with its nested baseline green"
+  judge  both sites state the measured mechanism, both name the cell, and the withdrawal is
+         visible rather than silent. **CLOSED.** And you recorded the lesson against yourself
+         in the terms I would have used -- running a test alone is not moving one variable.
+  ```
+* **R654, R655 -- ANSWERED AND CLOSED at verdict 91, not reopened, and nothing in this range
+  touches their sites.**
+* **R656 -- OPEN WITH XABIER, correctly recorded and correctly NOT repaired.**
+  ```
+  cmd  git diff --name-only 3a8731d..HEAD -- scripts
+  out  (no output) -- `scripts/ci_section.py` untouched, as DR1 required
+  judge  lower urgency stands: the push ordering dissolved the deadlock without it. It is a
+         correctness item about CA2's third state. **To Xabier.**
+  ```
+* **The DR1 / CZ0 wording conflict -- OPEN WITH XABIER, load-bearing for R657 and R658.**
+  Recorded at `docs/closure/F3.md` section 6d and now at section 6's own block. I do not rule
+  it. **Unchanged from verdict 91: three one-line anchored matches close R657 and R658
+  completely, and which of repair-or-delete is permitted is his.**
+* **R653 -- OPEN, carried to F4 unchanged.**
+  ```
+  cmd  grep -rn RHO_INF tests/ floatfea/
+  out  (no output) -- the constant still reaches no assertion
+  judge  becomes (c) the moment a G4.x gate cites this residual. **Carries by name.**
+  ```
+* **R638 -- OPEN, unchanged, carries BY NAME into F4 step 1.** EJ1 governs.
+  `RIGID_MODE_EXACTNESS` still has no counter-case and `floatfea/tolerances.py` is not in this
+  range's diff at all.
+* **R637 clause (iii) -- OPEN AS A CLAUSE, AND IT HAS NO NEW OBJECT THIS ROUND. Second time in
+  five.** The commit message of `6426ca4` carries its four lint figures as triples and says in
+  terms that no report-guard count is pasted there because it cannot be taken before the
+  commit exists. That is CZ1's reusable half applied correctly and unprompted for the second
+  commit running, and the figure you then measured at the sha reproduces on my instrument
+  exactly (`434 passed`).
+* **EG3(ii), the half no verdict in this milestone had measured -- NOW MEASURED ON BOTH SIDES
+  AND THE PREDICTION WAS WRONG IN YOUR FAVOUR.** Verdict 91 predicted `1 failed, 348 passed`
+  on the three guard files at its own commit, the one being R657. The real figure at `6426ca4`
+  is **`434 passed, 0 failed`** -- because your closure commit removed the trigger, which the
+  prediction could not know. **The difference is not CZ1 (iv): it is a prediction superseded
+  by a fix, and I record it rather than letting a stale prediction stand.**
+* **The EJ4 residual-location hand-over** -- unchanged, carried to F4's gate.
+  `docs/closure/F3.md:299-303,346` is its record.
+* **Verdict 91's seven `Next step opens when` items:** (1) the lock -- RESPECTED,
+  `docs/milestones/F4.md:3` still reads "UNLOCKED DRAFT ... Xabier locks it." and no
+  `docs/reports/F4` or `docs/reviews/F4` exists. (2) R657 and R658 not answered by widening,
+  by a declaration or by adding a name to a list -- RESPECTED; the diff touches no test.
+  (3) push ordering -- APPLIED, run `37033441823`, green. (4) section 0 producible -- YES, and
+  I regenerated it myself: `python scripts/ci_section.py` prints the shipped section byte for
+  byte, anchored on verdict 91 at `5c9bc52`, run `37028069713`. (5) a red traced by name --
+  **no red to trace.** (6) EG3(ii) -- measured, above. (7) the `Carried` list -- all 26,
+  exit 0, my run.
+* **The ledger, unchanged and not re-reviewed:** C113, C115 to C117, C119, C120, C122, C123 at
+  `docs/closure/F3.md` section 8, **C119 to F4 step 1's first commit and NOT before the lock**;
+  R631, R626's residue, R635; C102, C103, C106 to C112, C114, C88, C86, C90 to C98, C100, C74,
+  C76, C78, C82, C85, R610, R615. C89 withdrawn. **C40, C75, C75b, C99, C101, C104, C105,
+  C118, C121, C124 to C134 -- CLOSED and staying closed.** R622 is F4's own.
+
+## Findings
+
+**NOTHING IN THIS ROUND IS (a), (b), (c) OR (d).** `floatfea/` is untouched in the whole
+range, no tolerance value or form moved, no gate assertion changed, and the suite and CI are
+both green at the reviewed commit. **All three findings are CLOSURE ITEMS under CZ0, none of
+them holds anything, and the first is mine before it is yours.**
+
+**R660. (CLOSURE ITEM. BP0/CP3, AND THE SENTENCE IS MINE FIRST.) "TWO NEGATIVE CONTROLS PASS
+WITH THE PLANT AND WITHOUT IT" IS FALSE AT THE COMMIT THAT PUBLISHES IT, AND THAT COMMIT IS
+WHAT MADE IT FALSE.** Sites: `docs/reports/F3/step-3.md:2518`, `docs/closure/F3.md:489`, and
+the commit message of `6426ca4`.
+
+```
+claim  R658's two states pass with the plant and without it (present tense, three sites)
+cmd    the ablation at 6426ca4: suppress the `older_answers_sha` plant at `:498`, hold
+         everything else including the harness's re-commit
+out    both states FAILED -- nested `368 passed`, `assert 0 != 0`
+cmd    the same two as shipped at 6426ca4
+out    both `1 passed`
+rule   BP0: when the input a figure was measured on moves, the figure is regenerated or
+       withdrawn IN THE SAME COMMIT. CP3: if an edit follows the paste, the paste is void.
+judge  **REFUTED, AND BY THE SAME COMMIT THAT PUBLISHES IT.** Removing the trigger is what
+       restored all three controls; the sentence describing them as vacuous was measured at
+       `5c9bc52` and pasted into a commit where it is false. **It is my wording from verdict
+       91 and you reproduced it faithfully, which is why I am naming it against myself
+       first.** The error is conservative -- it understates the tree and overstates the
+       defect -- and it is still a false sentence in F3's permanent record.
+judge  **AND IT MATTERS BECAUSE SECTION 6 IS SCHEDULED TO BE COPIED.** Verdict 91 said section
+       6d propagates into F4 step 1's `Carried`; this sentence would propagate with it, for
+       the second round running, exactly as R659 would have.
+```
+**Closed when** all three sites read what was measured: the two states were vacuous *at
+`5c9bc52`, through the same trigger as R657*, and *discriminate at `6426ca4`*, with the open
+finding being the unanchored locator rather than a current vacuity. **The `docs/closure/F3.md`
+site is reachable in a standalone closure commit and needs no verdict (section 1); the
+`docs/reports/F3/step-3.md` site must NOT be touched in F3 -- carry it into F4 step 1's
+`Carried` and close it there, or state it left-and-why.** The commit message is immutable and
+is closed by the record, not by an edit.
+
+**R661. (CLOSURE ITEM. CW0/BF0.) SECTION 8's DECLARATION SENTENCE IS FALSE FOR EVERY ROW THIS
+COMMIT ADDED, AND ON TWO OF THEM IT DECLARES A BLOCKING FINDING CLOSED.** Sites:
+`docs/reports/F3/step-3.md:1895-1960` -- the rows added for R651 to R659 -- and specifically
+`:1948` (R657's own site) and `:1949-1955` (R658's).
+
+```
+claim  (the shipped reason, on every row this commit added) "**no change at this site.** The
+       finding was answered at an earlier revision of this step and verdict 87's own `Carried`
+       section records it closed; this revision's diff is R645's prose, R646's function, F4's
+       plan draft and verdict 88's closure list, none of which reach it."
+cmd    git diff --name-only 3a8731d..HEAD
+out    docs/closure/F3.md  docs/reports/F3/step-3-answers.json  docs/reports/F3/step-3.md
+cmd    the R657 row in section 8, against section 14 and against section 9's Carried table
+out    :1948 carries the sentence above
+out    section 14: "R657 and R658 stay OPEN and carry by name into F4 step 1"
+out    section 9: "| R657 | **carried** |" and "| R658 | **carried** |"
+judge  **THE REPORT DECLARES THE SAME TWO FINDINGS CLOSED IN ONE GENERATED TABLE AND OPEN IN
+       ANOTHER**, and R654 to R659 were raised at verdicts 90 and 91 -- verdict 87 says
+       nothing about any of them. The third clause is false of this diff on its face: this
+       revision's diff is the closure artifact and section 14, not "R645's prose, R646's
+       function, F4's plan draft and verdict 88's closure list".
+judge  **NOT (c), AND I CHECKED RATHER THAN ASSUMING.** `tests/test_report_carried.py`'s site
+       check asserts the literal `no change` is present on the row and nothing about the rest
+       of the sentence; `scripts/untouched_sites.py`'s own docstring says the reason "is the
+       implementer's sentence and no script can supply it". So no gate claims this is true,
+       and CZ0 puts it here. **It is still the most consequential thing I found**, because a
+       reader of section 8 checking whether a blocking item was left reads that it was closed
+       -- and a step executed on top of an item recorded as closed is the failure this whole
+       arrangement exists to prevent.
+```
+**Closed when** each row added for R651 to R659 carries a reason that is true of it, with the
+literal `no change` kept, and R657's and R658's rows say what section 14 says -- open,
+blocking, untouched because DR1 permits only deletion and the ruling is Xabier's. **The whole
+block is in `docs/reports/F3/step-3.md` and so is closed in F4 step 1's `Carried`, not in F3.**
+The pre-existing rows above `:1895` are not in scope; this is about the ones this commit added.
+
+**R662. (CLOSURE ITEM. BF0/CP3.) TWO `out` LINES IN SECTION 14 ARE NOT WHAT THEIR `cmd`
+PRINTS AT THIS COMMIT.** Site: `docs/reports/F3/step-3.md:2508-2514`, and the same block in
+`6426ca4`'s commit message.
+
+```
+claim  the first `cmd` is `sed -n 439p tests/test_report_guard_states.py` and its `out` shows
+       the needle as a two-part concatenation
+cmd    sed -n 439p tests/test_report_guard_states.py, at 6426ca4
+out    the needle is a SINGLE literal on that line, not a concatenation
+judge  the alteration is DISCLOSED on the next `out` line and the reason is good -- the
+       report cannot quote that string. It is still an `out` that the `cmd` does not print,
+       which is the shape verdict 88 found in a commit message at `bf21c37`.
+claim  the second `cmd` greps that needle over the report and its `out` is `:1450` and `:2316`
+cmd    the same grep at 6426ca4
+out    four lines -- 3, 638, 955, 1450 -- and no `:2316`
+judge  **this half is NOT disclosed.** The figure was taken before the same commit's own edit
+       removed the colliding line, so it describes a tree the commit moved. CP3's ordering:
+       generate, edit, re-run, paste -- and if an edit follows the paste the paste is void.
+```
+**Closed when** the first `cmd` is one that actually produces the pasted text (pipe `sed`
+through a substitution, or label the line `judge`), and the second names the commit it was
+measured at -- `at 5c9bc52` -- or is regenerated. **In `docs/reports/F3/step-3.md`, so closed
+in F4 step 1's `Carried`.**
+
+## Closure items
+
+Named, not re-reviewed, none of them holding anything. **There is no step open for these to be
+absorbed into**, so they go to F4 step 1's `Carried` and to the F3 closure artifact.
+
+* **R660** -- `docs/closure/F3.md:489` (fixable NOW in a standalone closure commit, no verdict
+  needed, measured in section 1), `docs/reports/F3/step-3.md:2518` (F4 step 1), and
+  `6426ca4`'s commit message (closed by the record). **My sentence before yours.**
+* **R661** -- `docs/reports/F3/step-3.md:1895-1960`. F4 step 1.
+* **R662** -- `docs/reports/F3/step-3.md:2508-2514`. F4 step 1.
+* **R656** -- `scripts/ci_section.py:279-283`. Xabier's, at lower urgency.
+* **The DR1 / CZ0 wording conflict** -- `docs/SUPERVISOR.md` DR1 versus `CLAUDE.md` CZ0.
+  **Load-bearing for R657 and R658.** To Xabier.
+* **R653, R638, R637 clause (iii), the EJ4 residual-location hand-over** -- carried to F4
+  step 1 by name, unchanged.
+* **C113, C115 to C117, C119, C120, C122, C123** as EJ3 ledgers them, **C119 to F4 step 1's
+  first commit and not before the lock**. **C102, C103, C106 to C112, C114, C88, C86, C90 to
+  C98, C100, C74, C76, C78, C82, C85, R610, R615** carried unchanged. **C89** withdrawn.
+  **C40, C75, C75b, C99, C101, C104, C105, C118, C121, C124 to C134** CLOSED.
+
+## Tolerances touched
+
+```
+cmd  git diff 3a8731d..HEAD --numstat -- floatfea/tolerances.py
+out  (no output) -- THE FILE IS NOT IN THE DIFF AT ALL, diffed separately per instruction 4
+cmd  git diff --name-only 3a8731d..HEAD -- floatfea
+out  (no output) -- NOT ONE LINE OF floatfea/ IN THE WHOLE RANGE
+cmd  git diff --name-only 3a8731d..HEAD -- tests scripts .github
+out  (no output) -- no golden moved, no parametrisation loosened, no conftest, no workflow
+cmd  grep -rn RHO_INF tests/ floatfea/
+out  (no output) -- the R653 constant reaches no assertion
+judge  **NO TOLERANCE WAS TOUCHED AS A VALUE OR AS A FORM, AND NOTHING THAT FUNCTIONS AS ONE
+       UNDER ANOTHER NAME WAS EITHER.** The range is three documentation files.
+```
+
+**none.** For continuity, the standing entries and their open residues, unchanged and not
+re-measured this round because the file is not in the diff: `RIGID_MODE_EXACTNESS` `1e-15`
+(**still no counter-case -- R638**, `floatfea/tolerances.py:330-400`);
+`PLATFORM_RIGID_MODE_EXACTNESS` `1.154338e-18`;
+`PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT` `1.0e-14`; `RIGID_MODE_BOUND`
+`199.526231496888` (**R631** its open residue, ledgered under DZ7c). `RHO_INF` `0.8` in
+`scripts/` is not a tolerance and is correctly not in that file.
+
+## My own instructions (4b), read line by line
+
+```
+cmd  git diff --stat 3a8731d..HEAD -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  (no output)
+cmd  git log --oneline 3a8731d..HEAD -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  (no output)
+judge  NOT ONE LINE OF WHAT I READ, CARRY OR MAY WRITE CHANGED IN THIS RANGE. No STOP-class
+       process finding, and no guard of mine has gone. Diffed rather than inferred from a
+       green suite, because nothing in the suite reads those files. **It matters most in a
+       round that hands a rule conflict upward for the third time, because a rule under
+       argument is a rule someone has a reason to edit.**
+```
+
+## On the criterion
+
+**I RULED UNDER CZ0.** All three findings are closure items and I have classed them that way.
+Under the retired head, R660 and R661 would each have been a blocking round; neither moves a
+gate, and R661 in particular is the kind of finding six consecutive rounds produced without
+moving one.
+
+**WHERE I CAME CLOSE TO DEPARTING, AND DID NOT: R661.** A generated table that declares two
+blocking findings closed is nearer to a gate than prose usually gets, and my own instructions
+let me block on a closure item that touches (c). **I checked whether it does and it does not**
+-- the site check asserts only the literal `no change`, and the generator's docstring says the
+reason is unverifiable by construction. So it is a closure item, said once, and I move on. I
+note the exposure because the next reader of section 8 inherits it.
+
+**MY DISAGREEMENT WITH THE CRITERION, ONCE AND IN ONE PLACE, AND IT IS THE SAME ONE: DR1 AS
+WRITTEN MAKES THREE CORRECT FIXES UNREACHABLE.** `scripts/ci_section.py:279-283` refuses a
+state CA2 commands be recorded (R656); `tests/test_report_guard_states.py:439` and `:498` are
+negative controls one line of prose away from failing false (R657, R658). DR1 permits deletion
+only; CZ0 says "fixed or deleted"; deleting the first is unavailable because the generator must
+still produce a table in the other two states, and deleting the second removes the only planted
+states for two shapes, which `docs/closure/F3.md` already records having happened once.
+**Three one-line anchored matches would close R657 and R658 completely, and this round measured
+what leaving them costs: one line of prose, three controls, one red.** That goes to Xabier
+through you, with R656 and the wording conflict. It does not become another round and nothing
+is blocked while he decides.
+
+## Next step opens when
+
+**F3 STEP 3 IS CLOSED AT PASS (DD1), F3 IS CLOSED, AND F4 IS OPEN -- VERDICT 88 OPENED IT AND
+NOTHING SINCE HAS CLOSED IT. THERE IS NOTHING TO OPEN AND NOTHING TO HOLD.** The disposition
+for the tree at `6426ca4`, recorded by hand as DD1 prescribes:
+
+**THE TREE AT `6426ca4` IS GREEN. 3114 passed, 0 failed, 0 skipped on ONE local invocation in
+a clean GitHub clone; CI run `37033441823` CONCLUSION SUCCESS at that sha with all four jobs
+accounted for, the verification ladder green on all six rungs at 1848 passed / 0 failed, and
+`guards and meta-tests` SEEN TO HAVE RUN AND PASSED; ruff, black and mypy clean on all three
+pathspecs; `check_carried` exit 0 on all 26. THE NINE REDS OF `5c9bc52` ARE GONE, AND MY
+ABLATION CONFIRMS THEY WENT BY RESTORING THREE CONTROLS RATHER THAN BY SILENCING THEM. NO
+FURTHER REPORT REVISION IS OWED FOR F3 STEP 3, AND MAKING ONE WOULD RE-ARM THE VERDICT
+REQUIREMENT FOR NO GAIN.**
+
+**TO YOUR QUESTION, PLAINLY: THERE IS NOTHING FOR YOU TO ANSWER. MAKE NO FURTHER REPORT
+COMMIT.** I measured that this verdict leaves the tree green and the `Stop` hook silent
+(section 1), so the loop settles here. Two optional, measured, verdict-free moves remain and
+neither is required:
+
+1. **R660's closure-artifact site may be fixed now**, in a standalone commit touching only
+   `docs/closure/F3.md`. Measured: outside the hook's pathspec at `require-verdict.sh:167` and
+   outside `check_carried`'s trigger at `:156`, and `229 passed` on the two tests that read
+   that file. **Worth doing**, because section 6 is scheduled to be copied into F4 step 1's
+   `Carried` and would otherwise propagate a false sentence about a gate's current state.
+2. **Nothing else.** Do not touch `docs/reports/F3/step-3.md`, `floatfea/` or `tests/`: I
+   measured that a commit touching the report BLOCKS and requires a new verdict, which is the
+   loop you asked me to help end.
+
+What F4 step 1 carries, and this list is the mechanism (section 1 says why it has to be exact):
+
+1. **THE PLAN IS LOCKED BEFORE IT IS IMPLEMENTED, AND I REFUSE AGAIN TO OPEN IT EARLY.**
+   `docs/milestones/F4.md:3` reads "UNLOCKED DRAFT, written to directive EJ5. Xabier locks it."
+   and no `docs/reports/F4` or `docs/reviews/F4` exists. **C119 is not fixed before that lock,
+   and R657 and R658 are not fixed before the DR1/CZ0 ruling.** The critical path is the lock
+   and it is Xabier's, not yours and not mine.
+2. **TWO BLOCKING ITEMS BY NAME: R657 and R658.** Same unanchored locator, two sites. Neither
+   may be answered by widening, by declaring a state green, or by adding a name to a list --
+   the deleted whitelist at `tests/test_report_guard_states.py:796-815` records what adding a
+   name costs. The permitted answers are an anchored plant or deletion-with-reason, and which
+   is permitted is Xabier's.
+3. **THREE CLOSURE ITEMS BY NAME: R660, R661, R662**, plus **R656**, the **DR1/CZ0 conflict**,
+   **R638** (EJ1), **R637 clause (iii)** with no current object, **R653**, the **EJ4
+   residual-location** hand-over, **R654, R655 and R659 as answered-and-verified**, plus the
+   EJ3 ledger.
+4. **THE PUSH ORDERING IS STANDING PRACTICE AND IS NOW PROVEN THREE TIMES.** Push the step's
+   final report revision as the HEAD of a push that also carries at least one
+   non-`paths-ignore`d file. `docs/closure/**`, `docs/milestones/**` and `tests/corpus/**` all
+   qualify; `docs/reports/**` and `docs/reviews/**` are the only ignored paths. Proof:
+   `bf21c37` (37009523830), `5c9bc52` (37028069713), `6426ca4` (37033441823).
+5. **SECTION 0 ANCHORS ON THIS VERDICT AND ON `6426ca4`, WHOSE RUN IS GREEN.** The first F4
+   step 1 report names verdict 92 at my verdict commit and generates section 0 for `6426ca4`.
+   **Do not name a different sha**; verdict 90 section 7 measures why that passes every guard
+   and is still a forgery.
+6. **A red at F4 step 1 is CZ1 (iv) unless every id traces BY NAME under EG3(i) -- and R657
+   says tracing by name is not enough.** Where a state's own failure line names another test,
+   the trace is one variable away from being a guess, and the cell is cheap. **This round adds
+   a second instruction of the same kind: a state that PASSES is not a state that
+   DISCRIMINATES.** Before any restored control is believed green, suppress its plant and paste
+   both directions.
+7. **EG3(ii) is now measured on both sides and the figure to beat is `434 passed, 0 failed` on
+   the three report-guard files at a verdict commit.** Verdict 91's prediction of `1 failed,
+   348 passed` was superseded by your own fix, which is the right way for a prediction to die.
+
+**Schedule.** F3 closed 1 October, twelve days inside its 13 October date. **Nothing in this
+round moves any date.** EJ6 stands: F4 19 October with a 14 October working target, the
+member-force table 23 October against 17, the code check 28 October against 22. The
+schedule-relevant fact is that **the mechanism block is finished and this round cost nothing
+from the critical path** -- the critical path is the F4 plan lock and it has been Xabier's for
+two rounds. I read neither a slip nor a scope cut as needed.
+
+**One sentence for the implementer.** You were right that nothing was blocked on me, you were
+right to ask whether you had left another collision of that class, and the answer is that you
+had not -- but you had left a sentence of MINE that your own fix made false, and the way I
+found it was by doing to your repair the one thing your repair proved necessary: suppressing
+the plant and measuring both directions instead of reading a green state as a working one.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F3 step 3
 Reviewed commit: 5c9bc523c4f50e2afa8ab3fac22d919e67100a8d
 Verdict: PASS
 **Reviewed commit: `5c9bc52`.** (HEAD of F3 and pushed. No corpus commit this round --
