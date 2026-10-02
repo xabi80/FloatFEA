@@ -1,0 +1,54 @@
+# CORPUS: load records whose STATIC part is absent, partial or mis-attributed --
+# F4's load-mapping gate (G4.1, G4.3, G4.6) and the refusal that must precede it.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the eighty-seventh verdict on F3, reviewed commit
+# 6083a87, from measurements taken against the pinned HSP state floatfea-ref-1.
+#
+# WHY THIS FILE EXISTS (BE3, EG4(e)'s load-mapping exception). The pinned
+# FloatSim model is a linearised seakeeping formulation. Measured, one variable
+# moved (solve_equilibrium False -> True, same deck, same database, same dt):
+# xi0 is identically 0 both ways, |C xi0 - F_state|_inf = 0, CumminsLHS carries
+# only C and M_plus_Ainf, and the four hubs plus the platform -- 568.98 N of
+# weight -- have diag(C) = 0, |mu| = 0 and |applied| = 0, their entire balance
+# being |M a| ~ |G^T lam| ~ 19.3 N. So `lam` is a PERTURBATION reaction and the
+# static part is not in the model, not merely unexported.
+#
+# docs/load-interchange-v1.md sec.7 already locks `gravity` and `hydrostatic` OUT
+# of the schema by decision and PLAN.md G4.6 prescribes that FloatFEA rebuilds
+# both -- gravity from the FE mass distribution, buoyancy from the hull geometry
+# on the MEAN wetted surface. The failure mode this corpus is about is therefore
+# NOT a missing channel. It is a record that reaches the mapping step carrying a
+# dynamic-only reaction while the assembled case LOOKS complete, so a member
+# force comes out three orders light with nothing in the file saying so.
+#
+# The shapes below are the ones an author who had just written the mapping would
+# not choose: the ones where the static part is present but wrong rather than
+# absent, the ones where the reconstruction is self-consistent and disagrees with
+# the model that produced the motions, and the ones where a sum over sources
+# conceals that one source never arrived.
+#
+# WHAT A PASSING SCAN MEANS. For each entry, the load-mapping step either
+# produces the stated member-force consequence or REFUSES the record, naming the
+# absent source. An entry whose expect=refuse is mapped silently is a miss. An
+# entry whose expect=map is refused is a false refusal and also a miss.
+# "Never invent a load distribution" is the refusal side; G4.6 is the
+# reconstruction side; neither alone covers this file.
+#
+# AWAITING A GATE: no shipped check reads this file at 6083a87. That is recorded
+# rather than hidden -- the coverage number for this batch is 0 of 12, and it
+# will stay 0 until F4's load-mapping gate exists to be measured against.
+
+id=static_absent_entirely            source=lam_only            static=none        mu=present   expect=refuse  consequence=member_force_low_by_the_whole_dead_load  note=the measured case: largest buoy-joint Fz 1.3091 N against a 281.3 N buoy weight, ratio 4.655e-03
+id=static_absent_structural_only     source=lam_only            static=buoys_only  mu=present   expect=refuse  consequence=hub_and_platform_weight_568.98N_missing   note=a reconstruction that walks hydro bodies only leaves the five structural bodies weightless, and every buoy row looks right
+id=equilibrium_reaction_exported_zero source=lam_plus_eq_row    static=zero_row    mu=present   expect=refuse  consequence=a_present_but_empty_static_record_reads_as_complete  note=solve_equilibrium=True yields xi_eq=0 on this deck, so an exported equilibrium reaction is identically zero and is NOT the dead load
+id=gravity_channel_readded           source=schema_v1_1         static=from_channel mu=present  expect=refuse  consequence=lumped_placeholder_replaces_a_computed_distribution  note=docs/load-interchange-v1.md sec.7 locks this out; re-adding it reverses a decision rather than filling a gap
+id=hydrostatic_channel_readded       source=schema_v1_1         static=pressure_field mu=present expect=refuse consequence=mean_wetted_surface_constraint_broken       note=same table; the instantaneous surface introduces a nonlinearity FloatSim never had and it surfaces as a G4.1 residual with no cause
+id=static_reconstructed_consistent   source=lam_plus_fe_gravity_and_buoyancy static=reconstructed mu=present expect=map consequence=none note=the prescribed path; G4.6 is what confirms the reconstruction against FloatSim's own C
+id=static_reconstructed_wrong_draft  source=lam_plus_fe_gravity_and_buoyancy static=reconstructed_at_wrong_waterline mu=present expect=refuse consequence=self_equilibrated_and_wrong note=buoyancy and weight both balance, so G4.1's residual is clean while every member carries the wrong axial
+id=static_double_counted             source=lam_plus_fe_gravity_and_buoyancy static=reconstructed_plus_eq_row mu=present expect=refuse consequence=dead_load_applied_twice note=the one shape where adding the export AND the reconstruction is worse than either
+id=mu_absent                         source=lam_only            static=reconstructed mu=absent   expect=refuse  consequence=radiation_memory_dropped_from_the_balance note=|mu|_inf measured 4.085851e+00 N on this case; mu[N,6] is a REQUIRED channel and its absence is not a small term
+id=mu_present_continuous_blend       source=lam_plus_mu         static=reconstructed mu=present_blended_uniformly expect=refuse consequence=residual_floor_reintroduced_while_looking_fixed note=mu is lagged and unblended; the exact discrete residual closes to 1.257436e-04 N, the uniformly-blended continuous form to 2.618e-02 relative
+id=per_source_sum_only               source=resultant_per_body  static=reconstructed mu=present   expect=refuse  consequence=one_absent_source_hidden_in_a_body_total note=a per-body resultant that balances cannot show that the hydrostatic source never arrived; the split by source is what can
+id=screening_only_record             source=no_strip_no_panel   static=reconstructed mu=present   expect=refuse  consequence=load_cases_built_from_a_screening_record note=docs/load-interchange-v1.md sec.6 says the reader ACCEPTS it and the solver REFUSES it; the refusal is the thing to assert, and it must name the source
