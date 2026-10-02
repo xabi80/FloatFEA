@@ -22,7 +22,12 @@
   "",
   "Verdict 90 (PASS) added R654, R655 and R656, all pointing at section 14: R654 is",
   "the void figure in that section, R655 the false mechanism its first sentence",
-  "carried, and R656 the generator that cannot express CA2's `unavailable`."
+  "carried, and R656 the generator that cannot express CA2's `unavailable`.",
+  "",
+  "Verdict 91 (PASS) added R657, R658 (both BLOCKING, carried into F4 step 1) and",
+  "R659 (answered). All three are section 14: R657's trigger was that section's own",
+  "prose, R658 is the same locator at a second site, R659 is the cascade attribution",
+  "both the reviewer and I published and both withdrew."
  ],
  "answered": {
   "R610": {
@@ -194,6 +199,18 @@
    "where": "§14"
   },
   "R656": {
+   "state": "answered",
+   "where": "§14"
+  },
+  "R657": {
+   "state": "carried",
+   "where": "§14"
+  },
+  "R658": {
+   "state": "carried",
+   "where": "§14"
+  },
+  "R659": {
    "state": "answered",
    "where": "§14"
   }
