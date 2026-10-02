@@ -140,6 +140,73 @@ def solve_one(period_s: float, duration_s: float, dt: float) -> tuple:
     return res, setup, deck, ext
 
 
+def discrete_residual(res, setup, ext, window: int = 100) -> dict[str, float]:
+    """The residual of the system `newmark.py:414-437` ACTUALLY solves.
+
+    R646. An earlier version of this script printed that the identity could not be
+    closed because "the per-body added-mass matrix and the memory state are not
+    exported". Both are in process: `A_inf` is inside `setup.lhs.M_plus_Ainf`, and
+    `mu_n = sum_k K_k @ xi_dot_{n-k} dt` is a deterministic function of
+    `setup.kernel` and `res.xi_dot`, which this script already holds. So it is
+    formed here rather than described.
+
+    The continuous identity `sum(reactions) + applied - M a` does NOT close to
+    round-off and is not meant to: `newmark.py:48` documents `mu_{n+1-alpha_f} ~=
+    mu_n` as an O(h) lag, and `docs/load-interchange-v1.md` sec.4.1-4.2 chooses the
+    discrete form for exactly that reason. Both are reported.
+    """
+    from floatsim.hydro.retardation import RadiationConvolution
+
+    h = float(res.t[1] - res.t[0])
+    rho_inf = 0.8  # the value `solve_one` passes; every coefficient follows from it
+    alpha_m = (2.0 * rho_inf - 1.0) / (rho_inf + 1.0)
+    alpha_f = rho_inf / (rho_inf + 1.0)
+    beta = 0.25 * (1.0 - alpha_m + alpha_f) ** 2
+    m_eff = setup.lhs.M_plus_Ainf
+    c_mat = setup.lhs.C
+    a_eff = (1.0 - alpha_m) * m_eff + (1.0 - alpha_f) * (h**2) * beta * c_mat
+
+    # `mu`, rebuilt by pushing the solver's own velocity history through a fresh
+    # buffer. The push of `xi_dot_0` BEFORE the loop and `mu_0 = 0` are both the
+    # integrator's startup convention (`newmark.py:384-391`), not a choice here.
+    buffer = RadiationConvolution(setup.kernel)
+    buffer.push(res.xi_dot[0])
+    n_steps = res.xi.shape[0]
+    mu = np.zeros_like(res.xi_dot)
+    for n in range(1, n_steps):
+        buffer.push(res.xi_dot[n])
+        mu[n] = buffer.evaluate()
+
+    def force_at(n: int) -> np.ndarray:
+        """`F_np1` as the loop builds it: time term at t_n, state term LAGGED."""
+        f = np.asarray(ext(float(res.t[n])), dtype=np.float64)
+        if getattr(setup, "state_force", None) is not None and n > 0:
+            f = f + np.asarray(
+                setup.state_force(float(res.t[n - 1]), res.xi[n - 1], res.xi_dot[n - 1]),
+                dtype=np.float64,
+            )
+        return f
+
+    worst_discrete = 0.0
+    worst_mu = 0.0
+    for n in range(max(1, n_steps - window), n_steps):
+        xi_n, xi_dot_n, xi_ddot_n = res.xi[n - 1], res.xi_dot[n - 1], res.xi_ddot[n - 1]
+        xi_pred = xi_n + h * xi_dot_n + (h**2) * (0.5 - beta) * xi_ddot_n
+        rhs = (
+            (1.0 - alpha_f) * force_at(n)
+            + alpha_f * force_at(n - 1)
+            - alpha_m * (m_eff @ xi_ddot_n)
+            - (1.0 - alpha_f) * (c_mat @ xi_pred)
+            - alpha_f * (c_mat @ xi_n)
+            - mu[n - 1]
+        )
+        g_mid = setup.constraints.jacobian(0.5 * (xi_n + res.xi[n]))
+        resid = a_eff @ res.xi_ddot[n] - g_mid.T @ res.lam[n] - rhs
+        worst_discrete = max(worst_discrete, float(np.max(np.abs(resid))))
+        worst_mu = max(worst_mu, float(np.max(np.abs(mu[n]))))
+    return {"discrete_worst_N": worst_discrete, "mu_inf_N": worst_mu, "window": float(window)}
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--period", type=float, default=10.0, help="model-scale period, s")
@@ -206,31 +273,22 @@ def main(argv: list[str] | None = None) -> int:
     ]
     assert len(buoy_rows) == 12, f"expected 12 buoy joints, found {len(buoy_rows)}"
     buoy_fz = float(np.max(np.abs([lam[i * rows + 2] for i in buoy_rows])))
+    print(f"  largest buoy-joint Fz at this step  {buoy_fz:.4e} N")
 
-    # C39: THE BUOY WEIGHT WAS TYPED. Read from the deck and from the frames module,
-    # so a deck whose buoys are a different mass cannot leave a stale figure here.
-    from floatfea.io.frames import GRAVITY_MAGNITUDE
-
-    buoy_mass = float(next(b for b in deck.bodies if b.name.startswith("buoy")).mass)
-    weight = buoy_mass * GRAVITY_MAGNITUDE
+    marks = discrete_residual(res, setup, ext)
+    print("\n## The residual of the system the integrator ACTUALLY solves (R646)")
+    print(f"  |mu|_inf over the window                          {marks['mu_inf_N']:.6e} N")
     print(
-        "\n  WHAT THIS DOES NOT CLOSE, AND IT IS NOT A DEFECT IN THE NUMBERS."
-        "\n  DY7 asks for `reactions + inertia relief - applied` with the residual. The"
-        "\n  inertia term here is the CUMMINS operator: an infinite-frequency added mass"
-        "\n  plus a convolution over the radiation kernel, plus the hydrostatic restoring"
-        "\n  `C @ xi`. Closing the identity needs the per-body added-mass matrix and the"
-        "\n  memory state at this step, and neither is exported -- the same gap DX1 found"
-        "\n  for the multipliers, one level deeper. `|R + A|` above is the part that IS"
-        "\n  available, not the residual DY7 wants."
-        "\n"
-        "\n  AND THE REACTIONS ARE PERTURBATIONS, NOT TOTALS. The study builds with"
-        "\n  `solve_equilibrium=False` and `xi` is displacement from the reference, so"
-        f"\n  `lam` is the reaction ABOUT the equilibrium state. The largest buoy-joint Fz"
-        f"\n  is {buoy_fz:.4f} N against a buoy weight of {buoy_mass:g} * "
-        f"{GRAVITY_MAGNITUDE:g} = {weight:.1f} N,"
-        f"\n  a ratio of {buoy_fz / weight:.2e}, which is what says so. Member forces need"
-        "\n  static PLUS dynamic, so F4's export has to carry the equilibrium reaction as"
-        "\n  well as the history."
+        f"  worst |A_eff a - G^T lam - rhs| over {int(marks['window'])} steps  "
+        f"{marks['discrete_worst_N']:.6e} N"
+    )
+    print(
+        "\n  The CONTINUOUS identity `sum(reactions) + applied - M a` does not close to"
+        "\n  round-off and is not meant to: `newmark.py:48` documents"
+        "\n  `mu_{n+1-alpha_f} ~= mu_n` as an O(h) lag, and `docs/load-interchange-v1.md`"
+        "\n  sec.4.1-4.2 chooses the discrete form so that G4.1 means what it says. The"
+        "\n  figure above is that discrete form, formed from `setup.kernel`,"
+        "\n  `res.xi_dot` and `setup.lhs.M_plus_Ainf` -- every one of them in process."
     )
     return 0
 
