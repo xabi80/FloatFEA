@@ -26,10 +26,21 @@
 #     preserves the set. That reflection permutes the labels in five pairs,
 #     [0,2,1,9,11,10,6,8,7,3,5,4], and displaces labels by up to 2.866025 m.
 #   * a single transposition of two labels displaces them by between 0.619657 m
-#     (the six nearest-neighbour pairs) and 2.866025 m (the diameter). So a
-#     POSITION tolerance below 0.619657 m detects every single transposition,
-#     and at or above it the six nearest pairs go silent. Both directions are
+#     and 2.866025 m (the diameter). So a POSITION tolerance STRICTLY BELOW
+#     0.619657 m detects all 66 single transpositions; at or above 0.619657 m
+#     FOUR go silent; at or above 0.866025 m SIXTEEN do. Both directions are
 #     stated because EH4 asks for both: that is the ceiling, not a floor.
+#   * CORRECTED AT THE EIGHTY-NINTH VERDICT. This block first said "the six
+#     nearest-neighbour pairs" at 0.619657 m and "six at 0.619657, six at
+#     0.866025" per label. BOTH FIGURES WERE WRONG and the implementer refuted
+#     the first in the revision answering verdict 88. Re-enumerated from the
+#     same four constants, all 66 pairs: 0.619657 m has multiplicity FOUR, all
+#     cross-cluster, (1,3) (2,9) (5,6) (6,10); the next band 0.866025 m has
+#     multiplicity TWELVE, all intra-cluster. Per label the nearest neighbour
+#     is 0.619657 m for SEVEN labels and 0.866025 m for FIVE -- label 6 sits in
+#     two of the four minimum pairs, which is why neither count is six. The
+#     boundary 0.619657 m is unchanged; only the multiplicity was wrong, and it
+#     makes the gate LESS blind than the verdict claimed, not more.
 #   * a cyclic cluster relabel, k -> k+3, displaces by up to 1.414214 m; an
 #     intra-cluster relabel, b -> b+1, by up to 0.866025 m; a 90 deg rotation of
 #     the whole platform by up to 2.121320 m.
