@@ -391,8 +391,10 @@ PANEL_RECONSTRUCTION_RESIDUAL_COUNTER: Final[float] = 1.0e-5
 # `test_the_REFUSAL_rejects_a_LIFTED_rigid_mode` currently carries as a local
 # literal. That is a new constant and a new row, in the last round of a step
 # closing under DZ7c, on a weakness in a value no commit of this step touched. It
-# is CARRIED INTO F4 by name and the measurement above is what a reader needs in
-# the meantime: this ceiling is not guarded at the strength the gate's is.
+# is BACKLOG for after 28 October under EH3, not an F4 carry -- and verdict 86
+# rules the opposite, that it carries into F4 as blocking (C121). EH3 governs and
+# the disagreement is Xabier's. The measurement above is what a reader needs either
+# way: this ceiling is not guarded at the strength the gate's is.
 # Set: 2026-09-13, F2; quantity re-normalised and reason re-measured
 # 2026-09-25 (R475); assertion dropped 2026-09-26 (DI0, R530)
 RIGID_MODE_EXACTNESS: Final[float] = 1e-15
