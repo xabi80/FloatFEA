@@ -1,4 +1,652 @@
 # Review — F3 step 3
+Reviewed commit: c834593fa05ab8e79f9b1b0c0fdcb41df6305e73
+Verdict: HOLD
+**Reviewed commit: `6083a87`.** (HEAD of F3 and pushed when I began. I committed corpus
+batch 32 at `c834593` before writing, so the script's `Reviewed commit:` stamp is the
+corpus commit and NOT the judged one -- `scripts/write_verdict.py`'s own docstring
+records that. The judged commit is `6083a87` and every figure below is taken there.)
+Tests: 2953 passed, 8 failed, 0 skipped   (MY OWN run, ONE invocation, no exclusion, clean clone at `6083a87` outside the synced folder, 1409.45s)
+
+## Round of 2026-10-02 -- EIGHTY-SEVENTH verdict. ON THE TREE. IT COUNTS AGAINST NO STEP.
+
+**STEP 3 IS CLOSED AT PASS, AT VERDICT 86, UNDER DD1, AND NOTHING IN THIS VERDICT
+REOPENS IT.** This round is about the state of the tree and about EJ4's STOP. I read
+EB4 the same way the hand-back does: it counts against no step. **The disposition of
+F3 step 3 is PASS.** The `Stop` hook reads the last line of this file and will now
+read `HOLD`; `CLAUDE.md` section Step gating says that disagreement is resolved
+against DD1, and this sentence is the record it is resolved by. **What the HOLD below
+holds is F4 step 1's FIRST COMMIT, not step 3.**
+
+**AND THE ANSWER TO THE QUESTION YOU ASKED HARDEST: EJ4's STOP IS WRONG, AND IT IS
+WRONG IN A WAY THAT MAKES THE PHYSICS IN IT MORE RIGHT, NOT LESS.** The static part is
+genuinely absent -- more thoroughly absent than section 6a says, and I measured it
+rather than read it. But absent from FloatSim was never the blocker, because
+`docs/load-interchange-v1.md` section 7 locks `gravity` and `hydrostatic` OUT of the
+schema BY DECISION and `PLAN.md` G4.6 prescribes that FloatFEA rebuilds both. And
+EJ4(b)'s residual IS formable, today, from what is already in process: I formed it,
+and the exact discrete identity closes to `1.257436e-04 N`. **F4's load mapping is not
+blocked. Nothing has to go to Xabier for F4 to start.** R645 and R646 below.
+
+**WHAT DOES BLOCK IS TWO LINES AND IT IS THE CZ1 CLASS EXACTLY.** `ruff check` is RED
+at this commit on `floatfea/tolerances.py:398`, a 126-character comment line added by
+the closure commit `c9902d3`; CI's lint job fails at step 6 and **`black`, `mypy`,
+`unit tests` and `guards and meta-tests` are ALL SKIPPED behind it**, which is the
+single thing CZ1 (iii) was written to make visible. And the report's section 0a calls
+run `36997601588` `**no result** (status in_progress)` when `gh` says `failure` -- that
+run is the one that would have shown the ruff red.
+
+## THE TREE AT 6083a87, MEASURED
+
+```
+cmd    git rev-parse HEAD && git rev-parse F3 && git rev-parse origin/F3, before my
+         corpus commit
+out    6083a87a4d1391cab0a1338af1b09bd58de1fbfb   all three
+cmd    git status --porcelain --untracked-files=all
+out    (no output)      the working tree is CLEAN, which it was not last round
+cmd    git log --oneline b7c05e7..6083a87
+out    6083a87 closure: EJ4 stopped at its own condition
+out    d4b89e0 report: R643's site declared
+out    b702f15 report: revision 3 carries verdict 86 -- R643 and R644 added
+out    c9902d3 closure: EJ1 settles C121, EJ3 ledgers the rest (F3)
+out    66af185 process: R644 -- two carve-out placements corrected (EJ2)
+out    aec96e0 report: F3 step 3 revision 3 -- F3 CLOSES, and the blocker was OneDrive
+cmd    item 1b: the newest revision's Answers: header against the newest verdict
+out    docs/reports/F3/step-3.md:955   Answers: verdict 86 @ 3b5e36b
+judge  1b PASSES. Verdict 86 IS the newest verdict and the report names it. This is
+       the first commit of this milestone at which that line has been right, and it
+       is the one comparison a machine cannot make for me.
+cmd    git diff b7c05e7..6083a87 -- tests/conftest.py "tests/**/conftest.py"
+out    (no output)
+cmd    git ls-files -- tests/conftest.py "tests/**/conftest.py"
+out    tests/conftest.py        CI0: the pathspec resolves to a real file, as it must
+judge  CH2: no conftest changed and no rung carries its own. Nothing can rewrite a
+       rung's record this round.
+cmd    python -m pytest -q, clean clone at 6083a87 under the LOCAL temp, ONE
+         invocation, no --ignore
+out    8 failed, 2953 passed, 2 warnings in 1409.45s (0:23:29)
+cmd    python -m ruff check floatfea tests
+out    E501 Line too long (126 > 100)  --> floatfea/tolerances.py:398:101
+out    Found 1 error.      exit 1
+cmd    python -m black --check floatfea tests
+out    91 files would be left unchanged.      exit 0
+cmd    python -m mypy floatfea
+out    Success: no issues found in 30 source files
+cmd    python scripts/check_carried.py
+out    check_carried: all 11 findings carried      exit 0
+```
+
+## CI AT THE REVIEWED COMMIT, FROM gh AND NOT FROM THE PASTE (CA2)
+
+```
+cmd    gh run list --commit 6083a87a4d13... --json databaseId,conclusion,status
+out    36998118365  completed  FAILURE
+cmd    gh run view 36998118365 --json jobs, job by job
+out    the verification ladder            SUCCESS   13 steps  10:55:05 -> 10:58:35
+out    lint, unit and guards              FAILURE   14 steps  10:55:05 -> 10:55:32
+out    CI determinism -- leg              skipped    0 steps
+out    CI determinism -- ten legs agree   skipped    0 steps
+cmd    the lint job's steps, by number and conclusion
+out    5 actionlint SUCCESS, 6 ruff FAILURE, 7 black --check SKIPPED,
+out    8 mypy SKIPPED, 9 unit tests SKIPPED, 10 guards and meta-tests SKIPPED
+cmd    gh run view 36998118365 --log-failed
+out    E501 Line too long (126 > 100) / Found 1 error. / exit code 1
+judge  NOT CK2: thirteen and fourteen real steps, real durations, no spending
+       annotation, no runner-never-started. The two skipped determinism jobs are
+       CK0's workflow_dispatch gate, UNAVAILABLE BY DECLARATION, as at 79 to 86.
+       THE LADDER IS GREEN AT THIS COMMIT, ALL SIX RUNGS -- so NO LOW RUNG IS RED
+       AND NOTHING HERE IS A STOP.
+judge  CI IS RED AT THE REVIEWED COMMIT AND I RECORD IT AS RED (CA2).
+judge  AND THE SECOND CONSEQUENCE IS THE ONE THAT MATTERS: because `ruff` is step 6,
+       `guards and meta-tests` NEVER RAN. So CI gives NO independent reading on my
+       eight reds at this commit, and my own clone is the only instrument. That is
+       the exact condition CA2 exists to prevent, caused by a line wrap.
+cmd    gh run view 36997601588 --json jobs, the run at c9902d3
+out    lint, unit and guards FAILURE, ruff FAILURE at step 6, steps 7 to 10 SKIPPED
+judge  THE SAME RED SHIPPED IN TWO CLOSURE COMMITS AND NEITHER PASTED CZ1 (ii).
+```
+
+## THE EG3(i) TRACE, ALL 8 MATCHED INDIVIDUALLY, AND THEY ARE ONE CAUSE
+
+```
+out     1 x test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+out           -> ON NEITHER LIST. CZ1 (iv).
+out     7 x test_the_guard_survives_the_state[baseline, non_numeric_step_suffix,
+out           superscript_digit_step_number, draft_suffix_beside_a_step_report,
+out           step_number_is_the_empty_string,
+out           verdict_amended_after_the_commit_the_report_answers,
+out           zero_padded_step_number]
+out           -> cascade off a RED BASELINE, identified by the baseline's own
+out              failure line and not by its name (EH1)
+cmd    the baseline's own failure text, read rather than assumed
+out    "1 failed, 220 passed in 5.16s", and the one failure inside the planted clone
+out    is test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW, same message
+cmd    python -m pytest ...::test_the_guard_reads_the_step_being_worked_on -q
+out    PASSES -- so this is NOT EG3 state (1)
+cmd    the five state-(2) names plus EH1's two additions
+out    ALL PASS -- revision 3 answers verdict 86, so state (2) IS cleared, and
+out    test_the_report_carries_a_WHOLE_SUITE_count PASSES: R643 is answered
+rule   EG3(i): every red traces BY NAME, and a red that does not match is CZ1 (iv)
+       unchanged
+judge  ZERO of the eight are the boundary. ALL EIGHT are one cause and one fix
+       clears them. EG3's own discriminator -- does the answering report clear it --
+       says no: revision 3 is in the tree and it is still red.
+judge  AND EG3(ii) IS CLEARED FOR VERDICT 86: I ran the three report-guard files AT
+       `6083a87`, `8 failed, 273 passed in 246.93s`, 281 collected. State (2) is
+       GREEN there, which is the half no verdict in this milestone had measured.
+```
+
+## MY RULING ON EJ4 -- THE THING YOU ASKED FOR, AND I RAN IT RATHER THAN READ IT
+
+**(1) YOU ARE RIGHT THAT THE STATIC PART IS ABSENT, AND IT IS ABSENT FOR A STRONGER
+REASON THAN SECTION 6a GIVES. `solve_equilibrium=False` IS NOT THE CAUSE.** One
+variable moved, everything else held -- same deck, same shared database, same `dt`,
+same two overrides, verbatim from the study:
+
+```
+claim  running with solve_equilibrium=True would recover the static part
+cmd    build_system(deck, bem_databases={}, dt=0.01, t_max_kernel=30.0,
+         solve_equilibrium=False then True, shared_hydro_database=hdb,
+         asymptote_check_override=..., kernel_decay_floor_override=...)
+out    False: |xi0|_inf = 0.000000e+00
+out    True : |xi0|_inf = 0.000000e+00
+out    |xi0_true - xi0_false|_inf = 0.000000e+00
+cell   ONE VARIABLE: solve_equilibrium. Deck, database, dt, overrides all held.
+rule   a causal claim carries its ablation (BG0)
+judge  REFUTED. `solve_equilibrium=True` CHANGES NOTHING ON THIS DECK, so the first
+       of section 6a's three ways out recovers nothing. The reason is in the function
+       itself: `floatsim/solver/equilibrium.py:98` solves `C xi = F_state(0, xi, 0)`
+       -- no gravity term, no buoyancy term, and no constraints.
+```
+
+```
+claim  the static reaction is zero BY CONSTRUCTION and not merely unexported
+cmd    |state_force(0, xi0, 0)|_inf, then |C @ xi0|_inf, then |C xi0 - F_state|_inf
+out    0.000000e+00, 0.000000e+00, 0.000000e+00
+cmd    the fields of the assembled left-hand side
+out    CumminsLHS fields: ['C', 'M_plus_Ainf']      -- there is no force vector
+cmd    diag(C) on a structural body
+out    diag(C) hub1 = [0. 0. 0. 0. 0. 0.]
+cmd    the bodies with no hydro label, and their weight
+out    hub1..hub4 at 12.0 kg and platform at 10.0 kg -> 568.98 N
+out    bodies with a hydro label: 12 of 17
+rule   verify the reference independently of the thing measured
+judge  xi = 0 IS AN EXACT EQUILIBRIUM OF THIS MODEL WITH ZERO JOINT REACTION. Gravity
+       is nowhere in the equations; `C` is a restoring derivative and nothing else.
+       Your ratio `4.655e-03` is the right finding; the per-body version is sharper
+       and I give it in (4) below.
+```
+
+**(2) AND THE STATIC PART IS NOT RECOVERABLE FROM ANYTHING EXPORTED. YOU ASKED THIS
+EXACT QUESTION AND THE ANSWER IS NO.**
+
+```
+cmd    the fields of the hydro database the study loads
+out    ['omega','heading_deg','A','B','A_inf','C','RAO','reference_point',
+out     'C_source','metadata','body_labels']
+judge  NO displaced volume, NO centre of buoyancy, NO buoyancy force. `C_source` says
+       the restoring is buoyancy-only; a stiffness is not a load. So the static part
+       is not in the database either, and your refusal to synthesise it from the
+       deck's weights was the right instinct about the wrong rule.
+```
+
+**(3) SO WHY THE STOP IS WRONG: THE LOCKED SCHEMA AND THE LOCKED PLAN BOTH ALREADY SAY
+THIS, AND BOTH ALREADY SAY WHO BUILDS THE STATIC PART. IT IS FLOATFEA.**
+
+```
+cmd    grep -n "load channel" docs/load-interchange-v1.md
+out    :618  | `gravity` load channel | Computed in FloatFEA from the FE mass
+out           distribution -- the one load source FloatFEA knows better than
+out           FloatSim, which carries a lumped placeholder. | F1 sec.3 |
+out    :619  | `hydrostatic` load channel | Gravity and buoyancy cancel inside `C`
+out           at xi=0 upstream. `C` is a restoring *derivative*, not a load, so
+out           there is no pressure field in it to extract. Recomputed in FloatFEA
+out           from hull geometry, **on the MEAN wetted surface** | Q1, **G4.6** |
+cmd    sed -n 670,674p docs/load-interchange-v1.md
+out    "Adding a `hydrostatic` pressure channel breaks G4.6's mean-wetted-surface
+out     constraint; adding `gravity` reintroduces a lumped placeholder in place of a
+out     computed distribution. BOTH WOULD READ AS IMPROVEMENTS TO SOMEONE WHO HAD
+out     NOT READ THIS TABLE -- which is why the table exists."
+cmd    sed -n 326,332p PLAN.md
+out    "Gravity and hydrostatic cancel inside `C` at xi=0 upstream, so neither can be
+out     extracted from it -- `C` is a restoring derivative, not a load. Both are
+out     therefore reconstructed independently in FloatFEA: gravity from the FE mass
+out     distribution, buoyancy from the hull geometry. This gate is what confirms the
+out     reconstruction matches the model that generated the motions."   (G4.6)
+cmd    sed -n 303,304p PLAN.md
+out    "Inertial loads distributed by the FE mass matrix. Self-equilibrium verified."
+rule   every citation resolves, checked mechanically
+judge  YOUR SECTION 6a FINDING IS THE LOCKED SCHEMA'S OWN SENTENCE, REDISCOVERED FROM
+       THE SOLVER SIDE AND WITH BETTER EVIDENCE. The decision that the static part
+       does not come from FloatSim was taken at Q1 and at F1 sec.3. Section 6a's ways
+       out (1) and (2) are both the thing line 670 forbids without reopening that
+       decision, and line 670 predicted the very sentence that would be written.
+       **"Inventing the static part from the deck's weights is exactly the load this
+       repository forbids" is the one place I think you went wrong.** `Never invent a
+       load distribution` is about a record with no strip resolution being given an
+       assumed one. Gravity from the FE mass matrix is not assumed, it is the plan's
+       own instruction at `PLAN.md:303`, it has G4.3 and G4.6 as its gates, and it is
+       the ONE source the schema says FloatFEA knows better than FloatSim.
+```
+
+**(4) AND EJ4(b) IS FORMABLE TODAY. I FORMED IT. NO EXPORT, NO HSP CHANGE.** You are
+right that `mu` is not on `IntegrationResult` -- I read
+`floatsim/solver/newmark.py:109-137` and it carries `t, xi, xi_dot, xi_ddot, lam` and
+nothing else. But `mu_n = sum_k K_k @ xi_dot_{n-k} * dt` and BOTH halves are in process
+in your own script: `setup.kernel` and `res.xi_dot`. `A_inf` is inside
+`setup.lhs.M_plus_Ainf`. I reproduced the SOLVER'S discretisation, not the textbook
+one:
+
+```
+claim  the inertia term cannot be formed, so EJ4(b) cannot be answered
+cmd    report_joint_reactions.solve_one(1.9799, 40.0, 0.01) -- your own function,
+         unmodified -- then rebuild mu with RadiationConvolution(setup.kernel) pushed
+         over res.xi_dot, and form the residual of the system newmark.py:414-437
+         actually solves: A_eff a_{n+1} - G(mid)^T lam_{n+1} - rhs, with
+         A_eff = (1-alpha_m) M + (1-alpha_f) h^2 beta C and rhs assembled term by
+         term including the lagged mu_n and the lagged F_state
+out    |mu|_inf over the window                                4.085851e+00 N
+out    EXACT DISCRETE residual, worst over the last 100 steps   1.257436e-04 N
+rule   reproduce the solver's discretisation: verify against the rule the code runs,
+       not the textbook rule
+judge  THE IDENTITY CLOSES. `1.257436e-04 N` against terms of 10 to 85 N is the KKT
+       solve's own residual. EJ4(b) is ANSWERED and the answer needed nothing
+       exported. The claim "closing the identity needs the per-body added-mass matrix
+       and the memory state at that step, and NEITHER IS EXPORTED" is wrong in both
+       halves for the purpose it is put to: `A_inf` is in the hydro database
+       (`docs/load-interchange-v1.md:88`, "A_inf . xi_ddot is reconstructed from the
+       hydro database and /kinematics") and `mu[N,6]` is ALREADY A REQUIRED CHANNEL of
+       the v1 schema (`:87`). So way out (3) is not a new ask either -- it is F4's
+       first item as already specified.
+```
+
+```
+cmd    the CONTINUOUS per-body form EJ4(b) literally asks for, same step, t = 40.000 s
+out    body       |M a|       |mu|     |C xi|  |applied| |G^T lam|   |resid|    rel
+out    buoy1  3.4965e+01 1.0798e+00 1.6338e+01 8.4255e+00 2.8356e+01 2.2427e-01 6.4e-03
+out    buoy8  3.2172e+01 1.8630e+00 1.2302e+01 3.1030e+01 1.4827e+00 8.4227e-01 2.6e-02
+out    hub1   1.9283e+01 0.0000e+00 0.0000e+00 0.0000e+00 1.9247e+01 3.6404e-02 1.9e-03
+out    platfm 1.6087e+01 0.0000e+00 0.0000e+00 0.0000e+00 1.6061e+01 2.6365e-02 1.6e-03
+out    worst per-body relative residual                                     2.618e-02
+out    and buoy2's |G^T lam| row reads 1.3091e+00 -- your figure, reproduced exactly
+rule   a residual destroys information: report the terms beside the norm
+judge  THE CONTINUOUS FORM IS 2.618e-02 RELATIVE AND THE DISCRETE FORM IS
+       1.257436e-04 N, AND THE GAP IS THE POINT. `newmark.py:48` documents
+       `mu_{n+1-alpha_f} ~= mu_n` as an O(h) lag; `docs/load-interchange-v1.md`
+       sec.4.1-4.2 is written about exactly this and chooses the discrete form so
+       that "G4.1 finally means what it says". EJ4(b) asked for the textbook
+       identity; the schema had already specified the one that closes.
+judge  **AND THE STRUCTURAL ROWS ARE YOUR OWN FINDING, SHARPER:** hub1 has |mu| = 0,
+       |C xi| = 0, |applied| = 0, and carries `1.9247e+01 N` of joint reaction against
+       a weight of 12.0 * 9.81 = 117.7 N. Four hubs and a platform, 568.98 N of
+       weight, appearing nowhere in the balance. That is a better sentence for a
+       reader than a ratio on one buoy row, because it needs no denominator.
+```
+
+## Carried
+
+Verdict 86 named three blocking items by name for F4 (R643, R638, R637 clause (iii)),
+one non-finding (R644), and nine closure items plus the carried ledger. Every one.
+
+* **R643 -- ANSWERED, and I verified it the way the condition was written.**
+
+```
+cmd    git grep -n SUITE_LINE_PLACEHOLDER -- docs/reports/F3/step-3.md
+out    :951   revision 2's section 11, the published record -- correct to leave
+cmd    the newest revision's own suite line
+out    :1356  **Whole suite at `b7c05e7`: 2901 passed, 18 failed, 1 skipped.**
+cmd    python -m pytest ...::test_the_report_carries_a_WHOLE_SUITE_count -q
+out    1 passed
+judge  CLOSED. Every one of the eighteen is named in a `- **failed**` bullet, each
+       traced, and the figure is the one from my own run at `b7c05e7` rather than
+       assembled. The refusal to hand-assemble it was right and it is now a real
+       measurement. R637 clause (iii) is the same OBJECT and it is NOT met -- see
+       R648, which is a different red from the one R643 named.
+```
+
+* **R638 -- OPEN, and EJ1 has moved its sequencing rather than its substance. I accept
+  the move and I record what it cost.** EJ1 writes it at all three sites: worked in
+  F4, closed before F4 closes, does not block F4's opening. CZ0's own sentence is
+  "stays blocking there", which read literally would hold F4 step 1 on it. EJ1 is a
+  directive and it governs; what it changes is WHEN, not WHETHER. **The one thing I
+  will not accept is a third recording.** `floatfea/tolerances.py:394-398` and
+  `docs/closure/F3.md:139-142` both now read the F4 wording and the report's section
+  9b row agrees, so **C121 is CLOSED**.
+* **R644 -- ANSWERED AND ADOPTED, in a standalone `process:` commit, and I read every
+  line of it.** See `## My own instructions` below. `66af185` is byte-identical in
+  `CLAUDE.md` and `docs/SUPERVISOR.md` and touches nothing else. **And the commit
+  message says it wrote `1288` from no run and corrected it unpushed.** That is CP3
+  being applied by the implementer to the commit adopting CP3's neighbour, and saying
+  so in the message is worth more than the slip cost.
+* **R637 clauses (i) and (ii) -- CLOSED at verdict 86 and staying closed.**
+* **R639, R624, R630, R632, R633, R634, C101, C104, C105 -- CLOSED and I do not reopen
+  them.** The diff over `tests` and `floatfea` touches no assertion and no value; the
+  only file is `floatfea/tolerances.py` and the only change in it is comment.
+* **R631, R626's residue, R635 -- LEDGERED, accepted, unchanged, not re-reviewed.**
+* **C118 -- CLOSED, and I reproduced it rather than taking it.**
+
+```
+cmd    git show SHA:docs/reports/F3/step-3.md piped to grep -o of the R629 sentence
+         "verdict 83's one red, was answered at", counted per commit
+out    95f6293 -> 1    b7c05e7 -> 3    aec96e0 -> 1    6083a87 -> 1
+judge  the doubling is gone and the editing step is a replace. This was the one that
+       doubled every round it was left, so closing it first was right.
+```
+
+* **C113, C115 to C117, C120, C122, C123 -- LEDGERED at `docs/closure/F3.md` section 8
+  per EJ3, as I asked. C119 is routed to F4 step 1's first commit as a (c), and I
+  agree with both the routing and the single exception.** The ledger literally carries
+  the row that demonstrates C119 -- `| R637 | R634-docs/closure/F3.md |` -- which is
+  the honest way to publish a generator defect.
+* **C102, C103, C106 to C112, C114, C88, C86, C90 to C98, C100, C74, C76, C78, C82,
+  C85, R610, R615 -- carried unchanged, no work asked, not re-reviewed. C89 withdrawn.
+  C40, C75, C75b, C99 -- `black --check` and `mypy` are GREEN at this commit; `ruff`
+  is the one that is not, and that is R647.** R622 is F4's own.
+
+## Findings
+
+**R645. (RULING ON A STOP. NOT (a) to (d), AND IT OUTRANKS EVERYTHING ELSE IN THIS
+ROUND. EJ4's STOP IS WITHDRAWN.) F4's LOAD MAPPING IS NOT BLOCKED, AND THE DECISION
+EJ4 SENDS TO XABIER WAS ALREADY TAKEN AT Q1 AND AT F1 SECTION 3.**
+The physics in section 6a is right and better evidenced than the documents that
+duplicate it. What is wrong is the conclusion. Three measurements, each above with its
+command: `solve_equilibrium=True` changes nothing (`|xi0_true - xi0_false|_inf = 0`),
+so way out (1) is empty; the equilibrium reaction on this deck is identically zero, so
+way out (2) exports a zero; and `docs/load-interchange-v1.md:670` forbids both without
+reopening a locked decision. The static part was always FloatFEA's to build --
+`PLAN.md:326-332`, gravity from the FE mass distribution and buoyancy from the hull
+geometry on the mean wetted surface, with **G4.6 as the gate that proves the
+reconstruction against FloatSim's own `C`**.
+**Closed when** `docs/closure/F3.md` section 6a and
+`scripts/report_joint_reactions.py:217-234` say what was measured and stop saying what
+must change outside FloatFEA -- site by site: (i) that the static reaction is zero BY
+CONSTRUCTION and not merely unexported, with the `solve_equilibrium` ablation as the
+proof; (ii) that `gravity` and `hydrostatic` are section 7 locked-out decisions which
+G4.6 already routes; (iii) that the sentence "F4's export has to carry the equilibrium
+reaction as well as the history" is DELETED, because that reaction is `0`; and (iv)
+that the "inventing the static part" sentence is withdrawn. **No new apparatus and no
+HSP change is needed for any of it.** Classed a closure item under CZ0 because it is
+prose -- but it is the prose that stopped the critical path, so it is first on the
+list.
+
+**R646. (NOT BLOCKING. Same head as R645, recorded separately because it is a
+different claim.) EJ4(b) IS ANSWERED, NOT BLOCKED: THE RESIDUAL CLOSES TO
+`1.257436e-04 N` FROM QUANTITIES ALREADY IN PROCESS.** `mu` is reconstructible from
+`setup.kernel` and `res.xi_dot`, `A_inf` is inside `setup.lhs.M_plus_Ainf`, and both
+are schema-declared sources (`docs/load-interchange-v1.md:87-88`). The continuous form
+EJ4(b) names reads `2.618e-02` relative, and that gap is the documented O(h) lag on
+`mu_n` -- the schema's section 4.2 chose the discrete form for precisely this reason.
+**Closed when** the script's closing paragraph carries the discrete residual it can
+actually form, with the lag named, instead of the sentence saying the identity cannot
+be closed.
+
+**R647. (d, BLOCKING) `ruff check floatfea tests` IS RED AT THE REVIEWED COMMIT AND IN
+CI, AND `black`, `mypy`, `unit tests` AND `guards and meta-tests` ARE ALL SKIPPED
+BEHIND IT.**
+
+```
+cmd    python -m ruff check floatfea tests, clean clone at 6083a87
+out    E501 Line too long (126 > 100) --> floatfea/tolerances.py:398:101
+out    Found 1 error.
+cmd    awk length on that line
+out    398:126:# opening. The measurement above is what a reader needs until then:
+out            this ceiling is not guarded at the strength the gate is.
+cmd    grep -n "line-length" pyproject.toml
+out    89:line-length = 100  [tool.black]      93:line-length = 100  [tool.ruff]
+cmd    git log --oneline -1 -S on that comment text -- floatfea/tolerances.py
+out    c9902d3 closure: EJ1 settles C121, EJ3 ledgers the rest (F3)
+cmd    gh run view 36998118365, the lint job's steps
+out    6 ruff FAILURE; 7 black SKIPPED; 8 mypy SKIPPED; 9 unit tests SKIPPED;
+out    10 guards and meta-tests SKIPPED
+rule   CZ1 (ii) and (iii): a closure commit is verified AFTER it exists, and the
+       pasted gh run list exists so that the guards step is SEEN TO HAVE RUN
+judge  THIS IS CZ1's OWN SUBJECT, SHIPPED TWICE. `pytest` does not run `ruff`, so the
+       implementer's loop cannot see it; CZ1 (ii) is the step that would have, and no
+       `ruff` output was pasted for `c9902d3` or for `6083a87`. The damage is not the
+       lint: it is that CI has given NO reading on the suite at either commit, so my
+       clone is the only instrument and CA2's whole premise is gone.
+```
+
+**Closed when** line 398 is wrapped at 100 columns in a commit that changes no
+tolerance value, and the four CZ1 (ii) outputs plus a `gh run list --commit SHA` with
+job-level conclusions are pasted, with the lint job's `guards and meta-tests` step
+SEEN TO HAVE RUN.
+
+**R648. (d, BLOCKING) THE REPORT'S SECTION 0a RECORDS A COMPLETED FAILURE AS
+`no result`, EIGHT REDS TRACE TO IT, AND IT IS ON NEITHER CARVE-OUT LIST.**
+
+```
+cmd    python -m pytest tests/test_report_carried.py::test_the_CI_TABLE_agrees_with
+         _gh_FOR_EVERY_ROW -q, clean clone at 6083a87, origin pointed at the real
+         repository so gh can resolve it
+out    1 failed -- run 36997601588: the table says no result, status in_progress;
+out    gh says failure
+cmd    the baseline of test_the_guard_survives_the_state, its own failure line
+out    "1 failed, 220 passed in 5.16s", and the one failure is the SAME test
+cmd    the seven cascading states
+out    each fails on the red baseline, not on its own subject
+rule   EG3's sharpening: state (2) is cleared BY THE ANSWERING REPORT. Revision 3 IS
+       the answering report, it is in the tree, and this is still red
+judge  NOT THE BOUNDARY. CZ1 (iv) unchanged, and the report itself rules it that way
+       at `docs/reports/F3/step-3.md:585`, which I credit. And it is not cosmetic:
+       the run the table calls no result is `c9902d3`'s -- the run that would have
+       shown R647. A guard built to catch "the CI record in the report not being the
+       CI record" caught exactly that, on the one row where it mattered.
+judge  ONE FIX CLEARS EIGHT. And I checked the thing that would make it unfixable: it
+       is NOT a deadlock. `scripts/ci_section.py --rounds` regenerated as the LAST
+       edit before the commit (CP3's own ordering) gives a table that agrees with gh
+       for every COMPLETED run; the row for the report's own push reads in_progress
+       on both sides while CI runs, which is why this test passed on CI at `b7c05e7`
+       and fails in a clone taken after the run completed.
+```
+
+**Closed when** section 0a is regenerated by `python scripts/ci_section.py --rounds`
+after R647's fix is pushed and its run has completed, and a run of
+`tests/test_report_carried.py` and `tests/test_report_guard_states.py` reads
+`0 failed` in a clone whose `origin` resolves -- or, if a row cannot be made to agree,
+the disagreement is stated as a finding about the guard rather than left red.
+
+## Closure items
+
+Named, not re-reviewed, none of them holding anything. Absorb the whole list in ONE
+commit and verify it AFTER the commit exists (CZ1). **R645 is first.**
+
+* **C124.** `docs/closure/F3.md` heading order is `4b, 8, 6, 6a, 7`: EJ3's section 8
+  was inserted ahead of section 6 and section 6a ahead of section 7. A reader
+  following the numbers reads the ledger before what carries into F4. **Closes when**
+  the sections are in numeric order, or section 8 is renumbered to where it sits.
+* **C125.** The hand-back's `Report guards: 320 passed` does not reproduce and cannot:
+  the three report-guard files collect **281** tests at `b702f15`, `d4b89e0` and
+  `6083a87` alike, and my own run of them at `6083a87` is `8 failed, 273 passed`. 320
+  is above the ceiling of that selection, so the figure is of a different set.
+  **Closes when** the figure names its selection or is retaken. CP3's class again.
+* **C126.** EJ0's `12x` is half-measured by its author's own admission and the
+  measured half does not reproduce on my instrument: the same three files at the same
+  commit took `246.93s` in a clone under the local temp, against the hand-back's
+  `67.49s` in a clone and "over thirteen minutes" in the synced tree. A ratio whose
+  numerator and denominator come from different machine loads is not a ratio.
+  **Closes when** both halves are taken back to back on one machine, or the figure is
+  withdrawn and verdict 86's `1.84x` -- which WAS taken that way -- stands alone.
+* **C127.** `scripts/report_joint_reactions.py:217-234` is an eighteen-line printed
+  paragraph making claims about what is and is not exportable, three of which R645 and
+  R646 refute. CW0: a claim about this repository in the source tree is a test, a
+  triple, or deleted. **Closes when** it is one of those three.
+* **C128.** `docs/reports/F3/step-3.md:1310` section 10 still reads "EH6 -- not
+  started" while the hand-back says EH6/EI3 is scripts-only and started. This is C123
+  unclosed and now a round older. **Closes when** the two agree.
+* **C129.** EJ5's plan draft and EJ6's dates are not written, on the ground that EJ4
+  says stop. R645 withdraws that ground. **Closes when** they are written, or the
+  schedule paragraph says which date they are measured against and whether it holds.
+* **C113, C115, C116, C117, C119, C120, C122, C123** -- as EJ3 ledgers them, C119 to
+  F4 step 1's first commit as a (c). **C102, C103, C106 to C112, C114, C88, C86, C90
+  to C98, C100, C74, C76, C78, C82, C85, R610, R615** -- carried unchanged. **C89**
+  withdrawn. **C40, C75, C75b, C99, C101, C104, C105, C118, C121** -- CLOSED.
+
+## Tolerances touched
+
+```
+cmd  git diff b7c05e7..6083a87 --numstat -- floatfea/tolerances.py
+out  5  2
+cmd  the same diff, lines matching a NAME: Final[float] = value declaration
+out  (no output) -- NOT ONE VALUE LINE CHANGED, in either direction
+cmd  git diff b7c05e7..6083a87 -- "tests/regression/*" tests/conftest.py
+out  (no output) -- no golden moved, no parametrisation loosened, no conftest
+cmd  git diff b7c05e7..6083a87 --stat -- tests floatfea
+out  floatfea/tolerances.py | 7 +++++--
+out  1 file changed, 5 insertions(+), 2 deletions(-)
+out  AND NOTHING ELSE UNDER EITHER TREE
+judge  NO TOLERANCE WAS TOUCHED AS A VALUE AND NO ASSERTION MOVED THIS ROUND. The
+       entire diff under `floatfea/` and `tests/` is two comment lines becoming five
+       in one entry -- and one of those five is R647.
+```
+
+| constant | value | form | counter | justification located |
+|---|---|---|---|---|
+| `RIGID_MODE_EXACTNESS` | `1e-15`, UNCHANGED | relative and dimensionless; correct form | **STILL NONE.** `1e-13` gives `1802 passed, 0 failed`; the solved edge is `3.783782e-12`; `3784x`, which I re-measured myself at `b7c05e7` and which nothing since has touched | `floatfea/tolerances.py:330-400` and `docs/closure/F3.md` section 4a, both now reading EJ1's F4 wording. **R638 is worked in F4 and closes before F4 closes.** |
+| `PLATFORM_RIGID_MODE_EXACTNESS` | `1.154338e-18`, UNCHANGED | unchanged | unchanged; the roof assertion from verdict 86 is untouched, silent rise still `1.63x` | `floatfea/tolerances.py:453-473`; not in this round's diff. |
+| `PLATFORM_RIGID_MODE_EXACTNESS_COUNTER_DEFECT` | `1.0e-14`, UNCHANGED | unchanged | unchanged; upper edge still solved at `3.09x` | `floatfea/tolerances.py:423-446`; not in this round's diff. |
+| `RIGID_MODE_BOUND` | `199.526231496888`, UNCHANGED | unchanged | unchanged | unchanged. **R631** is its open residue, ledgered under DZ7c. |
+
+## My own instructions (4b), read line by line
+
+```
+cmd  git diff b7c05e7..6083a87 --stat -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  CLAUDE.md 25 +++++-----, docs/SUPERVISOR.md 25 +++++-----
+out  2 files changed, 40 insertions(+), 10 deletions(-)
+cmd  git log --oneline b7c05e7..6083a87 -- .claude docs/SUPERVISOR.md CLAUDE.md
+out  66af185 process: R644 -- two carve-out placements corrected (EJ2)
+cmd  git show 66af185 --name-only
+out  CLAUDE.md, docs/SUPERVISOR.md     AND NOTHING ELSE
+cmd  the ten deleted lines, read one by one
+out  all ten are the EH1 paragraph being REWRITTEN, not removed: the two-list
+out  sentence loses `test_the_answered_verdict_is_the_NEWEST_one` from state (1)'s
+out  side and gains it, plus `test_a_carried_row_points_at_a_section_that
+out  _discusses_it`, on state (2)'s. NO GUARD IS DELETED AND NOTHING IS WEAKENED --
+out  state (2)'s list GROWS BY TWO and state (1)'s shrinks by one, which is strictly
+out  more reds traced by name and strictly fewer waived as the boundary. The added
+out  block is R644's measurement, in my own wording, unparaphrased.
+judge  NO STOP-CLASS PROCESS FINDING. A standalone `process:` commit citing EJ2 by
+       name, touching no `floatfea/` and no `tests/`, identical in both files. I
+       verified that identity by diffing the two added blocks against each other, not
+       by reading the subject line. Nothing I am instructed to carry has gone.
+```
+
+## The adversarial corpus (BE3)
+
+**BATCH 32, committed separately at `c834593`:
+`tests/corpus/f4_static_dynamic_reaction_split.txt`, 12 entries, all new.**
+
+```
+cmd  grep -c "^id=" tests/corpus/f4_static_dynamic_reaction_split.txt
+out  12
+cmd  git log --oneline -1 -- tests/corpus
+out  c834593 corpus: batch 32 -- the static part of a joint reaction
+cmd  grep -rln f4_static_dynamic_reaction_split tests/ scripts/ floatfea/
+out  (no output) -- NOTHING READS IT
+rule  EG4(e): batches pause after F3 step 3 EXCEPT mutation work on F4's
+      load-mapping gate. This is that surface and nothing else.
+```
+
+**New entries this round: 12. Caught by the implementer's checks: 0 of 12, and the
+reason is that there is no check -- no shipped file reads this corpus at `6083a87`, as
+the command above shows. I am recording that as the coverage number rather than
+dressing it up.** The entries are not about the case you found. They are the twelve
+where the static part is **present and wrong**: a reconstruction at the wrong
+waterline that is self-equilibrated and clean on G4.1 while every member carries the
+wrong axial; a static part added by BOTH the export and the reconstruction; a per-body
+resultant that balances and therefore cannot show that one source never arrived; and
+the equilibrium row that is exported and is identically zero. Those are the shapes the
+hand that writes the mapping would not choose, and nine of the twelve exist as
+candidates only because of what section 6a measured.
+
+**The method note, which is this round's transferable lesson and is not about the
+element.** The two findings that mattered came from one habit each. **When a report
+says a thing cannot be formed, form it** -- `mu` is genuinely not on
+`IntegrationResult`, the dataclass was read correctly, and it is a deterministic
+function of two things the same script already holds. **And when a report says a
+decision must go outside the repository, grep the locked documents for the decision
+first** -- `docs/load-interchange-v1.md:670` had not only taken it but written down in
+advance the sentence that someone who had not read it would write.
+
+## On the criterion
+
+**I ruled under CZ0 and I have one thing to say about it, once, and it is not a
+complaint about the criterion.** Two of this round's four findings block under (d) and
+both are one-line fixes. The two that matter -- R645 and R646 -- are **prose**, and
+under CZ0 they are closure items that I am instructed not to hold on. I have classed
+them that way and I am not holding on them. But **a false sentence in a closure
+artifact stopped F4's critical path**, which is the first time this milestone that the
+retired blocking head would have caught something costing schedule rather than
+attention. I am not asking for the head back; six rounds measured it not paying. I am
+recording the one counter-example so that the next time it is weighed, this round is
+in the sample. **That goes to Xabier through the implementer and it is not another
+round.**
+
+**And the EB4 reading: I agree. This round counts against no step.** Step 3's three
+rounds are 84, 85 and 86; this is the eighty-seventh and its subject is the tree and a
+STOP whose resolution the hand-back correctly routed out of the loop. **EJ1's
+relaxation of CZ0's "stays blocking there" to "closes before F4 closes" is a loosening
+of the cap's teeth** and I accept it as a directive, noting only that it is the second
+mechanism this milestone to move in that direction.
+
+## Next step opens when
+
+**F3 STEP 3 IS CLOSED AT PASS (DD1) AND F3 IS CLOSED. THIS VERDICT DOES NOT REOPEN
+EITHER, AND A VERDICT WRITTEN BY HAND IS HOW THE DISPOSITION IS RECORDED WHEN THE HOOK
+AND DD1 DISAGREE.** What is held is **F4 step 1's FIRST COMMIT**, and the conditions
+are two reds and nothing else:
+
+1. **R647 -- WRAP `floatfea/tolerances.py:398` AT 100 COLUMNS.** No value changes.
+   Then, at that commit, tree clean: `ruff check floatfea tests`,
+   `black --check floatfea tests`, `mypy floatfea`, `pytest -q`, pushed, and
+   `gh run list --commit SHA` with the job-level conclusions, so the lint job's
+   `guards and meta-tests` step is SEEN TO HAVE RUN. That is CZ1 (ii) and (iii) in
+   order, and it is the step that was skipped at `c9902d3` and at `6083a87`.
+2. **R648 -- REGENERATE SECTION 0a AFTER THAT RUN COMPLETES**, with
+   `python scripts/ci_section.py --rounds` as the LAST edit (CP3), and read `0 failed`
+   on `tests/test_report_carried.py` and `tests/test_report_guard_states.py` in a
+   clone whose `origin` resolves. One fix clears eight.
+3. **THEN F4 OPENS, AND IT OPENS UNBLOCKED.** R645 withdraws EJ4's STOP. **Write
+   EJ5's plan draft and EJ6's dates.** The static part is FloatFEA's to build --
+   `PLAN.md:326-332` and `docs/load-interchange-v1.md` section 7 -- so F4 step 1 maps
+   the dynamic reaction from `res.lam` AND reconstructs gravity from the FE mass
+   distribution and buoyancy from the hull geometry on the mean wetted surface, with
+   **G4.6 as the gate that proves the reconstruction against FloatSim's own `C`**. The
+   additive HSP writer carries `res.lam`, the per-body external force and `mu[N,6]`,
+   all three of which the schema already requires; it does **not** carry an
+   equilibrium reaction, because that reaction is `0`.
+4. **F4's `Carried` carries R638 BY NAME** (worked in F4, closed before F4 closes, per
+   EJ1), **R637 clause (iii)** (whose object is now R648 and no longer R643), and
+   **R645, R646, R647 and R648**, with the closure list C124 to C129 plus EJ3's
+   ledger.
+5. **C119 in F4 step 1's first commit**, as EJ3 routes it -- a generator that
+   misreports a site is (c), and I agree.
+
+**Schedule.** F3 closed 1 October, twelve days inside its 13 October date. F4 19
+October, the member-force table 23 October, the code-check screen 28 October. **I have
+one measurement that bears on them and it moves a date the right way:** EJ4's STOP was
+holding F4's critical path, R645 releases it, and the release costs nothing outside
+FloatFEA. CZ0's escalation stays live -- two consecutive steps closed carrying items --
+but I still read neither a slip nor a scope cut as needed, and now with one fewer
+reason to think otherwise. **And EH6 is less of a risk than it was being treated as:**
+one case at `T = 1.9799 s`, `40 s`, `dt 0.01` ran in `5m48.6s` in the synced tree and
+in about the same in my own call of `solve_one`, so six of them is under an hour. That
+is the first actual number anyone has on it, and it is the hand-back's, not mine.
+
+**One sentence for the implementer.** You asked me to check the reasoning rather than
+the arithmetic, you named the exact condition that would make you wrong, and you were
+right about the physics and wrong about the consequence -- which is the most useful
+shape a STOP can have, because every measurement in it is load-bearing for the work
+that now proceeds; the thing to take from it is that the decision you were about to
+send out of the loop had already been taken and written down, in two files you had not
+grepped.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F3 step 3
 Reviewed commit: b7c05e7714ab030780ddd3992dc269738513be6a
 Verdict: PASS
 **Reviewed commit: `b7c05e7`.**  (HEAD of F3, pushed, `F3 == origin/F3`. I committed no corpus batch this round, so HEAD at write time IS the judged commit.)
