@@ -1878,6 +1878,7 @@ FIGURE_ARGMIN_TIE_WINDOW_COUNTER_DEFECT: Final[float] = 1.0216
 # that measures it, and these three are step 1's.
 # ---------------------------------------------------------------------------
 
+# CLASS: ACCURACY -- an error ceiling on a numerical identity, with a counter-case.
 # A member's two end shears must sum to the load the member carries. Dimensionless
 # and relative, so it is a round-off ceiling rather than a physical threshold.
 #
@@ -1898,6 +1899,11 @@ F4_MEMBER_FORCE_CONSERVATION: Final[float] = 1.0e-13
 # Set: 2026-10-05, F4 step 1
 F4_MEMBER_FORCE_CONSERVATION_COUNTER_DEFECT: Final[float] = 0.5
 
+# CLASS: ACCURACY -- an agreement ceiling between the built geometry and
+# HSP-stable's own. Its counter-case is the permuted export, constructed in
+# `tests/verification/rung4/test_f4_static_and_mapping.py` rather than as a second
+# constant: a permutation is a REARRANGEMENT, so there is no injected magnitude to
+# declare -- the counter-case is the smallest transposition the geometry admits.
 # EB6's label-provenance gate: a buoy or hub label's node coordinates against
 # HSP-stable's own geometry, in metres at full scale.
 #
@@ -1911,6 +1917,21 @@ F4_MEMBER_FORCE_CONSERVATION_COUNTER_DEFECT: Final[float] = 0.5
 # Set: 2026-10-05, F4 step 1
 F4_EB6_POSITION_M: Final[float] = 1.0e-6
 
+# COUNTER-CASE: the smallest label transposition this geometry admits must NOT pass.
+# Reason for 30.982842: the closest two buoy centres are 0.619657 m apart at model
+# scale (settled at verdict 91: four pairs at that distance, sixteen at 0.866025 m),
+# and the build is at full scale, so a swap of that pair moves a label
+# 0.619657 x 50 = 30.982842 m. It is the HARDEST permutation -- anything the gate
+# would miss, it would miss here first -- and the ceiling clears it by 3.0983e+07x.
+# Injected by `test_EB6_a_PERMUTED_export_reddens_the_gate`, which runs the gate's own
+# comparison against a permuted expectation rather than inferring that it would notice.
+# Set: 2026-10-05, F4 step 1
+F4_EB6_POSITION_M_COUNTER_DEFECT: Final[float] = 30.982842
+
+# CLASS: ACCURACY -- an agreement ceiling between two independently derived
+# routes to one quantity. Its counter-case is R663's defective formula, which
+# puts the tip shear 25.0000% below the reaction -- eleven decades outside this,
+# and exercised by the conservation gate rather than by a declared magnitude.
 # A member's tip shear against the support reaction at that node: the same quantity
 # by two routes, one from `member_forces` and one from the solve's reaction vector.
 #
@@ -1921,6 +1942,16 @@ F4_EB6_POSITION_M: Final[float] = 1.0e-6
 # reaction, which is eleven decades outside this.
 # Set: 2026-10-05, F4 step 1
 F4_STATIC_REACTION_AGREEMENT: Final[float] = 1.0e-12
+
+# COUNTER-CASE: R663's defective formula must NOT pass.
+# Reason for 0.25: omitting the element equivalent load puts a platform arm's tip
+# shear exactly a quarter below the support reaction it must equal -- 2.299219e+06
+# against 3.065625e+06, measured, and the fraction is exact because the consistent
+# gravity load puts half the member's weight at each node. The hub arms are 20.69%,
+# so the platform value is the TIGHTER of the two and is the one declared.
+# Injected by `test_G4_the_defective_formula_misses_the_reaction_by_a_quarter`.
+# Set: 2026-10-05, F4 step 1
+F4_STATIC_REACTION_AGREEMENT_COUNTER_DEFECT: Final[float] = 0.25
 
 
 # ---------------------------------------------------------------------------

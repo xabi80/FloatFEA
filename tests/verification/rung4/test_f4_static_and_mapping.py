@@ -29,9 +29,11 @@ from floatfea.post.member_forces import element_equivalent_load, member_forces
 from floatfea.solve.static import solve_superstructure_static
 from floatfea.tolerances import (
     F4_EB6_POSITION_M,
+    F4_EB6_POSITION_M_COUNTER_DEFECT,
     F4_MEMBER_FORCE_CONSERVATION,
     F4_MEMBER_FORCE_CONSERVATION_COUNTER_DEFECT,
     F4_STATIC_REACTION_AGREEMENT,
+    F4_STATIC_REACTION_AGREEMENT_COUNTER_DEFECT,
 )
 
 
@@ -225,6 +227,37 @@ def test_G4_duality_is_a_property_of_the_JACOBIAN_not_of_the_mapper() -> None:
     )
 
 
+def test_G4_the_defective_formula_misses_the_reaction_by_a_quarter(
+    built: Superstructure,
+) -> None:
+    """R663's counter-case for `F4_STATIC_REACTION_AGREEMENT`, injected not asserted.
+
+    Omitting the element equivalent load puts a platform arm's tip shear exactly a
+    quarter below the reaction, because the consistent gravity load puts half the
+    member's weight at each node. That is eleven decades outside the agreement ceiling,
+    which is what makes the ceiling meaningful.
+    """
+    cases = solve_superstructure_static(built)
+    platform = next(b for b in built.bodies if b.name == "platform")
+    member = platform.members[0]
+    case = cases["platform"]
+
+    mf = member_forces(platform, member, case.u_full)  # no f_eq: the defect
+    reaction = case.vertical_reactions_N[member.node_b]
+    shortfall = (reaction - float(mf.end_b[2])) / reaction
+
+    assert shortfall == pytest.approx(
+        F4_STATIC_REACTION_AGREEMENT_COUNTER_DEFECT, rel=F4_STATIC_REACTION_AGREEMENT
+    ), (
+        f"the defective formula falls {shortfall:.6%} short of the reaction and the "
+        f"declared counter-case is {F4_STATIC_REACTION_AGREEMENT_COUNTER_DEFECT!r}. "
+        "If these disagree the defect is not the one R663 names."
+    )
+    assert (
+        shortfall > F4_STATIC_REACTION_AGREEMENT
+    ), "the agreement ceiling would accept R663's defect, so it certifies nothing."
+
+
 # --------------------------------------------------------------------------- R667
 HSP_STABLE = Path(__file__).resolve().parents[3].parent / "HSP-stable"
 STUDY = HSP_STABLE / "studies" / "platform-12buoy"
@@ -309,6 +342,11 @@ def test_EB6_a_PERMUTED_export_reddens_the_gate(built: Superstructure) -> None:
         index = int(buoy.removeprefix("buoy")) - 1
         got = bodies[owner].model.nodes.coords()[node][:2]
         worst = max(worst, float(np.linalg.norm(got - permuted[index])))
+    assert worst == pytest.approx(F4_EB6_POSITION_M_COUNTER_DEFECT, abs=F4_EB6_POSITION_M), (
+        f"the transposition moves a label {worst:.6f} m, and the declared counter-case "
+        f"is {F4_EB6_POSITION_M_COUNTER_DEFECT!r} m. If these disagree the geometry has "
+        "moved and the counter-case no longer injects what it says it does."
+    )
     assert worst > F4_EB6_POSITION_M, (
         f"with the two CLOSEST labels transposed the gate's own worst disagreement is "
         f"{worst:.6e} m, which the ceiling {F4_EB6_POSITION_M!r} ACCEPTS. The gate is "
