@@ -323,6 +323,42 @@ def _force_remove(func, path, exc):  # noqa: ANN001 - shutil's handler signature
     func(path)
 
 
+# EK2 / R657 / R658: THE PLANT LOCATOR IS ANCHORED, AND ONE PATTERN SERVES BOTH SITES.
+#
+# Both plants below used `text.rindex("Answers:" + " verdict")` -- an UNANCHORED
+# substring search over the whole report file. From `c09aef4` to `6426ca4` that landed
+# on a `cmd` line of the step report's own section 14, which quoted the needle while
+# explaining a different finding. The plant then wrote MID-LINE; `_answered_verdict()`
+# in `tests/test_report_carried.py` matches `^Answers:` anchored, so it never saw the
+# corruption and THE DEFECT WAS NEVER PLANTED. Three states certified nothing, two of
+# them while reading green, and the trigger was report prose rather than any change
+# here.
+#
+# This is the same shape as R637, where `rindex("# Revision ")` bound to a sentence
+# quoting it. The repair is the one the real reader already uses: line-anchored, and
+# the LAST match, which is the newest revision's header.
+#
+# ONE CONSTANT, BOTH CALL SITES, because C131 was a value written twice with a comment
+# asserting the two agreed -- and a comment is not a mechanism.
+_ANSWERS_HEADER = re.compile(r"^Answers:\s*verdict\s*\d+\s*@\s*\S+", re.MULTILINE)
+
+
+def _newest_answers_header(text: str) -> tuple[int, int]:
+    """`(start, end)` of the newest revision's answered-verdict header line.
+
+    Raises rather than returning a sentinel: a plant that cannot find its target must
+    fail loudly, because a plant that silently writes nothing is the defect R657 and
+    R658 name.
+    """
+    found = list(_ANSWERS_HEADER.finditer(text))
+    if not found:
+        raise AssertionError(
+            "no line-anchored answered-verdict header in the report, so this state "
+            "cannot be built -- it is NOT being reported as green"
+        )
+    return found[-1].start(), found[-1].end()
+
+
 def _seed_older_verdict(work: Path, reviews: Path) -> None:
     """Give the verdict file a second commit, inside the scratch copy (R517).
 
@@ -436,8 +472,7 @@ def _build(tmp: Path, state: str) -> Path:
             target.mkdir()
         elif action == "bad_answers_sha":
             text = (reports / REPORT_NAME).read_text(encoding="utf-8", errors="replace")
-            head = text.rindex("Answers: verdict")
-            end = text.index("\n", head)
+            head, end = _newest_answers_header(text)
             (reports / REPORT_NAME).write_text(
                 text[:head] + f"Answers: verdict 28 @ {arg}" + text[end:],
                 encoding="utf-8",
@@ -495,8 +530,7 @@ def _build(tmp: Path, state: str) -> Path:
             )
             older = history[1]
             text = (reports / REPORT_NAME).read_text(encoding="utf-8", errors="replace")
-            head = text.rindex("Answers: verdict")
-            end = text.index(chr(10), head)
+            head, end = _newest_answers_header(text)
             (reports / REPORT_NAME).write_text(
                 text[:head] + f"Answers: verdict 28 @ {older}" + text[end:],
                 encoding="utf-8",
