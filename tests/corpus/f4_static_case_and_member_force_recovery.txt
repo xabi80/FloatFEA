@@ -1,0 +1,56 @@
+# CORPUS: defects in F4 step 1's STATIC CASE and MEMBER-FORCE RECOVERY -- the
+# three EK0(d) checks, the EK0(e) duality figure, and the section-5 hand-check.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the ninety-third verdict, reviewed commit
+# a7fefba, batch 32. Every `measured=` field below was taken by the reviewer at
+# that commit against the shipped modules, full scale, deck platform12_deck.yaml.
+#
+# WHY THIS FILE EXISTS (BE3, EG4(e)'s load-mapping exception). Step 1 shipped 669
+# lines into floatfea/ and the step's whole verification is three numbers computed
+# by the shipped code about itself, plus one hand-check. The three are: the
+# conservation sum, the horizontal restraint's reactions, and the equality of the
+# platform's four hub reactions. The question this file asks of each entry is the
+# one a pass count cannot: IF THE THING THE CHECK CLAIMS WERE FALSE, WOULD THE
+# PUBLISHED FIGURE MOVE?
+#
+# The shapes below are the ones an author who had just written solve_body_static
+# would not choose. Not the ones where a reaction comes out absurd -- those are
+# loud. The ones where the LOAD is wrong and the checks are IDENTITIES the solve
+# enforces, so every published figure stays at round-off: half the body's mass
+# gone, gravity pointing up, the handed-down reaction sign-flipped. And, on the
+# member-force side, the one where the CORRECT formula is what reddens the
+# published hand-check.
+#
+# WHAT A PASSING SCAN MEANS. For each entry, inject the stated defect into the
+# shipped module, re-take the step's four published quantities, and compare with
+# the `measured=` field. An entry marked expect=catch whose figures do not move is
+# a regression in the check. An entry marked expect=MISS is a known hole, and the
+# scan records it as such -- the number this file reports is how many of the holes
+# have been closed, not how many entries pass.
+#
+# COVERAGE AT a7fefba, MEASURED BY THE REVIEWER AND NOT CLAIMED: 17 entries, of
+# which the step's own four published quantities CATCH 5, leave 1 UNDECIDABLE for
+# want of a declared threshold, and MISS 11. The two worst misses --
+# remainder_mass_dropped and gravity_vector_sign_reversed -- are both caught in one
+# move by the comparison the shipped code computes and never makes:
+# StaticCase.weight_N against StaticCase.applied_N.
+
+id=member_end_force_omits_consistent_load    site=floatfea/post/member_forces.py:78    quantity=member_force      expect=MISS                measured=tip_Vz_2.299219e+06_against_a_true_3.065625e+06_and_tip_My_-6.386719e+06_against_a_true_0   note=k_u is self-equilibrated by construction, so the member own weight can never appear in it; 25.0 percent low in shear on the platform arms, 20.69 percent on the hub arms, 5.56 percent high in root moment
+id=section_5_hand_check_is_the_same_identity site=docs/reports/F4/step-1.md:196         quantity=member_force      expect=MISS                measured=hand_value_2299218.75_equals_the_shipped_value_to_all_digits   note=the hand value is reaction minus the applied nodal load, which nodal equilibrium enforces; the check reddens on the CORRECT formula and passes on the defective one
+id=member_end_force_subtracts_load_twice     site=floatfea/post/member_forces.py:78    quantity=member_force      expect=catch               measured=tip_Vz_3.832031e+06_against_the_hand_value_2299218.75   note=the section-5 identity discriminates against this mutation while being vacuous for the shipped one, which is what makes the published agreement uninformative
+id=fixed_end_force_sign_flipped              site=floatfea/post/member_forces.py:78    quantity=member_force      expect=catch               measured=tip_Vz_1.532813e+06_tip_My_-1.277344e+07   note=same identity; detected
+id=horizontal_restraint_overconstrained      site=floatfea/loads/selfweight.py:86      quantity=worst_horizontal  expect=MISS                measured=0.000e+00_with_ux_uy_fixed_at_all_four_joints_eight_DOF_for_three_rigid_motions   note=gravity_load is nonzero only on uz, rx and ry, so the in-plane subproblem is homogeneous and the figure is exactly zero for ANY restraint; it cannot distinguish minimal-determinate from grossly redundant
+id=horizontal_restraint_also_clamps_yaw      site=floatfea/loads/selfweight.py:86      quantity=worst_horizontal  expect=MISS                measured=0.000e+00_with_ux_uy_rz_at_joint_0_plus_ux_uy_at_joint_1   note=same mechanism; the quantity measures whether the LOAD is vertical, not whether the restraint is determinate
+id=gravity_tilted_one_part_in_1e16           site=floatfea/io/frames.py                quantity=worst_horizontal  expect=declare_a_threshold measured=0.000e+00_to_1.226e-09_N_at_a_1e-16_tilt_rising_to_1.226e+04_N_at_1e-3   note=the figure IS sensitive to a horizontal load component, and no threshold is declared anywhere, so no injection size can be ruled caught or missed; this is the boundary EH4 asks to be solved in both directions
+id=remainder_link_offset_zeroed              site=floatfea/solve/static.py:12          quantity=all_three         expect=MISS                measured=reactions_bit_identical_u_full_differs_by_4.542e-17   note=the platform link offset is 0_0_20.663, purely vertical, so r_cross_F is zero under vertical gravity; the module docstring claim that the moment arm is load-bearing is refuted by its own ablation
+id=remainder_mass_dropped                    site=floatfea/loads/selfweight.py:65      quantity=all_three         expect=MISS                measured=sum_err_3.038e-16_horiz_0.000e+00_four_reactions_equal_at_1532812.5   note=HALF THE PLATFORM MASS GONE and all three EK0(d) checks read clean; weight_N 12262500 against applied_N -6131250, a factor of two, and nothing compares them
+id=gravity_vector_sign_reversed              site=floatfea/io/frames.py                quantity=all_three         expect=MISS                measured=sum_err_0.000e+00_horiz_0.000e+00_four_reactions_equal_at_-3065625   note=gravity pointing UP passes every check; static.py:86-91 says the sum form exists to catch a sign error, and the measurement is that it cannot see this one
+id=handed_down_reaction_sign_flipped         site=floatfea/solve/static.py:224         quantity=sum_err           expect=MISS                measured=sum_err_1.599e-16_hub_reactions_3883125_against_a_correct_5926875   note=sum_error compares two numbers both derived from the same f vector; DQ8 own form in the locked plan is normalised by weight, which the shipped property never reads
+id=handed_down_reaction_omitted              site=floatfea/solve/static.py:224         quantity=sum_err           expect=MISS                measured=sum_err_3.797e-16_hub_reactions_4905000   note=the prose identity weight_plus_handed_down_equals_applied is written out in the report and asserted nowhere
+id=one_arm_bending_stiffness_reduced_100x    site=the_deck_section                     quantity=symmetry          expect=catch               measured=reactions_671905.5_and_5459344.5_spread_1.5617_against_a_clean_9.11e-16   note=the symmetry check has real content; it is the one of the three the FE stiffness participates in and the only one of the three that discriminates here
+id=retained_dof_order_reversed               site=floatfea/solve/static.py:108         quantity=all_three         expect=catch               measured=sum_err_4.959_worst_horizontal_2.077e+08   note=CAUGHT, but not by the width assertion static.py:111-113 credits -- a permutation preserves width; it is the reported reactions that go loud, and the docstring names the wrong mechanism
+id=joint_b_share_sign_identical_to_a         site=floatfea/loads/joint_reactions.py:89 quantity=duality           expect=catch               measured=duality_residual_2.0   note=the one mutation the duality figure can see, and it is a mutation of the mapper own imposed sign
+id=floatsim_jacobian_blocks_not_negatives    site=floatfea/loads/joint_reactions.py:10 quantity=duality           expect=MISS                measured=no_module_under_floatfea_reads_a_constraint_jacobian   note=map_joint_reactions IMPOSES the opposite sign at :89, so duality on its output is 0.000e+00 by construction; the docstring and the report both name this Jacobian state as what the check catches
+id=lam_row_identically_zero                  site=floatfea/loads/joint_reactions.py:57 quantity=duality           expect=MISS                measured=duality_residual_0.0_by_the_documented_both-zero_branch   note=a mapping that delivered nothing prints the same 0.000e+00 as the published figure, so the figure cannot distinguish a satisfied law from an absent load
