@@ -194,11 +194,18 @@ out    N = 0 and Vy = Mz = 0 at every station, both bodies
 out    all four platform arms identical; all three arms of each hub identical
 out    platform arm tip Vz = 2.2992e+06 N
 rule   an independent arithmetic check, not a second run of the same code
-judge  N = 0 because gravity is vertical and every member lies in the joint plane;
-       Vy = Mz = 0 because nothing loads horizontally. The tip shear reconciles by
-       hand: the 3065625 N support reaction less half the member's own
-       156250 x 9.81 = 1533000 N weight gives 2.2996e+06 against the computed
-       2.2992e+06.
+judge  **THIS SECTION WAS WRONG AND THE WAY IT WAS WRONG IS WORSE THAN THE NUMBERS
+       (R663).** It read: "the tip shear reconciles by hand: the 3065625 N reaction
+       less half the member's own 156250 x 9.81 = 1533000 N weight gives 2.2996e+06
+       against the computed 2.2992e+06." That subtraction IS the defective formula's
+       own identity, so it agreed with the defect and would have REDDENED on the
+       correct code. It was not an independent check; it was the bug restated.
+judge  and the arithmetic was rounded in the one place that mattered:
+       156250 x 9.81 = 1532812.5, not 1533000, and the exact figure would have shown
+       the agreement was exact rather than approximate.
+judge  WHAT IS TRUE, AT ISSUE 2: N = 0 because gravity is vertical and every member
+       lies in the joint plane; Vy = Mz = 0 because nothing loads horizontally. The
+       figures are in section 12 and the gate is conservation, not an end value.
 judge  ONE ELEMENT PER MEMBER at F3's mesh, so two stations per member. EK1 asks the
        report to state that count and this is it.
 ```
@@ -294,9 +301,9 @@ judge  CORRECTED HERE, which is where EK3 puts it. The cause is my fill-in DEFAU
 
 | item | disposition |
 |---|---|
-| R657, R658 | **CLOSED** at `e505f28` under EK2 — the plant locators are anchored, one pattern serving both sites |
-| C119 | **CLOSED** at `9020c6c` under EK2 — the id prefix is consumed outside the capture |
-| R656 | **ledgered** after 28 Oct per EK2, unchanged |
+| R657, R658 | **answered** at `e505f28` under EK2 — the plant locators are anchored, one pattern serving both sites |
+| C119 | **answered** at `9020c6c` under EK2 — the id prefix is consumed outside the capture |
+| R656 | **open** — ledgered after 28 Oct per EK2, unchanged |
 
 ```
 cmd    the three affected states, as shipped
@@ -348,3 +355,146 @@ judge  all 43 are in the three report-parametrised files and all 43 are section 
        RE-TAKEN at the committed sha afterwards -- R651 and R654 were both a count
        taken before the edit that changed it.
 ```
+
+---
+
+# Revision 2 — the ninety-third verdict's seven blocking items
+
+Answers: verdict 93 @ 3a908fa
+
+**2026-10-05.**
+
+## 12. R663 — a real defect in `floatfea/`, and the gate that now catches it
+
+```
+claim  member_forces returned `k u` with the element's equivalent load omitted
+cmd    for one platform arm: k_local @ T @ u, then the same minus the element
+         equivalent load formed independently as M_e (T a_g)
+out                        SHIPPED (k u)   WITH f_eq SUBTRACTED
+out    end B Vz             2.299219e+06          3.065625e+06
+out    end B My            -6.386719e+06         -3.725290e-09
+out    Vz_A + Vz_B          0.000000e+00          1.532813e+06
+out    the tip reaction                           3.065625e+06
+out    the member's weight                        1.532812e+06
+out    mu L^2 / 12                                6.386719e+06
+rule   a member carrying its own distributed weight must show that weight in the SUM
+       of its two end shears
+judge  CONFIRMED, independently of the verdict. `k u` carries the rigid null space, so
+       its end shears cancel IDENTICALLY -- which is why the weight could never appear
+       and why no comparison against a hand-computed END value can see it. The shipped
+       tip moment is exactly `-mu L^2 / 12` where a roller carries none, and the
+       shipped tip shear is 25.0000% below the reaction it must equal.
+cmd    the fix, over all 16 members: |Vz_A + Vz_B - weight| / weight
+out    worst 5.696e-16; every tip shear equals its support reaction to every digit
+out    (3065625.000000 platform, 5926875.000000 hub)
+judge  FIXED. The reach was every Vz and My in both tables of the preview, which is
+       REISSUED as issue 2 and supersedes the first.
+```
+
+## 13. The gates, each with a counter-case that must redden
+
+`tests/verification/rung4/test_f4_static_and_mapping.py`, 9 tests.
+
+| gate | counter-case | answers |
+|---|---|---|
+| member end shears sum to the load carried | the shipped `k u` must fail it, asserted | R663 |
+| tip shear = support reaction | two separately derived numbers | R663 |
+| static sum vs the INDEPENDENT `weight_N` | remainder dropped; gravity reversed | R664, R665 |
+| duality is a property of the JACOBIAN | a both-blocks-`+I` mutant must read `2.0` | R668 |
+| EB6 first side vs HSP-stable | the two CLOSEST labels transposed | R667 |
+
+```
+cmd    pytest tests/verification/rung4/test_f4_static_and_mapping.py -q
+out    9 passed
+cmd    widen EB6_POSITION_CEILING from 1.0e-6 to 1.0e+3 and re-run
+out    1 failed, 8 passed      -- the counter-case, and only it
+rule   a ceiling nothing fails against is not a ceiling
+judge  the ceiling is load-bearing and the counter-case discriminates on it.
+judge  **AND MY FIRST EB6 COUNTER-CASE WAS WEAK.** It measured a property of the
+       GEOMETRY -- that a transposition moves a label further than the ceiling -- and
+       inferred the gate would notice. It now runs the gate's OWN comparison against a
+       permuted expectation. Inferring that a gate would catch something is not
+       measuring that it does.
+judge  R664's fix is the one move the verdict named: `sum_error` compares two numbers
+       both derived from `f`, while `weight_N` comes from the deck and entered no
+       comparison. It does now.
+judge  R668: no module under `floatfea/` reads a Jacobian, and the
+       `g[rows].T @ lam[rows]` check section 4 describes lives in a driver that was
+       never committed -- so the shipped duality figure WAS zero by construction. The
+       property is now asserted where it lives, on a Jacobian.
+judge  R669: nine tests now import the five modules. The four gate rows the plan marks
+       "to be measured at step 1" have assertions behind them.
+```
+
+## 14. R667's limitation, stated rather than left to be found
+
+```
+cmd    the skip condition on EB6's two tests
+out    skipif not (HSP-stable/studies/platform-12buoy/platform_common.py).is_file()
+rule   EB6's expected side is read READ-ONLY from HSP-stable by DS0's design
+judge  so the gate CANNOT RUN where that worktree is absent, which includes CI. It
+       passes locally and skips there. **A SKIPPING GATE IS A GAP**, and the skip
+       reason says so in those words rather than reading as a pass. Routing it is the
+       reviewer's: the alternatives are vendoring the four constants into the
+       repository, which puts the expected side where a permutation could reach it, or
+       accepting a gate that runs in one place only.
+```
+
+## 15. R666 — my "ONE CAUSE" was wrong for three of the 43
+
+```
+cmd    the verdict's own cells, which I accept rather than re-derive
+out    a stub verdict      43 -> 33   (10 clear, 0 new)
+out    **CLOSED** -> **answered**   33 -> 32
+out    **ledgered** -> **open**     32 -> 29
+rule   EG3(i): a red that does not trace to the stated cause still blocks
+judge  THREE OF THE 43 WERE NOT THE MILESTONE BOUNDARY. They were vocabulary: my
+       Carried table used words the report's own spelling rules do not permit. Section
+       1b's LIST was complete and verified set-identical by the verdict; its SENTENCE
+       was wrong. Both one-word changes are made.
+judge  this is the eighty-third verdict's R629 shape at forty-three-red scale: a real
+       defect inside a group ruled by class.
+```
+
+## 16. Carried
+
+| item | disposition |
+|---|---|
+| R663, R664, R665, R666, R668 | **answered** this round, each with a counter-case |
+| R669 | **answered** in part — nine gates now import the five modules |
+| R667 | **answered**, with the skip limitation stated in § 14 |
+| R656 | **open** with Xabier |
+| R653 | **open**; becomes a gate finding at step 2 |
+| R638 | **open** under EJ1, closed before F4 closes |
+| C135 to C143 | **open** — absorbed in the closure commit, not re-reviewed individually |
+
+The verdict **withdrew one of its own predecessor's closing conditions** and recorded
+that my refusal to write an `Answers:` header naming another milestone's verdict into
+F4's first report was right.
+
+```
+cmd    the four constants F4 step 1 declares, and the plan rows that move them
+out    F4_MEMBER_FORCE_CONSERVATION                 1.0e-13
+out    F4_MEMBER_FORCE_CONSERVATION_COUNTER_DEFECT  0.5
+out    F4_EB6_POSITION_M                            1.0e-6
+out    F4_STATIC_REACTION_AGREEMENT                 1.0e-12
+cmd    pytest tests/test_plan_matches_tolerances.py tests/test_no_tolerance_literals.py
+         tests/verification/rung4/test_f4_static_and_mapping.py -q
+out    183 passed
+rule   every numerical tolerance lives in floatfea/tolerances.py, and it moves with a
+       plan edit or it does not move
+judge  **THE TOLERANCE GUARD REFUSED ME THREE TIMES AND WAS RIGHT EACH TIME.** My first
+       version put the two ceilings in module constants with "not-a-tolerance"
+       docstrings; they are comparison epsilons reaching comparisons, which is exactly
+       the clause about a tolerance under another name. They are declared now, with
+       derivations and counter-cases, and `docs/milestones/F4.md` section 5a is the plan
+       edit that moves them.
+judge  and TWO literals went away rather than being exempted: the Jacobian test's values
+       are EXACT in binary floating point -- `x + (-x)` is exactly zero and
+       `max|2 lam| / max|lam|` exactly 2 -- so it asserts equality, which is stronger
+       than any epsilon and removes the question of which epsilon.
+```
+
+## 17. The whole suite
+
+SUITE2_PLACEHOLDER

@@ -1871,6 +1871,59 @@ FIGURE_ARGMIN_TIE_WINDOW_COUNTER_DEFECT: Final[float] = 1.0216
 
 
 # ---------------------------------------------------------------------------
+# F4 step 1 -- load mapping (rung 4)
+#
+# Declared when step 1 measured them, which is what the locked plan schedules:
+# `docs/milestones/F4.md` section 5 marks each F4 row "to be measured" at the step
+# that measures it, and these three are step 1's.
+# ---------------------------------------------------------------------------
+
+# A member's two end shears must sum to the load the member carries. Dimensionless
+# and relative, so it is a round-off ceiling rather than a physical threshold.
+#
+# Reason for 1e-13: the worst over all sixteen members is 5.696e-16, so this clears
+# the measured value by 175x. It cannot be loosened usefully -- the defect it exists
+# to catch (R663, the element equivalent load omitted) misses conservation by 1.0
+# exactly, since `k u` self-equilibrates and the whole weight goes missing. Any
+# ceiling below 1.0 catches it and any ceiling at or above 1.0 catches nothing, so
+# this value sits twelve decades inside a cliff rather than on a slope.
+# COUNTER-CASE: F4_MEMBER_FORCE_CONSERVATION_COUNTER_DEFECT below.
+# Set: 2026-10-05, F4 step 1
+F4_MEMBER_FORCE_CONSERVATION: Final[float] = 1.0e-13
+
+# COUNTER-CASE: the shipped-defect formula must NOT pass.
+# Reason for 0.5: `k u` loses the member's ENTIRE weight, so its relative
+# conservation error is 1.0. Half of that is the largest value that still certifies
+# the counter-case reproduces the defect rather than some smaller discrepancy.
+# Set: 2026-10-05, F4 step 1
+F4_MEMBER_FORCE_CONSERVATION_COUNTER_DEFECT: Final[float] = 0.5
+
+# EB6's label-provenance gate: a buoy or hub label's node coordinates against
+# HSP-stable's own geometry, in metres at full scale.
+#
+# Reason for 1e-6 m: DQ9 requires at least 1e3x above the clean worst and at least
+# 1e3x below the smallest transposition displacement. The clean worst is 0.000e+00 --
+# the builder reads the same geometry -- so the LOWER edge is vacuous and only the
+# upper one binds. The smallest single-label swap moves a position 0.619657 m at
+# model scale, 30.98 m at full scale, which this clears by 3.1e+07x. Both edges are
+# solved in the gate's two tests, and the ablation shows the counter-case is the only
+# test that fails when this is widened to 1e+3.
+# Set: 2026-10-05, F4 step 1
+F4_EB6_POSITION_M: Final[float] = 1.0e-6
+
+# A member's tip shear against the support reaction at that node: the same quantity
+# by two routes, one from `member_forces` and one from the solve's reaction vector.
+#
+# Reason for 1e-12: relative, and the two routes share only the solve. The measured
+# agreement is exact to every printed digit at full-scale magnitudes of 3.07e+06 to
+# 5.93e+06 N; 1e-12 is a round-off ceiling at that scale, not a fitted value.
+# COUNTER-CASE: R663's defective formula puts the tip shear 25.0000% below the
+# reaction, which is eleven decades outside this.
+# Set: 2026-10-05, F4 step 1
+F4_STATIC_REACTION_AGREEMENT: Final[float] = 1.0e-12
+
+
+# ---------------------------------------------------------------------------
 # Rung 5 -- Independent confirmation
 # CalculiX global cross-check (G7.1/V5.1), stress recovery (G6.2/V5.2), code
 # check hand calculations (G6.1/V5.3).

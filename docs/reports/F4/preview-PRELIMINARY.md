@@ -1,5 +1,19 @@
 # F4 step 1 — EK4 PRELIMINARY member-force preview
 
+**ISSUE 2. THIS SUPERSEDES THE FIRST ISSUE, WHOSE `Vz` AND `My` WERE ALL WRONG.**
+The ninety-third verdict found R663: `member_forces` returned `k u` with the
+element's equivalent load omitted, so every shear was 25.0000% low on the platform
+arms and 20.69% on the hub arms, every root moment 5.56% / 4.35% high, and the tip
+moment sat at exactly `-mu L^2 / 12` where a roller support carries none. The
+decisive symptom: `Vz_A + Vz_B` was identically zero, so each member's own weight
+appeared nowhere in its end forces.
+
+Fixed, and now gated by CONSERVATION rather than by a hand-computed end value —
+because the check I had written, `reaction - weight/2`, was the defective formula's
+own identity: it agreed with the bug and would have reddened on the fix. After the
+fix `Vz_A + Vz_B` equals each member's weight to `5.7e-16` and every tip shear
+equals its support reaction to every digit.
+
 **PRELIMINARY (EK4). Nothing here is gated.** Step 2 has not run, so DQ4, DQ5 and
 DQ8's tolerances are unmeasured. What this *is*: EK0(d)'s static case with its three
 checks passing, plus EK0(e)'s dynamic case over DQ6's window with the
@@ -13,43 +27,43 @@ F3's mesh (EK1), so two stations per member** — the value shown is the worse s
 
 | member | N | Vy | Vz | T | My | Mz |
 |---|---|---|---|---|---|---|
-| `platform:hub1_arm` | 1.2471e+07 | 1.8836e-02 | 2.7319e+06 | 5.9272e-06 | 1.4299e+08 | 1.3651e+00 |
-| `platform:hub2_arm` | 3.8726e+05 | 9.9594e+06 | 3.0521e+06 | 4.0689e+02 | 1.5909e+08 | 4.9070e+08 |
-| `platform:hub3_arm` | 1.1873e+07 | 1.3607e-02 | 3.0082e+06 | 5.9264e-06 | 1.5714e+08 | 7.4101e-01 |
-| `platform:hub4_arm` | 3.8726e+05 | 9.9594e+06 | 3.0521e+06 | 4.0689e+02 | 1.5909e+08 | 4.9070e+08 |
-| `hub1:buoy1_arm` | 5.0005e+06 | 2.1684e-02 | 4.8606e+06 | 5.9347e-05 | 1.2674e+08 | 8.0439e-01 |
-| `hub1:buoy2_arm` | 2.9590e+06 | 5.2677e+06 | 4.8626e+06 | 9.9921e+02 | 1.2680e+08 | 1.3166e+08 |
-| `hub1:buoy3_arm` | 2.9590e+06 | 5.2677e+06 | 4.8626e+06 | 9.9921e+02 | 1.2680e+08 | 1.3166e+08 |
-| `hub2:buoy4_arm` | 5.6862e+06 | 1.4060e+05 | 5.0113e+06 | 1.2573e+02 | 1.3047e+08 | 3.6064e+06 |
-| `hub2:buoy5_arm` | 2.7304e+06 | 4.9026e+06 | 5.0105e+06 | 8.5359e+02 | 1.3045e+08 | 1.2287e+08 |
-| `hub2:buoy6_arm` | 2.8003e+06 | 5.2672e+06 | 5.0108e+06 | 7.8602e+02 | 1.3046e+08 | 1.3204e+08 |
-| `hub3:buoy7_arm` | 5.7977e+06 | 1.7336e-02 | 5.1577e+06 | 5.6754e-05 | 1.3433e+08 | 6.4487e-01 |
-| `hub3:buoy8_arm` | 2.9923e+06 | 5.1893e+06 | 5.1656e+06 | 1.1970e+03 | 1.3456e+08 | 1.2950e+08 |
-| `hub3:buoy9_arm` | 2.9923e+06 | 5.1893e+06 | 5.1656e+06 | 1.1970e+03 | 1.3456e+08 | 1.2950e+08 |
-| `hub4:buoy10_arm` | 5.6862e+06 | 1.4060e+05 | 5.0113e+06 | 1.2573e+02 | 1.3047e+08 | 3.6064e+06 |
-| `hub4:buoy11_arm` | 2.8003e+06 | 5.2672e+06 | 5.0108e+06 | 7.8602e+02 | 1.3046e+08 | 1.3204e+08 |
-| `hub4:buoy12_arm` | 2.7304e+06 | 4.9026e+06 | 5.0105e+06 | 8.5359e+02 | 1.3045e+08 | 1.2287e+08 |
+| `platform:hub1_arm` | 1.2505e+07 | 1.9021e-02 | 3.4996e+06 | 1.1854e-05 | 1.3660e+08 | 1.3625e+00 |
+| `platform:hub2_arm` | 3.8726e+05 | 1.0004e+07 | 3.8299e+06 | 8.1377e+02 | 1.5261e+08 | 4.9033e+08 |
+| `platform:hub3_arm` | 1.1910e+07 | 1.3798e-02 | 3.8173e+06 | 1.1853e-05 | 1.5044e+08 | 7.3506e-01 |
+| `platform:hub4_arm` | 3.8726e+05 | 1.0004e+07 | 3.8299e+06 | 8.1377e+02 | 1.5261e+08 | 4.9033e+08 |
+| `hub1:buoy1_arm` | 5.0568e+06 | 2.1738e-02 | 6.1157e+06 | 1.1869e-04 | 1.2151e+08 | 8.0385e-01 |
+| `hub1:buoy2_arm` | 2.9711e+06 | 5.2944e+06 | 6.1191e+06 | 1.9984e+03 | 1.2157e+08 | 1.3176e+08 |
+| `hub1:buoy3_arm` | 2.9711e+06 | 5.2944e+06 | 6.1191e+06 | 1.9984e+03 | 1.2157e+08 | 1.3176e+08 |
+| `hub2:buoy4_arm` | 5.6962e+06 | 1.4060e+05 | 6.2568e+06 | 2.5145e+02 | 1.2528e+08 | 3.6064e+06 |
+| `hub2:buoy5_arm` | 2.7600e+06 | 4.9555e+06 | 6.2551e+06 | 1.7072e+03 | 1.2526e+08 | 1.2265e+08 |
+| `hub2:buoy6_arm` | 2.8292e+06 | 5.3215e+06 | 6.2558e+06 | 1.5720e+03 | 1.2527e+08 | 1.3181e+08 |
+| `hub3:buoy7_arm` | 5.8326e+06 | 1.7876e-02 | 6.4497e+06 | 1.1351e-04 | 1.2894e+08 | 6.4939e-01 |
+| `hub3:buoy8_arm` | 3.0282e+06 | 5.2509e+06 | 6.4662e+06 | 2.3941e+03 | 1.2914e+08 | 1.2976e+08 |
+| `hub3:buoy9_arm` | 3.0282e+06 | 5.2509e+06 | 6.4662e+06 | 2.3941e+03 | 1.2914e+08 | 1.2976e+08 |
+| `hub4:buoy10_arm` | 5.6962e+06 | 1.4060e+05 | 6.2568e+06 | 2.5145e+02 | 1.2528e+08 | 3.6064e+06 |
+| `hub4:buoy11_arm` | 2.8292e+06 | 5.3215e+06 | 6.2558e+06 | 1.5720e+03 | 1.2527e+08 | 1.3181e+08 |
+| `hub4:buoy12_arm` | 2.7600e+06 | 4.9555e+06 | 6.2551e+06 | 1.7072e+03 | 1.2526e+08 | 1.2265e+08 |
 
 ## The static case alone, for comparison
 
 | member | N | Vy | Vz | T | My | Mz |
 |---|---|---|---|---|---|---|
-| `platform:hub1_arm` | 0.0000e+00 | 0.0000e+00 | 2.2992e+06 | 8.2718e-25 | 1.2135e+08 | 0.0000e+00 |
-| `platform:hub2_arm` | 0.0000e+00 | 0.0000e+00 | 2.2992e+06 | 8.2718e-25 | 1.2135e+08 | 0.0000e+00 |
-| `platform:hub3_arm` | 0.0000e+00 | 0.0000e+00 | 2.2992e+06 | 6.8905e-10 | 1.2135e+08 | 0.0000e+00 |
-| `platform:hub4_arm` | 0.0000e+00 | 0.0000e+00 | 2.2992e+06 | 8.2718e-25 | 1.2135e+08 | 0.0000e+00 |
-| `hub1:buoy1_arm` | 0.0000e+00 | 0.0000e+00 | 4.7006e+06 | 0.0000e+00 | 1.2263e+08 | 0.0000e+00 |
-| `hub1:buoy2_arm` | 0.0000e+00 | 0.0000e+00 | 4.7006e+06 | 9.7511e-09 | 1.2263e+08 | 0.0000e+00 |
-| `hub1:buoy3_arm` | 0.0000e+00 | 0.0000e+00 | 4.7006e+06 | 9.4931e-09 | 1.2263e+08 | 0.0000e+00 |
-| `hub2:buoy4_arm` | 0.0000e+00 | 0.0000e+00 | 4.7006e+06 | 0.0000e+00 | 1.2263e+08 | 0.0000e+00 |
-| `hub2:buoy5_arm` | 0.0000e+00 | 0.0000e+00 | 4.7006e+06 | 5.0197e-09 | 1.2263e+08 | 0.0000e+00 |
-| `hub2:buoy6_arm` | 0.0000e+00 | 0.0000e+00 | 4.7006e+06 | 2.9580e-08 | 1.2263e+08 | 0.0000e+00 |
-| `hub3:buoy7_arm` | 0.0000e+00 | 0.0000e+00 | 4.7006e+06 | 0.0000e+00 | 1.2262e+08 | 0.0000e+00 |
-| `hub3:buoy8_arm` | 0.0000e+00 | 0.0000e+00 | 4.7006e+06 | 6.1345e-09 | 1.2262e+08 | 0.0000e+00 |
-| `hub3:buoy9_arm` | 0.0000e+00 | 0.0000e+00 | 4.7006e+06 | 2.4049e-08 | 1.2262e+08 | 0.0000e+00 |
-| `hub4:buoy10_arm` | 0.0000e+00 | 0.0000e+00 | 4.7006e+06 | 0.0000e+00 | 1.2262e+08 | 0.0000e+00 |
-| `hub4:buoy11_arm` | 0.0000e+00 | 0.0000e+00 | 4.7006e+06 | 1.6642e-09 | 1.2262e+08 | 0.0000e+00 |
-| `hub4:buoy12_arm` | 0.0000e+00 | 0.0000e+00 | 4.7006e+06 | 1.1036e-08 | 1.2263e+08 | 0.0000e+00 |
+| `platform:hub1_arm` | 0.0000e+00 | 0.0000e+00 | 3.0656e+06 | 8.2718e-25 | 1.1496e+08 | 0.0000e+00 |
+| `platform:hub2_arm` | 0.0000e+00 | 0.0000e+00 | 3.0656e+06 | 8.2718e-25 | 1.1496e+08 | 0.0000e+00 |
+| `platform:hub3_arm` | 0.0000e+00 | 0.0000e+00 | 3.0656e+06 | 6.8905e-10 | 1.1496e+08 | 0.0000e+00 |
+| `platform:hub4_arm` | 0.0000e+00 | 0.0000e+00 | 3.0656e+06 | 1.0340e-24 | 1.1496e+08 | 0.0000e+00 |
+| `hub1:buoy1_arm` | 0.0000e+00 | 0.0000e+00 | 5.9269e+06 | 0.0000e+00 | 1.1752e+08 | 0.0000e+00 |
+| `hub1:buoy2_arm` | 0.0000e+00 | 0.0000e+00 | 5.9269e+06 | 9.7511e-09 | 1.1752e+08 | 0.0000e+00 |
+| `hub1:buoy3_arm` | 0.0000e+00 | 0.0000e+00 | 5.9269e+06 | 9.9588e-09 | 1.1752e+08 | 0.0000e+00 |
+| `hub2:buoy4_arm` | 0.0000e+00 | 0.0000e+00 | 5.9269e+06 | 0.0000e+00 | 1.1752e+08 | 0.0000e+00 |
+| `hub2:buoy5_arm` | 0.0000e+00 | 0.0000e+00 | 5.9269e+06 | 5.0197e-09 | 1.1752e+08 | 0.0000e+00 |
+| `hub2:buoy6_arm` | 0.0000e+00 | 0.0000e+00 | 5.9269e+06 | 2.9580e-08 | 1.1752e+08 | 0.0000e+00 |
+| `hub3:buoy7_arm` | 0.0000e+00 | 0.0000e+00 | 5.9269e+06 | 0.0000e+00 | 1.1752e+08 | 0.0000e+00 |
+| `hub3:buoy8_arm` | 0.0000e+00 | 0.0000e+00 | 5.9269e+06 | 6.1345e-09 | 1.1752e+08 | 0.0000e+00 |
+| `hub3:buoy9_arm` | 0.0000e+00 | 0.0000e+00 | 5.9269e+06 | 2.4514e-08 | 1.1752e+08 | 0.0000e+00 |
+| `hub4:buoy10_arm` | 0.0000e+00 | 0.0000e+00 | 5.9269e+06 | 0.0000e+00 | 1.1752e+08 | 0.0000e+00 |
+| `hub4:buoy11_arm` | 0.0000e+00 | 0.0000e+00 | 5.9269e+06 | 1.6642e-09 | 1.1752e+08 | 0.0000e+00 |
+| `hub4:buoy12_arm` | 0.0000e+00 | 0.0000e+00 | 5.9269e+06 | 1.1502e-08 | 1.1752e+08 | 0.0000e+00 |
 
 ## Per-case checks (EN2's STOP conditions, none tripped)
 
