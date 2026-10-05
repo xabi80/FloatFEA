@@ -1,0 +1,101 @@
+# CORPUS: mutations of F4 STEP 1's ten shipped gates and of the three tolerances
+# they read -- tests/verification/rung4/test_f4_static_and_mapping.py and the six
+# F4_* entries in floatfea/tolerances.py.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the ninety-fourth verdict, reviewed commit
+# 7c8e4ae7c57d48f51a5e955a42fceb1d25a117ac, batch 33. Every measured= field below
+# was taken by the reviewer AT THAT COMMIT, full scale, deck platform12_deck.yaml,
+# froude_lambda 50.
+#
+# WHY THIS FILE EXISTS (BE3, and EG4(e) two standing exceptions to the corpus
+# pause -- F4 load-mapping gate and EB6 label-provenance gate). Batch 32 asked of
+# three published FIGURES "if the thing it claims were false, would the figure
+# move?" and the answer was no for eleven of seventeen. Step 1 now ships
+# ASSERTIONS instead of figures, so the question changes, and it changes in the
+# direction EH4 names: not "does the gate catch the defect its author injected"
+# but "how far may the gate be WEAKENED -- ceiling up, injection down, premise
+# removed -- with every one of the ten tests still green".
+#
+# WHAT A PASSING SCAN MEANS. For each entry: apply the mutation, then run
+#   pytest tests/verification/rung4/test_f4_static_and_mapping.py
+#          tests/verification/rung3/test_tolerance_counter_cases.py
+#          tests/test_no_tolerance_literals.py
+# and compare the outcome with expect=. expect=catch means at least one of those
+# tests must go RED and the entry names which. expect=miss means the reviewer
+# measured that they all stay GREEN -- a recorded hole, not a prediction, and an
+# entry that starts catching is a gate that improved, so the line is updated and
+# not deleted. expect=unavailable means the gate exists and does not run on the
+# machine that gates the merge. expect=catch_only_after_repair means an EXISTING
+# guard rules on it once the named repair is made and is silent until then.
+#
+# PLAN ROWS AND GUARDS IN SCOPE: F4.md section 5 (G4.4, EK0(a), EK0(d) symmetry,
+# EK0(d) supports, EK0(e) duality, EB6), F4.md section 5a (the six declared
+# constants), DQ9 both edges, EH4 two weakening directions, and rung3
+# test_the_ceiling_sits_below_its_counter_case.
+#
+# FIELDS
+#   id        a name for the shape, unique in this file
+#   surface   tolerance | gate | module | premise | provenance
+#   mutation  the one variable moved, everything else held
+#   measured  what the reviewer observed at 7c8e4ae
+#   expect    catch | miss | unavailable | catch_only_after_repair
+#   reaches   the quantity a missed defect would reach if shipped
+#
+# --- EH4 DIRECTION A: THE CEILING RISES (the direction that WEAKENS a gate) ---
+id=cons_ceiling_rises_to_one surface=tolerance mutation=F4_MEMBER_FORCE_CONSERVATION_1.0e-13_to_1.0 measured=150_passed expect=miss reaches=every_member_shear_and_moment
+id=cons_ceiling_rises_past_the_defect surface=tolerance mutation=F4_MEMBER_FORCE_CONSERVATION_1.0e-13_to_2.0 measured=150_passed expect=miss reaches=the_gate_would_accept_R663_itself_whose_error_is_1.0
+id=cons_ceiling_rises_nineteen_decades surface=tolerance mutation=F4_MEMBER_FORCE_CONSERVATION_1.0e-13_to_1.0e+6 measured=150_passed expect=miss reaches=the_gate_accepts_any_conservation_error
+id=agree_ceiling_rises_to_just_under_its_counter surface=tolerance mutation=F4_STATIC_REACTION_AGREEMENT_1.0e-12_to_0.249 measured=10_passed expect=miss reaches=a_24.9_percent_tip_shear_error_reads_green
+id=agree_ceiling_rises_past_its_counter surface=tolerance mutation=F4_STATIC_REACTION_AGREEMENT_1.0e-12_to_0.3 measured=1_failed_test_G4_the_defective_formula_misses_the_reaction_by_a_quarter expect=catch reaches=none
+id=eb6_ceiling_rises_to_just_under_the_transposition surface=tolerance mutation=F4_EB6_POSITION_M_1.0e-6_to_30.9 measured=10_passed expect=miss reaches=a_30.9_metre_label_displacement_reads_green
+id=eb6_ceiling_rises_past_the_transposition surface=tolerance mutation=F4_EB6_POSITION_M_1.0e-6_to_31.0 measured=1_failed_test_EB6_a_PERMUTED_export_reddens_the_gate expect=catch reaches=none
+#
+# --- EH4 DIRECTION B: THE CEILING FALLS TOWARD THE CLEAN VALUE ---
+id=cons_ceiling_falls_to_the_clean_worst surface=tolerance mutation=F4_MEMBER_FORCE_CONSERVATION_1.0e-13_to_5.0e-16 measured=1_failed_test_G4_member_end_shears_sum_to_the_load_the_member_carries expect=catch reaches=none_clean_worst_is_5.696e-16_a_175x_margin
+id=agree_ceiling_falls_to_the_clean_worst surface=tolerance mutation=F4_STATIC_REACTION_AGREEMENT_1.0e-12_to_3.0e-16 measured=1_failed_test_G4_the_tip_shear_equals_the_support_reaction expect=catch reaches=none_clean_worst_is_3.143e-16
+id=eb6_ceiling_falls_below_the_counter_printed_digits surface=tolerance mutation=F4_EB6_POSITION_M_1.0e-6_to_1.0e-14 measured=1_failed_test_EB6_a_PERMUTED_export_reddens_the_gate_through_its_approx_abs expect=catch reaches=the_lower_edge_is_set_by_the_decimal_places_of_30.982842_not_by_the_clean_worst_which_is_zero
+#
+# --- THE COUNTER NAME IS WHAT SELECTS THE BRACKET ---
+id=counter_suffix_renamed_to_COUNTER surface=tolerance mutation=F4_MEMBER_FORCE_CONSERVATION_COUNTER_DEFECT_renamed_COUNTER_and_ceiling_to_2.0 measured=1_failed_test_the_ceiling_sits_below_its_counter_case_F4_MEMBER_FORCE_CONSERVATION expect=catch_only_after_repair reaches=the_shipped_suffix_takes_the_rung3_carve_out_so_ceiling_below_counter_is_asserted_for_none_of_the_three
+id=counter_suffix_renamed_ceiling_held_clean surface=tolerance mutation=same_rename_with_the_ceiling_held_at_1.0e-13 measured=150_passed expect=catch_only_after_repair reaches=none_the_rename_alone_breaks_nothing_which_is_why_it_is_available
+#
+# --- THE CONSERVATION GATE OWN REACH ---
+id=conservation_gate_displacement_zeroed surface=gate mutation=u_full_replaced_by_zeros measured=worst_3.797e-16_GREEN expect=miss reaches=the_gate_is_an_identity_of_the_element_mass_row_sums_and_never_reads_the_solve
+id=conservation_gate_displacement_scaled_1000x surface=gate mutation=u_full_times_1000 measured=worst_0.000e+00_GREEN expect=miss reaches=same_as_above
+id=conservation_gate_displacement_randomised surface=gate mutation=u_full_replaced_by_normal_zero_1e-2_seed_0 measured=worst_7.595e-16_GREEN expect=miss reaches=same_as_above
+id=conservation_gate_element_mass_doubled surface=gate mutation=element_equivalent_load_times_2 measured=worst_1.000e+00_RED expect=catch reaches=none
+id=conservation_gate_body_average_vs_element_mass surface=premise mutation=one_member_length_halved_so_member_mass_over_n_is_no_longer_that_element_mass measured=all_four_platform_members_are_50.000_m_and_nothing_in_the_file_asserts_it expect=miss reaches=a_false_RED_on_any_frame_with_unequal_members
+#
+# --- THE INDEPENDENT-WEIGHT GATE, PHYSICALLY INJECTED RATHER THAN ARITHMETICALLY ---
+id=weight_gate_remainder_mass_dropped surface=gate mutation=remainder_diagonal_subtracted_from_body_mass_matrix measured=platform_rel_5.000e-01_and_all_five_rows_RED expect=catch reaches=none
+id=weight_gate_gravity_reversed_platform_row surface=gate mutation=selfweight_GRAVITY_VECTOR_negated_platform_row_read_alone measured=applied_1.226250e+07_expected_1.226250e+07_rel_0.000e+00_PASS expect=miss reaches=abs_of_applied_N_discards_the_sign_the_check_own_docstring_names_as_the_one_error_it_exists_for
+id=weight_gate_gravity_reversed_whole_gate surface=gate mutation=same_all_five_rows measured=the_four_hub_rows_read_rel_5.263e-01_RED expect=catch reaches=none_but_the_catch_is_carried_entirely_by_the_handed_down_term
+id=weight_gate_single_body_gravity_reversed surface=gate mutation=same_with_the_four_hub_rows_removed_from_the_loop measured=the_platform_row_alone_PASSES expect=miss reaches=a_body_with_no_upstream_term_is_sign_blind
+#
+# --- THE TIP-SHEAR GATE SILENT CONTINUE ---
+id=tip_shear_gate_reaction_map_emptied surface=gate mutation=vertical_reactions_N_emptied_on_every_body measured=0_assertions_executed_and_the_test_reports_1_passed expect=miss reaches=an_empty_collection_reads_green_rather_than_raising
+id=tip_shear_gate_displacement_zeroed surface=gate mutation=u_full_replaced_by_zeros measured=worst_7.931e-01_RED expect=catch reaches=none_16_of_16_members_assert
+id=tip_shear_gate_local_z_premise surface=premise mutation=a_member_inclined_out_of_the_joint_plane measured=all_16_members_have_dz_0.000e+00_and_no_assertion_states_it expect=miss reaches=a_LOCAL_Vz_compared_with_a_GLOBAL_Fz_reaction
+#
+# --- THE SIGNATURE: R663 IS ONE OMITTED KEYWORD AWAY ---
+id=member_forces_called_without_f_eq surface=module mutation=member_forces_called_with_f_eq_global_left_at_its_None_default measured=returns_silently_tip_Vz_2.299219e+06_the_R663_value_and_does_NOT_raise expect=miss reaches=every_member_force_a_future_caller_computes
+#
+# --- THE DUALITY GATE AND THE MAPPER IT DOES NOT TOUCH ---
+id=duality_residual_both_shares_zero surface=module mutation=duality_residual_of_zeros_and_zeros measured=0.0_identical_to_the_satisfied_law_value_0.0 expect=miss reaches=a_ramp_start_and_a_satisfied_law_print_the_same_number
+id=map_joint_reactions_sign_constant_flipped surface=module mutation=joint_reactions_line_89_body_b_sign_minus_one_to_plus_one measured=no_test_under_tests_calls_map_joint_reactions_at_this_commit expect=miss reaches=the_same_force_pushed_into_both_bodies_of_all_16_joints
+id=duality_gate_jacobian_is_hand_built surface=provenance mutation=the_FloatSim_constraint_jacobian_substituted_for_the_test_3x12_literal measured=no_module_under_floatfea_forms_or_reads_a_jacobian expect=miss reaches=the_gate_asserts_a_property_of_a_matrix_written_in_the_test_itself
+#
+# --- EK0(d) SYMMETRY, THE SUPPORT SCHEME, AND G4.4 ---
+id=horizontal_restraint_made_eight_dof_redundant surface=gate mutation=horizontal_restraint_replaced_by_ux_and_uy_at_all_four_joints measured=worst_horizontal_0.0_on_all_five_bodies_reactions_bit_identical_and_no_test_reads_the_quantity expect=miss reaches=the_determinacy_claim_at_static_py_lines_21_to_23
+id=platform_symmetry_one_arm_stiffness_reduced surface=gate mutation=one_arm_I_y_I_z_and_J_reduced_100x measured=no_test_under_tests_reads_vertical_reactions_N_for_a_spread_at_this_commit expect=miss reaches=the_split_between_the_four_redundant_supports
+id=g4_4_mapping_conservation_moment surface=gate mutation=a_mapped_record_losing_its_moment_about_the_common_point measured=no_test_asserts_G4.4_at_this_commit expect=miss reaches=every_mapped_load_per_body_and_per_source
+#
+# --- EB6, BOTH SIDES AND BOTH EDGES ---
+id=eb6_permuted_export_closest_pair surface=gate mutation=buoy_joint_nodes_buoy2_swapped_with_buoy4_a_genuinely_permuted_EXPORT measured=worst_30.982842_m_REDDENS_where_HSP_stable_exists expect=unavailable reaches=the_gate_is_correct_and_skips_in_CI_where_run_rung_reports_FAIL_2_skipped
+id=eb6_smallest_of_all_66_transpositions surface=gate mutation=each_of_the_66_label_transpositions_in_turn measured=minimum_30.982842_m_on_buoy2_buoy4_with_4_pairs_at_that_value expect=catch reaches=none_the_declared_counter_is_the_true_minimum
+id=eb6_clean_worst_is_exactly_zero surface=tolerance mutation=none_measure_the_clean_side measured=0.000000e+00_m_so_the_DQ9_1e3x_above_the_clean_worst_edge_is_vacuous expect=miss reaches=one_of_the_two_DQ9_edges_cannot_bind
+id=eb6_hub_joint_label_permutation surface=gate mutation=the_4_hub_platform_labels_transposed_against_platform_common_line_157 measured=no_test_reads_Z_HUB_REF_or_line_157_at_this_commit expect=miss reaches=the_DQ9_required_extension_to_the_4_hub_platform_joints
+id=eb6_two_of_four_constants_are_literals surface=provenance mutation=cc_CLUSTER_RADIUS_or_cc_BUOY_ANGLES_DEG_changed_in_HSP_stable measured=the_values_0_120_240_and_0.5_are_LITERALS_in_the_test_only_arm_radius_and_cluster_angles_are_parsed expect=miss reaches=the_docstring_claim_that_a_change_there_reaches_this_gate_is_false_for_two_of_four
+id=eb6_both_tests_removed_entirely surface=gate mutation=the_two_needs_hsp_stable_tests_deleted measured=run_rung_fails_at_this_commit_only_on_the_2_skipped_so_deletion_turns_the_rung_GREEN expect=miss reaches=removing_the_gate_is_rewarded_by_the_ladder_script
