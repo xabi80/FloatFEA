@@ -220,7 +220,26 @@ _MENTION = re.compile(r"\bR\d+\b")
 # The directory part is OPTIONAL, because findings name bare files too and
 # those were invisible to this pattern (R171). The optional `:line` and `:a-b`
 # suffixes are what take the guard to line resolution.
-_SITE = re.compile(r"((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json))(?::(\d+)(?:-(\d+))?)?")
+# C119 / R641 AT A SECOND SITE, REPAIRED UNDER EK2 (a PARSER misreading its input).
+# `[\w.-]` admits `-`, so a pytest id printed in a verdict -- `R637-R634-docs/closure/
+# F3.md` -- had `R637-R634-docs` taken as a leading DIRECTORY segment and the whole id
+# recorded as a site. The table then declared a path no repository has, and
+# `docs/closure/F3.md` section 8's ledger carries the row that demonstrates it.
+#
+# `(?:R\d+-)*` consumes the id prefixes OUTSIDE the capture, so the real path survives
+# -- which is what R641's narrowing achieved for `_ANSWERS_PATH` and what dropping the
+# match entirely would NOT: losing a real site silently is the one direction the
+# comments below say must never be silent.
+#
+# `(?<![\w.-])` stops a match from starting mid-token, which would otherwise yield
+# `ocs/closure/F3.md` once the prefix is skippable.
+#
+# KNOWN AND ACCEPTED: a genuine first segment of the form `R<digits>-` would be
+# stripped. No path in this repository has one.
+_SITE = re.compile(
+    r"(?<![\w.-])(?:R\d+-)*((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json))"
+    r"(?::(\d+)(?:-(\d+))?)?"
+)
 
 
 def _read(path: Path) -> str:
