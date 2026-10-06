@@ -1,0 +1,81 @@
+{
+ "_": [
+  "POINTERS ONLY (CH4).",
+  "",
+  "F4 STEP 2, REVISION 1. Answers the NINETY-SIXTH verdict. R683 at section 4,",
+  "R684 at 5, R653 at 6.",
+  "",
+  "R682 AND R685 POINT AT SECTION 7, WHICH IS WHERE THEY ARE HELD AND WHY.",
+  "Directive ER2 puts ER1's new mass basis before any step-2 tolerance work,",
+  "so that nothing is calibrated twice. Both items are figures derived from",
+  "mu, M and f, and ER0 changes all three. They are OPEN, not answered, and",
+  "section 7 carries the correct bound on the OLD basis so the reviewer can",
+  "see that the measurement exists and only its basis is waiting.",
+  "",
+  "R679, R680 and R681 were answered in step 1's closure commit and verified",
+  "by verdict 96 itself; they point at the ledger section rather than at a",
+  "section of this revision, because this revision did not do that work.",
+  "",
+  "R653 is the one item here that verdict 95 and 94 both carried: step 2 is",
+  "where a G4.x gate cites the replay residual, which is the condition set",
+  "for it to become blocking, so it is answered rather than carried again."
+ ],
+ "answered": {
+  "R622": {
+   "state": "carried",
+   "where": "\u00a79b"
+  },
+  "R626": {
+   "state": "carried",
+   "where": "\u00a79b"
+  },
+  "R631": {
+   "state": "carried",
+   "where": "\u00a79b"
+  },
+  "R635": {
+   "state": "carried",
+   "where": "\u00a79b"
+  },
+  "R638": {
+   "state": "carried",
+   "where": "\u00a79b"
+  },
+  "R653": {
+   "state": "answered",
+   "where": "\u00a76"
+  },
+  "R656": {
+   "state": "carried",
+   "where": "\u00a79b"
+  },
+  "R679": {
+   "state": "answered",
+   "where": "\u00a79a"
+  },
+  "R680": {
+   "state": "answered",
+   "where": "\u00a79a"
+  },
+  "R681": {
+   "state": "answered",
+   "where": "\u00a79a"
+  },
+  "R682": {
+   "state": "open",
+   "where": "\u00a77"
+  },
+  "R683": {
+   "state": "answered",
+   "where": "\u00a74"
+  },
+  "R684": {
+   "state": "answered",
+   "where": "\u00a75"
+  },
+  "R685": {
+   "state": "open",
+   "where": "\u00a77"
+  }
+ }
+}

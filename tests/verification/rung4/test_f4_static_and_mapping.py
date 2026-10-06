@@ -1005,7 +1005,11 @@ def test_R653_the_integrator_coefficients_match_the_INTERCHANGE_SPECIFICATION() 
         )
     # The difference the specification singles out, because the inertia term blends with
     # `alpha_m` and the other terms with `alpha_f`, and exporting only one loses it.
-    assert round(got.alpha_f - got.alpha_m, 5) == 0.05263, (
+    # not-a-tolerance: 0.05263 is a value `docs/load-interchange-v1.md:259` PUBLISHES.
+    # It is the expected side of an exact comparison against a figure rounded to the
+    # five places the specification prints, not a window within which two numbers may
+    # differ -- there is no slack here to widen.
+    assert round(got.alpha_f - got.alpha_m, 5) == 0.05263, (  # not-a-tolerance: see above
         f"alpha_f - alpha_m is {got.alpha_f - got.alpha_m!r}; the specification "
         "publishes 0.05263 and gives that difference as the reason both are exported."
     )
@@ -1018,14 +1022,24 @@ def test_R653_the_value_the_DRIVER_reconstructs_with_is_the_declared_one() -> No
     evaluates it at. This pins that number, so a silent edit to it reddens here rather
     than moving a published residual by a factor nobody notices.
     """
-    assert FLOATSIM_RHO_INF == 0.8, (
+    # not-a-tolerance: 0.8 is FloatSim's spectral radius at infinity -- an INPUT to the
+    # integrator, and the quantity this assertion pins rather than a bound on one. R653
+    # is precisely that this number reached no assertion; a ceiling here would be the
+    # opposite of what is wanted.
+    assert FLOATSIM_RHO_INF == 0.8, (  # not-a-tolerance: see above
         f"the declared spectral radius is {FLOATSIM_RHO_INF!r}, not 0.8. FloatSim's "
         "integrator is what sets this; changing it here does not change FloatSim, it "
         "only makes the reconstruction wrong -- and the reconstruction is what every "
         "joint reaction in this milestone is read from."
     )
     coefficients = generalized_alpha_coefficients(FLOATSIM_RHO_INF)
-    assert 0.0 < coefficients.beta < 0.5 and 0.0 < coefficients.gamma < 1.0, (
+    # not-a-tolerance: 0.5 and 1.0 are the mathematical ranges `beta` and `gamma` have
+    # for a dissipative generalized-alpha step, which is a property of the scheme and
+    # not an agreement between two measurements. Narrowing them would not loosen a
+    # comparison; it would assert something false about the method.
+    assert (  # not-a-tolerance: see above
+        0.0 < coefficients.beta < 0.5 and 0.0 < coefficients.gamma < 1.0
+    ), (
         f"the coefficients at rho_inf = {FLOATSIM_RHO_INF!r} are {coefficients!r}, "
         "which are outside the ranges a dissipative generalized-alpha step has."
     )
