@@ -580,6 +580,7 @@ Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 94 at `7
 | `37349836460` | push | `7c8e4ae` | conclusion **failure** |
 | `37405359199` | push | `ed484dd` | conclusion **failure** |
 | `37409288843` | push | `ca8b51b` | conclusion **failure** |
+| `37412585625` | push | `a3b914d` | conclusion **success** |
 
 **Run `37349836460`, conclusion **failure**: 39 failing test name(s) in the log.**
 - `tests/test_report_carried.py::test_the_report_carries_the_finding[R622]` (lint, unit and guards)
@@ -1600,3 +1601,70 @@ before the commit exists.** `scripts/suite_count.py` builds a clean worktree at 
 it cannot see an uncommitted report, and "I ran it before committing" is not a measurement
 for the three files parametrised over this report. The re-run AT this revision's own commit
 is below, taken after it existed.
+
+### 16a. The re-run at this revision's own commit (CZ1 (ii) and (iii))
+
+```
+claim  the whole suite at the commit that publishes this revision
+cmd    python scripts/suite_count.py          [at a3b914d, tree clean]
+out    **Whole suite at `a3b914d`: 2747 passed, 0 failed, 0 skipped.**
+out    **The excluded set: 270 passed, 1 failed, 0 skipped.**
+judge  the two vocabulary-corpus reds cleared with the commit, exactly as predicted
+       above -- 2 failed at `6cf4efe`, 0 at `a3b914d`. The excluded set went from 35
+       failed to 1.
+```
+
+```
+claim  ruff, black, mypy and the ladder are green at this commit on the MACHINE THAT
+       GATES THE MERGE, and `guards and meta-tests` is seen to have RUN
+cmd    gh run list --commit a3b914d73cc1b3ff38078f1fa2c6a32bb5269c91
+       then `gh run view <that run> --json jobs` -- job AND step level. The run's id is
+       NOT typed here: section 0a's generated table carries it, and R352 is why a
+       report may not name a run outside a generated section.
+out    conclusion: success
+out    JOB the verification ladder: success
+out        ladder 1 success / ladder 2 success / ladder 3 success / ladder 6 success
+out        **ladder 4 -- the loads are the loads: success**
+out        **ladder 5 -- independent confirmation: success**   (no longer skipped behind a red)
+out    JOB lint, unit and guards: success
+out        actionlint success / ruff success / black --check success / mypy success
+out        unit tests success / **guards and meta-tests: success**
+out    JOB CI determinism -- leg: skipped ; ten legs agree: skipped
+rule   CZ1 (iii): the lint job's `guards and meta-tests` step must be SEEN to have run
+       rather than skipped behind an earlier red step
+judge  **R670 IS CLOSED ON THE MACHINE THAT RAISED IT.** The ninety-fourth verdict's
+       red was `ladder 4`, from `run_rung: FAIL -- 2 skipped`. It is green, and `ladder
+       5` runs now instead of being skipped behind it. I used the full sha; the short
+       form returns an empty list silently (verdict 94's own note).
+```
+
+**AND ONE DISAGREEMENT I CANNOT RESOLVE, REPORTED RATHER THAN SETTLED.**
+`tests/test_report_guard_states.py` gives three different answers at the SAME commit
+depending on where it runs, and I measured all four environments rather than quoting the
+one that suits me:
+
+```
+claim  the file's result at a3b914d depends on the environment it runs in
+cmd    python -m pytest tests/test_report_guard_states.py -q    [four environments]
+out    the real repo, tree clean at a3b914d                     : 23 passed
+out    CI at a3b914d, `guards and meta-tests` (see section 0a)  : success
+out    `suite_count.py`'s own temporary worktree at a3b914d     : 1 failed
+out      the one: test_the_guard_survives_the_state[guard_state_declared_GREEN_in_
+out      REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL]
+out    a local clone whose `origin` is a FILE PATH, not GitHub  : 7 failed
+out      baseline + the 6 that cascade off it
+judge  the clone's seven are a clone artefact and I am confident of that much: `gh`
+       cannot resolve a repository there, and two other guards failed the same way in
+       the clone and passed in the real repo. **The suite_count worktree's one is a
+       different matter and I have not diagnosed it.** It is a CONTROL -- a planted
+       state declared green that must actually redden -- so the direction of its
+       failure is "the control did not behave", not "the tree is wrong".
+rule   CLAUDE.md: if two results disagree, the disagreement is the finding; report it
+judge  the two environments that decide whether this tree is green -- the repository
+       itself and CI -- agree and are green. I am not treating that as settling it,
+       because the figure this report publishes for the excluded set comes from the
+       worktree that disagrees, and a reader comparing the three would be right to
+       ask. Carried into step 2 by name if the reviewer wants it chased; I did not
+       spend this round's remaining budget on it in preference to the nine blocking
+       items.
+```
