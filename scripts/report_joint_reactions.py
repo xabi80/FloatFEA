@@ -37,6 +37,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from floatfea import hsp_pin  # noqa: E402
+from floatfea.io.integrator import (  # noqa: E402
+    FLOATSIM_RHO_INF,
+    generalized_alpha_coefficients,
+)
 
 # C131 (CW0). `rho_inf` was written twice -- passed to the integrator in
 # `solve_one` and re-declared in `discrete_residual` with a comment asserting the
@@ -56,17 +60,21 @@ from floatfea import hsp_pin  # noqa: E402
 #
 # THE JUSTIFICATION THIS COMMENT FIRST CARRIED IS RETRACTED (R653). It said a
 # 0.05 drift makes the residual "429x louder". That figure measured a MISMATCH
-# BETWEEN TWO COPIES, and the single constant above makes a mismatch
-# unconstructible; varying this value moves the residual by about 1.0005x. The
-# behaviour is correct and must not be undone -- the residual stays sensitive to a
-# wrong RECONSTRUCTION by two to three decades -- but an accidental witness went
-# with the duplication and nothing replaced it:
-#   cmd: grep -rn RHO_INF tests/ floatfea/
-#   out: (no output) -- nothing asserts this value
-# No assertion is added here: DR1 freezes apparatus through F6. R653 carries the
-# gap, and it becomes a gate finding if a G4.x gate ever cites this residual as
-# evidence that FloatSim's scheme is reproduced.
-RHO_INF = 0.8
+# BETWEEN TWO COPIES, and a single constant makes a mismatch unconstructible;
+# varying the value moves the residual by about 1.0005x. The behaviour is correct
+# and must not be undone -- the residual stays sensitive to a wrong RECONSTRUCTION
+# by two to three decades.
+#
+# R653 IS ANSWERED (EQ2(e)). The constant and the derivation that follows from it now
+# live in `floatfea/io/integrator.py`, where the FE side declares them and
+# `tests/verification/rung4/test_f4_static_and_mapping.py` asserts them against
+# `docs/load-interchange-v1.md` sec.6's own published coefficients. The grep that used
+# to return nothing now returns the declaration and the gate:
+#   cmd: grep -rln RHO_INF floatfea/ tests/
+#   out: floatfea/io/integrator.py, tests/verification/rung4/test_f4_static_and_mapping.py
+# The condition verdict 92 set for it to become blocking has arrived: F4 step 2's G4.1
+# cites this residual per body and per case.
+RHO_INF = FLOATSIM_RHO_INF
 
 HSP_RUNS = ROOT.parent / "HSP-runs"
 STUDY = HSP_RUNS / "studies" / "platform-12buoy"
@@ -188,10 +196,9 @@ def discrete_residual(res, setup, ext, window: int = 100) -> dict[str, float]:
     from floatsim.hydro.retardation import RadiationConvolution
 
     h = float(res.t[1] - res.t[0])
-    rho_inf = RHO_INF  # every alpha/beta/gamma below follows from it
-    alpha_m = (2.0 * rho_inf - 1.0) / (rho_inf + 1.0)
-    alpha_f = rho_inf / (rho_inf + 1.0)
-    beta = 0.25 * (1.0 - alpha_m + alpha_f) ** 2
+    # Every alpha/beta/gamma follows from `rho_inf`, and the formula is written once
+    # in `floatfea/io/integrator.py` rather than here (R653).
+    alpha_m, alpha_f, beta, _gamma = generalized_alpha_coefficients(RHO_INF)
     m_eff = setup.lhs.M_plus_Ainf
     c_mat = setup.lhs.C
     a_eff = (1.0 - alpha_m) * m_eff + (1.0 - alpha_f) * (h**2) * beta * c_mat

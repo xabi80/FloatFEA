@@ -25,6 +25,10 @@ from numpy.typing import NDArray
 
 from floatfea.io.frames import GRAVITY_MAGNITUDE, GRAVITY_VECTOR
 from floatfea.io.froude import to_full_scale
+from floatfea.io.integrator import (
+    FLOATSIM_RHO_INF,
+    generalized_alpha_coefficients,
+)
 from floatfea.loads.joint_reactions import ROWS_PER_JOINT, duality_residual, map_joint_reactions
 from floatfea.model.nodes import node_dofs
 from floatfea.model.platform import (
@@ -536,7 +540,8 @@ def test_EO1_static_member_forces_match_STATICS_not_the_model(built: Superstruct
             assert tip_ratio < F4_STATIC_TIP_MOMENT_RELATIVE, (
                 f"{member.label}: the tip moment is {mf.end_b[4]!r}, which is "
                 f"{tip_ratio:.6e} of the root moment, and a roller support transmits "
-                "none. R663's defect put it at exactly -mu L^2 / 12, which is 1/18 of "
+                "none. R663's defect put it at exactly -mu L^2 / 12, which against the "
+                "DEFECTIVE root moment this ratio uses is 1/18 of "
                 "the root moment on a platform arm."
             )
     assert checked == 16, f"{checked} of 16 members were checked, not all of them"
@@ -554,16 +559,17 @@ def test_EO1_the_analytic_gate_REDDENS_on_the_R663_formula(built: Superstructure
     mf = member_forces(body, member, case.u_full, np.zeros(12))  # R663's formula
     assert abs(float(mf.end_a[2])) != pytest.approx(want_vz, rel=F4_STATIC_REACTION_AGREEMENT)
 
-    # RELATIVE, like the ceiling it brackets (R681). The defect's tip moment over the
-    # member's own root moment is exactly `1/18` on a platform arm --
-    # `(mu L^2 / 12) / (R L - w L^2 / 2)` = `6386718.75 / 114960937.5` -- and the
-    # declared counter is the round bound below the measured `5.555556e-02`.
+    # RELATIVE, like the ceiling it brackets (R681).
+    #
+    # R682 IS NOT ANSWERED HERE, DELIBERATELY (ER2). The counter is on the wrong side of
+    # the defect for 12 of the 16 members, and the correct bound is derived from mu, M
+    # and f -- all three of which directive ER0 changes. Answering it on the old basis
+    # would calibrate it twice, so it is answered in the commit that lands the new
+    # basis, together with the per-member table that derives it.
     tip_ratio = abs(float(mf.end_b[4])) / abs(float(mf.end_a[4]))
     assert tip_ratio > F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER, (
         f"the defect's tip moment is {tip_ratio!r} of its root moment, which does not "
-        f"reach the declared counter {F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER!r}. The "
-        "counter is the smallest defect this gate must still fail, so an injection "
-        "below it is no longer the defect the counter names."
+        f"reach the declared counter {F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER!r}."
     )
     assert (
         tip_ratio > F4_STATIC_TIP_MOMENT_RELATIVE
@@ -752,24 +758,38 @@ def _body_errors(
 
 
 def _one_body_error(got: NDArray[np.float64], want: NDArray[np.float64], name: str) -> float:
-    # C158: `max(..., 1.0)` stood here, a small-number guard written as a literal inside
-    # a gate -- which `CLAUDE.md` names as a tolerance under another name, and which
-    # `test_no_tolerance_literals` does not see. It never bound (the scales measure
-    # 4473165.687831473 and 318301929.1018349), so it is removed and the thing it was
-    # guarding against is ASSERTED instead: for a nonzero multiplier row the resultants
-    # cannot both be zero, and if they were the normalisation would be the least of it.
+    # C158 removed a `max(..., 1.0)` floor from here -- a small-number guard written as a
+    # literal inside a gate, which `CLAUDE.md` names as a tolerance under another name.
+    # Removing it was right and stays.
+    #
+    # R684: WHAT REPLACED IT WAS WRONG. It asserted that no body can have a zero
+    # expected resultant for a nonzero multiplier row, and that is false: a row with
+    # only `buoy1`'s block nonzero is LEGAL -- `||lam|| = 1.912540e+06` -- and leaves
+    # `platform`, `hub2`, `hub3` and `hub4` at exactly zero, so the gate RAISED on it.
+    # It was latent only because `_synthetic_lam` is dense in all 16 joints.
+    #
+    # A body with no applied load is not a normalisation problem, it is a case with its
+    # own right answer: the mapper must put exactly nothing on it. So that case is
+    # asserted ABSOLUTELY -- measured `0.0` on all four such bodies for the buoy1-only
+    # row -- and the relative form is used only where there is a scale to divide by.
     f_scale = float(np.max(np.abs(want[0:3])))
     m_scale = float(np.max(np.abs(want[3:6])))
-    assert f_scale > 0.0 and m_scale > 0.0, (
-        f"{name}'s expected resultants are {want!r}, so there is no scale to normalise "
-        "by. For a nonzero multiplier row no body can have a zero resultant -- every "
-        "one of the five carries at least one joint -- and a zero would make this "
-        "body's comparison vacuous rather than wrong."
-    )
-    return max(
-        float(np.max(np.abs(got[0:3] - want[0:3]))) / f_scale,
-        float(np.max(np.abs(got[3:6] - want[3:6]))) / m_scale,
-    )
+    worst = 0.0
+    if f_scale == 0.0:
+        assert np.all(got[0:3] == 0.0), (
+            f"{name} carries no applied force in this multiplier row, so the mapper "
+            f"must put exactly none on it; it put {got[0:3]!r}."
+        )
+    else:
+        worst = max(worst, float(np.max(np.abs(got[0:3] - want[0:3]))) / f_scale)
+    if m_scale == 0.0:
+        assert np.all(got[3:6] == 0.0), (
+            f"{name} carries no applied moment in this multiplier row, so the mapper "
+            f"must put exactly none on it; it put {got[3:6]!r}."
+        )
+    else:
+        worst = max(worst, float(np.max(np.abs(got[3:6] - want[3:6]))) / m_scale)
+    return worst
 
 
 def _synthetic_lam(n_joints: int) -> NDArray[np.float64]:
@@ -827,15 +847,21 @@ def test_G4_4_the_mapping_CONSERVES_the_joint_resultants(built: Superstructure) 
     )
 
 
-@pytest.mark.parametrize("injection", ["sign_not_flipped", "wrong_node_same_body"])
+@pytest.mark.parametrize(
+    "injection", ["sign_not_flipped", "wrong_node_same_body", "internal_joint_dropped"]
+)
 def test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node(
     built: Superstructure, injection: str
 ) -> None:
     """Both counter-cases, injected into the MAPPED OUTPUT and not into the expected side.
 
     `wrong_node_same_body` is the one the declared counter is taken from, because it is
-    the smaller of the two AND the one a resultant-force-only gate cannot see: measured,
-    it leaves the force at `5.205e-17` and puts the moment at `0.2437`.
+    the smaller of the three AND the one a resultant-force-only gate cannot see: measured
+    per body, it leaves the force at `2.092543e-16` and puts the moment at `0.9597086`.
+
+    `internal_joint_dropped` is R683's, and it is the row that holds R679's per-body rule
+    in place: it reads `1.778481e+00` per body and `1.872582e-16` aggregated, so
+    reverting the rule reddens it. The other two are red under the aggregate too.
     """
     joint_order, nodes, n_dof_of = _joint_wiring(built)
     lam_row = _synthetic_lam(len(joint_order))
@@ -854,10 +880,25 @@ def test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node(
 
     if injection == "sign_not_flipped":
         loads["platform"][6 * here : 6 * here + 6] -= 2.0 * share
-    else:
+    elif injection == "wrong_node_same_body":
         there = nodes[(joint_order[hubs[1]][0], "platform")]
         loads["platform"][6 * here : 6 * here + 6] -= share
         loads["platform"][6 * there : 6 * there + 6] += share
+    else:
+        # R683. ONE INTERNAL JOINT DROPPED FROM BOTH SIDES -- the injection the
+        # AGGREGATE form of this gate could not see, and the only one of the three that
+        # distinguishes the two forms. The other two are red under the aggregate as
+        # well, so without this row reverting the per-body rule left the whole suite
+        # green and nothing held the rule in place.
+        #
+        # The closure commit's message said this row was here. It was not: the patch
+        # that added it raised before writing, and I read a stale `git diff --stat` as
+        # evidence instead of running `grep -rn internal_joint_dropped`. The claim and
+        # its refutation are both one command long.
+        hub = joint_order[hubs[0]][1]
+        hub_node = nodes[(joint, hub)]
+        loads["platform"][6 * here : 6 * here + 6] -= share
+        loads[hub][6 * hub_node : 6 * hub_node + 6] += share
 
     error = _mapping_error(built, loads, want)
     if injection == "wrong_node_same_body":
@@ -870,6 +911,123 @@ def test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node(
     assert error > F4_MAPPING_CONSERVATION, (
         f"the `{injection}` injection reads {error:.6e}, which the ceiling ACCEPTS. The "
         "gate is blind to a defect it exists to catch."
+    )
+
+
+def test_G4_4_a_LEGAL_SPARSE_row_does_not_raise_and_is_still_checked(
+    built: Superstructure,
+) -> None:
+    """R684's counter-case: one joint carrying load and fifteen carrying none.
+
+    This is a LEGAL multiplier row -- `||lam||` measures `1.912540e+06`, so there is
+    nothing degenerate about it -- and four of the five bodies have an expected
+    resultant of exactly zero. The gate as C158 left it RAISED here, on an assertion I
+    wrote from reasoning rather than measurement: "for a nonzero multiplier row no body
+    can have a zero resultant". It can. Only `buoy1`'s own hub carries anything.
+
+    The case has a right answer and the gate asserts it: the mapper must put EXACTLY
+    nothing on a body with no applied load. That is an absolute comparison because the
+    exact answer is zero and there is nothing to be relative to -- the same reason the
+    tip-moment ceiling was absolute before R681 made it relative, and here the reason
+    holds.
+    """
+    joint_order, nodes, n_dof_of = _joint_wiring(built)
+    index = next(i for i, (joint, _a, _b) in enumerate(joint_order) if joint == "buoy1")
+    dense = _synthetic_lam(len(joint_order))
+    lam_row = np.zeros_like(dense)
+    block = slice(ROWS_PER_JOINT * index, ROWS_PER_JOINT * (index + 1))
+    lam_row[block] = dense[block]
+    assert float(np.linalg.norm(lam_row)) > 0.0, "the row is zero, so it tests nothing"
+
+    loads = map_joint_reactions(lam_row, joint_order, nodes, n_dof_of)
+    want = _expected_resultants(built, lam_row, joint_order, nodes, n_dof_of)
+
+    silent = [name for name, acc in want.items() if not np.any(acc)]
+    assert len(silent) == 4, (
+        f"{len(silent)} of the five bodies carry no load from a buoy1-only row, not 4: "
+        f"{sorted(silent)}. The point of this case is that most bodies are untouched, "
+        "and if that is no longer true it is testing something else."
+    )
+    error = _mapping_error(built, loads, want)
+    assert error < F4_MAPPING_CONSERVATION, (
+        f"the sparse row's per-body departure is {error:.6e}, outside "
+        f"{F4_MAPPING_CONSERVATION:.1e}."
+    )
+    for name in silent:
+        got = _resultants(built, loads)[name]
+        assert np.all(got == 0.0), (
+            f"{name} carries nothing in this row and the mapper put {got!r} on it. "
+            "Exactly zero is the answer here, not nearly zero."
+        )
+
+
+# --------------------------------------------------------------------------- R653
+# expected: `docs/load-interchange-v1.md` SECTION 4 ("Time alignment is a required
+# field"), lines 259-260, which publish all four coefficients at the default
+# `rho_inf = 0.9` to five decimal places:
+#
+#     alpha_m = 0.42105     alpha_f = 0.47368     difference 0.05263
+#     gamma   = 0.55263     beta    = 0.27701
+#
+# The interchange specification is not derived from this code and this code is not
+# derived from it (EA4); they agree or one of them is wrong. I first cited this as
+# "sec.6", which is `## 6. Two-pass generation` at line 571 and has nothing to do with
+# the integrator -- a false citation in a docstring is the CW0 shape, and `grep -n '^## '`
+# is the command that settles it.
+_DOC_RHO_INF = 0.9
+_DOC_COEFFICIENTS = {"alpha_m": 0.42105, "alpha_f": 0.47368, "beta": 0.27701, "gamma": 0.55263}
+
+
+def test_R653_the_integrator_coefficients_match_the_INTERCHANGE_SPECIFICATION() -> None:
+    """R653: the replay driver's scheme parameter reaches an assertion.
+
+    `RHO_INF = 0.8` was a bare constant in `scripts/report_joint_reactions.py` and
+    `grep -rn RHO_INF tests/ floatfea/` returned nothing -- the driver's own comment said
+    so. R653 carried that on the condition that it becomes blocking once a G4.x gate
+    cites the residual as evidence FloatSim's scheme is reproduced, and F4 step 2's G4.1
+    does. So the constant and its closed form moved to `floatfea/io/integrator.py` and
+    this is the assertion.
+
+    NO TOLERANCE IS DECLARED FOR THIS and none is wanted: the specification publishes
+    five decimal places, so the comparison is against the value ROUNDED to five places,
+    which is exact. A ceiling here would be a number with nothing behind it.
+
+    All four coefficients come from one place -- the specification's own block -- so this
+    gate has a single expected side rather than two that could drift apart.
+    """
+    got = generalized_alpha_coefficients(_DOC_RHO_INF)
+    for name, published in _DOC_COEFFICIENTS.items():
+        assert round(getattr(got, name), 5) == published, (
+            f"at rho_inf = {_DOC_RHO_INF}, {name} is {getattr(got, name)!r}, which to "
+            f"five places is {round(getattr(got, name), 5)!r} and the interchange "
+            f"specification publishes {published!r}. One of the two is wrong and it is "
+            "not a rounding question."
+        )
+    # The difference the specification singles out, because the inertia term blends with
+    # `alpha_m` and the other terms with `alpha_f`, and exporting only one loses it.
+    assert round(got.alpha_f - got.alpha_m, 5) == 0.05263, (
+        f"alpha_f - alpha_m is {got.alpha_f - got.alpha_m!r}; the specification "
+        "publishes 0.05263 and gives that difference as the reason both are exported."
+    )
+
+
+def test_R653_the_value_the_DRIVER_reconstructs_with_is_the_declared_one() -> None:
+    """The constant itself, asserted -- which is the half R653 is actually about.
+
+    The formula being right at `rho_inf = 0.9` says nothing about the number the driver
+    evaluates it at. This pins that number, so a silent edit to it reddens here rather
+    than moving a published residual by a factor nobody notices.
+    """
+    assert FLOATSIM_RHO_INF == 0.8, (
+        f"the declared spectral radius is {FLOATSIM_RHO_INF!r}, not 0.8. FloatSim's "
+        "integrator is what sets this; changing it here does not change FloatSim, it "
+        "only makes the reconstruction wrong -- and the reconstruction is what every "
+        "joint reaction in this milestone is read from."
+    )
+    coefficients = generalized_alpha_coefficients(FLOATSIM_RHO_INF)
+    assert 0.0 < coefficients.beta < 0.5 and 0.0 < coefficients.gamma < 1.0, (
+        f"the coefficients at rho_inf = {FLOATSIM_RHO_INF!r} are {coefficients!r}, "
+        "which are outside the ranges a dissipative generalized-alpha step has."
     )
 
 
