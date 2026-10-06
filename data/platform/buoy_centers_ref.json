@@ -2,7 +2,7 @@
  "schema": "floatfea/eb6-reference/1",
  "provenance": {
   "source": "HSP-stable/studies/platform-12buoy/platform_common.py",
-  "lines": "CLUSTER_ARM_RADIUS :33, CLUSTER_ANGLES_DEG :34, BUOY_ANGLES_DEG :35, BUOY_RADIUS :36, Z_HUB_REF :102, buoy_centers() :51-58, the hub Body :157",
+  "lines": "CLUSTER_ARM_RADIUS :33, CLUSTER_ANGLES_DEG :34, BUOY_ANGLES_DEG :35, BUOY_RADIUS :36, Z_HUB_REF :102, buoy_centers() :51-58, the hub Body :157, hydro_body_label :140",
   "blob_sha": "b8b8123904aff2b79785043255cb28fcc6527ab5",
   "hsp_tag": "floatfea-ref-1",
   "generated_from": "the source code, never the deck export (EO0(a))"
@@ -79,5 +79,8 @@
    -1.0,
    0.4933695679797303
   ]
+ ],
+ "hydro_body_label_sites": [
+  "f\"buoy{k + 1}\""
  ]
 }

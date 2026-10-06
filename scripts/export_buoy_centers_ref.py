@@ -91,6 +91,26 @@ def _constants(text: str) -> tuple[float, list[float], float]:
     )
 
 
+def _hydro_labels(text: str) -> list[str]:
+    """Every `hydro_body_label=` right-hand side in the source, verbatim.
+
+    EK0(a)'s premise is structural: a body with no label has no excitation channel
+    addressing its rows. The right-hand sides are recorded as WRITTEN rather than
+    resolved, because resolving `f"buoy{k + 1}"` means re-implementing the study's loop
+    bound here and a snapshot that re-implements its source is not independent of it.
+    What the gate asserts is the thing that matters and that the text settles: no site
+    can produce a name belonging to one of the five FE bodies.
+    """
+    found = [m.group(1).strip() for m in re.finditer(r"hydro_body_label\s*=\s*([^,\n)]+)", text)]
+    if not found:
+        raise SystemExit(
+            f"no `hydro_body_label=` site found in {SOURCE_REL}. The premise EK0(a) rests "
+            "on is that only buoys carry one; a parse that finds none would assert that "
+            "vacuously, so the snapshot refuses instead."
+        )
+    return found
+
+
 def _z_hub(text: str) -> float:
     m = re.search(r"^Z_HUB_REF = ([\d.]+)", text, re.MULTILINE)
     if not m:
@@ -123,7 +143,7 @@ def build() -> dict[str, Any]:
             "source": f"HSP-stable/{SOURCE_REL}",
             "lines": "CLUSTER_ARM_RADIUS :33, CLUSTER_ANGLES_DEG :34, "
             "BUOY_ANGLES_DEG :35, BUOY_RADIUS :36, Z_HUB_REF :102, "
-            "buoy_centers() :51-58, the hub Body :157",
+            "buoy_centers() :51-58, the hub Body :157, hydro_body_label :140",
             "blob_sha": _blob_sha(source),
             "hsp_tag": hsp_pin.HSP_TAG,
             "generated_from": "the source code, never the deck export (EO0(a))",
@@ -131,6 +151,7 @@ def build() -> dict[str, Any]:
         "scale": "model",
         "buoy_centres_xy_m": buoys,
         "hub_positions_xyz_m": hubs,
+        "hydro_body_label_sites": _hydro_labels(text),
     }
 
 
@@ -148,6 +169,15 @@ def check() -> int:
         )
         return 0
     fresh = build()
+    if stored.get("hydro_body_label_sites") != fresh["hydro_body_label_sites"]:
+        print(
+            "EB6 reference: STALE -- the `hydro_body_label` sites differ from HSP-stable. "
+            f"stored {stored.get('hydro_body_label_sites')!r}, fresh "
+            f"{fresh['hydro_body_label_sites']!r}. EK0(a)'s premise is about these sites, "
+            "so regenerate and re-report the premise.",
+            file=sys.stderr,
+        )
+        return 1
     for key in ("buoy_centres_xy_m", "hub_positions_xyz_m"):
         if not np.allclose(np.asarray(stored[key]), np.asarray(fresh[key]), atol=0.0, rtol=0.0):
             print(

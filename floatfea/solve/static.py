@@ -18,9 +18,15 @@ hub the reduction is the identity and the code path is the same.
 WHAT EK0(d) ASSERTS, and each is a different kind of statement:
   * `Sum of reactions = applied` per body -- conservation, and the one a wrong mass
     distribution breaks.
-  * the horizontal restraint's reactions are ZERO -- that the support scheme is right. A
-    vertical load system can induce no horizontal reaction in a determinate restraint, so
-    a nonzero value means the restraint is carrying load it should not.
+  * the horizontal restraint's reactions are ZERO. **THIS MEASURES THAT THE APPLIED LOAD
+    IS PURELY VERTICAL, AND NOTHING ABOUT THE RESTRAINT.** The claim that stood here --
+    that the zero proves the support scheme determinate rather than convenient -- is
+    WITHDRAWN (R672). `gravity_load` is nonzero only on `uz`, `rx` and `ry`, so the
+    in-plane subproblem is homogeneous and the figure is exactly zero for ANY restraint
+    that removes the three in-plane rigid motions, determinate or grossly redundant. It
+    is sensitive to a horizontal component of the LOAD and to nothing else, and no
+    threshold is declared for it, so it is reported and not asserted on. The measurement
+    that withdrew the claim, and the redundant-restraint cell, are in the step report.
   * the platform's four hub reactions are EQUAL -- by the frame's four-fold symmetry.
     This is the only one of the three the FE stiffness participates in, because the fourth
     vertical support is redundant and the split between the four is a stiffness answer

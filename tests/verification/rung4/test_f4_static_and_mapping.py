@@ -24,7 +24,7 @@ from numpy.typing import NDArray
 
 from floatfea.io.frames import GRAVITY_MAGNITUDE, GRAVITY_VECTOR
 from floatfea.io.froude import to_full_scale
-from floatfea.loads.joint_reactions import duality_residual
+from floatfea.loads.joint_reactions import ROWS_PER_JOINT, duality_residual, map_joint_reactions
 from floatfea.model.nodes import node_dofs
 from floatfea.model.platform import (
     BodyModel,
@@ -38,10 +38,14 @@ from floatfea.solve.static import solve_superstructure_static
 from floatfea.tolerances import (
     F4_EB6_POSITION_M,
     F4_EB6_POSITION_M_COUNTER,
+    F4_MAPPING_CONSERVATION,
+    F4_MAPPING_CONSERVATION_COUNTER,
     F4_MEMBER_FORCE_CONSERVATION,
     F4_MEMBER_FORCE_CONSERVATION_COUNTER,
     F4_STATIC_REACTION_AGREEMENT,
     F4_STATIC_REACTION_AGREEMENT_COUNTER,
+    F4_STATIC_SYMMETRY_SPREAD,
+    F4_STATIC_SYMMETRY_SPREAD_COUNTER,
     F4_STATIC_TIP_MOMENT_N_M,
     F4_STATIC_TIP_MOMENT_N_M_COUNTER,
 )
@@ -117,9 +121,12 @@ def test_G4_the_conservation_gate_REDDENS_without_the_equivalent_load(
     carried = float(mf.end_a[2] + mf.end_b[2])
     relative = abs(carried - weight) / weight
 
-    # The SAME declared ceiling the gate uses, read the other way: `k u`'s end shears
-    # cancel identically, so the defective formula carries nothing to round-off.
-    assert abs(carried) / weight < F4_MEMBER_FORCE_CONSERVATION, (
+    # SIGNATURE, against the COUNTER and NOT against the ceiling (R671). This read
+    # `< F4_MEMBER_FORCE_CONSERVATION`, which made the assertion EASIER as the ceiling
+    # rose and was half of why nothing bounded the ceiling above. `k u`'s end shears
+    # cancel identically, so the defective formula carries nothing to round-off, and the
+    # counter is a loose bound that the signature satisfies by fifteen decades.
+    assert abs(carried) / weight < F4_MEMBER_FORCE_CONSERVATION_COUNTER, (
         f"without the equivalent load the end shears sum to {carried!r}, not zero. The "
         "defect's signature is that they cancel IDENTICALLY, so if this is nonzero the "
         "counter-case no longer reproduces R663 and the gate above is measuring "
@@ -128,6 +135,15 @@ def test_G4_the_conservation_gate_REDDENS_without_the_equivalent_load(
     assert relative > F4_MEMBER_FORCE_CONSERVATION_COUNTER, (
         f"the defective formula is only {relative:.3e} away from conservation, so the "
         "gate above would pass on the broken code and certifies nothing."
+    )
+    # AND AGAINST THE CEILING ITSELF, so that raising the ceiling makes THIS assertion
+    # HARDER (R671). The defect's relative error is exactly 1.0 -- the whole of the
+    # member's weight is missing -- so a ceiling at or above 1.0 reddens here, which is
+    # the number the ninety-fourth verdict measured rising to `1.0e+6` with 150 green.
+    assert relative > F4_MEMBER_FORCE_CONSERVATION, (
+        f"the ceiling {F4_MEMBER_FORCE_CONSERVATION:.3e} is not below the error the "
+        f"defect produces, {relative:.3e}. The gate above would ACCEPT R663. This "
+        "assertion exists to get harder as the ceiling is widened, not easier."
     )
 
 
@@ -505,3 +521,329 @@ def test_EO1_the_analytic_gate_REDDENS_on_the_R663_formula(built: Superstructure
     assert (
         tip > F4_STATIC_TIP_MOMENT_N_M
     ), "the ceiling accepts R663's tip moment, so the gate certifies nothing."
+
+
+# --------------------------------------------------------------------------- R676 / EK0(d)
+def _reaction_spread(case: object) -> float:
+    """`(max - min) / mean` over a body's vertical reactions.
+
+    Relative, because the quantity being tested is whether the four shares are the SAME,
+    not what they are. Normalised by the mean rather than by the weight so the figure is
+    about the split alone.
+    """
+    v = np.array(sorted(case.vertical_reactions_N.values()), dtype=np.float64)  # type: ignore[attr-defined]
+    return float((v.max() - v.min()) / abs(v.mean()))
+
+
+def _soften_one_arm(built: Superstructure, factor: float) -> Superstructure:
+    """One platform arm's `I_y`, `I_z`, `J` scaled; `A` HELD, so the mass is unchanged.
+
+    ONE VARIABLE MOVED (BG0). Scaling `A` too would change the body's mass and the weight
+    it carries, and the reaction split would then move for two reasons at once.
+    """
+    bodies = []
+    for body in built.bodies:
+        if body.name != "platform":
+            bodies.append(body)
+            continue
+        members = list(body.members)
+        s = members[0].section
+        members[0] = replace(
+            members[0],
+            section=replace(s, I_y=s.I_y * factor, I_z=s.I_z * factor, J=s.J * factor),
+        )
+        bodies.append(replace(body, members=tuple(members)))
+    return replace(built, bodies=tuple(bodies))
+
+
+def test_EK0d_the_platform_four_hub_reactions_are_EQUAL(built: Superstructure) -> None:
+    """EK0(d)'s third check, which had no assertion until now (R676).
+
+    # expected: the frame's four-fold symmetry, which is a property of the GEOMETRY and
+    not of the solve -- the four arms are equal in length and equally spaced, so an
+    equal split is the only answer compatible with the symmetry. This is the only one of
+    EK0(d)'s three checks the FE stiffness participates in: the fourth vertical support
+    is redundant, so the split between the four is a stiffness answer rather than a
+    statics one, and a wrong stiffness shows up here and nowhere else in EK0(d).
+    """
+    case = solve_superstructure_static(built)["platform"]
+    assert len(case.vertical_reactions_N) == 4, (
+        f"{len(case.vertical_reactions_N)} vertical reactions on the platform, not 4. "
+        "The symmetry statement is about the four hub supports and this gate is not "
+        "reading them."
+    )
+    spread = _reaction_spread(case)
+    assert spread < F4_STATIC_SYMMETRY_SPREAD, (
+        f"the platform's four hub reactions spread by {spread:.6e} relative, which is "
+        f"outside {F4_STATIC_SYMMETRY_SPREAD:.1e}. The frame is four-fold symmetric, so "
+        "either the geometry is not what it should be or the stiffness that decides the "
+        f"split is wrong. Reactions: {sorted(case.vertical_reactions_N.values())}"
+    )
+
+
+def test_EK0d_the_symmetry_gate_REDDENS_on_an_unsymmetric_frame(built: Superstructure) -> None:
+    """The counter-case: soften ONE arm in the MODEL and re-solve.
+
+    Injected into the model and not into the expected side -- R674 was the finding that
+    the expected side is the wrong place to corrupt, and this gate is written after it.
+    """
+    case = solve_superstructure_static(_soften_one_arm(built, 0.01))["platform"]
+    spread = _reaction_spread(case)
+    assert spread > F4_STATIC_SYMMETRY_SPREAD_COUNTER, (
+        f"softening one arm 100x gives a spread of {spread!r}, which does not reach the "
+        f"declared counter {F4_STATIC_SYMMETRY_SPREAD_COUNTER!r}. The counter is the "
+        "smallest defect this gate must still fail, so an injection that no longer "
+        "reaches it is no longer the defect the counter names."
+    )
+    assert spread > F4_STATIC_SYMMETRY_SPREAD, (
+        f"with one arm 100x softer the spread is {spread:.6e}, which the ceiling "
+        "ACCEPTS. The gate is blind to the asymmetry it exists to catch."
+    )
+
+
+# --------------------------------------------------------------------------- R676 / G4.4
+def _joint_wiring(built: Superstructure) -> tuple[list[tuple[str, str, str]], dict, dict]:
+    """`(joint_order, nodes, n_dof_of)` for `map_joint_reactions`, from the BUILDER.
+
+    The production driver takes `joint_order` from the deck, which is the authority for
+    it. Here it is formed from the builder's own maps, because this gate is a property of
+    the MAPPER and must run without an HSP worktree -- the lesson of R670. What the gate
+    therefore does NOT check is that this order matches the deck's; that is the driver's
+    job and it is stated here rather than left to be found.
+    """
+    by_name = {b.name: b for b in built.bodies}
+    n_dof_of = {b.name: b.model.n_dof for b in built.bodies}
+    joint_order: list[tuple[str, str, str]] = []
+    nodes: dict[tuple[str, str], int] = {}
+    for buoy, (owner, node) in sorted(built.buoy_joint_nodes.items()):
+        joint_order.append((buoy, buoy, owner))
+        nodes[(buoy, owner)] = node
+    for hub, owner in sorted(built.deck_joint_owner.items()):
+        if owner != "platform":
+            continue
+        joint_order.append((hub, hub, "platform"))
+        nodes[(hub, hub)] = by_name[hub].centre_node
+        nodes[(hub, "platform")] = by_name["platform"].model.nodes.index(f"platform:{hub}_arm_tip")
+    return joint_order, nodes, n_dof_of
+
+
+def _resultants(
+    built: Superstructure, loads: dict[str, NDArray[np.float64]]
+) -> NDArray[np.float64]:
+    """`[F, M]` about the GLOBAL ORIGIN of a mapped nodal load set."""
+    by_name = {b.name: b for b in built.bodies}
+    out = np.zeros(6, dtype=np.float64)
+    for body, f in loads.items():
+        coords = by_name[body].model.nodes.coords()
+        for nd in range(f.size // 6):
+            force = f[6 * nd : 6 * nd + 3]
+            out[0:3] += force
+            out[3:6] += f[6 * nd + 3 : 6 * nd + 6] + np.cross(coords[nd], force)
+    return out
+
+
+def _expected_resultants(
+    built: Superstructure,
+    lam_row: NDArray[np.float64],
+    joint_order: list[tuple[str, str, str]],
+    nodes: dict[tuple[str, str], int],
+    n_dof_of: dict[str, int],
+) -> NDArray[np.float64]:
+    """What the deck's blocks and the builder's nodes say those resultants must be.
+
+    # expected: formed from the MULTIPLIER BLOCKS and the node coordinates, not from the
+    mapper's output (EA4). A hub-platform joint contributes `+(F, M)` and `-(F, M)` and
+    its force cancels, but its MOMENT about the origin does not unless both sides act at
+    the same point -- which is exactly the error a resultant force cannot see.
+    """
+    by_name = {b.name: b for b in built.bodies}
+    out = np.zeros(6, dtype=np.float64)
+    for i, (joint, body_a, body_b) in enumerate(joint_order):
+        block = lam_row[ROWS_PER_JOINT * i : ROWS_PER_JOINT * (i + 1)]
+        force = np.asarray(block[0:3], dtype=np.float64)
+        moment = np.array([0.0, 0.0, float(block[3])], dtype=np.float64)
+        for sign, body in ((1.0, body_a), (-1.0, body_b)):
+            if body not in n_dof_of:
+                continue  # a buoy is a load on the superstructure, not a modelled body
+            x = by_name[body].model.nodes.coords()[nodes[(joint, body)]]
+            out[0:3] += sign * force
+            out[3:6] += sign * moment + np.cross(x, sign * force)
+    return out
+
+
+def _mapping_error(
+    built: Superstructure,
+    loads: dict[str, NDArray[np.float64]],
+    want: NDArray[np.float64],
+) -> float:
+    """Worst relative departure, force and moment normalised separately."""
+    got = _resultants(built, loads)
+    f_scale = max(float(np.max(np.abs(want[0:3]))), 1.0)
+    m_scale = max(float(np.max(np.abs(want[3:6]))), 1.0)
+    return max(
+        float(np.max(np.abs(got[0:3] - want[0:3]))) / f_scale,
+        float(np.max(np.abs(got[3:6] - want[3:6]))) / m_scale,
+    )
+
+
+def _synthetic_lam(n_joints: int) -> NDArray[np.float64]:
+    """One multiplier row, every block different.
+
+    Pseudo-random with a fixed seed rather than a tidy pattern: equal blocks would let a
+    sign error at one joint cancel against another's, and a gate that only works on
+    awkward numbers should be given awkward numbers.
+    """
+    return np.asarray(
+        np.random.default_rng(4).normal(0.0, 1.0e6, ROWS_PER_JOINT * n_joints),
+        dtype=np.float64,
+    )
+
+
+def test_G4_4_the_mapping_CONSERVES_the_joint_resultants(built: Superstructure) -> None:
+    """G4.4, which had no assertion and whose mapper no test called (R676).
+
+    The property: everything `map_joint_reactions` puts on the five modelled bodies has
+    the resultant force AND the resultant moment about the origin that the joint blocks
+    and the joint nodes require. It catches a dropped joint, a sign on the wrong side,
+    and a block on the wrong node.
+    """
+    joint_order, nodes, n_dof_of = _joint_wiring(built)
+    assert len(joint_order) == 16, f"{len(joint_order)} joints wired, not 16"
+    lam_row = _synthetic_lam(len(joint_order))
+    loads = map_joint_reactions(lam_row, joint_order, nodes, n_dof_of)
+    assert set(loads) == set(n_dof_of), (
+        f"the mapper returned {sorted(loads)} and the bodies are {sorted(n_dof_of)}. A "
+        "body missing from the output carries no joint load at all."
+    )
+    want = _expected_resultants(built, lam_row, joint_order, nodes, n_dof_of)
+    error = _mapping_error(built, loads, want)
+    assert error < F4_MAPPING_CONSERVATION, (
+        f"the mapped load's resultants depart from the joint blocks' own by {error:.6e} "
+        f"relative, outside {F4_MAPPING_CONSERVATION:.1e}. Either a block was dropped, "
+        "or a sign is on the wrong side, or a block landed on the wrong node."
+    )
+
+
+@pytest.mark.parametrize("injection", ["sign_not_flipped", "wrong_node_same_body"])
+def test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node(
+    built: Superstructure, injection: str
+) -> None:
+    """Both counter-cases, injected into the MAPPED OUTPUT and not into the expected side.
+
+    `wrong_node_same_body` is the one the declared counter is taken from, because it is
+    the smaller of the two AND the one a resultant-force-only gate cannot see: measured,
+    it leaves the force at `5.205e-17` and puts the moment at `0.2437`.
+    """
+    joint_order, nodes, n_dof_of = _joint_wiring(built)
+    lam_row = _synthetic_lam(len(joint_order))
+    loads = {
+        k: v.copy() for k, v in map_joint_reactions(lam_row, joint_order, nodes, n_dof_of).items()
+    }
+    want = _expected_resultants(built, lam_row, joint_order, nodes, n_dof_of)
+
+    hubs = [i for i, (_j, _a, b) in enumerate(joint_order) if b == "platform"]
+    assert len(hubs) == 4, f"{len(hubs)} hub-platform joints, not 4"
+    i = hubs[0]
+    joint = joint_order[i][0]
+    block = lam_row[ROWS_PER_JOINT * i : ROWS_PER_JOINT * (i + 1)]
+    share = np.concatenate([-np.asarray(block[0:3]), [0.0, 0.0, -float(block[3])]])
+    here = nodes[(joint, "platform")]
+
+    if injection == "sign_not_flipped":
+        loads["platform"][6 * here : 6 * here + 6] -= 2.0 * share
+    else:
+        there = nodes[(joint_order[hubs[1]][0], "platform")]
+        loads["platform"][6 * here : 6 * here + 6] -= share
+        loads["platform"][6 * there : 6 * there + 6] += share
+
+    error = _mapping_error(built, loads, want)
+    if injection == "wrong_node_same_body":
+        assert error > F4_MAPPING_CONSERVATION_COUNTER, (
+            f"the wrong-node injection reads {error!r}, which does not reach the declared "
+            f"counter {F4_MAPPING_CONSERVATION_COUNTER!r}. That injection is the SMALLER "
+            "of the two and the one the counter is taken from, so if it shrinks the "
+            "counter stops describing the defect the gate must catch."
+        )
+    assert error > F4_MAPPING_CONSERVATION, (
+        f"the `{injection}` injection reads {error:.6e}, which the ceiling ACCEPTS. The "
+        "gate is blind to a defect it exists to catch."
+    )
+
+
+# --------------------------------------------------------------------------- R676 / EK0(a)
+FE_BODY_NAMES = ("platform", "hub1", "hub2", "hub3", "hub4")
+"""The five bodies F4 models structurally. EK0's scope correction: they are DRY."""
+
+
+def _premise_violations(sites: list[str]) -> list[str]:
+    """EK0(a)'s premise, as a function so the gate and its counter-case run the SAME code.
+
+    Returns one sentence per violation. Written as a function rather than inline because a
+    counter-case that re-states the assertion tests the counter-case: `duality_residual`
+    was found passing on `(a, -a)` for exactly that reason, and this file is written after
+    that finding.
+    """
+    out: list[str] = []
+    for site in sites:
+        for name in FE_BODY_NAMES:
+            if name in site:
+                out.append(
+                    f"HSP-stable assigns `hydro_body_label = {site}`, which names the FE "
+                    f"body `{name}`. EK0's scope correction says the five FE bodies are "
+                    "DRY and EK0(a) says to STOP if they are not. This is that stop."
+                )
+        if "buoy" not in site:
+            out.append(
+                f"HSP-stable assigns `hydro_body_label = {site}`, which is not a buoy "
+                "label. The premise is that only buoys are wet; a third kind of labelled "
+                "body is something this milestone's scope has not been told about."
+            )
+    return out
+
+
+def test_EK0a_no_FE_BODY_carries_a_hydro_label_in_HSP_STABLE() -> None:
+    """EK0(a)'s premise, as an assertion rather than a report figure (R676).
+
+    # expected: `data/platform/buoy_centers_ref.json`'s `hydro_body_label_sites`,
+    generated by `scripts/export_buoy_centers_ref.py` from HSP-stable's own
+    `studies/platform-12buoy/platform_common.py:140` at blob
+    `b8b8123904aff2b79785043255cb28fcc6527ab5` -- independent of FloatFEA entirely (EA4).
+
+    WHAT THIS ASSERTS AND WHAT THE REPORT MEASURED ARE NOT THE SAME STATEMENT, and the
+    difference is the point. The report ran all six cases over 24,006 steps and found the
+    per-body external hydrodynamic force identically `0.000000e+00 N`. That is a sample,
+    however large. This is the STRUCTURAL reason it is zero: no excitation channel
+    addresses a body that carries no `hydro_body_label`, so there is no cancellation to
+    rely on. The sample cannot run in CI without an HSP worktree, and a gate that skips
+    turns its rung red (R670); this one runs everywhere the snapshot does.
+
+    WHAT IT DOES NOT CATCH: a body that acquires a label in HSP-stable AFTER this blob.
+    The snapshot's `--check` in the DS0 preflight is what sees that, and it is the same
+    limitation EB6's first side has for the same reason.
+    """
+    sites = _eb6_reference()["hydro_body_label_sites"]
+    assert isinstance(sites, list) and sites, (
+        f"the snapshot's hydro_body_label_sites is {sites!r}. An empty list would make "
+        "the check below vacuously true, which is the one way this gate could certify "
+        "nothing."
+    )
+    violations = _premise_violations(sites)
+    assert not violations, " AND ".join(violations)
+
+
+@pytest.mark.parametrize(
+    "site", ['f"hub{k + 1}"', '"platform"', 'f"deck{k}"', '"buoy1_and_platform"']
+)
+def test_EK0a_the_premise_gate_REDDENS_on_a_LABELLED_FE_BODY(site: str) -> None:
+    """The counter-case, which runs THE GATE'S OWN CHECK on a corrupted snapshot value.
+
+    The injection is into the expected side, and that is correct here rather than a repeat
+    of R674: this gate's whole content is a statement ABOUT HSP-stable's source, so the
+    source's value IS the thing under test. The last entry is the one that matters --
+    a label naming both a buoy and an FE body passes a "is there a buoy in it" check and
+    must still redden.
+    """
+    assert _premise_violations([site]), (
+        f"`hydro_body_label = {site}` produced no violation, so the gate above would "
+        "accept a labelled FE body and EK0(a) would never stop the step."
+    )

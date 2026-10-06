@@ -1982,6 +1982,66 @@ F4_STATIC_TIP_MOMENT_N_M: Final[float] = 1.0
 # Set: 2026-10-05, F4 step 1
 F4_STATIC_TIP_MOMENT_N_M_COUNTER: Final[float] = 6386718.75
 
+# CLASS: ACCURACY -- EK0(d)'s SYMMETRY check, which is the only one of EK0(d)'s three
+# the FE stiffness participates in: the fourth vertical support is redundant, so how
+# the platform's weight splits between the four hub reactions is a stiffness answer and
+# not a statics one. Dimensionless: `(max - min) / mean` over the four reactions.
+#
+# Reason for 1e-12: the measured clean spread is 9.113860057399177e-16 -- the frame is
+# four-fold symmetric and the split is equal to round-off -- so this is 1097x above the
+# measurement. It is a round-off ceiling at that scale and not a fitted value. BOTH
+# EDGES SOLVED (EH4): tightened, the clean case trips below 1e-15; widened, the counter
+# case below reddens it. And the weakening direction on the INJECTION rather than the
+# ceiling: softening one arm by one part in 1e9 already gives 4.0464e-10, which this
+# ceiling catches by 404x, so the gate does not need a large defect to see one.
+# Set: 2026-10-05, F4 step 1
+F4_STATIC_SYMMETRY_SPREAD: Final[float] = 1.0e-12
+
+# COUNTER-CASE: a frame that is NOT symmetric must not read as symmetric.
+# Reason for 1.5: one platform arm's `I_y`, `I_z` and `J` reduced by 100x -- `A`
+# untouched, so the body's mass is identical and the only variable that moved is the
+# stiffness that decides the split (BG0). The four reactions become 671905.5, 671905.5,
+# 5459344.5, 5459344.5 N against a clean 3065625.0 each, and the MEASURED spread is
+# 1.5616518375226505. The declared value is the round bound BELOW that measurement, not
+# the measurement: a counter is the smallest defect the gate must still fail, and
+# asserting bit-equality against a solve-derived number would redden on a platform whose
+# BLAS sums in a different order. Twelve decades above the ceiling either way. Injected
+# by `test_EK0d_the_symmetry_gate_REDDENS_on_an_unsymmetric_frame`, which softens the
+# MODEL and re-solves rather than perturbing the expected side.
+# Set: 2026-10-05, F4 step 1
+F4_STATIC_SYMMETRY_SPREAD_COUNTER: Final[float] = 1.5
+
+# CLASS: ACCURACY -- G4.4, the mapping conservation gate. The quantity is the resultant
+# FORCE and resultant MOMENT ABOUT THE GLOBAL ORIGIN of everything `map_joint_reactions`
+# injects into the five modelled bodies, against what the deck's own blocks and the
+# builder's own nodes say those resultants must be; relative, each normalised by its own
+# component scale.
+#
+# THE MOMENT IS IN THE QUANTITY AND NOT A SECOND CHECK, because a resultant force is
+# blind to WHICH node a block landed on: measured, a block moved to the wrong node of
+# the right body leaves the force at 5.2050529737194385e-17 and puts the moment at
+# 0.24374825705420716.
+#
+# Reason for 1e-12: the measured clean value is 1.8726e-16. It is not exactly zero and
+# the reason is summation order, not physics -- the mapper accumulates per node and the
+# expected side accumulates per joint -- so a relative round-off ceiling is the right
+# form. 1e-12 is 5341x above the measurement.
+# Set: 2026-10-05, F4 step 1
+F4_MAPPING_CONSERVATION: Final[float] = 1.0e-12
+
+# COUNTER-CASE: the SMALLEST of the two defects the gate must catch.
+# Reason for 0.2: a joint block mapped to the wrong node of the right body, which
+# MEASURES 0.24374825705420716. The other injection -- one side of a hub-platform joint
+# losing its sign flip -- reads 0.9202048893902944, so the wrong-node defect is the
+# smaller of the two and is the one the counter is taken from, per the rule that the
+# counter is the smallest defect the gate must still fail. The declared value is the
+# round bound BELOW that measurement rather than the measurement itself, for the same
+# reason as the symmetry counter: a bit-exact equality on a number the solve produces is
+# not portable. Twelve decades above the ceiling. Both injections are run by
+# `test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node`.
+# Set: 2026-10-05, F4 step 1
+F4_MAPPING_CONSERVATION_COUNTER: Final[float] = 0.2
+
 
 # ---------------------------------------------------------------------------
 # Rung 5 -- Independent confirmation
