@@ -90,12 +90,24 @@ def test_G4_member_end_shears_sum_to_the_load_the_member_carries(built: Superstr
     worst = 0.0
     for body in built.bodies:
         accel = _gravity_field(body.model.n_dof)
-        share = body.member_mass / len(body.members)
         for member in body.members:
+            # EACH ELEMENT'S OWN MASS, IN CLOSED FORM (R675). This was
+            # `body.member_mass / len(body.members)`, a body AVERAGE that equals the
+            # element mass only on a frame whose members are equal in length. I asserted
+            # that premise and it is FALSE: `hub1`'s members measure 25.0, 25.0 and
+            # 25.000000000000004 m, one and two ulp apart from the 120-degree geometry.
+            # Equal to round-off is not equal, and on a frame with genuinely unequal
+            # members the average would have made this gate FALSE-REDDEN -- a wrong
+            # answer rather than a missed one. `rho A L` is the prismatic mass of THIS
+            # element and it is also independent of the assembler (EA4): the consistent
+            # mass matrix the gate reads through `element_equivalent_load` is not where
+            # this number comes from.
+            weight = float(
+                body.material.rho * member.section.A * member.length * abs(GRAVITY_VECTOR[2])
+            )
             f_eq = element_equivalent_load(body, member, accel)
             mf = member_forces(body, member, cases[body.name].u_full, f_eq)
             carried = float(mf.end_a[2] + mf.end_b[2])
-            weight = float(share * abs(GRAVITY_VECTOR[2]))
             worst = max(worst, abs(carried - weight) / weight)
     assert worst < F4_MEMBER_FORCE_CONSERVATION, (
         f"the worst member fails conservation by {worst:.3e}. Its two end shears do not "
@@ -112,8 +124,8 @@ def test_G4_the_conservation_gate_REDDENS_without_the_equivalent_load(
     cases = solve_superstructure_static(built)
     body = built.bodies[0]
     member = body.members[0]
-    share = body.member_mass / len(body.members)
-    weight = float(share * abs(GRAVITY_VECTOR[2]))
+    # `rho A L`, the same closed form the gate above uses after R675.
+    weight = float(body.material.rho * member.section.A * member.length * abs(GRAVITY_VECTOR[2]))
 
     # An explicit ZERO equivalent load is the defect, stated rather than omitted
     # (R677): `member_forces` no longer has a default to forget.
