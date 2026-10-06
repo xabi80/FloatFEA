@@ -93,14 +93,16 @@ def member_forces(
     body: BodyModel,
     member: Member,
     u_global: NDArray[np.float64],
-    f_eq_global: NDArray[np.float64] | None = None,
+    f_eq_global: NDArray[np.float64],
 ) -> MemberForces:
     """End forces for one member from a FULL-DOF global displacement vector.
 
     `f_eq_global` is the element's equivalent nodal load in the GLOBAL frame, 12
-    components, from `element_equivalent_load`. It defaults to `None` -- meaning no
-    distributed load on this element -- and that default is correct only for a member
-    carrying nothing but its end actions. R663 is what omitting it costs.
+    components, from `element_equivalent_load`. **IT IS REQUIRED AND HAS NO DEFAULT
+    (R677).** It defaulted to `None` once, meaning "no distributed load", and R663 is
+    what that default cost: every caller that forgot it got a self-consistent wrong
+    answer instead of an error. A member genuinely carrying nothing but its end actions
+    passes an explicit zero vector, which is a statement rather than an omission.
 
     `u_global` must be in the body's full DOF numbering. A caller that solved a reduced
     system expands first: passing a reduced vector would silently read the wrong DOF,
@@ -122,11 +124,10 @@ def member_forces(
 
     dofs = element_dofs(member.node_a, member.node_b)
     f_local = k_local @ (t @ u_global[dofs])
-    if f_eq_global is not None:
-        f_eq = np.asarray(f_eq_global, dtype=np.float64)
-        if f_eq.shape != (12,):
-            raise ValueError(f"f_eq_global must have shape (12,); got {f_eq.shape}")
-        f_local = f_local - t @ f_eq
+    f_eq = np.asarray(f_eq_global, dtype=np.float64)
+    if f_eq.shape != (12,):
+        raise ValueError(f"f_eq_global must have shape (12,); got {f_eq.shape}")
+    f_local = f_local - t @ f_eq
     return MemberForces(
         label=member.label,
         body=body.name,

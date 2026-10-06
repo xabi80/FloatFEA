@@ -1888,16 +1888,25 @@ FIGURE_ARGMIN_TIE_WINDOW_COUNTER_DEFECT: Final[float] = 1.0216
 # exactly, since `k u` self-equilibrates and the whole weight goes missing. Any
 # ceiling below 1.0 catches it and any ceiling at or above 1.0 catches nothing, so
 # this value sits twelve decades inside a cliff rather than on a slope.
-# COUNTER-CASE: F4_MEMBER_FORCE_CONSERVATION_COUNTER_DEFECT below.
+# COUNTER-CASE: F4_MEMBER_FORCE_CONSERVATION_COUNTER below.
 # Set: 2026-10-05, F4 step 1
 F4_MEMBER_FORCE_CONSERVATION: Final[float] = 1.0e-13
 
 # COUNTER-CASE: the shipped-defect formula must NOT pass.
+# THE SUFFIX IS `_COUNTER` AND NOT `_COUNTER_DEFECT`, AND THE DIFFERENCE IS THE
+# WHOLE BRACKET (R671). `test_tolerance_counter_cases.py:73,88` returns EARLY for
+# any `_COUNTER_DEFECT`, on the sound reasoning that a defect SIZE is not in the
+# ceiling's quantity so no ordering exists to assert -- which is why the five F2/F3
+# entries keep that suffix. These three counters ARE in their ceiling's quantity --
+# a relative conservation error, a relative shortfall, a distance in metres -- so
+# the ordering exists and must be asserted. Named `_COUNTER_DEFECT`, this ceiling
+# rose from 1e-13 to 2.0 with 222 tests green, PAST the 1.0 error R663 itself
+# produces: the gate credited with catching R663 would have accepted R663.
 # Reason for 0.5: `k u` loses the member's ENTIRE weight, so its relative
 # conservation error is 1.0. Half of that is the largest value that still certifies
 # the counter-case reproduces the defect rather than some smaller discrepancy.
 # Set: 2026-10-05, F4 step 1
-F4_MEMBER_FORCE_CONSERVATION_COUNTER_DEFECT: Final[float] = 0.5
+F4_MEMBER_FORCE_CONSERVATION_COUNTER: Final[float] = 0.5
 
 # CLASS: ACCURACY -- an agreement ceiling between the built geometry and
 # HSP-stable's own. Its counter-case is the permuted export, constructed in
@@ -1926,7 +1935,7 @@ F4_EB6_POSITION_M: Final[float] = 1.0e-6
 # Injected by `test_EB6_a_PERMUTED_export_reddens_the_gate`, which runs the gate's own
 # comparison against a permuted expectation rather than inferring that it would notice.
 # Set: 2026-10-05, F4 step 1
-F4_EB6_POSITION_M_COUNTER_DEFECT: Final[float] = 30.982842
+F4_EB6_POSITION_M_COUNTER: Final[float] = 30.982842
 
 # CLASS: ACCURACY -- an agreement ceiling between two independently derived
 # routes to one quantity. Its counter-case is R663's defective formula, which
@@ -1951,7 +1960,27 @@ F4_STATIC_REACTION_AGREEMENT: Final[float] = 1.0e-12
 # so the platform value is the TIGHTER of the two and is the one declared.
 # Injected by `test_G4_the_defective_formula_misses_the_reaction_by_a_quarter`.
 # Set: 2026-10-05, F4 step 1
-F4_STATIC_REACTION_AGREEMENT_COUNTER_DEFECT: Final[float] = 0.25
+F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.25
+
+# CLASS: ACCURACY -- the tip moment a ROLLER support transmits, which is none. In
+# N*m at full scale, so an absolute ceiling rather than a relative one: the exact
+# answer is zero and there is nothing to be relative to.
+#
+# Reason for 1.0: the measured tip moments are 3.7e-09 and 2.8e-08 N*m against root
+# moments of 1.15e+08 and 1.18e+08, so this clears the measurement by eight decades
+# and sits eight decades below the defect it must reject.
+# Set: 2026-10-05, F4 step 1
+F4_STATIC_TIP_MOMENT_N_M: Final[float] = 1.0
+
+# COUNTER-CASE: R663's formula puts the tip moment at exactly `-mu L^2 / 12`.
+# Reason for 6386718.75: the EXACT `mu L^2 / 12 * g` for a platform arm's
+# 156250 kg over 50 m -- `3125 * 2500 / 12 * 9.81`, which is 6386718.75 and not
+# the 6386719.0 I first wrote. Six decades above the ceiling, and the hub arms
+# are larger still. THE ROUNDING MATTERED: declared as 6386719.0 the counter-case
+# missed the measured 6386718.750000007 and reddened, which is the third time this
+# milestone I have rounded a figure that was exact.
+# Set: 2026-10-05, F4 step 1
+F4_STATIC_TIP_MOMENT_N_M_COUNTER: Final[float] = 6386718.75
 
 
 # ---------------------------------------------------------------------------

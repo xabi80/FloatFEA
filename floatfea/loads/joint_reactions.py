@@ -50,13 +50,23 @@ def duality_residual(share_a: NDArray[np.float64], share_b: NDArray[np.float64])
     """`max|f_a + f_b| / max(|f_a|, |f_b|)` -- EK0(e)'s equal-and-opposite check.
 
     Relative, because the absolute size spans the whole run; and a SUM rather than a
-    difference, because equal and opposite means they cancel. Returns `0.0` when both
-    shares are zero, which is a real state at the start of a ramped run and not a
-    division to guard around.
+    difference, because equal and opposite means they cancel.
+
+    **RAISES when both shares are zero (R678).** It returned `0.0` there, which reads as
+    perfect agreement and cannot be told from a correct Jacobian -- so a run whose
+    multipliers had collapsed to zero would report the strongest possible result. A
+    caller with legitimately zero shares excludes those steps itself.
     """
     scale = max(float(np.max(np.abs(share_a))), float(np.max(np.abs(share_b))))
     if scale == 0.0:
-        return 0.0
+        raise ValueError(
+            "both shares are identically zero, so there is no duality to measure and "
+            "no scale to measure it against. R678: this returned 0.0, which reads as "
+            "PERFECT AGREEMENT and is indistinguishable from a correct Jacobian -- so "
+            "a run whose multipliers had collapsed to zero reported the strongest "
+            "possible result. A caller that expects zero shares (before the ramp, say) "
+            "excludes those steps itself, which is a statement rather than a silence."
+        )
     return float(np.max(np.abs(share_a + share_b)) / scale)
 
 

@@ -14,26 +14,35 @@ check, and the counter-cases below are what make these ones different.
 
 from __future__ import annotations
 
-import re
+import json
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 
-from floatfea.io.frames import GRAVITY_VECTOR
+from floatfea.io.frames import GRAVITY_MAGNITUDE, GRAVITY_VECTOR
 from floatfea.loads.joint_reactions import duality_residual
 from floatfea.model.nodes import node_dofs
-from floatfea.model.platform import Superstructure, build_superstructure
+from floatfea.model.platform import (
+    BodyModel,
+    Member,
+    Superstructure,
+    body_mass_matrix,
+    build_superstructure,
+)
 from floatfea.post.member_forces import element_equivalent_load, member_forces
 from floatfea.solve.static import solve_superstructure_static
 from floatfea.tolerances import (
     F4_EB6_POSITION_M,
-    F4_EB6_POSITION_M_COUNTER_DEFECT,
+    F4_EB6_POSITION_M_COUNTER,
     F4_MEMBER_FORCE_CONSERVATION,
-    F4_MEMBER_FORCE_CONSERVATION_COUNTER_DEFECT,
+    F4_MEMBER_FORCE_CONSERVATION_COUNTER,
     F4_STATIC_REACTION_AGREEMENT,
-    F4_STATIC_REACTION_AGREEMENT_COUNTER_DEFECT,
+    F4_STATIC_REACTION_AGREEMENT_COUNTER,
+    F4_STATIC_TIP_MOMENT_N_M,
+    F4_STATIC_TIP_MOMENT_N_M_COUNTER,
 )
 
 
@@ -54,7 +63,17 @@ def _gravity_field(n_dof: int) -> NDArray[np.float64]:
 
 # --------------------------------------------------------------------------- R663
 def test_G4_member_end_shears_sum_to_the_load_the_member_carries(built: Superstructure) -> None:
-    """R663's gate. `k u` alone CANNOT pass this, which is the point.
+    """R663's gate, and R675's correction: THIS IS BLIND TO THE SOLVE, BY CONSTRUCTION.
+
+    `k u`'s two end shears cancel identically, so the sum is always `-(f_eq_A + f_eq_B)`
+    whatever `u` is. Measured: the real solve, `u = 0`, `u x 1000` and randomised `u` all
+    give the same relative error, `<= 1.519e-16`. So this gate checks THE EQUIVALENT LOAD
+    and nothing else -- it caught R663 because R663 deleted that load entirely, and it
+    certifies nothing about the solution. `test_G4_the_tip_shear_equals_the_support_
+    reaction` is the one that reads the solve, and its own blindness test is beside it.
+
+    Saying so is the point: a gate whose reach is narrower than its name is how R663
+    survived a check that looked like it covered this.
 
     `k u` carries the rigid null space, so its two end shears cancel identically and the
     member's own weight appears nowhere. The defect put every platform-arm shear
@@ -91,7 +110,9 @@ def test_G4_the_conservation_gate_REDDENS_without_the_equivalent_load(
     share = body.member_mass / len(body.members)
     weight = float(share * abs(GRAVITY_VECTOR[2]))
 
-    mf = member_forces(body, member, cases[body.name].u_full)  # no f_eq: the defect
+    # An explicit ZERO equivalent load is the defect, stated rather than omitted
+    # (R677): `member_forces` no longer has a default to forget.
+    mf = member_forces(body, member, cases[body.name].u_full, np.zeros(12))
     carried = float(mf.end_a[2] + mf.end_b[2])
     relative = abs(carried - weight) / weight
 
@@ -103,7 +124,7 @@ def test_G4_the_conservation_gate_REDDENS_without_the_equivalent_load(
         "counter-case no longer reproduces R663 and the gate above is measuring "
         "something else."
     )
-    assert relative > F4_MEMBER_FORCE_CONSERVATION_COUNTER_DEFECT, (
+    assert relative > F4_MEMBER_FORCE_CONSERVATION_COUNTER, (
         f"the defective formula is only {relative:.3e} away from conservation, so the "
         "gate above would pass on the broken code and certifies nothing."
     )
@@ -116,12 +137,14 @@ def test_G4_the_tip_shear_equals_the_support_reaction(built: Superstructure) -> 
     not what `member_forces` computes -- so this compares two separately derived numbers.
     """
     cases = solve_superstructure_static(built)
+    checked = 0
     for body in built.bodies:
         accel = _gravity_field(body.model.n_dof)
         case = cases[body.name]
         for member in body.members:
             if member.node_b not in case.vertical_reactions_N:
                 continue
+            checked += 1
             f_eq = element_equivalent_load(body, member, accel)
             mf = member_forces(body, member, case.u_full, f_eq)
             reaction = case.vertical_reactions_N[member.node_b]
@@ -132,6 +155,14 @@ def test_G4_the_tip_shear_equals_the_support_reaction(built: Superstructure) -> 
                 f"{reaction!r} disagree. A roller at the member's end transmits exactly "
                 "its shear, so these are the same number by two routes."
             )
+    # R675's latent hazard, closed: the `continue` above skips nothing at F3's mesh --
+    # measured, 16 run and 0 skipped -- but a silent skip is a hazard even when it is
+    # currently empty, so the count is asserted and a topology change fails LOUDLY.
+    assert checked == 16, (
+        f"{checked} of 16 members were checked; the rest were skipped silently by the "
+        "`continue`. A gate that quietly narrows its own subject is how a defect "
+        "survives a green run."
+    )
 
 
 # ------------------------------------------------------------------- R664 and R665
@@ -157,9 +188,13 @@ def test_G4_1_static_the_sum_is_checked_against_the_INDEPENDENT_weight(
             for _ in (0,)
             if name != "platform"
         )
-        expected = case.weight_N + handed
-        assert abs(case.applied_N) == pytest.approx(expected, rel=F4_STATIC_REACTION_AGREEMENT), (
-            f"{name}: the applied load is {abs(case.applied_N)!r} and the deck's own "
+        # SIGNED, not `abs()` (R674). Gravity acts in -z, so the applied vertical load
+        # is NEGATIVE. Taking `abs()` made this blind to a sign flip, so the
+        # `gravity reversed` injection -- the one verdict 93 measured as undetected --
+        # PASSED on this very row.
+        expected = -(case.weight_N + handed)
+        assert case.applied_N == pytest.approx(expected, rel=F4_STATIC_REACTION_AGREEMENT), (
+            f"{name}: the applied load is {case.applied_N!r} and minus the deck's own "
             f"weight plus what the platform hands down is {expected!r}. These are "
             "independently derived, which is what R664 found the shipped check was not."
         )
@@ -169,21 +204,32 @@ def test_G4_1_static_the_sum_is_checked_against_the_INDEPENDENT_weight(
 def test_G4_1_static_the_weight_check_REDDENS_on_the_two_worst_misses(
     built: Superstructure, injection: str
 ) -> None:
-    """R664/R665's counter-case, on the two the verdict measured as undetected."""
+    """R664's counter-case, INJECTED INTO THE MODEL rather than into the expected side.
+
+    R674. The first version corrupted the number the gate compares AGAINST, which tests
+    arithmetic rather than the gate. A gate reading a corrupted MODEL is the only thing
+    that shows it would catch a corrupted model.
+    """
     cases = solve_superstructure_static(built)
     platform = next(b for b in built.bodies if b.name == "platform")
     case = cases["platform"]
 
-    if injection == "remainder_dropped":
-        corrupt = case.weight_N - platform.remainder_mass * abs(GRAVITY_VECTOR[2])
-    else:
-        corrupt = -case.weight_N
+    corrupt_body = (
+        replace(platform, remainder_mass=0.0) if injection == "remainder_dropped" else platform
+    )
+    accel = _gravity_field(corrupt_body.model.n_dof)
+    if injection == "gravity_reversed":
+        accel = -accel
 
-    agrees = abs(abs(case.applied_N) - corrupt) / abs(case.weight_N) < F4_STATIC_REACTION_AGREEMENT
-    assert not agrees, (
-        f"the weight check accepts the {injection!r} value {corrupt!r} as readily as the "
-        f"true {abs(case.applied_N)!r}, so it cannot discriminate and R664 is not "
-        "answered."
+    mass = body_mass_matrix(corrupt_body)
+    n_nodes = mass.shape[0] // 6
+    applied = float(sum((mass @ accel)[node_dofs(n)[2]] for n in range(n_nodes)))
+    expected = -case.weight_N  # the platform receives nothing from upstream
+
+    assert applied != pytest.approx(expected, rel=F4_STATIC_REACTION_AGREEMENT), (
+        f"with {injection!r} the applied vertical load is {applied!r}, which the gate "
+        f"accepts against the expected {expected!r}. It cannot discriminate, and R664 "
+        "is not answered."
     )
 
 
@@ -242,15 +288,15 @@ def test_G4_the_defective_formula_misses_the_reaction_by_a_quarter(
     member = platform.members[0]
     case = cases["platform"]
 
-    mf = member_forces(platform, member, case.u_full)  # no f_eq: the defect
+    mf = member_forces(platform, member, case.u_full, np.zeros(12))  # the defect
     reaction = case.vertical_reactions_N[member.node_b]
     shortfall = (reaction - float(mf.end_b[2])) / reaction
 
     assert shortfall == pytest.approx(
-        F4_STATIC_REACTION_AGREEMENT_COUNTER_DEFECT, rel=F4_STATIC_REACTION_AGREEMENT
+        F4_STATIC_REACTION_AGREEMENT_COUNTER, rel=F4_STATIC_REACTION_AGREEMENT
     ), (
         f"the defective formula falls {shortfall:.6%} short of the reaction and the "
-        f"declared counter-case is {F4_STATIC_REACTION_AGREEMENT_COUNTER_DEFECT!r}. "
+        f"declared counter-case is {F4_STATIC_REACTION_AGREEMENT_COUNTER!r}. "
         "If these disagree the defect is not the one R663 names."
     )
     assert (
@@ -258,97 +304,182 @@ def test_G4_the_defective_formula_misses_the_reaction_by_a_quarter(
     ), "the agreement ceiling would accept R663's defect, so it certifies nothing."
 
 
-# --------------------------------------------------------------------------- R667
-HSP_STABLE = Path(__file__).resolve().parents[3].parent / "HSP-stable"
-STUDY = HSP_STABLE / "studies" / "platform-12buoy"
+# --------------------------------------------------------------------------- R667 / EO0
+EB6_SOURCE_BLOB = "b8b8123904aff2b79785043255cb28fcc6527ab5"
+"""The HSP-stable blob the snapshot was generated from (EO0(b))."""
 
-needs_hsp_stable = pytest.mark.skipif(
-    not (STUDY / "platform_common.py").is_file(),
-    reason=(
-        "EB6's expected side is read READ-ONLY from HSP-stable by DS0's design, so it "
-        "lives outside this repository and the gate can only run where that worktree "
-        "exists. A SKIP HERE IS A REAL GAP, not a pass: it is reported as one."
-    ),
-)
+EB6_REFERENCE = Path(__file__).resolve().parents[3] / "data" / "platform" / "buoy_centers_ref.json"
 
 
-def _hsp_stable_buoy_centres() -> NDArray[np.float64]:
-    """The twelve centres from HSP-stable's own definition, read read-only (EB6).
+def _eb6_reference() -> dict[str, object]:
+    """EB6's expected side, from the PINNED SNAPSHOT (EO0).
 
-    # expected: HSP-stable/studies/platform-12buoy/platform_common.py:51-58,
-    `buoy_centers()`, built from CLUSTER_ARM_RADIUS (:33), CLUSTER_ANGLES_DEG (:34),
-    BUOY_ANGLES_DEG (:35) and BUOY_RADIUS (:36).
+    # expected: `data/platform/buoy_centers_ref.json`, generated by
+    `scripts/export_buoy_centers_ref.py` from HSP-stable's own
+    `studies/platform-12buoy/platform_common.py` -- CLUSTER_ARM_RADIUS `:33`,
+    CLUSTER_ANGLES_DEG `:34`, BUOY_ANGLES_DEG `:35`, BUOY_RADIUS `:36`, Z_HUB_REF `:102`,
+    `buoy_centers()` `:51-58`, the hub `Body` `:157` -- at blob
+    `b8b8123904aff2b79785043255cb28fcc6527ab5`, tag `floatfea-ref-1`.
 
-    The module is parsed for its four constants rather than imported, because importing
-    it drags in FloatSim and a gate on geometry must not depend on a solver being
-    installed. The constants are read from the file, so a change there reaches this gate.
+    THIS FILE IS NOT THE DECK EXPORT, which is the whole point: a permuted export cannot
+    reach it. The snapshot is kept honest by `--check` in the DS0 preflight (EO0(c)), not
+    by a pytest skip -- `scripts/run_rung.sh` fails a rung on any skip, which is what made
+    this gate red as R670.
     """
-    text = (STUDY / "platform_common.py").read_text(encoding="utf-8")
-    arm = float(re.search(r"^CLUSTER_ARM_RADIUS = ([\d.]+)", text, re.MULTILINE).group(1))
-    cluster = [
-        float(v)
-        for v in re.search(r"^CLUSTER_ANGLES_DEG = np\.array\(\[([^\]]+)\]\)", text, re.MULTILINE)
-        .group(1)
-        .split(",")
-    ]
-    buoy = [0.0, 120.0, 240.0]  # cc.BUOY_ANGLES_DEG, cited at :35
-    radius = 0.5  # cc.CLUSTER_RADIUS, cited at :36
-    out = []
-    for pc in np.deg2rad(cluster):
-        cx, cy = arm * np.cos(pc), arm * np.sin(pc)
-        for tb in np.deg2rad(buoy):
-            out.append([cx + radius * np.cos(tb), cy + radius * np.sin(tb)])
-    return np.asarray(out, dtype=np.float64)
+    assert EB6_REFERENCE.is_file(), (
+        f"{EB6_REFERENCE} is missing. It is committed precisely so this gate needs no "
+        "HSP-stable worktree and therefore no skip; regenerate it with "
+        "`python scripts/export_buoy_centers_ref.py` where that worktree exists."
+    )
+    data = json.loads(EB6_REFERENCE.read_text(encoding="utf-8"))
+    assert data["provenance"]["blob_sha"] == EB6_SOURCE_BLOB, (
+        f"the snapshot records blob {data['provenance']['blob_sha']!r} and this gate "
+        f"expects {EB6_SOURCE_BLOB!r}. One of them has moved, and a gate whose expected "
+        "side moved silently is R600's defect."
+    )
+    assert data["scale"] == "model", f"the snapshot is {data['scale']!r}, not model scale"
+    return data
 
 
-@needs_hsp_stable
-def test_EB6_every_buoy_label_sits_where_HSP_STABLE_says(built: Superstructure) -> None:
-    """EB6's first side. The expected value is NOT read from the export.
-
-    R600's defect was a gate reading the model's own nodes on both sides and asserting
-    `X == X`. Here the left side is the built FE node and the right side is HSP-stable's
-    own geometry, scaled by the Froude factor the build used.
-    """
-    expected = _hsp_stable_buoy_centres() * built.froude_lambda
+def test_EB6_every_buoy_label_sits_where_HSP_STABLE_SAYS(built: Superstructure) -> None:
+    """EB6's first side, against the pinned snapshot. NO SKIP (EO0(b))."""
+    reference = _eb6_reference()
+    expected = np.asarray(reference["buoy_centres_xy_m"], dtype=np.float64) * built.froude_lambda
     bodies = {b.name: b for b in built.bodies}
     worst = 0.0
+    checked = 0
     for buoy, (owner, node) in built.buoy_joint_nodes.items():
         index = int(buoy.removeprefix("buoy")) - 1
         got = bodies[owner].model.nodes.coords()[node][:2]
         worst = max(worst, float(np.linalg.norm(got - expected[index])))
+        checked += 1
+    assert checked == 12, f"{checked} of 12 buoy labels were checked, not all of them"
     assert worst < F4_EB6_POSITION_M, (
-        f"the worst buoy-label position disagrees with HSP-stable by {worst:.6e} m. "
-        "Either a label names the wrong node or the geometry has moved."
+        f"the worst buoy-label position disagrees with the pinned reference by "
+        f"{worst:.6e} m. Either a label names the wrong node or the geometry has moved."
     )
 
 
-@needs_hsp_stable
-def test_EB6_a_PERMUTED_export_reddens_the_gate(built: Superstructure) -> None:
-    """EB6's counter-case, constructed rather than asserted.
+def test_EB6_every_HUB_label_sits_where_HSP_STABLE_SAYS(built: Superstructure) -> None:
+    """DQ9's hub extension, which verdict 94 recorded as absent (R676)."""
+    reference = _eb6_reference()
+    expected = np.asarray(reference["hub_positions_xyz_m"], dtype=np.float64) * built.froude_lambda
+    bodies = {b.name: b for b in built.bodies}
+    worst = 0.0
+    checked = 0
+    for hub, owner in sorted(built.deck_joint_owner.items()):
+        if owner != "platform":
+            continue
+        index = int(hub.removeprefix("hub")) - 1
+        node = bodies["platform"].model.nodes.index(f"platform:{hub}_arm_tip")
+        got = bodies["platform"].model.nodes.coords()[node]
+        worst = max(worst, float(np.linalg.norm(got[:2] - expected[index][:2])))
+        checked += 1
+    assert checked == 4, f"{checked} of 4 hub joints were checked, not all of them"
+    assert worst < F4_EB6_POSITION_M, (
+        f"the worst hub-label position disagrees with the pinned reference by " f"{worst:.6e} m."
+    )
 
-    The smallest permutation is a transposition of the two closest labels, which is the
-    hardest case: `0.619657 m` at model scale, settled at verdict 91 as the smallest
-    single-swap displacement. Anything the gate would miss, it would miss here first.
+
+def test_EB6_a_PERMUTED_export_reddens_the_gate(built: Superstructure) -> None:
+    """EB6's counter-case, which EO0(d) keeps. Constructed, not asserted.
+
+    The smallest permutation is a transposition of the two closest labels -- the hardest
+    case, so anything the gate would miss it would miss here first.
     """
-    expected = _hsp_stable_buoy_centres() * built.froude_lambda
+    reference = _eb6_reference()
+    expected = np.asarray(reference["buoy_centres_xy_m"], dtype=np.float64) * built.froude_lambda
     permuted = expected.copy()
     permuted[[1, 3]] = permuted[[3, 1]]  # buoy2 <-> buoy4, the closest pair
 
-    # RUN THE GATE'S OWN COMPARISON against the permuted expectation, rather than
-    # measuring a property of the geometry and inferring that the gate would notice.
     bodies = {b.name: b for b in built.bodies}
     worst = 0.0
     for buoy, (owner, node) in built.buoy_joint_nodes.items():
         index = int(buoy.removeprefix("buoy")) - 1
         got = bodies[owner].model.nodes.coords()[node][:2]
         worst = max(worst, float(np.linalg.norm(got - permuted[index])))
-    assert worst == pytest.approx(F4_EB6_POSITION_M_COUNTER_DEFECT, abs=F4_EB6_POSITION_M), (
-        f"the transposition moves a label {worst:.6f} m, and the declared counter-case "
-        f"is {F4_EB6_POSITION_M_COUNTER_DEFECT!r} m. If these disagree the geometry has "
-        "moved and the counter-case no longer injects what it says it does."
+
+    assert worst == pytest.approx(F4_EB6_POSITION_M_COUNTER, abs=F4_EB6_POSITION_M), (
+        f"the transposition moves a label {worst:.6f} m and the declared counter-case is "
+        f"{F4_EB6_POSITION_M_COUNTER!r} m. If these disagree the counter no longer "
+        "injects what it says it does."
     )
     assert worst > F4_EB6_POSITION_M, (
         f"with the two CLOSEST labels transposed the gate's own worst disagreement is "
-        f"{worst:.6e} m, which the ceiling {F4_EB6_POSITION_M!r} ACCEPTS. The gate is "
-        "blind to the permutation it exists to catch."
+        f"{worst:.6e} m, which the ceiling ACCEPTS. The gate is blind to the permutation "
+        "it exists to catch."
     )
+
+
+# --------------------------------------------------------------------------- EO1
+def _analytic_static(body: BodyModel, member: Member, reaction: float) -> tuple[float, float]:
+    """`(root Vz, root My)` from statics alone: deck masses, `f`, geometry.
+
+    # expected: analytic. A cantilever-with-end-roller: vertical equilibrium gives the
+    root shear as `R - wL`, and moments about the root give `R L - wL^2/2`. Nothing here
+    reads the model's stiffness, its displacement or its member forces, which is what
+    makes it an independent side rather than a second route to the same arithmetic.
+    """
+    span = member.length
+    own_weight = body.member_mass / len(body.members) * GRAVITY_MAGNITUDE
+    return reaction - own_weight, reaction * span - own_weight * span / 2.0
+
+
+def test_EO1_static_member_forces_match_STATICS_not_the_model(built: Superstructure) -> None:
+    """EO1, and it answers R675: this gate READS THE SOLVE.
+
+    `root My` is `R L - wL^2/2`, and `R` is the support reaction the solve produced -- so
+    a wrong displacement field moves this figure, where the conservation gate cannot see
+    it. Confirmed against the directive's own arithmetic: platform `114960937.5 N*m`,
+    hub `117515625 N*m`, both reproduced to every digit.
+    """
+    cases = solve_superstructure_static(built)
+    checked = 0
+    for body in built.bodies:
+        accel = _gravity_field(body.model.n_dof)
+        case = cases[body.name]
+        for member in body.members:
+            reaction = case.vertical_reactions_N[member.node_b]
+            want_vz, want_my = _analytic_static(body, member, reaction)
+            mf = member_forces(
+                body, member, case.u_full, element_equivalent_load(body, member, accel)
+            )
+            checked += 1
+            assert abs(float(mf.end_a[2])) == pytest.approx(
+                want_vz, rel=F4_STATIC_REACTION_AGREEMENT
+            ), f"{member.label}: root Vz {mf.end_a[2]!r} against statics' {want_vz!r}"
+            assert abs(float(mf.end_a[4])) == pytest.approx(
+                want_my, rel=F4_STATIC_REACTION_AGREEMENT
+            ), f"{member.label}: root My {mf.end_a[4]!r} against statics' {want_my!r}"
+            assert abs(float(mf.end_b[4])) < F4_STATIC_TIP_MOMENT_N_M, (
+                f"{member.label}: the tip moment is {mf.end_b[4]!r}, and a roller "
+                "support transmits none. R663's defect put it at exactly -mu L^2 / 12."
+            )
+    assert checked == 16, f"{checked} of 16 members were checked, not all of them"
+
+
+def test_EO1_the_analytic_gate_REDDENS_on_the_R663_formula(built: Superstructure) -> None:
+    """EO1's counter-case: the shipped defect must fail the analytic comparison."""
+    cases = solve_superstructure_static(built)
+    body = next(b for b in built.bodies if b.name == "platform")
+    member = body.members[0]
+    case = cases[body.name]
+    reaction = case.vertical_reactions_N[member.node_b]
+    want_vz, want_my = _analytic_static(body, member, reaction)
+
+    mf = member_forces(body, member, case.u_full, np.zeros(12))  # R663's formula
+    assert abs(float(mf.end_a[2])) != pytest.approx(want_vz, rel=F4_STATIC_REACTION_AGREEMENT)
+
+    # The declared counter IS the defect's own magnitude, `mu L^2 / 12`, and naming it
+    # here is what makes it injected rather than a literal beside another literal.
+    tip = abs(float(mf.end_b[4]))
+    assert tip == pytest.approx(
+        F4_STATIC_TIP_MOMENT_N_M_COUNTER, rel=F4_STATIC_REACTION_AGREEMENT
+    ), (
+        f"the defect's tip moment is {tip!r} and the declared counter is "
+        f"{F4_STATIC_TIP_MOMENT_N_M_COUNTER!r}. If they disagree the counter no longer "
+        "describes the defect it is supposed to inject."
+    )
+    assert (
+        tip > F4_STATIC_TIP_MOMENT_N_M
+    ), "the ceiling accepts R663's tip moment, so the gate certifies nothing."
