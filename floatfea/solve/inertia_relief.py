@@ -27,7 +27,12 @@ from numpy.typing import NDArray
 from floatfea.assemble.system import assemble_dense
 from floatfea.element.constraints import constraint_transform, reduce_matrix
 from floatfea.model.nodes import DOF_PER_NODE
-from floatfea.model.platform import BodyModel, body_mass_matrix, rigid_projection
+from floatfea.model.platform import (
+    BodyModel,
+    body_mass_matrix,
+    rigid_links,
+    rigid_projection,
+)
 
 __all__ = ["ReliefResult", "solve_inertia_relief"]
 
@@ -65,15 +70,6 @@ class ReliefResult:
     """Deformation in the body's FULL DOF numbering, expanded through the link."""
 
 
-def _links(body: BodyModel) -> dict[int, tuple[int, NDArray[np.floating]]]:
-    """The body's rigid links, slave -> (master, offset); empty when the link is zero."""
-    if body.remainder_node == body.centre_node:
-        return {}
-    coords = body.model.nodes.coords()
-    offset: NDArray[np.floating] = coords[body.remainder_node] - coords[body.centre_node]
-    return {body.remainder_node: (body.centre_node, offset)}
-
-
 def solve_inertia_relief(body: BodyModel, applied: NDArray[np.float64]) -> ReliefResult:
     """Solve one body free under `applied`, with the implied rigid acceleration relieved.
 
@@ -90,7 +86,7 @@ def solve_inertia_relief(body: BodyModel, applied: NDArray[np.float64]) -> Relie
     k_full = assemble_dense(body.model, body.elements)
     m_full = body_mass_matrix(body)
 
-    links = _links(body)
+    links = rigid_links(body)
     if links:
         t_c = constraint_transform(n_dof, links)
         # Whole NODES are removed, never part of one, so the retained node list is

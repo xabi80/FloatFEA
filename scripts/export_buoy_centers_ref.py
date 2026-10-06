@@ -9,7 +9,10 @@ side where a deck-export permutation could reach it.
 
 A SNAPSHOT IS NEITHER. It carries the VALUES plus the provenance needed to prove they
 came from HSP-stable -- the source file's git blob sha and the pinned tag -- so a change
-to that file makes the snapshot stale and `--check` says so. The deck export cannot
+to that file makes the snapshot stale and `--check` says so. **ONE source file, and the
+limits of that are stated at `BUOY_ANGLES_DEG` (C155) and at the `BUOY_RADIUS` parse
+(C156): a value defined in `cluster-3buoy-rigid/cluster_common.py`, or taken from a
+trailing comment, is NOT covered by this file's blob sha.** The deck export cannot
 reach the snapshot, which is what EB6 is guarding against.
 
 GENERATED FROM THE SOURCE CODE, NEVER FROM THE DECK EXPORT (EO0(a)). The four constants
@@ -41,10 +44,21 @@ SOURCE_REL = "studies/platform-12buoy/platform_common.py"
 SNAPSHOT = ROOT / "data" / "platform" / "buoy_centers_ref.json"
 
 BUOY_ANGLES_DEG = (0.0, 120.0, 240.0)
-"""`cc.BUOY_ANGLES_DEG`, cited at `platform_common.py:35`.
+"""`cc.BUOY_ANGLES_DEG`, cited at `platform_common.py:35`, defined at
+`cluster-3buoy-rigid/cluster_common.py:47`.
 
-Read from `cluster-3buoy-rigid/cluster_common.py:47` rather than this file, so it is
-named here with its citation and checked by `--check` like everything else.
+**IT IS A LITERAL HERE AND `--check` DOES NOT COVER IT (C155).** The sentence that stood
+here said it was "checked by `--check` like everything else", and that was false in both
+halves: `check()` compares `build()` against the stored snapshot and `build()` reads this
+same literal, so both sides move together; and the recorded blob sha is
+`platform_common.py`'s, so a change in `cluster_common.py` moves neither side and
+`--check` prints "current". The value is right today -- verified against
+`cluster_common.py:47`, `np.array([0.0, 120.0, 240.0])`.
+
+WHAT `--check` DOES COVER: `CLUSTER_ARM_RADIUS`, `CLUSTER_ANGLES_DEG`, `BUOY_RADIUS` and
+`Z_HUB_REF`, all parsed from `platform_common.py`, plus that file's blob sha. A second
+source file would need a second blob sha, which is a schema change to the snapshot and
+belongs with the next thing that needs it.
 """
 
 
@@ -77,6 +91,14 @@ def _constants(text: str) -> tuple[float, list[float], float]:
     """`(CLUSTER_ARM_RADIUS, CLUSTER_ANGLES_DEG, BUOY_RADIUS)` parsed from the source."""
     arm = re.search(r"^CLUSTER_ARM_RADIUS = ([\d.]+)", text, re.MULTILINE)
     angles = re.search(r"^CLUSTER_ANGLES_DEG = np\.array\(\[([^\]]+)\]\)", text, re.MULTILINE)
+    # C156: `BUOY_RADIUS` IS PARSED FROM THE TRAILING COMMENT, not from the constant.
+    # `platform_common.py:36` reads `BUOY_RADIUS = cc.CLUSTER_RADIUS  # 0.5 m`, and the
+    # value lives in `cluster-3buoy-rigid/cluster_common.py:44`. The comment and the
+    # constant agree today (`CLUSTER_RADIUS = 0.5`, verified), and a comment that fell
+    # out of step with its constant would become the expected side of two gates with
+    # this file's blob sha unmoved. Reading the constant means a second source file and
+    # a second blob sha in the snapshot; until that exists, the limitation is written
+    # here and in the snapshot's own docstring rather than left for a reader to find.
     radius = re.search(r"^BUOY_RADIUS = cc\.CLUSTER_RADIUS\s*#\s*([\d.]+)", text, re.MULTILINE)
     if not (arm and angles and radius):
         raise SystemExit(

@@ -88,9 +88,16 @@ def horizontal_restraint(body: BodyModel, nodes: tuple[int, ...]) -> NDArray[np.
 
     The second node is chosen as the one FURTHEST from the first in `x`, because the
     pair's `x` separation is the lever that removes `rz`: two joints at the same `x`
-    would leave yaw free and the stiffness matrix singular. Picking the furthest is
-    not an optimisation, it is the only choice that cannot accidentally be degenerate
-    on a frame whose joints are nearly aligned.
+    would leave yaw free and the stiffness matrix singular. Picking the furthest
+    maximises that lever, which is why it is the choice.
+
+    **IT IS NOT A GUARANTEE AGAINST NEAR-DEGENERACY, AND THE SENTENCE HERE ONCE SAID IT
+    WAS (C140).** The refusal below tests `max(separations) == 0.0`, an EXACT float
+    comparison, so a frame whose joints are nearly -- but not exactly -- aligned passes
+    it and the solve is near-singular rather than refused. Picking the furthest pair
+    makes that the least bad choice available; it does not make it a safe one. No
+    threshold is declared for the separation, so this is reported here rather than
+    asserted, and a frame that needs one is a conversation about the geometry.
     """
     coords = body.model.nodes.coords()
     first = nodes[0]

@@ -638,6 +638,24 @@ def _build_body(
     )
 
 
+def rigid_links(body: BodyModel) -> dict[int, tuple[int, NDArray[np.floating]]]:
+    """The body's rigid links, slave -> (master, offset). Empty when there is none.
+
+    A hub's remainder sits ON its centre node, so there is no link and no reduction.
+    The platform's does not, and the offset is the vector master -> slave.
+
+    WRITTEN ONCE (C142). This was eight identical lines in `floatfea/solve/static.py`
+    and `floatfea/solve/inertia_relief.py`. It is a property of the BODY, not of either
+    solve, and C131's finding is that a rule written twice drifts -- so it lives beside
+    `BodyModel`, which is the thing it describes.
+    """
+    if body.remainder_node == body.centre_node:
+        return {}
+    coords = body.model.nodes.coords()
+    offset: NDArray[np.floating] = coords[body.remainder_node] - coords[body.centre_node]
+    return {body.remainder_node: (body.centre_node, offset)}
+
+
 def admissible(body: BodyModel) -> bool:
     """`m_r >= 0` and no eigenvalue of `J_r` below `-tol` (DY0d).
 

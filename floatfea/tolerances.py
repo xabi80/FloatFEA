@@ -1956,31 +1956,45 @@ F4_STATIC_REACTION_AGREEMENT: Final[float] = 1.0e-12
 # Reason for 0.25: omitting the element equivalent load puts a platform arm's tip
 # shear exactly a quarter below the support reaction it must equal -- 2.299219e+06
 # against 3.065625e+06, measured, and the fraction is exact because the consistent
-# gravity load puts half the member's weight at each node. The hub arms are 20.69%,
-# so the platform value is the TIGHTER of the two and is the one declared.
+# gravity load puts half the member's weight at each node. The hub arms are 20.69%.
+# C149: THE WORD WAS WRONG HERE. This said the platform value is "the TIGHTER of the
+# two"; 0.2069 < 0.25, so the HUB value is the tighter one. The platform value is
+# declared because it is the member the counter-case injects into, which is the reason
+# that matters, and the hub figure is the smaller of the two.
 # Injected by `test_G4_the_defective_formula_misses_the_reaction_by_a_quarter`.
 # Set: 2026-10-05, F4 step 1
 F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.25
 
-# CLASS: ACCURACY -- the tip moment a ROLLER support transmits, which is none. In
-# N*m at full scale, so an absolute ceiling rather than a relative one: the exact
-# answer is zero and there is nothing to be relative to.
+# CLASS: ACCURACY -- the tip moment a ROLLER support transmits, which is none.
+# RELATIVE, against the member's own root moment (R681).
 #
-# Reason for 1.0: the measured tip moments are 3.7e-09 and 2.8e-08 N*m against root
-# moments of 1.15e+08 and 1.18e+08, so this clears the measurement by eight decades
-# and sits eight decades below the defect it must reject.
-# Set: 2026-10-05, F4 step 1
-F4_STATIC_TIP_MOMENT_N_M: Final[float] = 1.0
+# THE FORM CHANGED AND THE REASON THAT STOOD HERE WAS REFUTED BY ITS OWN NEXT
+# SENTENCE. It read: "an absolute ceiling rather than a relative one: the exact
+# answer is zero and there is nothing to be relative to" -- and then named root
+# moments of 1.15e+08 and 1.18e+08 N*m, which is the thing to be relative to. The
+# assertion already computes that root moment two lines above, so the relative form
+# cost nothing. An absolute ceiling on a dimensional quantity is what the recorded
+# guard calls a defect, and it was one here: at model scale, or on a smaller frame,
+# `1.0 N*m` is a different statement about the same physics.
+#
+# Reason for 1e-12: the measured worst clean ratio is 5.265786e-16 over all 16
+# members, so this sits 1899x above the measurement -- a round-off ceiling at that
+# scale, not a fitted value. BOTH EDGES SOLVED (EH4): tightened, the clean case
+# trips below 1e-15; widened, the counter-case below reddens it.
+# Set: 2026-10-05, F4 step 1 (form corrected in the step closure commit, R681)
+F4_STATIC_TIP_MOMENT_RELATIVE: Final[float] = 1.0e-12
 
 # COUNTER-CASE: R663's formula puts the tip moment at exactly `-mu L^2 / 12`.
-# Reason for 6386718.75: the EXACT `mu L^2 / 12 * g` for a platform arm's
-# 156250 kg over 50 m -- `3125 * 2500 / 12 * 9.81`, which is 6386718.75 and not
-# the 6386719.0 I first wrote. Six decades above the ceiling, and the hub arms
-# are larger still. THE ROUNDING MATTERED: declared as 6386719.0 the counter-case
-# missed the measured 6386718.750000007 and reddened, which is the third time this
-# milestone I have rounded a figure that was exact.
-# Set: 2026-10-05, F4 step 1
-F4_STATIC_TIP_MOMENT_N_M_COUNTER: Final[float] = 6386718.75
+# Reason for 0.05: that defect's tip moment over the member's root moment is
+# EXACTLY 1/18 on a platform arm -- `(mu L^2 / 12) / (R L - w L^2 / 2)` with
+# `6386718.75 / 114960937.5` -- and the measured worst over all 16 members is
+# 5.555556e-02. The declared value is the round bound BELOW that measurement, for
+# the reason the symmetry and mapping counters are: a bound is what a counter
+# states, and an equality on a solve-derived number is a portability claim. The
+# bracket is 1.0550e+14x.
+# Injected by `test_EO1_the_analytic_gate_REDDENS_on_the_R663_formula`.
+# Set: 2026-10-05, F4 step 1 (form corrected in the step closure commit, R681)
+F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER: Final[float] = 0.05
 
 # CLASS: ACCURACY -- EK0(d)'s SYMMETRY check, which is the only one of EK0(d)'s three
 # the FE stiffness participates in: the fourth vertical support is redundant, so how
@@ -2002,7 +2016,14 @@ F4_STATIC_SYMMETRY_SPREAD: Final[float] = 1.0e-12
 # untouched, so the body's mass is identical and the only variable that moved is the
 # stiffness that decides the split (BG0). The four reactions become 671905.5, 671905.5,
 # 5459344.5, 5459344.5 N against a clean 3065625.0 each, and the MEASURED spread is
-# 1.5616518375226505. The declared value is the round bound BELOW that measurement, not
+# 1.5616518375226505. **THOSE FIGURES ARE REGENERATED IN THE STEP REPORT, NOT HERE
+# (C153, BI3).** No committed script reproduces them at this commit, and the ordering
+# assertion that uses the counter admits a 4% weakening of the injection without
+# noticing -- so a reader who needs the numbers takes them from
+# `docs/reports/F4/step-1.md` section 8, which is regenerated by rule, and this entry
+# carries the one value it needs plus this pointer. The same applies to the mapping
+# entry below.
+# The declared value is the round bound BELOW that measurement, not
 # the measurement: a counter is the smallest defect the gate must still fail, and
 # asserting bit-equality against a solve-derived number would redden on a platform whose
 # BLAS sums in a different order. Twelve decades above the ceiling either way. Injected

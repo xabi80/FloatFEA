@@ -15,6 +15,7 @@ check, and the counter-cases below are what make these ones different.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import replace
 from pathlib import Path
 
@@ -46,8 +47,8 @@ from floatfea.tolerances import (
     F4_STATIC_REACTION_AGREEMENT_COUNTER,
     F4_STATIC_SYMMETRY_SPREAD,
     F4_STATIC_SYMMETRY_SPREAD_COUNTER,
-    F4_STATIC_TIP_MOMENT_N_M,
-    F4_STATIC_TIP_MOMENT_N_M_COUNTER,
+    F4_STATIC_TIP_MOMENT_RELATIVE,
+    F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER,
 )
 
 
@@ -397,7 +398,19 @@ def test_EB6_every_buoy_label_sits_where_HSP_STABLE_SAYS(built: Superstructure) 
 
 
 def test_EB6_every_HUB_label_sits_where_HSP_STABLE_SAYS(built: Superstructure) -> None:
-    """DQ9's hub extension, which verdict 94 recorded as absent (R676)."""
+    """DQ9's hub extension (R676), widened to three components and both sides (C157).
+
+    TWO THINGS WERE WRONG WITH THE FIRST FORM and neither was the value. It compared
+    `got[:2]` against `expected[index][:2]`, dropping Z -- and Z is free, because the
+    snapshot's `24.668478398986515 m` equals the built arm-tip z to every digit. And it
+    read the PLATFORM's `platform:<hub>_arm_tip` node only, never the hub body's own
+    node, so exchanging the `hub1` and `hub2` body models left this gate at worst `0.0`
+    with `checked == 4`, GREEN. The buoy gate caught that exchange incidentally at
+    `70.71067811865476 m`, which is luck and not coverage.
+
+    Both sides of each joint are compared now, which is also the statement DQ9 wanted:
+    a hub label names a position, and the hub body and the platform must agree on it.
+    """
     reference = _eb6_reference()
     expected = np.asarray(
         to_full_scale(
@@ -414,13 +427,20 @@ def test_EB6_every_HUB_label_sits_where_HSP_STABLE_SAYS(built: Superstructure) -
         if owner != "platform":
             continue
         index = int(hub.removeprefix("hub")) - 1
-        node = bodies["platform"].model.nodes.index(f"platform:{hub}_arm_tip")
-        got = bodies["platform"].model.nodes.coords()[node]
-        worst = max(worst, float(np.linalg.norm(got[:2] - expected[index][:2])))
-        checked += 1
-    assert checked == 4, f"{checked} of 4 hub joints were checked, not all of them"
+        tip = bodies["platform"].model.nodes.index(f"platform:{hub}_arm_tip")
+        for coords in (
+            bodies["platform"].model.nodes.coords()[tip],
+            bodies[hub].model.nodes.coords()[bodies[hub].centre_node],
+        ):
+            worst = max(worst, float(np.linalg.norm(coords - expected[index])))
+            checked += 1
+    assert checked == 8, (
+        f"{checked} of 8 comparisons ran -- four hub joints, each from BOTH sides. A "
+        "count of 4 is the old form, which read the platform's arm tip only."
+    )
     assert worst < F4_EB6_POSITION_M, (
-        f"the worst hub-label position disagrees with the pinned reference by " f"{worst:.6e} m."
+        f"the worst hub-label position disagrees with the pinned reference by "
+        f"{worst:.6e} m, over all three components and both sides of each joint."
     )
 
 
@@ -471,7 +491,15 @@ def _analytic_static(body: BodyModel, member: Member, reaction: float) -> tuple[
     makes it an independent side rather than a second route to the same arithmetic.
     """
     span = member.length
-    own_weight = body.member_mass / len(body.members) * GRAVITY_MAGNITUDE
+    # R680: THIS WAS THE BODY AVERAGE TOO, and in the gate the report called "the one
+    # that reads the solve". § 7 of revision 3 measured the premise an average rests on
+    # -- that a body's members are equal in length -- and found it FALSE (`hub1`:
+    # 25.0, 25.0, 25.000000000000004). It was fixed in the conservation gate and left
+    # here, which is the half of R675 that got away. `rho A L` is THIS member's own
+    # prismatic mass, so the analytic side is right on an unequal frame; the average
+    # would have FALSE-REDDENED on a correct solve -- the expected own weight
+    # `1.532812e+06 N` against a true `1.686094e+06 N` with one member 10% longer.
+    own_weight = body.material.rho * member.section.A * span * GRAVITY_MAGNITUDE
     return reaction - own_weight, reaction * span - own_weight * span / 2.0
 
 
@@ -501,9 +529,15 @@ def test_EO1_static_member_forces_match_STATICS_not_the_model(built: Superstruct
             assert abs(float(mf.end_a[4])) == pytest.approx(
                 want_my, rel=F4_STATIC_REACTION_AGREEMENT
             ), f"{member.label}: root My {mf.end_a[4]!r} against statics' {want_my!r}"
-            assert abs(float(mf.end_b[4])) < F4_STATIC_TIP_MOMENT_N_M, (
-                f"{member.label}: the tip moment is {mf.end_b[4]!r}, and a roller "
-                "support transmits none. R663's defect put it at exactly -mu L^2 / 12."
+            # RELATIVE to this member's own root moment (R681). The absolute form
+            # said "there is nothing to be relative to" and the root moment was already
+            # in hand two lines above.
+            tip_ratio = abs(float(mf.end_b[4])) / abs(float(mf.end_a[4]))
+            assert tip_ratio < F4_STATIC_TIP_MOMENT_RELATIVE, (
+                f"{member.label}: the tip moment is {mf.end_b[4]!r}, which is "
+                f"{tip_ratio:.6e} of the root moment, and a roller support transmits "
+                "none. R663's defect put it at exactly -mu L^2 / 12, which is 1/18 of "
+                "the root moment on a platform arm."
             )
     assert checked == 16, f"{checked} of 16 members were checked, not all of them"
 
@@ -520,18 +554,19 @@ def test_EO1_the_analytic_gate_REDDENS_on_the_R663_formula(built: Superstructure
     mf = member_forces(body, member, case.u_full, np.zeros(12))  # R663's formula
     assert abs(float(mf.end_a[2])) != pytest.approx(want_vz, rel=F4_STATIC_REACTION_AGREEMENT)
 
-    # The declared counter IS the defect's own magnitude, `mu L^2 / 12`, and naming it
-    # here is what makes it injected rather than a literal beside another literal.
-    tip = abs(float(mf.end_b[4]))
-    assert tip == pytest.approx(
-        F4_STATIC_TIP_MOMENT_N_M_COUNTER, rel=F4_STATIC_REACTION_AGREEMENT
-    ), (
-        f"the defect's tip moment is {tip!r} and the declared counter is "
-        f"{F4_STATIC_TIP_MOMENT_N_M_COUNTER!r}. If they disagree the counter no longer "
-        "describes the defect it is supposed to inject."
+    # RELATIVE, like the ceiling it brackets (R681). The defect's tip moment over the
+    # member's own root moment is exactly `1/18` on a platform arm --
+    # `(mu L^2 / 12) / (R L - w L^2 / 2)` = `6386718.75 / 114960937.5` -- and the
+    # declared counter is the round bound below the measured `5.555556e-02`.
+    tip_ratio = abs(float(mf.end_b[4])) / abs(float(mf.end_a[4]))
+    assert tip_ratio > F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER, (
+        f"the defect's tip moment is {tip_ratio!r} of its root moment, which does not "
+        f"reach the declared counter {F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER!r}. The "
+        "counter is the smallest defect this gate must still fail, so an injection "
+        "below it is no longer the defect the counter names."
     )
     assert (
-        tip > F4_STATIC_TIP_MOMENT_N_M
+        tip_ratio > F4_STATIC_TIP_MOMENT_RELATIVE
     ), "the ceiling accepts R663's tip moment, so the gate certifies nothing."
 
 
@@ -641,16 +676,30 @@ def _joint_wiring(built: Superstructure) -> tuple[list[tuple[str, str, str]], di
 
 def _resultants(
     built: Superstructure, loads: dict[str, NDArray[np.float64]]
-) -> NDArray[np.float64]:
-    """`[F, M]` about the GLOBAL ORIGIN of a mapped nodal load set."""
-    by_name = {b.name: b for b in built.bodies}
-    out = np.zeros(6, dtype=np.float64)
-    for body, f in loads.items():
-        coords = by_name[body].model.nodes.coords()
+) -> dict[str, NDArray[np.float64]]:
+    """`[F, M]` about the GLOBAL ORIGIN, **PER BODY** (R679).
+
+    This returned ONE six-vector summed over all five bodies, and that aggregate is
+    identically blind to every hub-platform joint. The cause is physical: an internal
+    joint puts `+(F, M)` on one body and `-(F, M)` on the other, and the two act at the
+    SAME POINT -- a hub's centre node and its platform arm tip coincide, measured gap
+    `0.000e+00` at all four -- so the force cancels and so does the moment. A mapper
+    that skipped all four internal joints read `3.745164e-16` against a `1.0e-12`
+    ceiling, and one dropped joint read the clean value to every digit.
+
+    `docs/milestones/F4.md:310` specifies the quantity "per body and per source". It
+    said so before I wrote the gate; the aggregate was my own narrowing of it.
+    """
+    out: dict[str, NDArray[np.float64]] = {}
+    for body in built.bodies:
+        f = loads[body.name]
+        coords = body.model.nodes.coords()
+        acc = np.zeros(6, dtype=np.float64)
         for nd in range(f.size // 6):
             force = f[6 * nd : 6 * nd + 3]
-            out[0:3] += force
-            out[3:6] += f[6 * nd + 3 : 6 * nd + 6] + np.cross(coords[nd], force)
+            acc[0:3] += force
+            acc[3:6] += f[6 * nd + 3 : 6 * nd + 6] + np.cross(coords[nd], force)
+        out[body.name] = acc
     return out
 
 
@@ -660,7 +709,7 @@ def _expected_resultants(
     joint_order: list[tuple[str, str, str]],
     nodes: dict[tuple[str, str], int],
     n_dof_of: dict[str, int],
-) -> NDArray[np.float64]:
+) -> dict[str, NDArray[np.float64]]:
     """What the deck's blocks and the builder's nodes say those resultants must be.
 
     # expected: formed from the MULTIPLIER BLOCKS and the node coordinates, not from the
@@ -669,7 +718,7 @@ def _expected_resultants(
     the same point -- which is exactly the error a resultant force cannot see.
     """
     by_name = {b.name: b for b in built.bodies}
-    out = np.zeros(6, dtype=np.float64)
+    out = {name: np.zeros(6, dtype=np.float64) for name in n_dof_of}
     for i, (joint, body_a, body_b) in enumerate(joint_order):
         block = lam_row[ROWS_PER_JOINT * i : ROWS_PER_JOINT * (i + 1)]
         force = np.asarray(block[0:3], dtype=np.float64)
@@ -678,20 +727,45 @@ def _expected_resultants(
             if body not in n_dof_of:
                 continue  # a buoy is a load on the superstructure, not a modelled body
             x = by_name[body].model.nodes.coords()[nodes[(joint, body)]]
-            out[0:3] += sign * force
-            out[3:6] += sign * moment + np.cross(x, sign * force)
+            out[body][0:3] += sign * force
+            out[body][3:6] += sign * moment + np.cross(x, sign * force)
     return out
 
 
 def _mapping_error(
     built: Superstructure,
     loads: dict[str, NDArray[np.float64]],
-    want: NDArray[np.float64],
+    want: dict[str, NDArray[np.float64]],
 ) -> float:
-    """Worst relative departure, force and moment normalised separately."""
-    got = _resultants(built, loads)
-    f_scale = max(float(np.max(np.abs(want[0:3]))), 1.0)
-    m_scale = max(float(np.max(np.abs(want[3:6]))), 1.0)
+    """Worst relative departure over BODIES, force and moment normalised separately."""
+    return max(_body_errors(built, loads, want).values())
+
+
+def _body_errors(
+    built: Superstructure,
+    loads: dict[str, NDArray[np.float64]],
+    want: dict[str, NDArray[np.float64]],
+) -> dict[str, float]:
+    """One relative departure per body (R679), so an internal joint cannot cancel."""
+    got_all = _resultants(built, loads)
+    return {name: _one_body_error(got_all[name], want[name], name) for name in sorted(want)}
+
+
+def _one_body_error(got: NDArray[np.float64], want: NDArray[np.float64], name: str) -> float:
+    # C158: `max(..., 1.0)` stood here, a small-number guard written as a literal inside
+    # a gate -- which `CLAUDE.md` names as a tolerance under another name, and which
+    # `test_no_tolerance_literals` does not see. It never bound (the scales measure
+    # 4473165.687831473 and 318301929.1018349), so it is removed and the thing it was
+    # guarding against is ASSERTED instead: for a nonzero multiplier row the resultants
+    # cannot both be zero, and if they were the normalisation would be the least of it.
+    f_scale = float(np.max(np.abs(want[0:3])))
+    m_scale = float(np.max(np.abs(want[3:6])))
+    assert f_scale > 0.0 and m_scale > 0.0, (
+        f"{name}'s expected resultants are {want!r}, so there is no scale to normalise "
+        "by. For a nonzero multiplier row no body can have a zero resultant -- every "
+        "one of the five carries at least one joint -- and a zero would make this "
+        "body's comparison vacuous rather than wrong."
+    )
     return max(
         float(np.max(np.abs(got[0:3] - want[0:3]))) / f_scale,
         float(np.max(np.abs(got[3:6] - want[3:6]))) / m_scale,
@@ -714,10 +788,22 @@ def _synthetic_lam(n_joints: int) -> NDArray[np.float64]:
 def test_G4_4_the_mapping_CONSERVES_the_joint_resultants(built: Superstructure) -> None:
     """G4.4, which had no assertion and whose mapper no test called (R676).
 
-    The property: everything `map_joint_reactions` puts on the five modelled bodies has
-    the resultant force AND the resultant moment about the origin that the joint blocks
-    and the joint nodes require. It catches a dropped joint, a sign on the wrong side,
-    and a block on the wrong node.
+    The property, PER BODY (R679): everything `map_joint_reactions` puts on each of the
+    five modelled bodies has the resultant force AND the resultant moment about the
+    origin that the joint blocks and the joint nodes require of THAT body.
+
+    WHAT IT REACHES, measured rather than claimed (C152). Per body it catches a dropped
+    joint, a sign on the wrong side, and a block on the wrong node -- including the four
+    hub-platform joints, which the earlier AGGREGATE form was identically blind to
+    because `+F` and `-F` act at the same point and cancel in a sum.
+
+    WHAT IT DOES NOT REACH, and this is the boundary rather than a defect: the WIRING it
+    is handed. `joint_order` and `nodes` are inputs, built here from the builder's own
+    maps so this gate needs no HSP worktree (R670's lesson), and a gate cannot audit an
+    input it must be told. A wrong node arriving THROUGH the `nodes` map reads
+    `3.224193e-16` and a permuted `joint_order` reads `3.745164e-16` -- both green, both
+    outside this gate by construction. The deck is the authority for the order and the
+    driver is where that is checked.
     """
     joint_order, nodes, n_dof_of = _joint_wiring(built)
     assert len(joint_order) == 16, f"{len(joint_order)} joints wired, not 16"
@@ -729,10 +815,15 @@ def test_G4_4_the_mapping_CONSERVES_the_joint_resultants(built: Superstructure) 
     )
     want = _expected_resultants(built, lam_row, joint_order, nodes, n_dof_of)
     error = _mapping_error(built, loads, want)
+    per_body = _body_errors(built, loads, want)
+    error = max(per_body.values())
     assert error < F4_MAPPING_CONSERVATION, (
-        f"the mapped load's resultants depart from the joint blocks' own by {error:.6e} "
-        f"relative, outside {F4_MAPPING_CONSERVATION:.1e}. Either a block was dropped, "
-        "or a sign is on the wrong side, or a block landed on the wrong node."
+        f"the mapped load's per-body resultants depart from the joint blocks' own by "
+        f"{error:.6e} relative, outside {F4_MAPPING_CONSERVATION:.1e}. Per body: "
+        f"{ {k: f'{v:.3e}' for k, v in per_body.items()} }. Either a block was dropped, "
+        "or a sign is on the wrong side, or a block landed on the wrong node of the "
+        "right body. NOT in reach: a wrong `joint_order` or a wrong `nodes` map, which "
+        "are inputs to this gate -- see the docstring."
     )
 
 
@@ -786,6 +877,15 @@ def test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node(
 FE_BODY_NAMES = ("platform", "hub1", "hub2", "hub3", "hub4")
 """The five bodies F4 models structurally. EK0's scope correction: they are DRY."""
 
+_BUOY_LABEL = re.compile(r"\bbuoy\s*(?:\{|\d)", re.IGNORECASE)
+"""A buoy label, ANCHORED (C160).
+
+`"buoy" in site` was a bare substring, so `f"buoyancy_body{k}"` and `f"deck_buoy{k}"`
+satisfied it. The anchor requires the word `buoy` at a word boundary followed by an index
+-- a brace for an f-string template or a digit for a literal -- which is what every real
+site in HSP-stable looks like (`f"buoy{k + 1}"`).
+"""
+
 
 def _premise_violations(sites: list[str]) -> list[str]:
     """EK0(a)'s premise, as a function so the gate and its counter-case run the SAME code.
@@ -797,14 +897,20 @@ def _premise_violations(sites: list[str]) -> list[str]:
     """
     out: list[str] = []
     for site in sites:
+        # C160: BOTH HALVES FOLD CASE. The FE-body check was case-sensitive while the
+        # buoy check was a bare substring, so `f"buoy{k+1}_PLATFORM"` satisfied both and
+        # passed -- the same shape the `"buoy1_and_platform"` counter-case exists to
+        # catch, which is the part that makes it a miss rather than a gap.
+        # `f"buoyancy_body{k}"` and `f"deck_buoy{k}"` passed on the bare substring alone.
+        lowered = site.lower()
         for name in FE_BODY_NAMES:
-            if name in site:
+            if name in lowered:
                 out.append(
                     f"HSP-stable assigns `hydro_body_label = {site}`, which names the FE "
                     f"body `{name}`. EK0's scope correction says the five FE bodies are "
                     "DRY and EK0(a) says to STOP if they are not. This is that stop."
                 )
-        if "buoy" not in site:
+        if not _BUOY_LABEL.search(site):
             out.append(
                 f"HSP-stable assigns `hydro_body_label = {site}`, which is not a buoy "
                 "label. The premise is that only buoys are wet; a third kind of labelled "
@@ -829,9 +935,15 @@ def test_EK0a_no_FE_BODY_carries_a_hydro_label_in_HSP_STABLE() -> None:
     rely on. The sample cannot run in CI without an HSP worktree, and a gate that skips
     turns its rung red (R670); this one runs everywhere the snapshot does.
 
-    WHAT IT DOES NOT CATCH: a body that acquires a label in HSP-stable AFTER this blob.
-    The snapshot's `--check` in the DS0 preflight is what sees that, and it is the same
-    limitation EB6's first side has for the same reason.
+    WHAT IT DOES NOT CATCH, and there are two things (C159). A body that acquires a
+    label in HSP-stable AFTER this blob -- the snapshot's `--check` in the DS0 preflight
+    is what sees that, and EB6's first side has the same limitation for the same reason.
+    **And a label in a file the snapshot does not scan.** It scans
+    `studies/platform-12buoy/platform_common.py` only; `grep -rn` over HSP-stable also
+    finds `hydro_body_label` at `studies/platform-12buoy/platform_rao_pilot.py:152`,
+    `studies/cluster-3buoy-rigid/cluster_rao.py:118` and `cluster_fin_fan.py:86`. All
+    three read `buoy{k + 1}`, so the premise holds in substance -- but this gate's
+    assertion is about one file and says so rather than implying four.
     """
     sites = _eb6_reference()["hydro_body_label_sites"]
     assert isinstance(sites, list) and sites, (
@@ -844,7 +956,19 @@ def test_EK0a_no_FE_BODY_carries_a_hydro_label_in_HSP_STABLE() -> None:
 
 
 @pytest.mark.parametrize(
-    "site", ['f"hub{k + 1}"', '"platform"', 'f"deck{k}"', '"buoy1_and_platform"']
+    "site",
+    [
+        'f"hub{k + 1}"',
+        '"platform"',
+        'f"deck{k}"',
+        '"buoy1_and_platform"',
+        # C160's three measured misses. All three PASSED before the check folded case
+        # and anchored the buoy label, and each is a different half of the same shape:
+        # the FE-body test was case-sensitive, the buoy test a bare substring.
+        'f"buoy{k+1}_PLATFORM"',
+        'f"buoyancy_body{k}"',
+        'f"deck_buoy{k}"',
+    ],
 )
 def test_EK0a_the_premise_gate_REDDENS_on_a_LABELLED_FE_BODY(site: str) -> None:
     """The counter-case, which runs THE GATE'S OWN CHECK on a corrupted snapshot value.

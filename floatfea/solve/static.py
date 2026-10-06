@@ -9,8 +9,15 @@ THE REMAINDER IS A SLAVE, NOT A FREE NODE, AND THE FIRST VERSION OF THIS MODULE 
 SINGULAR BECAUSE OF IT. DY0 puts half of each body's mass at a `remainder_node` joined to
 the centre by a RIGID LINK, which is a kinematic constraint and not an element -- so
 `assemble()` leaves that node's six DOF unconnected and the factorisation is exactly
-singular. On the platform the link is `20.66 m` long, so the remainder's moment arm is
-load-bearing rather than incidental. The system is reduced through
+singular. That half is measured and it is the reason this module reduces at all.
+
+**THE SENTENCE THAT FOLLOWED IT IS WITHDRAWN (C138).** It said the platform's `20.66 m`
+link makes "the remainder's moment arm load-bearing rather than incidental". The offset
+measures `[4.0e-16, -7.5e-16, 20.663]` -- PURELY VERTICAL -- so under a vertical gravity
+field `r x F` is zero: ablating the offset to zero leaves the reactions bit-identical and
+`u_full` different by `4.542e-17`. The link's LENGTH is not load-bearing in the static
+case. What matters is that the link EXISTS, because that is what leaves six DOF
+unconnected. The system is reduced through
 `constraint_transform` before it is solved, and expanded back afterwards. Every hub has a
 ZERO-length link (DW1: a hub's mass reference already sits on the joint plane), so for a
 hub the reduction is the identity and the code path is the same.
@@ -52,7 +59,7 @@ from floatfea.loads.selfweight import (
     vertical_supports,
 )
 from floatfea.model.nodes import DOF_PER_NODE, node_dofs
-from floatfea.model.platform import BodyModel, Superstructure
+from floatfea.model.platform import BodyModel, Superstructure, rigid_links
 
 __all__ = ["StaticCase", "joint_nodes_of", "solve_body_static", "solve_superstructure_static"]
 
@@ -98,25 +105,18 @@ class StaticCase:
         return abs(self.sum_vertical_N + self.applied_N) / abs(self.applied_N)
 
 
-def _links(body: BodyModel) -> dict[int, tuple[int, NDArray[np.floating]]]:
-    """The body's rigid links, slave -> (master, offset). Empty when none.
-
-    A hub's remainder sits ON its centre node, so there is no link and no reduction.
-    The platform's does not, and the offset is the vector master -> slave.
-    """
-    if body.remainder_node == body.centre_node:
-        return {}
-    coords = body.model.nodes.coords()
-    offset: NDArray[np.floating] = coords[body.remainder_node] - coords[body.centre_node]
-    return {body.remainder_node: (body.centre_node, offset)}
-
-
 def _retained(n_dof: int, links: Mapping[int, object]) -> list[int]:
     """The DOF `constraint_transform` keeps, in its own column order.
 
     THE RULE IS RESTATED HERE AND CHECKED AGAINST THE TRANSFORM'S WIDTH, rather than
-    trusted. Two copies of an ordering rule that drift are C131's defect; an assert on
-    the width is what makes a drift loud instead of a silently permuted reaction vector.
+    trusted. Two copies of an ordering rule that drift are C131's defect.
+
+    **WHAT THE WIDTH ASSERT CATCHES, AND WHAT IT DOES NOT (C139).** It catches a COUNT
+    that drifts -- a DOF added to or dropped from one copy and not the other. It cannot
+    catch a PERMUTATION, because a permutation preserves width, and the comment here
+    once claimed it could. What catches a permutation is the solve going loud
+    downstream: reversing this function's order is caught, measured, by `sum_err 4.959`
+    and `worst_horizontal 2.077e+08`, not by the assert below.
     """
     slave_dofs = {d for s in links for d in range(DOF_PER_NODE * s, DOF_PER_NODE * (s + 1))}
     return [i for i in range(n_dof) if i not in slave_dofs]
@@ -170,7 +170,7 @@ def solve_body_static(
     applied = float(sum(f[node_dofs(n)[2]] for n in range(n_dof // DOF_PER_NODE)))
 
     k_full = assemble_dense(body.model, body.elements)
-    links = _links(body)
+    links = rigid_links(body)
     if links:
         t = constraint_transform(n_dof, links)
         retained = _retained(n_dof, links)
