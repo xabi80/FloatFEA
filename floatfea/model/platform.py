@@ -481,6 +481,7 @@ def _build_body(
     section: Section,
     preliminary: bool,
     basis_note: str,
+    laddered: bool = True,
 ) -> BodyModel:
     """One body at one `f`, with its remainder placed to match the deck's CoG.
 
@@ -596,7 +597,19 @@ def _build_body(
             "inside F1's section at the chosen fraction and the section or the fraction "
             "is the thing to look at."
         )
-    if fraction < MASS_FRACTION_LADDER[0]:
+    if not laddered:
+        # The CAUSAL clause below is true only of a fraction the ladder descended to:
+        # it names what `admissible()` rejected at the rung above. A fraction handed in
+        # by a caller was not rejected by anything, so the cause is dropped and the
+        # finding states the fact (BG0). It is a finding at ANY off-ladder fraction,
+        # above the default as much as below, because what makes the value reportable
+        # is that nothing admitted it.
+        findings.append(
+            f"{name}: the mass fraction is {fraction:g}, handed in by the caller rather "
+            f"than taken from {MASS_FRACTION_LADDER}, so `admissible()` was never "
+            "consulted for it. This body is a MEASUREMENT, not one to ship."
+        )
+    elif fraction < MASS_FRACTION_LADDER[0]:
         findings.append(
             f"{name}: the mass fraction is {fraction:g} rather than the default "
             f"{MASS_FRACTION_LADDER[0]:g}, because the default left a negative "
@@ -686,7 +699,11 @@ def body_mass_matrix(body: BodyModel) -> NDArray[np.float64]:
     return mass
 
 
-def build_superstructure(path: Path | None = None, froude_lambda: float = 50.0) -> Superstructure:
+def build_superstructure(
+    path: Path | None = None,
+    froude_lambda: float = 50.0,
+    mass_fraction: float | None = None,
+) -> Superstructure:
     """The five-body superstructure at full scale, or a refusal.
 
     Every coordinate comes from the deck's own joint points. Nothing is typed, and no
@@ -731,6 +748,27 @@ def build_superstructure(path: Path | None = None, froude_lambda: float = 50.0) 
             if preliminary
             else "docs/milestones/F1.md:389, basis at F1.md:425-433"
         )
+        if mass_fraction is not None:
+            # EK1's f SENSITIVITY. The ladder is bypassed on purpose: EK1 asks for
+            # f = 0.25 and 0.75, neither of which is on it, and 0.75 is ABOVE the
+            # default. `_build_body` accepts any fraction and reports findings rather
+            # than refusing, so an off-ladder build carries its own warnings and
+            # `admissible()` is NOT consulted -- the point of the sensitivity is to see
+            # what the member forces do, including at a fraction the ladder would have
+            # rejected. A caller passing this gets a model to MEASURE, not one to ship.
+            built.append(
+                _build_body(
+                    name,
+                    geometry[name],
+                    bodies[name],
+                    mass_fraction,
+                    section,
+                    preliminary,
+                    note,
+                    laddered=False,
+                )
+            )
+            continue
         for fraction in MASS_FRACTION_LADDER:
             candidate = _build_body(
                 name, geometry[name], bodies[name], fraction, section, preliminary, note

@@ -23,6 +23,7 @@ import pytest
 from numpy.typing import NDArray
 
 from floatfea.io.frames import GRAVITY_MAGNITUDE, GRAVITY_VECTOR
+from floatfea.io.froude import to_full_scale
 from floatfea.loads.joint_reactions import duality_residual
 from floatfea.model.nodes import node_dofs
 from floatfea.model.platform import (
@@ -344,7 +345,14 @@ def _eb6_reference() -> dict[str, object]:
 def test_EB6_every_buoy_label_sits_where_HSP_STABLE_SAYS(built: Superstructure) -> None:
     """EB6's first side, against the pinned snapshot. NO SKIP (EO0(b))."""
     reference = _eb6_reference()
-    expected = np.asarray(reference["buoy_centres_xy_m"], dtype=np.float64) * built.froude_lambda
+    expected = np.asarray(
+        to_full_scale(
+            np.asarray(reference["buoy_centres_xy_m"], dtype=np.float64),
+            "length",
+            built.froude_lambda,
+        ),
+        dtype=np.float64,
+    )
     bodies = {b.name: b for b in built.bodies}
     worst = 0.0
     checked = 0
@@ -363,7 +371,14 @@ def test_EB6_every_buoy_label_sits_where_HSP_STABLE_SAYS(built: Superstructure) 
 def test_EB6_every_HUB_label_sits_where_HSP_STABLE_SAYS(built: Superstructure) -> None:
     """DQ9's hub extension, which verdict 94 recorded as absent (R676)."""
     reference = _eb6_reference()
-    expected = np.asarray(reference["hub_positions_xyz_m"], dtype=np.float64) * built.froude_lambda
+    expected = np.asarray(
+        to_full_scale(
+            np.asarray(reference["hub_positions_xyz_m"], dtype=np.float64),
+            "length",
+            built.froude_lambda,
+        ),
+        dtype=np.float64,
+    )
     bodies = {b.name: b for b in built.bodies}
     worst = 0.0
     checked = 0
@@ -388,7 +403,14 @@ def test_EB6_a_PERMUTED_export_reddens_the_gate(built: Superstructure) -> None:
     case, so anything the gate would miss it would miss here first.
     """
     reference = _eb6_reference()
-    expected = np.asarray(reference["buoy_centres_xy_m"], dtype=np.float64) * built.froude_lambda
+    expected = np.asarray(
+        to_full_scale(
+            np.asarray(reference["buoy_centres_xy_m"], dtype=np.float64),
+            "length",
+            built.froude_lambda,
+        ),
+        dtype=np.float64,
+    )
     permuted = expected.copy()
     permuted[[1, 3]] = permuted[[3, 1]]  # buoy2 <-> buoy4, the closest pair
 
