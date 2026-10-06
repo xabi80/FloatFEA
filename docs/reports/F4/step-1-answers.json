@@ -1,0 +1,150 @@
+{
+ "_": [
+  "POINTERS ONLY (CH4).",
+  "",
+  "Revision 3 answers the NINETY-FOURTH verdict. R670 at section 2, R671 at 3,",
+  "R672 at 4, R673 at 5, R674 at 6, R675 at 7, R676 at 8, R677 at 9, R678 at 10.",
+  "",
+  "VERDICT 93's SEVEN POINT AT THEIR REMAINDERS, not at revision 2's sections.",
+  "Verdict 94 recorded each of the seven as answered in part and named the",
+  "remainder as a new finding; the remainder is where the item now stands, so",
+  "R663 points at R677's section, R664 at R674's, R665 at R672's, R667 at R670's,",
+  "R668 at R678's, R669 at R676's, and R666 at the section that answers the one",
+  "red it had left. Pointing them at revision 2 would name a section a reader",
+  "would find silent on the half that was still open.",
+  "",
+  "THIS FILE DID NOT EXIST FOR REVISIONS 1 AND 2, which is the whole of R673 (i):",
+  "thirteen items verdict 93 carried were absent from a hand-written table. The",
+  "table is generated from here now and the generator reads the verdict, not me."
+ ],
+ "answered": {
+  "R622": {
+   "state": "carried",
+   "where": "\u00a714b"
+  },
+  "R626": {
+   "state": "carried",
+   "where": "\u00a714b"
+  },
+  "R631": {
+   "state": "carried",
+   "where": "\u00a714b"
+  },
+  "R635": {
+   "state": "carried",
+   "where": "\u00a714b"
+  },
+  "R637": {
+   "state": "answered",
+   "where": "\u00a716"
+  },
+  "R638": {
+   "state": "carried",
+   "where": "\u00a714b"
+  },
+  "R653": {
+   "state": "carried",
+   "where": "\u00a714b"
+  },
+  "R654": {
+   "state": "answered",
+   "where": "\u00a714a"
+  },
+  "R655": {
+   "state": "answered",
+   "where": "\u00a714a"
+  },
+  "R656": {
+   "state": "carried",
+   "where": "\u00a714b"
+  },
+  "R657": {
+   "state": "answered",
+   "where": "\u00a714a"
+  },
+  "R658": {
+   "state": "answered",
+   "where": "\u00a714a"
+  },
+  "R659": {
+   "state": "answered",
+   "where": "\u00a714a"
+  },
+  "R660": {
+   "state": "answered",
+   "where": "\u00a714a"
+  },
+  "R661": {
+   "state": "answered",
+   "where": "\u00a714a"
+  },
+  "R662": {
+   "state": "answered",
+   "where": "\u00a714a"
+  },
+  "R663": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R664": {
+   "state": "answered",
+   "where": "\u00a76"
+  },
+  "R665": {
+   "state": "answered",
+   "where": "\u00a74"
+  },
+  "R666": {
+   "state": "answered",
+   "where": "\u00a75"
+  },
+  "R667": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R668": {
+   "state": "answered",
+   "where": "\u00a710"
+  },
+  "R669": {
+   "state": "answered",
+   "where": "\u00a78"
+  },
+  "R670": {
+   "state": "answered",
+   "where": "\u00a72"
+  },
+  "R671": {
+   "state": "answered",
+   "where": "\u00a73"
+  },
+  "R672": {
+   "state": "answered",
+   "where": "\u00a74"
+  },
+  "R673": {
+   "state": "answered",
+   "where": "\u00a75"
+  },
+  "R674": {
+   "state": "answered",
+   "where": "\u00a76"
+  },
+  "R675": {
+   "state": "answered",
+   "where": "\u00a77"
+  },
+  "R676": {
+   "state": "answered",
+   "where": "\u00a78"
+  },
+  "R677": {
+   "state": "answered",
+   "where": "\u00a79"
+  },
+  "R678": {
+   "state": "answered",
+   "where": "\u00a710"
+  }
+ }
+}
