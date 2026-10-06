@@ -38,8 +38,8 @@ sys.path.insert(0, str(ROOT))
 
 from floatfea import hsp_pin  # noqa: E402
 from floatfea.io.integrator import (  # noqa: E402
-    FLOATSIM_RHO_INF,
     generalized_alpha_coefficients,
+    rho_inf_from_deck,
 )
 
 # C131 (CW0). `rho_inf` was written twice -- passed to the integrator in
@@ -74,7 +74,7 @@ from floatfea.io.integrator import (  # noqa: E402
 #   out: floatfea/io/integrator.py, tests/verification/rung4/test_f4_static_and_mapping.py
 # The condition verdict 92 set for it to become blocking has arrived: F4 step 2's G4.1
 # cites this residual per body and per case.
-RHO_INF = FLOATSIM_RHO_INF
+RHO_INF = rho_inf_from_deck()
 
 HSP_RUNS = ROOT.parent / "HSP-runs"
 STUDY = HSP_RUNS / "studies" / "platform-12buoy"

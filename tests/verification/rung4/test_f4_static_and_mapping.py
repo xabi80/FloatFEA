@@ -21,6 +21,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import yaml
 from numpy.typing import NDArray
 
 from floatfea.io.frames import GRAVITY_MAGNITUDE, GRAVITY_VECTOR
@@ -28,10 +29,12 @@ from floatfea.io.froude import to_full_scale
 from floatfea.io.integrator import (
     FLOATSIM_RHO_INF,
     generalized_alpha_coefficients,
+    rho_inf_from_deck,
 )
 from floatfea.loads.joint_reactions import ROWS_PER_JOINT, duality_residual, map_joint_reactions
 from floatfea.model.nodes import node_dofs
 from floatfea.model.platform import (
+    DECK_YAML,
     BodyModel,
     Member,
     Superstructure,
@@ -43,6 +46,8 @@ from floatfea.solve.static import solve_superstructure_static
 from floatfea.tolerances import (
     F4_EB6_POSITION_M,
     F4_EB6_POSITION_M_COUNTER,
+    F4_INTEGRATOR_SPEC_AGREEMENT,
+    F4_INTEGRATOR_SPEC_AGREEMENT_COUNTER,
     F4_MAPPING_CONSERVATION,
     F4_MAPPING_CONSERVATION_COUNTER,
     F4_MEMBER_FORCE_CONSERVATION,
@@ -754,10 +759,28 @@ def _body_errors(
 ) -> dict[str, float]:
     """One relative departure per body (R679), so an internal joint cannot cancel."""
     got_all = _resultants(built, loads)
-    return {name: _one_body_error(got_all[name], want[name], name) for name in sorted(want)}
+    return {name: _one_body_error(got_all[name], want[name], name)[0] for name in sorted(want)}
 
 
-def _one_body_error(got: NDArray[np.float64], want: NDArray[np.float64], name: str) -> float:
+def _channels_compared(
+    built: Superstructure,
+    loads: dict[str, NDArray[np.float64]],
+    want: dict[str, NDArray[np.float64]],
+) -> int:
+    """How many force/moment channels were compared RELATIVELY (R689).
+
+    `_one_body_error` returns `0.0` for "compared and perfect" and, before R689, returned
+    the same `0.0` for "nothing to compare". So an all-zero multiplier row read `0.000e+00`
+    and PASSED, with no body compared at all -- a vacuous pass on the gate the plan's G4.4
+    row points at. The count is what distinguishes the two, and the gate asserts it.
+    """
+    got_all = _resultants(built, loads)
+    return sum(_one_body_error(got_all[name], want[name], name)[1] for name in sorted(want))
+
+
+def _one_body_error(
+    got: NDArray[np.float64], want: NDArray[np.float64], name: str
+) -> tuple[float, int]:
     # C158 removed a `max(..., 1.0)` floor from here -- a small-number guard written as a
     # literal inside a gate, which `CLAUDE.md` names as a tolerance under another name.
     # Removing it was right and stays.
@@ -775,6 +798,7 @@ def _one_body_error(got: NDArray[np.float64], want: NDArray[np.float64], name: s
     f_scale = float(np.max(np.abs(want[0:3])))
     m_scale = float(np.max(np.abs(want[3:6])))
     worst = 0.0
+    compared = 0  # R689: channels compared RELATIVELY, which `worst` cannot show
     if f_scale == 0.0:
         assert np.all(got[0:3] == 0.0), (
             f"{name} carries no applied force in this multiplier row, so the mapper "
@@ -782,6 +806,7 @@ def _one_body_error(got: NDArray[np.float64], want: NDArray[np.float64], name: s
         )
     else:
         worst = max(worst, float(np.max(np.abs(got[0:3] - want[0:3]))) / f_scale)
+        compared += 1
     if m_scale == 0.0:
         assert np.all(got[3:6] == 0.0), (
             f"{name} carries no applied moment in this multiplier row, so the mapper "
@@ -789,7 +814,8 @@ def _one_body_error(got: NDArray[np.float64], want: NDArray[np.float64], name: s
         )
     else:
         worst = max(worst, float(np.max(np.abs(got[3:6] - want[3:6]))) / m_scale)
-    return worst
+        compared += 1
+    return worst, compared
 
 
 def _synthetic_lam(n_joints: int) -> NDArray[np.float64]:
@@ -835,6 +861,16 @@ def test_G4_4_the_mapping_CONSERVES_the_joint_resultants(built: Superstructure) 
     )
     want = _expected_resultants(built, lam_row, joint_order, nodes, n_dof_of)
     error = _mapping_error(built, loads, want)
+    # R689: a row that compares NOTHING must not read as perfect agreement. Handed an
+    # all-zero multiplier row this gate read `0.0` and PASSED, with 0 of 5 bodies
+    # compared -- the vacuous pass the plan's G4.4 row would have certified.
+    compared = _channels_compared(built, loads, want)
+    assert compared > 0, (
+        f"not one of the five bodies had a channel to compare: {compared} channels. "
+        "`_one_body_error` returns 0.0 both for `compared and perfect` and for "
+        "`nothing to compare`, so this would have read as agreement. A multiplier "
+        "row that applies no load anywhere is not something this gate can certify."
+    )
     per_body = _body_errors(built, loads, want)
     error = max(per_body.values())
     assert error < F4_MAPPING_CONSERVATION, (
@@ -976,6 +1012,28 @@ def test_G4_4_a_LEGAL_SPARSE_row_does_not_raise_and_is_still_checked(
 # is the command that settles it.
 _DOC_RHO_INF = 0.9
 _DOC_COEFFICIENTS = {"alpha_m": 0.42105, "alpha_f": 0.47368, "beta": 0.27701, "gamma": 0.55263}
+_DOC_DIFFERENCE = 0.05263
+"""`alpha_f - alpha_m` as the specification prints it, at line 259."""
+
+_COEFFICIENT_RANGES = {"beta": (0.25, 1.0), "gamma": (0.5, 1.5)}
+"""The ranges `beta` and `gamma` ATTAIN over `rho_inf` in `[0, 1]` (R687).
+
+Endpoints, not bounds chosen with slack: `beta = 1/(1+rho)^2` gives `0.25` at `rho = 1`
+and `1.0` at `rho = 0`; `gamma = 1/2 + (1-rho)/(1+rho)` gives `0.5` and `1.5` at the same
+two. Measured at 100001 points across the interval and the extremes are exactly these.
+
+THEY ARE DATA HERE RATHER THAN LITERALS IN THE COMPARISON, which is not a dodge of
+`test_no_tolerance_literals` -- the guard is right that a number beside a comparison
+operator wants explaining, and the explanation is long enough to be a docstring rather
+than a trailing comment.
+
+R687 is what this replaced: the assertion read `0 < beta < 0.5 and 0 < gamma < 1.0` with
+a comment calling those "the mathematical ranges ... a property of the scheme". Both
+halves were false. `beta < 0.5` holds only for `rho_inf > sqrt(2) - 1` and `gamma < 1.0`
+only for `rho_inf > 1/3`, so at `rho_inf = 0.2` the shipped message called
+`beta = 0.6944444444444445` and `gamma = 1.1666666666666667` outside the ranges the
+method has. The comment was more wrong than the numbers.
+"""
 
 
 def test_R653_the_integrator_coefficients_match_the_INTERCHANGE_SPECIFICATION() -> None:
@@ -988,61 +1046,131 @@ def test_R653_the_integrator_coefficients_match_the_INTERCHANGE_SPECIFICATION() 
     does. So the constant and its closed form moved to `floatfea/io/integrator.py` and
     this is the assertion.
 
-    NO TOLERANCE IS DECLARED FOR THIS and none is wanted: the specification publishes
-    five decimal places, so the comparison is against the value ROUNDED to five places,
-    which is exact. A ceiling here would be a number with nothing behind it.
+    R688: A TOLERANCE **IS** DECLARED, AND THE SENTENCE THAT STOOD HERE WAS WRONG. It
+    said no tolerance was wanted "because the comparison is against the value ROUNDED to
+    five places, which is exact". `round(x, 5) == published` is not exact -- it is an
+    absolute window of half a unit in the fifth place, applied by a function instead of
+    by a declared constant, and the drift it accepted was `4.210526e-06` on `alpha_f`.
+    Calling that exact was wrong by six orders of magnitude. The window is now
+    `F4_INTEGRATOR_SPEC_AGREEMENT`, derived from the precision the specification prints
+    at rather than from anything measured here.
 
     All four coefficients come from one place -- the specification's own block -- so this
     gate has a single expected side rather than two that could drift apart.
     """
     got = generalized_alpha_coefficients(_DOC_RHO_INF)
+    worst = 0.0
     for name, published in _DOC_COEFFICIENTS.items():
-        assert round(getattr(got, name), 5) == published, (
-            f"at rho_inf = {_DOC_RHO_INF}, {name} is {getattr(got, name)!r}, which to "
-            f"five places is {round(getattr(got, name), 5)!r} and the interchange "
-            f"specification publishes {published!r}. One of the two is wrong and it is "
-            "not a rounding question."
+        drift = abs(getattr(got, name) - published)
+        worst = max(worst, drift)
+        assert drift < F4_INTEGRATOR_SPEC_AGREEMENT, (
+            f"at rho_inf = {_DOC_RHO_INF}, {name} is {getattr(got, name)!r} and the "
+            f"interchange specification publishes {published!r}, a difference of "
+            f"{drift:.6e} -- outside {F4_INTEGRATOR_SPEC_AGREEMENT:.1e}, which is half a "
+            "unit in the last place the specification prints. One of the two is wrong."
         )
     # The difference the specification singles out, because the inertia term blends with
     # `alpha_m` and the other terms with `alpha_f`, and exporting only one loses it.
-    # not-a-tolerance: 0.05263 is a value `docs/load-interchange-v1.md:259` PUBLISHES.
-    # It is the expected side of an exact comparison against a figure rounded to the
-    # five places the specification prints, not a window within which two numbers may
-    # differ -- there is no slack here to widen.
-    assert round(got.alpha_f - got.alpha_m, 5) == 0.05263, (  # not-a-tolerance: see above
+    assert abs((got.alpha_f - got.alpha_m) - _DOC_DIFFERENCE) < F4_INTEGRATOR_SPEC_AGREEMENT, (
         f"alpha_f - alpha_m is {got.alpha_f - got.alpha_m!r}; the specification "
-        "publishes 0.05263 and gives that difference as the reason both are exported."
+        f"publishes {_DOC_DIFFERENCE!r} and gives that difference as the reason both are "
+        "exported."
     )
+    assert worst < F4_INTEGRATOR_SPEC_AGREEMENT, f"worst drift {worst:.6e}"
 
 
-def test_R653_the_value_the_DRIVER_reconstructs_with_is_the_declared_one() -> None:
-    """The constant itself, asserted -- which is the half R653 is actually about.
+def test_R653_a_COEFFICIENT_WRONG_IN_THE_LAST_PRINTED_PLACE_reddens_the_gate() -> None:
+    """R688's counter-case: the window must reject one unit in the fifth place.
 
-    The formula being right at `rho_inf = 0.9` says nothing about the number the driver
-    evaluates it at. This pins that number, so a silent edit to it reddens here rather
-    than moving a published residual by a factor nobody notices.
+    The gate above compares against the specification's printed values within half a
+    unit of the last place. The smallest error that would have made the specification
+    print a different number is one WHOLE unit there, and that must not pass -- otherwise
+    the window is not a statement about the printing precision, it is just a number.
     """
-    # not-a-tolerance: 0.8 is FloatSim's spectral radius at infinity -- an INPUT to the
-    # integrator, and the quantity this assertion pins rather than a bound on one. R653
-    # is precisely that this number reached no assertion; a ceiling here would be the
-    # opposite of what is wanted.
-    assert FLOATSIM_RHO_INF == 0.8, (  # not-a-tolerance: see above
-        f"the declared spectral radius is {FLOATSIM_RHO_INF!r}, not 0.8. FloatSim's "
-        "integrator is what sets this; changing it here does not change FloatSim, it "
-        "only makes the reconstruction wrong -- and the reconstruction is what every "
-        "joint reaction in this milestone is read from."
+    got = generalized_alpha_coefficients(_DOC_RHO_INF)
+    for name, published in _DOC_COEFFICIENTS.items():
+        drift = abs(getattr(got, name) - (published + F4_INTEGRATOR_SPEC_AGREEMENT_COUNTER))
+        assert drift > F4_INTEGRATOR_SPEC_AGREEMENT, (
+            f"{name} shifted by one unit in the last printed place is {drift:.6e} from "
+            f"the closed form, which the ceiling {F4_INTEGRATOR_SPEC_AGREEMENT:.1e} "
+            "ACCEPTS. The window would not notice the specification printing a "
+            "different number."
+        )
+
+
+def test_R653_the_DECK_and_the_DECLARATION_agree_on_the_spectral_radius() -> None:
+    """R686: two independent sources for the number the replay reconstructs with.
+
+    # expected: `FLOATSIM_RHO_INF`, typed from HSP's own source line
+    (`platform_rao_pilot.py:291`). The artifact is `simulation.spectral_radius_inf` in
+    `data/platform/platform12_deck.yaml`, written by `scripts/export_platform_deck.py`
+    out of HSP at the pinned tag -- the only occurrence of that key in the repository.
+    Editing EITHER side reddens this, which is the shape EB6 uses for the buoy geometry.
+
+    WHAT THIS REPLACED AND WHY IT WAS NOT A CHECK. The first version asserted
+    `FLOATSIM_RHO_INF == 0.8` while the driver read `RHO_INF = FLOATSIM_RHO_INF`, so the
+    claim was true by assignment and the deck -- which had the number with provenance all
+    along -- was never read. Setting the deck key to 0.9, the exact `0.05`-class
+    disagreement C131's "429x louder" was about, left the whole suite green. That is
+    C131 re-instantiated by the commit that cited C131.
+    """
+    from_deck = rho_inf_from_deck()
+    assert from_deck == FLOATSIM_RHO_INF, (
+        f"the pinned deck export records a spectral radius of {from_deck!r} and this "
+        f"repository declares {FLOATSIM_RHO_INF!r}. One of them has moved. The deck is "
+        "generated from HSP at the pinned tag and says DO NOT HAND-EDIT, so a "
+        "disagreement is either a re-export that changed the study or an edit to the "
+        "declaration -- and the replay reconstructs with the DECK's value, so this is "
+        "the number every joint reaction in this milestone depends on."
     )
-    coefficients = generalized_alpha_coefficients(FLOATSIM_RHO_INF)
-    # not-a-tolerance: 0.5 and 1.0 are the mathematical ranges `beta` and `gamma` have
-    # for a dissipative generalized-alpha step, which is a property of the scheme and
-    # not an agreement between two measurements. Narrowing them would not loosen a
-    # comparison; it would assert something false about the method.
-    assert (  # not-a-tolerance: see above
-        0.0 < coefficients.beta < 0.5 and 0.0 < coefficients.gamma < 1.0
-    ), (
-        f"the coefficients at rho_inf = {FLOATSIM_RHO_INF!r} are {coefficients!r}, "
-        "which are outside the ranges a dissipative generalized-alpha step has."
+
+
+def test_R653_a_DECK_recording_FloatSims_DEFAULT_reddens_the_gate(tmp_path: Path) -> None:
+    """R686's counter-case: deck key `0.9`, which is FloatSim's default, must redden.
+
+    0.9 is not an arbitrary wrong number -- it is `floatsim/solver/newmark.py:222`'s
+    DEFAULT, and this study sets 0.8 at `platform_rao_pilot.py:291`. So the injection is
+    the mistake a reader actually makes: taking the solver's default for the study's
+    value. It is also the `0.05`-class drift C131 measured as "429x louder".
+    """
+    deck = yaml.safe_load(DECK_YAML.read_text(encoding="utf-8"))
+    deck["simulation"]["spectral_radius_inf"] = 0.9
+    patched = tmp_path / "platform12_deck.yaml"
+    patched.write_text(yaml.safe_dump(deck, sort_keys=False), encoding="utf-8")
+
+    from_deck = rho_inf_from_deck(patched)
+    assert from_deck != FLOATSIM_RHO_INF, (
+        f"a deck recording {from_deck!r} is indistinguishable from one recording "
+        f"{FLOATSIM_RHO_INF!r}, so the gate above would accept FloatSim's default in "
+        "place of this study's value."
     )
+
+
+def test_R653_the_coefficients_are_the_CLOSED_FORM_at_the_declared_radius() -> None:
+    """R687: the ranges, CORRECTED. My first version asserted ones the method does not have.
+
+    Measured over `rho_inf` in `[0, 1]` at 100001 points: `beta` spans `[0.25, 1.0]` and
+    `gamma` spans `[0.5, 1.5]`. The assertion that shipped was
+    `0 < beta < 0.5 and 0 < gamma < 1.0` with a comment calling those "the mathematical
+    ranges ... a property of the scheme" -- and `beta < 0.5` holds only for
+    `rho_inf > sqrt(2) - 1` and `gamma < 1.0` only for `rho_inf > 1/3`. At
+    `rho_inf = 0.2` the shipped message called `beta = 0.6944444444444445` and
+    `gamma = 1.1666666666666667` outside the ranges the method has, which is false of
+    both. The comment was more wrong than the literals.
+    """
+    for rho_inf in (0.0, 0.2, FLOATSIM_RHO_INF, 0.9, 1.0):
+        c = generalized_alpha_coefficients(rho_inf)
+        for name, (low, high) in _COEFFICIENT_RANGES.items():
+            value = getattr(c, name)
+            assert low <= value <= high, (
+                f"at rho_inf = {rho_inf!r}, {name} = {value!r}, outside "
+                f"[{low}, {high}] -- which is the range the closed form ATTAINS over "
+                "rho_inf in [0, 1], not a window anything may be widened to."
+            )
+        assert c.alpha_m <= c.alpha_f, (
+            f"at rho_inf = {rho_inf!r}, alpha_m = {c.alpha_m!r} exceeds "
+            f"alpha_f = {c.alpha_f!r}; the inertia term cannot lead the others."
+        )
 
 
 # --------------------------------------------------------------------------- R676 / EK0(a)

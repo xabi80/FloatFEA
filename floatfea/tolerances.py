@@ -1985,16 +1985,58 @@ F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.25
 F4_STATIC_TIP_MOMENT_RELATIVE: Final[float] = 1.0e-12
 
 # COUNTER-CASE: R663's formula puts the tip moment at exactly `-mu L^2 / 12`.
-# Reason for 0.05: that defect's tip moment over the member's root moment is
-# EXACTLY 1/18 on a platform arm -- `(mu L^2 / 12) / (R L - w L^2 / 2)` with
-# `6386718.75 / 114960937.5` -- and the measured worst over all 16 members is
-# 5.555556e-02. The declared value is the round bound BELOW that measurement, for
-# the reason the symmetry and mapping counters are: a bound is what a counter
-# states, and an equality on a solve-derived number is a portability claim. The
-# bracket is 1.0550e+14x.
+# Reason for 0.05: R682 IS OPEN AND THIS VALUE IS KNOWN TO BE ON THE WRONG SIDE OF
+# THE DEFECT FOR 12 OF THE 16 MEMBERS. The sentence that stood here said the
+# defect's ratio is "EXACTLY 1/18 on a platform arm -- `6386718.75 / 114960937.5`
+# -- and the measured worst over all 16 members is 5.555556e-02". **Both halves
+# are false and they are deleted rather than left standing while the repair waits
+# (ES2).** That arithmetic divides by the CORRECT root moment; the gate divides by
+# the DEFECTIVE one, which is larger by exactly the tip moment being tested.
+# Measured in the gate's own denominator the ratios are 1/19 on the platform arms
+# and 1/24 on the hub arms, and no member reads the figure that stood here.
+#
+# The corrected bound is not declared yet, deliberately: it depends on `f`, which
+# directive ER0 moves from 0.5 to 0.75, and ER2 puts the new mass basis before any
+# step-2 tolerance work so that nothing is calibrated twice. The counter-case
+# correspondingly still runs on one member rather than sixteen. Both land together
+# on the new basis, with the per-member table as the derivation.
 # Injected by `test_EO1_the_analytic_gate_REDDENS_on_the_R663_formula`.
 # Set: 2026-10-05, F4 step 1 (form corrected in the step closure commit, R681)
 F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER: Final[float] = 0.05
+
+# CLASS: ACCURACY -- agreement between this repository's closed-form generalized-alpha
+# coefficients and the ones `docs/load-interchange-v1.md` SECTION 4 (lines 259-260)
+# publishes. ABSOLUTE and dimensionless: the coefficients are O(0.1 to 1) pure numbers
+# and the window is set by the PRECISION THE SPECIFICATION PRINTS AT, not by any
+# response scale -- there is nothing here to be relative to.
+#
+# Reason for 5e-6: the specification prints five decimal places, so half a unit in the
+# last printed place is 5e-6 and that is the largest disagreement a correct
+# implementation can show against a correctly printed value. The measured worst over the
+# four coefficients at rho_inf = 0.9 is 4.210526e-06, on `alpha_f` -- exact
+# 0.4736842105263158 against published 0.47368 -- so the window clears the measurement
+# by 1.1875x. That margin is thin BY CONSTRUCTION and must not be widened: a window
+# larger than half a unit in the last place accepts a value the specification would have
+# printed differently.
+#
+# R688: THIS WINDOW WAS BEING APPLIED BY `round(x, 5) == published` AND CALLED EXACT.
+# It is not exact -- it is this same absolute window, hidden inside a function, and the
+# test and the step report both said "which is exact". The drift it accepted was
+# 4.210526e-06 on `alpha_f`, so "exact" was wrong by six orders of magnitude. A ceiling
+# applied by `round()` is a ceiling nothing declares, nothing brackets and no plan row
+# moves.
+# Set: 2026-10-06, F4 step 2
+F4_INTEGRATOR_SPEC_AGREEMENT: Final[float] = 5.0e-6
+
+# COUNTER-CASE: a coefficient wrong in the last place the specification prints.
+# Reason for 1e-5: one whole unit in the fifth decimal place, which is the smallest
+# error that would make the specification print a different number -- and therefore the
+# smallest defect this gate must still fail. Twice the ceiling, which is the most a
+# printing-precision window can ever be bracketed by: the ceiling is half a unit and the
+# counter is one unit, and no measurement can change that ratio.
+# Injected by `test_R653_a_COEFFICIENT_WRONG_IN_THE_LAST_PRINTED_PLACE_reddens_the_gate`.
+# Set: 2026-10-06, F4 step 2
+F4_INTEGRATOR_SPEC_AGREEMENT_COUNTER: Final[float] = 1.0e-5
 
 # CLASS: ACCURACY -- EK0(d)'s SYMMETRY check, which is the only one of EK0(d)'s three
 # the FE stiffness participates in: the fourth vertical support is redundant, so how
