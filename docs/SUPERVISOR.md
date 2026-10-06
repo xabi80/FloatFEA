@@ -468,6 +468,37 @@ or to the user counts against NO step.** Post-closure verdicts count against the
 next step only when they judge implementer work done for that step. A step
 therefore opens with its full three rounds, counted from its first report.
 
+**ROUNDS ARE COUNTED PER REPORT REVISION, AND AN INTERIM CHECK COUNTS AGAINST NONE
+(ES0).** Adopted by directive ES0, which took exit (i) of the two the ninety-seventh
+verdict named. **The `Stop` hook is not edited.**
+
+* **At most THREE REVIEWED REVISIONS per step.** The count is of revisions, not of
+  verdicts.
+* **A verdict the hook forces at a turn boundary mid-step, on a tree with NO new report
+  revision, is an INTERIM CHECK and counts against no round.**
+* **An interim check is light:** the suite and CI at the commit, plus a CZ0 (a)-(d) scan
+  of the diff since the last verdict. **No corpus batch, no closure list.**
+* **Its findings join the step's list** and are answered in the next revision.
+
+Why the clause exists, which is the part a later reader needs: EQ3's "one reviewer
+invocation, at the report" and the hook's "nothing past the newest verdict" cannot both be
+satisfied by a step that takes more than one commit, and F4 step 2's ER1(b) alone is six
+FloatSim re-runs. Without this clause the implementer's choices were to spend a round on a
+third of the work, to revert verified work to silence a hook, or to write a verdict -- and
+the third is forbidden outright.
+
+The ninety-seventh verdict ruled, correctly under EB4 as it then stood, that a
+hook-forced round counted: EB4 keys on the SUBJECT of a verdict and that verdict's subject
+was implementer work. This clause keys the exemption on whether a new report revision
+exists, which is what distinguishes "the work has reached a reviewable state" from "a turn
+ended".
+
+**It is not a free round.** An interim check still rules under CZ0 (a)-(d) and its findings
+still block; what it does not do is consume one of the three rounds in which the step's
+work gets read in full. DK0's concern -- that a mechanism which buys rounds makes the cap
+meaningless -- is answered by the revision count: three revisions is three revisions
+however many interim checks fall between them.
+
 ### CZ1's carve-out for a step's own boundary red (EG3)
 
 *Adopted by directive EG3 in the reviewer's wording, unparaphrased. Proposed in the
