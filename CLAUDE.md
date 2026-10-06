@@ -221,6 +221,46 @@ before the commit exists. That class includes `tests/test_report_carried.py`,
 `tests/test_report_guard_states.py`, and anything reading `git log`, `git diff` or
 `git merge-base`. For those, "I ran it before committing" is not a measurement.
 
+### A closure commit that changes a gate or a tolerance is REVIEWED (EQ0)
+
+*Adopted by directive EQ0 in the reviewer's wording, unparaphrased. Proposed in the
+ninety-sixth verdict, which reviewed a closure commit for the first time and found four
+blocking items in it -- three of them inside repairs made to answer blocking items -- in a
+tree that was green on three machines.*
+
+> **A closure commit that changes a gate or a tolerance is reviewed; one that changes only
+> prose is not.**
+
+**That review counts against no step's rounds (EB4).** It judges a commit written after the
+last reviewed round, so it is not implementer work done for the next step.
+
+**Why green was not enough, which is the whole reason for the rule.** CZ1 (ii) and (iii)
+measure whether a closure commit is GREEN. A green suite cannot see:
+
+* a counter declared on the wrong side of its own defect -- `F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER`
+  shipped at `0.05` above the defect on 12 of 16 members, because the figure was derived
+  against the CORRECT root moment while the gate divides by the DEFECTIVE one (`1/19` on
+  the platform arms, `1/24` on the hubs; no member read the published `5.555556e-02`);
+* a decision rule that nothing holds in place -- the per-body mapping residual shipped with
+  both of its counter-cases red under the aggregate it replaced, so reverting the fix left
+  the whole suite green, and the counter-case the commit message SAID was added was not in
+  the file at all;
+* a figure whose rule moved underneath it (BP0) -- four figures in a tolerance entry,
+  measured against the aggregate the same commit deleted.
+
+Each of those is `(b)` or `(c)` under CZ0 and each was invisible to `pytest -q`, to `ruff`,
+`black` and `mypy`, and to a green CI run at the commit's own sha.
+
+**And a closure commit NEVER touches a step report after that report's final verdict
+(EK3).** Measured three ways, one variable moved: the report-prose edits in place gave
+`7 failed, 16 passed`; the same commit with the report's CONTENT reverted to byte-identical
+gave `7 failed, 16 passed` again; the commit with the report left out entirely gave
+`23 passed`. The guard compares the newest commit touching the report against the newest
+touching the verdict, so reverting content cannot help -- **any** commit that touches a
+closed report before a newer verdict exists reddens it. EK3 already routed post-closure
+prose to "the next report or `docs/closure/**`"; this is the mechanical reason for that
+wording rather than a preference.
+
 ### CZ1's carve-out for a step's own boundary red (EG3)
 
 *Adopted by directive EG3 in the reviewer's wording, unparaphrased. Proposed in the
