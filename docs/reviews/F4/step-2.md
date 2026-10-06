@@ -1,4 +1,512 @@
 # Review — F4 step 2
+Reviewed commit: dc60ee9a42530407ad9a687478861b092beaf732
+Verdict: HOLD
+
+**Reviewed commit: `dc60ee9`.** (`dc60ee9a42530407ad9a687478861b092beaf732`, HEAD of F3,
+pushed.) Range `4615498..HEAD` -- two commits, `7a40758` and `dc60ee9`.
+Tests: 2951 passed, 84 failed, 0 skipped (MY OWN run, one invocation, no `--ignore`, no
+`-k`, no deselection, in the repository itself, 645.25s. **All 84 are EG3 state (2) and
+each is traced by name in section 2.**)
+**CI at the reviewed commit: run `37497138919` at `dc60ee9`, conclusion FAILURE.**
+`the verification ladder: success` at EVERY step -- `ladder 1`, `2`, `3`, `6`, `4`, `5`.
+`lint, unit and guards: failure` at `guards and meta-tests` ONLY; `actionlint`, `ruff`,
+`black --check`, `mypy` and `unit tests` all success. `84 failed, 961 passed in 663.08s`.
+NOT CK2 for the two jobs that ran: `runner_name` is `GitHub Actions 1000001534` and
+`...1535`, the steps ran, the durations are real. The two `CI determinism` jobs are
+`skipped` with `runner_name: null`, no steps and a one-second span -- **and that is CK0's
+own `if: github.event_name == 'workflow_dispatch'`, not CK2**: `.github/workflows/ci.yml:90`
+makes them by-hand-only, the annotations list is empty, and there is no payment or
+spending-limit annotation. A conditional skip is a check that was not asked for, which is
+a third thing again from unavailable and from red.
+
+## Round of 2026-10-06 -- ES0 INTERIM CHECK. Counts against NO round.
+
+**ES0's premise verified before anything else, because the exemption rests on it.**
+
+```
+claim  there is no new report revision -- the report is the one verdict 97 judged
+cmd    git log -1 --format='%h %s' -- docs/reports/F4/step-2.md
+out    7cee09f F4 step 2 revision 1: EQ0, EQ2's basis-independent half, ER1(c), ...
+judge  7cee09f is the commit verdict 97 judged. The report has not moved across verdict
+       98 and across this one. This counts against no round, verdict 97 remains round 1
+       of three, and TWO REVISIONS REMAIN.
+```
+
+Instruction 1b does not fire, for the reason given in verdict 98 and unchanged: a report
+that PREDATES the newest verdict with no revision between them is EG3 state (2), not a
+report answering a superseded round.
+
+**HOLD, and there is no new blocking item. All three of verdict 98's items are CLOSED and
+I reproduced every figure in all three repairs rather than reading them.** The HOLD is the
+step's own state: step 2's work -- ER1, EQ2's remainder, EQ3 -- has not been done, R682 and
+R685 are open and legitimately held by ER2's ordering, and step 3 does not begin. Nothing
+in this diff needs fixing before ER1 starts.
+
+**No STOP, and I was asked to rule on that specifically.** Section 5 rules on ER0 as a
+recorded input change. The ladder is green at every rung in CI.
+
+**The whole executable surface of this diff is four comment lines.**
+
+```
+claim  nothing under floatfea/ changed except comments
+cmd    git diff 4615498..HEAD -- floatfea/ | grep -E '^[+-]' | grep -v '^[+-][+-]' \
+         | grep -vE '^[+-]\s*#'
+out    (empty)
+cmd    git diff --stat 4615498..HEAD -- floatfea/
+out    floatfea/tolerances.py | 31 +++++++++++++++++++++++++++----
+judge  so a CZ0 (a) finding is not available in this range by construction. The one
+       executable change anywhere is `compared > 0` -> `compared == _CHANNELS` in rung 4,
+       which is (c), and it is section 4.
+```
+
+## 1. MY OWN INSTRUCTIONS, AND THE CONFTEST -- EACH DIFFED SEPARATELY
+
+```
+cmd    git diff --stat 4615498..HEAD -- .claude docs/SUPERVISOR.md
+out    (empty). Neither file moved. No STOP-class finding available here.
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py                   <- non-empty, so the pathspec is the CI0 one
+cmd    git diff 4615498..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty). No conftest changed. No new plugin. CH2 clear.
+cmd    git log --format='%h %an %s' 4615498..HEAD -- docs/reviews tests/corpus
+out    7f822ba gating-supervisor review: F4 step 2 -- ES0 INTERIM CHECK ...
+judge  the only commit touching docs/reviews/ in this range is my own verdict 98. The
+       implementer wrote neither a verdict nor a corpus entry.
+```
+
+**`dc60ee9` is a clean `plan:` commit and I checked the form rather than the subject
+line.**
+
+```
+cmd    git show --stat dc60ee9
+out    docs/milestones/F3.md | 19 ++ ; docs/milestones/F4.md | 99 ++ ; 118 insertions(+)
+claim  it touches no code and deletes nothing
+out    118 insertions(+), 0 deletions. No floatfea/, no tests/, no .claude/.
+claim  it cites the finding that asked for it
+out    "plan: the EQ, ER and ES directives recorded in F4.md and F3.md section 0 (R690)"
+```
+
+## 2. THE 84 REDS, EACH TRACED BY NAME (EG3(i), CA2)
+
+EG3(i) is explicit that a family is not a trace, and R644 is why each id gets run on its
+own. Every id, matched against EH1's and EJ2's corrected **state (2)** list:
+
+| count | id | on the list as |
+|---|---|---|
+| 66 | `test_every_named_site_is_touched_or_declared[R686/R687/R688/R689/R690/R691-...]` | named, state (2) |
+| 8 | `test_the_report_carries_the_finding[R686..R693]` | named, state (2) |
+| 1 | `test_the_CI_section_is_about_the_REVIEWED_commit` | named, state (2) |
+| 1 | `test_the_Carried_table_is_what_the_generator_produces` | named, state (2) |
+| 1 | `test_the_generator_would_catch_a_row_under_the_wrong_number` | named, state (2) |
+| 1 | `test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` | the red baseline |
+| 6 | the six planted states | the cascade, by failure line |
+
+66+8+1+1+1+1+6 = 84, and the whole-suite run's 84 is this subset's 84 -- nothing is red
+anywhere else in the tree:
+
+```
+cmd    python -m pytest -q                 (whole suite, one invocation)
+out    84 failed, 2951 passed, 2 warnings in 645.25s
+cmd    python -m pytest tests/test_report_carried.py tests/test_report_guard_states.py
+         tests/test_report_numbers_are_sourced.py -q -rf
+out    84 failed, 187 passed in 181.68s
+judge  identical count, so every red in the tree is in the three report-guard files.
+```
+
+**The cascade is identified by each state's OWN failure line, individually, not by its
+name** -- the R644 discipline, and the seven lines are distinct:
+
+```
+cmd    python -m pytest tests/test_report_guard_states.py -q
+         | grep -E "^E +AssertionError" | sort | uniq -c
+out    1 baseline: expected a clean run.
+out    1 draft_suffix_beside_a_step_report: ... must be stepped over, not reacted to.
+out    1 non_numeric_step_suffix:           ... must be stepped over, not reacted to.
+out    1 step_number_is_the_empty_string:   ... must be stepped over, not reacted to.
+out    1 superscript_digit_step_number:     ... must be stepped over, not reacted to.
+out    1 verdict_amended_after_the_commit_the_report_answers: expected a clean run.
+out    1 zero_padded_step_number:           ... must be stepped over, not reacted to.
+judge  each nested run pastes the same dirty baseline (74 failed, 139 passed) carrying
+       the state (2) ids. Six states assert against a clean baseline and the baseline is
+       dirty. Nothing is outside the list, so CZ1 (iv) does not fire and this is not (d).
+```
+
+**CI's 84 and my 84 are the SAME IDS, not the same count**, which is the only form of that
+claim worth making on a different OS and a different libm:
+
+```
+cmd    gh run view 37497138919 --log-failed | grep -oE "FAILED tests/[^ ]+" | sort -u > ci
+cmd    diff ci local
+out    (empty). IDENTICAL, 84 lines each.
+```
+
+**EG3(ii) -- state (1) cleared at verdict 98's own commit.**
+`test_the_guard_reads_the_step_being_worked_on` is absent from the 84 and
+`4615498..7f822ba` is the verdict alone, so the measurement at `7f822ba` is the
+measurement here.
+
+**Why the red grew from 32 to 84, since a growing red deserves a sentence:** verdict 98
+added three findings naming many sites, and `test_every_named_site_is_touched_or_declared`
+is one parametrisation per site. The composition is the tell that the growth is the
+boundary and not a defect -- R692 and R693 contribute **zero** named-site failures, because
+`7a40758` touched their sites, and R691 contributes four, all of them sites my own finding
+named as already correct (`CLAUDE.md`, `docs/SUPERVISOR.md`, `floatfea/tolerances.py:1990`)
+or as a guard that cannot see the shape (`tests/test_plan_matches_tolerances.py`). Those
+four are declarations the next revision writes, which the hand-back says it will.
+
+## 3. R691 -- CLOSED, AND I WITHDRAW ONE SITE OF MY OWN CONDITION WITH THE MEASUREMENT
+
+I built the frame, ran the solve, and computed the defect's ratio on all sixteen members
+rather than checking the arithmetic on paper:
+
+```
+cmd    python <scratch>/p1.py   (build_superstructure + solve_superstructure_static,
+                                 member_forces with the R663 formula on every member)
+rule   tip_ratio = |end_b[4]| / |end_a[4]| with the equivalent load deleted, which is
+       the quantity `F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER` is compared against
+out    platform:hub1..4_arm   tip_ratio 0.0526315789473684..  -> 1/19 EXACTLY, 4 members
+out    hub1..4:buoy1..12_arm  tip_ratio 0.0416666666666662..  -> 1/24 EXACTLY, 12 members
+out    min 0.04166666666666627   max 0.05263157894736891
+out    counter 0.05 sits ABOVE the defect on 12 of 16 members
+judge  `tolerances.py` was right and the plan row and the assertion string were wrong.
+       `1/19` and `1/24` are confirmed in the gate's own denominator; the F4.md row's
+       `smallest measured 0.04166666666666627` is `hub3:buoy9_arm` to the last digit;
+       and "sits above the defect on 12 of the 16 members" is 12 of 16 measured.
+```
+
+So `docs/milestones/F4.md:447` and `test_f4_static_and_mapping.py:549` are both correct
+now, and the `1/18`, `5.555556e-02` and `1.0550e+14x` figures survive nowhere outside the
+files that quote them AS WRONG:
+
+```
+cmd    grep -rn '1/18\|5\.555556e-02\|1\.0550e+14' --include=*.py --include=*.md .
+         | grep -v '^\./docs/reviews/'
+out    CLAUDE.md:274, docs/SUPERVISOR.md:438   -- quote the figure as wrong. Correct.
+out    docs/milestones/F4.md:230               -- ES2's record of the deletion. Correct.
+out    floatfea/tolerances.py:1990-1991        -- quotes it as the deleted claim. Correct.
+out    test_f4_static_and_mapping.py:550       -- "never 1/18 (R691)". Correct.
+out    docs/reports/F4/step-2.md:382-384       -- the report's own account. Correct.
+```
+
+**AND I WITHDRAW THE `:520` CLAUSE OF MY OWN CLOSING CONDITION, with the measurement that
+withdraws it.** My R691 named `test_f4_static_and_mapping.py:520` as a fourth site "same
+arithmetic", on a grep hit for `114960937`. It is not the same arithmetic: `:520` states
+the two CORRECT root moments and claims they reproduce, and they do.
+
+```
+cmd    python <scratch>/p1.py   (analytic_My vs solve_My, all 16 members)
+out    platform arms: analytic 114960937.500000  solve 114960937.500000
+out    hub arms:      analytic 117515625.000000  solve 117515625.000000
+judge  `:520`'s "both reproduced to every digit" is TRUE at this commit. The site needed
+       nothing, so it satisfies my condition's "or no figure at all" branch. Withdrawn.
+```
+
+**The discipline point stands even though the tree is clean, and I record it rather than
+blocking on it.** The hand-back reports R691 answered at "three sites" and the three it
+names are `tolerances.py`, `F4.md` and `test:549` -- which is not the set my condition
+named (`F4.md:348`, `test:549`, `test:520`). `:520` went unmentioned in either branch the
+site-by-site rule offers. It happens to be clean, and it is clean because **I** measured
+it, not because the answer said so. That is the fourth appearance of this shape in five
+verdicts. It is not blocking: there is nothing false in the tree, and CZ0 gives me no head
+for "the answer counted a different three".
+
+## 4. R692 -- CLOSED, REPRODUCED IN BOTH DIRECTIONS, AND THE WEAKENING EDGE SOLVED TOO
+
+Not read: run, with the production gate's own helpers, the real mapper and the real
+fixture, and with the old predicate evaluated beside the new one on every row.
+
+```
+cmd    python <scratch>/p2.py  (_joint_wiring, _synthetic_lam, map_joint_reactions,
+                                _channels_compared, _body_errors -- the shipped helpers)
+rule   the shipped pair: `_channels_compared(...) == _CHANNELS` and
+       `max(per_body) < F4_MAPPING_CONSERVATION`
+out    _CHANNELS = 10
+out    dense (control)        compared=10/10  err=2.196e-16  ==10: GREEN   >0: GREEN
+out    all zero               compared= 0/10  err=0.000e+00  ==10: RED     >0: RED
+out    only block 0 (buoy1)   compared= 2/10  err=0.000e+00  ==10: RED     >0: GREEN
+out    ... all twelve buoy blocks          compared= 2/10    ==10: RED     >0: GREEN
+out    ... all four hub blocks             compared= 4/10    ==10: RED     >0: GREEN
+out    SIXTEEN of sixteen degraded rows move from GREEN to RED. The control stays GREEN.
+judge  my figures to beat were 16 of 16 green at 2 of 10 and 4 of 10 channels. All
+       sixteen now redden, and the gate's own dense row is unaffected.
+```
+
+**EH4's weakening direction, which nothing asked for and which is the one that matters
+here: how degraded may a row be and still read green?** Solved by exhaustion rather than
+sampled, over every keep-set of the sixteen blocks:
+
+```
+cmd    python <scratch>/p6.py  (all C(16,k) keep-sets for k = 1..4, 2516 rows)
+rule   a row "passes" if compared == 10 AND max(per_body) < 1e-12
+out    k=1:   0 of   16 pass        k=2:   0 of  120 pass
+out    k=3:   0 of  560 pass        k=4: 175 of 1820 pass
+out    example: blocks (0, 1, 6, 14) = buoy1, buoy10, buoy4, hub3
+judge  the boundary is k = 4: twelve of sixteen blocks may be zero and the gate still
+       reads green. I rule that CORRECT rather than vacuous, and the distinction is the
+       one R684 and R689 are both about: on a four-block row every one of the five bodies
+       has a nonzero expected resultant and is compared RELATIVELY, and the mapping
+       genuinely is right on it. On a single-block row three of five bodies were never
+       compared at all. `== 10` closes exactly the second thing and nothing is hiding in
+       the first -- a defect at a zeroed joint is a no-op, and a dropped block inside a
+       body that still has load is what `internal_joint_dropped` reddens at 1.778.
+```
+
+**Two structural rulings, so they are not left ambiguous for the next reader.**
+
+* `compared` reads the EXPECTED side (`_one_body_error` takes `f_scale` from `want`), so
+  `compared == 10` is an assertion about the FIXTURE's premise, not about the mapper's
+  output. That is what makes it the density check verdict 98 offered as the alternative,
+  and it is why it cannot mask the error assertion: a mapper that puts nothing on a body
+  leaves `compared` at 10 and is caught by `max(per_body)`.
+* `_CHANNELS = 10` as a literal int is right here for the same reason `len(joint_order)
+  == 16` two lines above is right: on a model with a sixth body this gate SHOULD go red
+  and force a re-derivation rather than silently re-scale. I say so rather than leaving
+  the hard-coded count to be read as an oversight. It is a count, not a tolerance, and
+  `tests/test_no_tolerance_literals.py` is green on the file.
+
+## 5. ER0 -- A RECORDED INPUT CHANGE, NOT A RE-LOCK. NO STOP.
+
+I was asked to rule on this specifically and before ER1's six re-runs. **ER0 does not
+reopen EK's lock.** The ground is not EH2, and I read Â§ 0 line by line rather than
+accepting the citation:
+
+```
+claim  Â§ 0 (EK0, DQ4-DQ9, EK2-EK4) states no mass and no `f` ANYWHERE
+cmd    sed -n '28,140p' docs/milestones/F4.md   (the whole locked block, read)
+out    DQ4 "# expected: deck YAML mass, J_G"   <- the deck BY REFERENCE
+out    DQ5 "the deck's mass with DY0's split"  <- DY0 BY REFERENCE
+out    DQ7 "No buoy FE mass"                   <- a scope statement, not a value
+out    EK0(d) "self-weight from the FE mass (the DY0 distribution)"
+judge  Â§ 0 locks METHOD, SUBJECT and NORMALISATION, and names the mass only by reference
+       to the deck and to DY0. A deck value is an input to the locked method, not one of
+       the locked answers, so changing it changes what the method is applied to and
+       leaves every Â§ 0 sentence true. That is a recorded input change. NOT a STOP.
+```
+
+**One correction to the plan's own reasoning, recorded and not blocking:** `F4.md:150`
+cites EH2 as the clause that permits this. EH2 is at `docs/milestones/F3.md:678` and it
+governs **when `PLATFORM_RIGID_MODE_EXACTNESS` may move** -- (a) never on fixed inputs,
+(b) a re-derivation on changed inputs in a `plan:` commit, (c) both edges at `2x`. It is a
+tolerance-movement rule, and the thing it licenses here (ER1(d) re-deriving every
+dependent figure in the `plan:` commit) is right by EH2(b) by analogy, but EH2 is not a
+lock-scope clause and should not be cited as the authority for not re-locking. The
+authority is the paragraph above.
+
+**ER1(d)'s eight static figures are published in the plan AHEAD OF THE CODE, so I
+checked all eight.** The new basis is not in the tree -- `MASS_FRACTION_LADDER` is still
+`(0.5, 0.4, 0.3, 0.2, 0.1, 0.0)` -- so I reconstructed them from the measured old basis by
+the linearity of statics, and validated the reconstruction against a measured quantity it
+did not use:
+
+```
+cmd    python <scratch>/p5.py  (measured L, wL and R on the shipped basis, then
+                                platform mass x2 and f 0.5 -> 0.75 by linearity)
+out    measured now: platform L=50.0  wL=1532812.5  R=3065625.0
+out    measured now: hub      L=25.0  wL=2452500.0  R=5926875.0
+out    PLATFORM NEW: R=6131250.0000  wL=4598437.5000  Vz=1532812.5000  My=191601562.5000
+out    HUB NEW:      R=6948750.0000  wL=3678750.0000  Vz=3270000.0000  My=127734375.0000
+out    CONTROL for the hub formula R = (hub weight + platform share)/3, evaluated on the
+out    OLD platform share: 5926875.0 against the MEASURED 5926874.999999998
+judge  all eight of the plan's figures reproduce exactly, and the control says the
+       formula that produced the hub pair is the right formula -- the hub reaction rises
+       although the hub mass does not, because it carries the platform's share, and that
+       is the one figure in the eight a reader would wrongly call inconsistent.
+```
+
+**ER1(c)'s no-STOP, independently again, and the two densities F3.md now publishes:**
+
+```
+cmd    python <scratch>/p4.py  (build_superstructure(mass_fraction=0.75) + admissible())
+out    platform PSD=True  hub1..4 PSD=True          <- all five, so ER1(c) does not STOP
+out    hub rho_eq = 11433.544762348803             <- F3.md publishes 11433.5. Confirmed.
+out    platform rho_eq at the OLD 10 kg = 3572.982738234001
+judge  the platform's figure doubles with the mass to 7145.965476468, which is F3.md's
+       `7146.0`. Both recorded densities check out, and the hubs' above-steel equivalent
+       density is a reported finding per ES1 and not a STOP -- I agree with that ruling.
+```
+
+**R690 CLOSED.** Every directive I have been judging commits against is now readable:
+
+```
+cmd    for d in EQ0..EQ4 ER0..ER3 ES0..ES3; do grep -c "\*\*$d" docs/milestones/F4.md; done
+out    all thirteen return >= 1. ER0 and ES1 also appear in docs/milestones/F3.md.
+judge  the hand-back is right that this was about my ability to do the job, and it is
+       fixed. F3.md recording ER0 rather than editing DY0's rows is the right call for
+       the reason it gives: F3 is closed and its figures describe the basis it was
+       verified on.
+```
+
+## Findings
+
+**No new blocking finding this round.** Verdict 98's three items are closed, nothing in
+the diff is a CZ0 (a), (b), (c) or (d), and I am not inventing a head to fill this
+section. The three rulings I was asked for, numbered so they can be cited:
+
+**Ruling 1 -- ER0 is a recorded input change and needs no re-lock. NO STOP.** Section 5.
+The ground is that Â§ 0 names the mass only by reference to the deck and DY0; the EH2
+citation at `F4.md:150` is the wrong authority, and that is prose, not a gate.
+
+**Ruling 2 -- of the two percentages, `50.0%` is the one that belongs, and the
+mislabelling was MINE.** Both are arithmetic on the same band and both reproduce:
+
+```
+cmd    python <scratch>/p3.py
+out    band [4.210526e-06, 5.789474e-06], ratio 1.3750
+out    linear position of 5.0e-6 in that band:            50.0%
+out    (counter - ceiling)/(counter - max|d|):            86.4%
+judge  `86.4%` is the ceiling's position in `[max|d|, counter]`, which is a DIFFERENT
+       interval from the pinned band. Verdict 98 wrote it as "86.4% of the way up its
+       own legal band" and that label is false of it; I withdraw the label, not the
+       number. The entry carrying both with their formulas is truthful and I accept it
+       as shipped; at the next edit of that entry the `86.4%` should go, because a
+       reader who needs one number needs the position in the band that pins the value.
+```
+
+**Ruling 3 -- the counter's missing upper pin is structural, not a defect.** Verdict 98's
+tolerance table listed "the absence of any upper pin (direction B2: it may rise to `1e6`
+with nothing red)" under R693, and the new entry does not address it. I rule it closed
+without an edit, and the reason is general enough to be worth writing down: a counter-case
+is never pinned from above by its own assertion, because a larger injected defect is
+always detected. What pins it from above is its DERIVATION -- "one whole unit in the fifth
+decimal place" is the smallest error that changes what the specification prints, so the
+value is a definition and not a sample. The measured room between the boundary and that
+definition is `1.0857x`, which is the tightest such margin in the table. Nothing to fix.
+
+## Tolerances touched
+
+```
+cmd    git diff 4615498..HEAD -- floatfea/tolerances.py | grep -E '^[+-]'
+         | grep -v '^[+-][+-]' | grep -vE '^[+-]\s*#'
+out    (empty). Every changed line is a comment. NO VALUE MOVED, in this file or anywhere.
+```
+
+| name | old | new | form | counter | justification located | ruling |
+|---|---|---|---|---|---|---|
+| `F4_INTEGRATOR_SPEC_AGREEMENT_COUNTER` | `1.0e-5` | `1.0e-5`, unmoved | dimensionless, one unit in the fifth printed place | is the counter; injected by `test_R653_a_COEFFICIENT_WRONG_IN_THE_LAST_PRINTED_PLACE_reddens_the_gate` | `docs/milestones/F4.md:446`; entry at `floatfea/tolerances.py:2031-2062` | **R693 CLOSED.** All four ratios reproduce exactly on my instrument: `counter/ceiling 2.0000`, `ceiling/max|d| 1.1875`, `(max|d|+ceiling)/ceiling 1.8421`, `counter/(max|d|+ceiling) 1.0857`, with `C* = max|d| + ceiling = 9.2105263e-06`. The invariance sentence is gone and what replaced it is true of the ratio it is true of. "Thin by construction" is corrected to the measured `inf / 1.1250x / 1.1875x` across `rho_inf`. Both EH4 edges are in the entry and the band `[4.210526e-06, 5.789474e-06]` is `1.3750x`, which I re-solved. `C*` is named as the expression `max|d| + ceiling` with both terms pasted rather than as the digits; that determines it, and I accept it as satisfied rather than spending a round on the form. |
+| `F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER` | `0.05` | `0.05`, unmoved | dimensionless | is the counter, still injected on one member | `docs/milestones/F4.md:447` -- **now candid: "R682 OPEN: this value sits above the defect on 12 of the 16 members"** | **R691 CLOSED.** The row's three false figures are withdrawn and replaced by `1/19`, `1/24` and `smallest measured 0.04166666666666627`, all three of which I reproduced on all sixteen members to the last digit, including the `12 of 16`. The VALUE stays held by ER2, and that hold stays accepted. |
+
+## Carried
+
+Verdict 98 left **three findings and three carried items** open. Every one, with status:
+
+* **R691 -- ANSWERED. CLOSED.** Section 3. `docs/milestones/F4.md:447` and
+  `test_f4_static_and_mapping.py:549-551` both carry `1/19` and `1/24`; I measured both on
+  all sixteen members, and the plan row's `0.04166666666666627` and `12 of 16` as well.
+  **One site of my own condition WITHDRAWN with its measurement:** `:520` states the two
+  correct root moments, both reproduce to every digit, and it never carried the false
+  ratio. The site-by-site miss is recorded at the end of section 3 and does not block.
+* **R692 -- ANSWERED. CLOSED.** Section 4. `compared == _CHANNELS` with `_CHANNELS = 10`
+  declared and derived. All sixteen single-block rows move GREEN -> RED, the dense control
+  stays GREEN, and I solved the weakening edge as well: k = 4 blocks is the boundary, 175
+  of 1820 four-block rows still pass, and I rule those correct passes with the reason.
+* **R693 -- ANSWERED. CLOSED.** The tolerances table above. Four ratios named individually
+  and every one reproduced; the invariance sentence restated as the definition it is; both
+  EH4 edges and the `1.3750x` band pasted; "thin by construction" corrected. The `50.0%`
+  vs `86.4%` question is ruled in Ruling 2 and the mislabelling was mine.
+* **R690 -- ANSWERED. CLOSED.** Section 5. All thirteen of EQ0-EQ4, ER0-ER3 and ES0-ES3
+  are now readable in `docs/milestones/F4.md` Â§ 0, with ER0 and ES1 also in `F3.md`. I was
+  judging commits against three directives I could not read; I can read all of them now.
+* **R682 -- STILL OPEN, hold accepted, unchanged in substance.** The basis-INDEPENDENT
+  half is now done at every site. The VALUE is held by ER2's ordering, which is right:
+  `1/19` and `1/24` both move with `f` and with `M`, and ER0 moves both. Not held against
+  this diff.
+* **R685 -- STILL OPEN, hold accepted without reservation.** `tolerances.py` carries no
+  change for it in this range and nothing about it has moved. Not held.
+* **EG3(ii)** -- state (1) cleared at `7f822ba`, measured in section 2. State (2) is the
+  implementer's to measure at the next report commit, and my figure for it to beat is in
+  "Next step opens when".
+
+Closure items C161 to C173 and the earlier C-items: **not reviewed this round.** ES0
+excludes the closure list from an interim check and I did not look at them. The one
+closure-class thing I found while measuring is the EH2 citation in section 5; it is one
+line, it is recorded there, and it is explicitly not a list to work through.
+
+## The adversarial corpus (BE3)
+
+**No new corpus file this round, and the number is still reported.** EG4(e) pauses batches
+until 28 October except for mutation work on F4's load-mapping gate, and ES0's scope for an
+interim check excludes a batch. The exception covers exactly the gate in front of me, so I
+spent it on measurement rather than on a file: 16 single-block multiplier rows and 1820
+four-block rows, generated by exhaustion rather than by choosing shapes.
+
+* **16 new mutation rows against G4.4, 16 of 16 now caught** (they were 0 of 16 before
+  `7a40758`, and that is the whole content of R692).
+* **1820 four-block rows, 0 caught, and 0 SHOULD be caught** -- section 4 gives the
+  reason, and the measurement is what turns "the gate is fine on sparse rows" from a
+  belief into a boundary at k = 4.
+
+Entries new to `tests/corpus/`: none. Previous batch: 36, at `4f99c7f`.
+
+## Next step opens when
+
+**STEP 2 STAYS OPEN, and nothing in it is blocked on me.** This check counts against NO
+round, so **verdict 97 remains round 1 of three and TWO REVISIONS REMAIN**. Step 3 does not
+begin. **ER1 should start now** -- all three of verdict 98's items are closed, ER0 needs no
+re-lock, and there is no item of mine for ER1 to wait behind.
+
+The next report revision is round 2, and these are what I will read it for:
+
+1. **ER1 (a)-(e) and then EQ2's remainder, in ES3's order.** ER1(d) is the commit BP0
+   governs: every figure and declared counter depending on `mu`, `M` or `f` re-derived in
+   that commit, not the next. **My figures to beat, measured at `dc60ee9`:** platform
+   `R = 6131250.0`, `wL = 4598437.5`, `Vz = 1532812.5`, `My = 191601562.5`; hub
+   `R = 6948750.0`, `wL = 3678750.0`, `Vz = 3270000.0`, `My = 127734375.0`; all five bodies
+   PSD at `f = 0.75`; `rho_eq` hub `11433.544762348803`, platform `7145.965476468` at
+   20 kg.
+2. **R682's VALUE, on the new basis**, with the per-member table that derives it. My
+   figures on the OLD basis, which the new ones must supersede rather than contradict:
+   `1/19` on 4 platform arms, `1/24` on 12 hub arms, smallest `0.04166666666666627`,
+   counter above the defect on 12 of 16.
+3. **R685**, as ER2 orders it.
+4. **The sites of R691 that are declarations rather than edits** --
+   `tests/test_plan_matches_tolerances.py`, `floatfea/tolerances.py:1990`, `CLAUDE.md` and
+   `docs/SUPERVISOR.md` -- each named with the sentence saying it was left and why, which
+   is what `test_every_named_site_is_touched_or_declared` is red on and the one half of
+   this round's 84 that the revision itself clears.
+5. **EG3(ii)** -- the report-guard files run AT `dc60ee9` and the counts pasted. **My
+   figures: 84 failed, 2951 passed, 0 skipped whole-suite; 84 failed, 187 passed on the
+   three guard files; the same 84 ids in CI run `37497138919`.** Any red outside EH1's and
+   EJ2's state (2) list is CZ1 (iv) unchanged.
+
+**WHAT I WILL NOT ACCEPT AT THE NEXT REVISION.** A closing condition answered at a
+different set of sites than the one it named, reported as the same number of sites --
+section 3 is the fourth appearance of that shape in five verdicts, and this time the tree
+was clean only because I measured the site myself. A figure from ER1(d) taken before the
+final edit to the artifact that carries it; CP3 is the rule, and six FloatSim re-runs is
+exactly the shape that invites a remembered number. And an ER1(d) figure without the cell
+that isolates it (BG0) wherever the sentence says the new basis *caused* something to
+move: the basis moves two inputs at once -- `M` and `f` -- and a figure credited to one of
+them needs the one-at-a-time pair.
+
+## On the schedule
+
+The hand-back reports ER1 at two days and the working targets as F4 14 Oct, table 17 Oct,
+code-check 22 Oct, committed dates unchanged. Nothing in this verdict adds to that: there
+are no blocking items to answer, so ER1's two days start today rather than after a repair.
+**I see no slippage to report that the hand-back has not already reported.** If ER1(b)'s
+six re-runs overrun, that is reported the day it is known, per Â§ Step gating.
+
+## On ES0's scope -- I was asked, and this is not a second round of the same argument
+
+I agree with ES0 and said so once in verdict 98; I do not reopen it. Its scope was right
+for THIS diff in particular, and the reason is measurable: the entire executable surface of
+two commits is one assertion operator and four comment lines, and a full round against that
+would have spent a third of this step's allowance on a diff with no code in it.
+
+One observation to add to the one already recorded, not a request. This hand-back DID carry
+`claim/cmd/out` triples for its repairs and both EH4 directions for R693, which is the
+thing verdict 98 said would recover the reading cost -- and it worked. Three of five
+judgements last round came out of measurements the hand-back did not contain; this round
+every figure I needed was in it, and my job was to reproduce rather than to construct.
+That is the version of an interim check that is cheaper for both sides.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F4 step 2
 Reviewed commit: 46154986ac3b129d9bb9d1cf8c0bd6d05f7582a6
 Verdict: HOLD
 
