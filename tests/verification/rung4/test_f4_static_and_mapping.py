@@ -545,9 +545,9 @@ def test_EO1_static_member_forces_match_STATICS_not_the_model(built: Superstruct
             assert tip_ratio < F4_STATIC_TIP_MOMENT_RELATIVE, (
                 f"{member.label}: the tip moment is {mf.end_b[4]!r}, which is "
                 f"{tip_ratio:.6e} of the root moment, and a roller support transmits "
-                "none. R663's defect put it at exactly -mu L^2 / 12, which against the "
-                "DEFECTIVE root moment this ratio uses is 1/18 of "
-                "the root moment on a platform arm."
+                "none. R663's defect put it at exactly -mu L^2 / 12, which against "
+                "the DEFECTIVE root moment this ratio uses is 1/19 on a platform arm "
+                "and 1/24 on a hub arm, never 1/18 (R691)."
             )
     assert checked == 16, f"{checked} of 16 members were checked, not all of them"
 
@@ -865,11 +865,11 @@ def test_G4_4_the_mapping_CONSERVES_the_joint_resultants(built: Superstructure) 
     # all-zero multiplier row this gate read `0.0` and PASSED, with 0 of 5 bodies
     # compared -- the vacuous pass the plan's G4.4 row would have certified.
     compared = _channels_compared(built, loads, want)
-    assert compared > 0, (
-        f"not one of the five bodies had a channel to compare: {compared} channels. "
-        "`_one_body_error` returns 0.0 both for `compared and perfect` and for "
-        "`nothing to compare`, so this would have read as agreement. A multiplier "
-        "row that applies no load anywhere is not something this gate can certify."
+    assert compared == _CHANNELS, (
+        f"{compared} of {_CHANNELS} channels were compared. `_one_body_error` returns "
+        "0.0 both for `compared and perfect` and for `nothing to compare`, so a row "
+        "that reaches fewer bodies reads as agreement on the ones it never touched. "
+        "This gate is about the whole mapping, so it wants every channel."
     )
     per_body = _body_errors(built, loads, want)
     error = max(per_body.values())
@@ -1015,6 +1015,18 @@ _DOC_COEFFICIENTS = {"alpha_m": 0.42105, "alpha_f": 0.47368, "beta": 0.27701, "g
 _DOC_DIFFERENCE = 0.05263
 """`alpha_f - alpha_m` as the specification prints it, at line 259."""
 
+_CHANNELS = 10
+"""Force and moment channels across the five bodies -- `5 x 2` (R692).
+
+`assert compared > 0` stood here and is a nonzero-check wearing a count's name. It
+closed the all-zero vacuity and nothing else: measured, EVERY one of the sixteen
+single-block multiplier rows passes it, at 2 of 10 channels for a buoy-hub joint and
+4 of 10 for a hub-platform one. `> 4` is the smallest threshold at which all sixteen
+redden and `> 1` buys nothing, so the honest assertion is the whole count: this gate
+is about the mapping as a whole, and a row that reaches two bodies tells it nothing
+about the other three.
+"""
+
 _COEFFICIENT_RANGES = {"beta": (0.25, 1.0), "gamma": (0.5, 1.5)}
 """The ranges `beta` and `gamma` ATTAIN over `rho_inf` in `[0, 1]` (R687).
 
@@ -1022,10 +1034,16 @@ Endpoints, not bounds chosen with slack: `beta = 1/(1+rho)^2` gives `0.25` at `r
 and `1.0` at `rho = 0`; `gamma = 1/2 + (1-rho)/(1+rho)` gives `0.5` and `1.5` at the same
 two. Measured at 100001 points across the interval and the extremes are exactly these.
 
-THEY ARE DATA HERE RATHER THAN LITERALS IN THE COMPARISON, which is not a dodge of
-`test_no_tolerance_literals` -- the guard is right that a number beside a comparison
-operator wants explaining, and the explanation is long enough to be a docstring rather
-than a trailing comment.
+not-a-tolerance: THESE ARE RANGE ENDPOINTS THE CLOSED FORM ATTAINS, not a window
+within which two measurements may differ.
+
+**AND THE GUARD CANNOT SEE THEM, WHICH IS WORSE THAN BEING EXEMPTED BY IT.** The
+reviewer measured five container forms and `test_no_tolerance_literals` misses all
+five, including `assert residual < RANGES["r"]` -- a real tolerance, subscripted
+straight into a comparison. So moving numbers into a dict is not a dodge of the guard
+but it is not a declaration either: it is invisibility, and the marker above is here
+so that a reader greping for `not-a-tolerance:` finds this site. DR1 forbids extending
+the guard and no extension is proposed.
 
 R687 is what this replaced: the assertion read `0 < beta < 0.5 and 0 < gamma < 1.0` with
 a comment calling those "the mathematical ranges ... a property of the scheme". Both

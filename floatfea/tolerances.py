@@ -2030,10 +2030,33 @@ F4_INTEGRATOR_SPEC_AGREEMENT: Final[float] = 5.0e-6
 
 # COUNTER-CASE: a coefficient wrong in the last place the specification prints.
 # Reason for 1e-5: one whole unit in the fifth decimal place, which is the smallest
-# error that would make the specification print a different number -- and therefore the
-# smallest defect this gate must still fail. Twice the ceiling, which is the most a
-# printing-precision window can ever be bracketed by: the ceiling is half a unit and the
-# counter is one unit, and no measurement can change that ratio.
+# error that would make the specification print a different number -- and therefore
+# the smallest defect this gate must still fail.
+#
+# R693: FOUR RATIOS LIVE HERE AND THE ENTRY CONFLATED TWO OF THEM. `counter/ceiling
+# = 2.0000x` is a DEFINITION -- half a unit against one unit -- and the sentence that
+# stood here called it the bracket and said "no measurement can change that ratio".
+# The first half is true and the second is true OF THAT RATIO ONLY; neither makes it
+# a bracket. Each ratio, measured, named for what it is:
+#
+#   counter / ceiling              2.0000x   definition, not a measurement
+#   ceiling / max|d|               1.1875x   the CLEAN margin, and it IS measured
+#   (max|d| + ceiling) / ceiling   1.8421x   how far the ceiling may rise before the
+#                                            counter-case stops reddening
+#   counter / (max|d| + ceiling)   1.0857x   the room the COUNTER has above that point
+#
+# And "thin BY CONSTRUCTION" was false of the 1.1875x: that is `ceiling / max|d|` and
+# `max|d|` is measured, so it varies -- `inf` at `rho_inf` 0 and 1, where the closed
+# form lands exactly on a 5-dp value, and 1.1250x at 0.2, 0.5 and 0.8.
+#
+# BOTH EDGES SOLVED (EH4), which the first sweep took only one of. The clean case
+# needs `ceiling > max|d| = 4.210526e-06`; the counter-case needs
+# `ceiling < counter - max|d| = 5.789474e-06`. So the ceiling is PINNED into
+# `[4.210526e-06, 5.789474e-06]`, a band of 1.3750x -- and 5.0e-6 sits at 50.0% of it
+# by linear position, or 86.4% by `(counter - ceiling)/(counter - max|d|)`. Both
+# figures are arithmetic on the same band and the second is the reviewer's
+# parameterisation; they are recorded together because a single percentage here is
+# ambiguous and one of us would have been read as wrong.
 # Injected by `test_R653_a_COEFFICIENT_WRONG_IN_THE_LAST_PRINTED_PLACE_reddens_the_gate`.
 # Set: 2026-10-06, F4 step 2
 F4_INTEGRATOR_SPEC_AGREEMENT_COUNTER: Final[float] = 1.0e-5
