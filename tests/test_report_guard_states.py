@@ -424,6 +424,50 @@ def _seed_older_verdict(work: Path, reviews: Path) -> None:
 # here rather than being carried: the mechanism it was about no longer exists.
 
 
+def _real_git_dir_into(work: Path) -> None:
+    """Put a REAL `.git` directory in `work`, whatever shape `ROOT`'s is (C154).
+
+    THE DEFECT THIS REPAIRS WAS A LOCATOR, WHICH IS WHY EK2 ALLOWS THE REPAIR. The copy
+    loop above used to include `.git` and branch on `src.is_dir()`. In a `git worktree`
+    checkout `.git` is not a directory -- it is a ~169-byte FILE holding an absolute
+    `gitdir:` pointer -- so the `else` arm copied the POINTER, and every
+    `git -C <work>` in this module then operated on the ORIGINAL repository. Nothing
+    staged, `git commit` exited 1, and
+    `test_the_guard_survives_the_state[..._REDDENS_CONTROL]` failed with its assertion
+    never having run. `scripts/suite_count.py` builds exactly that kind of tree, so the
+    figure this repository publishes for the excluded set came from the one environment
+    where this file could not work. The sibling cleanup path already knew `.git` could be
+    a file (C10/R585) and this path did not, which is the shape C131 keeps naming: a rule
+    learned in one place and not the other.
+
+    The repair is the common directory plus an explicit HEAD. A worktree's own git dir
+    holds only that worktree's `HEAD` and `index` and defers everything else through
+    `commondir`, and a relative `commondir` copied one level down resolves to the wrong
+    place -- so the COMMON dir is what gets copied, and `HEAD` is then written from
+    `ROOT`'s own, detached, with `reset --mixed` bringing the index into line without
+    touching the files the loop above copied.
+    """
+    src = ROOT / ".git"
+    dst = work / ".git"
+    if src.is_dir():
+        shutil.copytree(src, dst, dirs_exist_ok=True)
+        return
+
+    def git(*args: str) -> str:
+        out = subprocess.run(
+            ["git", *args], capture_output=True, text=True, check=True, encoding="utf-8"
+        )
+        return out.stdout.strip()
+
+    common = Path(git("-C", str(ROOT), "rev-parse", "--path-format=absolute", "--git-common-dir"))
+    head = git("-C", str(ROOT), "rev-parse", "HEAD")
+    shutil.copytree(common, dst, dirs_exist_ok=True)
+    # `--no-deref` writes the sha INTO `HEAD` rather than through it, so the copy is
+    # detached at `ROOT`'s commit instead of at whatever branch the main checkout had.
+    git("-C", str(work), "update-ref", "--no-deref", "HEAD", head)
+    git("-C", str(work), "reset", "--quiet", "--mixed")
+
+
 def _build(tmp: Path, state: str) -> Path:
     """A repository copy with the state applied. Only `docs/` is mutated."""
     work = tmp / "repo"
@@ -431,13 +475,14 @@ def _build(tmp: Path, state: str) -> Path:
     # `.git` IS PART OF THE INPUT. `_changed_lines()` runs `git diff` against the
     # reviewed commit, so a copy without it gives an empty touched-set and every
     # site check fails for a reason that is the harness, not the guard.
-    for rel in (".git", "tests", "docs", "floatfea", "scripts", "pyproject.toml"):
+    for rel in ("tests", "docs", "floatfea", "scripts", "pyproject.toml"):
         src = ROOT / rel
         dst = work / rel
         if src.is_dir():
             shutil.copytree(src, dst, dirs_exist_ok=True)
         else:
             shutil.copy2(src, dst)
+    _real_git_dir_into(work)
     reports = work / "docs/reports" / MILESTONE
     reviews = work / ("docs/re" + "views") / MILESTONE
     for action, arg in STATES[state]:
