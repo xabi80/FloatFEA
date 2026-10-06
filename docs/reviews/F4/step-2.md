@@ -1,4 +1,508 @@
 # Review — F4 step 2
+Reviewed commit: 46154986ac3b129d9bb9d1cf8c0bd6d05f7582a6
+Verdict: HOLD
+
+**Reviewed commit: `4615498`.** (`46154986ac3b129d9bb9d1cf8c0bd6d05f7582a6`, HEAD of F3,
+pushed.) Range `488f2d8..HEAD` -- two commits.
+Tests: 2988 passed, 32 failed, 0 skipped (MY OWN run, one invocation, no `--ignore`, no
+`-k`, no deselection, in the repository itself, 639.53s. **All 32 are EG3 state (2) and
+each is traced by name in section 2.**)
+**CI at the reviewed commit: run `37492421362` at `4615498`, conclusion FAILURE.**
+`the verification ladder: success` at EVERY step -- `ladder 1`, `2`, `3`, `6`, `4`, `5`.
+`lint, unit and guards: failure` at `guards and meta-tests` ONLY; `actionlint`, `ruff`,
+`black --check`, `mypy` and `unit tests` all success. `32 failed, 998 passed in 328.27s`
+-- the same 32, same ids. NOT CK2: `runner_name` is `GitHub Actions 1000001531`, the steps
+ran, the durations are real.
+
+## Round of 2026-10-06 -- ES0 INTERIM CHECK. Counts against NO round.
+
+**ES0's premise verified before anything else, because the exemption rests on it.**
+
+```
+claim  there is no new report revision -- the report is the one verdict 97 judged
+cmd    git log --format='%h %s' -1 -- docs/reports/F4/step-2.md
+out    7cee09f F4 step 2 revision 1: EQ0, EQ2's basis-independent half, ER1(c), ...
+judge  7cee09f is the commit verdict 97 judged. The report has not moved. This is an
+       interim check, it counts against no round, verdict 97 stands as round 1 of 3,
+       and TWO REVISIONS REMAIN.
+```
+
+**Instruction 1b does not fire, and I say so rather than leaving it silent.** The report's
+header reads `Answers: verdict 96 @ 5786bed` and the newest verdict is 97. Under 1b that
+comparison is a HOLD. It is not one here: 1b guards against a report that answers a
+superseded round, and a report that PREDATES the newest verdict with no revision between
+them is EG3 state (2) -- designed, self-clearing, and the exact state ES0 exists to
+permit. The distinction is the same one DD1 draws between an open step and a step file.
+
+**I accept ES0's scope and I have held to it:** the suite, CI, and a CZ0 (a)-(d) scan of
+`488f2d8..HEAD`. No corpus batch. No closure list -- section 6 records the three
+closure-class things I found so they are not lost, as single lines, explicitly not as a
+list to work through.
+
+**HOLD, on three items, two of which are repairs that stopped one site short of their own
+closing condition.** R686 is ANSWERED and I reproduced it in both directions plus a third
+the condition did not ask for. R687 and R688 are answered on the branches they took.
+**R689 is HALF answered and R682 is not answered on the branch the hand-back says it
+took** -- and both are the same shape, the shape `CLAUDE.md` records under *A closing
+condition that names sites is closed site by site*. That rule was earned by R29. This is
+its third instantiation in four verdicts.
+
+**No STOP.** The ladder is green at every rung in CI. `4615498` is the permitted form for
+touching my own instructions and I confirm it in section 1 as I was asked.
+
+## 1. MY OWN INSTRUCTIONS, AND THE CONFTEST -- EACH DIFFED SEPARATELY
+
+```
+cmd    git diff --stat 488f2d8..HEAD -- .claude docs/SUPERVISOR.md
+out    docs/SUPERVISOR.md | 31 +++++++++++++++++++++++++++++++
+out    (.claude/ -- nothing)
+cmd    git log --format='%h %s' 488f2d8..HEAD -- .claude docs/SUPERVISOR.md CLAUDE.md
+out    4615498 process: ES0 -- rounds are counted per report revision; an interim check
+out            counts against none
+```
+
+**`4615498` IS THE PERMITTED FORM. NOT A STOP-CLASS FINDING.** Four conditions, each
+checked rather than inferred:
+
+```
+claim  standalone -- it touches nothing but the two instruction files
+cmd    git show --stat 4615498
+out    CLAUDE.md | 31 +++ ; docs/SUPERVISOR.md | 31 +++ ; 2 files changed, 62 insertions(+)
+claim  zero deletions, so no guard was removed
+out    62 insertions(+), 0 deletions -- and I read the 31 lines; they are additive
+claim  it cites the directive asking for the change, in its first line
+out    "process: ES0 -- rounds are counted per report revision ..."
+claim  the two inserted regions are byte-identical, which the commit message asserts
+cmd    git diff 488f2d8..HEAD -- <file> | grep '^+' | grep -v '^+++' | sed 's/^+//' ; md5sum
+out    8a6ad471294c2c4cfc1886bb3ed6ee14  (CLAUDE.md)
+out    8a6ad471294c2c4cfc1886bb3ed6ee14  (docs/SUPERVISOR.md)
+out    diff: no output. BYTE-IDENTICAL.
+```
+
+Same ruling as `9985bcd`, on the same four grounds, and I checked it the same way rather
+than carrying the earlier ruling across.
+
+```
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py                   <- non-empty, so the pathspec is the CI0 one
+cmd    git diff 488f2d8..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty). No conftest changed. No new plugin. CH2 clear.
+```
+
+## 2. THE 32 REDS, EACH TRACED BY NAME (EG3(i), CA2)
+
+EG3(i) is explicit that a family is not a trace. Each id, matched against EH1's and EJ2's
+corrected **state (2)** list:
+
+| count | id | on the list as |
+|---|---|---|
+| 17 | `test_every_named_site_is_touched_or_declared[R686/R687/R688/R690-...]` | named, state (2) |
+| 5 | `test_the_report_carries_the_finding[R686..R690]` | named, state (2) |
+| 1 | `test_the_CI_section_is_about_the_REVIEWED_commit` | named, state (2) |
+| 1 | `test_the_Carried_table_is_what_the_generator_produces` | named, state (2) |
+| 1 | `test_the_generator_would_catch_a_row_under_the_wrong_number` | named, state (2) |
+| 1 | `test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` | the red baseline |
+| 6 | the six planted states | the cascade, by failure line |
+
+**The cascade is identified by each state's OWN failure line and not by its name**, which
+is the R629 discipline:
+
+```
+out  [baseline] AssertionError: baseline: expected a clean run.
+out  [verdict_amended_after_the_commit_the_report_answers] ... expected a clean run.
+out  [non_numeric_step_suffix]           ... must be stepped over, not reacted to.
+out  [superscript_digit_step_number]     ... must be stepped over, not reacted to.
+out  [draft_suffix_beside_a_step_report] ... must be stepped over, not reacted to.
+out  [step_number_is_the_empty_string]   ... must be stepped over, not reacted to.
+out  [zero_padded_step_number]           ... must be stepped over, not reacted to.
+```
+
+Every one of the six asserts against a clean baseline and the baseline is dirty.
+17+5+3+1+6 = 32. **Nothing is outside the list, so CZ1 (iv) does not fire and this is not
+a (d).**
+
+**EG3(ii), the half no verdict has measured -- state (1) DID clear at my verdict commit.**
+`test_the_guard_reads_the_step_being_worked_on` was the cause of all eight reds at
+`7cee09f` and it is absent from the 32 above. `488f2d8..4615498` touches neither the report
+nor the verdict, so the measurement at `4615498` is the measurement at `488f2d8`:
+
+```
+cmd    git diff 488f2d8..HEAD --stat -- docs/reports docs/reviews
+out    (empty)
+out    test_the_guard_reads_the_step_being_worked_on: NOT in the FAILED list. CLEARED.
+```
+
+## 3. WHAT I REPRODUCED RATHER THAN READ
+
+**R686 -- ANSWERED, and the repair is bidirectional, which is more than the condition
+asked.** I ran the ablation myself, in both directions and in a third:
+
+```
+cmd    python <scratch>/r686.py  (pytest rung4 + tests/test_no_tolerance_literals.py)
+out    as shipped (deck 0.8)              88 passed
+out    deck key -> 0.9                    1 failed  RED test_R653_the_DECK_and_the_DECLARATION_agree...
+out    deck key -> 0.85                   1 failed  RED (same)
+out    deck key -> 0.8000001              1 failed  RED (same)   <- `==`, no slack
+out    declaration -> 0.9, deck untouched 2 failed  RED (same) + RED ..._FloatSims_DEFAULT_reddens...
+out    deck key DELETED                   1 failed  RED (same)   <- raises, never defaults
+out    deck restored: True
+rule   editing EITHER side must redden; a missing key must raise, not default
+```
+
+That is the EB6 shape and it is the real one. The literal left the comparison entirely
+rather than being re-marked, which is the right fix and not the cheap one. **R686 closed.**
+
+**R687 -- ANSWERED on the branch it took, and I note what that branch costs.** Branch A of
+the three I offered: the ranges the scheme actually attains, with both closed forms and
+both crossover values pasted, and the false sentence gone from both sites (the marker
+comment is deleted; the assertion message is rewritten). `rho_inf = 0.2` is now walked, so
+the value my finding was about is exercised. **Closed as offered.** The measurement of what
+the branch buys is in section 6; it is not a reopening.
+
+**R688 -- ANSWERED on the branch it took.** The window is declared, with a counter, with
+two plan rows in the same commit, and the word "exact" is gone from the docstring. The
+reference resolves:
+
+```
+cmd    sed -n '255,263p' docs/load-interchange-v1.md
+out    line 259: alpha_m = 0.42105     alpha_f = 0.47368     difference 0.05263
+judge  `_DOC_DIFFERENCE = 0.05263` and its "at line 259" both resolve. Citation good.
+```
+
+The per-channel figures the hand-back pastes are correct, and they are **a different
+quantity from the four in my R688** -- mine were the drift `round(x,5)` still ACCEPTED
+(distance to the quantisation edge, governing `7.895e-07` on `alpha_f`); these are
+`|exact - published|` (governing `4.210526e-06`, also on `alpha_f`). Both right. The
+hand-back's sentence "Per-channel drifts reproduce yours" is false -- they are not the same
+numbers and could not be -- and it is section 6's third line, not a blocking item. What IS
+blocking is the bracket figure: R693.
+
+## 4. R689 -- HALF ANSWERED. I SOLVED THE THRESHOLD AND THE VACUITY IS STILL THERE.
+
+The all-zero row is closed and I reproduced it. The COUNT is not, and `compared > 0` is a
+nonzero-check wearing a count's name. Inverting the decision rule rather than sampling one
+side of it:
+
+```
+cmd    python <scratch>/r689.py  (the production gate's own helpers, built fixture, real mapper)
+rule   the shipped pair: `_channels_compared(...) > 0` and
+       `max(per_body) < F4_MAPPING_CONSERVATION`
+out    dense in all 16 blocks  blocks 16/16  compared 10/10  err 2.196e-16  GREEN  <- control
+out    zeros everywhere        blocks  0/16  compared  0/10  err 0.000e+00  RED    <- R689, closed
+out    only block  0 (buoy1)   blocks  1/16  compared  2/10  err 0.000e+00  GREEN
+out    ... every one of blocks 0-11 (the twelve buoys)  compared 2/10  GREEN
+out    ... every one of blocks 12-15 (the four hubs)    compared 4/10  GREEN
+out    ALL SIXTEEN single-block rows read GREEN. The minimum is 2 of 10 channels.
+out
+out    `compared >  0`: 16 of 16 degraded rows still GREEN
+out    `compared >  1`: 16 of 16 still GREEN
+out    `compared >  2`:  4 of 16 still GREEN
+out    `compared >  3`:  4 of 16 still GREEN
+out    `compared >  4`:  0 of 16 -- EVERY degraded row reddens       <- the boundary
+```
+
+So the threshold that closes the item is `compared > 4`, equivalently `compared == 10`, and
+`> 0` sits four below it. My condition read "asserts the COUNT of bodies compared
+relatively -- equivalently that the lam row is nonzero in all sixteen blocks", and I named
+the pattern: "that is the `checked == 16` pattern this file already uses twice". A floor of
+one channel out of ten is not the count. The coverage still degrades invisibly, which is
+the sentence the condition was written against.
+
+## 5. R682 -- NOT ANSWERED. THE FALSE ARITHMETIC SURVIVES AT TWO OF THREE NAMED SITES.
+
+```
+cmd    grep -rn '1/18\|5\.555556e-02\|1\.0550e+14\|114960937\|6386718' --include=*.py --include=*.md .
+out    floatfea/tolerances.py:1990-1991  -- DELETED as false. Site 1 of 3. DONE.
+out    docs/milestones/F4.md:348         -- STILL THERE. Site 2 of 3.
+out    tests/verification/rung4/test_f4_static_and_mapping.py:549 -- STILL THERE. Site 3 of 3.
+out    tests/verification/rung4/test_f4_static_and_mapping.py:520 -- a fourth, same arithmetic.
+out    (CLAUDE.md:274 and docs/SUPERVISOR.md:438 quote the figure AS WRONG. Correct.)
+```
+
+R682's closing condition named three sites and I said so again in verdict 97 ("R682's
+condition names three sites"). One was answered. This is R691.
+
+## Findings
+
+**R691. (b, blocking) R682's FALSE ARITHMETIC IS DELETED FROM `tolerances.py` AND LEFT
+STANDING IN THE PLAN ROW THAT IS THE SAME COUNTER'S LOCATED JUSTIFICATION -- BY THE SAME
+COMMIT, IN A TABLE THAT COMMIT EDITED TWO LINES ABOVE.**
+`docs/milestones/F4.md:348` and `tests/verification/rung4/test_f4_static_and_mapping.py:549`
+(and `:520`). The plan row reads `F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER = 0.05 | ... R663's
+mu L^2 / 12 over the root moment -- exactly 1/18 on a platform arm, measured 5.555556e-02,
+bracket 1.0550e+14x`. `floatfea/tolerances.py:1990` now says of that exact sentence:
+"**Both halves are false and they are deleted rather than left standing while the repair
+waits (ES2)**", and gives `1/19` and `1/24` as the ratios in the gate's own denominator.
+**The two authoritative locations for this counter's justification now contradict each
+other inside one commit**, and `docs/SUPERVISOR.md` item 4 is the reason that is (b) rather
+than prose: a tolerance change needs "a justification located in `docs/milestones/F<n>.md`
+or the closure artifact", and a justification known by the same commit to be false is a
+missing one. I checked the arithmetic rather than taking either side: if the correct root
+moment is `M` and the defect adds `M/18`, then `(M/18)/(M*19/18) = 1/19` exactly --
+`tolerances.py` is right, the plan row is wrong, and `1/18` is the ratio against the
+CORRECT root moment, which is not the quantity the assertion divides by. The plan row's
+`1.0550e+14x` bracket is the same figure verdict 96 measured as `9.9950e+13` against the
+injected member and `7.9127e+13` against the worst. `test_f4_static_and_mapping.py:549` is
+worse than stale, because it names the right denominator and the wrong number: "against the
+DEFECTIVE root moment this ratio uses is 1/18 of the root moment on a platform arm."
+Nothing caught this: `tests/test_plan_matches_tolerances.py` compares the row's VALUE
+against the declared constant and never reads the row's prose.
+**Closed when** `docs/milestones/F4.md:348`, `test_f4_static_and_mapping.py:549` and `:520`
+each carry the `1/19` / `1/24` figures or no figure at all, and the `1.0550e+14x` bracket is
+re-measured or withdrawn. This is basis-INDEPENDENT -- the deleted claim does not depend on
+`f`, only the VALUE does, and the hold on the value stays accepted. **OR** each of the three
+sites is named in the next revision with the sentence saying it was left and why, which is
+the branch `CLAUDE.md` section *A closing condition that names sites* offers. What I will
+not accept a third time is R682 reported as answered on its prose branch while two sites
+carry the sentence.
+
+**R692. (c, blocking) `compared > 0` IS R689's CLOSING CONDITION MINUS ITS COUNT. ALL
+SIXTEEN DEGRADED ROWS STILL READ GREEN AND I SOLVED THE THRESHOLD.**
+`tests/verification/rung4/test_f4_static_and_mapping.py`, the `assert compared > 0` at
+`:865-871` inside `test_G4_4_the_mapping_CONSERVES_the_joint_resultants`. Measurements in
+section 4: the all-zero row now reddens (the half verdict 96 asked for, and it is real --
+I reproduced the control green and the injection red), and every one of the sixteen
+single-block rows reads GREEN at **2 of 10 channels compared** for the twelve buoy joints
+and **4 of 10** for the four hub joints. Solving the rule rather than sampling it,
+`compared > 4` is the smallest threshold at which every degraded row reddens; the shipped
+`> 0` sits four below it, and `> 1` buys nothing at all. The gate's coverage therefore
+still rests entirely on `_synthetic_lam` being dense in all sixteen blocks -- the
+`:769`-class sentence my R689 named as the CW0 shape -- and that premise is still asserted
+in prose and checked nowhere.
+**Closed when** the assertion is `compared == 10` (or the equivalent all-sixteen-blocks
+density check) with the `2 of 10` / `4 of 10` figures and the `compared > 4` boundary
+pasted as what it prevents. One character of the assertion, and it makes the `:769`
+sentence true by assertion in the same edit, which is what I asked for the first time.
+
+**R693. (b, blocking) THE NEW COUNTER'S BRACKET IS PUBLISHED AS `2x` AND MEASURES
+`1.0857x`, AND THE SENTENCE SAYING NO MEASUREMENT CAN CHANGE THAT RATIO IS REFUTED BY
+ONE.**
+`floatfea/tolerances.py`, the `F4_INTEGRATOR_SPEC_AGREEMENT_COUNTER` entry: "**Twice the
+ceiling, which is the most a printing-precision window can ever be bracketed by**: the
+ceiling is half a unit and the counter is one unit, and **no measurement can change that
+ratio**." The counter-to-ceiling ratio IS 2.000000 and that arithmetic is right. It is not
+the bracket. This repository's own usage of "bracket" is the margin by which the gate
+DETECTS the counter -- the deleted sentence four entries above used it that way ("The
+bracket is 1.0550e+14x"), and so does every other entry in the table. Solved, not sampled:
+
+```
+cmd    python <scratch>/tol_boundary.py
+rule   the counter-case asserts, for all four channels,
+       abs(exact - (published + C)) > F4_INTEGRATOR_SPEC_AGREEMENT
+out    clean abs(exact - published): alpha_f 4.210526e-06   alpha_m 2.631579e-06
+out                                  beta  -1.689751e-06    gamma  1.578947e-06
+out    bisected boundary C* = 9.2105263e-06  ( = max|d| + ceiling; closed form confirms)
+out    shipped counter 1.0e-5 clears C* by 1.085714x    <- THE DETECTION BRACKET
+out    the entry claims the bracket is "twice the ceiling" = 2.0x
+```
+
+And the invariance claim, refuted by one measurement because `C* = max|d| + ceiling` and
+`max|d|` is a property of the four exact values, not of the print precision:
+
+```
+out    rho_inf 0.90: max abs(exact - its own 5dp print) 4.210526e-06 -> bracket 1.0857x
+out    rho_inf 0.20: 4.444444e-06 -> C* 9.444444e-06 -> bracket 1.0588x
+out    rho_inf 0.00 and 1.00: max|d| = 0 -> C* = 5.0e-06 -> bracket 2.0000x
+judge  a measurement does change that ratio, and the same table shows it ranging
+       1.0588x to 2.0000x over the scheme's own parameter.
+```
+
+**EH4, both directions, which the hand-back's sweep took only one of.** It reported
+`7.0e-6, 9.9e-6` reddening the counter-case; the BOUNDARY is `5.789474e-06`:
+
+```
+out    DIRECTION A (strengthening): the ceiling FALLS -> the clean gate trips below
+out                    4.210526e-06 (4.2105264e-6 passes, 4.21e-6 RED)
+out    DIRECTION B (the WEAKENING one): the ceiling RISES -> the counter-case stops
+out                    detecting at 5.789474e-06 (5.7894e-6 detects, 5.79e-6 does not)
+out    => the ceiling is PINNED into [4.210526e-06, 5.789474e-06], a band of 1.3750x,
+out       and the shipped 5.0e-6 sits 86.4% of the way up its own legal band.
+out    DIRECTION B2 (the injection RISES): counter 1e-5, 2e-5, 1e-4, 1e-2, 1.0, 1e6
+out       -- all still "detected", NOTHING reddens. The counter is pinned only FROM BELOW.
+```
+
+**The ceiling's VALUE is right and I am not asking for it to move.** `5.0e-6` is the
+principled half-unit, it is absolute on a genuinely dimensionless quantity so the absolute
+form is correct and the entry says why, the two plan rows landed in the same commit, and
+the band `[4.210526e-06, 5.789474e-06]` is the tightest bracket in this table. **What is
+wrong is the arithmetic published about it**, and the entry is the only statement a reader
+has of what that counter bounds.
+**Closed when** the entry gives the detection bracket `1.0857x` with `C* = 9.2105263e-06`
+named as the boundary, the invariance sentence is deleted or restated as the thing that IS
+invariant (the counter/ceiling ratio of exactly 2, which is a definition and not a
+bracket), and the ceiling's band `[4.210526e-06, 5.789474e-06]` is pasted so a later
+reader sees it pinned from both sides instead of sampled from one. Section 6's third line
+notes the separate sentence "That margin is thin BY CONSTRUCTION"; fold it into this edit.
+
+## 6. RECORDED, NOT A CLOSURE LIST -- ES0 PUTS THE LIST OUTSIDE THIS CHECK
+
+Three lines so they are not lost. **None of these holds the step and none is to be worked
+through this round.** CZ0 classes them as closure items; I agree with the classification,
+and I give the reasoning for the first because I was asked to rule on it.
+
+1. **The dict is LEGITIMATE as to its four numbers, and it escapes the guard rather than
+   being exempted by it.** `_COEFFICIENT_RANGES` at
+   `test_f4_static_and_mapping.py:1017-1036`. Verdict 97 already ruled the numbers are not
+   tolerances -- they bound a computed quantity, there is no slack -- so the FORM is right
+   and the derivation in the docstring is correct and complete. **It is not a dodge.** The
+   part the hand-back did not ask about is what I measured, with the flat literal and the
+   module-level float NAME as controls so the probe carries its own failure:
+   ```
+   cmd  python <scratch>/probe_dict.py   (tests/test_no_tolerance_literals.py::offending)
+   out  CAUGHT  bare literal                               <- control
+   out  CAUGHT  module-level float NAME (the :497 clause)  <- control
+   out  MISSED  module-level DICT of floats, unpacked
+   out  MISSED  assert residual < RANGES["r"]              <- a REAL tolerance, subscripted
+   out  MISSED  module-level TUPLE, indexed
+   out  MISSED  LO, HI = 3.7e-9, 2.2e-3   then   LO <= v <= HI
+   out  MISSED  the SHIPPED shape, verbatim
+   ```
+   So it is invisible to the guard, which is a different and larger thing than a dodge: the
+   `:497` clause exists because "a module-level `NAME = <float>` used as a threshold is a
+   local literal wearing a name; the indirection is the point of the clause", and a
+   container is the same indirection one level down. The docstring routes unread species to
+   `tests/test_marker_exemption_corpus.py`; grepping that file for dict, tuple, container
+   or subscript returns nothing, so the routing claim does not cover this form. **DR1
+   forbids extending the guard and I am not asking for that.** The repair that costs one
+   line and no apparatus: a `not-a-tolerance:` marker on the dict assignment, which
+   restores the audit trail a reader greps for. It is free -- there is no unused-marker
+   guard, so an unconsumed marker is simply ignored.
+2. **`test_R653_the_coefficients_are_the_CLOSED_FORM_at_the_declared_radius` does not check
+   a closed form and checks nothing AT the declared radius.** `:1114`. R687's condition is
+   MET and this is not it reopened. Measured against nine wrong closed forms: the range
+   gate catches 6 and is blind to 3 -- `beta = 1/(1+r)` with the square dropped, the
+   Newmark trapezoid `beta=0.25, gamma=0.5`, and `alpha_m = (r-1)/(r+1)`. The spec pin
+   above it catches all nine, so the pair's reach is the pin's reach. The name states a
+   property the test cannot fail on, which is the shape R686 was, one finding earlier.
+   Renaming it to what it asserts costs one line.
+3. **Two sentences, and one claim I could not reproduce.** "Per-channel drifts reproduce
+   yours" in the hand-back -- a different quantity from my four, and both sets are right
+   (section 3). And `tolerances.py`: "That margin is thin BY CONSTRUCTION" of the
+   `1.1875x` -- the margin is `ceiling / max|d|` and `max|d|` is measured, giving `inf` at
+   `rho_inf` 0 and 1, `1.1250x` at 0.2/0.5/0.8, `1.1875x` at 0.9. It is thin by
+   measurement. BG0; fold into R693. **Not reproduced:** the `black`-moves-the-marker
+   fragility the hand-back flagged. I built a marked assertion long enough to force a
+   reflow; `black -l 100` left the marker on the comparison's line and `offending()` read
+   CLEAN before and after. Recorded as unverified, not as refuted -- a different shape may
+   do it.
+
+## Carried
+
+Verdict 97 left **five findings and two carried items** open. Every one, with status:
+
+* **R686 -- ANSWERED.** Section 3, reproduced in both directions plus the deleted-key case.
+  `integrator.py:rho_inf_from_deck`, `scripts/report_joint_reactions.py:77`,
+  `test_f4_static_and_mapping.py:1058-1112`. My figure to beat was `212 passed` with the
+  deck at `0.9`; it now reddens. **Closed.**
+* **R687 -- ANSWERED on branch A, as offered.** Both false sentences out of both sites; the
+  ranges `[0.25, 1.0]` and `[0.5, 1.5]`, the two closed forms and the crossovers
+  `sqrt(2)-1` and `1/3` all pasted; `rho_inf = 0.2` walked. **Closed.** The name is
+  section 6 item 2 and is not this item.
+* **R688 -- ANSWERED on the branch it took.** `F4_INTEGRATOR_SPEC_AGREEMENT = 5.0e-6`
+  declared, counter declared, two plan rows in the same commit, "exact" gone. **Closed**,
+  and the bracket arithmetic inside the answer is **R693**.
+* **R689 -- HALF ANSWERED. STILL OPEN as R692.** The all-zero vacuity is closed and
+  reproduced; the COUNT conjunct is not, and I solved the threshold.
+* **R690 -- STILL OPEN, NOT HELD** (it never was). Grepping
+  `docs/milestones/F4.md` for ER0, ER1, ER2, EQ2, EQ3 and EQ4 still returns nothing, and
+  the only plan change in this range is the two section 5a rows. ES0 and ES2 have now
+  joined the list of directives I can read only through a hand-back -- ES0 is in the
+  repository, which is why I could verify it in section 1; **ES2 is not.** Unchanged in
+  substance: the text goes in before ER1(d) derives anything from the new basis.
+* **R682 -- STILL OPEN, AND NOW ALSO R691.** The hold on the VALUE stays accepted
+  (basis-dependent through `f`, ER0 moves `f`, ER2's ordering is right). The
+  basis-INDEPENDENT half was taken at one of three named sites. Section 5.
+* **R685 -- STILL OPEN, hold accepted without reservation.** `tolerances.py` is untouched
+  for it in this range and nothing about it has moved. Not held.
+
+Closure items C161 to C173 and the earlier C-items: **not reviewed this round.** ES0
+excludes the closure list from an interim check, and I did not look at them.
+
+## Tolerances touched
+
+```
+cmd    git diff 488f2d8..HEAD -- floatfea/tolerances.py
+out    two new entries, one deleted justification paragraph, and nothing else.
+out    No existing VALUE moved -- the diff contains no changed `Final[float] =` line.
+```
+
+| name | old | new | form | counter | justification located | ruling |
+|---|---|---|---|---|---|---|
+| `F4_INTEGRATOR_SPEC_AGREEMENT` | none | `5.0e-6` | absolute, dimensionless -- correct here; the quantity is a pure number and the entry says there is nothing to be relative to | `F4_INTEGRATOR_SPEC_AGREEMENT_COUNTER` | `docs/milestones/F4.md:346`, same commit; entry at `tolerances.py:2007-2026` | **VALUE ACCEPTED.** Band `[4.210526e-06, 5.789474e-06]` solved in both directions, `1.3750x`, the tightest in this table. Passes the unit-scaling question non-vacuously because the quantity is genuinely dimensionless. The published bracket is **R693**. |
+| `F4_INTEGRATOR_SPEC_AGREEMENT_COUNTER` | none | `1.0e-5` | dimensionless, one unit in the fifth printed place | is the counter; injected by `test_R653_a_COEFFICIENT_WRONG_IN_THE_LAST_PRINTED_PLACE_reddens_the_gate` | `docs/milestones/F4.md:347`, same commit | **VALUE ACCEPTED** -- principled, not arbitrary, and it clears the boundary `C* = 9.2105263e-06`. **R693** on the bracket, the invariance sentence, and the absence of any upper pin (direction B2: it may rise to `1e6` with nothing red). |
+| `F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER` | `0.05` | `0.05`, unmoved | dimensionless | is the counter, still injected on one member | `docs/milestones/F4.md:348` -- **and that row is the false arithmetic the same commit deleted from `tolerances.py`** | **R691, blocking.** The `tolerances.py` paragraph is now correct and candid, and I say so: deleting a false sentence rather than leaving it standing while the repair waits is the right call and it is what I asked for. It was done at one site of three. |
+
+## Next step opens when
+
+**STEP 2 STAYS OPEN. This check counts against NO round, so verdict 97 remains round 1 of
+three and TWO REVISIONS REMAIN.** Step 3 does not begin. ER1's six FloatSim re-runs may
+proceed -- that is the whole point of ES0 and I am not obstructing it -- but these three
+are answered in the same revision that carries ER1, before its own work is read:
+
+1. **R691** -- `docs/milestones/F4.md:348`, `test_f4_static_and_mapping.py:549` and
+   `:520`, **each named with its hunk or with the sentence saying it was left and why**.
+   Basis independent; three edits. **My figures: `1/19` on a platform arm and `1/24` on a
+   hub, in the gate's own denominator; `1/18` is against the correct one; the
+   `1.0550e+14x` bracket measured `9.9950e+13` and `7.9127e+13`.**
+2. **R692** -- `compared == 10` (or the all-sixteen-blocks density check) in
+   `test_G4_4_the_mapping_CONSERVES_the_joint_resultants`, **not** in the sparse test,
+   which already has one. **My figures to beat: 16 of 16 single-block rows GREEN, minimum
+   2 of 10 channels compared, boundary at `compared > 4`.**
+3. **R693** -- the detection bracket `1.0857x`, the boundary `C* = 9.2105263e-06`, the
+   ceiling's band `[4.210526e-06, 5.789474e-06]`, and the invariance sentence deleted or
+   restated. Fold section 6 item 3's "thin BY CONSTRUCTION" into the same edit, because
+   BP0 says a figure whose rule moved is regenerated in the commit that moves it, not the
+   next.
+4. **R682, R685, R690** -- carried, unchanged in substance. R690's text in the repository
+   before ER1(d) derives anything from the new basis; **and ES2 with it**, since I have
+   now judged two commits citing a directive that exists nowhere I can read.
+5. **EG3(ii)** -- the report-guard files run AT my verdict commit and the counts pasted.
+   The expected reds are EH1's state (2) list and nothing else; any red outside it is CZ1
+   (iv) unchanged. **My figure at `4615498`: 32 failed, 2988 passed, 0 skipped, all 32
+   traced in section 2.**
+
+**WHAT I WILL NOT ACCEPT AT THE NEXT REVISION.** R691 reported answered with one or two of
+the three sites touched -- the rule is site by site and this is its third instantiation in
+four verdicts, so the next revision lists all three by path and line whatever their
+disposition. A count assertion for R692 that is a floor rather than the count: `> 1`
+through `> 4` are all still vacuous on 4 of 16 rows or more, and I have pasted the table.
+And for R693, a replacement bracket figure taken before the final edit to the entry -- CP3
+is the rule, and this round's one blocking tolerance finding is a bracket arithmetic
+inside a repair, which is CP2's recorded shape for the fourth round running.
+
+## On ES0's scope -- said once, and it leaves the loop
+
+**I agree with ES0 and this is the once I say so.** The exemption keys on whether a new
+report revision exists, which is a fact a machine can check and which distinguishes "the
+work reached a reviewable state" from "a turn ended". That is a better discriminator than
+the one I was applying in verdict 97, and the revision count answers DK0 cleanly.
+
+One limit, recorded as an observation and not as a HOLD or a request. An interim check
+reads a tree that **no report describes**, so every claim about it is one I had to
+construct a command for rather than check against a written one, and three of this round's
+five judgements came out of measurements the hand-back did not contain -- R691's third
+site, R692's threshold, R693's boundary. That is more reviewer work per unit of code, not
+less. If interim checks become frequent, the honest accounting is that the saving is in
+the ROUND COUNT and not in the reading, and the thing that would recover it is cheap: a
+hand-back for an interim check could carry the `claim/cmd/out` triples for the repairs it
+describes, which this one largely did, and the boundary solved in both directions, which
+it did not. Nothing follows from this; it goes to Xabier through the implementer if it is
+worth anything.
+
+## On the schedule
+
+The three blocking items are, between them, one assertion operator, three prose edits and
+one re-measured bracket -- a few hours, and none of them touches ER1. **ER1's two days are
+not threatened by this verdict and should start now, in parallel.** I see no slippage to
+report that the hand-back has not already reported.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F4 step 2
 Reviewed commit: 4f99c7f6a3e446bc183b67bf0c77b91596e367c5
 Verdict: HOLD
 **Reviewed commit: `7cee09f`.** (`7cee09fdaac615519fe0da08c09d018f7438d0de`, HEAD of F3
