@@ -197,15 +197,41 @@ entire body mass on the members and will never be on a ladder.**
 | `hub4:buoy11_arm` | 6.9487e+06 | 6.9487e+06 | 6.9487e+06 | 1.4306e+08 | 1.2773e+08 | 1.1241e+08 |
 | `hub4:buoy12_arm` | 6.9488e+06 | 6.9488e+06 | 6.9488e+06 | 1.4306e+08 | 1.2773e+08 | 1.1241e+08 |
 
-**`Vz` does not move with `f` at all** — worst relative move `0.000000`, which
-is exactly zero and not merely small. I drafted the opposite sentence for this section
-and the measurement refuted it before it was sent: I expected the handed-down platform
-share to break the independence `Vz` had in issue 3, and it does not. `f` moves mass
-between two places that both lie inside the member's span, so the TOTAL weight each
-member carries is conserved exactly, and the root shear is that total whatever the
-split — on either basis, and with or without a share handed down from above.
+**`Vz` AND `f`: THE ANSWER DEPENDS ON WHICH STATION, AND THIS SECTION HAS SAID BOTH
+THINGS WRONGLY ONCE.** The table above reports the WORSE station, and at that station
+`Vz` does not move with `f` at all — worst relative move `0.000000`, exactly
+zero. But the ROOT station moves a great deal:
 
-`My` runs from `1.1200×` at `f = 0.5` to `0.8800×` at `f = 1.0` against the
-shipped `f = 0.75`. Moving mass outboard raises the root moment; the lever is what `f`
-changes.
+```
+cmd  python -c "...root (end_a) and worst-station Vz per f..."
+out       f  member                         root Vz    worst-station Vz
+out    0.5   platform:hub1_arm         3.065625e+06        6.131250e+06
+out    0.75  platform:hub1_arm         1.532813e+06        6.131250e+06
+out    1.0   platform:hub1_arm         1.396984e-09        6.131250e+06
+out    0.5   hub1:buoy1_arm            4.496250e+06        6.948750e+06
+out    0.75  hub1:buoy1_arm            3.270000e+06        6.948750e+06
+out    1.0   hub1:buoy1_arm            2.043750e+06        6.948750e+06
+```
+
+The worst station is the tip, where `Vz` equals the support reaction and `f` cannot
+touch it: `f` moves mass between two places both inside the member's span, so the
+total each member carries is conserved and the reaction with it. The ROOT station is
+`R - wL`, and `wL` is exactly what `f` scales — at `f = 1.0` the whole body mass is
+on the members and the root shear goes to zero.
+
+I drafted "`Vz` moves with `f`", measured the worst station, found `0.000000`, and
+published the opposite. Both sentences were true of one station and false of the other,
+and neither said which. The figures above are the answer.
+
+`My` against the shipped `f = 0.75`, **split by body because one range is not both**:
+
+| arms | `f = 0.5` | `f = 1.0` |
+|---|---|---|
+| platform (4) | 1.200000× | 0.800000× |
+| hub (12) | 1.120000× | 0.880000× |
+
+Moving mass outboard raises the root moment; the lever is what `f` changes. The two
+rows differ because a hub arm's support reacts to the platform share handed down as
+well as to the hub's own weight, so `f` scales a smaller part of what it carries. An
+earlier draft of this line published the hub range as if it were the whole range.
 

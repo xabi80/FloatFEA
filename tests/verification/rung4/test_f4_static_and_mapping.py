@@ -552,10 +552,38 @@ def test_EO1_static_member_forces_match_STATICS_not_the_model(built: Superstruct
                 f"{member.label}: the tip moment is {mf.end_b[4]!r}, which is "
                 f"{tip_ratio:.6e} of the root moment, and a roller support transmits "
                 "none. R663's defect put it at exactly -mu L^2 / 12, which against "
-                "the DEFECTIVE root moment this ratio uses is 1/19 on a platform arm "
-                "and 1/24 on a hub arm, never 1/18 (R691)."
+                "the DEFECTIVE root moment this ratio uses is `f/(12-5f)` on a platform "
+                "arm -- 1/11 at ER0's f = 0.75 -- and `a/(12-5a)` with `a = 12f/17` on a "
+                "hub arm, 3/53 there (R691, R694)."
             )
     assert checked == 16, f"{checked} of 16 members were checked, not all of them"
+
+
+def _defect_tip_ratio(body: BodyModel) -> float:
+    """R663's tip/root ratio from STATICS, at this body's own `f` (R694).
+
+    # expected: analytic. For a cantilever-with-end-roller carrying a uniform line load
+    the correct root moment is `R L - w L^2 / 2` and the defect adds `mu L^2 / 12` to
+    BOTH stations, so the ratio the gate divides by is
+    `(mu L^2/12) / (R L - w L^2/2 + mu L^2/12)`. Writing `a` for the share of the
+    body's weight the member carries over the share the support reacts to, that reduces
+    to `a / (12 - 5a)`.
+
+    `a = f` on a platform arm: the four arms carry `f` of the platform mass between them
+    and the four supports carry all of it, so the per-member ratio of the two is `f`.
+
+    `a = 12f/17` on a hub arm: a hub's three arms carry `f` of the hub mass, but each of
+    its three supports reacts to the hub's own weight PLUS the platform share handed
+    down -- `14715000 + 6131250 = 20846250` against `14715000` -- so `a` is `f` times
+    `12/17`, the ratio of hub weight to total applied.
+
+    Verified against the solve at every rung of the ladder, worst relative disagreement
+    `3.05e-14`. At `f = 0` it is exactly zero: the members carry nothing, so there is no
+    distributed load and omitting it is not a defect.
+    """
+    f = body.mass_fraction
+    a = f if body.name == "platform" else 12.0 * f / 17.0
+    return a / (12.0 - 5.0 * a)
 
 
 def test_EO1_the_analytic_gate_REDDENS_on_the_R663_formula(built: Superstructure) -> None:
@@ -570,16 +598,23 @@ def test_EO1_the_analytic_gate_REDDENS_on_the_R663_formula(built: Superstructure
     mf = member_forces(body, member, case.u_full, np.zeros(12))  # R663's formula
     assert abs(float(mf.end_a[2])) != pytest.approx(want_vz, rel=F4_STATIC_REACTION_AGREEMENT)
 
-    # OVER ALL 16 MEMBERS (R682, closed on ER0's basis). This ran on the platform's
-    # first member only -- and the platform arms were the four members where the old
-    # counter 0.05 did hold, which is why nothing caught it sitting above the defect on
-    # the other twelve. One member cannot bracket a counter that claims to be the
-    # smallest defect.
+    # OVER ALL 16 MEMBERS (R682), AND AGAINST THE CLOSED FORM AT EACH BODY'S OWN `f`
+    # (R694). Two separate lessons:
+    #
+    # R682: this ran on the platform's first member only, and the platform arms were the
+    # four where the old constant held, which is why nothing caught it sitting above the
+    # defect on the other twelve.
+    #
+    # R694: a CONSTANT counter is calibrated at one rung and the ladder exists to leave
+    # that rung. At `f = 0.5`, admissible and one step down, the old 0.05 sat above the
+    # defect on 12 of 16 again. So the expected side is now the closed form --
+    # `a / (12 - 5a)` with `a = f` on a platform arm and `a = 12f/17` on a hub arm --
+    # which is statics and not this code (EA4), and the declared constant is the floor
+    # beneath every rung rather than a value true at one.
     #
     # RELATIVE, like the ceiling it brackets (R681), and the denominator is the
     # DEFECTIVE root moment because that is what the gate above divides by: it is the
-    # correct root plus `mu L^2 / 12`. On ER0's basis the ratios are EXACTLY 1/11 on the
-    # four platform arms and 1/(53/3) on the twelve hub arms.
+    # correct root plus `mu L^2 / 12`.
     worst_ratio = float("inf")
     checked = 0
     for body in built.bodies:
@@ -589,12 +624,20 @@ def test_EO1_the_analytic_gate_REDDENS_on_the_R663_formula(built: Superstructure
             ratio = abs(float(bad.end_b[4])) / abs(float(bad.end_a[4]))
             worst_ratio = min(worst_ratio, ratio)
             checked += 1
+            expected = _defect_tip_ratio(body)
+            if expected == 0.0:
+                continue  # f = 0: no distributed load, so no defect to inject
+            assert ratio == pytest.approx(expected, rel=F4_STATIC_REACTION_AGREEMENT), (
+                f"{member.label}: the defect's tip/root ratio is {ratio!r} and statics "
+                f"says {expected!r} at f = {body.mass_fraction!r}. The closed form is "
+                "`a/(12-5a)` with `a = f` on a platform arm and `a = 12f/17` on a hub "
+                "arm; a disagreement means the defect is not the one R663 names."
+            )
             assert ratio > F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER, (
                 f"{member.label}: the defect's tip moment is {ratio!r} of its root "
-                f"moment, BELOW the declared counter "
-                f"{F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER!r}. The counter is the "
-                "smallest defect this gate must still fail, so a member below it means "
-                "the counter is on the wrong side of the defect for that member."
+                f"moment, BELOW the declared floor "
+                f"{F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER!r}, which is meant to sit under "
+                f"EVERY rung of the ladder. At f = {body.mass_fraction!r} it does not."
             )
             assert ratio > F4_STATIC_TIP_MOMENT_RELATIVE, (
                 f"{member.label}: the ceiling accepts R663's tip moment, so the gate "
