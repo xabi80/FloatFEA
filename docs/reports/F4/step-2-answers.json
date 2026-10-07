@@ -1,81 +1,170 @@
 {
- "_": [
-  "POINTERS ONLY (CH4).",
-  "",
-  "F4 STEP 2, REVISION 1. Answers the NINETY-SIXTH verdict. R683 at section 4,",
-  "R684 at 5, R653 at 6.",
-  "",
-  "R682 AND R685 POINT AT SECTION 7, WHICH IS WHERE THEY ARE HELD AND WHY.",
-  "Directive ER2 puts ER1's new mass basis before any step-2 tolerance work,",
-  "so that nothing is calibrated twice. Both items are figures derived from",
-  "mu, M and f, and ER0 changes all three. They are OPEN, not answered, and",
-  "section 7 carries the correct bound on the OLD basis so the reviewer can",
-  "see that the measurement exists and only its basis is waiting.",
-  "",
-  "R679, R680 and R681 were answered in step 1's closure commit and verified",
-  "by verdict 96 itself; they point at the ledger section rather than at a",
-  "section of this revision, because this revision did not do that work.",
-  "",
-  "R653 is the one item here that verdict 95 and 94 both carried: step 2 is",
-  "where a G4.x gate cites the replay residual, which is the condition set",
-  "for it to become blocking, so it is answered rather than carried again."
- ],
- "answered": {
-  "R622": {
-   "state": "carried",
-   "where": "\u00a79b"
-  },
-  "R626": {
-   "state": "carried",
-   "where": "\u00a79b"
-  },
-  "R631": {
-   "state": "carried",
-   "where": "\u00a79b"
-  },
-  "R635": {
-   "state": "carried",
-   "where": "\u00a79b"
-  },
-  "R638": {
-   "state": "carried",
-   "where": "\u00a79b"
-  },
-  "R653": {
-   "state": "answered",
-   "where": "\u00a76"
-  },
-  "R656": {
-   "state": "carried",
-   "where": "\u00a79b"
-  },
-  "R679": {
-   "state": "answered",
-   "where": "\u00a79a"
-  },
-  "R680": {
-   "state": "answered",
-   "where": "\u00a79a"
-  },
-  "R681": {
-   "state": "answered",
-   "where": "\u00a79a"
-  },
-  "R682": {
-   "state": "open",
-   "where": "\u00a77"
-  },
-  "R683": {
-   "state": "answered",
-   "where": "\u00a74"
-  },
-  "R684": {
-   "state": "answered",
-   "where": "\u00a75"
-  },
-  "R685": {
-   "state": "open",
-   "where": "\u00a77"
+  "_": [
+    "POINTERS ONLY (CH4).",
+    "",
+    "F4 STEP 2, REVISION 2. Answers the HUNDRED-AND-FIRST verdict (4b8f079), which",
+    "was an ES0 INTERIM CHECK and counts against NO round. Verdict 97 remains round 1",
+    "of three; this revision is ROUND 2 and one revision remains after it.",
+    "",
+    "THE TWO BLOCKING ITEMS ARE R704 (section 2) and R705 (section 3). R704's",
+    "condition named two entries and R705's named three sites; both are closed site",
+    "by site, which is the whole point of the sixth and seventh appearance of that",
+    "shape in this milestone.",
+    "",
+    "CLOSED BY THE VERDICT ITSELF, on its own measurement rather than on my account:",
+    "R685 (section 4), R695, R696 and R698 (section 5), R682 and R691 (section 6).",
+    "They are recorded `answered` and point at the section that carries the figures I",
+    "reproduced, not at the verdict's word for it.",
+    "",
+    "R694 points at section 2 because R704 IS its unanswered half; the verdict's own",
+    "heading reads 'R694 WAS CLOSED ON ONE OF ITS TWO ENTRIES'.",
+    "",
+    "R697 and R699 to R703 are closure items carried unchanged and NOT re-adjudicated,",
+    "per verdict 100's instruction and verdict 101's C6. They point at section 10,",
+    "which carries the whole closure list C1 to C7 as well.",
+    "",
+    "Items with no section pointer were closed in an earlier round and this revision",
+    "does not re-do that work, so there is no section of THIS revision for them to",
+    "point at. The `where` names the round that closed them instead."
+  ],
+  "answered": {
+    "R704": {
+      "state": "answered",
+      "where": "§2",
+      "site": "tests/verification/rung4/test_f4_static_and_mapping.py"
+    },
+    "R705": {
+      "state": "answered",
+      "where": "§3",
+      "site": "tests/verification/rung4/test_f4_static_and_mapping.py"
+    },
+    "R694": {
+      "state": "answered",
+      "where": "§2"
+    },
+    "R685": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R695": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R696": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R698": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R682": {
+      "state": "answered",
+      "where": "§6"
+    },
+    "R691": {
+      "state": "answered",
+      "where": "§6"
+    },
+    "R697": {
+      "state": "carried",
+      "where": "§10"
+    },
+    "R699": {
+      "state": "carried",
+      "where": "§10"
+    },
+    "R700": {
+      "state": "carried",
+      "where": "§10"
+    },
+    "R701": {
+      "state": "carried",
+      "where": "§10"
+    },
+    "R702": {
+      "state": "carried",
+      "where": "§10"
+    },
+    "R703": {
+      "state": "carried",
+      "where": "§10"
+    },
+    "R653": {
+      "state": "answered",
+      "where": "revision 1"
+    },
+    "R679": {
+      "state": "answered",
+      "where": "step 1 closure"
+    },
+    "R680": {
+      "state": "answered",
+      "where": "step 1 closure"
+    },
+    "R681": {
+      "state": "answered",
+      "where": "step 1 closure"
+    },
+    "R683": {
+      "state": "answered",
+      "where": "revision 1"
+    },
+    "R684": {
+      "state": "answered",
+      "where": "revision 1"
+    },
+    "R686": {
+      "state": "answered",
+      "where": "verdict 98"
+    },
+    "R687": {
+      "state": "answered",
+      "where": "verdict 98"
+    },
+    "R688": {
+      "state": "answered",
+      "where": "verdict 98"
+    },
+    "R689": {
+      "state": "answered",
+      "where": "verdict 99, as R692"
+    },
+    "R690": {
+      "state": "answered",
+      "where": "verdict 99"
+    },
+    "R692": {
+      "state": "answered",
+      "where": "verdict 99"
+    },
+    "R693": {
+      "state": "answered",
+      "where": "verdict 99"
+    },
+    "R622": {
+      "state": "carried",
+      "where": "open elsewhere"
+    },
+    "R626": {
+      "state": "carried",
+      "where": "open elsewhere"
+    },
+    "R631": {
+      "state": "carried",
+      "where": "open elsewhere"
+    },
+    "R635": {
+      "state": "carried",
+      "where": "open elsewhere"
+    },
+    "R638": {
+      "state": "carried",
+      "where": "open elsewhere"
+    },
+    "R656": {
+      "state": "carried",
+      "where": "open elsewhere"
+    }
   }
- }
 }

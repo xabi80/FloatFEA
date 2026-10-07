@@ -713,3 +713,1499 @@ The guard that reads that file is not in rung 4 -- it is `tests/test_no_toleranc
 exist because R682's own edits were in the file. The revert changed the file and I
 re-measured only the directory I had been watching. "I ran the tests" is not a
 measurement of the tests I did not run.
+
+# Revision 2 — EQ3's DQ4 and DQ5, R685 closed, DQ8 per body, and R704/R705
+
+Answers: verdict 101 @ 4b8f079
+
+**2026-10-06.**
+
+## 0. CI at `e76f165`, the commit verdict 101 judged — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 101 at `e76f165` through the report's own `Answers:` line. Run `37566586915`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 1977 | 0 | 0 |
+| lint, unit and guards | 992 | 135 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 1 not green.**
+
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 135.**
+
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R686]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R687]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R688]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R689]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R690]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R691]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R692]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R693]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R694]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R695]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R696]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R697]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R698]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R699]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R700]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R701]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R702]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R703]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-HSP-stable/studies/platform-12buoy/platform_rao_pilot.py:291]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-floatfea/io/integrator.py:27]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-floatsim/solver/newmark.py:222]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-integrator.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-scripts/export_platform_deck.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-scripts/report_joint_reactions.py:77]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/test_no_tolerance_literals.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1016]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1017]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1018]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1019]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1020]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1021]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1022]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1023]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1024]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1025]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1026]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1027]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1028]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1029]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1030]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1031]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1032]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1033]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1034]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1035]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1036]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1037]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1038]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1039]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1040]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1041]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1042]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1043]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1044]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1045]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1046]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1037]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1038]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1039]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1040]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1041]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1042]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1043]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1044]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1045]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1046]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-docs/load-interchange-v1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-docs/reports/F4/step-2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:999]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1000]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1001]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1002]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1003]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1004]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1005]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1006]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1007]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1008]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1009]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1010]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1011]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1012]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1013]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R690-docs/milestones/F3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R690-docs/milestones/F4.md:5]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-docs/milestones/F4.md:348]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-floatfea/tolerances.py:1990]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-test_f4_static_and_mapping.py:549]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-tests/test_plan_matches_tolerances.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-tests/verification/rung4/test_f4_static_and_mapping.py:549]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R694-floatfea/model/platform.py:116]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R695-tests/verification/rung4/test_f4_static_and_mapping.py:315]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-docs/milestones/F4.md:473]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-floatfea/tolerances.py:1974]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-floatfea/tolerances.py:1975]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:320]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:321]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:322]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:323]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-floatfea/post/member_forces.py:10]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-floatfea/post/member_forces.py:12]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-floatfea/post/member_forces.py:13]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:95]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:526]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:527]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:555]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:556]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R700-export_platform_deck.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R700-scratchpad/er1b_runs.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R700-scripts/export_platform_deck.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2104]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2105]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2106]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2107]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2108]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2109]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2110]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2111]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2112]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2113]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2114]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2115]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2116]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2117]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2118]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 0a. Runs since the commit verdict 101 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 101 at `e76f165` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `37566586915` | push | `e76f165` | conclusion **failure** |
+| `37570352720` | push | `36a5003` | **no result** (`cancelled`) |
+| `37570657425` | push | `b68f2f7` | conclusion **failure** |
+
+**Run `37566586915`, conclusion **failure**: 135 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R686]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R687]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R688]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R689]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R690]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R691]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R692]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R693]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R694]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R695]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R696]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R697]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R698]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R699]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R700]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R701]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R702]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R703]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-HSP-stable/studies/platform-12buoy/platform_rao_pilot.py:291]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-floatfea/io/integrator.py:27]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-floatsim/solver/newmark.py:222]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-integrator.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-scripts/export_platform_deck.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-scripts/report_joint_reactions.py:77]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/test_no_tolerance_literals.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1016]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1017]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1018]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1019]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1020]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1021]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1022]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1023]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1024]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1025]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1026]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1027]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1028]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1029]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1030]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1031]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1032]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1033]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1034]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1035]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1036]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1037]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1038]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1039]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1040]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1041]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1042]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1043]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1044]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1045]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1046]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1037]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1038]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1039]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1040]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1041]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1042]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1043]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1044]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1045]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1046]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-docs/load-interchange-v1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-docs/reports/F4/step-2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:999]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1000]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1001]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1002]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1003]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1004]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1005]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1006]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1007]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1008]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1009]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1010]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1011]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1012]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1013]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R690-docs/milestones/F3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R690-docs/milestones/F4.md:5]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-docs/milestones/F4.md:348]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-floatfea/tolerances.py:1990]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-test_f4_static_and_mapping.py:549]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-tests/test_plan_matches_tolerances.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-tests/verification/rung4/test_f4_static_and_mapping.py:549]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R694-floatfea/model/platform.py:116]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R695-tests/verification/rung4/test_f4_static_and_mapping.py:315]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-docs/milestones/F4.md:473]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-floatfea/tolerances.py:1974]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-floatfea/tolerances.py:1975]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:320]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:321]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:322]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:323]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-floatfea/post/member_forces.py:10]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-floatfea/post/member_forces.py:12]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-floatfea/post/member_forces.py:13]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:95]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:526]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:527]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:555]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:556]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R700-export_platform_deck.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R700-scratchpad/er1b_runs.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R700-scripts/export_platform_deck.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2104]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2105]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2106]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2107]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2108]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2109]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2110]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2111]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2112]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2113]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2114]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2115]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2116]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2117]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2118]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+**Run `37570657425`, conclusion **failure**: 184 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R686]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R687]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R688]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R689]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R690]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R691]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R692]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R693]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R694]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R695]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R696]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R697]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R698]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R699]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R700]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R701]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R702]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R703]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R704]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R705]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-HSP-stable/studies/platform-12buoy/platform_rao_pilot.py:291]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-floatfea/io/integrator.py:27]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-floatsim/solver/newmark.py:222]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-integrator.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-scripts/export_platform_deck.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-scripts/report_joint_reactions.py:77]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/test_no_tolerance_literals.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1016]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1017]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1018]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1019]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1020]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1021]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1022]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1023]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1024]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1025]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1026]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1027]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1028]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1029]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1030]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1031]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1032]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1033]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1034]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1035]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1036]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1037]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1038]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1039]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1040]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1041]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1042]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1043]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1044]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1045]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1046]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1037]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1038]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1039]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1040]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1041]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1042]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1043]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1044]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1045]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1046]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-docs/load-interchange-v1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-docs/reports/F4/step-2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:999]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1000]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1001]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1002]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1003]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1004]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1005]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1006]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1007]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1008]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1009]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1010]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1011]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1012]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1013]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R689-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R690-docs/milestones/F3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R690-docs/milestones/F4.md:5]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-docs/SUPERVISOR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-docs/milestones/F4.md:348]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-floatfea/tolerances.py:1990]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-test_f4_static_and_mapping.py:549]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-tests/test_plan_matches_tolerances.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R691-tests/verification/rung4/test_f4_static_and_mapping.py:549]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R694-floatfea/model/platform.py:116]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R694-floatfea/tolerances.py:2027]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R695-floatfea/tolerances.py:1979]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R695-tests/verification/rung4/test_f4_static_and_mapping.py:315]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R696-floatfea/tolerances.py:1942]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-floatfea/tolerances.py:1974]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-floatfea/tolerances.py:1975]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:320]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:321]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:322]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:323]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R698-floatfea/tolerances.py:1960]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R698-floatfea/tolerances.py:1961]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R698-floatfea/tolerances.py:1962]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-floatfea/post/member_forces.py:10]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-floatfea/post/member_forces.py:12]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-floatfea/post/member_forces.py:13]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:95]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:526]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:527]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:555]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:556]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R700-export_platform_deck.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R700-scratchpad/er1b_runs.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R700-scripts/export_platform_deck.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R700-scripts/report_joint_reactions.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:200]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:201]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:202]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:203]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:204]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:205]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:206]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R702-docs/reports/F4/preview-PRELIMINARY.md:208]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R702-docs/reports/F4/preview-PRELIMINARY.md:209]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R702-docs/reports/F4/preview-PRELIMINARY.md:210]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2104]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2105]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2106]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2107]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2108]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2109]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2110]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2111]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2112]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2113]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2114]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2115]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2116]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2117]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2118]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R704-floatfea/model/platform.py:116]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R704-floatfea/tolerances.py:1988]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R704-floatfea/tolerances.py:1989]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R704-tests/verification/rung4/test_f4_static_and_mapping.py:355]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-docs/milestones/F4.md:72]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2239]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2240]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2241]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2242]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2243]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2244]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2245]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2246]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2247]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2248]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2249]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2250]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2251]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2252]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2253]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2254]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2255]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2256]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2257]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-tests/verification/rung4/test_f4_static_and_mapping.py:1511]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-tests/verification/rung4/test_f4_static_and_mapping.py:1512]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R705-tests/verification/rung4/test_f4_static_and_mapping.py:1515]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 0b. The reds at this commit are EG3 state (2), traced by name (EG3(i))
+
+**Verdict written, answering report not yet** — which is this revision. CI's own
+decomposition at `e76f165`, from the run's log rather than from my laptop:
+
+```
+claim  every red at the reviewed commit is in the two report-guard files
+cmd    python scripts/ci_section.py   (the 135 names it lists, grouped by test id)
+out    107  test_every_named_site_is_touched_or_declared
+out     18  test_the_report_carries_the_finding
+out      7  test_the_guard_survives_the_state
+out      1  test_the_generator_would_catch_a_row_under_the_wrong_number
+out      1  test_the_Carried_table_is_what_the_generator_produces
+out      1  test_the_CI_section_is_about_the_REVIEWED_commit
+out    107 + 18 + 7 + 1 + 1 + 1 = 135, the whole count
+judge  five of the six ids are EG3 state (2)'s own list (EH1); the seventh test's seven
+       parametrisations are the cascade off a red baseline, identified by their own
+       failure lines and not by their names. State (2) is cleared BY THIS REPORT and not
+       by time.
+```
+
+**And C7 is right that my `136`/`108` was wrong for that commit — the reason is CZ1's own
+reusable half.** I published `136 failed` and `108` of the site guard from a run on my
+WORKING TREE; CI at `e76f165` reads `135` and `107`.
+
+```
+cell   ONE VARIABLE: whether the tree under test is a commit. Same suite, same machine.
+out    working tree, DQ4/DQ5 not yet committed : 136 failed, 3056 passed  (108 sites)
+out    CI at e76f165, the commit itself        : 135 failed              (107 sites)
+judge  `test_every_named_site_is_touched_or_declared` asks, per site, whether a commit
+       TOUCHED it. Its answer is a function of the commit graph, so on an uncommitted
+       tree one site reads differently -- and that is exactly CZ1's sentence: "a check
+       whose input is the commit itself cannot be measured before the commit exists".
+       I knew the rule and applied it to lint and the report guards, and then took a
+       count of the report guards from a tree that was not a commit.
+```
+
+## 1. The schedule, and it holds
+
+**Step 2's date is 14 October and it holds.** Verdict 101 was an ES0 interim check and
+counts against no round, so verdict 97 remains round 1 of three and **this revision is
+round 2, with one revision remaining.** EQ3's four gate rows are shipped — DQ4(i),
+DQ4(ii), DQ5 and the per-body half of G4.1's quantity — and two of EQ3's items are not:
+**G4.1's dynamic gate and G4.5's `dt`/`dt/2` measurement**, which wait on the six FloatSim
+runs and now also on a plan decision about DQ8's quantity (section 8). That is reported
+the day it is known, which is today, and it is a scope question rather than a slip: if the
+plan decision lands this week both fit inside step 3 without moving 14 October. **No step
+has yet closed carrying a blocking item, so DZ7c does not fire.** R704 and R705 were
+answered the same day they were raised.
+
+## 2. R704 — and R694's second entry, which is the half I left
+
+R694's `Closed when` named two entries. I repaired one, reported both, and the reviewer
+measured the other still frozen. **This is the sixth appearance of that shape in this
+milestone** and the first on a gate rather than a sentence.
+
+```
+claim  the frozen `0.375` equality FALSE-REDDENS at five of six non-vacuous rungs
+cmd    python scratchpad/verify_r704_r705.py
+out         f               shortfall       f/2  closed form  old 0.375   floor
+out      0.75     0.37500000000000006     0.375         PASS       PASS    PASS
+out       0.5     0.25000000000000017      0.25         PASS       FAIL    PASS
+out       0.4      0.2000000000000001       0.2         PASS       FAIL    PASS
+out       0.3     0.15000000000000022      0.15         PASS       FAIL    PASS
+out       0.2     0.10000000000000019       0.1         PASS       FAIL    PASS
+out       0.1      0.0500000000000004      0.05         PASS       FAIL    PASS
+out       0.0   6.075906704932774e-16       0.0  VACUOUS, skipped
+rule   the counter-case must hold at every rung the ladder descends to
+judge  every one of those rungs is `admissible`, so none is unreachable. This is the R680
+       shape and not the R682 one: the gate does not let a defect through, it reddens on
+       correct code. My six figures reproduce the reviewer's to the digit.
+```
+
+```
+claim  the repair is the closed form at the body's own `f`, in `_defect_tip_ratio`'s shape
+cmd    grep -n "expected_shortfall = platform.mass_fraction" tests/verification/rung4/test_f4_static_and_mapping.py
+out    375:    expected_shortfall = platform.mass_fraction / 2.0
+rule   the shortfall is `f/2` -- the omitted load is the member's whole weight and half
+       lands at each node, which is statics and not this code (EA4)
+judge  `f` is read from the body, so no rung can invalidate it, and the constant is
+       demoted to a floor: `F4_STATIC_REACTION_AGREEMENT_COUNTER` moves `0.375` -> `0.04`,
+       below the smallest non-vacuous defect `0.05`, margin `1.2500x`. EH4's weakening
+       side: the defect may shrink to `0.8000` of its size before the floor stops
+       bracketing it. At `f = 0` there is no omitted load, so the case SKIPS with the
+       reason named rather than passing vacuously.
+```
+
+**What I am taking from the sixth repetition, since the reviewer said it would not accept
+a seventh.** The failure is not inattention to the condition — I read it — it is that I
+checked the site I had just edited and treated the edit as the evidence. The command that
+would have caught all six is the same one: a `grep` for every occurrence of the thing
+being fixed, run **after** the fix, pasted. EU4 says exactly that, and R705 below is where
+I actually did it.
+
+## 3. R705 — a gate that could not fail on a sign, and all three of its named sites
+
+```
+claim  three sign mutants, magnitudes exactly preserved, read the CLEAN value
+cmd    python scratchpad/verify_r704_r705.py
+out      none (clean)                     force 2.4835e-16  moment 5.9605e-16
+out      node A rotational rows flipped   force 2.4835e-16  moment 2.0000e+00  CAUGHT
+out      node B rotational rows flipped   force 2.4835e-16  moment 2.0000e+00  CAUGHT
+out      both ends flipped                force 2.4835e-16  moment 2.0000e+00  CAUGHT
+rule   `F4_DQ4_ELEMENT_VECTOR` = 1.0e-12
+judge  `2.0` is the exact algebra of comparing `-x` with `+x`, and the FORCE channel stays
+       at round-off because the injection moves no magnitude. Under the shipped
+       `abs(abs(f[ra]) - want_m)` all three read the clean value to every digit.
+```
+
+The signs are **measured, not fitted**, which matters because a sign chosen to make a
+mutant red is the defect wearing the repair's clothes:
+
+```
+claim  the element's convention is `('xy', +1, -1)` and `('xz', -1, +1)`, on every element
+cmd    python scratchpad/r704_r705.py
+out    the distinct (plane, sign_A, sign_B) patterns over EVERY element:
+out    [('xy', 1, -1), ('xz', -1, 1)]
+judge  that is the `flip = diag([1, -1, 1, -1])` `local_mass` applies to the xz plane and
+       documents. Taken from the textbook form `(L^2/12) e1 x w` and checked against the
+       element, not read off the element and written down as the expectation.
+```
+
+**All three sites the condition named, closed site by site, with the grep pasted (EU4).**
+
+```
+rule   R705's `Closed when` named three things: the assertion at :1511-1515, the
+       antisymmetry `f[ra] == -f[rb]` as an alternative, and the docstring sentence at
+       :1426-1431. Half of an item is not the item.
+```
+
+```
+claim  `abs(abs(` survives three times and EVERY ONE IS PROSE quoting the withdrawn form
+cmd    grep -n "abs(abs(" tests/verification/rung4/test_f4_static_and_mapping.py
+out    1474:    took `abs(abs(f[ra]) - want_m)` and read the clean value to every digit under the
+out    1544:FAIL ON ONE. `abs(abs(f[ra]) - want_m)` discards exactly the sign `docs/milestones/F4.md`
+out    1709:    error of comparing `-x` with `+x`. Under the `abs(abs(f[ra]) - want_m)` this gate
+judge  I first wrote `out  (no output)` here FROM THE EXPECTATION, and the command prints
+       three lines. All three are inside docstrings describing what the gate used to do,
+       which is why the count is 3 and not 0 -- but "no output" was not what the command
+       said, and I pasted it before running it. That is the BF0 shape, inside the section
+       that is about the BF0 shape, caught by running the command I had already written
+       down.
+cmd    grep -n "Had the convention disagreed" tests/verification/rung4/test_f4_static_and_mapping.py
+out    (no output -- this one I ran; `grep -c` returns 0)
+cmd    grep -n "sign_a \* want_m\|sign_b \* want_m" tests/verification/rung4/test_f4_static_and_mapping.py
+out    1591:                abs(f[ra] - sign_a * want_m) / want_m,
+out    1592:                abs(f[rb] - sign_b * want_m) / want_m,
+judge  the SIGNED comparison is the only one in the code path; the three prose mentions
+       describe the form it replaced. Three sites named, three sites closed, and the third
+       was a separate commit (`b68f2f7`) rather than a line I claimed the first covered.
+```
+
+**And the sign flip SHIPS as a counter-case, which is more than the condition asked for
+and is the part that matters.** An assertion with no counter-case is an assertion anything
+may quietly undo:
+
+```
+cell   ONE VARIABLE: the two signed lines reverted to `abs(abs(f[ra]) - want_m)`
+cmd    python scratchpad/verify_r705_docstring.py
+out    with the `abs` restored : 1 failed, 99 passed in 0.99s
+out      FAILED ...::test_DQ4_ii_the_closed_form_gate_REDDENS[moment_sign_flipped]
+out    restored                : 100 passed in 0.84s
+judge  that row and nothing else, read from the FAILED list rather than counted from the
+       total. Before this commit the same reversion left the whole file green -- R683's
+       lesson: the injection that distinguishes two forms of a rule is the one that holds
+       the rule.
+```
+
+**I also corrected an overstatement of my own inside the repair (CP2).** My first wording
+said the node-A flip "leaves every per-node figure unmoved". It does not:
+
+```
+claim  the flip MOVES DQ4(i)'s per-node figure and stays at round-off
+cmd    python scratchpad/verify_r705_docstring.py
+out    clean            worst per-node  2.796036563614433e-15  NOT CAUGHT
+out    node A flipped   worst per-node  3.140164140674671e-15  NOT CAUGHT
+rule   `F4_DQ4_RIGID_VECTOR` = 1.0e-12
+judge  it moves by 12% and both values are four orders inside the ceiling. "Unmoved" was
+       the wrong word; the docstring now carries both figures instead of the adjective.
+       The star geometry summing the centre-node moments to zero is why the response is
+       round-off rather than nothing at all — the reviewer's mechanism, my measurement.
+```
+
+## 4. R685 — closed, and it was wider than the finding said
+
+The reviewer reproduced every replacement figure independently and closed it. What I
+record here is the part that was mine to learn:
+
+```
+claim  the entry published four figures measured against the rule R679 DELETED
+cmd    git show da7c25b~1:floatfea/tolerances.py | grep -n "1.8726e-16\|5341x\|0.2437\|0.9202"
+out    2179:# 0.24374825705420716.
+out    2181:# Reason for 1e-12: the measured clean value is 1.8726e-16. It is not exactly zero and
+out    2184:# form. 1e-12 is 5341x above the measurement.
+out    2190:# MEASURES 0.24374825705420716. The other injection -- one side of a hub-platform joint
+out    2191:# losing its sign flip -- reads 0.9202048893902944, so the wrong-node defect is the
+out    -- FIVE lines, not the six I first listed: `2178`, which carries the
+out       `5.2050529737194385e-17` force figure, is matched by NO needle in this command.
+out       Four needles, five lines; the sixth row was a figure I knew was there and the
+out       command does not find.
+rule   BP0: when a decision rule changes, every figure citing the old rule is regenerated
+       or withdrawn IN THE SAME COMMIT
+judge  R679 changed the quantity from a sum over five bodies to a `max` over five. Both
+       are "the mapping error" and they are not the same number.
+```
+
+**How I found it is the transferable part.** I opened that entry intending to append one
+paragraph recording a ladder-wide re-measurement. The paragraph existed in my head as
+text; the anchor I patched against **did not exist in the file**, and the patch raised. Had
+it matched approximately I would have appended a correct paragraph above four wrong
+figures. EQ2's sentence — "a claim that a test exists is pasted from grep or pytest
+output, never from memory" — applies to a claim that a *paragraph* exists too.
+
+The replacements, every one reproduced by the reviewer independently to the last digit:
+
+```
+claim  the per-body figures the entry now carries
+cmd    python scratchpad/r685_measure.py && python scratchpad/r685_split.py
+out    worst clean over the five bodies : 2.1962235947826024e-16   (hub1)
+out    platform clean                   : 0.0   exactly
+out    ceiling 1.0e-12 above it by      : 4553.3x
+out    wrong node: force 0.0 exactly, moment 0.9597085787263796
+out    sign not flipped                 : 3.5569621874567385
+out    internal joint dropped           : 1.7784810937283693
+out    smallest injection               : 0.9597085787263796
+out    counter 0.2, margin              : 4.7985x
+out    counter / ceiling                : 2.000e+11x  -- ELEVEN decades, not twelve
+out    every figure BIT-IDENTICAL across all seven rungs: True
+rule   `F4_MAPPING_CONSERVATION` = 1.0e-12, `_COUNTER` = 0.2
+judge  the entry said "Twelve decades above the ceiling" and 0.2/1e-12 is 2e+11. The
+       symmetry counter's identical sentence IS right at 1.3/1e-12; this one was copied
+       to a value four decades smaller and never re-taken.
+```
+
+```
+claim  the gate and its counter-case measure the SAME quantity, which I checked rather
+       than assumed
+cmd    grep -n "def _mapping_error" -A 7 tests/verification/rung4/test_f4_static_and_mapping.py
+out    return max(_body_errors(built, loads, want).values())
+judge  had they differed, the counter would have been bracketing a quantity no gate
+       asserts -- a (c) finding wearing a green suite.
+```
+
+## 5. R695, R696 and R698 — closed, and R695's closure was mechanical
+
+All three were answered in `30e4395`, which verdict 101 read for the first time. Recorded
+here because the reviewer's method on R695 is the one I should have used on R704:
+
+```
+claim  every live injector citation in `tolerances.py` resolves to a real test
+cmd    grep -nE "Injected by|injections are run by" floatfea/tolerances.py | grep -oE "test_[A-Za-z0-9_]+" | sort -u
+out    test_DQ4_i_the_PER_NODE_gate_REDDENS
+out    test_DQ4_ii_the_closed_form_gate_REDDENS
+out    test_DQ5_the_free_fall_gate_REDDENS
+out    test_EB6_a_PERMUTED_export_reddens_the_gate
+out    test_EO1_the_analytic_gate_REDDENS_on_the_R663_formula
+out    test_G4_the_defective_formula_misses_the_reaction_by_f_over_two
+out    test_R653_a_COEFFICIENT_WRONG_IN_THE_LAST_PRINTED_PLACE_reddens_the_gate
+judge  seven citations, seven resolve, zero phantoms. The reviewer swept the WHOLE file
+       rather than reading the one line R695 named -- which is the difference between
+       closing a finding and closing its example.
+```
+
+R696's and R698's figures, which the reviewer measured rather than read:
+
+```
+claim  the ceiling entry's live sentences are on the new basis, and the equality's
+       justification is the window and not exact arithmetic
+cmd    (reviewer's run, reproduced: the support-reaction magnitudes and the four arms'
+       spread at the shipped basis)
+out    support reaction magnitudes : 6.13e+06 to 6.95e+06 N
+out    exact                       : 6131249.999999998 .. 6948750.0000000065
+out    the shortfall sentence      : 37.5000%
+out    the four arms' spread       : 4.4e-16
+rule   `F4_STATIC_REACTION_AGREEMENT` = 1e-12, so the window is 1e-12 against a spread
+       of 4.4e-16
+judge  the old figures survive only where labelled as old, or where correct for the
+       corner they describe. R698 is a BG0 failure inside a tolerance comment -- value
+       and form right, cause unmeasured -- which is where I least expected to find one.
+```
+
+## 6. R682 and R691 — both closed, at the fifth-missed site
+
+R682's value half closed with `_defect_tip_ratio`. R691 closed at the site I had missed
+five times, and the repair is the generalisable part:
+
+```
+claim  the fifth-missed site now carries the closed form rather than a basis-specific pair
+cmd    grep -n "12-5f\|12-5a\|12f/17" tests/verification/rung4/test_f4_static_and_mapping.py
+out    600:  "the DEFECTIVE root moment this ratio uses is `f/(12-5f)` on a platform "
+out    601:  "arm -- 1/11 at ER0's f = 0.75 -- and `a/(12-5a)` with `a = 12f/17` on a "
+out    620:  `a = 12f/17` on a hub arm: a hub's three arms carry `f` of the hub mass, but
+out    656:  # `a / (12 - 5a)` with `a = f` on a platform arm and `a = 12f/17` on a hub arm
+out    678:  "`a/(12-5a)` with `a = f` on a platform arm and `a = 12f/17` on a hub "
+rule   a repair survives the NEXT change of basis, not just this one
+judge  THE LINES ARE NOT :553-558 ANY MORE, and that is worth pasting rather than
+       repeating the verdict's numbers. :553-558 is where they sat at `e76f165`, the
+       commit the reviewer read; R704, R705 and the DQ4/DQ5 block pushed them to
+       600-678. A line range quoted from a verdict is stale the moment the file moves,
+       which is why the grep is the citation and the range is not.
+judge2 the old text named a basis-specific pair, so every basis change stranded it again
+       -- which is why it was missed five times rather than once.
+```
+
+## 7. EQ3 — DQ4(i), DQ4(ii) and DQ5, with the six declarations accepted
+
+The reviewer accepted all six values and forms and ran EU1's adversarial case on them.
+
+```
+claim  the four quantities, their worst clean values and their counters
+cmd    python scratchpad/dq4_dq5_measure.py && python scratchpad/dq4_dq5_counters.py
+out    DQ4(ii)            worst clean 1.9371509552001953e-15   ceiling clear 516.2x
+out    DQ4(i) per node    worst clean 2.796036563614433e-15    ceiling clear 357.6x
+out    DQ4(i) rotations   worst clean 1.2417634328206378e-16
+out    DQ5                worst clean 1.3335849658769691e-15   ceiling clear 749.9x
+out    counters: 5.0e-4 vs 1.0e-3 (margin 2.0000x) twice; 4.0e-4 vs 8.33e-4 (2.0833x)
+rule   each ceiling is a round-off ceiling over every non-vacuous rung of the ladder
+```
+
+The table is that run, one row per gate:
+
+| gate | quantity | worst clean | ceiling clear | counter |
+|---|---|---|---|---|
+| DQ4(ii) | `M_e a` against `mu L/2`, `+-mu L^2/12` | `1.9371509552001953e-15` | `516.2x` | `5.0e-4` vs `1.0e-3`, margin `2.0000x` |
+| DQ4(i) per node | `M a` against the closed-form construction | `2.796036563614433e-15` | `357.6x` | `5.0e-4` vs `1.0e-3`, margin `2.0000x` |
+| DQ4(i) rotations | `R^T M R a` against the deck's 6x6 | `1.2417634328206378e-16` | — | — |
+| DQ5 | `a = g`, `alpha = 0`, member forces zero | section 7a — **the published figure is short** | `749.9x` as published, `745.5x` corrected (C2) | `4.0e-4` vs `8.33e-4`, margin `2.0833x` |
+
+**DQ4(i)'s rotational half is a restatement of the rung-3 mass-property gate, and the
+gate says so.** The reviewer measured it as *narrower* than I claimed:
+
+```
+claim  the rotational half reaches nine of the ten entries G3.1a B compares, not ten
+cmd    (reviewer's run: a 100% deck_mass error against the rotational columns)
+out    deck_mass scaled x2 : the rotational half stays GREEN
+rule   the rigid 6x6 about the CoG has ten independent entries: mass, three CoG
+       couplings, six of J
+judge  the expected rotational columns are the skew first moment and `J_G alpha`, and
+       NEITHER contains the mass -- so a mass error is invisible to this half and it is
+       a strict subset of G3.1a B rather than an equal. I over-stated the gate and
+       thereby under-stated my own finding. It ships because the locked plan's row asks
+       for it, labelled.
+```
+
+**The expected side is orientation-free, and that is what makes it independent.**
+`M_A = (L^2/12) e1 x w`: the cross product annihilates the axial component on its own, so
+`rotation_matrix`, the roll angle, the orientation node, `local_mass` and `M` are all off
+that path. The reviewer checked it attribute by attribute and confirmed it.
+
+**NOT COVERED, recorded because DQ5's row instructs it:** rotational fields have no
+per-node expected side. A rigid angular acceleration is position-dependent and I could not
+write a consistent nodal form for it independent of the element code. Rotations are
+covered at the resultant level only.
+
+## 7a. DQ5's rung dependence — the figure EU1 saved, and the one it did not
+
+```
+claim  DQ5's clean value RISES as `f` falls, so the shipped rung is not its worst case
+cmd    python scratchpad/dq4_dq5_counters.py
+out       f    DQ5 clean
+out    0.75    3.780e-16
+out     0.5    3.795e-16
+out     0.4    4.218e-16
+out     0.3    4.887e-16
+out     0.2    7.171e-16
+out     0.1    1.334e-15
+rule   the ceiling is a round-off ceiling over every rung the ladder descends to
+judge  a 3.53x spread. Measured at the shipped rung alone the entry would have published
+       `2645.8x` of headroom where the ladder-wide figure is `749.9x`. Nothing in the diff
+       pointed at `f = 0.1`; it is the configuration nobody chose, which is EU1's own
+       first phrase.
+```
+
+**And C2 is right that the figure is still short.**
+
+```
+claim  the true worst clean is on a direction my sweep did not cover
+cmd    (reviewer's run: all three directions, where mine covered minus_z and x)
+out    worst clean : 1.3414143963362381e-15   on platform / y / moment
+out    ceiling clear : 745.5x, where I published 749.9x
+rule   `F4_DQ5_FREE_FALL` = 1.0e-12
+judge  the GATE reads every direction and is unaffected; the published number was taken
+       from a sweep narrower than the thing it described. Same error as the rung one, one
+       axis further in -- which is why it is a closure item and not a defect.
+```
+
+**The causal claim I attached to the rung spread is NOT measured and I am withdrawing it
+rather than defending it.** I wrote that the rise is conditioning — less member mass, more
+lumped remainder. Under BG0 that needs one variable moved with everything else held, and I
+did not isolate it. The measurement stands; the explanation does not.
+
+## 8. DQ8's residual per body — and why no tolerance is declared on it
+
+```
+claim  the function the plan names returned ONE number for all seventeen bodies
+cmd    git show e76f165~1:scripts/report_joint_reactions.py | grep -n "worst_discrete = max"
+out    281:        worst_discrete = max(worst_discrete, float(np.max(np.abs(resid))))
+rule   DQ8: "G4.1 is per body and per case, never aggregated"
+judge  the R679 shape again. `docs/milestones/F4.md:398` names this function as the one
+       that forms the quantity, and the quantity it formed is the one the plan forbids.
+       EJ4's `3.96e-06` was measured from that key, so it is withdrawn as a per-body
+       reference by name rather than re-based underneath it (BP0); the aggregate key is
+       kept so the published figure still has the thing it described.
+```
+
+```
+claim  the per-body breakdown runs, and the `rel` column is entirely the moment channel
+cmd    python scripts/report_joint_reactions.py --period 10.0 --duration 40.0
+out    body             worst N    reaction N          rel    force rel   moment rel
+out    platform      3.3284e-09    1.1923e+00   2.7915e-09   2.7353e-16   2.7915e-09
+out    hub1          1.5733e-10    1.3756e+00   1.1437e-10   2.8247e-16   1.1437e-10
+out    hub2          5.9092e-10    1.4306e+00   4.1304e-10   2.3281e-16   4.1304e-10
+out    hub3          1.6255e-10    1.4857e+00   1.0941e-10   2.6155e-16   1.0941e-10
+out    hub4          5.9092e-10    1.4306e+00   4.1304e-10   2.3281e-16   4.1304e-10
+out    force rel  : 2.3281e-16 to 1.0012e-14   over seventeen bodies
+out    moment rel : 1.0941e-10 to 2.7915e-09
+out    rel        : identical to moment rel on all seventeen
+judge  the aggregate for this case is `3.328367e-09 N`, which happens to BE the platform's
+       own worst, so here it hid nothing -- and it still names no body, and the reaction
+       scales range `5.2845e-01` to `1.5061e+00`, so the relative ordering is not the
+       absolute ordering.
+```
+
+**The dimensional point, and the reviewer's correction to it, which makes the refusal more
+right rather than less.** I argued that `max |Sum reactions|` is a force scale, so dividing
+a moment residual by it yields a quantity with units of length and not a ratio. The
+reviewer split the scale and found my premise wrong on **6 of 17 bodies**: on
+`buoy1/2/3/7/8/9` the moment rows dominate the reaction vector, so there it is `force_rel`
+that carries the dimension and `moment_rel` that is dimensionless. My sentence "`force rel`
+IS dimensionless on all seventeen" is **false on six**.
+
+So the position is stronger than I put it: **which channel is dimensionless depends on
+which component happens to be larger at that body in that window.** A tolerance on DQ8's
+scalar would be a tolerance on a quantity whose units change per body and per case.
+**Declining to declare is the correct refusal**, and the reviewer ruled it not a blocking
+omission. Both forms are reported — `<body>_rel` as DQ8 words it, plus `<body>_force_rel`
+and `<body>_moment_rel` — so the choice can be made against numbers. **C1 is answered
+before the G4.1-dynamic quantity is chosen**, per the verdict, because that choice is (c)
+and C1 is its input.
+
+A body with no reaction scale gets **no** relative key rather than a guarded one:
+
+```
+rule   C158's finding: a `max(..., 1.0)` floor inside a gate is a tolerance under another
+       name, so a body whose reactions vanish over the window is a case with its own
+       right answer -- the residual must be zero ABSOLUTELY -- and gets the absolute key
+       with no sentinel a gate could compare against
+out    on this case the branch was NOT taken: 17 of 17 bodies had a scale
+```
+
+C5 records that the per-body label map is validated by count only, which is a real gap and
+is on the corpus list for the batch that resumes at the end of October.
+
+## 9. The two rulings I asked for, and what I take from them
+
+Both went my way and both came back sharper than I sent them, which is the useful part.
+
+```
+out    ruling 1  DQ4(i)'s resultant half: I claimed ten entries, it reaches nine. A
+out              100% deck_mass error leaves it green.
+out    ruling 2  DQ8's normalisation: right in kind, premise wrong on 6 of 17 bodies,
+out              and the conclusion strengthened rather than weakened.
+judge  in both I reasoned correctly to a conclusion and got a COUNT wrong inside it, and
+       in both the count was something I could have measured and did not.
+```
+
+In both cases I reasoned correctly to a conclusion and got a *count* wrong inside it, and
+in both cases the count was something I could have measured and did not. The pattern is
+the same as R704's: the argument gets the attention and the enumeration does not.
+
+## 10. Closure items — C1 to C7, and R697 with R699 to R703
+
+Per CZ0 these are fixed **once, in the step's closure commit**, are not re-reviewed item by
+item, and the step is not held on one.
+
+```
+claim  the list is the verdict's own, seven items, read off its Closure items section
+cmd    (the verdict's `## Closure items` block, C1 to C7)
+out    C1 dimensional direction  C2 DQ5 worst clean  C3 the :971 figure
+out    C4 the oblique field      C5 the label map    C6 R697/R699-R703 carried
+out    C7 the 135/107 count
+```
+
+Listed here so the list is in the report rather than only in the verdict:
+
+| item | what it is | where |
+|---|---|---|
+| C1 | `scripts/report_joint_reactions.py:238` has the dimensional direction backwards — `N·m/N` is **length** — and both it and the commit message are incomplete per the 11-of-17 measurement | **answered before the G4.1-dynamic quantity is chosen** |
+| C2 | `F4_DQ5_FREE_FALL`'s worst clean is `1.3414143963362381e-15` on `platform/y/moment` (`745.5x`), not `1.3335849658769691e-15` (`749.9x`) | section 7a |
+| C3 | `:971`'s `2.092543e-16` is `hub3`'s clean round-off, not the injected body's | closure commit |
+| C4 | the oblique field adds no discrimination — both sides are exactly linear in `field` | closure commit |
+| C5 | the per-body label map is validated by count only | closure commit; corpus 28 Oct |
+| C6 | R697 and R699–R703 carried unchanged, not re-adjudicated | this section |
+| C7 | my `136`/`108` is `135`/`107` | section 0b |
+
+**R697, R699, R700, R701, R702 and R703** are the previous round's closure items, carried
+unchanged per that verdict's own instruction and C6 of this one — named individually
+rather than as a range, because a range is not a list and the row that points here has to
+find its own number. R697 is the f/2 mechanism being false of 12 of the 16 members; R699
+is the BP0 sweep's five further f/M-dependent figures; R700 is the replay driver shipping
+with the override off; R701 and R702 are the two preview figures true of less than they
+claimed; R703 is the symmetry entry's lost injection-side edge. The reviewer spot-checked
+R697 and reports it still open. All six go into the closure commit's single list with
+C1–C7.
+
+## 11. Carried
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R653 | **answered** — revision 1 | R682, R683, R684, R685, R653 and |
+| R679 | **answered** — step 1 closure | 's remainder (R683 IS that remainder, so five distinct) -- plus C161 to C166 and the |
+| R682 | **answered** — §6 | R682, R683, R684, R685, R653 and |
+| R683 | **answered** — revision 1 | R682, R683, R684, R685, R653 and |
+| R684 | **answered** — revision 1 | R682, R683, R684, R685, R653 and |
+| R685 | **answered** — §4 | R682, R683, R684, R685, R653 and |
+| R686 | **answered** — verdict 98 | test_R653_the_value_the_DRIVER_reconstructs_with_is_the_declared_one CANNOT FAIL ON THE... |
+| R687 | **answered** — verdict 98 | THE RANGE ASSERTION CLAIMS A PROPERTY GENERALIZED-ALPHA DOES NOT HAVE, AND THAT FALSE SENTENCE... |
+| R688 | **answered** — verdict 98 | round(x, 5) == published IS A COMPARISON EPSILON, THE TEST AND THE REPORT BOTH CALL IT EXACT,... |
+| R689 | **answered** — verdict 99, as R692 | THE PRODUCTION MAPPING GATE READS 0.000e+00 ON A ROW IT COMPARES NOTHING IN, AND PASSES ON AN... |
+| R690 | **answered** — verdict 99 | to (d), and I say so rather than dressing it as more.) ER0, ER1, ER2, EQ2, EQ3 AND EQ4 EXIST... |
+| R691 | **answered** — §6 | R682's FALSE ARITHMETIC IS DELETED FROM tolerances.py AND LEFT STANDING IN THE PLAN ROW THAT IS... |
+| R692 | **answered** — verdict 99 | compared > 0 IS R689's CLOSING CONDITION MINUS ITS COUNT. ALL SIXTEEN DEGRADED ROWS STILL READ... |
+| R693 | **answered** — verdict 99 | THE NEW COUNTER'S BRACKET IS PUBLISHED AS 2x AND MEASURES 1.0857x, AND THE SENTENCE SAYING NO... |
+| R694 | **answered** — §2 | F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER = 0.05 AND F4_STATIC_REACTION_AGREEMENT_COUNTER = 0.375... |
+| R695 | **answered** — §5 | floatfea/tolerances.py:1979 NAMES AN INJECTOR THAT DOES NOT EXIST, and e2fa88a is the commit... |
+| R696 | **answered** — §5 | THE CEILING ENTRY BRACKETING THE MOVED COUNTER STILL PUBLISHES THE OLD BASIS.... |
+| R697 | **carried** — §10 | THE f/2 MECHANISM IS FALSE OF 12 OF THE 16 MEMBERS. floatfea/tolerances.py:1974-1975 ("The... |
+| R698 | **answered** — §5 | THE EQUALITY'S JUSTIFICATION IS REFUTED BY ITS OWN MEASUREMENT.... |
+| R699 | **carried** — §10 | THE BP0 SWEEP MISSED FIVE MORE f/M-DEPENDENT FIGURES, AND ONE IS THE SITE R691's CLOSING... |
+| R700 | **carried** — §10 | THE REPLAY DRIVER SHIPS WITH THE OVERRIDE OFF, AND ONE SENTENCE CLAIMS OTHERWISE. cmd grep -n... |
+| R701 | **carried** — §10 | "Vz does not move with f at all" IS TRUE ONLY OF THE STATION THE TABLE REPORTS.... |
+| R702 | **carried** — §10 | "My runs from 1.1200x to 0.8800x" IS THE HUB'S RANGE PUBLISHED AS THE WHOLE RANGE.... |
+| R703 | **carried** — §10 | THE SYMMETRY ENTRY LOST ITS INJECTION-SIDE EDGE (EH4). floatfea/tolerances.py:2104-2118. The... |
+| R704 | **answered** — §2 | F4_STATIC_REACTION_AGREEMENT_COUNTER = 0.375 IS STILL A FROZEN EQUALITY PINNED TO f = 0.75, AND... |
+| R705 | **answered** — §3 | DQ4(ii)'s MOMENT CHANNEL CANNOT FAIL ON A SIGN, AND THE PLAN DECLARES ITS QUANTITY AS... |
+
+## 11a. Every named site this round's diff does not touch, declared by name
+
+The site guard's escape hatch is deliberate and explicit: the report may write
+`no change` beside the **exact** site, which is a claim a reviewer can check, rather
+than an omission nobody sees. Its own docstring records that five consecutive rounds
+closed a site-naming condition at some of its sites and recorded it as answered --
+and R704 is the sixth, so this table is not a formality.
+
+```
+claim  every site below is named by the verdict and untouched by this round's diff
+cmd    python -m pytest tests/test_report_carried.py::test_every_named_site_is_touched_or_declared -q
+out    154 sites, before this table existed, across 18 findings
+rule   a site is TOUCHED by the diff or DECLARED `no change` beside its exact token
+judge  the two findings this round answers are R704 and R705; everything else was
+       closed in an earlier round or is a closure item carried by instruction. The
+       four rows that matter are the ones where a BRANCH was chosen -- R705's
+       `tolerances.py` entry is the branch I did NOT take, and saying so is the
+       difference between a choice and an oversight.
+```
+
+| finding | site | this round | why |
+|---|---|---|---|
+| R686 | `HSP-stable/studies/platform-12buoy/platform_rao_pilot.py:291` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `floatfea/io/integrator.py:27` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `floatsim/solver/newmark.py:222` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `integrator.py` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `scripts/export_platform_deck.py` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `scripts/report_joint_reactions.py:77` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/test_no_tolerance_literals.py` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1016` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1017` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1018` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1019` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1020` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1021` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1022` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1023` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1024` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1025` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1026` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1027` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1028` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1029` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1030` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1031` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1032` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1033` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1034` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1035` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1036` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1037` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1038` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1039` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1040` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1041` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1042` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1043` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1044` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1045` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1046` | **no change** | closed in an earlier round (verdict 98). This round's diff does not reach it. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1037` | **no change** | closed in an earlier round (verdict 98), on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1038` | **no change** | closed in an earlier round (verdict 98), on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1039` | **no change** | closed in an earlier round (verdict 98), on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1040` | **no change** | closed in an earlier round (verdict 98), on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1041` | **no change** | closed in an earlier round (verdict 98), on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1042` | **no change** | closed in an earlier round (verdict 98), on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1043` | **no change** | closed in an earlier round (verdict 98), on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1044` | **no change** | closed in an earlier round (verdict 98), on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1045` | **no change** | closed in an earlier round (verdict 98), on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1046` | **no change** | closed in an earlier round (verdict 98), on branch A as offered. |
+| R688 | `CLAUDE.md` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `docs/load-interchange-v1.md` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1000` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1001` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1002` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1003` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1004` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1005` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1006` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1007` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1008` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1009` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1010` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1011` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1012` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1013` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:999` | **no change** | closed in an earlier round (verdict 98), on the branch it took. |
+| R689 | `CLAUDE.md` | **no change** | closed in an earlier round as R692 (verdict 99). |
+| R690 | `F3.md` | **no change** | closed in an earlier round (verdict 99). |
+| R690 | `docs/milestones/F3.md` | **no change** | closed in an earlier round (verdict 99). |
+| R690 | `docs/milestones/F4.md:5` | **no change** | closed in an earlier round (verdict 99). |
+| R691 | `CLAUDE.md` | **no change** | closed by the fifth-missed-site repair in `30e4395`, read by verdict 101. |
+| R691 | `docs/SUPERVISOR.md` | **no change** | closed by the fifth-missed-site repair in `30e4395`, read by verdict 101. |
+| R691 | `docs/milestones/F4.md:348` | **no change** | closed by the fifth-missed-site repair in `30e4395`, read by verdict 101. |
+| R691 | `floatfea/tolerances.py:1990` | **no change** | closed by the fifth-missed-site repair in `30e4395`, read by verdict 101. |
+| R691 | `test_f4_static_and_mapping.py:549` | **no change** | closed by the fifth-missed-site repair in `30e4395`, read by verdict 101. |
+| R691 | `tests/test_plan_matches_tolerances.py` | **no change** | closed by the fifth-missed-site repair in `30e4395`, read by verdict 101. |
+| R691 | `tests/verification/rung4/test_f4_static_and_mapping.py:549` | **no change** | closed by the fifth-missed-site repair in `30e4395`, read by verdict 101. |
+| R694 | `floatfea/model/platform.py:116` | **no change** | tip-moment half closed in `30e4395`; the reaction half IS R704, section 2. |
+| R694 | `floatfea/tolerances.py:2027` | **no change** | tip-moment half closed in `30e4395`; the reaction half IS R704, section 2. |
+| R695 | `floatfea/tolerances.py:1979` | **no change** | closed in `30e4395` and verified by the reviewer's whole-file sweep, section 5. |
+| R695 | `tests/verification/rung4/test_f4_static_and_mapping.py:315` | **no change** | closed in `30e4395` and verified by the reviewer's whole-file sweep, section 5. |
+| R696 | `floatfea/tolerances.py:1942` | **no change** | closed in `30e4395`, section 5. |
+| R697 | `floatfea/tolerances.py:1974` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R697 | `floatfea/tolerances.py:1975` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R697 | `tests/verification/rung4/test_f4_static_and_mapping.py:320` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R697 | `tests/verification/rung4/test_f4_static_and_mapping.py:321` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R697 | `tests/verification/rung4/test_f4_static_and_mapping.py:322` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R697 | `tests/verification/rung4/test_f4_static_and_mapping.py:323` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R698 | `floatfea/tolerances.py:1960` | **no change** | closed in `30e4395`, section 5. |
+| R698 | `floatfea/tolerances.py:1961` | **no change** | closed in `30e4395`, section 5. |
+| R698 | `floatfea/tolerances.py:1962` | **no change** | closed in `30e4395`, section 5. |
+| R699 | `floatfea/post/member_forces.py:10` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R699 | `floatfea/post/member_forces.py:12` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R699 | `floatfea/post/member_forces.py:13` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R699 | `tests/.../rung4/test_f4_static_and_mapping.py:526` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R699 | `tests/.../rung4/test_f4_static_and_mapping.py:527` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R699 | `tests/.../rung4/test_f4_static_and_mapping.py:555` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R699 | `tests/.../rung4/test_f4_static_and_mapping.py:556` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R699 | `tests/.../rung4/test_f4_static_and_mapping.py:95` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R700 | `export_platform_deck.py` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R700 | `scratchpad/er1b_runs.py` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R700 | `scripts/export_platform_deck.py` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R700 | `scripts/report_joint_reactions.py` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:200` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:201` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:202` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:203` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:204` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:205` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:206` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R702 | `docs/reports/F4/preview-PRELIMINARY.md:208` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R702 | `docs/reports/F4/preview-PRELIMINARY.md:209` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R702 | `docs/reports/F4/preview-PRELIMINARY.md:210` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2104` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2105` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2106` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2107` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2108` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2109` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2110` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2111` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2112` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2113` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2114` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2115` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2116` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2117` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R703 | `floatfea/tolerances.py:2118` | **no change** | closure item, carried unchanged by the verdict's own instruction. Section 10. |
+| R704 | `floatfea/model/platform.py:116` | **no change** | cited as what the counter DEPENDS on -- `MASS_FRACTION_LADDER` -- not as a defect to repair. Correct as it stands. |
+| R704 | `floatfea/tolerances.py:1988` | **no change** | the verdict cites these two lines as proof the closed form was ALREADY in the tree. The repair reads `f/2` from the body; these lines were right and stay. |
+| R704 | `floatfea/tolerances.py:1989` | **no change** | as `:1988` -- the closed form the repair uses, already correct before it. |
+| R704 | `tests/verification/rung4/test_f4_static_and_mapping.py:355` | **no change** | the block the condition named is REWRITTEN (section 2); this exact line is unchanged context inside the docstring the rewrite inserted, and the answering assertion is now at `:375`. |
+| R705 | `docs/milestones/F4.md:72` | **no change** | cited as the AUTHORITY declaring `+-mu L^2/12`, not as a defect. The gate was wrong and the plan was right. |
+| R705 | `floatfea/tolerances.py:2239` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2240` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2241` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2242` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2243` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2244` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2245` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2246` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2247` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2248` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2249` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2250` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2251` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2252` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2253` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2254` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2255` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2256` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `floatfea/tolerances.py:2257` | **no change** | the condition's THIRD branch -- state that the sign is out of DQ4(ii)'s scope and name the rung-2 test. I took the FIRST branch instead (the signed comparison plus a counter-case), so this entry is deliberately untouched rather than overlooked. |
+| R705 | `tests/verification/rung4/test_f4_static_and_mapping.py:1511` | **no change** | the assertion is REWRITTEN (section 3); the signed comparison is now at `:1591-1592` and this line is unchanged context. |
+| R705 | `tests/verification/rung4/test_f4_static_and_mapping.py:1512` | **no change** | as `:1511`. |
+| R705 | `tests/verification/rung4/test_f4_static_and_mapping.py:1515` | **no change** | as `:1511`. |
+
+## 12. Tolerances touched
+
+```
+claim  TWO values moved and six were declared; none was widened
+cmd    git diff fa709df..HEAD -- floatfea/tolerances.py | grep -E "^[-+]F4_"
+out    -F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.375
+out    +F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.04
+out    -F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER: Final[float] = 0.05
+out    +F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER: Final[float] = 0.005
+out    +F4_DQ4_ELEMENT_VECTOR: Final[float] = 1.0e-12
+out    +F4_DQ4_ELEMENT_VECTOR_COUNTER: Final[float] = 5.0e-4
+out    +F4_DQ4_RIGID_VECTOR: Final[float] = 1.0e-12
+out    +F4_DQ4_RIGID_VECTOR_COUNTER: Final[float] = 5.0e-4
+out    +F4_DQ5_FREE_FALL: Final[float] = 1.0e-12
+out    +F4_DQ5_FREE_FALL_COUNTER: Final[float] = 4.0e-4
+rule   a counter moving DOWN makes the gate demand more of the defect, not less
+judge  I WROTE "one value moved" AND THE DIFF SHOWS TWO. The tip-moment counter moved
+       0.05 -> 0.005 in `30e4395`, which is inside this range -- the commit verdict 101
+       read for the first time, and the one my own invocation scoped out of the range.
+       The table below was short a row for the same reason. This is why the section
+       carries the diff rather than a count I remembered.
+```
+
+| constant | before | after | why |
+|---|---|---|---|
+| `F4_STATIC_REACTION_AGREEMENT_COUNTER` | `0.375` | `0.04` | **R704.** A frozen equality pinned to `f = 0.75` became the floor beneath every rung; the expected side is now `f/2` at the body's own `f`. Smallest non-vacuous defect `0.05`, margin `1.2500x` |
+| `F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER` | `0.05` | `0.005` | **R694**, in `30e4395`. The same repair on the other entry R694's condition named: the counter-case compares against the closed form `a/(12-5a)` at each body's own `f` and the constant became the floor beneath every rung. Smallest at any rung with `f > 0` is `0.006060606060606062`, margin `1.2121x` |
+| `F4_DQ4_ELEMENT_VECTOR` | — | `1.0e-12` | DQ4(ii), new. Worst clean `1.9371509552001953e-15`, clear `516.2x`; shear-independent over five decades of `phi` |
+| `F4_DQ4_ELEMENT_VECTOR_COUNTER` | — | `5.0e-4` | smallest of **three** injections (`1.0e-3`), the third being R705's sign flip at exactly `2.0` |
+| `F4_DQ4_RIGID_VECTOR` | — | `1.0e-12` | DQ4(i), new. Worst clean `2.796036563614433e-15`, clear `357.6x` |
+| `F4_DQ4_RIGID_VECTOR_COUNTER` | — | `5.0e-4` | smallest of two (`1.0e-3`); the other strengthens as the ladder descends |
+| `F4_DQ5_FREE_FALL` | — | `1.0e-12` | DQ5, new. Worst clean at `f = 0.1`, not the shipped rung; `749.9x` as published and `745.5x` corrected (C2) |
+| `F4_DQ5_FREE_FALL_COUNTER` | — | `4.0e-4` | smallest of two (`8.33e-4`), and the two redden different channels |
+
+**No other tolerance moved**, and neither move was a widening: `0.375 -> 0.04` and
+`0.05 -> 0.005` are both counters moving **down**, which makes each gate demand more of
+the defect rather than less.
+
+## 13. Lint, types, and the whole suite
+
+```
+claim  lint, formatting and types are green at this commit
+cmd    python -m ruff check floatfea tests && python -m black --check floatfea tests
+       && python -m mypy floatfea
+out    All checks passed!
+out    98 files would be left unchanged.
+out    Success: no issues found in 36 source files
+judge  `pytest` does not run any of the three, which is CZ1's reason for running them
+       separately and pasting each.
+```
+
+**The reds are EG3 state (2) and section 0b traces every one.** The run below is the
+whole suite at this revision's own commit, generated by `scripts/suite_count.py` and run
+**after** every other edit to this report (R309): a count taken before an edit is a count
+that does not describe what shipped.
+
+**What the two numbers measure, because they do not measure the same tree.** The
+generator runs in a clean worktree **at the last commit**, which is `b68f2f7` — a commit
+where this revision does not exist.
+
+```
+cmd    python scripts/suite_count.py
+out    whole suite at b68f2f7 : 2855 passed, 0 failed, 0 skipped
+out    the excluded set       : 192 passed, 184 failed, 0 skipped
+cmd    python -m pytest tests/test_report_carried.py
+       tests/test_report_numbers_are_sourced.py tests/test_tree_prose_consistent.py -q
+out    1 failed, 386 passed   (the one was test_the_report_carries_a_WHOLE_SUITE_count,
+out                            which this paste answers)
+rule   EG3 state (2): a verdict written, its answering report not yet committed
+```
+
+So:
+
+* **the first count is the result**: `2855 passed, 0 failed, 0 skipped` over the whole
+  suite outside the three files parametrised over this report. Nothing in `floatfea/`,
+  `tests/verification/`, `tests/unit/`, `tests/regression/` or any guard outside those
+  three is red.
+* **the excluded set's 184 failures are EG3 state (2) and nothing else**: a verdict
+  written, its answering report not yet committed. Every id below is
+  `test_the_report_carries_the_finding`, `test_every_named_site_is_touched_or_declared`,
+  `test_the_Carried_table_is_what_the_generator_produces`,
+  `test_the_generator_would_catch_a_row_under_the_wrong_number`,
+  `test_the_CI_section_is_about_the_REVIEWED_commit`, or the
+  `test_the_guard_survives_the_state` cascade off a red baseline — which is EH1's
+  corrected state (2) list, plus the cascade identified by the baseline being red.
+* **it is cleared BY THIS REVISION's own commit and not by time** (EG3's sharpening). The
+  three files are green against this revision in the working tree, measured separately:
+  `1 failed, 386 passed` before the suite line existed, and that one was
+  `test_the_report_carries_a_WHOLE_SUITE_count`, which this paste answers.
+
+That is the self-reference the generator's exclusion exists for: the report guards cannot
+be measured at a commit that does not contain the report, and CZ1's reusable half is the
+same sentence — a check whose input is the commit itself cannot be measured before the
+commit exists. **The counts at this revision's own commit are pasted in the next
+revision's `Carried`** (EG3 condition (ii)).
+
+**Whole suite at `b68f2f7`: 2855 passed, 0 failed, 0 skipped.** **The excluded set: 192 passed, 184 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 376 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R686]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R687]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R688]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R689]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R690]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R691]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R692]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R693]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R694]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R695]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R696]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R697]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R698]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R699]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R700]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R701]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R702]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R703]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R704]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_report_carries_the_finding[R705]`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_Carried_table_is_what_the_generator_produces`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_generator_would_catch_a_row_under_the_wrong_number`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_CI_section_is_about_the_REVIEWED_commit`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-HSP-stable/studies/platform-12buoy/platform_rao_pilot.py:291]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-floatfea/io/integrator.py:27]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-floatsim/solver/newmark.py:222]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-integrator.py]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-scripts/export_platform_deck.py]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-scripts/report_joint_reactions.py:77]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/test_no_tolerance_literals.py]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1016]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1017]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1018]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1019]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1020]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1021]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1022]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1023]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1024]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1025]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1026]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1027]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1028]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1029]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1030]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1031]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1032]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1033]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1034]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1035]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1036]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1037]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1038]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1039]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1040]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1041]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1042]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1043]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1044]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1045]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R686-tests/verification/rung4/test_f4_static_and_mapping.py:1046]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1037]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1038]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1039]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1040]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1041]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1042]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1043]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1044]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1045]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R687-tests/verification/rung4/test_f4_static_and_mapping.py:1046]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-CLAUDE.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-docs/load-interchange-v1.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-docs/reports/F4/step-2.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:999]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1000]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1001]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1002]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1003]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1004]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1005]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1006]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1007]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1008]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1009]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1010]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1011]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1012]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R688-tests/verification/rung4/test_f4_static_and_mapping.py:1013]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R689-CLAUDE.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R690-docs/milestones/F3.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R690-docs/milestones/F4.md:5]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R691-CLAUDE.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R691-docs/SUPERVISOR.md]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R691-docs/milestones/F4.md:348]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R691-floatfea/tolerances.py:1990]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R691-test_f4_static_and_mapping.py:549]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R691-tests/test_plan_matches_tolerances.py]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R691-tests/verification/rung4/test_f4_static_and_mapping.py:549]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R694-floatfea/model/platform.py:116]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R694-floatfea/tolerances.py:2027]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R695-floatfea/tolerances.py:1979]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R695-tests/verification/rung4/test_f4_static_and_mapping.py:315]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R696-floatfea/tolerances.py:1942]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R697-floatfea/tolerances.py:1974]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R697-floatfea/tolerances.py:1975]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:320]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:321]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:322]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R697-tests/verification/rung4/test_f4_static_and_mapping.py:323]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R698-floatfea/tolerances.py:1960]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R698-floatfea/tolerances.py:1961]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R698-floatfea/tolerances.py:1962]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R699-floatfea/post/member_forces.py:10]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R699-floatfea/post/member_forces.py:12]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R699-floatfea/post/member_forces.py:13]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:95]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:526]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:527]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:555]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R699-tests/.../rung4/test_f4_static_and_mapping.py:556]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R700-export_platform_deck.py]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R700-scratchpad/er1b_runs.py]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R700-scripts/export_platform_deck.py]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R700-scripts/report_joint_reactions.py]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:200]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:201]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:202]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:203]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:204]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:205]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R701-docs/reports/F4/preview-PRELIMINARY.md:206]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R702-docs/reports/F4/preview-PRELIMINARY.md:208]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R702-docs/reports/F4/preview-PRELIMINARY.md:209]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R702-docs/reports/F4/preview-PRELIMINARY.md:210]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2104]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2105]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2106]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2107]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2108]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2109]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2110]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2111]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2112]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2113]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2114]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2115]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2116]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2117]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R703-floatfea/tolerances.py:2118]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R704-floatfea/model/platform.py:116]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R704-floatfea/tolerances.py:1988]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R704-floatfea/tolerances.py:1989]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R704-tests/verification/rung4/test_f4_static_and_mapping.py:355]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-docs/milestones/F4.md:72]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2239]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2240]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2241]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2242]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2243]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2244]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2245]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2246]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2247]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2248]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2249]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2250]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2251]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2252]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2253]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2254]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2255]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2256]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-floatfea/tolerances.py:2257]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-tests/verification/rung4/test_f4_static_and_mapping.py:1511]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-tests/verification/rung4/test_f4_static_and_mapping.py:1512]`
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R705-tests/verification/rung4/test_f4_static_and_mapping.py:1515]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[baseline]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[non_numeric_step_suffix]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[superscript_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
+```
