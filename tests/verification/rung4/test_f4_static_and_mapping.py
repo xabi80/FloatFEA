@@ -954,7 +954,7 @@ def test_G4_4_the_mapping_CONSERVES_the_joint_resultants(built: Superstructure) 
 def test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node(
     built: Superstructure, injection: str
 ) -> None:
-    """Both counter-cases, injected into the MAPPED OUTPUT and not into the expected side.
+    """All THREE counter-cases, injected into the MAPPED OUTPUT, not the expected side.
 
     `wrong_node_same_body` is the one the declared counter is taken from, because it is
     the smaller of the three AND the one a resultant-force-only gate cannot see: measured
@@ -1005,8 +1005,8 @@ def test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node(
     if injection == "wrong_node_same_body":
         assert error > F4_MAPPING_CONSERVATION_COUNTER, (
             f"the wrong-node injection reads {error!r}, which does not reach the declared "
-            f"counter {F4_MAPPING_CONSERVATION_COUNTER!r}. That injection is the SMALLER "
-            "of the two and the one the counter is taken from, so if it shrinks the "
+            f"counter {F4_MAPPING_CONSERVATION_COUNTER!r}. That injection is the SMALLEST "
+            "of the three and the one the counter is taken from, so if it shrinks the "
             "counter stops describing the defect the gate must catch."
         )
     assert error > F4_MAPPING_CONSERVATION, (

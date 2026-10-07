@@ -2175,26 +2175,65 @@ F4_STATIC_SYMMETRY_SPREAD_COUNTER: Final[float] = 1.3
 #
 # THE MOMENT IS IN THE QUANTITY AND NOT A SECOND CHECK, because a resultant force is
 # blind to WHICH node a block landed on: measured, a block moved to the wrong node of
-# the right body leaves the force at 5.2050529737194385e-17 and puts the moment at
-# 0.24374825705420716.
+# the right body leaves that body's force resultant at EXACTLY 0.0 and puts the whole
+# signal in the moment, at 0.9597085787263796.
 #
-# Reason for 1e-12: the measured clean value is 1.8726e-16. It is not exactly zero and
-# the reason is summation order, not physics -- the mapper accumulates per node and the
-# expected side accumulates per joint -- so a relative round-off ceiling is the right
-# form. 1e-12 is 5341x above the measurement.
+# Reason for 1e-12: the worst clean value over the five bodies is 2.1962235947826024e-16,
+# on `hub1`; `platform` is exactly 0.0. It is not exactly zero on the hubs and the reason
+# is summation order, not physics -- the mapper accumulates per node and the expected side
+# accumulates per joint -- so a relative round-off ceiling is the right form. 1e-12 is
+# 4553.3x above the worst of them.
+#
+# R685: ALL FOUR FIGURES IN THIS ENTRY WERE MEASURED UNDER THE RULE R679 DELETED, and
+# this is BP0 rather than a wrong number. They were taken when the gate SUMMED over all
+# five bodies; the shipped gate is `max` over the five, which is a different quantity,
+# and nothing re-took them when the rule moved. The aggregate readings were clean
+# 1.8726e-16 / ceiling 5341x / wrong-node force 5.2050529737194385e-17 and moment
+# 0.24374825705420716 / sign 0.9202048893902944, and each was correct against the rule
+# it was measured against. The per-body readings above and below replace them.
+#
+# The force channel going from 5.2050529737194385e-17 to EXACTLY 0.0 is the per-body
+# rule's own signature and not a tightening: the injection moves a block BETWEEN TWO
+# NODES OF ONE BODY, so that body's force resultant is bit-identical before and after,
+# while the aggregate sum carried four other bodies' round-off into the same number.
 # Set: 2026-10-05, F4 step 1
 F4_MAPPING_CONSERVATION: Final[float] = 1.0e-12
 
-# COUNTER-CASE: the SMALLEST of the two defects the gate must catch.
+# COUNTER-CASE: the SMALLEST of the THREE defects the gate must catch.
 # Reason for 0.2: a joint block mapped to the wrong node of the right body, which
-# MEASURES 0.24374825705420716. The other injection -- one side of a hub-platform joint
-# losing its sign flip -- reads 0.9202048893902944, so the wrong-node defect is the
-# smaller of the two and is the one the counter is taken from, per the rule that the
+# MEASURES 0.9597085787263796 per body. The other two injections -- one side of a
+# hub-platform joint losing its sign flip, reading 3.5569621874567385, and one internal
+# joint dropped from both sides (R683), reading 1.7784810937283693 -- are both larger, so
+# the wrong-node defect is the one the counter is taken from, per the rule that the
 # counter is the smallest defect the gate must still fail. The declared value is the
 # round bound BELOW that measurement rather than the measurement itself, for the same
 # reason as the symmetry counter: a bit-exact equality on a number the solve produces is
-# not portable. Twelve decades above the ceiling. Both injections are run by
-# `test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node`.
+# not portable. 2.000e+11x above the ceiling -- ELEVEN decades, where this entry said
+# twelve; 0.2/1e-12 is 2e+11 and the word was never measured. All three injections are
+# run by `test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node`.
+#
+# WHY THE VALUE DOES NOT MOVE THOUGH ITS BASIS DID. Under the aggregate rule the
+# wrong-node injection measured 0.24374825705420716 and 0.2 was the round bound below
+# THAT. Per body the same injection is 3.94x larger, so 0.2 is further below the defect
+# than it was declared to be: it errs safe, and the ordering it depends on survives --
+# wrong-node is still the smallest of the three. What changed is the WEAKENING window.
+# The injection may now fall to 0.2084 of its size before the counter stops bracketing
+# it, which is a 79% loss of sensitivity tolerated where this entry implied 18% (EH4:
+# the boundary is solved in the direction that WEAKENS the gate, not only the one that
+# makes it look strong).
+#
+# AND IT IS CHECKED ACROSS THE WHOLE LADDER, NOT AT THE SHIPPED RUNG (EU1, R694's
+# lesson). Every figure in this entry is BIT-IDENTICAL at all seven rungs of
+# `MASS_FRACTION_LADDER`, `f = 0.75` down to `f = 0.0`: clean 2.1962235947826024e-16,
+# wrong-node 0.9597085787263796, sign 3.5569621874567385, dropped 1.7784810937283693.
+# The smallest defect over every rung is 0.9597085787263796 and the counter clears it
+# by 4.7985x.
+#
+# That is the measurement and not the argument I would have made. The argument -- this
+# gate's quantity is the mapper's resultants against the joint blocks and the node
+# coordinates, and `f` moves neither -- happens to be right, and R694 is why stating it
+# was not enough: that counter was also a quantity nobody expected to depend on a rung,
+# until it was run at one.
 # Set: 2026-10-05, F4 step 1
 F4_MAPPING_CONSERVATION_COUNTER: Final[float] = 0.2
 
