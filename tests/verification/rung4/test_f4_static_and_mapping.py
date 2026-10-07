@@ -24,6 +24,8 @@ import pytest
 import yaml
 from numpy.typing import NDArray
 
+from floatfea.assemble.system import element_length
+from floatfea.element.beam import local_mass, shear_parameter
 from floatfea.io.frames import GRAVITY_MAGNITUDE, GRAVITY_VECTOR
 from floatfea.io.froude import to_full_scale
 from floatfea.io.integrator import (
@@ -40,10 +42,18 @@ from floatfea.model.platform import (
     Superstructure,
     body_mass_matrix,
     build_superstructure,
+    rigid_projection,
 )
 from floatfea.post.member_forces import element_equivalent_load, member_forces
+from floatfea.solve.inertia_relief import solve_inertia_relief
 from floatfea.solve.static import solve_superstructure_static
 from floatfea.tolerances import (
+    F4_DQ4_ELEMENT_VECTOR,
+    F4_DQ4_ELEMENT_VECTOR_COUNTER,
+    F4_DQ4_RIGID_VECTOR,
+    F4_DQ4_RIGID_VECTOR_COUNTER,
+    F4_DQ5_FREE_FALL,
+    F4_DQ5_FREE_FALL_COUNTER,
     F4_EB6_POSITION_M,
     F4_EB6_POSITION_M_COUNTER,
     F4_INTEGRATOR_SPEC_AGREEMENT,
@@ -1365,4 +1375,488 @@ def test_EK0a_the_premise_gate_REDDENS_on_a_LABELLED_FE_BODY(site: str) -> None:
     assert _premise_violations([site]), (
         f"`hydro_body_label = {site}` produced no violation, so the gate above would "
         "accept a labelled FE body and EK0(a) would never stop the step."
+    )
+
+
+# --------------------------------------------------------------------------- DQ4 / DQ5
+# The `M a` test on the nodal force VECTOR, and free fall from an independent body force.
+#
+# WHY THE VECTOR AND NOT THE QUADRATIC FORM, which is the distinction DQ4 is built on.
+# G3.1a already compares the body's mass, CoG and inertia -- and those ten numbers ARE
+# the whole of the rigid 6x6, so a gate asserting `R^T M R a` against the deck at six
+# unit accelerations would be G3.1a B evaluated one column at a time. Measured rather
+# than argued: `test_DQ4_i_ROTATIONS_...` below is that gate, it is kept because the
+# locked plan asks for it, and its docstring states the overlap instead of implying
+# novelty.
+#
+# The content DQ4 adds is PER NODE. The rigid 6x6 is rank 6; the nodal vector has
+# `6 N` components, and the dynamic residual DQ8 defines divides by `M a` DOF by DOF.
+# A mass matrix with the right rigid properties and the wrong distribution passes
+# G3.1a and fails here, which is the case `test_DQ4_i_the_PER_NODE_vector...` exists
+# for.
+#
+# WHAT IS NOT COVERED, recorded because DQ5 instructs it rather than left to inference:
+# ROTATIONAL fields have no per-node expected side here. The closed form below is for a
+# UNIFORM field; a rigid angular acceleration is position-dependent and its consistent
+# nodal vector has no form independent of the element code that I could write. So
+# rotations are covered at the RESULTANT level only, against the deck, and the per-node
+# rotational distribution is NOT COVERED by F4.
+
+
+def _independent_nodal_force(
+    body: BodyModel,
+    field: NDArray[np.float64],
+    *,
+    moment_factor: float = 1.0,
+    remainder_factor: float = 1.0,
+) -> NDArray[np.float64]:
+    """DY0's split under a UNIFORM acceleration field, by closed-form consistent loads.
+
+    # expected: the textbook consistent load vector of a uniform load on a two-node
+    # beam, in the orientation-free form
+
+    #     f_A = f_B = mu L a / 2        M_A = (L^2/12) e1 x (mu a) = -M_B
+
+    # with `e1 = (x_B - x_A)/L`. The cross product annihilates the axial component on
+    # its own, so NO decomposition into local axes is needed -- and therefore
+    # `rotation_matrix`, the roll angle and the orientation node are not on this path,
+    # nor is `local_mass`, nor is `M`. `gravity_load` is the dependent route and says
+    # so in its own docstring; this is the independent one DQ5 requires.
+
+    THE SIGNS ARE THE ELEMENT'S OWN CONVENTION, CHECKED NOT FITTED. For a local-y load
+    the form gives `+w L^2/12` about local z at end A, which is what `local_mass` was
+    measured to produce (`+1953125.0` against a closed form of `1953125.0`); for a
+    local-z load it gives `-w L^2/12` about local y, which is the sign `local_mass`'s
+    own `flip = diag([1, -1, 1, -1])` applies. Had the convention disagreed the gate
+    would have reddened, and the disagreement would have been the finding.
+
+    `moment_factor` and `remainder_factor` are 1.0 on every shipped call and are the
+    counter-cases' injection points.
+    """
+    coords = body.model.nodes.coords()
+    out = np.zeros(6 * len(coords), dtype=np.float64)
+    field = np.asarray(field, dtype=np.float64)
+    for e in body.elements:
+        xa = np.asarray(body.model.nodes[e.node_a].xyz, dtype=np.float64)
+        xb = np.asarray(body.model.nodes[e.node_b].xyz, dtype=np.float64)
+        length = element_length(body.model, e)
+        e1 = (xb - xa) / length
+        w = e.material.rho * e.section.A * field
+        half = w * length / 2.0
+        moment = moment_factor * (length**2 / 12.0) * np.cross(e1, w)
+        for node, sign in ((e.node_a, 1.0), (e.node_b, -1.0)):
+            dofs = node_dofs(node)
+            out[dofs[0:3]] += half
+            out[dofs[3:6]] += sign * moment
+    dofs = node_dofs(body.remainder_node)
+    out[dofs[0:3]] += remainder_factor * body.remainder_mass * field
+    return out
+
+
+def _uniform_field(n_dof: int, field: NDArray[np.float64]) -> NDArray[np.float64]:
+    """`field` on every translational triple, zero on every rotation."""
+    accel = np.zeros(n_dof, dtype=np.float64)
+    for node in range(n_dof // 6):
+        accel[node_dofs(node)[0:3]] = field
+    return accel
+
+
+def _body_extent(body: BodyModel) -> float:
+    """`l_b`: the largest node distance from the deck's CoG.
+
+    The normalising LENGTH, and R598 is why it is not 1.0 m: a quantity divided by one
+    metre is an absolute number wearing a relative number's units. C158 is the same
+    finding in the other direction -- a `max(..., 1.0)` floor inside a gate is a
+    tolerance under another name.
+    """
+    coords = body.model.nodes.coords()
+    return float(np.max(np.linalg.norm(coords - body.deck_cog, axis=1)))
+
+
+_DQ4_FIELDS: dict[str, NDArray[np.float64]] = {
+    "x": np.array([1.0, 0.0, 0.0]),
+    "y": np.array([0.0, 1.0, 0.0]),
+    "z": np.array([0.0, 0.0, 1.0]),
+    # An oblique field, because three axis-aligned ones leave every cross product with a
+    # zero component and a sign error in one term can hide in it.
+    "oblique": np.array([0.3, -0.7, 0.64807407]),
+}
+
+_DQ4_II_PLANES = ((1, 7, 5, 11, "xy"), (2, 8, 4, 10, "xz"))
+"""`(trans_A, trans_B, rot_A, rot_B, plane)` for the two bending planes."""
+
+
+def _dq4_ii_departures(
+    body: BodyModel, *, lumped: bool = False, moment_scale: float = 1.0
+) -> tuple[float, float]:
+    """`(worst force, worst moment)` relative departure from the closed form."""
+    worst_f = 0.0
+    worst_m = 0.0
+    for e in body.elements:
+        length = element_length(body.model, e)
+        m = local_mass(e.section, e.material, length)
+        mu = e.material.rho * e.section.A
+        for ta, tb, ra, rb, _plane in _DQ4_II_PLANES:
+            accel = np.zeros(12, dtype=np.float64)
+            accel[ta] = accel[tb] = 1.0
+            f = np.asarray(m @ accel, dtype=np.float64).copy()
+            if lumped:
+                f[ra] = f[rb] = 0.0
+            f[ra] *= moment_scale
+            f[rb] *= moment_scale
+            # expected: mu L / 2 and mu L^2 / 12, analytic.
+            want_f = mu * length / 2.0
+            want_m = mu * length**2 / 12.0
+            worst_f = max(worst_f, abs(f[ta] - want_f) / want_f, abs(f[tb] - want_f) / want_f)
+            worst_m = max(
+                worst_m,
+                abs(abs(f[ra]) - want_m) / want_m,
+                abs(abs(f[rb]) - want_m) / want_m,
+            )
+    return worst_f, worst_m
+
+
+def _dq4_i_departures(
+    body: BodyModel,
+    *,
+    field: NDArray[np.float64],
+    mass_scale: float = 1.0,
+    drop_remainder: bool = False,
+) -> tuple[float, float]:
+    """`(worst force, worst moment)` of `M a` against the independent construction."""
+    mass = body_mass_matrix(body).copy()
+    mass *= mass_scale
+    if drop_remainder:
+        base = 6 * body.remainder_node
+        for i in range(3):
+            mass[base + i, base + i] -= body.remainder_mass
+    n_dof = mass.shape[0]
+    through_m = mass @ _uniform_field(n_dof, field)
+    want = _independent_nodal_force(body, field)
+    f_idx = np.concatenate([node_dofs(i)[0:3] for i in range(n_dof // 6)])
+    m_idx = np.concatenate([node_dofs(i)[3:6] for i in range(n_dof // 6)])
+    return (
+        float(np.max(np.abs(through_m[f_idx] - want[f_idx]))) / float(np.max(np.abs(want[f_idx]))),
+        float(np.max(np.abs(through_m[m_idx] - want[m_idx]))) / float(np.max(np.abs(want[m_idx]))),
+    )
+
+
+@pytest.mark.parametrize("index", range(5))
+def test_DQ4_ii_the_element_nodal_vector_is_the_CLOSED_FORM(built: Superstructure, index: int):
+    """DQ4(ii), per element: `M_e a` under uniform translation is `mu L/2`, `+-mu L^2/12`.
+
+    AND THE CLOSED FORM SURVIVES SHEAR DEFORMATION, which was worth measuring before
+    asserting. This element is Timoshenko -- `bending_mass` takes a shear parameter --
+    and the closed form is the Euler-Bernoulli one, so the question is whether `phi`
+    moves it. It does not, at any `phi`:
+
+    ```
+    cell   ONE VARIABLE: the member length, section and material held, so `phi` sweeps
+    out    L = 50.0 m   phi = 1.5920e-02   force rel 2.4835e-16   moment rel 5.9605e-16
+    out    L =  5.0 m   phi = 1.5920e+00   force rel 1.5522e-16   moment rel 1.8626e-16
+    out    L =  1.0 m   phi = 3.9799e+01   force rel 0.0000e+00   moment rel 5.8208e-16
+    out    L =  0.5 m   phi = 1.5920e+02   force rel 0.0000e+00   moment rel 7.2760e-16
+    out    L =  0.2 m   phi = 9.9497e+02   force rel 1.2127e-16   moment rel 5.6843e-16
+    ```
+
+    Five decades of `phi` and no trend. The reason is physics and not luck: a rigid
+    translation generates no shear strain, so the shear parameter cancels out of the
+    row sums. The shipped geometry only reaches `phi = 6.4e-02`, so a dependence would
+    have been invisible here and present in F3's other sections.
+    """
+    body = built.bodies[index]
+    worst_f, worst_m = _dq4_ii_departures(body)
+    assert worst_f < F4_DQ4_ELEMENT_VECTOR, (
+        f"{body.name}: the element nodal force departs from `mu L / 2` by {worst_f:.6e} "
+        f"relative, outside {F4_DQ4_ELEMENT_VECTOR:.1e}."
+    )
+    assert worst_m < F4_DQ4_ELEMENT_VECTOR, (
+        f"{body.name}: the element nodal moment departs from `mu L^2 / 12` by "
+        f"{worst_m:.6e} relative, outside {F4_DQ4_ELEMENT_VECTOR:.1e}. A LUMPED mass "
+        "matrix has the right forces and no moments at all, so this is the channel "
+        "that distinguishes consistent from lumped."
+    )
+
+
+@pytest.mark.parametrize("length", [50.0, 5.0, 1.0, 0.5, 0.2])
+def test_DQ4_ii_the_closed_form_SURVIVES_SHEAR_DEFORMATION(
+    built: Superstructure, length: float
+) -> None:
+    """The claim in the gate above, as a test rather than as a docstring figure (CW0).
+
+    The closed form is EULER-BERNOULLI and this element is TIMOSHENKO, so whether the
+    shear parameter moves it is a question about the code, and a sentence in a docstring
+    asserting it does not is a claim nothing checks. The shipped geometry reaches only
+    `phi = 6.4e-02`; these lengths carry the same section and material to `phi = 9.9e+02`,
+    five decades up, which is the configuration the shipped model does not choose (EH4).
+
+    A rigid translation generates no shear strain, so `phi` must cancel out of the row
+    sums. That is the reason, and this is the measurement of it.
+    """
+    e = built.bodies[0].elements[0]
+    mass = local_mass(e.section, e.material, length)
+    mu = e.material.rho * e.section.A
+    phi = shear_parameter(e.section, e.material, length, plane="xy")
+    accel = np.zeros(12, dtype=np.float64)
+    accel[1] = accel[7] = 1.0
+    f = mass @ accel
+    # expected: mu L / 2 and mu L^2 / 12, analytic and independent of phi.
+    want_f = mu * length / 2.0
+    want_m = mu * length**2 / 12.0
+    force_rel = max(abs(f[1] - want_f), abs(f[7] - want_f)) / want_f
+    moment_rel = max(abs(abs(f[5]) - want_m), abs(abs(f[11]) - want_m)) / want_m
+    assert force_rel < F4_DQ4_ELEMENT_VECTOR, (
+        f"at L = {length} m, phi = {phi:.4e}, the nodal force departs from `mu L / 2` "
+        f"by {force_rel:.6e}, outside {F4_DQ4_ELEMENT_VECTOR:.1e}."
+    )
+    assert moment_rel < F4_DQ4_ELEMENT_VECTOR, (
+        f"at L = {length} m, phi = {phi:.4e}, the nodal moment departs from "
+        f"`mu L^2 / 12` by {moment_rel:.6e}, outside {F4_DQ4_ELEMENT_VECTOR:.1e}. A "
+        "shear-dependent row sum would show here and not at the shipped geometry."
+    )
+
+
+@pytest.mark.parametrize("injection", ["lumped", "moment_scaled"])
+def test_DQ4_ii_the_closed_form_gate_REDDENS(built: Superstructure, injection: str) -> None:
+    """Both injections go into `M_e a`, never into the closed form (EA4).
+
+    `lumped` is the defect this gate exists for -- a lumped mass matrix, which has the
+    right nodal FORCES and no nodal moments, so only the moment channel sees it. It
+    reads exactly 1.0. `moment_scaled` is the SMALL one the counter is taken from: a
+    0.1% error in the `L^2/12` term, which reads 1.0e-03.
+    """
+    body = built.bodies[0]
+    worst_f, worst_m = _dq4_ii_departures(
+        body,
+        lumped=injection == "lumped",
+        moment_scale=1.001 if injection == "moment_scaled" else 1.0,
+    )
+    error = max(worst_f, worst_m)
+    if injection == "moment_scaled":
+        assert error > F4_DQ4_ELEMENT_VECTOR_COUNTER, (
+            f"the 0.1% moment error reads {error!r}, which does not reach the declared "
+            f"counter {F4_DQ4_ELEMENT_VECTOR_COUNTER!r}. That injection is the SMALLER "
+            "of the two and the one the counter is taken from."
+        )
+    assert (
+        error > F4_DQ4_ELEMENT_VECTOR
+    ), f"the `{injection}` injection reads {error:.6e}, which the ceiling ACCEPTS."
+
+
+@pytest.mark.parametrize("field", sorted(_DQ4_FIELDS))
+@pytest.mark.parametrize("index", range(5))
+def test_DQ4_i_the_PER_NODE_vector_matches_the_INDEPENDENT_construction(
+    built: Superstructure, index: int, field: str
+) -> None:
+    """DQ4(i)'s own content: `M a` PER NODE against a route that never touches `M`.
+
+    This is what the rigid 6x6 cannot see. A mass matrix with the correct total mass,
+    CoG and inertia but the wrong DISTRIBUTION passes G3.1a and fails here, and the
+    dynamic residual DQ8 defines divides by `M a` DOF by DOF rather than by its
+    resultant -- so the per-node vector is the quantity that gate actually consumes.
+    """
+    body = built.bodies[index]
+    worst_f, worst_m = _dq4_i_departures(body, field=_DQ4_FIELDS[field])
+    assert worst_f < F4_DQ4_RIGID_VECTOR, (
+        f"{body.name}, field {field}: the nodal FORCE from `M a` departs from the "
+        f"closed-form construction by {worst_f:.6e} relative, outside "
+        f"{F4_DQ4_RIGID_VECTOR:.1e}."
+    )
+    assert worst_m < F4_DQ4_RIGID_VECTOR, (
+        f"{body.name}, field {field}: the nodal MOMENT departs by {worst_m:.6e} "
+        f"relative, outside {F4_DQ4_RIGID_VECTOR:.1e}."
+    )
+
+
+@pytest.mark.parametrize("injection", ["remainder_dropped", "mass_scaled"])
+def test_DQ4_i_the_PER_NODE_gate_REDDENS(built: Superstructure, injection: str) -> None:
+    """Injected into the assembled matrix, never into the closed-form side (EA4).
+
+    `remainder_dropped` removes the lumped remainder from `M` and reads 6.666667e-01 at
+    the shipped rung -- not 1.0, because at `f = 0.75` the members carry three quarters
+    of the mass, so the remainder is the smaller part of what is missing. At every lower
+    rung it reads exactly 1.0. `mass_scaled` is the small one: a 0.1% mass error reads
+    1.0e-03, nine decades above the ceiling, and the counter is taken from it.
+    """
+    body = built.bodies[0]
+    worst_f, worst_m = _dq4_i_departures(
+        body,
+        field=_DQ4_FIELDS["oblique"],
+        mass_scale=1.001 if injection == "mass_scaled" else 1.0,
+        drop_remainder=injection == "remainder_dropped",
+    )
+    error = max(worst_f, worst_m)
+    if injection == "mass_scaled":
+        assert error > F4_DQ4_RIGID_VECTOR_COUNTER, (
+            f"the 0.1% mass error reads {error!r}, which does not reach the declared "
+            f"counter {F4_DQ4_RIGID_VECTOR_COUNTER!r}."
+        )
+    assert (
+        error > F4_DQ4_RIGID_VECTOR
+    ), f"the `{injection}` injection reads {error:.6e}, which the ceiling ACCEPTS."
+
+
+@pytest.mark.parametrize("axis", range(3))
+@pytest.mark.parametrize("index", range(5))
+def test_DQ4_i_ROTATIONS_resultant_and_moment_match_the_DECK(
+    built: Superstructure, index: int, axis: int
+) -> None:
+    """DQ4(i)'s rotational half, AND THE OVERLAP IS STATED RATHER THAN IMPLIED.
+
+    This asserts `R^T M R a` against the deck's own 6x6 at three unit angular
+    accelerations. **That is algebraically G3.1a B, one column at a time**: the rigid
+    6x6 about the CoG has ten independent entries -- `m`, the three CoG couplings and
+    the six of `J` -- and G3.1a B already compares all ten. So this gate adds no
+    discrimination over G3.1a, and it is here because the locked plan's DQ4(i) row asks
+    for it, not because it reaches something new. The per-node test above is where
+    DQ4's content is.
+
+    WHAT THE NORMALISATION HAD TO BE. The expected resultant of a rotation about the
+    CoG is ZERO, so the first version divided a force by `max(|want|, 1.0)` and read
+    `4.66e-09` -- which is 4.66e-09 NEWTONS over one newton, an absolute number
+    presented as a relative one, and a small-number guard of exactly the kind C158
+    removed from `_one_body_error`. On the body's own scale, `m l_b` for a force and
+    `m l_b^2` for a moment, the same quantity reads 1.2e-16. R598 is the same finding.
+    """
+    body = built.bodies[index]
+    mass = body_mass_matrix(body)
+    coords = body.model.nodes.coords()
+    projection = rigid_projection(coords, body.deck_cog)
+    # expected: the deck's own rigid 6x6 about its declared CoG, built from the DECLARED
+    # mass and `J_G` alone. The reference point IS the declared CoG, so the coupling
+    # block is zero by construction and nothing here reads the assembled matrix (EA4).
+    m6_deck = np.zeros((6, 6), dtype=np.float64)
+    m6_deck[0:3, 0:3] = body.deck_mass * np.eye(3)
+    m6_deck[3:6, 3:6] = body.deck_inertia
+    alpha = np.zeros(6, dtype=np.float64)
+    alpha[3 + axis] = 1.0
+    got = projection.T @ (mass @ (projection @ alpha))
+    want = m6_deck @ alpha
+    extent = _body_extent(body)
+    force_rel = float(np.max(np.abs(got[0:3] - want[0:3]))) / (body.deck_mass * extent)
+    moment_rel = float(np.max(np.abs(got[3:6] - want[3:6]))) / (body.deck_mass * extent**2)
+    assert force_rel < F4_DQ4_RIGID_VECTOR, (
+        f"{body.name}, alpha about {'xyz'[axis]}: the resultant FORCE is {force_rel:.6e} "
+        f"of `m l_b`, outside {F4_DQ4_RIGID_VECTOR:.1e}. A rotation about the CoG must "
+        "produce no net force."
+    )
+    assert moment_rel < F4_DQ4_RIGID_VECTOR, (
+        f"{body.name}, alpha about {'xyz'[axis]}: the resultant MOMENT departs from the "
+        f"deck's `J_G alpha` by {moment_rel:.6e} of `m l_b^2`, outside "
+        f"{F4_DQ4_RIGID_VECTOR:.1e}."
+    )
+
+
+_DQ5_DIRECTIONS: dict[str, NDArray[np.float64]] = {
+    "x": np.array([1.0, 0.0, 0.0]),
+    "y": np.array([0.0, 1.0, 0.0]),
+    "minus_z": np.array([0.0, 0.0, -1.0]),
+}
+
+
+def _dq5_departures(
+    body: BodyModel,
+    direction: NDArray[np.float64],
+    *,
+    moment_factor: float = 1.0,
+    remainder_factor: float = 1.0,
+) -> dict[str, float]:
+    """Free fall under the independent force: the acceleration and the member forces."""
+    field = GRAVITY_MAGNITUDE * np.asarray(direction, dtype=np.float64)
+    applied = _independent_nodal_force(
+        body, field, moment_factor=moment_factor, remainder_factor=remainder_factor
+    )
+    relief = solve_inertia_relief(body, applied)
+    coords = body.model.nodes.coords()
+    extent = _body_extent(body)
+    out = {
+        # expected: `a = g` exactly, and `alpha = 0`. Analytic -- a free body under a
+        # uniform field accelerates with the field and does not spin.
+        "a": float(np.max(np.abs(relief.acceleration[0:3] - field))) / GRAVITY_MAGNITUDE,
+        "alpha": float(np.max(np.abs(relief.acceleration[3:6]))) / (GRAVITY_MAGNITUDE / extent),
+        "force": 0.0,
+        "moment": 0.0,
+    }
+    # The NET body force per element: the applied field minus the relieved rigid field.
+    # In free fall they cancel, so each element carries nothing and BOTH terms of
+    # `k u - f_eq` must vanish -- which is why `f_eq` is formed from the net and not
+    # from the field.
+    rigid = rigid_projection(coords, relief.reference_point) @ relief.acceleration
+    net = _uniform_field(body.model.n_dof, field) - rigid
+    for member in body.members:
+        e = next(
+            el for el in body.elements if el.node_a == member.node_a and el.node_b == member.node_b
+        )
+        length = element_length(body.model, e)
+        mu = e.material.rho * e.section.A
+        forces = member_forces(
+            body, member, relief.u_full, element_equivalent_load(body, member, net)
+        )
+        for end in forces.stations:
+            # expected: zero, normalised by `mu g L` and `mu g L^2` -- the plan's scales.
+            out["force"] = max(
+                out["force"], float(np.max(np.abs(end[0:3]))) / (mu * GRAVITY_MAGNITUDE * length)
+            )
+            out["moment"] = max(
+                out["moment"],
+                float(np.max(np.abs(end[3:6]))) / (mu * GRAVITY_MAGNITUDE * length * length),
+            )
+    return out
+
+
+@pytest.mark.parametrize("direction", sorted(_DQ5_DIRECTIONS))
+@pytest.mark.parametrize("index", range(5))
+def test_DQ5_the_body_FALLS_FREELY_under_the_INDEPENDENT_force(
+    built: Superstructure, index: int, direction: str
+) -> None:
+    """V4.2 / G4.2: `a = g`, `alpha = 0`, and every member force zero.
+
+    THE APPLIED LOAD DOES NOT COME FROM `M`, and that is the whole of why this is a
+    gate rather than a restatement. `gravity_load` forms `M a_g` and says in its own
+    docstring that DQ5 forbids that route here: a mass matrix wrong in the same way on
+    both sides would cancel and free fall would look perfect. The load here is the
+    closed-form consistent construction, which shares the node coordinates and the line
+    mass with the model and shares nothing else.
+    """
+    body = built.bodies[index]
+    worst = _dq5_departures(body, _DQ5_DIRECTIONS[direction])
+    for channel, value in worst.items():
+        assert value < F4_DQ5_FREE_FALL, (
+            f"{body.name}, falling along {direction}: the `{channel}` channel reads "
+            f"{value:.6e}, outside {F4_DQ5_FREE_FALL:.1e}. A free body under a uniform "
+            "field accelerates with the field, does not spin, and carries no internal "
+            f"force. All four channels: { {k: f'{v:.3e}' for k, v in worst.items()} }."
+        )
+
+
+@pytest.mark.parametrize("injection", ["consistent_moment_scaled", "remainder_dropped"])
+def test_DQ5_the_free_fall_gate_REDDENS(built: Superstructure, injection: str) -> None:
+    """Injected into the APPLIED load, which is this gate's object under test.
+
+    `consistent_moment_scaled` is a 1% error in the `L^2/12` term of the applied load
+    and reads 8.333333e-04; it is the SMALLER of the two and the counter is taken from
+    it. `remainder_dropped` removes the lumped remainder from the applied force
+    entirely.
+
+    Note which channel each one reddens, because they are not the same defect. Dropping
+    the remainder changes the RESULTANT, so the relief acceleration itself comes out
+    wrong; scaling the moment term leaves the resultant force untouched and shows up as
+    a spurious internal moment. A gate that only watched `a` would miss the second.
+    """
+    body = built.bodies[0]
+    worst = _dq5_departures(
+        body,
+        _DQ5_DIRECTIONS["minus_z"],
+        moment_factor=1.01 if injection == "consistent_moment_scaled" else 1.0,
+        remainder_factor=0.0 if injection == "remainder_dropped" else 1.0,
+    )
+    error = max(worst.values())
+    if injection == "consistent_moment_scaled":
+        assert error > F4_DQ5_FREE_FALL_COUNTER, (
+            f"the 1% consistent-moment error reads {error!r}, which does not reach the "
+            f"declared counter {F4_DQ5_FREE_FALL_COUNTER!r}."
+        )
+    assert error > F4_DQ5_FREE_FALL, (
+        f"the `{injection}` injection reads {error:.6e}, which the ceiling ACCEPTS. "
+        f"Channels: { {k: f'{v:.3e}' for k, v in worst.items()} }."
     )

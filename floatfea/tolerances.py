@@ -2236,6 +2236,124 @@ F4_MAPPING_CONSERVATION: Final[float] = 1.0e-12
 # until it was run at one.
 # Set: 2026-10-05, F4 step 1
 F4_MAPPING_CONSERVATION_COUNTER: Final[float] = 0.2
+# CLASS: ACCURACY -- DQ4(ii), the element nodal force VECTOR under uniform translational
+# acceleration. The quantity is the relative departure of `M_e a` from the closed form
+# `mu L / 2` on the translational rows and `mu L^2 / 12` on the rotational ones, worst
+# over every element of every body and both bending planes.
+#
+# Reason for 1e-12: the worst clean value over every non-vacuous rung of
+# `MASS_FRACTION_LADDER` is 1.9371509552001953e-15, at f = 0.75. 1e-12 is 516.2x above
+# it. A round-off ceiling is the right form -- the closed form is exact and the only
+# departure is the element matrix's own summation order.
+#
+# AND THE CLOSED FORM IS SHEAR-INDEPENDENT, which had to be measured because this
+# element is TIMOSHENKO and the closed form is the EULER-BERNOULLI one. Swept over five
+# decades of the shear parameter, by shortening one member with section and material
+# held, the departure has no trend: 5.96e-16 at phi = 1.59e-02 and 5.68e-16 at
+# phi = 9.95e+02. A rigid translation generates no shear strain, so phi cancels out of
+# the row sums. The shipped geometry reaches only phi = 6.4e-02, so a dependence would
+# have been invisible here and present on F3's other sections.
+# Set: 2026-10-06, F4 step 2
+F4_DQ4_ELEMENT_VECTOR: Final[float] = 1.0e-12
+
+# COUNTER-CASE: the SMALLER of the two defects the gate must catch.
+# Reason for 5e-4: a 0.1% error in the `L^2/12` term, which MEASURES 0.001000000000000745.
+# The other injection -- a LUMPED mass matrix, which has the right nodal forces and no
+# nodal moments at all -- reads exactly 1.0, so the scaled moment is the smaller of the
+# two and is the one the counter is taken from. The declared value is the round bound
+# below it rather than the measurement, because a bit-exact equality on a number the
+# element matrix produces is not portable. Eight decades above the ceiling.
+#
+# EH4, THE WEAKENING DIRECTION: the injection may SHRINK to 0.5000 of its size before
+# the counter stops bracketing it, and the ceiling may RISE 516.2x before a clean rung
+# trips. Both injections are run by `test_DQ4_ii_the_closed_form_gate_REDDENS`.
+#
+# f = 0.0 IS VACUOUS AND THE GATE DOES NOT RUN THERE. At f = 0 the members carry no
+# mass, `mu = 0`, every expected force and moment is exactly zero and a relative
+# departure has no denominator. The same rung is vacuous for
+# `F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER` and for the same reason.
+# Set: 2026-10-06, F4 step 2
+F4_DQ4_ELEMENT_VECTOR_COUNTER: Final[float] = 5.0e-4
+
+# CLASS: ACCURACY -- DQ4(i), the rigid nodal force VECTOR, PER NODE. The quantity is the
+# relative departure of `M a` from the closed-form consistent-load construction, force
+# and moment normalised separately, worst over four uniform fields and all five bodies.
+#
+# WHY THIS IS NOT G3.1a. The rigid 6x6 has ten independent entries -- mass, three CoG
+# couplings, six of `J` -- and G3.1a B compares all ten against the deck, so a gate
+# asserting `R^T M R a` is G3.1a B one column at a time. This one is PER NODE: `6 N`
+# components against a route that never touches `M`, `local_mass` or the element
+# transform. A mass matrix with the right rigid properties and the wrong DISTRIBUTION
+# passes G3.1a and fails here, and the dynamic residual DQ8 defines divides by `M a`
+# DOF by DOF rather than by its resultant.
+#
+# The same constant carries the ROTATIONAL half, which is at the resultant level only
+# and IS the G3.1a restatement -- kept because the locked plan's DQ4(i) row asks for it,
+# with the overlap stated in its own docstring rather than implied. Its figures are
+# normalised by `m l_b` and `m l_b^2` and not by one newton: the first version divided
+# a force whose expected value is zero by `max(|want|, 1.0)` and read 4.66e-09, an
+# absolute number wearing relative units, which is C158's finding and R598's.
+#
+# Reason for 1e-12: the worst clean value over every non-vacuous rung is
+# 2.796036563614433e-15, at f = 0.75; the rotational half's worst is 1.2417634328206378e-16.
+# 1e-12 is 357.6x above the first of them.
+# Set: 2026-10-06, F4 step 2
+F4_DQ4_RIGID_VECTOR: Final[float] = 1.0e-12
+
+# COUNTER-CASE: the SMALLER of the two defects the gate must catch.
+# Reason for 5e-4: a 0.1% error in the assembled mass, which MEASURES
+# 0.0010000000000005215 at every non-vacuous rung. The other injection -- the lumped
+# remainder removed from `M` -- reads 6.666666666666666e-01 at the shipped rung and
+# exactly 1.0 at every rung below it, which is itself worth reading: at f = 0.75 the
+# members carry three quarters of the mass, so the remainder is the SMALLER part of what
+# is missing, and the injection gets stronger as the ladder descends. The scaled mass is
+# the smaller of the two and is the one the counter is taken from.
+#
+# EH4, THE WEAKENING DIRECTION: the injection may SHRINK to 0.5000 of its size before the
+# counter stops bracketing it, and the ceiling may RISE 357.6x before a clean rung trips.
+# Both injections are run by `test_DQ4_i_the_PER_NODE_gate_REDDENS`. f = 0.0 is vacuous
+# for the reason the element entry above gives.
+# Set: 2026-10-06, F4 step 2
+F4_DQ4_RIGID_VECTOR_COUNTER: Final[float] = 5.0e-4
+
+# CLASS: ACCURACY -- DQ5 / G4.2, free fall under an INDEPENDENT body force. Four channels,
+# each relative and each normalised by its own scale: `|a - g| / g`, `|alpha| l_b / g`,
+# and the member end forces and moments by `mu g L` and `mu g L^2` (the plan's scales).
+#
+# THE APPLIED LOAD DOES NOT COME FROM `M`, and that is the whole content of the gate.
+# `gravity_load` forms `M a_g` and says in its own docstring that DQ5 forbids that route:
+# a mass matrix wrong in the same way on both sides would cancel and free fall would look
+# perfect. The load here is the closed-form consistent construction, which shares the
+# node coordinates and the line mass with the model and shares nothing else.
+#
+# Reason for 1e-12: the worst clean value over every non-vacuous rung is
+# 1.3335849658769691e-15, AT f = 0.1 AND NOT AT THE SHIPPED RUNG. 1e-12 is 749.9x above
+# it.
+#
+# THAT RUNG DEPENDENCE IS THE REASON THIS FIGURE IS LADDER-WIDE AND NOT SHIPPED-RUNG
+# (EU1, R694's lesson). This quantity RISES as `f` falls -- 3.780e-16, 3.795e-16,
+# 4.218e-16, 4.887e-16, 7.171e-16, 1.334e-15 over f = 0.75 down to 0.1, a 3.53x spread --
+# because less member mass and more lumped remainder conditions the relief solve
+# differently. Measured at the shipped rung alone this entry would have published 2645.8x
+# of headroom, and the true ladder-wide figure is 749.9x. Nothing in the diff pointed at
+# f = 0.1; it is the configuration nobody chose.
+# Set: 2026-10-06, F4 step 2
+F4_DQ5_FREE_FALL: Final[float] = 1.0e-12
+
+# COUNTER-CASE: the SMALLER of the two defects the gate must catch.
+# Reason for 4e-4: a 1% error in the `L^2/12` term of the APPLIED load, which MEASURES
+# 0.0008333333333333215. The other injection -- the lumped remainder dropped from the
+# applied force -- is larger. The two redden DIFFERENT channels and that is why both are
+# shipped: dropping the remainder changes the RESULTANT, so the relief acceleration comes
+# out wrong, while scaling the moment term leaves the resultant untouched and appears as
+# a spurious internal moment. A gate watching only `a` would miss the second.
+#
+# EH4, THE WEAKENING DIRECTION: the injection may SHRINK to 0.4800 of its size before the
+# counter stops bracketing it, and the ceiling may RISE 749.9x before a clean rung trips.
+# Both injections are run by `test_DQ5_the_free_fall_gate_REDDENS`. f = 0.0 is vacuous
+# for the reason the element entry above gives.
+# Set: 2026-10-06, F4 step 2
+F4_DQ5_FREE_FALL_COUNTER: Final[float] = 4.0e-4
 
 
 # ---------------------------------------------------------------------------
