@@ -2317,17 +2317,29 @@ F4_MAPPING_CONSERVATION_COUNTER: Final[float] = 0.2
 # Set: 2026-10-06, F4 step 2
 F4_DQ4_ELEMENT_VECTOR: Final[float] = 1.0e-12
 
-# COUNTER-CASE: the SMALLER of the two defects the gate must catch.
-# Reason for 5e-4: a 0.1% error in the `L^2/12` term, which MEASURES 0.001000000000000745.
-# The other injection -- a LUMPED mass matrix, which has the right nodal forces and no
-# nodal moments at all -- reads exactly 1.0, so the scaled moment is the smaller of the
-# two and is the one the counter is taken from. The declared value is the round bound
-# below it rather than the measurement, because a bit-exact equality on a number the
+# COUNTER-CASE: the SMALLEST of the three defects the gate must catch, over the DOMAIN
+# the ceiling reads -- five bodies, every element, both bending planes (R708).
+# Reason for 5e-4: a 0.1% error in the `L^2/12` term, whose minimum over that domain and
+# every rung MEASURES 0.0010000000000004098. The other two injections -- a LUMPED mass
+# matrix, which has the right nodal forces and no nodal moments at all, reading exactly
+# 1.0, and R705's sign flip reading 2.0000000000000004 -- are both larger, so the scaled
+# moment is the one the counter is taken from.
+#
+# R708: THE FIGURE THIS ENTRY PUBLISHED, 0.001000000000000745, WAS THE PLATFORM'S. The
+# counter-case injected into `bodies[0]` while the ceiling is parametrised over five.
+# The value is unaffected -- this injection is a property of the element and barely moves
+# between bodies -- but the figure described one body and was read as describing the
+# quantity, and the sister entry below was wrong for exactly that reason.
+#
+# The declared value is the round bound below it rather than the measurement,
+# because a bit-exact equality on a number the
 # element matrix produces is not portable. Eight decades above the ceiling.
 #
-# EH4, THE WEAKENING DIRECTION: the injection may SHRINK to 0.5000 of its size before
-# the counter stops bracketing it, and the ceiling may RISE 516.2x before a clean rung
-# trips. Both injections are run by `test_DQ4_ii_the_closed_form_gate_REDDENS`.
+# EH4, THE WEAKENING DIRECTION, over the ceiling's whole domain: the injection may SHRINK
+# to 0.4999 of its size before the counter stops bracketing it, and the ceiling may RISE
+# 516.2x before a clean rung trips. All three injections are run by
+# `test_DQ4_ii_the_closed_form_gate_REDDENS`, which asserts `len(per_body) == 5` so a
+# narrowed domain fails loudly.
 #
 # f = 0.0 IS VACUOUS AND THE GATE DOES NOT RUN THERE. At f = 0 the members carry no
 # mass, `mu = 0`, every expected force and moment is exactly zero and a relative
@@ -2392,9 +2404,12 @@ F4_DQ4_RIGID_VECTOR: Final[float] = 1.0e-12
 # is missing, and the injection gets stronger as the ladder descends. The scaled mass is
 # the smaller of the two and is the one the counter is taken from.
 #
-# EH4, THE WEAKENING DIRECTION: the injection may SHRINK to 0.5000 of its size before the
-# counter stops bracketing it, and the ceiling may RISE 357.6x before a clean rung trips.
-# f = 0.0 is vacuous for the reason the element entry above gives.
+# EH4, THE WEAKENING DIRECTION, over the ceiling's whole domain: the injection may SHRINK
+# to 0.7500 of its size before the counter stops bracketing it -- a 25% window, the
+# narrowest in the F4 block, and it is narrow because the counter now sits under a HUB's
+# remainder rather than the platform's. The ceiling may RISE 357.6x before a clean case
+# trips. The 0.5000 this entry published was computed against the platform-only
+# injection figure. f = 0.0 is vacuous for the reason the element entry above gives.
 #
 # R707 ADDS A THIRD INJECTION AND THE COUNTER DOES NOT MOVE FOR IT. A 0.1% error in the
 # body's own remainder mass reads 0.0006666666666664893 at f = 0.75 and
@@ -2403,8 +2418,35 @@ F4_DQ4_RIGID_VECTOR: Final[float] = 1.0e-12
 # is thinner is that the remainder is a quarter of the body's mass at the shipped rung
 # rather than all of it. All three injections are run by
 # `test_DQ4_i_the_PER_NODE_gate_REDDENS`.
-# Set: 2026-10-06, F4 step 2
-F4_DQ4_RIGID_VECTOR_COUNTER: Final[float] = 5.0e-4
+#
+# R708: 5.0e-4 WAS ABOVE THE REMAINDER DEFECT ON A HUB, and the counter-case could not see
+# it because it injected into `bodies[0]` while the ceiling reads five bodies and four
+# fields. Run over the ceiling's whole domain, at every rung:
+#
+#   f      mass_scaled min        remainder_mass min      where
+#   0.75   0.001000000000000298   0.00039999999999946773  hub2/oblique
+#   0.5    0.001000000000000298   0.000666666666666371    hub1/oblique
+#   0.4    0.0010000000000002659  0.0007499999999997228   hub2/oblique
+#   0.3    0.001000000000000186   0.0008235294117645755   hub1/oblique
+#   0.2    0.0010000000000002659  0.0008888888888885439   hub1/z
+#   0.1    0.0010000000000002659  0.0009473684210523983   hub1/oblique
+#
+# The platform is the STRONGEST body for the remainder injection, not a representative
+# one: its remainder is a quarter of its mass at f = 0.75 and a hub's is less, so the
+# 0.0006666666666664893 R707 published is the platform's figure and the quantity's is
+# 0.00039999999999946773. 3.0e-4 clears it by 1.3333x.
+#
+# THE INJECTION GETS WEAKER AS `f` FALLS HERE, which is the opposite of the
+# `remainder_dropped` row's behaviour, so neither row's direction could be inferred from
+# the other. Both are measured.
+#
+# AND THE COUNTER-CASES NOW ASSERT THEIR OWN DOMAIN SIZE -- `len(per_case) == 20` here,
+# `== 5` for the element entry, `== 15` for DQ5 -- so a counter-case narrowed back to one
+# body fails loudly rather than quietly bracketing less than its ceiling. R706 was the
+# fourth appearance of that shape and this is the fifth, found by running the round's own
+# settling loop on my own constants instead of waiting for it to be run on them.
+# Set: 2026-10-06, F4 step 2; value moved same day (R708)
+F4_DQ4_RIGID_VECTOR_COUNTER: Final[float] = 3.0e-4
 
 # CLASS: ACCURACY -- DQ5 / G4.2, free fall under an INDEPENDENT body force. Four channels,
 # each relative and each normalised by its own scale: `|a - g| / g`, `|alpha| l_b / g`,
@@ -2451,16 +2493,32 @@ F4_DQ4_RIGID_VECTOR_COUNTER: Final[float] = 5.0e-4
 # Set: 2026-10-06, F4 step 2
 F4_DQ5_FREE_FALL: Final[float] = 1.0e-12
 
-# COUNTER-CASE: the SMALLER of the two defects the gate must catch.
-# Reason for 4e-4: a 1% error in the `L^2/12` term of the APPLIED load, which MEASURES
-# 0.0008333333333333215. The other injection -- the lumped remainder dropped from the
-# applied force -- is larger. The two redden DIFFERENT channels and that is why both are
+# COUNTER-CASE: the SMALLER of the two defects the gate must catch, over the DOMAIN the
+# ceiling reads -- five bodies, three directions (R708).
+# Reason for 4e-4: a 1% error in the `L^2/12` term of the APPLIED load, whose minimum over
+# that domain and every rung MEASURES 0.0007216878364869912, on `hub4` under the
+# HORIZONTAL `x` field. The other injection -- the lumped remainder dropped from the
+# applied force -- has a minimum of 0.25000000000000006 and is larger. Margin 1.8042x.
+#
+# R708: THE FIGURE THIS ENTRY PUBLISHED, 0.0008333333333333215, WAS THE PLATFORM'S UNDER
+# `-z` -- the one body and the one direction the counter-case injected into, where the
+# ceiling reads fifteen cases. The declared 4e-4 is still below the true minimum, so no
+# value moves; what was wrong is that a reader comparing 4e-4 with 8.33e-4 would have
+# computed a margin of 2.0833x where the quantity gives 1.8042x.
+#
+# AND THE WEAKEST CASE IS NOT THE ONE A READER WOULD GUESS. Free fall in `-z` on the
+# platform is the obvious case and it is the STRONGEST; a hub falling sideways is the
+# weakest. Nothing in the shipped configuration points at it.
+#
+# The two redden DIFFERENT channels and that is why both are
 # shipped: dropping the remainder changes the RESULTANT, so the relief acceleration comes
 # out wrong, while scaling the moment term leaves the resultant untouched and appears as
 # a spurious internal moment. A gate watching only `a` would miss the second.
 #
-# EH4, THE WEAKENING DIRECTION: the injection may SHRINK to 0.4800 of its size before the
-# counter stops bracketing it, and the ceiling may RISE 749.9x before a clean rung trips.
+# EH4, THE WEAKENING DIRECTION, over the ceiling's whole domain: the injection may SHRINK
+# to 0.5543 of its size before the counter stops bracketing it, and the ceiling may RISE
+# 745.5x before a clean case trips. The 0.4800 this entry published came from the
+# platform-only figure.
 # Both injections are run by `test_DQ5_the_free_fall_gate_REDDENS`. f = 0.0 is vacuous
 # for the reason the element entry above gives.
 # Set: 2026-10-06, F4 step 2

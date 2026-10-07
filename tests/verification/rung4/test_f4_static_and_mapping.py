@@ -1820,19 +1820,31 @@ def test_DQ4_ii_the_closed_form_gate_REDDENS(built: Superstructure, injection: s
     It also escaped DQ4(i), because the star geometry sums the centre-node moments to
     zero for any uniform field -- so before this row no F4 gate watched the sign at all.
     """
-    body = built.bodies[0]
-    worst_f, worst_m = _dq4_ii_departures(
-        body,
-        lumped=injection == "lumped",
-        moment_scale=1.001 if injection == "moment_scaled" else 1.0,
-        flip_moment_sign=injection == "moment_sign_flipped",
+    # R708: EVERY BODY THE CEILING READS. `test_DQ4_ii_the_element_nodal_vector_is_the
+    # _CLOSED_FORM` is parametrised over all five; a counter-case on one of them brackets
+    # a narrower domain than its ceiling, which is R706's shape.
+    per_body = {}
+    for body in built.bodies:
+        wf, wm = _dq4_ii_departures(
+            body,
+            lumped=injection == "lumped",
+            moment_scale=1.001 if injection == "moment_scaled" else 1.0,
+            flip_moment_sign=injection == "moment_sign_flipped",
+        )
+        per_body[body.name] = (wf, wm)
+    assert len(per_body) == 5, (
+        f"{len(per_body)} of 5 bodies were injected. The ceiling reads five, so a "
+        "counter-case reaching fewer brackets a narrower domain (R706, R708)."
     )
-    error = max(worst_f, worst_m)
+    worst_f = min(v[0] for v in per_body.values())
+    worst_m = min(v[1] for v in per_body.values())
+    error = min(max(v) for v in per_body.values())
     if injection == "moment_scaled":
         assert error > F4_DQ4_ELEMENT_VECTOR_COUNTER, (
-            f"the 0.1% moment error reads {error!r}, which does not reach the declared "
-            f"counter {F4_DQ4_ELEMENT_VECTOR_COUNTER!r}. That injection is the SMALLEST "
-            "of the three and the one the counter is taken from."
+            f"the 0.1% moment error reads {error!r} at its WEAKEST body, which does not "
+            f"reach the declared counter {F4_DQ4_ELEMENT_VECTOR_COUNTER!r}. That "
+            "injection is the SMALLEST of the three and the one the counter is taken "
+            f"from. Per body: { {k: f'{max(v):.3e}' for k, v in per_body.items()} }."
         )
     if injection == "moment_sign_flipped":
         # expected: exactly 2.0 -- the relative error of `-x` against `+x` -- and the
@@ -1886,25 +1898,40 @@ def test_DQ4_i_the_PER_NODE_gate_REDDENS(built: Superstructure, injection: str) 
     rung it reads exactly 1.0. `mass_scaled` is the small one: a 0.1% mass error reads
     1.0e-03, nine decades above the ceiling, and the counter is taken from it.
     """
-    body = built.bodies[0]
-    worst_f, worst_m = _dq4_i_departures(
-        body,
-        field=_DQ4_FIELDS["oblique"],
-        mass_scale=1.001 if injection == "mass_scaled" else 1.0,
-        drop_remainder=injection == "remainder_dropped",
-        remainder_mass_scale=1.001 if injection == "remainder_mass_scaled" else 1.0,
+    # R708: EVERY BODY AND EVERY FIELD THE CEILING READS -- five bodies, four fields.
+    # This injected into `bodies[0]` under one field, and `F4_DQ4_RIGID_VECTOR_COUNTER`
+    # was ABOVE the remainder defect on `hub2` under the oblique field as a direct
+    # result: 0.00039999999999946773 against a declared 5.0e-4. The platform's remainder
+    # is a quarter of its mass and a hub's is less, so the platform is the STRONGEST
+    # body for that injection and the counter was taken there.
+    per_case = {}
+    for body in built.bodies:
+        for label, field in sorted(_DQ4_FIELDS.items()):
+            per_case[f"{body.name}/{label}"] = _dq4_i_departures(
+                body,
+                field=field,
+                mass_scale=1.001 if injection == "mass_scaled" else 1.0,
+                drop_remainder=injection == "remainder_dropped",
+                remainder_mass_scale=1.001 if injection == "remainder_mass_scaled" else 1.0,
+            )
+    assert len(per_case) == 20, (
+        f"{len(per_case)} of 20 body/field cases were injected. The ceiling reads five "
+        "bodies and four fields, so a counter-case reaching fewer brackets a narrower "
+        "domain (R706, R708)."
     )
-    error = max(worst_f, worst_m)
+    error = min(max(v) for v in per_case.values())
     if injection == "remainder_mass_scaled":
         # R707's own row. Before the repair this read the CLEAN value to every digit,
         # because `body.remainder_mass` was on both sides of the comparison; without
         # this row, restoring that read leaves the whole suite green and nothing holds
         # the independence in place (R683's lesson).
         assert error > F4_DQ4_RIGID_VECTOR_COUNTER, (
-            f"a 0.1% error in the body's own remainder mass reads {error!r}, which does "
-            f"not reach the declared counter {F4_DQ4_RIGID_VECTOR_COUNTER!r}. If it "
-            "reads the clean value, the expected side is reading `body.remainder_mass` "
-            "again and this gate cannot fail on the remainder at all (R707)."
+            f"a 0.1% error in the body's own remainder mass reads {error!r} at its "
+            f"WEAKEST body/field, which does not reach the declared counter "
+            f"{F4_DQ4_RIGID_VECTOR_COUNTER!r}. If it reads the clean value, the expected "
+            "side is reading `body.remainder_mass` again and this gate cannot fail on "
+            "the remainder at all (R707). The weakest case is a HUB, not the platform "
+            "(R708)."
         )
     if injection == "mass_scaled":
         assert error > F4_DQ4_RIGID_VECTOR_COUNTER, (
@@ -2063,18 +2090,29 @@ def test_DQ5_the_free_fall_gate_REDDENS(built: Superstructure, injection: str) -
     wrong; scaling the moment term leaves the resultant force untouched and shows up as
     a spurious internal moment. A gate that only watched `a` would miss the second.
     """
-    body = built.bodies[0]
-    worst = _dq5_departures(
-        body,
-        _DQ5_DIRECTIONS["minus_z"],
-        moment_factor=1.01 if injection == "consistent_moment_scaled" else 1.0,
-        remainder_factor=0.0 if injection == "remainder_dropped" else 1.0,
+    # R708: EVERY BODY AND EVERY DIRECTION THE CEILING READS -- five by three.
+    per_case = {}
+    for body in built.bodies:
+        for label in sorted(_DQ5_DIRECTIONS):
+            per_case[f"{body.name}/{label}"] = _dq5_departures(
+                body,
+                _DQ5_DIRECTIONS[label],
+                moment_factor=1.01 if injection == "consistent_moment_scaled" else 1.0,
+                remainder_factor=0.0 if injection == "remainder_dropped" else 1.0,
+            )
+    assert len(per_case) == 15, (
+        f"{len(per_case)} of 15 body/direction cases were injected. The ceiling reads "
+        "five bodies and three directions, so a counter-case reaching fewer brackets a "
+        "narrower domain (R706, R708)."
     )
+    worst = min(per_case.values(), key=lambda d: max(d.values()))
     error = max(worst.values())
     if injection == "consistent_moment_scaled":
         assert error > F4_DQ5_FREE_FALL_COUNTER, (
-            f"the 1% consistent-moment error reads {error!r}, which does not reach the "
-            f"declared counter {F4_DQ5_FREE_FALL_COUNTER!r}."
+            f"the 1% consistent-moment error reads {error!r} at its WEAKEST "
+            f"body/direction, which does not reach the declared counter "
+            f"{F4_DQ5_FREE_FALL_COUNTER!r}. The weakest case is a HUB under a HORIZONTAL "
+            "field, not the platform falling in `-z` (R708)."
         )
     assert error > F4_DQ5_FREE_FALL, (
         f"the `{injection}` injection reads {error:.6e}, which the ceiling ACCEPTS. "
