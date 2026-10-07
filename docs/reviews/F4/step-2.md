@@ -1,4 +1,697 @@
 # Review — F4 step 2
+Reviewed commit: bac301796de7190f3bdf52a47a3c7dfe40a46669
+Verdict: HOLD
+
+**Reviewed commit: `bac3017`** (`bac301796de7190f3bdf52a47a3c7dfe40a46669`, HEAD of F3,
+pushed, tree clean).
+Tests: **3236 passed, 0 failed, 0 skipped** (MY OWN run, ONE invocation, no `--ignore`, no
+`-k`, no deselection, in the repository itself, `654.90s`. Not the report's figure: the
+report's `2855 passed` is `scripts/suite_count.py` at `b68f2f7` with the 381 report-guard
+cases excluded, and `2855 + 381 = 3236` reconciles exactly.)
+
+## Round of 2026-10-06 -- ROUND 2 OF THREE. ONE REVISION REMAINS.
+
+**ES0's premise verified first, because the round count rests on it.**
+
+```
+cmd    git log -1 --format='%h %s' -- docs/reports/F4/step-2.md
+out    bac3017 report: F4 step 2 revision 2 -- EQ3's DQ4/DQ5, R685, DQ8 per body, R704/R705
+judge  a NEW report revision exists, so ES0's exemption does NOT apply. Verdict 97 was
+       round 1; 98, 99, 100 and 101 were interim checks against none; this is ROUND 2.
+       ONE REVISION REMAINS and the next one is the closer.
+```
+
+**Instruction 1b, checked mechanically rather than by reading.** The file's top line at
+`docs/reports/F4/step-2.md:3` still says `Answers: verdict 96 @ 5786bed`; revision 2's own
+header at `:719` says `Answers: verdict 101 @ 4b8f079`, which is the newest verdict and the
+commit I judged last.
+
+```
+cmd    python -m pytest tests/test_report_carried.py tests/test_report_numbers_are_sourced.py
+         tests/test_report_guard_states.py -q -p no:randomly
+out    381 passed in 154.16s
+judge  `test_the_answered_verdict_is_the_NEWEST_one` is inside that 381 and is green, so
+       the guard reads `:719` and not `:3`. 1b does not fire. The stale `:3` line is C13.
+```
+
+**AND THE RANGE, COMPUTED RATHER THAN TAKEN.** The hand-back says `e76f165..HEAD` is three
+commits and it is right this time.
+
+```
+cmd    git rev-list --count e76f165..HEAD
+out    3
+cmd    git log --oneline e76f165..HEAD
+out    bac3017 / b68f2f7 / 36a5003
+judge  36a5003 and b68f2f7 are the work; bac3017 is the revision. Nothing is scoped out of
+       my reading, and I read the whole range.
+```
+
+**HOLD, TWO BLOCKING ITEMS, AND BOTH ARE INSIDE THIS ROUND'S OWN REPAIRS.**
+
+* **R705 is CLOSED.** The signed comparison is right, the signs are independently derivable
+  (I derived them from the construction's own `(L^2/12) e1 x w` rather than from
+  `local_mass`), the shipped counter-case holds the rule, and I reproduced the ablation.
+  This is the best-executed item in the range.
+* **R704's repair carries a new blocking finding, R706.** The expected side is now the
+  closed form at the body's own `f` and that half is correct. **The floor `0.04` is derived
+  against the platform arm alone and sits ABOVE the defect on the twelve hub arms at
+  `f = 0.1`** -- `0.03529411764705815` against a floor of `0.04` -- where the ceiling it
+  brackets is asserted over all sixteen members with `assert checked == 16`. That is R682's
+  and R694's finding verbatim, the fourth time in this block, and **the sentence refuting it
+  is already in the entry eighteen lines above the value**: `floatfea/tolerances.py:1990`,
+  "C149's correction stands -- the hub arms are the smaller figure".
+* **R707 is mine, from EU1's adversarial case, and the implementer named the suspicion
+  itself without measuring it.** DQ4(i)'s expected side reads `body.remainder_mass` and
+  `body.remainder_node` -- the same two attributes `body_mass_matrix` reads -- so the gate
+  cannot fail on either. A **doubled** remainder mass and the remainder lumped at **any of
+  the six nodes** both read the clean value to every digit.
+
+**No STOP.** The ladder is SUCCESS at every step in CI at the newest code-bearing commit, no
+low rung is red, and `.claude`, `docs/SUPERVISOR.md` and `tests/conftest.py` are all
+untouched in this range (section 1).
+
+## 0. CI -- NO RUN AT `bac3017` BY DESIGN, AND THE RUN AT `b68f2f7` IS RED
+
+```
+cmd    gh run list --commit bac3017 --json name,conclusion,workflowName,status
+out    []
+cmd    grep -n paths-ignore -A 3 .github/workflows/ci.yml | head -6
+out    paths-ignore:
+out      - "docs/reports/**"
+judge  a report-only commit runs nothing. This is NOT CK2 -- there is no exhausted-
+       allowance job here, there is no job at all -- and it is the same situation I ruled
+       on at `fa709df`. Recorded as what it is: NO RUN at the reviewed commit.
+```
+
+```
+cmd    gh run list --commit b68f2f7 --json conclusion,databaseId,status
+out    [{"conclusion":"failure","databaseId":37570657425,"status":"completed"}]
+out    the verification ladder: SUCCESS, every step
+out      ladder 1 the solver is a solver        success
+out      ladder 2 the element is the element    success
+out      ladder 3 the model is the platform     success
+out      ladder 6 it stays fixed                success
+out      ladder 4 the loads are the loads       success
+out      ladder 5 independent confirmation      success
+out    lint, unit and guards: FAILURE at `guards and meta-tests` ONLY
+out      actionlint success / ruff success / black --check success / mypy success /
+out      unit tests success / guards and meta-tests FAILURE
+out    CI determinism -- leg / ten legs agree: skipped, no steps -- CK0's
+out      workflow_dispatch condition, NOT CK2
+```
+
+**A red CI is a HOLD regardless of the local run (CA2) -- except where EG3 carves it out,
+and this is that carve-out, traced rather than assumed.**
+
+```
+cmd    gh run view 37570657425 --log-failed, every FAILED id, parametrisation stripped,
+       counted
+out    154 tests/test_report_carried.py::test_every_named_site_is_touched_or_declared
+out     20 tests/test_report_carried.py::test_the_report_carries_the_finding
+out      7 tests/test_report_guard_states.py::test_the_guard_survives_the_state
+out      1 tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number
+out      1 tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces
+out      1 tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit
+rule   EG3 state (2) as corrected by EH1 and R644: the five named, plus
+       `test_the_answered_verdict_is_the_NEWEST_one`, plus
+       `test_a_carried_row_points_at_a_section_that_discusses_it`, plus the cascade
+       identified by a red baseline and each state's own failure line
+judge  154 + 20 + 7 + 1 + 1 + 1 = 184, which is the whole list. FOUR of the five named ids
+       are present; the seven `test_the_guard_survives_the_state` parametrisations are the
+       cascade. NOTHING is red outside the state's own list, so CZ1 (iv) does not fire and
+       this is NOT CZ0 (d). The HOLD comes from R706 and R707, not from the suite.
+```
+
+**AND EG3 CONDITION (ii), MEASURED BY ME AT THE REPORT'S OWN COMMIT.** State (2) is the half
+this milestone kept owing:
+
+```
+cmd    python -m pytest tests/test_report_carried.py tests/test_report_numbers_are_sourced.py
+         tests/test_report_guard_states.py -q -p no:randomly    (at bac3017, tree clean)
+out    381 passed in 154.16s
+cmd    python -m pytest -q -p no:randomly                        (at bac3017, tree clean)
+out    3236 passed, 2 warnings in 654.90s
+judge  the answering revision clears state (2) in full. The implementer's figure and mine
+       agree to the id. This is measured, not inferred, and it is not owed again.
+```
+
+## 1. MY OWN INSTRUCTIONS, AND THE CONFTEST -- EACH DIFFED SEPARATELY
+
+```
+cmd    git diff --stat e76f165..HEAD -- .claude docs/SUPERVISOR.md
+out    (empty)
+judge  NOT a STOP-class finding. Nothing in this range touches what I read or must carry.
+cmd    git ls-files -- tests/conftest.py "tests/**/conftest.py"
+out    tests/conftest.py
+cmd    git diff --stat e76f165..HEAD -- tests/conftest.py "tests/**/conftest.py"
+out    (empty)
+judge  the instruction's own CI0 check resolves to a real file, and it is unchanged. No new
+       or changed conftest, and no plugin the rungs load, so CH2's channel is closed by
+       reading rather than by assumption.
+cmd    git diff --stat e76f165..HEAD -- floatfea tests docs scripts
+out    docs/milestones/F4.md 4 | docs/reports/F4/step-2-answers.json 245 |
+       docs/reports/F4/step-2.md 1496 | docs/reviews/F4/step-2.md 780 |
+       floatfea/tolerances.py 29 | tests/verification/rung4/test_f4_static_and_mapping.py 142
+judge  NOTHING under `floatfea/` moved except `tolerances.py`. There is no (a) in this range
+       to find, which is why both my findings are (b) and (c).
+```
+
+## 2. R706 -- THE FLOOR IS THE PLATFORM ARM'S AND THE CEILING IS SIXTEEN MEMBERS'
+
+The repair's expected side is right and I verified it at every rung with the shipped
+assertion. The **floor** is the half that was derived at one member class.
+
+**First, the domain. `F4_STATIC_REACTION_AGREEMENT` is asserted over all sixteen members.**
+
+```
+cmd    sed -n '182,215p' tests/verification/rung4/test_f4_static_and_mapping.py
+out    def test_G4_the_tip_shear_equals_the_support_reaction(built: Superstructure) -> None:
+out        ... for body in built.bodies: ... for member in body.members:
+out            assert float(mf.end_b[2]) == pytest.approx(reaction,
+out                                              rel=F4_STATIC_REACTION_AGREEMENT)
+out    :210    assert checked == 16, (
+judge  sixteen members, and the count is asserted so the domain cannot narrow silently.
+       The counter-case injects into ONE of them -- `platform.members[0]`, `:371`.
+```
+
+**Then the defect, at every rung, over all sixteen rather than over the one the gate reads.**
+
+```
+cmd    python <scratch>/adv_r704b.py   (build_superstructure(measurement_fraction=f) at every
+                                        rung; the SAME quantity the counter-case measures,
+                                        on every member of every body)
+rule   the shipped floor assertion, `:387` -- shortfall > F4_STATIC_REACTION_AGREEMENT_COUNTER
+out      f  class      measured worst (min)   closed form         rel err   > floor 0.04?
+out   0.75  platform   0.37499999999999983    f/2   = 0.375      4.44e-16   True
+out   0.75  hub        0.2647058823529406     6f/17 = 0.2647058  2.10e-15   True
+out    0.5  platform   0.2499999999999997     0.25              1.22e-15   True
+out    0.5  hub        0.17647058823529396    0.17647058        9.44e-16   True
+out    0.4  hub        0.14117647058823465    0.14117647        4.72e-15   True
+out    0.3  hub        0.1058823529411758     0.10588235        6.16e-15   True
+out    0.2  hub        0.07058823529411748    0.07058823        2.56e-15   True
+out    0.1  platform   0.04999999999999985    0.05              7.91e-15   True
+out    0.1  hub        0.03529411764705825    0.03529411        1.65e-14   **FALSE**
+out
+out   rungs/bodies where the declared floor 0.04 is ABOVE the defect it must bracket:
+out      f=0.1 hub1: defect=0.03529411764705825   floor=0.04   ratio=0.8824
+out      f=0.1 hub2: defect=0.03529411764705865   floor=0.04   ratio=0.8824
+out      f=0.1 hub3: defect=0.035294117647058705  floor=0.04   ratio=0.8824
+out      f=0.1 hub4: defect=0.03529411764705815   floor=0.04   ratio=0.8824
+judge  TWELVE OF SIXTEEN MEMBERS at the ladder's bottom non-vacuous rung, every rung
+       `admissible`. The hub closed form is `6f/17` -- the `(12f/17)/2` that
+       `_defect_tip_ratio` already carries as `a = 12f/17` -- verified against the solve at
+       six rungs, worst disagreement `1.65e-14`.
+```
+
+**The boundary, solved in BOTH directions (EH4).**
+
+```
+rule   the floor must sit below the defect at every rung, on every member the ceiling reads
+out    strengthening side: 6f/17 = 0.04 at f = 17/150 = 0.11333333333333334, so EVERY
+out      admissible rung below 0.1134 puts 12 of 16 members under the floor
+out    weakening side: the floor may be no higher than 0.03529411764705883 and still
+out      bracket f = 0.1's hub arms -- the published 0.04 is already past it, and the
+out      honest margin on the twelve hub arms is 0.8824x, not 1.2500x
+judge  the entry's "The smallest non-vacuous defect is 0.05 at f = 0.1 and 0.04 sits below
+       it with margin 1.2500x" (`floatfea/tolerances.py:2005-2007`) is the PLATFORM ARM's
+       figure published as the quantity's. EH4's "defect may shrink to 0.8000 of its size"
+       inherits the same domain and is wrong by the same factor.
+```
+
+**And the entry contains its own refutation, eighteen lines above the value.**
+
+```
+cmd    sed -n '1990,1991p' floatfea/tolerances.py
+out    # `0.5/2 = 0.25` and `0.75/2 = 0.375`. C149's correction stands -- the hub arms are
+out    # the smaller figure and the platform value is declared because it is the member the
+judge  C149 and R697 both say the hub arms are smaller, R697 measured them at 9/34, and the
+       floor was derived anyway against the larger class. This is not a missed
+       configuration -- it is a configuration named in the same comment block.
+```
+
+**What the right repair looks like, and it is already in the file.** `_defect_tip_ratio`
+(`tests/verification/rung4/test_f4_static_and_mapping.py:572-597`) does exactly this for the
+tip-moment counter: `a = f` on a platform arm, `a = 12f/17` on a hub arm, injected over all
+sixteen with `assert checked == 16`. The reaction shortfall is `a/2` with the same `a`. I
+checked that the tip-moment floor is NOT affected, which answers the hand-back's first
+suspicion directly:
+
+```
+cmd    python <scratch>/adv_tip.py   (the SHIPPED `_defect_tip_ratio`, min over all bodies)
+rule   the shipped floor assertion, F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER = 0.005
+out    f=0.75  min 0.056603773584905655  margin 11.3208x
+out    f=0.5   min 0.03448275862068966   margin  6.8966x
+out    f=0.4   min 0.026666666666666672  margin  5.3333x
+out    f=0.3   min 0.019354838709677417  margin  3.8710x
+out    f=0.2   min 0.012500000000000004  margin  2.5000x
+out    f=0.1   min 0.006060606060606062  margin  1.2121x
+judge  **THE TWO FLOORS WERE NOT DERIVED THE SAME WAY AND ONLY ONE IS WRONG.** `0.005` is
+       safe on all sixteen at every rung because R694 forced the member-class split into
+       the expected side; `0.04` generalised over `f` and not over the member class, and
+       those are the same generalisation. The hand-back's hypothesis of a shared systematic
+       error is REFUTED -- which is itself the answer, because it means the thing to look
+       at is not the arithmetic but which of the two repairs copied the whole shape.
+```
+
+## 3. R707 -- DQ4(i) CANNOT FAIL ON THE REMAINDER, AND THE ENTRY'S CLAIM IS THE REVERSE
+
+The hand-back named this suspicion ("both read `body.remainder_mass` and
+`body.remainder_node`, so a wrong remainder is on both sides and would cancel ... I have
+not stated it anywhere") and did not measure it. It is real, and larger than suspected.
+
+```
+cmd    sed -n '1506,1507p' tests/verification/rung4/test_f4_static_and_mapping.py
+out        dofs = node_dofs(body.remainder_node)
+out        out[dofs[0:3]] += remainder_factor * body.remainder_mass * field
+judge  the EXPECTED side reads the same two attributes `body_mass_matrix` reads
+       (`floatfea/model/platform.py:718-724`). They cancel.
+```
+
+```
+cmd    python <scratch>/adv_rem2.py  (the shipped `_dq4_i_departures`, remainder_mass x2)
+rule   the shipped ceiling F4_DQ4_RIGID_VECTOR = 1.0e-12
+out     f     rem frac   clean                   remainder DOUBLED       caught?
+out    0.75   0.2500     (2.484e-16, 5.960e-16)  (1.863e-16, 5.960e-16)  False
+out    0.5    0.5000     (9.313e-17, 3.576e-16)  (4.657e-17, 3.576e-16)  False
+out    0.4    0.6000     (1.940e-17, 4.470e-16)  (9.701e-18, 4.470e-16)  False
+out    0.3    0.7000     (8.315e-18, 5.960e-16)  (4.158e-18, 5.960e-16)  False
+out    0.2    0.8000     (7.276e-18, 4.470e-16)  (3.638e-18, 4.470e-16)  False
+out    0.1    0.9000     (3.234e-18, 4.470e-16)  (1.617e-18, 4.470e-16)  False
+out    0.0    1.0000     RAISED ZeroDivisionError: float division by zero
+judge  a mass error of 25% of the body at the shipped rung, and 90% at f = 0.1, reads the
+       clean value. **THE BLIND FRACTION GROWS AS THE LADDER DESCENDS** -- the opposite
+       direction from the `4i_no_remainder` counter-case, whose own entry says it "gets
+       stronger as the ladder descends". That counter-case removes the remainder from `M`
+       ALONE, which is an asymmetric injection; it measures that the two sides carry the
+       SAME remainder, not that the remainder is right.
+```
+
+**And the node, which I did not expect to be blind as well:**
+
+```
+cmd    python <scratch>/adv_rem4.py  (remainder lumped at each of the six nodes in turn)
+rule   the shipped ceiling, worst over all four `_DQ4_FIELDS`
+out    remainder_node -> 0: 5.960464e-16   caught? False
+out    remainder_node -> 1: 5.960464e-16   caught? False
+out    remainder_node -> 2: 5.960464e-16   caught? False
+out    remainder_node -> 3: 5.960464e-16   caught? False
+out    remainder_node -> 4: 5.960464e-16   caught? False
+out    remainder_node -> 5: 5.960464e-16   caught? False    <- the shipped node
+judge  IDENTICAL to every digit at all six. Moving 25% of the body's mass to a different
+       node is a wrong DISTRIBUTION, and `floatfea/tolerances.py:2311-2313` says "A mass
+       matrix with the right rigid properties and the wrong DISTRIBUTION passes G3.1a and
+       fails here." That sentence is the entry's ONLY statement of what this gate adds
+       over G3.1a, it is the tolerance's reason for existing, and it is inverted on this
+       half of the distribution: G3.1a's CoG comparison catches the node move and this
+       gate does not.
+```
+
+**The repair is one expression and I measured that it works, so the closing condition is
+not a wish.** `body.deck_mass` is on the body, and the construction already computes every
+member's `rho A L`:
+
+```
+cmd    python <scratch>/adv_rem3.py  (remainder on the EXPECTED side taken as
+                                      deck_mass - sum(rho A L), not body.remainder_mass)
+rule   the shipped ceiling 1e-12 and the shipped F4_DQ4_RIGID_VECTOR_COUNTER = 5.0e-4
+out    f=0.75 remainder x1.000: 2.483527e-16   caught? False   <- clean stays at round-off
+out    f=0.75 remainder x1.001: 6.666667e-04   caught? True    <- above the declared counter
+out    f=0.75 remainder x2.000: 6.666667e-01   caught? True
+out    f=0.1  remainder x1.000: 3.233759e-18   caught? False
+out    f=0.1  remainder x1.001: 1.000000e-03   caught? True
+out    f=0.1  remainder x2.000: 1.000000e+00   caught? True
+judge  the clean case is unaffected (four orders inside the ceiling at both rungs), a 0.1%
+       remainder error reaches 6.7e-04 and 1.0e-03, and the ALREADY-DECLARED counter
+       `5.0e-4` brackets both. No new apparatus, no new constant, no tolerance move.
+```
+
+**The element is fine.** A genuinely wrong `remainder_mass` breaks the body's total mass and
+G3.1a's `MASS_PROPERTY_AGREEMENT` comparison against the deck YAML catches it -- the whole
+suite is green and this is gate reach, exactly as R705 was. It is (c) and not (a).
+
+## 4. R705 -- CLOSED, AND I REPRODUCED THE ABLATION RATHER THAN READING IT
+
+```
+cell   ONE VARIABLE: the two signed lines at `:1591-1592` reverted to
+       `abs(abs(f[ra]) - want_m)` in a scratch copy of the tree; nothing else touched
+cmd    python -m pytest tests/verification/rung4 -q -p no:randomly -k "DQ4 or DQ5"
+out    FAILED ...::test_DQ4_ii_the_closed_form_gate_REDDENS[moment_sign_flipped]
+out      Obtained: 5.960464477539063e-16   Expected: 2.0 +- 2.0e-12
+out    1 failed, 66 passed, 160 deselected
+cmd    python -m pytest tests/verification/rung4 -q -p no:randomly      (whole directory)
+out    FAILED ...::test_DQ4_ii_the_closed_form_gate_REDDENS[moment_sign_flipped]
+out    1 failed, 226 passed
+judge  THE ROW HOLDS THE RULE. Exactly one id goes red under the reversion, it is the
+       counter-case the commit added, and the obtained value is the clean one to every
+       digit -- the same `5.9605e-16` I measured last round under three mutants of
+       `local_mass`. The report's `1 failed, 99 passed` names the same single id under some
+       other selection; the count has no stated selection (C11), the id is right in all
+       three.
+```
+
+**The signs are not fitted, and I checked that independently of the element rather than
+accepting the sentence.** The construction's own closed form is `M_A = (L^2/12) e1 x (mu a)`:
+for the `xy` plane `e1 x w = x_hat x y_hat = +z_hat`, so `(rz_A, rz_B) = (+1, -1)`; for `xz`,
+`x_hat x z_hat = -y_hat`, so `(ry_A, ry_B) = (-1, +1)`. That is `_DQ4_II_PLANES` exactly, and
+it is derived from `_independent_nodal_force`'s formula, not read off `local_mass`.
+
+**And the configuration the diff did not choose, since R705 taught that a rung is not the
+only one:** the whole scale.
+
+```
+cmd    python <scratch>/adv_scale.py   (build_superstructure(froude_lambda=lam))
+rule   the shipped ceilings and the shipped sign-flip counter
+out    lambda= 50.0: DQ4ii=(2.484e-16,5.960e-16) DQ4i=(1.774e-16,5.109e-16) signflip=2.000000
+out    lambda= 30.0: DQ4ii=(1.437e-16,3.449e-16) DQ4i=(5.133e-17,3.285e-16) signflip=2.000000
+out    lambda=100.0: DQ4ii=(2.484e-16,8.345e-16) DQ4i=(1.774e-16,6.812e-16) signflip=2.000000
+out    lambda=150.0: DQ4ii=(1.472e-16,3.768e-16) DQ4i=(2.102e-16,4.037e-16) signflip=2.000000
+out    at lambda = 1 and lambda = 5000 the BUILDER REFUSES -- "L/D = 0.400 is below 2" and
+out    "L/r = 607.7 exceeds 300, the slenderness ceiling. Refused rather than analysed."
+judge  the clean gates are scale-invariant, the sign counter is exactly 2.0 at every scale,
+       and the unsupported scales RAISE rather than defaulting. R705's repair survives the
+       probe. The refusals are the right behaviour and I record them as such.
+```
+
+**The third named site is closed in its own commit (`b68f2f7`) and the self-correction is
+honest.** The docstring now carries `2.796036563614433e-15` -> `3.140164140674671e-15`
+instead of the word "unmoved", and I reproduce the second figure exactly: it is what my own
+node-A-flip harness reads. The hand-back flagged its own first wording and the fix is in the
+file rather than in the report.
+
+## 5. THE HAND-BACK'S OTHER TWO SUSPICIONS, RULED
+
+* **Section 11a's 154 `no change` rows: SORTED CORRECTLY, no mis-filed row found.** I read
+  every non-bulk row. The four substantive ones are accurate: `tolerances.py:2239-2257` is
+  genuinely the branch not taken and saying so is right; `tolerances.py:1988-1989` and
+  `model/platform.py:116` were cited by me as already-correct and are; `test...py:355` and
+  `:1511-1515` are unchanged context inside rewritten blocks, which is true of the file.
+  The bulk rows for R686, R687 and R688 all resolve to verdict 98 and this range does not
+  reach them. **The hatch is doing what it was built to do and I have nothing to add.**
+* **DQ4(i) against a defect identical on every body: NOT a gap for DQ4(i).** Its expected
+  side is per-node and independent of `M`, so a uniform `mass_scale` is caught --
+  `1.0000000000005215e-03` at every rung, which is the shipped counter-case. The per-body
+  `max` blindness I noted last round is the MAPPING gate's and is already on the 28 October
+  corpus target list. **The real blindness on DQ4(i) is the remainder, which is R707**, and
+  it is a different mechanism: not a max over bodies, but a shared value inside one body.
+
+## Findings
+
+**R706. (b, BLOCKING) `F4_STATIC_REACTION_AGREEMENT_COUNTER = 0.04` IS THE PLATFORM ARM'S
+FLOOR PUBLISHED AS THE QUANTITY'S, AND IT SITS ABOVE THE DEFECT ON 12 OF 16 MEMBERS AT
+`f = 0.1`.** `floatfea/tolerances.py:2020` (the value) and `:2005-2007` (the "smallest
+non-vacuous defect is 0.05 ... margin 1.2500x ... may shrink to 0.8000" justification);
+`tests/verification/rung4/test_f4_static_and_mapping.py:387-391` (the floor assertion),
+whose ceiling `F4_STATIC_REACTION_AGREEMENT` is asserted over all sixteen members at
+`:182-215` with `assert checked == 16`. Measured in section 2: the hub-arm shortfall is
+`6f/17` (verified against the solve at six rungs, worst disagreement `1.65e-14`) and reads
+`0.03529411764705815` at `f = 0.1` against a floor of `0.04` -- ratio `0.8824`, on all
+twelve hub arms, every rung `admissible`. Boundary solved both ways: `6f/17 = 0.04` at
+`f = 17/150 = 0.11333333333333334`, and the floor may be no higher than
+`0.03529411764705883` to bracket. The entry's own `:1990` already says "the hub arms are
+the smaller figure". **This is R682's and R694's finding for the fourth time in this block,
+and the tip-moment counter `0.005` is NOT affected** -- it is safe on all sixteen at every
+rung, `1.2121x` at worst, because R694 forced the member-class split into its expected side.
+**Closed when** the floor sits below the defect on all sixteen members at every admissible
+rung, measured and pasted, **or** the counter-case injects over all sixteen against the
+closed form at each body's own class -- `f/2` on a platform arm, `6f/17` on a hub arm, the
+same `a` `_defect_tip_ratio` already computes -- in that helper's shape with
+`assert checked == 16`, **or** the entry states that the declared figure is the platform
+arm's alone, quotes the hub figure beside it, and names what brackets the twelve. No new
+apparatus either way: `a = 12f/17` is already in the tree eighteen lines from the value.
+
+**R707. (c, BLOCKING) DQ4(i) CANNOT FAIL ON THE REMAINDER MASS OR ON THE REMAINDER NODE,
+AND THE ENTRY'S ONLY STATEMENT OF WHAT THE GATE ADDS OVER G3.1a IS INVERTED ON EXACTLY
+THAT HALF.** `tests/verification/rung4/test_f4_static_and_mapping.py:1506-1507`
+(`_independent_nodal_force` reading `body.remainder_node` and `body.remainder_mass`, the
+two attributes `body_mass_matrix` reads at `floatfea/model/platform.py:718-724`), against
+`floatfea/tolerances.py:2311-2313` ("A mass matrix with the right rigid properties and the
+wrong DISTRIBUTION passes G3.1a and fails here") and `:2310` ("a route that never touches
+`M`, `local_mass` or the element transform"), and `docs/milestones/F4.md:431` (the gate
+row's `# expected:` source, "the construction (node coordinates and line mass only, never
+`M`)"). Measured in section 3: a **doubled** remainder mass reads the clean value to every
+digit at every rung, and the remainder lumped at **any of the six nodes** reads an identical
+`5.960464e-16`. The unconstrained fraction of the body's mass is `0.25` at `f = 0.75` and
+`0.90` at `f = 0.1`, growing as the ladder descends -- the opposite direction from the
+`4i_no_remainder` counter-case, which removes the remainder from `M` alone and therefore
+measures that the two sides agree rather than that either is right. **The element is fine**
+(G3.1a's mass and CoG comparison catches a wrong remainder, the whole suite is green), so
+this is the gate's reach and not a defect in `floatfea/`, exactly as R705 was.
+**Closed when** the expected side's remainder comes from a source `M` does not read --
+`body.deck_mass` minus the construction's own `sum(rho A L)` is one expression and I
+measured it: clean stays at `2.483527e-16` / `3.233759e-18`, a 0.1% remainder error reaches
+`6.666667e-04` and `1.000000e-03`, and the already-declared `F4_DQ4_RIGID_VECTOR_COUNTER =
+5.0e-4` brackets both -- **or** `floatfea/tolerances.py:2310-2313` and
+`docs/milestones/F4.md:431` state the unconstrained fraction per rung and name the gate
+that covers it, with the "wrong DISTRIBUTION" sentence corrected or withdrawn. No new
+apparatus either way.
+
+## Closure items
+
+Fixed once, in the step's closure commit. **Not re-reviewed item by item, and the step is
+not held on one.** C1 to C7 from verdict 101 carry unchanged and are NOT re-adjudicated.
+
+**C8. The direction argument in report section 12 is false of a floor.** "a counter moving
+DOWN makes the gate demand more of the defect, not less" -- for `shortfall > floor`,
+lowering the floor demands LESS. Both moves ARE net strengthenings, but because of the
+closed-form equality that replaced a frozen constant, not because the constant went down.
+**Closed when** the `rule` line says which assertion got harder and why.
+
+**C9. `_dq4_i_departures` divides by `max|want[m_idx]|` with no guard.**
+`tests/verification/rung4/test_f4_static_and_mapping.py:1618`. At `f = 0` -- a rung of
+`MASS_FRACTION_LADDER`, `admissible` -- it raises a bare `ZeroDivisionError`. It raises
+rather than defaulting, which is the right half; the message says nothing. **Closed when**
+the vacuous rung raises with its reason named, as the R704 repair's own skip does.
+
+**C10. A published `f` label is wrong by rounding.**
+`tests/verification/rung3/test_platform_skeleton.py:621` prints `f {mass_fraction:.1f}`, so
+the shipped `0.75` prints as `f 0.8` beside every `rho_eq` row -- and ES1 asks for `rho_eq`
+per body, so this print is the deliverable. Captured in my own run's output.
+**Closed when** the format carries the value.
+
+**C11. The ablation count has no stated selection.** Report section 3 and
+`test_f4_static_and_mapping.py:1481-1484` say `1 failed, 99 passed`. I get `1 failed,
+66 passed` under `-k "DQ4 or DQ5"` and `1 failed, 226 passed` over the whole rung4
+directory. The FAILED id is identical in all three and the claim holds; the number does not
+identify its run. **Closed when** the figure names the selection, or quotes a count I can
+reproduce.
+
+**C12. Three cited scripts are not in the tree.** Report sections 2 and 3 cite
+`scratchpad/verify_r704_r705.py`, `scratchpad/r704_r705.py` and
+`scratchpad/verify_r705_docstring.py`. Same reproducibility class as R700. **Closed when**
+the figures are produced by something committed, or the citation says it is not.
+
+**C13. `docs/reports/F4/step-2.md:3` still says `Answers: verdict 96 @ 5786bed`.** Revision
+2's own header at `:719` is correct and is the one the guard reads -- verified mechanically,
+section 0 -- so nothing is broken. A later reader opening the file sees the stale line
+first. **Closed when** the top line tracks the newest revision, or says it is the first
+revision's.
+
+**C14. "Measured on every element of all five bodies, not assumed" is a measurement that
+cannot vary.** `tests/verification/rung4/test_f4_static_and_mapping.py:1548-1551`.
+`local_mass(section, material, length)` takes no orientation, so the sign pattern cannot
+differ between elements -- the sweep varies `L` and `mu`, neither of which can move a sign.
+Nothing false shipped: the signs ARE independently derivable and I derived them (section 4).
+**Closed when** the sentence says what the sweep varied, or cites the derivation instead of
+the sweep.
+
+**C15. R697 is still open and R706 is now its consequence.**
+`floatfea/tolerances.py:1988-1989` still generalises `f/2` to every member; the floor
+derived from that generalisation is R706. Recorded so the closure commit fixes the sentence
+and the gate in one place rather than twice.
+
+## Tolerances touched
+
+```
+cmd    git diff e76f165..HEAD -- floatfea/tolerances.py, non-comment changed lines only
+out    -F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.375
+out    +F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.04
+judge  ONE value moved in this range, and it is a counter. NO CEILING MOVED ANYWHERE IN THE
+       TREE, and the value is not in the same commit as code it rescues -- `floatfea/`
+       carries no change in this range except this file. The report's section 12 correctly
+       reports TWO, because its own range reaches back to `30e4395`; mine is
+       `e76f165..HEAD` and the tip-moment move is behind it, already ruled at verdict 101.
+```
+
+| name | old | new | form | counter | justification located | ruling |
+|---|---|---|---|---|---|---|
+| `F4_STATIC_REACTION_AGREEMENT_COUNTER` | `0.375` | `0.04` | dimensionless, relative; form changed from a frozen constant compared by EQUALITY to (closed-form equality at the body's own `f`) + (a floor) | IS the counter; injected by `test_G4_the_defective_formula_misses_the_reaction_by_f_over_two` at `tests/.../test_f4_static_and_mapping.py:371`, ONE member of the sixteen the ceiling reads | `floatfea/tolerances.py:1996-2019`; plan row `docs/milestones/F4.md:473` | **THE EXPECTED SIDE IS CLOSED AND CORRECT. THE FLOOR IS R706 AND BLOCKS.** The `f/2` read from `body.mass_fraction` is right and EA4-clean (an input, not a response), and I reproduced all six rungs to within `7.9e-15` relative; the `f = 0` skip names its reason and the gate genuinely has no defect to inject there. **But the floor is the platform arm's and the ceiling is sixteen members'**: `0.03529411764705825` on the hub arms at `f = 0.1` against a declared `0.04`, ratio `0.8824`, boundary at `f = 17/150`. The published `1.2500x` and `0.8000` shrink are both the platform arm's figures. **This is the same generalisation the tip-moment repair made and this one did not** -- over `f` but not over the member class, which are one thing. |
+| `F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER` | `0.005` | `0.005`, unmoved | dimensionless, relative; a floor under a closed form | `_defect_tip_ratio(body)`, `a = f` platform / `a = 12f/17` hub, over all 16 with `assert checked == 16` | `floatfea/tolerances.py:2016-2069` | **RE-VERIFIED AT THE HAND-BACK'S REQUEST AND SAFE.** It asked whether the two floors share a systematic error. They do not: measured over all bodies at every rung, the min runs `0.056603773584905655` down to `0.006060606060606062`, margin `11.3208x` to `1.2121x`, never below the floor. **Do not move it.** |
+| `F4_DQ4_RIGID_VECTOR` / `_COUNTER` | `1.0e-12` / `5.0e-4` | unmoved | dimensionless, relative | the small injection (`mass_scale=1.001`) and `drop_remainder` | `floatfea/tolerances.py:2304-2344`; plan rows `docs/milestones/F4.md:431`, `:484-485` | **VALUE AND FORM STAND; THE QUANTITY'S REACH IS R707 AND BLOCKS.** The ceiling, the clean figure and the counter's `2.0000x` margin all reproduce and I accepted them last round. What I did not test then is the remainder: the gate reads an identical value with the remainder mass DOUBLED and with it lumped at any of the six nodes, and the entry's own "wrong DISTRIBUTION ... fails here" sentence is inverted on that half. **No value needs to move** -- the already-declared `5.0e-4` brackets a 0.1% remainder error once the expected side stops sharing it. |
+| `F4_DQ4_ELEMENT_VECTOR` / `_COUNTER` | `1.0e-12` / `5.0e-4` | unmoved | dimensionless, relative; moment channel now SIGNED | three injections, the third R705's sign flip at exactly `2.0` on the moment channel with the force channel asserted at round-off | `floatfea/tolerances.py:2239-2301`; plan rows `docs/milestones/F4.md:432`, `:482-483` | **R705 CLOSED, AND THE COUNTER-CASE IS WHAT CLOSES IT.** The signed comparison is correct and the signs are independently derivable from `(L^2/12) e1 x w` -- I derived both planes rather than accepting the "measured on every element" sentence, which cannot vary (C14). The shipped `[moment_sign_flipped]` row holds the rule: reverting the two lines gives exactly one red, the right id, at the clean value `5.9605e-16`. Asserting the force channel stays at round-off under a sign-only injection is the right second half, because it distinguishes "the injection is the one R705 names" from "something moved". Scale-invariant at four values of `froude_lambda`. |
+| `F4_DQ5_FREE_FALL` / `_COUNTER` | `1.0e-12` / `4.0e-4` | unmoved | dimensionless, relative | two injections reddening different channels | `floatfea/tolerances.py:2345-2383` | **UNCHANGED AND ACCEPTED**, as at verdict 101. C2 remains the one closure item on it. R707's remainder sharing reaches DQ5's applied load too -- the remainder is on both the load and `M` -- but DQ5's assertion is free fall (`a = g`, member forces zero), which a consistent wrong remainder genuinely does satisfy, so there is nothing to catch there and I do not extend R707 to it. |
+| G4.1 dynamic (DQ8) | -- | **none declared** | -- | -- | `scripts/report_joint_reactions.py:217-247`; plan row `docs/milestones/F4.md:435` | **THE REFUSAL IS STILL CORRECT AND IS STILL NOT A BLOCKING OMISSION.** I ruled this at verdict 101 and nothing in this range changes the input. C1 is its closure item and lands before the quantity is chosen. The hand-back is right not to re-ask. |
+
+## Carried
+
+Verdict 101 (`4b8f079`, judging `e76f165`) left **two blocking findings, two items carried
+by name, one deferred, and seven closure items plus C1 to C7.** Every one, with status.
+
+* **R704 (blocking) -- ANSWERED IN FORM, AND ITS REPAIR CARRIES A NEW BLOCKING FINDING.**
+  The expected side is now `f/2` at the body's own `f` read from `body.mass_fraction`, which
+  is the first branch my condition offered and the right one; I reproduced all six rungs.
+  **R704 itself does not carry further.** What carries is **R706**: the floor the repair
+  declared is the platform arm's and the ceiling is sixteen members'. That is not the same
+  item restated -- R704 was about `f`, R706 is about the member class -- but it is the same
+  *shape*, and it is the fourth time in this block.
+* **R705 (blocking) -- CLOSED, at all three named sites, and the ablation reproduces.**
+  Section 4. The signed comparison, a shipped counter-case that goes red alone when the
+  `abs` returns, and the docstring sentence withdrawn in its own commit with the
+  self-correction (`2.796e-15` -> `3.140e-15`, not "unmoved") carried in the file. The third
+  site being a separate commit rather than a line claimed covered by the first is the
+  discipline the last six rounds have been asking for. **Does not carry.**
+* **R682 -- CLOSED and does not carry**, as ruled at verdict 101.
+* **R691 -- CLOSED at the fifth-missed site**, as ruled at verdict 101. Section 11a's rows
+  declare the remaining declaration-only sites by name and they are accurate.
+* **R685 -- CLOSED at verdict 101 and it stays closed.** No hunk in this range touches
+  `F4_MAPPING_CONSERVATION`'s entry.
+* **R695, R696, R698 -- CLOSED at verdict 101, unchanged in this range.**
+* **R697, R699 to R703 (closure) -- carried unchanged as closure items and NOT
+  re-adjudicated**, per verdict 101's own instruction. **R697 is now load-bearing**: the
+  unqualified `f/2` sentence at `floatfea/tolerances.py:1988-1989` is the sentence the R706
+  floor was derived from, so the closure commit fixes the prose and the gate in one place.
+  Recorded as C15; **R706 is the blocking half and it is in Findings, not here.**
+* **C1 to C7 (closure) -- carried unchanged.** C7's `136`/`108`-versus-`135`/`107`
+  discrepancy: the report traces it to a working tree rather than a commit and that account
+  is correct. My run and CI agree at this commit (184 ids, section 0), so the figure now
+  comes from its own run and C7 is answered in substance; it stays on the closure list only
+  as a record.
+* **Verdict 101's "WHAT I WILL NOT ACCEPT" -- HONOURED on its own terms, and I say so.** The
+  shape named was "a closing condition that names two entries, reported answered after one".
+  Both of R705's three sites and R704's one are answered, section 11a declares every
+  untouched site by name including the branch deliberately not taken, and the implementer
+  reported three errors of its own before I found them. **The sixth repetition did not
+  become a seventh.** R706 is a different failure -- a derivation whose domain was narrower
+  than the ceiling's -- and I record that distinction rather than filing it under the old
+  heading.
+* **The `0.05` versus `0.005` suspicion the hand-back raised -- MEASURED AND REFUTED**,
+  section 2. The two floors were not derived the same way and only one is wrong.
+
+## The adversarial corpus (BE3)
+
+**NO BATCH THIS ROUND, and it is EG4(e) rather than an omission.** Batches pause until
+28 October except mutation work on **F4's load-mapping gate** and **EB6's label-provenance
+gate**. This round's surfaces are the static reaction counter and the DQ4/DQ5 gates --
+neither exception -- so the round went into mutation measurement instead of a file.
+
+* **New entries in `tests/corpus/` this round: 0.** `tests/corpus/` is unchanged by me:
+  nothing added, nothing carried. Previous batch: 36, at `4f99c7f`. **No coverage number**,
+  and I will not publish one off a batch I did not run.
+* **What the mutation work bought instead, stated so the spend is visible.** Both blocking
+  findings came from running the model at a configuration the diff did not choose, and
+  neither from reading the diff: **R706** from evaluating the counter-case's own quantity on
+  the twelve members the gate does not read, at the rung the diff did not choose; **R707**
+  from mutating two attributes nothing in the diff mentions. **That is the third round
+  running where EU1's adversarial case is where the finding was, and the second where
+  inverting EH4's direction -- solving for how far the DEFECT may shrink rather than how far
+  the ceiling may rise -- is what exposed it.** Boundaries solved both ways this round:
+  `6f/17 = 0.04` at `f = 17/150` (strengthening) and the floor's maximum admissible value
+  `0.03529411764705883` (weakening); and the remainder-error detection threshold under the
+  repaired expected side (`6.666667e-04` at `f = 0.75`, `1.000000e-03` at `f = 0.1`) against
+  the declared `5.0e-4`.
+* **Coverage, honestly.** Of the two blocking findings, **neither** is a shape a check in
+  the tree looks for. R706 would be caught by one loop -- the counter-case's quantity over
+  the ceiling's own member set at every rung -- and that loop is what `_defect_tip_ratio`'s
+  gate already is for the other counter, so the tree contains the pattern and not the
+  instance. R707 is a shared-value shape nothing here scans for.
+* **The 28 October batch's targets, unchanged and still owed:** F4's load-mapping gate (a
+  defect identical on all five bodies; a block moved between two nodes at the same position)
+  and EB6's label-provenance gate per C5 (permutations that PRESERVE the count). **Added by
+  this round:** a shared-attribute corpus for DQ4(i) -- every attribute both
+  `_independent_nodal_force` and `body_mass_matrix` read, one entry each, which is the R707
+  shape generalised.
+* **Corpus hygiene note on my own files, carried from verdict 101 and still mine to fix:**
+  `tests/corpus/f4_static_case_and_member_force_recovery.txt` lines 40, 48, 49 and 50 carry
+  `measured=` figures on the OLD mass basis. I will re-head that file at the 28 October
+  batch.
+
+## Next step opens when
+
+**STEP 2 STAYS OPEN. THIS WAS ROUND 2 OF THREE; ONE REVISION REMAINS AND IT IS THE CLOSER.**
+Step 3 does not begin. At the next revision the step closes under CZ0 whatever the verdict,
+and any blocking item still open carries by name into step 3's `Carried` and blocks there.
+
+**Answered before anything else, and only these two block:**
+
+1. **R706** -- `floatfea/tolerances.py:2020` and `:2005-2007`, and
+   `tests/verification/rung4/test_f4_static_and_mapping.py:387-391`. **My figures to beat:**
+   hub-arm shortfall `6f/17`, verified against the solve at six rungs to `1.65e-14`;
+   `0.03529411764705825` / `0.03529411764705865` / `0.035294117647058705` /
+   `0.03529411764705815` on hub1 to hub4 at `f = 0.1`, every one `admissible`, ratio to the
+   declared floor `0.8824`; boundary `f = 17/150 = 0.11333333333333334`; the floor's maximum
+   admissible value `0.03529411764705883`. The closed form is `a/2` with the same `a`
+   `_defect_tip_ratio` already computes.
+2. **R707** -- `tests/verification/rung4/test_f4_static_and_mapping.py:1506-1507`, with
+   `floatfea/tolerances.py:2310-2313` and `docs/milestones/F4.md:431`. **My figures to
+   beat:** the remainder mass doubled reads the clean value to every digit at all six
+   non-vacuous rungs; the remainder at any of the six nodes reads an identical
+   `5.960464e-16`; the unconstrained fraction is `0.25` at `f = 0.75` and `0.90` at
+   `f = 0.1`; with the remainder taken from `deck_mass - sum(rho A L)` the clean case is
+   `2.483527e-16` / `3.233759e-18` and a 0.1% error reads `6.666667e-04` / `1.000000e-03`,
+   inside the already-declared `5.0e-4`.
+
+**Nothing else blocks.** R705, R682, R691, R685, R695, R696 and R698 are closed; no ceiling
+moved; the one counter that moved is accepted in form and blocked only on its domain; the
+refusal to declare a G4.1-dynamic tolerance is still correct. **C1 to C15 are closure
+class** -- one list, one commit, do not spend a round on them and do not hold the step on
+one -- **except that C1 is still answered before the G4.1-dynamic quantity is chosen**,
+because that choice is (c) and C1 is its input, **and C15 travels with R706's repair**
+because they are the same sentence.
+
+**WHAT I WILL NOT ACCEPT AT THE NEXT REVISION, which is the last one.** A counter whose
+domain is narrower than the domain of the ceiling it brackets, with the narrowness unstated.
+R706 is the fourth instance in this one block -- R682, R694, R704, R706 -- and the first
+where the narrow dimension was the MEMBER CLASS rather than the mass fraction. The command
+that settles it is one loop: evaluate the counter-case's own quantity on **every member the
+ceiling reads**, at **every admissible rung**, and paste the minimum. The repair for the
+other counter in the same file is that loop already. And a gate whose expected side shares a
+value with the measured side: R707's remainder is the second time this milestone that an
+"independent" construction turned out to read an attribute from the object under test, and
+the question that finds it is cheap -- for every attribute the expected side reads, mutate it
+and see whether the gate moves.
+
+## On the schedule
+
+The report's one hand-written paragraph says the schedule holds and I see nothing in this
+range to contradict it. Both my findings are one expression each in one file, and both closed
+forms are already in the tree. **Working targets F4 14 Oct, table 17 Oct, code-check 22 Oct;
+committed dates unchanged.** The thing I would watch is unchanged from verdict 101 and is not
+these two findings: **G4.1 dynamic and G4.5 both wait on the six FloatSim re-runs and now
+also on a plan decision about DQ8's quantity**, and the next revision is the last one in
+which step 2's work gets read in full. If that decision needs the plan reopened rather than a
+sentence, say so the day it is known under DZ7c -- reduce scope, do not slip. **Two
+consecutive steps closing while carrying is the escalation CZ0 names**, and this step closing
+with R706 or R707 open would be the first of those two, not the second.
+
+## On the criterion -- I was asked, and I agree with it
+
+Both blocking findings are (b) and (c), nothing prose went into Findings, and eight items
+that would have been blocking heads six rounds ago went to the closure list without argument
+-- including a false directional argument about a tolerance move (C8) and a published figure
+label wrong by rounding (C10). **ES0 and EU1 earned themselves again.** Neither finding came
+from reading the diff: the diff is clean, candid, self-correcting, and names three of its own
+errors before I did. R706 came from evaluating a shipped assertion's quantity on members the
+assertion does not read; R707 from mutating two attributes the diff never mentions.
+
+**One note on the EU1 wording question, said once and not re-argued.** Verdict 101 observed
+that EU1's "at least every admissible ladder rung" is narrower than its own first phrase,
+"the model run at a configuration the diff did not choose", and recommended leaving the
+wording and reading it the general way. This round is evidence for that reading rather than
+against it: the configurations that found things were **a member class** (R706) and **two
+attributes** (R707), and only R706 involved a rung at all. The hand-back asks whether it
+should be written down. **My answer is still no, and the reason is a measurement rather than
+a preference:** a clause enumerating configurations would have had to name "member class" and
+"shared attribute" in advance, and whoever wrote it would have been the same person whose
+corpus the enumeration came from -- which is the defect BE3 exists for. The general phrase is
+the one that keeps working. That goes to Xabier through the implementer as a reading, not as
+a round.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F4 step 2
 Reviewed commit: e76f16507966e7404e7daec92fd2fe917af0b9ef
 Verdict: HOLD
 
