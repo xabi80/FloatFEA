@@ -2016,8 +2016,44 @@ F4_STATIC_REACTION_AGREEMENT: Final[float] = 1.0e-12
 # closed and had edited one. That is the R682/R691 shape for the sixth time, and what it
 # costs is a round: the half I did not touch was a one-expression change with its closed
 # form already written down eight lines above this comment.
-# Set: 2026-10-05, F4 step 1; value moved 2026-10-06, F4 step 2 (R704)
-F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.04
+#
+# R706: 0.04 WAS THE PLATFORM ARM'S FLOOR PUBLISHED AS THE QUANTITY'S, and the entry says
+# so eighteen lines above it -- "the hub arms are the smaller figure and the platform
+# value is declared because it is the member the counter-case injects into". R704
+# generalised this quantity over `f` and left it specific to the member CLASS, and those
+# are the same generalisation. The ceiling it brackets,
+# `test_G4_the_tip_shear_equals_the_support_reaction`, asserts over ALL SIXTEEN members
+# with `assert checked == 16`; the counter-case injected into one.
+#
+# The hub-arm shortfall is `6f/17` -- the same `12/17` weight ratio `_defect_tip_ratio`
+# carries, halved -- and measured against the solve on sixteen members at every rung
+# (worst relative disagreement 1.93e-14):
+#
+#   f      platform f/2            hub 6f/17               min over 16
+#   0.75   0.37499999999999983     0.2647058823529406      0.2647058823529406
+#   0.5    0.2499999999999997      0.17647058823529332     0.17647058823529332
+#   0.4    0.19999999999999976     0.1411764705882346      0.1411764705882346
+#   0.3    0.1499999999999998      0.10588235294117578     0.10588235294117578
+#   0.2    0.0999999999999997      0.07058823529411722     0.07058823529411722
+#   0.1    0.04999999999999985     0.03529411764705815     0.03529411764705815
+#
+# `0.04` sits ABOVE the hub-arm defect on all twelve hub arms at `f = 0.1`, every rung
+# `admissible`. `0.03` is below the smallest at every rung and on every member; margin
+# 1.1765x. EH4's weakening side: `6f/17 = 0.04` at `f = 0.11333333333333334`, so the
+# whole failure lived below that rung, and the floor may be no higher than
+# 0.03529411764705883.
+#
+# THE COUNTER-CASE NOW COMPARES AGAINST `_reaction_shortfall`, which is per member class
+# as well as per rung, and asserts `checked == 16` so a counter reaching fewer members
+# than its ceiling fails loudly. This is the fourth appearance of the shape in this block
+# -- R682, R694, R704, R706 -- and the first where the narrow dimension is not `f`.
+#
+# `F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER` IS NOT TOUCHED and the reason is measured:
+# R694 forced the member-class split into `_defect_tip_ratio`, so `0.005` is already safe
+# on all sixteen at every rung. The two floors were NOT derived the same way, which is
+# the one suspicion the round's own measurement refuted.
+# Set: 2026-10-05, F4 step 1; value moved 2026-10-06, F4 step 2 (R704, then R706)
+F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.03
 
 # CLASS: ACCURACY -- the tip moment a ROLLER support transmits, which is none.
 # RELATIVE, against the member's own root moment (R681).
@@ -2308,9 +2344,31 @@ F4_DQ4_ELEMENT_VECTOR_COUNTER: Final[float] = 5.0e-4
 # couplings, six of `J` -- and G3.1a B compares all ten against the deck, so a gate
 # asserting `R^T M R a` is G3.1a B one column at a time. This one is PER NODE: `6 N`
 # components against a route that never touches `M`, `local_mass` or the element
-# transform. A mass matrix with the right rigid properties and the wrong DISTRIBUTION
-# passes G3.1a and fails here, and the dynamic residual DQ8 defines divides by `M a`
-# DOF by DOF rather than by its resultant.
+# transform. The dynamic residual DQ8 defines divides by `M a` DOF by DOF rather than by
+# its resultant, so the per-node vector is the quantity that gate consumes.
+#
+# R707: AND THE SENTENCE THAT USED TO SIT HERE WAS INVERTED ON HALF OF IT. It read "a mass
+# matrix with the right rigid properties and the wrong DISTRIBUTION passes G3.1a and fails
+# here", and for the remainder's NODE the opposite is true: G3.1a's CoG comparison catches
+# a remainder lumped at the wrong node and this gate does not, because both sides read
+# `body.remainder_node`. Measured: the remainder moved to a different node of the same
+# body read 5.960464e-16, the clean value.
+#
+# The remainder's MASS was the same shape and is now fixed. The expected side read
+# `body.remainder_mass` -- the attribute `body_mass_matrix` reads -- so the value was on
+# both sides and the gate could not fail on it: a doubled `m_r`, a 0.1% error and a moved
+# node all read the clean value TO EVERY DIGIT at every rung, with the blind fraction of
+# the body's mass growing from 0.25 at f = 0.75 to 0.90 at f = 0.1. The expected side now
+# takes `deck_mass - sum(rho A L)`, which is DY0's own definition, so a 0.1% error reads
+# 0.0006666666666664893 and a doubled remainder reads 0.6666666666666666 at f = 0.75 and
+# 1.0 below it. Clean is unchanged to every digit -- the two are equal when the split is
+# right -- which is what makes this a reach fix rather than a recalibration.
+#
+# THE INJECTION HAD TO MOVE THE BODY ATTRIBUTE, NOT THE MATRIX. An injection into `M`
+# alone was CAUGHT, because only one side moved, and it says nothing about a value both
+# sides read. `test_DQ4_i_the_PER_NODE_gate_REDDENS[remainder_mass_scaled]` is the row
+# that holds the repair: reverting the expected side to `body.remainder_mass` turns that
+# one row red and nothing else, measured.
 #
 # The same constant carries the ROTATIONAL half, which is at the resultant level only
 # and IS the G3.1a restatement -- kept because the locked plan's DQ4(i) row asks for it,
@@ -2336,8 +2394,15 @@ F4_DQ4_RIGID_VECTOR: Final[float] = 1.0e-12
 #
 # EH4, THE WEAKENING DIRECTION: the injection may SHRINK to 0.5000 of its size before the
 # counter stops bracketing it, and the ceiling may RISE 357.6x before a clean rung trips.
-# Both injections are run by `test_DQ4_i_the_PER_NODE_gate_REDDENS`. f = 0.0 is vacuous
-# for the reason the element entry above gives.
+# f = 0.0 is vacuous for the reason the element entry above gives.
+#
+# R707 ADDS A THIRD INJECTION AND THE COUNTER DOES NOT MOVE FOR IT. A 0.1% error in the
+# body's own remainder mass reads 0.0006666666666664893 at f = 0.75 and
+# 0.0009999999999997043 at f = 0.1, so the smallest is 0.0006666666666664893 and 5.0e-4
+# clears it by 1.3333x -- thinner than the 2.0000x the other two give, and the reason it
+# is thinner is that the remainder is a quarter of the body's mass at the shipped rung
+# rather than all of it. All three injections are run by
+# `test_DQ4_i_the_PER_NODE_gate_REDDENS`.
 # Set: 2026-10-06, F4 step 2
 F4_DQ4_RIGID_VECTOR_COUNTER: Final[float] = 5.0e-4
 
@@ -2352,16 +2417,37 @@ F4_DQ4_RIGID_VECTOR_COUNTER: Final[float] = 5.0e-4
 # node coordinates and the line mass with the model and shares nothing else.
 #
 # Reason for 1e-12: the worst clean value over every non-vacuous rung is
-# 1.3335849658769691e-15, AT f = 0.1 AND NOT AT THE SHIPPED RUNG. 1e-12 is 749.9x above
-# it.
+# 1.3414143963362381e-15, on `platform` / `y` / the moment channel, AT f = 0.1 AND NOT AT
+# THE SHIPPED RUNG. 1e-12 is 745.5x above it.
+#
+# C2: THIS ENTRY PUBLISHED 1.3335849658769691e-15 AND 749.9x, FROM A SWEEP NARROWER THAN
+# THE GATE. My sweep covered the `minus_z` and `x` directions; the gate parametrises all
+# three, and the worst is on `y`. The gate itself was never affected -- it reads every
+# direction -- but the figure described a measurement nobody took. Re-measured over all
+# five bodies, all three directions and all four channels at every rung, which is the
+# domain the gate actually asserts over.
 #
 # THAT RUNG DEPENDENCE IS THE REASON THIS FIGURE IS LADDER-WIDE AND NOT SHIPPED-RUNG
-# (EU1, R694's lesson). This quantity RISES as `f` falls -- 3.780e-16, 3.795e-16,
-# 4.218e-16, 4.887e-16, 7.171e-16, 1.334e-15 over f = 0.75 down to 0.1, a 3.53x spread --
-# because less member mass and more lumped remainder conditions the relief solve
-# differently. Measured at the shipped rung alone this entry would have published 2645.8x
-# of headroom, and the true ladder-wide figure is 749.9x. Nothing in the diff pointed at
-# f = 0.1; it is the configuration nobody chose.
+# (EU1, R694's lesson). This quantity RISES as `f` falls. Over all five bodies, all three
+# directions and all four channels, worst per rung:
+#
+#   f = 0.75   3.103734786926993e-16    hub2 / minus_z / force
+#   f = 0.5    3.7946401907139384e-16   platform / x / moment
+#   f = 0.4    4.2181628721474597e-16   platform / x / moment
+#   f = 0.3    4.886625964444269e-16    hub4 / minus_z / force
+#   f = 0.2    7.171159441551681e-16    platform / x / force
+#   f = 0.1    1.3414143963362381e-15   platform / y / moment
+#
+# A 4.32x spread, and the body, direction and channel that carry the worst all CHANGE
+# with the rung -- which is why the sweep has to be over the gate's whole domain and not
+# over the part a previous measurement happened to cover. Measured at the shipped rung
+# alone this entry would have published 3221.9x of headroom against a true 745.5x.
+# Nothing in the diff pointed at f = 0.1; it is the configuration nobody chose.
+#
+# NO CAUSE IS ATTACHED TO THE SPREAD. An earlier draft said it was conditioning -- less
+# member mass, more lumped remainder -- and under BG0 that needs one variable moved with
+# everything else held, which was never done. The measurement stands; the explanation was
+# withdrawn rather than defended.
 # Set: 2026-10-06, F4 step 2
 F4_DQ5_FREE_FALL: Final[float] = 1.0e-12
 

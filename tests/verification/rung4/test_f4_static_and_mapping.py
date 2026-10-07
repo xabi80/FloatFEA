@@ -322,6 +322,39 @@ def test_G4_duality_is_a_property_of_the_JACOBIAN_not_of_the_mapper() -> None:
     )
 
 
+def _reaction_shortfall(body: BodyModel) -> float:
+    """R663's shortfall as a FRACTION OF THE SUPPORT REACTION, per member class (R706).
+
+    # expected: analytic. The omitted load is the member's whole weight and half of it
+    lands at each node, so the tip shear is short by `(w L / 2) / R` -- the share of the
+    body's weight the member carries, over the share its support reacts to, halved.
+
+    `f/2` on a platform arm: the four arms carry `f` of the platform mass between them
+    and the four supports carry all of it, so the per-member ratio is `f`, halved.
+
+    `6f/17` on a hub arm: a hub's three arms carry `f` of the hub mass, but each of its
+    three supports reacts to the hub's own weight PLUS the platform share handed down --
+    `14715000 + 6131250 = 20846250` against `14715000` -- so the ratio is `f` times
+    `12/17`, halved. The same `12/17` `_defect_tip_ratio` carries, and for the same
+    reason.
+
+    R706: THE GATE HAD `f/2` AND THE CEILING IT BRACKETS READS SIXTEEN MEMBERS. R704
+    generalised the shortfall over `f` and left it specific to the member CLASS, and
+    those are the same generalisation -- which is why this is the fourth appearance of
+    the shape in this block and the first where the narrow dimension is not `f`. The
+    entry said so eighteen lines above its own value: "the hub arms are the smaller
+    figure and the platform value is declared because it is the member the counter-case
+    injects into". Measured against the solve at every rung, worst relative
+    disagreement `1.93e-14`; the hub arms read `0.03529411764705815` at `f = 0.1`,
+    BELOW the `0.04` that shipped.
+
+    At `f = 0` it is exactly zero: the members carry nothing, so there is no distributed
+    load and omitting it is not a defect.
+    """
+    f = body.mass_fraction
+    return (f if body.name == "platform" else 12.0 * f / 17.0) / 2.0
+
+
 def test_G4_the_defective_formula_misses_the_reaction_by_f_over_two(
     built: Superstructure,
 ) -> None:
@@ -358,40 +391,77 @@ def test_G4_the_defective_formula_misses_the_reaction_by_f_over_two(
     and not this code, and the declared constant is the FLOOR beneath every rung. At
     `f = 0` the members carry no mass, there is no omitted load, the shortfall is
     round-off and the counter-case is vacuous rather than failing.
+
+    R706: AND THE CLOSED FORM IS PER MEMBER CLASS, WHICH R704's REPAIR WAS NOT. R704
+    generalised over `f` and left `f/2` -- the PLATFORM arm's value -- as the quantity
+    for all sixteen members the ceiling reads. The hub arms are `6f/17`:
+
+    ```
+    f      platform f/2            hub 6f/17               min over 16
+    0.75   0.37499999999999983     0.2647058823529406      0.2647058823529406
+    0.5    0.2499999999999997      0.17647058823529332     0.17647058823529332
+    0.4    0.19999999999999976     0.1411764705882346      0.1411764705882346
+    0.3    0.1499999999999998      0.10588235294117578     0.10588235294117578
+    0.2    0.0999999999999997      0.07058823529411722     0.07058823529411722
+    0.1    0.04999999999999985     0.03529411764705815     0.03529411764705815  <- 0.04 FAILS
+    ```
+
+    Sixteen members compared at every rung, worst relative disagreement with the closed
+    form `1.93e-14`. The declared floor was `0.04`, which sits ABOVE the hub-arm defect
+    on all twelve hub arms at `f = 0.1` -- every rung `admissible`. `6f/17 = 0.04` at
+    `f = 0.11333333333333334`, so the whole failure lives below that.
     """
     cases = solve_superstructure_static(built)
-    platform = next(b for b in built.bodies if b.name == "platform")
-    member = platform.members[0]
-    case = cases["platform"]
-
-    mf = member_forces(platform, member, case.u_full, np.zeros(12))  # the defect
-    reaction = case.vertical_reactions_N[member.node_b]
-    shortfall = (reaction - float(mf.end_b[2])) / reaction
-
-    # expected: `f/2`, analytic. The omitted load is the member's whole weight and half
-    # of it lands at each node, so the tip shear is short by `f/2` of the reaction. Read
-    # from the BODY, not from a constant, so a rung the ladder descends to cannot
-    # invalidate it (R694, R704).
-    expected_shortfall = platform.mass_fraction / 2.0
-    if expected_shortfall == 0.0:
+    # R706: EVERY MEMBER THE CEILING READS, not the one the injection used to pick.
+    # `test_G4_the_tip_shear_equals_the_support_reaction` asserts over all sixteen with
+    # `assert checked == 16`; a counter-case on one of them brackets a narrower domain
+    # than the ceiling it is supposed to bracket, and the narrowness was unstated.
+    checked = 0
+    worst = float("inf")
+    for body in built.bodies:
+        case = cases[body.name]
+        expected_shortfall = _reaction_shortfall(body)
+        for member in body.members:
+            reaction = case.vertical_reactions_N.get(member.node_b)
+            if reaction is None or reaction == 0.0:
+                continue
+            mf = member_forces(body, member, case.u_full, np.zeros(12))  # the defect
+            shortfall = (reaction - float(mf.end_b[2])) / reaction
+            if expected_shortfall == 0.0:
+                continue  # f = 0: no distributed load, so no defect. Counted, not skipped.
+            checked += 1
+            worst = min(worst, shortfall)
+            # expected: `_reaction_shortfall`, analytic, at this body's own `f` AND its
+            # own member class. Read from the BODY, not from a constant, so neither a
+            # rung the ladder descends to nor a member class can invalidate it.
+            assert shortfall == pytest.approx(
+                expected_shortfall, rel=F4_STATIC_REACTION_AGREEMENT
+            ), (
+                f"{body.name}/{member.label}: the defective formula falls "
+                f"{shortfall:.6%} short of the reaction and the closed form at this "
+                f"body's own f = {body.mass_fraction!r} is {expected_shortfall!r}. "
+                "If these disagree the defect is not the one R663 names."
+            )
+            assert shortfall > F4_STATIC_REACTION_AGREEMENT, (
+                "the agreement ceiling would accept R663's defect, so it certifies " "nothing."
+            )
+    if checked == 0:
         pytest.skip(
             "f = 0 puts no mass on the members, so there is no distributed load to omit "
             "and no defect to inject. The counter-case is VACUOUS at this rung, not "
             "passing -- see the docstring's table."
         )
-    assert shortfall == pytest.approx(expected_shortfall, rel=F4_STATIC_REACTION_AGREEMENT), (
-        f"the defective formula falls {shortfall:.6%} short of the reaction and `f/2` at "
-        f"this body's own f = {platform.mass_fraction!r} is {expected_shortfall!r}. "
-        "If these disagree the defect is not the one R663 names."
+    assert checked == 16, (
+        f"{checked} of 16 members were compared. The ceiling this brackets asserts over "
+        "all sixteen, so a counter-case reaching fewer brackets a narrower domain than "
+        "the ceiling -- which is R706."
     )
-    assert shortfall > F4_STATIC_REACTION_AGREEMENT_COUNTER, (
-        f"the shortfall is {shortfall!r} and the declared floor is "
-        f"{F4_STATIC_REACTION_AGREEMENT_COUNTER!r}. The floor must sit below the defect "
-        "at EVERY rung the ladder descends to, not at the one the model ships."
+    assert worst > F4_STATIC_REACTION_AGREEMENT_COUNTER, (
+        f"the smallest shortfall over all sixteen members is {worst!r} and the declared "
+        f"floor is {F4_STATIC_REACTION_AGREEMENT_COUNTER!r}. The floor must sit below "
+        "the defect on EVERY member at EVERY rung, not on the member the injection "
+        "happens to pick."
     )
-    assert (
-        shortfall > F4_STATIC_REACTION_AGREEMENT
-    ), "the agreement ceiling would accept R663's defect, so it certifies nothing."
 
 
 # --------------------------------------------------------------------------- R667 / EO0
@@ -1503,8 +1573,32 @@ def _independent_nodal_force(
             dofs = node_dofs(node)
             out[dofs[0:3]] += half
             out[dofs[3:6]] += sign * moment
+    # R707: THE REMAINDER COMES FROM THE DECK, NOT FROM `body.remainder_mass`. This read
+    # `body.remainder_mass`, which is the attribute `body_mass_matrix` reads, so the
+    # value was on BOTH SIDES of the comparison and the gate could not fail on it.
+    # Measured with the injection on the ATTRIBUTE rather than on the matrix -- a doubled
+    # `m_r` read `5.108969552176339e-16` at `f = 0.75`, the clean value to every digit,
+    # and so did a 0.1% error and so did the remainder lumped at a different node. The
+    # blind fraction of the body's mass grew from `0.25` at `f = 0.75` to `0.90` at
+    # `f = 0.1`, which is the opposite direction from the counter-case's own claim.
+    #
+    # `deck_mass - sum(rho A L)` is DY0's own definition of the remainder and reads only
+    # the deck's declared mass and the members' geometry, so a wrong `m_r` now moves one
+    # side alone: doubled reads `0.6666666666666666` at `f = 0.75` and `1.0` below it,
+    # and a 0.1% error reads `0.0006666666666664893`, inside the already-declared
+    # counter. Clean is unchanged to every digit, because the two are equal when the
+    # split is right -- which is the property that makes this a reach fix and not a
+    # recalibration.
+    #
+    # WHAT IT STILL DOES NOT REACH, stated rather than left to be found: the NODE. Both
+    # sides read `body.remainder_node`, so a remainder lumped at the wrong node of the
+    # right body is outside this gate either way. G3.1a's CoG comparison is what catches
+    # that, measured -- and this gate's own entry had the relationship inverted.
+    member_mass = sum(
+        e.material.rho * e.section.A * element_length(body.model, e) for e in body.elements
+    )
     dofs = node_dofs(body.remainder_node)
-    out[dofs[0:3]] += remainder_factor * body.remainder_mass * field
+    out[dofs[0:3]] += remainder_factor * (body.deck_mass - member_mass) * field
     return out
 
 
@@ -1600,8 +1694,18 @@ def _dq4_i_departures(
     field: NDArray[np.float64],
     mass_scale: float = 1.0,
     drop_remainder: bool = False,
+    remainder_mass_scale: float = 1.0,
 ) -> tuple[float, float]:
-    """`(worst force, worst moment)` of `M a` against the independent construction."""
+    """`(worst force, worst moment)` of `M a` against the independent construction.
+
+    `remainder_mass_scale` is R707's injection and it moves the BODY ATTRIBUTE, not the
+    matrix. That distinction is the whole finding: an injection into `M` alone was
+    caught, because only one side moved, and it proved nothing about a value both sides
+    read. Mutating `body.remainder_mass` moves the assembled matrix AND -- before R707's
+    repair -- the expected side with it.
+    """
+    if remainder_mass_scale != 1.0:
+        body = replace(body, remainder_mass=remainder_mass_scale * body.remainder_mass)
     mass = body_mass_matrix(body).copy()
     mass *= mass_scale
     if drop_remainder:
@@ -1772,7 +1876,7 @@ def test_DQ4_i_the_PER_NODE_vector_matches_the_INDEPENDENT_construction(
     )
 
 
-@pytest.mark.parametrize("injection", ["remainder_dropped", "mass_scaled"])
+@pytest.mark.parametrize("injection", ["remainder_dropped", "mass_scaled", "remainder_mass_scaled"])
 def test_DQ4_i_the_PER_NODE_gate_REDDENS(built: Superstructure, injection: str) -> None:
     """Injected into the assembled matrix, never into the closed-form side (EA4).
 
@@ -1788,8 +1892,20 @@ def test_DQ4_i_the_PER_NODE_gate_REDDENS(built: Superstructure, injection: str) 
         field=_DQ4_FIELDS["oblique"],
         mass_scale=1.001 if injection == "mass_scaled" else 1.0,
         drop_remainder=injection == "remainder_dropped",
+        remainder_mass_scale=1.001 if injection == "remainder_mass_scaled" else 1.0,
     )
     error = max(worst_f, worst_m)
+    if injection == "remainder_mass_scaled":
+        # R707's own row. Before the repair this read the CLEAN value to every digit,
+        # because `body.remainder_mass` was on both sides of the comparison; without
+        # this row, restoring that read leaves the whole suite green and nothing holds
+        # the independence in place (R683's lesson).
+        assert error > F4_DQ4_RIGID_VECTOR_COUNTER, (
+            f"a 0.1% error in the body's own remainder mass reads {error!r}, which does "
+            f"not reach the declared counter {F4_DQ4_RIGID_VECTOR_COUNTER!r}. If it "
+            "reads the clean value, the expected side is reading `body.remainder_mass` "
+            "again and this gate cannot fail on the remainder at all (R707)."
+        )
     if injection == "mass_scaled":
         assert error > F4_DQ4_RIGID_VECTOR_COUNTER, (
             f"the 0.1% mass error reads {error!r}, which does not reach the declared "
