@@ -3,8 +3,8 @@
 # A golden under CLAUDE.md section Testing: changing these figures requires a
 # written explanation of why the deck moved. Regenerating it to match new
 # output without that explanation is the same error as widening a tolerance.
-content_sha256=19b197d8f18bc08b9c70b3e38a6a46914fca19d83e735d2f2ca13acf6a9d5774
-body_sha256=99e6f9713be4ae1fdccc1ccadf11d39628a3e8b38f23d2c1859fdc8d34aac1e0
+content_sha256=446b1dd933907b693c36f29638348bce6954d27d94736726be561b9a83b0aaae
+body_sha256=7e1a27e36427a26f7ada48706dd811f3d1af7758480e56919111556e3e80da6f
 canonical_bytes=30593
 bodies=17
 joints=16

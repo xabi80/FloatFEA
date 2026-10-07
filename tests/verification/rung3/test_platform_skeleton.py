@@ -541,12 +541,18 @@ def test_the_chosen_FRACTION_is_asserted_not_inferred(superstructure, index: int
     """DY0d. The `f` this body was built at, and the ladder it came from."""
     body = superstructure.bodies[index]
     assert body.mass_fraction in MASS_FRACTION_LADDER
-    # not-a-tolerance: DY0c's default MODEL PARAMETER, compared exactly. `f` is an
-    # input to the build and not a measured quantity, so there is nothing here to be
-    # close about -- the assertion exists so that descending the ladder for a body
+    # not-a-tolerance: the ladder's FIRST RUNG, a model parameter compared exactly. `f`
+    # is an input to the build and not a measured quantity, so there is nothing here to
+    # be close about -- the assertion exists so that descending the ladder for a body
     # shows up as a red with a reason rather than as a silent change of model.
-    assert body.mass_fraction == 0.5, (  # not-a-tolerance: an input, see above
-        f"{body.name} was built at f = {body.mass_fraction:g}, not the default 0.5. "
+    #
+    # ER1(d): THE EXPECTED VALUE MOVED FROM 0.5 TO 0.75 AND THIS GATE IS WHY ANYONE
+    # NOTICED. Directive ES1 prepended 0.75 to the ladder on Xabier's input (ER0), and
+    # this assertion went red on all five bodies with its own message saying "update it
+    # with the reason". That is the gate working: a change of model showed up as a red
+    # rather than as five bodies quietly built differently.
+    assert body.mass_fraction == 0.75, (  # not-a-tolerance: an input, see above
+        f"{body.name} was built at f = {body.mass_fraction:g}, not the first rung 0.75. "
         "That is admissible and it is a SIZING FINDING, so this assertion is what "
         "makes the change visible rather than silent — update it with the reason."
     )

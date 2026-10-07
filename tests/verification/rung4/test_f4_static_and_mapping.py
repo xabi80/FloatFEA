@@ -312,15 +312,21 @@ def test_G4_duality_is_a_property_of_the_JACOBIAN_not_of_the_mapper() -> None:
     )
 
 
-def test_G4_the_defective_formula_misses_the_reaction_by_a_quarter(
+def test_G4_the_defective_formula_misses_the_reaction_by_f_over_two(
     built: Superstructure,
 ) -> None:
     """R663's counter-case for `F4_STATIC_REACTION_AGREEMENT`, injected not asserted.
 
-    Omitting the element equivalent load puts a platform arm's tip shear exactly a
-    quarter below the reaction, because the consistent gravity load puts half the
-    member's weight at each node. That is eleven decades outside the agreement ceiling,
-    which is what makes the ceiling meaningful.
+    Omitting the element equivalent load puts a platform arm's tip shear short of the
+    reaction by EXACTLY `f/2`, because the consistent gravity load puts half the member's
+    weight at each node and the members carry `f` of the body's mass. That is eleven
+    decades outside the agreement ceiling, which is what makes the ceiling meaningful.
+
+    THE NAME SAID "by_a_quarter" AND THAT WAS TRUE OF ONE BASIS ONLY. At `f = 0.5` the
+    shortfall is `0.25`; ER0 moves `f` to `0.75` and it is `0.375`. The isolating cell,
+    because ER0 moves `M` and `f` at once (BG0): `(w L / 2) / R` measures `0.250000` at
+    old M + old f AND at new M + old f, and `0.375000` at old M + new f AND at new M +
+    new f -- so the move is `f`'s alone and the mass does not touch it.
     """
     cases = solve_superstructure_static(built)
     platform = next(b for b in built.bodies if b.name == "platform")
@@ -564,21 +570,37 @@ def test_EO1_the_analytic_gate_REDDENS_on_the_R663_formula(built: Superstructure
     mf = member_forces(body, member, case.u_full, np.zeros(12))  # R663's formula
     assert abs(float(mf.end_a[2])) != pytest.approx(want_vz, rel=F4_STATIC_REACTION_AGREEMENT)
 
-    # RELATIVE, like the ceiling it brackets (R681).
+    # OVER ALL 16 MEMBERS (R682, closed on ER0's basis). This ran on the platform's
+    # first member only -- and the platform arms were the four members where the old
+    # counter 0.05 did hold, which is why nothing caught it sitting above the defect on
+    # the other twelve. One member cannot bracket a counter that claims to be the
+    # smallest defect.
     #
-    # R682 IS NOT ANSWERED HERE, DELIBERATELY (ER2). The counter is on the wrong side of
-    # the defect for 12 of the 16 members, and the correct bound is derived from mu, M
-    # and f -- all three of which directive ER0 changes. Answering it on the old basis
-    # would calibrate it twice, so it is answered in the commit that lands the new
-    # basis, together with the per-member table that derives it.
-    tip_ratio = abs(float(mf.end_b[4])) / abs(float(mf.end_a[4]))
-    assert tip_ratio > F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER, (
-        f"the defect's tip moment is {tip_ratio!r} of its root moment, which does not "
-        f"reach the declared counter {F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER!r}."
-    )
-    assert (
-        tip_ratio > F4_STATIC_TIP_MOMENT_RELATIVE
-    ), "the ceiling accepts R663's tip moment, so the gate certifies nothing."
+    # RELATIVE, like the ceiling it brackets (R681), and the denominator is the
+    # DEFECTIVE root moment because that is what the gate above divides by: it is the
+    # correct root plus `mu L^2 / 12`. On ER0's basis the ratios are EXACTLY 1/11 on the
+    # four platform arms and 1/(53/3) on the twelve hub arms.
+    worst_ratio = float("inf")
+    checked = 0
+    for body in built.bodies:
+        case = cases[body.name]
+        for member in body.members:
+            bad = member_forces(body, member, case.u_full, np.zeros(12))
+            ratio = abs(float(bad.end_b[4])) / abs(float(bad.end_a[4]))
+            worst_ratio = min(worst_ratio, ratio)
+            checked += 1
+            assert ratio > F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER, (
+                f"{member.label}: the defect's tip moment is {ratio!r} of its root "
+                f"moment, BELOW the declared counter "
+                f"{F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER!r}. The counter is the "
+                "smallest defect this gate must still fail, so a member below it means "
+                "the counter is on the wrong side of the defect for that member."
+            )
+            assert ratio > F4_STATIC_TIP_MOMENT_RELATIVE, (
+                f"{member.label}: the ceiling accepts R663's tip moment, so the gate "
+                "certifies nothing."
+            )
+    assert checked == 16, f"{checked} of 16 members were checked, not all of them"
 
 
 # --------------------------------------------------------------------------- R676 / EK0(d)

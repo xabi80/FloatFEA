@@ -113,12 +113,19 @@ not-a-tolerance: a designed geometry, cited to its source. Nothing is compared
 against it.
 """
 
-MASS_FRACTION_LADDER: Final[tuple[float, ...]] = (0.5, 0.4, 0.3, 0.2, 0.1, 0.0)
+MASS_FRACTION_LADDER: Final[tuple[float, ...]] = (0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0)
 """The fractions of a body's mass the members may carry, most first (DY0c, DY0d).
 
-**0.5 is the default and its reason is physical:** a truss with its bottom chord in
-the joint plane carries about half its mass there, and the in-plane members are the
-STIFFNESS equivalent of that truss rather than a model of its steel.
+**0.75 IS THE FIRST RUNG, PREPENDED BY DIRECTIVE ES1 ON XABIER'S INPUT (ER0, 6 Oct).**
+It is his number for this platform, not a value derived here, and it arrives through the
+LADDER so that `admissible()` is consulted for it exactly as for every other rung --
+there is no caller override on the shipped path. All five bodies are PSD at it, measured
+before the change was accepted.
+
+**0.5 was the first rung until then and its reason was physical:** a truss with its bottom
+chord in the joint plane carries about half its mass there, and the in-plane members are
+the STIFFNESS equivalent of that truss rather than a model of its steel. It stays on the
+ladder as the second rung, so a body that is inadmissible at 0.75 descends to it.
 
 The ladder is descended per body when `f` is inadmissible — a negative remainder, or
 a remainder inertia tensor with a negative eigenvalue — and `f = 0` is always
@@ -720,7 +727,7 @@ def body_mass_matrix(body: BodyModel) -> NDArray[np.float64]:
 def build_superstructure(
     path: Path | None = None,
     froude_lambda: float = 50.0,
-    mass_fraction: float | None = None,
+    measurement_fraction: float | None = None,
 ) -> Superstructure:
     """The five-body superstructure at full scale, or a refusal.
 
@@ -766,20 +773,24 @@ def build_superstructure(
             if preliminary
             else "docs/milestones/F1.md:389, basis at F1.md:425-433"
         )
-        if mass_fraction is not None:
-            # EK1's f SENSITIVITY. The ladder is bypassed on purpose: EK1 asks for
-            # f = 0.25 and 0.75, neither of which is on it, and 0.75 is ABOVE the
-            # default. `_build_body` accepts any fraction and reports findings rather
-            # than refusing, so an off-ladder build carries its own warnings and
-            # `admissible()` is NOT consulted -- the point of the sensitivity is to see
-            # what the member forces do, including at a fraction the ladder would have
-            # rejected. A caller passing this gets a model to MEASURE, not one to ship.
+        if measurement_fraction is not None:
+            # A SENSITIVITY ENTRY POINT, NOT A SHIPPING KNOB (ES1). It was called
+            # `mass_fraction`, which read like one. ES1 says there is no caller override
+            # on the shipped path, and there is not: `build_superstructure()` with no
+            # argument descends the ladder and consults `admissible()` at every rung,
+            # which is how `f = 0.75` now arrives. This parameter exists because ER3
+            # asks for a sensitivity at `f = 0.5` and `f = 1.0`, and 1.0 is on no ladder
+            # and never will be -- it puts the entire body mass on the members.
+            #
+            # It bypasses the ladder, does NOT consult `admissible()`, and reports a
+            # finding on every body saying so, so a build made this way cannot be
+            # mistaken for one to ship.
             built.append(
                 _build_body(
                     name,
                     geometry[name],
                     bodies[name],
-                    mass_fraction,
+                    measurement_fraction,
                     section,
                     preliminary,
                     note,

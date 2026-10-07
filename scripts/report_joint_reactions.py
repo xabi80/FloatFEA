@@ -117,6 +117,44 @@ def report_export() -> None:
     print(f"  buoys represented: {len(bodies)} of 12 -- {sorted(bodies)}")
 
 
+PLATFORM_MASS_OVERRIDE: dict[str, object] | None = None
+"""ER0's new mass basis, applied IN MEMORY to the deck (ER1(b)).
+
+`None` is the deck as HSP exports it. Set it to
+`{"mass": 20.0, "inertia": {"Ixx": 20.0, "Iyy": 20.0, "Izz": 40.0}}` -- model scale --
+and `solve_one` mutates the platform body of the deck it just built, before
+`build_system` sees it.
+
+WHY IN MEMORY AND NOT IN HSP. HSP-stable is read-only at `floatfea-ref-1` (DS0) and
+FloatSim is not forked. ER0 changes an INPUT to the study, not the study, so the override
+belongs where the input is assembled -- here -- and the deck file on disk is untouched.
+`platform_common.py:177-178` is what it overrides: `mass=PLATFORM_MASS` and
+`Inertia(Ixx=10.0, Iyy=10.0, Izz=20.0)`.
+
+not-a-tolerance: these are masses and inertias, the physical inputs ER0 sets. Nothing is
+compared against them.
+"""
+
+
+def _apply_platform_override(deck: object) -> str:
+    """Mutate the deck's platform body in place; return a line describing what moved."""
+    if PLATFORM_MASS_OVERRIDE is None:
+        return "platform mass/inertia: deck as exported, no override"
+    body = next(b for b in deck.bodies if b.name == "platform")  # type: ignore[attr-defined]
+    before = (body.mass, body.inertia.Ixx, body.inertia.Iyy, body.inertia.Izz)
+    body.mass = float(PLATFORM_MASS_OVERRIDE["mass"])  # type: ignore[index]
+    inertia = PLATFORM_MASS_OVERRIDE["inertia"]  # type: ignore[index]
+    body.inertia.Ixx = float(inertia["Ixx"])  # type: ignore[index]
+    body.inertia.Iyy = float(inertia["Iyy"])  # type: ignore[index]
+    body.inertia.Izz = float(inertia["Izz"])  # type: ignore[index]
+    after = (body.mass, body.inertia.Ixx, body.inertia.Iyy, body.inertia.Izz)
+    return (
+        f"platform mass/inertia OVERRIDDEN in memory (ER0): "
+        f"mass {before[0]} -> {after[0]}, "
+        f"I {before[1]}/{before[2]}/{before[3]} -> {after[1]}/{after[2]}/{after[3]}"
+    )
+
+
 def solve_one(period_s: float, duration_s: float, dt: float) -> tuple:
     """One short case, returning `(res, setup, deck, ext)`. Read-only on HSP."""
     for path in (HSP_RUNS, STUDY, STUDY.parent / "cluster-3buoy-rigid"):
@@ -131,6 +169,7 @@ def solve_one(period_s: float, duration_s: float, dt: float) -> tuple:
     from floatsim.waves.regular import RegularWave
 
     deck = prp._deck_with_drag()
+    print(f"  {_apply_platform_override(deck)}", flush=True)
     hydro_dof = prp._hydro_dof(deck)
     hdb = read_capytaine(prp._PLAT_NC)
     # The study's own call, verbatim from `platform_rao_pilot.py:397-406`, including

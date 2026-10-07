@@ -33,7 +33,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 import yaml
 
@@ -135,13 +135,63 @@ def _preflight() -> str:
     return head
 
 
+PLATFORM_OVERRIDE: Final[dict[str, Any]] = {
+    "mass": 20.0,
+    "inertia": {"Ixx": 20.0, "Iyy": 20.0, "Izz": 40.0},
+}
+"""ER0's platform mass and inertia, at MODEL scale, applied to the exported deck (ER1(a)).
+
+**IT IS DECLARED HERE AND STATED ON THE DECK'S FACE**, so the generated file says what it
+is and `--check` compares HSP-stable's own deck PLUS this override against what is on
+disk. Setting it to `{}` exports HSP's deck unmodified.
+
+WHAT IT OVERRIDES: `platform_common.py:177-178`, `mass=PLATFORM_MASS` and
+`Inertia(Ixx=10.0, Iyy=10.0, Izz=20.0)`.
+
+WHY AN OVERRIDE AT ALL. ER0 is Xabier's input for this platform and HSP is not forked:
+HSP-stable stays read-only at the pinned tag (DS0), FloatSim's own study keeps its own
+numbers, and the change belongs where this repository assembles its input. The replay
+driver applies the same override in memory (`scripts/report_joint_reactions.py`), so the
+FE side and the FloatSim runs see one basis.
+
+ER0(a) records that the inertia scaling is an ASSUMPTION Xabier marked overridable:
+`20, 20, 40` is `10, 10, 20` scaled with the mass. ER0(b) leaves the reference point
+alone.
+
+not-a-tolerance: a mass and three inertias, the physical inputs ER0 sets. Nothing is
+compared against them.
+"""
+
+
+def apply_override(deck: Any) -> list[str]:
+    """Apply `PLATFORM_OVERRIDE` in place. Returns one line per value that moved."""
+    if not PLATFORM_OVERRIDE:
+        return []
+    body = next(b for b in deck.bodies if b.name == "platform")
+    moved: list[str] = []
+    before_mass = body.mass
+    body.mass = float(PLATFORM_OVERRIDE["mass"])
+    moved.append(f"platform mass {before_mass:g} -> {body.mass:g} kg (model)")
+    for axis, value in PLATFORM_OVERRIDE["inertia"].items():
+        before = getattr(body.inertia, axis)
+        setattr(body.inertia, axis, float(value))
+        moved.append(f"platform {axis} {before:g} -> {float(value):g} kg*m^2 (model)")
+    return moved
+
+
 def build_deck() -> Any:
-    """Import the pinned study and return its Deck. Read-only."""
+    """Import the pinned study, apply the declared override, return its Deck.
+
+    Read-only on HSP: the override is applied to the Deck OBJECT this function returns,
+    never to anything under `../HSP-stable` or `../HSP-runs`.
+    """
     for path in (HSP_RUNS, STUDY, STUDY.parent / "cluster-3buoy-rigid"):
         sys.path.insert(0, str(path))
     import platform_rao_pilot as prp
 
-    return prp._deck_with_drag()
+    deck = prp._deck_with_drag()
+    apply_override(deck)
+    return deck
 
 
 def dump_and_verify(deck: Any) -> tuple[str, dict[str, Any]]:
@@ -215,6 +265,18 @@ def digest(raw: dict[str, Any], body: str = "") -> str:
     )
 
 
+def _override_lines() -> list[str]:
+    """`PLATFORM_OVERRIDE` as the header prints it, without needing a deck."""
+    if not PLATFORM_OVERRIDE:
+        return []
+    out = [f"platform mass -> {float(PLATFORM_OVERRIDE['mass']):g} kg (model)"]
+    out += [
+        f"platform {axis} -> {float(value):g} kg*m^2 (model)"
+        for axis, value in PLATFORM_OVERRIDE["inertia"].items()
+    ]
+    return out
+
+
 def header(head: str, deck: Any) -> str:
     """The provenance the file carries on its face."""
     return (
@@ -231,7 +293,17 @@ def header(head: str, deck: Any) -> str:
         f"#   bodies         {len(deck.bodies)}\n"
         f"#   joints         {len(deck.joints)}\n"
         f"#   exported       {_dt.datetime.now(_dt.UTC).strftime('%Y-%m-%d')}\n"
-        "#\n"
+        + (
+            "#\n"
+            "#   OVERRIDE       this deck is HSP's deck PLUS a declared override, and\n"
+            "#                  the override is part of what `--check` compares (ER1(a)):\n"
+            + "".join(f"#                    {line}\n" for line in _override_lines())
+            + "#                  source: directive ER0 (Xabier, 6 Oct). The inertia\n"
+            "#                  scaling is ER0(a)'s assumption, marked overridable.\n"
+            if PLATFORM_OVERRIDE
+            else ""
+        )
+        + "#\n"
         "# SCALE: this deck is at MODEL scale. Nothing here is full scale and nothing\n"
         "# in this file applies a factor. floatfea.io.froude converts at the I/O\n"
         "# boundary and floatfea.io.reader refuses a model-scale record that has not\n"
