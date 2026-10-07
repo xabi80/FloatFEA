@@ -1462,8 +1462,28 @@ def _independent_nodal_force(
     the form gives `+w L^2/12` about local z at end A, which is what `local_mass` was
     measured to produce (`+1953125.0` against a closed form of `1953125.0`); for a
     local-z load it gives `-w L^2/12` about local y, which is the sign `local_mass`'s
-    own `flip = diag([1, -1, 1, -1])` applies. Had the convention disagreed the gate
-    would have reddened, and the disagreement would have been the finding.
+    own `flip = diag([1, -1, 1, -1])` applies.
+
+    R705: AND THIS DOCSTRING CLAIMED THE GATE WOULD HAVE REDDENED ON A DISAGREEMENT,
+    WHICH WAS FALSE OF THE GATE THAT READS THIS FUNCTION. Measured: under a sign flip on
+    the rotational rows of NODE A ONLY, the worst per-node departure MOVES, from
+    `2.796036563614433e-15` to `3.140164140674671e-15`, and stays at round-off -- four
+    orders inside the `1e-12` ceiling -- so the gate does not redden. The star geometry
+    sums the centre-node moments to zero for any uniform field, which is why the response
+    is round-off rather than nothing at all. Before R705 nothing in F4 caught it: DQ4(ii)
+    took `abs(abs(f[ra]) - want_m)` and read the clean value to every digit under the
+    same flip.
+
+    "Unmoved" would have been the wrong word, and that is why this paragraph carries two
+    figures instead of an adjective.
+
+    What the sign IS checked by, named rather than implied: DQ4(ii)'s moment channel
+    compares the SIGNED value, and `test_DQ4_ii_the_closed_form_gate_REDDENS
+    [moment_sign_flipped]` injects the flip and asserts exactly `2.0`. Reverting that
+    channel to the `abs` gives `1 failed, 99 passed`, and the single FAILED id is
+    `test_DQ4_ii_the_closed_form_gate_REDDENS[moment_sign_flipped]` -- that row and
+    nothing else, read from the run rather than counted. The sign is out of THIS
+    function's reach and the sentence saying otherwise is withdrawn.
 
     `moment_factor` and `remainder_factor` are 1.0 on every shipped call and are the
     counter-cases' injection points.
