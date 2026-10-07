@@ -2260,9 +2260,10 @@ F4_STATIC_SYMMETRY_SPREAD_COUNTER: Final[float] = 1.3
 # Set: 2026-10-05, F4 step 1
 F4_MAPPING_CONSERVATION: Final[float] = 1.0e-12
 
-# COUNTER-CASE: the SMALLEST of the THREE defects the gate must catch.
-# Reason for 0.2: a joint block mapped to the wrong node of the right body, which
-# MEASURES 0.9597085787263796 per body. The other two injections -- one side of a
+# COUNTER-CASE: the SMALLEST of the THREE defects the gate must catch, over the whole
+# domain of each -- which for the wrong-node injection includes WHERE it is placed (R710).
+# Reason for 0.2: a joint block mapped to the wrong node of the right body, whose weakest
+# ordered pair MEASURES 0.2179893030274107 per body. The other two injections -- one side of a
 # hub-platform joint losing its sign flip, reading 3.5569621874567385, and one internal
 # joint dropped from both sides (R683), reading 1.7784810937283693 -- are both larger, so
 # the wrong-node defect is the one the counter is taken from, per the rule that the
@@ -2275,20 +2276,46 @@ F4_MAPPING_CONSERVATION: Final[float] = 1.0e-12
 #
 # WHY THE VALUE DOES NOT MOVE THOUGH ITS BASIS DID. Under the aggregate rule the
 # wrong-node injection measured 0.24374825705420716 and 0.2 was the round bound below
-# THAT. Per body the same injection is 3.94x larger, so 0.2 is further below the defect
-# than it was declared to be: it errs safe, and the ordering it depends on survives --
-# wrong-node is still the smallest of the three. What changed is the WEAKENING window.
-# The injection may now fall to 0.2084 of its size before the counter stops bracketing
-# it, which is a 79% loss of sensitivity tolerated where this entry implied 18% (EH4:
-# the boundary is solved in the direction that WEAKENS the gate, not only the one that
-# makes it look strong).
+# THAT. Per body the same injection is 3.94x larger, so 0.2 errs safe and the ordering it
+# depends on survives -- wrong-node is still the smallest of the three.
+#
+# R710: BUT THE MARGIN AND THE WEAKENING WINDOW BELOW WERE THE SHIPPED PAIR'S, NOT THE
+# FAMILY'S. The quantity is a moment about the origin, so it scales with the LEVER between
+# the two nodes, and the injection SITE is a coordinate of this counter-case's domain.
+# Measured over all twelve ordered pairs of the four platform joint nodes:
+#
+#   node 3 -> 4   0.2179893030274107   <- the family MINIMUM
+#   node 2 -> 3   0.361471168710035
+#   node 1 -> 3   0.6264052990635567
+#   node 4 -> 1   0.6551181588194337
+#   node 2 -> 1   0.8174512848220575
+#   node 4 -> 3   0.9326006752312858
+#   node 1 -> 2   0.9597085787263796   <- the pair the counter-case used to inject
+#   node 2 -> 4   1.1789224535320926
+#   node 4 -> 2   1.310236317638867
+#   node 1 -> 4   1.5861138777899368
+#   node 3 -> 2   1.6621665189226082
+#   node 3 -> 1   1.6964643105279407
+#
+# A 7.78x spread, and the pair the counter-case injected is SEVENTH of twelve by size. So
+# the margin is 1.0899x against the family minimum, not the 4.7985x this entry published
+# against the shipped pair, and the weakening window is 0.9175 rather than 0.2084 -- the
+# injection may shrink by only 8% before the counter stops bracketing it. **THE VALUE IS
+# STILL SAFE AND DOES NOT MOVE**: 0.2 is below 0.2179893030274107.
+#
+# The ladder claim in this entry was CORRECT and stays: the family minimum is
+# bit-identical at all seven rungs. The narrow coordinate here is the SITE, which was not
+# on R708's list of coordinates -- `f`, the member class, the body, the field, the
+# direction -- and that is the point. The list is not what carries forward; the LOOP is.
+# The counter-case now evaluates all twelve pairs and asserts its own count.
 #
 # AND IT IS CHECKED ACROSS THE WHOLE LADDER, NOT AT THE SHIPPED RUNG (EU1, R694's
 # lesson). Every figure in this entry is BIT-IDENTICAL at all seven rungs of
 # `MASS_FRACTION_LADDER`, `f = 0.75` down to `f = 0.0`: clean 2.1962235947826024e-16,
-# wrong-node 0.9597085787263796, sign 3.5569621874567385, dropped 1.7784810937283693.
-# The smallest defect over every rung is 0.9597085787263796 and the counter clears it
-# by 4.7985x.
+# sign 3.5569621874567385, dropped 1.7784810937283693, and the wrong-node family's
+# minimum 0.2179893030274107. The smallest defect over every rung and every injection
+# site is that family minimum, and the counter clears it by 1.0899x (R710 -- this said
+# 0.9597085787263796 and 4.7985x, which was one pair of twelve).
 #
 # That is the measurement and not the argument I would have made. The argument -- this
 # gate's quantity is the mapper's resultants against the joint blocks and the node

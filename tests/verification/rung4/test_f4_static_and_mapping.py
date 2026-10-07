@@ -1097,9 +1097,50 @@ def test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node(
     if injection == "sign_not_flipped":
         loads["platform"][6 * here : 6 * here + 6] -= 2.0 * share
     elif injection == "wrong_node_same_body":
-        there = nodes[(joint_order[hubs[1]][0], "platform")]
-        loads["platform"][6 * here : 6 * here + 6] -= share
-        loads["platform"][6 * there : 6 * there + 6] += share
+        # R710: EVERY ORDERED PAIR, NOT THE FIRST TWO. The quantity is a moment about the
+        # origin, so it scales with the LEVER between the two nodes -- which makes the
+        # injection SITE a coordinate of this counter-case's domain, and the entry
+        # published the first pair's figure as the family's. Measured over all twelve
+        # ordered pairs of the four platform joint nodes: `0.2179893030274107` at node
+        # 3 -> 4 up to `1.6964643105279407` at node 3 -> 1, a 7.78x spread, with the
+        # shipped pair (1 -> 2, `0.9597085787263796`) SEVENTH of twelve by size. The
+        # declared `0.2` clears the family MINIMUM by `1.0899x`, not the `4.7985x` the
+        # entry claimed against the shipped pair.
+        #
+        # R708's list of narrow coordinates was `f`, the member class, the body, the field
+        # and the direction. The SITE was not on it, which is why this is a sixth instance
+        # rather than a repeat -- and the lesson is that the list is not what to carry
+        # forward, the LOOP is.
+        family: dict[tuple[int, int], float] = {}
+        for a_index in hubs:
+            a_node = nodes[(joint_order[a_index][0], "platform")]
+            a_block = lam_row[ROWS_PER_JOINT * a_index : ROWS_PER_JOINT * (a_index + 1)]
+            a_share = np.concatenate([-np.asarray(a_block[0:3]), [0.0, 0.0, -float(a_block[3])]])
+            for b_index in hubs:
+                b_node = nodes[(joint_order[b_index][0], "platform")]
+                if b_node == a_node:
+                    continue
+                moved = {k: v.copy() for k, v in loads.items()}
+                moved["platform"][6 * a_node : 6 * a_node + 6] -= a_share
+                moved["platform"][6 * b_node : 6 * b_node + 6] += a_share
+                family[(a_node, b_node)] = _mapping_error(built, moved, want)
+        assert len(family) == 12, (
+            f"{len(family)} ordered pairs were injected and four platform joint nodes "
+            "admit twelve. A counter-case on one pair of a family whose spread is 7.78x "
+            "brackets one point of it (R710)."
+        )
+        weakest = min(family.values())
+        assert weakest > F4_MAPPING_CONSERVATION_COUNTER, (
+            f"the weakest wrong-node pair reads {weakest!r}, which does not reach the "
+            f"declared counter {F4_MAPPING_CONSERVATION_COUNTER!r}. That pair is the one "
+            "the counter must be taken from, not the pair the loop happens to start at. "
+            f"The family: "
+            f"{ {f'{a}->{b}': f'{v:.4f}' for (a, b), v in sorted(family.items())} }."
+        )
+        assert (
+            weakest > F4_MAPPING_CONSERVATION
+        ), f"the weakest wrong-node pair reads {weakest:.6e}, which the ceiling ACCEPTS."
+        return
     else:
         # R683. ONE INTERNAL JOINT DROPPED FROM BOTH SIDES -- the injection the
         # AGGREGATE form of this gate could not see, and the only one of the three that
@@ -1116,14 +1157,9 @@ def test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node(
         loads["platform"][6 * here : 6 * here + 6] -= share
         loads[hub][6 * hub_node : 6 * hub_node + 6] += share
 
+    # The wrong-node family returns above, having asserted its own minimum against both
+    # the counter and the ceiling (R710). What reaches here is one of the other two.
     error = _mapping_error(built, loads, want)
-    if injection == "wrong_node_same_body":
-        assert error > F4_MAPPING_CONSERVATION_COUNTER, (
-            f"the wrong-node injection reads {error!r}, which does not reach the declared "
-            f"counter {F4_MAPPING_CONSERVATION_COUNTER!r}. That injection is the SMALLEST "
-            "of the three and the one the counter is taken from, so if it shrinks the "
-            "counter stops describing the defect the gate must catch."
-        )
     assert error > F4_MAPPING_CONSERVATION, (
         f"the `{injection}` injection reads {error:.6e}, which the ceiling ACCEPTS. The "
         "gate is blind to a defect it exists to catch."
@@ -1836,8 +1872,13 @@ def test_DQ4_ii_the_closed_form_gate_REDDENS(built: Superstructure, injection: s
         f"{len(per_body)} of 5 bodies were injected. The ceiling reads five, so a "
         "counter-case reaching fewer brackets a narrower domain (R706, R708)."
     )
-    worst_f = min(v[0] for v in per_body.values())
-    worst_m = min(v[1] for v in per_body.values())
+    # R709: ONE REDUCTION PER DIRECTION, AND NEITHER IS USED FOR THE OTHER.
+    # `error` feeds `error > counter`, so the WEAKEST body is the one that must clear it
+    # and `min` is right. The sign-flip branch below asserts `< ceiling` on the force
+    # channel, where the worst OFFENDER is the `max` -- and this line read `min` for
+    # both. Measured: a force-channel error confined to the four hubs left that
+    # assertion GREEN at 1.001, at 2.0 and at 1e+06, because `min` was always the
+    # platform's 2.483527e-16.
     error = min(max(v) for v in per_body.values())
     if injection == "moment_scaled":
         assert error > F4_DQ4_ELEMENT_VECTOR_COUNTER, (
@@ -1848,16 +1889,24 @@ def test_DQ4_ii_the_closed_form_gate_REDDENS(built: Superstructure, injection: s
         )
     if injection == "moment_sign_flipped":
         # expected: exactly 2.0 -- the relative error of `-x` against `+x` -- and the
-        # FORCE channel must stay at round-off, because the injection moves no magnitude.
-        assert worst_m == pytest.approx(2.0, rel=F4_DQ4_ELEMENT_VECTOR), (
-            f"the sign flip reads {worst_m!r} on the moment channel and the algebra says "
-            "exactly 2.0. If it reads the clean value the `abs` is back (R705)."
-        )
-        assert worst_f < F4_DQ4_ELEMENT_VECTOR, (
-            f"the sign flip moved the FORCE channel to {worst_f!r}. It must not: the "
-            "injection changes a sign and no magnitude, so a force-channel response "
-            "means the injection is not the one R705 names."
-        )
+        # FORCE channel at round-off, because the injection moves no magnitude.
+        #
+        # R709: ASSERTED PER BODY, NOT ON AN AGGREGATE. Every body must read 2.0 on the
+        # moment channel and round-off on the force channel; an aggregate hides whichever
+        # body disagrees, and which body that is depends on the reduction's direction.
+        for name, (force_channel, moment_channel) in sorted(per_body.items()):
+            assert moment_channel == pytest.approx(2.0, rel=F4_DQ4_ELEMENT_VECTOR), (
+                f"{name}: the sign flip reads {moment_channel!r} on the moment channel "
+                "and the algebra says exactly 2.0. If it reads the clean value the `abs` "
+                f"is back (R705). Per body: "
+                f"{ {k: f'{v[1]:.3e}' for k, v in sorted(per_body.items())} }."
+            )
+            assert force_channel < F4_DQ4_ELEMENT_VECTOR, (
+                f"{name}: the sign flip moved the FORCE channel to {force_channel!r}. It "
+                "must not -- the injection changes a sign and no magnitude, so a "
+                "force-channel response means the injection is not the one R705 names. "
+                f"Per body: { {k: f'{v[0]:.3e}' for k, v in sorted(per_body.items())} }."
+            )
     assert (
         error > F4_DQ4_ELEMENT_VECTOR
     ), f"the `{injection}` injection reads {error:.6e}, which the ceiling ACCEPTS."
