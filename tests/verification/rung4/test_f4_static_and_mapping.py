@@ -337,6 +337,27 @@ def test_G4_the_defective_formula_misses_the_reaction_by_f_over_two(
     because ER0 moves `M` and `f` at once (BG0): `(w L / 2) / R` measures `0.250000` at
     old M + old f AND at new M + old f, and `0.375000` at old M + new f AND at new M +
     new f -- so the move is `f`'s alone and the mass does not touch it.
+
+    R704: AND FIXING THE NAME WAS NOT FIXING THE GATE. Verdict 100's `Closed when` named
+    two entries and R694's repair reached one. This assertion still froze `0.375` by
+    equality, so it did not merely fail to catch something -- it FALSE-REDDENS on a
+    legitimate build. Measured at every rung, each `admissible`:
+
+    ```
+    f      shortfall                 f/2     |diff|
+    0.75   0.37500000000000006       0.375   5.55e-17
+    0.5    0.25000000000000017       0.25    1.67e-16
+    0.4    0.2000000000000001        0.2     8.33e-17
+    0.3    0.15000000000000022       0.15    2.22e-16
+    0.2    0.10000000000000019       0.1     1.80e-16
+    0.1    0.0500000000000004        0.05    3.96e-16
+    0.0    6.075906704932774e-16     0.0     6.08e-16   VACUOUS
+    ```
+
+    So the comparison is against the CLOSED FORM at this body's own `f`, which is statics
+    and not this code, and the declared constant is the FLOOR beneath every rung. At
+    `f = 0` the members carry no mass, there is no omitted load, the shortfall is
+    round-off and the counter-case is vacuous rather than failing.
     """
     cases = solve_superstructure_static(built)
     platform = next(b for b in built.bodies if b.name == "platform")
@@ -347,12 +368,26 @@ def test_G4_the_defective_formula_misses_the_reaction_by_f_over_two(
     reaction = case.vertical_reactions_N[member.node_b]
     shortfall = (reaction - float(mf.end_b[2])) / reaction
 
-    assert shortfall == pytest.approx(
-        F4_STATIC_REACTION_AGREEMENT_COUNTER, rel=F4_STATIC_REACTION_AGREEMENT
-    ), (
-        f"the defective formula falls {shortfall:.6%} short of the reaction and the "
-        f"declared counter-case is {F4_STATIC_REACTION_AGREEMENT_COUNTER!r}. "
+    # expected: `f/2`, analytic. The omitted load is the member's whole weight and half
+    # of it lands at each node, so the tip shear is short by `f/2` of the reaction. Read
+    # from the BODY, not from a constant, so a rung the ladder descends to cannot
+    # invalidate it (R694, R704).
+    expected_shortfall = platform.mass_fraction / 2.0
+    if expected_shortfall == 0.0:
+        pytest.skip(
+            "f = 0 puts no mass on the members, so there is no distributed load to omit "
+            "and no defect to inject. The counter-case is VACUOUS at this rung, not "
+            "passing -- see the docstring's table."
+        )
+    assert shortfall == pytest.approx(expected_shortfall, rel=F4_STATIC_REACTION_AGREEMENT), (
+        f"the defective formula falls {shortfall:.6%} short of the reaction and `f/2` at "
+        f"this body's own f = {platform.mass_fraction!r} is {expected_shortfall!r}. "
         "If these disagree the defect is not the one R663 names."
+    )
+    assert shortfall > F4_STATIC_REACTION_AGREEMENT_COUNTER, (
+        f"the shortfall is {shortfall!r} and the declared floor is "
+        f"{F4_STATIC_REACTION_AGREEMENT_COUNTER!r}. The floor must sit below the defect "
+        "at EVERY rung the ladder descends to, not at the one the model ships."
     )
     assert (
         shortfall > F4_STATIC_REACTION_AGREEMENT
@@ -1482,12 +1517,28 @@ _DQ4_FIELDS: dict[str, NDArray[np.float64]] = {
     "oblique": np.array([0.3, -0.7, 0.64807407]),
 }
 
-_DQ4_II_PLANES = ((1, 7, 5, 11, "xy"), (2, 8, 4, 10, "xz"))
-"""`(trans_A, trans_B, rot_A, rot_B, plane)` for the two bending planes."""
+_DQ4_II_PLANES = ((1, 7, 5, 11, "xy", 1.0, -1.0), (2, 8, 4, 10, "xz", -1.0, 1.0))
+"""`(trans_A, trans_B, rot_A, rot_B, plane, sign_A, sign_B)` for the two bending planes.
+
+R705: THE SIGNS ARE IN THE TUPLE BECAUSE THE GATE TOOK AN ABSOLUTE VALUE AND COULD NOT
+FAIL ON ONE. `abs(abs(f[ra]) - want_m)` discards exactly the sign `docs/milestones/F4.md`
+declares twice as `+-mu L^2/12`, and three sign mutants of `local_mass`'s rotational rows
+-- magnitudes preserved -- each read the clean value to every digit. The node-A-only flip
+escaped DQ4(i) as well, because the star geometry sums the centre-node moments to zero
+for any field, so no F4 gate was watching the sign at all.
+
+Measured on every element of all five bodies, not assumed: `xy` gives `(+1, -1)` and `xz`
+gives `(-1, +1)`, which is the `flip = diag([1, -1, 1, -1])` `local_mass` applies to the
+xz plane and says it applies. The distinct patterns over every element are exactly
+`[('xy', 1, -1), ('xz', -1, 1)]`."""
 
 
 def _dq4_ii_departures(
-    body: BodyModel, *, lumped: bool = False, moment_scale: float = 1.0
+    body: BodyModel,
+    *,
+    lumped: bool = False,
+    moment_scale: float = 1.0,
+    flip_moment_sign: bool = False,
 ) -> tuple[float, float]:
     """`(worst force, worst moment)` relative departure from the closed form."""
     worst_f = 0.0
@@ -1496,7 +1547,7 @@ def _dq4_ii_departures(
         length = element_length(body.model, e)
         m = local_mass(e.section, e.material, length)
         mu = e.material.rho * e.section.A
-        for ta, tb, ra, rb, _plane in _DQ4_II_PLANES:
+        for ta, tb, ra, rb, _plane, sign_a, sign_b in _DQ4_II_PLANES:
             accel = np.zeros(12, dtype=np.float64)
             accel[ta] = accel[tb] = 1.0
             f = np.asarray(m @ accel, dtype=np.float64).copy()
@@ -1504,14 +1555,21 @@ def _dq4_ii_departures(
                 f[ra] = f[rb] = 0.0
             f[ra] *= moment_scale
             f[rb] *= moment_scale
-            # expected: mu L / 2 and mu L^2 / 12, analytic.
+            if flip_moment_sign:
+                # R705's own injection: the MAGNITUDES are untouched and only the sign
+                # moves, which is precisely what the old `abs` could not see.
+                f[ra] = -f[ra]
+                f[rb] = -f[rb]
+            # expected: mu L / 2 and +-mu L^2 / 12, analytic, SIGNED (R705). The sign is
+            # the assertion's content and not decoration: an `abs` here let three sign
+            # mutants read the clean value exactly.
             want_f = mu * length / 2.0
             want_m = mu * length**2 / 12.0
             worst_f = max(worst_f, abs(f[ta] - want_f) / want_f, abs(f[tb] - want_f) / want_f)
             worst_m = max(
                 worst_m,
-                abs(abs(f[ra]) - want_m) / want_m,
-                abs(abs(f[rb]) - want_m) / want_m,
+                abs(f[ra] - sign_a * want_m) / want_m,
+                abs(f[rb] - sign_b * want_m) / want_m,
             )
     return worst_f, worst_m
 
@@ -1604,7 +1662,8 @@ def test_DQ4_ii_the_closed_form_SURVIVES_SHEAR_DEFORMATION(
     want_f = mu * length / 2.0
     want_m = mu * length**2 / 12.0
     force_rel = max(abs(f[1] - want_f), abs(f[7] - want_f)) / want_f
-    moment_rel = max(abs(abs(f[5]) - want_m), abs(abs(f[11]) - want_m)) / want_m
+    # SIGNED (R705): the xy plane's ends are `+want_m` and `-want_m`.
+    moment_rel = max(abs(f[5] - want_m), abs(f[11] + want_m)) / want_m
     assert force_rel < F4_DQ4_ELEMENT_VECTOR, (
         f"at L = {length} m, phi = {phi:.4e}, the nodal force departs from `mu L / 2` "
         f"by {force_rel:.6e}, outside {F4_DQ4_ELEMENT_VECTOR:.1e}."
@@ -1616,27 +1675,52 @@ def test_DQ4_ii_the_closed_form_SURVIVES_SHEAR_DEFORMATION(
     )
 
 
-@pytest.mark.parametrize("injection", ["lumped", "moment_scaled"])
+@pytest.mark.parametrize("injection", ["lumped", "moment_scaled", "moment_sign_flipped"])
 def test_DQ4_ii_the_closed_form_gate_REDDENS(built: Superstructure, injection: str) -> None:
-    """Both injections go into `M_e a`, never into the closed form (EA4).
+    """All three injections go into `M_e a`, never into the closed form (EA4).
 
     `lumped` is the defect this gate exists for -- a lumped mass matrix, which has the
     right nodal FORCES and no nodal moments, so only the moment channel sees it. It
     reads exactly 1.0. `moment_scaled` is the SMALL one the counter is taken from: a
     0.1% error in the `L^2/12` term, which reads 1.0e-03.
+
+    `moment_sign_flipped` IS R705 AND IT IS WHAT HOLDS THE SIGNED ASSERTION IN PLACE.
+    It leaves every magnitude exactly alone and moves only the sign, reading 2.0 -- the
+    error of comparing `-x` with `+x`. Under the `abs(abs(f[ra]) - want_m)` this gate
+    shipped with, the same injection read `5.9605e-16`, the clean value to every digit,
+    and all 66 DQ4/DQ5 parametrisations passed. Without this row, restoring that `abs`
+    would leave the whole suite green and nothing would hold the signed form (R683's
+    lesson: the injection that distinguishes two forms of a rule is the one that holds
+    the rule).
+
+    It also escaped DQ4(i), because the star geometry sums the centre-node moments to
+    zero for any uniform field -- so before this row no F4 gate watched the sign at all.
     """
     body = built.bodies[0]
     worst_f, worst_m = _dq4_ii_departures(
         body,
         lumped=injection == "lumped",
         moment_scale=1.001 if injection == "moment_scaled" else 1.0,
+        flip_moment_sign=injection == "moment_sign_flipped",
     )
     error = max(worst_f, worst_m)
     if injection == "moment_scaled":
         assert error > F4_DQ4_ELEMENT_VECTOR_COUNTER, (
             f"the 0.1% moment error reads {error!r}, which does not reach the declared "
-            f"counter {F4_DQ4_ELEMENT_VECTOR_COUNTER!r}. That injection is the SMALLER "
-            "of the two and the one the counter is taken from."
+            f"counter {F4_DQ4_ELEMENT_VECTOR_COUNTER!r}. That injection is the SMALLEST "
+            "of the three and the one the counter is taken from."
+        )
+    if injection == "moment_sign_flipped":
+        # expected: exactly 2.0 -- the relative error of `-x` against `+x` -- and the
+        # FORCE channel must stay at round-off, because the injection moves no magnitude.
+        assert worst_m == pytest.approx(2.0, rel=F4_DQ4_ELEMENT_VECTOR), (
+            f"the sign flip reads {worst_m!r} on the moment channel and the algebra says "
+            "exactly 2.0. If it reads the clean value the `abs` is back (R705)."
+        )
+        assert worst_f < F4_DQ4_ELEMENT_VECTOR, (
+            f"the sign flip moved the FORCE channel to {worst_f!r}. It must not: the "
+            "injection changes a sign and no magnitude, so a force-channel response "
+            "means the injection is not the one R705 names."
         )
     assert (
         error > F4_DQ4_ELEMENT_VECTOR

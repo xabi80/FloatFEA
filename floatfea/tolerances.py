@@ -1991,8 +1991,33 @@ F4_STATIC_REACTION_AGREEMENT: Final[float] = 1.0e-12
 # smaller figure and the platform value is declared because it is the member the
 # counter-case injects into.
 # Injected by `test_G4_the_defective_formula_misses_the_reaction_by_f_over_two`.
-# Set: 2026-10-05, F4 step 1
-F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.375
+#
+# R704: THE VALUE MOVES FROM 0.375 TO 0.04 AND THE REASON IS NOT A RE-CALIBRATION. The
+# shortfall is `f/2`, so NO constant can be right at more than one rung, and the gate
+# that compared this one by equality did not merely fail to catch a defect -- it
+# FALSE-REDDENS on a legitimate build. Measured at every rung, each `admissible`:
+# 0.37500000000000006 at f = 0.75, then 0.25000000000000017, 0.2000000000000001,
+# 0.15000000000000022, 0.10000000000000019 and 0.0500000000000004, each within 6.08e-16
+# of `f/2`.
+#
+# So the counter-case now compares against `f/2` AT THIS BODY'S OWN `f` -- read from
+# `body.mass_fraction`, which is statics and not this code (EA4) -- and this constant is
+# the FLOOR beneath every rung. The smallest non-vacuous defect is 0.05 at f = 0.1 and
+# 0.04 sits below it with margin 1.2500x. EH4's weakening side: the defect may shrink to
+# 0.8000 of its size before the floor stops bracketing it.
+#
+# At f = 0 the members carry no mass, there is no omitted load and no defect to inject;
+# the shortfall is round-off (6.075906704932774e-16) and the counter-case is VACUOUS
+# rather than failing, so it skips with the reason named.
+#
+# THIS IS THE SECOND ENTRY R694's CONDITION NAMED AND THE ONE I LEFT. R694 repaired the
+# tip-moment counter the same way -- closed form on the expected side, constant demoted
+# to a floor -- and verdict 100's `Closed when` said "both entries". I reported both
+# closed and had edited one. That is the R682/R691 shape for the sixth time, and what it
+# costs is a round: the half I did not touch was a one-expression change with its closed
+# form already written down eight lines above this comment.
+# Set: 2026-10-05, F4 step 1; value moved 2026-10-06, F4 step 2 (R704)
+F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.04
 
 # CLASS: ACCURACY -- the tip moment a ROLLER support transmits, which is none.
 # RELATIVE, against the member's own root moment (R681).
