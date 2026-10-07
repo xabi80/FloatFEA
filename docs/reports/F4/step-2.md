@@ -2209,3 +2209,779 @@ revision's `Carried`** (EG3 condition (ii)).
 - **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
 - **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
 ```
+
+# Revision 3 — R706, R707, and R708 which the settling loop found in my own counters
+
+Answers: verdict 102 @ 061f4c3
+
+**2026-10-06.**
+
+## 0. CI at `bac3017`, the commit verdict 102 judged — **no run, and the generator says so**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 102 at `bac3017` through the
+report's own `Answers:` line. **The generator exits 1 and this is its output
+verbatim:**
+
+```
+no CI run at bac301796de7190f3bdf52a47a3c7dfe40a46669. A commit that was never pushed has no run, and a report cannot publish a table for it.
+```
+
+That is correct and it is CK0, not CK2. **This is the first round in this step whose JUDGED
+COMMIT is a report commit**, and a report commit costs no run by design:
+
+```
+claim  the judged commit has no run, and the workflow says why
+cmd    gh run list --commit bac301796de7190f3bdf52a47a3c7dfe40a46669
+out    (no output)
+cmd    grep -n "paths-ignore" -A 3 .github/workflows/ci.yml
+out    24:    paths-ignore:
+out    25:      - "docs/reports/**"
+cmd    git diff --stat b68f2f7..bac3017 -- floatfea tests scripts data .github
+out    (empty)
+rule   CK0: a report revision changes no code, so the guards that read it run on the next
+       code push and locally every time
+judge  `bac3017` touches only `docs/reports/F4/step-2.md` and its answers file, so the
+       CODE under review at `bac3017` is `b68f2f7`'s code exactly, and `b68f2f7`'s run is
+       the evidence for it. The reviewer made this same ruling twice in this step, at
+       `fa709df` and at `bac3017` itself.
+```
+
+**The run that describes the reviewed code**, job by job, from `gh`:
+
+```
+claim  run 37570657425 at `b68f2f7` is failure at the guards job only; the ladder is green
+cmd    gh run view 37570657425 --json jobs --jq '.jobs[] | "\(.name)\t\(.conclusion)"'
+out    lint, unit and guards  failure
+out    the verification ladder  success
+out    CI determinism -- ten legs agree  skipped
+out    CI determinism -- leg  skipped
+rule   the verification ladder is the gate; the guards job carries the report guards,
+       which are EG3 state (2) at that commit
+judge  184 ids, all on state (2)'s list, decomposed in revision 2 section 0b and
+       re-measured by the reviewer at `135 + 20 + 7 + 1 + 1 + 1`. **A SECTION THE
+       GENERATOR CANNOT PRODUCE IS A GAP IN THE APPARATUS AND I AM NAMING IT RATHER THAN
+       WORKING AROUND IT**: `tests/test_report_carried.py`'s CI guards assume the judged
+       commit has a run, and a round judged at a report commit breaks that assumption.
+       Under DR1 that is a guard failing FALSE -- there is genuinely no run and the report
+       says so -- and DR1 says such a guard is fixed or deleted, never extended. It is
+       apparatus, so it does not go in a step commit. **Recorded for Xabier with C12.**
+```
+
+**The job table of that run**, counted by `scripts/ci_section.py`'s own `counts`
+rather than by a reimplementation of it, because the generator's refusal is about which
+COMMIT to anchor on and not about counting:
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint, unit and guards | 981 | 184 | 0 |
+| the verification ladder | 1978 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+
+**Run `37570657425`, conclusion `failure`. Job conclusions: 4 jobs, 1 not green** --
+`lint, unit and guards` (failure); `the verification ladder` **success**; the two
+`CI determinism` jobs `skipped`, which is CK0's own `workflow_dispatch` condition and not
+CK2. The guards job's failures are the 184 EG3 state (2) ids.
+
+**AND THE APPARATUS HAS NO STATE FOR THIS, WHICH I AM NAMING RATHER THAN DRESSING AS
+ONE.** `tests/test_report_carried.py` knows three CI states: a run with jobs, CK2 (a run
+whose jobs were never created, which its `_UNAVAILABLE` pattern matches on a fixed phrase
+about the billing allowance), and -- through `scripts/ci_section.py` -- a run that exists.
+It has **no state for "the judged commit is a report commit, so `paths-ignore` created no
+run at all"**. Writing CK2's phrase here would assert a billing state that is not the case;
+the truth is CK0. **An earlier draft of this paragraph QUOTED that phrase in order to
+reject it, and the guard matched the quotation and routed this section into the CK2 branch**
+-- a measurement artefact of describing a pattern inside the text the pattern reads, which
+is worth recording. So this
+section names the judged commit first, states that it has no run and why, and carries the
+counts of the run whose CODE is identical to it -- which is the reviewer's own reasoning at
+`fa709df`, applied here.
+
+**The structural point for Xabier, with C12.** A report revision never gets a run, so a
+round whose judged commit is a report commit can never have a generated section 0. The fix
+is a process one and there are two shapes: the verdict names the newest CODE commit as the
+one it judged, or a report revision is pushed together with a code commit. Both are
+outside a step commit. **Under DR1 this is a guard failing false -- there is genuinely no
+run and this section says so correctly -- and DR1 says such a guard is fixed or deleted,
+never extended.**
+
+## 0a. Runs since the commit verdict 102 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 102 at `bac3017` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `37577408916` | push | `c78918c` | **no result** (`cancelled`) |
+| `37577931492` | push | `77d4a6b` | conclusion **failure** |
+
+**Run `37577931492`, conclusion **failure**: 8 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R704-tests/verification/rung4/test_f4_static_and_mapping.py:356]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 0b. The reds, and there are none outside the step boundary
+
+```
+claim  the whole tree is green at the last code commit, with no report-guard exclusion
+cmd    python -m pytest tests -q          (the reviewer's own run at bac3017)
+out    3236 passed, 0 failed, 0 skipped in 654.90s
+cmd    python scripts/suite_count.py      (mine, at b68f2f7)
+out    Whole suite: 2855 passed, 0 failed, 0 skipped
+out    The excluded set: 192 passed, 184 failed, 0 skipped
+rule   EG3 state (2): a verdict written, its answering report not yet committed
+judge  `2855 + 381 = 3236` reconciles exactly, and the reviewer said so. The 184 were
+       measured at `b68f2f7`, a commit where revision 2 did not exist; at revision 2's
+       own commit all 381 report-guard cases pass, which is EG3 condition (ii) and is in
+       revision 2 section 13. **This revision creates state (2) again** and it clears at
+       this revision's own commit; the measurement goes in the closure section.
+```
+
+## 1. The schedule, and what closes with this revision
+
+**Step 2's date is 14 October and it holds.** This is **round 2's answering revision and
+the third of three, so step 2 closes here.** What closes with it: R704, R705, R706, R707
+and R708 all answered, EQ3's DQ4(i), DQ4(ii) and DQ5 shipped with counters that bracket
+their ceilings' domains, R685 closed, and DQ8's residual per body with the dimensional
+finding reported rather than papered over. **What carries, by name and still blocking
+under CZ0:** nothing. **What carries as closure items:** C1 to C15 and R697, R699, R700,
+R701, R702 and R703, listed in section 6. **What is not built and is step 3's:** G4.1's
+dynamic gate and G4.5's measurement, both of which wait on the six FloatSim runs and on a
+plan decision about DQ8's quantity — C1 is that decision's input and is answered before
+it. No step has closed carrying a blocking item, so DZ7c does not fire.
+
+## 2. R706 — the floor was the platform arm's, published as the quantity's
+
+```
+claim  the ceiling this counter brackets reads SIXTEEN members; the counter injected into
+       one
+cmd    sed -n '182,215p' tests/verification/rung4/test_f4_static_and_mapping.py | grep -nE "checked|assert"
+out    8:    checked = 0
+out    15:            checked += 1
+out    29:    assert checked == 16, (
+rule   a counter brackets the domain of the ceiling it is declared against
+judge  R704 generalised this quantity over `f` and left it specific to the member CLASS,
+       and those are the same generalisation.
+```
+
+**The entry said so eighteen lines above its own value, which is the part worth keeping.**
+
+```
+claim  the narrowness was written down in the same entry I edited
+cmd    git show c78918c~1:floatfea/tolerances.py | sed -n '1990,1992p'
+out    # `0.5/2 = 0.25` and `0.75/2 = 0.375`. C149's correction stands -- the hub arms
+out    #  are the smaller figure and the platform value is declared because it is the
+out    #  member the counter-case injects into.
+judge  not hidden, not subtle, and not new. I moved the value and did not read up.
+```
+
+```
+claim  the hub-arm shortfall is `6f/17` and sits BELOW the declared floor
+cmd    python <the sixteen-member loop, at every rung>
+out       f      platform f/2            hub 6f/17            min over 16
+out    0.75   0.37499999999999983   0.2647058823529406   0.2647058823529406
+out     0.5    0.2499999999999997  0.17647058823529332  0.17647058823529332
+out     0.4   0.19999999999999976   0.1411764705882346   0.1411764705882346
+out     0.3    0.1499999999999998  0.10588235294117578  0.10588235294117578
+out     0.2    0.0999999999999997  0.07058823529411722  0.07058823529411722
+out     0.1   0.04999999999999985  0.03529411764705815  0.03529411764705815
+out    sixteen members at every rung; worst disagreement with the closed form 1.93e-14
+rule   `F4_STATIC_REACTION_AGREEMENT_COUNTER`, the smallest defect the gate must fail
+judge  `6f/17` is `_defect_tip_ratio`'s own `12/17` -- hub weight over total applied,
+       14715000 against 14715000 + 6131250 -- halved. Not a fitted factor. `0.04` sat
+       above the defect on all TWELVE hub arms at `f = 0.1`, every rung `admissible`.
+```
+
+```
+claim  `0.03` clears every member at every rung and the boundary is solved both ways
+cmd    python <the same loop, against the declared floor>
+out    smallest over every non-vacuous rung and all 16: 0.03529411764705815
+out    floor 0.03 margin : 1.1765x ; the old 0.04 margin : 0.8824x
+out    EH4: 6f/17 = 0.04 at f = 0.11333333333333334
+judge  the whole failure lived below `f = 0.1133`, and the floor may be no higher than
+       0.03529411764705883.
+cell   ONE VARIABLE: `_reaction_shortfall` reverted to `f / 2.0` for every class
+cmd    python -m pytest tests/verification/rung4/test_f4_static_and_mapping.py -q
+out    1 failed, 100 passed   FAILED ...::test_G4_the_defective_formula_misses_the_
+       reaction_by_f_over_two
+out    restored: 101 passed
+judge  it fails at the SHIPPED rung, not only at f = 0.1, because the closed-form
+       equality catches a wrong member class immediately.
+```
+
+**And the one suspicion of mine the measurement refuted.** I asked the reviewer to check
+whether the two floors shared a derivation and so might share an error.
+
+```
+claim  `F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER = 0.005` is safe on all sixteen at every rung
+cmd    python <R694's ablation, every rung, minimum over all members>
+out           f               min ratio   floor 0.005   old 0.05  admissible
+out        0.75      0.0566037735849053          PASS       FAIL        True
+out         0.5     0.03448275862068926          PASS       FAIL        True
+out         0.1    0.006060606060605793          PASS       FAIL        True
+out    the `min ratio` column is the minimum over every member of every body
+judge  they were NOT derived the same way. R694's repair already generalised over the
+       member class, into `_defect_tip_ratio`; R704's did not. The suspicion was right in
+       kind and wrong in fact, and only the loop separated them. **`0.005` is not
+       touched.**
+```
+
+## 3. R707 — a gate that could not fail on the attribute its own expected side read
+
+```
+claim  a doubled remainder, a 0.1% error and a moved node ALL read the clean value
+cmd    python <the injection on the BODY ATTRIBUTE, every rung>
+out       f      clean                   m_r doubled             m_r +0.1%            node moved
+out    0.75  5.108969552176339e-16  5.108969552176339e-16  5.108969552176339e-16  5.108970e-16
+out     0.5  6.386211940220424e-16  6.386211940220424e-16  6.386211940220424e-16  6.386212e-16
+out     0.1  4.789658955165317e-16  4.789658955165317e-16  4.789658955165317e-16  4.789659e-16
+rule   `F4_DQ4_RIGID_VECTOR` = 1.0e-12
+judge  to every digit, at every rung. The blind fraction of the body's mass is 0.25 at
+       f = 0.75 and 0.90 at f = 0.1 -- it GROWS as the ladder descends, the opposite
+       direction from the `remainder_dropped` row's own behaviour, so neither row's
+       direction could be inferred from the other.
+```
+
+**My first cell was wrong and looked like a refutation, which is the part I want recorded.**
+
+```
+claim  injecting into `M` alone was CAUGHT and said nothing about R707
+cmd    python <the injection into the matrix, not the attribute>
+out    remainder x2 : 0.6666666666666666 at f = 0.75, 1.0 below -- CAUGHT
+judge  moving the matrix moves ONE side, so of course the comparison sees it. R707 is
+       about a value on BOTH sides, so the injection has to move the BODY ATTRIBUTE. I
+       produced a confident "not reproduced" that was an artefact of where I put the
+       defect, and the verdict's figure was right.
+```
+
+```
+claim  the repair is one expression, declares no new constant, and clean does not move
+cmd    python <the repaired expected side, every rung>
+out    REPAIRED: m_r doubled 0.6666666666666666 (f=0.75), 1.0 below
+out    REPAIRED: m_r +0.1%   0.0006666666666664893 (f=0.75), 1.0e-03 below
+out    worst clean under the repair : 6.386211940220424e-16
+rule   `deck_mass - sum(rho A L)` is DY0's own definition of the remainder
+judge  clean is unchanged TO EVERY DIGIT, because the two are equal when the split is
+       right -- which is what makes this a reach fix rather than a recalibration.
+cell   ONE VARIABLE: the expected side reverted to `body.remainder_mass`
+out    1 failed, 100 passed   FAILED ...[remainder_mass_scaled]
+judge  that row and nothing else. Without it, restoring the shared read leaves the whole
+       suite green and nothing holds the independence (R683's lesson).
+```
+
+**What the repair does NOT reach, stated rather than left to be found.** Both sides still
+read `body.remainder_node`, so a remainder lumped at the wrong node of the right body is
+outside this gate either way. The rung-3 mass-property gate's CoG comparison is what
+catches it, and this gate's entry had the relationship backwards:
+
+```
+claim  the entry's only statement of what this gate adds over the rung-3 gate was
+       inverted on the node half
+cmd    git show 77d4a6b~2:floatfea/tolerances.py | grep -n "passes G3.1a and fails here"
+out    2312:# passes G3.1a and fails here, and the dynamic residual DQ8 defines divides by `M a
+rule   G3.1a compares mass, CoG and inertia; this gate compares the nodal vector
+judge  for the remainder's NODE the opposite of that sentence is true -- the CoG
+       comparison catches a moved remainder and this gate does not -- so the one
+       sentence saying what the gate adds was wrong about the half R707 is on. It is
+       rewritten with the rung-3 gate named.
+```
+
+## 4. R708 — the settling loop, run on my own counters, found one
+
+The round-2 verdict named what it would not accept at this revision: *a counter whose
+domain is narrower than the domain of the ceiling it brackets, with the narrowness
+unstated*, and gave the settling command. I ran it on the three constants I had just
+declared rather than waiting for it to be run on them.
+
+```
+claim  the counter-cases injected into `bodies[0]` while their ceilings read five
+cmd    git show 77d4a6b~1:tests/verification/rung4/test_f4_static_and_mapping.py | grep -c "body = built.bodies\[0\]"
+out    4
+rule   a counter brackets the domain of the ceiling it is declared against (R706)
+judge  I WROTE 3 HERE AND THE COMMAND PRINTS 4. Three are the counter-cases R708 widened;
+       the fourth is `test_EO1_the_analytic_gate_REDDENS_on_the_R663_formula`, which is a
+       counter-case for a DIFFERENT ceiling -- `test_EO1_static_member_forces_match_
+       STATICS_not_the_model`, whose own assertion is also platform-only -- so its domain
+       matches its ceiling and it is not an instance. The count was wrong; the claim it
+       was supporting was not. Two of the three widened also picked one field or one
+       direction out of several.
+```
+
+```
+claim  `F4_DQ4_RIGID_VECTOR_COUNTER = 5.0e-4` sat ABOVE its defect on a HUB
+cmd    python <the settling loop: 5 bodies x 4 fields, every rung>
+out       f      mass_scaled min        remainder_mass min      where
+out    0.75   0.001000000000000298   0.00039999999999946773   hub2/oblique
+out     0.5   0.001000000000000298   0.000666666666666371     hub1/oblique
+out     0.4   0.0010000000000002659  0.0007499999999997228    hub2/oblique
+out     0.3   0.001000000000000186   0.0008235294117645755    hub1/oblique
+out     0.2   0.0010000000000002659  0.0008888888888885439    hub1/z
+out     0.1   0.0010000000000002659  0.0009473684210523983    hub1/oblique
+out    counter 0.0005 below the smallest: False   margin 0.8000x
+rule   the counter is the smallest defect the gate must still fail, over the ceiling's
+       domain
+judge  **the platform is the STRONGEST body for that injection, not a representative
+       one**: its remainder is a quarter of its mass at `f = 0.75` and a hub's is less.
+       R707's published `0.0006666666666664893` is the platform's figure; the quantity's
+       is `0.00039999999999946773`. I took the counter where the defect is largest, which
+       is the opposite of what a counter is for.
+```
+
+```
+claim  3.0e-4 clears every body, every field and every rung
+cmd    python -c "print(0.00039999999999946773/3.0e-4)"
+out    1.3333333333315591
+out    EH4 weakening side: 0.7500 -- a 25% window, the narrowest in the F4 block
+cell   ONE VARIABLE: the counter reverted to 5.0e-4
+out    1 failed, 100 passed   FAILED ...[remainder_mass_scaled]  ; restored: 101 passed
+judge  the widened counter-case catches the wrong value at the SHIPPED rung.
+```
+
+**The other two were safe on value and narrow on domain**, which is the half R706 says
+must not be left unstated:
+
+```
+claim  DQ4(ii)'s and DQ5's published injection figures were one body's
+cmd    python <the settling loop on both>
+out    DQ4(ii) moment_scaled, min over 5 bodies x every element x 2 planes:
+out      0.0010000000000004098   (the entry published 0.001000000000000745)
+out    DQ4(ii) lumped 1.0 ; sign_flipped 2.0000000000000004 ; margin 2.0000x
+out    DQ5 moment_factor, min over 5 bodies x 3 directions:
+out      0.0007216878364869912 on hub4 / x
+out      (the entry published 0.0008333333333333215, the platform under -z)
+out    DQ5 remainder_drop min 0.25000000000000006 ; margin 1.8042x not 2.0833x
+rule   BP0: the rule beneath these figures changed from "one body" to "the ceiling's
+       domain" in the same commit, so the figures are regenerated in it
+judge  neither value moves. What was wrong is that a reader comparing `4.0e-4` with
+       `8.33e-4` computes 2.0833x where the quantity gives 1.8042x, and the margin is the
+       number a reviewer attacks.
+```
+
+```
+claim  the weakest DQ5 case is not the one a reader would guess
+cmd    python <the settling loop, where-column>
+out    weakest at every rung: hub4/x, and hub2/x at f = 0.2 -- never platform/minus_z
+judge  free fall straight down on the platform is the obvious case and it is the
+       STRONGEST. A hub falling sideways is the weakest, and nothing in the shipped
+       configuration points at it.
+```
+
+```
+claim  the domain is now asserted, so narrowing it back fails loudly
+cmd    grep -n "of 5 bodies were injected\|of 20 body/field\|of 15 body/direction" tests/verification/rung4/test_f4_static_and_mapping.py
+out    1836:        f"{len(per_body)} of 5 bodies were injected. The ceiling reads five, so a "
+out    1918:        f"{len(per_case)} of 20 body/field cases were injected. The ceiling reads five "
+out    2104:        f"{len(per_case)} of 15 body/direction cases were injected. The ceiling reads "
+judge  the same device as `assert checked == 16` in the ceiling R706 was about. A count is
+       what distinguishes "compared and clear" from "never reached", which is R689 on a
+       different gate.
+```
+
+## 5. What the five instances have in common, which is the only generalisation I will claim
+
+R682, R694, R704, R706 and R708 are the same defect five times. The shape is **not** "a
+counter calibrated at one rung". It is **a counter calibrated at one POINT of whatever the
+ceiling's domain is** — and `f`, the member class, the body, the field and the direction
+are all coordinates of that domain. Each time, the fix generalised over the coordinate
+that had just been found and left the others:
+
+| # | the coordinate that was narrow | found by |
+|---|---|---|
+| R682 | the basis (`M`, `f`) | the reviewer |
+| R694 | the ladder rung | the reviewer |
+| R704 | the ladder rung, on the sister entry | the reviewer |
+| R706 | the member class | the reviewer |
+| R708 | the body, the field, the direction | me, with the reviewer's loop |
+
+The transferable part is the loop, not the list: **a counter's quantity, evaluated at
+every point of the ceiling's own parametrisation, minimum pasted.** Where that is cheap it
+is the derivation; the three counter-cases now assert their own domain size so the loop
+cannot be silently narrowed again. I am not claiming the shape is now closed — four of the
+five were found by someone else, and the fifth only because the fourth handed me the
+command.
+
+## 6. Closure items — C1 to C15, and R697 with R699 to R703
+
+Per CZ0 these are fixed **once, in the step's closure commit**, are not re-reviewed item by
+item, and the step is not held on one.
+
+```
+claim  the list is the verdict's own, fifteen plus six carried
+cmd    (the round-2 verdict's `## Closure items` block, C8 to C15, plus C1 to C7 carried)
+out    C8 the direction argument is false of a floor   C9 a bare ZeroDivisionError
+out    C10 a published f label wrong by rounding       C11 an ablation count with no
+out    C12 three cited scripts not in the tree             stated selection
+out    C13 the stale `:3` header                      C14 "every element" cannot vary
+out    C15 R697 is R706's source sentence             C1-C7 carried unchanged
+```
+
+**C1 and C12 are the two that are not simple prose fixes.**
+
+* **C1** — the dimensional direction in `scripts/report_joint_reactions.py` is backwards
+  and both it and the commit message are incomplete against the reviewer's
+  eleven-of-seventeen measurement. It is **answered before the G4.1-dynamic quantity is
+  chosen**, because that choice is (c) and C1 is its input.
+
+```
+claim  the comment asserts the wrong direction for a moment over a force
+cmd    grep -n "1/length" scripts/report_joint_reactions.py
+out    238:    three. Dividing a moment by a force scale gives a number with units of 1/length, so
+rule   N.m / N is LENGTH
+judge  mine, written in the commit that introduced the per-body breakdown.
+```
+* **C12** — three `scratchpad/` scripts cited as `cmd` are not in the tree, so a third
+  party cannot run them. **This is a real limit on BF0 and I am raising it rather than
+  deciding it**, because the two obvious fixes pull against each other: committing the
+  measurement scripts adds files under `scripts/`, which brushes DR1's freeze; inlining
+  every loop makes the reports much longer. The reviewer keeps its harnesses in its own
+  scratchpad by the same convention, so the asymmetry is only that my `cmd` lines name
+  paths and its do not. **Xabier's call.**
+
+| item | what it is | where |
+|---|---|---|
+| C1 | the dimensional direction, and its 11-of-17 premise | **before the G4.1-dynamic quantity** |
+| C2 | DQ5's worst clean | **answered early**, in `c78918c` |
+| C3 | a figure without its body (`:971`) | closure commit |
+| C4 | the oblique field's claimed discrimination | closure commit |
+| C5 | the per-body label map validated by count only | closure commit; corpus 28 Oct |
+| C6 | R697 and R699–R703 carried | this section |
+| C7 | the `135`/`107` count | revision 2 section 0b |
+| C8 | "a counter moving down demands more" is false of a floor | closure commit |
+| C9 | a bare `ZeroDivisionError` at `f = 0` | closure commit |
+| C10 | a published `f` label wrong by rounding | closure commit |
+| C11 | the ablation count has no stated selection | closure commit |
+| C12 | three cited scripts not in the tree | **process question, above** |
+| C13 | the stale `:3` header | closure commit |
+| C14 | "measured on every element" cannot vary | closure commit |
+| C15 | R697 is R706's source sentence — one fix for both | closure commit |
+
+**R697, R699, R700, R701, R702 and R703** are carried unchanged by the earlier verdict's
+instruction and C6 of the round-2 one, named individually because a range is not a list.
+
+## 7. Carried
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R653 | **answered** — revision 1 | R682, R683, R684, R685, R653 and |
+| R679 | **answered** — step 1 closure | 's remainder (R683 IS that remainder, so five distinct) -- plus C161 to C166 and the |
+| R682 | **answered** — revision 2 | R682, R683, R684, R685, R653 and |
+| R683 | **answered** — revision 1 | R682, R683, R684, R685, R653 and |
+| R684 | **answered** — revision 1 | R682, R683, R684, R685, R653 and |
+| R685 | **answered** — revision 2 | R682, R683, R684, R685, R653 and |
+| R686 | **answered** — verdict 98 | test_R653_the_value_the_DRIVER_reconstructs_with_is_the_declared_one CANNOT FAIL ON THE... |
+| R687 | **answered** — verdict 98 | THE RANGE ASSERTION CLAIMS A PROPERTY GENERALIZED-ALPHA DOES NOT HAVE, AND THAT FALSE SENTENCE... |
+| R688 | **answered** — verdict 98 | round(x, 5) == published IS A COMPARISON EPSILON, THE TEST AND THE REPORT BOTH CALL IT EXACT,... |
+| R689 | **answered** — verdict 99, as R692 | THE PRODUCTION MAPPING GATE READS 0.000e+00 ON A ROW IT COMPARES NOTHING IN, AND PASSES ON AN... |
+| R690 | **answered** — verdict 99 | to (d), and I say so rather than dressing it as more.) ER0, ER1, ER2, EQ2, EQ3 AND EQ4 EXIST... |
+| R691 | **answered** — revision 2 | R682's FALSE ARITHMETIC IS DELETED FROM tolerances.py AND LEFT STANDING IN THE PLAN ROW THAT IS... |
+| R692 | **answered** — verdict 99 | compared > 0 IS R689's CLOSING CONDITION MINUS ITS COUNT. ALL SIXTEEN DEGRADED ROWS STILL READ... |
+| R693 | **answered** — verdict 99 | THE NEW COUNTER'S BRACKET IS PUBLISHED AS 2x AND MEASURES 1.0857x, AND THE SENTENCE SAYING NO... |
+| R694 | **answered** — §2 | F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER = 0.05 AND F4_STATIC_REACTION_AGREEMENT_COUNTER = 0.375... |
+| R695 | **answered** — revision 2 | floatfea/tolerances.py:1979 NAMES AN INJECTOR THAT DOES NOT EXIST, and e2fa88a is the commit... |
+| R696 | **answered** — revision 2 | THE CEILING ENTRY BRACKETING THE MOVED COUNTER STILL PUBLISHES THE OLD BASIS.... |
+| R697 | **carried** — §6 | THE f/2 MECHANISM IS FALSE OF 12 OF THE 16 MEMBERS. floatfea/tolerances.py:1974-1975 ("The... |
+| R698 | **answered** — revision 2 | THE EQUALITY'S JUSTIFICATION IS REFUTED BY ITS OWN MEASUREMENT.... |
+| R699 | **carried** — §6 | THE BP0 SWEEP MISSED FIVE MORE f/M-DEPENDENT FIGURES, AND ONE IS THE SITE R691's CLOSING... |
+| R700 | **carried** — §6 | THE REPLAY DRIVER SHIPS WITH THE OVERRIDE OFF, AND ONE SENTENCE CLAIMS OTHERWISE. cmd grep -n... |
+| R701 | **carried** — §6 | "Vz does not move with f at all" IS TRUE ONLY OF THE STATION THE TABLE REPORTS.... |
+| R702 | **carried** — §6 | "My runs from 1.1200x to 0.8800x" IS THE HUB'S RANGE PUBLISHED AS THE WHOLE RANGE.... |
+| R703 | **carried** — §6 | THE SYMMETRY ENTRY LOST ITS INJECTION-SIDE EDGE (EH4). floatfea/tolerances.py:2104-2118. The... |
+| R704 | **answered** — §2 | F4_STATIC_REACTION_AGREEMENT_COUNTER = 0.375 IS STILL A FROZEN EQUALITY PINNED TO f = 0.75, AND... |
+| R705 | **answered** — round 2 | DQ4(ii)'s MOMENT CHANNEL CANNOT FAIL ON A SIGN, AND THE PLAN DECLARES ITS QUANTITY AS... |
+| R706 | **answered** — §2 | F4_STATIC_REACTION_AGREEMENT_COUNTER = 0.04 IS THE PLATFORM ARM'S FLOOR PUBLISHED AS THE... |
+| R707 | **answered** — §3 | DQ4(i) CANNOT FAIL ON THE REMAINDER MASS OR ON THE REMAINDER NODE, AND THE ENTRY'S ONLY... |
+
+## 7a. Every named site this round's diff does not touch, declared by name
+
+```
+claim  every site below is named by a verdict and untouched by this round's diff
+cmd    python -m pytest tests/test_report_carried.py::test_every_named_site_is_touched_or_declared -q
+out    173 sites before this table existed, across 20 findings
+rule   a site is TOUCHED by the diff or DECLARED `no change` beside its exact token
+judge  the two findings this round answers are R706 and R707, plus R708 which is mine.
+       The substantive rows are the ones where something was deliberately left: R706's
+       `tolerances.py:1990` is a sentence that was RIGHT and is not edited, and R707's
+       node sites are the half of the gate the repair does not reach.
+```
+
+| finding | site | this round | why |
+|---|---|---|---|
+| R686 | `HSP-stable/studies/platform-12buoy/platform_rao_pilot.py:291` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `floatfea/io/integrator.py:27` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `floatsim/solver/newmark.py:222` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `integrator.py` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `scripts/export_platform_deck.py` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `scripts/report_joint_reactions.py:77` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/test_no_tolerance_literals.py` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1016` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1017` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1018` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1019` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1020` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1021` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1022` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1023` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1024` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1025` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1026` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1027` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1028` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1029` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1030` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1031` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1032` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1033` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1034` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1035` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1036` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1037` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1038` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1039` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1040` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1041` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1042` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1043` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1044` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1045` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R686 | `tests/verification/rung4/test_f4_static_and_mapping.py:1046` | **no change** | closed at verdict 98. This round's diff does not reach it. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1037` | **no change** | closed at verdict 98, on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1038` | **no change** | closed at verdict 98, on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1039` | **no change** | closed at verdict 98, on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1040` | **no change** | closed at verdict 98, on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1041` | **no change** | closed at verdict 98, on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1042` | **no change** | closed at verdict 98, on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1043` | **no change** | closed at verdict 98, on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1044` | **no change** | closed at verdict 98, on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1045` | **no change** | closed at verdict 98, on branch A as offered. |
+| R687 | `tests/verification/rung4/test_f4_static_and_mapping.py:1046` | **no change** | closed at verdict 98, on branch A as offered. |
+| R688 | `CLAUDE.md` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `docs/load-interchange-v1.md` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1000` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1001` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1002` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1003` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1004` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1005` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1006` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1007` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1008` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1009` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1010` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1011` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1012` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:1013` | **no change** | closed at verdict 98, on the branch it took. |
+| R688 | `tests/verification/rung4/test_f4_static_and_mapping.py:999` | **no change** | closed at verdict 98, on the branch it took. |
+| R689 | `CLAUDE.md` | **no change** | closed at verdict 99 as R692. |
+| R690 | `F3.md` | **no change** | closed at verdict 99. |
+| R690 | `docs/milestones/F3.md` | **no change** | closed at verdict 99. |
+| R690 | `docs/milestones/F4.md:5` | **no change** | closed at verdict 99. |
+| R691 | `CLAUDE.md` | **no change** | closed in `30e4395`, read by verdict 101. |
+| R691 | `docs/SUPERVISOR.md` | **no change** | closed in `30e4395`, read by verdict 101. |
+| R691 | `docs/milestones/F4.md:348` | **no change** | closed in `30e4395`, read by verdict 101. |
+| R691 | `floatfea/tolerances.py:1990` | **no change** | closed in `30e4395`, read by verdict 101. |
+| R691 | `test_f4_static_and_mapping.py:549` | **no change** | closed in `30e4395`, read by verdict 101. |
+| R691 | `tests/test_plan_matches_tolerances.py` | **no change** | closed in `30e4395`, read by verdict 101. |
+| R691 | `tests/verification/rung4/test_f4_static_and_mapping.py:549` | **no change** | closed in `30e4395`, read by verdict 101. |
+| R694 | `floatfea/model/platform.py:116` | **no change** | tip-moment half in `30e4395`; the reaction half is R704 then R706. |
+| R694 | `floatfea/tolerances.py:2027` | **no change** | tip-moment half in `30e4395`; the reaction half is R704 then R706. |
+| R695 | `floatfea/tolerances.py:1979` | **no change** | closed in `30e4395`, verified by the reviewer's whole-file sweep. |
+| R695 | `tests/verification/rung4/test_f4_static_and_mapping.py:315` | **no change** | closed in `30e4395`, verified by the reviewer's whole-file sweep. |
+| R696 | `floatfea/tolerances.py:1942` | **no change** | closed in `30e4395`. |
+| R697 | `floatfea/tolerances.py:1974` | **no change** | closure item, carried by instruction. Section 6; C15 pairs it with R706. |
+| R697 | `floatfea/tolerances.py:1975` | **no change** | closure item, carried by instruction. Section 6; C15 pairs it with R706. |
+| R697 | `tests/verification/rung4/test_f4_static_and_mapping.py:320` | **no change** | closure item, carried by instruction. Section 6; C15 pairs it with R706. |
+| R697 | `tests/verification/rung4/test_f4_static_and_mapping.py:321` | **no change** | closure item, carried by instruction. Section 6; C15 pairs it with R706. |
+| R697 | `tests/verification/rung4/test_f4_static_and_mapping.py:322` | **no change** | closure item, carried by instruction. Section 6; C15 pairs it with R706. |
+| R697 | `tests/verification/rung4/test_f4_static_and_mapping.py:323` | **no change** | closure item, carried by instruction. Section 6; C15 pairs it with R706. |
+| R698 | `floatfea/tolerances.py:1960` | **no change** | closed in `30e4395`. |
+| R698 | `floatfea/tolerances.py:1961` | **no change** | closed in `30e4395`. |
+| R698 | `floatfea/tolerances.py:1962` | **no change** | closed in `30e4395`. |
+| R699 | `floatfea/post/member_forces.py:10` | **no change** | closure item, carried by instruction. Section 6. |
+| R699 | `floatfea/post/member_forces.py:12` | **no change** | closure item, carried by instruction. Section 6. |
+| R699 | `floatfea/post/member_forces.py:13` | **no change** | closure item, carried by instruction. Section 6. |
+| R699 | `tests/.../rung4/test_f4_static_and_mapping.py:526` | **no change** | closure item, carried by instruction. Section 6. |
+| R699 | `tests/.../rung4/test_f4_static_and_mapping.py:527` | **no change** | closure item, carried by instruction. Section 6. |
+| R699 | `tests/.../rung4/test_f4_static_and_mapping.py:555` | **no change** | closure item, carried by instruction. Section 6. |
+| R699 | `tests/.../rung4/test_f4_static_and_mapping.py:556` | **no change** | closure item, carried by instruction. Section 6. |
+| R699 | `tests/.../rung4/test_f4_static_and_mapping.py:95` | **no change** | closure item, carried by instruction. Section 6. |
+| R700 | `export_platform_deck.py` | **no change** | closure item, carried by instruction. Section 6. |
+| R700 | `scratchpad/er1b_runs.py` | **no change** | closure item, carried by instruction. Section 6. |
+| R700 | `scripts/export_platform_deck.py` | **no change** | closure item, carried by instruction. Section 6. |
+| R700 | `scripts/report_joint_reactions.py` | **no change** | closure item, carried by instruction. Section 6. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:200` | **no change** | closure item, carried by instruction. Section 6. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:201` | **no change** | closure item, carried by instruction. Section 6. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:202` | **no change** | closure item, carried by instruction. Section 6. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:203` | **no change** | closure item, carried by instruction. Section 6. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:204` | **no change** | closure item, carried by instruction. Section 6. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:205` | **no change** | closure item, carried by instruction. Section 6. |
+| R701 | `docs/reports/F4/preview-PRELIMINARY.md:206` | **no change** | closure item, carried by instruction. Section 6. |
+| R702 | `docs/reports/F4/preview-PRELIMINARY.md:208` | **no change** | closure item, carried by instruction. Section 6. |
+| R702 | `docs/reports/F4/preview-PRELIMINARY.md:209` | **no change** | closure item, carried by instruction. Section 6. |
+| R702 | `docs/reports/F4/preview-PRELIMINARY.md:210` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2104` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2105` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2106` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2107` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2108` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2109` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2110` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2111` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2112` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2113` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2114` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2115` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2116` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2117` | **no change** | closure item, carried by instruction. Section 6. |
+| R703 | `floatfea/tolerances.py:2118` | **no change** | closure item, carried by instruction. Section 6. |
+| R704 | `floatfea/model/platform.py:116` | **no change** | answered in `36a5003`; R706 is its member-class half, section 2. |
+| R704 | `floatfea/tolerances.py:1988` | **no change** | answered in `36a5003`; R706 is its member-class half, section 2. |
+| R704 | `floatfea/tolerances.py:1989` | **no change** | answered in `36a5003`; R706 is its member-class half, section 2. |
+| R704 | `floatfea/tolerances.py:1995` | **no change** | answered in `36a5003`; R706 is its member-class half, section 2. |
+| R704 | `tests/verification/rung4/test_f4_static_and_mapping.py:350` | **no change** | answered in `36a5003`; R706 is its member-class half, section 2. |
+| R704 | `tests/verification/rung4/test_f4_static_and_mapping.py:351` | **no change** | answered in `36a5003`; R706 is its member-class half, section 2. |
+| R704 | `tests/verification/rung4/test_f4_static_and_mapping.py:352` | **no change** | answered in `36a5003`; R706 is its member-class half, section 2. |
+| R704 | `tests/verification/rung4/test_f4_static_and_mapping.py:353` | **no change** | answered in `36a5003`; R706 is its member-class half, section 2. |
+| R704 | `tests/verification/rung4/test_f4_static_and_mapping.py:354` | **no change** | answered in `36a5003`; R706 is its member-class half, section 2. |
+| R704 | `tests/verification/rung4/test_f4_static_and_mapping.py:355` | **no change** | answered in `36a5003`; R706 is its member-class half, section 2. |
+| R704 | `tests/verification/rung4/test_f4_static_and_mapping.py:356` | **no change** | answered in `36a5003`; R706 is its member-class half, section 2. |
+| R705 | `docs/milestones/F4.md:72` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2239` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2240` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2241` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2242` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2243` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2244` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2245` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2246` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2247` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2248` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2249` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2250` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2251` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2252` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2253` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2254` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2255` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2256` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `floatfea/tolerances.py:2257` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `tests/verification/rung4/test_f4_static_and_mapping.py:1511` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `tests/verification/rung4/test_f4_static_and_mapping.py:1512` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `tests/verification/rung4/test_f4_static_and_mapping.py:1513` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `tests/verification/rung4/test_f4_static_and_mapping.py:1514` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R705 | `tests/verification/rung4/test_f4_static_and_mapping.py:1515` | **no change** | closed at all three sites in `36a5003` and `b68f2f7`, round 2. |
+| R706 | `tests/verification/rung4/test_f4_static_and_mapping.py:391` | **no change** | closed in an earlier round. |
+| R707 | `docs/milestones/F4.md:431` | **no change** | closed in an earlier round. |
+| R707 | `floatfea/model/platform.py:718` | **no change** | closed in an earlier round. |
+| R707 | `floatfea/model/platform.py:719` | **no change** | closed in an earlier round. |
+| R707 | `floatfea/model/platform.py:720` | **no change** | closed in an earlier round. |
+| R707 | `floatfea/model/platform.py:721` | **no change** | closed in an earlier round. |
+| R707 | `floatfea/model/platform.py:722` | **no change** | closed in an earlier round. |
+| R707 | `floatfea/model/platform.py:723` | **no change** | closed in an earlier round. |
+| R707 | `floatfea/model/platform.py:724` | **no change** | closed in an earlier round. |
+| R707 | `floatfea/tolerances.py:2310` | **no change** | closed in an earlier round. |
+
+## 8. Tolerances touched
+
+```
+claim  two values moved in this revision's range and no value was widened
+cmd    git diff bac3017..HEAD -- floatfea/tolerances.py | grep -E "^[-+]F4_"
+out    -F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.04
+out    +F4_STATIC_REACTION_AGREEMENT_COUNTER: Final[float] = 0.03
+out    -F4_DQ4_RIGID_VECTOR_COUNTER: Final[float] = 5.0e-4
+out    +F4_DQ4_RIGID_VECTOR_COUNTER: Final[float] = 3.0e-4
+rule   a counter moving DOWN narrows what the gate will accept as clean
+```
+
+| constant | before | after | why |
+|---|---|---|---|
+| `F4_STATIC_REACTION_AGREEMENT_COUNTER` | `0.04` | `0.03` | **R706.** `0.04` was the platform arm's floor; the hub arms are `6f/17` and read `0.03529411764705815` at `f = 0.1`. Clears every one of sixteen members at every rung by `1.1765x` |
+| `F4_DQ4_RIGID_VECTOR_COUNTER` | `5.0e-4` | `3.0e-4` | **R708.** `5.0e-4` sat above the remainder defect on `hub2` under the oblique field (`0.00039999999999946773`). The platform is the strongest body for that injection, not a representative one. Margin `1.3333x` |
+
+**`F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER` is NOT touched**, and the reason is measured
+rather than assumed:
+
+```
+claim  the tip-moment floor is already a floor under all sixteen members at every rung
+cmd    python <R694's ablation, minimum over every member of every body, each rung>
+out    the `floor 0.005` column reads PASS at 0.75, 0.5, 0.4, 0.3, 0.2 and 0.1
+out    the `old 0.05` column reads FAIL at every rung below the first
+rule   the counter is the smallest defect the gate must still fail
+judge  R694 forced the member-class split into `_defect_tip_ratio`, so this entry was
+       already general over the coordinate R706 found narrow in its sister. Section 2
+       carries the full run.
+```
+
+## 9. Lint, types, and the whole suite
+
+```
+claim  lint, formatting and types are green at this commit
+cmd    python -m ruff check floatfea tests && python -m black --check floatfea tests
+       && python -m mypy floatfea
+out    All checks passed!
+out    98 files would be left unchanged.
+out    Success: no issues found in 36 source files
+judge  `pytest` runs none of the three, which is CZ1's reason for pasting each.
+```
+
+**The first count is the result: `2856 passed, 0 failed, 0 skipped`** over the whole suite
+outside the three files parametrised over this report. Nothing in `floatfea/`,
+`tests/verification/`, `tests/unit/`, `tests/regression/` or any other guard is red.
+
+```
+cmd    python scripts/suite_count.py
+out    Whole suite at 77d4a6b : 2856 passed, 0 failed, 0 skipped
+out    The excluded set       : 373 passed, 8 failed, 0 skipped
+cmd    python -m pytest tests/test_report_carried.py
+       tests/test_report_numbers_are_sourced.py tests/test_tree_prose_consistent.py -q
+out    1 failed, 392 passed  (the one was test_the_report_carries_a_WHOLE_SUITE_count,
+out                          which this paste answers)
+rule   EG3 state (2): a verdict written, its answering report not yet committed
+```
+
+**The eight, traced by name (EG3(i)).** Seven are `test_the_guard_survives_the_state` --
+`baseline` plus the six planted states that cascade off a red baseline, identified by the
+baseline being red and by each state's own failure line, which is EH1's correction. The
+eighth is `test_every_named_site_is_touched_or_declared[R704-tests/verification/rung4/
+test_f4_static_and_mapping.py:356]`.
+
+**That eighth one is CZ1's own sentence for the third time in this step, and it is worth
+saying plainly.** Section 7a's table was built from the WORKING TREE and the site resolves
+one line earlier there than it does at the commit:
+
+```
+claim  the same site has a different line number in the working tree and at 77d4a6b
+cmd    python -m pytest tests/test_report_carried.py::
+       test_every_named_site_is_touched_or_declared -q     (working tree)
+out    the R704 rows end at test_f4_static_and_mapping.py:355
+cmd    python scripts/suite_count.py                       (clean worktree at 77d4a6b)
+out    ...test_every_named_site_is_touched_or_declared[R704-tests/verification/rung4/
+out       test_f4_static_and_mapping.py:356]
+rule   the guard asks, per site, whether a COMMIT touched it
+judge  R706's and R708's commits moved the line between the two measurements. The guard's answer is a function of the commit graph, so it cannot be settled
+before the commit exists -- which is exactly why CZ1 says "I ran it before committing" is
+not a measurement for this class. **It is re-measured at this revision's own commit and
+answered in a follow-on if it survives** (CZ1 (iv)); the closure section carries that
+measurement.
+
+**Whole suite at `77d4a6b`: 2856 passed, 0 failed, 0 skipped.** **The excluded set: 373 passed, 8 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 381 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+- **failed, in the excluded set** `tests.test_report_carried::test_every_named_site_is_touched_or_declared[R704-tests/verification/rung4/test_f4_static_and_mapping.py:356]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[baseline]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[non_numeric_step_suffix]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[superscript_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
+```

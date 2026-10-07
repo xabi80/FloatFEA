@@ -2,93 +2,101 @@
   "_": [
     "POINTERS ONLY (CH4).",
     "",
-    "F4 STEP 2, REVISION 2. Answers the HUNDRED-AND-FIRST verdict (4b8f079), which",
-    "was an ES0 INTERIM CHECK and counts against NO round. Verdict 97 remains round 1",
-    "of three; this revision is ROUND 2 and one revision remains after it.",
+    "F4 STEP 2, REVISION 3 -- THE LAST REVISION AND THE CLOSER. Answers the",
+    "HUNDRED-AND-SECOND verdict (061f4c3), which was ROUND 2 of three. Revision 1 was",
+    "round 1 and verdicts 98 to 101 were interim checks counting against none.",
     "",
-    "THE TWO BLOCKING ITEMS ARE R704 (section 2) and R705 (section 3). R704's",
-    "condition named two entries and R705's named three sites; both are closed site",
-    "by site, which is the whole point of the sixth and seventh appearance of that",
-    "shape in this milestone.",
+    "THE TWO BLOCKING ITEMS ARE R706 (section 2) and R707 (section 3). R706's floor was",
+    "the platform arm's published as the quantity's; R707's gate could not fail on the",
+    "attribute its own expected side read.",
     "",
-    "CLOSED BY THE VERDICT ITSELF, on its own measurement rather than on my account:",
-    "R685 (section 4), R695, R696 and R698 (section 5), R682 and R691 (section 6).",
-    "They are recorded `answered` and point at the section that carries the figures I",
-    "reproduced, not at the verdict's word for it.",
+    "R708 (section 4) IS MINE, NOT THE VERDICT'S. The round-2 verdict named the settling",
+    "loop it would require at this revision; I ran it on the three constants I had just",
+    "declared and it found `F4_DQ4_RIGID_VECTOR_COUNTER` above its defect on a hub. It is",
+    "recorded here as an answered finding of this revision rather than as a closure item,",
+    "because it moved a declared counter.",
     "",
-    "R694 points at section 2 because R704 IS its unanswered half; the verdict's own",
-    "heading reads 'R694 WAS CLOSED ON ONE OF ITS TWO ENTRIES'.",
+    "Items with no section pointer were closed in an earlier round, so there is no section",
+    "of THIS revision for them to point at; the `where` names the round instead.",
     "",
-    "R697 and R699 to R703 are closure items carried unchanged and NOT re-adjudicated,",
-    "per verdict 100's instruction and verdict 101's C6. They point at section 10,",
-    "which carries the whole closure list C1 to C7 as well.",
-    "",
-    "Items with no section pointer were closed in an earlier round and this revision",
-    "does not re-do that work, so there is no section of THIS revision for them to",
-    "point at. The `where` names the round that closed them instead."
+    "C1 to C15 and R697/R699 to R703 are the closure list, section 6. C1 is still answered",
+    "before the G4.1-dynamic quantity is chosen, and C12 is raised as a process question",
+    "rather than fixed unilaterally -- it interacts with DR1."
   ],
   "answered": {
-    "R704": {
+    "R706": {
       "state": "answered",
       "where": "§2",
       "site": "tests/verification/rung4/test_f4_static_and_mapping.py"
     },
-    "R705": {
+    "R707": {
       "state": "answered",
       "where": "§3",
       "site": "tests/verification/rung4/test_f4_static_and_mapping.py"
     },
-    "R694": {
+    "R708": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R705": {
+      "state": "answered",
+      "where": "round 2"
+    },
+    "R704": {
       "state": "answered",
       "where": "§2"
     },
     "R685": {
       "state": "answered",
-      "where": "§4"
+      "where": "revision 2"
     },
     "R695": {
       "state": "answered",
-      "where": "§5"
+      "where": "revision 2"
     },
     "R696": {
       "state": "answered",
-      "where": "§5"
+      "where": "revision 2"
     },
     "R698": {
       "state": "answered",
-      "where": "§5"
+      "where": "revision 2"
     },
     "R682": {
       "state": "answered",
-      "where": "§6"
+      "where": "revision 2"
     },
     "R691": {
       "state": "answered",
-      "where": "§6"
+      "where": "revision 2"
+    },
+    "R694": {
+      "state": "answered",
+      "where": "§2"
     },
     "R697": {
       "state": "carried",
-      "where": "§10"
+      "where": "§6"
     },
     "R699": {
       "state": "carried",
-      "where": "§10"
+      "where": "§6"
     },
     "R700": {
       "state": "carried",
-      "where": "§10"
+      "where": "§6"
     },
     "R701": {
       "state": "carried",
-      "where": "§10"
+      "where": "§6"
     },
     "R702": {
       "state": "carried",
-      "where": "§10"
+      "where": "§6"
     },
     "R703": {
       "state": "carried",
-      "where": "§10"
+      "where": "§6"
     },
     "R653": {
       "state": "answered",
