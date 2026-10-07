@@ -217,8 +217,30 @@ def solve_one(period_s: float, duration_s: float, dt: float) -> tuple:
     return res, setup, deck, ext
 
 
-def discrete_residual(res, setup, ext, window: int = 100) -> dict[str, float]:
-    """The residual of the system `newmark.py:414-437` ACTUALLY solves.
+def discrete_residual(
+    res, setup, ext, window: int = 100, body_names: list[str] | None = None
+) -> dict[str, float]:
+    """The residual of the system `newmark.py:414-437` ACTUALLY solves, PER BODY.
+
+    DQ8: "G4.1 is per body and per case, never aggregated." This function returned one
+    number for all bodies at once -- `max |resid|` over the whole state vector -- and
+    EJ4's `3.96e-06` reference was measured from it. That is the R679 shape exactly: the
+    static twin of this gate summed over five bodies and was identically blind to all
+    four hub-platform joints, because `+F` and `-F` act at the same point and cancel.
+
+    The aggregate is KEPT under its own key rather than replaced, because a figure
+    already published against it is withdrawn by name, not quietly re-based (BP0). The
+    per-body keys are what G4.1 reads.
+
+    NORMALISATION, AND ONE CONCERN I AM FLAGGING RATHER THAN DECIDING. DQ8 says the
+    residual is "normalised by that body's `max |Sum reactions|` over the window", which
+    is ONE SCALAR for a 6-vector carrying newtons on three rows and newton-metres on
+    three. Dividing a moment by a force scale gives a number with units of 1/length, so
+    the per-body figure mixes two quantities -- which is the kind of normalisation C158
+    and R598 were both about. The plan is explicit, so the plan's form is what ships
+    under `<body>_rel`; the force and moment channels are ALSO reported separately under
+    `<body>_force_rel` and `<body>_moment_rel`, and which of the two a tolerance is
+    declared on is a question for the step report rather than a choice made here.
 
     R646. An earlier version of this script printed that the identity could not be
     closed because "the per-body added-mass matrix and the memory state are not
@@ -263,8 +285,25 @@ def discrete_residual(res, setup, ext, window: int = 100) -> dict[str, float]:
             )
         return f
 
+    n_bodies = res.xi.shape[1] // 6
+    names = body_names if body_names is not None else [f"body{k}" for k in range(n_bodies)]
+    if len(names) != n_bodies:
+        raise ValueError(
+            f"{len(names)} body names for a state of {res.xi.shape[1]} DOF, which is "
+            f"{n_bodies} bodies. A per-body breakdown keyed by the wrong names is worse "
+            "than none, because every figure would be filed under the wrong body."
+        )
+
     worst_discrete = 0.0
     worst_mu = 0.0
+    # Per body: the worst 6-component residual over the window, and the worst reaction
+    # scale over the same window. Both are maxima over the window and NOT means --
+    # `CLAUDE.md` forbids averaging a per-case diagnostic, and an outlier hidden in a
+    # mean is the specific thing this residual exists to catch.
+    worst_body = {name: 0.0 for name in names}
+    worst_body_force = {name: 0.0 for name in names}
+    worst_body_moment = {name: 0.0 for name in names}
+    scale_body = {name: 0.0 for name in names}
     for n in range(max(1, n_steps - window), n_steps):
         xi_n, xi_dot_n, xi_ddot_n = res.xi[n - 1], res.xi_dot[n - 1], res.xi_ddot[n - 1]
         xi_pred = xi_n + h * xi_dot_n + (h**2) * (0.5 - beta) * xi_ddot_n
@@ -280,7 +319,36 @@ def discrete_residual(res, setup, ext, window: int = 100) -> dict[str, float]:
         resid = a_eff @ res.xi_ddot[n] - g_mid.T @ res.lam[n] - rhs
         worst_discrete = max(worst_discrete, float(np.max(np.abs(resid))))
         worst_mu = max(worst_mu, float(np.max(np.abs(mu[n]))))
-    return {"discrete_worst_N": worst_discrete, "mu_inf_N": worst_mu, "window": float(window)}
+        reaction = g_mid.T @ res.lam[n]
+        for k, name in enumerate(names):
+            sl = slice(6 * k, 6 * k + 6)
+            block = np.abs(resid[sl])
+            worst_body[name] = max(worst_body[name], float(np.max(block)))
+            worst_body_force[name] = max(worst_body_force[name], float(np.max(block[0:3])))
+            worst_body_moment[name] = max(worst_body_moment[name], float(np.max(block[3:6])))
+            scale_body[name] = max(scale_body[name], float(np.max(np.abs(reaction[sl]))))
+
+    out: dict[str, float] = {
+        # KEPT, and labelled, because EJ4's `3.96e-06` was measured from this key and a
+        # published figure is withdrawn by name rather than re-based underneath (BP0).
+        "discrete_worst_N": worst_discrete,
+        "mu_inf_N": worst_mu,
+        "window": float(window),
+    }
+    for name in names:
+        scale = scale_body[name]
+        out[f"{name}_worst_N"] = worst_body[name]
+        out[f"{name}_reaction_scale_N"] = scale
+        # A body whose reactions are identically zero over the window has no scale to
+        # divide by. That is not a small-number problem to be guarded with a floor
+        # (C158): it is a case with its own right answer -- the residual must then be
+        # zero ABSOLUTELY -- so the relative key is omitted and the absolute one is
+        # what a caller reads. A `-1.0` sentinel would be a number a gate could compare.
+        if scale > 0.0:
+            out[f"{name}_rel"] = worst_body[name] / scale
+            out[f"{name}_force_rel"] = worst_body_force[name] / scale
+            out[f"{name}_moment_rel"] = worst_body_moment[name] / scale
+    return out
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -351,13 +419,44 @@ def main(argv: list[str] | None = None) -> int:
     buoy_fz = float(np.max(np.abs([lam[i * rows + 2] for i in buoy_rows])))
     print(f"  largest buoy-joint Fz at this step  {buoy_fz:.4e} N")
 
-    marks = discrete_residual(res, setup, ext)
+    marks = discrete_residual(res, setup, ext, body_names=names)
     print("\n## The residual of the system the integrator ACTUALLY solves (R646)")
     print(f"  |mu|_inf over the window                          {marks['mu_inf_N']:.6e} N")
     print(
         f"  worst |A_eff a - G^T lam - rhs| over {int(marks['window'])} steps  "
-        f"{marks['discrete_worst_N']:.6e} N"
+        f"{marks['discrete_worst_N']:.6e} N   <- AGGREGATE; DQ8 forbids this as a gate"
     )
+    print(
+        "\n## PER BODY (DQ8), which is what G4.1 reads. The aggregate above is ONE"
+        "\n##   number for every body at once, and that is the R679 shape: this gate's"
+        "\n##   static twin summed over five bodies and could not see four joints."
+    )
+    print(
+        f"{'body':<10} {'worst N':>13} {'reaction N':>13} {'rel':>12} "
+        f"{'force rel':>12} {'moment rel':>12}"
+    )
+    print("-" * 78)
+    for name in names:
+        rel = marks.get(f"{name}_rel")
+        f_rel = marks.get(f"{name}_force_rel")
+        m_rel = marks.get(f"{name}_moment_rel")
+        cells = [
+            f"{rel:>12.4e}" if rel is not None else f"{'(no scale)':>12}",
+            f"{f_rel:>12.4e}" if f_rel is not None else f"{'-':>12}",
+            f"{m_rel:>12.4e}" if m_rel is not None else f"{'-':>12}",
+        ]
+        print(
+            f"{name:<10} {marks[f'{name}_worst_N']:>13.4e} "
+            f"{marks[f'{name}_reaction_scale_N']:>13.4e} " + " ".join(cells)
+        )
+    scaled = [n for n in names if f"{n}_rel" in marks]
+    if scaled:
+        worst_name = max(scaled, key=lambda n: marks[f"{n}_rel"])
+        print(
+            f"\n  WORST BODY {worst_name} at {marks[f'{worst_name}_rel']:.6e} relative, "
+            f"over {len(scaled)} of {len(names)} bodies with a reaction scale to divide by. "
+            f"The aggregate reads {marks['discrete_worst_N']:.6e} N and names no body."
+        )
     print(
         "\n  The CONTINUOUS identity `sum(reactions) + applied - M a` does not close to"
         "\n  round-off and is not meant to: `newmark.py:48` documents"
