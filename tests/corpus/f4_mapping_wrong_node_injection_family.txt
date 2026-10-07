@@ -1,0 +1,105 @@
+# CORPUS: WHERE the wrong-node injection is placed -- the one coordinate of the
+# F4 LOAD-MAPPING gate's counter-case that batches 33 to 36 never varied
+# -- tests/verification/rung4/test_f4_static_and_mapping.py at d4e2136
+#   (`_mapping_error`, `_one_body_error`, `_expected_resultants`,
+#    `test_G4_4_the_mapping_CONSERVES_the_joint_resultants`,
+#    `test_G4_4_the_mapping_gate_REDDENS_on_a_wrong_sign_and_on_a_wrong_node`)
+# -- floatfea/tolerances.py:2263-2299 (`F4_MAPPING_CONSERVATION_COUNTER = 0.2`)
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the 103rd verdict, reviewed commit
+# d4e21363712f3acf489ec716be9bd033eb013f16, batch 37. Every `measured=` field
+# was taken by the reviewer AT THAT COMMIT, full scale, froude_lambda 50, with
+# the shipped `_synthetic_lam(16)` row, at `mass_fraction=0.75` unless the
+# entry's `note=` says otherwise.
+#
+# WHY THIS FILE EXISTS (BE3, under EG4(e)'s standing exception for F4's
+# load-mapping gate -- one of the two surfaces where a miss reaches a member
+# force). The step this batch was written at found the same defect five times
+# (R682, R694, R704, R706, R708) and its own report named the shape: "a counter
+# calibrated at one POINT of whatever the ceiling's domain is", with `f`, the
+# member class, the body, the field and the direction listed as the coordinates
+# of that domain. The INJECTION SITE is a sixth coordinate and it was not on the
+# list. For this gate the defect the counter is declared against -- "a joint
+# block mapped to the wrong node of the right body" -- has twelve members among
+# the platform's four joint nodes alone, and the shipped counter-case evaluates
+# exactly one of them.
+#
+# WHAT A PASSING SCAN MEANS. For each candidate: `measured=` is
+# `_mapping_error` under that injection; `ceiling_reddens=` is whether the
+# shipped gate detects it (`measured > F4_MAPPING_CONSERVATION = 1e-12`);
+# `floor_brackets=` is whether the DECLARED counter `0.2` sits below it; and
+# `evaluated_by_shipped_counter_case=` is whether any shipped test evaluates
+# that placement at all. A scan passes when every whole-block member of the
+# family has `ceiling_reddens=yes` AND `floor_brackets=yes`, and when the
+# entry's figure is the one the tolerance entry publishes as the quantity's.
+#
+# WHAT IT MEASURED, stated here because a corpus with no reading is a list.
+#   (1) The family spans 7.8x: 0.2179893030274107 (node 3 -> 4) to
+#       1.6964643105279407 (node 3 -> 1). The shipped counter-case picks
+#       node 1 -> 2 at 0.9597085787263796, which is the SEVENTH of twelve by
+#       size, and the tolerance entry publishes that figure as "the smallest
+#       defect over every rung" with a margin of 4.7985x. The quantity's
+#       smallest is 0.2179893030274107 and the margin is 1.0899x. The entry
+#       swept the LADDER -- correctly, and every figure in it is rung-invariant,
+#       which B37-33 to B37-39 confirm -- and never the node pair.
+#   (2) The declared 0.2 is still BELOW every whole-block member of the family,
+#       so the value errs safe and need not move. What is wrong by 4.4x is the
+#       published margin and the published weakening window ("may fall to 0.2084
+#       of its size"; the true figure against the family minimum is 0.9175, and
+#       B37-17 to B37-26 solve that boundary from both sides, EH4).
+#   (3) TWO SHAPES THE GATE CANNOT SEE AT ALL, B37-28 and B37-30: move only the
+#       locked-axis MOMENT component of a block to the wrong node of the right
+#       body and `_mapping_error` reads 2.1962235947826024e-16, the clean value
+#       to every digit. A couple is free, so relocating it changes neither the
+#       resultant force nor the moment about the common point -- the quantity
+#       this gate is built on. The force channel alone is fully visible
+#       (B37-27, B37-29, both 0.2179893030274107 and 0.9597085787263796, equal
+#       to the whole-block figures to every digit, which is the same fact from
+#       the other side). The gate's own docstring says a block on the wrong node
+#       of the right body is IN REACH; that is true of a block and false of one
+#       of its four channels, and `res.lam` carries that channel on all sixteen
+#       joints (EK0(e)).
+#
+# Fields: id shape src_node dst_node frac channel measured ceiling_reddens
+#         floor_brackets evaluated_by_shipped_counter_case note
+id=B37-01 shape=whole_block_to_another_JOINT_node_of_the_platform src_node=1 dst_node=2 frac=1.0 channel=all measured=0.9597085787263796 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=yes note=the_shipped_pair
+id=B37-02 shape=whole_block_to_another_JOINT_node_of_the_platform src_node=1 dst_node=3 frac=1.0 channel=all measured=0.6264052990635567 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=-
+id=B37-03 shape=whole_block_to_another_JOINT_node_of_the_platform src_node=1 dst_node=4 frac=1.0 channel=all measured=1.5861138777899368 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=-
+id=B37-04 shape=whole_block_to_another_JOINT_node_of_the_platform src_node=2 dst_node=1 frac=1.0 channel=all measured=0.8174512848220575 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=-
+id=B37-05 shape=whole_block_to_another_JOINT_node_of_the_platform src_node=2 dst_node=3 frac=1.0 channel=all measured=0.361471168710035 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=-
+id=B37-06 shape=whole_block_to_another_JOINT_node_of_the_platform src_node=2 dst_node=4 frac=1.0 channel=all measured=1.1789224535320926 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=-
+id=B37-07 shape=whole_block_to_another_JOINT_node_of_the_platform src_node=3 dst_node=1 frac=1.0 channel=all measured=1.6964643105279407 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=-
+id=B37-08 shape=whole_block_to_another_JOINT_node_of_the_platform src_node=3 dst_node=2 frac=1.0 channel=all measured=1.6621665189226082 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=-
+id=B37-09 shape=whole_block_to_another_JOINT_node_of_the_platform src_node=3 dst_node=4 frac=1.0 channel=all measured=0.2179893030274107 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=-
+id=B37-10 shape=whole_block_to_another_JOINT_node_of_the_platform src_node=4 dst_node=1 frac=1.0 channel=all measured=0.6551181588194337 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=-
+id=B37-11 shape=whole_block_to_another_JOINT_node_of_the_platform src_node=4 dst_node=2 frac=1.0 channel=all measured=1.310236317638867 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=-
+id=B37-12 shape=whole_block_to_another_JOINT_node_of_the_platform src_node=4 dst_node=3 frac=1.0 channel=all measured=0.9326006752312858 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=-
+id=B37-13 shape=whole_block_to_a_NON_JOINT_node_of_the_platform src_node=1 dst_node=0 frac=1.0 channel=all measured=0.31320264953177845 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=centre_or_remainder_node
+id=B37-14 shape=whole_block_to_a_NON_JOINT_node_of_the_platform src_node=1 dst_node=5 frac=1.0 channel=all measured=0.8735173362479876 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=centre_or_remainder_node
+id=B37-15 shape=whole_block_to_a_NON_JOINT_node_of_the_platform src_node=3 dst_node=0 frac=1.0 channel=all measured=0.8482321552639701 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=centre_or_remainder_node
+id=B37-16 shape=whole_block_to_a_NON_JOINT_node_of_the_platform src_node=3 dst_node=5 frac=1.0 channel=all measured=0.8482321552639701 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=centre_or_remainder_node
+id=B37-17 shape=a_FRACTION_of_the_block_to_the_family_minimum_pair src_node=3 dst_node=4 frac=1.0 channel=all measured=0.2179893030274107 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=EH4_weakening_boundary_is_frac_0.9174762120086755
+id=B37-18 shape=a_FRACTION_of_the_block_to_the_family_minimum_pair src_node=3 dst_node=4 frac=0.95 channel=all measured=0.2070898378760401 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=EH4_weakening_boundary_is_frac_0.9174762120086755
+id=B37-19 shape=a_FRACTION_of_the_block_to_the_family_minimum_pair src_node=3 dst_node=4 frac=0.9175 channel=all measured=0.20000518552764932 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=EH4_weakening_boundary_is_frac_0.9174762120086755
+id=B37-20 shape=a_FRACTION_of_the_block_to_the_family_minimum_pair src_node=3 dst_node=4 frac=0.9 channel=all measured=0.1961903727246696 ceiling_reddens=yes floor_brackets=no evaluated_by_shipped_counter_case=no note=EH4_weakening_boundary_is_frac_0.9174762120086755
+id=B37-21 shape=a_FRACTION_of_the_block_to_the_family_minimum_pair src_node=3 dst_node=4 frac=0.75 channel=all measured=0.16349197727055806 ceiling_reddens=yes floor_brackets=no evaluated_by_shipped_counter_case=no note=EH4_weakening_boundary_is_frac_0.9174762120086755
+id=B37-22 shape=a_FRACTION_of_the_block_to_the_family_minimum_pair src_node=3 dst_node=4 frac=0.5 channel=all measured=0.10899465151370544 ceiling_reddens=yes floor_brackets=no evaluated_by_shipped_counter_case=no note=EH4_weakening_boundary_is_frac_0.9174762120086755
+id=B37-23 shape=a_FRACTION_of_the_block_to_the_family_minimum_pair src_node=3 dst_node=4 frac=0.25 channel=all measured=0.05449732575685268 ceiling_reddens=yes floor_brackets=no evaluated_by_shipped_counter_case=no note=EH4_weakening_boundary_is_frac_0.9174762120086755
+id=B37-24 shape=a_FRACTION_of_the_block_to_the_family_minimum_pair src_node=3 dst_node=4 frac=0.1 channel=all measured=0.021798930302741135 ceiling_reddens=yes floor_brackets=no evaluated_by_shipped_counter_case=no note=EH4_weakening_boundary_is_frac_0.9174762120086755
+id=B37-25 shape=a_FRACTION_of_the_block_to_the_family_minimum_pair src_node=3 dst_node=4 frac=0.01 channel=all measured=0.002179893030274247 ceiling_reddens=yes floor_brackets=no evaluated_by_shipped_counter_case=no note=EH4_weakening_boundary_is_frac_0.9174762120086755
+id=B37-26 shape=a_FRACTION_of_the_block_to_the_family_minimum_pair src_node=3 dst_node=4 frac=0.0001 channel=all measured=2.1798930302843387e-05 ceiling_reddens=yes floor_brackets=no evaluated_by_shipped_counter_case=no note=EH4_weakening_boundary_is_frac_0.9174762120086755
+id=B37-27 shape=ONLY_the_force_channel_of_the_block_moved src_node=3 dst_node=4 frac=1.0 channel=force measured=0.2179893030274107 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=family_minimum_pair
+id=B37-28 shape=ONLY_the_moment_channel_of_the_block_moved src_node=3 dst_node=4 frac=1.0 channel=moment measured=2.1962235947826024e-16 ceiling_reddens=no floor_brackets=no evaluated_by_shipped_counter_case=no note=family_minimum_pair
+id=B37-29 shape=ONLY_the_force_channel_of_the_block_moved src_node=1 dst_node=2 frac=1.0 channel=force measured=0.9597085787263796 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=shipped_pair
+id=B37-30 shape=ONLY_the_moment_channel_of_the_block_moved src_node=1 dst_node=2 frac=1.0 channel=moment measured=2.1962235947826024e-16 ceiling_reddens=no floor_brackets=no evaluated_by_shipped_counter_case=no note=shipped_pair
+id=B37-31 shape=the_block_SPLIT_between_two_wrong_nodes_of_the_right_body src_node=3 dst_node=4+2 frac=0.5 channel=all measured=0.84823215526397 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=halves_to_two_joint_nodes
+id=B37-32 shape=two_joint_blocks_SWAPPED_between_their_own_nodes src_node=3 dst_node=4 frac=1.0 channel=all measured=0.8983028836259537 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=a_label_permutation_of_the_mapped_output
+id=B37-33 shape=the_family_MINIMUM_pair_at_a_ladder_rung src_node=3 dst_node=4 frac=1.0 channel=all measured=0.2179893030274107 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=mass_fraction=0.75
+id=B37-34 shape=the_family_MINIMUM_pair_at_a_ladder_rung src_node=3 dst_node=4 frac=1.0 channel=all measured=0.2179893030274107 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=mass_fraction=0.5
+id=B37-35 shape=the_family_MINIMUM_pair_at_a_ladder_rung src_node=3 dst_node=4 frac=1.0 channel=all measured=0.2179893030274107 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=mass_fraction=0.4
+id=B37-36 shape=the_family_MINIMUM_pair_at_a_ladder_rung src_node=3 dst_node=4 frac=1.0 channel=all measured=0.2179893030274107 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=mass_fraction=0.3
+id=B37-37 shape=the_family_MINIMUM_pair_at_a_ladder_rung src_node=3 dst_node=4 frac=1.0 channel=all measured=0.2179893030274107 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=mass_fraction=0.2
+id=B37-38 shape=the_family_MINIMUM_pair_at_a_ladder_rung src_node=3 dst_node=4 frac=1.0 channel=all measured=0.2179893030274107 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=mass_fraction=0.1
+id=B37-39 shape=the_family_MINIMUM_pair_at_a_ladder_rung src_node=3 dst_node=4 frac=1.0 channel=all measured=0.2179893030274107 ceiling_reddens=yes floor_brackets=yes evaluated_by_shipped_counter_case=no note=mass_fraction=0.0
