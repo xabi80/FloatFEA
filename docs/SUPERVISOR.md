@@ -499,6 +499,39 @@ work gets read in full. DK0's concern -- that a mechanism which buys rounds make
 meaningless -- is answered by the revision count: three revisions is three revisions
 however many interim checks fall between them.
 
+**AND AN INTERIM CHECK WHOSE DIFF MOVES A TOLERANCE VALUE OR A DECLARED COUNTER INCLUDES
+THE ADVERSARIAL CASE (EU1).** Adopted by directive EU1 in the reviewer's wording,
+unparaphrased, proposed after the check that found R694.
+
+> An interim check whose diff moves a tolerance VALUE or a declared counter includes the
+> adversarial case -- the model run at a configuration the diff did not choose, here at
+> least every admissible ladder rung -- regardless of the light scope. It still counts
+> against no round.
+
+**Why: the scan of the diff is not what found R694.** Running the model at a configuration
+the diff did not choose is. `F4_STATIC_TIP_MOMENT_RELATIVE_COUNTER` was RE-DERIVED
+AND RE-JUSTIFIED ON A NEW MASS BASIS WITHOUT ITS VALUE MOVING -- `0.05` before and after,
+with a fresh per-member table, a fresh margin and a rewritten plan row -- and every figure
+in that derivation was correct AT THE SHIPPED RUNG. One rung down `MASS_FRACTION_LADDER`,
+at `f = 0.5` and admissible, the counter sat above the defect on 12 of 16 members, which is
+the finding R682 had already been twice. Five of the six non-vacuous rungs failed under it.
+
+**A value that does not move is the worst case for this, not the safest.** The commit said
+so explicitly -- "the value did not move, which is not the same as having been right" -- and
+still only checked the rung it had chosen. `grep` over the diff finds a changed line; it
+cannot find a line that should have changed.
+
+Nothing in the diff pointed at `f = 0.5`. The commit's own figures, its sweep, its margin
+and its plan row were all about `f = 0.75`, because that is the configuration the commit
+chose. A reviewer reading the diff reads the configuration the author chose; the
+adversarial case is the one nobody chose, and for a tolerance it is cheap -- the ladder has
+seven rungs and the model builds in under a second at each.
+
+**The repair R694 produced is the shape to look for:** a constant that is right at one
+configuration was replaced by the closed form the quantity actually has, with the constant
+demoted to a floor beneath every configuration. A counter that depends on a model parameter
+is not a number, it is a function, and the question an adversarial case asks is which.
+
 ### CZ1's carve-out for a step's own boundary red (EG3)
 
 *Adopted by directive EG3 in the reviewer's wording, unparaphrased. Proposed in the
