@@ -1,4 +1,581 @@
 # Review — F4 step 3
+Reviewed commit: f9b58464adca786bc284b55cbe4be5d8442e1abe
+Verdict: HOLD
+**Reviewed commit: `3305473`** (`33054730dc124df21bd166ae2aa5e1567acdd255`, the F4 step 3
+CLOSURE COMMIT, tree clean when I judged it; my corpus batch 41 is committed on top at
+`f9b5846`, which is why the plain `Reviewed commit:` stamp above is not the commit I
+judged -- R718's subject, and this bold line is the mechanism.)
+Tests: 3563 passed, 0 failed, 0 skipped   (MY OWN run, one invocation, no `-k`, no
+`--ignore`, no deselection, `-p no:randomly`, tree clean at `3305473`, `684.72s`. Not the
+report's figure. It reproduces the report's figure exactly.)
+
+## Round of 2026-10-08 -- EQ0 REVIEW OF THE CLOSURE COMMIT. COUNTS AGAINST NO STEP'S ROUNDS (EB4). **HOLD.**
+
+**READ THIS PARAGRAPH BEFORE THE HOOK DOES (DD1). F4 STEP 3's DISPOSITION IS `PASS`, SET BY
+THE 108th VERDICT AT `fa151ba`, AND NOTHING BELOW REOPENS IT.** This round judges a commit
+written *after* the last reviewed revision, under EQ0, because that commit changes a gate
+and a published quantity; EB4 makes it count against no step's rounds. The HOLD is on **the
+closure commit and on R730 where it already sits in F5's ledger** -- it means F5 step 1 does
+not open on the MID column and the item below is answered first. If the `Stop` hook reads
+this file's header and refuses, DD1 is the rule the disagreement is resolved against: step
+3 closed at verdict 108 and a verdict about the tree does not reopen it.
+
+**WHY HOLD, IN FIVE SENTENCES.** The implementer asked me to attack one thing -- "is R730's
+repair right, or right-looking?" -- and named the exact reason to worry: the parabolic sign
+was calibrated against my statics cut rather than derived, so if my cut and the chord mean
+share an assumption neither of us would see it. **I built the third route and the worry was
+correct, one component over from where either of us was looking.** The convention is right
+and I now have it from a route that shares nothing with the calibration; the `My` sag sign
+is right and right for a reason; **the `Mz` sag sign is wrong, by exactly twice the sag
+term, and it reaches 281 of the 384 published MID rows in the LOW direction** -- because the
+calibration cell is `platform:hub2_arm` under self-weight, where `w_local[1]` is identically
+zero on all sixteen members and the `Mz` branch of the same two-line expression cannot
+fire. R731 is closed as to every condition I set, R732's warrant is **stronger** than
+written and I measured it over the whole window rather than at the steps the cell chose, and
+the suite and CI are fully green at the reviewed commit with the defect in the tree.
+
+**No STOP.** No low rung is red. The ladder is SUCCESS in CI at this commit on a runner
+with no HSP worktree. The locked plan is not wrong -- the plan does not specify this
+expression -- and `docs/milestones/F5-DRAFT-code-checks.md` is a draft, not a lock, so
+nothing needs reopening.
+
+## 0. CI AT THE REVIEWED COMMIT -- COMPLETE AND FULLY GREEN, AND THE GUARDS STEP RAN
+
+```
+cmd    gh run list --commit 33054730dc124df21bd166ae2aa5e1567acdd255 --json databaseId,conclusion,status,headSha
+out    [{"conclusion":"success","databaseId":37840125227,"status":"completed",
+out      "headSha":"33054730dc124df21bd166ae2aa5e1567acdd255"}]
+cmd    gh run view 37840125227 --json jobs -q '.jobs[] | "\(.name)\t\(.conclusion)"'
+out    the verification ladder            success     (3m28s)
+out    lint, unit and guards              success     (9m03s)
+out    CI determinism -- leg              skipped
+out    CI determinism -- ten legs agree   skipped
+cmd    gh run view 37840125227 --json jobs   (step level, both jobs)
+out    ladder 1..6, including `ladder 4 -- the loads are the loads` and
+out      `ladder 5 -- independent confirmation`            all success
+out    actionlint / ruff / black --check / mypy / unit tests        all success
+out    guards and meta-tests                                       success   <- step 10, RAN
+judge  **CZ1 (iii) IS SATISFIED IN THE SPECIFIC WAY IT ASKS FOR**: `guards and meta-tests`
+       is seen to have RUN rather than been skipped behind an earlier red step. Not CA2's
+       unavailable state and not CK2 -- the jobs executed, nine minutes, no payment
+       annotation. R721's closure holds for the fifth commit in a row. **`gh run list
+       --commit 3305473` with the SHORT sha returns `[]`; the full sha returns the run.
+       A reviewer who took the short form at face value would have recorded this as an
+       unavailable check.**
+```
+
+## 1. MY OWN INSTRUCTIONS, THE CONFTEST, THE TOLERANCE FILE, AND THE STEP REPORT -- EACH DIFFED SEPARATELY
+
+```
+cmd    git diff 32fab69..HEAD --stat -- .claude docs/SUPERVISOR.md
+out    (empty)
+cmd    git diff 32fab69..HEAD --stat -- CLAUDE.md
+out    (empty)
+cmd    git diff 32fab69..HEAD --stat -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py                      <- CI0's check resolves to a real file
+cmd    git diff 32fab69..HEAD --stat -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff 32fab69..HEAD --stat -- docs/reports/
+out    (empty)
+judge  **NOT STOP-CLASS.** Nothing in this commit touches what I read, what I must carry
+       or what I may write. **EK3 IS SATISFIED**: the closure commit does not touch the
+       step report, which is the one thing a closure commit must not do after that
+       report's final verdict. **And nothing under `floatfea/` moved at all** -- the six
+       changed paths are two deliverable files, the closure artifact, one `scripts/` file
+       and two `tests/` files -- so there is no (a) in this range in the literal sense,
+       which is the classification question I take up under R734.
+```
+
+## 2. R730's REPAIR -- THE THIRD ROUTE, AND WHAT IT SAYS ABOUT EACH HALF
+
+I was asked to check the convention claim itself and whether the `TIP` flip broke anything.
+Both answers are measurements and both are good news. The sign is the finding.
+
+```
+claim  the internal action is `end_a` at `x = 0` and `-end_b` at `x = L`
+cmd    segment equilibrium of [0, x], derived from scratch and sharing nothing with
+       either the implementer's calibration or my own verdict-108 cut:
+         S(x) = end_a + w x                  (near segment acting on the far one)
+         M(x) = M_a - x (e_x X F_a) - (x^2/2)(e_x X w)
+rule   calibrated BEFORE being trusted: at `x = 0` against ROOT and at `x = L` against TIP
+out    x = 0 : bit-identical to `ROOT` on all 16 members
+out    x = L : agrees with `-end_b` to 9.3e-08 on a 1.9e+08 scale
+out    element equilibrium `end_a + end_b + w L`: max abs residual 0.000e+00 on 13 members,
+out      4.657e-10 on the three whose `length` carries a 1.4e-14 rounding
+judge  **THE CONVENTION IS RIGHT.** The measured sum relation fixes the interpretation:
+       `member_forces` returned vectors behave as forces ON the element, so `-end_b` IS
+       the internal action at the far end under the stated "as seen from the A end"
+       convention. **The module docstring's prose says the opposite** -- "the forces the
+       ELEMENT exerts on its nodes" -- and the numbers, not the prose, are what the repair
+       followed. That is the right choice and it is worth saying out loud, because the one
+       sentence a reader would reach for to check this sign is the sentence that is wrong.
+```
+
+```
+claim  the sag term's sign, which the comment says was CALIBRATED and not reasoned
+cmd    `s` in dM/dx = s V, measured from the element's OWN end forces with no cross
+       product and no textbook: for a linear shear, M(L) - M(0) = s L (V(0) + V(L)) / 2,
+       with Mz(0)=end_a[5], Mz(L)=-end_b[5], Vy(0)=end_a[1], Vy(L)=-end_b[1]. Run under an
+       arbitrary seeded `u` and a tilted uniform translational field, so the y plane is
+       not degenerate the way the gravity solution makes it.
+out    s_y = +1.000000000000   on all 16 members
+out    s_z = -1.000000000000   on all 16 members
+rule   M'' = s w, so M(L/2) = chord_mean - s w L^2 / 8
+out    => My(L/2) = chord - w_z L^2/8      <- `:363`, the code's sign. CORRECT.
+out    => Mz(L/2) = chord + w_y L^2/8      <- `:364` SUBTRACTS. WRONG.
+judge  The two planes carry OPPOSITE signs because e_x X F = (0, -F_z, +F_y), and the
+       repair gave them the same sign -- the same sign the pre-repair line gave them. **One
+       of the two was always going to be wrong whichever overall sign was chosen, and the
+       calibration could only ever see one of them.** This is R734.
+```
+
+```
+claim  making TIP `-end_b` broke nothing that read the old sign
+cmd    grep for `member_forces_table` and `F4_member_forces` over py, md and yml files
+       outside docs/reviews and docs/reports; and for `_station_values` outside the module
+out    only the file itself, plus one prose line in `docs/closure/F4.md:98`
+out    `_station_values` has no caller outside `member_forces_table.py`
+judge  **CONTAINED.** `f_sensitivity` reads `ROOT` only, so the published `f`-ladder is
+       unaffected, and `_write_summary` claim that ROOT and TIP are the element's own end
+       nodes survives the flip. The same grep is C40 seen from the other side, and it is
+       why the suite is green: `grep -rl member_forces_table tests/` returned NOTHING
+       before this round and returns only my own corpus file now.
+```
+
+## 3. R731's REPAIR -- ATTACKED AS ASKED. IT HOLDS, AND IT IS NOT A PREFIX MATCH
+
+```
+claim  the prefix match is the right comparison and one string is enough
+cmd    the provenance `hsp_tag` edited, one state at a time, tree restored between,
+       the staleness test alone
+out    "floatfea-ref-1-99-gc2fe24f-dirty  (HSP_code)"  -> 1 failed in 0.24s
+out    "floatfea-ref-1-dirty  (HSP-runs)"              -> 1 failed in 0.23s
+out    "UNKNOWN -- not a git checkout"                 -> 1 failed in 0.23s
+out    "c2fe24f  (HSP_code)"                           -> 1 failed in 0.24s
+out    clean tree                                      -> 1 passed in 0.41s
+judge  **IT IS NOT A PREFIX MATCH AND THAT IS WHY IT WORKS.** `recorded.split()[0] ==
+       HSP_TAG` is a TOKEN-EXACT comparison on the first whitespace field; a genuine
+       prefix match (`startswith`) would ACCEPT `floatfea-ref-1-dirty` and
+       `floatfea-ref-1-99-g...`, which are precisely the two states my condition named as
+       having to refuse. The code is right; the comment beside it at `:288` describes a
+       weaker check than the one shipped. Both of my named states refuse, the two I added
+       refuse, **R731's condition is discharged**, and the residue is R737.
+```
+
+## 4. R732's WARRANT -- I WAS ASKED WHETHER IT IS WEAKER THAN WRITTEN. IT IS STRONGER
+
+```
+claim  `docs/closure/F4.md:142` -- "the agreement is exact once the discrete weighting is
+       applied, so what F5 has to build is the gate and not the physics"
+cell   ONE VARIABLE MOVED (BG0): the reference the FE relief acceleration is compared
+       against. (A) a_FS(n); (B) (1-alpha_m) a_FS(n) + alpha_m a_FS(n-1), alpha_m = 1/3.
+rule   denominator stated: the window max of abs(a_FS) for that body and that case
+out    T=10.0   707 steps   (A) 1.4453 %  (B) 0.0000 %   3.67e+12x
+out    T=12.5   884 steps   (A) 1.1963 %  (B) 0.0000 %   1.09e+13x
+out    T=14.0   990 steps   (A) 1.0767 %  (B) 0.0000 %   1.24e+13x
+out    T=15.0  1061 steps   (A) 1.0093 %  (B) 0.0000 %   1.52e+13x
+out    T=16.2  1146 steps   (A) 0.9370 %  (B) 0.0000 %   1.33e+13x
+out    T=20.0  1415 steps   (A) 0.8133 %  (B) 0.0000 %   2.06e+13x
+judge  **MY OWN VERDICT-108 CELL TOOK ONE STEP PER CASE AND THE WARRANT DESERVED THE SAME
+       TREATMENT I GIVE EVERY OTHER FIGURE.** Measured over every fifth step of the full
+       window -- 1203 body-step samples -- (B) is still round-off in all six cases. The
+       sentence in section 5 is earned. **The implementer was right to flag that it rested
+       on my cell and right not to re-litigate it; the answer is that the cell generalises.**
+       This is the one question I was asked where the honest answer is stronger than you
+       wrote it.
+```
+
+## 5. TRY TO BREAK IT -- EVERYTHING I RAN, INCLUDING WHAT HELD
+
+| adversarial case | result |
+|---|---|
+| the MID station against segment equilibrium, static basis, 16 members | held: machine precision |
+| the same, DYNAMIC basis, 1248 (member, case, step) samples | **BROKE IT -- R734** |
+| the shear-moment sign per plane, from the end forces, arbitrary u, tilted field | **s_y = +1, s_z = -1 on all 16** |
+| the independent route calibrated at x = 0 and x = L before use | held: bit-identical and 9.3e-08 |
+| element equilibrium end_a + end_b + w L on all 16 members | held: 0.000e+00 / 4.657e-10 |
+| `w_local[1]` on the static basis, all 16 members | **identically zero -- R734's cause** |
+| the full-window envelope recomputed both ways, 384 MID rows | **281 change, worst 26.3% LOW** |
+| the published top-ten rows 3 and 4 recomputed both ways | 380.6/392.8 -> 384.6/396.7 |
+| the three static station figures the commit message publishes | held: reproduce to the digit |
+| the shipped CSV against a re-run at this commit, static rows | held: regenerated, BP0 satisfied |
+| `hsp_tag` edited to four unpinned states, one at a time | all four redden; clean passes |
+| `HSP_COMMIT` compared anywhere under `tests/` | **nothing -- R737** |
+| the alpha_m reference over every fifth step of all six cases | held: 0.0000% everywhere |
+| the angular ratio on the 90 samples the docstring names | held: 0.223941 reproduces |
+| the same ratio over the window the table envelopes | **17.067, then 50.297 -- R736** |
+| the local axial net field end-to-end along every member | **exactly constant -- R736** |
+| the My closed form against segment equilibrium, worst dynamic step | **4.0% gap -- R736** |
+| anything outside the generator reading the old TIP sign | held: nothing does |
+| the whole suite, one invocation, at the reviewed commit | 3563 passed, 0 failed |
+| the ladder in CI at the reviewed commit | SUCCESS, no HSP worktree |
+
+## Findings
+
+**R734. (BLOCKING. SAME CLASSIFICATION AND SAME CARVE-OUT AS R730, AND I SAY SO UNDER ITS
+OWN HEADING BELOW.) THE `Mz` SAG TERM IN R730's REPAIR HAS THE WRONG SIGN. `My` IS RIGHT.
+THE TWO PLANES CARRY OPPOSITE SIGNS AND THE REPAIR GAVE THEM THE SAME ONE -- WHICH IS THE
+SIGN THE PRE-REPAIR LINE HAD. 281 OF 384 PUBLISHED MID ROWS, DIRECTION LOW.**
+`scripts/measure/member_forces_table.py:364` (`mid[5] = mid[5] - w_local[1] * span * span /
+8.0`), the comment at `:360-363` that states the calibration method, published in
+`docs/F4_member_forces.csv` and `docs/F4_member_forces.md`.
+
+```
+claim  the published MID `Mz` is the internal moment resultant at midspan
+cmd    shipped mid[5] minus the segment-equilibrium mid[5], every member, every case,
+       subsampled over the whole window
+rule   M'' = s w with s_z = -1 measured, so the midspan value is chord + w_y L^2 / 8
+out    the discrepancy is EXACTLY -2 w_y L^2 / 8 to 2e-06 relative wherever w_y is nonzero
+out    worst single row: T=12.5 step 219 hub4:buoy12_arm, L = 25 m, w_y = -7183.621 N/m
+out      shipped Mz  +1.091976224e+06      true Mz  -3.046299784e+04
+out      2 w_y L^2/8 = -1.122441e+06       measured difference +1.122439e+06
+out    worst abs(w_local[1]) over the full window = 2.199282e+04 N/m
+judge  **IT IS A SIGN, NOT AN APPROXIMATION.** The discrepancy is twice the sag term, to
+       six figures, which no modelling error reproduces. At that row the published value
+       has the wrong sign as well as a factor of 36 on the magnitude.
+```
+
+**THE REACH, measured on the full window with the envelope formed exactly as the script
+forms it, and the stresses taken through the script's own `_stresses`:**
+
+```
+out    281 of 384 MID dynamic/total rows change
+out    worst relative sigma change  26.3 %  (platform:hub2_arm, T=20, dynamic_min,
+out      32.5 MPa published against 44.0 MPa corrected)
+out    worst on a `total` row        3.4 %
+out    the PUBLISHED top ten, rows 3 and 4 (both MID, T = 10 s):
+out      platform:hub2_arm  per-instant 380.6 -> 384.6   envelope 392.8 -> 396.7
+out      platform:hub4_arm  per-instant 380.6 -> 384.6   envelope 392.2 -> 396.1
+out    DIRECTION: published BELOW corrected in all twelve of the worst twelve rows
+```
+
+**AND THE CAUSE IS THE METHOD THE COMMENT DECLARES, WHICH IS WHY I AM NOT FILING THIS AS
+CARELESSNESS.** `:361` says the sign "IS CALIBRATED against an independent statics cut and
+not reasoned from the component order". The calibration cell is `platform:hub2_arm` under
+self-weight. Measured: `w_local[1] = 0.000000e+00` exactly on **all sixteen** members on the
+static basis, against `w_local[2] = -9.196875e+04` on the platform arms. **A cell with no
+local-y load cannot see the `Mz` branch of the expression it is calibrating.** Both published
+cells, both static cells my own closing condition asked for as the control, and both of my
+verdict-108 figures live at `w_y = 0`. The sentence the repair deleted -- "the signs follow
+the component order of `COMPONENTS` and not a convention invented here" -- was pointing at
+the one thing that distinguishes the two branches, and replacing an argument with a
+calibration at a single configuration is EU1's own lesson applied in the wrong direction:
+**a calibration at one configuration is still a constant that is right at one configuration.**
+
+**Closed when** `:364` reads `+ w_local[1] * span * span / 8.0`, with the derivation
+recorded as the measured s_y = +1 / s_z = -1 pair rather than as a calibration -- the
+measurement is four lines, needs no new file, and is the one in section 2 above -- and the
+sag sign is exercised at a configuration with `w_local[1]` nonzero, which the static basis
+cannot supply; and `docs/F4_member_forces.csv`, `docs/F4_member_forces.md` and the top-ten
+regenerated from it (BP0: the rule moved, so every figure citing the old one is regenerated
+in the same commit), with the two cells above re-measured and pasted as the control.
+
+**R735. (CLOSURE CLASS.) THE PROSE STILL SAYS `plus w L^2 / 8` IN BOTH PLACES WHILE THE CODE
+SUBTRACTS IN BOTH PLACES, SO AFTER R734 NO SIGN AMONG THE FOUR IS STATED CORRECTLY FOR BOTH
+COMPONENTS.**
+`scripts/measure/member_forces_table.py:65` (module docstring) and `:307`
+(`_station_values` docstring), against `:363` and `:364`.
+
+```
+cmd    sed -n 63,70p;305,309p scripts/measure/member_forces_table.py
+out    :65  "...moment parabolic, so the midspan moment is the chord mean plus `w L^2 / 8`"
+out    :307 "...so its mid value is the chord mean plus `w L^2 / 8` with `w` the local
+out          transverse load per unit length"
+out    :363 mid[4] = mid[4] - w_local[2] * span * span / 8.0
+out    :364 mid[5] = mid[5] - w_local[1] * span * span / 8.0
+judge  CW0. The honest form is MINUS on `My` and PLUS on `Mz`, and the asymmetry is the
+       whole content -- a sentence that gives one sign for both is the sentence that
+       produced R734.
+```
+
+**Closed when** both sentences carry the two signs separately, or carry neither and point
+at the measurement.
+
+**R736. (CLOSURE CLASS, AND IT IS THE REPAIR'S OWN NEW FIGURE.) THE `0.2239` IS A
+CHOSEN-CONFIGURATION FIGURE WITH NO OPERATING POINT, AND THE CONCLUSION DRAWN FROM IT IS
+WRONG IN BOTH DIRECTIONS AT ONCE: `N` IS PROVABLY EXACT WHERE THE DOCSTRING NOW CALLS IT AN
+APPROXIMATION, AND THE BENDING CLOSED FORM IS A 4% APPROXIMATION THAT IS STATED NOWHERE.**
+`scripts/measure/member_forces_table.py:308-320` (the replacement docstring),
+`docs/closure/F4.md:115`.
+
+```
+claim  "worst abs(alpha) L_max / abs(a) = 0.2239 ... The rotational contribution reaches
+       22% of the translational at the far node ... So the chord mean for `N` and `T` is
+       an APPROXIMATION of the same order as the MID bending term"
+cmd    the same ratio, same definition, on the 90 samples the entry names
+out    0.223941     <- REPRODUCES EXACTLY. The figure is correct for its own sample.
+cmd    the same ratio over the window the table actually envelopes
+out    every 20th step of 6203 steps:  17.067
+out    every  7th step of 6203 steps:  50.297
+out      OPERATING POINT at the worst: abs(alpha) L_max = 5.9182e-02 m/s^2 against
+out      abs(a_trans) = 1.1767e-03 m/s^2
+cmd    the quantity the `N` chord mean actually rests on -- the LOCAL AXIAL component of
+       the net field, end to end, relative to its own mean
+out    0.000 exactly, every member, every sampled step (f_x(A) = f_x(B) = -3.125324e-02)
+cmd    the My closed form against segment equilibrium at the worst dynamic step
+out    1.139973751e+05 against 1.096163314e+05 -- a 4.0 % gap, where the static basis
+out    gives 5.96e-08
+judge  Three things, and they pull in different directions. **(1)** Ninety samples is three
+       steps per case; the table envelopes 6203. **(2)** The ratio has no operating point
+       and at the worst step the denominator is 1.18e-03 m/s^2, so 50.297 is partly a
+       small-denominator artifact -- which is exactly why a bound without its denominator
+       is not a number. **(3)** The conclusion is wrong on both halves: the axial
+       projection of the angular field along a member is identically zero, so `N` is EXACT
+       for a reason and the new text calls it an approximation; while the TRANSVERSE
+       components do vary linearly, the true moment diagram is cubic, and that
+       approximation is 4.0% and is stated nowhere. **The repair replaced a false
+       justification with a true figure and a false conclusion, and the pessimistic
+       direction is still unmeasured.**
+```
+
+**Closed when** the entry states the bound with its denominator over the window the table
+covers, says `N` is exact and why in one clause, and gives the bending closed form's own
+measured size -- or carries one number and points at the step report, per BI3.
+
+**R737. (NOT BLOCKING -- R731'S CONDITION IS DISCHARGED AND THIS IS THE RESIDUE. IT BELONGS
+IN F5'S LEDGER WHERE R731 ALREADY SITS.) `HSP_COMMIT` IS DECLARED BESIDE `HSP_TAG` AND
+COMPARED NOWHERE, SO A TAG MOVED INSIDE THE HSP REPOSITORY PASSES.**
+`floatfea/hsp_pin.py:20` (`HSP_COMMIT = "25de7ce"`),
+`tests/verification/rung4/test_f4_g41_dynamic.py:281-305`.
+
+```
+cmd    grep -rn HSP_COMMIT tests/
+out    (nothing)
+rule   `floatfea/hsp_pin.py`'s own docstring: "a result that cannot name its pin is not
+       traceable"; it names two things, and the gate reads one
+judge  `git describe --tags --always --dirty` returns the bare string `floatfea-ref-1`
+       only at the commit the tag points to, clean -- so the hole is narrow and needs the
+       tag to have been moved. It cannot be closed from this side: the export records the
+       describe output and not the commit, so closing it means changing
+       `scripts/export_f4_dynamic_inputs.py` and regenerating a 12.21 MiB npz, which
+       needs a worktree. **Recorded rather than asked for.** My condition said the exact
+       comparison is the implementer's call and named two states that must refuse; both
+       refuse, and two more I added refuse.
+```
+
+**Closed when** F5 decides whether `HSP_COMMIT` goes into the provenance at the next
+export, or records in one line that the tag alone is the warrant and a moved tag is out of
+scope.
+
+**R738. (CLOSURE CLASS.) THE COMMIT MESSAGE SUBJECT SAYS `C34-C40` AND NONE OF C34 TO C40
+IS LANDED IN THE COMMIT. THEY ARE CARRIED IN THE CLOSURE ARTIFACT INSTEAD, WHICH IS
+PERMITTED -- BUT THE SUBJECT LINE READS AS REPAIRED.**
+The commit message of `3305473`, against `docs/closure/F4.md:132`.
+
+```
+cmd    git diff 32fab69..HEAD --stat
+out    six paths: docs/F4_member_forces.csv, docs/F4_member_forces.md, docs/closure/F4.md,
+out      scripts/measure/member_forces_table.py, tests/test_report_carried.py,
+out      tests/verification/rung4/test_f4_g41_dynamic.py
+out    `floatfea/tolerances.py` (C34, C35, C36)                  UNTOUCHED
+out    `tests/test_no_duplicate_tolerance_names.py` (C38)        UNTOUCHED
+out    `docs/milestones/F5-DRAFT-code-checks.md` (C39)           UNTOUCHED
+out    the `len(expected) >= 10` floor (C37)                     UNTOUCHED
+cmd    grep -n C24 docs/closure/F4.md
+out    :132  "**Also carried:** ... and C2-C15, C24-C40."
+judge  CZ0's own wording permits this: "Closure items still open go into the closure
+       artifact as a list." So the DISPOSITION is correct and I am not asking for the
+       list to be landed. What is wrong is one subject line, and BD0 is the rule it
+       breaks -- a commit message that makes a checkable claim carries the check.
+       **C39 is the one on that list whose cost went up this round**: its substance is
+       that F5's draft Q4 decides to check the three F4 stations without flagging MID as
+       derived, and R734 makes that load-bearing a second time.
+```
+
+**Closed when** the next commit message or report says the list is carried rather than
+landed. One sentence.
+
+## Tolerances touched
+
+```
+cmd    git diff 32fab69..HEAD --stat -- floatfea/tolerances.py
+out    (empty)
+judge  **NONE. NOT ONE VALUE, COUNTER, FORM OR COMMENT MOVED, AND NOTHING WAS WIDENED.**
+       EU1 therefore does not fire on this diff -- and I ran the adversarial case anyway,
+       because the diff moved a published quantity instead of a tolerance and the same
+       argument applies to a sign as to a constant. That is what found R734.
+```
+
+| name | old | new | form | counter | justification located | ruling |
+|---|---|---|---|---|---|---|
+| everything in the F4 block | -- | unmoved | -- | -- | -- | Not touched in this range. C34, C35 and C36 are prose items against three of these entries and remain open, carried in `docs/closure/F4.md:132`. |
+
+## Carried
+
+The 108th verdict (`fa151ba`, round 3 of three, PASS) carried **two blocking items by name
+into F5's ledger** and seven closure items. Every one, with status.
+
+* **R730 (blocking, carried into F5) -- NOT CLOSED, AND IT IS WHY THIS IS A HOLD.** My
+  closing condition was: "the MID row is the internal resultant at midspan on a single
+  consistent station convention ... with the `N`/`T` and `w L^2 / 8` sentences replaced by
+  what is measured; the CSV, the summary and the top-ten regenerated from it; and the two
+  static cells re-measured and pasted as the control." **Three of the four parts landed and
+  I measured each myself**: the convention is right and verified by a third route, the
+  regeneration happened and the static rows reproduce to the digit, and the two static
+  cells are pasted and correct. **The first part is not satisfied**: the `Mz` component of
+  the MID row is not the internal resultant, by exactly twice the sag term, on 281 of 384
+  published rows, in the LOW direction (R734). The `N`/`T` sentence was replaced and the
+  replacement is wrong in the other direction (R736). **Carries, still blocking, with its
+  reason restated: it is now a wrong sign in a repaired line rather than a wrong
+  construction.**
+* **R731 (blocking, carried into F5) -- CLOSED AS TO EVERY CONDITION I SET, measured by me
+  on four states one at a time.** The comparison is token-exact rather than the prefix
+  match its comment claims, which is stronger and is why both of my named states refuse.
+  **Does not carry as written. Its residue is R737**, which the closure artifact's own
+  wording already anticipates ("carries as blocking until F5 confirms the warrant holds for
+  every input the tag is claimed to cover") -- I am narrowing that to the single named
+  constant rather than leaving it open-ended.
+* **R732 (closure) -- CLOSED, AND THE WARRANT IS STRONGER THAN WRITTEN.** The attribution is
+  corrected, the ablation is in the closure artifact, and the figure's two denominators are
+  both stated. I re-measured the alpha_m-weighted reference over the full window, 1203
+  body-step samples: `0.0000%` in all six cases. **Section 5's "what F5 has to build is the
+  gate and not the physics" is earned. Does not carry.** The one thing left is that the
+  figure is still computed nowhere in the shipped tree -- the generator produces the
+  table, not the validation -- which is the same hole as C40 and is carried there.
+* **R733 (my own ruling) -- CLOSED.** Entry 178 is `False` in `_CI_SHAPES` with the
+  re-ruling recorded in the comment, and batch 40's four boundary ids are transcribed with
+  the expectations I gave. **All nine reds clear: my own run is `3563 passed, 0 failed` and
+  CI run `37840125227` is green on both jobs. Does not carry.**
+* **C34, C35, C36, C37, C38, C39, C40 (closure) -- ALL SEVEN STILL OPEN**, carried as a list
+  in `docs/closure/F4.md:132` rather than landed. That disposition is what CZ0 permits and I
+  am not holding on it; the commit subject claiming otherwise is R738. **C39 and C40 are the
+  two whose cost rose this round** and both for the same reason: the deliverable's generator
+  is outside every mechanical check, and F5's draft plans to check the MID column.
+* **R712 to R717, C2 to C15, C24 to C33 (closure) -- STILL OPEN**, carried in the closure
+  artifact and not re-reviewed item by item, per CZ0.
+* **The schedule.** The closure artifact records the committed dates unmoved -- F4 19 Oct,
+  member-force table 23 Oct, code check 28 Oct -- and states the cut rather than a slip.
+  **R734 is a one-character change plus a regeneration, so I do not read it as slippage**;
+  I read it as the deliverable going out again, which the implementer has already done once
+  this week. If the regeneration plus the corrected send cannot land before F5 step 1's
+  first commit, that is the escalation and it is the implementer's to raise, not mine to
+  pre-empt.
+
+## Carried for F5's ledger -- the names that stay blocking
+
+* **R730 / R734 -- the MID `Mz` sag sign**, `scripts/measure/member_forces_table.py:364`.
+  One character, then BP0's regeneration. **F5 step 1 still must not form a code check on
+  the MID column.** ROOT and TIP remain verified exact -- I verified them again this round
+  by a third route -- and a check restricted to those two may start at once.
+* **R737 -- `HSP_COMMIT` declared and not compared.** Narrower than R731 was; needs an
+  export change and a worktree, so it is an F5 decision and not an F4 omission.
+
+## Closure items
+
+* **R735** -- the two `plus w L^2 / 8` sentences. Named above with its site.
+* **R736** -- the `0.2239` entry: the window, the operating point, `N` exact, the 4.0%.
+* **R738** -- the commit subject's `C34-C40`.
+* **C34 to C40** -- unchanged from verdict 108, carried in `docs/closure/F4.md:132`.
+* **One number** -- `docs/closure/F4.md:115` publishes `0.2240`, which is my figure; the
+  implementer's own independent measurement is `0.2239` and that is what the source carries.
+  Two artifacts, two numbers, one quantity. Take the measured one.
+
+## The adversarial corpus (BE3)
+
+**BATCH 41, committed separately at `f9b5846`. 16 entries new this round, none of them read
+by the implementer. THE SHIPPED CHECKS CATCH 1.**
+
+`tests/corpus/f4_member_force_table_stations_and_load_path.txt`, extended rather than
+replaced. EG4(e) permits it: this is the F4 load-mapping surface where a miss reaches a
+member force, and it reached one.
+
+* **The 1 caught is `hsp_tag`**, by the gate assertion this same commit added -- which is
+  the honest reading of a corpus entry whose subject is a repair.
+* **9 are live misses**: the `Mz` sag sign (R734), the calibration cell that cannot see it,
+  the reach into 281 published rows, the suite and CI green with the defect in the tree
+  (C40), the two `plus w L^2 / 8` sentences (R735), the `0.2239` window and operating point,
+  `N` being exact, the cubic-not-parabolic 4.0%, and `HSP_COMMIT` (R737).
+* **6 are controls that HOLD** and are in the file so a later round cannot quietly lose
+  them: the convention by segment equilibrium, element equilibrium itself, the measured
+  shear-moment sign pair, the `My` sag sign, the alpha_m reference over the whole window,
+  and nothing outside the generator reading the old TIP sign.
+
+**The number, and what it says.** 1 of 16 against 9 of 21, 4 of 11, 8 of 13 and 5 of 10. The
+low count is not a measurement failure -- it is the measurement. **Every entry in this batch
+is on a surface with no gate, no test, no `mypy` and no tolerance**, so a count near zero is
+the expected value and the finding is that the expected value is near zero. `grep -rl
+member_forces_table tests/` was empty before this round. The one entry the tree catches is
+the one the implementer added a gate for.
+
+## Where I disagree with the criterion, said once, and I am repeating myself on purpose
+
+**I said this in the 108th verdict and the round in front of me is the second instance in
+two commits, so I am saying it once more and then stopping.**
+
+Under a literal reading of CZ0 (a)-(d), R734 is a closure item: `scripts/` is not
+`floatfea/`, `mid[5]` is not a tolerance, the generator asserts nothing, and no test is red.
+I have blocked on it under the carve-out my instructions give me, and I am naming that
+rather than smuggling it -- exactly as I did for R730.
+
+**What I would ask Xabier for is unchanged and it is one word in (a): a defect in
+`floatfea/` OR IN A PUBLISHED DELIVERABLE.** The measurement for it is now two rounds deep
+rather than one. In verdict 108 the two highest-value findings were both in that class.
+In this round the single blocking finding is in that class, it is a **sign error in the
+repair of the previous finding in that class**, it ships at 26.3% low on a stress a
+structural engineer sizes steel against, and **the entire mechanical apparatus of this
+repository is green on it**: 3563 local tests, both CI jobs, `ruff`, `black`, `mypy`, and a
+ladder that runs six rungs. There is no reading of CZ0 under which anything but a reviewer
+catches this, and no reading of (a)-(d) under which a reviewer that catches it is allowed to
+block.
+
+**The criterion is otherwise right and I am not arguing with the rest of it.** The
+three-round cap closed step 3 correctly. CZ0's retirement of published prose as a blocking
+head is why R735, R736 and R738 are a list and not a round -- and that is the correct trade,
+because none of them would have found R734. EQ0 is why this round exists at all, and EQ0 is
+what caught a (c)-class defect in a closure commit for the second time running.
+
+## Next step opens when
+
+**F4 STEP 3'S DISPOSITION IS UNCHANGED: `PASS`, SET AT THE 108th VERDICT (DD1). THIS ROUND
+DOES NOT REOPEN IT AND COUNTS AGAINST NO STEP'S ROUNDS (EB4).** What this HOLD means
+concretely, in order, cheapest first:
+
+1. **`scripts/measure/member_forces_table.py:364` takes `+` instead of `-`.** One character.
+   The derivation replaces the calibration sentence: s_y = +1, s_z = -1, measured from
+   the element's own end forces on all sixteen members, because the cross product puts
+   opposite signs on the two bending planes. Then the two signs are stated separately in
+   both docstrings (R735).
+2. **BP0's regeneration in the SAME commit**: `docs/F4_member_forces.csv`,
+   `docs/F4_member_forces.md` and the top-ten. The rule moved, so every figure citing the
+   old one is regenerated or withdrawn now and not when someone notices. My own numbers for
+   the two top-ten MID rows are `384.6 / 396.7` and `384.6 / 396.1`; if the regeneration
+   disagrees with those, the disagreement is the finding and I want to see it rather than a
+   reconciliation.
+3. **The sag sign is exercised at a configuration where `w_local[1]` is nonzero.** The
+   static basis cannot do it -- `w_local[1]` is identically zero there on all sixteen
+   members -- so the control is a tilted uniform field or any dynamic step, and the pasted
+   cell says which. This is the part that makes the repair of the repair different in kind
+   from the repair: **a control that can only be taken where the quantity is zero is not a
+   control.**
+4. **The corrected CSV and summary go to Xabier again, with one sentence saying which
+   column moved and by how much**, because the previous send was already a correction and a
+   second one without that sentence is worse than the first.
+5. **Then F5 step 1 opens, and it opens on ROOT and TIP only** until R730 and R734's
+   conditions are discharged. That sequencing condition is unchanged from verdict 108 and
+   the closure artifact records it; R734 is the reason it was right.
+
+**R735, R736, R738 and the `0.2240`/`0.2239` item are a LIST, not a round.** They go into
+the commit that lands item 1, or into F5's first report's `Carried`. Do not spend a round
+on them and do not answer them before item 1.
+
+**And one thing on the record for the implementer rather than against them.** The hand-back
+asked me to attack exactly the thing that was wrong, named the exact mechanism by which it
+could be wrong -- "if your cut and my chord mean share an assumption, neither of us would
+see it" -- and asked for a third route. That is the most useful hand-back I have been given
+in this milestone, and it is why the defect took one session instead of a round. The
+assumption we shared turned out not to be an assumption at all but a CONFIGURATION: both of
+my cells and both of yours sit at `w_y = 0`, where half the expression is unobservable.
+Nothing in either of our routes was wrong. We measured the same half twice.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F4 step 3
 Reviewed commit: beab29702e44ecb666f3e9d0423479589ada9cfc
 Verdict: PASS
 **Reviewed commit: `fa151ba`** (`fa151bac2249bb89df2c7f6c5d6e21f15a8030a9`, HEAD of F3 when
