@@ -1,6 +1,11 @@
 # Review — F4 step 3
 Reviewed commit: 9de3e4e9a8bc31caa1e22259d9d570c39d39c3b2
 Verdict: HOLD
+**Reviewed commit: `9de3e4e`** (`9de3e4e9a8bc31caa1e22259d9d570c39d39c3b2`, HEAD of F3
+at the time I judged it, tree clean). **I committed no corpus this round** -- ES0's
+light scope forbids a batch -- so the plain `Reviewed commit:` header above and the
+commit I judged are the same sha here. That coincidence is R718's subject and not its
+refutation.
 Tests: 3244 passed, 0 failed, 0 skipped   (MY OWN run, one invocation, no `-k`, no
 `--ignore`, no deselection, in the repository itself, tree clean at
 `9de3e4e9a8bc31caa1e22259d9d570c39d39c3b2`, `697.69s`. Not the report's figure -- there is
@@ -574,8 +579,126 @@ there is no deadlock. **Do not write a round into step 2's verdict file to clear
 change to my own tooling and goes through a directive in a standalone `process:` commit,
 not through a step commit.
 
+**R717. (closure class, EK2's LOCATOR class, and ONE MECHANISM WITH R716)
+`scripts/ci_section.py`'s ANCHOR PATTERN AND `scripts/write_verdict.py`'s OUTPUT DISAGREE,
+SO THE GENERATOR DEPENDS ON A PROSE CONVENTION ITS OWN PRODUCER DOES NOT EMIT.**
+`scripts/ci_section.py:172` is a bold, backticked pattern --
+`_JUDGED` at `:172` requires the sha to be WRAPPED IN BACKTICKS INSIDE A BOLD SPAN --
+and `:201-206` raises when it does not match. `scripts/write_verdict.py:82` emits
+`Reviewed commit: {sha}`, **plain**. So the only line the sanctioned writer produces cannot
+satisfy the only pattern the generator accepts, and what has been satisfying it is a
+sentence reviewers have written in the body by hand.
+
+```
+cmd    python scripts/ci_section.py
+out    verdict 104 at `9ec380e` does not name the commit it judged in its header, so
+out    there is no commit to report CI for.
+cmd    python <every commit touching docs/reviews, newest 40 states: does the file carry
+                the bold judged-commit line at all?>
+out    verdict-file states examined : 40
+out    NO bold line at all          : 5
+out      9ec380e docs/reviews/F4/step-3.md   <- mine, this round
+out      8368c51 docs/reviews/F3/step-3.md
+out      83c7ba5 / 5bfdf3e / 53c4908  docs/reviews/F2/step-7.md
+judge  **IT HAS BEEN OMITTED FOUR TIMES BEFORE MINE**, so this is not a quirk of one
+       hand-written verdict. The dependency is invisible until the line is absent, and the
+       line is absent exactly when a verdict is written outside `write_verdict.py` -- which
+       is R716's condition. **R716 and this are one mechanism, not two coincidences**, and
+       the coordinator's reading of that is right.
+```
+
+**It is EK2's class and the repair belongs at the PRODUCER, not at the consumer.** EK2
+permits repairing a locator that misreads its input. `_anchor()`'s own docstring is
+`CO1: one chain, no argument, no fallback that guesses`, and that refusal is CORRECT -- see
+R718. So the repair is that `write_verdict.py` emits the bold line, taken from the body's
+own statement of the commit it judged and refused when the body states none, which turns
+the convention into a mechanism. **Closed when** the writer emits what the anchor reads, or
+the anchor reads what the writer emits AND the two are shown to be the same quantity --
+which R718 measures that they are not.
+
+**I HAVE ADDED THE LINE TO THIS FILE, AND THERE IS AN ORDERING CONSEQUENCE THE COORDINATOR
+MUST ACT ON.** `_anchor()` reads the verdict **at the commit the report answers** --
+`git show {verdict_sha}:{VERDICT_IN_REPO}`, `scripts/ci_section.py:192-199`. The line is
+NOT in `9ec380e` and cannot be put there: that commit is pushed and force-push is
+forbidden. So **step 3's report must answer the commit that CARRIES this line** --
+`git log -1 --format=%h -- docs/reviews/F4/step-3.md`, taken when the report is written,
+which is the amendment commit and not `9ec380e` -- or the generator will refuse for the same reason at the older sha. That is the
+whole of what unblocks the report.
+
+**R718. (BLOCKING -- (c): a gate assertion on WHICH QUANTITY. Latent, and I say so.)
+`tests/test_report_carried.py:2086`'s FALLBACK SUBSTITUTES A DIFFERENT QUANTITY -- ONE THE
+TREE ALREADY DOCUMENTS AS NOT THE JUDGED COMMIT.**
+`tests/test_report_carried.py:2084-2086`:
+
+    def _judged_commit() -> str:
+        m = _JUDGED.search(VERDICT_TEXT)
+        return m.group(1) if m else _reviewed_commit(VERDICT_TEXT)
+
+and `:270-272`, where `_reviewed_commit()` reads the **plain** `^Reviewed commit:` header.
+That header is `write_verdict.py`'s `sha()` -- **HEAD at the moment the verdict was
+written** -- and `scripts/write_verdict.py:36-41` says so in its own words: "The
+`Reviewed commit:` stamp is taken from `HEAD`, which is structurally NOT the reviewed
+commit whenever the reviewer commits its corpus first -- as it is instructed to. The body
+names the commit it judged; that line does not."
+
+```
+cmd    python <every commit touching docs/reviews, newest 40 states: the plain header sha
+                against the bold judged-commit sha in the same file>
+rule   `test_the_CI_section_is_about_the_REVIEWED_commit` asserts the section is about the
+       commit the verdict JUDGED
+out    states carrying BOTH lines           : 35
+out    plain header == bold judged (prefix) : 12
+out    plain header DIFFERS from bold judged: 23
+out      488f2d8 docs/reviews/F4/step-2.md   plain 4f99c7f  judged 7cee09f
+out      5786bed docs/reviews/F4/step-1.md   plain 6e39151  judged 84de436c
+out      9d7a9c4 docs/reviews/F3/step-3.md   plain 4193c0d  judged 727b9fa
+out      580b183 docs/reviews/F3/step-2.md   plain 5a2ff21  judged 29570e1
+out      ... 19 more
+judge  the two lines are DIFFERENT QUANTITIES and they differ in 23 of the 35 states where
+       both exist. The fallback substitutes the first for the second.
+cmd    python <the 4 earlier no-bold states: is the plain header the verdict commit's own
+                parent, i.e. HEAD at write time?>
+out    8368c51  plain 6c4e6516f  parent 6c4e6516f  equal=True
+out    83c7ba5  plain 0a660cede  parent 0a660cede  equal=True
+out    5bfdf3e  plain d877c9100  parent d877c9100  equal=True
+out    53c4908  plain b9a985999  parent b9a985999  equal=True
+judge  **AND THIS IS THE HONEST LIMIT OF THE MEASUREMENT: THE FALLBACK HAS NEVER YET
+       MIS-RESOLVED.** It fires only when the bold line is absent, and in all four earlier
+       absences nothing was committed between the judged commit and the write, so HEAD at
+       write time WAS the judged commit. It is latent, not live, and I am not going to
+       pretend otherwise.
+```
+
+**WHY I BLOCK ON A LATENT DEFECT, AND IT IS NOT A JUDGEMENT CALL -- IT IS THIS ROUND.** The
+fallback fires when the bold line is missing; it is wrong when a commit intervened between
+the judged commit and the write. Those two conditions coincide the first time a reviewer
+commits a corpus and then hand-writes a verdict, **which is exactly this round minus the
+corpus**: I hand-wrote this verdict, and the only reason I did not commit a corpus batch
+first is that ES0's light scope forbids one on an interim check. Had this been a full round,
+the plain header would have named my corpus commit and
+`test_the_CI_section_is_about_the_REVIEWED_commit` would have certified a CI table as being
+about a commit that is not the one reviewed. **R352's four consecutive rounds were that
+exact defect with the section at fault; this is it with the CHECK at fault**, and a check
+that cannot fail when the thing it claims is false is the one shape my instructions say to
+ask of every test.
+
+**AND IT INVERTS THE COORDINATOR'S READING, WHICH IS WHY IT IS A FINDING RATHER THAN A
+NOTE.** The hand-back offers the fallback as the guards resolving what the generator cannot,
+and reads that as the generator being the weaker of the two. Measured, it is the other way
+round: the generator's refusal is correct under CO1, and the fallback is the defect. "A
+report could pass its own guards while the section it needs could not be produced" is true
+and is the right worry -- but the cure is not to teach the guard to guess; it is that the
+guard should refuse too, and the producer should emit the line so neither has to.
+
+**Closed when** `_judged_commit()` has no fallback and the existing `assert judged` is what
+fires -- its own message already reads "The verdict's header carries
+the bold, backticked header form by name, so the assertion is already written for
+the no-fallback form -- **or** the fallback reads a line that IS the judged commit, with the
+equality measured over the same 35 states rather than assumed. One expression either way,
+and no new apparatus.
+
 **ES0 light scope, honoured literally: there is no `## Closure items` list this round and
-no corpus batch.** R712 to R716 are closure class and join step 3's list, to be answered in
+no corpus batch.** R712 to R717 are closure class and join step 3's list, to be answered in
 its first revision or in the closure commit; C1 to C21 from step 2's rounds carry into
 `docs/closure/F4.md` unchanged and I did not re-adjudicate one of them.
 
@@ -672,8 +795,11 @@ step 3 still has all three. What it must do before anything else:
    not become a round.
 2. **C1 is answered in the same work**, because it is R711's input and verdict 102
    conditioned it exactly there.
-3. **R712 to R716 join step 3's list** and are answered in its first revision or in the
-   closure commit. None of them holds the step.
+3. **R712 to R717 join step 3's list** and are answered in its first revision or in the
+   closure commit. None of those holds the step. **R718 DOES hold it** -- it is (c) and
+   one deletion -- and **R717's ordering note must be acted on** for the report's
+   section 0 to be produced at all: the `Answers:` header must name the commit that
+   carries the bold anchor line, which is not `9ec380e`.
 4. **Step 3's own locked work is unchanged by this check** and is not reopened: the
    member-force table per member and per case at every element node, the six-case envelope,
    the `f` sensitivity, R638, R637 clause (iii), and `docs/closure/F4.md` with G4.5's
@@ -688,7 +814,7 @@ the plan meant.
 
 ## On the criterion -- I was asked, and I agree with it, with one note on where it bites
 
-CZ0 is right, and six rounds of prose findings moving no gate is the evidence. R712 to R716
+CZ0 is right, and six rounds of prose findings moving no gate is the evidence. R712, R714, R715 and R717
 went to the closure class without argument, including two I would have enjoyed arguing
 about, and that is the criterion working.
 
