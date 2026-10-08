@@ -1,0 +1,74 @@
+# CORPUS: a COUNTER-CASE MEMBER WHOSE RESPONSE IS THE CLEAN VALUE -- the one
+# coordinate of EV1's G4.1-DYNAMIC counter families that the shipped filter
+# decides by round-off
+# -- scripts/measure/g41_dynamic.py at 45e5242 (`measure_case`, the joint-drop
+#    family filter at :423-430, the family-size assertion at :432-438, the
+#    vacuous-set comment at :439-448, the mass-injection block at :461-475)
+# -- docs/milestones/F4.md:145-159 (EV1's window rule and its two counter-cases)
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the 105th verdict, reviewed commit
+# 45e5242fe4edb59cb1966c65102cafac03b38102, batch 38.
+#
+# WHAT A PASSING SCAN MEANS. For every entry below, the shipped family filter
+# must place the member in the channel's family if and only if dropping that
+# joint (or scaling that mass) moves THAT BODY's residual in THAT CHANNEL
+# detectably above its own clean value -- and the number the window rule is
+# declared from must be a member that satisfies that. An entry marked
+# `caught=no` is a shape the filter admits or rejects for a reason that is not
+# the property it claims to test.
+#
+# WHY THIS FILE EXISTS (BE3). EG4(e) pauses corpus batches to 28 October except
+# mutation work on the two surfaces where a miss reaches a member force. This is
+# one of them: member forces are static + dynamic (EK0(f)), the dynamic half is
+# `res.lam` mapped to the nodes, and G4.1-dynamic is the only gate that measures
+# whether that mapping balances. The defect class is older than this gate --
+# R689 named it, "a row that compares nothing reading as agreement", and R682,
+# R694, R704, R706, R708 and R710 were each a counter calibrated at one point of
+# its ceiling's domain -- and the shipped filter was written against the one
+# configuration its author ran, T_full = 14.
+#
+# EVERY `measured=` FIELD WAS TAKEN BY THE REVIEWER AT 45e5242, model scale,
+# ER0's basis (platform 20 kg, I 20/20/40), f = 0.75, dt 0.01, over DQ6's own
+# window, by running the shipped script with print-only instrumentation. A field
+# reading `not-run` was not measured and no claim is made about it.
+#
+# FIELDS
+#   id        a name for the shape
+#   channel   force | moment | both
+#   shape     what the candidate is
+#   rule      the property the filter claims to test
+#   caught    yes | no | not-run -- does the SHIPPED filter at 45e5242 place
+#             this member correctly, measured
+#   measured  the figure, where taken
+
+id=vacuous_pair_on_the_cases_WORST_body channel=moment shape=a_(body,joint)_pair_whose_moment_contribution_is_seven_decades_below_its_siblings,_sitting_on_the_body_that_carries_the_case_maximum rule=drop_must_exceed_that_bodys_own_clean_value caught=no measured=T10_hub3/11_drop_rel=9.309128055654e-07_own_clean=9.309127595066468e-07_ratio=1.000000049477_case_worst=9.309127595066468e-07_IN=True note=admitted_by_a_4.9e-08_relative_excess_over_the_very_quantity_that_makes_it_vacuous
+
+id=vacuous_pair_on_a_NON_worst_body channel=moment shape=the_same_shape_on_a_body_below_the_case_maximum rule=drop_must_exceed_that_bodys_own_clean_value caught=yes measured=T10_hub1/3_drop_rel=6.419583706073e-07_own_clean=6.419583012697247e-07_ratio=1.000000108009_case_worst=9.309127595066468e-07_IN=False note=the_right_outcome_for_the_wrong_reason_--_rejected_for_being_on_a_quiet_body,_not_for_being_vacuous
+
+id=vacuous_set_asserted_as_CASE_DEPENDENT channel=moment shape=the_claim_that_WHICH_pairs_are_vacuous_varies_with_the_case rule=a_geometric_fact_does_not_vary_with_the_wave_period caught=no measured=hub1/3_and_hub3/11_are_vacuous_at_BOTH_T10_and_T14_--_own_clean_ratios_1.000000108009/1.000000049477_at_T10_and_1.000003140535/1.000002160674_at_T14 note=what_varies_is_which_body_is_the_case_maximum_--_platform_at_T14_and_T15,_hub3_at_T10
+
+id=family_minimum_is_the_vacuous_member channel=moment shape=the_window_rules_weakest_counter_edge_taken_over_a_family_containing_a_vacuous_member rule=both_edges_of_the_geometric_centre_at_least_2x caught=no measured=shipped_weakest=9.309128e-07_against_clean_worst=2.3243458955783927e-06_gives_edges_0.6329x;_with_the_vacuous_member_excluded_weakest=1.752748714140e-02_gives_edges_86.8379x note=the_rule_reads_UNSATISFIABLE_because_of_one_member_that_certifies_nothing
+
+id=four_decade_gap_below_the_genuine_family channel=moment shape=nothing_in_the_genuine_family_is_anywhere_near_the_clean_worst rule=a_counter_familys_spread_is_what_a_margin_is_quoted_against caught=yes measured=T10_weakest_genuine=1.752748714140e-02_is_18828.3x_both_the_vacuous_member_and_the_case_clean_worst;_T14_weakest_genuine=1.816033296779e-02_at_12541.0x note=there_is_no_marginal_member_in_this_family_except_the_vacuous_one
+
+id=injection_whose_response_is_BELOW_the_clean_floor channel=moment shape=a_mass_scale_small_enough_that_the_injected_signal_sits_under_that_bodys_own_clean_residual rule=the_reported_response_must_be_the_RESPONSE_and_not_the_floor caught=no measured=at_eps=1e-6_the_pure_signal_max_of_resid_mass_minus_resid_over_den_m_is_2.538043e-09_on_hub2_and_hub4_while_their_clean_is_6.777114e-07,_267x_larger;_the_reported_weakest_6.013115e-07_is_hub3s_clean_6.021058e-07 note=the_published_counter_response_is_a_clean_value,_which_is_R689s_shape_arriving_in_the_mass_counter
+
+id=linearity_assumed_where_the_floor_dominates channel=moment shape=extrapolating_the_needed_injection_scale_from_one_point_through_the_origin rule=a_boundary_is_SOLVED,_not_extrapolated caught=no measured=eps_1.0e-06_gives_6.013115e-07_and_predicts_1+4.816e-06;_eps_4.816e-06_gives_6.034193e-07,_a_4.816x_larger_injection_moving_the_response_0.35_percent,_and_then_predicts_1+2.311e-05 note=one_variable_moved,_the_case_and_the_window_held
+
+id=needed_scale_against_the_PER_CASE_clean_worst channel=moment shape=solving_the_2x_edge_against_the_cases_own_maximum_where_the_declared_ceiling_is_global rule=one_global_ceiling_is_bracketed_against_the_global_clean_worst caught=no measured=the_per_case_print_gives_1+1.802e-05_at_T10,_1+4.816e-06_at_T14,_1+6.677e-06_at_T15_against_case_worsts_spanning_22.5807x note=the_clean_moment_spread_over_the_cases_is_the_factor_the_extrapolation_is_short_by
+
+id=the_solved_injection_scale channel=moment shape=the_scale_the_weakest_PURE_signal_needs_to_reach_2x_the_GLOBAL_clean_worst rule=invert_the_decision_rule_and_solve caught=no measured=1+1.831605e-03_at_T14,_from_a_weakest_pure_signal_of_2.538043e-09_at_eps_1e-6_against_a_global_clean_worst_of_2.3243458955783927e-06 note=380x_above_the_published_1+4.816e-06;_a_lower_bound,_since_only_T10_T14_T15_were_run
+
+id=force_channel_hides_the_same_defect channel=force shape=the_identical_filter_and_the_identical_extrapolation_on_a_channel_whose_clean_value_is_at_round_off rule=a_check_must_be_able_to_fail_on_every_channel_it_runs_on caught=yes measured=all_20_pairs_IN_at_both_T10_and_T14_with_ratios_1.69e+15_to_4.25e+15;_the_mass_prints_1+2.331e-15_agrees_with_the_solved_2.676582e-15_because_the_signal_1.386550e-07_sits_ABOVE_the_floor_1.615912e-16 note=the_force_channel_is_where_the_formula_happens_to_be_right,_which_is_why_reading_it_there_proves_nothing
+
+id=a_pair_vacuous_on_moment_and_LARGEST_on_force channel=both shape=one_(body,joint)_pair_being_the_weakest_member_of_one_channels_family_and_the_strongest_of_the_others rule=family_membership_is_decided_per_channel caught=yes measured=T14_hub1/3_is_the_moment_familys_rejected_minimum_at_9.211057536872e-07_and_the_force_familys_maximum_at_5.194570550653e-01;_hub3/11_likewise_6.021071415490e-07_and_5.052081622332e-01 note=the_per_channel_split_is_correct_and_this_entry_records_it_as_verified
+
+id=family_SIZE_asserted_while_MEMBERSHIP_is_not channel=both shape=asserting_the_family_size_is_20_while_the_number_the_ceiling_is_declared_from_comes_from_a_filtered_subset_no_assertion_reads rule=assertion_domain_blindness_--_the_collection_the_assertion_inspects_must_be_able_to_contain_the_failure caught=no measured=the_size_assertion_reads_all_f_and_gives_20_at_T10_and_T14;_the_filtered_moment_set_held_19_at_T10_and_18_at_T14_and_is_only_printed note=the_size_that_cannot_vary_is_asserted_and_the_set_that_does_vary_is_not
+
+id=a_joint_touching_a_body_only_in_round_off channel=both shape=a_(body,joint)_key_admitted_because_its_contribution_is_nonzero_only_in_the_last_bits rule=an_exact_zero_test_decides_whether_a_joint_touches_a_body caught=not-run measured=not-run note=the_zero_test_is_EXACT;_a_contribution_of_1e-300_rather_than_0.0_enters_the_family_and_the_size_assertion_then_refuses_at_a_number_other_than_20,_which_is_the_safe_direction_and_is_recorded_as_unmeasured
+
+id=a_body_whose_denominator_is_zero channel=both shape=a_case_in_which_some_FE_body_carries_no_joint_reaction_at_all_over_the_window rule=an_empty_parameter_set_is_an_error_and_not_a_skip caught=not-run measured=not-run note=the_den_positivity_guard_filters_that_body_OUT_of_both_clean_worsts_and_both_mass_minima_silently,_and_the_surviving_body_count_is_asserted_nowhere
+
+id=the_vacuity_margin_boundary_from_below channel=moment shape=how_close_to_1.0_the_own_clean_ratio_may_come_before_a_member_should_be_called_vacuous rule=EH4_--_every_boundary_solved_in_BOTH_directions caught=not-run measured=the_four_vacuous_ratios_measured_are_1.000000049477,_1.000000108009,_1.000002160674_and_1.000003140535,_and_the_weakest_genuine_members_is_18828.281127744427 note=five_decades_of_empty_space_between_them_so_the_margin_is_not_a_tuned_number;_the_boundary_is_unsolved_because_no_margin_exists_to_solve_it_against
