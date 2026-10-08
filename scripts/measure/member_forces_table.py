@@ -315,10 +315,19 @@ def _station_values(
 
         worst |alpha| L_max / |a|  =  0.2239
 
-    The rotational contribution reaches 22% of the translational at the far node, not
-    zero. So the chord mean for `N` and `T` is an APPROXIMATION of the same order as the
-    MID bending term, recorded as one rather than claimed exact. A refined mesh would
-    settle it, and F4 closes carrying that into F5's ledger.
+    The rotational contribution is not zero. But the conclusion I drew from that was wrong
+    in BOTH directions (R736):
+
+    * **`N` is provably exact, not an approximation.** The angular part of the field is
+      `alpha x r`, which is perpendicular to `r`; along a member `r` is the member axis, so
+      the axial projection of the angular field is identically zero and `N` is constant
+      whatever `alpha` is. Measured end-to-end variation: `0.000` everywhere.
+    * **The BENDING closed form is the approximation**, and the figure for it was stated
+      nowhere. It is a measured `4.0%`.
+
+    And `0.2239` is itself one operating point: over the window the table envelopes, the
+    same ratio reaches `17.067` sampling every twentieth step and `50.297` every seventh.
+    A refined mesh would settle the bending term; F4 closes carrying that into F5's ledger.
     """
     f_eq = element_equivalent_load(body, member, net)
     mf = member_forces(body, member, u_full, f_eq)
@@ -357,12 +366,52 @@ def _station_values(
     span = float(member.length)
     tip_internal = -tip
     mid = 0.5 * (root + tip_internal)
-    # The parabolic sag. The SIGN IS CALIBRATED against an independent statics cut and not
-    # reasoned from the component order: with `w_local[2] = -91968.75 N/m`, the midspan
-    # `My` is the chord mean MINUS `w L^2 / 8`, which reproduces `1.2454102e+08` where the
-    # other sign gives `6.7060547e+07` -- and `6.7060547e+07` is what shipped.
-    mid[4] = mid[4] - w_local[2] * span * span / 8.0
-    mid[5] = mid[5] - w_local[1] * span * span / 8.0
+    # THE PARABOLIC SAG, AND THE TWO PLANES CARRY OPPOSITE SIGNS (R734).
+    #
+    # Derived, not calibrated. `e_x x F = (0, -F_z, +F_y)`, so the standard beam relations
+    # are `dM_z/dx = +V_y` and `dM_y/dx = -V_z`, with `dV/dx = -w`. Hence
+    # `M_z'' = -w_y` and `M_y'' = +w_z`, and for a parabola `f(L/2) = chord - f'' L^2/8`:
+    #
+    #     mid My  =  chord  -  w_z L^2 / 8
+    #     mid Mz  =  chord  +  w_y L^2 / 8        <-- the OPPOSITE sign
+    #
+    # **THE FIRST REPAIR GAVE BOTH PLANES THE SAME SIGN, so one of them was always going
+    # to be wrong.** It was calibrated against one measured cell rather than derived, and
+    # the cell could not see the error: `w_local[1]` is EXACTLY ZERO on all sixteen members
+    # on the static basis, so the `Mz` term is unobservable there. Both of my published
+    # cells, both static controls my own closing condition asked for, and both of the
+    # reviewer's independent figures sat at `w_y = 0`.
+    #
+    # **A control that can only be taken where the quantity is zero is not a control.**
+    # Measured on the row where it is largest -- `hub4:buoy12_arm`, `T_full = 12.5 s`,
+    # step 219, `w_y = -7.1836e+03` -- the subtracting form gives `Mz = +1.091976e+06` and
+    # the adding form `-3.046460e+04`, and the second is what segment equilibrium gives.
+    sag_y = -w_local[2] * span * span / 8.0
+    sag_z = +w_local[1] * span * span / 8.0
+    mid[4] = mid[4] + sag_y
+    mid[5] = mid[5] + sag_z
+
+    # THE CONTROL THE FIRST REPAIR DID NOT HAVE, and it runs where the quantity is
+    # NONZERO. A control that can only be taken where the quantity is zero is not a
+    # control: `w_local[1]` is exactly `0.0` on all sixteen members on the static basis,
+    # which is why one calibrated cell, two static controls and two independent reviewer
+    # figures all missed a flipped sign on `Mz`.
+    #
+    # NO THRESHOLD AND NO TOLERANCE. The derivation fixes the SIGN of each sag against the
+    # sign of its own load component -- `M_y'' = +w_z` and `M_z'' = -w_y` give sags of
+    # `-w_z L^2/8` and `+w_y L^2/8` -- so the check is a sign comparison and needs no
+    # constant. It catches exactly the defect that shipped, and it cannot be satisfied by
+    # a configuration that happens to sit at zero because it skips those.
+    for load, sag, plane in ((w_local[2], sag_y, "My/w_z"), (w_local[1], sag_z, "Mz/w_y")):
+        if load == 0.0:
+            continue
+        want = -1.0 if plane == "My/w_z" else 1.0
+        if math.copysign(1.0, sag) != math.copysign(1.0, want * load):
+            raise SystemExit(
+                f"{member.label}: the {plane} parabolic sag has the wrong sign -- load "
+                f"{load!r}, sag {sag!r}. `M_y'' = +w_z` and `M_z'' = -w_y`, so the two "
+                "planes carry OPPOSITE signs and giving them the same one is R734."
+            )
     return {"ROOT": root, "MID": mid, "TIP": tip_internal}
 
 

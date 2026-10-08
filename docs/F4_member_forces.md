@@ -21,8 +21,8 @@
 |---|---|---|---|---|---|---|
 | 1 | platform | `platform:hub2_arm` | ROOT | T = 10 s | 742.6 | 762.2 |
 | 2 | platform | `platform:hub4_arm` | ROOT | T = 10 s | 742.6 | 761.5 |
-| 3 | platform | `platform:hub2_arm` | MID | T = 10 s | 380.6 | 392.8 |
-| 4 | platform | `platform:hub4_arm` | MID | T = 10 s | 380.6 | 392.2 |
+| 3 | platform | `platform:hub2_arm` | MID | T = 10 s | 384.6 | 396.7 |
+| 4 | platform | `platform:hub4_arm` | MID | T = 10 s | 384.6 | 396.1 |
 | 5 | platform | `platform:hub3_arm` | ROOT | T = 20 s | 337.3 | 338.2 |
 | 6 | platform | `platform:hub1_arm` | ROOT | T = 12.5 s | 312.2 | 314.5 |
 | 7 | hub1 | `hub1:buoy3_arm` | ROOT | T = 10 s | 262.5 | 263.0 |
