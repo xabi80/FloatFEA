@@ -2082,8 +2082,35 @@ _JUDGED = re.compile(r"\*\*Reviewed commit:\s*`([0-9a-f]{7,40})`")
 
 
 def _judged_commit() -> str:
+    """The commit the verdict JUDGED, from the bold line and from nowhere else (R718).
+
+    THIS HAD A FALLBACK TO THE PLAIN `Reviewed commit:` HEADER AND THAT WAS THE DEFECT.
+    The plain header is `scripts/write_verdict.py`'s `sha()` -- HEAD at the moment the
+    verdict was written -- and that file says in its own words (`:36-41`) that this is
+    "structurally NOT the reviewed commit whenever the reviewer commits its corpus first
+    -- as it is instructed to". Measured over the newest 60 commits touching the verdict
+    directory:
+
+        states carrying BOTH lines           : 53
+        plain header == bold judged (prefix) : 13
+        plain header DIFFERS from bold judged: 40
+        states with NO bold line at all      :  7
+
+    So in 40 of 53 states the fallback would have resolved to a DIFFERENT commit than the
+    one judged -- and `test_the_CI_section_is_about_the_REVIEWED_commit` would then have
+    certified a CI table as being about a commit that is not the one reviewed. It is
+    latent only because the seven no-bold states happen to have the plain header equal to
+    the judged commit's own parent, nothing having been committed in between.
+
+    `scripts/ci_section.py::_anchor` refuses outright in this case and its docstring says
+    why: "CO1: one chain, no argument, no fallback that guesses." The guard now refuses
+    the same way -- `assert judged` below already names the bold, backticked form in its
+    message, so the assertion was already written for this shape. R352 was four
+    consecutive rounds of a section naming the wrong commit; this is the same defect with
+    the CHECK at fault instead of the section.
+    """
     m = _JUDGED.search(VERDICT_TEXT)
-    return m.group(1) if m else _reviewed_commit(VERDICT_TEXT)
+    return m.group(1) if m else ""
 
 
 def test_the_CI_section_is_about_the_REVIEWED_commit() -> None:
