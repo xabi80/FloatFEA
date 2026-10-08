@@ -64,12 +64,6 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "measure"))
 
-# `CLAUDE.md`: every numerical tolerance in this repository lives in
-# `floatfea/tolerances.py`. No local literals -- this check shipped with `1.0e-12` written
-# into it, which is the rule's own prohibition, found while writing the gate that reads the
-# same quantity out of the npz.
-from floatfea.tolerances import F4_G41_DECOMPOSITION_AGREEMENT  # noqa: E402
-
 OUT_DIR = ROOT / "data" / "f4"
 NPZ = OUT_DIR / "dynamic_inputs.npz"
 PROVENANCE = OUT_DIR / "dynamic_inputs.provenance.json"
@@ -303,13 +297,24 @@ def export_case(period_full_s: float, dt: float) -> dict[str, Any]:
         # it: the per-joint decomposition must reproduce `g_mid.T lam` to round-off.
         reaction = np.asarray(g_mid.T @ lam, dtype=np.float64)
         rebuilt = contrib.sum(axis=0).reshape(-1)
-        scale = float(np.max(np.abs(reaction))) or 1.0
-        gap = float(np.max(np.abs(rebuilt - reaction))) / scale
-        if gap > F4_G41_DECOMPOSITION_AGREEMENT:
+        # THE SHAPES MUST MATCH; THE MAGNITUDE IS THE GATE'S JOB (R726).
+        #
+        # This check used to compare the gap against `F4_G41_DECOMPOSITION_AGREEMENT`,
+        # which put `floatfea/tolerances.py` on this script's import closure -- and the
+        # closure is what the staleness gate now asserts. The consequence, measured: every
+        # edit to any tolerance reddened the gate and demanded a 30-minute regeneration of
+        # a 12 MiB golden file, for a value that cannot change a single number in it.
+        #
+        # A ceiling in two places is also one place too many. `resid_control` is stored
+        # precisely so the CONSUMER can compare the two forms -- which
+        # `test_the_two_WAYS_of_forming_the_reaction_agree` does, against the declared
+        # ceiling, on the arrays that actually ship. What remains here is the structural
+        # question this script alone can answer.
+        if rebuilt.shape != reaction.shape:
             raise SystemExit(
-                f"the per-joint decomposition departs from `g_mid.T lam` by {gap:.3e} "
-                f"relative at step {n}, outside {F4_G41_DECOMPOSITION_AGREEMENT!r}; the "
-                "bodies do not partition the state as this export assumes."
+                f"the per-joint decomposition has shape {rebuilt.shape} and the reaction "
+                f"vector {reaction.shape} at step {n}; the bodies do not partition the "
+                "state as this export assumes."
             )
 
         # A CONTROL ON THE TOPOLOGY, taken once: every pair the deck names must actually

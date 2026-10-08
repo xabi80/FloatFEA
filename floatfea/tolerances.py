@@ -2571,8 +2571,67 @@ F4_DQ5_FREE_FALL_COUNTER: Final[float] = 4.0e-4
 # is a different rule and goes back to Xabier. It fires by design on any channel whose
 # clean worst and weakest defect are closer than four decades apart, which is why the force
 # channel's edges are five figures and the moment channel's are two.
+# R728 -- THIS CONSTANT WAS READ IN TWO OPPOSITE SENSES AND IT IS NOW TWO CONSTANTS.
+# Three uses read it as a FLOOR on a ratio (`edge >= this`); the vacuity assertion read it
+# as a CEILING on a signal (`signal < this * clean_worst`). Measured: raising it to `86.0`
+# -- a STRENGTHENING move for the window rule -- put the vacuity assertion back at
+# `1.999e-04` and reinstated the whole of R723's `43.0229x` of slack. One value serving
+# two senses means every change to it strengthens one and weakens the other.
 # Set: 2026-10-08, F4 step 3
 F4_WINDOW_RULE_MIN_EDGE: Final[float] = 2.0
+
+# CLASS: STRUCTURAL -- THE VACUITY FACTOR (EX2 / R723 / R728). No counter-case: it is a
+# decision rule's own shape, not an error ceiling (AO2).
+#
+# A counter-family member is VACUOUS when its response cannot redden the gate at any
+# ceiling the window rule could declare. The lowest such ceiling is
+# `F4_WINDOW_RULE_MIN_EDGE * clean_worst`, so that is the threshold the claim flips at --
+# which is why this value equals the edge floor BY DERIVATION and not by coincidence.
+#
+# IT IS A SEPARATE CONSTANT ANYWAY, which is R728. Shared, the two senses fought: the
+# vacuity assertion got looser every time the edge floor was tightened. Separated, a change
+# to either is a change to one thing, and the test pins this one from ABOVE as well --
+# `this * clean_worst` must stay below the declared ceiling, or a member called vacuous
+# would be one the gate actually catches.
+#
+# Reason for 2.0: it is `F4_WINDOW_RULE_MIN_EDGE` by the derivation above. At the measured
+# figures it leaves 43.0229x of margin on the moment channel, and at `86.0` it would
+# swallow the ceiling exactly -- which is the number R728 was found at.
+# Set: 2026-10-08, F4 step 3
+F4_G41_VACUITY_FACTOR: Final[float] = 2.0
+
+# CLASS: STRUCTURAL -- HOW FAR THE DECOMPOSITION CEILING MAY SIT ABOVE ITS MEASUREMENT
+# (R727). No counter-case: a declared headroom, not an error ceiling (AO2).
+#
+# `F4_G41_DECOMPOSITION_AGREEMENT` is the one F4 ceiling NOT declared by the window rule --
+# it is the value the export has always enforced, and the reviewer endorsed keeping it
+# there because the rule's own geometric centre would LOOSEN it by seven decades on a
+# quantity whose clean value is round-off. The cost of being outside the rule is that
+# nothing bounded it from above except its counter-case, eleven decades away: measured, it
+# widens from `1.0e-12` to just under `0.1` with the gate green.
+#
+# So it is pinned to its MEASUREMENT instead. The worst decomposition gap over the six
+# cases is `2.111298e-16` and the declared ceiling is `4736x` above it; `1.0e+4` is the
+# round bound above that, which leaves the ceiling about a third of a decade of room
+# rather than eleven.
+# Set: 2026-10-08, F4 step 3
+F4_G41_DECOMPOSITION_HEADROOM: Final[float] = 1.0e4
+
+# CLASS: STRUCTURAL -- EV1's MASS-INJECTION SIZE (R729). No counter-case: it is the size
+# of an injection, an INPUT to a counter-case rather than a ceiling anything is compared
+# against (AO2).
+#
+# EV1 specifies `M` scaled by `1 + 1e-6`. It was a module-level literal in
+# `scripts/measure/g41_dynamic.py` and reached `tests/` exactly once -- inside an f-string
+# in a failure message, where nothing asserted it. **Both of the force channel's declared
+# values are functions of it**: the mass response is exactly linear in it and IS the
+# binding member of the family, so the window centre moves `5.66x` across the band
+# `[8.8605e-07, 2.8385e-05]` over which the suite stays green.
+#
+# Reason for 1.0e-6: EV1 sets it. It is not measured and not tunable here -- a different
+# value is a different counter-case and goes back to Xabier.
+# Set: 2026-10-08, F4 step 3
+F4_G41_MASS_INJECTION_EPS: Final[float] = 1.0e-6
 
 # CLASS: ACCURACY -- EV1 / G4.1 DYNAMIC, THE FORCE CHANNEL. The quantity is
 # `max_t |Sum_j F_j - M.a| / max_t Sum_j |F_j|`, per FE body and per case, over the DQ6
