@@ -48,6 +48,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -55,6 +56,13 @@ import numpy as np
 from numpy.typing import NDArray
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+# `CLAUDE.md`: every numerical tolerance lives in `floatfea/tolerances.py`. EV1's "both
+# edges at least 2x" is the window rule's own shape, so it is declared there as a
+# STRUCTURAL entry rather than written into the three places that read it.
+from floatfea.tolerances import F4_WINDOW_RULE_MIN_EDGE  # noqa: E402
+
 NPZ = ROOT / "data" / "f4" / "dynamic_inputs.npz"
 PROVENANCE = ROOT / "data" / "f4" / "dynamic_inputs.provenance.json"
 
@@ -134,7 +142,11 @@ class WindowRule:
     @property
     def satisfiable(self) -> bool:
         """Both edges at least 2x, which is what EV1 requires of a declared ceiling."""
-        return self.live > 0 and self.lower_edge >= 2.0 and self.upper_edge >= 2.0
+        return (
+            self.live > 0
+            and self.lower_edge >= F4_WINDOW_RULE_MIN_EDGE
+            and self.upper_edge >= F4_WINDOW_RULE_MIN_EDGE
+        )
 
 
 def _sha256(path: Path) -> str:
@@ -419,8 +431,8 @@ def window_rule(inp: Inputs, channel: str) -> WindowRule:
         centre=centre,
         lower_edge=centre / worst,
         upper_edge=weakest / centre,
-        eh4_fall_to=2.0 * worst,
-        eh4_rise_to=weakest / 2.0,
+        eh4_fall_to=F4_WINDOW_RULE_MIN_EDGE * worst,
+        eh4_rise_to=weakest / F4_WINDOW_RULE_MIN_EDGE,
     )
 
 

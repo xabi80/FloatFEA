@@ -55,6 +55,7 @@ from floatfea.tolerances import (
     F4_G41_DYNAMIC_FORCE_COUNTER,
     F4_G41_DYNAMIC_MOMENT,
     F4_G41_DYNAMIC_MOMENT_COUNTER,
+    F4_WINDOW_RULE_MIN_EDGE,
 )
 
 _ROOT = Path(__file__).resolve().parents[3]
@@ -182,18 +183,41 @@ def test_the_module_the_gate_IMPORTS_reaches_nothing_but_numpy_and_the_stdlib() 
                 roots.add(node.module.split(".")[0])
             else:
                 roots.add("<relative>")
-    allowed = set(sys.stdlib_module_names) | {"numpy", "__future__"}
+    # `floatfea` IS ALLOWED, AND THE ALLOWANCE IS VERIFIED BELOW RATHER THAN ASSUMED.
+    # EV1's "both edges at least 2x" is a tolerance, so `CLAUDE.md` puts it in
+    # `floatfea/tolerances.py` and the module must import it -- which this check caught
+    # the moment the literal was replaced, and correctly.
+    allowed = set(sys.stdlib_module_names) | {"numpy", "floatfea", "__future__"}
     outside = sorted(roots - allowed)
     assert not outside, (
-        f"{path.name} imports {outside}, which is outside `numpy` and the standard "
-        "library. That is how R721 happened: the gate reached `HSP-runs` through an "
-        "import chain and errored on 124 of 126 cases in CI while passing on the machine "
-        "that wrote it. If a new dependency is genuinely needed, it belongs in the EXPORT "
-        "script, which is not on this gate's path."
+        f"{path.name} imports {outside}, which is outside `numpy`, `floatfea` and the "
+        "standard library. That is how R721 happened: the gate reached `HSP-runs` through "
+        "an import chain and errored on 124 of 126 cases in CI while passing on the "
+        "machine that wrote it. If a new dependency is genuinely needed, it belongs in the "
+        "EXPORT script, which is not on this gate's path."
     )
     assert "numpy" in roots, (
         "the module imports no numpy at all, which means this check is reading the wrong "
         "file -- a needle that matches nothing proves nothing (CW0)."
+    )
+
+    # AND WHAT MAKES `floatfea` SAFE TO ALLOW: it reaches no HSP code itself, so the
+    # allowance cannot become a back door. Asserted over the whole package, because the
+    # risk is a FUTURE edit to some other `floatfea` module and not this import.
+    reaching: list[str] = []
+    for src in sorted((_ROOT / "floatfea").rglob("*.py")):
+        for node in ast.walk(ast.parse(src.read_text(encoding="utf-8"))):
+            names: list[str] = []
+            if isinstance(node, ast.Import):
+                names = [a.name.split(".")[0] for a in node.names]
+            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+                names = [node.module.split(".")[0]]
+            if {"floatsim", "platform_rao_pilot"} & set(names):
+                reaching.append(str(src.relative_to(_ROOT)))
+    assert not reaching, (
+        f"{sorted(set(reaching))} import FloatSim or the study pilot, so allowing "
+        "`floatfea` on this gate's import path is a back door to `HSP-runs`. FloatFEA is "
+        "not forked from HSP and must not import it (`CLAUDE.md`)."
     )
 
 
@@ -432,11 +456,11 @@ def test_the_window_rule_HOLDS_at_the_declared_ceiling(inputs: Any, channel: str
     tol = F4_G41_DYNAMIC_FORCE if channel == "force" else F4_G41_DYNAMIC_MOMENT
     rule = _R.window_rule(inputs, channel)
     lower, upper = tol / rule.clean_worst, rule.weakest / tol
-    assert lower >= 2.0, (
+    assert lower >= F4_WINDOW_RULE_MIN_EDGE, (
         f"the {channel} ceiling {tol!r} is {lower:.6g}x the clean worst "
         f"{rule.clean_worst!r} at {rule.clean_at}, inside the window rule's 2x."
     )
-    assert upper >= 2.0, (
+    assert upper >= F4_WINDOW_RULE_MIN_EDGE, (
         f"the weakest live {channel} member {rule.weakest!r} at {rule.weakest_at} is only "
         f"{upper:.6g}x the ceiling {tol!r}, inside the window rule's 2x. This is EH4's "
         "weakening direction and it is the one that caught R722."
@@ -492,7 +516,7 @@ def test_the_mass_scale_is_VACUOUS_on_the_moment_channel(
     """
     signal = _R.mass_scale_signals(inputs, "moment")[(body, period)]
     worst, _where = _R.clean_worst(inputs, "moment")
-    assert signal < 2.0 * worst, (
+    assert signal < F4_WINDOW_RULE_MIN_EDGE * worst, (
         f"scaling {body}'s mass by 1 + {inputs.mass_eps:g} at T_full = {period:g} s moves "
         f"the moment residual by {signal!r}, which is at or above 2x the global clean "
         f"worst {worst!r}. The entry saying this injection is vacuous here is now wrong, "

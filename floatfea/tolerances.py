@@ -2550,6 +2550,30 @@ F4_DQ5_FREE_FALL: Final[float] = 1.0e-12
 # for the reason the element entry above gives.
 # Set: 2026-10-06, F4 step 2
 F4_DQ5_FREE_FALL_COUNTER: Final[float] = 4.0e-4
+# CLASS: STRUCTURAL -- EV1's WINDOW RULE PARAMETER. No counter-case: it is the rule's own
+# shape, not an error ceiling, and an invented counter-case for it would be an invented
+# number (AO2).
+#
+# EV1 declares a ceiling by taking the geometric centre between the clean worst and the
+# weakest live counter response, **with both edges at least 2x**. This is that 2x. It is
+# compared against `ceiling / clean_worst` and against `weakest / ceiling`, and it also
+# sets EH4's two bounds -- how far the ceiling may fall before the lower edge loses its
+# margin, and how far it may rise before the upper edge does.
+#
+# AND IT IS THE VACUITY THRESHOLD TOO (EX2 / R723). A counter member at or below
+# `2 x clean_worst` cannot be claimed to redden a gate whose ceiling the same rule places
+# above the clean worst -- so the same factor decides membership of the family and the
+# admissibility of the ceiling. One constant, because they are one rule: asserting vacuity
+# against the CEILING instead left 43.0229x of slack, inside which the claim was false and
+# the test was green.
+#
+# Reason for 2.0: EV1 sets it. It is not measured and not tunable here -- a different value
+# is a different rule and goes back to Xabier. It fires by design on any channel whose
+# clean worst and weakest defect are closer than four decades apart, which is why the force
+# channel's edges are five figures and the moment channel's are two.
+# Set: 2026-10-08, F4 step 3
+F4_WINDOW_RULE_MIN_EDGE: Final[float] = 2.0
+
 # CLASS: ACCURACY -- EV1 / G4.1 DYNAMIC, THE FORCE CHANNEL. The quantity is
 # `max_t |Sum_j F_j - M.a| / max_t Sum_j |F_j|`, per FE body and per case, over the DQ6
 # window, in the DISCRETE balance the plan locks. Five FE bodies -- the platform and four
