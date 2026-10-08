@@ -294,6 +294,7 @@ def measure_case(period_full_s: float, dt: float = DT, no_override: bool = False
     mass_f = {n: 0.0 for n in names}
     mass_m = {n: 0.0 for n in names}
     m_scaled = (1.0 + 1.0e-6) * m_eff
+    a_eff_s = (1.0 - alpha_m) * m_scaled + (1.0 - alpha_f) * (h**2) * beta * c_mat
     contrib_f_max: dict[tuple[str, int], float] = {}
     contrib_m_max: dict[tuple[str, int], float] = {}
     for n in range(*win.indices(len(res.t))):
@@ -337,8 +338,9 @@ def measure_case(period_full_s: float, dt: float = DT, no_override: bool = False
         whole_state_worst = max(whole_state_worst, float(np.max(np.abs(resid))))
         # The mass injection changes `a_eff ddot` and the `alpha_m M ddot` inside `rhs`,
         # so both are reformed rather than the first alone -- scaling one and not the
-        # other would inject a defect the integrator never had.
-        a_eff_s = (1.0 - alpha_m) * m_scaled + (1.0 - alpha_f) * (h**2) * beta * c_mat
+        # other would inject a defect the integrator never had. `a_eff_s` is CONSTANT and
+        # is hoisted: building a 102x102 matrix per step made one case take longer than
+        # the whole six-case run had before this loop existed.
         rhs_s = rhs + alpha_m * (m_eff @ xi_ddot_n) - alpha_m * (m_scaled @ xi_ddot_n)
         resid_mass = np.asarray(a_eff_s @ res.xi_ddot[n] - reaction - rhs_s, dtype=np.float64)
         for k, name in enumerate(names):
@@ -434,17 +436,16 @@ def measure_case(period_full_s: float, dt: float = DT, no_override: bool = False
             "platform joint plus three buoy joints. A counter-case over part of its "
             "family brackets part of it (R706/R708/R710)."
         )
-    # The two vacuous moment pairs are a GEOMETRIC fact and are named, so a change in
-    # the geometry fails here rather than quietly changing what the counter brackets.
-    expected_vacuous_m = [("hub1", 3), ("hub3", 11)]
-    if vacuous_m != expected_vacuous_m:
-        raise SystemExit(
-            f"the pairs vacuous on the MOMENT channel are {vacuous_m} and the measured "
-            f"set is {expected_vacuous_m} -- hub1's and hub3's platform joints, which "
-            "sit at those hubs' reference points so there is no lever and the "
-            "locked-axis moment is carried on the platform side. A different set means "
-            "the geometry moved and this exclusion is no longer the one measured."
-        )
+    # WHICH PAIRS ARE VACUOUS ON THE MOMENT CHANNEL IS CASE-DEPENDENT, and a fixed list
+    # would have been wrong. At `T_full = 14` the set is hub1/3 AND hub3/11; at
+    # `T_full = 10` it is hub1/3 alone, because that joint's locked-axis moment varies
+    # with the case and at T=10 hub3/11's drop does clear hub3's clean value. So the set
+    # is MEASURED and REPORTED per case rather than asserted against a remembered one.
+    #
+    # The structural fact that IS asserted is the family's size: twenty (body, joint)
+    # pairs, which is the platform's four hub joints plus each hub's one platform joint
+    # and three buoy joints. That cannot vary with the case, and if it does the topology
+    # has changed.
     if vacuous_f:
         raise SystemExit(
             f"these pairs are vacuous on the FORCE channel: {vacuous_f}. None was "
