@@ -1153,7 +1153,26 @@ def test_the_report_carries_a_CI_SECTION() -> None:
 #               and the corpus plants a thirteen-digit one;
 #   commas      stripped between digits before the scan, so `35,479,925,335`
 #               is one id rather than four short numbers.
-_RUN_ID = re.compile(r"(?<![\d.])(\d{9,})(?!\d)")
+# C29 -- NARROWED TO A STANDALONE TOKEN, which is a FIX and not an extension (CZ0: a
+# guard that fails false is fixed or deleted, never extended; strictly fewer matches).
+#
+# The left side rejected only a digit or a dot, so a run-shaped run of digits INSIDE A HEX
+# DIGEST matched -- the character before it is a hex letter. Measured on figures this
+# repository actually publishes:
+#
+#   sha256 f696...7a5758475552fb848c   ->  5758475552
+#   blob   927b1957190839e0929905888b  ->  1957190839, 0929905888
+#
+# EX0's provenance made that a live problem rather than a theoretical one: an npz digest
+# and two blob shas are now figures a step report carries, and three paragraphs were asked
+# for the "conclusion" of a CI run that does not exist. I first worked around it by citing
+# the digests truncated, which is neither fixing nor deleting and leaves the next digest to
+# trip over -- the reviewer's reading, and it is right.
+#
+# Both sides now reject any word character. Every shape the corpus measures is preserved:
+# a trailing full stop, a list item, a 13-digit id, thousands separators, backticks and
+# parentheses all still match; `199.526231496888` still does not.
+_RUN_ID = re.compile(r"(?<![0-9A-Za-z_.])(\d{9,})(?![0-9A-Za-z_])")
 
 # THE RIGHT-HAND DOT GUARD IS GONE (R444). It was there to keep
 # `526231496888` inside `199.526231496888` out, and the LEFT lookbehind
