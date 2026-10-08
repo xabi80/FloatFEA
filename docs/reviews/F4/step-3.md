@@ -1,4 +1,634 @@
 # Review — F4 step 3
+Reviewed commit: b20cf2abe5dc820e2db13a855c39d3438b917d54
+Verdict: HOLD
+**Reviewed commit: `45e5242`** (`45e5242fe4edb59cb1966c65102cafac03b38102`, HEAD of F3,
+tree clean when I judged it; my corpus batch 38 is committed on top at `b20cf2a`, which is
+why the plain `Reviewed commit:` stamp above this line is not the commit I judged -- R718's
+subject, now answered, and this bold line is the mechanism).
+Tests: 3112 passed, 0 failed, 0 skipped   (MY OWN run, one invocation, no `-k`, no
+`--ignore`, no deselection, `-p no:randomly`, tree clean at `45e5242`, `753.75s`. Not the
+report's figure.)
+
+## Round of 2026-10-07 -- ROUND 1 OF THREE. HOLD ON TWO (b) ITEMS, BOTH FOUND BY RUNNING THE MODEL AT A CONFIGURATION THE DIFF DID NOT CHOOSE.
+
+**THE VERIFY-FIRST ITEMS, COMPUTED.**
+
+```
+cmd    git log -1 --format='%h %s' -- docs/reports/F4/step-3.md
+out    6352d8c report: F4 step 3 revision 1 -- R711, R718, EV1's counter families, ...
+cmd    git rev-list --count 9de3e4e..HEAD   (at 45e5242, before my corpus commit)
+out    7
+judge  **SEVEN, NOT EIGHT.** The hand-back's list of seven names IS the range --
+       377bace, 2564563, 9ec380e, 74c77d1, d291b65, 6352d8c, 45e5242 -- and the "plus one
+       I may be miscounting" does not exist. Two of the seven are mine.
+cmd    git log -1 --format=%h -- docs/reviews/F4/step-3.md ; head -5 docs/reports/F4/step-3.md
+out    74c77d1 ; "Answers: verdict 104 @ 74c77d1"
+judge  **1b SATISFIED, one comparison.** The report answers the NEWEST verdict state: the
+       amendment at 74c77d1 is the newest commit touching the verdict file and it is the one
+       the header names, not 9ec380e. R717's ordering note was acted on, which is the only
+       reason section 0 could be generated at all.
+```
+
+**WHY IT IS A HOLD, IN THREE SENTENCES.** R711 and R718 are genuinely closed and I
+reproduced both independently -- the discrete form line for line against
+`newmark.py:375-460`, and R718's 53 / 13 / 40 / 7 counts to the digit. But the hand-back's
+headline is **refuted**: EV1's window rule IS satisfiable on the moment channel, and the
+reason it reads otherwise is that the shipped family filter admits a **vacuous** member
+whenever that member's body happens to carry the case maximum -- at `T_full = 10`, hub3/11
+clears hub3's own clean value by `4.9e-08` relative and becomes the family minimum.
+Excluded, the weakest member over the three cases I ran is `1.752748714140e-02`, the
+geometric centre against the global clean worst `2.3243458955783927e-06` is
+`2.018414e-04`, and **both edges are `86.8379x`** where the shipped rule gives `0.6329x`.
+
+**No STOP.** The verification ladder is SUCCESS at the reviewed commit in CI, no low rung
+is red, nothing under `floatfea/` moved in this range, `.claude`, `docs/SUPERVISOR.md`,
+`tests/conftest.py` and `floatfea/tolerances.py` are each untouched, and the plan is not
+wrong. EV1's mass counter-case is genuinely under-sized on the moment channel and that is a
+plan question for Xabier -- but the number to put to him is not the one in the report.
+
+## 0. CI -- COMPLETE AND GREEN AT THE REVIEWED COMMIT
+
+```
+cmd    gh run list --commit 45e5242fe4edb59cb1966c65102cafac03b38102
+         --json name,conclusion,workflowName,status,databaseId,event
+out    [{"conclusion":"success","databaseId":37723495711,"event":"push","name":"CI",
+out      "status":"completed","workflowName":"CI"}]
+judge  **CA2 SATISFIED on the commit I am judging.** The run was `in_progress` when I was
+       invoked and completed while I worked; an unfinished run is not a pass, so I waited
+       rather than recording it as one. NOT CK2 -- the jobs ran.
+cmd    for s in 6352d8c d291b65 74c77d1 ; do gh run list --commit $(git rev-parse $s) ; done
+out    6352d8c  37723446599  completed  CANCELLED
+out    d291b65  (no run)
+out    74c77d1  (no run)
+judge  the cancellation is the workflow's `concurrency: cancel-in-progress` rule and under
+       CX0/R449 it reached no verdict on anything; no reason is attributed to it. d291b65
+       and 74c77d1 were not the head of their push. **The hand-back was right that the runs
+       in this range supersede each other and right not to claim one.** The run that matters
+       is at HEAD and it is green.
+out    377bace  FAILURE (52 reds)   2564563  FAILURE (51 reds)
+judge  **EG3 STATE (2), AND I MATCHED EVERY ID RATHER THAN RULING A FAMILY.**
+       `test_every_named_site_is_touched_or_declared`, `test_the_report_carries_the_finding`,
+       `test_the_CI_section_is_about_the_REVIEWED_commit`,
+       `test_the_Carried_table_is_what_the_generator_produces`,
+       `test_the_generator_would_catch_a_row_under_the_wrong_number`, and ten
+       `test_the_guard_survives_the_state` cascading off a red `[baseline]`. Nothing off
+       EH1's corrected list. Not CZ0 (d): (d) is a red test at the REVIEWED commit, and at
+       45e5242 my own run is 3112 passed, 0 failed. **EG3 condition (ii) is met** -- state
+       (2) cleared at the report commit, measured by me and not taken from the report.
+```
+
+## 1. MY OWN INSTRUCTIONS, THE CONFTEST, AND THE TOLERANCE FILE -- EACH DIFFED SEPARATELY
+
+```
+cmd    git diff --stat 9de3e4e..HEAD -- .claude docs/SUPERVISOR.md
+out    (empty)
+judge  NOT a STOP-class finding. Nothing in this range touches what I read, what I must
+       carry or what I may write.
+cmd    git ls-files -- tests/conftest.py "tests/**/conftest.py"
+out    tests/conftest.py
+cmd    git diff --stat 9de3e4e..HEAD -- tests/conftest.py "tests/**/conftest.py"
+out    (empty)
+judge  CI0's check resolves to a real file; it is unchanged and no new conftest or plugin
+       appears anywhere under tests/. CH2's six channels are closed by reading, which is the
+       only way they can be closed.
+cmd    git diff --stat 9de3e4e..HEAD -- floatfea/tolerances.py
+out    (empty)
+judge  **NOT ONE LINE.** No value, no counter, no comment. EU1 does not fire; I ran its
+       adversarial case anyway, and sections 4 and 5 are it.
+cmd    git diff --stat 9de3e4e..HEAD -- floatfea tests docs scripts .github data
+out    docs/milestones/F4.md 2 | docs/reports/F4/step-3-answers.json 69 |
+out    docs/reports/F4/step-3.md 705 | docs/reviews/F4/step-3.md 841 |
+out    scripts/measure/g41_dynamic.py 293 | tests/test_report_carried.py 29
+judge  **NOTHING UNDER floatfea/ MOVED AT ALL**, so there is no (a) in this range to find.
+       Two of the six paths are mine. tests/test_report_carried.py is d291b65, a standalone
+       `process:` commit touching that file and nothing else, citing R718 -- which is what
+       EK2 and the reviewer-instruction rule ask for.
+```
+
+## 2. R711 -- CLOSED, AND I CHECKED THE TWO THINGS THE HAND-BACK SAID IT COULD NOT CHECK
+
+The numerator at `scripts/measure/g41_dynamic.py:300-320` is now
+`a_eff @ xi_ddot[n] - g_mid.T @ lam[n] - rhs` with the Jacobian at `0.5*(xi[n-1]+xi[n])`.
+I did not take "mirrored line for line" on trust -- I checked it against the SOLVER, which
+is the independent side.
+
+```
+cmd    sed -n '375,460p' ../HSP-runs/floatsim/solver/newmark.py
+rule   docs/milestones/F4.md:131 and :486 -- the DISCRETE balance, newmark.py:414-437
+out    solver: buffer.push(xi_dot_0) BEFORE the loop; mu_n = 0 at n = 0 explicitly; then
+out    per step buffer.push(xi_dot_{n+1}) THEN mu_{n+1} = buffer.evaluate()
+out    script: buffer.push(res.xi_dot[0]); mu = zeros; for i in 1..: push(xi_dot[i]) then
+out    mu[i] = buffer.evaluate()
+judge  **THE `mu` REBUILD IS IDENTICAL.** After the i-th push the buffer holds
+       xi_dot_0..xi_dot_i, so evaluate() is mu_i, and mu[0] = 0 is the solver's own
+       documented startup skip of the O(dt) artifact. This is the half the hand-back said it
+       could not check because it mirrored `discrete_residual`; checking it against
+       newmark.py is how that is closed, and it closes.
+out    solver: F_np1_sd = _eval_state_force(t[n], xi_n, xi_dot_n) for the step producing n+1
+out    script: force_at(i) adds state_force(t[i-1], xi[i-1], xi_dot[i-1]) under i > 0
+judge  the lag matches for every step in any DQ6 window. force_at(0) omits the state term
+       where the solver's F0 carries it -- one step at t = 0, nowhere near a window.
+       Recorded, not a finding.
+cmd    sed -n '116,133p' scripts/measure/g41_dynamic.py
+rule   DQ6: the last 5 whole wave periods, starting no earlier than ramp + 10 periods;
+       extend a run that is too short
+out    window_duration = RAMP + 15*T, so end - 5T == RAMP + 10T exactly
+out    window_slice: start = max(RAMP + 10T, t[-1] - 5T); lo = searchsorted(t, start)
+out    measured: T=14 -> 990 steps, t = 29.810 .. 39.700 ; T=10 -> 707 steps,
+out             t = 24.150 .. 31.210 ; T=15 -> 1061 steps, t = 31.220 .. 41.820
+judge  **THE READING IS RIGHT AND THE RUN IS EXTENDED AS DQ6 REQUIRES**, not truncated. The
+       two constraints coincide by construction, which is why the ramp floor never binds --
+       correct behaviour and not a dead branch: it binds on a run longer than RAMP + 15T.
+cmd    python scripts/measure/g41_dynamic.py --period 14      (my own run, at 45e5242)
+rule   the window rule of docs/milestones/F4.md:145
+out    force  worst 1.6159118708143226e-16  at hub3/T14
+out    moment worst 1.4480755718208573e-06  at platform/T14
+out    control: the per-joint decomposition reproduces `g_mid.T lam` to 2.015e-16 relative
+out    control: whole-state discrete residual worst 1.107530e-04
+judge  **EVERY FIGURE IN THE REPORT'S SECTION 2 REPRODUCES TO THE DIGIT**, both controls
+       included. The force channel closes to round-off under the locked form, which is what
+       made R711 worth catching before the runs were spent.
+```
+
+**The force-figure gap the hand-back asked me to rule on is NOT a finding.** My
+`1.086249e-16` was a window maximum over 200 steps of a 12 s run at `t = 10.010 .. 12.000`;
+the report's `1.6159118708143226e-16` is over 990 steps of a 39.70 s run at
+`t = 29.810 .. 39.700`. Two different runs and two different windows, on a channel whose
+absolute scale is `1e-16`. The moment figures agree to three figures because that channel
+carries a real `O(h)` signal; the force figures agree in order only because there is no
+signal there to agree about. **I attach no cause to the 1.49x** -- I did not run the cell
+that isolates it, and no ceiling is declared from either number, so the measurement is not
+owed. R711 **does not carry.**
+
+## 3. R718 -- CLOSED, AND THE LARGER COUNT IS RIGHT
+
+```
+cmd    python <the newest 60 commits touching docs/reviews/: the plain ^Reviewed commit:
+                header against the bold backticked judged line, in the same file state>
+rule   test_the_CI_section_is_about_the_REVIEWED_commit asserts the section is about the
+       commit the verdict JUDGED
+out    commits touching docs/reviews examined: 60
+out    states carrying BOTH lines           : 53
+out    plain header == bold judged (prefix) : 13
+out    plain header DIFFERS from bold judged: 40
+out    states with NO bold line at all      :  7
+out      DIFFERS 488f2d8 F4/step-2  plain 4f99c7f  judged 7cee09f
+out      DIFFERS 5786bed F4/step-1  plain 6e39151  judged 84de436
+out      DIFFERS 9f75cd5 F4/step-1  plain 9285a9f  judged b0824d5
+out      DIFFERS de9a448 F4/step-1  plain 3d6fdb6  judged 7c8e4ae
+out      DIFFERS 3a908fa F4/step-1  plain 80e24df  judged a7fefba
+judge  **53 / 13 / 40 / 7 -- EVERY NUMBER THE COMMIT MESSAGE AND THE REPORT PUBLISH, TO THE
+       DIGIT.** The hand-back's count is right and larger than mine; my 23 of 35 over 40
+       commits was the smaller sample and the conclusion is worse than I measured it.
+cmd    sed -n '2082,2116p' tests/test_report_carried.py
+out    `return m.group(1) if m else ""`, and the existing `assert judged` whose message
+out    already names the bold backticked form
+judge  **THE FALLBACK IS GONE AND THE ASSERTION IS WHAT FIRES** -- my condition's first
+       branch exactly. The removal reddens nothing legitimate: my own whole-suite run at the
+       reviewed commit is 3112 passed, 0 failed, 0 skipped. What it DOES do is make the
+       guard refuse on any verdict written through write_verdict.py without a hand-added
+       bold line, which is seven of the newest sixty states. That is the intended behaviour
+       and R717 is its answer at the producer. **R718 does not carry.**
+```
+
+## 4. THE HEADLINE, RULED -- THE WINDOW RULE IS SATISFIABLE, AND THE DIAGNOSIS STOPS ONE STEP SHORT
+
+I was asked to rule on three things and I do, from my own runs at `T_full = 10`, `14` and
+`15`: the shipped script with print-only instrumentation, ER0's basis, DQ6's own window.
+
+**(1) IS THE DIAGNOSIS RIGHT? HALF OF IT.** The per-case/global mismatch is real and is one
+of the two root causes. What it misses is that the member making the rule fail is
+**vacuous**, and that its admission is decided by the very round-off excess that proves it
+vacuous. The hand-back quotes "9.309128e-07 against 9.309128e-07, marginally" and reads the
+marginal clearing as a legitimate pass. It is not one.
+
+```
+cmd    python <the shipped measure_case, instrumented to print, for every moment-family
+                pair, drop_rel, its ratio to the CASE clean worst, and its ratio to its OWN
+                BODY's clean value>
+rule   scripts/measure/g41_dynamic.py:428 -- drop_rel_m = {k: v for k, v in all_m.items()
+       if v > clean_m_worst}, with clean_m_worst at :426 the max over the five FE bodies IN
+       THIS CASE
+out    T_full = 10   case clean worst 9.309127595066468e-07  (hub3 -- hub3 IS the maximum)
+out      hub1/3   drop_rel 6.419583706073e-07  /caseworst 0.689601001  /ownclean 1.000000108009  IN=False
+out      hub3/11  drop_rel 9.309128055654e-07  /caseworst 1.000000049  /ownclean 1.000000049477  IN=True
+out      hub3/8   drop_rel 1.752748714140e-02  /caseworst 18828.281    /ownclean 18828.281127744427  IN=True
+out    T_full = 14   case clean worst 1.4480755718208573e-06  (platform IS the maximum)
+out      hub3/11  drop_rel 6.021071415490e-07  /caseworst 0.415798148  /ownclean 1.000002160674  IN=False
+out      hub1/3   drop_rel 9.211057536872e-07  /caseworst 0.636089560  /ownclean 1.000003140535  IN=False
+out      hub4/12  drop_rel 1.816033296779e-02  /caseworst 12541.012    /ownclean 26796.556196920323  IN=True
+judge  **hub1/3 AND hub3/11 ARE VACUOUS IN BOTH CASES** -- own-clean ratios 1.000000049477,
+       1.000000108009, 1.000002160674, 1.000003140535. Dropping either joint moves its own
+       body's moment residual by between 4.9e-08 and 3.1e-06 relative. **hub3/11 is
+       ADMITTED at T=10 for one reason: hub3 happens to be that case's maximum, so the
+       per-case worst IS hub3's own clean value and the strict `>` is a number compared with
+       itself to the last bits.** The next member above it is 18828.3x away.
+```
+
+**(2) IS DECLINING TO DECLARE CORRECT? YES, AND FOR A STRONGER REASON THAN THE ONE GIVEN.**
+A ceiling declared by the window rule from a family minimum that is a vacuous member would
+have been declared from a number that certifies nothing -- "never widen" arriving through a
+derivation rather than an edit. The refusal is right; the conclusion attached to it is not.
+
+**(3) SHOULD A CEILING HAVE BEEN DECLARED BY ONE OF THE THREE RESOLUTIONS? NO, AND NONE OF
+THE THREE IS NEEDED.**
+
+```
+cmd    python <the window rule, over the three cases I ran, with and without the vacuous
+                member>
+rule   docs/milestones/F4.md:145-148 -- the geometric centre between the clean worst and the
+       weakest counter response, BOTH EDGES >= 2x
+out    clean worst (global over the 3 cases)   2.3243458955783927e-06  platform/T15
+out    AS SHIPPED, vacuous member admitted     weakest 9.309128e-07
+out      centre 1.470974e-06   lower edge 0.6329x   upper edge 0.6329x   both >= 2x: False
+out    VACUOUS MEMBER EXCLUDED                 weakest 1.752748714140e-02  (hub3/8 at T=10)
+out      centre 2.018414e-04   lower edge 86.8379x  upper edge 86.8379x   both >= 2x: TRUE
+out    per-case weakest ADMITTED member: T10 9.309128e-07, T14 1.816033e-02, T15 2.451485e-02
+judge  **THE WINDOW RULE CLOSES, AT 86.8x ON BOTH EDGES, ON THE JOINT-DROP COUNTER ALONE.**
+       Resolution 1 (test against the global clean worst) is half the repair, and here it
+       would exclude hub3/11 BY LUCK of which case carries the global maximum -- the same
+       defect with the opposite sign. Resolution 2 (thirty ceilings) changes what EV1 locked
+       and buys nothing the vacuity test does not. Resolution 3 is about the MASS counter,
+       not this one, and the number offered for it is refuted in section 5. Three cases is
+       not thirty and the figures will move; the MECHANISM will not.
+```
+
+## 5. THE MASS COUNTER -- "THE RESPONSE IS LINEAR IN THE SCALE" IS FALSE, MEASURED
+
+This is EU1's adversarial case run where EU1 does not require one: the model at an injection
+scale the diff did not choose.
+
+```
+cmd    python <the shipped script, T=14, everything held but the injection scale -- set to
+                the one value `need` itself publishes as the 2x edge>
+rule   scripts/measure/g41_dynamic.py:462-463 "The response is linear in the scale, so the
+       smallest usable scale is reported rather than guessed", and :471
+       need = 1.0e-6 * 2.0 * clean / got
+cell   ONE VARIABLE MOVED: eps 1.0e-06 -> 4.816e-06. Same case, same window, same basis.
+out    eps 1.0e-06    weakest moment 6.013115e-07   predicts 1 + 4.816e-06
+out    eps 4.816e-06  weakest moment 6.034193e-07   predicts 1 + 2.311e-05
+judge  **A 4.816x LARGER INJECTION MOVED THE RESPONSE BY 0.35%.** The response is not linear
+       in the scale; it is flat, because `got` is min_k max_t |resid_mass_k| / den_m_k, which
+       INCLUDES the clean residual floor, and on the moment channel the floor dominates. So
+       1 + 4.816e-06 -- published in the report's section 3 and in 6352d8c -- does not
+       bracket at the scale it names, and the formula then asks for 4.8x more again.
+cmd    python <the same run, instrumented to record the PURE injected signal
+                max_t |resid_mass - resid| per body, which IS linear in eps by construction>
+out    pure signal at eps = 1e-6, moment channel, relative:
+out      platform 2.735299e-08   hub1 4.191758e-09   hub2 2.538043e-09
+out      hub3 3.456107e-09       hub4 2.538043e-09
+out      their clean values: 6.777114e-07 on hub2 and hub4 -- 267x the signal
+out    weakest pure signal: force 1.386550e-07   moment 2.538043e-09
+out    the shipped `got` for comparison: 6.013115e-07, which is hub3's clean 6.021058e-07
+out    solved eps for the weakest PURE signal to reach 2x the GLOBAL clean worst:
+out      moment  1 + 1.831605e-03      force  1 + 2.676582e-15
+judge  **THE PUBLISHED "COUNTER RESPONSE" ON THE MOMENT CHANNEL IS A CLEAN VALUE.**
+       6.0131e-07 is hub3's own clean residual to three figures; the 1e-6 mass perturbation
+       is 267x below the floor at the body that sets the minimum. That is R689's shape -- a
+       row that compares nothing reading as agreement -- arriving in the MASS counter one
+       commit after the same shape was found and named in the joint-drop family. The solved
+       scale is 1 + 1.831605e-03: **380x the published 1 + 4.816e-06 and 41x the hand-back's
+       1 + 4.499e-05**, and it is a lower bound because I ran three cases, not six. **And
+       the force channel is where the formula is accidentally right** -- the signal
+       1.386550e-07 sits four decades above the floor 1.615912e-16, so there `got` IS the
+       signal and the printed 1 + 2.331e-15 agrees with the solved 2.676582e-15. Reading the
+       formula on the force channel certifies nothing about the moment channel, which is the
+       same channel asymmetry that let R711 survive a reading.
+```
+
+## 6. THE MASS INJECTION'S ALGEBRA -- ASKED, AND THE CHOICE IS RIGHT
+
+`:339-345` reforms both `a_eff` and the `alpha_m M xi_ddot_{n-1}` inside `rhs`. **That is
+correct and it is the right reading of EV1.** The question the counter asks is whether the
+gate notices a mass matrix wrong by `1e-6`; a wrong `M` is wrong in every place the residual
+reads it, and reforming one occurrence alone would inject an inconsistency the integrator
+never had -- which is the script's own comment and it is sound. The hoist of `a_eff_s` to
+`:297` is pure constant folding and I verified it changes nothing: my T=14 run at `45e5242`
+reproduces `6.013115e-07` exactly. **I did not measure the inconsistent alternative and I
+make no claim about its size.**
+
+## 7. TRY TO BREAK IT -- WHAT I RAN AND WHAT IT SAID
+
+* **The gate at a case the diff did not choose (`T_full = 10`)** -- found R719. The family
+  minimum is a vacuous member admitted by a `4.9e-08` relative excess.
+* **The gate at `T_full = 15`** -- confirmed the global clean worst `2.324346e-06` and that
+  the vacuous set there is `{hub1/3, hub3/11}`, the same set as T=14 and not a case-dependent
+  one.
+* **The injection at the scale the script's own formula names** -- found R720. `4.816x` more
+  injection, `0.35%` more response.
+* **The pure injected signal separated from the clean floor** -- `2.538043e-09` against a
+  floor of `6.777114e-07`. The published counter response is the floor.
+* **The window rule solved both ways, with and without the vacuous member** -- `0.6329x`
+  against `86.8379x`. EH4's weakening direction is the one that bites here: the rule reads
+  UNSATISFIABLE, which is the direction that invites a plan reopening nobody needs.
+* **The `mu` rebuild against `newmark.py:375-460` rather than against its own mirror** --
+  identical, including the `mu[0] = 0` startup skip.
+* **DQ6's window arithmetic at three periods** -- 707 / 990 / 1061 steps, the ramp floor and
+  the five-period rule coincident by construction, the run extended and not truncated.
+* **R718's count over 60 commits** -- 53 / 13 / 40 / 7, every figure reproduced.
+* **The whole suite at the reviewed commit** -- `3112 passed, 0 failed, 0 skipped`.
+
+## Findings
+
+**R719. (BLOCKING -- (b): a counter and how it is injected, through the
+generator-is-the-gate carve-out) THE JOINT-DROP FAMILY'S MEMBERSHIP RULE ADMITS A VACUOUS
+MEMBER WHENEVER THAT MEMBER'S BODY CARRIES THE CASE MAXIMUM, AND THAT MEMBER IS THE NUMBER
+THE WINDOW RULE WAS DECLARED UNSATISFIABLE FROM.**
+`scripts/measure/g41_dynamic.py:426` (`clean_m_worst`, the max over the five FE bodies in
+this case) and `:428` (`drop_rel_m = {k: v for k, v in all_m.items() if v > clean_m_worst}`).
+The rule conflates two different properties into one strict inequality: **vacuity** -- is
+dropping this joint detectable on THIS body at all -- and **bracketing** -- does this member
+exceed the ceiling the window rule will declare. Measured at `T_full = 10`, `14` and `15`,
+shipped script, ER0's basis, DQ6's window:
+
+* `hub1/3` and `hub3/11` are vacuous in **both** cases measured: drop response over own
+  body's clean value `1.000000108009` and `1.000000049477` at T=10, `1.000003140535` and
+  `1.000002160674` at T=14. Those joints sit at those hubs' reference points and the geometry
+  does not vary with the wave period.
+* `hub3/11` is nonetheless **admitted** at T=10, because hub3 is that case's maximum, so
+  `clean_m_worst` IS hub3's own clean value and the test reads
+  `9.309128055654e-07 > 9.309127595066468e-07` -- a `4.9e-08` relative excess, the same
+  quantity that makes it vacuous.
+* It is then the family minimum over the whole domain, `9.30912805565388e-07`, below the
+  global clean worst `2.3243458955783927e-06`, which is why the window rule reads
+  unsatisfiable with both edges at `0.6329x`.
+* Excluded, the weakest member over the three cases is `1.752748714140e-02` (hub3/8 at T=10),
+  the geometric centre is `2.018414e-04`, and **both edges are `86.8379x`**. The gap between
+  the vacuous pairs and the weakest genuine member is `18828.3x` at T=10 and `12541.0x` at
+  T=14 -- four decades of empty space, so nothing in this family is a marginal member and no
+  margin here is a tuned number.
+* **And the "CASE-DEPENDENT vacuous set" claim is false.**
+  `scripts/measure/g41_dynamic.py:439-448`, the report's section 3 and `45e5242`'s commit
+  message all state that which pairs are vacuous varies with the case, and attribute it to
+  hub3/11's locked-axis moment varying. What varies is which body carries the case maximum --
+  platform at T=14 and T=15, hub3 at T=10. The own-clean ratios are the quantity that decides
+  it and they were never taken.
+* **A gate carries its own failure.** A counter-case whose family contains `hub3/11` asserts
+  `drop_rel > COUNTER` on a quantity that IS hub3's clean residual. If the thing that member
+  claims were false, it would not go red.
+
+**Closed when** the two properties are separated: a **vacuity** test on
+`drop_rel[k,j] / clean_rel[k]` against a stated margin, with that margin's own boundary
+solved in both directions (EH4); and a **bracketing** test against the GLOBAL clean worst
+over all 30 body-cases rather than the per-case maximum. The window rule's two edges are then
+re-measured over the six cases and pasted, and my `86.8379x` over three cases is beaten or
+refuted at a named operating point. **The case-dependence sentence is made true or deleted
+(CW0)** at `:439-448`, in the report, and in the published claim, with the own-clean ratios
+pasted since those are what decide it. **No new apparatus either way: it is the expression at
+`:427-428` plus one ratio.**
+
+**R720. (BLOCKING -- (b): how the counter is injected, and the size it has to be)
+"THE RESPONSE IS LINEAR IN THE SCALE" IS FALSE ON THE MOMENT CHANNEL, SO EVERY PUBLISHED
+"SMALLEST SCALE FOR A 2x EDGE" IS AN EXTRAPOLATION THROUGH A FLOOR.**
+`scripts/measure/g41_dynamic.py:462-463` (the claim) and `:471`
+(`need = 1.0e-6 * 2.0 * clean / got`). `got` is `min_k max_t |resid_mass_k| / den_m_k` -- the
+residual computed with the scaled `M`, which includes the clean residual floor. On the moment
+channel the floor dominates the injected signal by `267x` at the body that sets the minimum,
+so `got` is not a response and is not linear in the scale. Measured, one variable moved
+(BG0), T=14, same window, same basis:
+
+```
+eps 1.0e-06    weakest moment 6.013115e-07   predicts 1 + 4.816e-06
+eps 4.816e-06  weakest moment 6.034193e-07   predicts 1 + 2.311e-05
+```
+
+and the pure signal, which IS linear by construction:
+
+```
+max_t |resid_mass - resid| / den_m at eps 1e-6, moment channel: platform 2.735299e-08,
+  hub1 4.191758e-09, hub2 2.538043e-09, hub3 3.456107e-09, hub4 2.538043e-09
+the shipped `got` of 6.013115e-07 is hub3's own clean value 6.021058e-07
+solved eps for the weakest pure signal to reach 2x the GLOBAL clean worst:
+  moment 1 + 1.831605e-03      force 1 + 2.676582e-15
+```
+
+So the report's `1 + 4.816e-06` is **380x** short and the hand-back's `1 + 4.499e-05` is
+**41x** short, and both describe a quantity that is mostly a clean residual. `need` is also
+computed against the PER-CASE `clean` where the ceiling is global, which costs a further
+factor of up to `22.5807x` -- the measured clean moment spread over the three cases. **The
+force channel is where the formula is accidentally right** (`1 + 2.331e-15` printed against
+`2.676582e-15` solved), because there the signal sits four decades above the floor.
+**Closed when** the injected signal is measured as `max_t |resid_mass - resid|` rather than
+`max_t |resid_mass|`, the 2x edge is solved against the global clean worst, and the published
+scale is **re-measured at the scale it names** instead of extrapolated -- or the linearity
+sentence is deleted and the boundary bisected. EV1 specifies `1 + 1e-6` and changing that is
+Xabier's, not a round; **what blocks is that the figure put to him be the measured one.** One
+expression, no new apparatus.
+
+## Closure items
+
+Per CZ0, named with their site and what would close each, fixed once in the step's closure
+commit, not re-reviewed item by item, and the step is not held on any of them.
+
+**C24. The dead `per_joint_contributions` builds the Jacobian at the point R711 forbade, and
+the LIVE function's docstring defines itself by reference to it.**
+`scripts/measure/g41_dynamic.py:156-173` is unreachable -- `grep -n per_joint_contributions`
+gives one call site, `:324`, and it calls `per_joint_contributions_from`. The dead function
+calls `setup.constraints.jacobian(xi)`, which is exactly the non-midpoint argument R711 was
+about, and `:137` reads "As `per_joint_contributions`, but from a Jacobian the caller already
+has" -- so the live function's documentation points a reader at the form the plan does not
+lock. **Closed when** the dead function is deleted and `:137` states the form directly.
+
+**C25. The report's figures describe the script at `45e5242`, one commit after the report.**
+`docs/reports/F4/step-3.md` section 2's `2.015e-16` and `1.107530e-04`, section 3's per-pair
+table and its `1 + 4.816e-06` were produced by the script as it exists at `45e5242`, which is
+a later commit than the report's own `6352d8c`. I verified they reproduce exactly at HEAD, so
+nothing in them is false about the tree under review -- but CP3's ordering is "generate, edit,
+re-run, paste, commit, and if an edit follows the paste the paste is void", and here the edit
+followed in a separate commit. **Closed when** the next revision states which commit the
+figures describe, or the code and the report land in one commit.
+
+**C26. The whole-suite figure is taken at the verdict commit and the "would print the same"
+sentence is now false.** The report's section 11 publishes `2856 + (166 + 83)` at `74c77d1`
+and says re-running `suite_count.py` prints the same two numbers. My own run at the reviewed
+commit is **3112 passed, 0 failed, 0 skipped**, against the report's `3105` total, because the
+report's own new site and finding rows add parametrisations. R637 clause (iii)'s whole subject
+is the whole-suite line measured at the commit it describes. **Closed when** the figure is
+taken at the report's own commit, or the sentence says which commit it is a figure for.
+
+**C27. The marker moved in the report commit again, and the plan's own section 2.4 says the
+first commit.** `docs/milestones/F4.md:3` advanced from `2` to `3` in `6352d8c`. The
+implementer records that the guard demands it ("The line is advanced in the commit that adds
+the next step's report, never before it") and reverted an early move at `27ecf62`. The plan's
+section 2.4 says the first commit and already records this deviation once, as C136. The
+measured cost is 52 and 51 CI reds at `377bace` and `2564563`, all on EH1's state (2) list.
+**The guard and the locked plan disagree and the guard is winning silently.** **Closed when**
+section 2.4 is corrected to match the guard, or the disagreement is written down as a plan
+question for Xabier.
+
+**C1 (carried, and its own trigger has now passed).** Verdict 102 required C1 "answered
+BEFORE the G4.1-dynamic quantity is chosen, because that choice is (c) and this is its
+input". The quantity IS now chosen -- discrete, two channels, moments about the reference
+point -- and `scripts/report_joint_reactions.py` is untouched in this range, so the inverted
+dimensional sentence at `:238` and the incomplete "on all seventeen" claim are still there.
+I keep it closure class under CZ0 and I do not hold the step on it, but it must land before
+either ceiling is declared, not in the closure commit after.
+
+**R712, R713, R714, R716, R717 (carried, declared, still open).** All five are correctly
+declared as untouched in the report's section 8a and listed in section 9. None holds the
+step. R717's producer repair is the thing that would stop the next verdict from needing a
+hand-added bold line, and I have added one again.
+
+## Tolerances touched
+
+```
+cmd    git diff 9de3e4e..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff d4e2136..HEAD -- floatfea/tolerances.py | grep -E "^[-+][A-Z0-9_]+:"
+out    (no output)
+judge  **NOT ONE LINE OF THAT FILE CHANGED IN THIS RANGE**, so no ceiling, no counter and no
+       comment moved. EU1 does not fire. I ran its adversarial case anyway -- the gate at two
+       cases the diff did not choose and the injection at a scale the diff did not choose --
+       and both findings came out of it, which is EU1's own reason for existing.
+```
+
+| name | old | new | form | counter | justification located | ruling |
+|---|---|---|---|---|---|---|
+| G4.1 dynamic force (DQ8 / EV1) | -- | **none declared** | dimensionless, relative, denominator a sum of magnitudes | joint drop: weakest `1.426891e-01` to `2.020284e-01` over the three cases I ran, `1.0e+15x` above the clean worst; mass `1+1e-6`: `1.386550e-07`, `8.6e+08x` above | `scripts/measure/g41_dynamic.py:300-360`; plan `docs/milestones/F4.md:117-148`, `:486` | **THE REFUSAL TO DECLARE IS CORRECT.** The channel closes to round-off (`1.6159118708143226e-16` at hub3/T14, `1.552257e-16` at hub4/T15, `1.191949e-16` at hub4/T10) and both counters bracket it by fifteen and nine decades. Nothing here blocks; the declaration waits on the six-case run. |
+| G4.1 dynamic moment (DQ8 / EV1) | -- | **none declared, and none may be declared from the current family rule** | dimensionless, relative, denominator a sum of magnitudes | joint drop: shipped weakest `9.309128e-07` is a VACUOUS member (R719); corrected weakest `1.752748714140e-02`. Mass `1+1e-6`: the reported `6.013115e-07` is hub3's own clean value (R720) | `scripts/measure/g41_dynamic.py:423-430`, `:461-475`; plan `:145-148` | **THE REFUSAL IS CORRECT AND THE REASON PUBLISHED FOR IT IS NOT.** The window rule closes at `86.8379x` on both edges once the vacuous member is excluded, against the `0.6329x` the hand-back reports. R719 and R720 are both here, and both are (b): the family membership rule and the injection size are "a counter and how it is injected". |
+| the FE acceleration assertion (DQ8's second bullet) | -- | **not measured in this range** | normalised by `max_t |a|` and `max_t |alpha|` | -- | plan `docs/milestones/F4.md:140-141` | **NOT YET MEASURED AND NOT YET DUE.** Recorded so it is not lost: DQ8 asks for the FE inertia-relief acceleration against FloatSim's, per body, and nothing in this range measures it. It is step 3's remaining work, not a finding. |
+| everything else in the F4 block | -- | unmoved | -- | -- | -- | Not touched in this range and not re-swept. Verdict 103 measured all nine clean or ruled, and verdict 104 reproduced the two that moved. |
+
+## Carried
+
+Verdict 104 (`9ec380e`, amended at `74c77d1`) was an ES0 interim check judging `9de3e4e`. It
+raised two blocking items and carried six closure ones. Every one, with status.
+
+* **R711 (blocking) -- CLOSED**, at the first branch of my condition. Answered at `377bace`,
+  `scripts/measure/g41_dynamic.py:253-320`: the numerator is the discrete residual, the
+  Jacobian is at `0.5*(xi[n-1]+xi[n])`, and `rhs` carries both generalized-alpha weights,
+  both damping terms, `alpha_m M xi_ddot_{n-1}` and the rebuilt `mu[n-1]`. Section 2: I
+  reproduced the `mu` rebuild against `newmark.py:375-460` rather than against its own
+  mirror, the state force's lag, the midpoint argument, and every figure in the report's
+  section 2 to the digit. The docstring at `:20-38` now says which balance it forms and why
+  the sentence had to be earned, so CW0 is satisfied. **Does not carry.**
+* **R718 (blocking) -- CLOSED**, at the first branch of my condition. Answered at `d291b65`,
+  a standalone `process:` commit touching `tests/test_report_carried.py:2082-2116` and
+  nothing else and citing the directive. The fallback is gone, `assert judged` is what fires,
+  and I reproduced 53 / 13 / 40 / 7 over sixty commits exactly -- the larger sample is right
+  and worse than mine was. **Does not carry.**
+* **R712 (closure) -- STILL OPEN**, correctly declared.
+  `scripts/report_joint_reactions.py:120` still ships `PLATFORM_MASS_OVERRIDE = None`, the
+  override is typed in `g41_dynamic.py`'s caller, and the joint count is still inferred
+  rather than asserted. Into the closure commit.
+* **R713, R714, R716, R717 (closure) -- STILL OPEN**, all four correctly declared as
+  untouched in section 8a and listed in section 9. R717's ordering half WAS acted on, which
+  is the only reason this step's report could be generated.
+* **R715 (closure) -- WITHDRAWN by the implementer, and I agree.** It was my finding about
+  the implementer's docstring; section 7 withdraws the overstatement with its evidence, and
+  the branch taken -- the moment about the reference point -- stays ruled right.
+* **C1 (closure, conditioned) -- STILL OPEN AND NOW PAST ITS TRIGGER.** See the closure list.
+* **C2 to C23 (closure)** -- carried unchanged into `docs/closure/F4.md` and NOT
+  re-adjudicated, per verdict 103's instruction. C21 does not recur; the range count is seven
+  rather than the eight offered.
+* **The two self-reported `black --check` counts** -- recorded in the report's section 9,
+  both pushed, neither re-litigated. Self-reporting them before I looked is the practice I
+  have been asking for. Closure class.
+* **Verdict 103's escalation -- unchanged and not re-argued.** Two consecutive steps closed
+  carrying; the choice stated was reduce scope rather than slip. Step 3 is now carrying two
+  blocking items of its own at round 1, and both are in the derivation of the one tolerance
+  pair step 3 exists to declare. **If they are still open at revision 2, that is a third
+  consecutive step and the choice has to be made rather than restated.**
+
+## The adversarial corpus (BE3)
+
+**BATCH 38 -- `tests/corpus/g41_dynamic_counter_family_vacuity.txt`, 15 entries, ALL NEW**,
+committed separately at `b20cf2a`.
+
+* **Coverage this round: 15 new entries; the check under review places 4 of them correctly.**
+  Of the twelve I measured, **4 caught and 8 not**; three are recorded `caught=not-run` with
+  no claim made. The eight misses are the two root causes behind R719 and R720 and their
+  consequences -- a vacuous member on the case-maximum body, the false case-dependence, the
+  family minimum, the sub-floor injection, the linearity assumption, the per-case reference,
+  the solved scale, and a family size asserted while the membership that varies is not.
+* **The coordinate the author never varied is WHICH BODY CARRIES THE CASE MAXIMUM.** The
+  filter was written and checked at `T_full = 14`, where the platform carries it and both
+  vacuous pairs fall out correctly. At `T_full = 10` hub3 carries it and one of them walks
+  through. Same shape as R682, R694, R704, R706, R708 and R710 -- a check calibrated at one
+  point of its own domain -- which is why this is a corpus file and not a note.
+* **EG4(e) justification, stated rather than assumed.** Batches pause to 28 October except
+  mutation work on the two surfaces where a miss reaches a member force. Member forces are
+  static + dynamic (EK0(f)), the dynamic half is `res.lam` at the sixteen joints, and
+  G4.1-dynamic is the only gate measuring whether that balance closes. That is the surface.
+* **Still owed at the 28 October batch, unchanged:** F4's load-mapping gate (a defect
+  identical on all five bodies; a block moved between two nodes at the same position), EB6's
+  gate per C5 (permutations that PRESERVE the count), the shared-attribute corpus for
+  DQ4(i), the aggregation-direction corpus, and the residual-form corpus added last round --
+  **of which this batch is the first half**, R711 and R719 being the same species.
+* **My own hygiene item, carried from verdicts 101 to 104 and still mine:**
+  `tests/corpus/f4_static_case_and_member_force_recovery.txt` lines 40, 48, 49 and 50 carry
+  `measured=` figures on the OLD mass basis. I re-head that file at the 28 October batch.
+
+## Next step opens when
+
+**Step 3 stays open. This was ROUND 1 of three; two revisions remain.** What revision 2 must
+do before anything else:
+
+1. **R719 is answered** -- the vacuity test separated from the bracketing test, the vacuity
+   margin's own boundary solved in both directions, the bracketing test taken against the
+   GLOBAL clean worst, and the window rule's two edges re-measured over all six cases with my
+   `86.8379x` beaten or refuted at a named operating point. **The "case-dependent vacuous
+   set" sentence is made true or deleted** at `scripts/measure/g41_dynamic.py:439-448`, in the
+   report and in the published claim.
+2. **R720 is answered** -- the injected signal measured as the DIFFERENCE
+   `max_t |resid_mass - resid|`, the 2x edge solved against the global clean worst rather
+   than extrapolated through a floor, and the published injection scale re-measured at the
+   scale it names. If EV1's `1 + 1e-6` genuinely cannot bracket the moment channel, the
+   figure that goes to Xabier is the measured one and not `1 + 4.816e-06` or `1 + 4.499e-05`.
+3. **C1 lands with them**, because verdict 102 conditioned it on being answered before this
+   quantity is chosen, and the quantity is now chosen.
+4. **Then the ceilings may be declared** -- both in `floatfea/tolerances.py` with their plan
+   rows in the same commit (BR0), each with a counter whose weakest family member is measured
+   over all 30 body-cases, both edges of the window rule stated, and both boundaries solved
+   including the two that weaken the gate (EH4).
+5. **Step 3's locked remainder is unchanged by this round and is not reopened:** the
+   member-force table per member and per case at every element node, the six-case envelope,
+   the `f` sensitivity, DQ8's FE-against-FloatSim acceleration assertion, R638, R637 clause
+   (iii), and `docs/closure/F4.md` with G4.5's measured rate and DQ6's cycle-to-cycle
+   measurement. The schedule paragraph says 14 October and holds; I add only that two
+   blocking items at round 1, with EV2 items 2 to 5 unstarted, is not a comfortable position.
+
+**What I will not accept at revision 2.** A G4.1-dynamic moment ceiling declared from a
+family whose minimum is a member whose drop response equals its own body's clean value, or a
+counter scale extrapolated from a quantity that is mostly a clean residual. Neither of those
+is a judgement about figures. They are the same single question -- if the thing this member
+claims were false, would it go red -- and for the two numbers the hand-back's headline rests
+on, the answer measured out as no.
+
+## On the criterion -- I was asked, and I agree, with the same single note
+
+CZ0 is right and I applied it. Four findings went to the closure class this round without
+argument, including C27, where a guard and the locked plan disagree and I would have enjoyed
+arguing it is (c). It is not: no gate assertion moved.
+
+**The note, said once and unchanged from verdict 104.** Both of my blocking findings are in
+`scripts/`, which CZ0 lists under "generators" as closure class, and I block on them under
+the carve-out my own instructions give -- "a generator whose output *is* a gate's assertion".
+Under EV3 every report figure comes from `scripts/measure/`, and under
+`docs/milestones/F4.md:486` the G4.1-dynamic ceilings are declared from the figures measured
+there, so EV3 moved the derivation of a (b) value out of the step report -- which is
+regenerated by rule -- and into `scripts/`. **A script under `scripts/measure/` whose output
+is a declared tolerance's derivation is (b) while it is being used that way.** The hand-back
+says it agrees and has put it to Xabier; I rule under it until he says otherwise. If he rules
+the other way, R719 and R720 become closure items, step 3 may close carrying them, and the
+two numbers in sections 4 and 5 are what a reader of `docs/closure/F4.md` will need -- they
+should go there verbatim rather than be re-derived.
+
+**And one thing on the record for the implementer rather than against them.** The hand-back
+named the file it had already found five defects in, said which two of its properties it
+could not check itself, volunteered three errors of its own before I could find them, and
+asked me to attack its headline rather than confirm it. I attacked the headline and it broke.
+That is the hand-back working as intended: the two things it asked me to check -- the `mu`
+rebuild and `window_slice` -- are both correct, and the finding sits next to them in the one
+place it did not think to look twice, which is the configuration it did not run.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F4 step 3
 Reviewed commit: 9de3e4e9a8bc31caa1e22259d9d570c39d39c3b2
 Verdict: HOLD
 **Reviewed commit: `9de3e4e`** (`9de3e4e9a8bc31caa1e22259d9d570c39d39c3b2`, HEAD of F3
