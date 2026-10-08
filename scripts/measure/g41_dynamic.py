@@ -17,10 +17,25 @@ the property the superseded single-scalar form lacked: a window in which the rea
 nearly balance has a small `|Sum_j F_j|` and an ordinary `Sum_j |F_j|`, and dividing by
 the first manufactures a large relative residual out of a quiet case.
 
-THE RESIDUAL IS THE DISCRETE ONE, as locked. The continuous identity does not close to
-round-off: `newmark.py:48` documents `mu_{n+1-alpha_f} ~= mu_n` as an O(h) lag, and
-`docs/load-interchange-v1.md` sec.4.1-4.2 chose the discrete form so that G4.1 means what
-it says. The form here is `report_joint_reactions.py::discrete_residual`'s, per body.
+THE RESIDUAL IS THE DISCRETE ONE, as locked, and R711 is why that sentence needed to be
+earned. The continuous identity does not close to round-off: `newmark.py:48` documents
+`mu_{n+1-alpha_f} ~= mu_n` as an O(h) lag, and `docs/load-interchange-v1.md` sec.4.1-4.2
+chose the discrete form so that G4.1 means what it says.
+
+**The first version of this script formed the CONTINUOUS balance and this docstring said
+it formed the discrete one.** Measured against the locked form over the same window, the
+force channel read `2.393343e-03` where the locked form reads `1.086249e-16` -- a factor
+of `2.2e+13`, and a ceiling declared by the window rule from the wrong quantity would have
+been thirteen decades loose on a channel that closes to round-off. The terms that were
+missing are the generalized-alpha weights, `C`, `mu`, the external force and the MIDPOINT
+Jacobian; of those, `ext`, `C`, `mu` and the added-mass contribution are identically zero
+on the five FE bodies (EK0(a)), so the cost was `alpha_m M_eff xi_ddot_{n-1}` and
+`(g_mid - g_now)^T lam`.
+
+The form here is `report_joint_reactions.py::discrete_residual`'s, mirrored line for line,
+per body -- and the loop carries a CONTROL comparing the per-body decomposition against
+the same residual's whole-state maximum, because nothing else in this script would notice
+a wrong slice.
 
 WHERE THE MOMENT IS TAKEN -- AND EV1's WORDING DISAGREES WITH THE LOCKED CONVENTIONS.
 
@@ -116,6 +131,26 @@ def window_slice(t: np.ndarray, period_model_s: float) -> slice:
     start = max(start_floor, end - 5.0 * period_model_s)
     lo = int(np.searchsorted(t, start))
     return slice(lo, len(t))
+
+
+def per_joint_contributions_from(g, lam, n_bodies: int) -> np.ndarray:
+    """As `per_joint_contributions`, but from a Jacobian the caller already has.
+
+    The numerator is formed at the step MIDPOINT, and the denominators must be about the
+    same configuration -- so the caller computes `g_mid` once and both read it. Two
+    `jacobian()` calls at different arguments is how a numerator and its denominator come
+    to describe different states.
+    """
+    from floatfea.loads.joint_reactions import ROWS_PER_JOINT
+
+    n_joints = g.shape[0] // ROWS_PER_JOINT
+    out = np.zeros((n_joints, n_bodies, 6), dtype=np.float64)
+    for j in range(n_joints):
+        rows = slice(ROWS_PER_JOINT * j, ROWS_PER_JOINT * (j + 1))
+        full = np.asarray(g[rows].T @ np.asarray(lam)[rows], dtype=np.float64)
+        for k in range(n_bodies):
+            out[j, k] = full[6 * k : 6 * k + 6]
+    return out
 
 
 def per_joint_contributions(setup, xi, lam, n_bodies: int) -> np.ndarray:
@@ -215,15 +250,81 @@ def measure_case(period_full_s: float, dt: float = DT, no_override: bool = False
     den_f = {n: 0.0 for n in names}
     den_m = {n: 0.0 for n in names}
 
+    # R711: THE DISCRETE BALANCE, mirroring `report_joint_reactions.discrete_residual`
+    # line for line. An earlier version of this loop formed `Sum_j G^T lam - M ddot` at
+    # `xi[n]` -- the CONTINUOUS balance -- which the plan does not lock and which reads
+    # 2.2e+13 times larger on the force channel.
+    from floatsim.hydro.retardation import RadiationConvolution
+
+    h = float(res.t[1] - res.t[0])
+    c_mat = setup.lhs.C
+    a_eff = (1.0 - alpha_m) * m_eff + (1.0 - alpha_f) * (h**2) * beta * c_mat
+
+    # `mu`, rebuilt by pushing the solver's own velocity history through a fresh buffer.
+    # The push of `xi_dot[0]` BEFORE the loop and `mu[0] = 0` are the integrator's own
+    # startup convention (`newmark.py:384-391`), not a choice here.
+    buffer = RadiationConvolution(setup.kernel)
+    buffer.push(res.xi_dot[0])
+    mu = np.zeros_like(res.xi_dot)
+    for i in range(1, res.xi.shape[0]):
+        buffer.push(res.xi_dot[i])
+        mu[i] = buffer.evaluate()
+
+    def force_at(i: int) -> np.ndarray:
+        """`F_np1` as the loop builds it: time term at `t_i`, state term LAGGED."""
+        f = np.asarray(ext(float(res.t[i])), dtype=np.float64)
+        if getattr(setup, "state_force", None) is not None and i > 0:
+            f = f + np.asarray(
+                setup.state_force(float(res.t[i - 1]), res.xi[i - 1], res.xi_dot[i - 1]),
+                dtype=np.float64,
+            )
+        return f
+
+    whole_state_worst = 0.0
+    decomposition_gap = 0.0
     for n in range(*win.indices(len(res.t))):
+        if n == 0:
+            continue  # the discrete form reads step n-1
+        xi_n, xi_dot_n, xi_ddot_n = res.xi[n - 1], res.xi_dot[n - 1], res.xi_ddot[n - 1]
+        xi_pred = xi_n + h * xi_dot_n + (h**2) * (0.5 - beta) * xi_ddot_n
+        rhs = (
+            (1.0 - alpha_f) * force_at(n)
+            + alpha_f * force_at(n - 1)
+            - alpha_m * (m_eff @ xi_ddot_n)
+            - (1.0 - alpha_f) * (c_mat @ xi_pred)
+            - alpha_f * (c_mat @ xi_n)
+            - mu[n - 1]
+        )
+        # THE JACOBIAN IS AT THE STEP MIDPOINT, which `newmark.py` says in its own
+        # comment and which the continuous version got wrong: `(g_mid - g_now).T lam`
+        # alone is 3.008e-05 .. 6.538e-04, itself up to 480x a hub's locked residual.
+        mid = 0.5 * (xi_n + res.xi[n])
         lam = np.asarray(res.lam[n], dtype=np.float64)
-        contrib = per_joint_contributions(setup, res.xi[n], lam, n_bodies)
-        inertia = np.asarray(m_eff @ res.xi_ddot[n], dtype=np.float64)
+        g_mid = setup.constraints.jacobian(mid)
+        reaction = np.asarray(g_mid.T @ lam, dtype=np.float64)
+        resid = np.asarray(a_eff @ res.xi_ddot[n] - reaction - rhs, dtype=np.float64)
+        # The denominators need each joint's own contribution, not their sum. Taken from
+        # the SAME `g_mid` the numerator used, so the two cannot be about different
+        # configurations.
+        contrib = per_joint_contributions_from(g_mid, lam, n_bodies)
+        # AND THE DECOMPOSITION IS ASSERTED AGAINST THE LOCKED FORM'S OWN TERM, which is
+        # a stronger control than comparing maxima: if the per-joint slicing were wrong,
+        # the sum over joints would not reproduce `g_mid.T lam`.
+        rebuilt = contrib.sum(axis=0).reshape(-1)
+        if rebuilt.shape != reaction.shape:
+            raise SystemExit(
+                f"the per-joint decomposition has shape {rebuilt.shape} and the "
+                f"reaction vector {reaction.shape}; the bodies do not partition the "
+                "state as this script assumes."
+            )
+        scale = float(np.max(np.abs(reaction))) or 1.0
+        gap = float(np.max(np.abs(rebuilt - reaction))) / scale
+        decomposition_gap = max(decomposition_gap, gap)
+        whole_state_worst = max(whole_state_worst, float(np.max(np.abs(resid))))
         for k, name in enumerate(names):
-            summed = contrib[:, k, :].sum(axis=0)
-            resid = summed - inertia[6 * k : 6 * k + 6]
-            num_f[name] = max(num_f[name], float(np.linalg.norm(resid[0:3])))
-            num_m[name] = max(num_m[name], float(np.linalg.norm(resid[3:6])))
+            block = resid[6 * k : 6 * k + 6]
+            num_f[name] = max(num_f[name], float(np.linalg.norm(block[0:3])))
+            num_m[name] = max(num_m[name], float(np.linalg.norm(block[3:6])))
             den_f[name] = max(
                 den_f[name],
                 float(np.sum(np.linalg.norm(contrib[:, k, 0:3], axis=1))),
@@ -232,6 +333,21 @@ def measure_case(period_full_s: float, dt: float = DT, no_override: bool = False
                 den_m[name],
                 float(np.sum(np.linalg.norm(contrib[:, k, 3:6], axis=1))),
             )
+
+    # THE CONTROL. If the per-body slicing were wrong, the per-body maxima could be
+    # anything and no other line here would notice. The largest per-body component must
+    # BE the largest component of the whole-state residual, because the bodies partition
+    # the state.
+    print(
+        f"  control: the per-joint decomposition reproduces `g_mid.T lam` to "
+        f"{decomposition_gap:.3e} relative, worst over the window",
+        flush=True,
+    )
+    print(
+        f"  control: whole-state discrete residual worst {whole_state_worst:.6e} "
+        "(all 102 DOF, the aggregate DQ8 forbids as a gate)",
+        flush=True,
+    )
 
     out = {"period_full_s": period_full_s, "steps": int(steps), "bodies": {}}
     print(f"  {'body':<10} {'force rel':>14} {'moment rel':>14} {'den_f':>12} {'den_m':>12}")
