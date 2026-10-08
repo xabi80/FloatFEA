@@ -1,0 +1,69 @@
+{
+  "_": [
+    "POINTERS ONLY (CH4).",
+    "",
+    "F4 STEP 3, REVISION 1. Answers the HUNDRED-AND-FOURTH verdict (9ec380e), which was",
+    "an ES0 INTERIM CHECK at `9de3e4e` and counts against NO round. So this revision is",
+    "ROUND 1 of three for step 3.",
+    "",
+    "THE BLOCKING ITEM IS R711 (section 2): the G4.1 measurement formed the CONTINUOUS",
+    "balance where the plan locks the discrete one, and its docstring claimed otherwise.",
+    "",
+    "R709 and R710 are the items step 2 closed carrying. They were answered in `4b64eaf`,",
+    "BEFORE the interim check, which is why that check closed them rather than raising",
+    "them -- section 4 carries the ablations anyway, because a closure I did not",
+    "reproduce myself is a closure I am taking on trust.",
+    "",
+    "R712 to R716 are closure class and go in section 9 with C1 to C15. R716 is a",
+    "mechanical note about `scripts/write_verdict.py` rather than a finding against the",
+    "work, and it needs a directive.",
+    "",
+    "R717 and R718 arrived with the verdict's amendment at `74c77d1`, which added the",
+    "bold judged-commit anchor I asked for. R718 BLOCKS and is answered in section 5a;",
+    "R717 is closure class and is the producer half of the same mechanism."
+  ],
+  "answered": {
+    "R711": {
+      "state": "answered",
+      "where": "§2",
+      "site": "scripts/measure/g41_dynamic.py"
+    },
+    "R709": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R710": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R712": {
+      "state": "carried",
+      "where": "§9"
+    },
+    "R713": {
+      "state": "carried",
+      "where": "§9"
+    },
+    "R714": {
+      "state": "carried",
+      "where": "§9"
+    },
+    "R715": {
+      "state": "answered",
+      "where": "§7"
+    },
+    "R716": {
+      "state": "carried",
+      "where": "§9"
+    },
+    "R717": {
+      "state": "carried",
+      "where": "§9"
+    },
+    "R718": {
+      "state": "answered",
+      "where": "§5a",
+      "site": "tests/test_report_carried.py"
+    }
+  }
+}
