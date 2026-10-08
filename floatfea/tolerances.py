@@ -2571,6 +2571,13 @@ F4_DQ5_FREE_FALL_COUNTER: Final[float] = 4.0e-4
 #   lower edge  ceiling / clean    : 2.69454e+07x
 #   upper edge  weakest / ceiling  : 2.82742e+07x
 #
+# THE TWO EDGES ARE AT THE DECLARED VALUE AND NOT AT THE CENTRE, which is a distinction
+# the script does not print: at the geometric centre both edges are equal by construction
+# (`27601784.6292x` twice), and rounding to `5.0e-9` makes them unequal. The four edge
+# figures in this file and in the moment entry below are arithmetic on the script's clean
+# worst and weakest signal, not lines of its output -- BI3, so the arithmetic is named
+# rather than implied.
+#
 # EH4, BOTH DIRECTIONS: the ceiling may FALL to 3.711214e-16 before the lower edge loses
 # its 2x, and RISE to 7.068550e-02 before the upper edge does. Seven decades of room
 # either way, because this channel closes to round-off and the injections are O(0.1).
@@ -2623,6 +2630,9 @@ F4_G41_DYNAMIC_FORCE_COUNTER: Final[float] = 0.1
 #   declared (round bound)         : 2.0e-4
 #   lower edge  ceiling / clean    : 86.0457x
 #   upper edge  weakest / ceiling  : 87.6412x
+#
+# At the centre both edges are `86.8398x`; these two are at the DECLARED `2.0e-4`. See the
+# force entry's note -- the script prints the centre's pair, not this one.
 #
 # EH4, BOTH DIRECTIONS: the ceiling may FALL to 4.648692e-06 and RISE to 8.764116e-03
 # before either edge loses its 2x.
