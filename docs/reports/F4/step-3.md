@@ -707,47 +707,166 @@ of this uncommitted revision and re-running it would print the same two numbers.
 
 # Revision 2 — EX0's committed inputs, EX1's re-derivation, and four findings of my own
 
-Answers: verdict 106 @ f07bcb8
+Answers: verdict 106 @ 0949047
 
 **2026-10-08.**
 
-## 0. CI at `45e5242`, the commit verdict 106 judged — conclusion **SUCCESS**
+## 0. CI at `f07bcb8`, the commit verdict 106 judged — conclusion **FAILURE**
 
 <!-- generated: scripts/ci_section.py -->
 
-Generated: `python scripts/ci_section.py`, anchored on verdict 106 at `45e5242` through the report's own `Answers:` line. Run `37723495711`, event `push`, conclusion **success**.
+Generated: `python scripts/ci_section.py`, anchored on verdict 106 at `f07bcb8` through the report's own `Answers:` line. Run `37733553932`, event `push`, conclusion **failure**.
 
 | job | passed | failed | skipped |
 |---|---|---|---|
-| the verification ladder | 1979 | 0 | 0 |
-| lint, unit and guards | 1045 | 0 | 0 |
+| the verification ladder | 1987 | 124 | 0 |
+| lint, unit and guards | 1054 | 0 | 0 |
 | CI determinism -- leg | 0 | 0 | 0 |
 | CI determinism -- ten legs agree | 0 | 0 | 0 |
 
-**Job conclusions: 4 jobs, 0 not green.**
+**Job conclusions: 4 jobs, 1 not green.**
 
-**Failing tests named in the log: 0.**
+- the verification ladder (failure)
+
+**Failing tests named in the log: 124.**
+
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[platform-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub1-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub2-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub3-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub4-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[platform-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub1-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub2-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub3-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub4-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[platform-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub1-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub2-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub3-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub4-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[platform-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub1-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub2-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub3-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub4-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[platform-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub1-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub2-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub3-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub4-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[platform-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub1-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub2-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub3-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[hub4-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[platform-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub1-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub2-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub3-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub4-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[platform-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub1-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub2-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub3-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub4-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[platform-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub1-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub2-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub3-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub4-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[platform-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub1-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub2-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub3-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub4-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[platform-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub1-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub2-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub3-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub4-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[platform-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub1-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub2-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub3-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_moment_residual_is_inside_its_ceiling[hub4-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_joint_drop_family_covers_the_whole_domain` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_every_joint_drop_reddens_the_force_gate` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_every_NON_VACUOUS_joint_drop_reddens_the_moment_gate` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_VACUOUS_moment_members_are_exactly_the_two_declared_pairs` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[platform-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub1-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub2-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub3-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub4-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[platform-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub1-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub2-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub3-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub4-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[platform-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub1-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub2-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub3-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub4-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[platform-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub1-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub2-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub3-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub4-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[platform-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub1-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub2-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub3-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub4-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[platform-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub1-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub2-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub3-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_reddens_the_force_gate[hub4-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[platform-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub1-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub2-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub3-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub4-T10]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[platform-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub1-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub2-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub3-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub4-T12.5]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[platform-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub1-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub2-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub3-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub4-T14]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[platform-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub1-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub2-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub3-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub4-T15]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[platform-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub1-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub2-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub3-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub4-T16.2]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[platform-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub1-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub2-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub3-T20]` (the verification ladder)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_mass_scale_is_VACUOUS_on_the_moment_channel[hub4-T20]` (the verification ladder)
 
 ## 0a. Runs since the commit verdict 106 judged
 
 <!-- generated: scripts/ci_section.py -->
 
-Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 106 at `45e5242` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 106 at `f07bcb8` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
 
 | run | event | head | outcome |
 |---|---|---|---|
-| `37723495711` | push | `45e5242` | conclusion **success** |
-| `37727415689` | push | `becf47c` | conclusion **success** |
-| `37729406337` | push | `7799482` | **no result** (`cancelled`) |
-| `37729727113` | push | `801796e` | conclusion **failure** |
 | `37733553932` | push | `f07bcb8` | conclusion **failure** |
 | `37790839814` | push | `8ae9acc` | conclusion **failure** |
 | `37794940102` | push | `380184e` | conclusion **failure** |
 | `37796814444` | push | `d16a46b` | conclusion **failure** |
-
-**Run `37729727113`, conclusion **failure**: 2 failing test name(s) in the log.**
-- `tests.verification.rung3.test_tolerance_counter_cases::test_every_accuracy_entry_has_a_counter_that_something_INJECTS[F4_G41_DYNAMIC_FORCE]` (the verification ladder)
-- `tests.verification.rung3.test_tolerance_counter_cases::test_every_accuracy_entry_has_a_counter_that_something_INJECTS[F4_G41_DYNAMIC_MOMENT]` (the verification ladder)
 
 **Run `37733553932`, conclusion **failure**: 124 failing test name(s) in the log.**
 - `tests.verification.rung4.test_f4_g41_dynamic::test_the_force_residual_is_inside_its_ceiling[platform-T10]` (the verification ladder)
@@ -1634,3 +1753,99 @@ at `8ae9acc` because I staged `docs/reports/F4/step-3-answers.json` in that comm
 the report revision it generates into. It would have fired at a non-boundary commit too.
 See section 6(f).
 
+
+# Revision 3 — verdict 107's five, and EY0's table first
+
+Answers: verdict 107 @ fbac279
+
+**2026-10-08.**
+
+## 1. What this revision is, and why its Carried table arrived before its answers
+
+**Step 3's working target is 16 October (EX4) and it holds.** This is **round 3 of three
+and the last reviewed revision for this step.** EY3 has pre-decided the outcome: if this
+revision's verdict closes step 3 carrying anything, F4 closes and the carried items go to
+F5's ledger. **That is a cut, not a slip**, and the committed dates are unchanged.
+
+**EY0 put the member-force table before any further revision-3 work, and it is first.** The
+table is sent separately; `scripts/measure/member_forces_table.py` is its script, outside
+the gate, reading `data/f4/dynamic_inputs.npz` (EX0(d)).
+
+**This section exists because BS0 is a build failure and not a review finding.** The
+moment verdict 107 was committed, the newest report's Carried table was required to list
+every open item, and revision 2 — which answers verdict 106 and has its own final verdict
+— must not be edited after it (EK3). So revision 3 opens with its Carried table and its
+substantive answers follow. The ordering is the hook's, not a choice, and it is recorded
+rather than left to look like an answer that is missing.
+
+## 2. R725 — the `Answers:` line named the wrong commit, and a generator published a green table for a red one
+
+```
+claim  revision 2's `Answers:` line named the commit verdict 106 REVIEWED, not the one it
+       was WRITTEN at, and the CI section anchors through that token
+cmd    git log --oneline -1 0949047
+out    0949047 review: F4 step 3 -- INTERIM CHECK, STOP. Rung 4 is red in CI
+cmd    git log --oneline -1 f07bcb8
+out    f07bcb8 F4 step 3: the gate EV1's declaration cannot exist without
+cmd    grep -n "^Answers:" docs/reports/F4/step-3.md
+out    5:Answers: verdict 104 @ 74c77d1
+out    710:Answers: verdict 106 @ 0949047
+rule   the `Answers:` line names the VERDICT's own commit; revision 1 got this right, and
+       `74c77d1` is a `review:` commit
+judge  **what the wrong token produced is the finding, not the token.** `ci_section.py`
+       says in its own output that it is "anchored on verdict 106 ... through the report's
+       own `Answers:` line", so revision 2 §0 published **"CI at `45e5242` — conclusion
+       SUCCESS"**, run `37723495711`, for a verdict that judged `f07bcb8`, whose run
+       `37733553932` reached conclusion **failure** with 124 errors. Regenerated against
+       the corrected token it reads **"CI at `f07bcb8` — conclusion FAILURE"**.
+```
+
+**And I mis-filed the red it caused.** `test_the_answered_verdict_is_the_NEWEST_one` was
+among revision 2's eight excluded-set failures, and §12 of that revision called all eight
+EG3 state (2). They WERE state (2) at `d16a46b`, where the report was older than the
+verdict. At `d09a237` this one fires on the wrong token, through the guard's later-of-the-two
+branch rather than its boundary carve-out. **The guard worked and I explained its output
+away.** That is R718's class one step further out: removing the fallback closed the
+generator trusting a MISSING token, and this is it trusting a PRESENT and wrong one.
+
+## 7. Carried
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R709 | **answered** — §8 | (blocking) -- CLOSED, at the first branch of my condition. Answered at 4b64eaf, |
+| R710 | **answered** — §8 | (blocking) -- CLOSED, at both branches of my condition. Answered at 4b64eaf, |
+| R711 | **answered** — §8 | and (c) through the generator-is-the-gate carve-out) scripts/measure/g41_dynamic.py MEASURES... |
+| R712 | **carried** — §8 | declaration) ER0's BASIS IS WIRED IN THE NEW CALLER AND NOT AT THE SITE, AND THE OVERRIDE'S... |
+| R713 | **carried** — §8 | run_for() AND code_identical_run() APPLY NO STATUS OR CONCLUSION FILTER, SO EW0's STATE CAN... |
+| R714 | **carried** — §8 | fnmatch IS WIDER THAN GITHUB'S GLOB AND WIDER IS THE UNSAFE DIRECTION.... |
+| R715 | **answered** — §8 | THE DOCSTRING'S EVIDENCE FOR "NOT COINCIDENT ON THIS PLATFORM" IS A BUOY FIGURE, AND NO BODY IN... |
+| R716 | **carried** — §8 | scripts/write_verdict.py CANNOT WRITE AN ES0 INTERIM CHECK ON A STEP WHOSE REPORT DOES NOT... |
+| R717 | **carried** — §8 | scripts/ci_section.py's ANCHOR PATTERN AND scripts/write_verdict.py's OUTPUT DISAGREE, SO THE... |
+| R718 | **answered** — §8 | : a gate assertion on WHICH QUANTITY. Latent, and I say so.)... |
+| R719 | **answered** — §8 | : a counter and how it is injected, through the generator-is-the-gate carve-out) THE JOINT-DROP... |
+| R720 | **answered** — §8 | : how the counter is injected, and the size it has to be) "THE RESPONSE IS LINEAR IN THE SCALE"... |
+| R721 | **answered** — §8 | , AND THE STOP) THE WHOLE OF LADDER RUNG 4 IS RED IN CI AT THE REVIEWED COMMIT BECAUSE THE GATE... |
+| R722 | **answered** — §8 | : a tolerance value, its counter, and how the counter is injected) THE FORCE CHANNEL CEILING,... |
+| R723 | **answered** — §8 | : a gate assertion, on the right quantity at the wrong threshold)... |
+| R724 | **answered** — §8 | : the warrant for excluding 12 of 120 counter-family members) THE PUBLISHED CAUSE OF THE MOMENT... |
+| R725 | **answered** — §2 | : A RED TEST AT THE REVIEWED COMMIT) REVISION 2 ANSWERS LINE NAMES THE COMMIT VERDICT 106... |
+| R726 | **open** — §3 | : a gate assertion, on which quantity) THE STALENESS CHECK READS TWO FILES AND THE NPZ IS A... |
+| R727 | **open** — §4 | : a tolerance value and the form of one; and (c): the assertion that would bound it)... |
+| R728 | **open** — §5 | : the FORM of a tolerance) F4_WINDOW_RULE_MIN_EDGE = 2.0 IS A FLOOR ON A RATIO IN THREE OF ITS... |
+| R729 | **open** — §6 | : a gate assertion that the plan requires and nothing makes; and (b): the size the counter is... |
+
+## 8. The items earlier rounds closed, and the closure list
+
+R709, R710, R711, R715 and R718 were closed in revision 1; R719 and R720 before revision 2;
+R721, R722, R723 and R724 in revision 2 and accepted by verdict 107. R712, R713, R714, R716
+and R717 remain closure items, R712's `PLATFORM_MASS_OVERRIDE` half answered by EX0(e).
+C2–C15 and C24–C27 carry, and verdict 107 adds **C28** (the force lower edge as a detection
+threshold rather than a ratio to noise), **C29** (the run-ID guard narrowed to standalone
+tokens, which EY1 routes to its own `process:` commit), **C30** (`body_mass`, `body_J_G` and
+`accel` loaded and read by nothing), **C31** (a docstring figure one ulp stale), **C32**
+(revision 2 §4's cell moves two variables) and **C33** (the `mypy` ledger's rule against its
+instance).
+
+**Sections 3 to 6 — R726, R727, R728 and R729 — follow the table.**

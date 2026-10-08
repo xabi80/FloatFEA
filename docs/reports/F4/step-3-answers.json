@@ -2,93 +2,114 @@
   "_": [
     "POINTERS ONLY (CH4).",
     "",
-    "F4 STEP 3, REVISION 2. Answers verdict 106 @ f07bcb8, which was an ES0 INTERIM CHECK",
-    "and a STOP. Under ES0 it counted against no round, so this revision is ROUND 2 of",
-    "three and one remains.",
+    "F4 STEP 3, REVISION 3 -- THE LAST FOR THIS STEP (EY1). Answers verdict 107 @ fbac279,",
+    "which was ROUND 2 OF THREE and a HOLD on five items.",
     "",
-    "ALL FOUR OF VERDICT 106's FINDINGS ARE ANSWERED and I reproduced each before",
-    "accepting it. R721 (section 2) is the STOP: the gate was green on one machine and",
-    "errored on 124 of 126 cases in CI. R722 (section 3) is mine: the force ceiling was",
-    "declared over one of EV1's two counter-cases. R723 and R724 are section 5.",
+    "R725 is ANSWERED: the `Answers:` line named the commit verdict 106 REVIEWED instead of",
+    "the one it was WRITTEN at, and `ci_section.py` anchors through that token -- so",
+    "revision 2 published a GREEN CI table for a commit that was RED. Section 2.",
     "",
-    "THE PLAN RE-LOCKED IN c8cb5f6, a standalone `plan:` commit (EX0-EX4). DK0: a re-lock",
-    "inside a step does not restart the round count.",
+    "R726 to R729 are the four blocking repairs EY1 orders. Sections 3 to 6.",
     "",
-    "SIX FINDINGS OF MY OWN are in section 6, four of them from building EX0 -- including a",
-    "DUPLICATED `Final` in tolerances.py that ruff, black and mypy all passed."
+    "EY0's MEMBER-FORCE TABLE came first by directive and is sent separately."
   ],
   "answered": {
     "R711": {
       "state": "answered",
-      "where": "§9",
+      "where": "§8",
       "site": "scripts/measure/g41_dynamic.py"
     },
     "R709": {
       "state": "answered",
-      "where": "§9"
+      "where": "§8"
     },
     "R710": {
       "state": "answered",
-      "where": "§9"
+      "where": "§8"
     },
     "R712": {
       "state": "carried",
-      "where": "§9"
+      "where": "§8"
     },
     "R713": {
       "state": "carried",
-      "where": "§9"
+      "where": "§8"
     },
     "R714": {
       "state": "carried",
-      "where": "§9"
+      "where": "§8"
     },
     "R715": {
       "state": "answered",
-      "where": "§9"
+      "where": "§8"
     },
     "R716": {
       "state": "carried",
-      "where": "§9"
+      "where": "§8"
     },
     "R717": {
       "state": "carried",
-      "where": "§9"
+      "where": "§8"
     },
     "R718": {
       "state": "answered",
-      "where": "§9",
+      "where": "§8",
       "site": "tests/test_report_carried.py"
     },
     "R721": {
       "state": "answered",
-      "where": "§2",
+      "where": "§8",
       "site": "tests/verification/rung4/test_f4_g41_dynamic.py"
     },
     "R722": {
       "state": "answered",
-      "where": "§3",
+      "where": "§8",
       "site": "floatfea/tolerances.py"
     },
     "R723": {
       "state": "answered",
-      "where": "§5",
+      "where": "§8",
       "site": "tests/verification/rung4/test_f4_g41_dynamic.py"
     },
     "R724": {
       "state": "answered",
-      "where": "§5",
+      "where": "§8",
       "site": "floatfea/tolerances.py"
     },
     "R719": {
       "state": "answered",
-      "where": "§1a",
+      "where": "§8",
       "site": "scripts/measure/g41_dynamic.py"
     },
     "R720": {
       "state": "answered",
-      "where": "§1a",
+      "where": "§8",
       "site": "scripts/measure/g41_dynamic.py"
+    },
+    "R725": {
+      "state": "answered",
+      "where": "§2",
+      "site": "docs/reports/F4/step-3.md"
+    },
+    "R726": {
+      "state": "open",
+      "where": "§3",
+      "site": "scripts/export_f4_dynamic_inputs.py"
+    },
+    "R727": {
+      "state": "open",
+      "where": "§4",
+      "site": "floatfea/tolerances.py"
+    },
+    "R728": {
+      "state": "open",
+      "where": "§5",
+      "site": "floatfea/tolerances.py"
+    },
+    "R729": {
+      "state": "open",
+      "where": "§6",
+      "site": "floatfea/tolerances.py"
     }
   }
 }

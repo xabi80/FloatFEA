@@ -102,6 +102,43 @@ def _sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+def _import_closure_shas() -> dict[str, str]:
+    """R726: the blob sha of every FLOATFEA file this export's import closure reaches.
+
+    **THE DEFENCE THIS REPLACES COVERED TWO FILES AND THE NPZ IS A FUNCTION OF AT LEAST
+    FIVE.** The reviewer constructed the stale-but-accepted state: editing
+    `scripts/report_joint_reactions.py` to change `heading_deg` from `0.0` to `90.0` --
+    the one variable EX3/R724 declares untested -- left the gate at `112 passed` and the
+    staleness test green, because the provenance named only
+    `export_f4_dynamic_inputs.py` and `measure/g41_dynamic.py`. It also showed
+    `floatfea/io/integrator.py` (which produces the stored `alpha_m`) and
+    `data/platform/platform12_deck.yaml` passing the same way.
+
+    Taken from `sys.modules` AFTER the solve, so it is the closure the run actually
+    reached rather than a list anyone maintains. HSP's own files are excluded and the
+    HSP tag covers them: they are not ours to sha, and `floatfea-ref-1` is the pin.
+    """
+    import sys as _sys
+
+    out: dict[str, str] = {}
+    for mod in list(_sys.modules.values()):
+        f = getattr(mod, "__file__", None)
+        if not f:
+            continue
+        path = Path(f).resolve()
+        try:
+            rel = path.relative_to(ROOT)
+        except ValueError:
+            continue  # outside this repository -- HSP, site-packages, the stdlib
+        if rel.parts and rel.parts[0] in ("floatfea", "scripts", "data"):
+            out[rel.as_posix()] = _blob_sha(path)
+    # The deck is data, not a module, so it is added by name.
+    deck = ROOT / "data" / "platform" / "platform12_deck.yaml"
+    if deck.exists():
+        out[deck.relative_to(ROOT).as_posix()] = _blob_sha(deck)
+    return dict(sorted(out.items()))
+
+
 def _hsp_tag() -> str:
     """The HSP state this export was taken at, per `docs/hsp-coupling.md`.
 
@@ -234,6 +271,13 @@ def export_case(period_full_s: float, dt: float) -> dict[str, Any]:
     # So the gate asserts the recompute against this, rather than anyone arguing in prose
     # that the orders agree.
     resid_control = np.zeros((len(steps), len(fe), 6), dtype=np.float64)
+    # EY0: THE RAW MULTIPLIERS, so a consumer can map them to FE NODES through the
+    # reviewed `map_joint_reactions` instead of deriving a frame transform of its own.
+    # `contrib` is each joint's reaction at the BODY REFERENCE POINT; a member-force
+    # table needs it at the joint's own node, and the transfer between the two is a
+    # frame question `docs/conventions.md` is the authority on. Storing `lam` keeps that
+    # question in the one module that has already been reviewed for it.
+    lam_window = np.zeros((len(steps), np.asarray(res.lam).shape[1]), dtype=np.float64)
     times = np.zeros(len(steps), dtype=np.float64)
     contrib_rows: list[np.ndarray] = []
 
@@ -310,6 +354,7 @@ def export_case(period_full_s: float, dt: float) -> dict[str, Any]:
             resid_control[row, k] = full_resid[6 * kk : 6 * kk + 6]
             if m_prev is not None:
                 m_xddot[0, k] = m_prev[6 * kk : 6 * kk + 6]
+        lam_window[row] = lam
 
     if len(pairs) != 20:
         raise SystemExit(
@@ -327,6 +372,14 @@ def export_case(period_full_s: float, dt: float) -> dict[str, Any]:
         "m_xddot": m_xddot,
         "accel": accel,
         "resid_control": resid_control,
+        "lam": lam_window,
+        # THE DECK'S OWN JOINT ORDER, which is the authority for the block order of
+        # `lam` (`map_joint_reactions`'s docstring, and the caveat at
+        # `test_f4_static_and_mapping.py:844-849`: the BUILDER's order is not checked
+        # against the deck's anywhere, and that is the driver's job). Recorded here so a
+        # consumer can check it rather than assume it.
+        "joint_body_a": np.array([str(j.body_a) for j in deck.joints]),
+        "joint_body_b": np.array([str(j.body_b) for j in deck.joints]),
         "pair_label": np.array([f"{n}/{j}" for n, j in pairs]),
         "pair_body": np.array([fe.index(n) for n, _j in pairs], dtype=np.int64),
         "body_mass": np.array([float(body[n].mass) for n in fe], dtype=np.float64),
@@ -338,6 +391,7 @@ def export_case(period_full_s: float, dt: float) -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> int:
     import g41_dynamic as g41
+    import report_joint_reactions as rjr
 
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--period", type=float, action="append")
@@ -407,7 +461,18 @@ def main(argv: list[str] | None = None) -> int:
             "path": "scripts/measure/g41_dynamic.py",
             "blob_sha": _blob_sha(ROOT / "scripts" / "measure" / "g41_dynamic.py"),
         },
+        # R726: every FloatFEA file the run's import closure reached, not a list of two.
+        "import_closure": _import_closure_shas(),
+        # R726: THE RUN PARAMETERS AS EXPLICIT FIELDS, so a consumer can assert them
+        # against `docs/milestones/F4.md` rather than trust that the npz was made the way
+        # the plan says. The heading is first because it is the one the reviewer moved.
         "run": {
+            # READ FROM THE SOLVE'S OWN MODULE, not mirrored here (R726). A mirror is
+            # the thing that diverges; `report_joint_reactions` is the one source and its
+            # blob sha is in `import_closure` below, so an edit to either reddens.
+            "heading_deg": float(rjr.WAVE_HEADING_DEG),
+            "wave_height_model_m": float(rjr.WAVE_HEIGHT_MODEL_M),
+            "wave_height_full_m": float(rjr.WAVE_HEIGHT_MODEL_M) * float(g41.LAMBDA),
             "periods_full_s": [float(p) for p in periods],
             "dt": float(args.dt),
             "rho_inf": float(g41.RHO_INF),

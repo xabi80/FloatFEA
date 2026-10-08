@@ -30,6 +30,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from typing import Final
 
 import numpy as np
 
@@ -75,6 +76,22 @@ from floatfea.io.integrator import (  # noqa: E402
 # The condition verdict 92 set for it to become blocking has arrived: F4 step 2's G4.1
 # cites this residual per body and per case.
 RHO_INF = rho_inf_from_deck()
+
+# THE WAVE THIS STUDY RUNS, as module constants with ONE source (R726).
+#
+# These were locals inside `solve_one`. The reviewer's stale-but-accepted state was an
+# edit to the heading -- `0.0 -> 90.0` -- which left the G4.1 gate at `112 passed` and its
+# staleness test green, because the npz's provenance named only two files and this was not
+# one of them. Hoisting them lets `scripts/export_f4_dynamic_inputs.py` RECORD the values
+# it actually ran with instead of mirroring them, and a mirror is the thing that diverges.
+#
+# `heading_deg = 0.0` is also the limitation EX3/R724 records: all six exported cases are
+# heading 0, so the heading dependence of the vacuous moment-channel set is UNTESTED.
+WAVE_HEIGHT_MODEL_M: Final[float] = 0.484
+"""The DS1 design wave at model scale. Full scale is this times the Froude factor."""
+
+WAVE_HEADING_DEG: Final[float] = 0.0
+"""Head seas. EX3/R724: no other heading has been run, and the dependence is untested."""
 
 HSP_RUNS = ROOT.parent / "HSP-runs"
 STUDY = HSP_RUNS / "studies" / "platform-12buoy"
@@ -189,8 +206,11 @@ def solve_one(period_s: float, duration_s: float, dt: float) -> tuple:
             kernel_decay_floor_override=prp._KERNEL_EXEMPT,
         )
 
-    height_m = 0.484  # the DS1 design wave at model scale
-    wave = RegularWave(amplitude=0.5 * height_m, omega=2.0 * np.pi / period_s, heading_deg=0.0)
+    wave = RegularWave(
+        amplitude=0.5 * WAVE_HEIGHT_MODEL_M,
+        omega=2.0 * np.pi / period_s,
+        heading_deg=WAVE_HEADING_DEG,
+    )
     f72 = make_regular_wave_force(
         hdb=hdb, wave=wave, body_position=(0.0, 0.0, 0.0), ramp=HalfCosineRamp(duration=10.0)
     )

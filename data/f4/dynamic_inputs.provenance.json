@@ -12,13 +12,31 @@
   },
   "generating_script": {
     "path": "scripts/export_f4_dynamic_inputs.py",
-    "blob_sha": "927b1957190839e0929905888bf7bf91c9568571"
+    "blob_sha": "07844f8e3f0fc4bb718ebfb099b5ffad7bbb73ba"
   },
   "measurement_module": {
     "path": "scripts/measure/g41_dynamic.py",
     "blob_sha": "4bfe6dcb5bab833d8fc22ecffa0215fa085971e5"
   },
+  "import_closure": {
+    "data/platform/platform12_deck.yaml": "90fba65d0c3138ab70e04bf95720151d7e590a7f",
+    "floatfea/__init__.py": "f82039d29c16cc1d5aa9366e34544902dfad238f",
+    "floatfea/hsp_pin.py": "d2e055b9fdc05f44af4dc8a41fde0356a827c96b",
+    "floatfea/io/__init__.py": "f17bb9059e2819ec2f170679973652447e79e1ce",
+    "floatfea/io/integrator.py": "0906c31fe1a1f9ab9ca3405d974f0f998a98ed13",
+    "floatfea/loads/__init__.py": "f1caf5b9c16d480790c442224d4cf2f0e746bad0",
+    "floatfea/loads/joint_reactions.py": "8251fb8be9c7b055cb9838ce901cee0c0abab3e3",
+    "floatfea/model/__init__.py": "0209f817a6948112e5bfb4d294c1eda65e36014d",
+    "floatfea/model/nodes.py": "59afba8c69ba7fa3166fe11ca5d58d71c3b2f57d",
+    "floatfea/tolerances.py": "91cdc9c48310aad355c17efe86f5e3e0fb7c5383",
+    "scripts/export_f4_dynamic_inputs.py": "07844f8e3f0fc4bb718ebfb099b5ffad7bbb73ba",
+    "scripts/measure/g41_dynamic.py": "4bfe6dcb5bab833d8fc22ecffa0215fa085971e5",
+    "scripts/report_joint_reactions.py": "006af3e1d622b9a405356b7830286ebe80bdb28d"
+  },
   "run": {
+    "heading_deg": 0.0,
+    "wave_height_model_m": 0.484,
+    "wave_height_full_m": 24.2,
     "periods_full_s": [
       10.0,
       12.5,
@@ -36,6 +54,6 @@
   },
   "npz": {
     "path": "data/f4/dynamic_inputs.npz",
-    "sha256": "f6961553cf28518198e38f2a1bc7ffad515d576f2c8fcd7a5758475552fb848c"
+    "sha256": "8f17fd40573f3ae54ff7fe2b706b1c17275eebbfb81349aae91f72efb083ffe7"
   }
 }
