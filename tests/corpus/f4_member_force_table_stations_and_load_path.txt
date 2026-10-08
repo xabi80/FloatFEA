@@ -1,0 +1,62 @@
+# CORPUS: EY0's MEMBER-FORCE TABLE -- the station construction and the load path.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the 108th verdict, F4 step 3 round 3, reviewed
+# commit fa151ba. Every `measured=` field was taken by the reviewer at that
+# commit against the shipped modules, full scale, deck platform12_deck.yaml, out
+# of `data/f4/dynamic_inputs.npz` -- no FloatSim and no HSP-runs on the path.
+#
+# WHY THIS FILE EXISTS (BE3, EG4(e)'s load-mapping exception). EY0's table is the
+# F4 deliverable: 1200 CSV rows and a top-ten list a structural engineer sizes
+# steel against. It is produced by a driver outside every gate,
+# `scripts/measure/member_forces_table.py`, and NOTHING under tests/ reads that
+# file. So the table's correctness rests on three sentences in its docstring,
+# each a claim about mechanics rather than a measurement:
+#
+#   (i)   "ROOT and TIP are the element's own end nodes: EXACT";
+#   (ii)  "MID is closed-form for a uniform net body force -- the chord mean
+#          plus w L^2 / 8";
+#   (iii) "N and T are taken as the chord mean, which is exact for a load with
+#          no axial or twisting component along the member and is the case here
+#          -- the net field is a translation".
+#
+# WHAT A PASSING SCAN MEANS. For each entry, form the quantity named by
+# `quantity=` the way the shipped script forms it, form it a SECOND way that
+# does not share the script's construction, and compare with `measured=`. An
+# entry marked expect=catch whose two routes agree is a regression in this file;
+# an entry marked expect=MISS is a live hole in the deliverable, and the number
+# this file reports is how many of the holes are still open.
+#
+# THE SECOND ROUTE USED THROUGHOUT IS PURE STATICS AND SHARES NOTHING WITH THE
+# BEAM CONVENTION: the resultant at a cut at x is taken by equilibrium of the
+# segment [0, x] -- the end action at A, plus the distributed load over x, with
+# moments about the cut. IT IS CALIBRATED AT BOTH ENDS BEFORE IT IS TRUSTED: at
+# x=0 it reproduces end_a bit-identically and at x=L it reproduces -end_b to
+# 1.49e-07 on a 1.92e+08 scale. That calibration is the warrant for every
+# `measured=` field below, and it is the step a reader should repeat first.
+
+# --- (ii) AND (iii): THE MID STATION. ---
+id=mid_is_the_half_sum_of_two_OPPOSITE_CONVENTION_end_actions site=scripts/measure/member_forces_table.py:323 quantity=MID_all_six expect=MISS measured=platform_hub2_arm_static_code_MID_Vz_+2299218.75_true_-3832031.25_code_My_6.70605e+07_true_1.24541e+08_sigma_94.4_MPa_against_175.3_MPa note=member_forces.py own docstring says end B axial has the OPPOSITE SIGN to end A and that a reader comparing the two ends sees an action and a reaction; mid=0.5*(root+tip) averages across that sign so it is half the element applied load and not a station value
+id=mid_axial_reads_ZERO_where_the_member_carries_386476_N site=scripts/measure/member_forces_table.py:323 quantity=MID_N expect=MISS measured=F4_member_forces.csv_platform_hub2_arm_MID_T10_total_max_N=6.643357e-05_against_ROOT_N=3.864765e+05_and_TIP_N=3.864837e+05 note=N is genuinely constant along this member and the published midspan value is round-off; the two end rows agree to six figures so the half-sum cancels exactly the quantity it reports
+id=the_published_station_profile_has_a_SPURIOUS_ZERO_CROSSING site=docs/F4_member_forces.csv quantity=Vz_along_the_member expect=MISS measured=published_-1.532812e+06_then_+2.299219e+06_then_+6.131250e+06_where_the_internal_shear_runs_-1.532812e+06_then_-3.832031e+06_then_-6.131250e+06 note=each of the three published numbers is a correct magnitude; read as a profile they rise through zero where the true shear falls monotonically, so the sign of the gradient and the location of the maximum are both wrong
+id=the_MID_error_direction_is_UNCONSERVATIVE_and_it_is_in_the_top_ten site=docs/F4_member_forces.md quantity=top_ten_ranking expect=MISS measured=rows_3_and_4_of_the_published_top_ten_are_MID_stations_at_366.4_MPa_and_the_static_only_cell_measures_94.4_published_against_175.3_true note=the error is LOW so a reader acting on the table under-sizes; a MID defect reading HIGH would be loud and this one is not, which is the class the implementer itself named for the two load-path errors it caught
+id=the_net_field_is_NOT_A_TRANSLATION site=scripts/measure/member_forces_table.py:304 quantity=alpha_L_over_a expect=MISS measured=norm_alpha_times_L_max_over_norm_a_trans_up_to_0.2240_on_hub1_at_T10_step0_and_0.0969_on_hub2_and_hub4 note=_net_field is rigid_projection(coords,ref)@relief.acceleration and relief.acceleration is the FULL six-vector, so the d_Alembert field varies LINEARLY along a member by up to 22 percent of its mean; the docstring warrant for a uniform load, a parabolic moment and a constant N and T is false at the configuration that ships
+id=control_ROOT_and_TIP_are_exact site=floatfea/post/member_forces.py quantity=ROOT_and_TIP expect=catch measured=the_statics_cut_reproduces_end_a_at_x=0_bit_identical_and_minus_end_b_at_x=L_to_1.49e-07_on_a_1.92e+08_scale note=THE CONTROL -- claim (i) holds and the two end rows are right; only the station they are combined into is wrong, which is why the defect survived every reading
+
+# --- THE LOAD-PATH VALIDATION FIGURE. ---
+id=the_1.55_percent_attributed_to_a_SMALL_MASS_DIFFERENCE site=scripts/measure/member_forces_table.py:41 quantity=FE_mass_over_npz_mass expect=MISS measured=ratio_1.00000000_on_all_five_bodies_platform_2.50000000e+06_kg_against_body_mass_times_125000_and_1.50000000e+06_kg_on_each_hub note=the published attribution is refuted by the cheapest available measurement; there is no mass difference to attribute it to
+id=the_residual_IS_THE_GENERALIZED_ALPHA_MASS_LAG site=scripts/measure/member_forces_table.py:41 quantity=a_FE_minus_a_FS expect=MISS measured=against_a_FS_at_n_the_worst_is_1.4425_percent_at_T10_falling_monotonically_to_0.8131_percent_at_T20_and_against_the_alpha_m_weighted_form_with_alpha_m=0.333333_it_is_0.0000_percent_a_collapse_of_4.75e+12x_to_3.10e+13x note=ONE VARIABLE MOVED (BG0) -- the reference the FE side is compared against, everything else held; the residual scales as 1/T which is a phase lag and not a mass error, and f4_dynamic_residual.py:328 and the locked plan already use the alpha_m weighted form. R711 in this same step was the CONTINUOUS balance standing where the plan locks the DISCRETE one
+id=the_figure_carries_no_OPERATING_POINT site=docs/F4_member_forces.md quantity=the_denominator expect=MISS measured=1.44_percent_worst_against_the_window_max_of_abs_a_FS_and_1.26_to_1.65_i.e._126_to_165_percent_against_abs_a_FS_at_that_step note=the published 1.55 and 2.78 state no denominator, and the two denominators a reader could choose differ by two orders of magnitude; neither reproduces either published number
+id=the_validation_figure_is_COMPUTED_NOWHERE site=scripts/measure/member_forces_table.py quantity=the_provenance_of_1.55 expect=MISS measured=the_string_appears_only_in_the_module_docstring_in_LABELS_and_in_the_summary_writer_and_not_once_in_the_step_report note=a working-note number published into a deliverable own header, which is the figures-are-regenerated rule and CW0 together; the measurement exists and is cheap, so the honest form is the loop
+
+# --- THE STALENESS RECORD, AFTER R726's REPAIR. ---
+id=hsp_tag_is_RECORDED_AND_COMPARED_WITH_NOTHING site=data/f4/dynamic_inputs.provenance.json:2 quantity=the_gate_at_a_wrong_FloatSim expect=MISS measured=114_passed_with_hsp_tag_edited_to_floatfea-ref-1-99-gc2fe24f-dirty_HSP_code_and_114_passed_at_UNKNOWN note=the import closure excludes HSP by design and its stated warrant is that the HSP tag covers them and floatfea-ref-1 is the pin; floatfea/hsp_pin.py:HSP_TAG is a committed constant ON that closure so the check is a string comparison needing no worktree, and the _hsp_tag docstring itself records three checkouts beside this one at two states with one dirty and 99 commits past the tag
+id=an_import_closure_ENTRY_DELETED_FROM_THE_RECORD site=tests/verification/rung4/test_f4_g41_dynamic.py:264 quantity=the_staleness_domain expect=MISS measured=114_passed_with_floatfea_io_integrator.py_dropped_from_import_closure_and_then_edited_and_114_passed_with_platform12_deck.yaml_dropped_and_edited note=the domain floor is len_expected_at_least_10_against_a_record_of_12_so_two_entries_may_be_removed; R726 named THREE files and only scripts/report_joint_reactions.py is required by name. CJ0 applies -- a gate reading a record cannot outrank an edit to the record -- so the cheap half is naming all three
+id=control_the_three_files_R726_NAMED_all_redden site=tests/verification/rung4/test_f4_g41_dynamic.py:228 quantity=the_staleness_test expect=catch measured=report_joint_reactions.py_heading_0_to_90_FAILED_and_platform12_deck.yaml_FAILED_and_floatfea_io_integrator.py_FAILED_and_floatfea_tolerances.py_1_passed_correctly_since_the_export_no_longer_imports_it note=THE CONTROL on R726 repair, re-measured one file at a time with the tree restored between; the state that found the finding is closed
+
+# --- THE STRUCTURAL PINS ADDED THIS ROUND, SOLVED IN THE WEAKENING DIRECTION (EH4). ---
+id=the_vacuity_factor_and_the_edge_floor_MOVED_TOGETHER site=floatfea/tolerances.py quantity=the_vacuity_threshold expect=MISS measured=114_passed_at_F4_G41_VACUITY_FACTOR=F4_WINDOW_RULE_MIN_EDGE=86.0_putting_the_threshold_back_at_1.999e-04_and_31_failed_at_87.0 note=R728 SINGLE-EDIT silence is closed and measured -- either constant alone reddens the equality pin, at 86.0 and at 1.0 -- and the two moved together still reach R723 43x; the SUBSTANCE is held elsewhere by test_the_VACUOUS_moment_members_are_the_two_x_axis_hub_pairs_and_the_mass_family at 1x with no constant in it, which is why this is the form and not the claim
+id=the_decomposition_headroom_and_its_ceiling_MOVED_TOGETHER site=floatfea/tolerances.py quantity=F4_G41_DECOMPOSITION_AGREEMENT expect=MISS measured=114_passed_at_HEADROOM=1.0e18_with_AGREEMENT=0.05_where_AGREEMENT_alone_reddens_at_2.12e-12 note=the pin is a real bound in one direction and the chain terminates at the counter-case rather than at a measurement; recorded as the measured limit of the pin-it-with-a-second-constant pattern rather than as a defect, since CJ0 makes review the bound for a coordinated edit
+id=control_the_decomposition_ceiling_is_PINNED site=tests/verification/rung4/test_f4_g41_dynamic.py:624 quantity=the_rise_bound expect=catch measured=green_at_2.11e-12_red_at_2.12e-12_so_the_rise_bound_is_2.11x_where_before_the_repair_it_was_1.413e+11x note=THE CONTROL on R727 repair. Both halves hold -- the discovery-based counter test reddens at 0.1413 and the measurement pin reddens four decades earlier
+id=control_the_mass_injection_size_is_PINNED site=tests/verification/rung4/test_f4_g41_dynamic.py:645 quantity=inputs.mass_eps expect=catch measured=FAILED_at_F4_G41_MASS_INJECTION_EPS=2.0e-6_and_the_value_is_read_from_the_npz_not_from_the_provenance_JSON note=THE CONTROL on R729 repair; the mass_eps scalar is written into the npz at export and the npz is sha256-checked, so this compares the declaration against the run

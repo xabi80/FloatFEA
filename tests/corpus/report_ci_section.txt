@@ -175,7 +175,36 @@ id=conclusion_inside_an_inline_code_span state=paragraph_reads_Run_35479925335_C
 id=em_dash_separated_conclusion state=paragraph_names_run_35479925335_and_the_conclusion_EMDASH_success expect=allowed measured=allowed
 id=id_split_by_a_markdown_bold_marker state=paragraph_reads_Run_STARSTAR_35479925335_STARSTAR_and_no_result expect=refused measured=refused
 id=no_run_id_at_all_but_a_conclusion state=paragraph_reads_conclusion_success_and_no_run_named expect=allowed measured=allowed
-id=run_id_as_part_of_a_longer_token state=paragraph_reads_Artifact_a35479925335b_was_produced_SEMICOLON_no_result_given expect=refused measured=refused_the_left_lookbehind_only_excludes_digits_and_dots_so_a_letter_prefixed_token_is_still_an_id
+# RE-RULED at the 108th verdict (F4 step 3, round 3, reviewed commit fa151ba).
+# The entry below asked for a letter-glued token to COUNT as a run id. C29 narrowed
+# `_RUN_ID` to a standalone token and the implementer raised the conflict instead of
+# resolving it, which is the right routing. I rule FOR the narrowing and AGAINST my
+# predecessor's expectation, on the implementer's evidence and on one of my own:
+#   - the old reading matched run-shaped digit runs INSIDE hex digests, and EX0 made
+#     sha256 and blob shas figures a step report now carries, so the guard failed false
+#     on the repository's own published numbers (CZ0: fixed or deleted, never extended);
+#   - the first repair attempted was to TRUNCATE the digests, i.e. to bend the figures
+#     around the guard -- which is the accommodation CZ0 forbids, and it would recur at
+#     the next digest;
+#   - gluing `a` and `b` onto a run id is not a shape anyone writes by accident, and an
+#     author who does it deliberately was never bounded by a regex (CJ0: review is the
+#     bound). The false-positive cost is paid every round; the true-positive is a
+#     deliberate forgery that review reads anyway.
+# The ORIGINAL intent -- a run id must be found however it is punctuated -- is kept and
+# extended by the four entries below it, which solve the narrowed boundary in BOTH
+# directions (EH4): the shapes the narrowing must still catch, and the shapes it must
+# now let through.
+id=run_id_as_part_of_a_longer_token state=paragraph_reads_Artifact_a35479925335b_was_produced_SEMICOLON_no_result_given expect=accepted ruled=the_108th_verdict_overturns_expect_refused measured=ACCEPTED_after_C29_and_that_is_correct_the_old_reading_also_matched_5758475552_inside_a_sha256_and_1957190839_inside_a_blob_sha
+
+# --- THE NARROWED BOUNDARY, SOLVED IN BOTH DIRECTIONS (EH4). New this round. ---
+# The four below are the shapes C29's lookarounds decide, and none of them was read by
+# the implementer. The first two MUST STILL BE CAUGHT or the narrowing went too far; the
+# last two MUST NOW BE LET THROUGH or it did not go far enough.
+id=run_id_at_the_very_start_of_the_file_with_no_preceding_character state=the_first_characters_of_a_hand_written_paragraph_are_37833259001_and_no_result_follows expect=caught measured=CAUGHT_runs_without_a_conclusion_returns_37833259001_so_the_lookbehind_succeeds_on_an_empty_left_context
+id=run_id_followed_immediately_by_an_em_dash_with_no_space state=paragraph_reads_run_37833259001_EMDASH_no_result_given expect=caught measured=CAUGHT_runs_without_a_conclusion_returns_37833259001_an_em_dash_is_not_a_word_character
+id=a_ten_digit_decimal_fraction_inside_a_backticked_measurement state=paragraph_reads_the_margin_was_BACKTICK_0.1413709999_BACKTICK_relative expect=accepted measured=ACCEPTED_empty_list_the_left_dot_exclusion_rejects_1413709999_so_a_backticked_decimal_is_not_asked_for_a_conclusion
+id=an_eleven_digit_run_of_digits_inside_a_base64_artifact_name state=paragraph_reads_artifact_BACKTICK_Zm9vYmFy37833259001Cg_BACKTICK_was_uploaded expect=accepted measured=ACCEPTED_empty_list_the_preceding_r_is_a_word_character_so_C29_rejects_it_and_the_pre_C29_pattern_WOULD_have_asked_this_artifact_name_for_a_conclusion
+
 id=the_generated_section_line_at_this_commit state=Generated_COLON_python_scripts_ci_section_FULLSTOP_py_anchored_on_verdict_49_at_ed67a7d_FULLSTOP_Run_BACKTICK_35489487935_BACKTICK_event_push_conclusion_STARSTAR_success_STARSTAR expect=allowed measured=allowed_the_shape_the_report_actually_uses_still_passes
 
 # ==========================================================================
