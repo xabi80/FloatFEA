@@ -1,4 +1,681 @@
 # Review — F4 step 3
+Reviewed commit: beab29702e44ecb666f3e9d0423479589ada9cfc
+Verdict: PASS
+**Reviewed commit: `fa151ba`** (`fa151bac2249bb89df2c7f6c5d6e21f15a8030a9`, HEAD of F3 when
+I judged it, tree clean; my corpus batch 40 is committed on top at `beab297`, which is why
+the plain `Reviewed commit:` stamp above is not the commit I judged -- R718's subject, and
+this bold line is the mechanism.)
+Tests: 3547 passed, 8 failed, 0 skipped   (MY OWN run, one invocation, no `-k`, no
+`--ignore`, no deselection, `-p no:randomly`, tree clean at `fa151ba`, `670.94s`. Not the
+report's figure.)
+
+## Round of 2026-10-08 -- ROUND 3 OF THREE. THE STEP CLOSES. PASS, CARRYING TWO.
+
+**WHY PASS, IN FIVE SENTENCES.** This is revision 3, the third reviewed revision, and the
+cap closes the step on it; EY3 has pre-decided that what it carries goes to F5's ledger, so
+I am ruling on the work and not on whether to extend. **All five of verdict 107's items are
+closed and I measured every one myself rather than reading the report** -- the three R726
+controls redden one file at a time, the decomposition ceiling's rise bound fell from
+`1.413e+11x` to `2.11x`, the vacuity factor's single-edit silence is gone at both `86.0`
+and `1.0`, `mass_eps` is pinned against the npz rather than against another literal, and
+the `Answers:` guard is green locally and in CI. **The verification ladder is SUCCESS in CI
+at the reviewed commit** on a runner with no HSP worktree. **The eight reds at `fa151ba`,
+in my run and in CI, trace by name to ONE cause and that cause is mine** -- corpus entry 178,
+which the implementer correctly raised instead of resolving, and which I have now re-ruled
+against my predecessor. **Two new blocking items carry**, both found by running the
+deliverable rather than by reading it: the published MID station is not an internal force
+(R730) and the gate's warrant for excluding FloatSim from its staleness list is a field
+nothing reads (R731).
+
+**No STOP.** No low rung is red; rung 3, 4 and 5 are green locally and in CI at the
+reviewed tree; the plan re-locked by EX and amended by EY is right and I am not reopening
+it. `.claude`, `docs/SUPERVISOR.md` and `tests/conftest.py` are untouched in this range,
+diffed separately, and `git ls-files -- tests/conftest.py 'tests/**/conftest.py'` returns
+the one file it should.
+
+**And one thing on the record before the findings.** The two errors the implementer caught
+in its own load path -- a `125000x` scale confusion and a gravity double-count that put the
+body in free fall at `-7.37 m/s^2` -- are both real, both of the class that does not crash,
+and self-reported before I looked. That is the practice this loop exists to produce. R730
+and R732 are the same class, one layer down, in the part of the work that was checked by
+reasoning rather than by a second route: the station convention, and the reference the
+validation was taken against. Neither is carelessness about numbers. Both are the
+measurement that was not taken because an argument stood where it would have gone.
+
+## 0. CI AT THE REVIEWED COMMIT -- RED, AND THE RED IS MINE
+
+```
+cmd    gh run list --commit fa151bac2249bb89df2c7f6c5d6e21f15a8030a9 --json name,conclusion,workflowName,status
+out    [{"conclusion":"failure","databaseId":37833259001,"name":"CI","status":"completed"}]
+cmd    gh run view 37833259001 --json jobs -q '.jobs[] | "\(.name)\t\(.conclusion)"'
+out    lint, unit and guards            failure
+out    the verification ladder          success
+out    CI determinism -- leg            skipped
+out    CI determinism -- ten legs agree skipped
+cmd    gh run view 37833259001 --log-failed | grep -E "FAILED"
+out    FAILED tests/test_report_carried.py::test_the_RUN_CONCLUSION_guard_rules_on_the_
+out      reviewer_shapes[run_id_as_part_of_a_longer_token]
+out    FAILED tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]
+out      + 6 more planted states, each failing on `1 failed, 484 passed` from that one id
+judge  **THE LADDER IS GREEN IN CI AT THE REVIEWED COMMIT**, runners with no `HSP-runs`,
+       which is R721's closure holding for the fourth commit in a row. The red job traces
+       BY NAME -- not by family, EG3(i) -- to a single corpus expectation, and the cascade
+       is identified by the baseline being red and by each state's own failure line. The
+       job durations are 9m05s and 2m36s with no payment annotation, so this is not CK2.
+```
+
+**This is not EG3 state (1) or (2) and I did not file it as one.**
+`test_the_guard_reads_the_step_being_worked_on` and
+`test_the_answered_verdict_is_the_NEWEST_one` are both GREEN at `fa151ba` -- the report
+answers verdict 107 at `fbac279`, the commit the verdict was written at, which is R725's
+repair working. The boundary is clean in both directions. The eight reds are a corpus
+disagreement and nothing else, and I traced all eight individually.
+
+## 1. MY OWN INSTRUCTIONS, THE CONFTEST, AND THE TOLERANCE FILE -- EACH DIFFED SEPARATELY
+
+```
+cmd    git diff fbac279..HEAD -- .claude docs/SUPERVISOR.md
+out    (empty)
+cmd    git diff fbac279..HEAD --stat -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py
+cmd    git diff fbac279..HEAD -- floatfea/tolerances.py | grep -E "^-[A-Z]" | grep -vE "^---"
+out    (empty -- NOT ONE EXISTING VALUE WAS REMOVED OR CHANGED)
+judge  Four additions and one comment block, no deletion. `7312f2c` is a standalone
+       `process:` commit touching one regex in `tests/test_report_carried.py` and nothing
+       under `floatfea/`; `005c6fc` is standalone and adds one file under `tests/`. Neither
+       touches the three paths a step commit may not, so neither is STOP-class. I read both
+       line by line and no guard was removed or weakened.
+```
+
+## 2. VERDICT 107's FIVE, EACH RE-MEASURED BY ME AND NOT READ
+
+```
+cmd    python -m pytest tests/verification/rung4/test_f4_g41_dynamic.py -q -p no:randomly
+out    114 passed in 1.84s
+cmd    python -m pytest tests/verification/rung4 tests/verification/rung3
+         tests/test_no_duplicate_tolerance_names.py tests/test_plan_matches_tolerances.py -q
+out    812 passed in 10.85s     (the report's figure, reproduced to the digit)
+cmd    ruff check floatfea tests scripts ; black --check floatfea tests ; mypy floatfea
+out    All checks passed! / 100 files would be left unchanged / Success: 36 source files
+```
+
+**R726 -- CLOSED, and the state that found it is closed with it.** One file touched at a
+time, tree restored between, staleness test alone:
+
+```
+out    scripts/report_joint_reactions.py  heading 0.0 -> 90.0   1 FAILED   <- the finding's own state
+out    data/platform/platform12_deck.yaml                       1 FAILED
+out    floatfea/io/integrator.py                                1 FAILED
+out    floatfea/tolerances.py                                   1 passed   <- CORRECTLY
+judge  All three files my condition named by name now redden, and the fourth correctly does
+       not: the export dropped its `from floatfea.tolerances import ...`, so the npz is
+       genuinely no longer a function of that file. **I endorse that removal.** It was the
+       one import that made every tolerance edit demand a 30-minute regeneration of a
+       12 MiB golden file for a value that cannot move a number in it, and the magnitude
+       check it carried moved to `test_the_two_WAYS_of_forming_the_reaction_agree`, which
+       reads the arrays that ship. The second repair is the one that works: the first
+       recorded `import_closure` and still read two fixed keys, and the report says so in
+       its own words -- "a field nothing reads is not a defence" -- which is the sentence
+       R731 below is about.
+```
+
+**R727 -- CLOSED, both halves, and the rise bound is now a measured quantity.**
+
+```
+cmd    the gate run with F4_G41_DECOMPOSITION_AGREEMENT patched, nothing else changed
+rule   EH4's weakening direction: the ceiling rises until a clean case trips
+out    2.00e-12   114 passed
+out    2.11e-12   114 passed
+out    2.12e-12   1 failed   test_the_decomposition_ceiling_is_PINNED_TO_ITS_MEASUREMENT
+out    1e-8       1 failed   (same)
+out    0.1413     2 failed   (same, plus test_every_declared_ceiling_sits_inside_its_counter)
+cmd    the same, HEADROOM patched below the measured ratio
+out    4.0e3      1 failed   <- the pin bites from the other side too
+judge  **`1.413e+11x` of admissible widening is now `2.11x`.** Both halves of my condition
+       landed: the counter test DISCOVERS its pairs from `dir(tolerances)` instead of
+       naming two, with a `>= 3` floor so a discovery that finds nothing cannot pass
+       quietly (CW0), and the ceiling is pinned to the measurement in the R694 shape. The
+       negative control `assert worst > 0.0` is there and it is the right one.
+```
+
+**And on the question I was asked -- is `F4_G41_DECOMPOSITION_HEADROOM = 1.0e4` invented?**
+It is a CHOICE and the entry says so, and the choice is sound but it is reverse-derived:
+`1.0e-12` is the value the export has always enforced, the measured gap is `2.111298e-16`,
+and `1.0e4` is the round number that admits the first given the second. Nothing in the tree
+says why four decades of headroom over a round-off quantity is acceptable -- the pin is
+anchored to a measurement, which is the property that matters, but its SIZE is anchored to
+the legacy ceiling. I am not blocking on it: the chain now terminates at a measurement in
+one direction and at the counter-case in the other, which is one more termination than it
+had. It is in the closure list as C34 with the sentence that would make it honest.
+
+**R728 -- CLOSED, and I rule ON THE QUESTION ASKED: the separation is REAL as to loudness
+and NOT real as to independence. That is the honest answer and it is enough.**
+
+```
+cmd    the gate run with the two constants patched, nothing else changed
+out    F4_WINDOW_RULE_MIN_EDGE alone -> 86.0    30 failed   <- the ORIGINAL R728 attack, now LOUD
+out    F4_G41_VACUITY_FACTOR   alone -> 86.0    30 failed
+out    F4_G41_VACUITY_FACTOR   alone -> 1.0     30 failed   <- tightening is loud too
+out    BOTH together           -> 3.0, 10.0     114 passed
+out    BOTH together           -> 86.0          114 passed  <- threshold back at 1.999e-04
+out    BOTH together           -> 87.0          31 failed
+judge  **The single-edit silence R728 was raised about is GONE, measured.** The edit that
+       was strengthening-in-intent and harmful-in-effect now reddens 30 cases. What is also
+       true is that the two constants cannot hold different values, so the degrees of
+       freedom are still one, and moving both reaches `86.0` with every assertion green --
+       and "keep them equal" is now the DOCUMENTED way to move either.
+```
+
+**I am not blocking on the residue, and the reason is a measurement rather than a
+concession.** The sharp claim -- `the mass injection is vacuous on the moment channel` -- is
+asserted independently at `test_f4_g41_dynamic.py:521-539`, at `1x`, with no constant in it
+at all: `vacuous = {k: v for k, v in family(...) if v <= worst}`, then `masses ==
+sorted(_BODIES)` and `len(vacuous) == 42`. I ran the `86.0/86.0` tree and that test stays
+green because the claim is TRUE at `1x`. So the ensemble holds the substance at the
+module's own definition and the parametrised test at `:542` adds per-case localisation on a
+looser threshold. Verdict 107's own judge paragraph said "the ENSEMBLE is sound and the FORM
+is not", and that is still exactly the state -- with the form improved by one real
+increment. **My predecessor offered two branches and the implementer took the one offered;
+correcting the same condition a third time would be me relitigating my own wording, not the
+work.** C35 carries the one sentence that would make the comment match the measurement.
+
+**R729 -- CLOSED, and it is pinned against the RUN and not against a literal.**
+
+```
+cmd    grep -n mass_eps scripts/export_f4_dynamic_inputs.py scripts/f4_dynamic_residual.py
+out    export:420   flat["mass_eps"] = np.array(g41.MASS_EPS, dtype=np.float64)
+out    residual:206 mass_eps=float(raw["mass_eps"]),
+cmd    the gate with F4_G41_MASS_INJECTION_EPS patched to 2.0e-6
+out    1 failed   test_the_mass_injection_size_is_the_DECLARED_one
+judge  The value is read out of the npz, whose sha256 is checked before anything else is
+       read, so this is the declaration against the run -- which is the branch that makes
+       it not BG1's subject. The literal still lives at `scripts/measure/g41_dynamic.py:116`
+       and must, because importing `tolerances` there would put that file back on the
+       staleness closure; the gate assertion IS the bridge between the two and that is the
+       right design. The entry's "It **was** a module-level literal in
+       `scripts/measure/g41_dynamic.py`" reads as though it no longer is. C36.
+```
+
+**R725 -- CLOSED.** `:710` reads `Answers: verdict 106 @ 0949047`, section 0 of revision 2
+reads `CI at f07bcb8 ... conclusion FAILURE` which is the run that actually failed, and
+revision 3's own line reads `Answers: verdict 107 @ fbac279`.
+`test_the_answered_verdict_is_the_NEWEST_one` is green in my run and in CI. EG3(ii) is
+satisfied from the side no verdict in this milestone had measured.
+
+## Findings
+
+**R730. (BLOCKING. I CLASS IT UNDER (a) AND SAY SO UNDER ITS OWN HEADING BELOW.) THE `MID`
+STATION IN EY0's TABLE IS NOT AN INTERNAL FORCE. IT IS HALF THE SUM OF TWO
+OPPOSITE-CONVENTION END ACTIONS, AND `floatfea/post/member_forces.py`'s OWN DOCSTRING SAYS
+THE TWO ENDS ARE AN ACTION AND A REACTION. 400 OF THE 1200 PUBLISHED ROWS, TWO OF THE
+PUBLISHED TOP TEN, AND THE ERROR DIRECTION IS LOW.**
+`scripts/measure/member_forces_table.py:323` (`mid = 0.5 * (root + tip)`) and `:301-306`
+(the docstring that justifies it), published in `docs/F4_member_forces.csv` and
+`docs/F4_member_forces.md`.
+
+```
+claim  the published MID row is the internal force resultant at midspan
+cmd    an INDEPENDENT statics route: the resultant at a cut at x by equilibrium of the
+       segment [0, x] -- the end action at A plus the distributed load over x, moments
+       about the cut. CALIBRATED FIRST: at x=0 it reproduces `end_a` bit-identically and at
+       x=L it reproduces `-end_b` to 1.49e-07 on a 1.92e+08 scale.
+rule   the shipped `mid = 0.5*(root+tip)` against that route at x = L/2
+out    platform/platform:hub2_arm, STATIC basis, L = 50 m, w_local = [0, 0, -91968.75]:
+out      code MID  [0, 0, +2299218.75, 0, 6.7060547e+07, 0]
+out      true MID  [0, 0, -3832031.25, 0, 1.2454102e+08, 0]
+out      sigma  code 94.4 MPa     true 175.3 MPa     (ROOT 269.7, TIP 0.0)
+out      tau    code  3.30 MPa    true   5.50 MPa
+out    hub1/hub1:buoy2_arm, STATIC basis, L = 25 m:
+out      sigma  code 73.7 MPa     true 106.1 MPa     (ROOT 179.8, TIP 0.0)
+out    docs/F4_member_forces.csv, platform:hub2_arm, T=10, total_max:
+out      MID  N = 6.643357e-05      ROOT N = 3.864765e+05   TIP N = 3.864837e+05
+judge  **`0.5*(f_a + f_b)` IS HALF THE ELEMENT'S OWN APPLIED LOAD, NOT A CHORD MEAN.** The
+       module's docstring states it in as many words: "The returned values are the forces
+       the ELEMENT exerts on its nodes at each end, which is why end B's axial has the
+       opposite sign to end A's under pure tension -- a reader comparing the two ends is
+       looking at an action and a reaction, not at a discrepancy." Averaging across that
+       sign cancels the quantity. The axial case is the clean proof: the two end rows agree
+       to six figures at `3.86e+05 N`, the member's axial force is constant along it, and
+       the published midspan value is `6.6e-05 N` -- round-off where a third of a meganewton
+       belongs. `2299218.75` is exactly half the member's weight `4598437.5 N`, which is
+       what the expression computes.
+```
+
+**THREE CONSEQUENCES, AND THE THIRD IS WHY IT BLOCKS RATHER THAN BEING FILED.**
+**(1)** The published station profile has the wrong gradient sign and a spurious zero
+crossing: `Vz` reads `-1.532812e+06 / +2.299219e+06 / +6.131250e+06` where the internal
+shear runs `-1.532812e+06 / -3.832031e+06 / -6.131250e+06` monotonically. A reader locating
+the worst section reads the wrong end. **(2)** The error direction is LOW -- `94.4` against
+`175.3` on the static cell -- so a reader sizing steel under-sizes. A MID row reading HIGH
+would be loud. **(3)** Rows 3 and 4 of the published top-ten ARE MID stations, at
+`366.4 MPa`, so the ranking the deliverable exists to produce is affected.
+
+**ROOT and TIP are fine and I verified it as a control**, which is exactly why this
+survived: claim (i) in the docstring holds bit-for-bit at both ends, and only the station
+constructed from them is wrong.
+
+**And the docstring's stated warrant for the `N` and `T` half is false independently.**
+`:304-306` says `the net field is a translation, so its local axial part is constant and
+its twist is zero`. `_net_field` is `rigid_projection(coords, relief.reference_point) @
+relief.acceleration` and `relief.acceleration` is the full six-vector:
+
+```
+cmd    |alpha| * L_max / |a_trans| per body, per case, from the shipped relief solve
+out    hub1  T10 step0   0.2240        platform T10 step0   0.0190
+out    hub2  T10 step0   0.0969        hub2     T12.5 step0 0.0560
+rule   a field that varies linearly along the member gives a CUBIC moment, not a parabola
+judge  the d'Alembert field varies by up to 22% of its mean across a member, so "uniform",
+       "parabolic" and "constant N and T" are each an approximation and none is stated as
+       one. This is second-order next to the convention error and it is the same shape:
+       a property asserted by argument where a loop was available.
+```
+
+**Closed when** the MID row is the internal resultant at midspan on a single consistent
+station convention -- I would take the statics cut above, which needs no beam convention and
+calibrates at both ends -- with the `N`/`T` and `w L^2/8` sentences replaced by what is
+measured; `docs/F4_member_forces.csv`, `docs/F4_member_forces.md` and the top-ten
+regenerated from it (BP0: the rule moved, so every figure citing the old one is regenerated
+in the same commit); and the two static cells above re-measured and pasted as the control.
+
+**R731. (BLOCKING -- (c): WHAT A GATE CLAIMS, ON WHICH QUANTITY.) THE STALENESS GATE
+EXCLUDES FLOATSIM FROM ITS DIGEST LIST ON A WARRANT NOTHING CHECKS: `hsp_tag` IS RECORDED
+AND COMPARED WITH NOTHING, AND `floatfea/hsp_pin.py:HSP_TAG` IS A COMMITTED CONSTANT ON THE
+GATE'S OWN IMPORT CLOSURE.**
+`scripts/export_f4_dynamic_inputs.py:107-110` (the exclusion and its stated reason),
+`:136-160` (`_hsp_tag`), `data/f4/dynamic_inputs.provenance.json:2`,
+`tests/verification/rung4/test_f4_g41_dynamic.py:228-305` (the test that reads everything
+in that file except this field).
+
+```
+claim  the gate accepts an npz generated by a FloatSim that is not the pinned one
+cmd    the provenance's `hsp_tag` edited, nothing else, gate run
+out    "floatfea-ref-1-99-gc2fe24f-dirty  (HSP_code)"   114 passed in 1.94s
+out    "UNKNOWN -- not a git checkout"                  114 passed in 1.87s
+cmd    grep -rn "hsp_tag" tests/ scripts/f4_dynamic_residual.py
+out    (nothing under tests/; `Inputs` has no such field)
+rule   `CLAUDE.md`: FloatFEA PINS a tagged HSP state. The export's own comment: "HSP's own
+       files are excluded and the HSP tag covers them: they are not ours to sha, and
+       `floatfea-ref-1` is the pin."
+judge  **THE EXCLUSION IS RIGHT AND ITS WARRANT IS UNASSERTED, WHICH IS R729's SHAPE ON
+       THE LARGEST INPUT OF ALL.** Every number in the npz is a function of FloatSim, and
+       FloatSim is the one input class the closure deliberately does not digest. The
+       trigger is not a forgery: `_hsp_tag()` resolves from the imported package, and its
+       OWN docstring records three HSP checkouts beside this one at two different states --
+       `../HSP-runs` and `../HSP-stable` at `floatfea-ref-1`, and `../HSP_code` at
+       `floatfea-ref-1-99-gc2fe24f-dirty`. An honest regeneration on the wrong `sys.path`
+       records the dirty tag truthfully and nothing refuses. **And the check needs no HSP
+       worktree**, which is the whole constraint R721 imposed: `floatfea/hsp_pin.py` is
+       already IN the recorded closure, so it is one string comparison against a committed
+       constant, runnable on a CI runner with no FloatSim at all.
+```
+
+**Closed when** `test_the_npz_is_NOT_STALE_against_the_code_that_generated_it`, or a sibling
+in the same file, asserts the recorded `hsp_tag` against `floatfea.hsp_pin.HSP_TAG` -- the
+exact comparison is the implementer's call, but a `-dirty` suffix and a
+`floatfea-ref-1-NN-g...` describe state must both refuse, because those are the two states
+the export's own docstring says exist -- with the controlled pair above re-measured and
+pasted. One assertion, no new file, no new apparatus.
+
+**R732. (CLOSURE CLASS UNDER CZ0, AND I SAY WHY IT STILL MATTERS.) THE DELIVERABLE'S ONLY
+VALIDATION IS TAKEN AGAINST THE WRONG REFERENCE; ITS PUBLISHED ATTRIBUTION IS REFUTED BY A
+ONE-LINE MEASUREMENT; AND THE FIGURE IS COMPUTED NOWHERE IN THE SHIPPED TREE.**
+`scripts/measure/member_forces_table.py:38-45` (the docstring), `:142-143` (`LABELS`),
+`:598-599` (the summary writer), published in both deliverable files.
+
+```
+claim  "the offset is systematic rather than scattered, which points at a small mass
+       difference and not at a wrong path"
+cmd    the FE rigid mass against the npz's own `body_mass` x 125000, per body
+out    platform 2.50000000e+06 kg / 2.50000000e+06 kg   ratio 1.00000000
+out    hub1..hub4 1.50000000e+06 kg each                ratio 1.00000000
+judge  **THERE IS NO MASS DIFFERENCE.** The first half of the attribution is refuted by the
+       cheapest measurement available, and nothing in the tree had taken it.
+
+cell   ONE VARIABLE MOVED (BG0): the FloatSim acceleration the FE side is compared against.
+       Same step, same body, same mapped loads, same relief solve.
+out    (A) against a_FS(n)                                        -- what the script uses
+out    (B) against (1-alpha_m)*a_FS(n) + alpha_m*a_FS(n-1), alpha_m = 0.333333
+out      T10    (A) 1.4425 %   (B) 0.0000 %    4.75e+12x
+out      T12.5  (A) 1.1965 %   (B) 0.0000 %    1.00e+13x
+out      T14    (A) 1.0177 %   (B) 0.0000 %    1.75e+13x
+out      T15    (A) 0.9642 %   (B) 0.0000 %    1.82e+13x
+out      T16.2  (A) 0.8836 %   (B) 0.0000 %    2.19e+13x
+out      T20    (A) 0.8131 %   (B) 0.0000 %    3.10e+13x
+rule   the denominator is the window max of |a_FS| for that body and case -- an operating
+       point, stated, because this ratio has none in the published form
+judge  **THE RESIDUAL IS THE GENERALIZED-ALPHA MASS WEIGHTING AND THE LOAD PATH IS EXACT.**
+       It scales as `1/T`, which is a phase lag and not a mass error, and it collapses to
+       round-off against the DISCRETE form the plan already locks -- the same form
+       `scripts/f4_dynamic_residual.py:328` uses for the mass injection. **This is R711's
+       finding in this same step, one layer out**: the continuous balance standing where
+       the plan locks the discrete one. The true statement is far stronger than the
+       published one and it is free.
+```
+
+**Two more things about the same sentence.** It carries no operating point: against the
+window max I measure `1.44 %` worst and against `|a_FS|` at the step I measure `1.26` to
+`1.65`, i.e. `126 %` to `165 %` -- two denominators two orders of magnitude apart, and
+neither reproduces `1.55 %` or `2.78 %`. And the figure is computed NOWHERE: the string
+appears in the module docstring, in `LABELS`, and in the summary writer, and not once in
+`docs/reports/F4/step-3.md`. It is a working-note number published into a deliverable's own
+header, which is Â§ Step gating's regeneration rule and CW0 at the same time.
+
+**Closed when** the comparison is taken against the `alpha_m`-weighted acceleration, the
+loop that takes it is in the script so the figure regenerates with the table, the
+denominator is stated, and the `small mass difference` sentence is replaced by the ablation
+above or deleted. I have filed this as closure class and not as blocking because it is
+prose and a figure, which CZ0 retired as a blocking head -- **and I record my disagreement
+in the section below, because this particular sentence is the only warrant the deliverable
+has.**
+
+**R733. (NOT A FINDING AGAINST THE WORK -- MY OWN RULING, RECORDED AS A FINDING SO IT IS
+ANSWERABLE.) CORPUS ENTRY 178 IS RE-RULED AGAINST MY PREDECESSOR, AND C29's NARROWING IS
+CORRECT.**
+`tests/corpus/report_ci_section.txt:178` (re-ruled at `beab297`),
+`tests/test_report_carried.py` (`_CI_SHAPES`, the `run_id_as_part_of_a_longer_token` row).
+
+```
+judge  The entry asked for `Artifact a35479925335b` to COUNT as a run id. I rule FOR the
+       narrowing, on the implementer's evidence and on one of my own: the old reading
+       matched digit runs inside hex digests, EX0 made sha256 and blob shas figures a step
+       report now carries, and the first repair attempted was to TRUNCATE the digests --
+       bending the figures around the guard, which CZ0 forbids outright. Gluing a letter
+       onto a run id is a deliberate forgery and CJ0 says review is the bound for those,
+       while the false positive is paid every round. **The implementer raising the conflict
+       instead of editing my file is the correct routing and I want it on the record.**
+cmd    the four new boundary entries, run against the shipped runs_without_a_conclusion
+out    at the very start of a file, no left context   -> CAUGHT   (must still be)
+out    followed by an unspaced em dash                -> CAUGHT   (must still be)
+out    a ten-digit decimal inside backticks           -> ACCEPTED (must now be)
+out    eleven digits inside a base64 artifact name    -> ACCEPTED (must now be)
+rule   EH4: both directions -- the shapes the narrowing must still catch, and the shapes it
+       must now let through. 4 of 4 behave as the narrowed pattern should.
+```
+
+**Closed when** the `run_id_as_part_of_a_longer_token` row in `_CI_SHAPES` has
+`must_refuse=False` and the four new ids are transcribed into `_CI_SHAPES` with the
+expectations above. Two edits in one file, and they clear nine of the nine reds now in the
+tree.
+
+## 3. TRY TO BREAK IT -- EVERYTHING I RAN, INCLUDING WHAT HELD
+
+| adversarial case | result |
+|---|---|
+| the MID station against an independent statics cut, two members, static basis | **BROKE IT -- R730** |
+| the same cut calibrated at `x=0` and `x=L` before being trusted | held: bit-identical and `1.49e-07` |
+| the FE body mass against the npz's own `body_mass`, all five bodies | **BROKE THE ATTRIBUTION -- R732** |
+| the relief acceleration against the `alpha_m`-weighted reference, 6 cases | **IDENTIFIED THE CAUSE -- R732** |
+| `hsp_tag` edited to a dirty checkout 99 commits past the pin | **BROKE IT -- R731** |
+| `hsp_tag` edited to `UNKNOWN` | **BROKE IT -- R731** |
+| an `import_closure` entry deleted from the record, then that file edited | 114 passed -- C37 |
+| the deck dropped from the closure, then edited | 114 passed -- C37 |
+| the three files R726 named, edited one at a time | all three redden; the finding is closed |
+| `tolerances.py` edited (now off the closure) | 1 passed, correctly |
+| `AGREEMENT` raised: `2.11e-12` green, `2.12e-12` red | rise bound `2.11x`; R727 closed |
+| `HEADROOM` lowered to `4.0e3` | red; the pin bites from both sides |
+| `HEADROOM` to `1.0e18` with `AGREEMENT` to `0.05` | 114 passed -- the two-edit path, C34 |
+| `MIN_EDGE` alone to `86.0`; `VACUITY_FACTOR` alone to `86.0` and to `1.0` | all three red; R728's silence closed |
+| both vacuity constants together to `86.0` | 114 passed -- C35 |
+| `MASS_INJECTION_EPS` to `2.0e-6` | red; R729 closed |
+| the EY2 parser on five unseen binding shapes | 1 of 5 -- starred target, module-level `if`, `try`, walrus all missed. C38 |
+| the EY2 parser with its `Tuple` branch removed | its own adversarial row reddens; the claim reproduces |
+| a real duplicate planted in `tolerances.py` | caught, with the right message |
+| the ladder in CI at the reviewed commit | SUCCESS, runners with no `HSP-runs` |
+
+## Tolerances touched
+
+```
+cmd    git diff fbac279..HEAD -- floatfea/tolerances.py | grep -E "^-[A-Z]" | grep -vE "^---"
+out    (empty)
+judge  **FOUR CONSTANTS ADDED, NOT ONE EXISTING VALUE MOVED, NOTHING WIDENED.** Three of the
+       four are the repairs for R727, R728 and R729 and the fourth is R728's new name. Each
+       has a plan row in `docs/milestones/F4.md` Â§ 5a and
+       `tests/test_plan_matches_tolerances.py` is green, which I ran.
+```
+
+| name | old | new | form | counter | justification located | ruling |
+|---|---|---|---|---|---|---|
+| `F4_G41_VACUITY_FACTOR` | -- | `2.0` | dimensionless, STRUCTURAL | none, correctly -- AO2 | entry in `floatfea/tolerances.py`; plan `docs/milestones/F4.md` Â§ 5a | **ADMISSIBLE.** Three pins and I solved all three. The equality to `F4_WINDOW_RULE_MIN_EDGE` is what binds, and it is loud in both directions at `86.0` and `1.0`. The derivation sentence is sound as a derivation; it is also the reason the two cannot move independently, which is C35 and not a defect. |
+| `F4_WINDOW_RULE_MIN_EDGE` | `2.0` | unmoved | dimensionless, STRUCTURAL | none -- AO2 | entry; plan `:599-600` | **UNBLOCKED.** Its fourth, opposite-sense reading moved off it, which was R728's whole condition. The `because they are one rule` sentence is gone from the entry; it survives in the plan row and that is C35. |
+| `F4_G41_DECOMPOSITION_HEADROOM` | -- | `1.0e4` | dimensionless, STRUCTURAL | none, correctly -- AO2 | entry; plan Â§ 5a | **ADMISSIBLE, and it is a CHOICE rather than a measurement.** It does the job: the ceiling's rise bound is `2.11x` where it was `1.413e+11x`, measured, and the pin reddens from below at `4.0e3`. Its SIZE is reverse-derived from the legacy ceiling and the entry does not say so. C34. |
+| `F4_G41_MASS_INJECTION_EPS` | -- | `1.0e-6` | dimensionless, STRUCTURAL | none, correctly -- an input to a counter-case, AO2 | entry; plan Â§ 5a | **CORRECT, and pinned against the RUN.** `inputs.mass_eps` comes out of the sha-checked npz, not out of the provenance JSON, which is the branch that makes this more than two literals compared. R729 closed. The entry's past tense about the live literal is C36. |
+| `F4_G41_DECOMPOSITION_AGREEMENT` | `1.0e-12` | unmoved | dimensionless, relative | `_COUNTER` `0.1` | entry; plan Â§ 5a | **UNBLOCKED, R727 closed at both halves.** Bound above by the measurement pin at `2.11x` and by a counter test that now DISCOVERS its pairs instead of naming two. |
+| `F4_G41_DYNAMIC_FORCE`, `_COUNTER`, `_MOMENT`, `_MOMENT_COUNTER` | -- | unmoved | -- | -- | -- | **UNBLOCKED.** R722 and R723 stay closed; R728 and R729, the two items that reached them, are both answered. |
+| everything else in the F4 block | -- | unmoved | -- | -- | -- | Not touched in this range and not re-swept. |
+
+## Carried
+
+Verdict 107 (`fbac279`) was **ROUND 2 OF THREE** and raised five blocking items and six
+closure items. Every one, with status.
+
+* **R725 (blocking, (d)) -- CLOSED.** `:710` reads `Answers: verdict 106 @ 0949047`, section
+  0 of revision 2 is regenerated onto `f07bcb8` and reads FAILURE, and revision 3's own line
+  reads `Answers: verdict 107 @ fbac279`. **The measurement is mine**:
+  `test_the_answered_verdict_is_the_NEWEST_one` is green at `fa151ba` in my run and in CI
+  run `37833259001`. **Does not carry.**
+* **R726 (blocking, (c)) -- CLOSED, at the second attempt, and the report says so itself.**
+  The provenance records twelve entries taken from the export's own `sys.modules` after the
+  solve, plus the deck by name; the test iterates them. **My own controlled pair, one file
+  at a time:** `report_joint_reactions.py` (the heading, the state I built), the deck and
+  `integrator.py` all redden, and `tolerances.py` correctly does not because the export
+  stopped importing it. **Does not carry. Its residue is R731 and C37.**
+* **R727 (blocking, (b) and (c)) -- CLOSED at both halves.** Rise bound `1.413e+11x` ->
+  `2.11x`, solved. The counter test discovers its pairs. The report's correction to my
+  MECHANISM is right and I accept it: `tests/verification/rung3/test_tolerance_counter_cases.py`
+  does redden on that pair and I measured the gate file alone. **That it did not treat the
+  correction as absolving the omission is the right instinct. Does not carry.**
+* **R728 (blocking, (b) FORM) -- CLOSED.** Separate constant, three pins, single-edit
+  silence gone in both directions, measured. The residue -- the two cannot hold different
+  values -- is real, is C35, and is NOT blocking because the substance is held at `1x` by a
+  test with no constant in it. **Does not carry.**
+* **R729 (blocking, (b) and (c)) -- CLOSED.** One assertion, against the npz. **Does not
+  carry.**
+* **C28 to C33 (closure) -- C29 is DONE** (the narrowing, and it immediately caught two
+  genuine ids in the report's own prose, which is the right outcome). **C28, C30, C31, C32
+  are STILL OPEN** and carried in the report's own list. **C33 is still open and is now
+  live**: `mypy` covers `floatfea` plus one named script, and
+  `scripts/measure/member_forces_table.py` -- the file R730 is in -- is a second script a
+  deliverable depends on and is not type-checked.
+* **R712 to R717 (closure, from verdicts 104-106) -- STILL OPEN**, correctly, and carried in
+  the report's Â§ 8. R717's cost showed up again this round only in that `ci_section.py`'s
+  anchor is still the mechanism R725 went through.
+* **C2 to C15, C24 to C27 (closure) -- STILL OPEN**, carried in the report and not
+  re-reviewed item by item, per CZ0.
+* **The schedule.** EX4's working target of 16 October holds and the report states it. EY3
+  took the cut rather than the slip and the committed dates are unmoved. **This is the third
+  consecutive step to close carrying blocking items, and EY3 has already made the choice
+  that Â§ Step gating requires at that point** -- reduce scope, close F4, move the ledger. I
+  am recording that the condition was met and the decision was made above me, not
+  re-escalating it.
+
+## Carried for the next step -- F5's ledger, per EY3
+
+**These two are BLOCKING and they stay blocking in F5. Named, so the dependency list is
+part of what gets re-read.**
+
+* **R730 -- the MID station is not an internal force.** `scripts/measure/member_forces_table.py:323`
+  and `:301-306`; `docs/F4_member_forces.csv`, `docs/F4_member_forces.md`. **It blocks F5's
+  step 1 directly**: EY4's draft Â§ 2 Q4 checks the three F4 stations, so every MID
+  utilisation in the code check is formed from this column. A code check on a station value
+  that is half the element's applied load is not a screen, it is a wrong number with a
+  clause number attached.
+* **R731 -- `hsp_tag` recorded and compared with nothing.** One assertion against
+  `floatfea/hsp_pin.py:HSP_TAG`, runnable with no FloatSim on the machine.
+
+## Closure items
+
+Named with their site and what would close each. The implementer fixes the whole list once,
+in the step's closure commit; they are not re-reviewed item by item and the step is not held
+on one. **EQ0 applies: R730's repair moves a published quantity and R733's moves a gate
+expectation, so that commit IS reviewed, against no round.**
+
+* **C34.** `floatfea/tolerances.py`, the `F4_G41_DECOMPOSITION_HEADROOM` entry. `1.0e4` is
+  presented as "the round bound above that", which reads as derived from the measurement
+  when it is derived from the ceiling it has to admit. **Closed when** the entry says that
+  in one sentence -- the ceiling is the legacy export value, the gap is `2.111298e-16`, the
+  pin leaves `2.11x`, and `1.0e4` is the round number that admits the first given the second
+  -- so a later reader does not take four decades of headroom for a derived quantity.
+* **C35.** `floatfea/tolerances.py` (the `F4_G41_VACUITY_FACTOR` comment, "THREE PINS, ALL
+  DERIVED, BECAUSE THE CEILING PIN ALONE WAS NOT ENOUGH") and `docs/milestones/F4.md:599-600`
+  (the surviving "because they are one rule"). Both are causal claims (BG0) and the
+  measurement is `114 passed` at `86.0/86.0`. **Closed when** each says what is measured:
+  one edit is now loud, the two together still reach `43x`, and the claim itself is pinned
+  at `1x` elsewhere by a test with no constant in it.
+* **C36.** `floatfea/tolerances.py`, the `F4_G41_MASS_INJECTION_EPS` entry: "It **was** a
+  module-level literal in `scripts/measure/g41_dynamic.py`". It still is, at `:116`, and it
+  must be. **Closed when** the entry says there are deliberately two sources, why
+  (importing `tolerances` there would put it back on the staleness closure), and that
+  `test_the_mass_injection_size_is_the_DECLARED_one` is the bridge.
+* **C37.** `tests/verification/rung4/test_f4_g41_dynamic.py:264`. The staleness domain's
+  floor is `len(expected) >= 10` against a record of twelve, so two entries may be dropped
+  from the JSON; measured, `114 passed` with `floatfea/io/integrator.py` dropped and then
+  edited, and again with the deck dropped and edited. CJ0 applies and review is the bound
+  for an edit to the record. **Closed when** all three files R726's condition named are
+  required by name, not one -- the other two are the same `in expected` line.
+* **C38.** `tests/test_no_duplicate_tolerance_names.py`. **The exception itself is well
+  made**: the reach is stated narrowly and truly, the planted duplicate goes into a copy of
+  the real file, the six parametrised rows hold binding-vs-mention apart, and breaking the
+  `Tuple` branch reddens its own adversarial row -- I reproduced that. On five unseen
+  binding shapes it caught 1: a starred target (`X, *Y = ...`), a module-level `if` block, a
+  `try/except` block and a walrus all read as no binding. None exists in `tolerances.py`
+  today, which is exactly why the tuple omission sat there. **Closed when** `ast.Starred`
+  recurses into `target.value` -- one `elif`, strictly more shapes found, so a fix and not
+  an extension -- or the docstring says `top-level statements only` instead of
+  `MODULE LEVEL ONLY`.
+* **C39.** `docs/milestones/F5-DRAFT-code-checks.md`. The draft is good and Â§ 0 asks the
+  right question of Xabier rather than answering it. Two things, both small. Â§ 5's
+  "that is a finding about the SECTION rather than about the platform" is a causal claim
+  with no ablation attached (BG0) -- the measurement is that the stand-in tube is a stiffness
+  equivalent, and the attribution to the section rather than the platform needs the cell
+  where the section moves and the platform does not. And Â§ 2 Q4 decides to check the three
+  F4 stations without flagging that MID is a DERIVED station -- R730 makes that load-bearing.
+  **Closed when** Â§ 5's sentence is reduced to what is measured and Q4 names MID's
+  derivation as a risk the lock should see. Every figure I checked in the draft reproduces:
+  `r = 0.8227`, `KL/r = 60.8 / 30.4`, `C_c = 108.1`, the elastic branch at `K > 1.78`, and
+  `0.6 x 355 = 213.0`.
+* **C40.** `scripts/measure/member_forces_table.py` is not in `mypy`'s path and is not
+  imported by any test -- `grep -rl member_forces_table tests/` is empty. It produces the
+  milestone deliverable. **Closed when** C33's ledger rule covers it, or it is named in
+  `ci.yml`'s list, or the step report says in one line that the deliverable's generator is
+  outside every automated check so a reader knows what the labels are worth.
+
+## The adversarial corpus (BE3)
+
+**BATCH 40, committed separately at `beab297`. 21 entries new this round, none of them read
+by the implementer. THE SHIPPED CHECKS CATCH 9.**
+
+* **`tests/corpus/f4_member_force_table_stations_and_load_path.txt`, 17 entries, new file.**
+  EG4(e) permits it: EY0's table is the F4 load-mapping surface where a miss reaches a
+  member force, and it reaches one here. **5 of 17 caught, and all five are the controls I
+  planted to check my own route before trusting it** -- the statics cut calibrated at both
+  ends, the three R726 files, the three new pins. The 12 misses are four shapes: the MID
+  station (R730, four entries), the load-path figure (R732, four entries), the `hsp_tag`
+  (R731), the closure-record deletion (C37), and the two pins moved together (C34, C35).
+* **`tests/corpus/report_ci_section.txt`: entry 178 re-ruled plus 4 new boundary entries.**
+  **4 of 4 behave as the narrowed guard should** -- solved in both directions per EH4, the
+  two it must still catch and the two it must now let through.
+
+**The number, and what it says.** 9 of 21 against 4 of 11, 8 of 13, 5 of 10 and 4 of 14 in
+the last four batches. But the composition is what matters: **of the twelve misses, two are
+blocking findings in this verdict and both came out of writing the corpus rather than out of
+reading the diff.** The MID defect was found by building a second route to a published
+number; the `hsp_tag` was found by asking what the staleness list deliberately leaves out.
+Neither was visible in the diff, both were cheap, and the one surface in this milestone that
+has no gate and no test is the one that produced them.
+
+**Pausing, per EG4(e), for the right reason.** This is the second batch I have taken on the
+member-force surface and the yield is still high because that surface has no corpus history.
+The hygiene item on `tests/corpus/f4_static_case_and_member_force_recovery.txt` lines 40,
+48, 49 and 50 is unchanged and still mine.
+
+## Where I disagree with the criterion, said once
+
+**CZ0's retirement of "the truth of a published figure" is right for a step report and it is
+wrong for THIS artifact, and the distinction I would draw is one sentence: a figure that
+describes the work is prose, and a figure that IS the work is the work.**
+
+`docs/F4_member_forces.csv` is not a report section. It is the thing F4 exists to produce
+and the thing F5's code checks consume -- EY4's draft Â§ 4 reads it, Â§ 5 quotes it, and
+`PLAN.md`'s F6 sizes steel from it. Under CZ0 (a)-(d) as written, a 46%-low midspan stress
+in that file is a closure item, because the file is not in `floatfea/`, is not a tolerance,
+is not a gate assertion and is not a red test. I have blocked on R730 anyway, under the
+carve-out my instructions give me for something classed as a closure item that touches
+(a) in substance, and I am naming it rather than smuggling it.
+
+**What I would ask Xabier for is not a new head and not a new guard.** It is one word added
+to (a): *a defect in `floatfea/` **or in a published deliverable***. That is strictly
+narrower than the retired head -- it covers `docs/F4_member_forces.*` and whatever F5
+publishes, and it covers nothing in a step report, no docstring, no plan row and no figure
+about the work. Six rounds of prose findings moved no gate and the measurement said so;
+this is a different thing, and the measurement also says so: the two highest-value findings
+in this verdict are both in that class, and under a literal reading of CZ0 neither would
+have blocked.
+
+**And the structural reason, which is the part I would want argued with rather than
+accepted.** Every other surface in this repository has something that fails when it is
+wrong. The deliverable has nothing: no test imports its generator, `mypy` does not read it,
+no tolerance governs it, and its only stated validation is a sentence. That is not an
+argument for apparatus -- DR1 stands and I am not asking for any. It is an argument that the
+one surface with no mechanical check is the one where review has to be allowed to block.
+
+## Next step opens when
+
+**STEP 3 IS CLOSED. PASS. THIS WAS ROUND 3 OF THREE and the cap closes it; EY3's cut takes
+R730 and R731 to F5's ledger, where they are blocking. F4 closes.** What has to happen, in
+order, cheapest first:
+
+1. **The nine reds clear, and eight of them are mine.** In
+   `tests/test_report_carried.py`: the `run_id_as_part_of_a_longer_token` row in `_CI_SHAPES`
+   takes `must_refuse=False`, and the four new corpus ids are transcribed with the
+   expectations in R733. Then
+   `python -m pytest tests/test_report_carried.py tests/test_report_guard_states.py -q
+   -p no:randomly` is run at the closure commit and pasted. At `beab297` I measure
+   `9 failed, 499 passed in 188.59s`, one cause plus the transcription this commit creates;
+   nothing else in the tree is red.
+2. **The closure commit lands C34 to C40 once**, with CZ1's four outputs -- `ruff check
+   floatfea tests`, `black --check floatfea tests`, `mypy floatfea`, `pytest -q` at that
+   commit with a clean tree -- and CZ1 (iii)'s pushed `gh run list --commit <sha>` with
+   job-level conclusions, so the lint job's `guards and meta-tests` step is seen to have RUN
+   rather than been skipped behind an earlier red. **EQ0 applies to it**: it changes a gate
+   expectation (item 1) and it should change `tolerances.py` prose (C34 to C36), so it is
+   reviewed, against no round.
+3. **F4's closure artifact `docs/closure/F4.md`** records R730 and R731 as carried into F5's
+   ledger by name, the open closure list, and the two numbers that moved this step -- the
+   decomposition ceiling's rise bound from `1.413e+11x` to `2.11x`, and the gate from
+   `1539.78 s` reaching HSP to `1.28 s` reading a committed npz with rung 4 and rung 5 green
+   in CI on a runner with no FloatSim.
+4. **F5's step 1 does not form a code check on the MID column until R730 is repaired.** This
+   is the one sequencing condition I am putting on the next milestone rather than on this
+   step: the ROOT and TIP columns are exact and verified, so a code check restricted to
+   those two stations can proceed immediately. MID cannot, and EY4's draft Â§ 2 Q4 should say
+   so when it locks.
+
+**What I would not accept at a fourth revision if there were one** -- recorded because EY3
+removed the fourth revision and the reason should not be lost: a published station value
+that is not a station value, and a staleness gate whose stated warrant for excluding the
+largest input is a field nothing reads. Both are the same question my instructions make me
+ask of every check -- if the thing this claims were false, would it go red -- and for both
+the measured answer today is no.
+
+**And one thing on the record for the implementer rather than against them.** Five blocking
+items answered in five commits, every repair with a working negative control that I
+reproduced independently, two of the four repairs reported as not having reddened on the
+first attempt, and the one DR1 exception built so that its own adversarial row caught its
+own parser. The sentence this revision wrote about R726 -- "a field nothing reads is not a
+defence" -- is the sentence R731 is about, which means the right instinct was already
+written down and applied one input short of where it reaches. That is a much better failure
+than the alternative. The two findings I carry were both found by building a second route to
+a number the work had computed once; neither was in the diff, and neither was a sentence.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F4 step 3
 Reviewed commit: d39e34a9e80839881e646b4f4ca7449c779f635c
 Verdict: HOLD
 **Reviewed commit: `d09a237`** (`d09a2370a258c30e540b3bdf1df15696e83b2e2c`, HEAD of F3,
