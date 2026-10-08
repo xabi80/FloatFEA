@@ -51,6 +51,7 @@ ran at all.
 
 from __future__ import annotations
 
+import fnmatch
 import json
 import re
 import subprocess
@@ -261,9 +262,12 @@ def full_sha(sha: str) -> str:
     return out.stdout.strip() if out.returncode == 0 else sha
 
 
-def run_for(sha: str) -> dict:
+def run_for(sha: str, required: bool = True) -> dict:
     """The push run at `sha`. A pull_request run at the same commit duplicates
-    it, and the push run is the one whose name is the commit's own subject."""
+    it, and the push run is the one whose name is the commit's own subject.
+
+    `required=False` returns `{}` instead of exiting, for EW0's caller.
+    """
     runs = json.loads(
         _gh(
             "run",
@@ -277,12 +281,91 @@ def run_for(sha: str) -> dict:
         )
     )
     if not runs:
+        if not required:
+            # EW0. "No run" has two causes and they are not the same state: a commit
+            # that was never pushed, and a commit the workflow declined to run on. The
+            # caller distinguishes them with `report_only()`; raising here cannot.
+            return {}
         raise SystemExit(
             f"no CI run at {sha}. A commit that was never pushed has no run, "
             "and a report cannot publish a table for it."
         )
     pushes = [r for r in runs if r["event"] == "push"] or runs
     return pushes[0]
+
+
+def paths_ignored() -> list[str]:
+    """The workflow's own `paths-ignore` globs (EW0).
+
+    Read from `.github/workflows/ci.yml` rather than written here, because a list in two
+    places is a list that drifts -- and the whole point of this state is that the
+    workflow's decision not to run is a FACT about the workflow.
+    """
+    text = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    out: list[str] = []
+    inside = False
+    for line in text.splitlines():
+        if re.match(r"^\s*paths-ignore:\s*$", line):
+            inside = True
+            continue
+        if inside:
+            m = re.match(r'^\s*-\s*"?([^"#]+?)"?\s*$', line)
+            if m:
+                out.append(m.group(1).strip())
+                continue
+            if line.strip() and not line.strip().startswith("#"):
+                break
+    return out
+
+
+def report_only(sha: str) -> bool:
+    """Does `sha` touch ONLY paths the workflow is told to ignore? (EW0)
+
+    This is the premise of the state and it is MEASURED, not assumed from the commit
+    subject: a commit called `report:` that also edits a test is not report-only, and
+    saying it is would publish another commit's run as this one's evidence.
+    """
+    globs = paths_ignored()
+    if not globs:
+        return False
+    out = subprocess.run(
+        ["git", "-C", str(ROOT), "show", "--name-only", "--format=", sha],
+        capture_output=True,
+        text=True,
+    )
+    touched = [ln.strip() for ln in out.stdout.splitlines() if ln.strip()]
+    if not touched:
+        return False
+    return all(any(fnmatch.fnmatch(path, glob) for glob in globs) for path in touched)
+
+
+def code_identical_run(sha: str) -> tuple[str, dict]:
+    """The newest ancestor of `sha` with a run whose CODE is identical to `sha`'s (EW0).
+
+    Walks first-parent history. "Code" is every path the workflow does NOT ignore, so the
+    comparison is the workflow's own notion of what a run would have measured. Returns
+    `("", {})` when no such ancestor exists, which the caller reports rather than guesses
+    around.
+    """
+    globs = paths_ignored()
+    out = subprocess.run(
+        ["git", "-C", str(ROOT), "rev-list", "--first-parent", "--max-count=40", sha],
+        capture_output=True,
+        text=True,
+    )
+    for candidate in out.stdout.split()[1:]:
+        diff = subprocess.run(
+            ["git", "-C", str(ROOT), "diff", "--name-only", candidate, sha],
+            capture_output=True,
+            text=True,
+        )
+        changed = [ln.strip() for ln in diff.stdout.splitlines() if ln.strip()]
+        if any(not any(fnmatch.fnmatch(path, glob) for glob in globs) for path in changed):
+            return "", {}  # the code differs: no ancestor can stand in for `sha`
+        run = run_for(candidate, required=False)
+        if run:
+            return candidate, run
+    return "", {}
 
 
 def never_started(jobs: list[dict]) -> bool:
@@ -449,10 +532,94 @@ def leg_section(sha: str, number: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+def report_only_section(number: str, sha: str) -> str:
+    """EW0's state: judged commit report-only, no run by design, code-identical run named.
+
+    The section names the JUDGED commit first -- so a guard checking that the table is
+    about the reviewed commit still resolves -- then says why there is no run, then
+    carries the code-identical run's job counts, which is the measurement of the same
+    code. Nothing is hand-assembled and nothing is newly measured.
+    """
+    ancestor, run = code_identical_run(sha)
+    globs = ", ".join(f"`{g}`" for g in paths_ignored())
+    if not run:
+        return (
+            _heading(number, sha, " \u2014 **report-only; no run by design**")
+            + "\n\n"
+            + _generated_by(number, sha)
+            + f" The judged commit touches only paths the workflow ignores ({globs}), so "
+            "no run was created. **And no ancestor with a run is code-identical to it**, "
+            "so there is no run that measures this code either.\n\n"
+            "```\n"
+            f"cmd  gh run list --commit {sha}\n"
+            "out  (no output)\n"
+            "judge NOTHING MEASURES THIS CODE. That is not CK2 -- no allowance is "
+            "involved --\n"
+            "     and it is not a red. It is a report that cannot be given a run, and "
+            "the\n"
+            "     next code push is what produces one.\n"
+            "```\n"
+        )
+    measured = counts(run["databaseId"])
+    jobs = json.loads(_gh("run", "view", str(run["databaseId"]), "--json", "jobs"))["jobs"]
+    lines = [
+        _heading(number, sha, " \u2014 **report-only; no run by design**", run["conclusion"]),
+        "",
+        _generated_by(number, sha)
+        + f" The judged commit touches only paths the workflow ignores ({globs}), so no "
+        f"run was created for it. **Code-identical run at `{ancestor}`**: run "
+        f"`{run['databaseId']}`, event `{run['event']}`, conclusion "
+        f"**{run['conclusion']}**.",
+        "",
+        "```",
+        f"cmd  gh run list --commit {sha}",
+        "out  (no output)",
+        f"cmd  git diff --name-only {ancestor[:7]} {sha[:7]}",
+        "out  only paths under the workflow's paths-ignore",
+        "judge NO RUN BY DESIGN, not CK2 and not a red. The run below measures the same",
+        "     code, because every path that differs is one the workflow ignores.",
+        "```",
+        "",
+        "| job | passed | failed | skipped |",
+        "|---|---|---|---|",
+    ]
+    red = []
+    for job in jobs:
+        name = job["name"]
+        pa, fa, sk = measured.get(name, (0, 0, 0))
+        lines.append(f"| {name} | {pa} | {fa} | {sk} |")
+        if job["conclusion"] not in ("success", "skipped"):
+            red.append(f"{name} ({job['conclusion']})")
+    lines += ["", f"**Job conclusions: {len(jobs)} jobs, {len(red)} not green.**"]
+    if red:
+        lines.append("")
+        lines += [f"- {r}" for r in red]
+    named = failing_names(run["databaseId"])
+    total = sum(len(v) for v in named.values())
+    lines += ["", f"**Failing tests named in the log: {total}.**"]
+    if named:
+        lines.append("")
+        for job in sorted(named):
+            for name in named[job]:
+                lines.append(f"- `{name}` ({job})")
+    return "\n".join(lines) + "\n"
+
+
 def section() -> str:
     number, sha = _anchor()
     sha = full_sha(sha)
-    run = run_for(sha)
+    run = run_for(sha, required=False)
+    if not run:
+        # EW0: THE JUDGED COMMIT IS REPORT-ONLY AND THE WORKFLOW DECLINED TO RUN.
+        # Distinct from the allowance state, and this branch never emits that state's
+        # phrase, so a parser keyed on it cannot match here.
+        if not report_only(sha):
+            raise SystemExit(
+                f"no CI run at {sha}, and the commit touches paths the workflow does "
+                "NOT ignore -- so it is a commit that was never pushed, not one the "
+                "workflow declined. A report cannot publish a table for it."
+            )
+        return report_only_section(number, sha)
     jobs = json.loads(_gh("run", "view", str(run["databaseId"]), "--json", "jobs"))["jobs"]
     if not jobs:
         # A RUN WITH NO JOBS AT ALL. `never_started()` reads "every job has

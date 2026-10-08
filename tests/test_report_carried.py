@@ -1009,6 +1009,16 @@ _CI_ROW = re.compile(
 # `unavailable`; neither is red.
 _UNAVAILABLE = re.compile(r"unavailable,\s*(allowance exhausted|no jobs created)", re.I)
 
+# EW0 / EK2: THE JUDGED COMMIT IS REPORT-ONLY AND THE WORKFLOW DECLINED TO RUN.
+#
+# A report revision never gets a run -- `paths-ignore: docs/reports/**` -- so a round
+# whose judged commit is a report commit has no run to tabulate. That is neither a run
+# with jobs nor CK2: no allowance is involved and nothing failed. Before this state
+# existed `scripts/ci_section.py` exited 1 and the report had to carry a hand-assembled
+# section, and a hand-assembled one that so much as QUOTED CK2's phrase in order to
+# reject it was matched by `_UNAVAILABLE` and routed into that branch.
+_REPORT_ONLY = re.compile(r"report-only;\s*no run by design", re.I)
+
 
 def _ci_section() -> str:
     """The CI section: the one whose body actually holds the per-job table.
@@ -1053,6 +1063,32 @@ def test_the_report_carries_a_CI_SECTION() -> None:
         "consecutive reviewed commits were red on CI and no revision said so; "
         "one of the reds was the report's own commit."
     )
+    # EW0: THE TWO UNAVAILABLE-SHAPED STATES ARE MUTUALLY EXCLUSIVE BY PATTERN.
+    # If one phrase ever matches the other's pattern, a section saying "the workflow
+    # declined to run" is read as "the billing allowance ran out", and the two have
+    # opposite consequences: one is a state of the repository, the other of an account.
+    assert not _UNAVAILABLE.search("report-only; no run by design"), (
+        "`_UNAVAILABLE` matches EW0's report-only phrase, so a judged commit the "
+        "workflow declined to run would be reported as an exhausted allowance."
+    )
+    assert not _REPORT_ONLY.search("unavailable, allowance exhausted"), (
+        "`_REPORT_ONLY` matches CK2's phrase, so an exhausted allowance would be "
+        "reported as a commit the workflow declined to run."
+    )
+    if _REPORT_ONLY.search(body):
+        # The state must carry the EVIDENCE, not just the claim: the full sha of the
+        # run that measures the same code, and that run's job table. A sentence alone
+        # is what the hand-carried section was.
+        assert re.search(r"\b[0-9a-f]{40}\b", body), (
+            "the section declares the judged commit report-only and names no "
+            "code-identical run by full sha. `gh run list --commit <SHORT sha>` returns "
+            "nothing whether or not a run exists, so an abbreviation is not evidence."
+        )
+        assert len(_CI_ROW.findall(body)) >= 3, (
+            "the section declares the judged commit report-only and carries no job "
+            "table. The run whose code is identical is what measures this code, and "
+            "its per-job counts are the measurement."
+        )
     if _UNAVAILABLE.search(body):
         # CK2. A run whose jobs never started measured nothing, and a table of
         # zeros would be a measurement-shaped object with no measurement in
