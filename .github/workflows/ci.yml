@@ -374,16 +374,25 @@ jobs:
       # CI. Both were already clean at the commit that added them here: `ruff check
       # scripts` passed and `black --check scripts` left 21 files unchanged.
       #
-      # `mypy` IS NOT EXTENDED, AND THE REASON IS A COUNT: `mypy scripts` gives 56
-      # errors in 16 files at that commit, so adding it would make the lint job red
-      # on work nobody has done. Ledgered rather than silently omitted. `run_rung.sh`
-      # is shell and is ledgered too -- `actionlint` above does not read it.
+      # `mypy` IS NOT EXTENDED OVER ALL OF `scripts/`, AND THE REASON IS A COUNT:
+      # `mypy scripts` gives 56 errors in 16 files at that commit, so adding it would
+      # make the lint job red on work nobody has done. Ledgered rather than silently
+      # omitted. `run_rung.sh` is shell and is ledgered too -- `actionlint` above does
+      # not read it.
+      #
+      # EX0(e) EXTENDS IT TO WHAT A GATE IMPORTS, which is a different obligation: a
+      # rung-4 gate reads `scripts/f4_dynamic_residual.py`, so that file is gate code
+      # and is type-checked here. Its sibling `scripts/export_f4_dynamic_inputs.py` is
+      # NOT, and the distinction is the point rather than an omission -- the export
+      # imports FloatSim and `platform_rao_pilot`, which have no stubs and are not
+      # present on a CI runner. **That is exactly why it must not be on a gate's path**,
+      # and R721 is what happened when something like it was.
       - name: ruff
         run: ruff check floatfea tests scripts
       - name: black --check
         run: black --check floatfea tests scripts
       - name: mypy
-        run: mypy floatfea
+        run: mypy floatfea scripts/f4_dynamic_residual.py
       - name: unit tests
         run: pytest tests/unit -q
       # `GH_TOKEN` IS FOR ONE TEST AND IT IS NAMED (CY3, R462).

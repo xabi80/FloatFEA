@@ -1,0 +1,12 @@
+# EX0(a): the committed dynamic inputs are a binary golden file.
+#
+# Marked explicitly rather than left to content detection, for two reasons. A text-mode
+# merge on a 10 MiB float64 archive would corrupt it silently, and the corruption would
+# read as a correct computation on a wrong window -- which is the one failure mode a
+# numeric tolerance cannot see, and the reason `f4_dynamic_residual.load()` checks a
+# sha256 before it reads anything.
+#
+# `merge=binary` makes a conflict here a conflict rather than a mangled file: the
+# resolution is always to regenerate with `scripts/export_f4_dynamic_inputs.py`, never to
+# pick a side.
+data/f4/*.npz binary merge=binary -diff

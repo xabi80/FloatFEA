@@ -1,0 +1,41 @@
+{
+  "hsp_tag": "floatfea-ref-1  (HSP-runs)",
+  "override": {
+    "platform": {
+      "mass": 20.0,
+      "inertia": {
+        "Ixx": 20.0,
+        "Iyy": 20.0,
+        "Izz": 40.0
+      }
+    }
+  },
+  "generating_script": {
+    "path": "scripts/export_f4_dynamic_inputs.py",
+    "blob_sha": "927b1957190839e0929905888bf7bf91c9568571"
+  },
+  "measurement_module": {
+    "path": "scripts/measure/g41_dynamic.py",
+    "blob_sha": "4bfe6dcb5bab833d8fc22ecffa0215fa085971e5"
+  },
+  "run": {
+    "periods_full_s": [
+      10.0,
+      12.5,
+      14.0,
+      15.0,
+      16.2,
+      20.0
+    ],
+    "dt": 0.01,
+    "rho_inf": 0.8,
+    "lambda": 50.0,
+    "ramp_s": 10.0,
+    "window": "DQ6: the last 5 whole periods, starting no earlier than ramp + 10",
+    "mass_eps": 1e-06
+  },
+  "npz": {
+    "path": "data/f4/dynamic_inputs.npz",
+    "sha256": "f6961553cf28518198e38f2a1bc7ffad515d576f2c8fcd7a5758475552fb848c"
+  }
+}
