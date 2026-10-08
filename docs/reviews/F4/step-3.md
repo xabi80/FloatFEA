@@ -1,4 +1,640 @@
 # Review — F4 step 3
+Reviewed commit: f07bcb853838c737a9002f5bc17d2f357b7724ac
+Verdict: STOP
+**Reviewed commit: `f07bcb8`** (`f07bcb853838c737a9002f5bc17d2f357b7724ac`, HEAD of F3,
+tree clean when I judged it; **I committed no corpus this round** -- ES0's light scope
+forbids a batch -- so the plain `Reviewed commit:` stamp above and the commit I judged are
+the same sha. That coincidence is R718's subject and not its refutation.)
+Tests: 3253 passed, 0 failed, 0 skipped   (MY OWN run, one invocation, no `-k`, no
+`--ignore`, no deselection, `-p no:randomly`, tree clean at `f07bcb8`, `2202.30s`. Not the
+report's figure -- there is no new report revision.)
+
+## Round of 2026-10-08 -- ES0 INTERIM CHECK, COUNTS AGAINST NO ROUND. **STOP.**
+
+**ES0's premise, computed rather than taken.**
+
+```
+cmd    git diff --stat 0e4188a..HEAD -- docs/reports/
+out    (empty)
+cmd    git log -1 --format='%h %s' -- docs/reports/F4/step-3.md ; head -4 docs/reports/F4/step-3.md
+out    6352d8c report: F4 step 3 revision 1 -- ... ; "Answers: verdict 104 @ 74c77d1"
+judge  **NO NEW REPORT REVISION EXISTS**, so ES0's exemption applies and this check counts
+       against NONE of step 3's three revisions. Instruction 1b does NOT make this a HOLD
+       on its own: 1b compares a REVISION's header against the newest verdict, and the
+       revision in the tree is the one I already judged at verdict 105. This is EG3 state
+       (2) by construction. **Revision 2 must say `verdict 105`, and if it says 104 that
+       is 1b's HOLD.**
+cmd    python -m pytest -q -p no:randomly tests/test_report_carried.py tests/test_report_guard_states.py
+out    220 passed in 144.65s
+judge  **EG3 CONDITION (ii), MEASURED -- AND STATE (2) DID NOT FIRE.** EG3 predicts seven
+       named reds when a verdict is newer than its report. At `f07bcb8` the verdict IS
+       newer and NONE of the seven fired, on 220 parametrisations. Recorded as the
+       measurement EG3(ii) asks for, not as a claim about why.
+```
+
+**EU1 FIRES, AND THE ADVERSARIAL CASE IS WHAT THIS VERDICT IS MADE OF.**
+
+```
+cmd    git diff 0e4188a..HEAD -- floatfea/tolerances.py | grep -E "^[-+][A-Za-z0-9_]+(:|\s*=)"
+out    +F4_G41_DYNAMIC_FORCE: Final[float] = 5.0e-9
+out    +F4_G41_DYNAMIC_FORCE_COUNTER: Final[float] = 0.1
+out    +F4_G41_DYNAMIC_MOMENT: Final[float] = 2.0e-4
+out    +F4_G41_DYNAMIC_MOMENT_COUNTER: Final[float] = 0.01
+judge  four VALUES and two declared COUNTERS move, so EU1's adversarial case is MANDATORY
+       and not discretionary. I ran the model at all six cases myself and then solved the
+       window rule over a counter family the diff did not choose. Three of the four
+       findings below came out of that and nothing else.
+```
+
+**WHY IT IS A STOP, IN FOUR SENTENCES.** The whole of ladder rung 4 is RED in CI at the
+reviewed commit -- `354 collected, 0 failed, 124 errored` -- and ladder 5 did not run
+behind it, because the new gate's module fixture requires a FloatSim solve against
+`../HSP-runs`, a sibling worktree outside the repository that CI does not check out. My own
+suite at the same commit is `3253 passed, 0 failed, 0 skipped`, which is CA2's sentence
+turned into a measurement: the gate is green on the one machine that has the worktree and
+red on every other. **This exact failure already happened once in this milestone, in this
+directory, and was recorded as R670** -- "CI IS RED AT THE REVIEWED COMMIT AND THE RED IS
+LADDER 4" is a quotation from `docs/reports/F4/step-1.md` -- and its answer is two files
+away: a committed snapshot under `data/`, produced by a committed exporter, with the gate
+REFUSING rather than skipping if it is absent. The plan row written this round
+(`docs/milestones/F4.md:486`: "The gate imports `scripts/measure/g41_dynamic.py`" and "Six
+coupled solves per session") is the row that is wrong, so the plan is what reopens, which is
+the STOP head exactly; and because that row is one sentence with a precedent already in the
+tree, the reopen is cheap.
+
+**I am not softening it.** My instructions and `CLAUDE.md` both attach "a low rung is red"
+to STOP without qualification, and the reason is the one that applies here: step 3's entire
+subject IS rung 4, and nothing about revision 2 is interpretable while rung 4 has not run
+on CI at all.
+
+## 0. CI -- RED AT THE REVIEWED COMMIT, WITH THE CONTROLLED PAIR
+
+```
+cmd    gh run list --commit f07bcb853838c737a9002f5bc17d2f357b7724ac
+         --json name,conclusion,workflowName,status,databaseId,event
+out    [{"conclusion":"failure","databaseId":37733553932,"event":"push","name":"CI",
+out      "status":"completed","workflowName":"CI"}]
+judge  **CA2: A RED CI IS A HOLD REGARDLESS OF WHAT THE LOCAL RUN SAYS**, and here it is
+       worse than a HOLD because the red is a ladder rung. The run was `in_progress` when I
+       was invoked and completed while I worked; an unfinished run is not a pass, so I
+       waited. NOT CK2 -- the jobs ran and the step took 4.7 s because the fixture errored,
+       not because it was never started.
+cmd    gh run view 37733553932 --json jobs   (job and step conclusions)
+out    the verification ladder     FAILURE
+out        ladder 4 -- the loads are the loads   FAILURE
+out        ladder 5 -- independent confirmation  SKIPPED
+out    lint, unit and guards       success  (every step, guards and meta-tests included)
+out    CI determinism -- leg / ten legs agree   skipped  (CK0 workflow_dispatch)
+cmd    gh run view 37733553932 --log-failed | grep "run_rung:"
+out    run_rung: 354 collected, 0 failed, 124 errored, 0 skipped
+out    run_rung: FAIL -- tests/verification/rung4 is red.
+out    124 x run_rung:   error  tests.verification.rung4.test_f4_g41_dynamic::<id>
+judge  **124 OF THE GATE 126 CASES ERRORED.** The two that did not are the only two that do
+       not take the `measured` fixture --
+       `test_the_two_channels_are_gated_SEPARATELY_and_never_combined` and
+       `test_the_declared_ceilings_sit_inside_their_counters`. The error is the fixture, on
+       every parametrisation.
+cmd    for s in 801796e 7799482 becf47c ; do gh run list --commit $s ; done
+out    801796e  37729727113  completed  FAILURE   (the rung-3 counter red the hand-back named)
+out    7799482  37729406337  completed  cancelled (concurrency cancel-in-progress; CX0/R449,
+out             no verdict reached on anything, no reason attributed)
+out    becf47c  37727415689  completed  SUCCESS
+cell   ONE VARIABLE MOVED. becf47c -> f07bcb8, the gate file added:
+out    becf47c  ladder 4 SUCCESS, whole run SUCCESS
+out    f07bcb8  ladder 4 FAILURE, 124 errored, ladder 5 skipped
+judge  **THE ABLATION IS CLEAN AND IT IS THE GATE FILE.** Rung 4 was green in CI two
+       commits ago. BG0 cell, free, and it is the cell the hand-back could have had by
+       waiting for one push.
+```
+
+## 1. MY OWN INSTRUCTIONS, THE CONFTEST, AND THE TOLERANCE FILE -- EACH DIFFED SEPARATELY
+
+```
+cmd    git diff --stat 0e4188a..HEAD -- .claude docs/SUPERVISOR.md
+out    (empty)
+judge  NOT a STOP-class finding. Nothing in this range touches what I read, what I must
+       carry, or what I may write. The STOP below is about the ladder, not about this.
+cmd    git ls-files -- tests/conftest.py "tests/**/conftest.py"
+out    tests/conftest.py
+cmd    git diff --stat 0e4188a..HEAD -- tests/conftest.py "tests/**/conftest.py"
+out    (empty)
+cmd    git ls-files -- "*conftest.py"
+out    tests/conftest.py
+judge  CI0 check resolves to a real file; it is unchanged, and the repository still has
+       exactly ONE conftest. **But CH2 channel is wider than a conftest this round and I
+       read the new path line by line**: the gate loads `scripts/measure/g41_dynamic.py` by
+       `importlib` into `sys.modules` at MODULE SCOPE (`test_f4_g41_dynamic.py:59-80`), and
+       that module inserts ROOT and later ROOT/scripts onto `sys.path` and mutates
+       `report_joint_reactions.PLATFORM_MASS_OVERRIDE` as a module global
+       (`g41_dynamic.py:212-216`). No pytest hook is defined anywhere in it, nothing
+       rewrites a report, nothing touches collection. Read, and clean. The global mutation
+       is contained only because nothing else under `tests/` imports that module.
+cmd    git diff --stat 0e4188a..HEAD -- floatfea tests docs scripts .github data
+out    docs/milestones/F4.md 6 | floatfea/tolerances.py 126 |
+out    scripts/measure/g41_dynamic.py 317 | scripts/report_joint_reactions.py 33 |
+out    tests/verification/rung4/test_f4_g41_dynamic.py 355
+judge  **NOTHING UNDER floatfea/ MOVED EXCEPT tolerances.py**, so there is no (a) in this
+       range outside the tolerance block. BR0 is satisfied: the plan rows and the
+       declarations are in one commit.
+```
+
+## 2. EVERY PUBLISHED FIGURE IN BOTH ENTRIES REPRODUCES, TO THE DIGIT, ON MY OWN SIX-CASE RUN
+
+I ran the shipped script over all six cases myself and wrote the JSON out, so the boundary
+arithmetic below is mine and not the entry's.
+
+```
+cmd    python scripts/measure/g41_dynamic.py --out <scratch>/g41_all6.json   (mine, f07bcb8)
+rule   docs/milestones/F4.md:145-148 -- geometric centre, both edges >= 2x
+out    clean worst force  : 1.8556070086831165e-16  at hub2/T20
+out    clean worst moment : 2.3243458955783927e-06  at platform/T15
+out    force  120 of 120 able to redden, 0 vacuous; weakest 0.14137099995337896 hub1/0/T12.5
+out    moment 108 of 120 able to redden, 12 VACUOUS; weakest 0.017528231438113724 hub3/8/T10
+out        vacuous hub1/3   9.544061e-10 .. 6.353783e-09  (6 of 6)
+out        vacuous hub3/11  1.128147e-09 .. 7.310970e-09  (6 of 6)
+out    centres 5.121807e-09 and 2.018457e-04; edges 27601784.6292x and 86.8398x
+out    mass x(1+1e-6): force weakest 3.385829e-08 -- "brackets";
+out                    moment weakest 1.360110e-09 -- "DOES NOT BRACKET at 2x"
+out    solved 2x scales: force 1 + 1.096102e-14, moment 1 + 3.417879e-03
+judge  **EVERY NUMBER IN BOTH TOLERANCE ENTRIES AND ALL FOUR PLAN ROWS REPRODUCES
+       EXACTLY** -- the clean worsts, both weakest members, both centres, the vacuous
+       ranges and counts, both EH4 bounds as the entries state them, and both solved mass
+       scales. R719 and R720 are genuinely closed at the first branch of my conditions.
+cmd    python <the four edge figures the script does NOT print, recomputed>
+out    force : at centre 27601784.6292x twice ; at declared 5.0e-9  2.69454e+07x / 2.82742e+07x
+out    moment: at centre 86.8398x twice      ; at declared 2.0e-4   86.0457x / 87.6412x
+out    counter margins 1.413710x / 1.752823x ; shrinks 0.707359 / 0.570508
+judge  **THE RE-SOURCING THE HAND-BACK ASKED ME TO CHECK IS CORRECT**, and the distinction
+       it drew -- edges at the DECLARED bound, equal only at the centre -- is real and is
+       stated. I found no further instance of the shape in either entry: I recomputed every
+       number in both and each is either a line of the script output or named arithmetic on
+       two such lines.
+cmd    python <the LINEARITY of the mass signal, derived rather than measured>
+out    resid_mass - resid = eps * [(1-alpha_m) M ddot_n + alpha_m M ddot_{n-1}]
+judge  R720 repair is better than the condition I set. The signal is **exactly** linear in
+       eps by construction -- a_eff_s - a_eff = (1-alpha_m) eps M and
+       rhs_s - rhs = -alpha_m eps M ddot_n -- so `need` is a solve and not an
+       extrapolation, and no re-measurement at the named scale is owed.
+```
+
+## 3. R719's REPAIR TOOK A DIFFERENT ROUTE THAN MY CONDITION NAMED, AND THE ROUTE IS BETTER
+
+My condition asked for "a vacuity test on `drop_rel/clean_rel` against a **stated margin**,
+with that margin's own boundary solved in both directions". The implementer did not do that:
+the exclusion is `signal <= GLOBAL clean worst`, with no margin at all. **That is the
+stronger answer and I withdraw my own condition's first clause.** Any ceiling the window
+rule can declare is strictly above the clean worst, so a member at or below it cannot redden
+the gate at any admissible ceiling -- the exclusion follows from the rule rather than from a
+number somebody picked, and my condition would have required an invented cutoff where none
+is needed. The implementer asked me to attack this; I attacked it and it holds.
+
+**And the pin IS a guard, not a declaration -- which is question 2, answered.**
+`test_the_VACUOUS_moment_members_are_exactly_the_two_declared_pairs` is two-sided: a third
+pair becoming vacuous changes the `pairs` list, a pair becoming live changes the count from
+12, and either reddens. Combined with
+`test_every_NON_VACUOUS_joint_drop_reddens_the_moment_gate`, a member landing between the
+clean worst and the ceiling reddens too, so the band the filter leaves open is itself
+asserted. The mechanism is sound. **What is not sound is the warrant printed beside it, and
+that is R724.**
+
+## 4. TRY TO BREAK IT -- WHAT I RAN AND WHAT IT SAID
+
+* **The window rule solved over EV1's OTHER counter-case** -- found R722. The force
+  channel's weakest counter response over both injections is `3.385829e-08`, not
+  `0.14137099995337896`, and the ceiling is `1994.78x` looser than its own rule's answer.
+* **The ceiling's rise boundary solved against the injection that actually binds** (EH4's
+  weakening direction) -- `1.692914e-08` against the published `7.068550e-02`, `4.17537e+06x`.
+* **The mass-vacuity test's threshold solved against the claim it holds in place** -- found
+  R723. `43.0229x` of slack between the test and the point the claim becomes false.
+* **The deck, against the published cause of the exclusion** -- found R724. All four
+  hub-platform joints carry `attach_a_body: [0.0, 0.0, 0.0]`.
+* **hub2 against hub4, in the script own output** -- identical `moment_rel` to seven digits
+  in all six cases. The coordinate separating the vacuous pairs from the live ones is the
+  one the gate holds fixed.
+* **The gate own 126 ids on a machine without the HSP worktree** -- 124 errors, which is
+  CI, which is the STOP.
+* **The decomposition control** -- `1.350e-16` to `3.778e-16` over the six cases, and
+  asserted by nothing; see R722 last paragraph for the one place that matters.
+* **The whole suite at the reviewed commit** -- `3253 passed, 0 failed, 0 skipped`.
+* **The report guards alone at the reviewed commit** -- `220 passed`, EG3(ii).
+
+## Findings
+
+**R721. (BLOCKING -- (d), AND THE STOP) THE WHOLE OF LADDER RUNG 4 IS RED IN CI AT THE
+REVIEWED COMMIT BECAUSE THE GATE FIXTURE NEEDS AN HSP WORKTREE CI DOES NOT HAVE, AND THIS IS
+R670 FOR THE SECOND TIME IN THE SAME DIRECTORY.**
+`tests/verification/rung4/test_f4_g41_dynamic.py:89-97` (the `measured` fixture) ->
+`scripts/measure/g41_dynamic.py:202-204` (`import report_joint_reactions`, `solve_one`) ->
+`scripts/report_joint_reactions.py:81` (`HSP_RUNS = ROOT.parent / "HSP-runs"`) and `:164`
+(`import platform_rao_pilot`).
+
+```
+cmd    git ls-files | grep -i platform_rao_pilot
+out    (nothing -- it is not in the repository)
+cmd    ls ../HSP-runs/studies/platform-12buoy/platform_rao_pilot.py
+out    ../HSP-runs/studies/platform-12buoy/platform_rao_pilot.py
+cmd    grep -n "HSP\|checkout" .github/workflows/ci.yml
+out    three actions/checkout@v4, no HSP worktree, no submodule, no fetch
+judge  the dependency is a sibling directory outside the repository. FloatSim is not forked
+       and HSP is pinned in a second worktree (`docs/hsp-coupling.md`), so this is not an
+       oversight CI can be taught -- it is the coupling scheme.
+```
+
+The error TEXT is not in the log: `scripts/run_rung.sh` prints the junit tally and the
+failing ids and no message, so CI says *that* 124 cases errored and not *why*. I named the
+cause from the dependency and the error signature -- exactly the 124 fixture-dependent ids,
+4.7 s, no solve attempted -- and not from a traceback.
+
+**And the three routes available inside the step are each measured-red or forbidden:**
+
+* declare the ceilings without a gate -> rung 3 red, measured at `801796e`
+  (`test_every_accuracy_entry_has_a_counter_that_something_INJECTS[F4_G41_DYNAMIC_FORCE]`
+  and `[..._MOMENT]`). The hand-back is right that BG1 is not failing false.
+* declare them with this gate -> rung 4 red, measured at `f07bcb8`.
+* make the gate conditional -> forbidden by `CLAUDE.md` ("Never ... skip a test"), by the
+  gate file own docstring `:35-37`, and mechanically by `scripts/run_rung.sh:235-249`, which
+  exits FAIL on any skipped case.
+
+**The answer is already in the tree and it is R670.** `docs/reports/F4/step-1.md:745-770`
+records the identical red -- "CI IS RED AT THE REVIEWED COMMIT AND THE RED IS LADDER 4" is a
+quotation from that file -- and the shape that cleared it: a committed snapshot
+(`data/platform/buoy_centers_ref.json`) produced by a committed exporter
+(`scripts/export_buoy_centers_ref.py`) carrying provenance and a `--check` in the DS0
+preflight, **and no pytest skip**. Two files away,
+`tests/verification/rung4/test_f4_static_and_mapping.py:848` and `:1028` say in their own
+words that a rung-4 gate "must run without an HSP worktree -- the lesson of R670".
+
+**Closed when** the plan row at `docs/milestones/F4.md:486` says what the rung-4 gate READS,
+and the gate reads it. The shape I believe satisfies every locked rule at once, named so the
+reopen is a sentence and not a redesign: `scripts/measure/g41_dynamic.py --out` already
+writes the whole 30-body-case JSON including both counter families; commit it under `data/`
+with its provenance (the HSP tag, the deck blob sha, `rho_inf`, `dt`, the six periods), have
+the gate assert the ceilings, both counter families, the domain sizes and the vacuous set
+against **that**, refuse rather than skip if it is absent or stale, and regenerate it only
+under the golden-file rule -- "Golden-file changes require a written explanation of why the
+numbers moved". That keeps EV1 30 body-cases, keeps BG1 satisfied, keeps the no-skip rule,
+and answers the cost escalation in the same stroke. **The live six-solve run then belongs
+where this repository already puts an expensive measurement: the `workflow_dispatch`
+determinism leg (CK0), which is recorded as skipped and is explicitly NOT CK2.**
+
+**R722. (BLOCKING -- (b): a tolerance value, its counter, and how the counter is injected)
+THE FORCE CHANNEL CEILING, COUNTER AND EH4 BOUND ARE ALL DECLARED OVER ONE OF EV1 TWO
+COUNTER-CASES, AND THE OTHER ONE BINDS.**
+`floatfea/tolerances.py` (the `F4_G41_DYNAMIC_FORCE` and `F4_G41_DYNAMIC_FORCE_COUNTER`
+entries), `docs/milestones/F4.md:539-540`, and `scripts/measure/g41_dynamic.py:519-522`
+(`weakest = min(live.values())`, where `live` is the joint-drop family only).
+
+`docs/milestones/F4.md:145-155` locks the ceiling as "the geometric centre between the clean
+worst and **the weakest counter response**" and then lists **two** counter-cases that "must
+hold for every body and every case". The gate asserts that both must hold --
+`test_the_mass_scale_reddens_the_force_gate` is 30 parametrisations of
+`signal > F4_G41_DYNAMIC_FORCE` -- so on the force channel the mass injection IS a member of
+the family, and the script own output says so in those words:
+`mass x(1+1e-06) signal: weakest 3.385829e-08 vs clean 1.855607e-16 -- brackets`. It is then
+left out of the minimum computed one line below.
+
+```
+cmd    python <the window rule over BOTH families, my own six-case JSON at f07bcb8>
+rule   docs/milestones/F4.md:145-155 -- the weakest counter response, both edges >= 2x,
+       over the two injections EV1 names
+out    clean worst                       1.8556070086831165e-16   hub2/T20
+out    weakest over the DROP family      1.4137099995337896e-01   hub1/0/T12.5
+out    weakest over BOTH families        3.385828902450096e-08    MASS/hub3/T10
+out    centre over BOTH                  2.506545e-12   edges 13507.9518x / 13507.9518x
+out    declared 5.0e-9 is                1994.78x LOOSER than its own rule answer
+out    upper edge at the declared value, against the injection that BINDS:  6.77166x
+out      (the entry and the plan row publish 2.82742e+07x)
+out    EH4 rise bound, true              1.692914e-08
+out      (the entry and the plan row publish 7.068550e-02 -- 4.17537e+06x out)
+out    F4_G41_DYNAMIC_FORCE_COUNTER = 0.1 is 2.95e+06x ABOVE a defect the gate must still
+out      fail; counter-above-weakest-over-both -> True
+judge  **THE WINDOW RULE IS SATISFIABLE OVER BOTH FAMILIES AT 13508x ON EACH EDGE**, so
+       nothing here is a plan conflict and no refusal is needed -- the rule simply was not
+       applied to the family EV1 names. The declared 5.0e-9 is still ADMISSIBLE: both
+       injections redden it and both edges clear 2x. What is wrong is the derivation and
+       every number published for the headroom.
+```
+
+**The harm is concrete and it is in EH4 weakening direction, which is why EH4 exists.** A
+later reader acting on the published EH4 bound would raise this ceiling toward `7.068550e-02`
+believing 2x remained. At any ceiling above `3.385829e-08` the mass injection is no longer
+detected -- and that one assertion, at a margin of `6.77x`, is also the ONLY thing in the
+gate that would notice the per-joint decomposition being wrong by a common scale factor:
+inflate `contrib` by k and `force_rel` falls by k, so the ceiling test gets EASIER; the drop
+signals are unchanged because they are `contrib/den`; only the mass signal moves. The script
+own decomposition control at `:332-334` is a print statement, so `6.77x` is the whole
+interlock -- and `2.82742e+07x` is what the file says it is.
+
+**Closed when** the force ceiling and `F4_G41_DYNAMIC_FORCE_COUNTER` are declared from the
+weakest response over **both** of EV1 injections -- `3.385829e-08` on my run, to be
+re-measured with the repair -- or EV1 "weakest counter response" is ruled to mean
+per-counter-case, by Xabier and not inside the step, with the published upper edge and EH4
+bound corrected to the measured ones either way. `scripts/measure/g41_dynamic.py:519-522` is
+one expression and it already has both families in hand at `:485-489` and `:537`. **The
+moment channel is NOT affected and I checked it**: the mass injection there is vacuous under
+the same rule (`1.360110e-09 <= 2.3243458955783927e-06`), so the window over both equals the
+window over the drop family -- `0.990856x`, identical edges. The moment entry survives this
+attack.
+
+**R723. (BLOCKING -- (c): a gate assertion, on the right quantity at the wrong threshold)
+`test_the_mass_scale_is_VACUOUS_on_the_moment_channel` CANNOT FAIL AT THE POINT ITS OWN
+CLAIM BECOMES FALSE.**
+`tests/verification/rung4/test_f4_g41_dynamic.py:312-343`, the assertion at `:337`
+(`signal < F4_G41_DYNAMIC_MOMENT`).
+
+The test exists -- correctly, and its docstring says so -- to hold in place the tolerance
+entry statement that EV1 second injection does not BRACKET the moment channel. That
+statement flips at the window rule own 2x requirement, `signal >= 2 x clean worst`. The test
+threshold is the ceiling instead.
+
+```
+cmd    python <max moment mass signal over 30 body-cases, and the flip point, my own JSON>
+rule   :337 asserts signal < 2.0e-4 ; the entry claims "three decades BELOW the clean
+       worst" and the script prints "DOES NOT BRACKET at 2x"
+out    max moment mass signal   1.6377355440545113e-07   platform/T20
+out    flip point, 2 x clean    4.648692e-06
+out    the test threshold is    43.0229x ABOVE the flip point
+out    the max signal is        28.3849x below the flip point, 1221.2x below the threshold
+out    at the flip point the window-rule centre becomes 3.287121e-06, so the declared
+out      2.0e-4 would then sit 60.84x above its own rule answer
+judge  **43x OF SLACK BETWEEN THE CHECK AND THE CLAIM.** Anywhere in that band the entry
+       sentence is false, the moment ceiling derivation has moved underneath it by 61x, and
+       the test is green. The quantity is right; the threshold is the ceiling where it
+       should be twice the clean worst -- and `_clean_worst(measured, "moment")` is already
+       computed in this very file at `:109-121`, so the right number is one call away.
+```
+
+**Closed when** `:337` asserts against `2.0 * _clean_worst(measured, "moment")[0]` -- the
+rule the claim is actually about -- with the resulting margin measured and pasted, and with
+the failure message still saying "raise the finding rather than widening anything", which is
+the right instruction and should survive. **No new apparatus: one expression and one call
+already in the file.**
+
+**R724. (BLOCKING -- (b): the warrant for excluding 12 of 120 counter-family members) THE
+PUBLISHED CAUSE OF THE MOMENT CHANNEL VACUITY IS REFUTED BY THE DECK, AND THE COORDINATE
+THAT DOES SEPARATE THE TWO PAIRS IS ONE THE GATE HOLDS FIXED IN ALL SIX CASES.**
+`floatfea/tolerances.py` (the `F4_G41_DYNAMIC_MOMENT` entry, the paragraph beginning "The
+cause is geometric and it is only two of the four hubs"),
+`tests/verification/rung4/test_f4_g41_dynamic.py:266-269`, and `docs/milestones/F4.md:541`
+("because those joints sit at their hubs reference points").
+
+The claim: "hub1 and hub3 platform joints sit AT those hubs reference points, so there is no
+lever ... **hub2 and hub4 platform joints are not at their reference points and are not
+vacuous.**"
+
+```
+cmd    python -I <read data/platform/platform12_deck.yaml, print every platform joint>
+rule   the quoted sentence, which is the stated reason 12 of 120 members are excluded
+out     3  hub1 -> platform   attach_a [0.0, 0.0, 0.0]
+out     7  hub2 -> platform   attach_a [0.0, 0.0, 0.0]
+out    11  hub3 -> platform   attach_a [0.0, 0.0, 0.0]
+out    15  hub4 -> platform   attach_a [0.0, 0.0, 0.0]
+out    all four hubs: mass 12.0, inertia 0.5/0.5/1.0, z 0.4933695679797303, buoy anchors
+out      (0.5,0,0) and (-0.25,+-0.433013,0) in body frame -- identical, all four
+judge  **ALL FOUR SIT AT THEIR HUBS REFERENCE POINTS.** The second half of the sentence is
+       false as written, and the first half cannot be the discriminator, because the four
+       hubs are identical in mass, inertia, anchor and buoy layout. The split it is offered
+       to explain is 3e+07 wide -- hub1/3 and hub3/11 at 1e-09, hub2/7 and hub4/15 at
+       3.03e-02 .. 4.25e-02 -- and no lever-versus-no-lever story covers that, because none
+       of the four has a lever.
+cmd    python <hub2 against hub4, moment_rel, every case, from my own run>
+out    T10 2.435996e-07 / 2.435996e-07   T14 6.777114e-07 / 6.777115e-07
+out    T15 7.318866e-07 / 7.318866e-07   T16.2 6.978779e-07 / 6.978779e-07
+out    T20 4.221282e-07 / 4.221283e-07   and hub2/7 against hub4/15 agree to 7 digits too
+out    hub1 and hub3, by contrast, differ from each other in every case
+judge  hub2 and hub4 sit at x = 0 and hub1/hub3 at x = +-1; the wave runs along +x
+       (`scripts/report_joint_reactions.py:193`, `heading_deg=0.0`, and
+       `scripts/run_floatsim_design_waves.py:177` tags every case head0). The two bodies at
+       the same wave phase produce the same number to seven digits, and **the two excluded
+       pairs are exactly the two hubs ON the wave axis.** I attach no cause: I did not run
+       the heading cell. What is measured is that the stated cause is false and that the
+       variable correlated with the exclusion is one all six cases hold fixed.
+```
+
+This is R719 own defect with the sign reversed. R719 was "the vacuous set is case-dependent",
+attributed to a mechanism nobody measured; the repair replaced it with "the cause is
+geometric", attributed to a mechanism nobody measured, and the deck refutes it in one line. I
+block rather than filing it as prose because under CZ0 it is the **only statement of why 12
+counter-family members are excluded**, which is "a counter and how it is injected", and
+because it is the stated warrant for the pin at `:278-286` being a structural fact rather
+than a heading-0 artifact. The pin mechanism is sound (section 3); its justification is not.
+
+**Closed when** the sentence is made true or deleted (CW0) at all three sites --
+`floatfea/tolerances.py`, `test_f4_g41_dynamic.py:266-269` and `docs/milestones/F4.md:541`
+-- with the deck four identical `attach_a_body` rows pasted, and **BG0 cell for whatever
+cause replaces it**: one variable moved. The cheap one is one case at `heading_deg = 90`; if
+the vacuous pairs move to `hub2/7` and `hub4/15`, the cause is the heading and the pin own
+scope is a heading-0 statement, which the entry should then say. If no cause is measured, the
+correct text is the bare measurement -- the four signal ranges with nothing attached to them.
+
+## Tolerances touched
+
+```
+cmd    git diff 0e4188a..HEAD -- floatfea/tolerances.py | grep -E "^[-]" | grep -vE "^---"
+out    (no output)
+judge  **126 LINES ADDED, NOT ONE LINE REMOVED OR CHANGED.** No existing value, counter or
+       comment moved; nothing was widened. The four new declarations are the whole subject.
+```
+
+| name | old | new | form | counter | justification located | ruling |
+|---|---|---|---|---|---|---|
+| `F4_G41_DYNAMIC_FORCE` | -- | `5.0e-9` | dimensionless, relative; denominator a sum of magnitudes | `_COUNTER` 0.1 injected by the joint drop at `test_f4_g41_dynamic.py:208-230`; EV1 mass injection at `:289-309` | `floatfea/tolerances.py` entry; plan `docs/milestones/F4.md:539`; script `:519-522` | **BLOCKED, R722.** The value is admissible and every figure in the entry reproduces, but it is `1994.78x` looser than the window rule over EV1 two injections, its real upper edge is `6.77166x` and not `2.82742e+07x`, and its EH4 rise bound is `1.692914e-08` and not `7.068550e-02`. |
+| `F4_G41_DYNAMIC_FORCE_COUNTER` | -- | `0.1` | dimensionless | is itself the counter | same entry; plan `:540` | **BLOCKED, R722.** Declared as "the SMALLEST defect the gate must still fail, over the whole family" and sitting `2.95e+06x` above a defect the same gate asserts it must fail (`3.385829e-08`). The two injections are held to two different thresholds -- the drop to the counter, the mass to the ceiling -- which is the inconsistency that reveals it. |
+| `F4_G41_DYNAMIC_MOMENT` | -- | `2.0e-4` | dimensionless, relative; moments about each body `reference_point`, stated | `_COUNTER` 0.01 over the 108 non-vacuous members at `:233-258`; the mass injection asserted VACUOUS at `:312-343` | same entry; plan `:541`; script `:490-528` | **BLOCKED on R724 only.** The window rule, the exclusion rule and every figure are right and I reproduced all of them; the window over both families equals the window over the drop family (`0.990856x`), so R722 does not touch this channel. What blocks is the warrant printed for the exclusion. |
+| `F4_G41_DYNAMIC_MOMENT_COUNTER` | -- | `0.01` | dimensionless | is itself the counter | same entry; plan `:542` | **CLEAN as a value, blocked by R723 as an assertion.** `0.017528231438113724` over 108 members, margin `1.7528x`, reproduced exactly; the `1 + 3.417879e-03` figure is an exact solve rather than an extrapolation and I verified the linearity algebraically. The entry statement that EV1 `1 + 1e-6` does not bracket is held in place by a test `43.0229x` too loose. |
+| the FE inertia-relief acceleration (EV1 third bullet) | -- | **still not built, and I rule it BLOCKING by name** | would be normalised by `max_t abs(a)` and `max_t abs(alpha)` | -- | plan `docs/milestones/F4.md:140-141`; NO row in the plan tolerance table | **(c), AND DEFERRING IT TO EV2 ITEM 2 COMMIT IS CORRECT.** `grep -c inertia_relief` is `0` in both the gate and the script; I verified it. The plan requires the assertion, so its absence is (c) and not a closure item, and the hand-back is right to carry it by name. It does **not** have to land in this commit -- nothing in EV1 orders the three bullets -- but it must land before step 3 closes, and if step 3 closes with it open it carries by name into step 4. Note that by `:145-148` it needs a THIRD pair of declarations, and the plan tolerance table has no row for them. |
+| everything else in the F4 block | -- | unmoved | -- | -- | -- | Not touched in this range and not re-swept. |
+
+## Carried
+
+Verdict 105 (`0e4188a`) was ROUND 1 OF THREE. It raised two blocking items and carried a
+closure list. Every one, with status.
+
+* **R719 (blocking) -- CLOSED, and I withdrew one clause of my own condition.** Answered at
+  `becf47c`. The bracketing test is against the GLOBAL clean worst over all 30 body-cases
+  (`scripts/measure/g41_dynamic.py:496-497`, `test_f4_g41_dynamic.py:109-121`), the signal is
+  the joint own contribution rather than the absolute residual (`:359-369`), the exclusion is
+  pinned two-sided (`:261-286`), the case-dependence sentence is gone and replaced, and my
+  three-case `86.8379x` becomes `86.8398x` over six -- confirmed, not beaten. **My "stated
+  margin" clause is WITHDRAWN**: the repair needs no margin and mine would have invented a
+  cutoff. **Does not carry, except that the replacement warrant is R724.**
+* **R720 (blocking) -- CLOSED, at the first branch of my condition.** Answered at `becf47c`.
+  `max_t abs(resid_mass - resid)` is what is measured (`:353-358`), the 2x edge is solved
+  against the global clean worst (`:539`), and the linearity is now exact rather than
+  assumed -- I derived it rather than taking it:
+  `resid_mass - resid = eps * [(1-alpha_m) M ddot_n + alpha_m M ddot_{n-1}]`. Both
+  `1 + 3.417879e-03` and `1 + 1.096102e-14` reproduce. **Does not carry.**
+* **C1 (closure, past its trigger) -- CLOSED.** Answered at `7799482`,
+  `scripts/report_joint_reactions.py:232-258`. Both halves: `N.m / N` is a LENGTH, so the
+  direction was inverted, **and** the premise that `max abs(Sum reactions)` is always the
+  force half was wrong, 11 of 17. Verdict 102 condition was that it land before the
+  G4.1-dynamic quantity is chosen; it landed in the same range as the declaration. **Does
+  not carry.**
+* **C24 (closure) -- CLOSED.** The dead `per_joint_contributions` is deleted and `:145-162`
+  states the form directly instead of by reference to it.
+* **C25, C26, C27 (closure) -- STILL OPEN**, and correctly so: all three are about the step
+  report, and there is no new report revision. They are revision 2.
+* **R712, R713, R714, R716, R717 (closure) -- STILL OPEN.** R712:
+  `scripts/report_joint_reactions.py:120` still ships `PLATFORM_MASS_OVERRIDE = None` and the
+  override is still typed in `g41_dynamic.py:212-216` -- **and that matters more than it did
+  last round**, because the gate figures now depend on a module global the gate own fixture
+  writes. R717 producer repair is still the thing that would stop this verdict from needing a
+  hand-added bold line, and I have added one again.
+* **The three commit-message figure errors the hand-back volunteered** (`116` for `120`, `22`
+  for `23`, and `grep -c "1/length"` pasted as `0` where it prints `1`) -- recorded, not
+  re-litigated, closure class. Self-reporting them before I looked is the practice I keep
+  asking for and it is worth saying so.
+* **Verdict 103 escalation and verdict 105 warning -- NOW DUE.** Verdict 105 said: "If they
+  are still open at revision 2, that is a third consecutive step and the choice has to be
+  made rather than restated." R719 and R720 are closed, so that particular sentence does not
+  fire -- but the STOP does, and it fires at the same place. The escalation is stated with
+  its choice under "On the questions I was asked".
+
+## The adversarial corpus (BE3)
+
+**NO BATCH THIS ROUND, AND NO COVERAGE NUMBER.** ES0 light scope says "no corpus batch" and
+I honour it literally, as verdict 104 did. EG4(e) would otherwise have permitted one here --
+G4.1-dynamic is the surface verdict 105 justified -- so the batch is owed at revision 2 or at
+the 28 October batch, whichever comes first, and it now has four shapes to plant that were
+not in batch 38: a counter family split across two injections with the minimum taken over
+one; a check whose threshold is looser than the claim it holds in place; a vacuous set whose
+stated cause is refuted by the input file; and **a gate that is green only on the machine
+that has the out-of-tree dependency.** My own hygiene item on
+`tests/corpus/f4_static_case_and_member_force_recovery.txt` lines 40, 48, 49 and 50 is
+unchanged and still mine.
+
+## On the questions I was asked
+
+**1. The gate assertions, run.** `3253 passed, 0 failed, 0 skipped` here, and `124 errored`
+in CI. Both are the answer and the second is the one that counts: CA2 exists because a
+measurement taken only where it was written is a claim about a machine. The hand-back was
+right to say it was not claiming the gate passes, and right that a red would be CZ1 (iv)
+rather than a boundary state. It is.
+
+**2. Is the vacuity rule a disguised invented cutoff? NO, and the pin IS a guard.** Section
+3. The exclusion follows from the window rule rather than from a chosen number, and it is
+better than the margin my own condition asked for -- I withdraw that clause. The pin is
+two-sided in both directions and the band the filter leaves open is asserted elsewhere.
+**But its stated warrant is false (R724)**, and the warrant is what the question was really
+about: the pin will not be "edited the next time a case moves" by its mechanism, and it will
+be if the reason printed beside it is wrong about which coordinate it depends on.
+
+**3. EU1 adversarial case.** Run, and mandatory here because four values moved. The
+injection the hand-back most expected to be wrong --
+`test_the_mass_scale_is_VACUOUS_on_the_moment_channel` -- does not reach the ceiling on any
+body or case: the maximum over 30 body-cases is `1.6377355440545113e-07` against `2.0e-4`.
+**The direction is right and the threshold is not (R723).** The finding the hand-back did not
+expect is next door: the same injection on the FORCE channel brackets, binds, and was left
+out of the minimum (R722). The script prints the word "brackets" one line above the minimum
+it is excluded from.
+
+**4. The script as gate code -- I AGREE, ON THE WORK AND ON THE CRITERION.** Importing one
+implementation of the residual rather than carrying a second is right, and R711 is the
+measured reason. The plan row records it in the same commit (BR0). I ruled in verdict 105
+that a script under `scripts/measure/` whose output is a declared tolerance derivation is (b)
+while it is used that way; this is the stronger form of the same thing, and the question I
+put to Xabier last round is answered by the work, in the direction I favoured. **Two
+consequences that follow from the ruling rather than from me, and which nobody has stated:**
+`mypy` does not cover `scripts/` -- `.github/workflows/ci.yml:386` is `mypy floatfea`, while
+`ruff` and `black` at `:382-384` do include `scripts` -- so the gate numerics are now the
+only gate code in the repository that is not type-checked, and
+`per_joint_contributions(g, lam, ...)` and `moment_point(deck)` are untyped. And R712
+`PLATFORM_MASS_OVERRIDE` is a module global that the gate own fixture writes, so the gate
+SETS its basis rather than reading it.
+
+**5. The four re-sourced figures.** Correct, and the distinction drawn is real. I recomputed
+every number in both entries and found no further instance of the same shape. The residual
+BI3 exposure is that the four edges at the declared bound are arithmetic the script does not
+print, so they go stale silently if the model moves -- two extra print lines in a script that
+already holds both inputs. Recorded, not blocking.
+
+**6. EV1 third assertion.** Ruled in the tolerances table: (c), blocking by name, and
+deferring it to EV2 item 2 commit is correct. It needs a third pair of declarations for which
+the plan tolerance table has no row.
+
+**7. The cost -- IT IS XABIER CALL, AND R721 PROBABLY DISSOLVES IT.** Reducing the gate from
+30 body-cases to 5 is a change to what the gate asserts, which is (c), and EV1 locked "every
+body and every case" -- so the implementer may not make that trade inside the step and
+neither may I. **But the trade as offered is the wrong one.** R721 repair -- the gate reads a
+committed 30-body-case measurement, refuses if it is absent or stale, and the live six-solve
+run moves to the `workflow_dispatch` leg -- keeps all 30 body-cases, costs CI nothing per
+push, and is the pattern R670 already established in this directory. I would put that to
+Xabier rather than the choice between 30 cases and 5. I attach **no figure** to the gate
+cost: my `2202.30s` against verdict 105 `753.75s` is not a controlled pair, because my own
+six-case script run shared this machine for most of it.
+
+**And the escalation, stated rather than restated.** Step 3 is past round 1 with a STOP, EV2
+items 2 to 5 unstarted, and a 14 October date. Two consecutive steps have already closed
+carrying blocking items. **The choice is: slip the date, or cut scope to EV1 two channels
+plus the member-force table and defer the acceleration assertion, the `f` sensitivity and the
+six-case envelope to F5.** That is Xabier, it goes out through the implementer, and it should
+go out today rather than at closure -- `CLAUDE.md` says slippage is reported the day it is
+known.
+
+## On the criterion -- I was asked, and I agree, with one note I have made before
+
+CZ0 is right and I applied it. Three of my four findings are (b) or (c) and the fourth is
+(d); nothing in this verdict is a figure or a sentence held against the step, and the closure
+class took the rest. Per ES0 light scope I have written **no closure list** -- the items I
+noticed and did not block on are named inline where they arise (the `mypy` gap, the BI3
+exposure on the four arithmetic edges, the decomposition control that is printed rather than
+asserted, and `run_rung.sh` swallowing the error text of a 124-error rung) and they go into
+revision 2 closure list rather than into this verdict as a heading.
+
+**The note, unchanged from verdicts 104 and 105.** Two of my findings live in `scripts/`,
+which CZ0 lists under "generators" as closure class, and I block on them under the carve-out
+my own instructions give -- a generator whose output *is* a gate assertion. **That carve-out
+is no longer needed for this file**: as of `f07bcb8` the gate IMPORTS it, so it is gate code
+on the plain reading and the plan row says so. What I would add is that a file which becomes
+gate code should enter the lint and type gates in the same commit, and this one did not.
+
+## Next step opens when
+
+**Step 3 does not resume on the current plan row. This was an ES0 INTERIM CHECK and it counts
+against NO round -- two reviewed revisions remain -- but the STOP halts implementation until
+the plan row is decided.** In order:
+
+1. **R721 is resolved at the plan, not inside the step.** `docs/milestones/F4.md:486` says
+   what the rung-4 gate READS. Until it does, rung 4 is red on every machine but one and
+   nothing above it runs. The repair I believe satisfies EV1, BG1, the no-skip rule and the
+   cost at once is named in the finding, and R670 own mechanism is two files away.
+2. **R722 is answered** -- the force ceiling and counter declared from the weakest response
+   over **both** of EV1 injections, or EV1 wording ruled by Xabier; and the published upper
+   edge and EH4 rise bound corrected to the measured ones either way.
+3. **R723 is answered** -- `:337` asserts against `2.0 * _clean_worst(measured, "moment")`,
+   with the resulting margin pasted.
+4. **R724 is answered at all three sites** -- the deck four identical `attach_a_body` rows
+   pasted, and either BG0 cell for the cause that replaces it (the `heading_deg = 90` case is
+   the cheap one) or the bare measurement with no cause attached.
+5. **EV1 third assertion carries by name**, blocking, into EV2 item 2 commit, with the third
+   pair of declarations and a plan row for them.
+6. **The escalation goes to Xabier today**, with the choice stated, per the section above.
+7. **Revision 2 header says `verdict 106`** -- instruction 1b, and the thing that makes
+   `tests/test_report_carried.py` mean anything.
+
+**What I will not accept at revision 2.** A ceiling whose published headroom is six decades
+larger than its distance to the injection that binds it, or a test that holds a tolerance
+entry statement in place at forty-three times the threshold the statement is about. Neither
+is a judgement about figures. Both are the same single question -- if the thing this
+assertion claims were false, would it go red -- and for the force channel EH4 bound the
+answer is that it would go red four million times later than the file says.
+
+**And one thing on the record for the implementer rather than against them.** Every one of
+the forty-odd figures in two new tolerance entries and four new plan rows reproduced exactly
+on my own independent six-case run: both clean worsts, both weakest members, both centres,
+all four edges, both EH4 bounds, the twelve vacuous signals and both solved mass scales. R719
+and R720 were closed properly, and one of them with a better repair than the condition I set,
+which I have withdrawn in its favour. The hand-back named the one thing it had not been able
+to run, said so plainly, and asked me to run it. I ran it, and what it found was not in the
+numbers -- it was that the gate had never been run anywhere except here.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F4 step 3
 Reviewed commit: b20cf2abe5dc820e2db13a855c39d3438b917d54
 Verdict: HOLD
 **Reviewed commit: `45e5242`** (`45e5242fe4edb59cb1966c65102cafac03b38102`, HEAD of F3,
