@@ -1975,9 +1975,36 @@ _CI_SHAPES: list[tuple[str, str, bool]] = [
         False,
     ),
     (
+        # RE-RULED BY THE 108th VERDICT, in favour of C29's narrowing: a run-shaped run of
+        # digits inside a longer token is NOT a run id. The evidence was that the old
+        # reading fired on an npz sha256 and two blob shas -- figures EX0's provenance made
+        # this repository publish -- and asked three paragraphs for the conclusion of a run
+        # that does not exist.
         "run_id_as_part_of_a_longer_token",
         "Artifact a35479925335b was produced; no result given.",
+        False,
+    ),
+    # BATCH 40's four boundary shapes, solved in BOTH directions (EH4): two that must still
+    # be caught at the edges of the narrowing, and two that must now be accepted.
+    (
+        "run_id_at_the_very_start_of_the_file_with_no_preceding_character",
+        "37833259001 was the push run for this round and no result follows.",
         True,
+    ),
+    (
+        "run_id_followed_immediately_by_an_em_dash_with_no_space",
+        "run 37833259001—no result given.",
+        True,
+    ),
+    (
+        "a_ten_digit_decimal_fraction_inside_a_backticked_measurement",
+        "the margin was `0.1413709999` relative.",
+        False,
+    ),
+    (
+        "an_eleven_digit_run_of_digits_inside_a_base64_artifact_name",
+        "artifact `Zm9vYmFy37833259001Cg` was uploaded.",
+        False,
     ),
     (
         "the_generated_section_line_at_this_commit",

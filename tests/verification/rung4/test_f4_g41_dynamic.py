@@ -278,6 +278,30 @@ def test_the_npz_is_NOT_STALE_against_the_code_that_generated_it() -> None:
         "state was constructed."
     )
 
+    # R731: THE HSP TAG IS COMPARED, NOT MERELY RECORDED -- and it is the gate's stated
+    # WARRANT for leaving FloatSim's own files off the closure list. The provenance carried
+    # it and nothing read it, so `114 passed` with the tag edited to a different checkout
+    # that sits beside this one. My own sentence in §3 of the report -- "a field nothing
+    # reads is not a defence" -- applied one input short of itself.
+    #
+    # `floatfea/hsp_pin.py` is the authority and is itself on the closure, so this is one
+    # string comparison and needs no worktree. The recorded form is `"<tag>  (<dir>)"`
+    # because `_hsp_tag()` resolves the repo from the imported module rather than guessing
+    # a directory name, so the PIN is matched as a prefix and the directory is reported.
+    from floatfea.hsp_pin import HSP_TAG
+
+    recorded = str(declared.get("hsp_tag", ""))
+    assert recorded, "the provenance records no `hsp_tag`; EX0(a) requires it."
+    assert recorded.split()[0] == HSP_TAG, (
+        f"the committed inputs were generated at HSP {recorded!r} and this repository is "
+        f"pinned to {HSP_TAG!r} (`floatfea/hsp_pin.py`). Re-pinning is a deliberate act -- "
+        "re-run the verification set, confirm nothing moved, note it in the closure "
+        "artifact -- and an npz from an unpinned simulator state is not traceable, which "
+        "is the whole reason `docs/hsp-coupling.md` asks for the tag. This check is also "
+        "why FloatSim's own files are not on the closure list above: the TAG covers them, "
+        "so the tag has to be read."
+    )
+
     stale: list[str] = []
     for rel, want in sorted(expected.items()):
         path = _ROOT / rel

@@ -9,6 +9,7 @@
 * Stand-in tube: the stiffness equivalent of a TRIANGULATED TRUSS of undecided depth (F1.md:390). Stresses are INDICATIVE, not a check on a real section.
 * EX3 / R724: all six cases are heading 0 degrees. The heading dependence is UNTESTED.
 * Stations: ROOT = the inboard end at the body's centre node, TIP = the far end. MID is closed-form for a uniform net body force (one element per member at F3's mesh).
+* R730: all three stations are INTERNAL ACTIONS in one convention (as seen from the A end), so TIP is `-end_b` and not the raw element end force. An earlier version averaged the two raw ends for MID, which computes a LOAD -- exactly half the member's weight on Vz -- and understated the midspan stress by 46%.
 * 'dynamic' is the DYNAMIC INCREMENT about static equilibrium, solved from FloatSim's multipliers with NO gravity -- FloatSim is linearised about equilibrium, so the static weight/buoyancy balance is already in the formulation. 'total' = static + dynamic.
 * The load path is validated against FloatSim's own per-body accelerations: 1.55% on all five bodies, 2.78% worst over eighteen samples.
 * No code check is applied. API RP 2A-WSD checks are F5 (EY4).
@@ -20,8 +21,8 @@
 |---|---|---|---|---|---|---|
 | 1 | platform | `platform:hub2_arm` | ROOT | T = 10 s | 742.6 | 762.2 |
 | 2 | platform | `platform:hub4_arm` | ROOT | T = 10 s | 742.6 | 761.5 |
-| 3 | platform | `platform:hub4_arm` | MID | T = 10 s | 366.4 | 373.5 |
-| 4 | platform | `platform:hub2_arm` | MID | T = 10 s | 366.4 | 373.5 |
+| 3 | platform | `platform:hub2_arm` | MID | T = 10 s | 380.6 | 392.8 |
+| 4 | platform | `platform:hub4_arm` | MID | T = 10 s | 380.6 | 392.2 |
 | 5 | platform | `platform:hub3_arm` | ROOT | T = 20 s | 337.3 | 338.2 |
 | 6 | platform | `platform:hub1_arm` | ROOT | T = 12.5 s | 312.2 | 314.5 |
 | 7 | hub1 | `hub1:buoy3_arm` | ROOT | T = 10 s | 262.5 | 263.0 |

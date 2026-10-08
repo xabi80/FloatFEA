@@ -65,8 +65,8 @@ force along the member, which is what the net d'Alembert field is on a prismatic
 shear linear, moment parabolic, so the midspan moment is the chord mean plus `w L^2 / 8`.
 A refined mesh would give it directly and this closed form would then be a check on it.
 
-    ROOT = the element's end at the body's `centre_node` (node_a)
-    TIP  = the far end (node_b)
+    ROOT = the internal action at the body's `centre_node` end (node_a)
+    TIP  = the internal action at the far end, which is `-end_b` and NOT `end_b` (R730)
 
 Stated rather than inferred: for a platform arm the centre node carries the lumped
 remainder and the hub joint is at the TIP, so "root" here is a GEOMETRIC name for the
@@ -136,6 +136,10 @@ LABELS = (
     "EX3 / R724: all six cases are heading 0 degrees. The heading dependence is UNTESTED.",
     "Stations: ROOT = the inboard end at the body's centre node, TIP = the far end. MID is "
     "closed-form for a uniform net body force (one element per member at F3's mesh).",
+    "R730: all three stations are INTERNAL ACTIONS in one convention (as seen from the A "
+    "end), so TIP is `-end_b` and not the raw element end force. An earlier version "
+    "averaged the two raw ends for MID, which computes a LOAD -- exactly half the member's "
+    "weight on Vz -- and understated the midspan stress by 46%.",
     "'dynamic' is the DYNAMIC INCREMENT about static equilibrium, solved from FloatSim's "
     "multipliers with NO gravity -- FloatSim is linearised about equilibrium, so the static "
     "weight/buoyancy balance is already in the formulation. 'total' = static + dynamic.",
@@ -301,9 +305,20 @@ def _station_values(
     ROOT and TIP are the element's two ends and are exact. MID is closed-form for a
     uniform net load: shear linear, so its mid value is the chord mean; moment parabolic,
     so its mid value is the chord mean plus `w L^2 / 8` with `w` the local transverse
-    load per unit length. `N` and `T` are taken as the chord mean, which is exact for a
-    load with no axial or twisting component along the member and is the case here -- the
-    net field is a translation, so its local axial part is constant and its twist is zero.
+    load per unit length. `N` and `T` are taken as the chord mean.
+
+    **AND "THE NET FIELD IS A TRANSLATION" WAS FALSE (R730).** That sentence stood here
+    to justify treating `N` and `T` as constant along the member. `_net_field` is
+    `-rigid_projection(coords, ref) @ relief.acceleration`, which includes the ANGULAR
+    part, so the field varies along a member whenever the body has angular acceleration.
+    Measured over ninety (case, step, body) samples:
+
+        worst |alpha| L_max / |a|  =  0.2239
+
+    The rotational contribution reaches 22% of the translational at the far node, not
+    zero. So the chord mean for `N` and `T` is an APPROXIMATION of the same order as the
+    MID bending term, recorded as one rather than claimed exact. A refined mesh would
+    settle it, and F4 closes carrying that into F5's ledger.
     """
     f_eq = element_equivalent_load(body, member, net)
     mf = member_forces(body, member, u_full, f_eq)
@@ -320,14 +335,35 @@ def _station_values(
     mu = float(body.material.rho * member.section.A)
     w_local = r @ (mu * np.asarray(a_mid, dtype=np.float64))  # (3,) local x, y, z
 
-    mid = 0.5 * (root + tip)
+    # R730 -- THE CONVENTION, WHICH THE FIRST VERSION AVERAGED ACROSS.
+    #
+    # `member_forces` returns the forces the ELEMENT EXERTS ON ITS NODES, so `end_a` and
+    # `end_b` are an ACTION AND A REACTION -- its own docstring says so. The internal
+    # action is `end_a` at `x = 0` and `-end_b` at `x = L`. Averaging the two raw ends
+    # therefore computes a LOAD, not an internal force, and the arithmetic says so
+    # exactly: conservation gives `Vz_a + Vz_b = weight`, so `0.5 * (end_a + end_b)` on
+    # `Vz` is HALF THE MEMBER'S WEIGHT. Measured on `platform:hub2_arm` under self-weight:
+    #
+    #   0.5 * (a + b)  ->  Vz = +2299218.75   = exactly mu g L / 2
+    #   0.5 * (a - b)  ->  Vz = -3832031.25   = the internal shear at midspan
+    #
+    # The published column was 46% LOW on stress -- 94.4 MPa against 175.3 -- which is the
+    # direction that matters, and it reached a sent deliverable.
+    #
+    # ALL THREE STATIONS ARE NOW ONE CONVENTION, so the profile has a meaning: the
+    # internal action as seen from the A end. `TIP` is therefore `-end_b` and not `end_b`.
+    # The shear then varies monotonically from `-1532812.5` to `-6131250.0` over the span,
+    # a change of exactly `-mu g L`, where the raw ends had a spurious zero crossing.
     span = float(member.length)
-    # The parabolic sag, on the two bending components. `w_local[2]` bends about local y
-    # and `w_local[1]` about local z, so the signs follow the component order of
-    # `COMPONENTS` and not a convention invented here.
-    mid[4] = mid[4] + w_local[2] * span * span / 8.0
-    mid[5] = mid[5] + w_local[1] * span * span / 8.0
-    return {"ROOT": root, "MID": mid, "TIP": tip}
+    tip_internal = -tip
+    mid = 0.5 * (root + tip_internal)
+    # The parabolic sag. The SIGN IS CALIBRATED against an independent statics cut and not
+    # reasoned from the component order: with `w_local[2] = -91968.75 N/m`, the midspan
+    # `My` is the chord mean MINUS `w L^2 / 8`, which reproduces `1.2454102e+08` where the
+    # other sign gives `6.7060547e+07` -- and `6.7060547e+07` is what shipped.
+    mid[4] = mid[4] - w_local[2] * span * span / 8.0
+    mid[5] = mid[5] - w_local[1] * span * span / 8.0
+    return {"ROOT": root, "MID": mid, "TIP": tip_internal}
 
 
 def _static_rows(built: Superstructure) -> dict[tuple[str, str, str], NDArray[np.float64]]:
