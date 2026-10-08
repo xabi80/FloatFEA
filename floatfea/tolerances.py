@@ -2550,6 +2550,122 @@ F4_DQ5_FREE_FALL: Final[float] = 1.0e-12
 # for the reason the element entry above gives.
 # Set: 2026-10-06, F4 step 2
 F4_DQ5_FREE_FALL_COUNTER: Final[float] = 4.0e-4
+# CLASS: ACCURACY -- EV1 / G4.1 DYNAMIC, THE FORCE CHANNEL. The quantity is
+# `max_t |Sum_j F_j - M.a| / max_t Sum_j |F_j|`, per FE body and per case, over the DQ6
+# window, in the DISCRETE balance the plan locks (`newmark.py:414-437`). Five FE bodies --
+# the platform and four hubs; the twelve buoys carry no FE mass (DQ7) and are out of the
+# gate -- by six design-wave cases, so **30 body-cases**.
+#
+# THE DENOMINATOR IS A SUM OF MAGNITUDES, which is the property the superseded
+# single-scalar form lacked: a window in which the reactions nearly balance has a small
+# `|Sum_j F_j|` and an ordinary `Sum_j |F_j|`, so dividing by the first would manufacture
+# a large relative residual out of a quiet case.
+#
+# Reason for 5.0e-9, by EV1's WINDOW RULE -- the geometric centre between the clean worst
+# and the weakest counter response, both edges at least 2x:
+#
+#   clean worst over 30 body-cases : 1.8556070086831165e-16   at hub2 / T_full = 20 s
+#   weakest able-to-redden signal  : 0.14137099995337896      at hub1/joint 0 / T = 12.5 s
+#   geometric centre               : 5.121807e-09
+#   declared (round bound)         : 5.0e-9
+#   lower edge  ceiling / clean    : 2.69454e+07x
+#   upper edge  weakest / ceiling  : 2.82742e+07x
+#
+# EH4, BOTH DIRECTIONS: the ceiling may FALL to 3.711214e-16 before the lower edge loses
+# its 2x, and RISE to 7.068550e-02 before the upper edge does. Seven decades of room
+# either way, because this channel closes to round-off and the injections are O(0.1).
+#
+# ALL 120 (pair, case) SIGNALS CAN REDDEN THIS CHANNEL -- none is vacuous at this clean
+# worst, which is the difference from the moment entry below.
+#
+# Measured by `python scripts/measure/g41_dynamic.py` (EV3), on ER0's basis applied in
+# memory, `rho_inf` read from the deck.
+# Set: 2026-10-07, F4 step 3
+F4_G41_DYNAMIC_FORCE: Final[float] = 5.0e-9
+
+# COUNTER-CASE: the SMALLEST defect the gate must still fail, over the whole family.
+# Reason for 0.1: the weakest able-to-redden joint-drop signal over all 120 (pair, case)
+# members is 0.14137099995337896, and 0.1 is the round bound below it; margin 1.4137x.
+# EH4's weakening side: the injection may shrink to 0.7074 of its size before the counter
+# stops bracketing it.
+#
+# THE RESPONSE IS THE SIGNAL AND NOT THE ABSOLUTE RESIDUAL (R719, R720). Both counters
+# first reported `max_t |resid_injected|`, which INCLUDES the clean floor -- so a member
+# contributing nothing reported its body's own clean value and read as a response. For the
+# drop the signal is algebraically the joint's own contribution, `dropped - clean =
+# contrib[j, k]`, which is the quantity an earlier threshold computed and used as a FILTER
+# where it belonged as the response.
+#
+# EV1's SECOND INJECTION, `M` scaled by `1 + 1e-6`, BRACKETS THIS CHANNEL: signal
+# 3.385829e-08 against a clean worst of 1.8556070086831165e-16. Solved on the signal, a 2x
+# edge needs only `1 + 1.096102e-14` here, because the force channel's signal sits far
+# above its floor.
+# Set: 2026-10-07, F4 step 3
+F4_G41_DYNAMIC_FORCE_COUNTER: Final[float] = 0.1
+
+# CLASS: ACCURACY -- EV1 / G4.1 DYNAMIC, THE MOMENT CHANNEL. The quantity is
+# `max_t |Sum_j (r_j x F_j + M_j) - J.alpha - ...| / max_t Sum_j (|r_j x F_j| + |M_j|)`,
+# per FE body and per case, over the DQ6 window, discrete form.
+#
+# MOMENTS ARE TAKEN ABOUT EACH BODY'S `reference_point`, NOT ABOUT `G` as EV1's wording
+# says. `docs/conventions.md:165` is locked and says the reference point; FloatSim's
+# `cog_offset_body=None` makes that point the CoG inside the solve, so the numerator is
+# the same either way and only the label differs. The conflict is recorded for Xabier and
+# the script prints the point on every run. R715 corrected my evidence for it: the
+# `+37.0 mm` offset is the BUOY's and buoys are out of this gate, so no FE body here has
+# a declared offset at all.
+#
+# Reason for 2.0e-4, by EV1's WINDOW RULE:
+#
+#   clean worst over 30 body-cases : 2.3243458955783927e-06   at platform / T_full = 15 s
+#   weakest able-to-redden signal  : 0.017528231438113724     at hub3/joint 8 / T = 10 s
+#   geometric centre               : 2.018457e-04
+#   declared (round bound)         : 2.0e-4
+#   lower edge  ceiling / clean    : 86.0457x
+#   upper edge  weakest / ceiling  : 87.6412x
+#
+# EH4, BOTH DIRECTIONS: the ceiling may FALL to 4.648692e-06 and RISE to 8.764116e-03
+# before either edge loses its 2x.
+#
+# TWELVE OF THE 120 (pair, case) SIGNALS ARE VACUOUS ON THIS CHANNEL AND ARE EXCLUDED WITH
+# THEIR MEASUREMENT (R689, R719):
+#
+#   hub1/joint 3    signal 9.544061e-10 .. 6.353783e-09   in 6 of 6 cases
+#   hub3/joint 11   signal 1.128147e-09 .. 7.310970e-09   in 6 of 6 cases
+#
+# Three decades below the clean worst, so neither can redden the gate at any ceiling. The
+# cause is geometric and it is only two of the four hubs: hub1's and hub3's platform
+# joints sit AT those hubs' reference points, so there is no lever and the locked-axis
+# moment is carried on the platform side. hub2's and hub4's platform joints are not at
+# their reference points and are not vacuous.
+#
+# AND "THE VACUOUS SET IS CASE-DEPENDENT" WAS FALSE. An earlier commit said so and
+# attributed it to those joints' locked-axis moments varying with the case. Both pairs are
+# vacuous in 6 of 6 cases. What varies is which BODY carries the case maximum -- the
+# platform at T = 14 and 15, hub3 at T = 10 -- and when hub3 carries it, a per-case
+# exclusion test compares hub3's clean value with itself and admits the vacuous member by
+# a ratio of 1.000000049477. The exclusion is against the GLOBAL clean worst for that
+# reason.
+# Set: 2026-10-07, F4 step 3
+F4_G41_DYNAMIC_MOMENT: Final[float] = 2.0e-4
+
+# COUNTER-CASE: the SMALLEST defect the gate must still fail, over the whole family.
+# Reason for 0.01: the weakest able-to-redden joint-drop signal over the 108 non-vacuous
+# (pair, case) members is 0.017528231438113724, and 0.01 is the round bound below it;
+# margin 1.7528x. EH4's weakening side: the injection may shrink to 0.5705 of its size.
+#
+# EV1's SECOND INJECTION DOES NOT BRACKET THIS CHANNEL AND THE SCALE THAT WOULD IS
+# RECORDED RATHER THAN ADOPTED. `M` scaled by `1 + 1e-6` produces a moment signal of
+# 1.360110e-09 against a clean worst of 2.3243458955783927e-06 -- three decades BELOW the
+# thing it must bracket. Solved on the signal, a 2x edge needs `1 + 3.417879e-03`.
+#
+# R720: AND THE EARLIER FIGURE FOR THAT SCALE WAS WRONG BY ~700x. It was extrapolated from
+# `max_t |resid_mass|`, which includes the clean floor, so a 4.816x larger injection moved
+# the reported response 0.35% and the extrapolation predicted `1 + 4.816e-06` and then
+# `1 + 4.499e-05`. **EV1 specifies `1 + 1e-6`, so the scale is not changed here** -- the
+# joint-drop injection brackets both channels and the window rule closes on it alone.
+# Set: 2026-10-07, F4 step 3
+F4_G41_DYNAMIC_MOMENT_COUNTER: Final[float] = 0.01
 
 
 # ---------------------------------------------------------------------------
