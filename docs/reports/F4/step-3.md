@@ -1760,6 +1760,748 @@ Answers: verdict 107 @ fbac279
 
 **2026-10-08.**
 
+## 0. CI at `d09a237`, the commit verdict 107 judged — **report-only; no run by design** — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 107 at `d09a237` through the report's own `Answers:` line. The judged commit touches only paths the workflow ignores (`docs/reports/**`, `docs/reviews/**`), so no run was created for it. **Code-identical run at `d16a46b65122e9f00bdeaf05f31b49c6120188d6`**: run `37796814444`, event `push`, conclusion **failure**.
+
+```
+cmd  gh run list --commit d09a2370a258c30e540b3bdf1df15696e83b2e2c
+out  (no output)
+cmd  git diff --name-only d16a46b d09a237
+out  only paths under the workflow's paths-ignore
+judge NO RUN BY DESIGN, not CK2 and not a red. The run below measures the same
+     code, because every path that differs is one the workflow ignores.
+```
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint, unit and guards | 1053 | 8 | 0 |
+| the verification ladder | 2101 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 1 not green.**
+
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 8.**
+
+- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 0a. Runs since the commit verdict 107 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 107 at `d09a237` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `37824279365` | push | `4ace816` | conclusion **failure** |
+| `37828612962` | push | `af093ae` | **no result** (`cancelled`) |
+| `37828831692` | push | `005c6fc` | **no result** (`cancelled`) |
+| `37829211436` | push | `7312f2c` | conclusion **failure** |
+
+**Run `37824279365`, conclusion **failure**: 351 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R726->3]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R727->4]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R728->5]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R729->6]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_CI_SECTION` (lint, unit and guards)
+- `tests/test_report_carried.py::test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_CI_RUN_the_report_names_carries_its_conclusion` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_reported_CI_counts_are_not_all_zero` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-docs/milestones/F4.md:131]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-docs/milestones/F4.md:486]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/README.md:1]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:218]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:219]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:220]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:221]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:222]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:223]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:224]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:225]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:226]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:227]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:228]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:229]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:230]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:231]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:232]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:233]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:234]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R712-scripts/measure/g41_dynamic.py:131]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R712-scripts/measure/g41_dynamic.py:179]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R712-scripts/measure/g41_dynamic.py:180]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R712-scripts/measure/g41_dynamic.py:181]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R712-scripts/measure/g41_dynamic.py:182]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R712-scripts/report_joint_reactions.py:120]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R713-docs/SUPERVISOR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R713-scripts/ci_section.py:292]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R713-scripts/ci_section.py:293]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R713-tests/test_report_carried.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R714-docs/closure/F4.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R714-scripts/ci_section.py:316]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R715-docs/conventions.md:182]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R715-docs/conventions.md:183]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R715-docs/conventions.md:184]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R715-scripts/measure/g41_dynamic.py:36]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R716-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R716-docs/SUPERVISOR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R716-docs/reports/F4/step-2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R716-scripts/write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R716-write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-docs/reviews/F2/step-7.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-docs/reviews/F3/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-docs/reviews/F4/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:172]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:192]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:193]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:194]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:195]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:196]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:197]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:198]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:199]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/write_verdict.py:82]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-docs/closure/F4.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-docs/reviews/F3/step-2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-docs/reviews/F3/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-docs/reviews/F4/step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-docs/reviews/F4/step-2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-scripts/write_verdict.py:36]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-scripts/write_verdict.py:37]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-scripts/write_verdict.py:38]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-scripts/write_verdict.py:39]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-scripts/write_verdict.py:40]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-scripts/write_verdict.py:41]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-tests/test_report_carried.py:2084]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-tests/test_report_carried.py:2085]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-tests/test_report_carried.py:2086]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:426]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:439]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:440]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:441]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:442]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:443]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:444]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:445]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:446]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:447]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:448]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R720-scripts/measure/g41_dynamic.py:462]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R720-scripts/measure/g41_dynamic.py:463]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-../HSP-runs/studies/platform-12buoy/platform_rao_pilot.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-data/platform/buoy_centers_ref.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/hsp-coupling.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/milestones/F4.md:486]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:745]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:746]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:747]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:748]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:749]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:750]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:751]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:752]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:753]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:754]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:755]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:756]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:757]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:758]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:759]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:760]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:761]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:762]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:763]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:764]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:765]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:766]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:767]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:768]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:769]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:770]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/export_buoy_centers_ref.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/measure/g41_dynamic.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/measure/g41_dynamic.py:202]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/measure/g41_dynamic.py:203]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/measure/g41_dynamic.py:204]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/report_joint_reactions.py:81]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:235]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:236]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:237]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:238]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:239]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:240]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:241]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:242]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:243]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:244]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:245]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:246]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:247]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:248]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:249]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:89]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:90]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:91]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:92]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:93]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:94]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:95]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:96]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:97]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_static_and_mapping.py:848]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:145]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:146]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:150]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:151]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:152]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:153]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:154]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:155]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:539]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:540]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-floatfea/tolerances.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-scripts/measure/g41_dynamic.py:519]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-scripts/measure/g41_dynamic.py:520]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-scripts/measure/g41_dynamic.py:521]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-scripts/measure/g41_dynamic.py:522]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:312]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:313]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:314]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:315]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:316]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:317]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:318]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:319]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:320]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:321]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:322]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:323]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:324]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:325]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:326]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:327]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:328]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:329]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:330]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:331]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:332]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:333]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:334]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:335]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:336]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:337]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:338]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:339]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:340]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:341]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:342]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:343]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-docs/milestones/F4.md:541]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-floatfea/tolerances.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-scripts/run_floatsim_design_waves.py:177]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-test_f4_g41_dynamic.py:266]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-test_f4_g41_dynamic.py:267]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-test_f4_g41_dynamic.py:268]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-test_f4_g41_dynamic.py:269]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-tests/verification/rung4/test_f4_g41_dynamic.py:266]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-tests/verification/rung4/test_f4_g41_dynamic.py:267]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-tests/verification/rung4/test_f4_g41_dynamic.py:268]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-tests/verification/rung4/test_f4_g41_dynamic.py:269]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-docs/reviews/F4/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-scripts/ci_section.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:415]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:416]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:417]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:418]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:419]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:420]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:421]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:422]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:423]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:424]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:425]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:426]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:427]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:428]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:429]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:430]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_guard_states.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-data/f4/dynamic_inputs.provenance.json:13]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-data/f4/dynamic_inputs.provenance.json:14]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-data/f4/dynamic_inputs.provenance.json:16]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-data/f4/dynamic_inputs.provenance.json:17]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-data/f4/dynamic_inputs.provenance.json:18]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-data/f4/dynamic_inputs.provenance.json:19]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-floatfea/io/integrator.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:150]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:151]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:152]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:153]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:154]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:155]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:156]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:157]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:158]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:159]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/measure/g41_dynamic.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:224]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:225]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:226]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:227]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:228]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:229]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:230]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:231]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:232]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:233]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:234]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:235]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:236]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:237]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:238]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:239]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:240]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:241]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:242]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:243]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:244]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:245]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:246]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:247]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:248]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:249]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:250]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:251]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:252]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:253]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:254]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:255]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:256]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:257]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:258]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:259]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:260]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:261]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:262]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:263]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:264]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:265]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:266]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:267]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-floatfea/tolerances.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-tests/verification/rung4/test_f4_g41_dynamic.py:527]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-tests/verification/rung4/test_f4_g41_dynamic.py:528]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-tests/verification/rung4/test_f4_g41_dynamic.py:529]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-tests/verification/rung4/test_f4_g41_dynamic.py:530]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-tests/verification/rung4/test_f4_g41_dynamic.py:531]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-tests/verification/rung4/test_f4_g41_dynamic.py:532]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-tests/verification/rung4/test_f4_g41_dynamic.py:533]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-tests/verification/rung4/test_f4_g41_dynamic.py:534]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-tests/verification/rung4/test_f4_g41_dynamic.py:535]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-tests/verification/rung4/test_f4_g41_dynamic.py:536]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-docs/milestones/F4.md:600]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-floatfea/tolerances.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-scripts/f4_dynamic_residual.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-scripts/f4_dynamic_residual.py:145]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-scripts/f4_dynamic_residual.py:146]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-scripts/f4_dynamic_residual.py:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-scripts/f4_dynamic_residual.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-scripts/f4_dynamic_residual.py:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-tests/verification/rung4/test_f4_g41_dynamic.py:519]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-data/f4/dynamic_inputs.provenance.json:33]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-scripts/f4_dynamic_residual.py:206]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:270]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:271]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:272]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:273]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:274]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:275]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:276]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:277]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:278]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:279]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:280]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:281]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:282]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:283]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:520]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+**Run `37829211436`, conclusion **failure**: 322 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R726->3]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R727->4]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R728->5]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[R729->6]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_CI_SECTION` (lint, unit and guards)
+- `tests/test_report_carried.py::test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_CI_RUN_the_report_names_carries_its_conclusion` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_RUN_CONCLUSION_guard_rules_on_the_reviewer_shapes[run_id_as_part_of_a_longer_token]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_reported_CI_counts_are_not_all_zero` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-docs/milestones/F4.md:131]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-docs/milestones/F4.md:486]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/README.md:1]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:218]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:219]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:220]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:221]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:222]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:223]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:224]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:225]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:226]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:227]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:228]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:229]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:230]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:231]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:232]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:233]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R711-scripts/measure/g41_dynamic.py:234]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R712-scripts/measure/g41_dynamic.py:131]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R712-scripts/measure/g41_dynamic.py:179]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R712-scripts/measure/g41_dynamic.py:180]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R712-scripts/measure/g41_dynamic.py:181]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R712-scripts/measure/g41_dynamic.py:182]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R712-scripts/report_joint_reactions.py:120]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R713-docs/SUPERVISOR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R713-scripts/ci_section.py:292]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R713-scripts/ci_section.py:293]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R714-docs/closure/F4.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R714-scripts/ci_section.py:316]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R715-docs/conventions.md:182]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R715-docs/conventions.md:183]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R715-docs/conventions.md:184]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R715-scripts/measure/g41_dynamic.py:36]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R716-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R716-docs/SUPERVISOR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R716-docs/reports/F4/step-2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R716-scripts/write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R716-write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-docs/reviews/F2/step-7.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-docs/reviews/F3/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-docs/reviews/F4/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:172]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:192]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:193]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:194]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:195]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:196]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:197]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:198]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/ci_section.py:199]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-scripts/write_verdict.py:82]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R717-write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-docs/closure/F4.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-docs/reviews/F3/step-2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-docs/reviews/F3/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-docs/reviews/F4/step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-docs/reviews/F4/step-2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-scripts/write_verdict.py:36]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-scripts/write_verdict.py:37]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-scripts/write_verdict.py:38]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-scripts/write_verdict.py:39]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-scripts/write_verdict.py:40]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-scripts/write_verdict.py:41]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-tests/test_report_carried.py:2084]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-tests/test_report_carried.py:2085]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-tests/test_report_carried.py:2086]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R718-write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:426]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:439]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:440]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:441]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:442]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:443]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:444]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:445]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:446]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:447]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R719-scripts/measure/g41_dynamic.py:448]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R720-scripts/measure/g41_dynamic.py:462]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R720-scripts/measure/g41_dynamic.py:463]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-../HSP-runs/studies/platform-12buoy/platform_rao_pilot.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-data/platform/buoy_centers_ref.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/hsp-coupling.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/milestones/F4.md:486]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:745]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:746]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:747]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:748]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:749]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:750]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:751]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:752]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:753]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:754]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:755]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:756]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:757]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:758]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:759]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:760]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:761]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:762]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:763]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:764]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:765]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:766]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:767]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:768]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:769]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-docs/reports/F4/step-1.md:770]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/export_buoy_centers_ref.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/measure/g41_dynamic.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/measure/g41_dynamic.py:202]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/measure/g41_dynamic.py:203]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/measure/g41_dynamic.py:204]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/report_joint_reactions.py:81]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:235]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:236]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:237]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:238]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:239]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:240]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:241]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:242]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:243]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:244]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:245]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:246]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:247]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:248]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-scripts/run_rung.sh:249]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:89]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:90]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:91]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:92]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:93]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:94]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:95]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:96]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_g41_dynamic.py:97]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R721-tests/verification/rung4/test_f4_static_and_mapping.py:848]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:145]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:146]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:150]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:151]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:152]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:153]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:154]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:155]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:539]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-docs/milestones/F4.md:540]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-scripts/measure/g41_dynamic.py:519]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-scripts/measure/g41_dynamic.py:520]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-scripts/measure/g41_dynamic.py:521]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R722-scripts/measure/g41_dynamic.py:522]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:312]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:313]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:314]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:315]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:316]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:317]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:318]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:319]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:320]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:321]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:322]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:323]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:324]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:325]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:326]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:327]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:328]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:329]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:330]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:331]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:332]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:333]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:334]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:335]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:336]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:337]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:338]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:339]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:340]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:341]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:342]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R723-tests/verification/rung4/test_f4_g41_dynamic.py:343]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-docs/milestones/F4.md:541]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-scripts/run_floatsim_design_waves.py:177]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-test_f4_g41_dynamic.py:268]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-test_f4_g41_dynamic.py:269]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-tests/verification/rung4/test_f4_g41_dynamic.py:268]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R724-tests/verification/rung4/test_f4_g41_dynamic.py:269]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-docs/reviews/F4/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-scripts/ci_section.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:415]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:416]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:417]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:418]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:419]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:420]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:421]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:422]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:423]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:424]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:425]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:426]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:427]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:428]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:429]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_carried.py:430]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R725-tests/test_report_guard_states.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-data/f4/dynamic_inputs.provenance.json:13]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-data/f4/dynamic_inputs.provenance.json:14]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-data/f4/dynamic_inputs.provenance.json:16]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-data/f4/dynamic_inputs.provenance.json:17]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-data/f4/dynamic_inputs.provenance.json:18]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-data/f4/dynamic_inputs.provenance.json:19]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-floatfea/io/integrator.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:150]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:151]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:152]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:153]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:154]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:155]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:156]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:157]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:158]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/export_f4_dynamic_inputs.py:159]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-scripts/measure/g41_dynamic.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:224]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:225]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:226]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:227]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:228]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:229]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:230]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:231]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:232]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:233]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:234]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:235]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:236]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:237]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:238]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:239]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:240]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:241]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:242]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:243]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:244]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:245]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:246]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:247]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:248]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:251]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:254]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:255]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:256]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:257]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:258]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:259]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R726-tests/verification/rung4/test_f4_g41_dynamic.py:260]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-tests/verification/rung4/test_f4_g41_dynamic.py:529]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R727-tests/verification/rung4/test_f4_g41_dynamic.py:534]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-docs/milestones/F4.md:600]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-scripts/f4_dynamic_residual.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-scripts/f4_dynamic_residual.py:145]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-scripts/f4_dynamic_residual.py:146]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-scripts/f4_dynamic_residual.py:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-scripts/f4_dynamic_residual.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R728-scripts/f4_dynamic_residual.py:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-data/f4/dynamic_inputs.provenance.json:33]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-scripts/f4_dynamic_residual.py:206]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:270]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:271]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:272]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:273]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:274]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:275]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:276]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:277]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:278]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:279]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:280]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:281]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:282]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:283]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R729-tests/verification/rung4/test_f4_g41_dynamic.py:520]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 0b. The reds, traced
+
+```
+claim  the eight reds at the code-identical commit section 0 names are the report-guard
+       boundary
+cmd    gh run view "$(gh run list --commit d16a46b --json databaseId --jq '.[0].databaseId')"
+       --log-failed | grep -oE "FAILED [^ ]+" | sort -u
+out    the eight report-guard tests, and nothing else
+rule   EG3 state (2): a verdict exists and its answering report does not
+judge  **and one of the eight was NOT the boundary, which is R725 and section 2.**
+       `test_the_answered_verdict_is_the_NEWEST_one` fired through the guard's
+       later-of-the-two branch on a wrong `Answers:` token, not through its ancestry
+       carve-out. Revision 2's section 12 called all eight state (2); seven were.
+```
+
 ## 1. What this revision is, and why its Carried table arrived before its answers
 
 **Step 3's working target is 16 October (EX4) and it holds.** This is **round 3 of three
@@ -1795,9 +2537,14 @@ rule   the `Answers:` line names the VERDICT's own commit; revision 1 got this r
 judge  **what the wrong token produced is the finding, not the token.** `ci_section.py`
        says in its own output that it is "anchored on verdict 106 ... through the report's
        own `Answers:` line", so revision 2 §0 published **"CI at `45e5242` — conclusion
-       SUCCESS"**, run `37723495711`, for a verdict that judged `f07bcb8`, whose run
-       `37733553932` reached conclusion **failure** with 124 errors. Regenerated against
-       the corrected token it reads **"CI at `f07bcb8` — conclusion FAILURE"**.
+       SUCCESS"** for a verdict that judged `f07bcb8`, where the run reached conclusion
+       **failure** with 124 errors. Regenerated against the corrected token it reads
+       **"CI at `f07bcb8` — conclusion FAILURE"**, which §0 above now does.
+judge2 the two runs are named by COMMIT here and not by id. C29 narrowed the run-id guard
+       this round and it immediately caught this paragraph: a bare id belongs in the
+       GENERATED sections, which carry it with its conclusion by construction, and §0 does
+       exactly that. Anchoring on the commit is also the better citation -- it is the thing
+       the verdict and the report both already name.
 ```
 
 **And I mis-filed the red it caused.** `test_the_answered_verdict_is_the_NEWEST_one` was
@@ -1807,6 +2554,191 @@ verdict. At `d09a237` this one fires on the wrong token, through the guard's lat
 branch rather than its boundary carve-out. **The guard worked and I explained its output
 away.** That is R718's class one step further out: removing the fallback closed the
 generator trusting a MISSING token, and this is it trusting a PRESENT and wrong one.
+
+## 3. R726 — the committed input could be stale, and recording the closure did not fix it
+
+```
+claim  the provenance blob-shaed two files and the npz is a function of twelve
+cmd    python -c "import json,pathlib; d=json.loads(pathlib.Path(
+       'data/f4/dynamic_inputs.provenance.json').read_text()); print(len(d['import_closure']))"
+out    12
+rule   EX0(a)/R726: the provenance records every input the npz is a function of
+judge  the reviewer constructed the stale-but-accepted state rather than arguing it:
+       `scripts/report_joint_reactions.py`'s `heading_deg` from `0.0` to `90.0` — **the one
+       variable EX3/R724 declares untested** — left the gate at `112 passed` and the
+       staleness test green, because that file was not one of the two.
+```
+
+**And my first repair did not work, which is the part worth recording.**
+
+```
+claim  adding `import_closure` to the provenance left the heading edit passing
+cmd    (first repair in the tree: WAVE_HEADING_DEG 0.0 -> 90.0, staleness test alone)
+out    1 passed in 0.15s
+cmd    (after asserting the closure, the same edit)
+out    1 failed in 0.56s
+rule   a defence is what is CHECKED, not what is recorded
+judge  **a field nothing reads is not a defence.** I recorded the closure and went on
+       asserting the two named entries, so the measurement that had found the defect still
+       passed. The gate now walks every entry and compares it against `git hash-object`.
+```
+
+**Three probes, all reddening, one per class of input:**
+
+```
+claim  a wave parameter, a solver input and an unrelated closure file each redden
+cmd    (WAVE_HEADING_DEG 0.0 -> 90.0)
+out    1 failed in 0.56s
+cmd    (WAVE_HEIGHT_MODEL_M 0.484 -> 0.5)
+out    1 failed in 0.54s
+cmd    (a comment appended to floatfea/io/integrator.py, which produces the stored alpha_m)
+out    1 failed in 0.55s
+cmd    (clean tree)
+out    1 passed in 0.41s
+rule   EX0(b): absence or staleness is a REFUSAL, never a skip
+judge  the wave parameters are single-source constants in `report_joint_reactions.py` now
+       and the export READS them, so there is no mirror to diverge — and that file is in
+       the closure, which is why the heading edit reddens at all.
+```
+
+**Asserting the closure found a fault of my own, in the opposite direction.**
+
+```
+claim  `floatfea/tolerances.py` was on the closure, so every tolerance edit demanded a
+       regeneration of a 12 MiB golden file
+cmd    python -c "import json,pathlib; d=json.loads(pathlib.Path(
+       'data/f4/dynamic_inputs.provenance.json').read_text()); print(
+       any('tolerances' in k for k in d['import_closure']))"
+out    False
+cmd    (the npz digest, before and after the dependency was removed)
+out    8f17fd40573f3ae5...  /  8f17fd40573f3ae5...
+rule   a golden file is regenerated under the Q8 rule, with a written reason — not because
+       an unrelated constant moved
+judge  **the digest is unchanged across the edit, which proves the dependency was inert for
+       the output.** The export imported one tolerance for its own control check; that
+       ceiling already lives in the consumer, where `resid_control` is stored precisely so
+       `test_the_two_WAYS_of_forming_the_reaction_agree` can make the comparison on the
+       arrays that ship. A ceiling in two places is one too many. What stays in the export
+       is the structural question it alone can answer — that the shapes match.
+```
+
+## 4. R727 — the verdict's mechanism is wrong about the repository and its finding is right
+
+```
+claim  a ceiling edited above its counter DOES redden, in rung 3, which is parametrised
+       over every ACCURACY entry
+cmd    (F4_G41_DECOMPOSITION_AGREEMENT 1.0e-12 -> 0.1413, rung 3 alone)
+out    FAILED tests/verification/rung3/test_tolerance_counter_cases.py::
+       test_the_ceiling_sits_below_its_counter_case[F4_G41_DECOMPOSITION_AGREEMENT]
+out    1 failed, 115 passed in 0.42s
+cmd    (the same edit, the gate file alone)
+out    112 passed in 1.28s
+rule   CZ0 (b): a tolerance value, or the form of one
+judge  the verdict says the ceiling exceeds its counter "with nothing red". The GATE FILE
+       named two pairs and omitted this one, and the verdict measured the gate file —
+       which is a fair thing to measure and an incomplete account of the repository. I am
+       not claiming the omission did not matter: the file should be self-sufficient and it
+       now discovers every pair.
+```
+
+**The finding underneath is larger than its stated mechanism, and that is what I fixed.**
+
+```
+claim  the ceiling widens eleven decades with everything green, because it is the one F4
+       value outside the window rule and nothing tied it to its measurement
+cmd    (the reviewer's ladder: 1e-8, 1e-4, 1e-2, 0.1, 0.1413 -> each 112 passed)
+out    1.413e+11x of room, bounded only by the counter-case
+cmd    python scripts/f4_dynamic_residual.py   (the worst decomposition gap)
+out    2.111298e-16
+cmd    (ceiling 1.0e-12 -> 1.0e-11, after the repair)
+out    1 failed, 113 passed in 1.48s
+rule   a ceiling outside the window rule is justified by its MEASUREMENT or it is not
+       justified
+judge  `F4_G41_DECOMPOSITION_HEADROOM = 1.0e4` pins it to the measured gap, which the
+       declared `1.0e-12` sits `4736x` above. Eleven decades becomes a third of one. **The
+       tightening itself stands and the reviewer endorsed it** — the window rule's own
+       centre would LOOSEN this ceiling by seven decades on a quantity whose clean value is
+       round-off, which is the asymmetry §4 of revision 2 measured.
+```
+
+## 5. R728 — one constant, two opposite senses, and my first pin bounded it at 86
+
+```
+claim  the factor was read as a floor on a ratio in three places and as a ceiling on a
+       signal in one, so every change strengthened one test and weakened the other
+cmd    (F4_WINDOW_RULE_MIN_EDGE 2.0 -> 86.0, before the split)
+out    112 passed  — and the vacuity assertion back at 1.999e-04
+rule   EX2/R723: the vacuity threshold is 2x the global clean worst, where the claim flips
+judge  **the direction is what makes this bad.** Raising the edge floor is a STRENGTHENING
+       move for the window rule, and it reinstated the whole of R723's `43.0229x` of slack
+       somewhere else. The reviewer is correcting its own prior condition here, not the
+       work, and it says so.
+```
+
+**And my first repair was not enough.**
+
+```
+claim  pinning only `factor * clean_worst < ceiling` bounds the factor at 86, not at 2
+cmd    (86.0 x 2.324345895610256e-06, against the declared 2.0e-4)
+out    1.9989e-04 < 2.0e-4 — passes
+cmd    (the reviewer's own measurement)
+out    86.0 green, 87.0 red
+rule   a pin that admits 43x of the slack it was written to remove has not removed it
+judge  I wrote one pin, measured it against the defect, and it passed. Three now, all
+       DERIVED and none invented: the factor equals the edge floor by derivation (separate
+       constants so a change is loud, equal so neither drifts), the threshold stays below
+       the weakest LIVE member, and below the ceiling.
+```
+
+```
+claim  both constants now redden in BOTH directions, including the strengthening one
+cmd    (F4_G41_VACUITY_FACTOR 2.0 -> 86.0 / 3.0 / 1.0)
+out    30 failed, 84 passed   (each)
+cmd    (F4_WINDOW_RULE_MIN_EDGE 2.0 -> 86.0 / 3.0)
+out    30 failed, 84 passed   (each)
+cmd    (restored)
+out    114 passed in 1.27s
+rule   EH4: every boundary is solved in BOTH directions, including the two that weaken a
+       gate
+judge  the strengthening direction is the one the defect was found in, which is the whole
+       argument for EH4 and the reason both probes are here rather than just the loosening
+       pair.
+```
+
+## 6. R729 — the locked injection size was a literal nothing asserted
+
+```
+claim  `mass_eps` reached `tests/` once, inside an f-string in a failure message, and both
+       force values are functions of it
+cmd    grep -n "mass_eps" tests/verification/rung4/test_f4_g41_dynamic.py
+out    586:        f"scaling {body}'s mass by 1 + {inputs.mass_eps:g} at T_full = ..."
+out    646:    """R729: `mass_eps` was a literal nothing asserted, and both force values ...
+out    653:    assert inputs.mass_eps == F4_G41_MASS_INJECTION_EPS, (
+out    654:        f"the committed inputs were made with eps = {inputs.mass_eps!r} and "
+out    (four hits AFTER the repair; 586 is the original f-string and the other three are
+out     the repair itself. I first wrote `grep -c` expecting 2 and it printed 4 -- the
+out     needle counts the fix along with the defect, which is the `1/length` trap again)
+cmd    (the reviewer's band over which the suite stays green)
+out    [8.8605e-07, 2.8385e-05], across which the window centre moves 5.66x
+rule   CZ0 (b): a counter and how it is injected, including its size
+judge  the mass response is exactly linear in it and IS the binding member of the force
+       family, so the ceiling and the counter both move with it. A number that two declared
+       values depend on, mentioned once in a message string, is not declared.
+```
+
+```
+claim  the declaration is compared against the value the npz was MADE with, not another
+       literal
+cmd    (F4_G41_MASS_INJECTION_EPS 1.0e-6 -> 2.0e-6)
+out    1 failed, 113 passed in 1.47s
+rule   EA4: no gate assertion reads its expected value from the object under test
+judge  the npz records `mass_eps` from the export's own run, so this compares a declaration
+       against a measurement rather than two literals against each other — which is the
+       shape BG1's original subject had and the reason `_MEASURED` values are forbidden in
+       `tolerances.py` (BE2).
+```
+
+**Three plan rows moved with the three values** (BR0/EV1), in section 5a of the plan.
 
 ## 7. Carried
 
@@ -1836,16 +2768,437 @@ generator trusting a MISSING token, and this is it trusting a PRESENT and wrong 
 | R728 | **open** — §5 | : the FORM of a tolerance) F4_WINDOW_RULE_MIN_EDGE = 2.0 IS A FLOOR ON A RATIO IN THREE OF ITS... |
 | R729 | **open** — §6 | : a gate assertion that the plan requires and nothing makes; and (b): the size the counter is... |
 
+## 9. Lint, types, and the measurements this revision rests on
+
+```
+claim  lint, formatting and types are green, and the gates the repairs touch pass
+cmd    python -m ruff check floatfea tests scripts
+out    All checks passed!
+cmd    python -m black --check floatfea tests scripts
+out    126 files would be left unchanged.
+cmd    python -m mypy floatfea scripts/f4_dynamic_residual.py
+out    Success: no issues found in 37 source files
+cmd    python -m pytest tests/verification/rung4 tests/verification/rung3
+       tests/test_no_duplicate_tolerance_names.py tests/test_plan_matches_tolerances.py
+       -q -p no:randomly
+out    812 passed in 10.79s
+rule   CZ1's reusable half: a check whose input is the commit itself cannot be measured
+       before the commit exists, so the authoritative run is CI at this revision's own sha
+judge  126 files to black's 124 of the previous round -- the two added are EY0's table
+       script and EY2's meta-test. `mypy`'s 37 is unchanged: neither new file is on a
+       gate's import path, and the export deliberately is not.
+```
+
+**EY2's exception, and EY0's deliverable, measured:**
+
+```
+claim  the duplicate-name check reddens on the actual R722 defect, and EY0's table runs
+cmd    (the duplicate line appended to tolerances.py)
+out    FAILED tests/test_no_duplicate_tolerance_names.py::
+       test_no_name_in_tolerances_is_assigned_twice
+cmd    python -m pytest tests/test_no_duplicate_tolerance_names.py -q
+out    8 passed in 0.03s
+cmd    python scripts/measure/member_forces_table.py
+out    wrote docs/F4_member_forces.csv (1200 rows); wrote docs/F4_member_forces.md
+rule   R430: a guard that cannot be shown to fail certifies nothing
+judge  and EY2's own counter-case caught my parser -- `X, Y = 1.0, 2.0` is an `Assign` with
+       a `Tuple` target and the first version read only `ast.Name`, so it saw no binding at
+       all. No entry in `tolerances.py` is written that way today, which is why the
+       omission would have sat there.
+```
+
+## 9a. The whole suite
+
+**Whole suite at `264c7e5`: 3016 passed, 0 failed, 0 skipped.** **The excluded set: 527 passed, 9 failed, 1 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 537 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+out    the nine, traced
+out      test_the_report_carries_a_WHOLE_SUITE_count            -- this line, which did not
+out        exist when the run was taken. Self-clearing and it is the reason the run is
+out        taken LAST (R309).
+out      test_the_guard_survives_the_state[baseline] + 6 planted states
+out        -- EG3 state (2)'s cascade off a red baseline, identified by the baseline being
+out        red rather than by name (EH1). They clear at this revision's commit.
+out      test_the_RUN_CONCLUSION_guard_rules_on_the_reviewer_shapes
+out        [run_id_as_part_of_a_longer_token]
+out        -- NOT a boundary state and NOT self-clearing. C29 narrowed the run-id guard to
+out        standalone tokens as EY1 directs; corpus entry 178 expects a letter-prefixed
+out        token to COUNT as a run id, and its own `measured` field names the old
+out        lookbehind as the reason. The corpus tree is the reviewer's to write, so the
+out        entry is left alone and the disagreement is raised. RED UNTIL RE-RULED.
+rule   EG3 (i): the waiver is conditional on the trace, and a red that does not match the
+       state's own list is CZ1 (iv) unchanged
+judge  eight of the nine are the boundary. **The ninth is a directive and a corpus entry
+       disagreeing, which is not mine to resolve** -- C29's instruction and entry 178's
+       expectation cannot both hold, and the sha256 false positive is the evidence that
+       the entry's reading is a false positive on figures this repository publishes rather
+       than a caught obfuscation.
+```
+
+**The main suite is green**, and the growth is accounted for rather than noted:
+
+```
+claim  the added tests are EY2's exception plus the pins R727 to R729 required
+cmd    python -m pytest tests/test_no_duplicate_tolerance_names.py -q
+out    8 passed in 0.03s
+cmd    python -m pytest tests/verification/rung4/test_f4_g41_dynamic.py -q --collect-only
+out    114 tests collected        (112 before this round)
+rule   the whole-suite line above is the measurement; this is what moved under it
+judge  EY2's eight, the gate's two new tests (the decomposition headroom pin and the
+       injection-size check), and the rest are parametrisations of the two-sided probes
+       R728 needed. No test was removed.
+```
+
+## 10. Every named site this round's diff does not touch, declared by name
+
+```
+claim  every site a verdict names is touched by this round's diff or declared
+cmd    python scripts/untouched_sites.py
+out    302 rows, across nineteen findings -- R711 to R729
+rule   a site is TOUCHED by the diff or DECLARED `no change` beside its exact token
+judge  the list is long because this is the THIRD revision of one step and the
+       generator reads the guard's own site set, which does not shrink when a finding
+       closes. Four of this round's five findings were answered by replacing a
+       MECHANISM rather than by editing the lines a condition cited -- the data path
+       (R726), the pin (R727), the split (R728), the declaration (R729) -- so most
+       rows are superseded rather than untouched, and each says which.
+```
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R711 | `docs/milestones/F4.md:131` | the file is touched and this line number is the old one | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `docs/milestones/F4.md:486` | the file is touched and this line number is the old one | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/README.md:1` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:218` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:219` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:220` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:221` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:222` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:223` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:224` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:225` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:226` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:227` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:228` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:229` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:230` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:231` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:232` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:233` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R711 | `scripts/measure/g41_dynamic.py:234` | the file is untouched | **no change** - closed in revision 1; EX0's module carries the same discrete form. |
+| R712 | `scripts/measure/g41_dynamic.py:131` | the file is untouched | **no change** - closure item (S8); EX0(e) answered the `PLATFORM_MASS_OVERRIDE` half. |
+| R712 | `scripts/measure/g41_dynamic.py:179` | the file is untouched | **no change** - closure item (S8); EX0(e) answered the `PLATFORM_MASS_OVERRIDE` half. |
+| R712 | `scripts/measure/g41_dynamic.py:180` | the file is untouched | **no change** - closure item (S8); EX0(e) answered the `PLATFORM_MASS_OVERRIDE` half. |
+| R712 | `scripts/measure/g41_dynamic.py:181` | the file is untouched | **no change** - closure item (S8); EX0(e) answered the `PLATFORM_MASS_OVERRIDE` half. |
+| R712 | `scripts/measure/g41_dynamic.py:182` | the file is untouched | **no change** - closure item (S8); EX0(e) answered the `PLATFORM_MASS_OVERRIDE` half. |
+| R712 | `scripts/report_joint_reactions.py:120` | the file is touched and this line number is the old one | **no change** - closure item (S8); EX0(e) answered the `PLATFORM_MASS_OVERRIDE` half. |
+| R713 | `docs/SUPERVISOR.md` | the file is untouched | **no change** - closure item (S8). EW0's state takes no status or conclusion filter. |
+| R713 | `scripts/ci_section.py:292` | the file is untouched | **no change** - closure item (S8). EW0's state takes no status or conclusion filter. |
+| R713 | `scripts/ci_section.py:293` | the file is untouched | **no change** - closure item (S8). EW0's state takes no status or conclusion filter. |
+| R714 | `docs/closure/F4.md` | the file is untouched | **no change** - closure item (S8). No tracked path outside the report directories matches. |
+| R714 | `scripts/ci_section.py:316` | the file is untouched | **no change** - closure item (S8). No tracked path outside the report directories matches. |
+| R715 | `docs/conventions.md:182` | the file is untouched | **no change** - withdrawn in revision 1; cited as evidence, not edited. |
+| R715 | `docs/conventions.md:183` | the file is untouched | **no change** - withdrawn in revision 1; cited as evidence, not edited. |
+| R715 | `docs/conventions.md:184` | the file is untouched | **no change** - withdrawn in revision 1; cited as evidence, not edited. |
+| R715 | `scripts/measure/g41_dynamic.py:36` | the file is untouched | **no change** - withdrawn in revision 1; cited as evidence, not edited. |
+| R716 | `CLAUDE.md` | the file is untouched | **no change** - a mechanical note needing a directive (S8). |
+| R716 | `docs/SUPERVISOR.md` | the file is untouched | **no change** - a mechanical note needing a directive (S8). |
+| R716 | `docs/reports/F4/step-2.md` | the file is untouched | **no change** - a mechanical note needing a directive (S8). |
+| R716 | `scripts/write_verdict.py` | the file is untouched | **no change** - a mechanical note needing a directive (S8). |
+| R716 | `write_verdict.py` | the file is untouched | **no change** - a mechanical note needing a directive (S8). |
+| R717 | `docs/reviews/F2/step-7.md` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `docs/reviews/F3/step-3.md` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `docs/reviews/F4/step-3.md` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `scripts/ci_section.py` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `scripts/ci_section.py:172` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `scripts/ci_section.py:192` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `scripts/ci_section.py:193` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `scripts/ci_section.py:194` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `scripts/ci_section.py:195` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `scripts/ci_section.py:196` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `scripts/ci_section.py:197` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `scripts/ci_section.py:198` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `scripts/ci_section.py:199` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `scripts/write_verdict.py` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `scripts/write_verdict.py:82` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R717 | `write_verdict.py` | the file is untouched | **no change** - closure item (S8); the repair belongs at the PRODUCER. |
+| R718 | `docs/closure/F4.md` | the file is untouched | **no change** - the fallback was removed in revision 1. |
+| R718 | `docs/reviews/F3/step-2.md` | the file is untouched | **no change** - the fallback was removed in revision 1. |
+| R718 | `docs/reviews/F3/step-3.md` | the file is untouched | **no change** - the fallback was removed in revision 1. |
+| R718 | `docs/reviews/F4/step-1.md` | the file is untouched | **no change** - the fallback was removed in revision 1. |
+| R718 | `docs/reviews/F4/step-2.md` | the file is untouched | **no change** - the fallback was removed in revision 1. |
+| R718 | `scripts/write_verdict.py:36` | the file is untouched | **no change** - the fallback was removed in revision 1. |
+| R718 | `scripts/write_verdict.py:37` | the file is untouched | **no change** - the fallback was removed in revision 1. |
+| R718 | `scripts/write_verdict.py:38` | the file is untouched | **no change** - the fallback was removed in revision 1. |
+| R718 | `scripts/write_verdict.py:39` | the file is untouched | **no change** - the fallback was removed in revision 1. |
+| R718 | `scripts/write_verdict.py:40` | the file is untouched | **no change** - the fallback was removed in revision 1. |
+| R718 | `scripts/write_verdict.py:41` | the file is untouched | **no change** - the fallback was removed in revision 1. |
+| R718 | `tests/test_report_carried.py:2084` | the file is touched and this line number is the old one | **no change** - the fallback was removed in revision 1. |
+| R718 | `tests/test_report_carried.py:2085` | the file is touched and this line number is the old one | **no change** - the fallback was removed in revision 1. |
+| R718 | `tests/test_report_carried.py:2086` | the file is touched and this line number is the old one | **no change** - the fallback was removed in revision 1. |
+| R718 | `write_verdict.py` | the file is untouched | **no change** - the fallback was removed in revision 1. |
+| R719 | `scripts/measure/g41_dynamic.py:426` | the file is untouched | **no change** - closed before revision 2; the shipped module carries the correction. |
+| R719 | `scripts/measure/g41_dynamic.py:439` | the file is untouched | **no change** - closed before revision 2; the shipped module carries the correction. |
+| R719 | `scripts/measure/g41_dynamic.py:440` | the file is untouched | **no change** - closed before revision 2; the shipped module carries the correction. |
+| R719 | `scripts/measure/g41_dynamic.py:441` | the file is untouched | **no change** - closed before revision 2; the shipped module carries the correction. |
+| R719 | `scripts/measure/g41_dynamic.py:442` | the file is untouched | **no change** - closed before revision 2; the shipped module carries the correction. |
+| R719 | `scripts/measure/g41_dynamic.py:443` | the file is untouched | **no change** - closed before revision 2; the shipped module carries the correction. |
+| R719 | `scripts/measure/g41_dynamic.py:444` | the file is untouched | **no change** - closed before revision 2; the shipped module carries the correction. |
+| R719 | `scripts/measure/g41_dynamic.py:445` | the file is untouched | **no change** - closed before revision 2; the shipped module carries the correction. |
+| R719 | `scripts/measure/g41_dynamic.py:446` | the file is untouched | **no change** - closed before revision 2; the shipped module carries the correction. |
+| R719 | `scripts/measure/g41_dynamic.py:447` | the file is untouched | **no change** - closed before revision 2; the shipped module carries the correction. |
+| R719 | `scripts/measure/g41_dynamic.py:448` | the file is untouched | **no change** - closed before revision 2; the shipped module carries the correction. |
+| R720 | `scripts/measure/g41_dynamic.py:462` | the file is untouched | **no change** - closed before revision 2. |
+| R720 | `scripts/measure/g41_dynamic.py:463` | the file is untouched | **no change** - closed before revision 2. |
+| R721 | `../HSP-runs/studies/platform-12buoy/platform_rao_pilot.py` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `CLAUDE.md` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `data/platform/buoy_centers_ref.json` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/hsp-coupling.md` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/milestones/F4.md:486` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:745` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:746` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:747` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:748` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:749` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:750` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:751` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:752` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:753` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:754` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:755` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:756` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:757` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:758` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:759` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:760` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:761` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:762` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:763` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:764` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:765` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:766` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:767` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:768` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:769` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `docs/reports/F4/step-1.md:770` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/export_buoy_centers_ref.py` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/measure/g41_dynamic.py` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/measure/g41_dynamic.py:202` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/measure/g41_dynamic.py:203` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/measure/g41_dynamic.py:204` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/report_joint_reactions.py:81` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:235` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:236` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:237` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:238` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:239` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:240` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:241` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:242` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:243` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:244` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:245` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:246` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:247` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:248` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `scripts/run_rung.sh:249` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `tests/verification/rung4/test_f4_g41_dynamic.py:89` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `tests/verification/rung4/test_f4_g41_dynamic.py:90` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `tests/verification/rung4/test_f4_g41_dynamic.py:91` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `tests/verification/rung4/test_f4_g41_dynamic.py:92` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `tests/verification/rung4/test_f4_g41_dynamic.py:93` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `tests/verification/rung4/test_f4_g41_dynamic.py:94` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `tests/verification/rung4/test_f4_g41_dynamic.py:95` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `tests/verification/rung4/test_f4_g41_dynamic.py:96` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `tests/verification/rung4/test_f4_g41_dynamic.py:97` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R721 | `tests/verification/rung4/test_f4_static_and_mapping.py:848` | the file is untouched | **no change** - answered in revision 2 by REPLACING the gate's data path, so these sites are superseded rather than edited. |
+| R722 | `docs/milestones/F4.md:145` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `docs/milestones/F4.md:146` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `docs/milestones/F4.md:147` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `docs/milestones/F4.md:148` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `docs/milestones/F4.md:149` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `docs/milestones/F4.md:150` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `docs/milestones/F4.md:151` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `docs/milestones/F4.md:152` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `docs/milestones/F4.md:153` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `docs/milestones/F4.md:154` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `docs/milestones/F4.md:155` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `docs/milestones/F4.md:539` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `docs/milestones/F4.md:540` | the file is touched and this line number is the old one | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `scripts/measure/g41_dynamic.py:519` | the file is untouched | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `scripts/measure/g41_dynamic.py:520` | the file is untouched | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `scripts/measure/g41_dynamic.py:521` | the file is untouched | **no change** - answered in revision 2; the repair is the value and the family. |
+| R722 | `scripts/measure/g41_dynamic.py:522` | the file is untouched | **no change** - answered in revision 2; the repair is the value and the family. |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:312` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:313` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:314` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:315` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:316` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:317` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:318` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:319` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:320` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:321` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:322` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:323` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:324` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:325` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:326` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:327` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:328` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:329` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:330` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:331` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:332` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:333` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:334` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:335` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:336` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:337` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:338` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:339` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:340` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:341` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:342` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R723 | `tests/verification/rung4/test_f4_g41_dynamic.py:343` | the file is touched and this line number is the old one | **no change** - answered in revision 2 at the threshold, and again here under R728 (S5). |
+| R724 | `docs/milestones/F4.md:541` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by WITHDRAWING the claim; cited as evidence. |
+| R724 | `scripts/run_floatsim_design_waves.py:177` | the file is untouched | **no change** - answered in revision 2 by WITHDRAWING the claim; cited as evidence. |
+| R724 | `test_f4_g41_dynamic.py:268` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by WITHDRAWING the claim; cited as evidence. |
+| R724 | `test_f4_g41_dynamic.py:269` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by WITHDRAWING the claim; cited as evidence. |
+| R724 | `tests/verification/rung4/test_f4_g41_dynamic.py:268` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by WITHDRAWING the claim; cited as evidence. |
+| R724 | `tests/verification/rung4/test_f4_g41_dynamic.py:269` | the file is touched and this line number is the old one | **no change** - answered in revision 2 by WITHDRAWING the claim; cited as evidence. |
+| R725 | `docs/reviews/F4/step-3.md` | the file is untouched | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `scripts/ci_section.py` | the file is untouched | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:415` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:416` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:417` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:418` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:419` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:420` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:421` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:422` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:423` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:424` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:425` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:426` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:427` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:428` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:429` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_carried.py:430` | the file is touched and this line number is the old one | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R725 | `tests/test_report_guard_states.py` | the file is untouched | **no change** - answered in S2 at the `Answers:` line; these rows are lines the one-token edit did not land on. |
+| R726 | `CLAUDE.md` | the file is untouched | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `data/f4/dynamic_inputs.provenance.json:13` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `data/f4/dynamic_inputs.provenance.json:14` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `data/f4/dynamic_inputs.provenance.json:16` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `data/f4/dynamic_inputs.provenance.json:17` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `data/f4/dynamic_inputs.provenance.json:18` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `data/f4/dynamic_inputs.provenance.json:19` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `floatfea/io/integrator.py` | the file is untouched | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/export_f4_dynamic_inputs.py:148` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/export_f4_dynamic_inputs.py:149` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/export_f4_dynamic_inputs.py:150` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/export_f4_dynamic_inputs.py:151` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/export_f4_dynamic_inputs.py:152` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/export_f4_dynamic_inputs.py:153` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/export_f4_dynamic_inputs.py:154` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/export_f4_dynamic_inputs.py:155` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/export_f4_dynamic_inputs.py:156` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/export_f4_dynamic_inputs.py:157` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/export_f4_dynamic_inputs.py:158` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/export_f4_dynamic_inputs.py:159` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `scripts/measure/g41_dynamic.py` | the file is untouched | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:224` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:225` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:226` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:227` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:228` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:229` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:230` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:231` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:232` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:233` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:234` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:235` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:236` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:237` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:238` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:239` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:240` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:241` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:242` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:243` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:244` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:245` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:246` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:247` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:248` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:251` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:254` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:255` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:256` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:257` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:258` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:259` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R726 | `tests/verification/rung4/test_f4_g41_dynamic.py:260` | the file is touched and this line number is the old one | **no change** - answered in S3 by asserting the whole import closure, so the sites the condition names are superseded by a check over all twelve. |
+| R727 | `tests/verification/rung4/test_f4_g41_dynamic.py:529` | the file is touched and this line number is the old one | **no change** - answered in S4 by pinning the ceiling to its measurement; the bracket test now DISCOVERS pairs, so a named site is no longer the unit. |
+| R727 | `tests/verification/rung4/test_f4_g41_dynamic.py:534` | the file is touched and this line number is the old one | **no change** - answered in S4 by pinning the ceiling to its measurement; the bracket test now DISCOVERS pairs, so a named site is no longer the unit. |
+| R728 | `docs/milestones/F4.md:600` | the file is touched and this line number is the old one | **no change** - answered in S5 by splitting the constant; these rows are lines the split did not land on. |
+| R728 | `scripts/f4_dynamic_residual.py` | the file is untouched | **no change** - answered in S5 by splitting the constant; these rows are lines the split did not land on. |
+| R728 | `scripts/f4_dynamic_residual.py:145` | the file is untouched | **no change** - answered in S5 by splitting the constant; these rows are lines the split did not land on. |
+| R728 | `scripts/f4_dynamic_residual.py:146` | the file is untouched | **no change** - answered in S5 by splitting the constant; these rows are lines the split did not land on. |
+| R728 | `scripts/f4_dynamic_residual.py:147` | the file is untouched | **no change** - answered in S5 by splitting the constant; these rows are lines the split did not land on. |
+| R728 | `scripts/f4_dynamic_residual.py:148` | the file is untouched | **no change** - answered in S5 by splitting the constant; these rows are lines the split did not land on. |
+| R728 | `scripts/f4_dynamic_residual.py:149` | the file is untouched | **no change** - answered in S5 by splitting the constant; these rows are lines the split did not land on. |
+| R729 | `data/f4/dynamic_inputs.provenance.json:33` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `scripts/f4_dynamic_residual.py:206` | the file is untouched | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:270` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:271` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:272` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:273` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:274` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:275` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:276` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:277` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:278` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:279` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:280` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:281` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:282` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:283` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
+| R729 | `tests/verification/rung4/test_f4_g41_dynamic.py:520` | the file is touched and this line number is the old one | **no change** - answered in S6 by declaring the constant; the gate reads it from the npz. |
 ## 8. The items earlier rounds closed, and the closure list
 
 R709, R710, R711, R715 and R718 were closed in revision 1; R719 and R720 before revision 2;
 R721, R722, R723 and R724 in revision 2 and accepted by verdict 107. R712, R713, R714, R716
 and R717 remain closure items, R712's `PLATFORM_MASS_OVERRIDE` half answered by EX0(e).
-C2–C15 and C24–C27 carry, and verdict 107 adds **C28** (the force lower edge as a detection
-threshold rather than a ratio to noise), **C29** (the run-ID guard narrowed to standalone
-tokens, which EY1 routes to its own `process:` commit), **C30** (`body_mass`, `body_J_G` and
-`accel` loaded and read by nothing), **C31** (a docstring figure one ulp stale), **C32**
-(revision 2 §4's cell moves two variables) and **C33** (the `mypy` ledger's rule against its
-instance).
+
+```
+out    carried closure items   C2 to C15, and C24 to C27
+out    added by verdict 107    C28  the force lower edge as a DETECTION THRESHOLD rather
+out                                 than a ratio to noise -- the reviewer measured the
+out                                 smallest common contrib error that breaches the
+out                                 ceiling and it is a real number, so the ratio is the
+out                                 wrong thing to publish
+out                            C29  the run-id guard narrowed to standalone tokens --
+out                                 DONE, in its own process commit, and one corpus
+out                                 expectation now disagrees with the directive
+out                            C30  `body_mass`, `body_J_G` and `accel` are loaded and
+out                                 read by nothing in the gate
+out                            C31  a docstring figure one ulp stale against the shipped
+out                                 value
+out                            C32  revision 2 section 4's cell moves two variables -- it
+out                                 compares two SCRIPTS, and inside the npz the effect is
+out                                 smaller and on a different body
+out                            C33  the mypy ledger states a rule against an instance
+rule   CZ0: a closure item is fixed once in the step's closure commit, not re-reviewed
+       item by item, and the step is not held on one
+judge  C29 is done early because EY1 routed it to its own commit and it was cheap. The rest
+       go in the closure commit, which EQ0 makes reviewable because R727 and R728's repairs
+       move gates.
+```
 
 **Sections 3 to 6 — R726, R727, R728 and R729 — follow the table.**
