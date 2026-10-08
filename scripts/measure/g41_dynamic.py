@@ -282,6 +282,20 @@ def measure_case(period_full_s: float, dt: float = DT, no_override: bool = False
 
     whole_state_worst = 0.0
     decomposition_gap = 0.0
+    # EV1's counter-cases, both post-processing on the same solved window.
+    #   drop  : one joint's reaction removed -- family = every (body, joint) pair where
+    #           that joint touches that body, so the WEAKEST pair is what the counter
+    #           must sit below.
+    #   mass  : `M` scaled by 1 + 1e-6, one response per body.
+    # Maxima over the window per member of the family, then the MINIMUM over the family:
+    # a counter has to bracket the weakest response, not the one a loop starts at.
+    drop_f: dict[tuple[str, int], float] = {}
+    drop_m: dict[tuple[str, int], float] = {}
+    mass_f = {n: 0.0 for n in names}
+    mass_m = {n: 0.0 for n in names}
+    m_scaled = (1.0 + 1.0e-6) * m_eff
+    contrib_f_max: dict[tuple[str, int], float] = {}
+    contrib_m_max: dict[tuple[str, int], float] = {}
     for n in range(*win.indices(len(res.t))):
         if n == 0:
             continue  # the discrete form reads step n-1
@@ -321,6 +335,12 @@ def measure_case(period_full_s: float, dt: float = DT, no_override: bool = False
         gap = float(np.max(np.abs(rebuilt - reaction))) / scale
         decomposition_gap = max(decomposition_gap, gap)
         whole_state_worst = max(whole_state_worst, float(np.max(np.abs(resid))))
+        # The mass injection changes `a_eff ddot` and the `alpha_m M ddot` inside `rhs`,
+        # so both are reformed rather than the first alone -- scaling one and not the
+        # other would inject a defect the integrator never had.
+        a_eff_s = (1.0 - alpha_m) * m_scaled + (1.0 - alpha_f) * (h**2) * beta * c_mat
+        rhs_s = rhs + alpha_m * (m_eff @ xi_ddot_n) - alpha_m * (m_scaled @ xi_ddot_n)
+        resid_mass = np.asarray(a_eff_s @ res.xi_ddot[n] - reaction - rhs_s, dtype=np.float64)
         for k, name in enumerate(names):
             block = resid[6 * k : 6 * k + 6]
             num_f[name] = max(num_f[name], float(np.linalg.norm(block[0:3])))
@@ -333,6 +353,46 @@ def measure_case(period_full_s: float, dt: float = DT, no_override: bool = False
                 den_m[name],
                 float(np.sum(np.linalg.norm(contrib[:, k, 3:6], axis=1))),
             )
+            mb = resid_mass[6 * k : 6 * k + 6]
+            mass_f[name] = max(mass_f[name], float(np.linalg.norm(mb[0:3])))
+            mass_m[name] = max(mass_m[name], float(np.linalg.norm(mb[3:6])))
+            if name not in FE_BODIES:
+                continue
+            # The joint-drop family is PER CHANNEL, and the reason is measured rather
+            # than assumed: two of the twenty (body, joint) pairs contribute essentially
+            # NO MOMENT to their own body, because the hub-platform joint of hub1 and of
+            # hub3 sits at that hub's reference point -- no lever, and the locked-axis
+            # moment is carried on the platform side. `|M|` reads 3.2035e-09 and
+            # 6.0906e-09 against `|F|` of 6.4573e+01 and 5.1737e+01.
+            #
+            # Dropping such a pair changes that body's moment residual by nothing, so the
+            # member reads the CLEAN value and would set the family minimum: before this
+            # filter the weakest moment response was 6.021071e-07, which is hub3's own
+            # clean 6.021058e-07 to seven figures. That is R689's shape -- a row that
+            # compares nothing reading as agreement -- and the fix is R689's: exclude it
+            # from the channel it is vacuous for, count per channel, and name it.
+            #
+            # hub2's and hub4's platform joints are NOT vacuous (2.1241e-01), so only two
+            # of the four hubs have their platform joint at their reference point.
+            for j in range(contrib.shape[0]):
+                f_mag = float(np.linalg.norm(contrib[j, k, 0:3]))
+                m_mag = float(np.linalg.norm(contrib[j, k, 3:6]))
+                if max(f_mag, m_mag) == 0.0:
+                    continue  # this joint does not touch this body
+                dropped = block - (-contrib[j, k])
+                key = (name, j)
+                # A member is in a channel's family only if its contribution to THAT
+                # channel is large against the clean residual there. The threshold is the
+                # denominator's own round-off floor, not a tuned number.
+                # MEMBERSHIP IS DECIDED PER PAIR OVER THE WHOLE WINDOW, not per
+                # step. Per step let a pair join the family on one step and be
+                # excluded on another, so the moment family came out 20 while the
+                # exclusion set was simultaneously correct -- a filter disagreeing
+                # with its own report.
+                drop_f[key] = max(drop_f.get(key, 0.0), float(np.linalg.norm(dropped[0:3])))
+                drop_m[key] = max(drop_m.get(key, 0.0), float(np.linalg.norm(dropped[3:6])))
+                contrib_f_max[key] = max(contrib_f_max.get(key, 0.0), f_mag)
+                contrib_m_max[key] = max(contrib_m_max.get(key, 0.0), m_mag)
 
     # THE CONTROL. If the per-body slicing were wrong, the per-body maxima could be
     # anything and no other line here would notice. The largest per-body component must
@@ -349,7 +409,101 @@ def measure_case(period_full_s: float, dt: float = DT, no_override: bool = False
         flush=True,
     )
 
-    out = {"period_full_s": period_full_s, "steps": int(steps), "bodies": {}}
+    # The families, normalised by the same denominators the clean figure uses, and
+    # reduced by MINIMUM -- the weakest member is what a counter must sit below.
+    # THE FAMILY TEST IS THE ONE THE WINDOW RULE NEEDS: does dropping the joint move
+    # this channel ABOVE the clean worst? An earlier filter thresholded the joint's
+    # CONTRIBUTION instead, at `1e-9 x` the denominator, and was wrong by a factor of
+    # three -- `hub1/3` and `hub3/11` carry `|M| max` of 5.0420e-08 and 7.8975e-08
+    # against a 1.95e-08 threshold, so they passed, while their drop responses are
+    # 9.2111e-07 and 6.0211e-07: hub1's and hub3's own clean moment values to seven
+    # figures. Vacuous, and the filter said otherwise.
+    all_f = {k: v / den_f[k[0]] for k, v in drop_f.items() if den_f[k[0]] > 0.0}
+    all_m = {k: v / den_m[k[0]] for k, v in drop_m.items() if den_m[k[0]] > 0.0}
+    clean_f_worst = max(num_f[n2] / den_f[n2] for n2 in FE_BODIES if den_f[n2] > 0.0)
+    clean_m_worst = max(num_m[n2] / den_m[n2] for n2 in FE_BODIES if den_m[n2] > 0.0)
+    drop_rel_f = {k: v for k, v in all_f.items() if v > clean_f_worst}
+    drop_rel_m = {k: v for k, v in all_m.items() if v > clean_m_worst}
+    vacuous_f = sorted(set(all_f) - set(drop_rel_f))
+    vacuous_m = sorted(set(all_m) - set(drop_rel_m))
+
+    if len(all_f) != 20:
+        raise SystemExit(
+            f"the joint-drop family holds {len(all_f)} (body, joint) pairs and the five "
+            "FE bodies touch twenty: the platform's four hub joints, and each hub's one "
+            "platform joint plus three buoy joints. A counter-case over part of its "
+            "family brackets part of it (R706/R708/R710)."
+        )
+    # The two vacuous moment pairs are a GEOMETRIC fact and are named, so a change in
+    # the geometry fails here rather than quietly changing what the counter brackets.
+    expected_vacuous_m = [("hub1", 3), ("hub3", 11)]
+    if vacuous_m != expected_vacuous_m:
+        raise SystemExit(
+            f"the pairs vacuous on the MOMENT channel are {vacuous_m} and the measured "
+            f"set is {expected_vacuous_m} -- hub1's and hub3's platform joints, which "
+            "sit at those hubs' reference points so there is no lever and the "
+            "locked-axis moment is carried on the platform side. A different set means "
+            "the geometry moved and this exclusion is no longer the one measured."
+        )
+    if vacuous_f:
+        raise SystemExit(
+            f"these pairs are vacuous on the FORCE channel: {vacuous_f}. None was "
+            "measured to be, so a counter taken over this family would bracket less "
+            "than the family."
+        )
+    print(
+        f"  joint-drop family: {len(all_f)} pairs, {len(drop_rel_f)} usable on force and "
+        f"{len(drop_rel_m)} on moment (vacuous there: {vacuous_m})"
+    )
+    print(f"  clean worst this case: force {clean_f_worst:.6e}, moment {clean_m_worst:.6e}")
+
+    # EV1's mass injection, and whether `1 + 1e-6` is large enough to bracket each
+    # channel. The response is linear in the scale, so the smallest usable scale is
+    # reported rather than guessed.
+    mass_rel_f = min(mass_f[n2] / den_f[n2] for n2 in FE_BODIES if den_f[n2] > 0.0)
+    mass_rel_m = min(mass_m[n2] / den_m[n2] for n2 in FE_BODIES if den_m[n2] > 0.0)
+    for label, got, clean in (
+        ("force", mass_rel_f, clean_f_worst),
+        ("moment", mass_rel_m, clean_m_worst),
+    ):
+        verdict = "brackets" if got > 2.0 * clean else "DOES NOT BRACKET at 2x"
+        need = 1.0e-6 * 2.0 * clean / got if got > 0.0 else float("inf")
+        print(
+            f"  mass x(1+1e-6) on {label}: weakest {got:.6e} vs clean {clean:.6e} "
+            f"-- {verdict}; the scale for a 2x edge is 1 + {need:.3e}"
+        )
+
+    out = {
+        "period_full_s": period_full_s,
+        "steps": int(steps),
+        "bodies": {},
+        "counters": {
+            "joint_dropped": {
+                "pairs_force": len(drop_rel_f),
+                "pairs_moment": len(drop_rel_m),
+                "weakest_force": min(drop_rel_f.values()),
+                "vacuous_moment": [list(k) for k in vacuous_m],
+                "weakest_moment": min(drop_rel_m.values()),
+            },
+            "mass_scaled_1e-6": {
+                "weakest_force": min(mass_f[n2] / den_f[n2] for n2 in FE_BODIES if den_f[n2] > 0.0),
+                "weakest_moment": min(
+                    mass_m[n2] / den_m[n2] for n2 in FE_BODIES if den_m[n2] > 0.0
+                ),
+            },
+        },
+    }
+    c = out["counters"]
+    print(
+        f"  counter joint_dropped: weakest force "
+        f"{c['joint_dropped']['weakest_force']:.6e}, weakest moment "
+        f"{c['joint_dropped']['weakest_moment']:.6e}"
+    )
+    print(
+        f"  counter mass x(1+1e-6):             weakest force "
+        f"{c['mass_scaled_1e-6']['weakest_force']:.6e}, weakest moment "
+        f"{c['mass_scaled_1e-6']['weakest_moment']:.6e}"
+    )
     print(f"  {'body':<10} {'force rel':>14} {'moment rel':>14} {'den_f':>12} {'den_m':>12}")
     for name in names:
         if name not in FE_BODIES:
