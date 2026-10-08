@@ -232,15 +232,30 @@ def discrete_residual(
     already published against it is withdrawn by name, not quietly re-based (BP0). The
     per-body keys are what G4.1 reads.
 
-    NORMALISATION, AND ONE CONCERN I AM FLAGGING RATHER THAN DECIDING. DQ8 says the
-    residual is "normalised by that body's `max |Sum reactions|` over the window", which
-    is ONE SCALAR for a 6-vector carrying newtons on three rows and newton-metres on
-    three. Dividing a moment by a force scale gives a number with units of 1/length, so
-    the per-body figure mixes two quantities -- which is the kind of normalisation C158
-    and R598 were both about. The plan is explicit, so the plan's form is what ships
-    under `<body>_rel`; the force and moment channels are ALSO reported separately under
-    `<body>_force_rel` and `<body>_moment_rel`, and which of the two a tolerance is
-    declared on is a question for the step report rather than a choice made here.
+    NORMALISATION -- AND DQ8 HAS SINCE BEEN AMENDED, WHICH SETTLES IT (EV1). The clause
+    this paragraph argued with said the residual is "normalised by that body's
+    `max |Sum reactions|` over the window", which is ONE SCALAR for a 6-vector carrying
+    newtons on three rows and newton-metres on three.
+
+    C1: TWO THINGS I WROTE HERE WERE WRONG, in opposite directions.
+
+    * **The dimensional direction.** This said dividing a moment by a force scale "gives
+      a number with units of 1/length". `N.m / N` is **LENGTH**. The concern was right and
+      the arithmetic in it was backwards, which is the BG0 shape -- a correct worry with
+      an unmeasured sentence attached.
+    * **The premise.** I wrote as though `max |Sum reactions|` were always the force half,
+      so the moment rows were always the dimensional ones. The round-2 verdict measured
+      that it is the force half on only **11 of 17** bodies: on six of them the moment
+      rows dominate, and there it is the FORCE channel that carries the length and the
+      moment channel that is dimensionless. **Which channel is dimensionless depends on
+      the body and the window**, which makes the refusal to declare a tolerance on that
+      scalar more right than my argument for it, not less.
+
+    EV1 amended DQ8 to two separately gated dimensionless numbers, each with a denominator
+    that is a sum of MAGNITUDES so cancellation cannot shrink it. `<body>_rel` below is
+    therefore **superseded for the gate** and is kept only because figures were published
+    against it; `scripts/measure/g41_dynamic.py` is what G4.1 dynamic reads now, and
+    `<body>_force_rel` and `<body>_moment_rel` are the channels EV1 gates.
 
     R646. An earlier version of this script printed that the identity could not be
     closed because "the per-body added-mass matrix and the memory state are not
