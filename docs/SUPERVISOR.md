@@ -24,8 +24,10 @@ Both read this file. The witness applies exactly the guards in
 `.claude/agents/gating-supervisor.md` — the list lives there, once — and
 **both rule under the same blocking criterion (CZ0)**, in that file's
 § *What blocks, and what is a closure item*: a finding blocks only if it is a
-defect in `floatfea/`, a tolerance value or form, a gate assertion, or a red
-test at the reviewed commit. Everything else is recorded as a closure item and
+defect in `floatfea/` **or in a published deliverable** (EZ0), a tolerance value or
+form, a gate assertion, or a red test at the reviewed commit. **A published deliverable is
+any file sent to Xabier, and anything under `results/` or `scripts/measure/` that produces
+one** — one phrase, narrower than the head CZ0 retired, and it covers nothing in a report. Everything else is recorded as a closure item and
 does not hold a step. A witness HOLD on something outside (a)–(d) is not a
 stricter verdict; it is a verdict under a criterion this repository retired.
 

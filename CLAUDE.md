@@ -149,12 +149,25 @@ What changes is what may consume a review round.
 
 A finding **blocks** only if it is one of four things:
 
-(a) a defect in `floatfea/`;
+(a) a defect in `floatfea/` **or in a published deliverable** (EZ0);
 (b) a tolerance value, or the form of one, including a counter and how it is
     injected;
 (c) a gate assertion — what a gate claims, on which quantity, at what
     threshold;
 (d) a red test at the reviewed commit.
+
+**A PUBLISHED DELIVERABLE is any file sent to Xabier, and anything under `results/`
+or `scripts/measure/` that produces one (EZ0).** The amendment is one phrase and it is
+narrower than the head CZ0 retired: it covers nothing in a report.
+
+Earned over two rounds. Verdict 108's two highest-value findings were both in that class.
+Verdict 109's single blocking finding was a **sign error in the repair of the previous
+finding in that class** — `mid[5]` subtracting where it must add, shipping `26.3%` low on a
+midspan stress someone sizes steel against — and `3563` local tests, both CI jobs, `ruff`,
+`black`, `mypy` and a six-rung ladder were all green on it. Under the unamended head that
+was a closure item, because `scripts/` is not `floatfea/`, `mid[5]` is not a tolerance, the
+generator asserts nothing and no test was red. The reviewer blocked under the carve-out and
+named it rather than smuggling it, twice, and asked for this phrase both times.
 
 Everything else — prose, figures, docstrings, guards, apparatus, report
 sections — is a **closure item**. The verdict lists it under its own heading;
