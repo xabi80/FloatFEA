@@ -594,6 +594,7 @@ def test_G61_tension_plus_bending_interaction() -> None:
     assert got.in_tension
     assert_close(got.u_combined, expected, TOL, floor=RATIO_FLOOR, what="section 3.3.1")
     assert got.governing == "3.3.1 interaction", got.governing
+    assert got.interaction_form == "tension", got.interaction_form  # R752
 
 
 def test_G61_a_member_at_EXACTLY_zero_axial_reads_as_TENSION() -> None:
@@ -704,6 +705,9 @@ def test_G61_compression_plus_bending_AMPLIFIED_form(
     assert got.axial_branch == branch, got.axial_branch
     assert_close(got.u_combined, amplified, TOL, floor=RATIO_FLOOR, what="section 3.3.2")
     assert got.governing == "3.3.2 interaction", got.governing
+    # R752: the RECORDED form, against the one the hand calculation just worked out. A
+    # caller inferred this from a C_m sensitivity column and published it backwards.
+    assert got.interaction_form == "amplified", got.interaction_form
 
 
 def test_G61_compression_plus_bending_SIMPLE_form_governs_where_it_should() -> None:
@@ -724,6 +728,7 @@ def test_G61_compression_plus_bending_SIMPLE_form_governs_where_it_should() -> N
 
     got = _member(axial_n=n, moment_y_nm=my, moment_z_nm=mz, k_l_over_r=kl)
     assert_close(got.u_combined, simple, TOL, floor=RATIO_FLOOR, what="section 3.3.2 simple")
+    assert got.interaction_form == "simple", got.interaction_form  # R752
 
 
 def test_G61_a_LARGER_Cm_RAISES_the_compression_utilisation() -> None:
@@ -1139,3 +1144,51 @@ def test_the_compression_counter_case_CANNOT_be_taken_on_the_elastic_branch() ->
         floor=RATIO_FLOOR,
         what="the inelastic-branch construction reaches unity",
     )
+
+
+def test_G61_the_RECORDED_interaction_form_is_the_larger_of_the_two() -> None:
+    """R752: `interaction_form` against the two forms worked by hand, over a sweep.
+
+    **A CALLER INFERRED THIS FROM A `C_m` SENSITIVITY COLUMN AND PUBLISHED IT BACKWARDS.**
+    The predicate `utilisation_Cm1 != utilisation_K2` answers a different question -- whether
+    `C_m` visibly moves the station's governing utilisation -- and its answer on the
+    shipped table was the ten rows where the SIMPLE form governs, published as the ten
+    amplified ones. Seven of seventeen are amplified.
+
+    # expected, worked here at every point:
+    #     amplified = f_a/F_a + C_m f_b / [(1 - f_a/F_e') F_b]
+    #     simple    = f_a/(0.6 F_y) + f_b/F_b
+    #     interaction_form == "amplified" iff amplified > simple
+    """
+    c_c = math.sqrt(2.0 * math.pi**2 * 210e9 / 355e6)
+    seen = {"amplified": 0, "simple": 0}
+    for kl in (30.4, 60.8, 100.0, 121.5, 150.0, 200.0):
+        if kl < c_c:
+            r = kl / c_c
+            f_a_allow = (
+                (1.0 - (kl**2) / (2.0 * c_c**2))
+                * 355e6
+                / (5.0 / 3.0 + (3.0 / 8.0) * r - (r**3) / 8.0)
+            )
+        else:
+            f_a_allow = 12.0 * math.pi**2 * 210e9 / (23.0 * kl**2)
+        f_e = 12.0 * math.pi**2 * 210e9 / (23.0 * kl**2)
+        for frac in (0.02, 0.1, 0.4, 0.8):
+            f_a = frac * f_e
+            for my in (0.0, 1.0e6, 1.0e7, 1.0e8, 5.0e8):
+                f_b = my / W_SECTION
+                amplified = f_a / f_a_allow + CM_JOINT_TRANSLATION * f_b / (
+                    (1.0 - frac) * 0.75 * 355e6
+                )
+                simple = f_a / (0.6 * 355e6) + f_b / (0.75 * 355e6)
+                want = "amplified" if amplified > simple else "simple"
+                got = _member(axial_n=-f_a * AREA, moment_y_nm=my, k_l_over_r=kl).interaction_form
+                assert got == want, (
+                    f"KL/r = {kl}, f_a/F_e' = {frac}, My = {my:g}: recorded {got!r} and the "
+                    f"hand calculation gives {want!r} (amplified {amplified:.9f} against "
+                    f"simple {simple:.9f})"
+                )
+                seen[want] += 1
+    # BOTH outcomes occur, so the assertion is not vacuous in either direction
+    assert seen["amplified"] > 0 and seen["simple"] > 0, seen
+    assert sum(seen.values()) == 120, seen

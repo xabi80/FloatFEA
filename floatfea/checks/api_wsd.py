@@ -320,6 +320,21 @@ class MemberCheck:
     axial_branch: str
     bending_branch: str
     in_tension: bool
+    interaction_form: str
+    """Which half of section 3.3's interaction `u_combined` IS -- `"tension"` for
+    section 3.3.1, or `"amplified"` or `"simple"` for the two forms section 3.3.2 requires
+    and takes the larger of.
+
+    **R752: THIS IS RECORDED BECAUSE A CALLER INFERRED IT AND GOT IT BACKWARDS.** The
+    deliverable's summary derived "which form governs" from whether a `C_m = 1.0`
+    sensitivity column differed from the shipped one, and published `10 of 17` amplified
+    where the truth is **7 of 17 amplified and 10 of 17 simple** -- the ten it counted are
+    exactly the ten where the SIMPLE form governs. That predicate detects something else:
+    whether `C_m` visibly moves the station's governing utilisation, which it does on the
+    bending-dominated ROOTs and cannot do on a TIP whose bending moment is `~1e-08 MPa` and
+    whose `U` is beam shear. Both facts are true and neither implies the other, so the
+    answer is reported rather than reconstructed.
+    """
     u_axial: float
     u_bending: float
     u_shear: float
@@ -389,6 +404,7 @@ def check_member(
     # and not a choice made here.
     if in_tension:
         u_combined = f_a / (ALLOWABLE_TENSION_FACTOR * fy) + u_bending
+        interaction_form = "tension"
     else:
         f_e = euler_stress(k_l_over_r, e)
         if f_a >= f_e:
@@ -401,6 +417,7 @@ def check_member(
         amplified = u_axial + cm * u_bending / (1.0 - f_a / f_e)
         simple = f_a / (ALLOWABLE_TENSION_FACTOR * fy) + u_bending
         u_combined = max(amplified, simple)
+        interaction_form = "amplified" if amplified > simple else "simple"
 
     candidates = {
         "3.2.1 tension" if in_tension else "3.2.2 compression": u_axial,
@@ -421,6 +438,7 @@ def check_member(
         axial_branch=axial_branch,
         bending_branch=bending_branch,
         in_tension=in_tension,
+        interaction_form=interaction_form,
         u_axial=u_axial,
         u_bending=u_bending,
         u_shear=u_shear,

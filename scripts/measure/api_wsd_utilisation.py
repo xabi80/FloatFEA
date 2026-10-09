@@ -206,6 +206,7 @@ def main(argv: list[str] | None = None) -> int:
                 "f_vt_MPa": locked.f_vt / 1e6,
                 "axial_branch": locked.axial_branch,
                 "bending_branch": locked.bending_branch,
+                "interaction_form": locked.interaction_form,
                 "u_axial": locked.u_axial,
                 "u_bending": locked.u_bending,
                 "u_shear": locked.u_shear,
@@ -371,16 +372,21 @@ def _write_summary(
         over_clauses[key] = over_clauses.get(key, 0) + 1
     over_bodies = sorted({str(r["body"]) for r in over_rows})
     over_stations = sorted({str(r["station"]) for r in over_rows})
-    # The amplified form of 3.3.2 governs exactly where `C_m` reaches `U`, because `C_m`
-    # appears nowhere else in the calculation.
+    # **R752: WHICH FORM GOVERNS IS READ FROM THE CHECK, NOT INFERRED FROM A SENSITIVITY
+    # COLUMN.** This counted rows where `utilisation_Cm1 != utilisation_K2` and called them
+    # the amplified ones. That predicate answers a DIFFERENT question -- whether `C_m`
+    # visibly moves the station's governing utilisation -- and its answer is the ten rows
+    # where the SIMPLE form governs. The seven it missed are TIPs whose bending moment is
+    # `~1e-08 MPa` and whose `U` is beam shear, so `C_m` cannot reach `U` there at all.
+    # Published: `10 of 17` AMPLIFIED. True: **7 of 17 amplified, 10 of 17 simple**, and the
+    # ten the sentence counted were the simple ones.
     #
-    # **COMPARED AT THE PRECISION THE CSV PUBLISHES, NOT IN MEMORY.** The CSV writes
-    # `{:.6g}`, so two utilisations differing in the seventh significant figure are EQUAL
-    # in the published file and differ in these floats. Taken in memory the count is 12;
-    # taken from the published values it is 10, and 10 is the one a reader can reproduce
-    # from the file this sentence sits beside. A published count measured at a precision
-    # the publication does not carry is not checkable.
-    amplified_rows = [
+    # `MemberCheck.interaction_form` records which half of `max(amplified, simple)` was
+    # taken, so there is nothing left to infer. Both counts are published, separately,
+    # because both are true and neither implies the other.
+    amplified_rows = [r for r in compression if r["interaction_form"] == "amplified"]
+    simple_rows = [r for r in compression if r["interaction_form"] == "simple"]
+    cm_visible = [
         r
         for r in compression
         if f"{float(r['utilisation_Cm1']):.6g}" != f"{float(r['utilisation_K2']):.6g}"
@@ -410,8 +416,11 @@ def _write_summary(
             if compression
             else f"compression stations           : NONE of {len(rows)} per-instant rows"
         ),
-        f"section 3.3.2's AMPLIFIED form governs on {len(amplified_rows)} of "
-        f"{len(compression)} compression rows",
+        f"section 3.3.2 over {len(compression)} compression rows: AMPLIFIED governs on "
+        f"{len(amplified_rows)}, SIMPLE on {len(simple_rows)}  (read from "
+        f"interaction_form, not inferred -- R752)",
+        f"C_m visibly moves U on {len(cm_visible)} of {len(compression)} -- a DIFFERENT "
+        f"question, and its answer is the bending-dominated ROOTs",
         f"worst station {worst_row['member']} {worst_row['station']}: "
         f"u_axial = {float(worst_row['u_axial']):.6f}  "
         f"u_bending = {float(worst_row['u_bending']):.5f}  "
