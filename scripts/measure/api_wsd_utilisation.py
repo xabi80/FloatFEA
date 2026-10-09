@@ -374,16 +374,31 @@ def _write_summary(
     over_stations = sorted({str(r["station"]) for r in over_rows})
     # **R752: WHICH FORM GOVERNS IS READ FROM THE CHECK, NOT INFERRED FROM A SENSITIVITY
     # COLUMN.** This counted rows where `utilisation_Cm1 != utilisation_K2` and called them
-    # the amplified ones. That predicate answers a DIFFERENT question -- whether `C_m`
-    # visibly moves the station's governing utilisation -- and its answer is the ten rows
-    # where the SIMPLE form governs. The seven it missed are TIPs whose bending moment is
-    # `~1e-08 MPa` and whose `U` is beam shear, so `C_m` cannot reach `U` there at all.
-    # Published: `10 of 17` AMPLIFIED. True: **7 of 17 amplified, 10 of 17 simple**, and the
-    # ten the sentence counted were the simple ones.
+    # the amplified ones. Published: `10 of 17` AMPLIFIED. True: **7 of 17 amplified, 10 of
+    # 17 simple**, and the ten the sentence counted were the simple ones.
+    #
+    # **AND THE EXPLANATION OF *WHY* WAS WRONG TOO (C66), WHICH IS WORTH MORE THAN THE
+    # COUNT.** It said the seven missed rows "are TIPs whose bending moment is `~1e-08 MPa`
+    # and whose `U` is beam shear, so `C_m` cannot reach `U` there at all" -- a conjunction
+    # asserted of all seven where each half holds of a different subset, with a `so` spanning
+    # two mechanisms and no cell under it. Measured over the 17 rows:
+    #
+    #   all 10 that FIRE are an OVERTAKE: amplified(C_m = 1.0) exceeds simple, by 0.1153%
+    #     to 1.3129%. That is what the predicate detects -- not which form governs.
+    #   5 of the 7 that MISS miss because `u_combined` is not the governing channel at all:
+    #     beam shear governs those TIPs.
+    #   2 miss because the bending term is negligible -- platform:hub1_arm and hub3_arm TIP,
+    #     bending share 0.0000%, where the AMPLIFIED form IS governing and `C_m` DOES reach
+    #     `U`, by about 1e-10. "Cannot reach it at all" is false on exactly those two.
+    #   0 of the 7 are the both-halves case the old sentence described of all seven.
+    #
+    # So "bending-dominated ROOT" is a CORRELATE of the overtake and not its cause, and the
+    # coincidence is contingent at one part in a thousand: the tightest overtake is 0.1153%.
+    # **That contingency is the argument for publishing both counts separately**, which is
+    # what the two lines below do.
     #
     # `MemberCheck.interaction_form` records which half of `max(amplified, simple)` was
-    # taken, so there is nothing left to infer. Both counts are published, separately,
-    # because both are true and neither implies the other.
+    # taken, so there is nothing left to infer.
     amplified_rows = [r for r in compression if r["interaction_form"] == "amplified"]
     simple_rows = [r for r in compression if r["interaction_form"] == "simple"]
     cm_visible = [
@@ -420,7 +435,7 @@ def _write_summary(
         f"{len(amplified_rows)}, SIMPLE on {len(simple_rows)}  (read from "
         f"interaction_form, not inferred -- R752)",
         f"C_m visibly moves U on {len(cm_visible)} of {len(compression)} -- a DIFFERENT "
-        f"question, and its answer is the bending-dominated ROOTs",
+        f"question: those are the rows where amplified(C_m = 1.0) OVERTAKES simple",
         f"worst station {worst_row['member']} {worst_row['station']}: "
         f"u_axial = {float(worst_row['u_axial']):.6f}  "
         f"u_bending = {float(worst_row['u_bending']):.5f}  "

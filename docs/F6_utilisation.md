@@ -67,7 +67,7 @@ largest |U(K=2) - U(K=1)|      : 0.034238  at platform:hub1_arm TIP (elastic)
 largest |U(C_m=1) - U(C_m=0.85)| : 0.009245  at hub4:buoy10_arm ROOT (inelastic)
 worst compression station      : U = 1.71167
 section 3.3.2 over 17 compression rows: AMPLIFIED governs on 7, SIMPLE on 10  (read from interaction_form, not inferred -- R752)
-C_m visibly moves U on 10 of 17 -- a DIFFERENT question, and its answer is the bending-dominated ROOTs
+C_m visibly moves U on 10 of 17 -- a DIFFERENT question: those are the rows where amplified(C_m = 1.0) OVERTAKES simple
 worst station platform:hub2_arm ROOT: u_axial = 0.000833  u_bending = 1.71138  (3.3.2 interaction, elastic)
 ```
 

@@ -331,9 +331,15 @@ class MemberCheck:
     where the truth is **7 of 17 amplified and 10 of 17 simple** -- the ten it counted are
     exactly the ten where the SIMPLE form governs. That predicate detects something else:
     whether `C_m` visibly moves the station's governing utilisation, which it does on the
-    bending-dominated ROOTs and cannot do on a TIP whose bending moment is `~1e-08 MPa` and
-    whose `U` is beam shear. Both facts are true and neither implies the other, so the
-    answer is reported rather than reconstructed.
+    bending-dominated ROOTs. **The explanation of why it is silent on the other seven was
+    also wrong (C66)** and the measured one is three mechanisms, not one: all ten that fire
+    are an OVERTAKE -- `amplified(C_m = 1.0)` exceeds `simple`, by `0.1153%` to `1.3129%`;
+    five of the seven that miss do so because `u_combined` is not the governing channel at
+    all (beam shear governs those TIPs); and two miss because the bending term is
+    negligible, where the amplified form IS governing and `C_m` DOES reach `U`, by about
+    `1e-10`. Both counts are true, neither implies the other, and the coincidence between
+    them is contingent at one part in a thousand -- so the answer is reported rather than
+    reconstructed.
     """
     u_axial: float
     u_bending: float
