@@ -1,4 +1,582 @@
 # Review — F6 step 1
+Reviewed commit: 1febfc0afd2a53e6318609d476a5e7599e42803a
+Verdict: PASS
+**Reviewed commit: `ececa58`** (`ececa58e472546cf02798d00377c918f12d70eed`, tree clean when I
+judged it; my corpus batch 45 is committed on top, which is why the plain `Reviewed commit:`
+stamp below is not the commit I judged -- R718's subject, and this bold line is the mechanism.)
+Tests: 3434 passed, 0 failed, 0 skipped   (MY OWN run, one invocation, no `-k`, no
+`--ignore`, no deselection, `-p no:randomly`, tree clean at `ececa58`, `625.92s`.)
+
+## Round of 2026-10-09 -- EQ0 REVIEW OF F6 STEP 1's CLOSURE COMMIT. **PASS, AND IT IS CLEAN. R752 IS CLOSED.** No blocking item. Five closure items, one of them the same sentence-about-which-rows shape for the fourth round running -- this time inside the repair's own explanation.
+
+**STEP 1 REMAINS CLOSED BY VERDICT 112 UNDER DD1.** This verdict judges a commit written
+after the last reviewed round; it is not a fourth round on step 1's work and it counts
+against no step's rounds (EB4). The step's disposition is read from verdict 112's PASS and
+this verdict does not reopen it. Step 2 may open.
+
+**WHY EQ0 APPLIES AND WHY I AGREE IT DOES.** The commit adds a field to `MemberCheck`, adds
+three pinning assertions and a 120-configuration sweep to G6.1, and changes
+`scripts/measure/api_wsd_utilisation.py` and both published files. That is a gate change
+under EQ0's own words. No tolerance value moved and `floatfea/tolerances.py` is
+byte-identical across the range, so EU1 does not fire; I ran the adversarial case anyway,
+because the thing the commit changes is a LABEL and a label has no window to solve.
+
+**WHY PASS.** I reproduced R752's repair independently and it is right in both directions:
+`7` amplified and `10` simple over the 17 compression rows, recomputed from the
+deliverable's own columns without reading the new field, and the new field agrees with an
+independently written hand side at **37044 configurations the commit did not choose, with
+zero disagreements**. Both published sentences are TRUE. No published number moved: the CSV
+gained exactly one column and all 22 shared columns are byte-identical over all 32 rows.
+Twenty-six-way clause pinning is intact and the four mutations of the new line are killed,
+each of them by the new sweep test ALONE.
+
+**No STOP.** No low rung is red. CI is green at the reviewed commit for the first time in
+this milestone, `guards and meta-tests` RAN rather than being skipped, and rung 5 collected
+`69` on Ubuntu -- the new test among them.
+
+## 0. CI AT THE REVIEWED COMMIT -- GREEN, AND I CHECKED IT IS GREEN FOR THE RIGHT REASONS
+
+```
+cmd    gh run list --commit ececa58e472546cf02798d00377c918f12d70eed --json ...
+out    [{"conclusion":"success","databaseId":37961529765,"event":"push","name":"CI"}]
+cmd    gh run view 37961529765 --json jobs -q '.jobs[] | .name + " :: " + .conclusion'
+out    lint, unit and guards             success    16:46:33Z -> 16:57:52Z
+out    the verification ladder           success    16:46:33Z -> 16:49:47Z
+out    CI determinism -- leg             skipped
+out    CI determinism -- ten legs agree  skipped
+cmd    gh run view 37961529765 --json jobs -q '... .steps[] ...'
+out    step 10  guards and meta-tests  success        <- RAN, not skipped behind a red step
+out    steps 5-9  actionlint / ruff / black / mypy / unit tests  all success
+cmd    gh run view 37961529765 --log | grep -E "run_rung:|passed"
+out    unit tests              88 passed in 0.58s
+out    guards and meta-tests   1161 passed, 1 warning in 637.89s
+out    run_rung: 1276 / 66 / 297 / 134 / 343 / 69 collected, 0 failed, 0 errored, 0 skipped
+judge  **CA2 SATISFIED AND THIS IS NOT CK2.** A real eleven-minute run with a real runner, no
+       allowance annotation, nothing unavailable. **RUNG 5 IS 69 ON UBUNTU** where it was 68
+       at the last executed run, so the new test ran on the machine neither of us controls.
+       The guard job is `1161 passed, 0 skipped` against `9 failed, 1149 passed, 1 skipped`
+       at `a041574`: the two CZ1-class guards cleared, the skip cleared, and the arithmetic
+       closes -- `1149 + 9 + 1 = 1159` plus the two extra parametrisations C65 named.
+```
+
+**AND THE "GREEN FOR THE RIGHT REASONS" QUESTION, WHICH IS THE RIGHT QUESTION TO HAVE ASKED.**
+
+```
+claim  nothing stopped asserting
+cmd    git diff --numstat 47af12c..ececa58
+out    33/33 docs/F6_utilisation.csv ; 2/1 docs/F6_utilisation.md ; 18/0 api_wsd.py ;
+out    20/11 api_wsd_utilisation.py ; 53/0 the rung-5 test file
+cmd    git diff 47af12c..ececa58 | grep -E "^\+.*(xfail|skipif|pytest.skip|deselect|--ignore|addopts|filterwarnings)"
+out    (none)
+cmd    git diff 47af12c..ececa58 -- tests/ | grep -c "^-[^-]"
+out    0
+cmd    git diff --stat 47af12c..ececa58 -- pyproject.toml .github scripts/run_rung.sh
+out    (empty)
+judge  **ZERO DELETIONS UNDER `tests/`, no marker, no deselection, no workflow and no
+       `addopts`.** 3433 + 1 new test = 3434, which is my own count. The only way this suite
+       got greener is that a test was added and the two boundary guards cleared at a commit
+       that is no longer the boundary.
+```
+
+## 1. MY OWN INSTRUCTIONS, THE CONFTEST AND THE TOLERANCE FILE -- EACH DIFFED SEPARATELY
+
+```
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py
+cmd    git diff --stat 47af12c..ececa58 -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+judge  CH2/CI0: no conftest and no plugin in the range, so rung 5's `69 collected, 0 failed`
+       is a pytest result and not a record rewritten from the rung's own directory. I did not
+       have to read a hookwrapper.
+cmd    git diff --stat 47af12c..ececa58 -- .claude docs/SUPERVISOR.md
+out    (empty)
+judge  **CLEAN. My own instructions are untouched.** C45 is still open and still process class.
+cmd    git diff --stat 47af12c..ececa58 -- floatfea/tolerances.py
+out    (empty)
+judge  **NO TOLERANCE VALUE AND NO TOLERANCE FORM MOVED**, which matches the commit message.
+       And the new test introduces no comparison epsilon of its own: it asserts STRING
+       equality, exactly, so CLAUDE.md's tolerance rule is not engaged by it at all.
+cmd    git diff 47af12c..ececa58 -- tests/ | grep -E "^\+.*(assert_close|TOL|RATIO_FLOOR)"
+out    (none)
+```
+
+## 2. R752, REPRODUCED WITHOUT READING THE NEW FIELD
+
+The condition verdict 112 set was site-by-site and I checked it that way.
+
+```
+claim  the count is computed from the two forms themselves
+cmd    per published compression row, recompute amplified = f_a/F_a + cm*u_b/(1 - f_a/F_e)
+       and simple = f_a/(0.6 F_y) + u_b from the deliverable's own columns, F_e at the
+       body's own KL/r (121.5 platform, 60.8 hubs), and compare with the column
+rule   floatfea/checks/api_wsd.py:419-420, u_combined = max(amplified, simple) and
+       interaction_form = "amplified" if amplified > simple else "simple"
+out    interaction_form over 32 rows : tension 15 ; simple 10 ; amplified 7
+out    my own hand side over the 17 compression rows: 7 amplified, 10 simple
+out    MISMATCHES BETWEEN THE RECORDED FIELD AND MY HAND SIDE: none
+out    the 7 amplified are all TIPs; the 10 simple are all ROOTs
+judge  **CLOSED, AND THE COUNT IS RIGHT IN BOTH HALVES.** I did not read the field to get
+       the numbers; I read it to compare. Verdict 112's 7-of-17 / 10-of-17 holds.
+cmd    sed -n '69,70p' docs/F6_utilisation.md
+out    :69  section 3.3.2 over 17 compression rows: AMPLIFIED governs on 7, SIMPLE on 10
+out         (read from interaction_form, not inferred -- R752)
+out    :70  C_m visibly moves U on 10 of 17 -- a DIFFERENT question, and its answer is the
+out         bending-dominated ROOTs
+cmd    the ten cm-visible rows, by station and bending share
+out    10 of 10 are ROOT; bending shares 97.92% to 99.95%
+judge  **BOTH PUBLISHED SENTENCES ARE TRUE AT THIS COMMIT.** The hand-written sentence at
+       :72, which was the true half last round, now agrees with :69 instead of contradicting
+       it.
+cmd    python scripts/measure/api_wsd_utilisation.py --out <tmp> --summary <tmp> ; diff
+out    CSV identical; MD identical
+cmd    the committed CSV before and after, column by column
+out    22 columns -> 23; added {interaction_form}; removed none
+out    VALUE CHANGES IN THE 22 SHARED COLUMNS OVER ALL 32 ROWS: 0
+judge  **BP0 SATISFIED AND BETTER THAN ASKED.** Both files were regenerated in the same
+       commit, they regenerate byte-identically from the committed generator, and the repair
+       added a record without moving a single published number.
+cmd    git diff 47af12c..ececa58 -- scripts/measure/api_wsd_utilisation.py | grep "^-.*amplified form of 3.3.2"
+out    -    # The amplified form of 3.3.2 governs exactly where `C_m` reaches `U`, because
+judge  the causal comment at the old :374 IS DELETED, which was the last half of the
+       condition. **A NEW ONE TOOK ITS PLACE AND IT IS ALSO FALSE** -- C66 below.
+```
+
+**AND THE DISAGREEMENT VERDICT 112 ASKED FOR RATHER THAN A RECONCILIATION.** My
+full-precision figures through the module differ from my own verdict-112 figures in the sixth
+digit, and the cause is mine.
+
+```
+cmd    check_member at platform:hub2_arm ROOT from docs/F4_member_forces.csv, full precision
+out    amplified(C_m=0.85) = 1.4567239338182123   verdict 112 published 1.456719
+out    simple               = 1.7116713396966154   verdict 112 published 1.711666
+out    amplified(C_m=1.0)   = 1.71364579462711     verdict 112 published 1.713640
+out    u_combined = 1.7116713396966154 = U(K=2); U(C_m=1) = 1.71364579462711
+judge  **VERDICT 112's FIGURES WERE TAKEN AT SIX-DIGIT INPUT**, because it recomputed from the
+       deliverable's six-figure columns, as its own cmd line says. Every ordering, both counts
+       and the published U = 1.71167 are unaffected. I record it rather than reconcile it,
+       because a figure I hand over as "mine to beat" is an input to a generator, and this is
+       the second round running in which I have had to say so about my own output.
+```
+
+## 3. THE THREE THINGS I WAS ASKED TO ATTACK -- EACH RUN, AND WHAT THEY SAID
+
+**(1) THE FIELD ITSELF. Is there a configuration where the recorded value and the larger of
+the two hand-computed forms disagree?** No, over 37044 configurations. **And the tie IS
+constructible**, in closed form, which answers the second half of the question.
+
+```
+cmd    six grades 235/275/355/420/460/690 MPa; fourteen D/t from 5.00 to 299.00 spanning all
+       three section 3.2.3 branches; nine KL/r from 10 to 250 either side of C_c; seven
+       f_a/F_e' from 1e-9 to 0.9999; seven My from 0 to 1e10 -- against a hand side written
+       in this review, using the module's own allow_axial and allow_bending and my own cm
+rule   interaction_form == "amplified" iff amplified > simple
+out    37044 points compared; 0 refused; DISAGREEMENTS: 0
+out    28263 amplified and 8781 simple, so neither outcome is a corner of the domain
+out    u_combined equals the named form's value to 1e-14 at 37034 of 37044; the ten
+out      exceptions are all at f_a/F_e' = 0.9999, where (1 - f_a/F_e') = 1e-4 magnifies a
+out      last-bit difference in MY OWN F_e spelling by 1e4 -- maximum 1.1103e-12. Not a
+out      module defect, and I name the cause so a later round does not read it as one
+judge  **THE FIELD IS RIGHT WHERE THE GATE DOES NOT LOOK.** The gate's own sweep is one
+       grade, one section and one bending branch; this is six grades and three branches.
+cmd    solve amplified == simple in closed form: u_b = (f_a/(0.6 F_y) - u_a)/(cm/(1-r) - 1),
+       positive exactly when r = f_a/F_e' < 1 - cm = 0.15 and F_a < 0.6 F_y
+out    at KL/r = 60.8, f_a/F_e' = 0.02, My = 1.263384395e+07 N.m:
+out      amplified == simple == 0.09426368988411235, BIT-IDENTICAL
+out      interaction_form = "simple";  u_combined = 0.09426368988411235
+out    and max(amplified, simple) returns its FIRST argument on a tie, which is amplified
+out    the comparison > -> >= gives 69 passed; the tie direction is unasserted
+judge  **A TIE IS REACHABLE AT AN ORDINARY CONFIGURATION, NOT A PATHOLOGICAL ONE**, and the
+       field names "simple" where the max returned the amplified operand. **THIS IS NOT A
+       DEFECT**: at a tie both forms govern, the two values are equal, and no published
+       number or utilisation changes -- naming either half is true. It is an undocumented
+       convention on a field that is now a published column, so it is C69. The Euler refusal
+       is upstream of both forms, as the report says: f_a/F_e' = 0.9999 returns amplified,
+       1.0 and 1.0001 raise the named ValueError before either form is formed.
+```
+
+**(2) CAN THE TWO PUBLISHED COUNTS DRIFT APART AGAIN -- "two different sources in one block".
+NO, AND THE PREMISE IS WRONG.** This is the one place I disagree with the report's own
+self-criticism, and I would rather say so than accept a confession that is not earned.
+
+```
+claim  the block reads the field for one sentence and the CSV for the other
+cmd    scripts/measure/api_wsd_utilisation.py:234, :388-392 -- what `compression` is a list OF
+out    _write_summary(args.summary, out_rows, ...) is called with out_rows, the IN-MEMORY
+out      list of dicts; amplified_rows, simple_rows and cm_visible all comprehend over
+out      compression = [r for r in rows if r["axial_branch"] != "tension"]
+judge  **ONE SOURCE, TWO PRECISIONS. NEITHER SENTENCE READS THE CSV.** interaction_form is a
+       string carried on the same dict that carries utilisation_Cm1; the six-figure
+       formatting is a formatting of the same float, chosen so the published count is
+       reproducible from the published file. That is not R747's shape -- R747 was a
+       HAND-WRITTEN sentence beside a generated table. **What IS still R747's shape is the
+       hand-written clause at the end of the second sentence**, "and its answer is the
+       bending-dominated ROOTs": a fixed string on a generated count. True today. C68.
+cmd    the same block with the predicate's six-figure formatting replaced by a raw float
+       comparison, regenerated
+out    C_m visibly moves U on 12 of 17        (shipped: 10 of 17)
+out    the two rows it gains are platform:hub1_arm TIP (dU = 2.6419e-11) and
+out      platform:hub3_arm TIP (dU = 2.8412e-10), both TIPs
+judge  **AND THE COMMENT THAT JUSTIFIED THE PRECISION WAS DELETED IN THIS COMMIT WHILE THE
+       PRECISION STAYED.** The deleted sentence was "taken in memory the count is 12; taken
+       from the published values it is 10, and 10 is the one a reader can reproduce from the
+       file this sentence sits beside". It is still true, it still governs a published count,
+       and nothing in the tree says it any more -- so a later reader who simplifies the
+       predicate gets 12, and the hand-written clause about bending-dominated ROOTs becomes
+       FALSE, because the two rows it gains are TIPs. BP0 inverted: the rule stayed and the
+       sentence that explained it went. C67.
+```
+
+**(3) CZ1, RE-MEASURED BY ME RATHER THAN READ.**
+
+```
+cmd    python -m pytest -q -p no:randomly   (my own, tree clean at ececa58)
+out    3434 passed, 2 warnings in 625.92s (0:10:25)
+cmd    gh run list --commit ececa58... ; gh run view 37961529765
+out    success; both jobs success; step 10 "guards and meta-tests" success
+judge  **(ii) AND (iii) CONFIRMED AT THE COMMIT'S OWN SHA, AND (iv) IS VACUOUS.** 3434 is my
+       count and not the report's. There is no follow-on to write. **And C65 closes itself
+       here**: this is the first commit in this milestone whose published whole-suite figure
+       and the reviewed commit are the same commit, because a closure commit is not followed
+       by a report.
+```
+
+## 4. WHAT THE NEW GATE ASSERTIONS CATCH -- MEASURED, NOT READ
+
+Four one-at-a-time edits of the new line and its inputs, in a clean `git archive ececa58`
+copy under `/tmp`, rung 5 re-run after each, the source restored and the restoration asserted
+with `cmp`. The new sweep test was also run ALONE, so its individual reach is a number.
+
+```
+rule   the three pinning asserts at :597, :710, :731 and the 120-point sweep at :1149
+out    labels SWAPPED                       5 failed, 64 passed   KILLED   (alone: 1 failed)
+out    always "amplified"                   2 failed, 67 passed   KILLED   (alone: 1 failed)
+out    always "simple"                      4 failed, 65 passed   KILLED   (alone: 1 failed)
+out    tension label -> "simple"            1 failed, 68 passed   KILLED
+out    cm -> literal 1.0 in the amplified form
+out                                         8 failed, 61 passed   KILLED   (alone: 1 failed)
+out    comparison > -> >=   (the tie)       69 passed             SURVIVES -- C69
+judge  **FIVE OF SIX KILLED AND THE SWEEP KILLS FOUR OF THEM ON ITS OWN.** The sixth is the
+       measure-zero tie. The cm mutation is worth a sentence: the sweep's hand side imports
+       CM_JOINT_TRANSLATION from the module, so a change to the CONSTANT moves both sides
+       together and this test cannot see it -- a change to the USE of it inside the formula
+       moves one side and this test does see it. Verdict 112 measured the constant killed
+       elsewhere (0.85 -> 0.58, 4 failed), so the family is covered; I record the boundary of
+       this test's own reach rather than crediting it with the whole.
+cmd    the 120-point sweep's own split and its tightest margin
+rule   assert seen["amplified"] > 0 and seen["simple"] > 0; assert sum == 120
+out    102 amplified and 18 simple; tightest relative margin 2.192577e-02; widest 0.8731
+out    points within 1% of a tie: 0
+judge  **NON-VACUOUS IN BOTH DIRECTIONS AND NOT SITTING ON A KNIFE EDGE.** Both outcomes are
+       asserted to occur and the point count is pinned, so an empty or one-sided sweep is an
+       error and not a skip. The 18-of-120 minority is the thing a later edit to the loop
+       bounds could quietly take to zero; the assertion is what stops it.
+```
+
+**AND THE PART I WENT LOOKING FOR AND DID NOT FIND.** `MemberCheck` has exactly one
+construction site -- `grep -rn "MemberCheck(" --include=*.py .` gives `api_wsd.py:430` and
+nothing else -- and it is keyword-constructed, so inserting a field between `in_tension` and
+`u_axial` cannot shift a positional argument anywhere. No test builds one by hand.
+
+## 5. THE MECHANISM -- THE READING I WAS ASKED TO ATTACK, AND IT IS THREE REASONS NOT ONE
+
+The report asks whether its account of the predicate is right. **The definition is right; the
+explanation of the seven missed rows is wrong, and the explanation of the ten is a correlate
+rather than the mechanism.** Measured.
+
+```
+rule   U = max(u_axial, u_bending, u_shear, u_torsion, u_combined) and cm enters ONLY the
+       amplified form, so the predicate fires iff raising cm to 1.0 moves that max at the
+       published six figures
+out    THE TEN THAT FIRE: amplified(C_m=1.0) OVERTAKES simple, by 0.1153% to 1.3129%
+out      platform:hub2_arm / hub4_arm ROOT  amp(1.0) 1.71364579462711 against simple
+out        1.7116713396966154   -> 0.1153%
+out      hub2:buoy4_arm / hub4:buoy10_arm ROOT  -> 1.3129%  (the widest)
+out    THE FIVE THAT DO NOT, BECAUSE u_combined IS NOT THE MAX: hub1:buoy1_arm,
+out      hub1:buoy2_arm, hub1:buoy3_arm, hub3:buoy8_arm, hub3:buoy9_arm TIP -- governing is
+out      3.2.4 beam shear, u_combined 0.0157 against u_shear 0.0741 at the first
+out    THE TWO THAT DO NOT, BECAUSE THE MOMENT IS NEGLIGIBLE: platform:hub1_arm and
+out      platform:hub3_arm TIP -- governing IS 3.3.2 interaction, the amplified form IS
+out      governing, and U moves by 2.6419e-11 and 2.8412e-10, below six figures
+judge  **THREE REASONS ACROSS THE SEVENTEEN, AND VERDICT 112's MECHANISM IS THE RIGHT ONE FOR
+       THE TEN.** "Bending-dominated ROOT" is a correlate of the overtake, not its cause: what
+       makes a row fire is that the amplified form becomes governing at the perturbed C_m, and
+       on the two over-unity platform ROOTs it does so **by 0.1153%**. The coincidence between
+       the cm-visible set and the simple-governing set is therefore contingent at the
+       one-part-in-a-thousand level, which is the strongest available argument FOR what this
+       commit did -- publishing both counts separately -- and I say so for that reason.
+       **And the report's own sentence "on three of them U is beam shear" is 5 of 7**; it is
+       not in the tree, so it is a note rather than an item.
+```
+
+**THE SENTENCE IN THE TREE THAT SAYS OTHERWISE IS FALSE, IN TWO PLACES.**
+`scripts/measure/api_wsd_utilisation.py:377-378` and, in the same words,
+`floatfea/checks/api_wsd.py:333-335`: *"The seven it missed are TIPs whose bending moment is
+`~1e-08 MPa` and whose `U` is beam shear, so `C_m` cannot reach `U` there at all."*
+
+```
+cmd    per amplified-governing row: governing clause, f_b, and the conjunction
+out    all 7 are TIPs                                           TRUE
+out    U is beam shear                                          5 of 7
+out    f_b < 1e-6 MPa                                           3 of 7
+out    BOTH halves                                              1 of 7 (hub1:buoy1_arm TIP)
+out    the other four f_b are 0.1779, 0.1779, 1.023, 1.023 MPa, bending shares 8.3%,
+out      8.3%, 42.85%, 42.85%
+judge  **THE CONJUNCTION HOLDS ON ONE OF THE SEVEN.** Both halves fail, on different subsets,
+       and the "so" is a causal claim with no cell (BG0) standing over the two different
+       mechanisms above -- the second of which is the OPPOSITE of what the sentence says,
+       since on those two rows the amplified form governs and C_m does reach U. This is C66.
+```
+
+**I CONSIDERED BLOCKING ON IT AND I AM NOT, AND A READER OF THIS VERDICT IS OWED THE REASON.**
+It is prose, which CZ0 names in its closure list in terms, and `floatfea/checks/api_wsd.py` is
+reached by that list through "docstrings". The carve-out I would have used -- a docstring that
+is the only statement of what something means -- does not apply: the *definition* half of that
+docstring ("which half of section 3.3's interaction `u_combined` IS") is correct, and the
+false half is diagnostic. **No published number is wrong, no gate asserts on it, and the field
+it explains is right at 37044 configurations.** So it is a closure item. What I will not do is
+smuggle it: it is the fourth consecutive round in which the defect was *a sentence about which
+rows*, and it is now inside the repair of a finding that was *a sentence about which rows*.
+
+## Findings
+
+**NONE THAT BLOCK.** I ruled every candidate against CZ0 (a)-(d) as amended by EZ0 and not one
+of them lands:
+
+* **(a) a defect in `floatfea/` or in a published deliverable.** `interaction_form` agrees
+  with an independently written hand side at 37044 configurations, 0 disagreements; the two
+  published sentences are true; the CSV gained one column and moved no value; both files
+  regenerate byte-identically. The one false sentence is a comment and a docstring, which CZ0
+  names as closure items -- C66, and section 5 says why I did not take the carve-out.
+* **(b) a tolerance value or form.** `floatfea/tolerances.py` is byte-identical across the
+  range and the new test carries no comparison epsilon at all -- it asserts string equality.
+* **(c) a gate assertion.** Four of the five mutations of the new line and its inputs are
+  killed, four of them by the new sweep alone; the fifth is the measure-zero tie, which is
+  C69. The sweep asserts both outcomes occur and pins its point count at 120.
+* **(d) a red test at the reviewed commit.** `3434 passed, 0 failed, 0 skipped` in my own run,
+  and a green CI at the commit's own sha with the guard step seen to have RUN.
+
+## Closure items
+
+Verdict 112's list ended at C65, so this one starts at C66. **C41 to C65 remain open, are not
+re-adjudicated here, and the implementer has stated them as outstanding and taken the choice to
+Xabier -- which is what CLAUDE.md asks for and not a finding.** I note one consequence rather
+than re-rule it: **C58, C59 and C60 are the three on that list that touch a gate assertion or a
+`floatfea/` refusal**, so the commit that eventually answers them is an EQ0 commit and gets
+reviewed, and that review counts against no step's rounds.
+
+* **C66.** `scripts/measure/api_wsd_utilisation.py:377-378` and, in the same words,
+  `floatfea/checks/api_wsd.py:333-335`. "The seven it missed are TIPs whose bending moment is
+  `~1e-08 MPa` and whose `U` is beam shear, so `C_m` cannot reach `U` there at all." Of the
+  seven: all are TIPs, `U` is beam shear on **5**, `f_b < 1e-6 MPa` on **3**, both on **1**;
+  the other four carry `f_b` of `0.1779`, `0.1779`, `1.023`, `1.023 MPa` at bending shares
+  `8.3%`, `8.3%`, `42.85%`, `42.85%`. The "so" is a causal claim with no cell over two
+  different mechanisms, and on `platform:hub1_arm` and `platform:hub3_arm` TIP the amplified
+  form IS governing and `C_m` DOES reach `U`, by `2.6419e-11` and `2.8412e-10`. **Closed when**
+  the sentence states the three measured reasons -- the overtake on ten, `u_combined` not being
+  the max on five, the moment being below six figures on two -- or is reduced to the bare
+  counts with no cause attached.
+* **C67.** `scripts/measure/api_wsd_utilisation.py:389`. The comment that justified the
+  six-figure formatting in the `cm_visible` predicate was deleted in this commit and the
+  formatting it justified was not. Measured at `ececa58`: a raw float comparison gives
+  `12 of 17` and the shipped comparison gives `10 of 17`, the two extra rows being the
+  platform TIPs. **Closed when** the precision choice carries its reason again, in one line,
+  or the predicate is changed deliberately and the published clause regenerated with it.
+* **C68.** `docs/F6_utilisation.md:70`, generated at
+  `scripts/measure/api_wsd_utilisation.py:421-422`. "and its answer is the bending-dominated
+  ROOTs" is a fixed string on a generated count -- R747's shape surviving in a published file.
+  It is TRUE at this commit (10 of 10 ROOT, bending shares `97.92%` to `99.95%`) and it is true
+  by `0.1153%` on two of its ten rows. **Closed when** the clause is generated from the set it
+  describes, or deleted and the count left to stand on its own.
+* **C69.** `floatfea/checks/api_wsd.py:420`. The tie convention is undocumented and unasserted:
+  `interaction_form` records `"simple"` when `amplified == simple`, while
+  `max(amplified, simple)` returns the amplified operand, and `>` to `>=` leaves `69 passed`.
+  The tie is reachable in closed form -- `KL/r = 60.8`, `f_a/F_e' = 0.02`,
+  `My = 1.263384395e+07 N.m` gives `amplified == simple == 0.09426368988411235` bit-identically.
+  No published number changes at a tie. **Closed when** the field's docstring states which half
+  a tie is recorded as and why, or the absence is recorded as accepted.
+* **C70.** `scripts/measure/api_wsd_utilisation.py` has no test. `grep -rn
+  "F6_utilisation\|api_wsd_utilisation" tests/ --include=*.py` returns one match, and it is a
+  COMMENT in the rung-5 file about the script's print precision; the only other matches under
+  `tests/` are three corpus DATA files. Measured consequence: replacing the two
+  `interaction_form` comprehensions with the old predicate and its complement republishes
+  "AMPLIFIED governs on 10, SIMPLE on 7" -- R752 exactly, still carrying its own
+  "(read from interaction_form, not inferred -- R752)" parenthesis -- with
+  `tests/test_tree_prose_consistent.py` at `32 passed` and rung 4 plus rung 5 at `412 passed`.
+  **No new apparatus through F6, so this is recorded and not requested**, and I say plainly what
+  step 2's locked gate does and does not do: "the table regenerates identically from stored
+  results" catches a STALE published file, not a WRONG count. **Closed when** the absence is
+  recorded as accepted for F6 with that distinction stated, or `docs/milestones/F2a.md` gains
+  the row.
+* **R735, R736, R738, C34 to C40, the `0.2240`/`0.2239` item, R712 to R717, C2 to C15, C24 to
+  C33, C41 to C65** -- still open, carried as a list, not re-reviewed item by item. **C45 still
+  needs its own standalone `process:` commit.**
+
+## Tolerances touched
+
+```
+cmd    git diff --stat 47af12c..ececa58 -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff 47af12c..ececa58 | grep -E "^\+.*(assert_close|TOL|RATIO_FLOOR|e-1[0-9])"
+out    (none)
+judge  **NONE. NO VALUE MOVED, NO FORM MOVED, AND NO NEW ONE WAS INTRODUCED UNDER ANOTHER
+       NAME.** The new assertion is an exact string equality, so there is nothing for a
+       counter to be a counter OF. EU1 does not fire; I ran the adversarial case anyway,
+       because what this commit changes is a LABEL and a label has no window to solve --
+       section 3(1) is that case and it is 37044 configurations wide.
+```
+
+| name | old | new | form | counter | justification located | ruling |
+|---|---|---|---|---|---|---|
+| `F6_API_CLAUSE_AGREEMENT` | `1.0e-14` | unchanged | dimensionless, RELATIVE | `F6_API_CLAUSE_AGREEMENT_COUNTER` | `floatfea/tolerances.py`; `docs/milestones/F6.md` 3a | **UNMOVED.** Not re-swept; verdict 112 verified both dense figures to sixteen digits and nothing in this range touches them. C59 and C61 still open against the entry. |
+| `F6_API_CLAUSE_AGREEMENT_COUNTER` | `3.0e-13` | unchanged | dimensionless | n/a, it IS the counter (AO2) | same entry | **UNMOVED.** C58 and C59 still open against what holds it in place, and this commit did not answer either. |
+| `F6_API_CLAUSE_INJECTION_EPS` | `1.0e-10` | unchanged | dimensionless, STRUCTURAL | none, correctly (AO2) | same entry | **UNMOVED.** C62 still open against the sentence that reads as two decades of headroom. |
+| `F6_API_UTILISATION_COUNTER_FACTOR` | `1.1` | unchanged | dimensionless, STRUCTURAL | none, correctly (AO2) | same entry | **UNMOVED.** |
+| everything in the F4 block and earlier | -- | unmoved | -- | -- | -- | Not touched in this range and not re-swept. |
+
+## Carried
+
+Verdict 112 (`47af12c`, judging `54ff15c`) was a **PASS** that closed step 1 carrying one
+blocking item by name. Status of everything it carried.
+
+* **R752 (blocking, carried into step 2 by name) -- CLOSED, AND CLOSED SITE BY SITE.** The
+  count is now computed from the quantity rather than a proxy: `MemberCheck.interaction_form`
+  records which half of `max(amplified, simple)` was taken, the generator reads it, the
+  sentence is regenerated, the CSV carries it as a column, and **both deliverable files were
+  regenerated in the same commit** (BP0) and regenerate byte-identically from the committed
+  generator. I reproduced `7 amplified / 10 simple` from the deliverable's own columns without
+  reading the new field and got no mismatch on any of the seventeen rows. The causal comment at
+  the old `:374` is deleted, which was the condition's last clause -- **and the comment that
+  replaced it carries a new false conjunction and a new uncelled "so", which is C66 and does
+  not reopen the item.** The one thing I asked for that is absent is nothing: the condition is
+  met in full. **R752 does not carry into step 2.**
+* **THE CLOSURE LIST C58 to C65, AND C41 to C57 -- NOT IN THIS COMMIT, STATED AS OUTSTANDING,
+  AND ESCALATED.** Under CZ0 a closure item does not block and is not re-reviewed item by item,
+  so the non-delivery is not a finding; the implementer named it on the commit's own face and
+  took the choice to Xabier, which is what CLAUDE.md's escalation clause asks for. Recorded
+  consequence: **C58, C59 and C60 move a gate assertion or a `floatfea/` refusal**, so wherever
+  they are answered that commit is an EQ0 commit.
+* **THE TWO ITEMS FOR XABIER -- RECEIVED, RELAYED FAITHFULLY, AND I ADD NOTHING.** The EG3/EH1
+  list gap is relayed in my own wording and the second item -- the `MemberCheck` field -- is in
+  this commit and is the subject of this review. I note only that at `ececa58` the gap did not
+  arise: both guards are GREEN here (`1161 passed, 0 skipped` in CI), because a closure commit
+  is not followed by a report and so creates neither boundary state. **That is a measurement in
+  favour of the second of the two fixes I offered** -- the guards reading the previous commit --
+  and it is still not mine to write.
+* **THE SCHEDULE -- NO ESCALATION IS DUE AND I AGREE WITH THE REPORT'S READING.** Working
+  target 22 October, committed 28 October, today 9 October. Step 1 closed carrying one blocking
+  item and this commit closed it, so the item does not reach step 2's `Carried`. CLAUDE.md's
+  trigger is two consecutive steps closing with blocking items; step 1's single item is now
+  answered, which makes the count zero rather than one. **On today's evidence the 22 October
+  target holds.** If step 2 closes carrying anything, the choice -- slip the date or reduce
+  scope -- has to be stated with a number beside it.
+
+## The adversarial corpus (BE3)
+
+**BATCH 45, committed separately:
+`tests/corpus/f6_the_recorded_interaction_form_and_what_holds_the_R752_repair_in_place.txt`,
+19 entries, every one new this round and none of them read by the implementer.** EG4(e)'s
+pause permits it and the header claims the exception explicitly: the surface is EB6's
+label-provenance one, the same as batch 44's, and this commit is the repair batch 44 named.
+
+**COVERAGE: 9 of 19 caught.**
+
+```
+cmd    grep -c "^id=" <the file>                     out  19
+cmd    grep "^id=" <the file> | grep -c "expect=catch" out  9
+cmd    python -m pytest -q -p no:randomly <the six files that read tests/corpus>
+out    1382 passed, 2 warnings in 97.62s
+```
+
+**AND THE NUMBER THAT MATTERS MORE THAN 9 OF 19 IS THE RE-SCORE OF BATCH 44's GROUP 1.** That
+group was six entries, all `expect=miss`, and verdict 112 wrote "one field closes six entries".
+Measured at `ececa58`:
+
+```
+out  check_member_cannot_be_asked_which_form_governed          MISS -> CATCH   (4 assertions)
+out  the_published_amplified_count_is_inverted                 DEFECT REPAIRED, scan still MISS
+out  the_generated_count_contradicts_the_sentence_two_lines_below_it
+out                                                            DEFECT REPAIRED, scan still MISS
+out  the_simple_form_governs_on_both_over_unity_platform_ROOTs  NOW PUBLISHED, scan still MISS
+out  the_causal_comment_behind_that_count_is_false             STILL MISS -- the old comment is
+out    deleted and the replacement re-fires the entry on new text (C66)
+out  the_Cm_sensitivity_label_is_a_tie_broken_by_row_order     STILL MISS, untouched
+judge  **ONE OF SIX FLIPS TO A CATCH; THREE OF SIX HAVE THEIR DEFECT REPAIRED WITH NO
+       DETECTOR; TWO ARE UNCHANGED AND ONE OF THOSE RE-FIRES.** My own "one field closes six
+       entries" is withdrawn as written: the field closed one entry as a DETECTION and
+       repaired three defects, which is a different and smaller claim. Against the last six
+       rounds -- 1 of 16, 9 of 21, 4 of 11, 8 of 13, 5 of 22, 9 of 25 -- this round is 47%,
+       and the composition is the story again: **every one of the ten misses is in a file that
+       no test reads**, which is C70 and is the same sentence I have now written four rounds
+       running.
+```
+
+## On the criterion -- I was asked, and I agree with it, and I used no carve-out
+
+CZ0 as amended by EZ0 is right and I applied it. **This commit is the cheapest kind of round
+there is**: one gate change, measured five ways, no blocking item, five closure items named once
+with their sites and their numbers. Under the retired "truth of a published figure or sentence"
+head, C66 and C68 would each have been an argument and a round; under CZ0 they are two lines and
+the implementer fixes them with the rest of the list.
+
+**ONE OBSERVATION ABOUT EQ0 ITSELF, FOR THE RECORD AND NOT AS A DISAGREEMENT.** EQ0 was earned
+on a closure commit that was green on three machines and carried four blocking items, three of
+them inside repairs. This one is green on two machines and carries none -- and the difference is
+not luck. The thing that made it clean is that the repair **recorded a quantity instead of
+inferring one**, so there was a field for me to check against a hand side at 37044
+configurations rather than a sentence to argue about. That is the shape worth repeating, and it
+is the same shape R694's repair had: a constant that was right at one configuration replaced by
+the quantity itself.
+
+**AND THE ONE THING I WOULD SAY TO XABIER IF ASKED.** Four consecutive rounds on this surface
+have found the same class of defect -- a true number beside a sentence about which rows it
+describes -- and all four have been in `scripts/measure/` or in a comment, which `pytest` cannot
+reach. The arithmetic in `floatfea/checks/api_wsd.py` is now pinned twenty-six ways and the new
+field thirty-seven thousand. The gap is one level up and it is not an apparatus gap, because
+"no new apparatus through F6" is a throughput decision I agree with. It is a reading, it is
+mine, and C70 is where I have recorded that it is the only thing standing there.
+
+## Next step opens when
+
+**STEP 1 WAS CLOSED BY VERDICT 112 AND REMAINS CLOSED (DD1). THIS VERDICT IS AN EQ0 REVIEW OF
+THE COMMIT THAT FOLLOWED IT AND IT COUNTS AGAINST NO STEP'S ROUNDS (EB4). STEP 2 MAY OPEN NOW,
+AND NOTHING FROM THIS REVIEW GATES ITS FIRST REVISION.** The conditions, specifically:
+
+1. **R752 DOES NOT CARRY.** It was verdict 112's one blocking item, it was closed in this
+   commit site by site, and I verified every clause of the condition. Step 2's `Carried`
+   records it as closed with this verdict named, and does not re-argue it.
+2. **The closure items C66 to C70, and the open C41 to C65, go into the step's closure commit
+   where CZ0 puts them** -- fixed once, not re-reviewed item by item. **C45 needs its own
+   standalone `process:` commit.** CZ1 (i) to (iv) applies to that commit, and **EQ0 applies to
+   it** if it answers C58, C59, C60 or C69, because each of those moves a gate assertion or a
+   `floatfea/` refusal.
+3. **Step 2's own gate is unchanged**: the table regenerates identically from stored results
+   and the top-ten list is stable under a re-run. I measured the first half again today and it
+   holds byte for byte for both files. The tie in the top-ten ordering is still live --
+   `hub2:buoy4_arm` ROOT and `hub4:buoy10_arm` ROOT carry `0.009245` to every published digit
+   and `sorted` is stable on input order -- and it is now joined by a second tie of the same
+   kind in C69. **Both are the same question: what a published label says when two numbers are
+   equal.** Design against it before the list is published rather than after.
+4. **The MID column stays excluded** on R736's grounds, and the published label still says R730
+   (C50).
+
+**WHAT I WILL NOT ACCEPT AT STEP 2's FIRST REVISION.** The same three as verdict 112, unchanged,
+plus one. A count or a clause attribution in a published table derived from a PROXY rather than
+from the quantity -- that was R752 and this commit is the pattern for fixing it. A top-ten list
+whose order depends on row order among equal values. A measurement block in
+`floatfea/tolerances.py` that no committed script regenerates (BI3, now three rounds on the
+list). **And new: a sentence characterising WHICH rows a published count covers, where the
+characterisation is not itself computed from the set.** C66, C68 and R752 are three instances of
+that one shape in two commits, and the question is the recorded one -- if the thing this
+sentence asserts were false, would anything go red. For all three I measured the answer and it
+is no.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6 step 1
 Reviewed commit: 24fad0492733f50ad2921041ca53145387ead6e0
 Verdict: PASS
 **Reviewed commit: `54ff15c`** (`54ff15ccc899ffd1f9f8c996d048c816a7e652c0`, tree clean when I
