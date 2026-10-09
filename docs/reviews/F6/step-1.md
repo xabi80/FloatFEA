@@ -1,4 +1,789 @@
 # Review — F6 step 1
+Reviewed commit: a0482e2a03525f72ab64c9137de1a9b4a65b616b
+Verdict: HOLD
+**Reviewed commit: `dd90505`** (`dd905051ff75f9506a6c383906fb62bec24cd0a6`, tree clean when I
+judged it; my corpus batch 43 is committed on top at `a0482e2`, which is why the plain
+`Reviewed commit:` stamp is not the commit I judged -- R718's subject, and this bold line is
+the mechanism.)
+Tests: 3358 passed, 0 failed, 0 skipped   (MY OWN run, one invocation, no `-k`, no
+`--ignore`, no deselection, `-p no:randomly`, tree clean at `dd90505`, `661.48s`. The
+report's whole-suite line is `3100 passed` plus an excluded set of `249 passed, 8 failed,
+1 skipped` AT `1f8f61a`; `3100 + 249 + 8 + 1 = 3358`, and at `dd90505` all of it is green.)
+
+## Round of 2026-10-09 -- ROUND 2 OF THREE, F6 step 1. **HOLD.** Five blocking items. The gate was built, it is good work, and the two Â§ 3.2.3 branch limits it was built to pin survive a digit swap.
+
+**WHY HOLD, IN SIX SENTENCES.** G6.1 exists, it is 65 tests at 32 points, it runs in CI on
+ubuntu at rung 5, and I mutated every numeric literal on an executable line of
+`floatfea/checks/api_wsd.py` one at a time -- **30 of them redden it**, including the
+`0.75 F_y` cap, both halves of Â§ 3.3.2's `max`, the bending resultant, `C_c`'s `2`, the
+safety-factor polynomial and `F_xc`'s fractional power. **Four survive, and two of the four
+are `10340` and `20680`** -- the two numbers R742 was about: `10340 -> 10430` and
+`20680 -> 20860`, the classic transcription slip, each leaving `65 passed`. The third
+survivor is Â§ 3.2.2's `D/t = 300` refusal at `303`. **The published deliverable's summary
+prose contradicts its own published table on four counts**, and one of them is R739's own
+subject -- "All four are platform arm ROOTs, all governed by Â§ 3.3.1" where the CSV and the
+top-ten table three inches above it both say two are Â§ 3.3.2. **The deliverable's G6.1
+warrant cites `tests/verification/rung6/`**, which holds `__init__.py` and
+`.empty-by-design` and is run as `empty:` in CI -- the gate moved to rung 5 at `1f8f61a`
+and the four citations of it did not. And **the counter is a constant pinned to one of two
+chosen points at a `1.0355x` margin**: over 350 live amplified-governing configurations the
+diff did not choose, 266 sit at or below it and the weakest is `267x` below.
+
+**No STOP.** No low rung is red: `the verification ladder` is SUCCESS at `1f8f61a` with
+rung 5 `full:` and `run_rung: 65 collected, 0 failed`. The locked plan is not wrong; FB0
+inverted FA3 for F6 and the step did what FB0 asked.
+
+**WHAT THE IMPLEMENTER ASKED ME TO CHECK, AND WHAT THE ANSWER WAS.** Nine items were named.
+Items 4 (R744), 5 (the rung placement), 6 (R737) and 8 (R743/FB2) hold, and I measured each
+rather than reading it. Item 1's claim that no `# expected:` is a module call holds, with
+one caveat in the closure list. Item 2(b) -- changing the material to make Â§ 3.2.2(b)'s
+elastic half reachable -- is the **right** call and I say so in Â§ 4. Item 3 is where the
+finding is. Item 7's fifth figure disagreed for a reason neither of us had: **I am
+withdrawing my own `0.034926`**, and the cause is not only the basis.
+
+## 0. CI -- UNAVAILABLE AT THE REVIEWED COMMIT BY DESIGN, AND THE LAST RUN DESCRIBES THIS TREE
+
+```
+cmd    gh run list --commit dd905051ff75f9506a6c383906fb62bec24cd0a6 --json conclusion,status
+out    []
+cmd    gh run list --commit acfc5df5e6940ca7e1232d1097296c7bce9aa987 --json conclusion,status
+out    []
+cmd    sed -n '22,26p' .github/workflows/ci.yml
+out    on: push: branches ["**"] paths-ignore: - "docs/reports/**"
+cmd    git diff --stat 1f8f61a..dd90505
+out    docs/reports/F6/step-1.md | 82 ++++++---     one file, and it is the ignored path
+judge  **THIS IS NOT CK2 AND IT IS NOT CA2's RED.** No run exists at the reviewed commit
+       because that commit touches only `docs/reports/**`, which CK0 ignores by its own
+       recorded decision. It is UNAVAILABLE and is recorded as that. The last run that
+       executed is at `1f8f61a`, and the only difference between that tree and this one is
+       a report file, so its result still describes the code under review. `acfc5df` has no
+       run of its own because it was pushed together with `1f8f61a`.
+cmd    gh run list --commit 1f8f61a4f5fd9b374c4e7e92f6a428485c4c1622 --json ...
+out    [{"conclusion":"failure","databaseId":37939206345,"event":"push","status":"completed"}]
+cmd    gh run view 37939206345 --json jobs -q '.jobs[] | .name + " " + .conclusion'
+out    the verification ladder            success
+out    lint, unit and guards              failure
+out    CI determinism -- leg              skipped
+out    CI determinism -- ten legs agree   skipped
+cmd    gh run view 37939206345 --json jobs    (the ladder job, step level)
+out    ladder 1 / 2 / 3 / 6 / 4 / 5           all success
+cmd    gh run view 37939206345 --log | grep "ladder 5"
+out    run_rung: 65 collected, 0 failed, 0 errored, 0 skipped
+out    run_rung: OK -- 1 director(y|ies) ran
+judge  **THE 65 TESTS RAN ON UBUNTU AND ARE GREEN THERE**, and rung 5 really is `full:`
+       with the marker deleted in the same commit. That is the one measurement the
+       tolerance's own justification could not take on one machine, and it is the answer to
+       the implementer's item 3: the `1.0e-14` headroom for a `pow` that is not correctly
+       rounded is now an ubuntu measurement and not only an argument.
+cmd    gh run view 37939206345 --log | grep -E "^FAILED|failed," | sort -u
+out    8 failed, 1081 passed, 1 skipped, 1 warning in 310.57s
+out    FAILED tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count
+out    FAILED tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]
+out      + 6 more planted states, each pasting that one red in its own failure line
+judge  **THE CLAIM IS EXACTLY RIGHT AND I CHECKED IT RATHER THAN TOOK IT.** Eight reds, one
+       cause, each traced by name. `test_the_report_carries_a_WHOLE_SUITE_count` is on
+       NEITHER of EG3's two lists, so under EH1 it would block -- except that it is red at
+       `1f8f61a` and GREEN at the reviewed commit, which my own full run measures. The
+       fixed point is real: `scripts/suite_count.py` measures a clean worktree AT a commit,
+       so a line naming `1f8f61a` cannot be inside `1f8f61a`. Landing it in a report-only
+       follow-on that creates no run is the right resolution and it is self-clearing.
+       **Nothing outside those three files was red at `1f8f61a`, and nothing at all is red
+       at `dd90505`.**
+```
+
+## 1. MY OWN INSTRUCTIONS, THE CONFTEST AND THE TOLERANCE FILE -- EACH DIFFED SEPARATELY
+
+```
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py
+cmd    git diff 2cf33b0..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+cmd    git diff --name-status 2cf33b0..HEAD -- '*conftest*' '*plugin*' tests/
+out    D  tests/verification/rung5/.empty-by-design
+out    A  tests/verification/rung5/test_g61_api_wsd_hand_calculations.py
+judge  CH2/CI0: no conftest and no plugin anywhere in the range, so no rung's green is
+       written from its own directory and I did not have to read a hookwrapper. The one
+       `tests/` addition is the gate itself, and I read all 1012 lines of it.
+cmd    git diff --stat 2cf33b0..HEAD -- .claude docs/SUPERVISOR.md
+out    (empty)
+judge  **CLEAN.** My own instructions are untouched in this range. C45 is still open and is
+       still process class rather than step work.
+cmd    git diff 2cf33b0..HEAD -- floatfea/tolerances.py | grep -cE "^-[^-]"
+out    1       the single line `# (no entries yet -- F6/F7)`
+judge  **NOTHING WAS WIDENED AND NO EXISTING VALUE MOVED.** Four entries are new. EU1
+       FIRES -- tolerance values moved -- so Â§ 5 is the adversarial case, run at
+       configurations the diff did not choose. That is what found R750.
+```
+
+## 2. WHAT G6.1 CATCHES -- MEASURED, NOT READ
+
+I mutated every numeric literal on a code line of `floatfea/checks/api_wsd.py` by `+1%`,
+one at a time, restoring the source byte-identical after each, and re-ran the whole of
+rung 5 each time. This is the measurement the gate deserved and the one no planted-shape
+count can substitute for.
+
+```
+cmd    56 literals, one 1% edit each, `pytest -q -p no:randomly tests/verification/rung5`
+out    30 KILLED on executable lines; 4 SURVIVED; the rest were inside docstrings or f-strings
+out    KILLED: C_c's 2.0; F_e's 12.0 and 23.0; F_xe's 2.0; F_xc's 1.64, 0.23 and 0.25;
+out            the safety polynomial's 5.0/3.0/3.0/8.0/3/8.0; (1.0 - 0.5 r^2); the 0.75 cap;
+out            0.84, 1.74, 0.72, 0.58; the amplification's 1.0
+out    KILLED: PASCAL_PER_MPA, LOCAL_BUCKLING_DT, BENDING_THIRD_BRANCH_NUMERATOR,
+out            CM_JOINT_TRANSLATION, ALLOWABLE_TENSION_FACTOR, ALLOWABLE_SHEAR_FACTOR,
+out            BEAM_SHEAR_AREA_FACTOR, ELASTIC_LOCAL_BUCKLING_C
+out    KILLED: u_combined = amplified alone (1 failed); = simple alone (5 failed);
+out            the 0.75 cap disabled (3 failed); hypot -> max (4 failed)
+judge  **THIS IS A REAL GATE.** Eight module constants and twenty-two in-line clause
+       coefficients each redden it, both halves of Â§ 3.3.2's `max` are live, and R742's own
+       cap has a control that fires when it is removed. Verdict 110 said G6.1 was the next
+       thing to build and six of eight findings were inside its scope; it was built and it
+       would have caught them. The four survivors are R749.
+```
+
+## Findings
+
+**R747. (BLOCKING. (a) AS AMENDED BY EZ0 -- A DEFECT IN A PUBLISHED DELIVERABLE AND IN THE
+`scripts/measure/` GENERATOR THAT PRODUCES IT.) THE DELIVERABLE'S SUMMARY PROSE CONTRADICTS
+ITS OWN PUBLISHED TABLE ON FOUR COUNTS, AND ONE OF THEM IS R739's OWN SUBJECT -- THE
+GOVERNING CLAUSE ON THE OVER-UNITY STATIONS.**
+`scripts/measure/api_wsd_utilisation.py:363-375` (the hand-written block inside
+`_write_summary`), published at `docs/F6_utilisation.md:81-83`.
+
+```
+claim  the four sentences in the summary block, against the CSV the same run wrote
+cmd    python -I -c "read docs/F6_utilisation.csv; group the 4 rows with U > 1.0 by
+       governing_clause; read u_axial/u_bending at the worst station; max |U(K2)-U(K1)|;
+       count compression rows where utilisation_Cm1 != utilisation_K2"
+rule   the published table and CSV in the same file, written by the same run
+out    PUBLISHED  "All four are platform arm ROOTs, all governed by section 3.3.1"
+out    MEASURED   hub1_arm ROOT 3.3.1 (1.17709); hub2_arm ROOT 3.3.2 (1.71167);
+out               hub3_arm ROOT 3.3.1 (1.18223); hub4_arm ROOT 3.3.2 (1.71167)
+out               Counter({'3.3.1 interaction': 2, '3.3.2 interaction': 2})
+out    PUBLISHED  "changes the governing number by at most `0.024`"
+out    MEASURED   0.034238 -- and the GENERATED code block at :77 prints that figure
+out               three lines above the sentence
+out    PUBLISHED  "u_axial = 0.0004 against u_bending = 1.815"
+out    MEASURED   worst station platform:hub2_arm ROOT: u_axial 0.000833389,
+out               u_bending 1.71138.  `1.815` is the total_max/total_min figure R740 was
+out               about, which the label at :16 says is NOT used here
+out    PUBLISHED  "the amplification never bites, and on the compression rows the simple
+out               0.6 F_y form governs over the amplified one"
+out    MEASURED   10 of 17 compression rows have utilisation_Cm1 != utilisation_K2, which
+out               can only happen where the amplified form governs, because C_m appears
+out               nowhere else in the calculation
+judge  **THE FIRST ONE IS THE FINDING AND THE OTHER THREE ARE THE SAME MECHANISM.** R739's
+       whole subject was that the published clause attribution on the over-unity stations
+       was wrong; the CSV and the top-ten table are now right and the sentence a reader
+       reads last is the pre-repair one. The fourth is a causal claim (BG0) refuted by the
+       `U (C_m=1)` column this same commit added. Verdict 109's single blocking finding was
+       a defect in the repair of the previous finding in this class; this is that again,
+       and the class is why EZ0 exists.
+```
+
+**Closed when** the four sentences are generated from the sets they describe or deleted,
+and `docs/F6_utilisation.csv` and `docs/F6_utilisation.md` are regenerated in the same
+commit (BP0). The 2/2 split, `0.034238`, `u_bending = 1.71138` and `10 of 17` are my
+figures to beat; if the regeneration disagrees I want the disagreement, not a
+reconciliation. The structural half of it is that `_write_summary` interleaves generated
+f-strings with hand-written sentences about the same quantities, and the hand-written ones
+are the four that are wrong.
+
+**R748. (BLOCKING. (a) UNDER EZ0.) THE DELIVERABLE'S G6.1 WARRANT CITES A DIRECTORY THAT
+CONTAINS NO TESTS AND THAT CI RUNS AS `empty:`. THE GATE MOVED AT `1f8f61a` AND ITS FOUR
+CITATIONS DID NOT.**
+`docs/F6_utilisation.md:9`, `docs/F6_utilisation.csv:5`,
+`scripts/measure/api_wsd_utilisation.py:36` and `:92`.
+
+```
+claim  "G6.1 is GREEN: every clause is verified against an independent hand calculation in
+       tests/verification/rung6/, at two or more points per branch, either side of every
+       boundary (FB0)."
+cmd    ls -a tests/verification/rung6/ ; ls tests/verification/rung5/
+out    rung6:  .  ..  .empty-by-design  __init__.py
+out    rung5:  __init__.py  test_g61_api_wsd_hand_calculations.py
+cmd    grep -n "rung6" .github/workflows/ci.yml
+out    run: sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression
+cmd    git show 1f8f61a --name-only
+out    .github/workflows/ci.yml  docs/milestones/F6.md  docs/reports/F6/step-1.md
+out    floatfea/tolerances.py  tests/verification/rung5/.empty-by-design
+out    tests/verification/rung5/test_g61_api_wsd_hand_calculations.py
+judge  **THE CITATION DOES NOT RESOLVE, AND IT NAMES THE ONE DIRECTORY CI ASSERTS IS
+       EMPTY.** The commit that moved the gate out of rung 6 did not touch the deliverable,
+       the CSV or the generator, so the published warrant now points at exactly the state
+       `1f8f61a` was written to escape -- a rung whose own green result could not say that
+       nothing in it runs. "Every citation resolves" is one of the recorded guards and this
+       is the shape it names: a reader checking the deliverable's own evidence finds
+       nothing at the path given. BP0 is the mechanical half: the gate's location is the
+       rule the sentence cites, it moved, and the artifact citing it was not regenerated in
+       the same commit.
+```
+
+**Closed when** the four sites read `tests/verification/rung5/` and the CSV and the
+summary are regenerated in the same commit, with `ls tests/verification/rung5/` pasted. One
+string and one run. I am naming the classification rather than smuggling it: this is a
+sentence, and under the retired head it would have been a closure item -- it blocks because
+`docs/F6_utilisation.md` is a file sent to Xabier and `scripts/measure/` is named in EZ0's
+own definition, and because the sentence IS the deliverable's warrant rather than a remark
+inside it.
+
+**R749. (BLOCKING. (c) -- A GATE ASSERTION: WHAT THE GATE CLAIMS, ON WHICH QUANTITY, AT
+WHAT THRESHOLD.) G6.1 DOES NOT PIN Â§ 3.2.3's TWO BRANCH LIMITS OR Â§ 3.2.2's REFUSAL
+THRESHOLD. `10340 -> 10430` AND `20680 -> 20860` EACH LEAVE ALL 65 TESTS GREEN, AND THOSE
+ARE THE TWO NUMBERS R742 WAS ABOUT.**
+`floatfea/checks/api_wsd.py:147`, `:148`, `:226`, against
+`tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:368` and `:472` and
+`docs/milestones/F6.md` Â§ 3a.
+
+```
+rule   docs/milestones/F6.md section 3a: the agreement is measured "over 32 points either
+       side of every branch boundary"; the test file's own docstring: "the points sit
+       EITHER SIDE OF EVERY BOUNDARY rather than in the middle of a range -- C_c, the three
+       D/t limits, the local-buckling limit, the tension/compression switch. A point taken
+       only in a branch's interior cannot see a misplaced boundary, which is R742's whole
+       mechanism."
+cmd    one edit each, source restored byte-identical, whole of rung 5 re-run
+out    limit_1 = 10340.0 -> 10430.0   (a digit swap)       65 passed in 0.40s
+out    limit_1 = 10340.0 -> 10443.4   (+1%)                65 passed in 0.40s
+out    limit_2 = 20680.0 -> 20860.0   (a digit swap)       65 passed in 0.41s
+out    limit_2 = 20680.0 -> 20886.8   (+1%)                65 passed in 0.41s
+out    if d_t > 300.0  ->  if d_t > 303.0                  65 passed in 0.39s
+out    in_tension = axial_n >= 0.0  ->  > 0.0              65 passed in 0.40s
+cmd    the bracket each boundary actually has, from _FB_POINTS and _FXC_POINTS
+out    limit_1 = 29.1268 : nearest points 29.0 and 30.0  -- 0.44% below, 3.0% above
+out    limit_2 = 58.2535 : nearest points 58.0 and 60.0  -- 0.44% below, 3.0% above
+out    the 300 refusal   : admitted at 300 and 100, refused at 500 and 700
+out    LOCAL_BUCKLING_DT : bracketed at D/t = 60 exactly and 60.5 -- and it IS killed
+out    limit_3           : `assert limit_3 == 845.0704225352113` at test:472 -- KILLED,
+out                        and it is what kills PASCAL_PER_MPA and the third numerator too
+judge  **THE GATE ALREADY CONTAINS THE TECHNIQUE THAT WOULD CLOSE THIS AND APPLIES IT TO
+       ONE OF THE THREE LIMITS.** `limit_3` is pinned by an exact equality against
+       `section_class(...)`; `limit_1` and `limit_2` are not pinned at all. test:368's
+       `assert 10340.0 / 355.0 == 29.12676056338028` looks like the missing assertion and
+       is not one: both sides are written in the test and neither reads the module, so it
+       holds byte for byte under every mutation above -- CW0's triple-whose-command-cannot-
+       fail shape, in an assertion rather than a comment. And this is not a hypothetical
+       class of defect: R742 was a question about exactly these two numbers one round ago.
+```
+
+**Closed when** `limit_1` and `limit_2` are pinned the way `limit_3` already is -- one
+exact equality each against `section_class(D_OUTER, WALL, FY)`, which is a one-character
+change to test:368 -- or a point is added inside each boundary's own neighbourhood
+(`29.2` and `58.3` would do it), and the `300` refusal is bracketed at `300` and `300.1`
+the way `LOCAL_BUCKLING_DT` is bracketed at `60` and `60.5`. Re-run the three mutations and
+paste both outcomes. No new apparatus: this is inside the file the step already shipped.
+
+**R750. (BLOCKING. (b) -- A COUNTER VALUE AND THE FORM OF ONE, WHICH IS WHAT EU1 ASKS THE
+ADVERSARIAL CASE ABOUT.) `F6_API_CLAUSE_AGREEMENT_COUNTER = 8.0e-13` IS A CONSTANT PINNED
+TO ONE OF TWO CHOSEN POINTS AT A `1.0355x` MARGIN. AT 266 OF 350 LIVE
+AMPLIFIED-GOVERNING CONFIGURATIONS THE DIFF DID NOT CHOOSE IT SITS AT OR ABOVE THE
+RESPONSE, AND THE WEAKEST IS `267x` BELOW IT. THE DECLARED WINDOW'S LOWER EDGE IS `15.35x`
+AND NOT `59.3937x`.**
+`floatfea/tolerances.py` (`F6_API_CLAUSE_AGREEMENT`, `F6_API_CLAUSE_AGREEMENT_COUNTER`),
+`tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:888-908`, and
+`docs/milestones/F6.md` Â§ 3a's two rows.
+
+```
+claim  "`C_m` is the weakest member and stays the weakest by `1.21x` ... so the gate
+       resolves a `C_m` error to `0.828392` of its relative size", and
+       "margin `1.0355x`" below "the weakest live response over the whole family
+       `8.283918449512958e-13`"
+cmd    run check_member at 432 admissible configurations -- KL/r in {30.4, 45, 60.8, 80,
+       100, 108.1, 121.5, 150, 200}, f_a/F_e' in {0.02 ... 0.95}, My in {1e6 ... 5e8} --
+       and scale `cm` by 1 + F6_API_CLAUSE_INJECTION_EPS at each, one variable moved
+rule   the gate's own decision rule: the response must exceed
+       F6_API_CLAUSE_AGREEMENT_COUNTER
+out    configurations with 3.3.2 interaction governing : 432
+out    of those, response EXACTLY 0.000000e+00         : 82
+out    live                                            : 350
+out    at or BELOW the declared counter 8.0e-13        : 266 of 350
+out    WEAKEST live                                    : 3.098618e-15  at KL/r = 30.4,
+out                                                       f_a/F_e' = 0.4, My = 1e6
+out                                                       -- 267x below the counter
+out    strongest live                                  : 9.794854e-13
+out    the two points the diff chose                   : 0.56 and 0.828392 of eps
+judge  **R694's SHAPE EXACTLY, AND THE PLAN RECORDS IT AS SUCH.** "A counter that depends
+       on a model parameter is not a number, it is a function, and the question an
+       adversarial case asks is which." The resolution has a closed form --
+       `cm * u_bending / ((1 - f_a/F_e') * u_combined)` -- and the declared `0.828392` is
+       that function evaluated at the better of two chosen points, with a 3.5% margin
+       beneath it. The gate passes because `_worst_move` is a MAX over the 32 quantities,
+       which is a defensible aggregation for non-vacuity; the sentence declaring what the
+       gate RESOLVES is not defensible, and the margin is quoted in the direction that
+       makes it look strong.
+cmd    test:888-908 -- which direction the declared "weakest" is taken in
+out    `weakest = min(responses)` where each response is itself `_worst_move`, a MAX over
+out    the 32 points. So `weakest` is min-over-5-coefficients of max-over-32-points, and
+out    the min over points is never formed anywhere in the file.
+judge  **EH4's WEAKENING DIRECTION WAS NOT SOLVED.** "A boundary is solved in both
+       directions, including the two that WEAKEN a gate." The direction that weakens this
+       one is the minimum over points, and it is the direction the declared margin is
+       quoted in.
+cmd    a dense sweep of the clause module's own admissible domain -- D/t <= 300 in steps of
+       0.01, at the gate's own two grades, KL/r at seven values -- module against a hand
+       side written independently of the test file. 97681 points.
+rule   the window rule's lower edge: F6_API_CLAUSE_AGREEMENT / the clean worst
+out    declared clean worst   1.683679572698748e-16  -> lower edge 59.3937x
+out    DENSE clean worst      6.515863e-16 at F_y = 355 MPa, D/t = 113.43, KL/r = 108.1
+out                                                  -> lower edge 15.35x
+out    six grades             6.587053e-16 at F_y = 420 MPa, D/t = 260.97, KL/r = 108.1
+judge  **THE CONFIGURATION IS ONE THE GATE NEARLY CHOSE** -- the locked grade, a `KL/r`
+       already in `_FA_POINTS`, and a `D/t` between the `100` and `200` of `_FXC_POINTS`.
+       `15.35x` still clears `F4_WINDOW_RULE_MIN_EDGE = 2.0`, so the ceiling is not wrong;
+       the published edge is wrong by `3.87x` as a statement about the module the ceiling
+       defends. The gate's own `_quantities` docstring names this hazard in its own words
+       -- "a family measured on a narrower domain than the ceiling it defends reports the
+       strongest member as the quantity's, which is what R708 and R710 both were" -- and
+       the sentence applies to the gate that contains it.
+```
+
+**Closed when** the counter is a floor beneath every admissible configuration rather than a
+constant at one, which R694's repair shape already demonstrates: either `C_m`'s resolution
+is written as the closed form above and the counter derived from its minimum over the
+family's own points, or the family's points are chosen at the WEAK end instead of the
+strong one and the margin restated from there. **And** `F6_API_CLAUSE_AGREEMENT`'s window
+entry states the edge over the domain the ceiling defends (`15.35x`, or whatever a rerun
+gives) rather than over the 32 points, with the `(F_y, D/t, KL/r)` it was taken at. **And**
+EH4's weakening direction is taken at least once: the minimum over points, reported beside
+the maximum. `3.098618e-15`, `266 of 350`, `82 of 432` and `6.515863e-16` are my figures.
+I am not ruling that `8.0e-13` is the wrong number -- I am ruling that its stated basis is a
+figure about one point and that the gate's own assertion never looks in the direction that
+would refute it.
+
+**R751. (BLOCKING. (a) -- AND I AM NAMING THE CLASSIFICATION RATHER THAN SMUGGLING IT.)
+`floatfea/post/member_forces.py:23`'s ATTRIBUTION IS STILL INVERTED, AND Â§ 8a RECORDS IT AS
+"ALREADY CORRECT". IT IS THE ONLY STATEMENT OF THE AXIAL SENSE IN `floatfea/`, AND R739's
+WHOLE REPAIR IS A NEGATION THAT IS CORRECT ONLY IF THAT SENTENCE IS FALSE.**
+`floatfea/post/member_forces.py:23`, against `docs/reports/F6/step-1.md` Â§ 8a row 3.
+
+```
+claim  (section 8a) "the attribution sentence already says `the forces the ELEMENT exerts
+       on its nodes at each end`, which is the true sense and is what R739 measured. The
+       verdict's condition asked for it to be corrected; it did not need correcting"
+cmd    move node_b of platform:hub1_arm 1 mm OUTWARD along the member axis -- an
+       unambiguous stretch -- and read member_forces(body, member, u, zeros(12))
+rule   a force the ELEMENT exerts ON node A under TENSION points from A toward B, i.e.
+       along +local x, so end_a[0] would be POSITIVE if the sentence held
+out    EA/L * 1e-3   true internal N, tension positive (Hooke)  = +5.51010219e+06
+out    member_forces end_a[0]                                   = -5.51010219e+06
+out    member_forces end_b[0]                                   = +5.51010219e+06
+judge  **THE SENTENCE IS BACKWARDS AND THE REPORT'S CLAIM ABOUT IT IS FALSE.** `end_a[0]`
+       is negative for a stretch, so the returned vector is the force the NODES exert ON
+       THE ELEMENT (`k u`), which is the opposite attribution. The sentence's second half
+       -- "end B's axial has the opposite sign to end A's under pure tension" -- is true
+       under either attribution, which is exactly why reading it does not refute it and
+       only a prescribed-sense measurement does. This reproduces verdict 110's figure to
+       every digit, so it is not a question of which of us measured.
+cmd    grep -rn "forces the ELEMENT exerts\|force the NODES exert" floatfea/
+out    floatfea/post/member_forces.py:23 only
+judge  it is the ONLY statement of the sense in the library, and the repair R739 landed is
+       `root[0] = -root[0]` at the publishing boundary. A reader who trusts :23 concludes
+       the negation is a double correction and deletes it. That is R739 shipped again.
+```
+
+**Closed when** the sentence states the sense as measured -- `k u` is the force applied TO
+the element, so `end_a[0]` is minus the internal axial action -- with the 1 mm cell above
+pasted beside it, and Â§ 8a's row corrected. **The classification, said once:** this is a
+sentence, and under the retired "truth of a published figure or sentence" head it would be a
+closure item. I block on it because (i) it is the only statement in `floatfea/` of a
+convention a published column's sign now depends on, which is the carve-out my instructions
+name for a docstring that is the only statement of what something means, and (ii) verdict
+110 made it a named site of R739's closing condition and the report recorded that half of
+the item as answered on a claim that one command refutes -- "half of an item is not the
+item". If Xabier reads the criterion more narrowly, this becomes closure item C56 and
+nothing else in this verdict changes.
+
+## 3. WHAT I MEASURED AND FOUND SOUND -- the four the implementer asked about, each run rather than read
+
+```
+R744 -- THE SAG CONTROL, mutated at all four sites on a fixture with a_y = 3 and a_z = 2
+cmd    four separate one-character mutations of _station_values, each on its own copy
+out    HEAD, unperturbed                       OK, exit 0   MID Mz = +2.92968750e+06
+out    DEFINITION  sag_z = +w -> -w            REFUSED
+out    DEFINITION  sag_y = -w -> +w            REFUSED
+out    APPLICATION mid[5] = mid[5] - sag_z     REFUSED
+out    APPLICATION mid[4] = mid[4] - sag_y     REFUSED
+judge  **R744 IS ANSWERED, BOTH PLANES AND BOTH HALVES.** The subject is now `mid - chord`,
+       the delta the station publishes, which is what the condition named. Taken on my own
+       fixture, not the report's cell. It is the third round on those two lines and it is
+       the first time all four mutations redden.
+
+THE RUNG PLACEMENT (item 5) -- and the guard that caught it is the right guard
+out    ladder 5 in CI: run_rung: 65 collected, 0 failed; rung 5 `full:`; marker deleted in
+out    the same commit; `run_rung.sh`'s full:/empty: contract satisfied in one commit
+judge  SOUND, and self-reported before I could find it. `test_every_test_in_the_suite_is_
+       run_by_some_ci_job` earned its keep: 65 green tests running in no job is precisely
+       the state no test's own result can report.
+
+R737 (item 6) -- the framing correction is CORRECT and I withdraw my wording
+cmd    sed -n '80,95p' scripts/export_platform_deck.py
+out    HSP_COMMIT is compared against the live worktree HEAD, with a tag check and a dirty
+out    check beside it
+judge  **THE IMPLEMENTER IS RIGHT AND MY FINDING WAS LOOSELY WORDED.** "Declared and
+       compared nowhere" was wrong: it is compared. What is unpinned at commit level is the
+       dynamic-inputs npz, whose provenance records the tag alone. The decision -- the
+       provenance gains `hsp_commit` at the next export, the npz resting meanwhile on the
+       tag plus the deck's indirect commit-level warrant -- is one of the two branches my
+       condition offered and it is recorded. **R737 is CLOSED.** The reading of the
+       `import_closure` consequence is also right: the G4.1 staleness assertion reads the
+       export script's own blob sha, so touching that script reddens the gate until the npz
+       is regenerated, and six FloatSim runs to pin a commit nobody has moved is the wrong
+       trade this week. Recording the decision is the whole of what I asked for.
+
+R743 / FB2 (item 8) -- the direction, and my own 5.3x ranking
+out    largest |U(Cm=1) - U(K=2)| = 0.009245  against  largest |U(K=2) - U(K=1)| = 0.034238
+judge  **MY `5.3x` RANKING DOES NOT SURVIVE THE PER-INSTANT BASIS AND I WITHDRAW IT.** On
+       the shipped basis `K` is the larger lever by 3.7x, not the smaller by 5.3x. The
+       constant is renamed, the category is Â§ 3.3.1 case (a), the direction is stated as
+       measured, and a `C_m = 1.0` column is published. R743 is ANSWERED. The conclusion
+       that survives is the one I said survives: u_axial 0.0008 against u_bending 1.7114.
+```
+
+## 4. ON ITEM 2(b) -- CHANGING THE MATERIAL TO MAKE A GATE NON-VACUOUS IS THE RIGHT CALL
+
+The implementer asked me to attack this hardest and I will say the opposite instead, because
+the measurement supports it.
+
+```
+rule   API RP 2A-WSD section 3.2.2(b): F_xc = F_y [1.64 - 0.23 (D/t)^(1/4)], capped at
+       F_xe = 2 C E t / D with C = 0.3
+cmd    solve min(F_xc, F_xe) = F_xe for D/t, at each grade
+out    S355  F_xe never governs at any D/t the clause admits
+out    S460  first governs at D/t = 491.94  -- outside D/t <= 300
+out    S690  first governs at D/t = 252.53  -- inside
+judge  **THE CLAUSE HALF IS INERT AT THE LOCKED GRADE, AND THAT IS A PROPERTY OF THE CLAUSE
+       AND NOT A CHOICE OF THE TEST.** A gate that exercised only S355 would have certified
+       `ELASTIC_LOCAL_BUCKLING_C` against nothing -- which is what the implementer measured
+       as a `0.000000e+00` response before the repair. Taking that one assertion at S690 is
+       not relaxing the model; it is the only configuration in which the expression is
+       reachable, and the test says so in its own name and docstring and asserts
+       `f_xe < f_xc` first so the point cannot drift off the governing side. My own
+       mutation sweep confirms it is live: `ELASTIC_LOCAL_BUCKLING_C` 0.3 -> 0.303 gives
+       `3 failed`.
+judge  **AND THE SAME TEST KEEPS THE S355 COMPARISON AT THE SAME D/t, one variable moved**
+       (test:315-321), so a reader sees which half governs where. That is the right shape.
+       **No finding.** The one thing I would add is in the closure list: the plan row says
+       "the hand calculation takes it at S690" and the plan's own Â§ 0 locks F_y = 355 MPa,
+       so the two should name each other explicitly rather than leaving a reader to
+       reconcile them.
+```
+
+**And the third measured point -- the pure-compression counter-case on the elastic branch --
+is right for the reason given.** `F_a` and `F_e'` are the same expression there, so
+`F_a/F_e' = 1.000000` and `u_axial = 1` is the singularity of the amplification. I verified
+`f_a_allow / euler_stress(121.5, E) == 1.0` exactly and `0.5505390764073391` at `60.8`, and
+the test asserts both rather than asserting the conclusion. Taking it on the inelastic
+branch is the clause's answer, not the test's.
+
+## 5. THE ADVERSARIAL CASE (EU1) -- what I ran at configurations the diff did not choose
+
+Tolerance values moved, so EU1 fires. Seven probes, none of them chosen by the diff. Four
+found something.
+
+```
+1  EVERY NUMERIC LITERAL ON A CODE LINE, perturbed 1% one at a time, rung 5 re-run after
+   each, source restored byte-identical. 56 literals, 30 killed, 4 survived.
+   -> R749. Two of the four are the numbers R742 was about.
+2  432 ADMISSIBLE AMPLIFIED-GOVERNING CONFIGURATIONS instead of the two the diff chose.
+   266 of 350 live responses at or below the declared counter; weakest 267x below; 82
+   respond exactly 0.0.  -> R750, and it is R694's shape.
+3  A DENSE 97681-POINT SWEEP of the clause module's admissible domain, module against a
+   hand side I wrote rather than the test's. Clean worst 6.515863e-16 at F_y = 355,
+   D/t = 113.43, KL/r = 108.1, against the declared 1.683679572698748e-16.  -> R750.
+4  THE PUBLISHED DELIVERABLE AGAINST ITS OWN PUBLISHED CSV, four sentences at a time.
+   -> R747, and the first of the four is R739's own subject.
+5  THE FOUR SAG SITES, mutated separately on a fixture reaching both planes.
+   -> nothing. R744 is answered.
+6  THE 1 mm PRESCRIBED STRETCH, re-run independently. end_a[0] = -5.51010219e+06.
+   -> R751, in the docstring rather than in the arithmetic.
+7  REVERTING R739's TWO NEGATION LINES. `_station_values` returns at exit 0 and nothing
+   under `tests/` imports the module, so the revert is invisible to all 3358 tests.
+   -> closure item C52; the two sag planes carry a refusal and the axial line does not.
+```
+
+**And two things that did NOT break, recorded because an absence is a measurement.** Both
+halves of Â§ 3.3.2's `max` are live -- dropping either reddens -- so the two amplified points
+are doing work. And `allowable_bending`'s cap cannot be removed silently: disabling
+`if f_b > cap` gives `3 failed`, which is R742's repair carrying its own failure, the
+property R744 was the absence of.
+
+## Closure items
+
+Named with their site and what would close each. The implementer fixes the whole list once,
+in the step's closure commit; they are not re-reviewed item by item and the step is not held
+on one. Verdict 110's list ended at C49, so this one starts at C50. **C41 to C49 remain
+open and are not re-adjudicated here.**
+
+* **C50.** `docs/F6_utilisation.md:14` and `scripts/measure/api_wsd_utilisation.py`'s MID
+  label: "the MID column waits on R730's discharge". Verdict 110 ruled R730/R734 discharged
+  and named R736 as the live reason; the label gives R736's substance ("a measured 4.0%
+  approximation on bending, unverified against a refined mesh") under R730's number, so a
+  reader tracing the exclusion arrives at a closed item. The hand-back says the exclusion
+  now rests on R736; the published label does not. **Closed when** the label names R736.
+* **C51.** `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:573`.
+  `assert_close(one_plane, two_planes, ...)` is module against module -- an invariance
+  assertion, not a hand calculation. It is hand-pinned two lines later through `summed`, so
+  the claim in the file docstring survives; the first assertion on its own does not. **Closed
+  when** the docstring notes which assertions are invariances rather than hand values, or
+  the magnitude is asserted against `summed / sqrt(2)` directly.
+* **C52.** `scripts/measure/member_forces_table.py:433`. The axial negation has no control
+  beside it, where the two sag planes each have one. Measured: replacing both lines with
+  `pass` leaves `_station_values` at exit 0, and `grep -rl member_forces_table tests/`
+  returns only two corpus data files, so the revert is invisible to all 3358 tests. **Closed
+  when** the sign of the published `N` is refused the way the sag signs are -- one
+  `copysign` comparison against a prescribed-sense reference -- or the absence is recorded
+  as accepted with the reason.
+* **C53.** `scripts/measure/member_forces_table.py:493`. The repaired guard skips when
+  `applied == 0.0`, and the subject is now a difference rather than a product, so a sag
+  below half an ULP of the chord mean is skipped where the old subject could only be zero if
+  the load was. The ratio needed is about `1e16` and no shipped row is near it. **Closed
+  when** the skip reads the load alone, as it did before, with the difference asserted
+  nonzero rather than used as the skip condition.
+* **C54.** `docs/milestones/F6.md` Â§ 3a's `F6_API_CLAUSE_AGREEMENT_COUNTER` row says "the
+  hand calculation takes it at S690" while Â§ 0 locks `F_y = 355 MPa`. Both are right and
+  neither names the other. **Closed when** the Â§ 3a row cites Â§ 0's lock and says why the
+  one assertion departs from it.
+* **C55.** `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:748`.
+  `_quantities`' docstring says the 32 points are "the domain of the ceiling" and warns that
+  "a family measured on a narrower domain than the ceiling it defends reports the strongest
+  member as the quantity's". The warning is correct and applies to this file: the ceiling
+  defends a module in `__all__` that accepts every `D/t` up to 300 at every grade. **Closed
+  when** R750's repair lands and the sentence is restated against the domain that results.
+* **C56.** `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:370` and the file
+  docstring's "either side of every boundary": the tension/compression switch is exercised on
+  both sides but not bracketed at it, and `in_tension >= 0.0 -> > 0.0` leaves 65 green.
+  Harmless today -- the two differ only at exactly zero -- but the docstring names the switch
+  as one of the bracketed boundaries. **Closed when** the claim is narrowed or a point sits
+  at `axial_n = 0.0` and `-0.0`.
+* **C57.** `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:623` and `:820`
+  import `CM_JOINT_TRANSLATION` into the hand side, so the VALUE is pinned by the single
+  exact assert at `:677` and by nothing else -- the hand arithmetic cannot see it. The assert
+  exists and kills a 1% edit, so this is a note about where the warrant lives, not a gap.
+  **Closed when** the two hand sides write `0.85` out, as they do for every other
+  coefficient.
+* **R735, R736, R738, C34 to C40, and the `0.2240`/`0.2239` item** -- still open from verdict
+  109, carried in `docs/closure/F4.md:147`, not re-adjudicated. R735's third site and the
+  published label the report's Â§ 8 greps are part of that list.
+* **R712 to R717, C2 to C15, C24 to C33, C41 to C49** -- still open, carried, not re-reviewed
+  item by item, per CZ0.
+
+## Tolerances touched
+
+```
+cmd    git diff 2cf33b0..HEAD -- floatfea/tolerances.py | grep -E "^\+[A-Z0-9_]+: Final"
+out    +F6_API_CLAUSE_AGREEMENT: Final[float] = 1.0e-14
+out    +F6_API_CLAUSE_AGREEMENT_COUNTER: Final[float] = 8.0e-13
+out    +F6_API_CLAUSE_INJECTION_EPS: Final[float] = 1.0e-12
+out    +F6_API_UTILISATION_COUNTER_FACTOR: Final[float] = 1.1
+cmd    git diff 2cf33b0..HEAD -- floatfea/tolerances.py | grep -cE "^-[^-]"
+out    1    the single line `# (no entries yet -- F6/F7)`
+judge  **FOUR NEW ENTRIES, NOTHING EXISTING MOVED, NOTHING WIDENED.** All four are declared
+       under the "Rung 5 -- Independent confirmation" header and the gate is now in rung 5,
+       which `1f8f61a` fixed. EU1 fires and Â§ 5 is the adversarial case.
+```
+
+| name | old | new | form | counter | justification located | ruling |
+|---|---|---|---|---|---|---|
+| `F6_API_CLAUSE_AGREEMENT` | -- | `1.0e-14` | dimensionless, RELATIVE | `F6_API_CLAUSE_AGREEMENT_COUNTER` | `floatfea/tolerances.py` entry, window rule; `docs/milestones/F6.md` Â§ 3a | **FORM ADMISSIBLE, THE DECLARED WINDOW IS NOT. R750.** Relative and dimensionless, correctly; an exactness tolerance at a small multiple of round-off with the measurements recorded, correctly; and the ubuntu run at `1f8f61a` is the independent-platform measurement the argument needed. What is wrong is the lower edge: `59.3937x` is the edge over the 32 chosen points, `15.35x` is the edge over the domain the ceiling defends, at `F_y = 355`, `D/t = 113.43`, `KL/r = 108.1`. Still above `F4_WINDOW_RULE_MIN_EDGE = 2.0`, so the VALUE stands; the published edge does not. |
+| `F6_API_CLAUSE_AGREEMENT_COUNTER` | -- | `8.0e-13` | dimensionless, a floor beneath the family response | n/a, it IS the counter (AO2) | same entry | **BLOCKED, R750.** A constant at `1.0355x` below a response measured at one of two chosen points, where 266 of 350 live amplified-governing configurations sit at or below it and the weakest is `3.098618e-15`. The resolution has a closed form; the declared `0.828392` is that function at the strong end. EH4's weakening direction -- the minimum over points -- is never formed in the file. |
+| `F6_API_CLAUSE_INJECTION_EPS` | -- | `1.0e-12` | dimensionless, STRUCTURAL, an input to a counter-case | none, correctly (AO2) | same entry | **ADMISSIBLE, and solved in both directions as the entry claims.** I reproduced the linearity: the response scales with it, so it may fall to `1.207158e-14` before `C_m`'s response at the chosen point reaches the ceiling. The reason given -- that a real transcription error is percent-scale and this measures non-vacuity -- is right, and my mutation sweep is the evidence (a 1% edit gives `1 failed` to `7 failed`, ten decades over). Its consequence is R750's, not its own. |
+| `F6_API_UTILISATION_COUNTER_FACTOR` | -- | `1.1` | dimensionless, STRUCTURAL, a load multiplier | none, correctly (AO2) | same entry | **ADMISSIBLE, and the entry's hardest claim is true.** All six channels reach exactly `1.0` by a closed form, redden at `1.1x`, `governing` names the injected clause in all six, and neither branch moves under the injection -- which the test asserts rather than states. The elastic-branch exclusion is a property of the clause (`F_a/F_e' = 1.000000` exactly, verified) and not of the test, and the test asserts the ratio rather than the conclusion. |
+| everything in the F4 block and earlier | -- | unmoved | -- | -- | -- | Not touched in this range and not re-swept. |
+
+## Carried
+
+Verdict 110 (`2cf33b0`, judging `0b9ea0d`) was a **HOLD** carrying eight names and a closure
+list. Every one, with status.
+
+* **R739 (blocking) -- ANSWERED IN SUBSTANCE, TWO NAMED SITES STILL OPEN.** The negation is
+  at the publishing boundary (`scripts/measure/member_forces_table.py:433`), the derivation
+  is recorded there, both tables are regenerated in the same commit, and `F_a = 73.19` /
+  `161.08` and the 2/2 clause split are published. The sense is read once, from
+  `docs/conventions.md:320`. **Two residues, each blocking under its own number:**
+  `floatfea/post/member_forces.py:23` is still inverted and Â§ 8a records it as correct
+  (**R751**), and the published summary still says all four over-unity rows are Â§ 3.3.1
+  (**R747**). The 1 mm cell is recorded in the source comment rather than in the report;
+  that half of the condition I let stand, because the measurement is where the fix is.
+* **R740 (blocking) -- CLOSED.** `total_instant` rows exist, one per station, on EZ2's
+  governing basis, with a refusal if any station lacks a governing-basis peak; the filter
+  reads only those; the label states which quantity the column is and why the envelope is
+  not used. `U = 1.71167` against the old `1.81496` is published. The "ONLY WITHIN THE
+  GOVERNING BASIS" note -- that tracking the global peak emitted 2 rows instead of 32 -- is
+  the kind of self-reported near-miss that makes the rest believable.
+* **R741 (blocking) -- CLOSED.** `local_buckling_stress` implements Â§ 3.2.2(b),
+  `allowable_axial_compression` takes `D` and `t`, refuses above `D/t = 300`, reports
+  `*_local` branches, and the refusal is exercised. `C_c` is recomputed from `F_xc`, which
+  is the clause's own substitution. My mutation sweep confirms both the limit and the
+  coefficient are live.
+* **R742 (blocking) -- CLOSED, by option (i).** The limits stay at `10340`/`20680`, the
+  modulus the clause's limits were derived at is stated, and the reduced branch is capped at
+  `0.75 F_y`. The sweep test asserts `checked > 7000` so a narrowed domain fails loudly, and
+  the cap carries its own failure: disabling it gives `3 failed`. **The residue is R749** --
+  the cap is now what the first boundary's correctness rests on, and the boundary's own
+  location is unpinned.
+* **R743 (blocking) -- CLOSED.** Renamed `CM_JOINT_TRANSLATION`, category Â§ 3.3.1 case (a),
+  direction stated as measured, `C_m = 1.0` column published, and the direction asserted at
+  an amplified-governing point rather than a vacuous one. **My own `5.3x` ranking is
+  WITHDRAWN**: on the shipped basis `K` is the larger lever by `3.7x`.
+* **R744 (blocking) -- CLOSED, measured at all four sites.** Â§ 3 above. The report's account
+  of the two ways its first cell was wrong -- reading the repaired source back after the
+  HEAD loop had overwritten it, and writing outside the repository so the unperturbed
+  control failed -- is the most useful paragraph in the revision, and both tells it names
+  were the right tells.
+* **R745 (blocking) -- CLOSED.** `Answers: verdict 110 @ 2cf33b0`, `step-1-answers.json`
+  committed, `## 0` and `## 0a` generated, the whole-suite line present, the five sections
+  sourced, and the eight-red trace pasted and checkable. I verified the trace by name in CI
+  and verified the clearing by my own full run at `dd90505`: 3358 passed.
+* **R746 (blocking) -- CLOSED.** The header names verdict 110, the `Carried` table is the
+  generator's, R731 and R732 are marked answered-by-109 rather than carried, and R737 is
+  named with a decision.
+* **R737 (blocking, carried from verdict 109) -- CLOSED, and my framing was the loose half.**
+  Â§ 3 above.
+* **R735, R736, R738, C34 to C40, the `0.2240`/`0.2239` item, R712 to R717, C2 to C15,
+  C24 to C33, C41 to C49 (closure) -- STILL OPEN**, carried as a list, not re-adjudicated.
+  C46 -- the guard that was failing false on its own fixture -- is green in my run, so it
+  was either fixed or it was conditional; it stays on the list until the closure commit says
+  which. R735's third site and the published label the report's Â§ 8 greps belong to that
+  list too.
+* **THE MID EXCLUSION -- correctly excluded, wrongly attributed.** The hand-back says it now
+  rests on R736; the published label still says R730. C50.
+* **THE SCHEDULE -- and this is the escalation verdict 110 said would be due.** The report
+  states the 22 October working target, the 28 October committed date, and that the target
+  holds. Step 1 is two rounds in and carries five blocking items into round three. Four of
+  the five are a string, a regeneration, two exact equalities and a sentence; the fifth
+  (R750) is a derivation the implementer has already done once and has to redo at the weak
+  end. **None of them needs a FloatSim run and none needs new apparatus.** On today's
+  evidence the 22 October working target still holds and I would not slip it yet. If round 3
+  closes still carrying any of R747 to R751, the choice -- slip the date or reduce scope --
+  has to be stated with a number beside it rather than restated.
+
+## The adversarial corpus (BE3)
+
+**BATCH 43, committed separately at `a0482e2`:
+`tests/corpus/f6_g61_gate_reach_and_the_counter_at_other_configurations.txt`, 29 entries,
+every one new this round and none of them read by the implementer.**
+
+EG4(e)'s pause to 28 October permits it and the file header claims the exception explicitly:
+the surface is F4's load-mapping gate -- the `N` column, the generator that writes it, and
+the clause module that reads it and branches on its sign. The clause-boundary entries are on
+the same surface one step downstream: a `D/t` limit one digit wrong picks a different
+allowable for the same member force.
+
+**COVERAGE: the shipped checks catch 8 of 29.**
+
+```
+cmd    grep "^id=" <the file> | grep -c "expect=catch"
+out    8
+cmd    grep "^id=" <the file> | grep -c "expect=miss"
+out    21
+cmd    python -m pytest -q -p no:randomly <the 10 files that read tests/corpus>
+out    1765 passed, 2 warnings in 377.84s
+```
+
+Against the last five rounds -- 1 of 16, 9 of 21, 4 of 11, 8 of 13, 5 of 22 -- this is the
+second highest, and the reason is the thing that changed: **last round the surface had no
+gate at all and now it has one.** All eight catches are in the clause module, and every one
+of them is a mutation G6.1 kills. Batch 42's five catches were all controls.
+
+**And the number that matters more than 8 of 29 is 30 of 34.** Of the thirty-four
+executable-line literals and expressions I mutated in `floatfea/checks/api_wsd.py`, G6.1
+kills thirty. The four it does not are R749, and two of them are the numbers the previous
+round's finding was about. That is the measurement on FB0's ordering: the gate was worth
+building, it works, and the holes in it are at the boundaries rather than in the arithmetic.
+
+## On the criterion -- I was asked, and I agree with it, and I used its carve-out twice
+
+CZ0 as amended by EZ0 is right and I applied it. Of my five findings, three are squarely in
+(a), (b) or (c) without argument: R749 is a gate assertion, R750 is a counter value and the
+form of one, R747 is a defect in a published deliverable and in the `scripts/measure/`
+generator named in EZ0's own definition.
+
+**Two needed the carve-out and I am naming both rather than smuggling them.** R748 and R751
+are sentences. R748 blocks because the sentence IS the deliverable's warrant and its cited
+path contains nothing -- "every citation resolves" is a recorded guard and this is its
+shape. R751 blocks because it is the only statement in `floatfea/` of a convention a
+published column's sign now depends on, and because it is a named site of R739's closing
+condition that the report recorded as answered on a claim one command refutes. **If Xabier
+reads the criterion more narrowly, both become closure items and the other three findings
+hold the step on their own.** I would rather be told the line is in the wrong place than
+guess at it.
+
+**Nothing in this verdict is held against a figure in a report.** Eight prose items went
+into the closure list, including C50 and C54, which under the retired head would each have
+been a finding and would each have moved nothing. **And I want to record what the mutation
+sweep bought, because it is the first time this project has had one.** Four of my five
+findings came from running something the diff did not choose, and three of the four came
+from two loops that each took under a minute per case -- a per-literal mutation of one
+module, and the same model at 432 configurations instead of 2. The diff read nothing like as
+well. `grep` over a diff finds a changed line; it cannot find a line that should have
+changed, and it cannot find a constant that is right at the point its author picked.
+
+## Next step opens when
+
+**STEP 1 STAYS OPEN. THIS WAS ROUND 2 OF THREE AND ONE REVIEWED REVISION REMAINS.** After
+the third revision the step closes under CZ0 whatever its state, and any blocking item still
+open carries by name into step 2 and stays blocking there. In order, cheapest first:
+
+1. **R748 is answered** -- the four citations read `tests/verification/rung5/`, and
+   `docs/F6_utilisation.csv` and `docs/F6_utilisation.md` are regenerated in the same commit
+   (BP0), with `ls tests/verification/rung5/` pasted. One string and one run.
+2. **R747 is answered in that same commit, because it is the same regeneration** -- the four
+   summary sentences are generated from the sets they describe or deleted. My figures to
+   beat: the 2/2 split between Â§ 3.3.1 and Â§ 3.3.2 on the four over-unity rows, `0.034238`,
+   `u_bending = 1.71138` at `platform:hub2_arm` ROOT, and the amplified form governing on
+   `10 of 17` compression rows. If the regeneration disagrees with those I want the
+   disagreement rather than a reconciliation.
+3. **R751 is answered** -- one clause in `floatfea/post/member_forces.py:23`, the 1 mm cell
+   beside it, and Â§ 8a's row corrected. `end_a[0] = -5.51010219e+06` for a stretch where
+   `EA/L x 1e-3 = +5.51010219e+06` is the measurement, and it is the same one verdict 110
+   took.
+4. **R749 is answered** -- `limit_1` and `limit_2` are pinned the way `limit_3` already is,
+   or a point sits inside each boundary's own neighbourhood, and the `300` refusal is
+   bracketed the way `LOCAL_BUCKLING_DT` is at `60`/`60.5`. Re-run `10340 -> 10430`,
+   `20680 -> 20860` and `300 -> 303` and paste both outcomes for each. Three assertions
+   inside a file the step already shipped; no new apparatus.
+5. **R750 is answered** -- the counter is a floor beneath every admissible configuration
+   rather than a constant at one, the window entry states the edge over the domain the
+   ceiling defends, and EH4's weakening direction is taken at least once. `3.098618e-15`,
+   `266 of 350`, `82 of 432` and `6.515863e-16 at (355 MPa, 113.43, 108.1)` are my figures.
+6. **The closure list C50 to C57** goes in the step's closure commit, where CZ0 puts it, and
+   C45 still needs its own standalone `process:` commit. CZ1 applies to that commit and EQ0
+   applies if it moves a gate or a tolerance -- which, if R749 and R750 are answered in it
+   rather than in the revision, it will.
+
+**What I will not accept at revision 3.** A deliverable whose summary paragraph still
+contradicts the table above it, because that is R739's own subject for the second round
+running and it is the paragraph a reader reaches last. A G6.1 warrant citing a directory CI
+declares empty. A branch limit that a digit swap leaves green, when the file already
+contains the exact assertion that would catch it and applies it to one limit of three. A
+counter whose declared basis is the strongest member of its family when the rule it is
+declared under asks for a floor beneath the weakest. And a sentence in `floatfea/` that
+says the opposite of what a prescribed-sense measurement says, two rounds after that
+measurement was first taken. The question for all five is the recorded one: if the thing
+this claim asserts were false, would anything go red. For R749 and R750 I measured the
+answer and it is no.
+
+**And one thing on the record for the implementer rather than against them.** This revision
+built the step's locked content from nothing in one round, and the gate it built is real: I
+mutated thirty-four things in the module and it killed thirty. It found and reported three
+vacuous counter-cases that nobody asked it about, it reported its own first cell being wrong
+in two ways before I could find it, it reported the rung placement before I could find that
+either, and it corrected my framing of R737 with a command. Four of the eight items verdict
+110 raised are closed outright and two more are closed in substance. **The pattern in what
+remains is one thing, and it is worth saying plainly: every one of the five is at a boundary
+or in a sentence, and none is in the arithmetic.** The clause transcription is correct --
+I checked thirty coefficients by mutation this round after checking eight by hand last
+round. What keeps going wrong is the edge of the domain and the prose a reader reads
+instead of the table. Those are the two places a correct calculation gets published wrong,
+and the fix for both is the same one: generate the sentence from the set, and bracket the
+boundary at the boundary.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6 step 1
 Reviewed commit: 517f8e201a1860142277d155b03b221458f482bb
 Verdict: HOLD
 **Reviewed commit: `0b9ea0d`** (`0b9ea0dd5cec0a6382c26fafae31be6f488a7d0b`, tree clean when
