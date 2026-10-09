@@ -8,6 +8,8 @@
 * Hub line mass 15 t/m, against the platform arms' 10.3 t/m.
 * Stand-in tube: the stiffness equivalent of a TRIANGULATED TRUSS of undecided depth (F1.md:390). Stresses are INDICATIVE, not a check on a real section.
 * EX3 / R724: all six cases are heading 0 degrees. The heading dependence is UNTESTED.
+* FA1: the 213.0 MPa figure this table compares against is a GENERIC 0.6*Fy REFERENCE; it is SUPERSEDED by F6's API RP 2A-WSD clauses and it is NOT the API bending allowable. For D/t = 13.9 (below 10340/Fy = 29.13) API gives Fb = 0.75*Fy = 266.25 MPa; the generic reference is 1.25x conservative on bending.
+* FA0: T = 12.5 s STAYS in the governing set. It is 0.3% below sqrt(6.5*H) = 12.542 s -- within the guidance's precision -- and it was CHOSEN as the band's lower edge. The response rises as T falls across the band, so the lower edge governs and 12.5 s represents it. No new FloatSim run.
 * EZ2: the GOVERNING envelope is T = 12.5; 14; 15 and 16.2 s only. T = 10 s and T = 20 s are outside the associated-period range for H = 24.2 m -- and T = 10 s exceeds the deep-water breaking steepness -- so they are reported as SENSITIVITY ONLY and cannot govern. T = 12.5 s sits 0.042 s below the band's lower bound; see the wave-basis table.
 * Stations: ROOT = the inboard end at the body's centre node, TIP = the far end. MID is closed-form for a uniform net body force (one element per member at F3's mesh).
 * R730: all three stations are INTERNAL ACTIONS in one convention (as seen from the A end), so TIP is `-end_b` and not the raw element end force. An earlier version averaged the two raw ends for MID, which computes a LOAD -- exactly half the member's weight on Vz -- and understated the midspan stress by 46%.
@@ -61,7 +63,7 @@
 | 16.2 | 409.8 | 0.0591 | in the band 12.542-16.316 s | **governing** |
 | 20 | 624.5 | 0.0387 | above the band 12.542-16.316 s by 3.684 s | sensitivity only |
 
-**`T = 12.5 s` sits `0.042 s` BELOW the lower bound it is included under** (`sqrt(6.5 x 24.2) = 12.542 s`). EZ2(a) names it as governing and that is what ships; the directive's own criterion and its own case list disagree by that much, and it is the lowest-period governing case, so it is the one most likely to carry the envelope. Flagged rather than passed over.
+**`T = 12.5 s` sits `0.042 s` below `sqrt(6.5 x 24.2) = 12.542 s`, and FA0 RULES THAT IT STAYS.** `0.3%` below the bound is within the guidance's own precision, and the case was CHOSEN as the band's lower edge. The reason it matters is the direction: **the response rises as `T` falls across the band**, so the lower edge is what governs and `12.5 s` is what represents it -- which is also why it carries 8 of the governing top ten. No new FloatSim run.
 
 ## The section these stresses are computed on
 
