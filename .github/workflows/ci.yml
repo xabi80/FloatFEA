@@ -502,4 +502,4 @@ jobs:
       - name: "ladder 4 -- the loads are the loads"
         run: sh scripts/run_rung.sh full:tests/verification/rung4
       - name: "ladder 5 -- independent confirmation"
-        run: sh scripts/run_rung.sh empty:tests/verification/rung5
+        run: sh scripts/run_rung.sh full:tests/verification/rung5

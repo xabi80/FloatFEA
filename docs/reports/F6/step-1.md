@@ -273,26 +273,50 @@ table rides behind it, carrying the G6.1 line on its face.
 
 ## 2. G6.1 — the gate the step was locked to build
 
-`tests/verification/rung6/test_g61_api_wsd_hand_calculations.py`. Every clause against the
+`tests/verification/rung5/test_g61_api_wsd_hand_calculations.py`. Every clause against the
 clause arithmetic worked by hand in the test, in SI, with the clause cited — never the
 module's own function (FB0, EA4).
 
 ```
 claim  G6.1 exists, is green, and reads both new files
-cmd    python -m pytest tests/verification/rung6/ -q
-out    65 passed in 0.43s
-cmd    grep -c "def test_" tests/verification/rung6/test_g61_api_wsd_hand_calculations.py
+cmd    python -m pytest tests/verification/rung5/ -q
+out    65 passed in 0.44s
+cmd    grep -c "def test_" tests/verification/rung5/test_g61_api_wsd_hand_calculations.py
 out    37
-cmd    grep -c "# expected:" tests/verification/rung6/test_g61_api_wsd_hand_calculations.py
+cmd    grep -c "# expected:" tests/verification/rung5/test_g61_api_wsd_hand_calculations.py
 out    22
 cmd    grep -rl api_wsd tests/ | grep -v corpus
-out    tests/verification/rung6/test_g61_api_wsd_hand_calculations.py
+out    tests/verification/rung5/test_g61_api_wsd_hand_calculations.py
 rule   FB0: each clause function, two or more points per branch, either side of every
        boundary; the clause formula worked by hand, never the module's own function
 judge  the verdict's `grep -rl api_wsd tests/` was EMPTY. The points are four per
        compression branch either side of `C_c`, two compact and four on each reduced
        bending branch either side of the two `D/t` limits, both sides of the
        local-buckling limit, both forms of section 3.3.2, and both refusals.
+```
+
+**AND IT IS RUNG 5, NOT RUNG 6, WHICH I HAD TO BE TOLD BY A GUARD.**
+
+```
+claim  G6.1 is V5.3 and belongs to rung 5; it was written into rung 6
+cmd    grep -n "V5.3\|Gate G6.1\|Rung 6" docs/verification/README.md
+out    177:**V5.3 Code check hand calculations.** Each API RP 2A-WSD utilisation term
+out    180:and the code result. *Gate G6.1.*
+out    186:## Rung 6 — It stays fixed
+cmd    python -m pytest tests/test_ci_runs_the_whole_suite.py -q
+out    65 of 3358 collected tests are run by no CI job   (before the move)
+out    74 passed                                         (after)
+rule   docs/verification/README.md orders the ladder by DEPENDENCY, and
+       floatfea/tolerances.py's own section headers already put G6.1 under
+       "Rung 5 -- Independent confirmation" and rung 6 under golden-file regression
+judge  **THE TEST WAS GREEN IN THE WRONG RUNG AND NOTHING ABOUT ITS OWN RESULT SAID SO.**
+       What said so was `test_every_test_in_the_suite_is_run_by_some_ci_job`: rung 6 is
+       declared `empty:` in the workflow and carries a `.empty-by-design` marker, so the
+       65 tests ran on my machine and in no CI job at all. The file is now in
+       `tests/verification/rung5`, that rung is `full:` and its marker is deleted in the
+       same commit, and `scripts/run_rung.sh` reports `65 collected, 0 failed, 0 errored,
+       0 skipped`. **I had declared the tolerances under the rung-5 header while putting
+       the test in rung 6**, which is the contradiction the guard caught.
 ```
 
 **R742 is answered — the cap, and the cause is the clause's own continuity point.**

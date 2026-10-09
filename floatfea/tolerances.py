@@ -2863,7 +2863,7 @@ F4_G41_DYNAMIC_MOMENT_COUNTER: Final[float] = 0.01
 # CLASS: ACCURACY -- carries F6_API_CLAUSE_AGREEMENT_COUNTER below.
 #
 # G6.1: every API RP 2A-WSD clause in `floatfea/checks/api_wsd.py` against the clause
-# arithmetic worked by hand in `tests/verification/rung6/`, in SI, with the clause cited
+# arithmetic worked by hand in `tests/verification/rung5/`, in SI, with the clause cited
 # (FB0). The quantity is the relative disagreement between the two, over 32 points chosen
 # either side of every branch boundary -- `C_c`, the three `D/t` limits, the local-buckling
 # limit and the tension/compression switch.
