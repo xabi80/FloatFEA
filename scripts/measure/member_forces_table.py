@@ -120,6 +120,53 @@ from floatfea.post.member_forces import (  # noqa: E402
 from floatfea.solve.inertia_relief import solve_inertia_relief  # noqa: E402
 from floatfea.solve.static import solve_superstructure_static  # noqa: E402
 
+WAVE_HEIGHT_FULL_M = 24.2
+"""The DS1 design wave at full scale, `0.484 m` model times the Froude factor."""
+
+GOVERNING_PERIODS = (12.5, 14.0, 15.0, 16.2)
+"""EZ2(a): the cases the GOVERNING envelope is taken over.
+
+**EZ2 corrects the case selection, and it is Xabier's correction of his own basis.** For
+`H = 24.2 m` the associated-period range by DNV practice is
+`sqrt(6.5 H) <= T <= sqrt(11 H)`, which is `12.542 .. 16.316 s`. The two cases outside it
+are reported separately and are not allowed to govern:
+
+    T = 10 s   H/lambda = 0.1550  -- EXCEEDS the deep-water breaking steepness 1/7 = 0.1429
+    T = 20 s   H/lambda = 0.0387  -- below the range; the wave is too long for this height
+
+**AND T = 12.5 s SITS 0.042 s BELOW THE LOWER BOUND IT IS BEING INCLUDED UNDER.**
+`sqrt(6.5 x 24.2) = 12.542 s`. EZ2(a) names it as governing and that is what ships, but the
+directive's own criterion and its own case list disagree by that much, so the fact is here
+rather than passed over. It is the lowest-period governing case and therefore the one most
+likely to carry the envelope, which is why the discrepancy is worth a reader's attention.
+"""
+
+SENSITIVITY_PERIODS = (10.0, 20.0)
+"""EZ2(b): outside the associated-period range; `T = 10 s` exceeds breaking steepness."""
+
+
+def steepness(period_full_s: float) -> tuple[float, float, str]:
+    """`(lambda, H/lambda, position)` for one case, deep water.
+
+    `lambda = g T^2 / (2 pi)`. The position string is what EZ2(d) asks for on every label
+    line, and it names the two independent reasons a case can be out of range -- the
+    period band and the steepness limit -- rather than collapsing them into "outside".
+    """
+    lam = 9.81 * period_full_s * period_full_s / (2.0 * math.pi)
+    s = WAVE_HEIGHT_FULL_M / lam
+    lo = math.sqrt(6.5 * WAVE_HEIGHT_FULL_M)
+    hi = math.sqrt(11.0 * WAVE_HEIGHT_FULL_M)
+    if s > 1.0 / 7.0:
+        where = f"BREAKING (H/L {s:.4f} > 1/7); and below the band {lo:.3f}-{hi:.3f} s"
+    elif period_full_s < lo:
+        where = f"below the band {lo:.3f}-{hi:.3f} s by {lo - period_full_s:.3f} s"
+    elif period_full_s > hi:
+        where = f"above the band {lo:.3f}-{hi:.3f} s by {period_full_s - hi:.3f} s"
+    else:
+        where = f"in the band {lo:.3f}-{hi:.3f} s"
+    return lam, s, where
+
+
 STATIONS = ("ROOT", "MID", "TIP")
 BASES = ("static", "dynamic", "total")
 
@@ -134,6 +181,10 @@ LABELS = (
     "Stand-in tube: the stiffness equivalent of a TRIANGULATED TRUSS of undecided depth "
     "(F1.md:390). Stresses are INDICATIVE, not a check on a real section.",
     "EX3 / R724: all six cases are heading 0 degrees. The heading dependence is UNTESTED.",
+    "EZ2: the GOVERNING envelope is T = 12.5; 14; 15 and 16.2 s only. T = 10 s and T = 20 s "
+    "are outside the associated-period range for H = 24.2 m -- and T = 10 s exceeds the "
+    "deep-water breaking steepness -- so they are reported as SENSITIVITY ONLY and cannot "
+    "govern. T = 12.5 s sits 0.042 s below the band's lower bound; see the wave-basis table.",
     "Stations: ROOT = the inboard end at the body's centre node, TIP = the far end. MID is "
     "closed-form for a uniform net body force (one element per member at F3's mesh).",
     "R730: all three stations are INTERNAL ACTIONS in one convention (as seen from the A "
@@ -475,6 +526,7 @@ def main(argv: list[str] | None = None) -> int:
     # any instant. Both are reported and both are labelled; a reader given only the bound
     # would take 762.2 MPa for a real stress.
     instant: dict[tuple[str, str, str], tuple[float, float]] = {}
+    instant_sens: dict[tuple[str, str, str], tuple[float, float]] = {}
 
     for i, period in enumerate(inp.periods_full_s):
         lam = raw[f"case{i}/lam"]
@@ -503,8 +555,13 @@ def main(argv: list[str] | None = None) -> int:
                             values if key not in worst_lo else np.minimum(worst_lo[key], values)
                         )
                         sigma_now, _tau_now = _stresses(member, static[key] + values)
-                        if sigma_now > instant.get(key, (0.0, 0.0))[0]:
-                            instant[key] = (sigma_now, float(period))
+                        # EZ2(a)/(b): only the IN-RANGE cases may govern. The two outside
+                        # are tracked separately and reported in their own block -- a
+                        # breaking wave and a wave too long for this height cannot set a
+                        # design envelope, and letting them would have been the finding.
+                        target = instant if period in GOVERNING_PERIODS else instant_sens
+                        if sigma_now > target.get(key, (0.0, 0.0))[0]:
+                            target[key] = (sigma_now, float(period))
         for key in sorted(worst_hi):
             for tag, dyn in (("max", worst_hi[key]), ("min", worst_lo[key])):
                 rows.append(Row(key[0], key[1], key[2], period, f"dynamic_{tag}", dyn))
@@ -515,7 +572,7 @@ def main(argv: list[str] | None = None) -> int:
         rows.append(Row(key[0], key[1], key[2], float("nan"), "static", values))
 
     _write_csv(args.out, rows, by_name)
-    _write_summary(args.summary, rows, by_name, inp, instant)
+    _write_summary(args.summary, rows, by_name, inp, instant, instant_sens)
     print(f"\n  wrote {args.out.relative_to(ROOT)} ({len(rows)} rows)")
     print(f"  wrote {args.summary.relative_to(ROOT)}")
     return 0
@@ -606,12 +663,15 @@ def _write_summary(
     by_name: dict[str, BodyModel],
     inp: Any,
     instant: dict[tuple[str, str, str], tuple[float, float]],
+    instant_sens: dict[tuple[str, str, str], tuple[float, float]],
 ) -> None:
     """The envelope over the six cases, the ten most loaded stations, and the f sweep."""
     env: dict[tuple[str, str, str], tuple[float, float, str]] = {}
     for r in rows:
         if not r.basis.startswith("total"):
             continue
+        if r.period_full_s not in GOVERNING_PERIODS:
+            continue  # EZ2(a): out-of-range cases do not set the envelope
         member = _member_of(by_name, r.body, r.member)
         sigma, _tau = _stresses(member, r.values)
         key = (r.body, r.member, r.station)
@@ -643,6 +703,46 @@ def _write_summary(
             f"{sigma / 1e6:.1f} | {bound[0] / 1e6:.1f} |"
         )
     lines += [
+        "",
+        "## The two cases OUTSIDE the associated-period range (sensitivity only)",
+        "",
+        "**EZ2(b): these do not govern and are not in the table above.** `T = 10 s` exceeds "
+        "the deep-water breaking steepness and `T = 20 s` is too long for this height, so "
+        "neither can set a design envelope. They are reported because the response at "
+        "`T = 10 s` is the largest in the whole sweep and a reader who saw only the "
+        "governing block would not know that.",
+        "",
+        "| body | member | station | case | sigma at the instant (MPa) |",
+        "|---|---|---|---|---|",
+    ]
+    for (body, label, station), (sigma, period) in sorted(
+        instant_sens.items(), key=lambda kv: -kv[1][0]
+    )[:10]:
+        lines.append(f"| {body} | `{label}` | {station} | T = {period:g} s | {sigma / 1e6:.1f} |")
+    lines += [
+        "",
+        "## The wave basis, per case (EZ2(d))",
+        "",
+        f"`H = {WAVE_HEIGHT_FULL_M} m` full scale. Deep-water `lambda = g T^2 / (2 pi)`; the "
+        "associated-period band is `sqrt(6.5 H) .. sqrt(11 H)`; the breaking limit is "
+        "`H/lambda = 1/7 = 0.1429`.",
+        "",
+        "| T (s) | lambda (m) | H/lambda | position | basis |",
+        "|---|---|---|---|---|",
+    ]
+    for period in sorted(inp.periods_full_s):
+        lam, s, where = steepness(period)
+        # NOT named `basis`: that shadows the imported `floatfea.basis` module, and the
+        # section below reads `basis.chs_class_limits()` -- which is how this was found.
+        which = "**governing**" if period in GOVERNING_PERIODS else "sensitivity only"
+        lines.append(f"| {period:g} | {lam:.1f} | {s:.4f} | {where} | {which} |")
+    lines += [
+        "",
+        "**`T = 12.5 s` sits `0.042 s` BELOW the lower bound it is included under** "
+        "(`sqrt(6.5 x 24.2) = 12.542 s`). EZ2(a) names it as governing and that is what "
+        "ships; the directive's own criterion and its own case list disagree by that much, "
+        "and it is the lowest-period governing case, so it is the one most likely to carry "
+        "the envelope. Flagged rather than passed over.",
         "",
         "## The section these stresses are computed on",
         "",

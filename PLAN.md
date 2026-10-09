@@ -343,16 +343,28 @@ double as a diagnostic.
   the absolute residual may still look acceptable, so the rate is the property
   that actually guards the fix.
 
-### F5 — Screening and load case generation · *Week 6*
+### F5 — Screening and load case generation — **SUPERSEDED BY THE DESIGN-WAVE BASIS (DJ2/EZ3)**
 
 Response metric extraction, snapshot selection, envelope convergence check.
 Implementation lands here, but the metric list must be **specified during F1**,
 because it determines which channels the schema has to carry.
 
-- **G5.1** The case list is reproducible: same input record and same criteria
-  produce a byte-identical case list.
-- **G5.2** Envelope convergence: adding the next tier of candidate snapshots
-  changes no governing utilisation by more than the stated threshold.
+**EZ3: this milestone is superseded.** The load basis is the six design waves of DQ6
+rather than a screening pass over a long simulation, so there is no snapshot selection to
+make reproducible and no next tier of candidates to add. Code checks are **F6**, where
+`PLAN.md` always put them; the carried ledger that earlier directives called "F5's" is
+**F6's**.
+
+- ~~**G5.1** The case list is reproducible~~ — subsumed: the case list is the six periods,
+  declared in `docs/milestones/F4.md` § 6 and recorded in
+  `data/f4/dynamic_inputs.provenance.json`, whose sha256 the rung-4 gate refuses on.
+- ~~**G5.2** Envelope convergence~~ — **WITHDRAWN (EZ3), with the limitation stated rather
+  than left implicit.** There is no convergence to demonstrate because there is no tier to
+  add: the basis is **six regular waves at heading 0 degrees**, and EZ2 narrows the
+  governing set to the four inside the associated-period band. So the envelope is not
+  claimed to be converged — it is the envelope *of those four*. The heading dependence is
+  untested (EX3/R724) and `T = 12.5 s` sits `0.042 s` below the band's lower bound while
+  carrying 8 of the governing top ten.
 
 ### F6 — Post-processing and code checks · *Week 7–8*
 

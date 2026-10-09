@@ -8,6 +8,7 @@
 * Hub line mass 15 t/m, against the platform arms' 10.3 t/m.
 * Stand-in tube: the stiffness equivalent of a TRIANGULATED TRUSS of undecided depth (F1.md:390). Stresses are INDICATIVE, not a check on a real section.
 * EX3 / R724: all six cases are heading 0 degrees. The heading dependence is UNTESTED.
+* EZ2: the GOVERNING envelope is T = 12.5; 14; 15 and 16.2 s only. T = 10 s and T = 20 s are outside the associated-period range for H = 24.2 m -- and T = 10 s exceeds the deep-water breaking steepness -- so they are reported as SENSITIVITY ONLY and cannot govern. T = 12.5 s sits 0.042 s below the band's lower bound; see the wave-basis table.
 * Stations: ROOT = the inboard end at the body's centre node, TIP = the far end. MID is closed-form for a uniform net body force (one element per member at F3's mesh).
 * R730: all three stations are INTERNAL ACTIONS in one convention (as seen from the A end), so TIP is `-end_b` and not the raw element end force. An earlier version averaged the two raw ends for MID, which computes a LOAD -- exactly half the member's weight on Vz -- and understated the midspan stress by 46%.
 * 'dynamic' is the DYNAMIC INCREMENT about static equilibrium, solved from FloatSim's multipliers with NO gravity -- FloatSim is linearised about equilibrium, so the static weight/buoyancy balance is already in the formulation. 'total' = static + dynamic.
@@ -19,16 +20,48 @@
 
 | # | body | member | station | governing case | sigma at the instant (MPa) | envelope upper bound (MPa) |
 |---|---|---|---|---|---|---|
-| 1 | platform | `platform:hub2_arm` | ROOT | T = 10 s | 742.6 | 762.2 |
-| 2 | platform | `platform:hub4_arm` | ROOT | T = 10 s | 742.6 | 761.5 |
-| 3 | platform | `platform:hub2_arm` | MID | T = 10 s | 384.6 | 396.7 |
-| 4 | platform | `platform:hub4_arm` | MID | T = 10 s | 384.6 | 396.1 |
-| 5 | platform | `platform:hub3_arm` | ROOT | T = 20 s | 337.3 | 338.2 |
-| 6 | platform | `platform:hub1_arm` | ROOT | T = 12.5 s | 312.2 | 314.5 |
-| 7 | hub1 | `hub1:buoy3_arm` | ROOT | T = 10 s | 262.5 | 263.0 |
-| 8 | hub1 | `hub1:buoy2_arm` | ROOT | T = 10 s | 262.5 | 263.2 |
-| 9 | hub4 | `hub4:buoy11_arm` | ROOT | T = 10 s | 261.7 | 265.2 |
-| 10 | hub2 | `hub2:buoy6_arm` | ROOT | T = 10 s | 261.7 | 265.4 |
+| 1 | platform | `platform:hub4_arm` | ROOT | T = 12.5 s | 455.7 | 482.9 |
+| 2 | platform | `platform:hub2_arm` | ROOT | T = 12.5 s | 455.7 | 483.2 |
+| 3 | platform | `platform:hub3_arm` | ROOT | T = 16.2 s | 314.7 | 318.9 |
+| 4 | platform | `platform:hub1_arm` | ROOT | T = 12.5 s | 312.2 | 314.5 |
+| 5 | platform | `platform:hub4_arm` | MID | T = 12.5 s | 253.9 | 269.4 |
+| 6 | platform | `platform:hub2_arm` | MID | T = 12.5 s | 253.9 | 269.7 |
+| 7 | hub3 | `hub3:buoy9_arm` | ROOT | T = 12.5 s | 214.8 | 216.8 |
+| 8 | hub3 | `hub3:buoy8_arm` | ROOT | T = 12.5 s | 214.8 | 216.7 |
+| 9 | hub1 | `hub1:buoy3_arm` | ROOT | T = 12.5 s | 210.1 | 216.3 |
+| 10 | hub1 | `hub1:buoy2_arm` | ROOT | T = 12.5 s | 210.1 | 216.4 |
+
+## The two cases OUTSIDE the associated-period range (sensitivity only)
+
+**EZ2(b): these do not govern and are not in the table above.** `T = 10 s` exceeds the deep-water breaking steepness and `T = 20 s` is too long for this height, so neither can set a design envelope. They are reported because the response at `T = 10 s` is the largest in the whole sweep and a reader who saw only the governing block would not know that.
+
+| body | member | station | case | sigma at the instant (MPa) |
+|---|---|---|---|---|
+| platform | `platform:hub2_arm` | ROOT | T = 10 s | 742.6 |
+| platform | `platform:hub4_arm` | ROOT | T = 10 s | 742.6 |
+| platform | `platform:hub2_arm` | MID | T = 10 s | 384.6 |
+| platform | `platform:hub4_arm` | MID | T = 10 s | 384.6 |
+| platform | `platform:hub3_arm` | ROOT | T = 20 s | 337.3 |
+| platform | `platform:hub1_arm` | ROOT | T = 10 s | 302.6 |
+| hub1 | `hub1:buoy3_arm` | ROOT | T = 10 s | 262.5 |
+| hub1 | `hub1:buoy2_arm` | ROOT | T = 10 s | 262.5 |
+| hub4 | `hub4:buoy11_arm` | ROOT | T = 10 s | 261.7 |
+| hub2 | `hub2:buoy6_arm` | ROOT | T = 10 s | 261.7 |
+
+## The wave basis, per case (EZ2(d))
+
+`H = 24.2 m` full scale. Deep-water `lambda = g T^2 / (2 pi)`; the associated-period band is `sqrt(6.5 H) .. sqrt(11 H)`; the breaking limit is `H/lambda = 1/7 = 0.1429`.
+
+| T (s) | lambda (m) | H/lambda | position | basis |
+|---|---|---|---|---|
+| 10 | 156.1 | 0.1550 | BREAKING (H/L 0.1550 > 1/7); and below the band 12.542-16.316 s | sensitivity only |
+| 12.5 | 244.0 | 0.0992 | below the band 12.542-16.316 s by 0.042 s | **governing** |
+| 14 | 306.0 | 0.0791 | in the band 12.542-16.316 s | **governing** |
+| 15 | 351.3 | 0.0689 | in the band 12.542-16.316 s | **governing** |
+| 16.2 | 409.8 | 0.0591 | in the band 12.542-16.316 s | **governing** |
+| 20 | 624.5 | 0.0387 | above the band 12.542-16.316 s by 3.684 s | sensitivity only |
+
+**`T = 12.5 s` sits `0.042 s` BELOW the lower bound it is included under** (`sqrt(6.5 x 24.2) = 12.542 s`). EZ2(a) names it as governing and that is what ships; the directive's own criterion and its own case list disagree by that much, and it is the lowest-period governing case, so it is the one most likely to carry the envelope. Flagged rather than passed over.
 
 ## The section these stresses are computed on
 
