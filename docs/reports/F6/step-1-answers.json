@@ -2,129 +2,143 @@
   "_": [
     "POINTERS ONLY (CH4).",
     "",
-    "F6 STEP 1, REVISION 2. Answers verdict 110 @ 2cf33b0, which was ROUND 1 OF THREE and a",
-    "HOLD on eight items -- six on the code and the deliverable, two on a red suite and a",
-    "red CI.",
+    "F6 STEP 1, REVISION 3 -- THE THIRD AND LAST REVIEWED REVISION FOR THIS STEP (CZ0).",
+    "Answers verdict 111 @ fdb4ecd, which was ROUND 2 OF THREE and a HOLD on five items,",
+    "R747 to R751.",
     "",
-    "THE ORDERING CHANGED UNDER FB0 AND THAT IS WHAT THIS REVISION IS. The verdict's own",
-    "section `On FA3 versus G6.1` went to Xabier and came back as FB0: G6.1 lands BEFORE the",
-    "next deliverable send, which inverts FA3 for F6. So this revision is G6.1 first --",
-    "`tests/verification/rung6/test_g61_api_wsd_hand_calculations.py`, 66 tests, 32 points,",
-    "two or more per branch either side of every boundary -- and the regenerated deliverable",
-    "second, with the G6.1 green line on its face.",
+    "ALL FIVE ARE ANSWERED AND ONE OF THEM REFINES THE VERDICT'S OWN FRAMING. R750 asks for",
+    "a counter that is 'a floor beneath every admissible configuration rather than a",
+    "constant at one'. Measured, no constant can be: C_m's resolution is",
+    "cm*u_bending/((1-f_a/F_e')*u_combined), so its infimum over the domain is 0 and it is",
+    "ATTAINED -- at KL/r = 30.4, f_a/F_e' = 0.40 the amplified form still governs at zero",
+    "bending, because F_a = 1.926954e+08 < 0.6 F_y. So the verdict's SECOND option is the",
+    "one taken: the family's points are placed AT the weak end and the margin is restated",
+    "from there, with the vacuity rule carrying the rest. Section 2 has the measurement.",
     "",
-    "R739 and R740 were answered in the commit before this verdict existed (the corrected",
-    "table was sent twice), and the verdict confirms the figures: F_a = 73.25 on the four",
-    "platform ROOTs and 161.08 on the hub ROOTs, all four over-unity rows on section 3.3.2,",
-    "the governing U = 1.71167 per-instant against the 1.81496 envelope bound published",
-    "before. The one figure of the verdict's that this revision does NOT reproduce is",
-    "`largest |U(K=2)-U(K=1)| = 0.034926`: it is now 0.034238, and the difference is R740",
-    "-- the verdict measured it on the total_max/total_min basis with the sign corrected,",
-    "and the shipped table is per-instant. Section 4 carries the cell.",
+    "AND R751 WAS RIGHT AND MY SECTION 8a ROW WAS FALSE. The 1 mm cell reproduces the",
+    "verdict's figures to every digit. The row is struck through in place rather than",
+    "edited away, because what it got wrong is the mechanism: a sentence whose second half",
+    "is true under either attribution cannot be checked by reading it.",
     "",
-    "R737 is a DECISION and it is recorded rather than coded, with the residual risk stated:",
-    "see section 6.",
-    "",
-    "The closure list C41 to C49 is NOT in this revision. CZ0 puts it in the step's closure",
-    "commit, fixed once, and C45 needs a standalone `process:` commit of its own."
+    "The closure list C41 to C57 is NOT in this revision. CZ0 puts it in the step's closure",
+    "commit, fixed once; C45 needs a standalone `process:` commit of its own. C52 is the",
+    "one I have partly taken ahead of that -- the new rung-4 test is its control for the",
+    "`floatfea/` half and NOT for the publishing-boundary half, and section 8 states which."
   ],
   "answered": {
     "R712": {
       "state": "open",
-      "where": "§8"
+      "where": "§9"
     },
     "R713": {
       "state": "open",
-      "where": "§8"
+      "where": "§9"
     },
     "R714": {
       "state": "open",
-      "where": "§8"
+      "where": "§9"
     },
     "R715": {
       "state": "open",
-      "where": "§8"
+      "where": "§9"
     },
     "R716": {
       "state": "open",
-      "where": "§8"
+      "where": "§9"
     },
     "R717": {
       "state": "open",
-      "where": "§8"
+      "where": "§9"
     },
     "R730": {
       "state": "answered",
-      "where": "§8",
-      "site": "scripts/measure/member_forces_table.py"
+      "where": "§9"
     },
     "R731": {
       "state": "answered",
-      "where": "§8"
+      "where": "§9"
     },
     "R732": {
       "state": "answered",
-      "where": "§8"
+      "where": "§9"
     },
     "R734": {
       "state": "answered",
-      "where": "§3",
-      "site": "scripts/measure/member_forces_table.py"
+      "where": "§9"
     },
     "R735": {
       "state": "open",
-      "where": "§8"
+      "where": "§9"
     },
     "R736": {
       "state": "open",
-      "where": "§8"
+      "where": "§9"
     },
     "R737": {
       "state": "answered",
-      "where": "§6",
-      "site": "floatfea/hsp_pin.py"
+      "where": "§9"
     },
     "R738": {
       "state": "open",
-      "where": "§8"
+      "where": "§9"
     },
     "R739": {
       "state": "answered",
-      "where": "§4",
-      "site": "scripts/measure/member_forces_table.py"
+      "where": "§8",
+      "site": "floatfea/post/member_forces.py"
     },
     "R740": {
+      "state": "answered",
+      "where": "§9"
+    },
+    "R741": {
+      "state": "answered",
+      "where": "§9"
+    },
+    "R742": {
+      "state": "answered",
+      "where": "§9"
+    },
+    "R743": {
+      "state": "answered",
+      "where": "§9"
+    },
+    "R744": {
+      "state": "answered",
+      "where": "§9"
+    },
+    "R745": {
+      "state": "answered",
+      "where": "§9"
+    },
+    "R746": {
+      "state": "answered",
+      "where": "§9"
+    },
+    "R747": {
       "state": "answered",
       "where": "§4",
       "site": "scripts/measure/api_wsd_utilisation.py"
     },
-    "R741": {
-      "state": "answered",
-      "where": "§2",
-      "site": "floatfea/checks/api_wsd.py"
-    },
-    "R742": {
-      "state": "answered",
-      "where": "§2",
-      "site": "floatfea/checks/api_wsd.py"
-    },
-    "R743": {
-      "state": "answered",
-      "where": "§5",
-      "site": "floatfea/checks/api_wsd.py"
-    },
-    "R744": {
+    "R748": {
       "state": "answered",
       "where": "§3",
-      "site": "scripts/measure/member_forces_table.py"
+      "site": "scripts/measure/api_wsd_utilisation.py"
     },
-    "R745": {
+    "R749": {
       "state": "answered",
-      "where": "§7"
+      "where": "§5",
+      "site": "tests/verification/rung5/test_g61_api_wsd_hand_calculations.py"
     },
-    "R746": {
+    "R750": {
       "state": "answered",
-      "where": "§8"
+      "where": "§6",
+      "site": "floatfea/tolerances.py"
+    },
+    "R751": {
+      "state": "answered",
+      "where": "§8",
+      "site": "floatfea/post/member_forces.py"
     }
   }
 }

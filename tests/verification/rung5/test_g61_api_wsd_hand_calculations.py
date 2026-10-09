@@ -329,6 +329,11 @@ def test_G61_a_section_outside_the_clause_is_REFUSED_not_extrapolated() -> None:
     """
     with pytest.raises(ValueError, match="exceeds 300"):
         allowable_axial_compression(60.8, D_OUTER, D_OUTER / 500.0, FY, E)
+    # R749: BRACKETED AT THE LIMIT ITSELF, the way the local-buckling limit is bracketed at
+    # 60 and 60.5. `300` and `500` left `if d_t > 300.0 -> 303.0` green.
+    allowable_axial_compression(60.8, D_OUTER, D_OUTER / 300.0, FY, E)
+    with pytest.raises(ValueError, match="exceeds 300"):
+        allowable_axial_compression(60.8, D_OUTER, D_OUTER / 300.1, FY, E)
     # and the reduction IS applied where the clause applies, rather than skipped
     got, branch = allowable_axial_compression(60.8, D_OUTER, D_OUTER / 100.0, FY, E)
     assert branch.endswith("_local"), branch
@@ -365,11 +370,44 @@ def test_G61_bending_compact_branch() -> None:
     """
     expected = 0.75 * 355e6
     assert expected == 266.25e6  # not-a-tolerance: the hand value, exact
-    assert 10340.0 / 355.0 == 29.12676056338028  # not-a-tolerance: the hand limit 10340/F_y, exact
+
+    # R749: THE TWO LIMITS ARE PINNED AGAINST THE MODULE, which is what `limit_3` already
+    # had and these two did not. The line that stood here was
+    # `assert 10340.0 / 355.0 == 29.12676056338028` -- both sides written in this file,
+    # neither reading `api_wsd`, so it held byte for byte under `10340 -> 10430` and under
+    # `+1%`. CW0's triple-whose-command-cannot-fail shape, in an assertion.
+    # **These are the two numbers R742 was about.**
+    klass = section_class(D_OUTER, WALL, FY)
+    assert klass.limit_1 == 29.12676056338028  # not-a-tolerance: the hand value of 10340/F_y
+    assert klass.limit_2 == 58.25352112676056  # not-a-tolerance: the hand value of 20680/F_y
     for d_over_t in (13.888888888888889, 29.0):
         got, branch = allowable_bending(D_OUTER, D_OUTER / d_over_t, FY, E)
         assert branch == "compact", (d_over_t, branch)
         assert_close(got, expected, TOL, floor=FLOOR, what="section 3.2.3 compact")
+
+
+def test_G61_the_two_branch_LIMITS_decide_the_branch_within_0_25_percent() -> None:
+    """R749's second half: a point either side of each limit, inside its own neighbourhood.
+
+    The nearest points the sweep had were `29.0`/`30.0` and `58.0`/`60.0` -- `0.44%` below
+    and `3.0%` above each limit -- so a limit moved by a digit swap (`10340 -> 10430`, which
+    is `+0.87%`) moved no point across a boundary. `29.2` and `58.3` are inside the gap.
+
+    # expected: 10340/355 = 29.12676056338028 and 20680/355 = 58.25352112676056, so
+    # D/t = 29.0 is compact and 29.2 is reduced_1; 58.0 is reduced_1 and 58.3 is reduced_2.
+    """
+    for d_over_t, want in (
+        (29.0, "compact"),
+        (29.2, "reduced_1"),
+        (58.0, "reduced_1"),
+        (58.3, "reduced_2"),
+    ):
+        got = allowable_bending(D_OUTER, D_OUTER / d_over_t, FY, E)[1]
+        assert got == want, (
+            f"D/t = {d_over_t} reads {got!r} and the clause gives {want!r}. The two limits "
+            "are 29.12676056338028 and 58.25352112676056, and these four points bracket "
+            "them to better than 0.25%."
+        )
 
 
 @pytest.mark.parametrize("d_over_t", [30.0, 40.0, 50.0, 58.0])
@@ -558,6 +596,30 @@ def test_G61_tension_plus_bending_interaction() -> None:
     assert got.governing == "3.3.1 interaction", got.governing
 
 
+def test_G61_a_member_at_EXACTLY_zero_axial_reads_as_TENSION() -> None:
+    """R749's third: the tension/compression switch, bracketed at its own boundary.
+
+    `in_tension = axial_n >= 0.0`, so zero is TENSION and the allowable is `0.6 F_y` rather
+    than the column value. `>= 0.0 -> > 0.0` left all 65 tests green, because no point sat
+    at exactly zero: every axial load in the file is strictly positive or strictly
+    negative. This is the one point that distinguishes them.
+
+    # expected: at N = 0 the axial branch is "tension" and F_a = 0.6 F_y = 213.0e6 Pa; one
+    # ULP below zero it is the column value, which at KL/r = 121.5 is the elastic branch.
+    """
+    at_zero = _member(axial_n=0.0, moment_y_nm=1.0e6, k_l_over_r=121.5)
+    assert at_zero.in_tension
+    assert at_zero.axial_branch == "tension", at_zero.axial_branch
+    assert_close(
+        at_zero.allow_axial, 0.6 * 355e6, TOL, floor=FLOOR, what="F_a at exactly zero axial"
+    )
+    # and one ULP below zero is the other side, so the boundary is bracketed rather than
+    # approached from one side
+    below = _member(axial_n=-5e-324, moment_y_nm=1.0e6, k_l_over_r=121.5)
+    assert not below.in_tension
+    assert below.axial_branch == "elastic", below.axial_branch
+
+
 def test_G61_the_bending_term_is_the_RESULTANT_and_not_the_sum() -> None:
     """One variable moved: the same total moment, split two ways (BG0).
 
@@ -581,10 +643,19 @@ def test_G61_the_bending_term_is_the_RESULTANT_and_not_the_sum() -> None:
     )
 
 
+# `F_e'` at `KL/r = 30.4`, which the weak-end point below is placed by.
+_F_E_AT_30_4 = 12.0 * math.pi**2 * 210e9 / (23.0 * 30.4**2)
+
 AMPLIFIED_POINTS = [
     # (KL/r, N, My, the branch of 3.2.2 it is on). CHOSEN BY MEASUREMENT -- see below.
     (60.8, -1.0e8, 1.0e8, "inelastic"),
     (121.5, -1.0e7, 1.0e8, "elastic"),
+    # **THE WEAK END (R750), AND IT IS THE POINT THE COUNTER IS DECLARED FROM.** The two
+    # above were chosen for the STRONGEST `C_m` resolution, which is the direction that
+    # makes the gate look sensitive; a dense sweep of the admissible domain puts the
+    # MINIMUM at `KL/r = 30.4`, `f_a/F_e' = 0.40`, `My = 1e6`, where the axial term
+    # dominates `u_combined` and `C_m`'s share of it is `3.074923e-03`.
+    (30.4, -0.4 * _F_E_AT_30_4 * AREA, 1.0e6, "inelastic"),
 ]
 
 
@@ -736,7 +807,23 @@ COEFFICIENTS = [
 _FA_POINTS = (30.4, 60.8, 100.0, 108.0, 108.1, 121.5, 150.0, 200.0)
 _FXC_POINTS = (61.0, 100.0, 200.0, 300.0)
 _FXE_POINTS = (260.0, 300.0)
-_FB_POINTS = (13.888888888888889, 29.0, 30.0, 40.0, 50.0, 58.0, 60.0, 100.0, 300.0, 700.0)
+_FB_POINTS = (
+    13.888888888888889,
+    29.0,
+    29.2,
+    30.0,
+    40.0,
+    50.0,
+    58.0,
+    58.3,
+    60.0,
+    100.0,
+    300.0,
+    700.0,
+)
+"""R749: `29.2` and `58.3` are inside each branch limit's own neighbourhood. The sweep's
+nearest points were `29.0`/`30.0` and `58.0`/`60.0` -- `0.44%` below each limit and `3.0%`
+above -- so a limit moved by a digit swap crossed no point and nothing reddened."""
 
 
 def _quantities(cm: float | None = None) -> dict[str, float]:
@@ -824,6 +911,7 @@ def _hand_quantities() -> dict[str, float]:
 
 
 def _worst_move(clean: dict[str, float], hurt: dict[str, float]) -> tuple[float, str]:
+    """The MAXIMUM relative move over the points. Non-vacuity: something responded."""
     worst, where = 0.0, "-"
     for key, value in clean.items():
         scale = max(abs(value), abs(hurt[key]))
@@ -833,8 +921,33 @@ def _worst_move(clean: dict[str, float], hurt: dict[str, float]) -> tuple[float,
     return worst, where
 
 
+def _weakest_live_move(clean: dict[str, float], hurt: dict[str, float]) -> tuple[float, str]:
+    """The MINIMUM relative move over the points that respond AT ALL -- EH4's weakening
+    direction, and the one this file never formed (R750).
+
+    `weakest = min(responses)` over coefficients, where each response was itself a MAX over
+    points, is min-over-coefficients of max-over-points. The declared margin was quoted in
+    that direction, so a configuration where the gate resolves a defect 267x more weakly
+    than published sat outside everything the file looked at.
+
+    A point whose response is EXACTLY ZERO is skipped rather than returned, because zero is
+    VACUOUS and not a failure -- and for `C_m` the zero is reachable: its share of
+    `u_combined` tends to zero as the bending term does, so the infimum over the whole
+    admissible domain is `0` and is ATTAINED. **No constant can be a floor beneath every
+    admissible configuration**, which is why the counter is a floor beneath the gate's own
+    points with those points placed AT the weak end.
+    """
+    best, where = float("inf"), "-"
+    for key, value in clean.items():
+        scale = max(abs(value), abs(hurt[key]))
+        rel = abs(value - hurt[key]) / scale if scale else 0.0
+        if 0.0 < rel < best:
+            best, where = rel, key
+    return best, where
+
+
 def _injected(coefficient: str) -> dict[str, float]:
-    """The 32 quantities with ONE clause coefficient scaled by the declared injection."""
+    """The 35 quantities with ONE clause coefficient scaled by the declared injection."""
     if coefficient == "CM_JOINT_TRANSLATION":
         # the module global is inert here: the default is bound at import (see above)
         return _quantities(cm=CM_JOINT_TRANSLATION * (1.0 + F6_API_CLAUSE_INJECTION_EPS))
@@ -848,11 +961,15 @@ def _injected(coefficient: str) -> dict[str, float]:
     return hurt
 
 
-def test_the_two_quantity_SETS_are_the_same_32_points() -> None:
-    """A key on one side only would silently drop a point from the clean worst."""
+def test_the_two_quantity_SETS_are_the_same_35_points() -> None:
+    """A key on one side only would silently drop a point from the clean worst.
+
+    A narrower domain than the ceiling defends reports the strongest member as the
+    quantity's, which is what R708, R710 and now R750 all were.
+    """
     hand, module = set(_hand_quantities()), set(_quantities())
     assert hand == module, f"only on one side: {sorted(hand ^ module)}"
-    assert len(hand) == 32, len(hand)
+    assert len(hand) == 35, len(hand)
 
 
 @pytest.mark.parametrize("coefficient", COEFFICIENTS)
@@ -861,16 +978,28 @@ def test_an_INJECTED_clause_coefficient_exceeds_the_declared_COUNTER(coefficient
 
     Each coefficient is scaled by `1 + F6_API_CLAUSE_INJECTION_EPS`, one at a time, which is
     what a transcription defect is -- `0.6` typed for `0.66`. The response must exceed
-    `F6_API_CLAUSE_AGREEMENT_COUNTER`, which sits below the weakest member of the family.
+    `F6_API_CLAUSE_AGREEMENT_COUNTER`, which sits below the weakest LIVE POINT of the
+    family -- not below the weakest coefficient's STRONGEST point, which is what it meant
+    for one round (R750).
     """
-    response, where = _worst_move(_quantities(), _injected(coefficient))
-    assert response > F6_API_CLAUSE_AGREEMENT_COUNTER, (
-        f"scaling {coefficient} by 1 + {F6_API_CLAUSE_INJECTION_EPS:g} moves the worst "
-        f"quantity by only {response:.6e} ({where}), at or below the declared counter "
-        f"{F6_API_CLAUSE_AGREEMENT_COUNTER:.6e}. The hand calculations would not catch a "
-        "defect of that size."
+    clean, hurt = _quantities(), _injected(coefficient)
+    strongest, where_max = _worst_move(clean, hurt)
+    weakest, where_min = _weakest_live_move(clean, hurt)
+
+    # NON-VACUITY: something responded at all.
+    assert strongest > F6_API_CLAUSE_AGREEMENT, (
+        f"scaling {coefficient} by 1 + {F6_API_CLAUSE_INJECTION_EPS:g} moves NOTHING above "
+        f"the ceiling -- its strongest point is {strongest:.6e} ({where_max})"
     )
-    assert response > F6_API_CLAUSE_AGREEMENT, "and it must exceed the ceiling itself"
+    # **AND THE COUNTER IS ASSERTED AGAINST THE MINIMUM OVER LIVE POINTS (R750)**, which is
+    # EH4's weakening direction. It was the MAXIMUM, so a point at which the gate resolves
+    # the same defect `267x` more weakly satisfied it without ever being looked at.
+    assert weakest > F6_API_CLAUSE_AGREEMENT_COUNTER, (
+        f"scaling {coefficient} by 1 + {F6_API_CLAUSE_INJECTION_EPS:g} moves its WEAKEST "
+        f"live point by only {weakest:.6e} ({where_min}), at or below the declared counter "
+        f"{F6_API_CLAUSE_AGREEMENT_COUNTER:.6e}. Its strongest point moves "
+        f"{strongest:.6e}, which is the direction that makes the gate look sensitive."
+    )
 
 
 def test_the_ceiling_and_its_counter_BRACKET_the_family_BOTH_ways() -> None:
@@ -882,10 +1011,10 @@ def test_the_ceiling_and_its_counter_BRACKET_the_family_BOTH_ways() -> None:
     """
     clean_worst, clean_where = _worst_move(_quantities(), _hand_quantities())
     assert clean_worst > 0.0, (
-        "every one of the 32 points is bit-identical, so the lower edge of the window is "
+        "every one of the 35 points is bit-identical, so the lower edge of the window is "
         "unbounded and the ceiling is pinned by nothing from below"
     )
-    responses = [(_worst_move(_quantities(), _injected(c))[0], c) for c in COEFFICIENTS]
+    responses = [(_weakest_live_move(_quantities(), _injected(c))[0], c) for c in COEFFICIENTS]
     assert len(responses) == 5, responses
     assert all(
         r > 0.0 for r, _ in responses

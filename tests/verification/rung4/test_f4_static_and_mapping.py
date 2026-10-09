@@ -25,6 +25,7 @@ import yaml
 from numpy.typing import NDArray
 
 from floatfea.assemble.system import element_length
+from floatfea.basis import E_STEEL
 from floatfea.element.beam import local_mass, shear_parameter
 from floatfea.io.frames import GRAVITY_MAGNITUDE, GRAVITY_VECTOR
 from floatfea.io.froude import to_full_scale
@@ -47,6 +48,7 @@ from floatfea.model.platform import (
 from floatfea.post.member_forces import element_equivalent_load, member_forces
 from floatfea.solve.inertia_relief import solve_inertia_relief
 from floatfea.solve.static import solve_superstructure_static
+from floatfea.testing import assert_close
 from floatfea.tolerances import (
     F4_DQ4_ELEMENT_VECTOR,
     F4_DQ4_ELEMENT_VECTOR_COUNTER,
@@ -2167,3 +2169,59 @@ def test_DQ5_the_free_fall_gate_REDDENS(built: Superstructure, injection: str) -
         f"the `{injection}` injection reads {error:.6e}, which the ceiling ACCEPTS. "
         f"Channels: { {k: f'{v:.3e}' for k, v in worst.items()} }."
     )
+
+
+# ===========================================================  R751 / C52: the axial SENSE
+def test_a_member_in_pure_TENSION_returns_a_NEGATIVE_end_a_axial() -> None:
+    """R751. `end_a[0]` is MINUS the internal axial action, measured on a prescribed sense.
+
+    **THE SENTENCE THIS REPLACES WAS BACKWARDS FOR TWO ROUNDS AND READING IT NEVER REFUTED
+    IT.** `floatfea/post/member_forces.py` said the returned values are "the forces the
+    ELEMENT exerts on its nodes", which would make `end_a[0]` POSITIVE under tension. It is
+    negative. The half of that sentence a reader checks -- "end B's axial has the opposite
+    sign to end A's under pure tension" -- is true under EITHER attribution, which is why
+    only a prescribed-sense measurement distinguishes them.
+
+    **AND IT IS THE CONTROL THE PUBLISHING BOUNDARY DID NOT HAVE (C52).** R739's repair is
+    `root[0] = -root[0]` in `scripts/measure/member_forces_table.py`; before this test,
+    reverting that negation left the whole suite green, so nothing in the tree asserted the
+    convention the negation exists to satisfy. `docs/conventions.md:320` locks tension
+    positive, and this is the one test that reads it.
+
+    # expected: node B moved 1 mm OUTWARD along the member axis is an unambiguous stretch,
+    # so Hooke gives the internal axial action as EA/L * 1e-3, tension positive. The
+    # function returns MINUS that at end A and PLUS it at end B.
+    """
+    built = build_superstructure()
+    body = next(b for b in built.bodies if b.name == "platform")
+    member = next(m for m in body.members if m.label == "platform:hub1_arm")
+    nodes = body.model.nodes
+    pos_a = np.array([nodes[member.node_a].x, nodes[member.node_a].y, nodes[member.node_a].z])
+    pos_b = np.array([nodes[member.node_b].x, nodes[member.node_b].y, nodes[member.node_b].z])
+    axis = (pos_b - pos_a) / float(np.linalg.norm(pos_b - pos_a))
+
+    stretch = 1.0e-3
+    u_global = np.zeros(body.model.n_dof)
+    u_global[6 * member.node_b : 6 * member.node_b + 3] = axis * stretch
+
+    hooke = E_STEEL * float(member.section.A) / float(member.length) * stretch
+    out = member_forces(body, member, u_global, np.zeros(12))
+
+    assert hooke > 0.0, "a stretch is tension; the expected value must be positive"
+    assert_close(
+        float(out.end_a[0]),
+        -hooke,
+        F4_MEMBER_FORCE_CONSERVATION,
+        floor=1.0,
+        what="end_a[0] against MINUS the internal axial action",
+    )
+    assert_close(
+        float(out.end_b[0]),
+        +hooke,
+        F4_MEMBER_FORCE_CONSERVATION,
+        floor=1.0,
+        what="end_b[0] against PLUS the internal axial action",
+    )
+    # and the half that is true under either attribution, asserted so its weakness is
+    # visible beside the half that is not
+    assert float(out.end_a[0]) * float(out.end_b[0]) < 0.0

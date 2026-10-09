@@ -33,7 +33,7 @@ implies; `C_m = 1.0` is the alternative and it RAISES every compression utilisat
 `C_m` multiplies the bending term. R743: the module stated that direction backwards.
 
 **G6.1 IS GREEN** -- every clause here is verified against an independent hand calculation
-in `tests/verification/rung6/test_g61_api_wsd_hand_calculations.py`, at two or more points
+in `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py`, at two or more points
 per branch, either side of every boundary (FB0). Before that gate existed this script's
 output carried "clause implementations unverified".
 """
@@ -89,7 +89,7 @@ LABELS = (
     "C_m = 1.0 RAISES the compression utilisation and 0.85 is the LESS onerous of the two "
     "(R743). A C_m = 1.0 column is reported beside the K = 1.0 one (FB2).",
     "G6.1 is GREEN: every clause is verified against an independent hand calculation in "
-    "tests/verification/rung6/, at two or more points per branch, either side of every "
+    "tests/verification/rung5/, at two or more points per branch, either side of every "
     "boundary (FB0). R742: F_b is capped at 0.75 Fy -- the first reduced branch exceeded it "
     "to D/t = 30.60. R741: section 3.2.2(b) local buckling is implemented and D/t > 300 is "
     "refused rather than extrapolated.",
@@ -236,6 +236,15 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
+def _and_list(items: list[str]) -> str:
+    """`a`, `a and b`, `a, b and c` -- so a generated sentence reads as one."""
+    if not items:
+        return "nothing"
+    if len(items) == 1:
+        return items[0]
+    return ", ".join(items[:-1]) + " and " + items[-1]
+
+
 def _write_summary(
     path: Path,
     rows: list[dict[str, object]],
@@ -341,37 +350,91 @@ def _write_summary(
         max(float(r["utilisation_K2"]) for r in compression) if compression else float("nan")
     )
     worst_overall = max(float(r["utilisation_K2"]) for r in rows)
+    # R747: EVERY SENTENCE BELOW IS GENERATED FROM THE SET IT DESCRIBES.
+    #
+    # Four hand-written sentences stood here and all four contradicted the table in the
+    # same file -- the clause attribution on the over-unity stations ("all governed by
+    # 3.3.1" against a 2/2 split), the K sensitivity ("at most 0.024" against 0.034238
+    # printed three lines above), the worst station's two utilisations (`0.0004` and
+    # `1.815`, the second being the envelope figure R740 removed), and a causal claim that
+    # the amplification "never bites" refuted by the C_m column this script added. They
+    # were correct before R739 and R740 and nothing re-took them, which is BP0: a figure
+    # whose rule moved underneath it.
+    #
+    # So the sets are formed first and the sentences read from them. The only words left
+    # are the ones that are true whatever the numbers are.
+    worst_row = max(rows, key=lambda r: float(r["utilisation_K2"]))
+    over_rows = [r for r in rows if float(r["utilisation_K2"]) > 1.0]
+    over_clauses: dict[str, int] = {}
+    for r in over_rows:
+        key = str(r["governing_clause"])
+        over_clauses[key] = over_clauses.get(key, 0) + 1
+    over_bodies = sorted({str(r["body"]) for r in over_rows})
+    over_stations = sorted({str(r["station"]) for r in over_rows})
+    # The amplified form of 3.3.2 governs exactly where `C_m` reaches `U`, because `C_m`
+    # appears nowhere else in the calculation.
+    #
+    # **COMPARED AT THE PRECISION THE CSV PUBLISHES, NOT IN MEMORY.** The CSV writes
+    # `{:.6g}`, so two utilisations differing in the seventh significant figure are EQUAL
+    # in the published file and differ in these floats. Taken in memory the count is 12;
+    # taken from the published values it is 10, and 10 is the one a reader can reproduce
+    # from the file this sentence sits beside. A published count measured at a precision
+    # the publication does not carry is not checkable.
+    amplified_rows = [
+        r
+        for r in compression
+        if f"{float(r['utilisation_Cm1']):.6g}" != f"{float(r['utilisation_K2']):.6g}"
+    ]
+    worst_cm_row = max(
+        rows, key=lambda r: abs(float(r["utilisation_Cm1"]) - float(r["utilisation_K2"]))
+    )
+    worst_cm = abs(float(worst_cm_row["utilisation_Cm1"]) - float(worst_cm_row["utilisation_K2"]))
+
     out += [
         "",
         "**The `K = 2.0` lock moves the platform arms onto a different formula** — at "
         "`K = 1.0` every arm is inelastic and at `K = 2.0` the 50 m platform arms cross "
-        "`C_c = 108.06` into § 3.2.2's elastic branch — **but it barely moves a "
-        "utilisation**, and that is the quantitative answer to FA2:",
+        "`C_c = 108.06` into § 3.2.2's elastic branch. How much it moves a utilisation, "
+        "and how much `C_m` does, are the two numbers FA2 and FB2 ask for:",
         "",
         "```",
         f"axial branch over {len(rows)} rows : "
         + "; ".join(f"{k} {v}" for k, v in sorted(branches.items())),
         f"largest |U(K=2) - U(K=1)|      : {worst_k[0]:.6f}  "
         f"at {worst_k[1]['member']} {worst_k[1]['station']} ({worst_k[1]['axial_branch']})",
+        f"largest |U(C_m=1) - U(C_m={CM_LOCKED})| : {worst_cm:.6f}  "
+        f"at {worst_cm_row['member']} {worst_cm_row['station']} "
+        f"({worst_cm_row['axial_branch']})",
         (
             f"worst compression station      : U = {worst_compression:.5f}"
             if compression
             else f"compression stations           : NONE of {len(rows)} per-instant rows"
         ),
+        f"section 3.3.2's AMPLIFIED form governs on {len(amplified_rows)} of "
+        f"{len(compression)} compression rows",
+        f"worst station {worst_row['member']} {worst_row['station']}: "
+        f"u_axial = {float(worst_row['u_axial']):.6f}  "
+        f"u_bending = {float(worst_row['u_bending']):.5f}  "
+        f"({worst_row['governing_clause']}, {worst_row['axial_branch']})",
         "```",
         "",
-        "**Bending governs everywhere and the axial term is three orders smaller.** At the "
-        "worst station `u_axial = 0.0004` against `u_bending = 1.815`, so § 3.3's "
-        "interaction is bending plus a rounding error, the `C_m / (1 - f_a/F_e')` "
-        "amplification never bites, and on the compression rows the simple `0.6 F_y` form "
-        "of § 3.3.2 governs over the amplified one — which has no `K` in it at all. **The "
-        "`K` question, which looked like the biggest modelling choice in the check, changes "
-        "the governing number by at most `0.024`.** It would matter on a member carrying "
-        "real axial load; none of these does.",
+        "**Bending governs and the axial term is three orders smaller** — the ratio is in "
+        "the block above, at the worst station, read from the row the table publishes. "
+        "Neither modelling lever moves the governing number much, and the reason is the "
+        "clause rather than the structure: § 3.3.2 takes the larger of its amplified and "
+        "simple forms, the simple form carries no `F_a` and no `C_m`, and it is the one "
+        "that governs wherever bending dominates.",
         "",
         f"**{len(over)} of {len(all_stations)} member-stations exceed `U = 1.0`**, the worst "
-        f"at `{worst_overall:.3f}`. All four are platform "
-        "arm ROOTs, all governed by § 3.3.1, and all on bending.",
+        f"at `{worst_overall:.3f}`. "
+        + (
+            f"They are on {_and_list(over_bodies)}, at {_and_list(over_stations)}, "
+            f"and the governing clause is "
+            + "; ".join(f"{k} on {v}" for k, v in sorted(over_clauses.items()))
+            + "."
+            if over_rows
+            else "There are none."
+        ),
         "",
         "## What this does NOT do",
         "",

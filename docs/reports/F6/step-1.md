@@ -821,7 +821,7 @@ judge  three sites are touched and need no row: `floatfea/checks/api_wsd.py:133`
 |---|---|---|
 | `docs/conventions.md:320` | no change — **by design** | it is the AUTHORITY, locked at F0. "Positive axial force: tension positive" is what the publishing boundary was corrected to agree with; changing it would be reopening the F0 gate (CLAUDE.md § Conventions) |
 | `floatfea/checks/api_wsd.py:254` | no change | old `in_tension = axial_n >= 0.0` is CORRECT given a tension-positive column. R739's defect was the column, not the reader, so the fix is at the publishing boundary in `scripts/measure/member_forces_table.py` and this line is right as written |
-| `floatfea/post/member_forces.py:23` | no change — **already correct** | the attribution sentence already says "the forces the ELEMENT exerts on its nodes at each end", which is the true sense and is what R739 measured. The verdict's condition asked for it to be corrected; it did not need correcting |
+| `floatfea/post/member_forces.py:23` | ~~no change — **already correct**~~ **WRONG, AND R751 IS THIS ROW** | the row claimed the attribution sentence "already says the true sense". It says the opposite of the true sense, and one 1 mm prescribed stretch refutes it. Revision 3's § 10 carries the measurement and the corrected sentence; this row is left visible rather than edited away, because what it got wrong is the whole mechanism — a sentence whose second half is true under either attribution cannot be checked by reading it |
 | `scripts/measure/api_wsd_utilisation.py:138` | no change | `axial_n=float(r["N"])` is correct once the column it reads is tension-positive. Negating here as well would double the fix |
 | `scripts/measure/member_forces_table.py:415` | no change | the `0.5 * (a + b) -> Vz = +2299218.75` cell is R730's measurement and is still true; it is the evidence for the convention, not a statement of it |
 | `scripts/measure/api_wsd_utilisation.py:81` | no change | a bare `)` closing the label tuple at the reviewed commit. The label block above it is rewritten and two labels are added; this line is punctuation |
@@ -916,3 +916,583 @@ judge  three sites are touched and need no row: `floatfea/checks/api_wsd.py:133`
 No row points at this section: every item is in this table by construction, so a pointer
 here would resolve whatever it said (R318). § 8 is where the carried items are discussed and
 § 7 is where R745 is.
+
+# Revision 3 — verdict 111's five, and the one place it was the loose half
+
+Answers: verdict 111 @ fdb4ecd
+
+**2026-10-09.**
+
+## 0. CI at `dd90505`, the commit verdict 111 judged — **report-only; no run by design** — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 111 at `dd90505` through the report's own `Answers:` line. The judged commit touches only paths the workflow ignores (`docs/reports/**`, `docs/reviews/**`), so no run was created for it. **Code-identical run at `1f8f61a4f5fd9b374c4e7e92f6a428485c4c1622`**: run `37939206345`, event `push`, conclusion **failure**.
+
+```
+cmd  gh run list --commit dd905051ff75f9506a6c383906fb62bec24cd0a6
+out  (no output)
+cmd  git diff --name-only 1f8f61a dd90505
+out  only paths under the workflow's paths-ignore
+judge NO RUN BY DESIGN, not CK2 and not a red. The run below measures the same
+     code, because every path that differs is one the workflow ignores.
+```
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 2180 | 0 | 0 |
+| lint, unit and guards | 1081 | 8 | 1 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 1 not green.**
+
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 8.**
+
+- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 0a. Runs since the commit verdict 111 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 111 at `dd90505` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| (none) | | | no run at any commit in this round |
+
+## 1. The schedule, and what this revision is
+
+**F6 step 1's working target holds, and this is the step's third and last reviewed
+revision.** Verdict 111 said the escalation it asked for would be due if step 1 carried
+blocking items into round three, and that on its own evidence it would not slip the date.
+It does not: all five of R747 to R751 are answered below, nothing is carried forward
+blocking, and the closure list goes to the closure commit where CZ0 puts it.
+
+```
+claim  the dates this step is measured against, and today's
+cmd    grep -n "October" docs/milestones/F6.md | tail -2
+out    290:Drafted under EY4, **locked by EZ4**. Working target **22 October**, committed
+out    291:**28 October**. F4 closed **9 October** against a committed 19 October, and the
+cmd    date +%Y-%m-%d
+out    2026-10-09
+rule   CLAUDE.md section Step gating: the report's one hand-written paragraph carries the
+       schedule -- which date the step is measured against, and whether it holds
+judge  the step's locked content is built and verified, four of the five findings were a
+       string, a regeneration, two exact equalities and a sentence, and the fifth was a
+       derivation redone at the weak end. Nothing needed a FloatSim run. No slippage.
+```
+
+## 2. R750 refines its own framing, and that is the finding of the revision
+
+Verdict 111 asks for a counter that is "a floor beneath every admissible configuration
+rather than a constant at one". **Measured, no constant can be — and the reason is a
+property of the clause.**
+
+```
+claim  C_m's resolution has infimum 0 over the admissible domain, and it is ATTAINED
+cmd    at KL/r = 30.4 and f_a/F_e' = 0.40, drive the bending moment to zero and measure the
+       response to scaling `cm` by 1 + 1.0e-10
+rule   section 3.3.2's amplified form governs where it exceeds the simple form, and C_m's
+       share of u_combined is `cm * u_bending / ((1 - f_a/F_e') * u_combined)`
+out    at KL/r = 30.4: F_a = 1.926954e+08  0.6 F_y = 2.130000e+08  F_a < 0.6 F_y: True
+out      -> so the AMPLIFIED form governs even at ZERO bending
+out    My = 1.0e+06   U = 2.436414   3.3.2 interaction   response 3.074923e-13
+out    My = 1.0e+05   U = 2.429673   3.3.2 interaction   response 3.088937e-14
+out    My = 1.0e+04   U = 2.428999   3.3.2 interaction   response 3.108077e-15
+out    My = 1.0e+03   U = 2.428932   3.3.2 interaction   response 1.828331e-16
+out    My = 1.0e+02   U = 2.428925   3.3.2 interaction   response 0.000000e+00
+out    My = 0.0e+00   U = 2.428924   3.2.2 compression   response 0.000000e+00
+judge  **THE RESPONSE GOES TO ZERO CONTINUOUSLY AND REACHES IT WHILE THE AMPLIFIED FORM IS
+       STILL GOVERNING**, so there is no positive lower bound to be a floor beneath. A zero
+       response is VACUOUS and not a failure, which is the distinction the vacuity rule
+       already carries. **So the verdict's SECOND option is the one taken** -- "the family's
+       points are chosen at the WEAK end instead of the strong one and the margin restated
+       from there" -- and the first is not available to any constant.
+```
+
+## 3. R748 — the four stale citations
+
+```
+claim  the deliverable's G6.1 warrant now resolves, and the directory it names has tests
+cmd    grep -rn "rung6" scripts/measure/api_wsd_utilisation.py docs/F6_utilisation.md
+       docs/F6_utilisation.csv
+out    (no output)
+cmd    ls tests/verification/rung5/
+out    __init__.py
+out    test_g61_api_wsd_hand_calculations.py
+cmd    grep -n "rung5" docs/F6_utilisation.md | head -1
+out    9:* G6.1 is GREEN: every clause is verified against an independent hand calculation
+out      in tests/verification/rung5/, ...
+rule   BP0: the gate's location is the rule the sentence cites, it moved at `1f8f61a`, and
+       the artifact citing it must be regenerated in the same commit
+judge  two sites in the generator, two in its output. `1f8f61a` moved the gate and touched
+       neither, so the published warrant pointed at the one directory CI asserts is empty.
+       The CSV and the summary are regenerated in this commit.
+```
+
+## 4. R747 — the four sentences are generated from the sets they describe
+
+The structural half of the finding is the one worth answering: `_write_summary` interleaved
+generated f-strings with hand-written sentences **about the same quantities**, and the
+hand-written four were the ones that went stale when R739 and R740 moved the basis under
+them.
+
+```
+claim  no sentence in the summary is hand-written about a quantity the table carries
+cmd    python scripts/measure/api_wsd_utilisation.py  then read the block it writes
+rule   the published table and CSV in the same file, written by the same run
+out    largest |U(K=2) - U(K=1)|        : 0.034238  at platform:hub1_arm TIP (elastic)
+out    largest |U(C_m=1) - U(C_m=0.85)| : 0.009245  at hub4:buoy10_arm ROOT (inelastic)
+out    section 3.3.2's AMPLIFIED form governs on 10 of 17 compression rows
+out    worst station platform:hub2_arm ROOT: u_axial = 0.000833  u_bending = 1.71138
+out      (3.3.2 interaction, elastic)
+out    4 of 32 member-stations exceed U = 1.0, the worst at 1.712. They are on platform,
+out      at ROOT, and the governing clause is 3.3.1 interaction on 2; 3.3.2 interaction on 2
+judge  **ALL FOUR OF THE VERDICT'S FIGURES REPRODUCE**: the 2/2 split, `0.034238`,
+       `u_bending = 1.71138` and `10 of 17`. The sentence that said "the amplification never
+       bites" is deleted rather than corrected -- it was a causal claim (BG0) refuted by the
+       `C_m` column the same commit added, and what replaces it is the mechanism: section
+       3.3.2 takes the larger of two forms and the simple one carries no `F_a` and no `C_m`.
+```
+
+**AND `10 of 17` IS A CHOICE ABOUT PRECISION, WHICH IS WORTH ONE SENTENCE.**
+
+```
+claim  the count depends on whether it is taken in memory or from the published file
+cmd    count compression rows where utilisation_Cm1 != utilisation_K2, in the in-memory
+       floats and then in the `{:.6g}` values the CSV writes
+rule   the sentence sits beside the CSV, so a reader can only reproduce the CSV's own
+out    in memory             : 12 of 17
+out    at the CSV's precision: 10 of 17
+judge  **10 IS THE REPRODUCIBLE ONE AND IT IS WHAT IS PUBLISHED.** Two utilisations
+       differing in the seventh significant figure are EQUAL in the published file. A
+       published count measured at a precision the publication does not carry is not
+       checkable, which is why the generator now rounds before comparing -- and it is why
+       the verdict's figure and my first regeneration disagreed.
+```
+
+## 5. R749 — the two limits are pinned, and the mutations are re-run
+
+```
+claim  all six mutations the verdict found surviving are now killed, and the tree is
+       restored byte-identical after each
+cmd    one edit at a time, source restored after each, the whole of rung 5 re-run
+rule   the gate's own docstring: "the points sit EITHER SIDE OF EVERY BOUNDARY rather than
+       in the middle of a range ... A point taken only in a branch's interior cannot see a
+       misplaced boundary, which is R742's whole mechanism"
+out    unperturbed                                    -> exit 0  67 passed in 0.40s
+out    limit_1 10340 -> 10430 (digit swap)            -> KILLED   2 failed, 65 passed
+out    limit_1 10340 -> 10443.4 (+1%)                 -> KILLED   2 failed, 65 passed
+out    limit_2 20680 -> 20860 (digit swap)            -> KILLED   2 failed, 65 passed
+out    limit_2 20680 -> 20886.8 (+1%)                 -> KILLED   2 failed, 65 passed
+out    the 300 refusal -> 303                         -> KILLED   1 failed, 66 passed
+out    in_tension >= 0.0 -> > 0.0                     -> KILLED   1 failed, 66 passed
+out    PASCAL_PER_MPA 1.0e6 -> 1.1e6 (control)        -> KILLED   6 failed, 61 passed
+out    unperturbed again                              -> exit 0  67 passed in 0.40s
+judge  **BOTH HALVES OF THE CONDITION, because either alone leaves a hole.** The exact
+       equalities read `section_class(D_OUTER, WALL, FY).limit_1` and `.limit_2`, which is
+       what `limit_3` already had; and `29.2` and `58.3` are added inside each limit's own
+       neighbourhood, where the nearest points were `0.44%` below and `3.0%` above. The
+       `300` refusal is bracketed at `300` and `300.1` the way the local-buckling limit is
+       bracketed at `60` and `60.5`, and the tension switch at `0.0` and one ULP below.
+       The line that stood here -- `assert 10340.0 / 355.0 == 29.12676056338028` -- had both
+       sides written in the test and read the module on neither, which is CW0's
+       triple-whose-command-cannot-fail shape in an assertion rather than a comment.
+```
+
+## 6. R750 — the counter is a floor over points placed at the weak end
+
+```
+claim  the gate now forms the MINIMUM over points, which it never did, and the counter is
+       asserted against it
+cmd    read `_weakest_live_move` and the counter assertion in the gate
+rule   EH4: a boundary is solved in both directions, including the two that WEAKEN a gate
+out    `weakest = min(responses)` was min-over-5-COEFFICIENTS of max-over-32-POINTS
+out    it is now min over live (coefficient, point) pairs, and the MAXIMUM is kept for the
+out      non-vacuity assertion beside it
+out    a point whose response is exactly 0.0 is SKIPPED, because zero is vacuous (section 2)
+judge  the declared margin was quoted in the direction the file never looked.
+```
+
+```
+claim  the weak-end point is in the gate's own set, and it is where the dense sweep puts
+       the minimum
+cmd    sweep C_m's resolution over KL/r in 10 values, f_a/F_e' in 9, My in 7 -- 540
+       admissible amplified-governing configurations -- with the closed form written
+       independently of the test file
+rule   the resolution's closed form, `cm * u_bending / ((1 - f_a/F_e') * u_combined)`
+out    MINIMUM share, CLOSED FORM : 3.074214485116655e-03  at KL/r = 30.4,
+out                                  f_a/F_e' = 0.40, My = 1e+06
+out    MAXIMUM share, CLOSED FORM : 9.792984835072608e-01  at KL/r = 200.0,
+out                                  f_a/F_e' = 0.95, My = 5e+08
+out    the same share from the MODULE at eps = 1e-10 : 3.074923e-03   -- they agree to 0.02%
+out    the two points the shipped gate chose        : 0.562374 and 0.828392
+out    the module's response at that configuration, eps = 1e-12 : 3.098617940959989e-15
+judge  **THE LAST LINE IS THE VERDICT'S OWN FIGURE TO SEVEN DIGITS** -- `3.098618e-15` -- at
+       the configuration it named, measured here through `check_member` rather than through
+       the closed form, and with the sweep written independently. `AMPLIFIED_POINTS` now
+       contains that configuration. The two points the gate had were `270x` stronger.
+       **AND THE eps = 1e-12 FIGURE IS THE NOISY ONE**: it implies a share of `3.0986e-03`
+       against the closed form's `3.0742e-03`, a `0.8%` disagreement, because the response
+       at that injection is a difference of two doubles agreeing to twelve figures. At
+       `1e-10` the same share reads `3.074923e-03`. That is a second reason for the larger
+       injection and it is why the declared value is taken from the `1e-10` run.
+```
+
+```
+claim  the injection moves because at the old one the gate could not catch the defect at all
+rule   the window rule's own floor: the weakest live response must clear the ceiling by
+       more than F4_WINDOW_RULE_MIN_EDGE
+out    minimum share 3.074923e-03  ->  eps must exceed 2.0 * 1.0e-14 / 3.074923e-03
+out                                 =  6.504229e-12
+out    eps = 1e-12 : weakest live response 3.098618e-15  =   0.3099x the ceiling
+out    eps = 1e-11 : weakest live response 3.080391e-14  =   3.080x  the ceiling
+out    eps = 1e-10 : weakest live response 3.074923e-13  =  30.75x   the ceiling
+out    eps = 1e-09 : weakest live response 3.074194e-12  = 307.4x    the ceiling
+judge  `1.0e-10` is the round value above the boundary, two decades clear. At the shipped
+       `1.0e-12` the weakest live point responded `0.3099x` the ceiling, so the declared
+       counter `8.0e-13` sat **258.2x ABOVE a response the gate asserts it must catch**.
+```
+
+```
+claim  the window's lower edge is now a statement about the domain the ceiling defends
+cmd    a dense sweep of the module's admissible domain -- D/t from 5.00 to 300.00 in steps
+       of 0.01, six grades, ten KL/r, module against a hand side written in the sweep
+       itself -- 2124072 points compared
+rule   the window rule's lower edge: F6_API_CLAUSE_AGREEMENT / the clean worst
+out    points compared     : 2124072
+out    DENSE CLEAN WORST   : 6.538410439539509e-16
+out      at                : F_a, F_y = 420 MPa, D/t = 240.85, KL/r = 108.0
+out    at F_y = 355 MPa    : 6.501155667207290e-16  at F_a, D/t = 106.76, KL/r = 108.1
+out    lower edge at 1.0e-14 : 15.2942x   (15.3819x at the locked grade)
+out    published before      : 59.3937x, from the clean worst over the 32 points
+judge  **THE PUBLISHED EDGE WAS OUT BY 3.88x AS A STATEMENT ABOUT THE MODULE**, and
+       `15.2942x` still clears the window rule's floor, so the ceiling does not move. **AND
+       WHICH `D/t` WINS IS GRID-SENSITIVE, WHICH IS ITSELF THE MEASUREMENT**: the verdict's
+       independent sweep gave `6.515863e-16` at `D/t = 113.43` where this one gives
+       `6.501155667207290e-16` at `106.76` -- same quantity, same `KL/r = 108.1`, a `0.2%`
+       disagreement. That says the function is flat in that neighbourhood, not that one of
+       us mismeasured, and it is why the entry records a neighbourhood rather than a point.
+```
+
+**The bracket as declared.**
+
+```
+claim  every number in the two entries is a floor or an edge over a measured domain
+cmd    read floatfea/tolerances.py's two F6_API_CLAUSE_AGREEMENT entries
+rule   the window rule: the ceiling sits between the clean worst and the weakest live
+       response, both edges above F4_WINDOW_RULE_MIN_EDGE
+out    clean worst (6 grades)   6.538410439539509e-16
+out    weakest live response    3.074922627292889e-13
+out    geometric centre         1.417924758478675e-14
+out    F6_API_CLAUSE_AGREEMENT          = 1.0e-14   edges 15.2942x and 30.7492x
+out    F6_API_CLAUSE_AGREEMENT_COUNTER  = 3.0e-13   margin 1.024974x, 30x over the ceiling
+out    F6_API_CLAUSE_INJECTION_EPS      = 1.0e-10
+judge  the ceiling is the round value below the centre, which is the window rule's own
+       idiom, and it is unchanged -- what changed is that its stated basis is now the
+       domain it defends. The reviewer's run of this gate on ubuntu at `1f8f61a` is the
+       cross-platform measurement the headroom argument could not take on one machine.
+```
+
+## 7. The gate at the new values
+
+```
+claim  the gate reddens at the OLD values and passes at the new ones, with nothing else moved
+cmd    python -m pytest tests/verification/rung5/ -q
+out    with eps = 1e-12 and counter = 8.0e-13, after the min-over-points change:
+out      3 failed, 65 passed -- "the ceiling sits only 0.3099x below the weakest injection
+out      (3.098618e-15, CM_JOINT_TRANSLATION) -- it could be widened past a defect it must
+out      catch"
+out    with eps = 1e-10 and counter = 3.0e-13:
+out      68 passed in 0.42s
+cell   the aggregation changed first and the values second, so the red above is the gate
+       seeing what the verdict saw rather than the values being moved to fit it
+judge  **THE ORDER MATTERS AND IT IS THE WHOLE POINT.** A tolerance moved in the same commit
+       as the code it rescues is rejected in review; here the ASSERTION moved first, went
+       red on the shipped values, and the values were re-derived from the sweep afterwards.
+```
+
+## 8. R751 — the sentence was backwards, and my row about it was false
+
+```
+claim  `member_forces` returns the force applied TO the element, so end_a[0] is MINUS the
+       internal axial action
+cmd    move node B of platform:hub1_arm 1 mm OUTWARD along the member axis -- an
+       unambiguous stretch -- and read member_forces at each end
+rule   a force the ELEMENT exerts ON node A under TENSION points from A toward B, i.e.
+       along +local x, so end_a[0] would be POSITIVE if the old sentence held
+out    EA/L * 1e-3   true internal N, tension positive (Hooke) = +5.51010219e+06
+out    member_forces end_a[0]                                  = -5.51010219e+06
+out    member_forces end_b[0]                                  = +5.51010219e+06
+out    end_a[0] and end_b[0] have opposite signs: True
+judge  **THE VERDICT IS RIGHT AND MY SECTION 8a ROW WAS FALSE**, and this reproduces its
+       figures to every digit, so it is not a question of which of us measured. The row is
+       struck through in place rather than edited away: what it got wrong is the mechanism.
+       The half a reader checks -- "end B's axial has the opposite sign to end A's under
+       pure tension" -- is TRUE under either attribution, which is why reading the sentence
+       never refuted it and only a prescribed sense does.
+```
+
+```
+claim  the sentence is now a CHECK and not a sentence, and reverting the attribution reddens
+cmd    tests/verification/rung4/test_f4_static_and_mapping.py::
+       test_a_member_in_pure_TENSION_returns_a_NEGATIVE_end_a_axial, then the mutation
+rule   CW0: a claim about this repository in a docstring is a test, a triple, or deleted
+out    unperturbed                                                      -> exit 0
+out    the attribution INVERTED (what the old docstring claimed)         -> REDDENS
+out    R739's negation at the publishing boundary REVERTED               -> still green
+judge  **THE SECOND ROW IS THE HONEST LIMIT OF THIS TEST AND IT IS C52's OTHER HALF.** The
+       test lives in `floatfea/` and does not read the published table, so reverting
+       `root[0] = -root[0]` in `scripts/measure/member_forces_table.py` leaves it green.
+       C52 asks for a control on the published column; this closes the `floatfea/` half of
+       it and the closure commit owes the other. Stated rather than claimed closed.
+```
+
+The module's paragraph now carries the attribution as measured, with a `claim`/`cmd`/`out`
+triple that `tests/test_tree_prose_consistent.py` runs — so if the test is renamed or its
+wording moves, the sentence goes red rather than quietly stale.
+
+## 9. The ledger, and what verdict 111 closed
+
+Verdict 111 closed **R740, R741, R742, R743, R744, R745, R746 and R737**, and ruled R739
+answered in substance with two residues that became **R747** and **R751** — both answered
+above. **R730, R731, R732 and R734** remain closed from earlier rounds. Nothing in that
+list is re-litigated here; § 8 is the one place I disagreed with a verdict and it is a
+disagreement the verdict invited.
+
+**The F4 ledger's open names remain open** in `docs/closure/F4.md` as a list, not
+re-adjudicated, per CZ0. The table in § 10 is the generator's and carries each one with its
+state; these are the ones the newest verdict still files as open rather than closed:
+
+```
+claim  which carried items are still open, read from the verdict rather than from memory
+cmd    grep -n "still open" docs/reviews/F6/step-1.md | tail -3
+out    1315:  `:449` (`+w_y`). That is R735 unchanged and still open. **Closed when**
+out           both sentences
+out    1325:* **R735, R736, R738, C34 to C40, and the `0.2240`/`0.2239` item** -- all still
+out           open from
+out    1327:* **R712 to R717, C2 to C15, C24 to C33** -- still open, carried in the F4
+out           closure
+rule   CZ0: a closure item is listed once and fixed in the step's closure commit
+judge  **R735**, **R736** and **R738** are the three named findings of that set, and
+       **R712** to **R717** are the F4 block. None is re-adjudicated here and none blocks;
+       the whole list travels to the closure commit. The `0.2240`/`0.2239` item is in it too
+       and is the one with no number of its own.
+```
+
+```
+claim  the F4 ledger is a list in the closure artifact and this revision does not touch it
+cmd    git diff --stat HEAD -- docs/closure/F4.md
+out    (empty)
+rule   CZ0: a finding that is not (a) to (d) is a closure item, listed once and fixed in
+       the step's closure commit
+judge  the carried names are read from the verdict by the generator rather than from my
+       memory of them, which is what R746 was about and what the table below is for.
+```
+
+**Both verdicts' closure items go in the step's closure commit, fixed once**, per CZ0.
+
+```
+claim  the closure list, its size, and the two items that are not ordinary
+cmd    grep -c "^\* \*\*C" docs/reviews/F6/step-1.md
+out    18      -- the C-items both verdicts list, as bulleted entries
+cmd    grep -n "gating-supervisor.md" docs/reviews/F6/step-1.md | head -1
+out    the agent file is named by one of them, and a change to it may not ride in a commit
+out      that also touches floatfea/ or tests/ -- so it needs a standalone `process:` commit
+cmd    grep -n "the axial negation has no control" docs/reviews/F6/step-1.md
+out    the item asking for a control on the published column's sign
+rule   CZ0: a finding that is not (a) to (d) is a closure item, fixed once in the closure
+       commit and not re-reviewed item by item
+judge  the last of those is **half-taken ahead of the closure commit** and § 8 says which
+       half: the new rung-4 test is a control for the `floatfea/` attribution and not for
+       the publishing-boundary negation, which stays open.
+```
+
+## 9a. Every site both verdicts named, site by site
+
+**A closing condition that names sites is closed site by site, and half of an item is not
+the item.** Both verdicts live in one file and the guard reads the NEWEST revision for its
+declarations, so revision 3 owes a row for every untouched site of verdict 110 as well as of
+verdict 111 — revision 2's § 8a is not what the guard reads. Its reasons are still true and
+are restated rather than pointed at.
+
+```
+claim  the sites below are untouched by this revision's diff, and the rest are touched
+cmd    git diff -U0 dd90505 -- . ":(exclude)docs/reviews" ":(exclude)tests/corpus"
+rule   tests/test_report_carried.py's site check: a named site is in the diff, or the
+       newest revision says `no change` beside that exact site
+out    87 sites, each with its own row below
+judge  the two large groups are `allowable_axial_compression`'s docstring, kept verbatim
+       because verdict 110 verified that arithmetic to the fifteenth digit, and the gate's
+       counter block, whose old line numbers no longer address the rewritten code.
+```
+
+| finding | site | status | what was done instead |
+|---|---|---|---|
+| R739 | `docs/F6_utilisation.md:35` | no change at that line | the FA2 table's row, regenerated with the file. The `F_a = 213.00` the verdict objected to is gone: no governing row reads `0.6 F_y` |
+| R739 | `docs/conventions.md:320` | no change -- **by design** | it is the AUTHORITY, locked at F0. "Positive axial force: tension positive" is what the publishing boundary was corrected to agree with, and changing it would be reopening the F0 gate |
+| R739 | `floatfea/checks/api_wsd.py:254` | no change | old `in_tension = axial_n >= 0.0` is CORRECT given a tension-positive column, and R749 now BRACKETS it at `0.0` and one ULP below. R739's defect was the column, not the reader |
+| R739 | `scripts/measure/api_wsd_utilisation.py:138` | no change | `axial_n=float(r["N"])` is correct once the column it reads is tension-positive; negating here as well would double the fix |
+| R739 | `scripts/measure/member_forces_table.py:415` | no change | the `0.5 * (a + b) -> Vz = +2299218.75` cell is R730's measurement and is still true -- it is the evidence for the convention, not a statement of it |
+| R740 | `docs/F4_member_forces.md` | no change | F4's own deliverable, regenerated at `acfc5df` and byte-identical under R744, which moved no published value |
+| R740 | `docs/F6_utilisation.md:13` | no change at that line | a label line, regenerated with the file |
+| R740 | `scripts/measure/api_wsd_utilisation.py:79` | no change at that line | inside the label tuple, regenerated. Two labels were added and the R740 label rewritten; these three line numbers are punctuation and a line the rewrite kept |
+| R740 | `scripts/measure/api_wsd_utilisation.py:80` | no change at that line | as `:79` |
+| R740 | `scripts/measure/api_wsd_utilisation.py:81` | no change at that line | as `:79` |
+| R741 | `floatfea/checks/api_wsd.py` | no change | the bare path, cited as the module R741 is about. Its CONTENT is changed in § 5 and in revision 2's § 2; no single line is named here |
+| R741 | `floatfea/checks/api_wsd.py:132` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:133` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:134` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:135` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:136` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:137` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:138` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:139` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:140` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:141` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:142` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:143` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:144` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:145` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:146` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:147` | no change -- **by design** | `limit_1 = 10340.0 / fy_mpa` is unchanged: R742 was closed by option (i), which keeps the standard's own SI numbers. What R749 asked for is that the gate PIN them, and it now does: an exact equality against `section_class(D_OUTER, WALL, FY).limit_1`, plus a point at `D/t = 29.2` inside the limit's own neighbourhood. Both mutations the verdict ran are killed (§ 5) |
+| R741 | `floatfea/checks/api_wsd.py:148` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:149` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:150` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:151` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:152` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R741 | `floatfea/checks/api_wsd.py:153` | no change | `allowable_axial_compression`'s docstring and guards. The FA2 paragraph and the branch table are kept verbatim because they are still true, and verdict 110 verified that arithmetic to the fifteenth digit |
+| R742 | `floatfea/basis.py:46` | no change -- **the verdict forbade it** | `E_STEEL = 210e9` is a locked material constant and R742's closing condition says explicitly "**Not** by changing `E_STEEL`" |
+| R742 | `floatfea/checks/api_wsd.py:102` | no change | the branch limit, kept by R742's option (i) and now PINNED by the gate (§ 5) |
+| R742 | `floatfea/checks/api_wsd.py:103` | no change | the second branch limit, same reason |
+| R743 | `floatfea/checks/api_wsd.py:71` | no change at that line | inside the `C_m` docstring, rewritten wholesale for R743. These exact lines are blanks, the closing `"""`, and lines the rewrite kept |
+| R743 | `floatfea/checks/api_wsd.py:72` | no change at that line | inside the `C_m` docstring, rewritten wholesale for R743. These exact lines are blanks, the closing `"""`, and lines the rewrite kept |
+| R743 | `floatfea/checks/api_wsd.py:73` | no change at that line | inside the `C_m` docstring, rewritten wholesale for R743. These exact lines are blanks, the closing `"""`, and lines the rewrite kept |
+| R743 | `floatfea/checks/api_wsd.py:74` | no change at that line | inside the `C_m` docstring, rewritten wholesale for R743. These exact lines are blanks, the closing `"""`, and lines the rewrite kept |
+| R743 | `floatfea/checks/api_wsd.py:75` | no change at that line | inside the `C_m` docstring, rewritten wholesale for R743. These exact lines are blanks, the closing `"""`, and lines the rewrite kept |
+| R743 | `floatfea/checks/api_wsd.py:76` | no change at that line | inside the `C_m` docstring, rewritten wholesale for R743. These exact lines are blanks, the closing `"""`, and lines the rewrite kept |
+| R743 | `floatfea/checks/api_wsd.py:77` | no change at that line | inside the `C_m` docstring, rewritten wholesale for R743. These exact lines are blanks, the closing `"""`, and lines the rewrite kept |
+| R744 | `scripts/measure/member_forces_table.py:446` | no change at that line | the R734 derivation and the two sag assignments, which are CORRECT and stay. R744 was not those lines -- it was that the control read them instead of reading the published value (§ 8 of revision 2) |
+| R744 | `scripts/measure/member_forces_table.py:447` | no change at that line | the R734 derivation and the two sag assignments, which are CORRECT and stay. R744 was not those lines -- it was that the control read them instead of reading the published value (§ 8 of revision 2) |
+| R744 | `scripts/measure/member_forces_table.py:448` | no change at that line | the R734 derivation and the two sag assignments, which are CORRECT and stay. R744 was not those lines -- it was that the control read them instead of reading the published value (§ 8 of revision 2) |
+| R744 | `scripts/measure/member_forces_table.py:449` | no change at that line | the R734 derivation and the two sag assignments, which are CORRECT and stay. R744 was not those lines -- it was that the control read them instead of reading the published value (§ 8 of revision 2) |
+| R745 | `CLAUDE.md` | no change -- **and it is Xabier's** | R745 asks for a third state in EG3's list, which is a process rule and changes only in a standalone `process:` commit citing the directive that asks for it |
+| R745 | `docs/reviews/F6/step-1.md` | no change -- **forbidden** | the implementer never writes, edits or deletes a verdict; a `PreToolUse` hook refuses it, Bash included |
+| R745 | `scripts/ci_section.py` | no change | it is RUN, not edited: § 0 and § 0a are its output |
+| R745 | `scripts/suite_count.py` | no change | it is RUN last, after every other edit (CP3) |
+| R745 | `test_report_carried.py` | no change | the bare token is the tail of the path above |
+| R745 | `test_report_guard_states.py` | no change | the bare token is the tail of the path above |
+| R745 | `tests/test_report_carried.py` | no change | the guard R745 is measured by. An existing guard that fails false is fixed or deleted and never extended (CZ0); this one does not fail false |
+| R745 | `tests/test_report_carried.py:211` | no change | the milestone-boundary line. R745's own last paragraph routes it to `CLAUDE.md` and to Xabier, not to an edit here |
+| R745 | `tests/test_report_guard_states.py` | no change | the planted-state guard, unedited |
+| R745 | `tests/test_report_numbers_are_sourced.py` | no change | unedited |
+| R746 | `docs/reports/F6/step-1.md:5` | no change -- **deliberately** | line 5 is REVISION 1's `Answers:` line, and EK3 forbids touching a step report after that report's final verdict. The correction R746 asked for is each later revision's own header |
+| R747 | `docs/F6_utilisation.md:81` | no change at that line | the four sentences are generated now and the block those line numbers pointed into is gone. `:81` was a blank line between paragraphs |
+| R747 | `docs/F6_utilisation.md:82` | no change at that line | the first line of the over-unity f-string, which the replacement kept byte-identical -- what changed is the sentence after it |
+| R747 | `docs/F6_utilisation.md:83` | no change at that line | the second line of the same f-string, same reason |
+| R747 | `scripts/measure/api_wsd_utilisation.py:371` | no change at that line | a bare `"",` separating two list entries. The hand-written sentence it preceded is deleted and the generated one is in its place |
+| R747 | `scripts/measure/api_wsd_utilisation.py:372` | no change at that line | `f"**{len(over)} of {len(all_stations)} member-stations exceed..."` -- the count was always generated and is kept verbatim. The words AFTER it were the hand-written half and they are what moved |
+| R747 | `scripts/measure/api_wsd_utilisation.py:375` | no change at that line | the closing `"",` of the same list, punctuation |
+| R748 | `__init__.py` | no change | the bare token is the tail of `tests/verification/rung6/__init__.py` in the verdict's `ls` output. Both rung directories keep their `__init__.py`; rung 6 keeps its `.empty-by-design` too, which is what makes it `empty:` |
+| R748 | `scripts/run_rung.sh` | no change | the verdict cites it as the mechanism that makes rung 6 `empty:`, not as a site to edit. Its contract is what `1f8f61a` had to satisfy: a `full:` directory carries no `.empty-by-design` and an `empty:` one must |
+| R749 | `floatfea/checks/api_wsd.py:147` | no change -- **by design** | `limit_1 = 10340.0 / fy_mpa` is unchanged: R742 was closed by option (i), which keeps the standard's own SI numbers. What R749 asked for is that the gate PIN them, and it now does: an exact equality against `section_class(D_OUTER, WALL, FY).limit_1`, plus a point at `D/t = 29.2` inside the limit's own neighbourhood. Both mutations the verdict ran are killed (§ 5) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:889` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:890` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:891` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:892` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:893` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:894` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:895` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:896` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:897` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:898` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:899` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:900` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:901` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:902` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:903` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:904` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:905` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:906` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:907` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+| R750 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:908` | no change at that line | the counter block was rewritten for R750 and these old line numbers no longer address it: `_weakest_live_move` is added, the counter is asserted against the minimum over live points, and the weak-end amplified configuration joins `AMPLIFIED_POINTS` (§ 6) |
+
+## 10. Carried
+
+**The row set, the class and the subject are the verdict's; the state and the pointer are
+`docs/reports/F6/step-1-answers.json`'s. Neither is retyped here.**
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R712 | **open** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R717 | **open** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R730 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R731 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R732 | **answered** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R734 | **answered** — §9 | (blocking, carried into F6's ledger) -- CLOSED, and I measured all four |
+| R735 | **open** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R736 | **open** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R737 | **answered** — §9 | (blocking, carried into F6's ledger) -- STILL OPEN, AND NOTHING IN THIS STEP |
+| R738 | **open** — §9 | no clause this generator can cut -- see the verdict's Carried section |
+| R739 | **answered** — §8 | AS AMENDED BY EZ0, AND ALSO (a) ON THE UNAMENDED HEAD, BECAUSE THE DEFECT IS IN floatfea/.) THE... |
+| R740 | **answered** — §9 | UNDER EZ0.) U = 1.815 IS THE PER-COMPONENT ENVELOPE BOUND, THE DELIVERABLE'S LABEL SAYS IT IS... |
+| R741 | **answered** — §9 | , AND THE LOCKED PLAN REQUIRES IT IN ITS OWN WORDS.) Â§ 3.2.2's LOCAL-BUCKLING CHECK IS NOT... |
+| R742 | **answered** — §9 | .) allowable_bending RETURNS MORE THAN 0.75 F_y, WHICH NO READING OF Â§ 3.2.3 PERMITS, FOR D/t... |
+| R743 | **answered** — §9 | .) CM_NO_TRANSVERSE_LOAD = 0.85 IS DECLARED UNDER THE WRONG CLAUSE CATEGORY AND ITS... |
+| R744 | **answered** — §9 | -- ASSERTION DOMAIN BLINDNESS, AND IT IS THE CONTROL THAT ANSWERED VERDICT 109's BLOCKING... |
+| R745 | **answered** — §9 | .) 43 RED TESTS AT THE REVIEWED COMMIT AND A RED CI JOB, AND THE EG3(i) TRACE IS NOT PASTED... |
+| R746 | **answered** — §9 | , AND IT IS THE FIRST THING MY INSTRUCTIONS TELL ME TO CHECK.) THE REPORT'S Carried SECTION... |
+| R747 | **answered** — §4 | AS AMENDED BY EZ0 -- A DEFECT IN A PUBLISHED DELIVERABLE AND IN THE scripts/measure/ GENERATOR... |
+| R748 | **answered** — §3 | UNDER EZ0.) THE DELIVERABLE'S G6.1 WARRANT CITES A DIRECTORY THAT CONTAINS NO TESTS AND THAT CI... |
+| R749 | **answered** — §5 | -- A GATE ASSERTION: WHAT THE GATE CLAIMS, ON WHICH QUANTITY, AT WHAT THRESHOLD.) G6.1 DOES NOT... |
+| R750 | **answered** — §6 | -- A COUNTER VALUE AND THE FORM OF ONE, WHICH IS WHAT EU1 ASKS THE ADVERSARIAL CASE ABOUT.)... |
+| R751 | **answered** — §8 | -- AND I AM NAMING THE CLASSIFICATION RATHER THAN SMUGGLING IT.)... |
+
+### What each finding was, and where the answer lives
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R712 | carried | **open** | §9 | `` | carried from an earlier verdict |
+| R713 | carried | **open** | §9 | `` | carried from an earlier verdict |
+| R714 | carried | **open** | §9 | `` | carried from an earlier verdict |
+| R715 | carried | **open** | §9 | `` | carried from an earlier verdict |
+| R716 | carried | **open** | §9 | `` | carried from an earlier verdict |
+| R717 | carried | **open** | §9 | `` | carried from an earlier verdict |
+| R730 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R731 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R732 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R734 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R735 | carried | **open** | §9 | `` | carried from an earlier verdict |
+| R736 | carried | **open** | §9 | `` | carried from an earlier verdict |
+| R737 | carried | **answered** | §9 | `` | carried from an earlier verdict |
+| R738 | carried | **open** | §9 | `` | carried from an earlier verdict |
+| R739 | recorded | **answered** | §8 | `floatfea/post/member_forces.py` | AS AMENDED BY EZ0, AND ALSO (a) ON THE UNAMENDED HEAD, BECAUSE THE |
+| R740 | recorded | **answered** | §9 | `` | UNDER EZ0.) `U = 1.815` IS THE PER-COMPONENT ENVELOPE BOUND, THE |
+| R741 | recorded | **answered** | §9 | `` | , AND THE LOCKED PLAN REQUIRES IT IN ITS OWN WORDS.) Â§ 3.2.2's |
+| R742 | recorded | **answered** | §9 | `` | .) `allowable_bending` RETURNS MORE THAN `0.75 F_y`, WHICH NO READING |
+| R743 | recorded | **answered** | §9 | `` | .) `CM_NO_TRANSVERSE_LOAD = 0.85` IS DECLARED UNDER THE WRONG CLAUSE |
+| R744 | recorded | **answered** | §9 | `` | ASSERTION DOMAIN BLINDNESS, AND IT IS THE CONTROL THAT ANSWERED |
+| R745 | recorded | **answered** | §9 | `` | .) 43 RED TESTS AT THE REVIEWED COMMIT AND A RED CI JOB, AND THE |
+| R746 | recorded | **answered** | §9 | `` | , AND IT IS THE FIRST THING MY INSTRUCTIONS TELL ME TO CHECK.) THE |
+| R747 | recorded | **answered** | §4 | `scripts/measure/api_wsd_utilisation.py` | AS AMENDED BY EZ0 -- A DEFECT IN A PUBLISHED DELIVERABLE AND IN THE |
+| R748 | recorded | **answered** | §3 | `scripts/measure/api_wsd_utilisation.py` | UNDER EZ0.) THE DELIVERABLE'S G6.1 WARRANT CITES A DIRECTORY THAT |
+| R749 | recorded | **answered** | §5 | `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py` | A GATE ASSERTION: WHAT THE GATE CLAIMS, ON WHICH QUANTITY, AT |
+| R750 | recorded | **answered** | §6 | `floatfea/tolerances.py` | A COUNTER VALUE AND THE FORM OF ONE, WHICH IS WHAT EU1 ASKS THE |
+| R751 | recorded | **answered** | §8 | `floatfea/post/member_forces.py` | AND I AM NAMING THE CLASSIFICATION RATHER THAN SMUGGLING IT.) |
+
+No row points at this section: every item is in this table by construction, so a pointer
+here would resolve whatever it said (R318).

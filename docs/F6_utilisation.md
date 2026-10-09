@@ -6,7 +6,7 @@
 * Fy = 355 MPa (S355; ASSUMED). No one-third increase (EZ4 Q2, locked): section 3.1.2's increase is written for a declared extreme event and these are screening design waves with no return period.
 * K = 2.0 for every arm, L = member length (EZ4 Q3): a cantilever from the body centre, the gimbal end on a floating body giving no reliable lateral restraint. A K = 1.0 column is reported beside it (FA2).
 * C_m = 0.85 (section 3.3.1 case (a); members in frames subject to joint translation), consistent with K = 2.0's sidesway assumption. C_m MULTIPLIES the bending term, so C_m = 1.0 RAISES the compression utilisation and 0.85 is the LESS onerous of the two (R743). A C_m = 1.0 column is reported beside the K = 1.0 one (FB2).
-* G6.1 is GREEN: every clause is verified against an independent hand calculation in tests/verification/rung6/, at two or more points per branch, either side of every boundary (FB0). R742: F_b is capped at 0.75 Fy -- the first reduced branch exceeded it to D/t = 30.60. R741: section 3.2.2(b) local buckling is implemented and D/t > 300 is refused rather than extrapolated.
+* G6.1 is GREEN: every clause is verified against an independent hand calculation in tests/verification/rung5/, at two or more points per branch, either side of every boundary (FB0). R742: F_b is capped at 0.75 Fy -- the first reduced branch exceeded it to D/t = 30.60. R741: section 3.2.2(b) local buckling is implemented and D/t > 300 is refused rather than extrapolated.
 * Governing basis: T = 12.5; 14; 15; 16.2 s (EZ2). T = 10 s and T = 20 s are outside the associated-period range for H = 24.2 m -- T = 10 s exceeds the breaking steepness -- and cannot govern.
 * ROOT and TIP only (FA3). The MID column waits on R730's discharge: its closed form is a measured 4.0% approximation on bending, unverified against a refined mesh.
 * Load basis: platform 20 kg / hub 12 kg model scale; 75% of body mass on arms; platform inertia scaled with mass (assumed). ER0. Hub line mass 15 t/m against the platform arms' 10.3 t/m.
@@ -59,17 +59,20 @@
 | hub4 | 25 | 60.8 | 30.4 | **inelastic** |
 | platform | 50 | 121.5 | 60.8 | **elastic** |
 
-**The `K = 2.0` lock moves the platform arms onto a different formula** — at `K = 1.0` every arm is inelastic and at `K = 2.0` the 50 m platform arms cross `C_c = 108.06` into § 3.2.2's elastic branch — **but it barely moves a utilisation**, and that is the quantitative answer to FA2:
+**The `K = 2.0` lock moves the platform arms onto a different formula** — at `K = 1.0` every arm is inelastic and at `K = 2.0` the 50 m platform arms cross `C_c = 108.06` into § 3.2.2's elastic branch. How much it moves a utilisation, and how much `C_m` does, are the two numbers FA2 and FB2 ask for:
 
 ```
 axial branch over 32 rows : elastic 4; inelastic 13; tension 15
 largest |U(K=2) - U(K=1)|      : 0.034238  at platform:hub1_arm TIP (elastic)
+largest |U(C_m=1) - U(C_m=0.85)| : 0.009245  at hub4:buoy10_arm ROOT (inelastic)
 worst compression station      : U = 1.71167
+section 3.3.2's AMPLIFIED form governs on 10 of 17 compression rows
+worst station platform:hub2_arm ROOT: u_axial = 0.000833  u_bending = 1.71138  (3.3.2 interaction, elastic)
 ```
 
-**Bending governs everywhere and the axial term is three orders smaller.** At the worst station `u_axial = 0.0004` against `u_bending = 1.815`, so § 3.3's interaction is bending plus a rounding error, the `C_m / (1 - f_a/F_e')` amplification never bites, and on the compression rows the simple `0.6 F_y` form of § 3.3.2 governs over the amplified one — which has no `K` in it at all. **The `K` question, which looked like the biggest modelling choice in the check, changes the governing number by at most `0.024`.** It would matter on a member carrying real axial load; none of these does.
+**Bending governs and the axial term is three orders smaller** — the ratio is in the block above, at the worst station, read from the row the table publishes. Neither modelling lever moves the governing number much, and the reason is the clause rather than the structure: § 3.3.2 takes the larger of its amplified and simple forms, the simple form carries no `F_a` and no `C_m`, and it is the one that governs wherever bending dominates.
 
-**4 of 32 member-stations exceed `U = 1.0`**, the worst at `1.712`. All four are platform arm ROOTs, all governed by § 3.3.1, and all on bending.
+**4 of 32 member-stations exceed `U = 1.0`**, the worst at `1.712`. They are on platform, at ROOT, and the governing clause is 3.3.1 interaction on 2; 3.3.2 interaction on 2.
 
 ## What this does NOT do
 

@@ -17,13 +17,32 @@ weight" is the DEFECTIVE formula's own identity, so it agreed with the bug and w
 reddened on the fix. The test that catches this is conservation -- the end shears must sum
 to the load the member carries -- not a comparison with a hand-computed end value.
 
-SIGN AND COMPONENT ORDER ARE `docs/conventions.md`'s, not this module's. The local axes
-come from `member_local_axes`, so `N` is along the member from A to B, `Vy`/`Vz` are the
-two local shears, `T` is torsion about the member axis and `My`/`Mz` the two bending
-moments. The returned values are the forces the ELEMENT exerts on its nodes at each end,
-which is why end B's axial has the opposite sign to end A's under pure tension -- a
-reader comparing the two ends is looking at an action and a reaction, not at a
-discrepancy.
+COMPONENT ORDER IS `docs/conventions.md`'s, not this module's. The local axes come from
+`member_local_axes`, so `N` is along the member from A to B, `Vy`/`Vz` are the two local
+shears, `T` is torsion about the member axis and `My`/`Mz` the two bending moments.
+
+**THE RETURNED VECTORS ARE THE FORCES APPLIED *TO* THE ELEMENT, NOT THE FORCES IT EXERTS
+ON ITS NODES (R751), SO `end_a[0]` IS MINUS THE INTERNAL AXIAL ACTION.** `f = k u - f_eq`
+is what an element's nodes must apply to hold it in that displaced state, which is the
+opposite attribution to the one this paragraph carried for two rounds:
+
+    claim:  a member in pure TENSION returns a NEGATIVE end_a[0], so the vector is the
+            force the NODES exert on the ELEMENT and `docs/conventions.md:320`'s
+            tension-positive `N` is MINUS it at end A
+    cmd:    files("tests/verification/rung4/*.py", "MINUS the internal axial action")
+    out:    tests/verification/rung4/test_f4_static_and_mapping.py
+
+`tests/verification/rung4/test_f4_static_and_mapping.py` runs the measurement, because a
+sentence is not a check: node B of `platform:hub1_arm` moved 1 mm OUTWARD along the member
+axis is an unambiguous stretch, `EA/L x 1e-3 = +5.51010219e+06 N` by Hooke, and this
+function returns `end_a[0] = -5.51010219e+06` and `end_b[0] = +5.51010219e+06`.
+
+**AND THE SECOND HALF OF THE OLD SENTENCE WAS TRUE UNDER EITHER ATTRIBUTION**, which is
+why reading it never refuted it: end B's axial does have the opposite sign to end A's
+under pure tension either way. Only a prescribed-sense measurement distinguishes them, and
+`scripts/measure/member_forces_table.py` negates at the publishing boundary **because**
+this attribution is the one above -- a reader who believed the old sentence would read that
+negation as a double correction and delete it.
 
 ONE ELEMENT PER MEMBER, at F3's mesh. EK1 asks for every element node along a member and
 asks the report to state the count; `BodyModel.elements` builds exactly one

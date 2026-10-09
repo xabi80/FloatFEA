@@ -2864,33 +2864,69 @@ F4_G41_DYNAMIC_MOMENT_COUNTER: Final[float] = 0.01
 #
 # G6.1: every API RP 2A-WSD clause in `floatfea/checks/api_wsd.py` against the clause
 # arithmetic worked by hand in `tests/verification/rung5/`, in SI, with the clause cited
-# (FB0). The quantity is the relative disagreement between the two, over 32 points chosen
+# (FB0). The quantity is the relative disagreement between the two, over 35 points chosen
 # either side of every branch boundary -- `C_c`, the three `D/t` limits, the local-buckling
-# limit and the tension/compression switch.
+# limit, the tension/compression switch, and both ends of `C_m`'s own resolution.
 #
-# WINDOW RULE, over the whole counter family. Clean worst `1.683679572698748e-16`, at the
-# ONE point of 32 that is not bit-identical: `F_xc` at `D/t = 61`, whose `(D/t)^(1/4)` is
-# the only FRACTIONAL power in the six clauses. Weakest live family member
-# `8.283918449512958e-13` (`C_m`, via section 3.3.2's amplified form). Geometric centre
-# `1.180993830438892e-14`; the declared value is the round number below it, with edges
-# `59.3937x` and `82.8392x`. All five family members live, none vacuous.
+# **THE WINDOW'S LOWER EDGE IS A STATEMENT ABOUT THE DOMAIN THE CEILING DEFENDS, NOT ABOUT
+# THE 35 POINTS (R750).** It was published as `59.3937x` from the clean worst over the gate's
+# own points, `1.683679572698748e-16`. Over a dense sweep of the module's admissible domain
+# -- `D/t` from 5.00 to 300.00 in steps of `0.01`, six grades, ten `KL/r`, 2124072 points
+# compared against a hand side written independently of the test file -- the clean worst is
 #
-# THE OTHER 31 POINTS AGREE TO THE BIT, and that is what the headroom is for rather than
-# slack: `pow` is not required to be correctly rounded, CI runs ubuntu and this was
-# measured on Windows, so a correct transcription must not redden on the platform that
-# computes `61^(1/4)` one ULP differently.
+#     6.538410439539509e-16   at F_a, F_y = 420 MPa, D/t = 240.85, KL/r = 108.0
+#     6.501155667207290e-16   at the LOCKED grade: F_y = 355 MPa, D/t = 106.76, KL/r = 108.1
+#
+# so the lower edge is `15.2942x`, and `15.3819x` at the grade F6 ships. **The published
+# figure was out by `3.88x` as a statement about the module.** The ceiling does not move:
+# `15.2942x` still clears `F4_WINDOW_RULE_MIN_EDGE`, and the reviewer's independent run of
+# the gate on ubuntu at `1f8f61a` is the cross-platform measurement the headroom argument
+# could not take on one machine.
+#
+# WINDOW RULE: clean worst `6.538410439539509e-16`, weakest live response
+# `3.074922627292889e-13`, geometric centre `1.417924758478675e-14`; the declared value is
+# the round number below the centre, with edges `15.2942x` and `30.7492x`.
+#
+# WHICH `D/t` WINS IS GRID-SENSITIVE AND THAT IS ITSELF THE MEASUREMENT. The reviewer's
+# independent sweep put the locked-grade worst at `D/t = 113.43` and `6.515863e-16`; this one
+# puts it at `106.76` and `6.501155667207290e-16`. Same quantity, same `KL/r = 108.1`, same
+# order -- the disagreement is `0.2%` and it says the function is flat in that
+# neighbourhood, not that one of us mismeasured. The headroom is for `pow` not being
+# correctly rounded across platforms, which is why the figure is a neighbourhood rather than
+# a point.
 # Set: 2026-10-09, F6 step 1
 F6_API_CLAUSE_AGREEMENT: Final[float] = 1.0e-14
 
-# The counter-case: a clause COEFFICIENT scaled by `1 + F6_API_CLAUSE_INJECTION_EPS`, one
-# at a time, which is what a transcription defect is -- `0.6` typed for `0.66`, `0.4` for
-# `0.45`, `0.3` for `0.33`. Round bound below the weakest live response over the whole
-# family `8.283918449512958e-13`; margin `1.0355x`, EH4 weakening `82.8392x`.
+# The counter-case: a clause COEFFICIENT scaled by `1 + F6_API_CLAUSE_INJECTION_EPS`, one at
+# a time, which is what a transcription defect is -- `0.6` typed for `0.66`, `0.4` for
+# `0.45`, `0.3` for `0.33`. Round bound below the weakest LIVE POINT over the whole family,
+# `3.074922627292889e-13`; margin `1.024974x`, and the counter sits `30x` above the ceiling.
 #
-# THE FAMILY HAD TO BE REPAIRED BEFORE IT MEASURED ANYTHING -- four of its seven members
-# responded exactly `0.000000e+00`, each for a different reason, and the three remaining
-# all sat at sensitivity `1.0`, which is what a family looks like when it is only testing
-# the comparison:
+# **IT WAS A CONSTANT AT ONE CHOSEN POINT AND IT IS NOW A FLOOR OVER POINTS PLACED AT THE
+# WEAK END (R750).** The shipped `8.0e-13` was a round bound below `min` over the five
+# COEFFICIENTS of `max` over the points -- and the min over POINTS was never formed anywhere
+# in the gate. Measured at the shipped injection, the weakest live point was
+# `3.098618e-15`, so the declared counter sat **`258.2x` ABOVE a response the gate asserts
+# it must catch**, at a configuration the test file did not contain. That is R694's shape
+# exactly: a counter that depends on a model parameter is a function, not a number.
+#
+# AND THE FUNCTION'S INFIMUM OVER THE WHOLE ADMISSIBLE DOMAIN IS `0`, ATTAINED -- which is
+# why "a floor beneath every admissible configuration" cannot be met by any constant.
+# `C_m`'s resolution is `cm * u_bending / ((1 - f_a/F_e') * u_combined)`, so it tends to zero
+# as the bending term does, and at `KL/r = 30.4`, `f_a/F_e' = 0.40` the amplified form still
+# governs at zero bending because `F_a = 1.926954e+08 < 0.6 F_y`. Measured down that path at
+# the declared injection: `My = 1e6 -> 3.074923e-13`, `1e5 -> 3.088937e-14`,
+# `1e4 -> 3.108077e-15`, `1e3 -> 1.828331e-16`, `1e2 -> 0.000000e+00`. A zero response is
+# VACUOUS, not a failure.
+#
+# So the counter is a floor beneath the gate's own points, and those points are placed AT the
+# weak end rather than at the strong one: a dense sweep over `KL/r`, `f_a/F_e'` and `My`
+# localises the minimum resolution to `3.074923e-03` at `KL/r = 30.4`, `f_a/F_e' = 0.40`,
+# `My = 1e6`, and `AMPLIFIED_POINTS` now contains that configuration. The two points the
+# gate had resolved `C_m` at `0.562374` and `0.828392`, which is `270x` stronger.
+#
+# THE FAMILY ALSO HAD TO BE REPAIRED BEFORE IT MEASURED ANYTHING -- four of its seven
+# members responded exactly `0.000000e+00`, each for a different reason:
 #
 #   * `ELASTIC_LOCAL_BUCKLING_C` was dead because `F_xe = 2 C E t / D` NEVER governs
 #     `min(F_xc, F_xe)` at `F_y = 355 MPa` -- not at any `D/t` the clause admits. Solved,
@@ -2904,31 +2940,28 @@ F6_API_CLAUSE_AGREEMENT: Final[float] = 1.0e-14
 #     relative nudge of a threshold responds only where a point sits within `eps` of it.
 #     They are not in this family at all; their counter-cases MOVE THE LIMIT PAST A POINT
 #     and assert the branch changes.
-#
-# `C_m` is the weakest member and stays the weakest by `1.21x` -- it multiplies only the
-# bending half of one of section 3.3.2's two forms, so the gate resolves a `C_m` error to
-# `0.828392` of its relative size. That figure is itself the product of choosing the point:
-# at the first point tried the sensitivity was `0.151897`, because `max(amplified, simple)`
-# selected the SIMPLE form there and `C_m` does not appear in it.
 # Set: 2026-10-09, F6 step 1
-F6_API_CLAUSE_AGREEMENT_COUNTER: Final[float] = 8.0e-13
+F6_API_CLAUSE_AGREEMENT_COUNTER: Final[float] = 3.0e-13
 
 # CLASS: STRUCTURAL -- the size of the coefficient injection above. An INPUT to a
 # counter-case rather than a ceiling anything is compared against, so no counter-case of
 # its own (AO2), and `F6_API_CLAUSE_AGREEMENT_COUNTER` is a function of it.
 #
-# Reason for 1.0e-12: it is the smallest injection whose WEAKEST family member still clears
-# the declared ceiling by the window rule's own floor. Solved both ways (EH4): the response
-# is linear in it, so `eps` may fall to `1.207158e-14` -- `82.84x` below the declared value
-# -- before `C_m`'s response reaches the ceiling, and it may rise without bound.
+# Reason for 1.0e-10: it is the round value above the smallest injection whose WEAKEST LIVE
+# POINT still clears the declared ceiling by the window rule's own floor. Solved: the
+# response is linear in the injection and the minimum resolution is `3.074923e-03`, so
+# `2.0 * 1.0e-14 / 3.074923e-03 = 6.504229e-12` is the boundary and `1.0e-10` is two decades
+# above it. It was `1.0e-12`, at which the weakest live point responds `3.098618e-15` --
+# `0.3099x` the ceiling, so the gate could not catch a `C_m` defect of the declared size at
+# all at that configuration.
 #
-# IT IS DELIBERATELY AT ROUND-OFF SCALE AND THAT IS THE POINT. The clause coefficients are
-# exact decimals, so a real transcription error is never `1e-12`; it is percent-scale and
-# is caught ten decades over. What this injection measures is that the comparison is not
+# IT IS STILL AT ROUND-OFF SCALE AND THAT IS STILL THE POINT. The clause coefficients are
+# exact decimals, so a real transcription error is never `1e-10`; it is percent-scale and is
+# caught eight decades over. What this injection measures is that the comparison is not
 # VACUOUS -- that the hand calculation resolves the coefficient at all, rather than passing
 # because both sides call the same arithmetic.
 # Set: 2026-10-09, F6 step 1
-F6_API_CLAUSE_INJECTION_EPS: Final[float] = 1.0e-12
+F6_API_CLAUSE_INJECTION_EPS: Final[float] = 1.0e-10
 
 # CLASS: STRUCTURAL -- the locked plan's counter-case per check: "an injected input that
 # must push the utilisation past 1.0". A load multiplier, not a ceiling, so no counter-case
