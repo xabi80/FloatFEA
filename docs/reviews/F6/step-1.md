@@ -1,4 +1,666 @@
 # Review — F6 step 1
+Reviewed commit: 24fad0492733f50ad2921041ca53145387ead6e0
+Verdict: PASS
+**Reviewed commit: `54ff15c`** (`54ff15ccc899ffd1f9f8c996d048c816a7e652c0`, tree clean when I
+judged it; my corpus batch 44 is committed on top at `24fad04`, which is why the plain
+`Reviewed commit:` stamp below is not the commit I judged -- R718's subject, and this bold
+line is the mechanism.)
+Tests: 3433 passed, 0 failed, 0 skipped   (MY OWN run, one invocation, no `-k`, no
+`--ignore`, no deselection, `-p no:randomly`, tree clean at `54ff15c`, `648.19s`.)
+
+## Round of 2026-10-09 -- ROUND 3 OF THREE, F6 step 1. **PASS, AND THE STEP CLOSES CARRYING ONE.** Four of the five are closed and I ran each. The fifth is closed in form and its repair published an inverted count.
+
+**WHY PASS.** This is the third reviewed revision, so under CZ0 as amended by ES0 the step
+closes whatever its state. It closes in good order: **R748, R749, R750 and R751 are CLOSED**,
+each measured rather than read, and R747's four sentences are now generated from their sets --
+three of them correctly. **One blocking item is open and carries by name into step 2: R752**,
+the fourth generated sentence, which publishes "the AMPLIFIED form governs on 10 of 17
+compression rows" where the amplified form governs on **7 of 17** and the ten rows it counts
+are **exactly the ten where the SIMPLE form governs**. The predicate is right about a
+different question. **My own verdict-111 inference is the proximate cause and I withdraw it.**
+
+**WHAT I RAN RATHER THAN READ.** Twenty-six one-at-a-time mutations of
+`floatfea/checks/api_wsd.py`, source restored byte-identical after each: **26 of 26 killed**,
+including all three R749 survivors, the `>=`/`>` switch and the nine coefficients the report
+asked me to try. Thirteen mutations of the gate's own aggregation, point set and three
+constants. The clause module at 1792 `(KL/r, f_a/F_e, My)` configurations the diff did not
+choose. An independent hand side for section 3.2.2 over six grades and `D/t` from 5 to 300,
+in two spellings. A consistent change of unit system. A 1 mm prescribed stretch. The
+deliverable regenerated and diffed byte for byte.
+
+**No STOP.** No low rung is red: `the verification ladder` is SUCCESS at `a041574` with
+`ladder 5 -- independent confirmation` success and `run_rung: 68 collected, 0 failed`. The
+locked plan is not wrong.
+
+## 0. CI -- UNAVAILABLE AT THE REVIEWED COMMIT BY DESIGN, RED AT THE ROUND'S CODE COMMIT, AND I TRACED ALL NINE BY NAME
+
+```
+cmd    gh run list --commit 54ff15ccc899ffd1f9f8c996d048c816a7e652c0 --json ...
+out    []
+cmd    git show --stat 54ff15c
+out    docs/reports/F6/step-1.md   one file, and it is under the workflow's paths-ignore
+judge  **UNAVAILABLE BY DESIGN. NOT CK2 AND NOT CA2's RED.** No run exists at the reviewed
+       commit because that commit touches only `docs/reports/**`.
+cmd    gh run list --commit a041574e59f9cb61b6ab58e1bce7706e2bf76d32 --json ...
+out    [{"conclusion":"failure","databaseId":37951958409,"event":"push","name":"CI"}]
+cmd    gh run view 37951958409 --json jobs -q '.jobs[] | .name + " :: " + .conclusion'
+out    lint, unit and guards             failure     (step 10, guards and meta-tests)
+out    the verification ladder           success
+out    CI determinism -- leg             skipped
+out    CI determinism -- ten legs agree  skipped
+cmd    gh run view 37951958409   (the ladder job, step level)
+out    ladder 1 / 2 / 3 / 6 / 4 / 5     all success
+cmd    gh run view 37951958409 --log | grep "run_rung:"
+out    1276 / 66 / 297 / 134 / 343 / 68 collected, 0 failed, 0 errored, 0 skipped
+judge  **THE 68 RUNG-5 TESTS RAN ON UBUNTU AND ARE GREEN THERE**, which is the one
+       measurement an exactness ceiling's own justification cannot take on one machine. The
+       three new assertions and the new weak-end point are inside that 68.
+cmd    gh run view 37951958409 --log | grep -oE "FAILED tests/[^ ]*" | sort -u
+out    FAILED tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+out    FAILED tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count
+out    FAILED tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]
+out      + [non_numeric_step_suffix] [superscript_digit_step_number]
+out        [draft_suffix_beside_a_step_report] [step_number_is_the_empty_string]
+out        [verdict_amended_after_the_commit_the_report_answers] [zero_padded_step_number]
+out    9 failed, 1149 passed, 1 skipped, 1 warning in 660.77s
+cmd    python -m pytest -q -p no:randomly tests/test_report_carried.py
+       tests/test_report_guard_states.py tests/test_report_numbers_are_sourced.py
+       -- AT THE REVIEWED COMMIT
+out    327 passed in 139.56s
+judge  **NINE REDS, TWO CAUSES, EVERY ONE MATCHED BY NAME, AND NOTHING OUTSIDE THOSE TWO
+       FILES.** I checked the claim rather than took it: each of the seven planted states
+       pastes the SAME two reds in its own failure line, which is how EH1 says a cascade is
+       identified. Both causes are CZ1's class -- a check whose input is the commit itself:
+       `scripts/suite_count.py` measures a clean worktree AT a commit, and the `0a` table
+       needs a RUN, which cannot exist before a push. **Both clear at the reviewed commit
+       and I measured the clearing**; my own whole-suite run at `54ff15c` is `3433 passed,
+       0 failed, 0 skipped`. CZ0 (d) asks about a red test at the reviewed commit and there
+       is none.
+```
+
+**AND THE STRUCTURAL PROBLEM UNDER IT IS NOW TWO ROUNDS OLD -- see the criterion section.**
+Neither of those two guards is on either of EG3/EH1's lists, so on a literal reading of "any
+red not on the list still blocks" both would block, and for the second consecutive round a
+reviewer has admitted them by hand. That is a criterion question and it goes to Xabier.
+
+## 1. MY OWN INSTRUCTIONS, THE CONFTEST AND THE TOLERANCE FILE -- EACH DIFFED SEPARATELY
+
+```
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py
+cmd    git diff fdb4ecd..54ff15c -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+cmd    git diff --name-status fdb4ecd..54ff15c -- '*conftest*' '*plugin*'
+out    (empty)
+judge  CH2/CI0: no conftest and no plugin anywhere in the range, so no rung's green is
+       written from its own directory and I did not have to read a hookwrapper. Rung 5's
+       green is a pytest result and not a rewritten record.
+cmd    git diff --stat fdb4ecd..54ff15c -- .claude docs/SUPERVISOR.md
+out    (empty)
+judge  **CLEAN.** My own instructions are untouched in this range. C45 is still open and is
+       still process class rather than step work.
+cmd    git diff fdb4ecd..54ff15c -- floatfea/tolerances.py | grep -E "^[-+][A-Z0-9_]+: Final"
+out    -F6_API_CLAUSE_AGREEMENT_COUNTER: Final[float] = 8.0e-13
+out    +F6_API_CLAUSE_AGREEMENT_COUNTER: Final[float] = 3.0e-13
+out    -F6_API_CLAUSE_INJECTION_EPS: Final[float] = 1.0e-12
+out    +F6_API_CLAUSE_INJECTION_EPS: Final[float] = 1.0e-10
+judge  **TWO VALUES MOVED AND `F6_API_CLAUSE_AGREEMENT` DID NOT.** The counter FELL by
+       `2.67x` and the injection ROSE by `100x`; nothing else in the file moved. EU1 fires
+       and section 5 is the adversarial case.
+```
+
+## 2. THE ORDER THE VALUES MOVED IN -- THE THING THE REPORT ASKED ME TO BE MOST SUSPICIOUS OF
+
+```
+claim  the assertion moved first and went red on the shipped values, so the values were
+       re-derived rather than fitted
+cmd    in a clean `git archive HEAD` copy: COUNTER 3.0e-13 -> 8.0e-13 and EPS 1.0e-10 ->
+       6.5e-12 and -> 5.0e-11, one at a time, whole of rung 5 re-run, both files restored
+       byte-identical and asserted
+rule   the gate's own two assertions: weakest live > COUNTER, and weakest/CEILING > 2.0
+out    EPS -> 6.5e-12  (the entry's own boundary)     3 failed, 65 passed
+out    EPS -> 5.0e-11                                 2 failed, 66 passed
+out    COUNTER -> 3.1e-13                             2 failed, 66 passed
+cmd    git diff --stat fdb4ecd..54ff15c -- floatfea/checks/api_wsd.py
+out    (empty)
+judge  **THE ORDER IS AS CLAIMED AND THE MODULE THE TOLERANCES MEASURE IS BYTE-IDENTICAL
+       ACROSS THE RANGE.** There is no code change in this commit for either value to
+       rescue, which is the strongest available form of "the tolerance was not moved to make
+       a failure pass". The aggregation is what makes the old values red; the values follow.
+```
+
+**And the question behind it -- is `1.0e-10` simply large enough to make a weak gate look
+adequate.** Solved in both directions.
+
+```
+rule   the response is linear in the injection and the minimum resolution is 3.074923e-03
+out    the gate reddens below eps = 9.757e-11 -- the counter is a function of eps, so at the
+out      SHIPPED counter there is 2.5% of headroom beneath the injection, not two decades
+out    eps may rise to 1.0e-8 with 68 passed -- unbounded and unasserted
+out    the entry's 6.504229e-12 is the CEILING-based boundary and is correct as stated
+judge  **NOT A FINDING, AND THE READING MATTERS.** `1.0e-10` is eight decades below a real
+       transcription error (the coefficients are exact decimals) and three decades above the
+       point where the comparison goes vacuous. What the entry does not say is that the two
+       constants are locked together: lowering `eps` without lowering the counter reddens
+       the gate, so "two decades above the boundary" is a statement about what `eps` COULD
+       be if the counter were re-derived, not about headroom in the shipped gate. C62.
+```
+
+## Findings
+
+**R752. (BLOCKING. (a) AS AMENDED BY EZ0 -- A DEFECT IN A PUBLISHED DELIVERABLE AND IN THE
+`scripts/measure/` GENERATOR THAT PRODUCES IT.) THE REPAIR OF R747's FOURTH SENTENCE
+PUBLISHES AN INVERTED COUNT: SECTION 3.3.2's AMPLIFIED FORM GOVERNS ON 7 OF 17 COMPRESSION
+ROWS, NOT 10, AND THE TEN ROWS THE SENTENCE COUNTS ARE EXACTLY THE TEN WHERE THE SIMPLE FORM
+GOVERNS. MY OWN `10 of 17` IS WITHDRAWN -- THE COUNT WAS RIGHT AND THE INFERENCE I ATTACHED
+TO IT WAS NOT.**
+`scripts/measure/api_wsd_utilisation.py:374-386` (the `amplified_rows` predicate and the
+comment above it), published at `docs/F6_utilisation.md:69`.
+
+```
+claim  "section 3.3.2's AMPLIFIED form governs on 10 of 17 compression rows", generated
+cmd    per published compression row, recompute the two forms section 3.3.2 takes the larger
+       of, from the deliverable's own columns:
+         amplified = f_a/F_a + cm*u_bending/(1 - f_a/F_e)
+         simple    = f_a/(0.6 F_y) + u_bending
+       with F_e at the body's own KL/r -- 121.5 platform, 60.8 hubs
+rule   floatfea/checks/api_wsd.py:401-403, `u_combined = max(amplified, simple)`
+out    AMPLIFIED governs on  7 of 17
+out    SIMPLE    governs on 10 of 17
+out    and the 10 rows the published sentence counts are the 10 SIMPLE-governing rows,
+out      one for one
+out    platform:hub2_arm ROOT  u_bending 1.71138  amplified 1.456719  simple 1.711666
+out    platform:hub4_arm ROOT  u_bending 1.71138  amplified 1.456719  simple 1.711666
+out    hub1:buoy2_arm   ROOT   u_bending 0.78429  amplified 0.677880  simple 0.790490
+out    ... seven more, all SIMPLE, every one bending-dominated at a share above 98.4%
+out    hub3:buoy8_arm   TIP    u_bending 0.00384  amplified 0.008400  simple 0.007720
+out    ... six more, all AMPLIFIED, every one with a bending share under 46%
+judge  **THE PREDICATE IS RIGHT ABOUT A DIFFERENT QUESTION.** `amplified_rows` is the rows
+       where `utilisation_Cm1 != utilisation_K2` at the CSV's `{:.6g}`. That detects `C_m`
+       changing the GOVERNING utilisation, which happens where the amplified form governs AT
+       THE PERTURBED `C_m = 1.0` -- not at the shipped `0.85`. Measured at
+       platform:hub2_arm ROOT: at `C_m = 0.85` amplified is `1.456719` against simple
+       `1.711666`, so SIMPLE governs by `17.5%`; at `C_m = 1.0` amplified rises to
+       `1.713640` and TAKES OVER, which is the published `utilisation_Cm1 = 1.71365`. The
+       column differs precisely BECAUSE the simple form was governing and stopped.
+```
+```
+cmd    the comment the predicate is derived from, api_wsd_utilisation.py:374
+out    "The amplified form of 3.3.2 governs exactly where `C_m` reaches `U`, because `C_m`
+out     appears nowhere else in the calculation."
+judge  **A CAUSAL CLAIM (BG0) WITH NO CELL, AND ONE ROW REFUTES IT.** `C_m` appearing
+       nowhere else is true and does not license the inference, because `C_m` can flip which
+       half of the `max` is taken.
+cmd    sed -n '69,72p' docs/F6_utilisation.md
+out    :69  section 3.3.2's AMPLIFIED form governs on 10 of 17 compression rows
+out    :72  ... the simple form carries no `F_a` and no `C_m`, and it is the one that
+out         governs wherever bending dominates
+judge  **THE DELIVERABLE NOW SAYS BOTH, AND THE HAND-WRITTEN HALF IS THE TRUE ONE.** `:72`
+       is correct -- the simple form governs on exactly the ten bending-dominated rows,
+       including both over-unity platform ROOTs at a 99.98% bending share. This is R747's
+       class for the third round running, a summary line contradicting the table it sits
+       beside, inverted, with the generated half now the wrong one. Verdict 109's single
+       blocking finding was a defect in the repair of the previous finding in this class.
+cmd    the fields of MemberCheck
+out    no field records which half of `max(amplified, simple)` was taken, so any caller
+out    that wants it must re-derive it -- which is what the proxy was
+```
+
+**Closed when** the count is computed from the two forms themselves -- either `check_member`
+returns which half of `max(amplified, simple)` governed, or the generator forms both from the
+row it already has -- the sentence is regenerated, and `docs/F6_utilisation.csv` and
+`docs/F6_utilisation.md` are regenerated in the same commit (BP0). **My figures to beat:
+AMPLIFIED on 7 of 17, SIMPLE on 10 of 17; at `platform:hub2_arm` ROOT amplified `1.456719`
+against simple `1.711666` at `C_m = 0.85`, and `1.713640` at `C_m = 1.0`, which is the
+published `utilisation_Cm1`.** If a regeneration disagrees I want the disagreement, not a
+reconciliation. **And the comment at `:374` is deleted or given its cell**, because it is the
+sentence that produced the predicate.
+
+**I AM WITHDRAWING MY OWN FIGURE AND SAYING WHY, BECAUSE IT IS THE CAUSE.** Verdict 111
+wrote: "10 of 17 compression rows have `utilisation_Cm1 != utilisation_K2`, **which can only
+happen where the amplified form governs, because `C_m` appears nowhere else in the
+calculation**". The count is correct; the clause after the comma is wrong, for the reason
+above. The implementer generated the sentence from the set *my verdict named* instead of from
+the set the sentence describes, and that is the right instinct applied to a defective input.
+**A figure I hand over as "mine to beat" is an input to a generator, and this is the second
+consecutive round in which one of my inferences rather than my arithmetic was the defect** --
+the first was the `5.3x` ranking I withdrew in verdict 111.
+
+## 3. WHAT I CLOSED, EACH MEASURED RATHER THAN READ
+
+```
+R749 -- THE THREE SURVIVORS, RE-RUN BY ME, PLUS TWENTY-THREE MORE
+cmd    26 one-at-a-time edits of floatfea/checks/api_wsd.py in a clean `git archive HEAD`
+       copy, whole of rung 5 re-run after each, source restored byte-identical and asserted
+out    limit_1 10340 -> 10430 (digit swap)   2 failed, 66 passed   KILLED
+out    limit_1 -> 10443.4 (+1%)              2 failed, 66 passed   KILLED
+out    limit_1 -> 10236.6 (-1%)              2 failed, 66 passed   KILLED
+out    limit_2 20680 -> 20860 (digit swap)   3 failed, 65 passed   KILLED
+out    limit_2 -> 20886.8 (+1%)              3 failed, 65 passed   KILLED
+out    limit_2 -> 20473.2 (-1%)              4 failed, 64 passed   KILLED
+out    d_t > 300.0 -> 303.0                  1 failed, 67 passed   KILLED
+out    d_t > 300.0 -> 299.0                  1 failed, 67 passed   KILLED
+out    in_tension >= 0.0 -> > 0.0            1 failed, 67 passed   KILLED
+out    CONTROL PASCAL_PER_MPA 1.0e6 -> 1.1e6 6 failed, 62 passed   KILLED
+out    the nine the report asked me to try: 0.84 -> 0.48 (5 failed); 1.74 -> 1.47 (4);
+out      0.72 -> 0.27 (15); 0.58 -> 0.85 (15); 1.64 -> 1.46 (8); 0.23 -> 0.32 (8);
+out      F_e 12.0 -> 21.0 (12); 23.0 -> 32.0 (11); (1 - 0.5 r^2) 0.5 -> 0.05 (8)
+out    and seven more I chose: 5/3 -> 5/3.1 (8); 3/8 -> 3/8.8 (8); r^3/8 -> /8.8 (8);
+out      CM_JOINT_TRANSLATION 0.85 -> 0.58 (4); LOCAL_BUCKLING_DT 60 -> 90 (4);
+out      BEAM_SHEAR_AREA_FACTOR 0.5 -> 0.6 (4); third numerator 300000 -> 30000 (14)
+out    **26 of 26 KILLED. Nothing survives.**
+judge  **R749 IS CLOSED AND THE CONDITION WAS MET BOTH WAYS INSTEAD OF ONE.** `limit_1` and
+       `limit_2` are exact equalities against `section_class(D_OUTER, WALL, FY)` -- which is
+       the one function `allowable_bending` itself calls, so one literal serves both and
+       pinning it pins the branch -- AND `29.2`/`58.3` sit inside each limit's own
+       neighbourhood AND in `_FB_POINTS`. The `300` refusal is bracketed at `300`/`300.1`
+       and I confirmed it reddens on `299` too, which is the direction nobody asked for.
+       The tension switch is bracketed at `0.0` and `-5e-324`.
+
+R748 -- THE FOUR CITATIONS
+cmd    grep -rn "rung6" docs/F6_utilisation.md docs/F6_utilisation.csv
+       scripts/measure/api_wsd_utilisation.py ; ls tests/verification/rung5/
+out    (no match in any of the three files)
+out    rung5:  __init__.py  test_g61_api_wsd_hand_calculations.py
+cmd    python scripts/measure/api_wsd_utilisation.py --out <tmp> --summary <tmp> ; diff
+out    CSV identical; MD identical
+judge  **CLOSED, AND THE REGENERATION IS BYTE-IDENTICAL**, which is more than the condition
+       asked and is the shape step 2's own gate will need.
+
+R751 -- THE ATTRIBUTION, AND THE HONEST STATEMENT OF ITS TEST's REACH
+cmd    in a clean copy: invert `member_forces`' returned vector; then separately delete
+       `root[0] = -root[0]`, then `tip_internal[0] = -tip_internal[0]`, from
+       scripts/measure/member_forces_table.py. Whole of rung 4 each time.
+out    baseline                                 343 passed in 3.17s
+out    the attribution INVERTED                 4 failed, 339 passed   REDDENS
+out      -- test_a_member_in_pure_TENSION_returns_a_NEGATIVE_end_a_axial plus the two
+out         conservation tests and the defective-formula control
+out    `root[0] = -root[0]` reverted            343 passed             still green
+out    `tip_internal[0]` reverted               343 passed             still green
+cmd    grep -rl member_forces_table tests/
+out    tests/verification/rung4/test_f4_static_and_mapping.py + three corpus DATA files
+judge  **CLOSED FOR THE `floatfea/` HALF, AND THE REPORT STATES THE OTHER HALF's ABSENCE
+       RATHER THAN CLAIMING IT.** The paragraph is now the measured attribution with a
+       triple `tests/test_tree_prose_consistent.py` runs, and the measurement is a rung-4
+       test on a prescribed sense -- `end_a[0] = -5.51010219e+06` where Hooke gives
+       `+5.51010219e+06`, verdict 110's and verdict 111's figure to every digit.
+       **Self-reporting that the test does not reach the publishing boundary is worth more
+       than the test**: it is C52's other half, it is named as open, and nothing in the
+       report pretends otherwise. I found the second negation unguarded too.
+```
+
+## 4. R750 -- I ACCEPT THE READING, I WITHDRAW MY OWN WORDING, AND HERE IS WHY
+
+The implementer asked me to attack this hardest. I will do the opposite, because the
+measurement supports it, and I will say exactly which of my sentences was wrong.
+
+```
+claim  (mine, verdict 111) "the counter is a floor beneath every admissible configuration
+       rather than a constant at one"
+cmd    the resolution's closed form, cm*u_bending/((1 - f_a/F_e)*u_combined), tends to 0
+       with the bending term. Does the amplified form still govern there?
+rule   u_combined = max(amplified, simple); at u_bending = 0 these are f_a/F_a and
+       f_a/(0.6 F_y), so the amplified form governs iff F_a < 0.6 F_y
+out    F_a(KL/r = 30.4) = 1.926954e+08  <  0.6 F_y = 2.130000e+08   -> TRUE
+out    and down that path at eps = 1.0e-10, measured through `check_member`:
+out      My = 1e6 -> 3.074923e-13   1e5 -> 3.088937e-14   1e4 -> 3.108077e-15
+out      My = 1e3 -> 1.828331e-16   1e2 -> 0.000000e+00
+judge  **THE INFIMUM IS 0 AND IT IS ATTAINED WHILE THE AMPLIFIED BRANCH IS STILL THE
+       GOVERNING ONE, SO NO CONSTANT CAN SATISFY MY CONDITION AS I WROTE IT.** I reproduced
+       the entry's five-row table to every digit, from the module rather than from the
+       closed form, and I checked the branch inequality rather than taking it. **My wording
+       is WITHDRAWN.** The second option my own condition offered -- points chosen at the
+       weak end, margin restated from there -- is the only one available and it is the one
+       taken.
+cmd    the whole family, through the gate's own helpers, at the shipped values
+out    35 points. CM_JOINT_TRANSLATION live at 3 of them:
+out      3.074923e-13 (KL/r=30.4)   5.621925e-11 (60.8)   8.281906e-11 (121.5)
+out    ALLOWABLE_TENSION_FACTOR 1.147542e-12 and 9.999994e-11; ALLOWABLE_SHEAR_FACTOR
+out      1.000000e-10; BEAM_SHEAR_AREA_FACTOR 9.999985e-11; ELASTIC_LOCAL_BUCKLING_C
+out      9.999979e-11 and 9.999985e-11
+out    WEAKEST LIVE over the family = 3.0749226272928885e-13; margin over 3.0e-13 =
+out      1.024974x
+judge  **THE DECLARED FIGURES ARE THE SAME DOUBLES I GET AND THE WEAK POINT IS WHERE IT IS
+       SAID TO BE.** The new point is 183x weaker than the next weakest, so which point wins
+       is not marginal; the margin to the counter is 2.5%, tighter than the 1.0355x the old
+       value had, and pinned from above -- COUNTER -> 3.1e-13 gives 2 failed.
+cmd    an independent hand side for section 3.2.2, written in my own sweep, in two
+       spellings, against the module at the two exact decimals the entry names
+out    6.50115566720729e-16   at F_y = 355 MPa, D/t = 106.76, KL/r = 108.1
+out    6.538410439539509e-16  at F_y = 420 MPa, D/t = 240.85, KL/r = 108.0
+out    identical under both spellings of the same hand arithmetic
+judge  **BOTH PUBLISHED FIGURES REPRODUCE TO ALL SIXTEEN DIGITS AGAINST A HAND SIDE WRITTEN
+       INDEPENDENTLY OF BOTH THE TEST FILE AND THE REPORT's SWEEP.** The lower edge
+       `15.2942x` is sound as a magnitude and clears `F4_WINDOW_RULE_MIN_EDGE = 2.0` by
+       7.6x, so the ceiling does not move.
+cmd    and on the 0.2% disagreement between our two sweeps, which the report asked me to
+       rule on
+out    my own 0.01-step scan over D/t 100..120 at the locked grade has a MAXIMUM of
+out      4.885e-16 and reaches 6.4e-16 at NONE of 2001 points -- because `dt += 0.01`
+out      accumulates, so my grid never lands on the exact decimal 106.76
+out    every worst either of us found sits at KL/r = 108.0 or 108.1, against C_c between
+out      113.86 and 115.96
+judge  **THE IMPLEMENTER's READING IS RIGHT AND IF ANYTHING UNDERSTATED.** The quantity is
+       pure round-off: it is not flat in that neighbourhood so much as NOISY, and its argmax
+       is a function of the last bits of `D/t` and of how the hand side is spelled. The
+       magnitude is reproducible; the location is not. **No finding.** The over-precision on
+       the location is C61, with the mechanism: every worst is at the inelastic branch's
+       safety polynomial near `C_c`, not at `F_xc`'s fractional power, which is what the OLD
+       entry attributed it to.
+```
+
+**So R750 is CLOSED on all three of its conditions.** The counter is a floor beneath the
+gate's own points with those points placed at the weak end; the window entry states the edge
+over the domain the ceiling defends with the `(F_y, D/t, KL/r)` it was taken at; and EH4's
+weakening direction is formed, asserted, and reported beside the maximum.
+
+## 5. THE ADVERSARIAL CASE (EU1) -- WHAT I RAN AT CONFIGURATIONS THE DIFF DID NOT CHOOSE
+
+Two tolerance values moved, so EU1 fires. Six probes. Two found something.
+
+```
+1  THE TWO FORMS OF SECTION 3.3.2, RECOMPUTED PER PUBLISHED ROW, against what the
+   deliverable says about them.  -> R752. 7 of 17, not 10, and the ten are the other set.
+2  1792 (KL/r, f_a/F_e, My) CONFIGURATIONS instead of the three the gate has. 1595 live,
+   762 below the shipped counter, minimum 1.112868e-16 -- and that is NOT a finding, because
+   the entry now scopes its claim to the gate's own points and proves the infimum is 0. The
+   measurement that matters is the other direction: the minimum where bending is at least
+   1% of u_combined is 8.647182e-13, ABOVE the gate's chosen point at 3.074923e-13, whose
+   own bending share is 0.217%. The chosen point is at the weak end in the only sense
+   available.
+3  AN INDEPENDENT HAND SIDE FOR SECTION 3.2.2 over six grades and D/t from 5 to 300, in two
+   spellings.  -> both published clean worsts reproduce to 16 digits; the argmax does not
+   survive a change of grid.  -> C61, not a finding.
+4  THIRTEEN MUTATIONS OF THE GATE ITSELF -- its aggregation, its point set, its three
+   constants.  -> reverting `_weakest_live_move` to `_worst_move` leaves 68 passed; moving
+   the weak-end point's My or KL/r leaves 68 passed; the counter may fall BELOW its own
+   ceiling and the injection may rise without bound, both with 68 passed.  -> C58 and C59,
+   and I say under them why they are not blocking.
+5  A CONSISTENT CHANGE OF UNIT SYSTEM -- the same physical state in (Pa, N) and (kPa, kN).
+   U = 1.0810699109478443 against 1.0810699109478445, relative 2.054e-16, so the utilisation
+   is unit-invariant. The section 3.2.3 BRANCH SELECTION is not: `section_class` at
+   `fy = 355e3` reads D/t = 100 as `compact`, so `F_b` would be `0.75 F_y` instead of the
+   second reduced branch -- unconservative by `1/0.72` -- and `fy = 0.0` raises a bare
+   `ZeroDivisionError`. Unreachable from any shipped caller.  -> C60.
+6  26 CLAUSE MUTATIONS. 26 killed. Nothing survives. Section 3.
+```
+
+**And two things that did NOT break, recorded because an absence is a measurement.** The
+deliverable regenerates byte-identically from the committed generator, both files. And the
+`K = 1.0` and `C_m = 1.0` sensitivity columns each move exactly one variable:
+`check_member(k_l_over_r=kl1, ...)` recomputes `F_a` AND `F_e` at the same `KL/r`, so neither
+column is a mixture of two configurations -- which is the defect I went looking for in the
+generator and did not find.
+
+## Closure items
+
+Named with their site and what would close each. The implementer fixes the whole list once,
+in the step's closure commit; they are not re-reviewed item by item and the step is not held
+on one. Verdict 111's list ended at C57, so this one starts at C58. **C41 to C57 remain open
+and are not re-adjudicated here.**
+
+* **C58.** `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:654`, `:990` and
+  `:1014`. **R750's repair is not self-protecting.** Reverting `_weakest_live_move` to
+  `_worst_move` in the counter assertion gives `68 passed`; the same substitution in the
+  bracket test gives `68 passed`; changing the weak-end point's `My` from `1.0e6` to `1.0e8`
+  gives `68 passed`, and its `KL/r` from `30.4` to `90.0` gives `68 passed`. The declared
+  basis -- margin `1.024974x`, points placed AT the weak end -- would become false in
+  silence and the gate would return to the state R750 found. The `35`-point count catches a
+  DELETED point (`1 failed, 66 passed`) and a key COLLISION (`1 failed, 67 passed`) and no
+  replacement that keeps a distinct key. **Not blocking: everything the gate asserts today
+  is true and I verified every shipped figure.** **Closed when** the weak-end point's
+  identity is asserted -- the simplest form is an assert that the minimum over live points
+  is attained at the `KL/r = 30.4` key -- or the absence is recorded as accepted.
+* **C59.** `floatfea/tolerances.py`, the three F6 window constants. Each has unasserted slack
+  in the direction that weakens it: the counter may FALL to `1.0e-15`, a tenth of its own
+  ceiling, with `68 passed`; the injection may RISE to `1.0e-8` with `68 passed`; the ceiling
+  may RISE `15x` with `68 passed`, the solved bound being
+  `weakest / F4_WINDOW_RULE_MIN_EDGE = 1.5375e-13`. The third is the window rule's designed
+  slack at `MIN_EDGE = 2.0` and I am not reopening that; the first is the one worth a line,
+  because nothing asserts `COUNTER > CEILING` and the line that used to compare a response
+  with the ceiling was moved onto the STRONGEST point in the same commit. **Closed when**
+  `COUNTER > CEILING` is asserted once, or the three slacks are recorded as accepted with
+  these numbers beside them.
+* **C60.** `floatfea/checks/api_wsd.py:146`. `section_class` divides by `PASCAL_PER_MPA` and
+  nothing refuses an `F_y` that is not in pascals: at `fy = 355e3`, `D/t = 100` reads
+  `compact` with `limit_1 = 29126.7606` where the same section at `355e6` reads `reduced_2`;
+  `fy = 0.0` raises `ZeroDivisionError` rather than a named refusal. FB1 had the module
+  refuse a `D/t` outside the clause's range rather than extrapolate, and the clause's own
+  `10340/F_y` form is what makes `F_y`'s unit load-bearing. **Closed when** an implausible
+  `F_y` is refused the way an out-of-range `D/t` is, or the absence is recorded with the
+  reason that no shipped caller can reach it.
+* **C61.** `floatfea/tolerances.py`'s `F6_API_CLAUSE_AGREEMENT` entry. The location
+  `(420 MPa, D/t = 240.85, KL/r = 108.0)` is published to five figures for a quantity that is
+  round-off: my own 0.01-step scan at the locked grade peaks at `4.885e-16` and reaches
+  `6.4e-16` at none of 2001 points, because accumulated `+= 0.01` changes the last bits. The
+  magnitude and the `15.2942x` edge are sound. Two further things in the same entry: every
+  worst either of us found is at `KL/r = 108.0`/`108.1` against `C_c` between `113.86` and
+  `115.96`, so the mechanism is the inelastic branch's safety polynomial near `C_c` and not
+  `F_xc`'s fractional power the old entry named (BP0); and no committed script regenerates
+  that block (BI3). **Closed when** the location is given as a neighbourhood, the mechanism
+  is restated, and the block either gets its generator or moves to the step report with a
+  pointer.
+* **C62.** `floatfea/tolerances.py`'s `F6_API_CLAUSE_INJECTION_EPS` entry. "`1.0e-10` is two
+  decades above [`6.504229e-12`]" is true of the ceiling-based boundary and reads as
+  headroom; at the shipped counter the injection may fall only `2.5%`, to `9.757e-11`, before
+  the gate reddens, because the counter is a function of it. **Closed when** the entry says
+  which boundary the two decades are above.
+* **C63.** `docs/reports/F6/step-1.md` section 9a, the `R741 | floatfea/checks/api_wsd.py:147`
+  row, which gives R749's `limit_1` reason. At verdict 110's own commit `0b9ea0d`, line 147 is
+  the closing `"""` of `allowable_axial_compression`'s docstring, not `limit_1`. **I checked
+  the rest of that group at `0b9ea0d` rather than at HEAD and the other twenty-one rows are
+  correct**: lines 132-153 there really are that function's `def`, docstring, guards and
+  body, and R742's `:102`/`:103` really are the two branch limits. **One row of eighty-seven
+  is wrong and the reasons are not boilerplate.** **Closed when** that row reads what line
+  147 was.
+* **C64.** `scripts/measure/api_wsd_utilisation.py:234`. `args.out.relative_to(ROOT)` raises
+  `ValueError` when `--out` points outside the repository, AFTER both files are written, so
+  the script exits non-zero having succeeded. **Closed when** the print is
+  relative-or-absolute.
+* **C65.** The published whole-suite line describes `a041574` (`3106 + 315 + 9 + 1 = 3431`)
+  while the reviewed commit `54ff15c` has `3433` passing in my run -- two extra
+  parametrisations over the longer revision. The fixed point is real and the resolution is
+  right; the consequence is that no published whole-suite figure ever describes the commit
+  under review. **Closed when** the two-test difference is explained or deliberately ignored
+  in one sentence. This one may well close by saying so.
+* **R735, R736, R738, C34 to C40, and the `0.2240`/`0.2239` item** -- still open from verdict
+  109, carried in `docs/closure/F4.md`, not re-adjudicated.
+* **R712 to R717, C2 to C15, C24 to C33, C41 to C57** -- still open, carried, not re-reviewed
+  item by item, per CZ0. **C45 still needs its own standalone `process:` commit**, and C52's
+  publishing-boundary half is still open -- I measured both negations unguarded at rung 4.
+
+## Tolerances touched
+
+```
+cmd    git diff fdb4ecd..54ff15c -- floatfea/tolerances.py | grep -E "^[-+][A-Z0-9_]+: Final"
+out    -F6_API_CLAUSE_AGREEMENT_COUNTER: Final[float] = 8.0e-13
+out    +F6_API_CLAUSE_AGREEMENT_COUNTER: Final[float] = 3.0e-13
+out    -F6_API_CLAUSE_INJECTION_EPS: Final[float] = 1.0e-12
+out    +F6_API_CLAUSE_INJECTION_EPS: Final[float] = 1.0e-10
+cmd    git diff --stat fdb4ecd..54ff15c -- floatfea/checks/api_wsd.py
+out    (empty)
+judge  **TWO VALUES MOVED, THE MODULE THEY MEASURE IS BYTE-IDENTICAL, AND THE ASSERTION
+       MOVED FIRST.** Neither value rescues a code change because there is no code change in
+       the range for it to rescue. EU1 fires and section 5 is the adversarial case.
+```
+
+| name | old | new | form | counter | justification located | ruling |
+|---|---|---|---|---|---|---|
+| `F6_API_CLAUSE_AGREEMENT` | `1.0e-14` | unchanged | dimensionless, RELATIVE; exactness at a small multiple of round-off | `F6_API_CLAUSE_AGREEMENT_COUNTER` | `floatfea/tolerances.py` entry; `docs/milestones/F6.md` section 3a | **ADMISSIBLE, AND THE BASIS R750 ASKED FOR IS NOW THE RIGHT ONE.** The value did not move; its stated lower edge did, from `59.3937x` over the gate's own points to `15.2942x` over the domain the ceiling defends, with the `(F_y, D/t, KL/r)` given. Both dense figures reproduce to all sixteen digits against a hand side I wrote independently, in two spellings. The edge clears `F4_WINDOW_RULE_MIN_EDGE = 2.0` by `7.6x`. The over-precision on the LOCATION and the stale mechanism sentence are C61; that the ceiling may rise `15x` with the gate green is C59 and is the window rule's own design. |
+| `F6_API_CLAUSE_AGREEMENT_COUNTER` | `8.0e-13` | `3.0e-13` | dimensionless; a floor beneath the gate's own points, with those points at the weak end | n/a, it IS the counter (AO2) | same entry | **ADMISSIBLE, AND THE FORM IS NOW DEFENSIBLE.** It FELL by `2.67x` while the injection rose `100x`, which is a tightening in the quantity that matters: the counter is asserted against the MINIMUM over live `(coefficient, point)` pairs -- EH4's weakening direction, which this file never formed. Margin `1.024974x` below `3.0749226272928885e-13`, which I reproduce exactly; pinned from above (`3.1e-13` gives `2 failed`); `30x` above the ceiling. That no constant can be a floor beneath EVERY admissible configuration is proved rather than asserted -- the infimum is `0` and attained while the amplified branch still governs, and I verified the branch inequality `F_a = 1.926954e+08 < 0.6 F_y = 2.130000e+08` myself. **My own closing wording is withdrawn.** What nothing holds in place is C58; that it may fall below its own ceiling is C59. |
+| `F6_API_CLAUSE_INJECTION_EPS` | `1.0e-12` | `1.0e-10` | dimensionless, STRUCTURAL; an input to a counter-case | none, correctly (AO2) | same entry | **ADMISSIBLE, AND THE RISE IS THE ONLY COHERENT REPAIR.** At `1.0e-12` the weakest live point responded `3.098618e-15`, `0.3099x` the ceiling, so the gate could not resolve a `C_m` defect of the declared size at that configuration at all -- and the alternative repair, holding `eps` and dropping the counter to about `3e-15`, would put the counter BENEATH its own ceiling, which is incoherent. I solved both directions: the gate reddens below `9.757e-11` and survives to `1.0e-8` unasserted. `1.0e-10` is still eight decades below a percent-scale transcription error. The sentence that reads as two decades of headroom is C62. |
+| `F6_API_UTILISATION_COUNTER_FACTOR` | `1.1` | unchanged | dimensionless, STRUCTURAL; a load multiplier | none, correctly (AO2) | same entry | **UNMOVED AND STILL ADMISSIBLE.** Re-checked at this commit: the compression case recomputes `F_a*A` from the clause's own branch rather than carrying a literal, asserts the branch, and the elastic-branch exclusion is asserted as `F_a / F_e == 1.0` exactly rather than stated. |
+| everything in the F4 block and earlier | -- | unmoved | -- | -- | -- | Not touched in this range and not re-swept. |
+
+## Carried
+
+Verdict 111 (`fdb4ecd`, judging `dd90505`) was a **HOLD** carrying five names and a closure
+list. Every one, with status.
+
+* **R747 (blocking) -- ANSWERED IN FORM, AND ITS REPAIR CARRIES R752.** The structural half
+  is done and done well: `_write_summary` no longer interleaves hand-written sentences with
+  generated ones about the same quantities, the sets are formed first, and three of my four
+  figures reproduce exactly -- the `2/2` split between section 3.3.1 and section 3.3.2 on the
+  four over-unity rows, `0.034238` at `platform:hub1_arm` TIP, and `u_axial = 0.000833389`
+  against `u_bending = 1.71138` at `platform:hub2_arm` ROOT. Both files regenerate
+  byte-identically. **The fourth sentence is generated from the wrong set and is now R752**,
+  which blocks and carries into step 2.
+* **R748 (blocking) -- CLOSED.** The four citations read `tests/verification/rung5/`, `grep`
+  for `rung6` finds nothing in any of them, `ls tests/verification/rung5/` shows the gate, and
+  the CSV and summary regenerate byte-identically in the same commit.
+* **R749 (blocking) -- CLOSED, and closed better than the condition.** Both limits are exact
+  equalities against `section_class(D_OUTER, WALL, FY)` -- which `allowable_bending` itself
+  calls, so the pin reaches the branch -- AND `29.2`/`58.3` are inside each limit's own
+  neighbourhood AND in `_FB_POINTS`. The `300` refusal is bracketed at `300`/`300.1`, the
+  tension switch at `0.0` and `-5e-324`. **26 of 26 mutations killed in my own run**,
+  including all six the verdict found surviving, both `-1%` directions nobody asked for, and
+  the `PASCAL_PER_MPA` control.
+* **R750 (blocking) -- CLOSED on all three conditions, and I withdrew one of my own sentences
+  to close it.** Section 4. The measurement that decided it is the branch inequality at zero
+  bending, which I took independently.
+* **R751 (blocking) -- CLOSED for the `floatfea/` half.** The paragraph states the measured
+  attribution, carries a triple `tests/test_tree_prose_consistent.py` runs, and the
+  measurement is a rung-4 test on a prescribed sense. Inverting the attribution gives
+  `4 failed, 339 passed`; reverting either publishing-boundary negation leaves rung 4 at
+  `343 passed`, which the report states rather than papers over. That half stays as C52.
+* **R735, R736, R738, C34 to C40, the `0.2240`/`0.2239` item, R712 to R717, C2 to C15,
+  C24 to C33, C41 to C57 (closure) -- STILL OPEN**, carried as a list, not re-adjudicated.
+* **THE MID EXCLUSION -- still excluded on R736's grounds and still labelled R730 (C50).**
+* **THE SCHEDULE -- the escalation verdict 111 anticipated is NOT due, and I agree with the
+  report's reading.** Working target 22 October, committed 28 October, today 9 October. Step 1
+  closes with one blocking item, which is one generated sentence and one predicate in a file
+  the step already ships; it needs no FloatSim run, no new apparatus and no plan change.
+  **On today's evidence the 22 October target holds and I would not slip it.** CLAUDE.md's
+  escalation trigger is two consecutive steps closing with blocking items. This is the first.
+  If step 2 closes carrying anything, the choice -- slip the date or reduce scope -- has to be
+  stated with a number beside it rather than restated.
+
+## Carried for the next step
+
+**R752 (blocking) carries by name into step 2's `Carried` section and stays blocking there.**
+`scripts/measure/api_wsd_utilisation.py:374-386`, published at `docs/F6_utilisation.md:69`.
+Closed when the amplified/simple count is computed from the two forms themselves, the sentence
+regenerated, both files regenerated in the same commit, and the causal comment at `:374`
+deleted or given its cell. My figures: AMPLIFIED on `7 of 17`, SIMPLE on `10 of 17`;
+`1.456719` against `1.711666` at `C_m = 0.85` and `1.713640` at `C_m = 1.0` at
+`platform:hub2_arm` ROOT. **Step 2 regenerates this deliverable anyway**, so the fix lands
+inside work already planned rather than beside it.
+
+Nothing else carries blocking. The closure list C58 to C65, and the open C41 to C57, go into
+the step's closure commit where CZ0 puts them; **CZ1 applies to that commit and EQ0 applies if
+it moves a gate or a tolerance** -- which, if C58 or C59 are answered there rather than in
+step 2, it will.
+
+## The adversarial corpus (BE3)
+
+**BATCH 44, committed separately at `24fad04`:
+`tests/corpus/f6_which_clause_form_governs_and_what_holds_the_counter_in_place.txt`, 25
+entries, every one new this round and none of them read by the implementer.**
+
+EG4(e)'s pause to 28 October permits it and the file header claims the exception explicitly:
+the surface is **EB6's label-provenance** one -- which clause, and which FORM of it, is
+attributed to a published utilisation in `docs/F6_utilisation.md` and `.csv`. A wrong
+attribution is what R739 was, what R747 was, and what R752 is.
+
+**COVERAGE: the shipped checks catch 9 of 25.**
+
+```
+cmd    grep -c "^id=" <the file>
+out    25
+cmd    grep "^id=" <the file> | grep -c "expect=catch"
+out    9
+cmd    python -m pytest -q -p no:randomly <the 8 files that read tests/corpus or the tree
+       prose>
+out    1458 passed, 2 warnings in 160.26s
+```
+
+Against the last six rounds -- 1 of 16, 9 of 21, 4 of 11, 8 of 13, 5 of 22, 8 of 29 -- this is
+`36%` against `28%`, and the composition is what moved: **all six misses in group 1 are one
+defect and one missing field.** `MemberCheck` does not record which half of
+`max(amplified, simple)` was taken, so every caller that wants it re-derives it, and the one
+caller that did got it wrong. One field closes six entries.
+
+**And the number that matters beside 9 of 25 is 26 of 26.** Of the twenty-six clause
+mutations I ran this round, G6.1 kills all twenty-six; last round it killed thirty of
+thirty-four and the four survivors were R749. **The gate is now complete over the clause
+arithmetic and over its branch boundaries.** What the corpus still catches is one level up:
+not the clause, but the sentence that says which clause governed.
+
+## On the criterion -- I was asked, and I agree with it, and my one disagreement is not about the work
+
+CZ0 as amended by EZ0 is right and I applied it. My single blocking finding is squarely in (a)
+without argument: `docs/F6_utilisation.md` is a file sent to Xabier, `scripts/measure/` is
+named in EZ0's own definition, and the defect is a false statement about which clause form
+governs a published utilisation. **I used no carve-out this round.** Eight items went into the
+closure list, including three -- C58, C59, C60 -- that under the retired "truth of a published
+figure or sentence" head I would have had to argue about; under CZ0 they are listed once and
+cost nobody a round.
+
+**THE ONE DISAGREEMENT, AND IT IS WITH THE MECHANISM RATHER THAN THE WORK.** For the second
+consecutive round, the two guards that are red BY CONSTRUCTION at the commit a round's code
+lands in -- `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` and
+`test_the_report_carries_a_WHOLE_SUITE_count` -- are on NEITHER of EG3/EH1's two lists, and
+EH1 says in terms that any red not on the list still blocks. Verdict 111 admitted the second
+by hand on the ground that it is green at the reviewed commit; I have now admitted both the
+same way. **That is a reviewer exercising discretion twice about a state the rule says blocks,
+which is exactly what EG3(i) exists to stop.** The fix is one of two sentences and neither is
+mine to write: either EG3's state (1) list gains those two names, or the two guards read the
+previous commit so that they can be measured before a push. **This goes to Xabier through the
+implementer and it does not become another round.** I record it because the alternative is a
+third reviewer making the same undocumented call.
+
+**And one thing on the record for the implementer rather than against them.** Four of five
+blocking items closed, each one I ran rather than read, and three of them closed better than
+the condition asked: R749 took both options instead of one, R748's regeneration is
+byte-identical, R751 states the limit of its own test instead of claiming the item.
+**R750 is the best work in this milestone.** It refused the condition I wrote, proved the
+refusal (`F_a = 1.926954e+08 < 0.6 F_y` with the amplified branch still governing at zero
+bending), took the option that remained, moved the assertion before the values and showed the
+red, and published the disagreement between our two sweeps as a disagreement rather than
+reconciling it. I checked every digit and every digit holds. **The one thing that went wrong
+went wrong in the same place it has gone wrong three rounds running**: not in the arithmetic,
+which is now pinned twenty-six ways, but in a sentence about which clause governs -- and this
+time the sentence was generated, which is what we both asked for, from a predicate I handed
+over in a verdict. Generating a sentence from a set is only as good as the set, and the set is
+the thing to review next time.
+
+## Next step opens when
+
+**STEP 1 IS CLOSED. THIS WAS THE THIRD REVIEWED REVISION AND CZ0 CLOSES THE STEP.** Step 2
+may open now. The conditions on it, specifically:
+
+1. **Step 2's report answers R752 by name in its `Carried` section**, with the count computed
+   from the two forms and both deliverable files regenerated in the same commit (BP0). It
+   stays blocking until then.
+2. **The closure commit carries C58 to C65 and the open C41 to C57**, fixed once, not
+   re-reviewed item by item. **C45 needs its own standalone `process:` commit.** CZ1 (i) to
+   (iv) applies to that commit, and EQ0 applies -- so it is REVIEWED, and that review counts
+   against no step's rounds -- if it answers C58 or C59, because both move a gate assertion.
+3. **Step 2's own gate is that the table regenerates identically from stored results and the
+   top-ten list is stable under a re-run.** I measured the first half for step 1's deliverable
+   today and it holds byte for byte. The stability of a top-ten list under TIES is the part
+   that does not: `hub2:buoy4_arm` ROOT and `hub4:buoy10_arm` ROOT carry `0.009245` to every
+   published digit and `max` returns whichever comes first, which is the shape to design
+   against before the list is published rather than after.
+4. **The MID column stays excluded** on R736's grounds, and the published label still says
+   R730 (C50).
+
+**What I will not accept at step 2's first revision.** A count or a clause attribution in a
+published table that is derived from a PROXY for the quantity rather than from the quantity --
+that is R752, and it is the third round in a row that the arithmetic was right and the
+sentence about which clause governed was wrong. A top-ten list whose order depends on row
+order among equal values. And a measurement block in `floatfea/tolerances.py` that no
+committed script regenerates, now that BI3 has been on the closure list for two rounds. The
+question for all three is the recorded one: if the thing this claim asserts were false, would
+anything go red. For R752 I measured the answer and it is no.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6 step 1
 Reviewed commit: a0482e2a03525f72ab64c9137de1a9b4a65b616b
 Verdict: HOLD
 **Reviewed commit: `dd90505`** (`dd905051ff75f9506a6c383906fb62bec24cd0a6`, tree clean when I
