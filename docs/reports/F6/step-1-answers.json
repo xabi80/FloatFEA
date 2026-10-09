@@ -1,0 +1,130 @@
+{
+  "_": [
+    "POINTERS ONLY (CH4).",
+    "",
+    "F6 STEP 1, REVISION 2. Answers verdict 110 @ 2cf33b0, which was ROUND 1 OF THREE and a",
+    "HOLD on eight items -- six on the code and the deliverable, two on a red suite and a",
+    "red CI.",
+    "",
+    "THE ORDERING CHANGED UNDER FB0 AND THAT IS WHAT THIS REVISION IS. The verdict's own",
+    "section `On FA3 versus G6.1` went to Xabier and came back as FB0: G6.1 lands BEFORE the",
+    "next deliverable send, which inverts FA3 for F6. So this revision is G6.1 first --",
+    "`tests/verification/rung6/test_g61_api_wsd_hand_calculations.py`, 66 tests, 32 points,",
+    "two or more per branch either side of every boundary -- and the regenerated deliverable",
+    "second, with the G6.1 green line on its face.",
+    "",
+    "R739 and R740 were answered in the commit before this verdict existed (the corrected",
+    "table was sent twice), and the verdict confirms the figures: F_a = 73.25 on the four",
+    "platform ROOTs and 161.08 on the hub ROOTs, all four over-unity rows on section 3.3.2,",
+    "the governing U = 1.71167 per-instant against the 1.81496 envelope bound published",
+    "before. The one figure of the verdict's that this revision does NOT reproduce is",
+    "`largest |U(K=2)-U(K=1)| = 0.034926`: it is now 0.034238, and the difference is R740",
+    "-- the verdict measured it on the total_max/total_min basis with the sign corrected,",
+    "and the shipped table is per-instant. Section 4 carries the cell.",
+    "",
+    "R737 is a DECISION and it is recorded rather than coded, with the residual risk stated:",
+    "see section 6.",
+    "",
+    "The closure list C41 to C49 is NOT in this revision. CZ0 puts it in the step's closure",
+    "commit, fixed once, and C45 needs a standalone `process:` commit of its own."
+  ],
+  "answered": {
+    "R712": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R713": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R714": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R715": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R716": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R717": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R730": {
+      "state": "answered",
+      "where": "§8",
+      "site": "scripts/measure/member_forces_table.py"
+    },
+    "R731": {
+      "state": "answered",
+      "where": "§8"
+    },
+    "R732": {
+      "state": "answered",
+      "where": "§8"
+    },
+    "R734": {
+      "state": "answered",
+      "where": "§3",
+      "site": "scripts/measure/member_forces_table.py"
+    },
+    "R735": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R736": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R737": {
+      "state": "answered",
+      "where": "§6",
+      "site": "floatfea/hsp_pin.py"
+    },
+    "R738": {
+      "state": "open",
+      "where": "§8"
+    },
+    "R739": {
+      "state": "answered",
+      "where": "§4",
+      "site": "scripts/measure/member_forces_table.py"
+    },
+    "R740": {
+      "state": "answered",
+      "where": "§4",
+      "site": "scripts/measure/api_wsd_utilisation.py"
+    },
+    "R741": {
+      "state": "answered",
+      "where": "§2",
+      "site": "floatfea/checks/api_wsd.py"
+    },
+    "R742": {
+      "state": "answered",
+      "where": "§2",
+      "site": "floatfea/checks/api_wsd.py"
+    },
+    "R743": {
+      "state": "answered",
+      "where": "§5",
+      "site": "floatfea/checks/api_wsd.py"
+    },
+    "R744": {
+      "state": "answered",
+      "where": "§3",
+      "site": "scripts/measure/member_forces_table.py"
+    },
+    "R745": {
+      "state": "answered",
+      "where": "§7"
+    },
+    "R746": {
+      "state": "answered",
+      "where": "§8"
+    }
+  }
+}

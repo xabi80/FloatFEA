@@ -2860,7 +2860,100 @@ F4_G41_DYNAMIC_MOMENT_COUNTER: Final[float] = 0.01
 # never absorbed here.
 # ---------------------------------------------------------------------------
 
-# (no entries yet -- F6/F7)
+# CLASS: ACCURACY -- carries F6_API_CLAUSE_AGREEMENT_COUNTER below.
+#
+# G6.1: every API RP 2A-WSD clause in `floatfea/checks/api_wsd.py` against the clause
+# arithmetic worked by hand in `tests/verification/rung6/`, in SI, with the clause cited
+# (FB0). The quantity is the relative disagreement between the two, over 32 points chosen
+# either side of every branch boundary -- `C_c`, the three `D/t` limits, the local-buckling
+# limit and the tension/compression switch.
+#
+# WINDOW RULE, over the whole counter family. Clean worst `1.683679572698748e-16`, at the
+# ONE point of 32 that is not bit-identical: `F_xc` at `D/t = 61`, whose `(D/t)^(1/4)` is
+# the only FRACTIONAL power in the six clauses. Weakest live family member
+# `8.283918449512958e-13` (`C_m`, via section 3.3.2's amplified form). Geometric centre
+# `1.180993830438892e-14`; the declared value is the round number below it, with edges
+# `59.3937x` and `82.8392x`. All five family members live, none vacuous.
+#
+# THE OTHER 31 POINTS AGREE TO THE BIT, and that is what the headroom is for rather than
+# slack: `pow` is not required to be correctly rounded, CI runs ubuntu and this was
+# measured on Windows, so a correct transcription must not redden on the platform that
+# computes `61^(1/4)` one ULP differently.
+# Set: 2026-10-09, F6 step 1
+F6_API_CLAUSE_AGREEMENT: Final[float] = 1.0e-14
+
+# The counter-case: a clause COEFFICIENT scaled by `1 + F6_API_CLAUSE_INJECTION_EPS`, one
+# at a time, which is what a transcription defect is -- `0.6` typed for `0.66`, `0.4` for
+# `0.45`, `0.3` for `0.33`. Round bound below the weakest live response over the whole
+# family `8.283918449512958e-13`; margin `1.0355x`, EH4 weakening `82.8392x`.
+#
+# THE FAMILY HAD TO BE REPAIRED BEFORE IT MEASURED ANYTHING -- four of its seven members
+# responded exactly `0.000000e+00`, each for a different reason, and the three remaining
+# all sat at sensitivity `1.0`, which is what a family looks like when it is only testing
+# the comparison:
+#
+#   * `ELASTIC_LOCAL_BUCKLING_C` was dead because `F_xe = 2 C E t / D` NEVER governs
+#     `min(F_xc, F_xe)` at `F_y = 355 MPa` -- not at any `D/t` the clause admits. Solved,
+#     it first governs at `D/t = 491.94` for S460, which is outside `D/t <= 300`, and at
+#     `D/t = 252.53` for S690, which is inside. So half of section 3.2.2(b) is unreachable
+#     at the grade F6 locks, and the hand calculation takes it at `F_y = 690 MPa` instead.
+#   * `CM_JOINT_TRANSLATION` was dead because `check_member`'s `cm` default is bound at
+#     IMPORT, so perturbing the module global is inert. It is injected through the
+#     parameter. Same shape for `fy` and `e`.
+#   * `LOCAL_BUCKLING_DT` and `BENDING_THIRD_BRANCH_NUMERATOR` are THRESHOLDS, and a
+#     relative nudge of a threshold responds only where a point sits within `eps` of it.
+#     They are not in this family at all; their counter-cases MOVE THE LIMIT PAST A POINT
+#     and assert the branch changes.
+#
+# `C_m` is the weakest member and stays the weakest by `1.21x` -- it multiplies only the
+# bending half of one of section 3.3.2's two forms, so the gate resolves a `C_m` error to
+# `0.828392` of its relative size. That figure is itself the product of choosing the point:
+# at the first point tried the sensitivity was `0.151897`, because `max(amplified, simple)`
+# selected the SIMPLE form there and `C_m` does not appear in it.
+# Set: 2026-10-09, F6 step 1
+F6_API_CLAUSE_AGREEMENT_COUNTER: Final[float] = 8.0e-13
+
+# CLASS: STRUCTURAL -- the size of the coefficient injection above. An INPUT to a
+# counter-case rather than a ceiling anything is compared against, so no counter-case of
+# its own (AO2), and `F6_API_CLAUSE_AGREEMENT_COUNTER` is a function of it.
+#
+# Reason for 1.0e-12: it is the smallest injection whose WEAKEST family member still clears
+# the declared ceiling by the window rule's own floor. Solved both ways (EH4): the response
+# is linear in it, so `eps` may fall to `1.207158e-14` -- `82.84x` below the declared value
+# -- before `C_m`'s response reaches the ceiling, and it may rise without bound.
+#
+# IT IS DELIBERATELY AT ROUND-OFF SCALE AND THAT IS THE POINT. The clause coefficients are
+# exact decimals, so a real transcription error is never `1e-12`; it is percent-scale and
+# is caught ten decades over. What this injection measures is that the comparison is not
+# VACUOUS -- that the hand calculation resolves the coefficient at all, rather than passing
+# because both sides call the same arithmetic.
+# Set: 2026-10-09, F6 step 1
+F6_API_CLAUSE_INJECTION_EPS: Final[float] = 1.0e-12
+
+# CLASS: STRUCTURAL -- the locked plan's counter-case per check: "an injected input that
+# must push the utilisation past 1.0". A load multiplier, not a ceiling, so no counter-case
+# (AO2).
+#
+# For each of the six channels the load that makes that channel exactly `1.0` is in closed
+# form -- `F_t A`, `F_b W`, `F_v (0.5 A)`, `F_v W_t`, `F_a A`, and half the budget in each
+# term for the interaction -- and the counter-case applies this factor to it, so the
+# injection is one number rather than six calibrated loads.
+#
+# Reason for 1.1: it is a 10% exceedance, comfortably clear of the `1.0` threshold at
+# double precision and small enough that no channel's branch changes under it -- which was
+# measured, because a factor large enough to move `D/t` or cross `C_c` would be testing a
+# different clause than the one the row names. All six reddened and `governing` named the
+# injected clause in all six.
+#
+# ONE CHANNEL CANNOT BE TAKEN WHERE IT FIRST SEEMED TO BELONG, and the reason is a property
+# of the clauses rather than of the test: on section 3.2.2's ELASTIC branch `F_a` and
+# section 3.3.2's `F_e'` are THE SAME EXPRESSION, `12 pi^2 E / (23 (KL/r)^2)`, so
+# `F_a/F_e' = 1.000000` exactly and `u_axial = f_a/F_a = 1` coincides with the singularity
+# of `1/(1 - f_a/F_e')`. A pure-compression counter-case at `KL/r = 121.5` therefore hits
+# the module's Euler refusal instead of reaching `U = 1.0`, and it is taken on the
+# inelastic branch at `KL/r = 60.8`, where `F_a/F_e' = 0.550539`.
+# Set: 2026-10-09, F6 step 1
+F6_API_UTILISATION_COUNTER_FACTOR: Final[float] = 1.1
 
 
 # ---------------------------------------------------------------------------

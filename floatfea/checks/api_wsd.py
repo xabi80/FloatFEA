@@ -39,7 +39,7 @@ from typing import Final
 from floatfea.basis import E_STEEL, FY_S355
 
 __all__ = [
-    "CM_NO_TRANSVERSE_LOAD",
+    "CM_JOINT_TRANSLATION",
     "MemberCheck",
     "SectionClass",
     "allowable_axial_compression",
@@ -49,6 +49,7 @@ __all__ = [
     "check_member",
     "column_slenderness_parameter",
     "euler_stress",
+    "local_buckling_stress",
     "section_class",
 ]
 
@@ -57,6 +58,33 @@ PASCAL_PER_MPA: Final[float] = 1.0e6
 
 ALLOWABLE_TENSION_FACTOR: Final[float] = 0.6
 """§ 3.2.1: `F_t = 0.6 F_y`."""
+
+LOCAL_BUCKLING_DT: Final[float] = 60.0
+"""§ 3.2.2(b): above this `D/t`, local buckling must be considered (R741)."""
+
+ELASTIC_LOCAL_BUCKLING_C: Final[float] = 0.3
+"""§ 3.2.2(b)'s `C` in `F_xe = 2 C E t / D`."""
+
+BENDING_THIRD_BRANCH_NUMERATOR: Final[float] = 300000.0
+"""§ 3.2.3's third-range upper limit as `this / F_y[MPa]` (FB1).
+
+**FB1 SETS THIS AND IT ADMITS A NEGATIVE ALLOWABLE, WHICH IS MEASURED AND REFUSED RATHER
+THAN PASSED ON.** At `F_y = 355 MPa` the limit is `845.1`, and the third branch
+`(0.72 - 0.58 F_y (D/t) / E) F_y` crosses zero at `D/t = 0.72 E / (0.58 F_y) = 734.3`:
+
+    D/t = 300  ->  Fb = +151.18 MPa
+    D/t = 500  ->  Fb =  +81.57 MPa
+    D/t = 734  ->  Fb =   +0.12 MPa
+    D/t = 845  ->  Fb =  -38.52 MPa
+
+FB1 also asks for `F_b <= 0.75 F_y` everywhere, and that assertion cannot see a negative.
+So `allowable_bending` refuses a non-positive result as well, and the discrepancy goes back
+to Xabier: the editions I can check give the third range a FLAT `D/t <= 300`, which at this
+`F_y` is `2.8x` tighter and never reaches the sign change. In practice § 3.2.2(b)'s
+`D/t > 60` refusal fires long before either limit on any compression member, so nothing in
+F6 reaches this branch -- but the boundary is wrong in one of the two readings and it is
+declared here rather than chosen silently.
+"""
 
 ALLOWABLE_SHEAR_FACTOR: Final[float] = 0.4
 """§ 3.2.4: `F_v = 0.4 F_y`, for beam shear and for torsional shear alike."""
@@ -68,12 +96,27 @@ Written out because it is the clause's own idealisation and not a section proper
 factor stands in for the shear distribution over a tube, and using `A` would read 2x low.
 """
 
-CM_NO_TRANSVERSE_LOAD: Final[float] = 0.85
-"""§ 3.3.2's reduction factor for a compression member with no transverse load.
+CM_JOINT_TRANSLATION: Final[float] = 0.85
+"""§ 3.3.1 case (a): members in frames **subject to joint translation** (sidesway).
 
-API's own default for members in a frame. These arms carry a distributed body force, so
-`0.85` is the conservative reading of a clause whose alternatives need an end-moment ratio
-the screen does not resolve; it is a declared input, reported beside every utilisation.
+FB2 sets this, and it is the reading consistent with `K = 2.0`: EZ4 chose `K = 2.0` because
+the gimbal end bears on a floating body and gives no reliable lateral restraint, which is
+the sidesway case. The two assumptions now agree instead of one being sidesway and the
+other not.
+
+**AND THE DIRECTION WAS STATED BACKWARDS HERE (R743).** `C_m` MULTIPLIES the bending term
+in § 3.3.2, so a LARGER `C_m` gives a LARGER utilisation: `C_m = 1.0` **raises** every
+compression utilisation and `0.85` is the less onerous of the two, not the conservative one.
+The earlier comment called `0.85` "the conservative reading", which is wrong in the
+direction that matters. Measured one variable at a time on the K sensitivity:
+
+    shipped                        0.024114
+    axial sign fixed alone         0.034926
+    C_m = 1.0 alone                0.128855
+    both                           0.151293
+
+`C_m` is the second-largest lever in the check and a `C_m = 1.0` column is reported beside
+the `K = 1.0` one (FB2).
 """
 
 
@@ -86,6 +129,8 @@ class SectionClass:
     """`10340 / F_y`, `F_y` in MPa. Below it, `F_b = 0.75 F_y`."""
     limit_2: float
     """`20680 / F_y`. Between the two, the first reduced branch."""
+    limit_3: float
+    """`300000 / F_y` (FB1). Beyond it § 3.2.3 is not written and is refused."""
     branch: str
     """`"compact"`, `"reduced_1"`, `"reduced_2"`, or `"slender"`."""
 
@@ -101,15 +146,18 @@ def section_class(d_outer: float, wall: float, fy: float = FY_S355) -> SectionCl
     fy_mpa = fy / PASCAL_PER_MPA
     limit_1 = 10340.0 / fy_mpa
     limit_2 = 20680.0 / fy_mpa
+    limit_3 = BENDING_THIRD_BRANCH_NUMERATOR / fy_mpa
     if d_t <= limit_1:
         branch = "compact"
     elif d_t <= limit_2:
         branch = "reduced_1"
-    elif d_t <= 300.0:
+    elif d_t <= limit_3:
         branch = "reduced_2"
     else:
         branch = "slender"
-    return SectionClass(d_over_t=d_t, limit_1=limit_1, limit_2=limit_2, branch=branch)
+    return SectionClass(
+        d_over_t=d_t, limit_1=limit_1, limit_2=limit_2, limit_3=limit_3, branch=branch
+    )
 
 
 def allowable_axial_tension(fy: float = FY_S355) -> float:
@@ -129,8 +177,37 @@ def euler_stress(k_l_over_r: float, e: float = E_STEEL) -> float:
     return 12.0 * math.pi * math.pi * e / (23.0 * k_l_over_r * k_l_over_r)
 
 
+def local_buckling_stress(
+    d_outer: float, wall: float, fy: float = FY_S355, e: float = E_STEEL
+) -> float:
+    """§ 3.2.2(b): `F_xc`, the local buckling stress that replaces `F_y` in the column form.
+
+    R741 -- THIS WAS NOT IMPLEMENTED AT ALL, and the locked plan asks for it in its own
+    words: "the check must still refuse rather than pass silently on one that is slender".
+    Measured before the repair, `allowable_axial_compression` returned
+    `1.3610e+08 Pa`, branch `inelastic`, at `D/t = 100` with no refusal.
+
+        F_xe = 2 C E t / D,  C = 0.3                      (elastic local buckling)
+        F_xc = F_y                                        for D/t <= 60
+        F_xc = F_y [1.64 - 0.23 (D/t)^(1/4)] <= F_xe      for D/t > 60
+
+    The stand-in tube is `D/t = 13.9`, so `F_xc = F_y` and nothing in F6 is reduced by
+    this. It exists because a section that WOULD be reduced must not pass silently.
+    """
+    d_t = d_outer / wall
+    if d_t <= LOCAL_BUCKLING_DT:
+        return fy
+    f_xe = 2.0 * ELASTIC_LOCAL_BUCKLING_C * e * wall / d_outer
+    f_xc = fy * (1.64 - 0.23 * d_t**0.25)
+    return float(min(f_xc, f_xe))
+
+
 def allowable_axial_compression(
-    k_l_over_r: float, fy: float = FY_S355, e: float = E_STEEL
+    k_l_over_r: float,
+    d_outer: float,
+    wall: float,
+    fy: float = FY_S355,
+    e: float = E_STEEL,
 ) -> tuple[float, str]:
     """§ 3.2.2. Returns `(F_a, branch)` with the branch named.
 
@@ -145,12 +222,25 @@ def allowable_axial_compression(
     """
     if k_l_over_r <= 0.0:
         raise ValueError(f"KL/r must be positive; got {k_l_over_r}")
-    c_c = column_slenderness_parameter(fy, e)
+    d_t = d_outer / wall
+    if d_t > 300.0:
+        raise ValueError(
+            f"D/t = {d_t:.1f} exceeds 300, beyond which API section 3.2.2 is not written. "
+            "Refused rather than extrapolated (R741)."
+        )
+    # § 3.2.2(b): `F_y` is replaced by the local buckling stress on a slender tube.
+    f_xc = local_buckling_stress(d_outer, wall, fy, e)
+    reduced = f_xc < fy
+    c_c = column_slenderness_parameter(f_xc, e)
     if k_l_over_r >= c_c:
-        return euler_stress(k_l_over_r, e), "elastic"
-    ratio = k_l_over_r / c_c
-    safety = 5.0 / 3.0 + (3.0 / 8.0) * ratio - (ratio**3) / 8.0
-    return (1.0 - 0.5 * ratio * ratio) * fy / safety, "inelastic"
+        branch = "elastic"
+        f_a = euler_stress(k_l_over_r, e)
+    else:
+        ratio = k_l_over_r / c_c
+        safety = 5.0 / 3.0 + (3.0 / 8.0) * ratio - (ratio**3) / 8.0
+        branch = "inelastic"
+        f_a = (1.0 - 0.5 * ratio * ratio) * f_xc / safety
+    return f_a, (branch + "_local" if reduced else branch)
 
 
 def allowable_bending(
@@ -168,17 +258,43 @@ def allowable_bending(
         reduced_2   20680/F_y < D/t <= 300      :  F_b = [0.72 - 0.58 F_y D/(E t)] F_y
     """
     klass = section_class(d_outer, wall, fy)
+    cap = 0.75 * fy
     if klass.branch == "compact":
-        return 0.75 * fy, klass.branch
-    if klass.branch == "reduced_1":
-        return (0.84 - 1.74 * fy * d_outer / (e * wall)) * fy, klass.branch
-    if klass.branch == "reduced_2":
-        return (0.72 - 0.58 * fy * d_outer / (e * wall)) * fy, klass.branch
-    raise ValueError(
-        f"D/t = {klass.d_over_t:.1f} exceeds 300, where API section 3.2.3 stops. Local "
-        "buckling governs there and a beam-level allowable would be an invented clause "
-        "(DNV-RP-C202 is the reference, and it is F7 sub-model work)."
-    )
+        f_b = cap
+    elif klass.branch == "reduced_1":
+        f_b = (0.84 - 1.74 * fy * d_outer / (e * wall)) * fy
+    elif klass.branch == "reduced_2":
+        f_b = (0.72 - 0.58 * fy * d_outer / (e * wall)) * fy
+    else:
+        raise ValueError(
+            f"D/t = {klass.d_over_t:.1f} exceeds {klass.limit_3:.1f} "
+            f"(= {BENDING_THIRD_BRANCH_NUMERATOR:g}/F_y), where API section 3.2.3 is not "
+            "written. Extrapolating it would be an invented clause; DNV-RP-C202 is the "
+            "reference and it is F7 sub-model work."
+        )
+
+    # R742: THE CAP, AND IT CAUGHT A REAL TRANSCRIPTION ERROR. The reduced branches must
+    # never exceed the compact value, and the first one DID: `F_b = 267.785587 MPa` at
+    # `D/t = 29.1268` against the `266.25` cap, staying above it to `D/t = 30.5974`. The
+    # cause is the clause's own continuity point -- `1500/F_y[ksi]` is continuous at
+    # `E = 29000 ksi = 199948 MPa` and this module runs at `210000 MPa`, so the SI
+    # conversion of the limit and the SI value of `E` disagree. **The fix belongs in the
+    # clause transcription and NOT in `E_STEEL`**, which is a material property.
+    if f_b > cap:
+        f_b = cap
+
+    # AND THE CAP CANNOT SEE A NEGATIVE, which FB1's third limit admits (see
+    # `BENDING_THIRD_BRANCH_NUMERATOR`). A non-positive allowable is refused rather than
+    # returned: it would make every utilisation on that member negative or infinite.
+    if f_b <= 0.0:
+        raise ValueError(
+            f"D/t = {klass.d_over_t:.1f} gives F_b = {f_b:.4e} Pa, which is not positive. "
+            "Section 3.2.3's third branch crosses zero at "
+            f"D/t = 0.72 E / (0.58 F_y) = {0.72 * e / (0.58 * fy):.1f}, inside the range "
+            f"FB1's limit {klass.limit_3:.1f} admits. The clause does not describe a "
+            "section this slender."
+        )
+    return f_b, klass.branch
 
 
 def allowable_shear(fy: float = FY_S355) -> float:
@@ -233,7 +349,7 @@ def check_member(
     k_l_over_r: float,
     fy: float = FY_S355,
     e: float = E_STEEL,
-    cm: float = CM_NO_TRANSVERSE_LOAD,
+    cm: float = CM_JOINT_TRANSLATION,
 ) -> MemberCheck:
     """All six clauses on one member-station, plus § 3.3's interaction.
 
@@ -258,7 +374,9 @@ def check_member(
         allow_axial = allowable_axial_tension(fy)
         axial_branch = "tension"
     else:
-        allow_axial, axial_branch = allowable_axial_compression(k_l_over_r, fy, e)
+        allow_axial, axial_branch = allowable_axial_compression(
+            k_l_over_r, d_outer_m, wall_m, fy, e
+        )
 
     u_axial = f_a / allow_axial
     u_bending = f_b / allow_bending

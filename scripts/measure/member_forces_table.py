@@ -181,6 +181,12 @@ LABELS = (
     "Stand-in tube: the stiffness equivalent of a TRIANGULATED TRUSS of undecided depth "
     "(F1.md:390). Stresses are INDICATIVE, not a check on a real section.",
     "EX3 / R724: all six cases are heading 0 degrees. The heading dependence is UNTESTED.",
+    "R739: the N column is TENSION POSITIVE (docs/conventions.md:320). It was published "
+    "compression-positive -- a 1 mm stretch gave a negative N -- which put every "
+    "over-unity station on API section 3.3.1 instead of 3.3.2.",
+    "R740: `total_instant` rows carry the six components AT the step where sigma peaks. "
+    "`total_max` / `total_min` are the PER-COMPONENT envelope; their six values do not "
+    "occur together and a utilisation from them is an UPPER BOUND.",
     "FA1: the 213.0 MPa figure this table compares against is a GENERIC 0.6*Fy REFERENCE; "
     "it is SUPERSEDED by F6's API RP 2A-WSD clauses and it is NOT the API bending "
     "allowable. For D/t = 13.9 (below 10340/Fy = 29.13) API gives Fb = 0.75*Fy = "
@@ -422,8 +428,31 @@ def _station_values(
     # internal action as seen from the A end. `TIP` is therefore `-end_b` and not `end_b`.
     # The shear then varies monotonically from `-1532812.5` to `-6131250.0` over the span,
     # a change of exactly `-mu g L`, where the raw ends had a spurious zero crossing.
+    # R739 -- THE AXIAL COLUMN WAS COMPRESSION-POSITIVE, against a convention locked at F0.
+    #
+    # `docs/conventions.md:320`: "Positive axial force: **tension positive**." `member_forces`
+    # returns `k_local @ (t @ u) - t @ f_eq`, and `k u` is the NODAL force on the element --
+    # uniformly, for every component. For the transverse components that coincides with the
+    # internal action at the A end, which is why R730's segment-equilibrium cut validated
+    # `ROOT = end_a` and `TIP = -end_b`. **For the axial it does not.** Measured on a sense
+    # that cannot be argued with -- node B moved 1 mm OUTWARD along the member axis:
+    #
+    #     end_a[0]                              = -5.5101e+06
+    #     EA/L x 1e-3  (true tension, Hooke)    = +5.5101e+06
+    #     published N  (= end_a[0])             = -5.5101e+06     <-- for a STRETCH
+    #
+    # So a member in tension published a negative `N`, and `floatfea/checks/api_wsd.py` read
+    # `axial_n >= 0.0` as tension: every over-unity station went to section 3.3.1 with
+    # `F_a = 0.6 F_y` instead of 3.3.2 with the column allowable.
+    #
+    # Corrected HERE, at the publishing boundary, because that is where the locked
+    # convention applies: the CSV is a published deliverable (EZ0) and `conventions.md` is
+    # what it has to agree with.
     span = float(member.length)
     tip_internal = -tip
+    root = root.copy()
+    root[0] = -root[0]
+    tip_internal[0] = -tip_internal[0]
     mid = 0.5 * (root + tip_internal)
     # THE PARABOLIC SAG, AND THE TWO PLANES CARRY OPPOSITE SIGNS (R734).
     #
@@ -445,6 +474,7 @@ def _station_values(
     # Measured on the row where it is largest -- `hub4:buoy12_arm`, `T_full = 12.5 s`,
     # step 219, `w_y = -7.1836e+03` -- the subtracting form gives `Mz = +1.091976e+06` and
     # the adding form `-3.046460e+04`, and the second is what segment equilibrium gives.
+    chord_my, chord_mz = float(mid[4]), float(mid[5])
     sag_y = -w_local[2] * span * span / 8.0
     sag_z = +w_local[1] * span * span / 8.0
     mid[4] = mid[4] + sag_y
@@ -456,20 +486,33 @@ def _station_values(
     # which is why one calibrated cell, two static controls and two independent reviewer
     # figures all missed a flipped sign on `Mz`.
     #
+    # **IT ASSERTS ON THE PUBLISHED VALUE, NOT ON THE INTERMEDIATE (R744).** It compared
+    # `sag_y` and `sag_z` -- the two local variables -- against their own load components,
+    # which is a check on the two lines that DEFINE them and on nothing else. A one-
+    # character reversion at the line that APPLIES them (`mid[5] = mid[5] - sag_z`) leaves
+    # both intermediates correct and the published `Mz` wrong, and the control passed.
+    # What the published MID carries is `mid - chord`, so that is the subject: the chord
+    # mean is taken before the sags are applied and the difference is what is signed.
+    #
     # NO THRESHOLD AND NO TOLERANCE. The derivation fixes the SIGN of each sag against the
     # sign of its own load component -- `M_y'' = +w_z` and `M_z'' = -w_y` give sags of
     # `-w_z L^2/8` and `+w_y L^2/8` -- so the check is a sign comparison and needs no
     # constant. It catches exactly the defect that shipped, and it cannot be satisfied by
     # a configuration that happens to sit at zero because it skips those.
-    for load, sag, plane in ((w_local[2], sag_y, "My/w_z"), (w_local[1], sag_z, "Mz/w_y")):
-        if load == 0.0:
+    published = (
+        (w_local[2], float(mid[4]) - chord_my, -1.0, "My/w_z"),
+        (w_local[1], float(mid[5]) - chord_mz, +1.0, "Mz/w_y"),
+    )
+    for load, applied, want, plane in published:
+        if load == 0.0 or applied == 0.0:
             continue
-        want = -1.0 if plane == "My/w_z" else 1.0
-        if math.copysign(1.0, sag) != math.copysign(1.0, want * load):
+        if math.copysign(1.0, applied) != math.copysign(1.0, want * load):
             raise SystemExit(
-                f"{member.label}: the {plane} parabolic sag has the wrong sign -- load "
-                f"{load!r}, sag {sag!r}. `M_y'' = +w_z` and `M_z'' = -w_y`, so the two "
-                "planes carry OPPOSITE signs and giving them the same one is R734."
+                f"{member.label}: the {plane} parabolic sag reaches the PUBLISHED MID "
+                f"with the wrong sign -- load {load!r}, published sag {applied!r}. "
+                "`M_y'' = +w_z` and `M_z'' = -w_y`, so the two planes carry OPPOSITE "
+                "signs; giving them the same one is R734 and flipping one at the line "
+                "that applies it is R744."
             )
     return {"ROOT": root, "MID": mid, "TIP": tip_internal}
 
@@ -535,6 +578,7 @@ def main(argv: list[str] | None = None) -> int:
     # would take 762.2 MPa for a real stress.
     instant: dict[tuple[str, str, str], tuple[float, float]] = {}
     instant_sens: dict[tuple[str, str, str], tuple[float, float]] = {}
+    peak: dict[tuple[str, str, str], tuple[float, float, Any]] = {}
 
     for i, period in enumerate(inp.periods_full_s):
         lam = raw[f"case{i}/lam"]
@@ -562,7 +606,23 @@ def main(argv: list[str] | None = None) -> int:
                         worst_lo[key] = (
                             values if key not in worst_lo else np.minimum(worst_lo[key], values)
                         )
-                        sigma_now, _tau_now = _stresses(member, static[key] + values)
+                        at_instant = static[key] + values
+                        sigma_now, _tau_now = _stresses(member, at_instant)
+                        # R740: KEEP THE COMPONENTS AT THE PEAK INSTANT, not just sigma.
+                        # The CSV carried `static`, `dynamic_*` and `total_*` only -- all
+                        # ENVELOPES -- so a consumer computing a utilisation got the
+                        # per-component bound while a label said per-instant. The gap at the
+                        # governing station is `0.103` in U, `4.3x` the K sensitivity.
+                        # ONLY WITHIN THE GOVERNING BASIS. Tracking the global peak
+                        # dropped every station whose largest response is at `T = 10 s` --
+                        # the breaking wave, which is most of them -- so the first version
+                        # of this emitted 2 `total_instant` rows instead of 32. The peak
+                        # that matters is the peak of the cases allowed to govern.
+                        if (
+                            period in GOVERNING_PERIODS
+                            and sigma_now > peak.get(key, (0.0, 0.0, None))[0]
+                        ):
+                            peak[key] = (sigma_now, float(period), at_instant)
                         # EZ2(a)/(b): only the IN-RANGE cases may govern. The two outside
                         # are tracked separately and reported in their own block -- a
                         # breaking wave and a wave too long for this height cannot set a
@@ -575,6 +635,18 @@ def main(argv: list[str] | None = None) -> int:
                 rows.append(Row(key[0], key[1], key[2], period, f"dynamic_{tag}", dyn))
                 rows.append(Row(key[0], key[1], key[2], period, f"total_{tag}", static[key] + dyn))
         print(f"  T_full = {period:4g} s: {lam.shape[0]} steps", flush=True)
+
+    # R740: one `total_instant` row per station -- the six components AT the step where
+    # sigma peaks, on EZ2's governing basis. This is the row a code check must read, and
+    # until it existed the only honest label for a utilisation was "envelope bound".
+    if len(peak) != len(static):
+        raise SystemExit(
+            f"{len(peak)} per-instant rows for {len(static)} member-stations. Every station "
+            "must have a governing-basis peak; a shortfall means a station's peak was taken "
+            "outside the governing cases and then dropped."
+        )
+    for key, (_sigma, period, values) in sorted(peak.items()):
+        rows.append(Row(key[0], key[1], key[2], period, "total_instant", values))
 
     for key, values in sorted(static.items()):
         rows.append(Row(key[0], key[1], key[2], float("nan"), "static", values))

@@ -26,6 +26,16 @@ restraint. That is not a scaling: at `K = 2.0` the 50 m platform arms cross `C_c
 members move onto a different formula. FA2 asks for the branch per member-station and for
 `f_a` against `F_a` beside the bending terms, so a reader sees how little the axial
 contributes rather than inferring it.
+
+**AND FB2's `C_m = 1.0` COLUMN BESIDE IT.** `C_m = 0.85` is section 3.3.1 case (a), members
+in frames subject to joint translation, which is the reading `K = 2.0`'s sidesway assumption
+implies; `C_m = 1.0` is the alternative and it RAISES every compression utilisation, because
+`C_m` multiplies the bending term. R743: the module stated that direction backwards.
+
+**G6.1 IS GREEN** -- every clause here is verified against an independent hand calculation
+in `tests/verification/rung6/test_g61_api_wsd_hand_calculations.py`, at two or more points
+per branch, either side of every boundary (FB0). Before that gate existed this script's
+output carried "clause implementations unverified".
 """
 
 from __future__ import annotations
@@ -40,7 +50,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from floatfea.basis import FY_S355  # noqa: E402
-from floatfea.checks.api_wsd import CM_NO_TRANSVERSE_LOAD, check_member  # noqa: E402
+from floatfea.checks.api_wsd import CM_JOINT_TRANSLATION, check_member  # noqa: E402
 from floatfea.model.platform import _outer_diameter, build_superstructure  # noqa: E402
 
 GOVERNING_PERIODS = (12.5, 14.0, 15.0, 16.2)
@@ -54,6 +64,16 @@ STATIONS_CHECKED = ("ROOT", "TIP")
 K_LOCKED = 2.0
 K_SENSITIVITY = 1.0
 
+CM_LOCKED = CM_JOINT_TRANSLATION
+CM_SENSITIVITY = 1.0
+"""FB2's second sensitivity column, beside the `K = 1.0` one.
+
+`C_m = 0.85` is section 3.3.1 case (a) -- members in frames **subject to joint translation**
+-- which is the reading consistent with `K = 2.0`'s sidesway assumption. `C_m` MULTIPLIES
+the bending term in section 3.3.2, so `C_m = 1.0` **raises** every compression utilisation
+and `0.85` is the less onerous of the two (R743). The module's comment had that direction
+backwards, and `C_m` is the second-largest lever in the check."""
+
 LABELS = (
     "INDICATIVE SIZING SCREEN -- NOT A CODE CASE. API RP 2A-WSD working-stress checks on a "
     "STAND-IN TUBE that is the stiffness equivalent of a triangulated truss of undecided "
@@ -64,6 +84,15 @@ LABELS = (
     "K = 2.0 for every arm, L = member length (EZ4 Q3): a cantilever from the body centre, "
     "the gimbal end on a floating body giving no reliable lateral restraint. A K = 1.0 "
     "column is reported beside it (FA2).",
+    "C_m = 0.85 (section 3.3.1 case (a); members in frames subject to joint translation), "
+    "consistent with K = 2.0's sidesway assumption. C_m MULTIPLIES the bending term, so "
+    "C_m = 1.0 RAISES the compression utilisation and 0.85 is the LESS onerous of the two "
+    "(R743). A C_m = 1.0 column is reported beside the K = 1.0 one (FB2).",
+    "G6.1 is GREEN: every clause is verified against an independent hand calculation in "
+    "tests/verification/rung6/, at two or more points per branch, either side of every "
+    "boundary (FB0). R742: F_b is capped at 0.75 Fy -- the first reduced branch exceeded it "
+    "to D/t = 30.60. R741: section 3.2.2(b) local buckling is implemented and D/t > 300 is "
+    "refused rather than extrapolated.",
     "Governing basis: T = 12.5; 14; 15; 16.2 s (EZ2). T = 10 s and T = 20 s are outside the "
     "associated-period range for H = 24.2 m -- T = 10 s exceeds the breaking steepness -- "
     "and cannot govern.",
@@ -76,8 +105,13 @@ LABELS = (
     "7850 kg/m^3), so the mass does not fit inside F1's section at f = 0.75.",
     "EX3 / R724: all cases are heading 0 degrees. The heading dependence is UNTESTED, and "
     "the governing component on the transverse arms is entirely dynamic.",
-    "The utilisations are computed from F4's PER-INSTANT stresses where available; the "
-    "per-component envelope is an upper bound and is reported separately in F4's table.",
+    "R740: the utilisations are computed from F4's `total_instant` rows -- the six "
+    "components AT the step where sigma peaks. The `total_max`/`total_min` envelope is a "
+    "per-component upper bound whose values do not occur together, and it is NOT used here.",
+    "R739: F4's N column is tension-positive (docs/conventions.md:320). It was published "
+    "compression-positive, which put every over-unity station on section 3.3.1 instead of "
+    "3.3.2 and reported F_a = 213.00 MPa where the column allowable is 73.25 (platform, "
+    "elastic) or 161.02 (hubs, inelastic).",
 )
 
 
@@ -123,7 +157,13 @@ def main(argv: list[str] | None = None) -> int:
     for r in rows:
         if r["station"] not in STATIONS_CHECKED:
             continue
-        if not r["basis"].startswith("total"):
+        # R740: the PER-INSTANT row, not the per-component envelope. F4's `total_max` and
+        # `total_min` max each of the six components INDEPENDENTLY over the window, so their
+        # six values do not occur together and a utilisation from them is an upper bound --
+        # which the label used to call per-instant. `total_instant` carries the components AT
+        # the step where sigma peaks. The gap at the governing station is `0.103` in U,
+        # `4.3x` the K sensitivity this summary reports.
+        if r["basis"] != "total_instant":
             continue
         try:
             period = float(r["period_full_s"])
@@ -147,8 +187,10 @@ def main(argv: list[str] | None = None) -> int:
             d_outer_m=d_outer,
             wall_m=wall,
         )
-        locked = check_member(k_l_over_r=kl2, **common)
-        sens = check_member(k_l_over_r=kl1, **common)
+        locked = check_member(k_l_over_r=kl2, cm=CM_LOCKED, **common)
+        sens = check_member(k_l_over_r=kl1, cm=CM_LOCKED, **common)
+        # FB2: the SECOND sensitivity, at the locked K. One variable moved from `locked`.
+        sens_cm = check_member(k_l_over_r=kl2, cm=CM_SENSITIVITY, **common)
         out_rows.append(
             {
                 "body": r["body"],
@@ -171,6 +213,7 @@ def main(argv: list[str] | None = None) -> int:
                 "u_combined": locked.u_combined,
                 "utilisation_K2": locked.utilisation,
                 "utilisation_K1": sens.utilisation,
+                "utilisation_Cm1": sens_cm.utilisation,
                 "governing_clause": locked.governing,
             }
         )
@@ -222,14 +265,16 @@ def _write_summary(
         "",
         "## The ten most utilised member-stations",
         "",
-        "| # | body | member | station | case | governing clause | U (K=2) | U (K=1) |",
-        "|---|---|---|---|---|---|---|---|",
+        "| # | body | member | station | case | governing clause | U (K=2) | U (K=1) "
+        "| U (C_m=1) |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for n, r in enumerate(top, start=1):
         out.append(
             f"| {n} | {r['body']} | `{r['member']}` | {r['station']} | "
             f"T = {r['period_full_s']} s | {r['governing_clause']} | "
-            f"{float(r['utilisation_K2']):.3f} | {float(r['utilisation_K1']):.3f} |"
+            f"{float(r['utilisation_K2']):.3f} | {float(r['utilisation_K1']):.3f} "
+            f"| {float(r['utilisation_Cm1']):.3f} |"
         )
     out += [
         "",
@@ -253,7 +298,10 @@ def _write_summary(
         f"* `D = {d_outer:.4f} m`, `t = {wall:.5f} m`, `D/t = {d_outer / wall:.1f}` — "
         f"**compact**, so § 3.2.3 gives `F_b = 0.75 F_y = {0.75 * FY_S355 / 1e6:.2f} MPa`.",
         f"* `A = {area:.4f} m²`, `W = {w_bend:.4f} m³`, `W_t = {w_tors:.4f} m³`.",
-        f"* `C_m = {CM_NO_TRANSVERSE_LOAD}` (§ 3.3.2, no transverse load — a declared input).",
+        f"* `C_m = {CM_LOCKED}` (§ 3.3.1 case (a), members in frames subject to joint "
+        f"translation — consistent with `K = 2.0`'s sidesway assumption). `C_m` multiplies "
+        f"the bending term, so the `C_m = {CM_SENSITIVITY}` column is the HIGHER of the two "
+        f"(R743).",
         "",
         "| body | L (m) | KL/r at K=2 | KL/r at K=1 | branch at K=2 |",
         "|---|---|---|---|---|",
@@ -285,7 +333,13 @@ def _write_summary(
     }
     all_stations = {(str(r["body"]), str(r["member"]), str(r["station"])) for r in rows}
     compression = [r for r in rows if r["axial_branch"] != "tension"]
-    worst_compression = max(float(r["utilisation_K2"]) for r in compression)
+    # R739's consequence: with the axial sign corrected AND only per-instant rows kept,
+    # the set can be empty -- there is one row per station now rather than a max/min pair
+    # of opposite axial sign, so a station is tension or compression but not both. An empty
+    # set is reported as such rather than crashing or being quietly omitted.
+    worst_compression = (
+        max(float(r["utilisation_K2"]) for r in compression) if compression else float("nan")
+    )
     worst_overall = max(float(r["utilisation_K2"]) for r in rows)
     out += [
         "",
@@ -299,7 +353,11 @@ def _write_summary(
         + "; ".join(f"{k} {v}" for k, v in sorted(branches.items())),
         f"largest |U(K=2) - U(K=1)|      : {worst_k[0]:.6f}  "
         f"at {worst_k[1]['member']} {worst_k[1]['station']} ({worst_k[1]['axial_branch']})",
-        f"worst compression station      : U = {worst_compression:.5f}" "  with U(K=1) identical",
+        (
+            f"worst compression station      : U = {worst_compression:.5f}"
+            if compression
+            else f"compression stations           : NONE of {len(rows)} per-instant rows"
+        ),
         "```",
         "",
         "**Bending governs everywhere and the axial term is three orders smaller.** At the "
