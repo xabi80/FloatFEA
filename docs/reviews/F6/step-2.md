@@ -1,4 +1,253 @@
 # Review — F6 step 2
+Reviewed commit: bf5fdf0adca9bfc46b477cec10f0a50132a495d4
+Verdict: PASS
+Reviewed commit: bf5fdf0adca9bfc46b477cec10f0a50132a495d4
+Tests: 3338 passed, 0 failed, 0 skipped   (my run, `python -m pytest -q -p no:randomly -rf`, 646.49s)
+
+## Round of 2026-10-10 -- R775's REPAIR. **PASS. F6 CLOSES, AND THIS IS THE LAST VERDICT ON IT.** Counts against no round (EB4). The cross-check is gone, the entailment is recorded at the site in three steps, and `test_R775_the_report_only_section_0_is_ACCEPTED_beside_a_none_table` pins the pair that actually occurs -- EW0's section 0 beside a legitimate `(none)` table -- asserting both that the locator does not match it and that the guard accepts it, so a future widening fails for the right reason. R776's count is corrected with the cause named and the count written out. The artifact's R770 row no longer claims the realistic half is caught. **You took the refutation offer, checked it against the generator rather than against your test, and reported that it failed. That is the whole discipline in one commit.** Tree `3338 passed, 0 failed`; CI green on both jobs at the reviewed commit. Four closure items, none blocking, one of which is the milestone's first finding happening one last time.
+
+**Which clause I ruled under.** `CLAUDE.md` Â§ "Step gating": CZ0 (a)-(d) with EB4, DD1 for
+F6's disposition, CA2 for the CI reading. My definition's citations resolve, which is FE1
+and `035454d` working.
+
+## Carried
+
+**R775 -- ANSWERED AT ALL FOUR SITES, AND YOU REACHED THE ENTAILMENT INDEPENDENTLY.**
+
+The refutation offer was taken and failed, and you reported the failure rather than the
+attempt. I re-derived the three links myself and they hold:
+
+```
+claim  the cross-check is gone and the site records WHY in the form the finding required
+cmd    git show a1c6f77 -- tests/test_report_carried.py
+out    the `named = _SECTION_0_RUN.findall(zero)` block and the `COVERED, by a cross-check`
+       paragraph are removed; in their place a three-step entailment -- every capital-`Run`
+       emitter requires a run to exist; `rounds_runs` filters by TIME so a run at the judged
+       commit is always in the window, therefore `(none)` ENTAILS no run there; therefore
+       `section()` takes `if not run:` and returns `report_only_section`, whose line is
+       lowercase -- plus the live-report sentence and the widening-is-worse sentence
+judge  it records the entailment and NOT the word "extension", which is right: I agreed with
+       your reading ruling and it was never the reason the check had to go. **The site now
+       states a reach that is true, which is what R770 was about, one level up.**
+```
+
+```
+claim  the new test pins the pair that occurs, and a widening of the locator fails it
+cmd    read `test_R775_the_report_only_section_0_is_ACCEPTED_beside_a_none_table`
+out    two assertions: `not _SECTION_0_RUN.findall(report_only)`, and
+       `ci_table_defects(report_only + _zero_run_0a(), _TRUTH.get) == []`
+judge  both halves are the right ones. The first fails on a widening and its message names
+       R775's reasoning as the thing to re-read; the second fails if the legitimate EW0 pair
+       is ever reported as a defect, which is the error the deleted check would have made on
+       every report-only round. **This is EH4's weakening direction on this guard, pinned.**
+```
+
+**R776 -- ANSWERED, AND YOU GOT THE CAUSE RIGHT.** The note says FOUR, names them, and
+carries the count as a block rather than a claim. The cause is the one I measured: a resolver
+extracting bold `**CODE` tokens sees `CA2` inside a longer bold span and never sees `CK2`.
+`docs/closure/F6.md`'s R772 row carried the same miscount and is fixed in the same sequence.
+
+**THE ARTIFACT -- CORRECTED RATHER THAN EXTENDED.** The R770 row now reads "ANSWERED at
+`1e43410`, THEN CORRECTED AT R775's COMMIT" and drops the "realistic half is now caught"
+sentence, which is BP0 applied without being asked. R775's and R776's rows are added with
+their entailments. **And the species paragraph is the thing I would keep out of this whole
+milestone**, with the question above `CLAUDE.md`'s guard list where it belongs.
+
+**THE TREE AND CI -- CONFIRMED, AND FE0's CONDITION STILL HOLDS.**
+
+```
+cmd    python -m pytest -q -p no:randomly -rf
+out    3338 passed, 2 warnings in 646.49s        (0 failed, 0 skipped)
+cmd    gh run view 38072530770 --json headSha,conclusion,jobs
+out    headSha bf5fdf0a  conclusion success
+         the verification ladder            success
+         lint, unit and guards              success
+         CI determinism -- leg / ten legs   skipped (workflow_dispatch only, by design)
+cmd    ruff check / black --check / mypy over floatfea tests scripts
+out    All checks passed! / 132 files unchanged / no issues in 38 source files
+judge  **green on every job that runs, at the reviewed commit's own sha, with zero waived
+       reds and nothing to trace.** It was `in_progress` when I began and I waited for it;
+       you said you would not claim it before it completed and you did not.
+```
+
+**And the three commits are correctly scoped**, which matters more here than usual:
+`a1c6f77` touches only `tests/`, `035454d` only `.claude/agents/gating-supervisor.md`, and
+`bf5fdf0` only `docs/closure/F6.md`. The reviewer's own instructions never travelled with
+`tests/` in this sequence, which is the rule that exists because nothing but a reviewer
+reading that file would notice.
+
+## Findings
+
+**NONE BLOCKING.** R775 is answered at every site its condition named, R776 is answered with
+its cause, no tolerance moved, nothing under `floatfea/` changed, the tree is green with zero
+waived reds and CI is green on both jobs at the reviewed commit's own sha.
+
+## Closure items
+
+* **R777 -- AND IT IS THE MILESTONE'S FIRST FINDING HAPPENING ONE LAST TIME.**
+  `.claude/agents/gating-supervisor.md`, the R772 note. "FOUR CODES ABOVE DO NOT RESOLVE" is
+  right about the four it is *about*, and the note closes "**Every other code here
+  resolves**", which is false by two:
+  ```
+  cmd  every code-shaped token in the citation section, bold or not, resolved against
+       CLAUDE.md
+  out  30 tokens; 6 do not resolve: BE3, BU0, CA2, CK2, EE1, FE1
+  ```
+  `BE3` is a pointer to this file's own Â§ "The adversarial corpus is yours to write (BE3)",
+  which exists, and `FE1` is a directive name like `BU0`. **No rule is lost and the note's
+  own test is not violated** -- BE3's rule is stated in this file, FE1 carries none. What is
+  wrong is the quantifier: it was measured over *codes cited as `CLAUDE.md` clauses* and
+  written over *every code here*. **The repair is to narrow the quantifier to what was
+  measured, NOT to re-count a third time** -- and that is R755, the first blocking finding of
+  this milestone, verbatim: a sentence right about the axes its author swept and silent about
+  the one with nothing on it. First finding and last closure item, same defect.
+* **R778.** The species count is **five** in `a1c6f77`'s message -- R757, R770, R771, R776,
+  R775 -- and **six** in `bf5fdf0`'s artifact, which adds R756. Both are in the same
+  three-commit sequence and a reader comparing them finds a figure that moved. R756 *proper*
+  was an **absent** gate, not one whose domain excluded the failure; what was of the species
+  was its first version, which "could not fail" and which the same commit threw away. **Six
+  is defensible if that is what is meant, and the artifact should say so**; otherwise five is
+  the tighter list. BP0's own concern.
+* **R779.** `3338` is right -- I reproduce it -- and the arithmetic beside it does not account
+  for it. `a1c6f77`'s judge line reads "`3337` before, plus R775's test, minus the unreachable
+  one it replaced, plus the declaration test retained", which sums to **+0** against a
+  measured **+1**.
+  ```
+  cmd  count `^def test_` and collected ids in tests/test_report_carried.py at af674e6 and
+       at a1c6f77
+  out  af674e6: 40 functions    a1c6f77: 40 functions    collected now: 131
+  ```
+  So the file the commit touched did not change count at all, and the `+1` arrives from
+  elsewhere -- `tests/test_supervisor_conftest_pathspec.py` is the only test file that reads
+  the reviewer's definition, which `035454d` edited. Closed when the delta is attributed to
+  the commit that produced it, which is BF0 on a number that is correct.
+* **R780.** `tests/test_report_carried.py`,
+  `test_R775_the_report_only_section_0_is_ACCEPTED_beside_a_none_table`. Its fixture is a
+  hand-copied transcription of `report_only_section`'s output, so **it pins the LOCATOR and
+  not the GENERATOR**: reword `report_only_section` to a capital `Run` and this test stays
+  green on its frozen fixture. That is exactly what its docstring claims -- "if a future
+  widening of the locator makes this fail" -- so it is not wrong, and it is benign now that
+  nothing consumes the match on that path. Closed by one sentence at the site saying which
+  of the two directions is pinned, so the next reader does not take it for the other.
+
+**Open ledger, carried into whatever comes next:** R773 and R774 (the run-id locator's
+weakening direction and its three digit floors), R777-R780 above, C41-C65, C67-C70, C77-C79,
+C82, C90, C91, C92, C94, C96, C97, R712-R717, R735, R736, R738, R765-R768, C2-C15, C24-C40,
+and the `0.2240`/`0.2239` item. **C88, C89, R770, R771, R772, R775 and R776 are closed.**
+
+## Tolerances touched
+
+**None, and nothing under `floatfea/` has changed since verdict 118.**
+
+```
+cmd    git diff 2eb00ea..bf5fdf0 --stat -- floatfea/
+out    (empty)
+cmd    git diff fb550e2..bf5fdf0 --stat
+out    .claude/agents/gating-supervisor.md | 14 ++-    (035454d, standalone)
+       docs/closure/F6.md                  | 23 ++--    (bf5fdf0)
+       tests/test_report_carried.py        | 102 +++--   (a1c6f77, standalone)
+```
+
+## The adversarial corpus -- the pause HELD, for the last time this milestone
+
+**No batch. Zero new entries.** EG4(e)'s two exceptions are F4's load-mapping gate and
+EB6's label-provenance gate; this round's subject is one deleted branch of a report guard,
+one note in my own definition and three artifact rows. Neither surface.
+
+**What I ran instead:**
+
+1. **The new test read against the generator rather than against itself** -- which is the
+   instrument that found R775 and the first thing I applied to its repair. The fixture is
+   faithful to `report_only_section`'s live output; what it pins is the locator, which is
+   R780.
+2. **A ROBUST census of the citation section** -- every code-shaped token, bold or not,
+   rather than the bold tokens the previous resolver saw. Six do not resolve where the note
+   says four, which is R777, and the extraction is the whole difference between the two
+   answers. **That is the third time in three rounds that re-running a check with a wider
+   domain than its author chose produced the round's finding.**
+3. **The test-count arithmetic**, function counts and collected ids at both commits, which
+   is R779.
+4. **The species list against the two places it is written**, which is R778.
+
+**Five consecutive rounds closed by the substitute** -- R755, R756, R757, R770, R775 -- and
+this sixth round found four closure items by the same instrument and no blocking one, which
+is what a converging sequence looks like. EG4(e)'s evidence is now six rounds deep on one
+surface: apparatus that reads this project's own record. **It is not evidence about the
+element, and nobody should read it as such.**
+
+## Next step opens when
+
+**F6 IS CLOSED. PASS.** Nothing is carried as blocking. The four closure items above go into
+the ledger and are not re-reviewed; R777 is the one I would fix first, because it is one
+word and it is in the file nothing but a reviewer reads.
+
+FE2 stops work here, so there is no next step to open. What the next increment inherits:
+
+1. **A green tree and a green CI, with zero waived reds**, at `bf5fdf0` and at the three
+   commits before it. That is the baseline now and it should never again be a paragraph.
+2. **The ledger above**, with R773 the only entry in it that touches a locator the gating
+   record depends on.
+3. **The two directives**, which you are carrying to Xabier unsoftened and which I restate
+   once more so they are in the verdict and not only in a summary:
+   **(i) C88 and C89 do not belong in a ledger with C41-C65.** They are the guards that read
+   the gating record. C89 kept `pytest -q` red by eight for the whole of F6, cost four hand
+   traces and a paragraph in every verdict, and was fixed in one commit the moment someone
+   spent one on it. An item in the apparatus that decides whether other greens are believed
+   is a different kind of closure item from a sentence in a report, **and the ledger has no
+   way to say so.** That is the one change to `CLAUDE.md` I would ask for before the next
+   increment opens.
+   **(ii) The reviewer's definition should cite and never mirror.** FE1 did it; `aff8c16`
+   and `035454d` show it working, because the citation's own non-resolving codes were found
+   by a check the file now carries -- twice, and the second time with a wider domain. The
+   residual is unchanged and not closable by the implementer: if an invocation is silent
+   about the clause under which a review exists, I read my definition, and my definition is
+   only as current as the last directive.
+
+## The last word on F6
+
+**What it delivered.** A clause module checked against hand arithmetic at two or more points
+either side of every branch boundary, in SI, with the clause cited and never the module's own
+function. Eight tolerances, each with its counter or its stated `AO2` exemption and both EH4
+boundaries, and **no value widened to pass anything** -- the two that were re-justified were
+re-justified with their values held, which is EU1's stated worst case, and the adversarial
+case was run at both. A results report for Xabier that regenerates byte-identically under a
+gate that reddens on its own defect. And the finding the milestone exists to have produced:
+**the stand-in section reaches `U = 1.71167`, four of thirty-two stations exceed unity, and a
+platform arm root reaches `1.0130` against `F_b` under self-weight alone, before any wave
+load.** Nothing was tuned to bring it under unity. The finding is about the stand-in, so
+replacing the stand-in replaces the finding -- and that sentence was in the locked plan
+before the number existed, which is why the number can be believed.
+
+**What it cost, in one sentence that is now measured rather than asserted.** Six instances of
+one species, five of them blocking, none of them in the element: an assertion whose domain
+cannot contain the failure it names. Every one reddened on an injected defect -- *a gate
+carries its own failure* was satisfied every single time -- and what none of them did was
+redden on a defect the system can produce. The question that catches them is not "is this
+test correct":
+
+> **what is the collection this assertion inspects, and can the failure be in it?**
+
+For R775 the answer was only reachable by reading the generator instead of the test: the
+assertion was correct and the input was impossible. **That is the sentence I would put above
+`CLAUDE.md`'s guard list**, and it is the one thing this milestone learned that the guard
+list did not already say.
+
+**And one observation I will put on the record because it is the honest summary of seven
+rounds.** The element has been right far more often than the instruments measuring it, and
+the instruments have been wrong in a single, repeating way that a green suite cannot see. The
+arrangement worked -- every one of those six was caught, each by running something at a
+configuration nobody chose -- but it worked at a cost that the next increment should not have
+to pay in the same coin. **Fix C89's class first, narrow the quantifiers to the sweeps that
+measured them, and read the generator rather than the test.** That is F6's whole transferable
+content.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6 step 2
 Reviewed commit: af674e60c13303fe2322227e68326e00f8ef783e
 Verdict: HOLD
 Reviewed commit: af674e60c13303fe2322227e68326e00f8ef783e
