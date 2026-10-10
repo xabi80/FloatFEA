@@ -3071,8 +3071,17 @@ F6_API_FY_PLAUSIBLE_MAX: Final[float] = 1.0e9
 # is EU1/R694's shape verbatim, and the gate added to deny it was itself written at one
 # grade literal.
 #
-# Reason for 1.0e8: it is a floor beneath EVERY admissible configuration, which is R694's
-# repair shape. TABLE 2 -- `F_xc` at the clause's `D/t = 300` limit, over every admissible
+# Reason for 1.0e8: it is a floor beneath every admissible `(F_y, D/t)` **AT THE SHIPPED
+# `e`**, which is R694's repair shape on the two axes the clause's own limits bound. **THE
+# SCOPE STOPS THERE, AND THE SENTENCE USED TO SAY "EVERY ADMISSIBLE CONFIGURATION" (R755).**
+# `e` is the clause's third argument and NOTHING IN THE MODULE REFUSES ONE: at the `D/t`
+# ceiling the elastic term caps `F_xc` at `0.6 e / (D/t)`, independent of the grade, so the
+# floor breaks below `e = 5.000000e+10 Pa` -- closed form `floor * 300 / 0.6`, and the
+# module's own bisection agrees to `0.000e+00`. `E_STEEL` clears it by `4.2000x`; aluminium
+# at `7.0e10` is still admitted and a 30 GPa modulus is refused. That exposure is C96 and it
+# is not closed by this entry; what this entry does is stop overstating its own guarantee.
+#
+# TABLE 2 -- `F_xc` at the clause's `D/t = 300` limit, over every admissible
 # grade with the floor and ceiling of the range included:
 #
 #      F_y [MPa]   F_xc [MPa]              F_xc [Pa]

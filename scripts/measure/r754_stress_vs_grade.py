@@ -27,6 +27,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from floatfea.checks.api_wsd import (  # noqa: E402
+    ELASTIC_LOCAL_BUCKLING_C,
     LOCAL_BUCKLING_DT,
     _require_plausible_fy,
     _require_plausible_stress,
@@ -135,6 +136,40 @@ def main() -> int:
         mark = "   <- the minimum" if f_xc == binding_f_xc else ""
         print(f"{fy / 1e6:10.1f} {f_xc / 1e6:12.3f} {f_xc:22.10e}{mark}")
     print(f"  the binding case is {binding_f_xc:.10e} Pa")
+
+    print()
+    print("=== TABLE 4: THE AXIS THE SWEEP ABOVE DOES NOT COVER (R755) ===")
+    print("`e` is the third argument of the clause and NOTHING IN THE MODULE REFUSES ONE.")
+    print("At the clause's D/t ceiling the elastic term caps F_xc at 2 C E t / D = 0.6 e /")
+    print("(D/t), which is independent of the grade -- so the floor's guarantee is a")
+    print("statement about (F_y, D/t) AT A FIXED e, and the e at which it breaks is closed")
+    print("form:  0.6 e / 300 < floor   <=>   e < floor * 300 / 0.6")
+    print()
+    e_break = F6_API_STRESS_PLAUSIBLE_MIN * DT_HI / (2.0 * ELASTIC_LOCAL_BUCKLING_C)
+    print(f"{'quantity':34s} {'value [Pa]':>16s}")
+    print(f"{'the floor':34s} {F6_API_STRESS_PLAUSIBLE_MIN:16.6e}")
+    print(f"{'e below which the floor breaks':34s} {e_break:16.6e}")
+    print(f"{'E_STEEL, the shipped value':34s} {E:16.6e}")
+    print(f"  E_STEEL clears the break by {E / e_break:.4f}x")
+    print()
+    print("  bisected on the module itself rather than on the closed form:")
+    lo, hi = 1.0e6, E
+    for _ in range(300):
+        mid = 0.5 * (lo + hi)
+        f_xc = local_buckling_stress(D, D / DT_HI, F6_API_FY_PLAUSIBLE_MIN, mid)
+        if _raises(_require_plausible_stress, f_xc):
+            lo = mid
+        else:
+            hi = mid
+    print(
+        f"    the module first refuses at e = {hi:.6e} Pa "
+        f"(closed form {e_break:.6e}, agreement {abs(hi - e_break) / e_break:.3e})"
+    )
+    print("  and for reference, two materials a caller might pass:")
+    for name, value in (("aluminium, 70 GPa", 7.0e10), ("GFRP, 30 GPa", 3.0e10)):
+        f_xc = local_buckling_stress(D, D / DT_HI, F6_API_FY_PLAUSIBLE_MIN, value)
+        verdict = "REFUSED" if _raises(_require_plausible_stress, f_xc) else "admitted"
+        print(f"    {name:20s} e = {value:.3e} -> F_xc = {f_xc:.6e} Pa, {verdict}")
 
     print()
     print("=== TABLE 3: EH4, both directions on the STRESS floor ===")

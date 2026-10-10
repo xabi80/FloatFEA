@@ -175,3 +175,112 @@ def test_the_label_the_milestone_requires_is_on_the_face_of_both_files(label: st
     assert label.replace(";", ",") in TABLE.read_text(encoding="utf-8").replace(
         ";", ","
     ), f"the CSV's label block does not carry {label!r}"
+
+
+# --------------------------------------------------------------------------
+# R756: THE LOCKED PLAN'S REGENERATION GATE, WHICH WAS ASSERTED NOWHERE
+# --------------------------------------------------------------------------
+# `docs/milestones/F6.md:261` locks it: "the table regenerates identically from stored
+# results (G6.3's shape), and the top-ten list is stable under a re-run." Nothing in
+# `tests/` read `results/F6/` at all, and the deliverable was NOT deterministic -- the
+# reviewer regenerated it and found eight lines of 457 differing, every one a pytest
+# wall-clock timing pasted into section 5's status block.
+#
+# The repair was to publish the COUNTS and not the duration: the counts are what each row
+# claims and they are deterministic, the duration was never part of the claim. These two
+# tests are what holds that in place, and they are the gate the plan named.
+
+RESULTS_REPORT = ROOT / "results" / "F6" / "floatfea_results_report.md"
+GENERATOR = ROOT / "scripts" / "measure" / "f6_results_report.py"
+
+
+def test_R756_the_results_report_REGENERATES_IDENTICALLY() -> None:
+    """Two runs of the generator, byte-compared. The plan's gate, as a test.
+
+    `--no-gates` is passed because the status column's own run is what this file is NOT
+    measuring: it would invoke the eight gates twice inside one test, and a difference
+    there would be a red gate rather than a non-deterministic document. Everything else --
+    the model block, the mass basis, the loads, the envelope, the `f` sweep, the top ten
+    and every table -- is compared in full.
+    """
+    import subprocess
+    import sys
+    import tempfile
+
+    assert GENERATOR.is_file(), GENERATOR
+    with tempfile.TemporaryDirectory() as tmp:
+        outs = []
+        for n in (1, 2):
+            out = Path(tmp) / f"run{n}" / "floatfea_results_report.md"
+            proc = subprocess.run(
+                [sys.executable, str(GENERATOR), "--no-gates", "--out", str(out)],
+                capture_output=True,
+                text=True,
+                cwd=ROOT,
+            )
+            assert proc.returncode == 0, proc.stderr[-2000:]
+            outs.append(out.read_text(encoding="utf-8"))
+    first, second = outs
+    if first != second:
+        pairs = zip(first.splitlines(), second.splitlines(), strict=False)
+        differing = [(n, a, b) for n, (a, b) in enumerate(pairs, 1) if a != b]
+        pytest.fail(
+            f"the deliverable does not regenerate identically: {len(differing)} line(s) "
+            f"differ out of {len(first.splitlines())}. First three:\n"
+            + "\n".join(f"  line {n}:\n    {a!r}\n    {b!r}" for n, a, b in differing[:3])
+            + "\nThis is the gate at docs/milestones/F6.md:261 (R756). A figure that "
+            "changes between two runs of the same tree is not a measurement of the tree."
+        )
+
+
+def test_R756_the_published_report_carries_NO_WALL_CLOCK_figure() -> None:
+    """The specific non-determinism R756 found -- and it REGENERATES to look for it.
+
+    **THE FIRST VERSION OF THIS TEST COULD NOT FAIL, which is the defect it was written to
+    prevent.** It read only the shipped file, and the shipped file had already been
+    regenerated without timings -- so reverting the generator's one line left both R756
+    tests green. Measured: `12 passed` with `counts = tail[-1]` restored, which is R756's
+    own state.
+
+    So it runs the generator WITH the gates, into a temporary directory, and reads THAT.
+    The status column is the only part of the document a timing can enter through, and
+    running the gates is the only way to produce one. It costs one pass of the eight gate
+    invocations; the shipped file is checked too, because that is what is published.
+    """
+    import subprocess
+    import sys
+    import tempfile
+
+    pattern = r"\d+ (?:passed|failed) in [\d.]+s"
+
+    with tempfile.TemporaryDirectory() as tmp:
+        out = Path(tmp) / "floatfea_results_report.md"
+        proc = subprocess.run(
+            [sys.executable, str(GENERATOR), "--out", str(out)],
+            capture_output=True,
+            text=True,
+            cwd=ROOT,
+        )
+        assert proc.returncode == 0, proc.stderr[-2000:]
+        regenerated = out.read_text(encoding="utf-8")
+
+    assert re.search(r"\d+ passed", regenerated), (
+        "a run WITH the gates produced no `N passed` at all, so the assertion below is "
+        "vacuous -- either section 5's status block was removed or it stopped running them."
+    )
+    timings = re.findall(pattern, regenerated)
+    assert not timings, (
+        f"regenerating with the gates produced {len(timings)} wall-clock figure(s): "
+        f"{timings[:4]}. The counts are deterministic and the durations are not, so two "
+        "runs of the same tree yield different documents (R756). This is the assertion "
+        "that reddens when the generator stops stripping the duration."
+    )
+
+    assert RESULTS_REPORT.is_file(), RESULTS_REPORT
+    shipped = RESULTS_REPORT.read_text(encoding="utf-8")
+    shipped_timings = re.findall(pattern, shipped)
+    assert not shipped_timings, (
+        f"the PUBLISHED report carries {len(shipped_timings)} wall-clock figure(s): "
+        f"{shipped_timings[:4]}. The generator is fixed but the shipped file was not "
+        "regenerated after it."
+    )

@@ -177,8 +177,11 @@ def _require_plausible_stress(stress: float) -> None:
     Bisected, the refusal started at `D/t = 138.4383` for S235 and `248.0006` for S275, and
     `12.066%` of the declared six-grade sweep raised.
 
-    The floor is beneath every admissible configuration: the minimum `F_xc` over the
-    admissible grade range at `D/t = 300` is `1.3655759329e+08 Pa`, at the grade floor.
+    The floor is beneath every admissible `(F_y, D/t)` AT THE SHIPPED `e`: the minimum
+    `F_xc` over the admissible grade range at `D/t = 300` is `1.3655759329e+08 Pa`, at the
+    grade floor. **THE SCOPE STOPS THERE (R755)** -- `e` is unguarded, and below
+    `e = 5.000000e+10 Pa` the floor refuses a section the clause admits. `E_STEEL` clears
+    that by `4.2000x`.
 
     claim:  a committed script regenerates every figure above, so none of them is a
             remembered one (BI3) -- it is the script `F6_API_STRESS_PLAUSIBLE_MIN`'s

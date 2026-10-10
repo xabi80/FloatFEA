@@ -155,14 +155,14 @@ every numerical tolerance in this repository lives.
 
 ```
 pytest's own summary for each row, at this commit:
-  G2.1             2 passed in 0.44s
-  G3.1a            53 passed in 0.58s
-  G4.1 force       114 passed in 2.30s
-  G4.1 moment      114 passed in 2.20s
-  G4.4             1 passed in 0.50s
-  EB6              2 passed in 0.44s
-  static analytic  2 passed in 0.46s
-  G6.1             77 passed in 0.54s
+  G2.1             2 passed
+  G3.1a            53 passed
+  G4.1 force       114 passed
+  G4.1 moment      114 passed
+  G4.4             1 passed
+  EB6              2 passed
+  static analytic  2 passed
+  G6.1             77 passed
 ```
 
 The two G4.1 rows are asserted by the same module, so their summary lines are the
