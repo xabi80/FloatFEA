@@ -2963,6 +2963,57 @@ F6_API_CLAUSE_AGREEMENT_COUNTER: Final[float] = 3.0e-13
 # Set: 2026-10-09, F6 step 1
 F6_API_CLAUSE_INJECTION_EPS: Final[float] = 1.0e-10
 
+# CLASS: STRUCTURAL -- how far above its counter the weakest live response may sit, i.e.
+# how LOOSE the floor is allowed to be. A bound on a margin, not a ceiling on a measured
+# quantity, so no counter-case of its own (AO2).
+#
+# **C58: R750's REPAIR WAS NOT SELF-PROTECTING AND THIS IS WHAT HOLDS IT.** The gate asserts
+# that the weakest live response EXCEEDS the counter, which is the floor direction. It did
+# not assert that the floor is TIGHT, so three substitutions returned the gate to the state
+# R750 found, each with `68 passed`:
+#
+#   * `_weakest_live_move` -> `_worst_move` in the counter assertion;
+#   * the same substitution in the bracket test;
+#   * the weak-end point's `My` from `1.0e6` to `1.0e8`, or its `KL/r` from `30.4` to `90.0`.
+#
+# Under the first, the reported "weakest" becomes min-over-COEFFICIENTS of max-over-POINTS
+# -- `8.281906e-11`, which is `276.1x` the counter and `269.3x` the true weakest. A bound on
+# the margin catches it; the floor alone cannot, because a larger response satisfies a floor.
+#
+# Reason for 2.0: it is `F4_WINDOW_RULE_MIN_EDGE`, the same floor the window's two edges are
+# held to, used here in the one remaining direction. The shipped margin is `1.024974x`, so
+# the bound clears it by `1.95x` and the three substitutions miss it by two decades. A
+# tighter bound would pin the counter to its own rounding rather than to the measurement.
+# Set: 2026-10-09, F6 step 2
+F6_API_COUNTER_MARGIN_MAX: Final[float] = 2.0
+
+# CLASS: STRUCTURAL -- the range of `F_y`, in pascals, that the API clause module accepts.
+# A refusal threshold on an input, which fires by design on a wrong unit, so no counter-case
+# (AO2).
+#
+# **C60: THE CLAUSE'S OWN `10340/F_y` FORM MAKES `F_y`'s UNIT LOAD-BEARING, AND NOTHING
+# REFUSED A WRONG ONE.** `section_class` divides by `PASCAL_PER_MPA`, so at `fy = 355e3` --
+# S355 entered in kPa -- `D/t = 100` reads `compact` with `limit_1 = 29126.7606`, where the
+# same section at `355e6` reads `reduced_2`. `F_b` then comes back as `0.75 F_y` instead of
+# the reduced branch, which is the wrong allowable by `1.76x` on a section the clause says
+# is slender. `fy = 0.0` raised `ZeroDivisionError` rather than a named refusal.
+#
+# FB1 had the module refuse a `D/t` outside the clause's range rather than extrapolate; this
+# is the same rule applied to the other load-bearing input.
+#
+# Reason for 2.0e8 and 1.0e9: structural steel yield, generously bracketed. The low edge
+# admits S235 (`2.35e8`) and the high edge S960 (`9.6e8`); every grade G6.1 and the dense
+# agreement sweep use -- 235, 275, 355, 420, 460 and 690 MPa -- is inside. A kPa slip lands
+# at `3.55e5`, three decades below the low edge, and a GPa slip at `3.55e11`, two above the
+# high edge, so both are refused rather than silently reclassified.
+# Set: 2026-10-09, F6 step 2
+F6_API_FY_PLAUSIBLE_MIN: Final[float] = 2.0e8
+
+# CLASS: STRUCTURAL -- the upper edge of the range above. Same entry, same reason, no
+# counter-case (AO2).
+# Set: 2026-10-09, F6 step 2
+F6_API_FY_PLAUSIBLE_MAX: Final[float] = 1.0e9
+
 # CLASS: STRUCTURAL -- the locked plan's counter-case per check: "an injected input that
 # must push the utilisation past 1.0". A load multiplier, not a ceiling, so no counter-case
 # (AO2).

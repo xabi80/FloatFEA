@@ -37,6 +37,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from floatfea.basis import E_STEEL, FY_S355
+from floatfea.tolerances import F6_API_FY_PLAUSIBLE_MAX, F6_API_FY_PLAUSIBLE_MIN
 
 __all__ = [
     "CM_JOINT_TRANSLATION",
@@ -141,7 +142,24 @@ def section_class(d_outer: float, wall: float, fy: float = FY_S355) -> SectionCl
     **`D/t > 300` IS REFUSED RATHER THAN EXTRAPOLATED.** The clause's third branch is
     written only to `D/t = 300`; beyond it local buckling governs and a beam-level check is
     not the binding one. Returning a number there would be inventing a clause.
+
+    **AND AN `F_y` THAT IS NOT PLAUSIBLY IN PASCALS IS REFUSED TOO (C60).** The clause's
+    own `10340/F_y` form, with `F_y` in MPa, makes this argument's unit load-bearing: at
+    `fy = 355e3` -- S355 entered in kPa -- `D/t = 100` came back `compact` where the same
+    section at `355e6` is `reduced_2`, so `F_b` was `0.75 F_y` instead of the reduced
+    branch. Nothing refused it, and `fy = 0.0` raised `ZeroDivisionError` rather than
+    saying what was wrong. FB1 had this module refuse a `D/t` outside the clause's range
+    rather than extrapolate; this is that rule applied to the other load-bearing input.
     """
+    if not F6_API_FY_PLAUSIBLE_MIN <= fy <= F6_API_FY_PLAUSIBLE_MAX:
+        raise ValueError(
+            f"F_y = {fy!r} Pa is outside the plausible range for structural steel "
+            f"[{F6_API_FY_PLAUSIBLE_MIN:g}, {F6_API_FY_PLAUSIBLE_MAX:g}] Pa. Section "
+            "3.2.3's branch limits are written as 10340/F_y and 20680/F_y with F_y in MPa, "
+            "so this argument's UNIT decides which branch a section lands in -- S355 "
+            "entered as 355e3 reads a D/t = 100 tube as `compact`. SI throughout: pascals "
+            "(docs/conventions.md)."
+        )
     d_t = d_outer / wall
     fy_mpa = fy / PASCAL_PER_MPA
     limit_1 = 10340.0 / fy_mpa
@@ -340,6 +358,15 @@ class MemberCheck:
     `1e-10`. Both counts are true, neither implies the other, and the coincidence between
     them is contingent at one part in a thousand -- so the answer is reported rather than
     reconstructed.
+
+    **THE TIE IS RECORDED AS `"simple"` (C69), AND THE TIE IS REACHABLE.** Where
+    `amplified == simple` exactly, `max` returns the amplified operand and this field says
+    `"simple"`. That is deliberate: at a tie the two forms give the same number, so no
+    published figure depends on the choice, and `"simple"` is the label that does not claim
+    the `C_m / (1 - f_a/F_e')` amplification is doing anything. Solved in closed form, the
+    tie occurs at `KL/r = 60.8`, `f_a/F_e' = 0.02`, `My = 1.263384395e+07 N.m`, where both
+    forms are `0.09426368988411235` bit-identically -- so this is a documented convention
+    rather than an unreachable branch.
     """
     u_axial: float
     u_bending: float

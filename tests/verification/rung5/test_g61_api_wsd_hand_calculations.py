@@ -57,6 +57,9 @@ from floatfea.tolerances import (
     F6_API_CLAUSE_AGREEMENT,
     F6_API_CLAUSE_AGREEMENT_COUNTER,
     F6_API_CLAUSE_INJECTION_EPS,
+    F6_API_COUNTER_MARGIN_MAX,
+    F6_API_FY_PLAUSIBLE_MAX,
+    F6_API_FY_PLAUSIBLE_MIN,
     F6_API_UTILISATION_COUNTER_FACTOR,
 )
 
@@ -991,6 +994,28 @@ def test_an_INJECTED_clause_coefficient_exceeds_the_declared_COUNTER(coefficient
     strongest, where_max = _worst_move(clean, hurt)
     weakest, where_min = _weakest_live_move(clean, hurt)
 
+    # **C58: THE TWO AGGREGATIONS ARE THE MINIMUM AND THE MAXIMUM, COMPUTED HERE RATHER
+    # THAN TAKEN FROM THE HELPERS.** Substituting `_worst_move` for `_weakest_live_move` in
+    # this assertion left all 68 tests green, because a floor is satisfied by any larger
+    # response -- so the thing to assert is not the value but the AGGREGATION. The spread it
+    # catches is real: `ratio max/min` is `269.34` for `C_m` and `87.14` for the tension
+    # factor, and `1.00` for the three whose live points respond identically.
+    per_point = sorted(
+        abs(v - hurt[k]) / max(abs(v), abs(hurt[k]))
+        for k, v in clean.items()
+        if max(abs(v), abs(hurt[k])) and v != hurt[k]
+    )
+    assert per_point, f"{coefficient} has no live point at all"
+    assert weakest == per_point[0], (
+        f"{coefficient}: `_weakest_live_move` returned {weakest:.6e} and the minimum over "
+        f"its {len(per_point)} live points is {per_point[0]:.6e}. It is not a minimum, and "
+        "the declared counter is a floor beneath the minimum (C58)."
+    )
+    assert strongest == per_point[-1], (
+        f"{coefficient}: `_worst_move` returned {strongest:.6e} and the maximum over its "
+        f"live points is {per_point[-1]:.6e}. It is not a maximum."
+    )
+
     # NON-VACUITY: something responded at all.
     assert strongest > F6_API_CLAUSE_AGREEMENT, (
         f"scaling {coefficient} by 1 + {F6_API_CLAUSE_INJECTION_EPS:g} moves NOTHING above "
@@ -1036,9 +1061,41 @@ def test_the_ceiling_and_its_counter_BRACKET_the_family_BOTH_ways() -> None:
         f"the ceiling sits only {upper_edge:.4g}x below the weakest injection "
         f"({weakest:.6e}, {weakest_name}) -- it could be widened past a defect it must catch"
     )
+    # C59: nothing asserted this, so the counter could fall to a TENTH of its own ceiling
+    # with the suite green. One line.
+    assert F6_API_CLAUSE_AGREEMENT_COUNTER > F6_API_CLAUSE_AGREEMENT, (
+        f"the counter {F6_API_CLAUSE_AGREEMENT_COUNTER:.3e} is at or below its own ceiling "
+        f"{F6_API_CLAUSE_AGREEMENT:.3e}. A gate cannot be required to catch a defect it is "
+        "also permitted to accept."
+    )
     assert weakest > F6_API_CLAUSE_AGREEMENT_COUNTER, (
         f"the declared counter {F6_API_CLAUSE_AGREEMENT_COUNTER:.6e} is ABOVE the weakest "
         f"live response {weakest:.6e} ({weakest_name}), so that member does not satisfy it"
+    )
+    # **C58: AND THE FLOOR IS TIGHT, WHICH IS THE HALF THE REPAIR DID NOT ASSERT.** A floor
+    # is satisfied by any LARGER response, so `weakest > COUNTER` alone let three
+    # substitutions return the gate to the state R750 found, each with `68 passed`:
+    # `_weakest_live_move` back to `_worst_move` here or in the counter test, and the
+    # weak-end point's `My` or `KL/r` moved off the minimum. Under the first the reported
+    # weakest becomes min-over-COEFFICIENTS of max-over-POINTS -- `276.1x` the counter.
+    assert weakest < F6_API_CLAUSE_AGREEMENT_COUNTER * F6_API_COUNTER_MARGIN_MAX, (
+        f"the weakest live response {weakest:.6e} sits "
+        f"{weakest / F6_API_CLAUSE_AGREEMENT_COUNTER:.4g}x above the declared counter "
+        f"{F6_API_CLAUSE_AGREEMENT_COUNTER:.6e}, past the "
+        f"{F6_API_COUNTER_MARGIN_MAX:g}x bound. The counter is declared as a floor just "
+        "BENEATH the weakest live response; a weakest that far above it means the "
+        "aggregation is no longer the minimum over points, or the family's points are no "
+        "longer at the weak end. Both were measured as silent (C58)."
+    )
+    assert weakest_name == "CM_JOINT_TRANSLATION", (
+        f"the weakest family member is {weakest_name!r} and the declaration is written "
+        "about C_m, whose resolution the dense sweep localises the minimum to"
+    )
+    _, weak_point = _weakest_live_move(_quantities(), _injected("CM_JOINT_TRANSLATION"))
+    assert weak_point == "3.3.2 U KL/r=30.4", (
+        f"C_m's weakest point is {weak_point!r} and the counter is derived at the weak-end "
+        "configuration `3.3.2 U KL/r=30.4`. Moving that point off the minimum leaves the "
+        "declared margin false in silence."
     )
 
 
@@ -1192,3 +1249,98 @@ def test_G61_the_RECORDED_interaction_form_is_the_larger_of_the_two() -> None:
     # BOTH outcomes occur, so the assertion is not vacuous in either direction
     assert seen["amplified"] > 0 and seen["simple"] > 0, seen
     assert sum(seen.values()) == 120, seen
+
+
+# ==========================================================  C60 and C69, the two inputs
+def test_an_F_y_that_is_not_plausibly_in_PASCALS_is_REFUSED() -> None:
+    """C60: the clause's `10340/F_y` form makes this argument's UNIT load-bearing.
+
+    At `fy = 355e3` -- S355 entered in kPa -- `D/t = 100` came back `compact` where the same
+    section at `355e6` is `reduced_2`, so `F_b` was `0.75 F_y` instead of the reduced
+    branch. Nothing refused it, and `fy = 0.0` raised `ZeroDivisionError` rather than saying
+    what was wrong. FB1 had the module refuse a `D/t` outside the clause's range rather than
+    extrapolate; this is that rule applied to the other load-bearing input.
+
+    # expected: the range is [2.0e8, 1.0e9] Pa, which admits S235 and S960; a kPa slip lands
+    # three decades below it and a GPa slip two above.
+    """
+    for fy in (235e6, 275e6, 355e6, 420e6, 460e6, 690e6):
+        assert F6_API_FY_PLAUSIBLE_MIN <= fy <= F6_API_FY_PLAUSIBLE_MAX, fy
+        section_class(D_OUTER, WALL, fy)  # every grade this file uses is admitted
+
+    for fy in (355e3, 355.0, 355e9, 0.0, -355e6):
+        with pytest.raises(ValueError, match="plausible range for structural steel"):
+            section_class(D_OUTER, WALL, fy)
+        with pytest.raises(ValueError, match="plausible range for structural steel"):
+            allowable_bending(D_OUTER, WALL, fy, E)
+
+
+def test_the_kPa_SLIP_would_otherwise_have_reclassified_a_slender_tube() -> None:
+    """C60's counter-case: the defect the refusal prevents, at its own section.
+
+    **This is why the refusal is not cosmetic.** At `D/t = 100` the clause gives the second
+    reduced branch; under a kPa `F_y` the same section read `compact`, and `F_b` came back
+    as `0.75 F_y` -- the wrong allowable, in the unsafe direction.
+
+    # expected: at F_y = 355 MPa, D/t = 100 is `reduced_2`; the `compact` value 266.25 MPa
+    # is 1.2059x the correct one.
+    """
+    wall = D_OUTER / 100.0
+    f_b, branch = allowable_bending(D_OUTER, wall, FY, E)
+    assert branch == "reduced_2", branch
+    compact = 0.75 * 355e6
+    assert f_b < compact, (f_b, compact)
+    # the clause worked by hand at this D/t, so the ratio is an exact equality rather than
+    # a comparison with slack
+    hand = (0.72 - 0.58 * 355e6 * D_OUTER / (210e9 * wall)) * 355e6
+    assert f_b == hand  # not-a-tolerance: exact
+    assert compact / f_b == 1.205880101064237  # not-a-tolerance: the hand ratio, exact
+    with pytest.raises(ValueError, match="plausible range for structural steel"):
+        allowable_bending(D_OUTER, wall, 355e3, E)
+
+
+def test_G61_a_TIE_between_the_two_forms_is_recorded_as_simple() -> None:
+    """C69: the tie convention, stated in the field's docstring and asserted here.
+
+    `max(amplified, simple)` returns the amplified operand at a tie and the field says
+    `simple`. At a tie the two forms give the same number, so no published figure depends on
+    the choice -- but `>` to `>=` left the whole gate green, so nothing held the convention
+    in place.
+
+    # expected: solved in closed form from the module's own F_a, the crossing is at
+    # KL/r = 60.8, f_a/F_e' = 0.02, My = 12633843.953476468 N.m, where both forms are
+    # 0.09426368988411232 bit-identically. Setting them equal gives
+    #     f_b = F_b (f_a/F_a - f_a/(0.6 F_y)) / (1 - C_m/(1 - f_a/F_e'))
+    # and the bracket runs the other way on each side: BELOW the crossing the amplified
+    # form governs and above it the simple one does, because `1 - C_m/(1 - f_a/F_e')` is
+    # positive at `0.132653`.
+    #
+    # The verdict's figure was `1.263384395e+07` and `0.09426368988411235`, which is the
+    # same crossing rounded -- it was computed at the 4-decimal section modulus.
+    """
+    kl, frac, my = 60.8, 0.02, 12633843.953476468
+    f_e = 12.0 * math.pi**2 * 210e9 / (23.0 * kl**2)
+    f_a = frac * f_e
+    c_c = math.sqrt(2.0 * math.pi**2 * 210e9 / 355e6)
+    r = kl / c_c
+    f_a_allow = (
+        (1.0 - (kl**2) / (2.0 * c_c**2)) * 355e6 / (5.0 / 3.0 + (3.0 / 8.0) * r - (r**3) / 8.0)
+    )
+    f_b = my / W_SECTION
+    amplified = f_a / f_a_allow + CM_JOINT_TRANSLATION * f_b / ((1.0 - frac) * 0.75 * 355e6)
+    simple = f_a / (0.6 * 355e6) + f_b / (0.75 * 355e6)
+    assert amplified == simple, (amplified, simple)  # the tie is REACHABLE, bit-identically
+
+    got = _member(axial_n=-f_a * AREA, moment_y_nm=my, k_l_over_r=kl)
+    assert got.interaction_form == "simple", (
+        f"at the tie the recorded form is {got.interaction_form!r}. The convention is the "
+        "label that does not claim the amplification is doing anything, and it is stated in "
+        "MemberCheck.interaction_form's own docstring (C69)."
+    )
+    assert_close(got.u_combined, simple, TOL, floor=RATIO_FLOOR, what="U at the tie")
+
+    # AND THE BRACKET, so the tie is a crossing and not an isolated coincidence
+    below = _member(axial_n=-f_a * AREA, moment_y_nm=my * 0.999, k_l_over_r=kl)
+    above = _member(axial_n=-f_a * AREA, moment_y_nm=my * 1.001, k_l_over_r=kl)
+    assert below.interaction_form == "amplified", below.interaction_form
+    assert above.interaction_form == "simple", above.interaction_form
