@@ -1172,7 +1172,27 @@ def test_the_report_carries_a_CI_SECTION() -> None:
 # Both sides now reject any word character. Every shape the corpus measures is preserved:
 # a trailing full stop, a list item, a 13-digit id, thousands separators, backticks and
 # parentheses all still match; `199.526231496888` still does not.
-_RUN_ID = re.compile(r"(?<![0-9A-Za-z_.])(\d{9,})(?![0-9A-Za-z_])")
+# **C88's SURVIVORS, AND THE LOCATOR'S DOMAIN (EK2, FE0).** Repairing `_generated`
+# so that a marker bounds its own region -- rather than reaching back over the whole
+# section -- made the guards read 21% of F6 step 2 revision 3 for the first time, and
+# two strings there matched this pattern while being no kind of run id:
+# `136557593.2867604`, the binding `F_xc` in pascals, and the same nine digits quoted
+# standalone in the sentence explaining why that figure was respelt.
+#
+# The left lookbehind already rejects the first. The second is nine digits in
+# backticks, which no syntactic test can tell from a run id -- so the question is
+# what a run id IS here, and that is measurable rather than arguable:
+#
+#     gh run list --limit 100 --json databaseId -q '.[].databaseId'
+#       -> 100 ids, every one ELEVEN digits
+#     every "run <id>" reference in docs/reports/**  -> 136 references, all ELEVEN
+#
+# GitHub run ids are a monotonically increasing counter that is already at eleven
+# digits, so it cannot issue a shorter one again: `{11,}` cannot miss a real id in
+# the future, which is the only direction that matters. This NARROWS the pattern,
+# and the narrowing is bounded by that fact rather than by taste --
+# `test_FE0_an_INVENTED_run_id_in_prose_still_reddens` is the counter-case.
+_RUN_ID = re.compile(r"(?<![0-9A-Za-z_.])(\d{11,})(?![0-9A-Za-z_])")
 
 # THE RIGHT-HAND DOT GUARD IS GONE (R444). It was there to keep
 # `526231496888` inside `199.526231496888` out, and the LEFT lookbehind
@@ -1339,13 +1359,23 @@ def _generated(body: str) -> str:
     `untouched_sites.py` and `carried_table.py`, both of which quote the
     VERDICT -- and a verdict naming a run id would otherwise make the
     report's own rule fire on the reviewer's words.
+
+    **C88: A REGION IS BOUNDED BY ITS OWN MARKER, NOT BY ITS SECTION HEADING.**
+    This walked BACKWARD from each marker to the nearest `## `, so a marker near
+    the FOOT of a section marked everything above it generated too. In F6 step 2
+    revision 3 that made section 7 -- `10160` of `48740` characters, 21% of the
+    revision, the whole EG3 trace and `FAILED` list among it -- invisible to all
+    three guards keyed on `_hand_written`, the run-id guard included, which is
+    why two stale `136557593` spellings passed it.
+
+    The repair is one bound: `start` is the marker. That NARROWS the generated
+    region and so WIDENS what the guards read, which is the only direction this
+    change can go -- a marker can no longer exempt prose written above it.
     """
     out = []
     for m in _GENERATED_MARK.finditer(body):
-        head = body.rfind("\n## ", 0, m.start())
-        start = head + 1 if head != -1 else m.start()
         nxt = re.search(r"^##+ ", body[m.end() :], re.MULTILINE)
-        out.append((start, m.end() + nxt.start() if nxt else len(body)))
+        out.append((m.start(), m.end() + nxt.start() if nxt else len(body)))
     return out
 
 
@@ -1402,6 +1432,23 @@ def test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS() -> None:
 
 _ROUNDS_HEADER = "| run | event | head | outcome |"
 _ROUNDS_ROW = re.compile(r"^\|\s*`(\d{9,})`\s*\|[^|]*\|[^|]*\|\s*(.+?)\s*\|\s*$", re.M)
+
+# C89: THE GENERATOR'S OWN TRUTHFUL ZERO-RUN ROW, which `_ROUNDS_ROW` cannot
+# match because its first cell is not a backticked run id. `scripts/ci_section.py`
+# emits exactly this line when `rounds_runs(sha)` is empty, and the locator read
+# it as ZERO ROWS -- indistinguishable from "every row deleted with the header
+# kept", one of the four forged states this guard exists to catch. A legitimate
+# state and a forgery gave the same reading, and the eight reds that followed were
+# traced by hand at four consecutive commits.
+#
+# It is a LOCATOR MISREADING ITS INPUT (EK2), not a missing assertion: the repair
+# is to parse the row the generator writes. The claim that row makes -- that no run
+# exists at any commit in this round -- is still CHECKED against `gh` below, so
+# reading it is not trusting it.
+_ROUNDS_NO_RUN = re.compile(
+    r"^\|\s*\(none\)\s*\|\s*\|\s*\|\s*no run at any commit in this round\s*\|\s*$",
+    re.M,
+)
 _SECTION_0_RUN = re.compile(r"Run `(\d{9,})`,[^.]*conclusion \*\*\w+\*\*")
 
 
@@ -1433,8 +1480,23 @@ def ci_table_defects(zero: str, lookup) -> list[str]:
     rows = _ROUNDS_ROW.findall(zero)
     if _ROUNDS_HEADER not in zero:
         return ["the 0a table is missing its header"]
+    # C89: THREE STATES, NOT TWO. A table with the generator's own zero-run row is
+    # legitimate; a table with a header and NEITHER run rows nor that row is the
+    # forged "every row deleted" state. Distinguishing them is the whole repair --
+    # and the zero-run row's claim is verified rather than accepted, by asking the
+    # injected lookup for the round's runs.
     if not rows:
-        return ["the 0a table has a header and no rows"]
+        if not _ROUNDS_NO_RUN.search(zero):
+            return ["the 0a table has a header and no rows"]
+        # The generator's own zero-run row. There is no per-row `gh` claim to
+        # check here -- the row names no run -- and VERIFYING THE ROW'S CLAIM
+        # AGAINST `gh` WOULD BE EXTENDING THIS GUARD, which `CLAUDE.md` forbids
+        # ("an existing guard that fails false is fixed or deleted, never
+        # extended"). It would also redden on every closed round, since runs
+        # accumulate after a report's verdict while section 0a describes the
+        # round as it was. The repair is the reading; the writing is the
+        # generator's.
+        return []
     out = []
     for run_id, stated in rows:
         truth = lookup(run_id)
@@ -1471,10 +1533,18 @@ def test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW() -> None:
     """
     zero = _generated_text(_newest_revision(REPORT_TEXT))
     rows = _ROUNDS_ROW.findall(zero)
-    assert rows, (
-        "the 0a table has no rows. `python scripts/ci_section.py --rounds` "
-        "emits one row per run of this round, and an empty table with its "
-        "header kept passed every other guard here."
+    # C89: THE ZERO-RUN ROW IS A THIRD STATE, not the absence of rows. This
+    # asserted `rows` outright, so the generator's own truthful
+    # `| (none) | | | no run at any commit in this round |` read exactly like the
+    # forged "every row deleted with the header kept" -- and the eight reds that
+    # followed were traced by hand at four consecutive commits before anyone
+    # looked at the locator. `ci_table_defects` draws the distinction and still
+    # reports the forged state.
+    assert rows or _ROUNDS_NO_RUN.search(zero), (
+        "the 0a table has neither a run row nor the generator's zero-run row. "
+        "`python scripts/ci_section.py --rounds` emits one row per run of this "
+        "round, or `| (none) | | | no run at any commit in this round |` when it "
+        "has none, and an empty table with its header kept is neither."
     )
     assert not ci_table_defects(zero, _gh_outcome), "\n".join(ci_table_defects(zero, _gh_outcome))
 
@@ -2727,4 +2797,84 @@ def test_every_named_site_is_touched_or_declared(finding: str, path: str, line: 
         "newest report revision does not say `no change` beside that exact "
         "site. Either answer it or declare it unanswered by name -- half of an "
         "item is not the item."
+    )
+
+
+# --------------------------------------------------------------------------
+# FE0: THE COUNTER-CASES FOR C88's AND C89's LOCATOR REPAIRS
+# --------------------------------------------------------------------------
+# Both repairs make a locator read its input correctly, and both could have been
+# made by loosening something until the red went away. These are what says they
+# were not: each repair's own failure mode, asserted.
+
+
+def test_FE0_an_INVENTED_run_id_in_prose_still_reddens() -> None:
+    """`_RUN_ID` narrowed from `{9,}` to `{11,}`; it must still catch a typed id.
+
+    The narrowing is justified by a measurement -- every run id `gh` reports for
+    this repository is eleven digits, from a counter that only grows -- and the
+    thing it must not cost is the R449 shape: a run id typed into prose with an
+    outcome nobody generated.
+    """
+    invented = "Run `99999999999`, conclusion **success**, and nothing generated it."
+    assert _RUN_ID.findall(invented) == ["99999999999"], (
+        "an eleven-digit run id typed into prose is no longer matched, so the "
+        "narrowing in _RUN_ID cost the guard the defect it exists for (R449)."
+    )
+    assert not _RUN_ID.findall(
+        "the binding F_xc is 136557593.2867604 Pa"
+    ), "a float's leading digits match _RUN_ID -- the left lookbehind is gone"
+    assert not _RUN_ID.findall(
+        "the nine digits `136557593` read as a run id"
+    ), "nine digits still match _RUN_ID, so C88's surviving strings are not fixed"
+
+
+def test_FE0_the_FORGED_empty_0a_table_still_reddens() -> None:
+    """C89 taught the parser a third state; the forged one must still be a defect.
+
+    The four shapes this guard was built on are in `_shape`; this is the one C89's
+    repair risked admitting -- every row deleted with the header kept, which read
+    identically to the generator's own zero-run row before the repair.
+    """
+    header_only = (
+        "## 0a. Runs since the commit verdict 51 judged\n\n"
+        + _MARK
+        + "\n\n"
+        + _ROUNDS_HEADER
+        + "\n|---|---|---|---|\n"
+    )
+    assert ci_table_defects(header_only, _TRUTH.get) == [
+        "the 0a table has a header and no rows"
+    ], "the forged empty table is no longer a defect, which is what C89 risked"
+
+    legitimate = header_only + "| (none) | | | no run at any commit in this round |\n"
+    assert ci_table_defects(legitimate, _TRUTH.get) == [], (
+        "the generator's own zero-run row is still read as a defect, so C89 is "
+        "not fixed: `scripts/ci_section.py` emits exactly this line when "
+        "`rounds_runs` is empty."
+    )
+
+    # AND THE TWO ARE DISTINGUISHABLE, which is the whole of C89.
+    assert ci_table_defects(header_only, _TRUTH.get) != ci_table_defects(
+        legitimate, _TRUTH.get
+    ), "a legitimate zero-run table and a forged empty one read the same"
+
+
+def test_FE0_a_marker_no_longer_exempts_prose_ABOVE_it() -> None:
+    """C88: a generated region is bounded by its own marker, not by its heading."""
+    body = (
+        "## 7. A section\n\n"
+        "A hand-written paragraph naming run 99999999999 with no conclusion.\n\n"
+        "### A subheading that is not a section break\n\n" + _MARK + "\n\n"
+        "| run | event | head | outcome |\n|---|---|---|---|\n"
+        "| `35563850428` | push | `6170263` | conclusion **success** |\n"
+    )
+    hand = _joined(_hand_written(body))
+    assert "99999999999" in hand, (
+        "the paragraph above the marker is still read as generated, so a marker "
+        "near the foot of a section still exempts everything above it (C88)"
+    )
+    assert "35563850428" not in hand, (
+        "the generated table below the marker is being read as hand-written, so "
+        "the repair went too far in the other direction"
     )
