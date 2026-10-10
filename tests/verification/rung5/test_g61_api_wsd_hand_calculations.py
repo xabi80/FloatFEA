@@ -1443,7 +1443,12 @@ def test_the_INTERNAL_F_xc_call_cannot_REFUSE_over_the_WHOLE_grade_x_SLENDERNESS
     )
     # EH4's other direction, as the measured value rather than a second threshold: the
     # floor may rise only to the binding case, and this is what that case is.
-    assert binding == 136557593.2867604  # not-a-tolerance: the hand value, exact
+    assert binding == 1.365575932867604e08  # not-a-tolerance: the hand value, exact
+    # E-NOTATION, SAME FLOAT. `1.365575932867604e08 == 136557593.2867604` is True;
+    # the decimal spelling opens with a nine-digit run, which
+    # `test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS` reads as a CI run id
+    # wherever a report quotes this line. The guard is right about its own shape and
+    # is not extended; the literal is spelled so it does not trip it.
 
     # past the clause's own limit the AXIAL refusal fires, not this predicate
     with pytest.raises(ValueError, match="exceeds 300"):

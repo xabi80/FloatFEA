@@ -175,10 +175,17 @@ def _require_plausible_stress(stress: float) -> None:
     `F_y`, and `F_xc` is below the grade by construction -- so at S235, `D/t = 200`, inside
     the clause's own limit, `column_slenderness_parameter` refused `1.821394e+08 Pa`.
     Bisected, the refusal started at `D/t = 138.4383` for S235 and `248.0006` for S275, and
-    `12.1%` of the declared six-grade sweep raised.
+    `12.066%` of the declared six-grade sweep raised.
 
     The floor is beneath every admissible configuration: the minimum `F_xc` over the
-    admissible grade range at `D/t = 300` is `1.365576e+08 Pa`, at the grade floor.
+    admissible grade range at `D/t = 300` is `1.3655759329e+08 Pa`, at the grade floor.
+
+    claim:  a committed script regenerates every figure above, so none of them is a
+            remembered one (BI3) -- it is the script `F6_API_STRESS_PLAUSIBLE_MIN`'s
+            tolerance entry cites, and it emits the two bisected `D/t`, the `12.066%` and
+            the binding `F_xc` as its three tables
+    cmd:    files("scripts/measure/*.py", "TABLE 2: F_xc at the clause's")
+    out:    scripts/measure/r754_stress_vs_grade.py
     """
     if not F6_API_STRESS_PLAUSIBLE_MIN <= stress <= F6_API_FY_PLAUSIBLE_MAX:
         raise ValueError(

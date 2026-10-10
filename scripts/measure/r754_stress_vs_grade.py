@@ -134,14 +134,14 @@ def main() -> int:
         binding_f_xc = min(binding_f_xc, f_xc)
         mark = "   <- the minimum" if f_xc == binding_f_xc else ""
         print(f"{fy / 1e6:10.1f} {f_xc / 1e6:12.3f} {f_xc:22.10e}{mark}")
-    print(f"  the binding case is {binding_f_xc!r} Pa")
+    print(f"  the binding case is {binding_f_xc:.10e} Pa")
 
     print()
     print("=== TABLE 3: EH4, both directions on the STRESS floor ===")
     kpa_s355 = 355e6 / 1.0e3
     print(f"  declared            {F6_API_STRESS_PLAUSIBLE_MIN:.6e} Pa")
     print(
-        f"  may RISE only to    {binding_f_xc!r} Pa  "
+        f"  may RISE only to    {binding_f_xc:.10e} Pa  "
         f"({binding_f_xc / F6_API_STRESS_PLAUSIBLE_MIN:.10f}x), above which a legitimate"
     )
     print("                      slender section at the grade floor is refused")

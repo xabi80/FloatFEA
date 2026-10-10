@@ -3084,7 +3084,7 @@ F6_API_FY_PLAUSIBLE_MAX: Final[float] = 1.0e9
 #          460.0      314.082       3.1408246456e+08
 #          690.0      420.000       4.2000000000e+08
 #         1000.0      420.000       4.2000000000e+08
-#       the binding case is 136557593.2867604 Pa
+#       the binding case is 1.3655759329e+08 Pa
 #
 # The binding corner is the grade FLOOR at the `D/t` CEILING, which is the corner no
 # single-grade literal reaches. The last two rows tie because the elastic local-buckling
@@ -3095,7 +3095,7 @@ F6_API_FY_PLAUSIBLE_MAX: Final[float] = 1.0e9
 # TABLE 3 -- EH4, both directions on this floor:
 #
 #       declared            1.000000e+08 Pa
-#       may RISE only to    136557593.2867604 Pa  (1.3655759329x), above which a legitimate
+#       may RISE only to    1.3655759329e+08 Pa  (1.3655759329x), above which a legitimate
 #                           slender section at the grade floor is refused
 #       may FALL only to    3.550000e+05 Pa  (281.6901x below the declared value),
 #                           beneath which a kPa S355 is admitted as a stress

@@ -2,37 +2,59 @@
   "_": [
     "POINTERS ONLY (CH4).",
     "",
-    "F6 STEP 2, REVISION 2. Answers verdict 114 @ bf45e66, which was ROUND 1 OF THREE and a",
-    "HOLD on one item, R753.",
+    "F6 STEP 2, REVISION 3. Answers verdict 115 @ a16eb28, which was ROUND 2 OF THREE and a",
+    "HOLD on one item, R754. Under CZ0's cap this is the last revision that gets read in",
+    "full.",
     "",
-    "R753 IS ANSWERED BY DELETION, which is the second of the two routes its closing",
-    "condition offered. The clause claimed that the ten rows are the ones where",
-    "amplified(C_m = 1.0) overtakes simple. Measured independently on all 17 compression",
-    "rows, that overtake holds on 17 of 17 -- so the clause is false as an identity and",
-    "empty as an implication, exactly as the verdict says. What I had MEASURED was the",
-    "stricter predicate (overtakes at 1.0 AND did not at 0.85), which is 10 of 17; what I",
-    "WROTE was the loose one. Section 2 carries the measurement.",
+    "R754 IS ANSWERED BY THE FIRST OF THE TWO ROUTES ITS CONDITION OFFERED: the refusal stays",
+    "on the public F_y entries and column_slenderness_parameter takes the STRESS it is",
+    "actually given, through a second predicate with its own floor. The grade range is",
+    "untouched at 200..1000 MPa. The denying gate is replaced by one asserted over the whole",
+    "grade x slenderness grid rather than at one grade literal, so :1398 and :1452 can no",
+    "longer disagree. All four named sites are recorded site by site in section 2.",
     "",
-    "AND SEVEN CLOSURE ITEMS ARE ANSWERED IN THE SAME COMMIT because each is a FALSE FIGURE",
-    "or a missing refusal rather than prose: C71 (1.76x was the D/t = 300 ratio, not the",
-    "D/t = 100 one the sentence names), C72 (the F_y refusal reached two of six entry",
-    "points), C74 (the margin bound credited with three kills when it is the sole killer of",
-    "one), C75 (0 of 7 where it is 1 of 7), C76 (the overtake sentence, R753's own class),",
-    "C80 (a negative diameter returned the BEST allowable), C83 (the tie docstring carried",
-    "the rounded My, at which the field returns the OPPOSITE label), and C73/C81 (EH4's",
-    "weakening direction, unsolved on all three new constants).",
+    "AND FC2's RESULTS REPORT IS HERE, all nine sections, generated end to end. Section 4",
+    "carries it. The verdict's condition 3 asked for sections 1 to 7 at least.",
     "",
-    "C67 comes with R753 and is load-bearing now: _CSV_FIGURES names the precision the count",
-    "is taken at, and the published sentence states it.",
+    "C84 and C85 are answered in the same commit as R754 because both are refusal-funnel",
+    "defects in floatfea/ and separating them from R754 would have meant shipping a funnel I",
+    "knew to be incomplete. C87 is answered by measurement -- the four numbers were already",
+    "in the entry. C86 is recorded in section 7 and NOT fixed by editing revision 2's prose,",
+    "because EK3 keeps a closure commit off a report after its verdict.",
     "",
-    "WHAT IS NOT HERE: FC2's results report. The blocker and the false figures came first.",
-    "C77/C78/C79 are report figures and C82 is in this revision's own prose; C41 to C70",
-    "stay on the ledger, which FC0 routes past 28 October."
+    "WHAT IS NOT HERE: the PDF. No markdown renderer is installed in this environment and",
+    "section 4 carries the command that shows it. C77, C78, C79, C82 and the C41-C70 ledger",
+    "go to the step's closure commit, where CZ0 puts them."
   ],
   "answered": {
-    "R753": {
+    "R754": {
       "state": "answered",
       "where": "§2",
+      "site": "floatfea/checks/api_wsd.py"
+    },
+    "C84": {
+      "state": "answered",
+      "where": "§3",
+      "site": "floatfea/checks/api_wsd.py"
+    },
+    "C85": {
+      "state": "answered",
+      "where": "§3",
+      "site": "tests/verification/rung5/test_g61_api_wsd_hand_calculations.py"
+    },
+    "C86": {
+      "state": "answered",
+      "where": "§6",
+      "site": "docs/reports/F6/step-2.md"
+    },
+    "C87": {
+      "state": "answered",
+      "where": "§6",
+      "site": "floatfea/tolerances.py"
+    },
+    "R753": {
+      "state": "answered",
+      "where": "§2a",
       "site": "scripts/measure/api_wsd_utilisation.py"
     }
   }
