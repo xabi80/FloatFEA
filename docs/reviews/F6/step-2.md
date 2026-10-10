@@ -1,4 +1,803 @@
 # Review — F6 step 2
+Reviewed commit: 95678935f9cebce34923d0d98753aa4668e0cc84
+Verdict: PASS
+**Reviewed commit: `9567893`** (branch `F3`, pushed, tree clean when I judged it; no corpus
+batch on top this round -- EG4(e), see the corpus section -- so for once the plain
+`Reviewed commit:` stamp below IS the commit I judged.)
+Tests: 3309 passed, 8 failed, 0 skipped   (MY OWN run, one invocation, no `-k`, no
+`--ignore`, no deselection, `-p no:randomly`, tree clean at `9567893`, `613.43s`. All eight
+traced INDIVIDUALLY in section 1, not by family.)
+
+## Round of 2026-10-09 -- F6 STEP 2 REVISION 3. **ROUND 3 OF THREE. THE STEP CLOSES: PASS, carrying two blocking items by name into step 3.** R754 is answered by the right route and I attacked the route rather than the figure. FC2's deliverable exists, all nine sections, and it regenerates byte-identically except for eight wall-clock timings -- which is how I found that **the locked plan's step-2 gate is asserted nowhere**. The floor is a floor over 1194291 points of the two axes the entry names, and is not one on the third axis, which nothing in the module declares.
+
+**WHY PASS AND NOT HOLD.** CZ0's cap: this is the third reviewed revision, so the step
+closes here whatever I write. PASS is the disposition the cap prescribes, and it is also the
+honest one about the work -- R754's condition had five parts and all five land. The two
+blocking items below carry by name into step 3's `Carried` and stay blocking there; they are
+not a reason to hold a step the cap has already closed, and writing HOLD would only make the
+next turn unreachable.
+
+**WHAT IS GOOD, AND IT IS THE SUBSTANCE.** R754 is answered by route one: the refusal stays
+on the five public `F_y` entries and `column_slenderness_parameter` gets a predicate of its
+own. I did not take that on the report's word. **Putting the grade predicate back in front of
+the stress gives `2 failed`** -- so the new gate catches the exact defect it was written for,
+which is the one question that matters about it. **Deleting the new predicate gives
+`1 failed`.** Perturbing either clause coefficient in its last bit gives `1 failed`, in both
+directions. The binding corner the gate asserts is a value I reproduced bit-for-bit from the
+clause worked by hand. BI3 is discharged: every figure in the entry and the plan row comes
+out of `scripts/measure/r754_stress_vs_grade.py` to the digit, and I ran it.
+
+**NO STOP.** No low rung is red. The verification ladder is GREEN in CI on Ubuntu at the
+reviewed commit's own sha, and green locally.
+
+## 1. THE EIGHT REDS -- TRACED ID BY ID, AND THE CI RED IS THE SAME EIGHT ON A SECOND MACHINE
+
+```
+claim  the whole suite at the reviewed commit, and what is red
+cmd    python -m pytest -q -p no:randomly        (whole suite, tree clean at 9567893)
+out    8 failed, 3309 passed, 2 warnings in 613.43s (0:10:13)      -- NO SKIPS
+out    1  tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+out    7  tests/test_report_guard_states.py::test_the_guard_survives_the_state[...]
+out       baseline, non_numeric_step_suffix, superscript_digit_step_number,
+out       draft_suffix_beside_a_step_report, step_number_is_the_empty_string,
+out       verdict_amended_after_the_commit_the_report_answers, zero_padded_step_number
+judge  **NOTHING UNDER tests/verification, tests/unit OR tests/regression IS RED.**
+```
+
+**EG3(i) SAYS EACH `FAILED` ID IS MATCHED INDIVIDUALLY, SO I RAN ALL SEVEN ALONE.** The
+eighty-third verdict ruled eight planted states as one cascade by class and the eighth was
+R629. That is the only reason this block exists.
+
+```
+cmd    each of the seven states run ALONE, its own inner log read rather than its name
+out    baseline                                    FAILED ...::test_the_CI_TABLE_... | 1 failed, 125 passed
+out    non_numeric_step_suffix                     FAILED ...::test_the_CI_TABLE_... | 1 failed, 125 passed
+out    superscript_digit_step_number               FAILED ...::test_the_CI_TABLE_... | 1 failed, 125 passed
+out    draft_suffix_beside_a_step_report           FAILED ...::test_the_CI_TABLE_... | 1 failed, 125 passed
+out    step_number_is_the_empty_string             FAILED ...::test_the_CI_TABLE_... | 1 failed, 125 passed
+out    verdict_amended_after_the_commit...answers  FAILED ...::test_the_CI_TABLE_... | 1 failed, 125 passed
+out    zero_padded_step_number                     FAILED ...::test_the_CI_TABLE_... | 1 failed, 125 passed
+rule   EH1: the cascade is identified by the baseline being red and by each cascading
+       state's own failure line, not by its name
+judge  **ONE CAUSE AND SEVEN CASCADES, AND EVERY INNER RUN IS `1 failed, 125 passed`** -- no
+       second red hiding inside the group. There is no R629 here and I checked rather than
+       asserting it.
+cmd    the one cause's own assertion text
+out    AssertionError: the 0a table has no rows. `python scripts/ci_section.py --rounds`
+out      emits one row per run of this round, and an empty table with its header kept
+out      passed every other guard here.
+cmd    section 0a of revision 3, read
+out    | run | event | head | outcome |
+out    | (none) | | | no run at any commit in this round |
+cmd    gh run list --limit 8 ...   -- the runs after 5c71cb4
+out    the only run whose head is a commit of this round is 38027858544, at 9567893 ITSELF
+judge  **FC1's STATE (2), ON FC1's OWN STATED REASON.** `scripts/ci_section.py --rounds`
+       needs a RUN, and at report time no run existed for any commit in this round. The
+       generator's answer -- one row reading `(none)` -- is TRUE, and `_ROUNDS_ROW` wants a
+       backticked nine-digit id in the first cell, so it reads zero rows. Designed,
+       self-clearing at the follow-on commit that reports `38027858544`. **I do not hold on
+       it.** C89 records the shape.
+```
+
+## 2. CI AT THE REVIEWED COMMIT -- IT FINISHED WHILE I WAS WORKING, AND IT IS RED
+
+The invocation told me run `38027858544` was `in_progress`. **It has completed, and it is
+`failure`.** CA2 says a red CI is a HOLD regardless of the local run, so this needs a ruling
+and not a mention.
+
+```
+cmd    gh run list --commit 9567893 --json name,conclusion,workflowName,status,databaseId
+out    []                                          <- at the moment I asked, by short sha
+cmd    gh run list --limit 8 --json databaseId,headSha,conclusion,status,workflowName,event
+out    38027858544  9567893...  push  completed  FAILURE
+judge  the `--commit 9567893` form returned nothing and the `--limit` form returns the run.
+       A short-sha lookup is not reliable here; the run EXISTS. Recorded because the
+       implementer's `scripts/review_invocation.py` reported "no CI run" and that is the
+       same lookup.
+cmd    gh run view 38027858544 --json jobs
+out    the verification ladder            SUCCESS   13 steps
+out    lint, unit and guards              failure   14 steps; step 10 'guards and
+out                                                 meta-tests' is the only non-green step
+out    CI determinism -- leg / ten legs   skipped   0 steps   (workflow_dispatch, CK0)
+judge  **NOT CK2.** Both real jobs ran with full step lists; no spending annotation, no
+       two-second empty job. The two skipped jobs are CK0's design. **Steps 1-9 --
+       actionlint, ruff, black --check, mypy, unit tests -- are all SUCCESS**, so the lint
+       claims in the invocation are confirmed on Ubuntu and not only locally.
+cmd    gh run view 38027858544 --log-failed     (the FAILED list and the count)
+out    8 failed, 1014 passed, 1 warning in 611.93s (0:10:11)
+out    FAILED tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+out      - AssertionError: the 0a table has no rows. ...
+out    FAILED tests/test_report_guard_states.py::test_the_guard_survives_the_state[...]
+out      baseline, draft_suffix_beside_a_step_report, non_numeric_step_suffix,
+out      step_number_is_the_empty_string, superscript_digit_step_number,
+out      verdict_amended_after_the_commit_the_report_answers, zero_padded_step_number
+judge  **THE SAME EIGHT IDS, THE SAME INNER ASSERTION, ON A DIFFERENT OS AND A DIFFERENT
+       libm.** EG3 says CZ1 (iii) does not apply to the boundary red a step's own report
+       creates, on either side of the verdict, and this is state (2) with FC1's amendment.
+       The red CI is that boundary and nothing else, measured by name rather than matched by
+       shape. **CA2 is satisfied, not waived: I read the job and step conclusions and the
+       ladder is green with 2206 collected and 0 failed.**
+```
+
+## 3. MY OWN INSTRUCTIONS, THE CONFTEST, THE TOLERANCE FILE -- EACH DIFFED SEPARATELY
+
+```
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py
+cmd    git diff --stat 5c71cb4..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+judge  CH2/CI0: no conftest and no plugin in the range, so rung 5's `77 passed` is a pytest
+       result and not a record rewritten from the rung's own directory. There is no
+       `pytest_runtest_makereport`, `pytest_ignore_collect` or
+       `pytest_collection_modifyitems` under `tests/verification/rung5/`.
+cmd    git diff --stat 5c71cb4..HEAD -- .claude docs/SUPERVISOR.md
+out    (empty)
+judge  **NO STOP-CLASS FINDING.** My instructions are untouched in this range. C45 bites for
+       the fourth verdict running and now in a second place -- see the corpus section, where
+       my agent definition and `CLAUDE.md` give opposite instructions about whether a batch
+       happens this round.
+cmd    git diff 5c71cb4..HEAD -- floatfea/tolerances.py | grep -E "^[+-].*Final\["
+out    +F6_API_STRESS_PLAUSIBLE_MIN: Final[float] = 1.0e8
+judge  ONE name ADDED, none removed, none moved. The entry is section 5's subject.
+cmd    git diff 5c71cb4..HEAD | grep -E "^\+.*(xfail|skipif|pytest.skip|deselect|--ignore|addopts)"
+out    the only matches are prose lines quoting earlier rounds' own grep commands
+cmd    git diff --stat 5c71cb4..HEAD -- pyproject.toml .github scripts/run_rung.sh
+out    (empty)
+judge  **NOTHING WAS WIDENED AND NOTHING STOPPED ASSERTING.** No marker, no deselection, no
+       workflow change, no rung-script change.
+```
+
+## 4. R754, ATTACK (a) -- I TESTED THE CLAIM AND NOT THE FIGURE, AND IT IS TRUE ON TWO AXES OF THREE
+
+The implementer asks exactly the right question about its own repair: *"if the floor is not a
+floor at some other `D` or `E` the module admits, that is the same defect again one level
+out, and it is mine."* **`D` drops out. `E` does not.**
+
+```
+claim  F_xc is a function of (D/t, F_y, E) and NOT of D separately, so the gate's `D = 2.5`
+       is not a restriction
+cmd    local_buckling_stress(D, D/300, 2.0e8, E_STEEL) over D = 0.05, 0.5, 2.5, 10.0, 137.0
+out    {136557593.2867604}        <- one value, five diameters
+rule   the clause: F_xe = 2 C E t / D = 0.6 E / (D/t) and F_xc = F_y[1.64 - 0.23(D/t)^1/4],
+       both functions of the RATIO
+judge  **THE `D` HALF OF THE QUESTION IS ANSWERED AND THE ANSWER IS CLEAN.** The gate fixing
+       `D = 2.5` costs nothing, and that is a property of the clause rather than of the test.
+```
+
+```
+claim  over the two axes the entry names, the floor is a floor and the bound is ATTAINED at
+       the corner the entry names -- checked on a CONTINUUM, not on the gate's seven grades
+cmd    801 grades spanning [2.0e8, 1.0e9] x 1491 D/t spanning [2.001, 300.0], every point
+       through local_buckling_stress AND allowable_axial_compression
+out    dense grid tested 1194291   refused 0
+out    min F_xc = 136557593.2867604  at (F_y = 2.0e8, D/t = 300.0)
+out    binding == 1.365575932867604e08  ->  True
+out    hand: 2.0e8 * (1.64 - 0.23 * 300**0.25) = 136557593.2867604
+rule   the gate's own assertions, `binding > F6_API_STRESS_PLAUSIBLE_MIN` and
+       `binding == 1.365575932867604e08`
+judge  **THE CORNER ARGUMENT IS CORRECT AND I CHECKED IT THE EXPENSIVE WAY.** The gate's
+       seven discrete grades suffice because `F_xc` is increasing in `F_y` at fixed `D/t` and
+       the grade FLOOR is in the set, so the discrete minimum is the continuous one. The
+       distinction from `C_m` is real: `C_m`'s resolution has infimum `0` ATTAINED, so no
+       constant can be a floor; `F_xc`'s infimum is `1.3656e+08` attained at a corner, so a
+       constant can. **The implementer's reason for a constant where R750 needed a function
+       is the right reason.**
+```
+
+**AND HERE IS THE AXIS NOBODY SWEPT, WHICH IS THE WHOLE OF EU1's LESSON. THIS IS R755.**
+
+```
+claim  `e` is an argument of every function in the chain, nothing in the module refuses it,
+       and below a solved value the stress predicate fires on the module's own F_xc again
+cmd    grep -n "def _require_plausible_e\|not e > 0\|e <= 0" floatfea/checks/api_wsd.py
+out    (none)                     <- there is no predicate on `e` anywhere in the module
+cmd    allowable_axial_compression(121.5, 2.5, 2.5/300, 2.0e8, e) over a sweep of `e`
+out    e = 2.1e+11   F_xc = 1.365576e+08   F_a = 5.4806e+07  inelastic_local
+out    e = 7.0e+10   F_xc = 1.365576e+08   F_a = 2.4417e+07  elastic_local
+out    e = 5.0e+10   F_xc = 1.000000e+08   F_a = 1.7441e+07  elastic_local
+out    e = 4.9e+10   RAISED ValueError: stress = 98000000.0 Pa is outside the plausible
+out      range [1e+08, 1e+09] Pa. This argument is a STRESS and not a grade ...
+out    e = 2.1e+08   RAISED  (stress = 420000.0)
+out    e = 2.1e+02   RAISED  (stress = 0.42)
+rule   the entry's own sentence, in `floatfea/tolerances.py` and `docs/milestones/F6.md:241`:
+       "Reason for 1.0e8: it is **a floor beneath EVERY admissible configuration**"
+cmd    solve the boundary rather than sample it
+out    the floor breaks when 0.6 e / (D/t) < 1.0e8, i.e. for e < 1.0e8 (D/t) / 0.6;
+out      at the D/t CEILING that is e < 5.0e+10 Pa exactly, and the shipped
+out      E_STEEL = 2.1e+11 clears it by 4.2x
+judge  **THE SENTENCE IS FALSE ON THE ONE AXIS THE MODULE DECLARES NOTHING ABOUT**, and the
+       diagnostic a caller then reads blames the STRESS when the input error is `E`. It is
+       R754's shape at one remove and C60's at two: the claim is true over the axes the
+       author swept. **The repair NARROWED this rather than widening it** -- before it the
+       effective floor on `F_xc` was `2.0e8`, which breaks at `e < 1.0e11`, so aluminium at
+       `7.0e+10` used to be refused and now is not. That is why this is R755 and not a
+       reopened R754.
+```
+
+**I ALSO MEASURED THE OTHER DIRECTION ON `e`, BECAUSE A MISSING REFUSAL MATTERS MOST WHERE IT
+DOES NOT RAISE.**
+
+```
+claim  an `e` slip that does NOT raise returns a plausible wrong allowable, silently
+cmd    check_member(... fy=355e6, e=E_STEEL*s) at the shipped platform station, s = 1, 10,
+       1000; everything else held
+out    e = 2.1e+11   F_a = 7.325207e+07  elastic     U = 0.01454691   C_c =  108.06
+out    e = 2.1e+12   F_a = 1.853336e+08  inelastic   U = 0.00839778   C_c =  341.71
+out    e = 2.1e+10   F_a = 7.325207e+06  elastic     U = 0.10865409   C_c =   34.17
+cell   ONE VARIABLE: `e`. Same section, same loads, same grade, same `K L`.
+judge  a 10x slip DOWN moves `F_a` by `10.0x` and `U` by `7.5x`; a 1000x slip UP moves `F_a`
+       by `2.88x` and MOVES THE BRANCH LABEL from `elastic` to `inelastic`, which is a
+       published column. No refusal, no diagnostic. **This half is NOT new this revision and
+       is NOT what I block on**: C60 was ruled a closure item for the same shape on `F_y`
+       and I am consistent with that. It is C96. What blocks is the SENTENCE, under (b).
+```
+
+## 5. ATTACK (b) -- THE GATE AT `:1398`. ITS GRID, AND WHETHER IT REDDENS BOTH WAYS
+
+```
+claim  the grid is the domain the clause admits on the axes it sweeps, not a convenient subset
+cmd    read the gate: grades = (2.0e8, 235e6, 275e6, 355e6, 420e6, 460e6, 690e6);
+       tenths in range(50, 3001) -> D/t from 5.0 to 300.0 step 0.1; checked == 7 * 2951
+rule   the module's admissible set: `_require_tube` gives D/t > 2 (solved at 2.0002 admitted,
+       2.0000 refused, verdict 115), and `d_t > 300.0` is refused by name
+out    the grid's D/t floor is 5.0 and the clause admits (2, 5) as well
+cmd    is the excluded strip reachable? F_xc over D/t in (2, 5]
+out    D/t <= 60 returns `fy` UNREDUCED, so F_xc >= 2.0e8 there, twice the floor
+judge  **THE SUBSET IS JUSTIFIED AND THE JUSTIFICATION IS NOT WRITTEN DOWN.** `5.0` is the
+       declared sweep's own lower edge from the `F6_API_CLAUSE_AGREEMENT` entry, and nothing
+       in (2, 5) can be below the floor because the clause returns `F_y` there. My own dense
+       grid started at `2.001` and confirmed it: `0 refused`. The grid is not convenient; the
+       reason it is sufficient belongs beside it. C95.
+cmd    grades: is the discrete seven enough? the continuum, 801 grades
+out    the minimum over the continuum is at F_y = 2.0e8, which IS in the gate's tuple
+judge  sufficient, for the monotonicity reason in section 4. The gate includes the grade
+       FLOOR itself, which the gate it replaced did not -- that is the repair.
+```
+
+```
+claim  the assertion reddens on a drift in EITHER direction, measured rather than argued
+cmd    one edit at a time, whole rung 5 after each, source restored and `git status
+       --porcelain` asserted empty after each; baseline 77 passed
+out    _require_plausible_stress -> _require_plausible_fy  (REVERT R754)  2 failed, 75 passed
+out    delete the _require_plausible_stress call entirely                 1 failed, 76 passed
+out    1.64  -> 1.6400000000000001   (binding UP, last bit)               1 failed, 76 passed
+out    0.23  -> 0.2300000000000001   (binding DOWN, last bit)             1 failed, 76 passed
+judge  **THE GATE CATCHES THE DEFECT IT WAS WRITTEN FOR**, which is the one thing that had to
+       be true and the one thing a reader cannot take on trust. `binding ==` is an exact
+       float equality, so both directions redden at the last bit, and I moved the clause
+       COEFFICIENTS rather than the asserted literal, so the kill is on the quantity.
+cmd    EH4 both directions on F6_API_STRESS_PLAUSIBLE_MIN, bisected
+out    RISE:  1.2e8 -> 77 passed          1.3655759328e8      -> 77 passed
+out           1.365575932867604e8 -> 1 failed (the new gate)
+out           1.4e8 -> 2 failed (the new gate AND the entry-point test)
+out    FALL:  1.0e6 -> 77 passed          3.56e5 -> 77 passed
+out           3.55e5 -> 1 failed (test_EVERY_entry_point_that_takes_F_y_refuses_a_wrong_unit)
+judge  **BOTH DIRECTIONS ARE PINNED BY SHIPPED TESTS, which is what EH4 asks and what this
+       entry gets right.** The weakening direction is held by the entry-point test's `355e3`
+       case, two decades of headroom away, so the floor cannot be quietly lowered to admit a
+       kPa grade. The two published bounds are off by their own endpoint -- C90, not a value
+       error.
+cmd    the one assertion in the gate's loop I could not make fail
+out    assert branch in ("elastic","elastic_local","inelastic","inelastic_local")
+out    the labels the loop can actually see, enumerated over the grid: exactly those four
+judge  `allowable_axial_compression` returns `branch + "_local" if reduced else branch` with
+       `branch` in two values, so the four-element set is exhaustive by construction and that
+       line cannot redden. The gate's real claim is carried by the absence of a raise, by
+       `f_a > 0.0`, by `checked == 7 * 2951` and by `binding ==` -- all four of which kill.
+       The vacuous line is C91. It is not what the gate claims, so it is not (c).
+```
+
+## 6. ATTACK (c) -- THE PUBLISHED DELIVERABLE. I REGENERATED IT, AND THAT IS WHERE R756 CAME FROM
+
+I checked every figure in `results/F6/floatfea_results_report.md` I could reach
+independently, and then I ran the generator.
+
+```
+claim  the document regenerates from its committed sources
+cmd    python scripts/measure/f6_results_report.py --out <a path outside the repo>
+       then diff against results/F6/floatfea_results_report.md
+out    158,165c158,165        -- EIGHT LINES, AND NOTHING ELSE IN 457
+out    <   G2.1             2 passed in 0.40s       >   G2.1             2 passed in 0.44s
+out    <   G4.1 force     114 passed in 1.93s       >   G4.1 force     114 passed in 2.30s
+out    ... six more, all of the form `in <wall clock>s`
+judge  **EVERY MODEL, LOAD, FORCE, STRESS, SWEEP, UTILISATION AND COUNT REPRODUCES
+       BYTE-IDENTICALLY.** The only differences in the whole document are pytest's eight
+       wall-clock timings, embedded in section 5. The top-ten list is identical, so the
+       plan's "stable under a re-run" half is true in fact.
+cmd    is the plan's step-2 gate asserted anywhere?
+out    grep -rln "f6_results_report\|floatfea_results_report" tests/      -> (nothing)
+out    grep -rn "scripts/measure\|scripts\.measure" over tests/*.py and tests/**/*.py
+out      -> only tests/corpus/*.txt, which is DATA and imports nothing
+out    tests/regression/test_f6_deliverable_agrees_with_itself.py reads
+out      docs/F6_utilisation.md and docs/F6_utilisation.csv -- and asserts COUNT AGREEMENT
+out      between prose and CSV, never regeneration
+rule   docs/milestones/F6.md:261, the locked plan's own step-2 gate: "**Gate: the table
+       regenerates identically from stored results** (G6.3's shape), and the top-ten list is
+       stable under a re-run"
+judge  **NOTHING IN THE REPOSITORY ASSERTS THAT GATE, FOR EITHER DELIVERABLE, AND THE
+       ARTIFACT THIS REVISION PUBLISHES WOULD FAIL IT AS THE PLAN WORDS IT.** That is R756.
+       The corpus already recorded the shape against a different generator --
+       `tests/corpus/f4_member_force_table_stations_and_load_path.txt:13`, "NOTHING under
+       tests/ reads that" -- so this is the second generator with no reader, and the first
+       one the locked plan names a gate for.
+```
+
+**AND THE FIGURES THEMSELVES, WHICH IS THE OTHER HALF OF EZ0.** I take `(a)` in a published
+deliverable seriously enough to recompute rather than reconcile.
+
+```
+claim  section 2's section properties, which every later figure divides by
+cmd    build_superstructure(); the platform arm's own section
+out    A = 1.3119290921390976   I_y = 0.887979206014348   J = 1.775958412028696
+out    r = sqrt(I_y/A) = 0.8227089400267873       published 0.822709        EXACT
+out    W = I/(D/2) = 0.710383   W_t = 2J/D = 1.420767     published both    EXACT
+judge  I tried to refute `r` from the printed `I` and `A` and got `0.822755` by hand; the
+       hand arithmetic was mine and wrong. From the model the three are mutually consistent
+       to every published digit. **Recorded because a reviewer's own slip becoming an input
+       to the tree is exactly what C83 was.**
+claim  section 7's four allowables and the slenderness, from the clause functions
+out    F_a platform = 73192213.83 -> 73.19 MPa, branch `elastic`     published  EXACT
+out    F_a hub      = 161077545.9 -> 161.08 MPa, branch `inelastic`  published  EXACT
+out    C_c = 108.05885   F_b = 266.25 (compact)   F_v = 142.00       published  EXACT
+out    KL/r = 121.5497 at K = 2.0 > C_c, so the four platform arms ARE on the elastic
+out      branch -- the locked plan's own section 0 judge line, confirmed
+claim  sections 7 and 8's counts and levers, recomputed from results/F6/F6_utilisation.csv
+out    32 stations, 15 tension, 17 compression, 7 amplified, 4 over unity    EXACT
+out    worst U = 1.71167 at platform:hub2_arm ROOT, T = 12.5, 3.3.2, elastic EXACT
+out    all ten top-ten rows, all three U columns, all six f_a/F_a/u columns   EXACT
+out    K lever 0.0342376 at platform:hub1_arm TIP                            EXACT
+out    C_m lever 0.009245 -- **TIED between hub2:buoy4_arm ROOT and hub4:buoy10_arm ROOT**,
+out      and the document names one of the two without saying it is a tie       C92
+out    rank 10 = 0.788204, rank 11 = 0.776563, a 1.50% gap -- verdict 115's withdrawal of
+out      the ordering item reproduces
+claim  section 4's per-case stress BOUND and the band arithmetic (NEW this revision)
+out    762.151 / 483.214 / 382.531 / 344.055 / 330.610 / 338.226 MPa, recomputed as the max
+out      abs sigma over the 32 ROOT total_max/total_min rows per case           EXACT
+out    sqrt(6.5*24.2) = 12.5419, sqrt(11*24.2) = 16.3156; 0.334% / 20.267% / 22.582% edge
+out      offsets; H/lambda 0.1551 > 1/7 at T = 10 s                             EXACT
+out    monotone falling across the band, ticking back up at T = 20 s (338.226 > 330.610)
+judge  the BOUND / per-instant distinction the plan insists on is kept and LABELLED, and the
+       sentence "it is the only quantity in the set that is defined per case" is TRUE --
+       `total_instant` is one row per station carrying its own case, not a per-case series.
+claim  section 6's f sensitivity (NEW), section 8(i) and 8(iii)'s counts (NEW)
+out    the eight f rungs, My linear in f to the last digit; 269.716 = 1.9160e8/0.710383;
+out      1.0130 = 269.716/266.25; 1.2663 = 269.716/213.00; span 1.6208/0.8104 = 2.00 EXACT
+out    N 48/48, Vy 48/48, Vz 0/48, T 15/48, My 1/48, Mz 48/48 exactly zero on the static
+out      basis, with the three max values                                       EXACT
+out    section 6's 18-row envelope table, every component, member and period    EXACT
+claim  section 5's eight ceilings resolve by name, and the G4.1 ratio
+out    1.15434e-18 / 1e-13 / 2.5e-12 / 0.0002 / 1e-12 / 1e-06 / 1e-12 / 1e-14    EXACT
+out    0.0002/2.5e-12 = 8e+07, log10 = 7.903                                     EXACT
+claim  the two CSVs beside the document are the sources it was generated from
+out    sha256 docs/F4_member_forces.csv == results/F6/F4_member_forces.csv       SAME
+out    sha256 docs/F6_utilisation.csv   == results/F6/F6_utilisation.csv         SAME
+judge  **NOT ONE WRONG FIGURE IN THE DELIVERABLE.** I looked for the verdict-109 shape -- a
+       sign error in the repair of a published figure -- and there is none. Three rounds of
+       EZ0 findings, and this is the first deliverable in the milestone I could not break on
+       its numbers.
+```
+
+**THE RULING I WAS ASKED FOR ON SECTION 5's DEVIATION FROM FC2.** The document publishes each
+gate's ceiling, constant and pass status, and deliberately **not** its measured residual,
+saying so in its own prose with a pointer to where the residuals live.
+
+**I rule the deviation CORRECT, and more than merely permitted.** BP0's rule is that a figure
+whose decision rule can move underneath it is regenerated or withdrawn in the same commit; a
+residual copied into a second document that nothing regenerates is precisely the shape that
+produced `93000x`, `1281`, `all 5` and `five decades`. The document cannot regenerate
+residuals it does not compute, and harvesting them out of pytest output would be a new report
+generator -- forbidden through F6. So the choice was: publish a stale residual, build
+forbidden apparatus, or publish the ceiling with a pointer and say why. **The third is the
+right one, and the document states it rather than leaving a reader to notice the absence.**
+What would satisfy FC2 and BP0 together is a MARGIN computed by the generator at the commit it
+publishes -- worst over ceiling, as a ratio with its operating point -- which is regenerated
+by rule because the generator computes it. That is a closure item (C97), not a block, and it
+is the right shape for the next milestone that publishes this table.
+
+**One caveat I will not leave unsaid: I was asked to rule on a deviation from a directive
+whose text is nowhere in this repository.** `FC2` appears only in verdicts, in the step report
+and in one generator docstring; `FC0` only in verdicts. `docs/milestones/F6.md` carries `FA0`
+to `FB5` verbatim for exactly this reason -- "so the plan and the directives do not have to be
+read side by side" -- and the FC series is not there. My ruling above is on the wording the
+invocation quoted and on the merits. C93.
+
+## 7. ATTACK (d) -- THE RESPELLING. THE VALUE DID NOT MOVE, AND THE GUARD SEES LESS THAN ITS NAME SAYS
+
+```
+claim  the asserted value is the same float before and after the respelling
+cmd    python -c, comparing 136557593.2867604 with 1.365575932867604e08
+out    True
+cmd    local_buckling_stress(2.5, 2.5/300, 2.0e8, 210e9) == 1.365575932867604e08
+out    True          <- and the hand value 2.0e8*(1.64-0.23*300**0.25) is the same float
+judge  **THE VALUE DID NOT MOVE.** And it is not a tolerance: it is the clause worked by hand
+       and asserted exactly, which is the right form for it.
+cmd    grep -rn "136557593" over the whole tree, excluding .git
+out    docs/reports/F6/step-2.md:1665    (the sentence explaining the respelling)
+out    docs/reports/F6/step-2.md:1669    (the `... == 136557593.2867604` is `True` line)
+out    tests/verification/rung5/...:1447 (the same explanation, as a comment)
+judge  no SOURCE publishes the decimal spelling -- the generator, the tolerance entry, the
+       plan row, the docstring and the gate's literal all read `1.3655759329e+08` or the
+       e-notation float. The three survivors are the explanation of the respelling itself.
+cmd    but does the guard actually SEE the two in the report? I measured rather than assumed
+out    the paragraph containing `136557593` is INSIDE _generated_text(body), so the guard
+out      skips it; `_RUN_ID` would otherwise match `136557593` at both sites
+cmd    _generated(body) over revision 3
+out    4 regions, 14216 of 48740 chars; one region is 10160 chars and OPENS at
+out      '## 7. The suite, and EG3 state (2)'
+cmd    the mechanism, read: tests/test_report_carried.py:1344-1348
+out    for each generated-marker comment, body.rfind of the section-heading prefix walks BACK
+out      to that heading, and the region then runs to the NEXT `##`
+judge  **ONE GENERATED MARKER NEAR THE BOTTOM OF A SECTION MARKS THE WHOLE SECTION AS
+       GENERATED.** The `answered_table.py` marker inside section 7 makes all 10160
+       characters of it -- 21% of the revision, including the entire EG3 trace and the
+       `FAILED` list -- invisible to all three guards that key on `_hand_written`, the
+       run-id guard among them. The respelling was still the right call and the guard did
+       fire somewhere; what is measured here is that its reach is smaller than its name.
+       C88, and it is the guard owner's to fix or delete, never to extend.
+```
+
+## 8. ON THE CRITERION -- I WAS ASKED, I AGREE WITH IT, AND I HAVE ONE THING TO SEND OUT
+
+I applied CZ0 as amended by EZ0 and I agree with it. **The amendment earned its keep in the
+opposite direction this round:** I went looking for the verdict-109 shape in a published
+deliverable and found none, and the work of looking was worth doing because EZ0 makes it
+blocking if it is there. A criterion that makes a reviewer recompute sixty published figures
+and find them all right is working.
+
+**R755 and R756 are both inside the criterion without needing EZ0.** R755 is `(b)` -- the
+scope statement of a tolerance's justification, which is the form of one. R756 is `(c)` -- a
+gate the locked plan names, on a named quantity, asserted nowhere. Neither needs the
+published-deliverable carve-out, and I say so because the last four rounds all turned on it.
+
+**ONE THING FOR XABIER, and it is C45 for the fourth verdict running, now with a second
+instance.** My own agent definition carries the UNAMENDED head "(a) a defect in `floatfea/`",
+so the criterion I rule under lives in `CLAUDE.md:152` and in the invocation. **And this round
+it contradicts `CLAUDE.md` on a second thing:** my definition says "Add unseen entries at
+every review" and "Your corpus rounds continue unchanged (BE3)", while `CLAUDE.md` EG4(e)
+pauses batches until 28 October. I followed `CLAUDE.md`, which is the project instruction and
+the later one. One standalone `process:` commit fixes both, and FC0 routing it past
+28 October is the wrong side of the date for it.
+
+## Findings
+
+**TWO BLOCK, AND BOTH CARRY INTO STEP 3 BY NAME UNDER THE CAP.**
+
+**R755. (BLOCKING -- (b), THE FORM OF A TOLERANCE: ITS SCOPE STATEMENT, FALSE ON THE ONE AXIS NOTHING SWEEPS.)**
+`floatfea/tolerances.py:3074` (the `F6_API_STRESS_PLAUSIBLE_MIN` entry's Reason paragraph),
+`docs/milestones/F6.md:241` (the same sentence in the plan row) and
+`floatfea/checks/api_wsd.py:181` (the same sentence in `_require_plausible_stress`'s
+docstring) each say the floor is **"a floor beneath EVERY admissible configuration"**. It is a
+floor beneath every admissible `(F_y, D/t)` -- I verified that over `1194291` points of a
+continuum and the minimum is exactly the published corner -- and it is **not** a floor on `e`,
+which is an argument of `local_buckling_stress`, `allowable_axial_compression`,
+`allowable_bending`, `euler_stress` and `check_member`, and which nothing in the module
+refuses.
+
+```
+cmd    allowable_axial_compression(121.5, 2.5, 2.5/300.0, 2.0e8, 4.9e10)
+out    ValueError: stress = 98000000.0 Pa is outside the plausible range
+out      [1e+08, 1e+09] Pa. This argument is a STRESS and not a grade -- section 3.2.2 is
+out      evaluated at `F_xc` on a slender tube -- so the floor sits beneath the smallest
+out      `F_xc` the clause can produce rather than at a steel grade.
+cmd    grep -n "def _require_plausible_e" floatfea/checks/api_wsd.py
+out    (none)
+```
+
+**Solved, not sampled:** the floor breaks for `e < 1.0e8 (D/t) / 0.6`, which at the clause's
+own `D/t = 300` ceiling is `e < 5.0e+10 Pa` exactly; `E_STEEL = 2.1e+11` clears it by `4.2x`.
+The refusal then fires on an `F_xc` the module computed for itself, from a grade and a section
+both inside the declared ranges, and its message tells the caller the STRESS is implausible
+when the wrong input was `E`. **That is R754's own sentence with one axis substituted, and
+EU1's lesson verbatim: the adversarial case is the configuration nobody chose.** The repair
+NARROWED the exposure rather than creating it -- the pre-repair effective floor of `2.0e8`
+breaks at `e < 1.0e11`, so aluminium at `7.0e+10` used to be refused and now is not -- which
+is why this is a new finding about the SENTENCE and not a reopened R754.
+
+**Closed when** the three sites state the scope they were measured over -- the admissible
+grade range and the clause's `D/t` range **at `E = E_STEEL`** -- and name `e` as an input the
+module does not guard; **or** `e` carries a predicate of its own and the sentence becomes true
+as written. Either route; the first is a sentence and a scope, the second is a funnel and a
+counter-case. **The sentence is not left true as written**, because it is the only written
+justification for a constant where R750 needed a function, and that argument has to be right
+about its own domain.
+
+**R756. (BLOCKING -- (c), A GATE THE LOCKED PLAN NAMES THAT IS ASSERTED NOWHERE, ON THE ARTIFACT THIS STEP EXISTS TO PRODUCE.)**
+`docs/milestones/F6.md:261` locks step 2's gate: *"the table regenerates identically from
+stored results (G6.3's shape), and the top-ten list is stable under a re-run."* Nothing in the
+repository asserts it, for either deliverable, and the artifact this revision publishes fails
+it as worded.
+
+```
+cmd    python scripts/measure/f6_results_report.py --out <outside the repo>; then diff
+out    158,165c158,165        -- eight lines of 457, all of the form `in <wall clock>s`
+out    <   G4.1 force       114 passed in 1.93s
+out    >   G4.1 force       114 passed in 2.30s
+cmd    grep -rln "f6_results_report" tests/
+out    (nothing)
+cmd    tests/regression/test_f6_deliverable_agrees_with_itself.py, lines 30-31
+out    SUMMARY = docs/F6_utilisation.md ; TABLE = docs/F6_utilisation.csv
+```
+
+Every substantive figure reproduces byte-identically and the top-ten list is stable, so the
+gate's claim is TRUE about the content and FALSE about the file -- and **nothing says which,
+because nothing reads the file.** The document's own header states "Every figure below is read
+from a committed artifact or computed from the built model; none is typed into the document",
+which is true and is not the same statement as "nothing in it changes between runs".
+Section 4 of the report checks numeric tokens in prose outside code fences and tables, a
+domain that excludes all eight of the non-deterministic figures: the recorded
+assertion-domain-blindness shape, in the report's own claim about the deliverable.
+
+A second consequence, because it will cost someone a rebuild: the generator's `--out` defaults
+into the repository and rewrites both CSVs, so **running it dirties the working tree by eight
+lines**, and any `git status --porcelain` clean check taken after a regeneration is red for no
+reason.
+
+**Closed when** section 5's status column is deterministic -- the pass/fail and the counts are
+the measurement, the wall clock is not -- **and** one test asserts the plan's gate on
+`results/F6/floatfea_results_report.md`: regenerate to a temporary path at the current commit
+and compare. **This is an assertion on an existing artifact, not new apparatus**: it is the
+gate `docs/milestones/F6.md:261` already locks. If it is read as apparatus under the F6
+freeze, then the plan row is what moves instead -- say so and strike the gate on the record,
+rather than leaving a locked gate with nothing behind it. Do not leave both.
+
+**NOTHING ELSE BLOCKS.** I ruled every other candidate against CZ0 (a)-(d):
+
+* **(a)** R754 is answered at all four named sites and I killed the revert. C84's funnel now
+  reaches the third divider -- `allowable_axial_compression(60.0, 2.5, 0.0)` raises the named
+  refusal, verified -- and C85's two NaN tuples pin the diameter clause, with all three
+  clauses of `_require_tube` reddening when deleted one at a time. **No figure in
+  `results/F6/floatfea_results_report.md` is wrong**, and I recomputed about sixty of them
+  from the model and the CSVs rather than reconciling them against the report.
+* **(b)** one value ADDED, `F6_API_STRESS_PLAUSIBLE_MIN = 1.0e8`; no value moved, no name
+  removed. Both EH4 directions are pinned by shipped tests and I bisected both. BI3 is
+  discharged on this entry -- the first time in six rounds on that list -- and every figure in
+  it reproduces from the committed script. The defect is in the entry's SCOPE SENTENCE and
+  that is R755.
+* **(c)** the new gate kills the revert in two places, kills the predicate deletion, and kills
+  a last-bit coefficient drift in both directions. Its grid is the clause's domain on the axes
+  it sweeps. The one assertion inside it that cannot fail is C91 and is not the gate's claim.
+  The gate that IS missing is R756.
+* **(d)** eight reds, each traced INDIVIDUALLY to one cause -- section 0a having no parseable
+  row because no run existed for any commit in this round -- which is FC1's state (2) on
+  FC1's own stated reason. CI is red at the reviewed commit with **the same eight ids on
+  Ubuntu**, and the verification ladder is green there with 2206 collected and 0 failed. No
+  STOP.
+
+## Closure items
+
+Verdict 115's list ended at C87, so this one starts at C88. **Of verdict 115's four, C84 and
+C85 are ANSWERED and I verified both; C86 is answered by relocation, correctly, because EK3
+keeps a commit off a closed report; C87 is answered by MEASUREMENT and the measurement is
+right** -- I re-ran it and all four numbers are in the `F6_API_FY_PLAUSIBLE_MIN` entry's own
+Reason paragraph, which the diff did not touch. C77, C78, C79, C82 and the C41-C70 ledger go
+to the closure commit. Fixed once there, not re-reviewed item by item, and the step is not
+held on one.
+
+* **C88.** `tests/test_report_carried.py:1344`. `_generated` walks back from each
+  generated-marker comment to the nearest `## ` heading, so one marker near the bottom of a
+  section marks the WHOLE section generated. In revision 3 that makes section 7 -- `10160` of
+  `48740` characters, 21%, including the entire EG3 trace and `FAILED` list -- invisible to
+  all three guards keyed on `_hand_written`, including
+  `test_no_RUN_ID_appears_outside_THE_GENERATED_CI_SECTIONS` itself, which is why the two
+  surviving `136557593` spellings pass. **Closed when** a generated region is bounded by its
+  own marker rather than by its section heading, or the guard is deleted; it is not extended.
+* **C89.** `tests/test_report_carried.py:1474`. `_ROUNDS_ROW` requires a backticked
+  nine-digit run id, so the generator's own truthful row `| (none) | | | no run at any commit
+  in this round |` reads as zero rows -- indistinguishable from "every row deleted with the
+  header kept", the forged state the guard was built to catch. **Closed when** the legitimate
+  zero-run state has a representation the guard can read, or the guard's message names the
+  ambiguity so the next reader does not re-derive it.
+* **C90.** `floatfea/tolerances.py:3098` and `docs/milestones/F6.md:241`. TABLE 3's two EH4
+  bounds are each stated as the first FAILING value with the wording of the last passing one.
+  Bisected by me: rise `1.3655759328e8` green, `1.365575932867604e8` RED (the gate's `>` is
+  strict); fall `3.56e5` green, `3.55e5` RED. **Closed when** both read as the exclusive
+  bounds they are.
+* **C91.** `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:1424`. The
+  branch-label membership assertion cannot fail: the function returns one of exactly those
+  four strings by construction. **Closed when** it asserts something the grid could falsify --
+  that both branch families and both local states OCCUR in the grid is true and non-vacuous,
+  I measured all four labels -- or it is deleted.
+* **C92.** `results/F6/floatfea_results_report.md:321`. The `C_m` lever row names one of TWO
+  tied members; `hub4:buoy10_arm` ROOT is identical to the digit. Section 6 says so explicitly
+  about the four platform arms, so the document knows the shape. **Closed when** the row says
+  it is a tie or names the set.
+* **C93.** `docs/milestones/F6.md:84`. The plan records post-lock directives verbatim "so the
+  plan and the directives do not have to be read side by side", and carries FA0 to FB5.
+  **FC0 and FC2 are nowhere in the repository** -- FC2 appears only in verdicts, the step
+  report and one generator docstring. I was asked to rule on a deviation from FC2's wording
+  and could rule only on the wording the invocation quoted. **Closed when** the FC series sits
+  in that subsection like the FA and FB series.
+* **C94.** `docs/reports/F6/step-2.md` section 4. "Nothing in the document is typed" is true;
+  the command beside it scans prose outside code fences and tables, which excludes the eight
+  figures in the document that change between runs. **Closed when** the claim's domain and the
+  claim are the same statement.
+* **C95.** `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:1419`. The grid's
+  `D/t` floor is `5.0` where `_require_tube` admits `D/t > 2`. It is sufficient -- below
+  `D/t = 60` the clause returns `F_y` unreduced, so `F_xc >= 2.0e8` there, and my own dense
+  grid from `2.001` confirms `0 refused` -- and the reason is not written beside the grid.
+  **Closed when** it is.
+* **C96.** `floatfea/checks/api_wsd.py:263`. `e` is a load-bearing input with a load-bearing
+  unit and no predicate anywhere in the module. Measured one variable at a time at the shipped
+  station: `e / 10` moves `F_a` by `10.0x` and `U` by `7.5x`; `e x 1000` moves `F_a` by
+  `2.88x` and moves the published `axial_branch` label from `elastic` to `inelastic`; no
+  refusal and no diagnostic in either case. This predates the revision, and **C60 was ruled a
+  closure item for the identical shape on `F_y`**, so it is filed the same way. **Closed when**
+  `e` reaches the funnel with a counter-case, or the module records that it is deliberately
+  unguarded and why.
+* **C97.** `results/F6/floatfea_results_report.md:176`. Section 5's omission of measured
+  residuals is CORRECT under BP0 and I ruled it so in section 6. What satisfies FC2 as well is
+  a MARGIN the generator computes at the commit it publishes -- worst over ceiling, as a ratio
+  with its operating point -- which is regenerated by rule. **Closed when** that margin is
+  published, or FC2's "each with its measured margin" is formally reduced.
+* **R735, R736, R738, C34 to C40, the `0.2240`/`0.2239` item, R712 to R717, C2 to C15, C24 to
+  C33, C41 to C70, C77 to C79, C82** -- still open, carried as a list, not re-reviewed item by
+  item. **C45 still needs its own standalone `process:` commit** and section 8 is the fourth
+  verdict running to say so, now with a second contradiction to name.
+
+## Tolerances touched
+
+```
+cmd    git diff 5c71cb4..HEAD -- floatfea/tolerances.py | grep -E "^[+-].*Final\["
+out    +F6_API_STRESS_PLAUSIBLE_MIN: Final[float] = 1.0e8
+cmd    git diff --stat 5c71cb4..HEAD -- floatfea/tolerances.py
+out    71 insertions, 0 deletions
+cmd    git diff 5c71cb4..HEAD | grep -E "^\+.*(xfail|skipif|pytest.skip|deselect|--ignore)"
+out    the only matches are prose lines quoting earlier rounds' own grep commands
+cmd    python scripts/measure/r754_stress_vs_grade.py           (BI3, run by me)
+out    all three tables, and every figure in the new entry and the plan row reproduces:
+out    12.066%, 21357 of 177006, 138.4383, 248.0006, 292.9167 MPa, 1.3655759329e+08,
+out    3.550000e+05, 281.6901x, 4.2e8, and the grade-independence crossover at D/t 252.5
+judge  **ONE NAME ADDED, NO VALUE MOVED, NOTHING STOPPED ASSERTING.** The addition is a
+       WIDENING of the effective floor on one function, `2.0e8 -> 1.0e8`, and it is the
+       correct direction for the correct reason: the quantity guarded is a reduced stress and
+       `2.0e8` refused sections the clause admits. The adversarial case is section 4's
+       continuum grid and section 5's bisections, at configurations the diff did not choose.
+       **It is the `e` axis that found R755, and nothing in the diff pointed at it.**
+```
+
+| name | old | new | form | counter | justification located | ruling |
+|---|---|---|---|---|---|---|
+| `F6_API_STRESS_PLAUSIBLE_MIN` | -- | `1.0e8` | pascals, **STRUCTURAL**; a refusal threshold on an internal REDUCED STRESS | none, correctly (AO2) -- a refusal edge, not an agreement ceiling | `floatfea/tolerances.py:3030-3103`; `docs/milestones/F6.md:241`; both regenerated by `scripts/measure/r754_stress_vs_grade.py` (BI3 discharged, verified by me) | **CORRECT VALUE, CORRECT FORM, AND THE SCOPE SENTENCE IS R755.** The bound is attained at a corner -- `1.365575932867604e+08` at `F_y = 2.0e8`, `D/t = 300` -- which I confirmed over a continuum of `1194291` points, `0` refused, and bit-for-bit against the clause worked by hand. That attainment is exactly what distinguishes it from `C_m`'s resolution, whose infimum is `0` attained, and it is why a constant is right here where R750 needed a function. Both EH4 directions pinned by shipped tests and bisected by me: rise to `1.3655759328e8` green and the binding value red; fall to `3.56e5` green and `3.55e5` red. The Reason paragraph's "a floor beneath EVERY admissible configuration" is false on `e` -- R755 -- and the two published bounds are off by their endpoint -- C90. |
+| `F6_API_FY_PLAUSIBLE_MIN` | `2.0e8` | unchanged | pascals, STRUCTURAL; a refusal threshold on a GRADE | none (AO2) | `floatfea/tolerances.py:3004-3029` | **UNMOVED, AND NOW CORRECTLY SCOPED.** It guards five public `F_y` entries and no longer stands in front of a reduced stress. The entry records that its sentence was false downstream between C72 and R754 rather than being quietly left true -- BP0 done the right way round. C87's four boundaries are in this entry's Reason paragraph and I verified all four are there. |
+| `F6_API_FY_PLAUSIBLE_MAX` | `1.0e9` | unchanged | pascals, STRUCTURAL | none (AO2) | same entry | **UNMOVED**, and now the upper edge of BOTH predicates. Unreachable by `F_xc`, which only falls from `F_y`. |
+| `F6_API_CLAUSE_AGREEMENT` | `1.0e-14` | unchanged | dimensionless, RELATIVE | `F6_API_CLAUSE_AGREEMENT_COUNTER` | same block | **UNMOVED.** Its declared domain -- `D/t` 5.00 to 300.00 over six grades -- is the set R754 was measured against, and `0` of `177006` points now raise where `21357` did. C61 still open. |
+| `F6_API_CLAUSE_AGREEMENT_COUNTER` | `3.0e-13` | unchanged | dimensionless; a floor beneath the gate's own points | n/a, it IS the counter (AO2) | same block | **UNMOVED.** |
+| `F6_API_CLAUSE_INJECTION_EPS` | `1.0e-10` | unchanged | dimensionless, STRUCTURAL | none (AO2) | same block | **UNMOVED.** C62 still open. |
+| `F6_API_COUNTER_MARGIN_MAX` | `2.0` | unchanged | dimensionless, STRUCTURAL | none (AO2) | same block | **UNMOVED**, still pinned from above at the solved `138.05`. |
+| `F6_API_UTILISATION_COUNTER_FACTOR` | `1.1` | unchanged | dimensionless, STRUCTURAL | none (AO2) | same block | **UNMOVED.** |
+| everything in the F4 block and earlier | -- | unmoved | -- | -- | -- | Not touched in this range and not re-swept. |
+
+## Carried
+
+Verdict 115 (`a16eb28`, judging `5c71cb4`) was a **HOLD** carrying one blocking item, R754,
+and four closure items C84 to C87. Status of every one, read from the verdicts rather than
+from memory. **The report's header names `verdict 115 @ a16eb28` and that IS the latest
+verdict** -- the one comparison, taken: `git log -1 --format=%h -- docs/reviews/F6/step-2.md`
+is `a16eb28`.
+
+* **R754 -- ANSWERED AND CLOSED, by the first of the two routes the condition offered.** All
+  five conditions land, and I checked each rather than reading the claim.
+  **(1) The four sites, site by site.** Site 1 `floatfea/checks/api_wsd.py:230` -> the call is
+  `_require_plausible_stress`, now at `:273`, and the false "therefore already inside the
+  range" docstring is replaced; the `grep` shows one site moved and five did not. Site 2
+  `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:1398` -> the one-grade gate
+  is gone and the grid gate is in its place, and **reverting the predicate gives `2 failed`**,
+  so it catches what it was written for. Site 3 `:1452` -> unchanged by design and now
+  consistent, because the two assertions are about different constants. Site 4
+  `floatfea/tolerances.py:3010` and `docs/milestones/F6.md:239` -> re-measured in the same
+  commit (BP0), both recording that the sentence was false downstream. **Section 2a declares
+  the nine untouched sites one row each**, which is the half of "a condition that names sites
+  is closed site by site" that usually goes missing.
+  **(2) The adversarial case is the grid.** It is, on two axes of three, and I extended it to
+  a continuum. The third axis is R755.
+  **(3) FC2's results report.** All nine sections, against a condition asking for one to
+  seven, and not one wrong figure in it.
+  **(4) Nothing else gated revision 3.** C84 and C85 were brought forward into the same commit
+  and both are correct, which I verified by deleting each `_require_tube` clause one at a time.
+  **(5) The nine reds cleared by the revision existing.** They did --
+  `test_a_blocking_item_is_not_routed_to_4a` and
+  `test_the_generator_would_catch_a_row_under_the_wrong_number` are green at this commit, and
+  my verdict-115 finding format was the fix. **It does not carry.**
+* **C84 -- ANSWERED.** `allowable_axial_compression(60.0, 2.5, 0.0)` now raises the named "not
+  a tube" refusal instead of `ZeroDivisionError`; `_require_plausible_fy` and `_require_tube`
+  both run before the division. The route taken is the one the condition named first.
+* **C85 -- ANSWERED, AND THE CASE IS THE ONE I NAMED.** `(nan, 0.18)` and `(2.5, nan)` are in
+  the tuple, and deleting any one of the three clauses of `_require_tube` now gives
+  `1 failed` -- I ran all three. Before those two tuples the first clause was decoration at
+  `77 passed`.
+* **C86 -- ANSWERED BY RELOCATION, and the relocation is correct.** The attribution is
+  corrected in revision 3 rather than by editing revision 2's prose, because EK3 keeps a
+  commit off a report that already has its verdict. The figure was always mine.
+* **C87 -- ANSWERED BY MEASUREMENT, and the measurement is right.** All four of `3.55e5`,
+  `3.55e11`, `2.35e8` and `9.6e8` are in the `F6_API_FY_PLAUSIBLE_MIN` entry's own Reason
+  paragraph, from C60's repair, which the diff that prompted the item did not touch. **My own
+  first check said two of four and the fault was my regex, not the tree.** Recorded, because a
+  reviewer's wrong figure becoming an input to the tree is what C83 was.
+* **C41 to C70, C77 to C79, C82 -- NOT IN THIS COMMIT, STATED AS OUTSTANDING, AND THEY GO TO
+  THE CLOSURE COMMIT**, where CZ0 puts them. A closure item does not block and is not
+  re-reviewed item by item, so the non-delivery is not a finding. **C45 is the one I will not
+  let pass in silence** and section 8 is where I say so for the fourth time.
+* **THE GENERATED SECTIONS -- LANDED.** Sections 0, 0a, 7's answered table and 8 carry
+  generated markers; section 0's CI table is the generator's and its ten named failures match
+  the `9af9b75` run row for row; section 0a is the generator's truthful empty answer. C88 and
+  C89 are about the guards that read them, not about the sections.
+* **FC1 AND MY OWN INSTRUCTIONS -- UNTOUCHED IN THIS RANGE.** Section 3. No STOP-class finding.
+* **THE SCHEDULE -- THE TRIGGER IS NOW ARMED, AND I SAY SO HERE RATHER THAN AT THE CLOSURE.**
+  Working target 22 October, committed 28 October, today 9 October. Step 1 closed carrying
+  nothing; **step 2 closes carrying two.** The escalation in `CLAUDE.md` is for two CONSECUTIVE
+  steps closing with blocking items, so the count is one and step 3 is the step that arms it.
+  Both carried items are small and bounded -- R755 is a scope sentence at three sites or a
+  predicate on one argument; R756 is a deterministic status column and one regeneration
+  assertion -- so **my recommendation is to hold the 22 October working target and take both
+  in step 3's first commit**, before any new step-3 content. If step 3 closes carrying either,
+  the choice to state is slip to the committed 28 October or reduce step 3's scope, and it is
+  stated the day it is known.
+
+## Next step opens when
+
+**STEP 2 IS CLOSED. PASS.** This was round 3 of 3 under CZ0's cap, so the step closes here and
+step 3 may open. What travels:
+
+1. **R755 and R756 carry by name into step 3's `Carried` section and stay BLOCKING there.**
+   They are answered before any new step-3 content, each at the sites named in the Findings
+   section, site by site, with the diff hunk for each or a statement that the site was left
+   and why. R756's condition has two halves and **half of an item is not the item**: the
+   deterministic status column AND the assertion.
+2. **The closure items C88 to C97, plus the open ledger, go into the step's closure artifact
+   as a list.** Fixed once, in one closure commit, not re-reviewed item by item. **That closure
+   commit changes neither a gate nor a tolerance if it is prose only** -- if it moves either,
+   EQ0 makes it reviewed, and CZ1 (i)-(iv) applies to it in any case.
+3. **The eight reds clear at the follow-on commit that reports run `38027858544` in section
+   0a**, and that is the implementer's own CZ1 (iii) measurement to paste, not mine. **If they
+   do not clear, that is a finding in the guards and not in the work** -- C88 and C89 are the
+   two places I would look first.
+4. **Nothing in this verdict requires new apparatus.** R756's assertion is the gate the locked
+   plan already names; if the next reader rules it apparatus under the F6 freeze, then
+   `docs/milestones/F6.md:261` is what moves and the gate is struck on the record rather than
+   left standing with nothing behind it. Say which; do not leave both.
+
+**WHAT I WILL NOT ACCEPT AT STEP 3.** Verdict 115's five, minus the two that landed, plus one.
+A count or a clause attribution in a published table derived from a PROXY rather than from the
+quantity. A measurement block in `floatfea/tolerances.py` that no committed script regenerates
+-- **and this round that item finally came off the list, so it stays off**. A threshold
+declared without its boundary in the direction that weakens it. A refusal whose admissible
+domain is asserted at one point of the parameter space it is applied over. **And new: a
+JUSTIFICATION WHOSE QUANTIFIER IS WIDER THAN THE SWEEP THAT MEASURED IT.** "Every admissible
+configuration" is a claim about a product space, and C60, R754 and R755 are now three
+instances of one thing in one module -- the sentence is right about the axes the author swept
+and silent about the one with no predicate on it. The cheap fix is always the same: write the
+quantifier as the axes actually swept, and name the rest.
+
+## The adversarial corpus (BE3)
+
+**NO BATCH THIS ROUND, AND THE REASON IS A RULE AND NOT A BUDGET.** `CLAUDE.md` EG4(e) pauses
+corpus batches until 28 October "except mutation work on **F4's load-mapping gate** and
+**EB6's label-provenance gate** -- the two surfaces where a miss would reach a member force".
+This round's subject is API section 3.2.2's refusal funnel and a results document; neither is
+those two surfaces. Batch 47 claimed the EB6 exception for the published branch label and I
+could have stretched it again, but the pause exists precisely to stop a round spending on a
+surface it does not name.
+
+**So the coverage measurement for this round is zero new entries, and that is the honest
+number.** The series stands at `1 of 16`, `9 of 21`, `4 of 11`, `8 of 13`, `5 of 22`,
+`9 of 25`, `9 of 19`, `4 of 22`, `6 of 25` -- and EG4(e)'s own justification was that the last
+round's misses were all outside the element. **What replaced the batch this round is the
+continuum grid and the `e` axis**, which is where R755 came from, and that is the same
+measurement by a different instrument: a configuration the author did not choose. The grid cost
+about a second to run, and the regeneration that found R756 cost about twenty.
+
+**AND THE INSTRUCTION CONFLICT IS NAMED RATHER THAN RESOLVED BY ME.** My agent definition says
+"Add unseen entries at every review" and "Your corpus rounds continue unchanged (BE3)";
+`CLAUDE.md` EG4(e) says they pause. I followed `CLAUDE.md`. That is the second half of C45, and
+section 8 sends it out.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6 step 2
 Reviewed commit: ba1527ed20f87b7d258eea460bb48817e90db102
 Verdict: HOLD
 **Reviewed commit: `5c71cb4`** (branch `F3`, tree clean when I judged it; my corpus batch 47 is
