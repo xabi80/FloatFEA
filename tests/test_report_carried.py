@@ -1442,9 +1442,14 @@ _ROUNDS_ROW = re.compile(r"^\|\s*`(\d{9,})`\s*\|[^|]*\|[^|]*\|\s*(.+?)\s*\|\s*$"
 # traced by hand at four consecutive commits.
 #
 # It is a LOCATOR MISREADING ITS INPUT (EK2), not a missing assertion: the repair
-# is to parse the row the generator writes. The claim that row makes -- that no run
-# exists at any commit in this round -- is still CHECKED against `gh` below, so
-# reading it is not trusting it.
+# is to parse the row the generator writes.
+#
+# **THE ROW IS ACCEPTED, NOT VERIFIED (R770), AND THIS COMMENT SAID THE OPPOSITE.**
+# It claimed the row's claim "is still CHECKED against `gh` below". It is not:
+# `ci_table_defects` returns before its lookup loop, because that loop iterates
+# `rows` and this row is not in `rows`. The sentence survived an earlier draft
+# that did check it, and it is the kind of sentence that stops the next reader
+# looking. What is covered and what is not is stated at the branch itself.
 _ROUNDS_NO_RUN = re.compile(
     r"^\|\s*\(none\)\s*\|\s*\|\s*\|\s*no run at any commit in this round\s*\|\s*$",
     re.M,
@@ -1481,21 +1486,42 @@ def ci_table_defects(zero: str, lookup) -> list[str]:
     if _ROUNDS_HEADER not in zero:
         return ["the 0a table is missing its header"]
     # C89: THREE STATES, NOT TWO. A table with the generator's own zero-run row is
-    # legitimate; a table with a header and NEITHER run rows nor that row is the
-    # forged "every row deleted" state. Distinguishing them is the whole repair --
-    # and the zero-run row's claim is verified rather than accepted, by asking the
-    # injected lookup for the round's runs.
+    # legitimate; a header with NEITHER run rows nor that row is the forged "every
+    # row deleted" state. Distinguishing them is the repair.
     if not rows:
         if not _ROUNDS_NO_RUN.search(zero):
             return ["the 0a table has a header and no rows"]
-        # The generator's own zero-run row. There is no per-row `gh` claim to
-        # check here -- the row names no run -- and VERIFYING THE ROW'S CLAIM
-        # AGAINST `gh` WOULD BE EXTENDING THIS GUARD, which `CLAUDE.md` forbids
-        # ("an existing guard that fails false is fixed or deleted, never
-        # extended"). It would also redden on every closed round, since runs
-        # accumulate after a report's verdict while section 0a describes the
-        # round as it was. The repair is the reading; the writing is the
-        # generator's.
+        # **WHAT THIS BRANCH COVERS, AND WHAT IT DOES NOT (R770).** Before C89 an
+        # empty table was always a defect, so it rejected the legitimate zero-run
+        # table AND a forged one written in its place. The repair admits the
+        # legitimate one, and that reopens a fifth spelling of the fourth forged
+        # edit in this guard's docstring: a `(none)` row written while runs exist.
+        #
+        # NOT COVERED, DECLARED RATHER THAN DESCRIBED AS CLOSED: a `(none)` row
+        # whose claim is false AND whose own generated section 0 names no run
+        # either. There is no sound `gh` check for it. `rounds_runs` is computed
+        # against current history and DRIFTS UPWARD after a round closes -- at
+        # verdict 115's anchor it returned 0 runs when section 0a was generated and
+        # 6 afterwards -- so a lookup would redden every closed round. Drift adds
+        # runs and never removes them, so no threshold fixes it, and building a
+        # different source of truth would be the forbidden extension.
+        #
+        # COVERED, by a cross-check this function already performs on the text it
+        # already has: section 0 and section 0a are two halves of ONE generated
+        # block, and `_SECTION_0_RUN` already parses section 0's own
+        # `Run `<id>`, ... conclusion ...` lines. If section 0 names a run while
+        # 0a says no run exists, the halves contradict each other -- no network,
+        # no drift, and the same shape as the failing-name cross-check below. That
+        # is a READING of the input, not a new reach, which is why it is not an
+        # extension: it calls nothing, opens nothing, and uses a locator this
+        # module already defines.
+        named = _SECTION_0_RUN.findall(zero)
+        if named:
+            return [
+                "the 0a table says `no run at any commit in this round` and "
+                f"section 0 of the same generated block names run {named[0]} -- "
+                "the two halves of one generated section contradict each other"
+            ]
         return []
     out = []
     for run_id, stated in rows:
@@ -2858,6 +2884,68 @@ def test_FE0_the_FORGED_empty_0a_table_still_reddens() -> None:
     assert ci_table_defects(header_only, _TRUTH.get) != ci_table_defects(
         legitimate, _TRUTH.get
     ), "a legitimate zero-run table and a forged empty one read the same"
+
+
+def _zero_run_0a() -> str:
+    """Section 0a as `scripts/ci_section.py` emits it when the round has no runs."""
+    return (
+        "## 0a. Runs since the commit verdict 51 judged\n\n"
+        + _MARK
+        + "\n\n"
+        + _ROUNDS_HEADER
+        + "\n|---|---|---|---|\n"
+        + "| (none) | | | no run at any commit in this round |\n"
+    )
+
+
+def test_R770_a_forged_zero_run_row_is_caught_when_section_0_CONTRADICTS_it() -> None:
+    """C89's repair admitted a fifth forged state; this is the half that is closable.
+
+    Section 0 and section 0a are two halves of ONE generated block. A `(none)` row
+    written while section 0 names a run for the same round is the two halves
+    disagreeing, and `_SECTION_0_RUN` already parses those lines -- so the check is
+    a reading of the text `ci_table_defects` is already handed, with no network and
+    no dependence on `rounds_runs`, which drifts upward after a round closes.
+    """
+    legitimate = _zero_run_0a()
+    assert ci_table_defects(legitimate, _TRUTH.get) == [], (
+        "the generator's own zero-run row, with nothing in section 0 to contradict "
+        "it, is still read as a defect -- that is C89 unfixed"
+    )
+
+    forged = (
+        "## 0. CI at `abc1234`\n\n"
+        + _MARK
+        + "\n\nRun `35563850428`, event push, conclusion **success**.\n\n"
+        + legitimate
+    )
+    found = ci_table_defects(forged, _TRUTH.get)
+    assert found and "contradict each other" in found[0], (
+        "a `(none)` row written while section 0 of the same generated block names a "
+        f"run for this round is not caught; ci_table_defects returned {found!r}"
+    )
+
+
+def test_R770_the_UNCOVERED_state_is_DECLARED_and_not_described_as_closed() -> None:
+    """The residual, asserted so it is a fact of the suite and not a sentence.
+
+    A `(none)` row whose claim is false AND whose section 0 names no run either is
+    NOT caught, and will not be: `rounds_runs` is computed against current history
+    and drifts upward after a round closes -- at verdict 115's anchor it returned 0
+    runs when section 0a was generated and 6 afterwards -- so a `gh` lookup would
+    redden every closed round, and drift adds runs without ever removing them, so
+    no threshold fixes it.
+
+    **If this test ever fails, the hole has been closed and that is good news** --
+    delete it and record how, because the comment at `ci_table_defects`'s zero-run
+    branch says it cannot be done soundly and would then be the stale sentence.
+    """
+    assert ci_table_defects(_zero_run_0a(), _TRUTH.get) == [], (
+        "the fully-consistent forgery is now caught, which is better than this "
+        "test expects. Delete this test and record how it was done -- the comment "
+        "at ci_table_defects's zero-run branch claims it cannot be, and that "
+        "comment is now the stale one."
+    )
 
 
 def test_FE0_a_marker_no_longer_exempts_prose_ABOVE_it() -> None:
