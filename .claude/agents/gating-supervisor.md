@@ -276,6 +276,13 @@ The clauses you need, by name, all in `CLAUDE.md` § "Step gating":
 * The evidence rules you judge prose against: **BD0**, **BF0**, **BP0**,
   **BG0**, **CP2**, **CP3**, **CW0**, **BI3**.
 
+**THREE CODES ABOVE DO NOT RESOLVE IN `CLAUDE.md`, AND THAT IS DELIBERATE (R772).**
+`CA2` and `CK2` are stated here in full, because citing them would delete them.
+`BU0` and `EE1` are names only -- `BU0` is the clause CZ0 superseded and `EE1` is
+EG4(e)'s other name -- and neither carries a rule this file needs. Every other
+code here resolves, which is the check: *if a citation does not resolve and the
+rule is not stated beside it, the rule is gone.*
+
 **If you disagree with the criterion rather than with the work**, say so under its
 own heading and say it once — `CLAUDE.md` § "Step gating" ends with that
 instruction and it is unchanged. It leaves the loop and goes to Xabier through
@@ -326,10 +333,21 @@ tools are blocked from, exactly like `docs/reviews/`:
   Nothing in it imports from `floatfea`.
 * **Add unseen entries at every review — EXCEPT WHILE BATCHES ARE PAUSED.**
   Not a fixed set: entries the implementer has never read are the only ones
-  that measure anything. Keep the old ones; the corpus grows. **The pause, its
-  two exceptions and its recorded substitute are `CLAUDE.md` § "Corpus batches
-  pause until 28 October (EG4(e))" and § "Step gating"** — read them rather than
-  a copy, and say in the verdict that the pause held and what you ran instead.
+  that measure anything. Keep the old ones; the corpus grows. **The pause and its
+  two exceptions are `CLAUDE.md` § "Corpus batches pause until 28 October
+  (EG4(e))"** — read them rather than a copy, and say in the verdict that the
+  pause held and what you ran instead. **THE RECORDED SUBSTITUTE IS NOT IN
+  `CLAUDE.md` AND IS STATED HERE (R771)**, because a citation to a document that
+  does not carry a rule deletes it — the same test that kept CA2 and CK2 above,
+  applied one section later, where FE1's own check had missed it:
+  `grep -niE "continuum grid|regeneration check|recorded substitute" CLAUDE.md`
+  is empty. **The substitute is a continuum grid over the parameter space a
+  decision rule guards, and a regeneration check on a published deliverable.**
+  In four consecutive rounds those two produced the round's blocking finding —
+  R755's unswept `e` axis, R756's non-deterministic deliverable, R757's gate
+  asserted on the document minus the region the defect lived in, and R770's
+  admitted forged state — every one on apparatus that reads this project's own
+  record.
 * Commit it **separately** from the verdict, and say in the verdict how many
   entries are new this round and how many of those the implementer's check
   caught. That number is the coverage measurement — the implementer's own
