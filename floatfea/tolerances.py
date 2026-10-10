@@ -3031,6 +3031,46 @@ F6_API_FY_PLAUSIBLE_MIN: Final[float] = 2.0e8
 # Set: 2026-10-09, F6 step 2
 F6_API_FY_PLAUSIBLE_MAX: Final[float] = 1.0e9
 
+# CLASS: STRUCTURAL -- the floor for a STRESS argument, as against a GRADE. A refusal
+# threshold on an input, firing by design on a wrong unit, so no counter-case (AO2).
+#
+# **R754: THE GRADE RANGE WAS APPLIED TO A REDUCED STRESS AND FIRED ON THE MODULE'S OWN
+# INTERMEDIATE.** `allowable_axial_compression` substitutes `F_xc` for `F_y` and hands it to
+# `column_slenderness_parameter`, which C72 had refusing anything outside the plausible
+# GRADE range. `F_xc` is section 3.2.2(b)'s REDUCED stress and is below the grade by
+# construction, so:
+#
+#     allowable_axial_compression(60.0, 2.5, 0.0125, 235e6)
+#     -> ValueError: F_y = 182139402.8186804 Pa is outside the plausible range ...
+#
+# at `D/t = 200`, inside the clause's own `D/t <= 300`, from a grade given correctly in
+# pascals. Bisected on the module's own `F_xc`, the refusal starts at `D/t = 138.4383` for
+# S235 and `248.0006` for S275, never for S355 and above; **every `F_y` below
+# `292.9167 MPa` fires somewhere inside the clause's range, and `12.1%` of the six-grade
+# sweep the `F6_API_CLAUSE_AGREEMENT` entry declares now raises.**
+#
+# The figure that entry carried -- `F_xc = 242.39 MPa` at `D/t = 300`, `1.21x` of margin --
+# was right AT S355 and is a function of the grade. That is EU1/R694's shape verbatim, and
+# the gate added to deny it was itself written at one grade literal.
+#
+# Reason for 1.0e8: it is a floor beneath EVERY admissible configuration, which is R694's
+# repair shape. The minimum `F_xc` over the admissible grade range at the clause's own
+# `D/t = 300` limit is `136557593.2867604 Pa`, at the grade floor `2.0e8`:
+#
+#     F_y = 200.0 MPa -> F_xc = 136.558 MPa   <- the minimum, and the binding case
+#     F_y = 235.0 MPa -> F_xc = 160.455 MPa
+#     F_y = 275.0 MPa -> F_xc = 187.767 MPa
+#     F_y = 355.0 MPa -> F_xc = 242.390 MPa
+#     F_y = 690.0 MPa -> F_xc = 420.000 MPa
+#
+# so `1.0e8` clears the binding case by `1.3655759328676038x`. EH4, both directions: it may
+# RISE only to `136557593.2867604` before a legitimate slender section at the grade floor is
+# refused, and it
+# may FALL to `3.55e5` -- a kPa S355 -- before a unit error is admitted, which is `282x`
+# below the declared value.
+# Set: 2026-10-09, F6 step 2
+F6_API_STRESS_PLAUSIBLE_MIN: Final[float] = 1.0e8
+
 # CLASS: STRUCTURAL -- the locked plan's counter-case per check: "an injected input that
 # must push the utilisation past 1.0". A load multiplier, not a ceiling, so no counter-case
 # (AO2).

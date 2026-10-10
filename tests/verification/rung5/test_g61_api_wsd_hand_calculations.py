@@ -60,6 +60,7 @@ from floatfea.tolerances import (
     F6_API_COUNTER_MARGIN_MAX,
     F6_API_FY_PLAUSIBLE_MAX,
     F6_API_FY_PLAUSIBLE_MIN,
+    F6_API_STRESS_PLAUSIBLE_MIN,
     F6_API_UTILISATION_COUNTER_FACTOR,
 )
 
@@ -1364,7 +1365,6 @@ def test_EVERY_entry_point_that_takes_F_y_refuses_a_wrong_unit() -> None:
         "section_class": lambda fy: section_class(D_OUTER, wall, fy),
         "allowable_axial_tension": allowable_axial_tension,
         "allowable_shear": allowable_shear,
-        "column_slenderness_parameter": lambda fy: column_slenderness_parameter(fy, E),
         "local_buckling_stress": lambda fy: local_buckling_stress(D_OUTER, wall, fy, E),
         "allowable_bending": lambda fy: allowable_bending(D_OUTER, wall, fy, E),
         "allowable_axial_compression": (
@@ -1374,7 +1374,7 @@ def test_EVERY_entry_point_that_takes_F_y_refuses_a_wrong_unit() -> None:
             axial_n=-1.0e6, moment_y_nm=1.0e6, wall_m=wall, k_l_over_r=121.5, fy=fy
         ),
     }
-    assert len(calls) == 8, sorted(calls)
+    assert len(calls) == 7, sorted(calls)
     for name, call in calls.items():
         call(FY)  # the shipped grade is accepted everywhere
         for bad in (355e3, 355.0, 355e9, 0.0):
@@ -1382,34 +1382,72 @@ def test_EVERY_entry_point_that_takes_F_y_refuses_a_wrong_unit() -> None:
                 call(bad)
             assert "pascals" in str(e.value), (name, bad)
 
-
-def test_the_INTERNAL_F_xc_call_stays_inside_the_range_at_every_admissible_section() -> None:
-    """The refusal must not fire on a value this module computed for itself.
-
-    `allowable_axial_compression` substitutes `F_xc` for `F_y` and passes it to
-    `column_slenderness_parameter`, which now refuses an implausible `F_y`. So the question is
-    whether `F_xc` can fall below the range on a section the clause admits.
-
-    # expected: F_xc is monotone falling in D/t, and at the clause's own limit D/t = 300 it is
-    # 242.39 MPa -- above the 200 MPa edge. Beyond 300 the axial clause refuses first, so the
-    # internal call never sees a value outside the range.
-    """
-    at_limit = local_buckling_stress(D_OUTER, D_OUTER / 300.0, FY, E)
-    assert at_limit > F6_API_FY_PLAUSIBLE_MIN, (
-        f"F_xc at the clause's own D/t = 300 limit is {at_limit:.6e} Pa, below the "
-        f"plausible-F_y floor {F6_API_FY_PLAUSIBLE_MIN:.6e}. The internal substitution "
-        "would then refuse a value this module computed, which is the refusal firing on "
-        "itself rather than on a caller's unit error."
+    # **AND THE EIGHTH TAKES A STRESS, NOT A GRADE (R754).** `column_slenderness_parameter`
+    # is called internally with `F_xc`, which is below the grade by construction, so it
+    # carries the STRESS predicate and refuses with its own message. Applying the grade
+    # range to it is what fired on the module's own intermediate.
+    column_slenderness_parameter(FY, E)
+    for bad in (355e3, 355.0, 355e9, 0.0):
+        with pytest.raises(ValueError, match="is a STRESS and not a grade") as e:
+            column_slenderness_parameter(bad, E)
+        assert "pascals" in str(e.value), bad
+    # and it accepts every F_xc the clause can produce, down to the binding case
+    column_slenderness_parameter(
+        local_buckling_stress(D_OUTER, D_OUTER / 300.0, F6_API_FY_PLAUSIBLE_MIN, E), E
     )
-    for d_over_t in (61.0, 100.0, 200.0, 300.0):
-        f_xc = local_buckling_stress(D_OUTER, D_OUTER / d_over_t, FY, E)
-        assert F6_API_FY_PLAUSIBLE_MIN <= f_xc <= F6_API_FY_PLAUSIBLE_MAX, (d_over_t, f_xc)
-        assert allowable_axial_compression(60.8, D_OUTER, D_OUTER / d_over_t, FY, E)[1] == (
-            "inelastic_local"
-        )
-    # and past the clause's limit the AXIAL refusal fires first, not the F_y one
+
+
+def test_the_INTERNAL_F_xc_call_cannot_REFUSE_over_the_WHOLE_grade_x_SLENDERNESS_GRID() -> None:
+    """R754: this assertion was written at ONE grade literal and that is why it missed.
+
+    `allowable_axial_compression` substitutes section 3.2.2(b)'s `F_xc` for `F_y` and hands
+    it on. The version of this test that shipped asserted `F_xc > F6_API_FY_PLAUSIBLE_MIN`
+    at `FY = 355e6` only -- and changing that single literal to `235e6` reddened it with its
+    own message, because **the margin is a function of the grade and the test sampled one
+    point of it.** EU1/R694's shape: a constant that is right at one configuration.
+
+    Measured before the repair: the refusal fired from `D/t = 138.4383` at S235 and
+    `248.0006` at S275, every grade below `292.9167 MPa` fired somewhere inside the clause's
+    range, and `12.1%` of the declared six-grade sweep raised.
+
+    # expected: over every admissible grade and every `D/t` the clause admits, section
+    # 3.2.2 returns rather than refusing -- and the refusal still fires past `D/t = 300`,
+    # which is the axial clause's own limit and not this predicate's.
+    """
+    grades = (F6_API_FY_PLAUSIBLE_MIN, 235e6, 275e6, FY, 420e6, 460e6, FY_HIGH)
+    checked = 0
+    for fy in grades:
+        for tenths in range(50, 3001):
+            d_over_t = tenths / 10.0
+            f_a, branch = allowable_axial_compression(121.5, D_OUTER, D_OUTER / d_over_t, fy, E)
+            assert f_a > 0.0, (fy, d_over_t, f_a)
+            # **AND THE BRANCH IS A FUNCTION OF THE GRADE TOO**, which is R754's own
+            # lesson applied to this assertion: at the grade floor, `C_c = 143.9` and
+            # `KL/r = 121.5` is INELASTIC, where at S355 the same `KL/r` is elastic. An
+            # assertion naming one label would have been the same defect again.
+            assert branch in ("elastic", "elastic_local", "inelastic", "inelastic_local"), (
+                fy,
+                d_over_t,
+                branch,
+            )
+            checked += 1
+    assert checked == len(grades) * 2951, checked
+
+    # THE BINDING CASE, named: the smallest `F_xc` the clause can produce is at the grade
+    # FLOOR and the clause's own `D/t` limit, and the declared stress floor sits below it.
+    binding = local_buckling_stress(D_OUTER, D_OUTER / 300.0, F6_API_FY_PLAUSIBLE_MIN, E)
+    assert binding > F6_API_STRESS_PLAUSIBLE_MIN, (
+        f"the smallest F_xc the clause can produce is {binding:.6e} Pa, at the grade floor "
+        f"and D/t = 300, and the stress floor is {F6_API_STRESS_PLAUSIBLE_MIN:.6e}. A floor "
+        "above it refuses a section the clause admits, which is R754."
+    )
+    # EH4's other direction, as the measured value rather than a second threshold: the
+    # floor may rise only to the binding case, and this is what that case is.
+    assert binding == 136557593.2867604  # not-a-tolerance: the hand value, exact
+
+    # past the clause's own limit the AXIAL refusal fires, not this predicate
     with pytest.raises(ValueError, match="exceeds 300"):
-        allowable_axial_compression(60.8, D_OUTER, D_OUTER / 600.0, FY, E)
+        allowable_axial_compression(60.8, D_OUTER, D_OUTER / 400.0, F6_API_FY_PLAUSIBLE_MIN, E)
 
 
 # =============================  EH4: the weakening direction, solved for the three constants
@@ -1481,6 +1519,12 @@ def test_a_GEOMETRY_that_is_not_a_tube_is_REFUSED() -> None:
         (2.5, -0.18),  # negative wall -- was `compact`
         (0.0, 0.18),  # zero diameter -- was `compact`
         (2.5, 1.25),  # t = D/2, not a tube
+        # **C85: THE CASE THAT PINS THE DIAMETER CLAUSE.** Deleting `not d_outer > 0.0` left
+        # rung 5 at `77 passed`, because each of the five above is also caught by one of the
+        # other two clauses. `(nan, 0.18)` is not: `0.18 >= 0.5 * nan` is False and
+        # `not 0.18 > 0.0` is False, so only the diameter clause rejects it.
+        (float("nan"), 0.18),
+        (2.5, float("nan")),
     )
     for d_outer, wall in bad:
         with pytest.raises(ValueError, match="not a tube"):

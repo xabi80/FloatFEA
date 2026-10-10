@@ -37,7 +37,11 @@ from dataclasses import dataclass
 from typing import Final
 
 from floatfea.basis import E_STEEL, FY_S355
-from floatfea.tolerances import F6_API_FY_PLAUSIBLE_MAX, F6_API_FY_PLAUSIBLE_MIN
+from floatfea.tolerances import (
+    F6_API_FY_PLAUSIBLE_MAX,
+    F6_API_FY_PLAUSIBLE_MIN,
+    F6_API_STRESS_PLAUSIBLE_MIN,
+)
 
 __all__ = [
     "CM_JOINT_TRANSLATION",
@@ -163,6 +167,30 @@ def _require_plausible_fy(fy: float) -> None:
         )
 
 
+def _require_plausible_stress(stress: float) -> None:
+    """Refuse a STRESS that cannot be one (R754), which is a different predicate from a grade.
+
+    **THE GRADE RANGE WAS APPLIED TO A REDUCED STRESS AND FIRED ON THE MODULE'S OWN
+    INTERMEDIATE.** `allowable_axial_compression` substitutes section 3.2.2(b)'s `F_xc` for
+    `F_y`, and `F_xc` is below the grade by construction -- so at S235, `D/t = 200`, inside
+    the clause's own limit, `column_slenderness_parameter` refused `1.821394e+08 Pa`.
+    Bisected, the refusal started at `D/t = 138.4383` for S235 and `248.0006` for S275, and
+    `12.1%` of the declared six-grade sweep raised.
+
+    The floor is beneath every admissible configuration: the minimum `F_xc` over the
+    admissible grade range at `D/t = 300` is `1.365576e+08 Pa`, at the grade floor.
+    """
+    if not F6_API_STRESS_PLAUSIBLE_MIN <= stress <= F6_API_FY_PLAUSIBLE_MAX:
+        raise ValueError(
+            f"stress = {stress!r} Pa is outside the plausible range "
+            f"[{F6_API_STRESS_PLAUSIBLE_MIN:g}, {F6_API_FY_PLAUSIBLE_MAX:g}] Pa. This "
+            "argument is a STRESS and not a grade -- section 3.2.2 is evaluated at `F_xc` "
+            "on a slender tube -- so the floor sits beneath the smallest `F_xc` the clause "
+            "can produce rather than at a steel grade. SI throughout: pascals "
+            "(docs/conventions.md)."
+        )
+
+
 def _require_tube(d_outer: float, wall: float) -> None:
     """Refuse a `(D, t)` that is not a tube (C80).
 
@@ -228,11 +256,14 @@ def allowable_axial_tension(fy: float = FY_S355) -> float:
 def column_slenderness_parameter(fy: float = FY_S355, e: float = E_STEEL) -> float:
     """`C_c = sqrt(2 pi^2 E / F_y)` -- § 3.2.2's boundary between the two branches.
 
-    `F_y` here is `F_xc` on a slender tube, which is `local_buckling_stress`'s output and is
-    therefore already inside the range -- so the refusal is on the PUBLIC entry and the
-    internal call passes a value this module computed.
+    **THIS ARGUMENT IS A STRESS, NOT A GRADE (R754).** `allowable_axial_compression` calls
+    it with `F_xc` on a slender tube, which is below the grade by construction, so the
+    plausible-GRADE range is the wrong predicate: it refused `1.821394e+08 Pa` at S235,
+    `D/t = 200`, inside the clause's own limit. The paragraph that stood here said `F_xc`
+    "is therefore already inside the range", which was true at S355 and false at the two
+    grades below it.
     """
-    _require_plausible_fy(fy)
+    _require_plausible_stress(fy)
     return math.sqrt(2.0 * math.pi * math.pi * e / fy)
 
 
@@ -290,6 +321,11 @@ def allowable_axial_compression(
     """
     if k_l_over_r <= 0.0:
         raise ValueError(f"KL/r must be positive; got {k_l_over_r}")
+    # C84: THE THIRD DIVIDER. `_require_tube`'s docstring named two functions that divide by
+    # `wall` and this is a third -- `allowable_axial_compression(60.0, 2.5, 0.0)` raised
+    # `ZeroDivisionError` here, before any funnel ran.
+    _require_plausible_fy(fy)
+    _require_tube(d_outer, wall)
     d_t = d_outer / wall
     if d_t > 300.0:
         raise ValueError(
