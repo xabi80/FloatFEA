@@ -27,11 +27,13 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from floatfea.checks.api_wsd import (  # noqa: E402
+    LOCAL_BUCKLING_DT,
     _require_plausible_fy,
     _require_plausible_stress,
     local_buckling_stress,
 )
 from floatfea.tolerances import (  # noqa: E402
+    F6_API_FY_PLAUSIBLE_MAX,
     F6_API_FY_PLAUSIBLE_MIN,
     F6_API_STRESS_PLAUSIBLE_MIN,
 )
@@ -93,6 +95,61 @@ def main() -> int:
     print("the binding value MOVES between the cells, and that is the point: under the")
     print("grade predicate the points below 200 MPa are the ones being refused, so its")
     print("binding figure measures the defect and not the clause.")
+
+    # BI3: the three tables `F6_API_STRESS_PLAUSIBLE_MIN`'s entry publishes, regenerated
+    # here rather than typed there. A comment that carries measurements is a report that
+    # nothing regenerates unless something regenerates it.
+    print()
+    print("=== TABLE 1: where the GRADE predicate starts to refuse, per grade ===")
+    print(f"{'F_y [MPa]':>10s} {'refusal starts at D/t':>22s}")
+    for fy in GRADES:
+        if not _raises(_require_plausible_fy, local_buckling_stress(D, D / DT_HI, fy, E)):
+            print(f"{fy / 1e6:10.0f} {'never, within the clause':>22s}")
+            continue
+        lo, hi = LOCAL_BUCKLING_DT, DT_HI
+        for _ in range(200):
+            mid = 0.5 * (lo + hi)
+            if _raises(_require_plausible_fy, local_buckling_stress(D, D / mid, fy, E)):
+                hi = mid
+            else:
+                lo = mid
+        print(f"{fy / 1e6:10.0f} {hi:22.4f}")
+    lo, hi = F6_API_FY_PLAUSIBLE_MIN, F6_API_FY_PLAUSIBLE_MAX
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        if _raises(_require_plausible_fy, local_buckling_stress(D, D / DT_HI, mid, E)):
+            lo = mid
+        else:
+            hi = mid
+    print(f"  every F_y below {hi / 1e6:.4f} MPa fires somewhere inside D/t <= {DT_HI:.0f}")
+
+    print()
+    print(f"=== TABLE 2: F_xc at the clause's D/t = {DT_HI:.0f} limit, per grade ===")
+    print("over EVERY admissible grade, the floor of the range included -- the corner no")
+    print("single-grade literal reaches, and the one the floor below must clear.")
+    print(f"{'F_y [MPa]':>10s} {'F_xc [MPa]':>12s} {'F_xc [Pa]':>22s}")
+    binding_f_xc = float("inf")
+    for fy in (F6_API_FY_PLAUSIBLE_MIN, *GRADES, F6_API_FY_PLAUSIBLE_MAX):
+        f_xc = local_buckling_stress(D, D / DT_HI, fy, E)
+        binding_f_xc = min(binding_f_xc, f_xc)
+        mark = "   <- the minimum" if f_xc == binding_f_xc else ""
+        print(f"{fy / 1e6:10.1f} {f_xc / 1e6:12.3f} {f_xc:22.10e}{mark}")
+    print(f"  the binding case is {binding_f_xc!r} Pa")
+
+    print()
+    print("=== TABLE 3: EH4, both directions on the STRESS floor ===")
+    kpa_s355 = 355e6 / 1.0e3
+    print(f"  declared            {F6_API_STRESS_PLAUSIBLE_MIN:.6e} Pa")
+    print(
+        f"  may RISE only to    {binding_f_xc!r} Pa  "
+        f"({binding_f_xc / F6_API_STRESS_PLAUSIBLE_MIN:.10f}x), above which a legitimate"
+    )
+    print("                      slender section at the grade floor is refused")
+    print(
+        f"  may FALL only to    {kpa_s355:.6e} Pa  "
+        f"({F6_API_STRESS_PLAUSIBLE_MIN / kpa_s355:.4f}x below the declared value),"
+    )
+    print("                      beneath which a kPa S355 is admitted as a stress")
     return 0
 
 
