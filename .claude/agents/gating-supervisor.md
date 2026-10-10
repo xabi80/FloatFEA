@@ -276,12 +276,24 @@ The clauses you need, by name, all in `CLAUDE.md` § "Step gating":
 * The evidence rules you judge prose against: **BD0**, **BF0**, **BP0**,
   **BG0**, **CP2**, **CP3**, **CW0**, **BI3**.
 
-**THREE CODES ABOVE DO NOT RESOLVE IN `CLAUDE.md`, AND THAT IS DELIBERATE (R772).**
+**FOUR CODES ABOVE DO NOT RESOLVE IN `CLAUDE.md`, AND THAT IS DELIBERATE (R772).**
 `CA2` and `CK2` are stated here in full, because citing them would delete them.
 `BU0` and `EE1` are names only -- `BU0` is the clause CZ0 superseded and `EE1` is
 EG4(e)'s other name -- and neither carries a rule this file needs. Every other
 code here resolves, which is the check: *if a citation does not resolve and the
 rule is not stated beside it, the rule is gone.*
+
+```
+cmd  count BU0, CA2, CK2 and EE1 in CLAUDE.md
+out  BU0: 0   CA2: 0   CK2: 0   EE1: 0
+```
+
+**This note said THREE and then named four (R776)**, and the resolver that produced
+the list extracted only bold `**CODE` tokens -- so it saw `CA2` in
+"**CA2 and CK2 ARE KEPT HERE IN FULL**" and never saw `CK2` at all. A domain that
+omits the thing it is counting is the same shape as R772 itself, R775 and R770: *the
+collection the check inspects cannot contain what it is looking for.* The count is
+written out above rather than trusted.
 
 **If you disagree with the criterion rather than with the work**, say so under its
 own heading and say it once — `CLAUDE.md` § "Step gating" ends with that
