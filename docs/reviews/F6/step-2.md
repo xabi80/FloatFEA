@@ -1,4 +1,384 @@
 # Review — F6 step 2
+Reviewed commit: c0e3165f5e443743dab78f64faf0b96c5511a98f
+Verdict: PASS
+Reviewed commit: c0e3165f5e443743dab78f64faf0b96c5511a98f
+Tests: 3323 passed, 8 failed, 0 skipped   (my run, `python -m pytest -q`, 637.56s)
+
+## Round of 2026-10-10 -- F6 CLOSURE, SECOND EQ0 ROUND. **COUNTS AGAINST NO ROUND (EB4).** **R757 IS CLOSED BY THE ROUTE THE CONDITION NAMED, AND THE REPAIR IS STRONGER THAN WHAT IT CLAIMS.** The comparison is on the gated document, the premise is asserted, the freshness half I did not ask for is the most valuable test in the file, and the duration pattern's domain now EXACTLY EQUALS the set of lines `_run_gate` can publish -- which I measured rather than accepted. I reconstructed R756's own state on the document content and all three assertions redden independently with the premise still green. R758, R760, R761, R762, R763 and R764 are each answered. Four closure items are new, one of them a sentence in the deliverable that is refuted by its own next clause. **F6 CLOSES.**
+
+**Which clause I ruled under.** `CLAUDE.md` section "Step gating": EQ0, EB4, CZ0 (a)-(d) with
+EZ0's amendment, EG3/EH1 for the boundary red. My definition still carries none of EQ0, EB4
+or ES0; I ruled under `CLAUDE.md` and I rule below on whether that blocks.
+
+## Carried
+
+**R757 -- CLOSED, and I checked the mechanism rather than the diff's description of it.**
+
+```
+claim  the premise the whole old pair rested on was false: `--no-gates` removes the block
+cmd    python scripts/measure/f6_results_report.py --no-gates --out <scratch> ;
+       grep -c "pytest's own summary" <scratch>
+out    0
+rule   `scripts/measure/f6_results_report.py:486` -- `if gate_runs:` guards the whole fence,
+       and `gate_runs` is only appended to inside `if args.gates:`
+judge  confirmed independently. The old assertion compared 449 lines of a 457-line document
+       and the eight it never saw were the eight R756 found.
+```
+
+**And the repaired gate reddens on R756's own state, which I measured on the CONTENT so that
+nothing had to be edited.** I rebuilt the defect by restoring the duration to the published
+status lines of the shipped document and ran each of the three assertions against it:
+
+```
+claim  R756's own state reddens all three assertions, independently, with the premise green
+cmd    take the shipped bytes, append ` in 3.45s` / ` in 3.71s` to every line matching
+       `^  \S.*\s\d+ passed$`, then apply each assertion's own predicate
+out    status lines rewritten            : 8
+       A vs B  (determinism assertion)   : 8 differing lines -> RED
+       pattern finds in A (wall-clock)   : 8  ['2 passed in 3.45s', '53 passed in 3.45s']
+       shipped vs A (freshness assertion): 8 differing lines -> RED
+       premise on A (block present)      : True
+rule   the three assertions as written at `c0e3165`
+judge  **EIGHT**, which is R756's own count of eight lines of 457 -- so the reconstruction is
+       the defect and not an approximation of it. The premise staying GREEN is the part that
+       matters: each assertion reddens because of what it asserts, not because the fixture
+       collapsed. That is the counter-case the condition asked for, taken by a route that
+       could not be mistaken for the implementer's own, and it agrees with the reported
+       `3 failed, 17 passed` and the two `1 failed, 19 deselected` runs.
+```
+
+**The fixture does not rewrite what it compares against, which was the first thing I checked
+on the freshness test.**
+
+```
+claim  running the file leaves the shipped deliverable byte-identical, so the shipped-vs-fresh
+       comparison is not self-fulfilling
+cmd    sha256sum results/F6/floatfea_results_report.md ; pytest the file ; sha256sum again
+out    20 passed in 25.86s
+       before=bfc21efccafbf1b4  after=bfc21efccafbf1b4  unchanged=yes  (tree clean)
+judge  the fixture passes `--out <tmp>`; had it taken the default the freshness assertion
+       would have compared the file with itself. It does not.
+```
+
+**R758 -- ANSWERED, and the defence I expected was not attempted.** The footer no longer
+asserts a renderer or a version, and the artifact's new section 3 records that the previous
+sentence was rendered in a throwaway venv, which is why a committed file could not attest to
+it. One sentence in the replacement is refuted by its own next clause; see R765 below.
+
+**R760 -- ANSWERED.** `docs/closure/F6.md` section 0 now names **C89** as the cause, says the
+eight are **not** self-clearing, says the waiver is EG3's with the trace pasted, and says
+`pytest -q` and CI stay red by eight until C89 is fixed. That is the distinction EH1 draws,
+written down.
+
+**R761 -- ANSWERED, AND YOU ASKED WHETHER THE CORRECTION OVERSTATES THE OTHER WAY. IT DOES,
+MILDLY, AND THE LOAD-BEARING CLAIM SURVIVES IT.** I pulled the series off the verdicts myself:
+
+```
+claim  F6's own coverage series, in CHRONOLOGICAL order, and its rates
+cmd    grep -nE "COVERAGE" docs/reviews/F6/step-1.md docs/reviews/F6/step-2.md
+       (both files are newest-first, so file order is reverse chronological)
+out    step 1, rounds 1-4 : 5 of 22, 8 of 29, 9 of 25, 9 of 19
+       step 2, rounds 1-3 : 4 of 22, 6 of 25, none (EG4(e))
+       rates              : 0.227, 0.276, 0.360, 0.474 | 0.182, 0.240
+judge  THE VALUES ARE RIGHT AND THE PRESENTATION IS NOT. Section 7 lists step 1 newest-first
+       (`9 of 19 ... 5 of 22`) and step 2 oldest-first (`4 of 22, 6 of 25`) in one sentence
+       with neither labelled, so a reader taking it left to right sees step 1 DECLINING when
+       it rises. And "flat around a fifth to a third" understates the top: `9 of 19` is
+       `0.474`, a fifth to a HALF, and the step-1 rate rises monotonically by `2.09x` before
+       step 2 falls to `0.182`. **The claim the paragraph needs is true either way** -- this
+       is not the `2 of 22 -> 1 of 19` decay CZ0 retired the figure head on, and F6's corpus
+       went on finding shapes. It is better served by the chronological numbers than by
+       "flat". Closure item R766; the correction of the attribution itself is correct and is
+       what I asked for.
+```
+
+**R762 -- ANSWERED, and the replacement is the stronger sentence.** "Not one blocking finding
+was in the clause arithmetic" is true and checkable; naming R754 as the one that was inside
+`floatfea/` is what the old trichotomy denied in the same breath. It also says so about its
+own earlier draft, which is the habit worth keeping.
+
+**R763 -- REPAIRED RATHER THAN LEDGERED, AND THE NEW PREDICATE DISCRIMINATES. I checked that
+rather than taking it.**
+
+```
+claim  `u_shear` being the largest of the row's four utilisations SEPARATES the shear-governed
+       family from the rest, so the new assertion is not true of every row by construction
+cmd    read docs/F6_utilisation.csv; for each row compare `u_shear` with the max of
+       (u_axial, u_bending, u_shear, u_torsion) against whether the clause starts `3.2.4`
+out    3.2.4 rows: 14 of 32
+       rows where u_shear is the max but the clause is NOT 3.2.4: 0
+       so the predicate SEPARATES the families: True
+judge  14 for 14 and 0 of the other 18 -- the assertion is the right predicate and it can
+       fail. The `seen == {...}` distribution guard is an equality on a dict and reddens on
+       any change, so the two sense arms going vacuous is now visible instead of silent.
+       Both halves of R763 are answered.
+```
+
+**R764 -- RECORDED**, in section 5, at the scope the measurement supports.
+
+## The two attacks you asked for
+
+**ONE: does the gated fixture have its own version of the hole? Is the premise test enough?**
+
+**Mostly yes, and the reason is measured, not reasoned.** I enumerated the ways a gated
+document could be deterministic for the wrong reason and ran the one that can happen by
+accident:
+
+```
+claim  the realistic version -- a node id that no longer resolves -- SURFACES in the
+       published table rather than producing a quiet constant
+cmd    import `_run_gate` from the generator and call it with a stale node id and a live one
+out    test_DOES_NOT_EXIST                            -> ('FAIL', '?')
+       test_G2_1_every_MEMBER_has_NO_SEVENTH_zero_mode -> ('pass', '1 passed')
+rule   `_run_gate` returns FAIL on any non-zero return code, and counts becomes `?` when no
+       line of pytest's output contains " passed" or " failed"
+judge  a renamed or deleted test publishes FAIL and `?` on the face of the deliverable.
+       That is the accident-shaped case and it is loud.
+```
+
+The other cases, in order of how they end:
+
+* **All eight gates failing to collect** -- every cell `?`, no `N passed` anywhere, so **the
+  premise test reddens** on its second assertion. The premise is doing real work, and it is
+  the assertion I would have asked for.
+* **A generator mutation that fabricates the column** -- caught by
+  `test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree`, because the shipped
+  bytes were produced by the unmutated generator. That test is the answer to your question
+  and it is the half I did not ask for. It converts every assertion in the file from "the
+  generator agrees with itself" into "the generator agrees with itself AND the published file
+  is its output", which is what `docs/milestones/F6.md:261` actually says.
+* **The residual, and it is real but it is not this gate's claim.** A *fabricated constant*
+  plus a regeneration leaves everything green, because nothing asserts that the published
+  counts are pytest's counts. Section 5 of the deliverable says "pytest's own summary for
+  each row, at this commit", which is a provenance claim with no check behind it --
+  "provenance, not existence". It needs two deliberate acts, the first of which is exactly
+  what the counter-case tests, and closing it would be new apparatus under the F6 freeze.
+  **Closure item R768**, with the cheap version named there.
+* **One gate publishing FAIL while the rest pass** -- deterministic, no timing, premise green,
+  this file green. The deliverable could ship a FAIL row and only the ladder in CI would say
+  so. Also R768.
+
+**So: the premise test is enough for the vacuity it was written for, and the freshness test is
+what closes the configuration you were worried about.** What neither reaches is the
+truthfulness of the counts, which is a different claim from determinism and is not one this
+gate makes.
+
+**TWO: the duration pattern. I did not accept the six forms; I solved for its domain.**
+
+```
+claim  the new pattern's domain EXACTLY EQUALS the set of lines `_run_gate` can publish --
+       so it is no longer narrower than its claim, which is a stronger statement than
+       "it matches six forms"
+cmd    apply the pattern to fifteen pytest summary forms, then check each MISS against
+       `_run_gate`'s own `tail` filter
+out    MATCH, 12 of 15: 22 passed in 3.45s | 1 failed, 11 passed in 14.12s | 22 passed,
+       1 warning in 3.45s | 53 passed, 2 warnings in 9.01s | 22 passed, 1 skipped in 2.0s |
+       2 passed, 1 xfailed in 1.0s | 1 failed, 2 errors in 0.5s | 10 passed, 1 deselected,
+       3 warnings in 12.3s | 20 passed in 24.00s | 664 passed, 1 warning in 260.47s |
+       8 failed, 3315 passed, 2 warnings in 700.18s | 3315 passed, 2 warnings in 698.74s
+       MISS, 3 of 15:  no tests ran in 0.01s | 1 error in 0.50s | 2 xfailed in 0.1s
+       matches in the SHIPPED deliverable: []   (and no " in <num>s" substring at all)
+rule   `_run_gate` keeps only lines containing " passed" or " failed"; the string
+       "2 xfailed" contains "xfailed" and NOT " failed", so none of the three misses can
+       become counts -- each becomes `?`
+judge  **the three misses are unreachable through the only channel, so the pattern's domain
+       and the publishable set coincide.** That closes R757's second half completely rather
+       than widening it one form at a time, and it is the "invert the decision rule and
+       solve" shape instead of sampling one side of it. No false positive on the shipped
+       bytes.
+```
+
+## On the mirror drifts: RECORDING THEM IS SUFFICIENT, AND NONE OF THEM BLOCKS
+
+You asked me to rule, given that the clause under which this review exists is missing from my
+own definition. My ruling, and the reasoning rather than the conclusion:
+
+1. **They are not (a)-(d).** Not a defect in `floatfea/` or a published deliverable, not a
+   tolerance or a counter, not a gate assertion, not a red test. CZ0 is explicit that the
+   criterion is the default and not a gag, and I have twice blocked across it where a
+   closure-class item touched (a)-(c). This one does not touch anything the code or the gates
+   can see.
+2. **More decisively: a HOLD here would have no satisfiable condition.** `CLAUDE.md` forbids
+   a change to my definition in any commit that also touches `floatfea/` or `tests/`, and
+   requires a standalone `process:` commit citing a directive -- and a reviewer finding is not
+   a directive, which is why three earlier refusals to act on C45 were correct. So the repair
+   for this item is something the implementer is **forbidden** to make in answer to a verdict.
+   A HOLD whose condition cannot be met without a directive is not a gate, it is a deadlock,
+   and this project has already paid two verdicts for exactly one of those -- the step-5
+   header stalemate `CLAUDE.md` records, where a verdict on step 5 could not clear a step-6
+   report and a verdict on step 6 was what the refusal existed to prevent.
+3. **The mitigation is in force and has already worked once -- here.** FD1's precedence clause
+   is why I read `CLAUDE.md` first, ruled under EQ0 and EB4, and said so in both verdicts.
+   The drift is now self-reporting instead of silent, which is the whole of C45.
+
+**The residual risk, stated so it is not lost.** Had this invocation been silent about FD0 and
+EB4, my definition's "three verdicts per step" is what I would have read, and it would have
+told me this review could not exist. That risk is real, it is not closable by the implementer,
+and it belongs in the same directive as the durable fix: **the definition should CITE
+`CLAUDE.md` section "Step gating" rather than copy it**, because a mirror of a living document
+is a figure whose rule moves underneath it -- BP0, applied to my own instructions.
+
+
+## Findings
+
+**NONE BLOCKING.** R757 is closed by the route its condition named; every other carried item
+is answered; no tolerance moved; no file under `floatfea/` changed; no rung is red.
+
+## Closure items
+
+* **R765.** `results/F6/floatfea_results_report.md:452-455`. The bolded sentence **"This file
+  claims nothing about anything outside the repository"** is refuted by its own next clause:
+  "a PDF rendering, if one was sent with it, was produced elsewhere by a tool that is not a
+  dependency of this project, and the note it was sent with is where that tool is named." The
+  hedge makes the substance honest -- nothing falsifiable is left -- but the bolded claim is
+  false of the sentence it introduces, and this footer is the one place in the milestone where
+  that exact move has now gone wrong three times. Closed when the bold claim is dropped or
+  narrowed to what follows it: nothing in this file can be checked against anything outside
+  the repository, so it asserts nothing about it.
+* **R766.** `docs/closure/F6.md` section 7, the corpus-series sentence. Step 1 is listed
+  newest-first and step 2 oldest-first in one sentence with neither labelled, and "flat around
+  a fifth to a third" understates the top: the measured rates are `0.227, 0.276, 0.360, 0.474`
+  then `0.182, 0.240`, a fifth to a HALF, with step 1 rising monotonically by `2.09x`. Closed
+  when the series is given in one labelled order and the characterisation is the measurement
+  -- **no monotone decay, rate between `0.18` and `0.47`** -- which is all the paragraph's
+  argument needs and is more convincing than "flat".
+* **R767.** `tests/regression/test_f6_deliverable_agrees_with_itself.py`, the new freshness
+  test, and `docs/milestones/F6.md:261`. The test is right and I asked for it; it creates a
+  coupling nobody has written down. **`tests/regression` now reddens whenever any input to the
+  deliverable changes without the deliverable being regenerated** -- the F6 ceilings in
+  `floatfea/tolerances.py`, `docs/F4_member_forces.csv`, `docs/F6_utilisation.csv` or
+  `data/f4/dynamic_inputs.provenance.json`. That is the gate working, but the next person to
+  edit a ceiling will see a regression-tree red with no obvious cause. Closed when the plan
+  row or the artifact says in one line that a ceiling edit now requires a deliverable
+  regeneration, and names the command.
+* **R768.** The same file, and the deliverable's section 5 sentence "pytest's own summary for
+  each row, at this commit". Nothing asserts that the published counts ARE pytest's counts,
+  nor that all eight rows read `pass`: a constant returned from `_run_gate` together with a
+  regeneration leaves the whole file green, and a single FAIL row would ship with only the
+  ladder in CI objecting. The accident-shaped case is loud -- `('FAIL', '?')`, measured above
+  -- and closing the deliberate one would be new apparatus under the F6 freeze. Closed, when
+  the freeze lifts, by the cheap version: assert that every status cell in the gated
+  regeneration reads `pass` and that the row count equals `len(GATES)`. Two lines, no new
+  file, and it makes the deliverable's own provenance sentence checkable.
+
+**Carried-forward ledger, unchanged:** C41-C65, C67-C70, C77-C79, C82, C88, C89, C90, C91,
+C92, C94, C96, C97, R712-R717, R735, R736, R738, C2-C15, C24-C40, the `0.2240`/`0.2239` item,
+and R765-R768 above.
+
+## CI, at the reviewed commit
+
+```
+cmd    gh run list --commit c0e3165 ; gh run view 38050428782 --json jobs
+out    run 38050428782, F3, CI, completed, FAILURE
+         lint, unit and guards      failure   (red step: guards and meta-tests)
+         the verification ladder    success
+         CI determinism -- leg               skipped
+         CI determinism -- ten legs agree    skipped
+cmd    gh run view 38050428782 --log-failed | grep -oE "FAILED [^ ]+" | sort -u
+out    the same eight, byte for byte, as my local run and as the two commits before it
+```
+
+**RED, waived under `CLAUDE.md` EG3 with the trace pasted, and nothing is new.** Baseline
+`test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` plus the seven planted states that cascade
+off it; cause **C89**, traced to `assert []` in `_ROUNDS_ROW.findall`; nothing outside the
+list, so CZ1 (iv) is not reached. **`the verification ladder` is green** -- no rung is red.
+The local count moved from `3315` to `3323` passed, which is exactly the eight assertions this
+commit adds (one premise, one freshness, and six parametrised pattern counter-cases, replacing
+two old tests with four). Nothing else moved.
+
+
+## Tolerances touched
+
+**None.**
+
+```
+claim  no non-comment line of `floatfea/tolerances.py` changed, and no code path in
+       `floatfea/` changed, across the whole closure sequence
+cmd    git diff 449ee6b..c0e3165 -- floatfea/tolerances.py | grep -E "^[+-]"
+         | grep -vE "^[+-]#" | grep -vE "^(\+\+\+|---)"
+       git diff 934e17a..c0e3165 --stat -- floatfea/
+out    (empty)
+       (empty -- this commit touches no file under floatfea/ at all)
+```
+
+Lint, format and types at the reviewed commit, since EQ0 makes this commit reviewable and
+CZ1 (ii) applies to it:
+
+```
+cmd    python -m ruff check floatfea tests scripts
+       python -m black --check floatfea tests scripts
+       python -m mypy floatfea scripts/f4_dynamic_residual.py
+out    All checks passed!
+       132 files would be left unchanged.
+       Success: no issues found in 38 source files
+```
+
+## Next step opens when
+
+**F6 IS CLOSED. PASS.** R757's condition is met at all three sites it named, the counter-case
+is in the artifact and I reproduced it by an independent route, and the repair is stronger
+than the condition asked for in two respects I want on the record: the **freshness** assertion
+I did not ask for, and a duration pattern whose domain I measured to coincide with the
+publishable set rather than merely to cover six examples.
+
+What travels out of the milestone, and nothing here reopens it:
+
+1. **The four closure items above go into the ledger**, not into a round. R765 is the only one
+   in a published deliverable and it is a bold claim about its own next clause, not a wrong
+   number; R768 names the two lines that would close it when the apparatus freeze lifts.
+2. **The escalation stands and the artifact carries it unsoftened**: C88 and C89 out of the
+   C41-C65 ledger, and the first commit of the next increment spent on **C89**. The reason has
+   not changed and this round reinforced it -- I have now traced the same eight reds at four
+   consecutive commits, and at each one the trace cost real work that a green tree would not
+   have cost. A tree that is red by design is a tree in which the next real red is harder to
+   see, and EG3(i) exists because the eighth member of exactly such a group turned out to be a
+   defect.
+3. **The definition should cite `CLAUDE.md` rather than mirror it** -- a directive for Xabier,
+   with the residual risk named in the ruling above.
+
+## The adversarial work this round -- the corpus pause HELD
+
+**No batch. Zero new entries.** EG4(e)'s exceptions are F4's load-mapping gate and EB6's
+label-provenance gate; this round's subject is a document-regeneration gate and a closure
+artifact, and I did not stretch them. **What I ran instead, all four under `/tmp`-equivalent
+scratch and nothing written to the tree:**
+
+1. **R756's defect reconstructed on the document content** and each of the three assertions
+   put against it independently, with the premise checked to stay green -- the counter-case by
+   a route that is not the implementer's, giving the same eight lines R756 found.
+2. **A continuum over the decision rule's own domain**, in the form this gate has one: fifteen
+   pytest summary forms against the duration pattern, with each miss then checked against
+   `_run_gate`'s filter, so the result is a statement about the DOMAIN and not about examples.
+3. **A provenance probe of `_run_gate`** with a stale node id -- the measurement that answered
+   your first question, and the one that turned "the premise test is probably enough" into
+   something with an output beside it.
+4. **A discrimination check on R763's new predicate** -- 14 of 14 shear rows and 0 of the
+   other 18 -- because a repaired assertion that is true of every row is the same defect it
+   was written to fix.
+
+Items 1 and 3 are where the content of this round came from. **Three consecutive rounds now in
+which the substitute produced the round's findings and a batch would not have been permitted
+to look**, which is the only evidence EG4(e)'s substitution has, and it is worth saying that
+it is evidence about one surface and not a general result.
+
+## One sentence for the record, since FD4 makes this the last word on F6
+
+The thing this milestone will be worth remembering for is not the code check. It is that
+**four of the last five blocking findings were gates that could not fail**, each written in
+good faith to close the previous one, and that every single time the thing being guarded was
+fine. R754 was the one exception and the one defect in `floatfea/`. The clause arithmetic was
+hand-checked at two points either side of every branch boundary and has not moved since
+R741/R742. **This project's element has been right far more often than its instruments**, and
+the instrument that is currently broken is the one that decides whether the others are --
+which is why C89 is the first thing I would fix next, and why I said so twice.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6 step 2
 Reviewed commit: 4bc359f5a575f72f5a9cf692ff0d58fb10eeead0
 Verdict: HOLD
 Reviewed commit: 4bc359f5a575f72f5a9cf692ff0d58fb10eeead0
