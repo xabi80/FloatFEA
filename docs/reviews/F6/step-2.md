@@ -1,4 +1,363 @@
 # Review — F6 step 2
+Reviewed commit: af674e60c13303fe2322227e68326e00f8ef783e
+Verdict: HOLD
+Reviewed commit: af674e60c13303fe2322227e68326e00f8ef783e
+Tests: 3337 passed, 0 failed, 0 skipped   (my run, `python -m pytest -q -p no:randomly -rf`, 677.54s)
+
+## Round of 2026-10-10 -- R770's REPAIR. **F6 REMAINS CLOSED (DD1); THIS HOLD IS ON `1e43410`.** Counts against no round (EB4). Conditions (1) and (3) are met and met well -- the two false sentences are gone, the reach is stated, the drift measurement is at the site, and the declaration test is a good instrument. **CONDITION (2) IS THE PROBLEM, AND NOT FOR THE REASON YOU EXPECTED. The cross-check is a READING and not an extension -- I agree with your ruling -- and it is VACUOUS ON EVERY INPUT THE GENERATORS CAN PRODUCE.** `_SECTION_0_RUN` requires a capital `Run` with a comma after the id; the only section 0 reachable when 0a says `(none)` is `report_only_section`'s, which writes lowercase `run`. **The report this guard reads is in that state right now.** So the half the commit says is covered is not covered, which is the sentence R770 was. Your two questions are both answered with measurements, and both answers are "no". The tree is genuinely green and CI is green on every job at the reviewed commit.
+
+**Which clause I ruled under.** `CLAUDE.md` Â§ "Step gating": CZ0 (c) with EB4, DD1 for F6's
+disposition, and CA2 for the CI reading. **My definition's citations now resolve** -- 22 of
+23 bold codes, with the exceptions stated in full beside them, which is `aff8c16` working.
+
+## Carried
+
+**CONDITION (1) -- MET, AND THE SITE NOW SAYS SOMETHING TRUE.** Both sentences are deleted.
+`_ROUNDS_NO_RUN`'s comment says the row "is **accepted, not verified**", says the old
+sentence survived a draft that did check it, and names it as the kind of sentence that stops
+the next reader looking. The branch comment separates COVERED from NOT COVERED and carries
+the drift measurement -- 0 runs at verdict 115's anchor when Â§ 0a was generated, 6
+afterwards. I re-ran that myself at the anchor and it reproduces. **That is the half of R770
+that mattered most and it is done properly.**
+
+**CONDITION (3) -- MET.** The residual is in `docs/closure/F6.md` Â§ 5 with the drift
+measurement, and `test_R770_the_UNCOVERED_state_is_DECLARED_and_not_described_as_closed`
+makes the hole a fact of the suite. **Its docstring is the best thing in the commit**: it
+says that if the test ever fails the hole has been closed, names the comment that would then
+be the stale one, and tells the next reader to delete both. That is a declaration with an
+expiry, which is more than I asked for.
+
+**CONDITION (2) -- THE CROSS-CHECK. I RULE IT A READING AND NOT AN EXTENSION, AS YOU ASKED.**
+It calls nothing, opens nothing, reads no new input, uses a locator the module already
+defines, and sits one block from a cross-check of identical shape. `CLAUDE.md` forbids a
+guard growing new REACH; noticing a contradiction inside the text it is handed is not new
+reach. **Your ruling is correct and that is not why it has to go.** See R775.
+
+**YOUR FIRST QUESTION -- can the test fail for the wrong reason because its id is in
+`_TRUTH`? NO, AND THE LOOKUP IS IRRELEVANT BY CONSTRUCTION.**
+
+```
+claim  the cross-check's result does not depend on the lookup at all, so the test's choice
+       of a known id cannot make the assertion pass for the wrong reason
+cmd    call `ci_table_defects` on the forged text three ways: known id with a `_TRUTH`-like
+       lookup, an UNKNOWN id with an empty lookup, and a known id with a lookup returning
+       None
+out    known id, _TRUTH-like lookup   : ['... names run 35563850428 -- the two halves ...']
+       UNKNOWN id, empty lookup       : ['... names run 99999999999 -- the two halves ...']
+       known id, lookup returns None  : ['... names run 35563850428 -- the two halves ...']
+judge  identical in all three. You were right that the choice "proves nothing either way",
+       and that is harmless: the assertion is lookup-independent on purpose, and the only
+       way `found[0]` can lose "contradict each other" is the cross-check being removed.
+       **Not a finding.**
+```
+
+**YOUR SECOND QUESTION -- can `_SECTION_0_RUN.findall(zero)` reach a different round's
+section 0 across revisions? NO. `_generated_text(_newest_revision(...))` bounds it, and here
+is the number.**
+
+```
+claim  the revision bound is real and large, not nominal
+cmd    for every step report: count `_SECTION_0_RUN` ids in the WHOLE file, and in the
+       generated regions of the NEWEST revision only
+out    report                 revs  ids whole  ids in newest rev
+       docs/reports/F2/step-5.md 26        25                  2
+       docs/reports/F2/step-6.md  6        17                  3
+       docs/reports/F2/step-7.md  7        18                  1
+       docs/reports/F3/step-3.md  4         9                  1
+       docs/reports/F4/step-3.md  3         9                  2
+       docs/reports/F6/step-1.md  3         3                  1
+       docs/reports/F6/step-2.md  3         1                  0
+judge  25 -> 2 and 18 -> 1: the bound is doing real work and an older round's section 0
+       cannot reach the cross-check. I also checked that every one of these ids sits inside
+       a generated region in every report, so the cross-check never reads a hand-written id
+       either. **Not a finding -- and the last row is where R775 comes from.**
+```
+
+**R771 AND R772 (`aff8c16`) -- REPAIRED, STANDALONE, AND THE SUBSTITUTE IS NOW STATED.** One
+file, no `tests/`, cites the verdict item. The corpus bullet states the substitute in full
+with the grep beside it; the citation section carries the non-resolving note. **The
+substitute no longer depends on a redundant copy upstream, which was the whole of R771.**
+One count in both is wrong -- see R776.
+
+**R773 -- LEDGERED WITH THE COST STATED IN THE DIRECTION THAT WEAKENS IT**, which is what I
+asked for: "a nine-digit INVENTED id now passes, and my counter-case only tests the
+eleven-digit invention -- EH4's weakening direction, unsolved." Correct, open, and the
+honest version. R774 likewise.
+
+**THE TREE AND CI -- CONFIRMED INDEPENDENTLY, AND FE0's CONDITION IS GENUINELY MET.**
+
+```
+cmd    python -m pytest -q -p no:randomly -rf
+out    3337 passed, 2 warnings in 677.54s        (0 failed, 0 skipped)
+cmd    gh run view 38069945459 --json headSha,conclusion,jobs
+out    headSha af674e60  conclusion success
+         the verification ladder            success
+         lint, unit and guards              success
+         CI determinism -- leg / ten legs   skipped (workflow_dispatch only, by design)
+cmd    ruff check / black --check / mypy over floatfea tests scripts
+out    All checks passed! / 132 files unchanged / no issues in 38 source files
+judge  **the reviewed commit has its own green run on every job that runs**, so the
+       `code_identical_run` argument is not needed here either. `38068797040` at `fe246aa`
+       is green too, and `af674e6` differs from it only in `docs/closure/F6.md`, which no
+       test reads as input -- the two grep hits under `tests/` are comments. The cancelled
+       runs at `f9f227d` and `aff8c16` are CK2's state and are correctly not claimed. **When
+       I began this review the run at `af674e6` was `in_progress`, which under CA2 is not a
+       pass; I waited for it rather than reasoning past it.**
+```
+
+## Findings
+
+**ONE BLOCKS. CZ0 (c), and it is the fourth instance of one species -- this time inside the
+repair of the third.**
+
+**R775. (BLOCKING -- (c), A GATE ASSERTION THAT CANNOT FIRE ON ANY INPUT THE GENERATORS CAN
+PRODUCE, DOCUMENTED AS COVERING THE HALF IT CANNOT REACH.)**
+`tests/test_report_carried.py`, `ci_table_defects`'s zero-run branch -- the `COVERED, by a
+cross-check this function already performs` paragraph and the `named = _SECTION_0_RUN.findall`
+block; `test_R770_a_forged_zero_run_row_is_caught_when_section_0_CONTRADICTS_it`; and
+`docs/closure/F6.md` section 5's R770 row, which repeats the claim.
+
+**The chain, each link measured rather than reasoned:**
+
+```
+claim  every line a generator can emit that `_SECTION_0_RUN` matches requires a run to
+       EXIST -- so it cannot coexist with a `(none)` 0a table
+cmd    locate every backticked-run-id emitter in scripts/ci_section.py with its function
+out    515, 529  leg_section     "Run `<id>` at `<sha>`..."  -- no comma after the id, so
+                                                               _SECTION_0_RUN misses it
+       640, 659, 681  section    "Run `<id>`, event ..., conclusion **...**"  -- MATCHES
+       798  rounds_section       "**Run `<id>`, conclusion **failure**:"      -- MATCHES
+judge  all three `section()` branches sit inside `if run:` -- a run at the JUDGED commit --
+       and `rounds_section`'s block is emitted per run OF THE ROUND. **Each requires a run.**
+```
+
+```
+claim  a `(none)` 0a ENTAILS that section 0 is `report_only_section`, whose run line
+       `_SECTION_0_RUN` cannot match
+cmd    read `rounds_runs` and `section`, then run the EW0 section 0 verbatim through
+       `ci_table_defects` beside a legitimate `(none)` table
+out    _SECTION_0_RUN matches: []
+       ci_table_defects      : []
+       -> legitimate EW0 state is ACCEPTED: True
+rule   `rounds_runs` filters by TIME, `createdAt > _committed_at(sha)` (CY0, R461). A run at
+       the judged commit is necessarily created after that commit's own time, so it is IN
+       the window -- therefore `(none)` entails NO run at the judged commit, therefore
+       `section()` takes its `if not run:` path and returns `report_only_section`, which
+       writes "Code-identical run at `<anc>`: run `<id>`, event ..., conclusion **...**" --
+       LOWERCASE "run", with the id on the next source line.
+judge  **THE ZERO-RUN BRANCH AND A `_SECTION_0_RUN` MATCH ARE MUTUALLY EXCLUSIVE ON
+       GENERATED INPUT.** The cross-check can never fire on a real report.
+```
+
+```
+claim  this is not hypothetical -- the report the shipped guard reads is in that state NOW
+cmd    read section 0 of the newest revision of docs/reports/F6/step-2.md
+out    ## 0. CI at `5c71cb4` ... -- **report-only; no run by design** ...
+       **Code-identical run at `9af9b75c...`**: run `38017640023`, event `push`,
+       conclusion **failure**.
+       (and in the table above: 0 _SECTION_0_RUN ids in that revision's generated text)
+judge  live, not forward-looking. Today 0a carries run rows so the branch is not reached;
+       the moment a report-only round produces an empty 0a -- which is the ONLY way to get
+       one -- section 0 will be exactly this, and the cross-check will see nothing.
+```
+
+```
+claim  and widening the locator makes the guard WRONG rather than useful
+cmd    the same EW0 text with the one letter changed, lowercase run -> capital Run
+out    _SECTION_0_RUN matches: ['38065478575']
+       ci_table_defects      : ['... section 0 of the same generated block names run
+                                 38065478575 -- the two halves ... contradict each other']
+judge  capitalise one letter in an unrelated generator's prose and the guard calls the
+       LEGITIMATE report-only state a forgery. **So this cannot be repaired by widening the
+       locator** -- widening it makes the guard reject a designed, documented, currently
+       live state, which is C89's own shape. The contradiction it looks for does not exist:
+       section 0 naming a run of THIS round entails 0a listing it, and when 0a says
+       `(none)` section 0's only run reference is a code-identical ANCESTOR's, which is EW0
+       and is correct.
+```
+
+**And the test is verified against an input its own author designed.** Its forged section 0
+is `Run `35563850428`, event push, conclusion **success**.` -- hand-written, capital `R`, and
+**no generator emits that form in the state under test**. The assertion is real, the suite is
+green, and the configuration it asserts over is unreachable. That is the species BE3 exists
+for, and it is the fourth time in this milestone: R756, R757, R770, R775.
+
+**WHY IT BLOCKS RATHER THAN BEING A CLOSURE ITEM:** the comment says *COVERED*. R770 was two
+sentences claiming a check that did not happen; this is a paragraph and an unreachable code
+path claiming a check that cannot happen. **The repair re-created the defect it repaired, in
+the half it added** -- and a reader who believes the comment stops looking, which is the
+sentence `1e43410` itself wrote about the sentences it deleted.
+
+**Closed by the branch verdict 119 already offered, which the measurement now forces rather
+than leaves to judgement:**
+
+1. **Remove the cross-check** -- the `named = _SECTION_0_RUN.findall` block and the `COVERED`
+   paragraph -- and keep conditions (1) and (3) unchanged.
+2. **Record WHY at the site:** not that it was an extension, because it was not and that
+   ruling stands, but that the two sections cannot contradict each other on this axis, with
+   the entailment above written out.
+3. **Delete `test_R770_a_forged_zero_run_row_is_caught_when_section_0_CONTRADICTS_it`, or
+   keep only its first half** -- the legitimate zero-run table returning `[]`, which is
+   C89's own assertion and is worth keeping -- **and add the EW0 section 0 verbatim as a
+   case that must be ACCEPTED.** That pins the clean case nearest the boundary, which is
+   EH4's weakening direction on this guard, and it costs four lines.
+4. **Correct `docs/closure/F6.md` section 5's R770 row in the same commit.** "The realistic
+   half is now caught" is exactly the sentence BP0 requires to move when the rule moves.
+5. **The declaration then becomes the whole of R770's answer**, which is the honest outcome:
+   the forged `(none)` row is not catchable soundly, it is declared, and the declaration has
+   a test with an expiry date on it.
+
+**If you disagree with the entailment, the one command that would refute me is a generated
+section 0 carrying a capital `Run `<id>`,` beside a `(none)` 0a table.** I could not produce
+one from `scripts/ci_section.py`. If you can, this finding is wrong and I want that instead.
+
+**One note on the tooling, because it caught me.** My draft of this verdict carried a
+`Reviewed commit:` sha whose first eight characters were right and whose tail I had
+fabricated. `scripts/write_verdict.py` stamps the real `HEAD` on the line above mine, so
+the two sat together and the mismatch was visible immediately. That stamp is documented as
+structurally NOT the reviewed commit whenever the reviewer commits a corpus first -- which
+is true -- and on this occasion it was the only thing standing between me and R769's own
+class in my own verdict. I reverted the write and redid it rather than appending a
+correction, so nothing earlier in this file moved.
+
+## Closure items
+
+* **R776.** `.claude/agents/gating-supervisor.md`, the R772 note, and `docs/closure/F6.md`
+  section 5's R772 row. The note says **"THREE CODES ABOVE DO NOT RESOLVE"** and then names
+  four -- `CA2`, `CK2`, `BU0`, `EE1` -- and the ledger row lists only `BU0`, `CA2` and `EE1`,
+  omitting `CK2`.
+  ```
+  cmd    grep -o -F "<code>" CLAUDE.md | wc -l, for each of the four
+  out    BU0 0   CA2 0   CK2 0   EE1 0
+  cmd    extract every bold code from the citation section and resolve it
+  out    23 bold codes, 22 resolve, 1 does not (BU0) -- CA2, CK2 and EE1 are not bold
+         TOKENS in that section, which is why a bold-code resolver misses them
+  ```
+  Nothing is lost -- `CA2` and `CK2` are stated in full, which is the point of the note --
+  but the count is off by one and **the resolver that produced the list extracted a domain
+  that omitted `CK2`**, which is the same domain-blindness shape as R772 itself. Closed when
+  the note says four and names them, and the ledger row matches.
+* **R773, R774** -- open, correctly ledgered, with R773's weakening direction stated. R773's
+  repair is the one my measurement points at: the context word, not a digit floor, which
+  would also give R774's three locators one floor.
+
+**Carried-forward ledger, unchanged:** C41-C65, C67-C70, C77-C79, C82, C90, C91, C92, C94,
+C96, C97, R712-R717, R735, R736, R738, R765-R768, C2-C15, C24-C40, the `0.2240`/`0.2239`
+item, R773, R774, R776. **C88, C89, R770's conditions (1) and (3), R771 and R772 are
+closed.**
+
+## Tolerances touched
+
+**None. Nothing under `floatfea/` has changed since verdict 118.**
+
+```
+cmd    git diff 2eb00ea..af674e6 --stat -- floatfea/
+out    (empty)
+cmd    git diff 3c699fd..af674e6 --stat
+out    .claude/agents/gating-supervisor.md | 26 ++--   (aff8c16, standalone)
+       docs/closure/F6.md                  | 59 ++--   (fe246aa, af674e6)
+       tests/test_report_carried.py        | 118 ++--  (1e43410, standalone)
+judge  each of the four commits is correctly scoped: the two touching the reviewer's
+       definition and `tests/` never travel together, and neither touches the other's tree.
+```
+
+## The adversarial corpus -- the pause HELD
+
+**No batch. Zero new entries.** EG4(e)'s two exceptions are F4's load-mapping gate and
+EB6's label-provenance gate; this round's subject is one branch of a report guard and my own
+definition's citations. Neither is those surfaces.
+
+**What I ran instead, all of it in scratch and nothing written to the tree:**
+
+1. **The cross-check against the GENERATOR rather than against the test** -- every
+   backticked-run-id emitter in `scripts/ci_section.py` located and classified by whether
+   `_SECTION_0_RUN` can match it, then the entailment from `rounds_runs`'s time filter to
+   `section()`'s `if not run:` path. **That is where R775 came from, and it is the only
+   instrument that could have found it:** the test is green, the assertion is real, and the
+   defect is that the generator cannot produce the input.
+2. **The EW0 state run verbatim through the guard**, then the same text with one letter
+   changed -- which is the boundary solved in the direction that weakens the gate (EH4), and
+   it turns out to be one character wide.
+3. **The revision-bound census** across fifteen step reports, which answered your second
+   question with a number instead of an argument.
+4. **The lookup-independence triple** on the new cross-check, which answered your first.
+5. **A bold-code resolver** over my own definition's citation section, which found R776.
+
+**Five consecutive rounds now in which the substitute produced the round's blocking
+finding** -- R755, R756, R757, R770, R775. All five on apparatus that reads this project's
+own record, and none on the element. That is EG4(e)'s whole evidence and it is evidence
+about one surface.
+
+## Next step opens when
+
+**R775 is answered in one commit, and nothing else is required.**
+
+1. The cross-check is removed, the reason is recorded at the site, the test is deleted or
+   reduced to its first half with the EW0 case added as ACCEPTED, and
+   `docs/closure/F6.md` section 5's R770 row is corrected -- all four sites, in one commit,
+   each with its hunk, because half of an item is not the item.
+2. **Or the entailment is refuted** with a generated section 0 carrying a capital
+   `Run `<id>`,` beside a `(none)` 0a table. Then R775 is withdrawn and I will say so.
+3. R776 is fixed in the same commit and not re-reviewed.
+4. The tree stays at `0 failed` with no waiver claimed, and CI stays green on both jobs at
+   the commit's own sha. **That is now the baseline and it should never again be a
+   paragraph.**
+
+This verdict counts against no round (EB4). **F6 is closed and stays closed by DD1**; the FE
+sequence is what is open.
+
+## For the record -- the last word on F6
+
+**One species, five times, and the fifth was inside the repair of the fourth.** R755 a
+quantifier wider than its sweep; R756 a gate the plan named and nothing asserted; R757 a
+gate asserted on the document minus the region the defect lived in; R770 a branch that
+admitted the state it named, with two comments saying it was checked; R775 a cross-check
+that cannot fire on anything a generator can produce, with a paragraph saying it covers the
+realistic half. **Every one of them green on `pytest`, `ruff`, `black`, `mypy` and CI. None
+of them in the element.** The clause arithmetic was hand-checked at two points either side
+of every branch boundary and has not moved since R741/R742.
+
+**The question that found all five is the same question, and it is not "is the test
+correct".** It is: *what is the collection this assertion inspects, and can the failure be
+in it?* For R775 the answer required reading the generator rather than the test -- the
+assertion was correct, the input was impossible. **I would put that sentence in `CLAUDE.md`
+above the guard list**, because "a gate carries its own failure" is already there and it was
+satisfied every single time: each of these gates DID redden on an injected defect. What none
+of them did was redden on a defect the system could actually produce.
+
+**And the two directives I am carrying out, restated once because FE2 ends the loop.**
+
+**(i) C88 and C89 do not belong in a ledger with C41-C65.** They are the guards that read the
+gating record. C89 kept `pytest -q` red by eight for the whole of F6, cost four hand traces
+and a paragraph in every verdict, and was fixed in one commit when someone finally spent one
+on it. **An item in the apparatus that decides whether other greens are believed is a
+different kind of closure item from a sentence in a report**, and the ledger has no way to
+say so. That distinction is the one change to `CLAUDE.md` I would ask for before the next
+increment opens.
+
+**(ii) The reviewer's definition should cite and never mirror**, which FE1 has now done and
+which this round's `aff8c16` shows working -- the citation's own non-resolving codes were
+found by a check the file now carries. The residual risk is unchanged and not closable by the
+implementer: if an invocation is silent about the clause under which a review exists, I read
+my definition, and my definition is only as current as the last directive.
+
+**What F6 actually delivered**, so the cost is not the only thing on the record: a clause
+module checked against hand arithmetic at two points either side of every branch boundary,
+eight tolerances each with its counter or its `AO2` exemption and both EH4 boundaries, a
+published results report that regenerates byte-identically under a gate that reddens on its
+own defect, and a finding that matters -- **the stand-in section reaches `U = 1.71167`, four
+of thirty-two stations over unity, and `1.0130` on a platform arm under self-weight alone**.
+Nothing was tuned to bring it under unity and no tolerance was touched to make it look
+better. That is the milestone. The five findings above are what it cost to be able to believe
+it.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6 step 2
 Reviewed commit: 6f3bd0d8d1851af7f81154327b380d75053c411d
 Verdict: HOLD
 Reviewed commit: 6f3bd0d8d1851af7f81154327b380d75053c411d
