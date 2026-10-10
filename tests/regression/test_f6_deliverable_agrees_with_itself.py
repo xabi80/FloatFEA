@@ -138,10 +138,22 @@ def test_the_two_counts_are_DIFFERENT_so_neither_can_stand_for_the_other() -> No
 def test_the_governing_clause_agrees_with_the_axial_branch_on_every_row() -> None:
     """R739's class: a tension-positive column read as compression put every over-unity
     station on the wrong clause. Here the two published columns must agree about the sense.
+
+    **R763: TWO OF THE FOUR ARMS WERE VACUOUS AND ONE WHOLE FAMILY REACHED NO ASSERTION.**
+    No shipped row's `governing_clause` starts with `3.2.1` or `3.2.2` -- the published
+    distribution is `3.3.1 interaction` 6, `3.3.2 interaction` 12, `3.2.4 beam shear` 14 --
+    so those two `if` arms ran on 0 of 32 rows, and the 14 beam-shear rows fell through
+    every branch. The two arms are kept because a future table could land on either clause
+    and the sense would still have to agree; what is added is a measured check that the
+    clause set is the one this file was written against, so an arm going vacuous is visible
+    rather than silent, and an explicit assertion for the shear family.
     """
-    for row in _rows():
+    rows = _rows()
+    seen: dict[str, int] = {}
+    for row in rows:
         tension = row["axial_branch"] == "tension"
         clause = row["governing_clause"]
+        seen[clause] = seen.get(clause, 0) + 1
         if clause.startswith("3.3."):
             want = "3.3.1 interaction" if tension else "3.3.2 interaction"
             assert clause == want, (
@@ -152,6 +164,25 @@ def test_the_governing_clause_agrees_with_the_axial_branch_on_every_row() -> Non
             assert tension, f"{row['member']} {row['station']}: section 3.2.1 on compression"
         if clause.startswith("3.2.2"):
             assert not tension, f"{row['member']} {row['station']}: section 3.2.2 on tension"
+        if clause.startswith("3.2.4"):
+            # The shear family reached no assertion at all. Shear governs when the shear
+            # utilisation is the largest of the row's four -- that is what "governing"
+            # means -- and it is sense-agnostic, which is why the arms above skip it.
+            u = {k: float(row[k]) for k in ("u_axial", "u_bending", "u_shear", "u_torsion")}
+            assert u["u_shear"] >= max(u.values()), (
+                f"{row['member']} {row['station']} is published as governed by "
+                f"{clause!r} and its shear utilisation {u['u_shear']:.6g} is not the "
+                f"largest of {u}"
+            )
+
+    # R763's own guard: if the clause set changes, the two sense arms above may go vacuous
+    # and nothing else in this file would say so.
+    assert seen == {"3.3.1 interaction": 6, "3.3.2 interaction": 12, "3.2.4 beam shear": 14}, (
+        f"the published clause distribution is {seen}, not the one this test was written "
+        "against. Two of its four sense arms are reached by NO shipped row as written "
+        "(3.2.1 and 3.2.2, 0 of 32), so a change here can make them vacuous silently -- "
+        "re-read R763 before updating this number."
+    )
 
 
 @pytest.mark.parametrize(
@@ -178,109 +209,157 @@ def test_the_label_the_milestone_requires_is_on_the_face_of_both_files(label: st
 
 
 # --------------------------------------------------------------------------
-# R756: THE LOCKED PLAN'S REGENERATION GATE, WHICH WAS ASSERTED NOWHERE
+# R756 / R757: THE LOCKED PLAN'S REGENERATION GATE, ON THE GATED DOCUMENT
 # --------------------------------------------------------------------------
 # `docs/milestones/F6.md:261` locks it: "the table regenerates identically from stored
 # results (G6.3's shape), and the top-ten list is stable under a re-run." Nothing in
-# `tests/` read `results/F6/` at all, and the deliverable was NOT deterministic -- the
-# reviewer regenerated it and found eight lines of 457 differing, every one a pytest
-# wall-clock timing pasted into section 5's status block.
+# `tests/` read `results/F6/` at all, and the deliverable was NOT deterministic -- eight
+# lines of 457 differed between two runs, every one a pytest wall-clock timing pasted into
+# section 5's status block (R756).
 #
-# The repair was to publish the COUNTS and not the duration: the counts are what each row
-# claims and they are deterministic, the duration was never part of the claim. These two
-# tests are what holds that in place, and they are the gate the plan named.
+# **R757: THE FIRST TWO VERSIONS OF THIS GATE WERE BOTH VACUOUS, AND THE SECOND LOOKED LIKE
+# A REPAIR.** Version one read only the shipped file, which had already been regenerated
+# clean, so reverting the generator left `12 passed`. Version two added a double run -- and
+# passed it `--no-gates`, under which `_run_gate` is never called, `gate_runs` is empty, and
+# `if gate_runs:` means **the entire "pytest's own summary for each row" block is not
+# emitted at all**. R756's eight differing lines lived inside that block. So the
+# determinism assertion was green on R756's own state BY CONSTRUCTION: the same shape as
+# the version thrown away, one level out, inside the commit repairing a finding about a
+# missing gate.
+#
+# So the comparison is taken on the GATED document, which is the only form that contains
+# the column a timing can enter through. It costs two passes of the eight gate node-sets,
+# shared by every assertion below through one module-scoped fixture.
 
 RESULTS_REPORT = ROOT / "results" / "F6" / "floatfea_results_report.md"
 GENERATOR = ROOT / "scripts" / "measure" / "f6_results_report.py"
 
+# A pytest summary line, with however many clauses stand between the count and the
+# duration. The first version of this pattern required the count ADJACENT to `" in "`, so
+# `22 passed, 1 warning in 3.45s` and `53 passed, 1 skipped in 9.01s` -- both forms this
+# tree emits elsewhere -- did not match it. It reddened only because the eight gate
+# node-sets happen to print a bare `N passed` today, and would have stopped doing so the
+# day a warning appeared in any of four unrelated rung modules.
+_PYTEST_DURATION = re.compile(r"\d+ (?:passed|failed)[^\n]*? in [\d.]+s")
 
-def test_R756_the_results_report_REGENERATES_IDENTICALLY() -> None:
-    """Two runs of the generator, byte-compared. The plan's gate, as a test.
 
-    `--no-gates` is passed because the status column's own run is what this file is NOT
-    measuring: it would invoke the eight gates twice inside one test, and a difference
-    there would be a red gate rather than a non-deterministic document. Everything else --
-    the model block, the mass basis, the loads, the envelope, the `f` sweep, the top ten
-    and every table -- is compared in full.
-    """
+def _first_differences(left: str, right: str) -> list[tuple[int, str, str]]:
+    pairs = zip(left.splitlines(), right.splitlines(), strict=False)
+    return [(n, a, b) for n, (a, b) in enumerate(pairs, 1) if a != b]
+
+
+@pytest.fixture(scope="module")
+def gated_runs() -> list[str]:
+    """Two full regenerations WITH the gates, into a temporary directory."""
     import subprocess
     import sys
     import tempfile
 
     assert GENERATOR.is_file(), GENERATOR
+    out: list[str] = []
     with tempfile.TemporaryDirectory() as tmp:
-        outs = []
         for n in (1, 2):
-            out = Path(tmp) / f"run{n}" / "floatfea_results_report.md"
+            path = Path(tmp) / f"run{n}" / "floatfea_results_report.md"
             proc = subprocess.run(
-                [sys.executable, str(GENERATOR), "--no-gates", "--out", str(out)],
+                [sys.executable, str(GENERATOR), "--out", str(path)],
                 capture_output=True,
                 text=True,
                 cwd=ROOT,
             )
             assert proc.returncode == 0, proc.stderr[-2000:]
-            outs.append(out.read_text(encoding="utf-8"))
-    first, second = outs
-    if first != second:
-        pairs = zip(first.splitlines(), second.splitlines(), strict=False)
-        differing = [(n, a, b) for n, (a, b) in enumerate(pairs, 1) if a != b]
-        pytest.fail(
-            f"the deliverable does not regenerate identically: {len(differing)} line(s) "
-            f"differ out of {len(first.splitlines())}. First three:\n"
-            + "\n".join(f"  line {n}:\n    {a!r}\n    {b!r}" for n, a, b in differing[:3])
-            + "\nThis is the gate at docs/milestones/F6.md:261 (R756). A figure that "
-            "changes between two runs of the same tree is not a measurement of the tree."
-        )
+            out.append(path.read_text(encoding="utf-8"))
+    return out
 
 
-def test_R756_the_published_report_carries_NO_WALL_CLOCK_figure() -> None:
-    """The specific non-determinism R756 found -- and it REGENERATES to look for it.
+def test_R757_the_gated_regeneration_CONTAINS_the_status_block(
+    gated_runs: list[str],
+) -> None:
+    """The premise every assertion below rests on, asserted rather than assumed.
 
-    **THE FIRST VERSION OF THIS TEST COULD NOT FAIL, which is the defect it was written to
-    prevent.** It read only the shipped file, and the shipped file had already been
-    regenerated without timings -- so reverting the generator's one line left both R756
-    tests green. Measured: `12 passed` with `counts = tail[-1]` restored, which is R756's
-    own state.
-
-    So it runs the generator WITH the gates, into a temporary directory, and reads THAT.
-    The status column is the only part of the document a timing can enter through, and
-    running the gates is the only way to produce one. It costs one pass of the eight gate
-    invocations; the shipped file is checked too, because that is what is published.
+    Without this, a generator change that stopped emitting section 5 would make the whole
+    pair below pass on an absent column -- which is precisely how R757 happened.
     """
-    import subprocess
-    import sys
-    import tempfile
-
-    pattern = r"\d+ (?:passed|failed) in [\d.]+s"
-
-    with tempfile.TemporaryDirectory() as tmp:
-        out = Path(tmp) / "floatfea_results_report.md"
-        proc = subprocess.run(
-            [sys.executable, str(GENERATOR), "--out", str(out)],
-            capture_output=True,
-            text=True,
-            cwd=ROOT,
+    for n, text in enumerate(gated_runs, 1):
+        assert "pytest's own summary for each row" in text, (
+            f"gated run {n} does not contain section 5's status block, so the comparisons "
+            "below cannot see the column R756's timings entered through (R757)."
         )
-        assert proc.returncode == 0, proc.stderr[-2000:]
-        regenerated = out.read_text(encoding="utf-8")
+        assert re.search(
+            r"\d+ passed", text
+        ), f"gated run {n} carries no `N passed`, so the status column ran no gates."
 
-    assert re.search(r"\d+ passed", regenerated), (
-        "a run WITH the gates produced no `N passed` at all, so the assertion below is "
-        "vacuous -- either section 5's status block was removed or it stopped running them."
-    )
-    timings = re.findall(pattern, regenerated)
-    assert not timings, (
-        f"regenerating with the gates produced {len(timings)} wall-clock figure(s): "
-        f"{timings[:4]}. The counts are deterministic and the durations are not, so two "
-        "runs of the same tree yield different documents (R756). This is the assertion "
-        "that reddens when the generator stops stripping the duration."
+
+def test_R756_the_results_report_REGENERATES_IDENTICALLY(gated_runs: list[str]) -> None:
+    """The plan's gate: two GATED runs, byte-compared."""
+    first, second = gated_runs
+    differing = _first_differences(first, second)
+    assert not differing, (
+        f"the deliverable does not regenerate identically: {len(differing)} line(s) "
+        f"differ out of {len(first.splitlines())}. First three: "
+        + " | ".join(f"line {n}: {a!r} vs {b!r}" for n, a, b in differing[:3])
+        + " -- this is the gate at docs/milestones/F6.md:261 (R756). A figure that changes "
+        "between two runs of the same tree is not a measurement of the tree."
     )
 
+
+def test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree(
+    gated_runs: list[str],
+) -> None:
+    """The plan's other half: the committed file IS what this tree regenerates.
+
+    The tests either side of this one both hold on a deliverable generated from an older
+    tree and never refreshed. This compares the SHIPPED bytes against a fresh gated run,
+    which is what "regenerates identically from stored results" actually says.
+    """
     assert RESULTS_REPORT.is_file(), RESULTS_REPORT
     shipped = RESULTS_REPORT.read_text(encoding="utf-8")
-    shipped_timings = re.findall(pattern, shipped)
-    assert not shipped_timings, (
-        f"the PUBLISHED report carries {len(shipped_timings)} wall-clock figure(s): "
-        f"{shipped_timings[:4]}. The generator is fixed but the shipped file was not "
-        "regenerated after it."
+    differing = _first_differences(shipped, gated_runs[0])
+    assert not differing and len(shipped.splitlines()) == len(gated_runs[0].splitlines()), (
+        f"the committed deliverable is not what this tree regenerates: "
+        f"{len(differing)} line(s) differ, shipped has {len(shipped.splitlines())} lines "
+        f"against {len(gated_runs[0].splitlines())}. First three: "
+        + " | ".join(f"line {n}: shipped {a!r} vs fresh {b!r}" for n, a, b in differing[:3])
+        + " -- re-run `python scripts/measure/f6_results_report.py`."
+    )
+
+
+def test_R756_no_WALL_CLOCK_figure_in_the_GATED_or_the_SHIPPED_report(
+    gated_runs: list[str],
+) -> None:
+    """The specific non-determinism R756 found, on both the fresh and the shipped bytes."""
+    for label, text in (
+        ("the gated regeneration", gated_runs[0]),
+        ("the SHIPPED report", RESULTS_REPORT.read_text(encoding="utf-8")),
+    ):
+        timings = _PYTEST_DURATION.findall(text)
+        assert not timings, (
+            f"{label} carries {len(timings)} pytest wall-clock figure(s): {timings[:4]}. "
+            "The counts are deterministic and the durations are not, so two runs of the "
+            "same tree yield different documents (R756)."
+        )
+
+
+@pytest.mark.parametrize(
+    "summary",
+    [
+        "22 passed in 3.45s",
+        "1 failed, 11 passed in 14.12s",
+        "22 passed, 1 warning in 3.45s",
+        "53 passed, 2 warnings in 9.01s",
+        "22 passed, 1 skipped in 2.0s",
+        "3315 passed, 2 warnings in 698.74s",
+    ],
+)
+def test_R757_the_duration_pattern_matches_EVERY_form_pytest_prints(summary: str) -> None:
+    """The pattern's own counter-case, because its first version was narrower than its claim.
+
+    Three of the six forms below did not match the original pattern, which required the
+    count adjacent to `" in "`. Two of them are emitted by this repository today -- the
+    reviewer's own whole-suite line and the step report's `664 passed, 1 warning in
+    260.47s`. The gate reddened only by the accident that the eight gate node-sets print a
+    bare count.
+    """
+    assert _PYTEST_DURATION.search(summary), (
+        f"{summary!r} is a form pytest prints and the duration pattern does not match it, "
+        "so a timing in that form would pass the gate above."
     )
