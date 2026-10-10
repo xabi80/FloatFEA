@@ -2928,6 +2928,15 @@ def test_R775_the_report_only_section_0_is_ACCEPTED_beside_a_none_table() -> Non
     `(none)` table. **It must be ACCEPTED.** If a future widening of the locator
     makes this fail, that widening is reporting a correct report as a forgery,
     which is the error the deleted check would have made.
+
+    **WHICH DIRECTION THIS PINS, SAID PLAINLY (R780).** The fixture below is a
+    hand-copied transcription of `report_only_section`'s output, so this test pins
+    **the LOCATOR, not the GENERATOR**: reword `report_only_section` to a capital
+    `Run` and this stays green on a frozen fixture. That is deliberate and it is
+    what the paragraph above describes -- the risk being guarded is a future
+    widening of `_SECTION_0_RUN` -- but it is not a guard on the generator's
+    wording, and nothing here should be read as one. It is benign today because
+    nothing consumes a match on that path: the branch that did was deleted.
     """
     report_only = (
         "## 0. CI at `5c71cb4`, the commit verdict 115 judged "
