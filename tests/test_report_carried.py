@@ -1506,22 +1506,39 @@ def ci_table_defects(zero: str, lookup) -> list[str]:
         # runs and never removes them, so no threshold fixes it, and building a
         # different source of truth would be the forbidden extension.
         #
-        # COVERED, by a cross-check this function already performs on the text it
-        # already has: section 0 and section 0a are two halves of ONE generated
-        # block, and `_SECTION_0_RUN` already parses section 0's own
-        # `Run `<id>`, ... conclusion ...` lines. If section 0 names a run while
-        # 0a says no run exists, the halves contradict each other -- no network,
-        # no drift, and the same shape as the failing-name cross-check below. That
-        # is a READING of the input, not a new reach, which is why it is not an
-        # extension: it calls nothing, opens nothing, and uses a locator this
-        # module already defines.
-        named = _SECTION_0_RUN.findall(zero)
-        if named:
-            return [
-                "the 0a table says `no run at any commit in this round` and "
-                f"section 0 of the same generated block names run {named[0]} -- "
-                "the two halves of one generated section contradict each other"
-            ]
+        # **NOT COVERED EITHER, AND THE REASON IS AN ENTAILMENT, NOT A CHOICE
+        # (R775).** A cross-check stood here: if section 0 named a run while 0a
+        # said none existed, the two halves of one generated block would be
+        # contradicting each other. It was a reading rather than an extension and
+        # it still had to go, because **it cannot fire on any input
+        # `scripts/ci_section.py` can produce.**
+        #
+        #   * every capital-`Run `<id>`,` emitter requires a run to EXIST --
+        #     `section()`'s three branches sit after its own `if not run:` return,
+        #     and `rounds_section`'s block is emitted per run OF THE ROUND;
+        #   * `rounds_runs` filters by TIME (`createdAt > _committed_at(sha)`,
+        #     CY0/R461), and a run at the judged commit is necessarily created
+        #     after that commit -- so it is always inside the window. Therefore a
+        #     `(none)` 0a table ENTAILS no run at the judged commit;
+        #   * which forces `section()` down `if not run:` to
+        #     `report_only_section`, whose line reads
+        #     "**Code-identical run at `<anc>`**: run `<id>`, ..." -- LOWERCASE
+        #     `run`, which `_SECTION_0_RUN` does not match.
+        #
+        # So the zero-run branch and a `_SECTION_0_RUN` match are MUTUALLY
+        # EXCLUSIVE on generated input, and the newest revision of
+        # `docs/reports/F6/step-2.md` is in exactly that state today: zero
+        # `_SECTION_0_RUN` ids in its section 0. **And widening the locator to a
+        # case-insensitive `run` would be worse than useless** -- it would report
+        # the LEGITIMATE report-only state as a forgery, because section 0's only
+        # run reference there is a code-identical ANCESTOR's, which is EW0 and is
+        # correct.
+        #
+        # The contradiction does not exist to be found: section 0 naming a run of
+        # THIS round entails 0a listing it. So this branch accepts the row, the
+        # whole hole is declared above, and
+        # `test_R775_the_report_only_section_0_is_ACCEPTED_beside_a_none_table`
+        # pins the state that the deleted check would have mis-reported.
         return []
     out = []
     for run_id, stated in rows:
@@ -2898,31 +2915,40 @@ def _zero_run_0a() -> str:
     )
 
 
-def test_R770_a_forged_zero_run_row_is_caught_when_section_0_CONTRADICTS_it() -> None:
-    """C89's repair admitted a fifth forged state; this is the half that is closable.
+def test_R775_the_report_only_section_0_is_ACCEPTED_beside_a_none_table() -> None:
+    """The state the deleted cross-check would have mis-reported, pinned (R775).
 
-    Section 0 and section 0a are two halves of ONE generated block. A `(none)` row
-    written while section 0 names a run for the same round is the two halves
-    disagreeing, and `_SECTION_0_RUN` already parses those lines -- so the check is
-    a reading of the text `ci_table_defects` is already handed, with no network and
-    no dependence on `rounds_runs`, which drifts upward after a round closes.
+    R770's repair added a cross-check: section 0 naming a run while 0a said none
+    existed. It was unreachable -- a `(none)` 0a table ENTAILS no run at the judged
+    commit, which forces `section()` down `if not run:` to `report_only_section`,
+    whose run reference is LOWERCASE and names a code-identical ANCESTOR's run.
+
+    So this is the pair that actually occurs, taken from the newest revision of
+    `docs/reports/F6/step-2.md`: EW0's report-only section 0 beside a legitimate
+    `(none)` table. **It must be ACCEPTED.** If a future widening of the locator
+    makes this fail, that widening is reporting a correct report as a forgery,
+    which is the error the deleted check would have made.
     """
-    legitimate = _zero_run_0a()
-    assert ci_table_defects(legitimate, _TRUTH.get) == [], (
-        "the generator's own zero-run row, with nothing in section 0 to contradict "
-        "it, is still read as a defect -- that is C89 unfixed"
-    )
-
-    forged = (
-        "## 0. CI at `abc1234`\n\n"
+    report_only = (
+        "## 0. CI at `5c71cb4`, the commit verdict 115 judged "
+        "— **report-only; no run by design** — conclusion **FAILURE**\n\n"
         + _MARK
-        + "\n\nRun `35563850428`, event push, conclusion **success**.\n\n"
-        + legitimate
+        + "\n\nGenerated: `python scripts/ci_section.py`, anchored on verdict 115 at "
+        "`5c71cb4` through the report's own `Answers:` line. The judged commit touches "
+        "only paths the workflow ignores, so no run was created for it. "
+        "**Code-identical run at `9af9b75c11c1a35b5a413cc92a80faf9381cf92b`**: run "
+        "`38017640023`, event `push`, conclusion **failure**.\n\n"
     )
-    found = ci_table_defects(forged, _TRUTH.get)
-    assert found and "contradict each other" in found[0], (
-        "a `(none)` row written while section 0 of the same generated block names a "
-        f"run for this round is not caught; ci_table_defects returned {found!r}"
+    assert not _SECTION_0_RUN.findall(report_only), (
+        "`_SECTION_0_RUN` matches the report-only section 0. It is written to match "
+        "capital `Run `<id>`,` and this line is lowercase `run` naming an ancestor's "
+        "run -- if it matches now, the locator was widened and R775's reasoning needs "
+        "re-reading before anything is built on it."
+    )
+    assert ci_table_defects(report_only + _zero_run_0a(), _TRUTH.get) == [], (
+        "the legitimate EW0 pair -- a report-only section 0 beside a `(none)` 0a "
+        "table -- is reported as a defect. That is the error R775's deleted "
+        "cross-check would have made on every report-only round."
     )
 
 
