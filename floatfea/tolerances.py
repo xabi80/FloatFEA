@@ -2982,8 +2982,23 @@ F6_API_CLAUSE_INJECTION_EPS: Final[float] = 1.0e-10
 #
 # Reason for 2.0: it is `F4_WINDOW_RULE_MIN_EDGE`, the same floor the window's two edges are
 # held to, used here in the one remaining direction. The shipped margin is `1.024974x`, so
-# the bound clears it by `1.95x` and the three substitutions miss it by two decades. A
-# tighter bound would pin the counter to its own rounding rather than to the measurement.
+# the bound clears it by `1.95x`. A tighter bound would pin the counter to its own rounding
+# rather than to the measurement.
+#
+# **AND THE BOUND IS THE SOLE KILLER OF ONE OF THE FOUR, NOT OF THREE (C74).** This entry
+# said "the three substitutions miss it by two decades", which credits the bound with all of
+# them. Measured, one substitution at a time, by which assertion reddens:
+#
+#     counter assertion -> _worst_move : the INLINE min/max assertion
+#     bracket test      -> _worst_move : THIS BOUND
+#     weak-end `My` moved             : the weakest-name and weakest-point assertions
+#     weak-end `KL/r` moved           : the same two
+#
+# So the bound covers the bracket test and the other three are covered by assertions that do
+# not read it. **EH4's weakening direction, now asserted, also pins the bound from above**:
+# it must sit below `strongest / COUNTER = 276.1x`, the margin the max-over-points
+# aggregation produces, so raising it to `300.0` reddens that test rather than admitting the
+# substitution it was raised to admit.
 # Set: 2026-10-09, F6 step 2
 F6_API_COUNTER_MARGIN_MAX: Final[float] = 2.0
 
@@ -2995,8 +3010,10 @@ F6_API_COUNTER_MARGIN_MAX: Final[float] = 2.0
 # REFUSED A WRONG ONE.** `section_class` divides by `PASCAL_PER_MPA`, so at `fy = 355e3` --
 # S355 entered in kPa -- `D/t = 100` reads `compact` with `limit_1 = 29126.7606`, where the
 # same section at `355e6` reads `reduced_2`. `F_b` then comes back as `0.75 F_y` instead of
-# the reduced branch, which is the wrong allowable by `1.76x` on a section the clause says
-# is slender. `fy = 0.0` raised `ZeroDivisionError` rather than a named refusal.
+# the reduced branch, which is the wrong allowable by `1.205880101064237x` AT THAT
+# SECTION (C71 -- the entry said `1.76x`, which is the ratio at `D/t = 300`, the far
+# end of the clause's range, not at the `D/t = 100` this sentence names). `fy = 0.0`
+# raised `ZeroDivisionError` rather than a named refusal.
 #
 # FB1 had the module refuse a `D/t` outside the clause's range rather than extrapolate; this
 # is the same rule applied to the other load-bearing input.

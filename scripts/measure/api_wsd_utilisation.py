@@ -74,6 +74,12 @@ the bending term in section 3.3.2, so `C_m = 1.0` **raises** every compression u
 and `0.85` is the less onerous of the two (R743). The module's comment had that direction
 backwards, and `C_m` is the second-largest lever in the check."""
 
+_CSV_FIGURES = 6
+"""Significant figures the CSV writes (`{:.6g}`), and therefore the precision any count
+taken from it is measured at. Two utilisations differing in the seventh figure are EQUAL in
+the published file; a count measured at a precision the publication does not carry is not
+checkable by its reader."""
+
 LABELS = (
     "INDICATIVE SIZING SCREEN -- NOT A CODE CASE. API RP 2A-WSD working-stress checks on a "
     "STAND-IN TUBE that is the stiffness equivalent of a triangulated truss of undecided "
@@ -383,14 +389,18 @@ def _write_summary(
     # asserted of all seven where each half holds of a different subset, with a `so` spanning
     # two mechanisms and no cell under it. Measured over the 17 rows:
     #
-    #   all 10 that FIRE are an OVERTAKE: amplified(C_m = 1.0) exceeds simple, by 0.1153%
-    #     to 1.3129%. That is what the predicate detects -- not which form governs.
+    #   all 10 that FIRE are an overtake at `C_m = 1.0` that was NOT one at `0.85`, by
+    #     0.1153% to 1.3129%. **The overtake ALONE holds on 17 of 17 and distinguishes
+    #     nothing (R753, C76)** -- what the predicate sees is `C_m` moving `U` past the
+    #     published precision, which on this table is the change of which form governs.
     #   5 of the 7 that MISS miss because `u_combined` is not the governing channel at all:
     #     beam shear governs those TIPs.
     #   2 miss because the bending term is negligible -- platform:hub1_arm and hub3_arm TIP,
     #     bending share 0.0000%, where the AMPLIFIED form IS governing and `C_m` DOES reach
     #     `U`, by about 1e-10. "Cannot reach it at all" is false on exactly those two.
-    #   0 of the 7 are the both-halves case the old sentence described of all seven.
+    #   **1 of the 7 is the both-halves case (C75)** -- `hub1:buoy1_arm` TIP, beam shear AND
+    #     `f_b = 4.659e-08 MPa`. This comment said `0`; verdict 113 published `1`, and `1`
+    #     is right. The four remaining are shear-governed with `f_b` of `0.1779`/`1.023 MPa`.
     #
     # So "bending-dominated ROOT" is a CORRELATE of the overtake and not its cause, and the
     # coincidence is contingent at one part in a thousand: the tightest overtake is 0.1153%.
@@ -399,6 +409,19 @@ def _write_summary(
     #
     # `MemberCheck.interaction_form` records which half of `max(amplified, simple)` was
     # taken, so there is nothing left to infer.
+    #
+    # **AND THE CLAUSE EXPLAINING THE SECOND COUNT IS DELETED RATHER THAN REPLACED (R753).**
+    # It read "those are the rows where amplified(C_m = 1.0) OVERTAKES simple", which is
+    # false as an identity and empty as an implication: measured on all 17 compression rows,
+    # `amplified(C_m = 1.0) > simple` holds on **17 of 17**, so it distinguishes nothing.
+    # The ten include every row where the SIMPLE form governs at the shipped `C_m` and the
+    # amplified one overtakes it at `1.0`; the seven excluded are also overtakes, the
+    # smallest by `16%` (`hub3:buoy8_arm` TIP, `0.008977` against `0.007717`).
+    #
+    # What I had MEASURED was the stricter predicate -- overtakes at `1.0` AND did not at
+    # `0.85` -- which is `10 of 17` and does coincide with the count. What I WROTE was the
+    # loose one. That is C68 for the second time, so the clause goes: the line below states
+    # only what is counted, which is a definition and carries no inference.
     amplified_rows = [r for r in compression if r["interaction_form"] == "amplified"]
     simple_rows = [r for r in compression if r["interaction_form"] == "simple"]
     cm_visible = [
@@ -434,8 +457,8 @@ def _write_summary(
         f"section 3.3.2 over {len(compression)} compression rows: AMPLIFIED governs on "
         f"{len(amplified_rows)}, SIMPLE on {len(simple_rows)}  (read from "
         f"interaction_form, not inferred -- R752)",
-        f"C_m visibly moves U on {len(cm_visible)} of {len(compression)} -- a DIFFERENT "
-        f"question: those are the rows where amplified(C_m = 1.0) OVERTAKES simple",
+        f"C_m visibly moves the governing U on {len(cm_visible)} of {len(compression)} "
+        f"compression rows, at the {_CSV_FIGURES} significant figures this file publishes",
         f"worst station {worst_row['member']} {worst_row['station']}: "
         f"u_axial = {float(worst_row['u_axial']):.6f}  "
         f"u_bending = {float(worst_row['u_bending']):.5f}  "

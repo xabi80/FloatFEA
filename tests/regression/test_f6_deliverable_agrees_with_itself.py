@@ -90,8 +90,22 @@ def test_the_Cm_VISIBILITY_count_is_the_CSV_s_own_count() -> None:
         for r in rows
         if f"{float(r['utilisation_Cm1']):.6g}" != f"{float(r['utilisation_K2']):.6g}"
     )
-    match = re.search(r"C_m visibly moves U on (\d+) of (\d+)", _summary())
-    assert match is not None, "the summary carries no `C_m visibly moves U on N of M` sentence"
+    match = re.search(
+        r"C_m visibly moves the governing U on (\d+) of (\d+) compression rows, at the "
+        r"(\d+) significant figures",
+        _summary(),
+    )
+    assert match is not None, (
+        "the summary carries no `C_m visibly moves the governing U on N of M compression "
+        "rows, at the K significant figures` sentence. R753 deleted the clause that used "
+        "to follow it -- `those are the rows where amplified(C_m = 1.0) OVERTAKES simple`, "
+        "which holds on 17 of 17 and distinguished nothing -- so this reads the predicate "
+        "and the precision it is taken at, and nothing else."
+    )
+    assert int(match.group(3)) == 6, (
+        f"the summary says the count is taken at {match.group(3)} significant figures and "
+        "this test compares at 6, which is what the CSV writes"
+    )
     assert (int(match.group(1)), int(match.group(2))) == (visible, len(rows)), (
         f"the summary publishes {match.group(1)} of {match.group(2)} and the CSV gives "
         f"{visible} of {len(rows)}"

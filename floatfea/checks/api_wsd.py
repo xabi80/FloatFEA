@@ -136,6 +136,54 @@ class SectionClass:
     """`"compact"`, `"reduced_1"`, `"reduced_2"`, or `"slender"`."""
 
 
+def _require_plausible_fy(fy: float) -> None:
+    """Refuse an `F_y` that is not plausibly in pascals (C60, widened by C72).
+
+    **IT IS A FUNCTION BECAUSE THE REFUSAL REACHED TWO OF THE SIX ENTRY POINTS.** C60 put
+    it inside `section_class`, which `allowable_bending` routes through -- and that is the
+    production path, so nothing shipped was wrong. The API surface was:
+    `allowable_axial_compression(121.5, 2.5, 0.025, 355e3)` returned `F_a = 1.928148e+05`
+    on branch `'inelastic_local'` where the same call at `355e6` returns `7.325207e+07` on
+    `'elastic_local'`, and `column_slenderness_parameter` moved
+    `1.080589e+02 -> 3.417121e+03`. **The branch is a published CSV column and FA2 makes it
+    a reported quantity**, so a caller reaching it through the axial clause got a label the
+    table publishes. `allowable_axial_tension` and `allowable_shear` accepted it too and
+    scale linearly, which is the quiet case: no branch moves and the number is simply wrong.
+
+    "No shipped caller can reach it" was true and is a claim about today's callers.
+    """
+    if not F6_API_FY_PLAUSIBLE_MIN <= fy <= F6_API_FY_PLAUSIBLE_MAX:
+        raise ValueError(
+            f"F_y = {fy!r} Pa is outside the plausible range for structural steel "
+            f"[{F6_API_FY_PLAUSIBLE_MIN:g}, {F6_API_FY_PLAUSIBLE_MAX:g}] Pa. Section "
+            "3.2.3's branch limits are written as 10340/F_y and 20680/F_y with F_y in MPa, "
+            "so this argument's UNIT decides which branch a section lands in -- S355 "
+            "entered as 355e3 reads a D/t = 100 tube as `compact`. SI throughout: pascals "
+            "(docs/conventions.md)."
+        )
+
+
+def _require_tube(d_outer: float, wall: float) -> None:
+    """Refuse a `(D, t)` that is not a tube (C80).
+
+    **A NEGATIVE DIAMETER OR WALL RETURNED `compact` -- THE BEST ALLOWABLE.** `D/t` came out
+    negative and every branch test in section 3.2.3 is an UPPER bound, so a negative ratio
+    satisfies the first one. A zero wall raised `ZeroDivisionError` rather than saying what
+    was wrong, and a zero diameter gave `D/t = 0.0`, also `compact`.
+
+    It is a function for C72's reason: `section_class` and `local_buckling_stress` both
+    divide by `wall`, and a refusal in one of two dividers is a refusal a caller can walk
+    past.
+    """
+    if not d_outer > 0.0 or not wall > 0.0 or wall >= 0.5 * d_outer:
+        raise ValueError(
+            f"D = {d_outer!r} m and t = {wall!r} m are not a tube: both must be positive "
+            "and the wall must be under half the diameter. A negative D/t satisfies every "
+            "branch test in section 3.2.3, because each is an upper bound -- so this "
+            "returned `compact`, the best allowable, rather than refusing (C80)."
+        )
+
+
 def section_class(d_outer: float, wall: float, fy: float = FY_S355) -> SectionClass:
     """§ 3.2.3's branch for a circular tube.
 
@@ -151,15 +199,8 @@ def section_class(d_outer: float, wall: float, fy: float = FY_S355) -> SectionCl
     saying what was wrong. FB1 had this module refuse a `D/t` outside the clause's range
     rather than extrapolate; this is that rule applied to the other load-bearing input.
     """
-    if not F6_API_FY_PLAUSIBLE_MIN <= fy <= F6_API_FY_PLAUSIBLE_MAX:
-        raise ValueError(
-            f"F_y = {fy!r} Pa is outside the plausible range for structural steel "
-            f"[{F6_API_FY_PLAUSIBLE_MIN:g}, {F6_API_FY_PLAUSIBLE_MAX:g}] Pa. Section "
-            "3.2.3's branch limits are written as 10340/F_y and 20680/F_y with F_y in MPa, "
-            "so this argument's UNIT decides which branch a section lands in -- S355 "
-            "entered as 355e3 reads a D/t = 100 tube as `compact`. SI throughout: pascals "
-            "(docs/conventions.md)."
-        )
+    _require_plausible_fy(fy)
+    _require_tube(d_outer, wall)
     d_t = d_outer / wall
     fy_mpa = fy / PASCAL_PER_MPA
     limit_1 = 10340.0 / fy_mpa
@@ -180,11 +221,18 @@ def section_class(d_outer: float, wall: float, fy: float = FY_S355) -> SectionCl
 
 def allowable_axial_tension(fy: float = FY_S355) -> float:
     """§ 3.2.1. `F_t = 0.6 F_y`."""
+    _require_plausible_fy(fy)
     return ALLOWABLE_TENSION_FACTOR * fy
 
 
 def column_slenderness_parameter(fy: float = FY_S355, e: float = E_STEEL) -> float:
-    """`C_c = sqrt(2 pi^2 E / F_y)` -- § 3.2.2's boundary between the two branches."""
+    """`C_c = sqrt(2 pi^2 E / F_y)` -- § 3.2.2's boundary between the two branches.
+
+    `F_y` here is `F_xc` on a slender tube, which is `local_buckling_stress`'s output and is
+    therefore already inside the range -- so the refusal is on the PUBLIC entry and the
+    internal call passes a value this module computed.
+    """
+    _require_plausible_fy(fy)
     return math.sqrt(2.0 * math.pi * math.pi * e / fy)
 
 
@@ -212,6 +260,8 @@ def local_buckling_stress(
     The stand-in tube is `D/t = 13.9`, so `F_xc = F_y` and nothing in F6 is reduced by
     this. It exists because a section that WOULD be reduced must not pass silently.
     """
+    _require_plausible_fy(fy)
+    _require_tube(d_outer, wall)
     d_t = d_outer / wall
     if d_t <= LOCAL_BUCKLING_DT:
         return fy
@@ -317,6 +367,7 @@ def allowable_bending(
 
 def allowable_shear(fy: float = FY_S355) -> float:
     """§ 3.2.4. `F_v = 0.4 F_y`, for beam shear and torsional shear alike."""
+    _require_plausible_fy(fy)
     return ALLOWABLE_SHEAR_FACTOR * fy
 
 
@@ -364,9 +415,15 @@ class MemberCheck:
     `"simple"`. That is deliberate: at a tie the two forms give the same number, so no
     published figure depends on the choice, and `"simple"` is the label that does not claim
     the `C_m / (1 - f_a/F_e')` amplification is doing anything. Solved in closed form, the
-    tie occurs at `KL/r = 60.8`, `f_a/F_e' = 0.02`, `My = 1.263384395e+07 N.m`, where both
-    forms are `0.09426368988411235` bit-identically -- so this is a documented convention
+    tie occurs at `KL/r = 60.8`, `f_a/F_e' = 0.02`, `My = 12633843.953476468 N.m`, where both
+    forms are `0.09426368988411232` bit-identically -- so this is a documented convention
     rather than an unreachable branch.
+
+    **AND THE `My` HERE WAS THE ROUNDED ONE FOR A ROUND (C83).** It read
+    `1.263384395e+07`, and at THAT `My` this field returns `"amplified"` with
+    `u_combined = 0.09426368986817012` -- the opposite label to the one this paragraph
+    states, in the only place the convention is written down. The tie is a single double
+    and a rounded neighbour of it is not a tie.
     """
     u_axial: float
     u_bending: float

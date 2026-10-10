@@ -1,0 +1,39 @@
+{
+  "_": [
+    "POINTERS ONLY (CH4).",
+    "",
+    "F6 STEP 2, REVISION 2. Answers verdict 114 @ bf45e66, which was ROUND 1 OF THREE and a",
+    "HOLD on one item, R753.",
+    "",
+    "R753 IS ANSWERED BY DELETION, which is the second of the two routes its closing",
+    "condition offered. The clause claimed that the ten rows are the ones where",
+    "amplified(C_m = 1.0) overtakes simple. Measured independently on all 17 compression",
+    "rows, that overtake holds on 17 of 17 -- so the clause is false as an identity and",
+    "empty as an implication, exactly as the verdict says. What I had MEASURED was the",
+    "stricter predicate (overtakes at 1.0 AND did not at 0.85), which is 10 of 17; what I",
+    "WROTE was the loose one. Section 2 carries the measurement.",
+    "",
+    "AND SEVEN CLOSURE ITEMS ARE ANSWERED IN THE SAME COMMIT because each is a FALSE FIGURE",
+    "or a missing refusal rather than prose: C71 (1.76x was the D/t = 300 ratio, not the",
+    "D/t = 100 one the sentence names), C72 (the F_y refusal reached two of six entry",
+    "points), C74 (the margin bound credited with three kills when it is the sole killer of",
+    "one), C75 (0 of 7 where it is 1 of 7), C76 (the overtake sentence, R753's own class),",
+    "C80 (a negative diameter returned the BEST allowable), C83 (the tie docstring carried",
+    "the rounded My, at which the field returns the OPPOSITE label), and C73/C81 (EH4's",
+    "weakening direction, unsolved on all three new constants).",
+    "",
+    "C67 comes with R753 and is load-bearing now: _CSV_FIGURES names the precision the count",
+    "is taken at, and the published sentence states it.",
+    "",
+    "WHAT IS NOT HERE: FC2's results report. The blocker and the false figures came first.",
+    "C77/C78/C79 are report figures and C82 is in this revision's own prose; C41 to C70",
+    "stay on the ledger, which FC0 routes past 28 October."
+  ],
+  "answered": {
+    "R753": {
+      "state": "answered",
+      "where": "§2",
+      "site": "scripts/measure/api_wsd_utilisation.py"
+    }
+  }
+}

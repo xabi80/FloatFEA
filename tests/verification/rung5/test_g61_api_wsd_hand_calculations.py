@@ -1344,3 +1344,171 @@ def test_G61_a_TIE_between_the_two_forms_is_recorded_as_simple() -> None:
     above = _member(axial_n=-f_a * AREA, moment_y_nm=my * 1.001, k_l_over_r=kl)
     assert below.interaction_form == "amplified", below.interaction_form
     assert above.interaction_form == "simple", above.interaction_form
+
+
+# ============================================  C72: the refusal reaches EVERY entry point
+def test_EVERY_entry_point_that_takes_F_y_refuses_a_wrong_unit() -> None:
+    """C72: C60's refusal reached two of the six, and the production path was the protected one.
+
+    `allowable_bending` routes through `section_class`, so nothing shipped was wrong. The API
+    surface was not: `allowable_axial_compression(121.5, 2.5, 0.025, 355e3)` returned
+    `F_a = 1.928148e+05` on branch `'inelastic_local'` where the same call at `355e6` returns
+    `7.325207e+07` on `'elastic_local'`, and **the branch is a published CSV column** that FA2
+    makes a reported quantity. `allowable_axial_tension` and `allowable_shear` scale linearly,
+    which is the quiet case: no branch moves and the number is simply wrong.
+
+    # expected: every public entry taking `F_y` refuses `355e3`, and every one accepts `355e6`.
+    """
+    wall = D_OUTER / 100.0
+    calls = {
+        "section_class": lambda fy: section_class(D_OUTER, wall, fy),
+        "allowable_axial_tension": allowable_axial_tension,
+        "allowable_shear": allowable_shear,
+        "column_slenderness_parameter": lambda fy: column_slenderness_parameter(fy, E),
+        "local_buckling_stress": lambda fy: local_buckling_stress(D_OUTER, wall, fy, E),
+        "allowable_bending": lambda fy: allowable_bending(D_OUTER, wall, fy, E),
+        "allowable_axial_compression": (
+            lambda fy: allowable_axial_compression(121.5, D_OUTER, wall, fy, E)
+        ),
+        "check_member": lambda fy: _member(
+            axial_n=-1.0e6, moment_y_nm=1.0e6, wall_m=wall, k_l_over_r=121.5, fy=fy
+        ),
+    }
+    assert len(calls) == 8, sorted(calls)
+    for name, call in calls.items():
+        call(FY)  # the shipped grade is accepted everywhere
+        for bad in (355e3, 355.0, 355e9, 0.0):
+            with pytest.raises(ValueError, match="plausible range for structural steel") as e:
+                call(bad)
+            assert "pascals" in str(e.value), (name, bad)
+
+
+def test_the_INTERNAL_F_xc_call_stays_inside_the_range_at_every_admissible_section() -> None:
+    """The refusal must not fire on a value this module computed for itself.
+
+    `allowable_axial_compression` substitutes `F_xc` for `F_y` and passes it to
+    `column_slenderness_parameter`, which now refuses an implausible `F_y`. So the question is
+    whether `F_xc` can fall below the range on a section the clause admits.
+
+    # expected: F_xc is monotone falling in D/t, and at the clause's own limit D/t = 300 it is
+    # 242.39 MPa -- above the 200 MPa edge. Beyond 300 the axial clause refuses first, so the
+    # internal call never sees a value outside the range.
+    """
+    at_limit = local_buckling_stress(D_OUTER, D_OUTER / 300.0, FY, E)
+    assert at_limit > F6_API_FY_PLAUSIBLE_MIN, (
+        f"F_xc at the clause's own D/t = 300 limit is {at_limit:.6e} Pa, below the "
+        f"plausible-F_y floor {F6_API_FY_PLAUSIBLE_MIN:.6e}. The internal substitution "
+        "would then refuse a value this module computed, which is the refusal firing on "
+        "itself rather than on a caller's unit error."
+    )
+    for d_over_t in (61.0, 100.0, 200.0, 300.0):
+        f_xc = local_buckling_stress(D_OUTER, D_OUTER / d_over_t, FY, E)
+        assert F6_API_FY_PLAUSIBLE_MIN <= f_xc <= F6_API_FY_PLAUSIBLE_MAX, (d_over_t, f_xc)
+        assert allowable_axial_compression(60.8, D_OUTER, D_OUTER / d_over_t, FY, E)[1] == (
+            "inelastic_local"
+        )
+    # and past the clause's limit the AXIAL refusal fires first, not the F_y one
+    with pytest.raises(ValueError, match="exceeds 300"):
+        allowable_axial_compression(60.8, D_OUTER, D_OUTER / 600.0, FY, E)
+
+
+# =============================  EH4: the weakening direction, solved for the three constants
+def test_EH4_the_weakening_boundary_of_each_new_constant_is_SOLVED() -> None:
+    """EH4: a boundary is solved in BOTH directions, including the ones that WEAKEN a gate.
+
+    **THIS WAS APPLIED TO NOTHING WHEN THE THREE CONSTANTS WERE DECLARED**, which the reviewer
+    found and is right about: every boundary in those entries was solved from the side that
+    makes the gate look strong. One sentence per entry is the whole cost.
+
+    # expected, each solved rather than sampled:
+    #   F6_API_COUNTER_MARGIN_MAX  weakens by RISING. It may rise to 276.1x -- the margin the
+    #     `_worst_move` substitution produces -- before that substitution is admitted.
+    #   F6_API_FY_PLAUSIBLE_MIN    weakens by FALLING. It may fall to 3.55e5 before a kPa
+    #     S355 is admitted; it may RISE only to 2.35e8 before S235 is refused.
+    #   F6_API_FY_PLAUSIBLE_MAX    weakens by RISING. It may rise to 3.55e11 before a GPa
+    #     S355 is admitted; it may FALL only to 9.6e8 before S960 is refused.
+    """
+    # --- the margin bound: how far may it RISE before the substitution is admitted?
+    clean, hurt = _quantities(), _injected("CM_JOINT_TRANSLATION")
+    strongest, _ = _worst_move(clean, hurt)
+    weakest, _ = _weakest_live_move(clean, hurt)
+    admitted_at = strongest / F6_API_CLAUSE_AGREEMENT_COUNTER
+    assert admitted_at > F6_API_COUNTER_MARGIN_MAX, (
+        f"the margin bound {F6_API_COUNTER_MARGIN_MAX:g} is at or above {admitted_at:.4g}, "
+        "the margin the max-over-points substitution produces -- so it would be admitted"
+    )
+    assert admitted_at / F6_API_COUNTER_MARGIN_MAX > F4_WINDOW_RULE_MIN_EDGE, (
+        f"the bound may rise only {admitted_at / F6_API_COUNTER_MARGIN_MAX:.4g}x before the "
+        "substitution passes, which is less than the window rule's own floor"
+    )
+    # and the strengthening side: how far may it FALL before the clean margin trips?
+    clean_margin = weakest / F6_API_CLAUSE_AGREEMENT_COUNTER
+    assert clean_margin < F6_API_COUNTER_MARGIN_MAX, (clean_margin, F6_API_COUNTER_MARGIN_MAX)
+
+    # --- the F_y range, both edges, both directions
+    assert F6_API_FY_PLAUSIBLE_MIN > 355e3 * 10.0, (
+        "the low edge may fall to 3.55e5 before a kPa S355 is admitted; it is declared at "
+        f"{F6_API_FY_PLAUSIBLE_MIN:g}, which must clear that by more than a decade"
+    )
+    assert F6_API_FY_PLAUSIBLE_MIN < 235e6, (  # not-a-tolerance: S235's yield, a grade
+        "the low edge may rise only to 2.35e8 before S235 is refused; it is declared at "
+        f"{F6_API_FY_PLAUSIBLE_MIN:g}"
+    )
+    assert F6_API_FY_PLAUSIBLE_MAX < 355e9 / 10.0, (
+        "the high edge may rise to 3.55e11 before a GPa S355 is admitted; it is declared at "
+        f"{F6_API_FY_PLAUSIBLE_MAX:g}, which must clear that by more than a decade"
+    )
+    assert F6_API_FY_PLAUSIBLE_MAX > 960e6, (  # not-a-tolerance: S960's yield, a grade
+        "the high edge may fall only to 9.6e8 before S960 is refused; it is declared at "
+        f"{F6_API_FY_PLAUSIBLE_MAX:g}"
+    )
+
+
+def test_a_GEOMETRY_that_is_not_a_tube_is_REFUSED() -> None:
+    """C80: a negative diameter or wall returned `compact` -- the BEST allowable.
+
+    `D/t` came out negative and every branch test in section 3.2.3 is an UPPER bound, so a
+    negative ratio satisfies the first one. A zero wall raised `ZeroDivisionError` and a
+    zero diameter gave `D/t = 0.0`, also `compact`. The refusal is a funnel for C72's
+    reason: `section_class` and `local_buckling_stress` both divide by `wall`.
+
+    # expected: D and t both positive and t < D/2, refused otherwise; and the refusal
+    # reaches BOTH dividers, not one of two.
+    """
+    bad = (
+        (2.5, 0.0),  # zero wall -- was ZeroDivisionError
+        (-2.5, 0.18),  # negative diameter -- was `compact`
+        (2.5, -0.18),  # negative wall -- was `compact`
+        (0.0, 0.18),  # zero diameter -- was `compact`
+        (2.5, 1.25),  # t = D/2, not a tube
+    )
+    for d_outer, wall in bad:
+        with pytest.raises(ValueError, match="not a tube"):
+            section_class(d_outer, wall, FY)
+        with pytest.raises(ValueError, match="not a tube"):
+            local_buckling_stress(d_outer, wall, FY, E)
+        with pytest.raises(ValueError, match="not a tube"):
+            allowable_bending(d_outer, wall, FY, E)
+    # and the real tube is admitted by all three
+    section_class(D_OUTER, WALL, FY)
+    local_buckling_stress(D_OUTER, WALL, FY, E)
+    allowable_bending(D_OUTER, WALL, FY, E)
+
+
+def test_the_NEGATIVE_D_over_t_would_otherwise_have_returned_the_BEST_allowable() -> None:
+    """C80's counter-case: the direction the defect ran in.
+
+    A refusal that prevents a CONSERVATIVE error is housekeeping. This one prevented the
+    unsafe error: `compact` is the top of section 3.2.3's three branches, so a sign slip on
+    either geometry input returned `F_b = 0.75 F_y` -- the highest allowable the clause has.
+
+    # expected: 0.75 * 355e6 = 266.25e6 Pa is the compact value and the maximum over the
+    # three branches, so returning it on a nonsense section is the worst outcome available.
+    """
+    compact = 0.75 * 355e6
+    over_the_range = [
+        allowable_bending(D_OUTER, D_OUTER / d_over_t, FY, E)[0]
+        for d_over_t in (13.888888888888889, 40.0, 100.0, 300.0, 700.0)
+    ]
+    assert max(over_the_range) == compact, (max(over_the_range), compact)
+    assert all(v <= compact for v in over_the_range)
