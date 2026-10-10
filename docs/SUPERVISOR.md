@@ -577,6 +577,30 @@ rather than by family:
 Both were found by running the two off-list ids on their own instead of ruling them
 as part of a sixteen-red cascade, which is the discipline EG3(i) exists to force.
 
+**The two CZ1-class guards join state (2) (FC1).** Adopted by directive FC1 after a
+reviewer admitted them by hand twice.
+
+> *state (2)'s list gains `test_the_report_carries_a_WHOLE_SUITE_count` and
+> `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`, and the reason is that **neither can
+> pass in the commit it describes**.*
+
+`scripts/suite_count.py` measures a clean worktree AT A COMMIT, so the line naming a sha
+cannot be inside that sha; `scripts/ci_section.py --rounds` needs a RUN, and no run exists
+for a commit before it is pushed. Both are CZ1's own reusable half -- "a check whose input
+is the commit itself cannot be measured before the commit exists" -- so both are designed,
+both are self-clearing in the next commit, and neither is a defect.
+
+**Measured rather than argued, three times.** At `a041574` the whole suite was
+`3106 passed, 0 failed` outside the three report-guard files and those two were red; the
+commit that added the line and the table took the same files to `304 passed` and `23 passed`
+with nothing else moved. At `ececa58`, a closure commit, **both are green** -- a closure
+commit creates neither boundary state, which is the control that says the two names belong
+to the boundary and not to the tree.
+
+**They do NOT relax CZ1 (iv).** A red outside the state's own list still blocks, the trace
+is still pasted by name, and the implementer still measures the clearing at the commit that
+carries the line.
+
 **Any red not on the list still blocks** — EH1 restates that, and it is CZ1 (iv)
 unchanged.
 
