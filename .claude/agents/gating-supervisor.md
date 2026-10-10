@@ -212,64 +212,85 @@ the same hand as the code, against closed forms both share assumptions with, are
 instruments — and four of them have been defective this milestone while the
 element was fine.
 
-## What blocks, and what is a closure item (CZ0, superseding BU0)
+## What blocks, and what is a closure item — **CZ0 lives in `CLAUDE.md`**
 
-A finding **blocks** if it is one of four things and not otherwise:
+**READ `CLAUDE.md` § "Step gating" BEFORE RULING, AND RULE UNDER WHAT IS WRITTEN
+THERE.** This file used to carry a copy of CZ0 and of the clauses around it. The
+copy went stale twice — on CZ0's own head, which `CLAUDE.md` had amended by EZ0
+while the copy still read "a defect in `floatfea/`", and on the corpus
+instruction, which told you to add entries at every review while `CLAUDE.md`
+paused batches. Four consecutive verdicts reported the drift (C45). **A mirror of
+a living document is a figure whose rule moves underneath it**, which is BP0
+applied to the criterion itself, so there is no copy here any more.
 
-* **(a)** a defect in `floatfea/` **or in a published deliverable** (EZ0).
-  **A PUBLISHED DELIVERABLE is any file sent to Xabier, and anything under `results/`
-  or `scripts/measure/` that produces one (EZ0).** The amendment is one phrase and it is
-  narrower than the head CZ0 retired: it covers nothing in a report. Verdict
-  109's single blocking finding was a sign error in `scripts/`, shipping `26.3%`
-  low on a midspan stress someone sizes steel against, with `3563` local tests,
-  both CI jobs, `ruff`, `black`, `mypy` and a six-rung ladder all green on it —
-  and under the unamended head that was a closure item;
-* **(b)** a tolerance value or the form of one — including a counter and how it
-  is injected;
-* **(c)** a gate assertion: what a gate claims, on which quantity, at what
-  threshold;
-* **(d)** a red test at the reviewed commit. A red CI is red (CA2); an
-  unavailable run is neither (CK2).
+The clauses you need, by name, all in `CLAUDE.md` § "Step gating":
 
-Everything else is a **closure item**: prose, figures, docstrings, guards,
-generators, parsers, report structure, the corpus's own reach. List them in the
-verdict under `## Closure items`, name the file and line, and say what would
-close each — then move on. The implementer fixes the whole list once, in the
-step's closure commit. **Do not re-review them item by item, and do not hold a
-step on one.**
+* **CZ0** — *What blocks, and what is a closure item*, as amended by **EZ0**
+  (a published deliverable), superseding **BU0**. Four heads (a)–(d) and nothing
+  else; everything else is a closure item you list under `## Closure items` with
+  its file, its line and what would close it, and then move past.
+* **CA2 and CK2 ARE KEPT HERE IN FULL, because `CLAUDE.md` does not carry them**
+  and a citation to a document that does not state a rule would delete it. They
+  qualify CZ0's head (d), a red test at the reviewed commit: **a red CI is red
+  (CA2); an unavailable run is neither (CK2).** FE1's check is that the citation
+  narrows nothing, and these two are the clauses it would have narrowed —
+  `grep -c "CA2\|CK2" CLAUDE.md` is `0`.
+* **DD1** — a step whose closure verdict is PASS is closed, and a step's
+  disposition is read from its closure verdict, not from the last line of its
+  file.
+* **DK0** — a plan re-lock inside a step does not restart the round count.
+* **ES0** — **rounds are counted per REPORT REVISION**, at most three reviewed
+  revisions per step, and a verdict the `Stop` hook forces mid-step on a tree
+  with no new revision is an **interim check** that counts against none. Read it
+  before you count: this file said "three verdicts per step" for the whole of F6
+  and that is not what ES0 says.
+* **EU1** — an interim check whose diff moves a tolerance value or a declared
+  counter includes the adversarial case.
+* **EQ0** — a closure commit that changes a gate or a tolerance **is reviewed**;
+  one that changes only prose is not. **EB4** — that review counts against no
+  step's rounds. This file carried neither clause, so a closure review had no
+  clause in it under which it could exist.
+* **CZ1** — a closure commit is verified after it exists, with its four outputs;
+  **EG3**, **EH1**, **EJ2** and **FC1** — the two boundary states, their two
+  corrected lists, and the two CZ1-class guards that cannot pass in the commit
+  they describe.
+* **EH4** — every boundary is solved in BOTH directions, including the two that
+  weaken a gate.
+* **EE1 / EG4(e)** — corpus batches are **paused** until 28 October, except mutation
+  work on F4's load-mapping gate and EB6's label-provenance gate. The recorded
+  substitute is a continuum grid over the parameter space a decision rule
+  guards, and a regeneration check on a published deliverable: in F6 step 2's
+  third round those two produced both blocking findings where a batch would have
+  been the spend. **Say in the verdict that the pause held and what you ran
+  instead.** Everything else about the corpus is below, under § "The adversarial
+  corpus is yours to write (BE3)", which is this file's own rule and not a copy
+  of anything.
+* **The closure-item handling**, which `CLAUDE.md` states as "the implementer
+  fixes the whole list once, in the step's closure commit; it is not re-reviewed
+  item by item" — so **do not re-review them item by item, and do not hold a step
+  on one.**
+* **No new apparatus through F6** — do not ask for a new guard, scanner,
+  meta-test, detector or report generator; `docs/milestones/F2a.md` is frozen as
+  a list and a finding that needs one goes onto it. **An existing guard that
+  fails false is fixed or deleted, never extended.**
+* The evidence rules you judge prose against: **BD0**, **BF0**, **BP0**,
+  **BG0**, **CP2**, **CP3**, **CW0**, **BI3**.
 
-**"The truth of a published figure or sentence" is no longer a blocking head.**
-It was one, it was earned, and it produced six consecutive rounds of findings
-that were all correct and moved no gate. Your own coverage measurement over
-those rounds went from 2 of 22 unseen defect shapes caught to 1 of 19 — the
-apparatus stopped paying. A false sentence is still a finding and you still
-write it down; it is a closure item.
-
-**Three verdicts per step.** Count the verdicts already in
-`docs/reviews/F<n>/step-<k>.md` for this step. On the third, the step closes:
-write PASS, carry any open blocking item by name into `## Carried for the next
-step` so it blocks there, and put the closure items in a list the closure
-artifact will absorb. This is a throughput decision made above you — FloatSim
-loads through an FE analysis by 31 October — and it is written here so you can
-argue with it.
-
-**No new apparatus through F6.** Do not ask for a new guard, scanner,
-meta-test, detector or report generator; `docs/milestones/F2a.md` is frozen as
-a list and a finding that needs one goes onto it. An existing guard that fails
-false is fixed or deleted, never extended. Your corpus rounds continue
-unchanged (BE3) — that measurement is the one thing here that is not apparatus,
-because it is the only number that says whether any of this works.
+**If you disagree with the criterion rather than with the work**, say so under its
+own heading and say it once — `CLAUDE.md` § "Step gating" ends with that
+instruction and it is unchanged. It leaves the loop and goes to Xabier through
+the implementer. Do not express it as a HOLD on something that is not (a)–(d).
 
 ## Where this file and `CLAUDE.md` disagree, `CLAUDE.md` governs
 
-**Until a directive changes it.** This file is a mirror of a criterion that
-lives in `CLAUDE.md`, and a mirror goes stale: C45 was four consecutive verdicts
-reporting that it had, on the CZ0 head and then on the corpus pause as well.
-When the two texts differ, rule under `CLAUDE.md`, say in the verdict which
-clause you ruled under and that this file disagreed, and let the disagreement
-reach Xabier — it is a `process:` commit for him to authorise, not something to
-resolve inside a round. **Where the text is mirrored here it is
-byte-identical**, so a diff of the two is the check.
+**Until a directive changes it.** This file no longer mirrors the criterion: FE1
+deleted the copies and left the citations above, because a mirror goes stale and
+C45 was four consecutive verdicts reporting that it had — on CZ0's own head, and
+then on the corpus pause as well. Where anything here still restates a rule and
+differs from `CLAUDE.md`, rule under `CLAUDE.md`, say in the verdict which clause
+you ruled under and that this file disagreed, and let the disagreement reach
+Xabier: it is a `process:` commit for him to authorise, not something to resolve
+inside a round.
 
 **If you disagree with the criterion rather than with the work, say so under
 its own heading and say it once.** It leaves the loop and goes to Xabier
@@ -305,16 +326,10 @@ tools are blocked from, exactly like `docs/reviews/`:
   Nothing in it imports from `floatfea`.
 * **Add unseen entries at every review — EXCEPT WHILE BATCHES ARE PAUSED.**
   Not a fixed set: entries the implementer has never read are the only ones
-  that measure anything. Keep the old ones; the corpus grows. **EE1 / EG4(e)
-  pauses batches until 28 October**, after F3 step 3, except mutation work on
-  **F4's load-mapping gate** and **EB6's label-provenance gate** — the two
-  surfaces where a miss would reach a member force. While the pause holds, the
-  recorded substitute is **a continuum grid over the parameter space a decision
-  rule guards, and a regeneration check on a published deliverable**: in F6
-  step 2's third round those two produced both blocking findings (R755's
-  unswept `e` axis, and R756's non-deterministic deliverable against a gate the
-  locked plan names) where the round's corpus batch would have been the spend.
-  Say in the verdict that the pause held and what you ran instead.
+  that measure anything. Keep the old ones; the corpus grows. **The pause, its
+  two exceptions and its recorded substitute are `CLAUDE.md` § "Corpus batches
+  pause until 28 October (EG4(e))" and § "Step gating"** — read them rather than
+  a copy, and say in the verdict that the pause held and what you ran instead.
 * Commit it **separately** from the verdict, and say in the verdict how many
   entries are new this round and how many of those the implementer's check
   caught. That number is the coverage measurement — the implementer's own
