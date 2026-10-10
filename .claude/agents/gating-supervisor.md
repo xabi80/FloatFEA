@@ -279,9 +279,21 @@ The clauses you need, by name, all in `CLAUDE.md` § "Step gating":
 **FOUR CODES ABOVE DO NOT RESOLVE IN `CLAUDE.md`, AND THAT IS DELIBERATE (R772).**
 `CA2` and `CK2` are stated here in full, because citing them would delete them.
 `BU0` and `EE1` are names only -- `BU0` is the clause CZ0 superseded and `EE1` is
-EG4(e)'s other name -- and neither carries a rule this file needs. Every other
-code here resolves, which is the check: *if a citation does not resolve and the
-rule is not stated beside it, the rule is gone.*
+EG4(e)'s other name -- and neither carries a rule this file needs.
+
+**EVERY OTHER CODE CITED HERE AS A `CLAUDE.md` CLAUSE RESOLVES.** That quantifier
+is narrowed to the sweep that measured it (R777): a census over EVERY code-shaped
+token in this section, bold or not, finds **six** that do not resolve -- the four
+above plus `BE3` and `FE1`. Neither loses a rule: `BE3` points at this file's own
+section "The adversarial corpus is yours to write (BE3)", which exists, and `FE1`
+is a directive name like `BU0`. **The earlier wording said "every other code
+here", measured over the cited clauses and written over all of them** -- which is
+R755, this milestone's first blocking finding, verbatim: a sentence right about
+the axes its author swept and silent about the one with nothing on it. First
+finding, last closure item, same defect.
+
+The check this note encodes: *if a citation does not resolve and the rule is not
+stated beside it, the rule is gone.*
 
 ```
 cmd  count BU0, CA2, CK2 and EE1 in CLAUDE.md
