@@ -216,7 +216,14 @@ element was fine.
 
 A finding **blocks** if it is one of four things and not otherwise:
 
-* **(a)** a defect in `floatfea/`;
+* **(a)** a defect in `floatfea/` **or in a published deliverable** (EZ0).
+  **A PUBLISHED DELIVERABLE is any file sent to Xabier, and anything under `results/`
+  or `scripts/measure/` that produces one (EZ0).** The amendment is one phrase and it is
+  narrower than the head CZ0 retired: it covers nothing in a report. Verdict
+  109's single blocking finding was a sign error in `scripts/`, shipping `26.3%`
+  low on a midspan stress someone sizes steel against, with `3563` local tests,
+  both CI jobs, `ruff`, `black`, `mypy` and a six-rung ladder all green on it —
+  and under the unamended head that was a closure item;
 * **(b)** a tolerance value or the form of one — including a counter and how it
   is injected;
 * **(c)** a gate assertion: what a gate claims, on which quantity, at what
@@ -253,6 +260,17 @@ false is fixed or deleted, never extended. Your corpus rounds continue
 unchanged (BE3) — that measurement is the one thing here that is not apparatus,
 because it is the only number that says whether any of this works.
 
+## Where this file and `CLAUDE.md` disagree, `CLAUDE.md` governs
+
+**Until a directive changes it.** This file is a mirror of a criterion that
+lives in `CLAUDE.md`, and a mirror goes stale: C45 was four consecutive verdicts
+reporting that it had, on the CZ0 head and then on the corpus pause as well.
+When the two texts differ, rule under `CLAUDE.md`, say in the verdict which
+clause you ruled under and that this file disagreed, and let the disagreement
+reach Xabier — it is a `process:` commit for him to authorise, not something to
+resolve inside a round. **Where the text is mirrored here it is
+byte-identical**, so a diff of the two is the check.
+
 **If you disagree with the criterion rather than with the work, say so under
 its own heading and say it once.** It leaves the loop and goes to Xabier
 through the implementer. Do not express it as a HOLD on something that is not
@@ -285,9 +303,18 @@ tools are blocked from, exactly like `docs/reviews/`:
 * It holds **test data, never test code** — one candidate per line, plus a
   header naming what the file is a corpus of and what a passing scan means.
   Nothing in it imports from `floatfea`.
-* **Add unseen entries at every review.** Not a fixed set: entries the
-  implementer has never read are the only ones that measure anything. Keep the
-  old ones; the corpus grows.
+* **Add unseen entries at every review — EXCEPT WHILE BATCHES ARE PAUSED.**
+  Not a fixed set: entries the implementer has never read are the only ones
+  that measure anything. Keep the old ones; the corpus grows. **EE1 / EG4(e)
+  pauses batches until 28 October**, after F3 step 3, except mutation work on
+  **F4's load-mapping gate** and **EB6's label-provenance gate** — the two
+  surfaces where a miss would reach a member force. While the pause holds, the
+  recorded substitute is **a continuum grid over the parameter space a decision
+  rule guards, and a regeneration check on a published deliverable**: in F6
+  step 2's third round those two produced both blocking findings (R755's
+  unswept `e` axis, and R756's non-deterministic deliverable against a gate the
+  locked plan names) where the round's corpus batch would have been the spend.
+  Say in the verdict that the pause held and what you ran instead.
 * Commit it **separately** from the verdict, and say in the verdict how many
   entries are new this round and how many of those the implementer's check
   caught. That number is the coverage measurement — the implementer's own
