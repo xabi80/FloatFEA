@@ -1,4 +1,505 @@
 # Review — F6 step 2
+Reviewed commit: 4bc359f5a575f72f5a9cf692ff0d58fb10eeead0
+Verdict: HOLD
+Reviewed commit: 4bc359f5a575f72f5a9cf692ff0d58fb10eeead0
+Tests: 3315 passed, 8 failed, 0 skipped   (my run, `python -m pytest -q`, 700.18s)
+
+## Round of 2026-10-10 -- F6 CLOSURE, an EQ0 REVIEW OF A CLOSURE COMMIT. **COUNTS AGAINST NO ROUND (EB4).** Step 2 closed PASS at verdict 116; this is not a fourth round on its work. **HOLD on one item, and it is the second half of R756 -- the half verdict 116 named in advance: "R756's condition has two halves and half of an item is not the item: the deterministic status column AND the assertion."** The status column half is done and I verified it by the route the commit did not take. The assertion half is asserted on the document MINUS the status column, and the status column is the only region in which the non-determinism ever lived. FD1's edit to my own definition deletes no guard and narrows no instruction; one sentence in its commit message overstates its own byte-identity claim and I say where.
+
+**WHICH CLAUSE I RULED UNDER, as the new precedence heading in my definition requires.**
+I ruled under `CLAUDE.md` section "Step gating": EQ0 (a closure commit that changes a gate or
+a tolerance is reviewed), EB4 (that review counts against no step's rounds), CZ0 (a)-(d) with
+EZ0's amendment, and EG3/EH1/FC1 for the boundary red. **My agent definition disagrees with
+`CLAUDE.md` in three further places that FD1 did not reach**, and under the precedence clause
+I name them rather than resolve them:
+
+* it says "**Three verdicts per step** ... count the verdicts already in the file";
+  `CLAUDE.md` ES0 says **three reviewed REVISIONS**, and that an interim check counts against
+  none. On the definition's text this review would be a fourth verdict in step 2's file and
+  inadmissible.
+* it has **no EQ0 and no EB4** at all, so it has no clause under which a closure commit is
+  reviewed -- which is the thing I was invoked to do.
+* its corpus section now carries EG4(e) correctly, and its **substitute paragraph has no
+  mirror in `CLAUDE.md`** -- additive, contradicting nothing, but it is new mirror surface and
+  the next stale-mirror finding will be about it.
+
+I followed `CLAUDE.md` in all three. That is C45's third instalment and it goes out the same
+way, not into a round.
+
+## Carried
+
+**From verdict 116 (the latest verdict, `449ee6b`). Its two blocking items and its four
+travelling conditions, each with status.**
+
+**R755 -- ANSWERED, site by site, and I re-derived the boundary rather than reading TABLE 4.**
+All three sites now state the scope actually swept and name `e` as unguarded:
+`floatfea/tolerances.py:3074-3083`, `floatfea/checks/api_wsd.py:180-184`,
+`docs/milestones/F6.md:298`. I checked the direction of the exposure and the completeness of
+the new quantifier independently.
+
+```
+claim  the new quantifier is TRUE at the worst corner, and `e` has a ONE-SIDED exposure only
+       -- downward -- so "the floor breaks below 5e10" does not hide an upper break
+cmd    grid over the admissible product space, straight through the module: D/t in
+       [60.0, 300.0] step 0.1, fy in {2.0e8, 2.35e8, 3.55e8, 6.9e8, 1.0e9},
+       e in {5.0e10, 5.0000001e10, 2.1e11, 2.1e14, 1e20}; min F_xc, then
+       `_require_plausible_stress` on it
+out    e=5.0000e+10  min F_xc=1.000000e+08 at D/t=300.0 fy=2.000e+08  admitted=True
+       e=5.0000e+10  min F_xc=1.000000e+08 at D/t=300.0 fy=2.000e+08  admitted=True
+       e=2.1000e+11  min F_xc=1.365576e+08 at D/t=300.0 fy=2.000e+08  admitted=True
+       e=2.1000e+14  min F_xc=1.365576e+08 at D/t=300.0 fy=2.000e+08  admitted=True
+       e=1.0000e+20  min F_xc=1.365576e+08 at D/t=300.0 fy=2.000e+08  admitted=True
+rule   `_require_plausible_stress`'s comparison against `F6_API_STRESS_PLAUSIBLE_MIN = 1.0e8`
+judge  THREE THINGS, AND THE THIRD IS WHY I ACCEPT THE SENTENCE RATHER THAN ASKING FOR MORE.
+       (i) at `e = 5.0e10` exactly the corner is `1.000000e+08` and is ADMITTED, so the break
+       is STRICTLY below, which is what all three sites say -- they do not say "at or below".
+       (ii) above the shipped `e` the corner is pinned at `1.365576e+08` for fourteen further
+       decades, so there is no upper-side break and no site claims one. (iii) `F_xc` is a
+       function of exactly `(d_outer, wall, fy, e)` and `wall`/`d_outer` enter only as the
+       ratio (`f_xe = 2 C e t / D`), so `(F_y, D/t)` plus `e` EXHAUSTS the argument list. The
+       repaired quantifier is therefore complete, not another partial one -- which is the
+       thing R755 was, and the specific way a repair of R755 could have been R755 again.
+```
+
+The direction is also right, and it is the cheap direction: below `5e10` the module **refuses
+a section the clause admits** -- a false REFUSAL, not a silent wrong number. `api_wsd.py:182`
+says exactly that; the `tolerances.py` entry says "the floor breaks", which is consistent but
+vaguer. I checked TABLE 4 against the closed form and against the module, and its `0.000e+00`
+agreement reproduces here.
+
+**C96 -- LEDGERING IT IS DEFENSIBLE, AND I WAS ASKED TO RULE.** I rule that it is, on
+measurements rather than on the ledger's say-so. `e` reaches the clause module only as
+`E_STEEL` on every shipped path -- the single production consumer is
+`scripts/measure/f6_results_report.py:714`, which passes `E_STEEL` by name, and a grep for the
+five entry points returns nothing else outside `api_wsd.py`, `r754_stress_vs_grade.py` and
+rung-5 tests that also pass `E_STEEL`. The exposure is one-sided and downward, so a caller who
+passes a low modulus gets a **named refusal**, not a wrong allowable; `E_STEEL` clears the
+break by `4.2000x`. And C60 was ruled closure-class for the identical shape on `F_y` in the
+same module. A missing predicate on an argument no shipped path varies, whose failure mode is
+a refusal, is not CZ0 (a). **It would stop being defensible the moment a material becomes an
+input** -- which is one schema row away -- and the ledger entry says so.
+
+**R756 -- FIRST HALF ANSWERED, SECOND HALF IS R757 BELOW.** The status column is deterministic
+and I measured it by the route the commit's own gate does not take:
+
+```
+claim  the deliverable AS PUBLISHED -- generated WITH the gates, which is how the shipped file
+       was made -- regenerates byte-identically, and the shipped bytes are that output
+cmd    python scripts/measure/f6_results_report.py --out $S/g1/r.md
+       python scripts/measure/f6_results_report.py --out $S/g2/r.md
+       diff $S/g1/r.md $S/g2/r.md ; diff $S/g1/r.md results/F6/floatfea_results_report.md
+out    GATED DOUBLE RUN: byte-identical
+       SHIPPED == fresh GATED run: byte-identical
+rule   byte equality, no tolerance
+judge  the FACT the plan's gate asserts is TRUE at this commit. What is not asserted is this
+       fact; see R757. I also checked the `--no-gates` exclusion's stated reason and it holds:
+       `grep -nE "datetime|time\.|perf_counter|strftime|now\(\)" scripts/measure/f6_results_report.py`
+       returns nothing, so `_run_gate`'s subprocess output IS the only channel a timing can
+       enter the document through. The sentence is sound, not convenient. The gate built on it
+       is not.
+```
+
+The counter-case claim verifies. With `counts = tail[-1]` restored the published cell reads
+`N passed in X.XXs`, which the second test's pattern matches, and the determinism test is
+untouched because `--no-gates` never calls `_run_gate` -- so `1 failed, 11 passed` is exactly
+right, and `12 passed` on the first version is exactly right too. I ran the file as shipped:
+`12 passed in 14.94s`.
+
+**Verdict 116 condition 3 -- THE EIGHT REDS DID NOT CLEAR, AND 116 NAMED WHERE TO LOOK.** It
+said: "If they do not clear, that is a finding in the guards and not in the work -- C88 and
+C89 are the two places I would look first." It is C89. Traced individually, not by family:
+
+```
+claim  the baseline's own failure line is C89's, and the seven planted states cascade off it
+cmd    python -m pytest tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW -q -p no:randomly
+out    assert rows, "the 0a table has no rows..."
+       AssertionError: ... assert []
+       1 failed in 0.34s
+judge  it never reaches `gh`. `_ROUNDS_ROW.findall` returns `[]` because the generator's
+       truthful `(none)` row has no backticked nine-digit id -- C89 verbatim. Each of the
+       seven `test_the_guard_survives_the_state[...]` failures carries the SAME `FAILED` id in
+       its own subprocess trace (`1 failed, 125 passed in 0.78s`), which is EH1's test for a
+       cascade: the baseline red plus each state's own failure line, not the name.
+```
+
+**Verdict 116 condition 4 -- ANSWERED, AND I AGREE WITH THE ANSWER.** 116 required the next
+reader to say whether R756's assertion is new apparatus under the F6 freeze or the gate the
+plan already names, and "do not leave both". It is the gate the plan names
+(`docs/milestones/F6.md:261`), the implementer built it as that, and nothing is struck from the
+plan. Said once, on the record.
+
+**C93 -- CLOSED.** FC0, FC2 and FC3 are in `docs/milestones/F6.md` section "FA, FB, FC" with
+both deviations from FC2 stated. I read the FC2 block against the wording my own earlier
+invocation quoted to me and they agree; the block's header says where it paraphrases.
+
+**C45 -- CLOSED BY FD1, AND I DIFFED IT MYSELF RATHER THAN TAKING THE CLAIM.**
+
+```
+claim  `eb625bd` is standalone, touches only the reviewer's definition, and the three changes
+       delete no guard and narrow no instruction relative to the text in force
+cmd    git show --name-only --format="" eb625bd ; git diff eb625bd^..eb625bd
+out    .claude/agents/gating-supervisor.md
+       1 file changed, 31 insertions(+), 4 deletions(-)
+judge  FOUR LINES REMOVED, EACH ACCOUNTED FOR. One was `* **(a)** a defect in floatfea/;`,
+       replaced by the WIDER EZ0 head. Three were the corpus bullet's "Add unseen entries at
+       every review", replaced by the same instruction plus EG4(e)'s pause -- a narrowing OF
+       THE DEFINITION but not of the instruction in force, because `CLAUDE.md` EG4(e) already
+       pauses batches and the definition had been instructing the opposite. Nothing else is
+       removed. The precedence heading and the substitute paragraph are purely additive.
+       **This is not a STOP**: standalone `process:` commit, cites FD1, touches no `floatfea/`
+       and no `tests/`, removes no guard. I also checked the three remaining mirrored heads
+       (b), (c), (d) -- (b) and (c) are substantively `CLAUDE.md`'s with different punctuation,
+       (d) carries CA2/CK2 which `CLAUDE.md` does not, additively.
+```
+
+One overstatement in that commit's message, and it is exactly the class I am here to catch:
+
+```
+claim  the message says "the mirrored block is byte-identical to CLAUDE.md's, modulo the
+       two-space list indent", with `out  byte-identical when de-dented: True`
+cmd    de-dent the agent definition's whole `* **(a)**` bullet and test it for membership in
+       CLAUDE.md; then test the EZ0 DEFINITION paragraph alone
+out    whole (a) bullet dedented in CLAUDE.md: False
+       EZ0 definition paragraph, dedented, in CLAUDE.md: True
+judge  the load-bearing half IS byte-identical -- the two sentences defining a published
+       deliverable, `CLAUDE.md:159-161`. The trailing earned-reason sentence is a PARAPHRASE:
+       `CLAUDE.md:164-170` says "a **sign error in the repair of the previous finding in that
+       class** -- `mid[5]` subtracting where it must add"; the definition says "a sign error in
+       `scripts/`". **No meaning is shifted** -- sign error, in `scripts/`, `26.3%` low, every
+       instrument green -- and no part of the HEAD differs. What is wrong is the word "block",
+       and an `out` line reading True for something that is False. Closure item, R764.
+```
+
+## Findings
+
+**ONE BLOCKS. It is CZ0 (c), and it is the second half of an item verdict 116 split in
+advance.**
+
+**R757. (BLOCKING -- (c), A GATE ASSERTION: THE QUANTITY IS THE DOCUMENT MINUS THE ONLY REGION
+THE DEFECT EVER LIVED IN.)** `tests/regression/test_f6_deliverable_agrees_with_itself.py`.
+
+`test_R756_the_results_report_REGENERATES_IDENTICALLY` is named for the plan's gate and its
+docstring calls itself "the plan's gate, as a test". It compares two `--no-gates` runs. With
+`--no-gates`, `scripts/measure/f6_results_report.py:477-492` never calls `_run_gate`, every
+status cell reads `not run`, and **the entire "pytest's own summary for each row" fenced block
+is not emitted at all** -- `if gate_runs:` is false. R756's eight differing lines were all
+inside that block. So the determinism assertion is green on R756's own state **by
+construction**, and that is the same shape as the version the commit itself threw away, one
+level out: version 1 could not fail at all; version 2 has one test that cannot fail on this
+defect and one that can.
+
+The whole burden therefore falls on the second test, and its quantity is narrower than its
+claim:
+
+```
+claim  `test_R756_the_published_report_carries_NO_WALL_CLOCK_figure`'s pattern misses a
+       wall-clock figure in three of the five summary forms pytest actually emits
+cmd    re.search(r"\d+ (?:passed|failed) in [\d.]+s", s) for five real summary lines
+out    22 passed in 3.45s                  -> MATCH
+       1 failed, 11 passed in 14.12s       -> MATCH
+       22 passed, 1 warning in 3.45s       -> MISS
+       53 passed, 2 warnings in 9.01s      -> MISS
+       22 passed, 1 skipped in 2.0s        -> MISS
+rule   the test's own assertion, `assert not timings`
+judge  the pattern requires the count to be ADJACENT to " in ". pytest puts warning and skip
+       counts between them, and this tree emits them: the closure artifact's own section 0
+       pastes `664 passed, 1 warning in 260.47s`, and my whole-suite run ends `8 failed,
+       3315 passed, 2 warnings in 700.18s`. Today the eight gate node-sets happen to print
+       plain `N passed`, so the gate does redden on R756's state -- I verified that. It stops
+       reddening the day a DeprecationWarning or a skip appears anywhere in
+       `tests/verification/rung3/test_platform_skeleton.py`,
+       `rung4/test_f4_g41_dynamic.py`, `rung4/test_f4_static_and_mapping.py` or
+       `rung5/test_g61_api_wsd_hand_calculations.py` -- four whole modules, none of which has
+       any connection to this gate. **A gate whose reach depends on a contingency nobody would
+       think to protect is the assertion-domain-blindness guard, and this is it.**
+```
+
+And the same overstatement is on the face of the **published deliverable**, which is EZ0's
+carve-out: `results/F6/floatfea_results_report.md:450-452` says "`docs/milestones/F6.md`'s
+step-2 gate requires that it regenerate identically, and `tests/regression/` asserts that".
+`tests/regression/` asserts that of the document **without** section 5's status block. A reader
+of the deliverable takes the sentence to be about the file in their hands.
+
+**Closed when the determinism comparison is taken on the GATED document** -- which is the
+plan's gate exactly, costs one extra gated pass over what the second test already pays, and
+**is green today**: I measured two gated runs byte-identical and the shipped file
+byte-identical to a fresh gated run, both above, so this repair cannot be a widening and
+cannot fail. If instead only the pattern is widened to `r"in [\d.]+s"`, say so and say why the
+weaker form was kept. Either way the deliverable's sentence is brought into line with what is
+asserted, in the same commit, and the determinism test's name and docstring stop claiming the
+whole document. **No new apparatus is requested: one existing assertion's quantity, and one
+published sentence.**
+
+## Closure items
+
+Listed with file and line, fixed once, not re-reviewed. **Three of the new ones are in the
+closure artifact, which is the first document in this milestone that nothing re-reads.**
+
+* **R758.** `results/F6/floatfea_results_report.md:453-456`, the PDF sentence. FD2's finding
+  was that a footer claim about the ENVIRONMENT went stale; the repair replaces it with a claim
+  about an artifact and a document **outside the repository**, which is the same shape.
+  Measured: no PDF is tracked (`git ls-files` filtered for a pdf suffix returns empty), the
+  working tree is clean with no untracked files, nothing in the tree names a renderer except
+  `docs/reports/F6/step-2.md:1455-1462` recording that none was available, and none of
+  `markdown`, `xhtml2pdf`, `reportlab`, `pypdf`, `weasyprint` is installed in the only
+  interpreter on this machine (`py -0p` lists one, 3.13.11). So "The cover note states the
+  renderer and its version" points at a document a repository reader cannot reach, and the
+  four version strings the invocation gave me are recorded nowhere in the tree. **I do not call
+  the sentence false -- I cannot refute it -- I record it as UNVERIFIED.** Closed when the
+  toolchain and the pypdf verification are committed as a `results/F6/` note, or when the
+  cross-reference is deleted and the footer says only that a PDF is sent separately and is not
+  reproducible from this tree. *For whoever writes the next deliverable: this footer has now
+  made three claims about things outside the repository and two of them went wrong. A
+  deliverable should claim only what the tree can show.*
+* **R759.** `docs/milestones/F6.md:298`, the `F6_API_STRESS_PLAUSIBLE_MIN` row. It says "the
+  elastic term caps `F_xc` at `4.2e8` from `D/t = 252.5` upward, so above that crossover
+  `F_xc` is grade-independent". `floatfea/tolerances.py:3100` says the same thing **with "at
+  S690"**; the plan row dropped the qualifier, and without it the sentence is false and is
+  refuted by the clause before it in the same row. Measured: the elastic term is `4.9901e+08`
+  at `D/t = 252.5` and reaches `4.2e8` only at `D/t = 300`; the crossover at the grade CEILING
+  is `D/t = 151.165`; and at `D/t = 300` `F_xc` spans `1.3656e+08` to `4.2000e+08` across the
+  admissible grades, a factor of `3.08` -- which is exactly why "the binding corner is the
+  grade FLOOR at the `D/t` CEILING", the row's own neighbouring sentence. The `tolerances.py`
+  form is also a BG0 miss: the elastic cap explains the TIE between TABLE 2's last two rows,
+  not the LOCATION of the minimum, which is at the grade floor because the inelastic term is
+  proportional to `F_y` and would be there with no cap at all. Closed when the plan row carries
+  the "at S690" qualifier and the "which is why" is reduced to what was measured. **None of the
+  entry's load-bearing numbers moves** -- `1.0e8`, `1.3655759329e+08`, `3.550000e+05` all
+  reproduce here -- which is why this is not (b).
+* **R760.** `docs/closure/F6.md:25-28`, section 0's judge line. It attributes the eight reds
+  to "FC1's own class ... FC1 puts it in state (2) because it cannot pass in the commit it
+  describes". The name is on FC1's list, but **the failure line is not FC1's mechanism**: the
+  baseline fails at `assert []` in `_ROUNDS_ROW.findall`, never reaching `gh`, which is C89.
+  EH1 is explicit that a boundary state is "identified by the baseline being red and by each
+  cascading state's own failure line, **not by its name**". The difference is load-bearing:
+  FC1's state (2) is self-clearing in the next commit; C89's red clears in no commit until C89
+  is fixed. Closed when section 0 names C89 as the cause and says the red is not self-clearing.
+* **R761.** `docs/closure/F6.md:289-294`, section 7's first "did not pay" bullet: "six
+  consecutive rounds of true-but-gateless figure findings **on step 1**, whose own coverage
+  measurement fell from 2-of-22 to 1-of-19 unseen shapes while they ran". Section 0 of the same
+  file records `step-1.md: 4 rounds`, counted mechanically as 4, so six consecutive rounds did
+  not happen there; and the two figures are not F6's -- `2 of 22` and `1 of 19` are at
+  `docs/reviews/F3/step-3.md:1988` and `docs/reports/F2/step-5.md:9705`, while F6's own series
+  is the one verdict 116 records, `1 of 16 ... 6 of 25`. The second bullet's `0 of 20` and
+  `3 of 8` ARE attributed correctly (`docs/reports/F2/step-5.md:8852`), but beside the first
+  they read as F6's too. Closed when the bullet says which milestone measured what. **The claim
+  that the apparatus stopped paying is not what I am disputing** -- `CLAUDE.md` CZ0 states it as
+  the reason for the amendment and I accept it. The attribution is.
+* **R762.** `docs/closure/F6.md:269-273`, section 7's opening trichotomy: "Every blocking
+  finding in the last three rounds was in prose, apparatus or a published figure -- not in the
+  element and not in the clauses", which then lists R754 as one of the four. R754 was a refusal
+  predicate in `floatfea/checks/api_wsd.py`, in the module's own path, refusing `12.066%` of
+  its declared sweep -- none of prose, apparatus or a published figure. "Not in the clause
+  arithmetic" is true; the trichotomy is not. Closed when the sentence is the measurement:
+  three of the four were outside `floatfea/`, one was inside it.
+* **R763.** `tests/regression/test_f6_deliverable_agrees_with_itself.py`,
+  `test_the_governing_clause_agrees_with_the_axial_branch_on_every_row` -- **pre-existing, not
+  this commit's.** Its `3.2.1` and `3.2.2` arms are vacuous on the shipped table: the CSV's
+  `governing_clause` column counts 14 beam-shear rows, 12 of 3.3.2 and 6 of 3.3.1, so zero of
+  32 rows reach either arm and the 14 shear rows reach no assertion in the body at all. The
+  `3.3.` arm is live on 18 of 32 and does the work. Closed when the test either asserts that
+  the arms it claims to cover are non-empty, or says in one line which 18 rows it is about.
+* **R764.** `eb625bd`'s commit message, the out line reading
+  `byte-identical when de-dented: True`. Measured False for the block it names and True for the
+  EZ0 definition paragraph inside it; see Carried. Closed when the claim names the paragraph it
+  measured. *BF0's point stands even here: the command was run, the output was pasted, and the
+  SCOPE WORD in the claim did not match the scope the command measured.*
+
+**Carried-forward ledger, unchanged and not re-reviewed:** C41-C65, C67-C70, C77-C79, C82, C88,
+C89, C90, C91, C92, C94, C96, C97, R712-R717, R735, R736, R738, C2-C15, C24-C40, and the
+`0.2240`/`0.2239` item. **C90 reproduces at this commit** and is the same exclusivity point my
+own grid hit: `_require_plausible_stress(1.0e8)` ADMITS, so "may RISE only to
+`1.3655759329e+08`" is the first failing value wearing the words of the last passing one.
+
+## Tolerances touched
+
+**None. No value moved, and I checked that mechanically rather than by reading.**
+
+```
+claim  no non-comment line of `floatfea/tolerances.py` changed across the three commits
+cmd    git diff 449ee6b..4bc359f -- floatfea/tolerances.py | grep -E "^[+-]"
+         | grep -vE "^[+-]#" | grep -vE "^(\+\+\+|---)"
+out    (empty)
+```
+
+`F6_API_STRESS_PLAUSIBLE_MIN` is the one entry whose prose moved: `1.0e8` unchanged, form
+unchanged (pascals, STRUCTURAL), no counter and still correctly AO2, TABLE 2 and TABLE 3
+unchanged, and the **scope statement NARROWED** -- "every admissible configuration" to "every
+admissible `(F_y, D/t)` at the shipped `e`", with the unguarded axis named. A narrowing of a
+justification's quantifier to match the sweep is the opposite of a widening, and EU1's worst
+case -- a value re-justified without moving -- is why I ran the grid over the axis the diff did
+not choose rather than reading TABLE 4. It held.
+
+`floatfea/checks/api_wsd.py`'s only change is the same sentence in
+`_require_plausible_stress`'s docstring. **No code path changed in `floatfea/` in these three
+commits**: `git diff 449ee6b..4bc359f -- floatfea/` is two comment blocks and nothing else.
+`tests/conftest.py` is unchanged (CH2/CI0: `git ls-files -- tests/conftest.py
+'tests/**/conftest.py'` -> `tests/conftest.py`, and the diff over it is empty), so no rung's
+green rests on a new hook. `.claude/` changed only in `eb625bd`, the standalone `process:`
+commit.
+
+## CI, at the reviewed commit
+
+```
+cmd    gh run list --commit 4bc359f ... ; gh run view 38048212941 --json jobs
+out    run 38048212941, F3, CI, completed, FAILURE
+         lint, unit and guards      failure   (red step: guards and meta-tests)
+         the verification ladder    success
+         CI determinism -- leg               skipped
+         CI determinism -- ten legs agree    skipped
+cmd    gh run view 38048212941 --log-failed | grep -oE "FAILED [^ ]+" | sort -u
+out    the same eight, byte for byte, as my local run
+```
+
+**RED, AND WAIVED UNDER `CLAUDE.md` EG3 WITH THE TRACE PASTED -- not under my own definition,
+which has no such clause and would have made this a HOLD on its own.** Every FAILED id
+matches: the baseline is `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`, which FC1 puts on
+state (2)'s list, and the seven `test_the_guard_survives_the_state[...]` ids each carry the
+baseline's own failure line in their subprocess trace. Nothing is outside the list, so CZ1 (iv)
+is not reached. The `guards and meta-tests` step RAN rather than being skipped behind an earlier
+red, which is CZ1 (iii)'s point. **`the verification ladder` is green** -- no rung is red, so
+nothing here is STOP-class.
+
+`eb625bd` has **no run of its own** (it was pushed together with `4bc359f`): recorded as
+**unavailable**, not skipped over. It touches only `.claude/`, which nothing in the suite reads.
+`d8554a9`'s run `38030773188` is the same failure with the same eight.
+
+**AND THE PART I WANT ON THE RECORD, BECAUSE FD4 STOPS WORK WITH IT TRUE.** The cause of the
+eight is C89, not a boundary state, so **it clears in no commit until C89 is fixed**: this
+repository's `pytest -q` and its CI are now permanently red by eight, and C89 is a ledgered
+closure item that FD4 means nobody will reach. See the heading below.
+
+## The adversarial work this round -- the corpus pause HELD
+
+**No batch. Zero new entries, and that is the honest number.** `CLAUDE.md` EG4(e) pauses
+batches until 28 October except mutation work on F4's load-mapping gate and EB6's
+label-provenance gate. This round's subjects are an API refusal predicate's scope statement, a
+document-regeneration gate, a closure artifact and my own definition. None is those two
+surfaces, and I did not stretch the exception.
+
+**What I ran instead -- the substitute FD1 now records, which rests on last round's
+measurement:**
+
+1. **A continuum grid over the parameter space the decision rule guards, on the axis the diff
+   chose and the axes it did not** -- 2941 slendernesses x 5 grades x 5 moduli, straight
+   through `local_buckling_stress` and `_require_plausible_stress`, with the boundary solved
+   from **both** directions (EH4): `e` downward to the break and upward fourteen decades past
+   the shipped value. It confirmed R755's repair and, more usefully, confirmed that the new
+   quantifier **exhausts the argument list** rather than being partial again.
+2. **A regeneration check on the published deliverable, in the mode the shipped gate excludes**
+   -- two GATED runs byte-compared, and the shipped bytes against a fresh gated run. Both
+   identical. **This is what found R757**: the fact is true and the gate does not assert it.
+3. **The gate's own assertion domain, solved in the direction that WEAKENS it** (EH4): the
+   wall-clock pattern against the five summary forms pytest emits, 2 match and 3 miss.
+4. **A byte-identity test between my definition's mirrored CZ0 block and `CLAUDE.md`'s**, which
+   is the check FD1's own precedence clause nominates. It found R764.
+
+Items 2 and 3 produced this round's only blocking finding, and item 1 confirmed a repair
+without producing one. **That is two consecutive rounds of evidence for EG4(e)'s substitution,
+and it is the only argument I have for it.** The grid cost about four seconds; the gated
+double-run about ninety.
+
+## The closure artifact's figures, which I was asked to check
+
+Checked against the two published CSVs and the built model, not against a report. **Section 0's
+fourth block reproduces exactly:**
+
+```
+cmd    read docs/F6_utilisation.csv and docs/F4_member_forces.csv directly
+out    rows 32 ; worst utilisation_K2 1.71167 ; over unity 4
+       static rows 48 ; N zero on 48 of 48 ; Vy zero on 48 of 48 ; Mz zero on 48 of 48
+       worst |sigma| = 269.716 MPa at platform:hub1_arm ROOT ; / 266.25 = 1.01302
+       grep -c "^## Round of" on the two verdict files -> 4 and 3
+```
+
+Section 1's `7 grades x 2951 slendernesses` resolves to a real assertion at
+`tests/verification/rung5/test_g61_api_wsd_hand_calculations.py:1434`
+(`assert checked == len(grades) * 2951` with a seven-tuple of grades). Section 2's "no value
+was widened" is the mechanical check above. Section 3's R755 and R756 narratives match the
+diff. Section 5's reproduction of my own C88-C97 wording is faithful -- I checked C88's
+`10160` of `48740` and `21%`, and C96's `10.0x` / `7.5x` / `2.88x` with the branch label moving
+from `elastic` to `inelastic`, against `docs/reviews/F6/step-2.md:228-229`, `425-431`,
+`578-579` and `621-622`. **No meaning is shifted in any of those.** Section 7's three "paid"
+claims are each locatable, including the `7.9` decades correction (`0.0002 / 2.5e-12 = 8e+07`).
+What is wrong is the two attributions in section 7's "did not pay" bullet and the trichotomy
+above it -- R761 and R762 -- and section 0's cause attribution, R760.
+
+## Where I disagree with the criterion, said once, and it goes to Xabier
+
+**Not with CZ0. With what FD4 closes F6 on top of.**
+
+Everything here rests on one proposition: that a green suite is evidence. `CLAUDE.md` says so
+three times, EQ0 exists because green was not enough, CZ1 exists because some checks cannot be
+green before the commit they describe. At this commit the suite is **8 failed, 3315 passed**,
+CI is **failure**, and the cause is C89 -- a guard whose regex cannot distinguish its own
+generator's truthful `(none)` from the forged empty table the guard was written to catch. It is
+ledgered as a closure item, correctly under CZ0. FD4 stops work after F6 closes. The
+consequence is that the next increment opens on a tree where **red is the normal state**, and
+the first thing anyone must do is decide whether eight reds are the expected eight -- which is
+exactly the judgement EG3(i) was written to stop people making by family instead of by name,
+after the eighth planted state in such a group turned out to be a real defect (R629).
+
+I am not asking for a round and I am not holding on it: C89 is not (a)-(d) and step 2 is closed.
+**I am asking that C88 and C89 not travel in the ledger beside C41-C65.** They are not figures
+in prose; they are the two guards that read the gating record itself -- one now permanently red,
+and one (C88) making 21% of a report invisible to all three hand-written guards. One line in
+the choice FD4 asks for: **I would spend the first commit of the next increment on C89, not on
+new work**, so that green means something again before anything is measured against it.
+
+Second, smaller, and the same place my last three verdicts put it. My definition is still stale
+against `CLAUDE.md` on the round cap (ES0), on EQ0 and on EB4, and FD1 added a paragraph to it
+that `CLAUDE.md` does not carry. FD1's precedence clause means this now self-reports instead of
+recurring as a finding, which is the right fix and I say so plainly -- FD1 is a good commit.
+But the mirror itself is the defect shape, and the durable repair is for the definition to
+**cite** `CLAUDE.md` section "Step gating" rather than copy it. A directive for Xabier, not a
+round.
+
+## Next step opens when
+
+**F6 DOES NOT CLOSE AT THIS COMMIT. HOLD on R757 and on nothing else.** Specifically:
+
+1. **R757 is answered at the three sites named, site by site, with the diff hunk for each**
+   (verdict 116's rule stands: half of an item is not the item). The determinism comparison is
+   taken on the **gated** document -- measured green here, so it cannot fail and cannot be a
+   widening -- or the pattern is widened to `r"in [\d.]+s"` with a sentence saying why the
+   weaker form was kept. The third site is
+   `results/F6/floatfea_results_report.md:450-452`, whose sentence about what
+   `tests/regression/` asserts is corrected in the **same** commit (BP0: when the rule moves,
+   every sentence citing it moves with it), as is the determinism test's name and docstring.
+2. **The repair's own counter-case is run and pasted**, in the shape this commit already
+   demonstrated: one line reverted in `scripts/measure/f6_results_report.py`, the file run, the
+   FAILED id named, the line restored -- **and this time with the second test deselected**, so
+   that the determinism test is shown to redden on R756's own state **by itself**, which is the
+   claim its name makes and the thing it currently cannot do. That measurement is the whole
+   item.
+3. **The closure items above are fixed once, in the same commit**, and not re-reviewed item by
+   item. R759 touches the locked plan's tolerance row in its prose only; say so in the message.
+4. **CZ1 (ii) and (iii) are measured at that commit** -- `ruff`, `black`, `mypy`, `pytest -q`,
+   and a pushed `gh run list --commit <sha>` with job-level conclusions -- with the eight reds
+   traced **by name to C89**, not to FC1's state (2). That trace is R760's repair and CZ1's
+   requirement in one.
+5. **Then F6 closes.** The repair is one assertion, one sentence and a list of prose fixes; it
+   changes a gate, so EQ0 makes the commit reviewable and that review counts against no round
+   either. Nothing in this verdict requires new apparatus, no tolerance moves, no rung is red,
+   and the schedule is not at risk: the code check was committed for 28 October, and the results
+   report was asked for by 22 October, exists on 10 October, and is correct in every figure I
+   checked.
+
+**One sentence for the record, since FD4 makes this the last word on F6.** The milestone's own
+honest account of itself -- section 7 of the closure artifact -- is the most valuable thing in
+it, and it is right about the shape: the clause arithmetic was hand-checked and has held, and
+every late finding was in the apparatus, the prose or the published artifact. R757 is one more
+of those, and it is the fourth consecutive finding in this milestone to be **a gate that could
+not fail on the defect it names**. That is the pattern worth carrying into whatever Xabier
+picks next: this project's element has been right far more often than its instruments.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6 step 2
 Reviewed commit: 95678935f9cebce34923d0d98753aa4668e0cc84
 Verdict: PASS
 **Reviewed commit: `9567893`** (branch `F3`, pushed, tree clean when I judged it; no corpus
