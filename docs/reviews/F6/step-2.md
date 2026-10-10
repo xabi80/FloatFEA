@@ -1,4 +1,388 @@
 # Review — F6 step 2
+Reviewed commit: 6f3bd0d8d1851af7f81154327b380d75053c411d
+Verdict: HOLD
+Reviewed commit: 6f3bd0d8d1851af7f81154327b380d75053c411d
+Tests: 3335 passed, 0 failed, 0 skipped   (my run, `python -m pytest -q -p no:randomly -rf`, 669.40s)
+
+## Round of 2026-10-10 -- DIRECTIVE FE, TWO `process:` COMMITS. **F6 REMAINS CLOSED (DD1) -- THIS HOLD ATTACHES TO THE FE COMMITS AND NOT TO STEP 2.** FE1 narrows nothing: I collected its citations and tested each against both documents, and the CA2/CK2 judgement is right. **FE0's C88 repair is correct and I measured its direction across five reports. FE0's C89 repair ADMITS A FORGED STATE THE GUARD PREVIOUSLY REJECTED, and two comments at the site say that state is verified against `gh` when nothing verifies it.** `| (none) | | | no run at any commit in this round |` written while runs exist returns `[]`. That is my adversarial case passing when it should fail, in the guard that decides whether every other green is believed. The tree is genuinely green -- `3335 passed, 0 failed`, both CI jobs success -- and that is the first time in this milestone.
+
+**READ THIS BEFORE THE `Stop` HOOK DOES.** F6's closure verdict is **verdict 118, PASS**, and
+**DD1** is explicit: a step whose closure verdict is PASS is closed, a later verdict written
+into that file about the state of the TREE does not reopen it, and a step's disposition is
+read from its closure verdict and not from the last line of its file. `CLAUDE.md` records
+what the alternative costs -- two verdicts spent on a header, neither about the work. So:
+**F6 is closed. Step 2 is closed. This HOLD is on `f9f227d`, and the only thing it gates is
+the next commit in the FE sequence.** If the hook and this sentence disagree, this sentence
+is what the disagreement is resolved against, by DD1's own wording.
+
+**Which clause I ruled under.** `CLAUDE.md` Â§ "Step gating": CZ0 (c) as amended by EZ0, with
+EB4 (this review counts against no round), DD1 as above, and CA2/CK2 from my own definition
+for the CI reading. **FE1's citation now resolves for every one of those** -- which is the
+first time I have been able to write that sentence.
+
+## Carried
+
+**FE1 (`6f3bd0d`) -- I RAN THE CHECK MY OWN WAY AND IT NARROWS NOTHING I CAN FIND.**
+
+Standalone, one file, cites FD1's successor directive. `git diff --name-only f9f227d 6f3bd0d`
+is `.claude/agents/gating-supervisor.md` alone -- no `floatfea/`, no `tests/`.
+
+```
+claim  every directive code the new citations name RESOLVES in `CLAUDE.md`, which is my own
+       "every citation resolves" guard applied to my own instructions
+cmd    for each of 30 codes: grep -o -F "<code>" CLAUDE.md | wc -l
+out    RESOLVES: CZ0 5, EZ0 2, DD1 1, DK0 2, ES0 2, EU1 2, EQ0 2, EB4 3, CZ1 11, EG3 4,
+                 EH1 2, EJ2 1, FC1 2, EH4 1, EG4(e) 1, BD0 1, BF0 3, BP0 3, BG0 1, CP2 3,
+                 CP3 1, CW0 1, BI3 1
+       ZERO    : BU0 0, CA2 0, CK2 0, EE1 0   (and BE3 0, FD0 0, FD1 0 -- not cited as
+                 CLAUDE.md clauses)
+judge  **CA2 and CK2 are the two that matter and FE1 got them right**: they qualify CZ0's
+       head (d), `CLAUDE.md` carries neither, and they are kept in the definition IN FULL
+       with that grep beside them. That is the correct call and it is the one a careless
+       citation would have deleted. `BU0` and `EE1` resolve nowhere and cost no rule -- see
+       R772.
+```
+
+**And the rule-by-rule check, which is the one FE1 actually has to pass.** For each
+substantive rule in the 65 removed lines I asked where it now lives:
+
+* CZ0's four heads with EZ0's amendment -- **`CLAUDE.md:150-161`**.
+* CA2/CK2 on head (d) -- **kept in the definition in full**.
+* the closure-item enumeration -- `CLAUDE.md:172-173` ("prose, figures, docstrings, guards,
+  apparatus, report sections"). The old copy also said "generators, parsers, report
+  structure, the corpus's own reach"; **"apparatus" absorbs the first three and
+  `CLAUDE.md`'s "a corpus finding that is not (a)-(d) is a closure item" carries the
+  fourth.** No loss.
+* "list under `## Closure items`, name the file and line, say what would close each", and
+  "do not re-review item by item, do not hold a step on one" -- **kept in the definition**.
+* the retired figure head and its `2 of 22` / `1 of 19` -- `CLAUDE.md:175-181`.
+* the round cap -- **replaced by ES0, which is a CORRECTION and not a loss**: my copy said
+  "three verdicts per step" for the whole of F6 and ES0 says three reviewed REVISIONS with
+  interim checks free. I have been counting the wrong object all milestone.
+* carry-by-name and closure-items-to-the-artifact -- `CLAUDE.md`, DK0's paragraph.
+* the throughput rationale and "so you can argue with it" -- `CLAUDE.md:146-148` and the
+  section's closing instruction, which the definition also keeps.
+* no new apparatus, F2a frozen, **fixed or deleted never extended** -- **kept**.
+* "your corpus rounds continue (BE3)" -- the definition's own Â§ BE3, untouched.
+
+**Net: the removed lines cost nothing, and the citation ADDS ten clauses I never had** --
+ES0 corrected, EU1, EQ0, EB4, CZ1 with EG3/EH1/EJ2/FC1, EH4, DD1, DK0, and the eight
+evidence rules. Two of those are the clauses under which this review and the last two exist.
+**Every structural section of the file is intact** -- `## What you read`, `## The recorded
+guards`, `## Try to break it`, `## The adversarial corpus`, `## What you write` and the
+four mandatory verdict headings all still present, and the diff touches only three regions.
+
+**There is one thing the citation costs and it is worth naming rather than hiding:** the old
+arrangement had a mechanical check -- "where the text is mirrored here it is byte-identical,
+so a diff of the two is the check" -- and FE1 correctly deletes it with the mirror. There is
+now **no mechanical check at all** on this file; there is nothing to drift, which is the
+point, but the only thing standing between it and a quiet deletion is a reviewer reading it.
+That is `CLAUDE.md`'s own stated reason for the restriction, and FE1 makes it the whole of
+the defence rather than half of it. I think that is the right trade and I want it on the
+record as a trade.
+
+**FE0's C88 REPAIR -- CORRECT, AND I MEASURED ITS DIRECTION RATHER THAN READING IT.** The
+claim is that bounding a region by its own marker "NARROWS the generated region and so WIDENS
+what the guards read, which is the only direction this change can go". A structural claim in
+one direction is exactly the kind that should be measured on more than the file that
+prompted it:
+
+```
+claim  the repair widens what the guards read on every report in the tree, never narrows it
+cmd    reimplement both `_generated` bodies and total the generated span per report
+out    docs/reports/F6/step-1.md   OLD= 31405  NEW= 25465  guards read MORE by   5940
+       docs/reports/F6/step-2.md   OLD= 60147  NEW= 49925  guards read MORE by  10222
+       docs/reports/F4/step-1.md   OLD= 30889  NEW= 30259  guards read MORE by    630
+       docs/reports/F4/step-2.md   OLD=120718  NEW=113877  guards read MORE by   6841
+       docs/reports/F4/step-3.md   OLD=235463  NEW=233483  guards read MORE by   1980
+judge  five of five, strictly one direction, and `10222` on F6 step 2 is C88's own `10160`
+       for revision 3 plus the earlier revisions' markers. **And the repair cannot create a
+       FALSE POSITIVE**, which is the thing I went looking for: every generator emits
+       `GENERATED_MARK + "\n\n" + text`, so all generated content is BELOW its own marker --
+       `scripts/ci_section.py:243`, `scripts/carried_table.py:296`,
+       `scripts/untouched_sites.py:72`, `scripts/answered_table.py:55`. There is no
+       generator that would now have its output read as hand-written.
+```
+
+**THE `_RUN_ID` NARROWING -- YOUR MEASUREMENTS REPRODUCE TO THE DIGIT, AND THE ARGUMENT IS
+SOUND IN THE DIRECTION YOU CLAIMED AND SILENT IN THE OTHER ONE.**
+
+```
+claim  every run id this repository has ever referred to is eleven digits, and the only
+       9-10 digit tokens the old pattern caught are not run ids
+cmd    gh run list --limit 100 --json databaseId -q '.[].databaseId' | awk '{print length}'
+       grep -rhoiE "run \`?[0-9]{6,}\`?" docs/reports/ | wc -l  (and the same, by length)
+       grep for every 9-10 digit token the OLD pattern matched and the NEW does not
+out    100 ids, all of length 11
+       136 references, all of length 11        <- your figure, to the digit
+       the 9-10 digit tokens in docs/reports: `136557593` and `479001600`
+judge  `136557593` is the binding `F_xc` in pascals and `479001600` is `12!`. **Neither is a
+       run id, so the narrowing removes exactly two false positives and loses no real
+       reference.** The monotone-counter argument is correct in the direction that matters:
+       a real id cannot come back below eleven digits.
+```
+
+**What the narrowing does cost, stated because EH4 asks for the direction that weakens the
+gate:** this guard does not catch REAL ids, it catches ids in the WRONG PLACE, and R449's
+measured shapes include "an invented run id". An invention need not be plausible: a typed
+`123456789` now passes, and your counter-case tests only the eleven-digit invention, which is
+the side that still works. **I am not blocking on it** -- a forger copying a real id produces
+eleven digits, and nine digits in prose is what the repair exists to permit. But the better
+locator was available without any narrowing, and it is the same pattern plus one word of
+context: R449's shape is `Run `<id>`, conclusion ...`, and `136557593` appears as "the nine
+digits `136557593`" with no `run` before it. **The context word is the discriminator, not the
+digit count.** R773.
+
+**AND THE EXTENSION: THE CODE IS BACKED OUT, TWO COMMENTS ARE NOT. That is R770 and it
+blocks.** See Findings.
+
+**FE0's CONDITION -- THE TREE. CONFIRMED INDEPENDENTLY, AND IT IS THE REAL THING.**
+
+```
+cmd    python -m pytest -q -p no:randomly -rf
+out    3335 passed, 2 warnings in 669.40s        (0 failed, 0 skipped)
+judge  `3323 passed, 8 failed` at `c0e3165` -> `3335 passed, 0 failed`. No EG3 waiver is
+       claimed, none is needed, and I have nothing to trace. **This is the first commit in
+       this milestone where "green" means green without a paragraph attached**, and I traced
+       the same eight reds by hand at four consecutive commits to get here.
+```
+
+**CI, AND I ACCEPT `code_identical_run` -- BUT IT IS NOT LOAD-BEARING, SO DO NOT PUSH AN
+EMPTY COMMIT.**
+
+```
+cmd    gh run list -L 6 ; gh run view 38065478575 --json jobs
+out    38065478575  6f3bd0d  push  completed  SUCCESS
+         the verification ladder          success
+         lint, unit and guards            success
+         CI determinism -- leg / ten legs skipped (workflow_dispatch only, by design)
+       38065326903  f9f227d  push  completed  cancelled
+cmd    grep -rn "\.claude" .github/
+out    (no reference to .claude in .github/)
+judge  **the reviewed commit is `6f3bd0d` and its own run is green on every job that runs**,
+       so FE0's cancelled run needs no argument at all: I review the tree at HEAD, and
+       HEAD's CI is green. Your reasoning is separately sound -- the inter-commit diff is one
+       file, nothing in `.github/` references it and no test reads it -- and `paths-ignore`
+       does not list `.claude/**`, which is why the push triggered a run in the first place.
+       The cancelled run at `f9f227d` is CK2's state and you were right not to claim it.
+       **No empty commit. It would buy a run on a tree nobody will ship.**
+```
+
+## Findings
+
+**ONE BLOCKS. CZ0 (c), and it is my adversarial case passing when it should fail.**
+
+**R770. (BLOCKING -- (c), A GATE ASSERTION: THE C89 REPAIR ADMITS A FIFTH FORGED STATE, AND
+TWO COMMENTS AT THE SITE SAY IT IS VERIFIED.)** `tests/test_report_carried.py:1484-1499`
+(`ci_table_defects`'s zero-run branch) and `:1437-1448` (`_ROUNDS_NO_RUN`'s comment).
+
+`test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`'s docstring enumerates the four edits "that
+every guard accepted" and that this guard exists to close -- among them **"every row deleted
+with the header kept"**. FE0 reopens that one in a new spelling: not by deleting the rows,
+but by writing the generator's zero-run row in their place.
+
+```
+claim  `| (none) | | | no run at any commit in this round |` written WHILE RUNS EXIST is
+       accepted, and the state was rejected before FE0
+cmd    exec `ci_table_defects` out of the module and call it on three tables with a lookup
+       that knows two runs exist for the round
+out    real row, gh says cancelled, table says no result :
+           ['run 38065326903: the table says `**no result**`, gh says `cancelled`']
+       every row DELETED (header only)                   :
+           ['the 0a table has a header and no rows']
+       FORGED `(none)` row WHILE RUNS EXIST              : []
+       the forged (none) row is accepted: True
+rule   `ci_table_defects` as written at `6f3bd0d`
+judge  **`lookup` is never called on that path.** `rows` is empty, so the `for run_id,
+       stated in rows` loop below does not execute, and the branch returns `[]` before
+       reaching it. Before FE0 this state was caught -- as "a header and no rows", because
+       the guard rejected the legitimate and the forged table alike. C89 was that it
+       rejected the legitimate one; the repair admits both. **This is the assertion-domain
+       -blindness guard exactly: the collection the assertion inspects (`rows`) cannot
+       contain the failure, because the `(none)` row is not in it.**
+```
+
+**And the site says the opposite, twice.** `:1487-1488` -- "the zero-run row's claim is
+verified rather than accepted, **by asking the injected lookup for the round's runs**". And
+`:1446-1448` -- "The claim that row makes ... **is still CHECKED against `gh` below**, so
+reading it is not trusting it." Three lines further down the same function says verifying it
+"WOULD BE EXTENDING THIS GUARD, which `CLAUDE.md` forbids", and that is what the code does.
+**Two sentences survived the extension you backed out, and they are the two that would stop
+the next reader from looking.** CW0's class, in the file the gating record rests on.
+
+**Your reason for not checking it is CORRECT and I am not asking you to reverse it.**
+`rounds_runs` is computed against current history, so it drifts upward after a round closes,
+and a naive check would redden on every closed round. Drift adds runs and never removes
+them, so there is no sound `gh`-based check of the `(none)` row, and building one would be
+forbidden apparatus. The defect is not the decision. It is that the decision is documented as
+its opposite and its cost is undeclared.
+
+**Closed when all three of these are true:**
+
+1. **The two false sentences are deleted** -- `:1487-1488` and `:1446-1448` -- and the site
+   states what is actually true: the `(none)` row is **accepted, not verified**, the reason is
+   that `rounds_runs` drifts upward after the round closes, and **the one state this guard
+   does not cover is a `(none)` row written while runs existed.** A narrowed reach is declared,
+   not described as its opposite.
+2. **The realistic half of the state is closed by a cross-check the file already performs,
+   which is not an extension.** `ci_table_defects` already asserts "A ROW MUST NOT CONTRADICT
+   THE FAILING-NAME BLOCK GENERATED BESIDE IT", and `_SECTION_0_RUN` already parses section
+   0's own `Run `<id>`, ... conclusion ...` lines in the same generated block. **If section 0
+   names a run for this round while 0a says "no run at any commit in this round", the two
+   halves of one generated section contradict each other** -- no network, no drift, same
+   shape as the check beside it. That closes the forgery where the halves disagree and leaves
+   only the fully-consistent one, which is the half `gh` would be needed for.
+3. **The residual is ledgered by name**, with the drift measurement that makes it
+   unmeasurable, so the next reader finds the reasoning instead of repeating it.
+
+**If you judge (2) to be an extension rather than a reading, say so and leave it out** -- then
+(1) and (3) alone close this item, because a declared hole is a different object from a hole
+described as closed. **Do not leave both.**
+
+## Closure items
+
+* **R771. FE1's own check caught this class for CA2/CK2 and missed it one section later.**
+  `.claude/agents/gating-supervisor.md:329-332`, the corpus bullet: "The pause, its two
+  exceptions and **its recorded substitute** are `CLAUDE.md` Â§ "Corpus batches pause until 28
+  October (EG4(e))" and Â§ "Step gating" -- read them rather than a copy."
+  ```
+  cmd    grep -niE "continuum grid|regeneration check|substitute" CLAUDE.md
+  out    (NONE in CLAUDE.md)
+  ```
+  **`CLAUDE.md` states the pause and its two exceptions; it does not state the substitute
+  anywhere.** By FE1's own rule -- "a citation to a document that does not state a rule
+  deletes that rule" -- that cross-reference would delete it. It survives only because the
+  CZ0-citations bullet at `:259-263` still carries the substitute in full. **So nothing is
+  lost today, and the file now contains a false claim about `CLAUDE.md` whose only
+  mitigation is a redundant copy upstream** -- trim that copy trusting this pointer and the
+  substitute is gone. Closed by one of two edits: drop "and its recorded substitute" from
+  `:330`, or put the substitute into `CLAUDE.md` in a directive. *I flagged in verdict 117
+  that FD1's substitute paragraph had no mirror in `CLAUDE.md`; this is that observation
+  becoming load-bearing.*
+* **R772.** Same file: `BU0` is cited as what CZ0 supersedes and `EE1` as the pause's other
+  code, and **both resolve zero times in `CLAUDE.md`** (`grep -o -F` counts above). No rule is
+  lost -- BU0 is the superseded head and EG4(e) carries the pause -- but "every citation
+  resolves" is one of my own recorded guards and these two do not. Closed when both are
+  marked as historical codes rather than as `CLAUDE.md` clauses, or dropped.
+* **R773.** `tests/test_report_carried.py:1195`, the `_RUN_ID` narrowing. The measurement
+  behind it reproduces exactly and loses no real reference; what it costs is the EH4
+  direction -- a 9- or 10-digit INVENTED id in prose now passes, and the counter-case tests
+  only the eleven-digit invention. Closed either by adding the 9-digit invention to
+  `test_FE0_an_INVENTED_run_id_in_prose_still_reddens` as a declared, accepted miss, or by
+  the locator the measurement actually points at: **`[Rr]un \`?\d{6,}` -- the context word,
+  not the digit count**, which would have excluded `136557593` ("the nine digits
+  `136557593`") without narrowing anything.
+* **R774.** Same file: after FE0 there are **three locators for one object at two different
+  digit floors** -- `_RUN_ID` at `{11,}` (`:1195`), `_ROUNDS_ROW` at `{9,}` (`:1434`) and
+  `_SECTION_0_RUN` at `{9,}` (`:1455`). If `{11,}` is right because real ids are eleven
+  digits, the other two are wrong; if `{9,}` is right for them, the narrowing's stated reason
+  is not the real one -- which is false positives in prose, and that is the honest reason.
+  Closed when the three agree, or when the comment says why they differ.
+
+**Carried-forward ledger, unchanged:** C41-C65, C67-C70, C77-C79, C82, C90, C91, C92, C94,
+C96, C97, R712-R717, R735, R736, R738, R765-R768, C2-C15, C24-C40, the `0.2240`/`0.2239`
+item, and R771-R774 above. **C88 and C89 come OFF it** -- both repaired, C88 correctly, C89
+subject to R770.
+
+## Tolerances touched
+
+**None, and nothing under `floatfea/` changed at all.**
+
+```
+cmd    git diff 2eb00ea..HEAD --stat -- floatfea/
+out    (empty)
+cmd    git diff 2eb00ea..HEAD --stat -- tests/ scripts/
+out    scripts/measure/f6_results_report.py  11 +--      (verdict 118's closure item R765)
+       tests/test_report_carried.py         168 +++--     (FE0)
+```
+
+Lint, format and types at the reviewed commit, and CI agrees with them:
+
+```
+cmd    ruff check / black --check / mypy, and the `lint, unit and guards` CI job
+out    both CI jobs SUCCESS at 6f3bd0d; the local suite 3335 passed, 0 failed
+```
+
+## The adversarial corpus -- the pause HELD
+
+**No batch. Zero new entries.** EG4(e)'s two exceptions are F4's load-mapping gate and EB6's
+label-provenance gate; this round's subject is two locators in the report guards and my own
+definition, and neither is those surfaces. I did not stretch them.
+
+**What I ran instead, all of it outside the tree:**
+
+1. **A citation resolver over my own instructions** -- 30 directive codes against both
+   documents, which is FE1's check by a different route and which found R771 and R772. The
+   substantive rules were then checked one at a time by where each now lives, not by code.
+2. **A direction measurement on C88** across five reports rather than the one that prompted
+   it, plus a check of every generator's marker placement, which is what says the repair
+   cannot create a false positive.
+3. **The forged-state construction on C89** -- the three tables through `ci_table_defects`
+   with a lookup that knows runs exist. **That is where R770 came from, and it is the same
+   instrument as the last two rounds': run the thing at a configuration the diff did not
+   choose.** The diff chose the legitimate zero-run row and the header-only forgery; the
+   configuration nobody chose is the zero-run row WITH runs behind it.
+4. **The run-id digit census** -- 100 ids from `gh`, 136 references in the reports, and every
+   9-10 digit token the old pattern caught, which is how the narrowing's cost got stated in
+   the direction that weakens it.
+
+**Four consecutive rounds now in which the substitute produced the round's blocking finding.**
+That is the whole of EG4(e)'s evidence and it is evidence about one surface -- apparatus that
+reads the project's own record -- not a general result.
+
+## Next step opens when
+
+**R770 is answered, in one commit, and nothing else is required.**
+
+1. **The two false sentences are deleted and the site states the gate's real reach**, per
+   R770 items (1) and (3).
+2. **Either the cross-check in R770 item (2) is added, or it is ruled an extension and left
+   out with that ruling written down.** Not both, and not silence.
+3. **The counter-case for whichever you choose**: if the cross-check goes in,
+   `test_FE0_the_FORGED_empty_0a_table_still_reddens` gains the state I constructed above --
+   a `(none)` row beside a section-0 line naming a run -- and it must redden. If it stays
+   out, the counter-case is the declaration: a test or a comment that NAMES the admitted
+   state, so the next reader finds it before constructing it.
+4. **The closure items R771-R774 are fixed in the same commit** and not re-reviewed. R771 is
+   the only one in a file nothing else checks, so it is the one I would do first.
+5. **The tree stays at `0 failed` with no waiver claimed**, and CI stays green on both jobs.
+   That is now the baseline and it should never again be a paragraph.
+
+**This verdict counts against no round (EB4), and so will the next one.** F6 is closed and
+stays closed by DD1; the FE sequence is what is open.
+
+## For the record, since FE2 stops work after this
+
+**The two things I would carry into whatever comes next, both measured in this milestone
+rather than argued:**
+
+**One. Every late blocking finding was a gate that could not fail, and never the thing it
+guarded.** R756, R757 and now R770 are one defect three times: an assertion whose domain
+excludes the state it names. R770 is the sharpest of the three because the repair was
+correct, the reason for its limit was correct, and the only thing wrong was that the limit
+was written down backwards -- which is the version that survives review, because a reader
+who believes the comment stops looking. The question that catches all three is the one I now
+ask first: **what is the collection this assertion inspects, and can the failure be in it?**
+
+**Two. The tree is green, and it took five commits and four hand traces to get there.** C89
+was a guard that could not distinguish its own generator's truth from a forgery, and it kept
+`pytest -q` red by eight while everything else was being measured against "green". It was
+ledgered as a closure item for the whole of F6 and it was correct to ledger it under CZ0 --
+and it was also the single most expensive open item in the milestone, because every verdict
+after it had to spend a paragraph proving that red was the expected red. **The lesson is not
+that CZ0 is wrong. It is that an item in the apparatus that reads the gating record is not
+the same kind of closure item as a sentence in a report**, and the ledger had no way to say
+so. That is the distinction I would want written into `CLAUDE.md` before the next increment
+opens, and it is the escalation from verdict 117 restated with its cost now measured:
+**C88 and C89 were worth a round and did not get one for seven.**
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6 step 2
 Reviewed commit: c0e3165f5e443743dab78f64faf0b96c5511a98f
 Verdict: PASS
 Reviewed commit: c0e3165f5e443743dab78f64faf0b96c5511a98f
