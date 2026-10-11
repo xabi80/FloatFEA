@@ -230,48 +230,120 @@ def area_for_compression(force: float, panel_length: float) -> tuple[float, str]
 
 @dataclass
 class Sized:
-    """One `(section, group, h, b)` answer."""
+    """One `(section, group, h, b, geometry)` answer."""
 
     chord_area: float
     chord_force: float
     chord_governing: str
     chord_branch: str
-    diagonal_area: float
-    diagonal_force: float
+    chord_buckling_length: float
+    diagonal_area_max: float
+    diagonal_force_max: float
     diagonal_governing: str
-    diagonal_branch: str
+    diagonal_steel_per_m: float
     line_mass: float
     mass_ratio: float
     torsion_share_of_face_shear: float
     torsion_share_max: float
 
 
-def size(section: str, rows: list[dict[str, str]], h: float, b: float, mu: float) -> Sized:
-    """FI2 + FI3 for one cross-section and one `(h, b)`.
+# FACE GEOMETRY -- THE THING R801 WAS ABOUT, AND IT IS NOW STATED ONCE.
+#
+# A box of depth `h` and width `b` has TWO face dimensions, and FI1's "diagonals at 45°
+# (panel length = the face dimension)" therefore has two consistent readings. The first
+# version of this script took the SHORTER buckling length from one of them and the SHORTER
+# diagonal from the other -- the favourable half of each -- via a single
+# `panel_length=min(h, b)` while its own comment said "the face dimension". At the headline
+# answer's 8:3 aspect ratio that mattered, and it mattered most exactly where the sweep's
+# answer sat.
+#
+# Both readings are computed and BOTH are published, because which one FI means changes the
+# answer and a reader needs to see that the recommendation survives either:
+#
+#   "per_face_45"  -- 45° on every face, so the panel length is that face's own dimension.
+#                     The diagonals are all at 45° and each face's panel differs. A chord
+#                     is braced every `h` by the vertical faces and every `b` by the
+#                     horizontal ones, at non-coincident stations; the tube is circular so
+#                     `r_y = r_z`, and the governing buckling length is `max(h, b)`.
+#   "uniform_panel"-- one panel length `min(h, b)` for the whole truss, so the chord's
+#                     buckling length is `min(h, b)` -- but then the larger faces' diagonals
+#                     are NOT at 45°: across a face of transverse dimension `d` over a panel
+#                     `p` they sit at `atan(d/p)` and are `hypot(p, d)` long, so they cost
+#                     `hypot(p, d)/p` of their area per unit length of truss.
+#
+# What may not stand is `min` for the chord and 45° for the diagonals at the same time.
+GEOMETRIES = ("per_face_45", "uniform_panel")
+
+
+@dataclass(frozen=True)
+class Face:
+    """One braced face: how many there are, its transverse dimension, its shear key."""
+
+    count: int
+    dimension: float
+    shear_key: str
+
+
+def faces(section: str, h: float, b: float) -> tuple[Face, ...]:
+    """The braced faces and their transverse dimensions.
+
+    The box has two vertical faces of depth `h` taking `Vz`, and two horizontal faces of
+    width `b` taking `Vy`. The triangle has two inclined faces taking `Vz` and one bottom
+    face of width `b` taking `Vy`, which is why `triangle_resolution` divides `Vy` by one
+    rather than by two.
+    """
+    if section == "box":
+        return (Face(2, h, "vertical"), Face(2, b, "horizontal"))
+    return (Face(2, h, "vertical"), Face(1, b, "horizontal"))
+
+
+def panel_and_diagonal(geometry: str, h: float, b: float, face: Face) -> tuple[float, float, float]:
+    """`(chord buckling length, diagonal length, diagonal steel per unit truss length)`.
+
+    The third is the one that decides mass: a diagonal of length `L_d` repeated every `p`
+    along the truss contributes `A_d · L_d / p` of area per unit length.
+    """
+    if geometry == "per_face_45":
+        panel = face.dimension
+        diagonal = panel * math.sqrt(2.0)
+        return max(h, b), diagonal, diagonal / panel
+    panel = min(h, b)
+    diagonal = math.hypot(panel, face.dimension)
+    return panel, diagonal, diagonal / panel
+
+
+def size(
+    section: str,
+    rows: list[dict[str, str]],
+    h: float,
+    b: float,
+    mu: float,
+    geometry: str,
+) -> Sized:
+    """FI2 + FI3 for one cross-section, one `(h, b)` and one reading of the geometry.
 
     The chord area is the worst over every chord, every station and every instant, in BOTH
     senses: the largest tension demand and the largest compression demand are sized
     separately and the larger area wins, because the compression branch is not a scaling of
     the tension one.
+
+    **EACH FACE'S DIAGONALS ARE SIZED FOR THAT FACE'S OWN SHEAR** (R801). The first version
+    sized one diagonal from the worst face shear anywhere and applied it to every face,
+    which is conservative on mass but hides which face governs -- and FI2 asks for each
+    member's governing case and station.
     """
     resolve = RESOLVERS[section]
     worst_t = (0.0, "")
     worst_c = (0.0, "")
-    worst_shear = (0.0, "")
-    # The torsion term's share of the face shear, measured rather than assumed small. FI1
-    # specifies `T/(2 A_enclosed)`, and a term dropped because someone expected it to be
-    # small is how a missing load survives.
-    #
-    # **IT IS FORMED FROM ITS OWN TERMS AND NOT BY DIFFERENCING, AND THE FIRST VERSION
-    # WAS WRONG FOR EXACTLY THAT REASON.** It resolved each row twice, once with `T` and
-    # once with `T = 0`, and subtracted. At the governing face-shear row `T` is
-    # `-1.41e-09 N.m` against a face shear of `2.96e+06 N`, so the two resolutions differ
-    # in the 17th significant figure -- below double precision -- and the subtraction
-    # returned EXACTLY zero. Publishing `0.000e+00` would have been publishing a
-    # cancellation as a result. This is G4.1's rule in another guise: a small quantity is
-    # formed from its own terms, never by subtracting two large ones.
+    worst_face: dict[str, tuple[float, str]] = {}
+    # The torsion term's share of the face shear, formed from its own terms. The second
+    # resolution with `T = 0` that used to stand here, and the subtraction that used it,
+    # are gone: they computed this by cancelling two numbers that agree to 16 figures and
+    # returned exactly zero. G4.1's rule -- a small quantity comes from its own terms.
     torsion_share = 0.0
     torsion_share_max = 0.0
+    governing_shear = (0.0, "")
+
     for r in rows:
         vals = {c: float(r[c]) for c in COMPONENTS}
         res = resolve(vals["N"], vals["Vy"], vals["Vz"], vals["T"], vals["My"], vals["Mz"], h, b)
@@ -279,23 +351,23 @@ def size(section: str, rows: list[dict[str, str]], h: float, b: float, mu: float
         for name, force in res.chords.items():
             if force > worst_t[0]:
                 worst_t = (force, f"{where} chord {name}")
-            if force < -worst_c[0] or (-force) > worst_c[0]:
+            if -force > worst_c[0]:
                 worst_c = (-force, f"{where} chord {name}")
-        # The torsion term itself, from its own formula. The second resolution with
-        # `T = 0` that used to stand here, and the subtraction that used it, are gone:
-        # they computed the same quantity by cancelling two numbers that agree to 16
-        # figures, and returned exactly zero.
         q = abs(vals["T"]) / (2.0 * enclosed_area(section, h, b))
         term = {"vertical": q * h, "horizontal": q * b}
         for name, shear in res.face_shear.items():
             share = term[name] / shear if shear > 0.0 else 0.0
             torsion_share_max = max(torsion_share_max, share)
-            if shear > worst_shear[0]:
-                worst_shear = (shear, f"{where} face {name}")
+            if shear > worst_face.get(name, (0.0, ""))[0]:
+                worst_face[name] = (shear, f"{where} face {name}")
+            if shear > governing_shear[0]:
+                governing_shear = (shear, f"{where} face {name}")
                 torsion_share = share
 
+    # --- the chord ------------------------------------------------------------------
+    chord_L = panel_and_diagonal(geometry, h, b, faces(section, h, b)[0])[0]
     a_t = area_for_tension(worst_t[0])
-    a_c, branch_c = area_for_compression(-worst_c[0], panel_length=min(h, b))
+    a_c, branch_c = area_for_compression(-worst_c[0], panel_length=chord_L)
     if a_t >= a_c:
         chord_area, chord_force, chord_where, chord_branch = a_t, worst_t[0], worst_t[1], "tension"
     else:
@@ -306,34 +378,34 @@ def size(section: str, rows: list[dict[str, str]], h: float, b: float, mu: float
             branch_c,
         )
 
-    # FI1: diagonals at 45°, panel length = the face dimension, force = face shear / sin θ.
-    theta = math.radians(DIAGONAL_ANGLE_DEG)
-    diag_force = worst_shear[0] / math.sin(theta)
-    # A diagonal takes the face shear in tension on one brace and compression on the other,
-    # so it is sized for the worse of the two at the same magnitude.
-    a_dt = area_for_tension(diag_force)
-    panel = min(h, b)
-    a_dc, branch_d = area_for_compression(-diag_force, panel_length=panel / math.sin(theta))
-    if a_dt >= a_dc:
-        diag_area, diag_branch = a_dt, "tension"
-    else:
-        diag_area, diag_branch = a_dc, branch_d
+    # --- the diagonals, per face ------------------------------------------------------
+    diagonal_steel = 0.0
+    worst_diag = (0.0, 0.0, "")
+    for face in faces(section, h, b):
+        shear, where = worst_face.get(face.shear_key, (0.0, "(no shear)"))
+        _, diag_len, steel_per_m = panel_and_diagonal(geometry, h, b, face)
+        # sin(theta) = dimension / diagonal length, for a diagonal spanning the panel.
+        sin_theta = face.dimension / diag_len
+        force = shear / sin_theta
+        a_dt = area_for_tension(force)
+        a_dc, _ = area_for_compression(-force, panel_length=diag_len)
+        a_d = max(a_dt, a_dc)
+        diagonal_steel += face.count * a_d * steel_per_m
+        if a_d > worst_diag[0]:
+            worst_diag = (a_d, force, where)
 
-    # FI2's line mass: the chords, plus each braced face's diagonal steel per unit length.
-    # A 45° diagonal spanning a panel of length `p` has length `p/sin θ`, and there is one
-    # per panel per face, so its steel per unit length of truss is `A_d / sin θ`.
     chord_steel = N_CHORDS[section] * chord_area
-    diagonal_steel = N_DIAGONAL_FACES[section] * diag_area / math.sin(theta)
     line_mass = (chord_steel + diagonal_steel) * RHO_STEEL * JOINT_ALLOWANCE
     return Sized(
         chord_area=chord_area,
         chord_force=chord_force,
         chord_governing=chord_where,
         chord_branch=chord_branch,
-        diagonal_area=diag_area,
-        diagonal_force=diag_force,
-        diagonal_governing=worst_shear[1],
-        diagonal_branch=diag_branch,
+        chord_buckling_length=chord_L,
+        diagonal_area_max=worst_diag[0],
+        diagonal_force_max=worst_diag[1],
+        diagonal_governing=worst_diag[2],
+        diagonal_steel_per_m=diagonal_steel,
         line_mass=line_mass,
         mass_ratio=line_mass / mu,
         torsion_share_of_face_shear=torsion_share,
@@ -481,58 +553,63 @@ def main(argv: list[str] | None = None) -> int:
         for section in ("box", "triangle"):
             for h in H_GRID:
                 for b in B_GRID:
-                    try:
-                        s = size(section, rows, h, b, mu)
-                    except ValueError as exc:
-                        answers.append(
-                            {
-                                "group": group,
-                                "section": section,
-                                "h_m": h,
-                                "b_m": b,
-                                "found": False,
-                                "refused": str(exc)[:160],
-                            }
+                    row: dict[str, object] = {
+                        "group": group,
+                        "section": section,
+                        "h_m": h,
+                        "b_m": b,
+                    }
+                    ok_cell = True
+                    for geometry in GEOMETRIES:
+                        try:
+                            s = size(section, rows, h, b, mu, geometry)
+                        except ValueError as exc:
+                            row["found"] = False
+                            row[f"refused_{geometry}"] = str(exc)[:160]
+                            ok_cell = False
+                            continue
+                        row[f"chord_A_m2_{geometry}"] = s.chord_area
+                        row[f"chord_L_m_{geometry}"] = s.chord_buckling_length
+                        row[f"chord_branch_{geometry}"] = s.chord_branch
+                        row[f"diagonal_steel_m2_{geometry}"] = s.diagonal_steel_per_m
+                        row[f"line_mass_kg_per_m_{geometry}"] = s.line_mass
+                        row[f"mass_ratio_{geometry}"] = s.mass_ratio
+                        if geometry == GEOMETRIES[0]:
+                            row["chord_force_N"] = s.chord_force
+                            row["chord_governing"] = s.chord_governing
+                            row["diagonal_A_m2"] = s.diagonal_area_max
+                            row["diagonal_force_N"] = s.diagonal_force_max
+                            row["diagonal_governing"] = s.diagonal_governing
+                            row["torsion_share_of_face_shear"] = s.torsion_share_of_face_shear
+                            row["torsion_share_max"] = s.torsion_share_max
+                            row["EI_proxy_Ac_h2"] = s.chord_area * h * h
+                            row["EI_proxy_Ac_b2"] = s.chord_area * b * b
+                            row["I_over_standin_h"] = s.chord_area * h * h / STANDIN_I
+                    if ok_cell:
+                        row["found"] = True
+                        # THE HEADLINE MUST SURVIVE BOTH READINGS (R801). A cell that is
+                        # mass-consistent under one geometry and not the other is not an
+                        # answer, it is a choice of reading -- and the cell this sweep
+                        # first reported, (3, 8), was exactly that.
+                        row["mass_ratio_worst"] = max(
+                            float(row[f"mass_ratio_{g}"]) for g in GEOMETRIES
                         )
-                        continue
-                    answers.append(
-                        {
-                            "group": group,
-                            "section": section,
-                            "h_m": h,
-                            "b_m": b,
-                            "found": True,
-                            "chord_A_m2": s.chord_area,
-                            "chord_force_N": s.chord_force,
-                            "chord_governing": s.chord_governing,
-                            "chord_branch": s.chord_branch,
-                            "diagonal_A_m2": s.diagonal_area,
-                            "diagonal_force_N": s.diagonal_force,
-                            "diagonal_governing": s.diagonal_governing,
-                            "diagonal_branch": s.diagonal_branch,
-                            "line_mass_kg_per_m": s.line_mass,
-                            "mass_ratio": s.mass_ratio,
-                            "torsion_share_of_face_shear": s.torsion_share_of_face_shear,
-                            "torsion_share_max": s.torsion_share_max,
-                            "EI_proxy_Ac_h2": s.chord_area * h * h,
-                            "EI_proxy_Ac_b2": s.chord_area * b * b,
-                            "I_over_standin_h": s.chord_area * h * h / STANDIN_I,
-                        }
-                    )
+                        row["consistent_under_both"] = float(row["mass_ratio_worst"]) <= 1.0
+                    answers.append(row)
         ok = [
             a
             for a in answers
-            if a["group"] == group and a.get("found") and float(a["mass_ratio"]) <= 1.0
+            if a["group"] == group and a.get("found") and a.get("consistent_under_both")
         ]
         if ok:
             shallowest = min(ok, key=lambda a: (float(a["h_m"]), float(a["b_m"])))
             print(
-                f"  shallowest mass-consistent: {shallowest['section']} "
-                f"h={shallowest['h_m']} b={shallowest['b_m']} "
-                f"ratio={float(shallowest['mass_ratio']):.3f}"
+                "  shallowest mass-consistent UNDER BOTH readings: "
+                f"{shallowest['section']} h={shallowest['h_m']} b={shallowest['b_m']} "
+                f"worst ratio={float(shallowest['mass_ratio_worst']):.3f}"
             )
         else:
-            print("  NO mass-consistent truss in the declared grid")
+            print("  NO truss is mass-consistent under both readings in the declared grid")
 
     payload: dict[str, object] = {
         "answers": answers,
@@ -549,6 +626,7 @@ def main(argv: list[str] | None = None) -> int:
             "b_grid": list(B_GRID),
             "governing_periods_s": list(GOVERNING_PERIODS),
             "standin_I_m4": STANDIN_I,
+            "geometries": list(GEOMETRIES),
         },
     }
 

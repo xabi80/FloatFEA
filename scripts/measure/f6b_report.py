@@ -7,8 +7,13 @@
 written literally is FI's declared inputs, the clause numbers and the section labels, each
 named as such where it appears. Every measurement is read from
 `results/F6b/truss_sizing.json`. F6a shipped a document saying "no figure is typed" with
-four figures as string literals in its generator; the sentence is the one that tells a
+four figures as string literals in its generator; that sentence is the one which tells a
 reader not to check, so this one carries its own qualifier.
+
+**BOTH READINGS OF FI1's PANEL GEOMETRY ARE PUBLISHED (R801).** The first version of this
+document reported a cell that is mass-inconsistent under either of them, because the sizing
+took the shorter buckling length from one reading and the shorter diagonal from the other.
+A recommendation has to survive both, so both ratios are in every table.
 """
 
 from __future__ import annotations
@@ -21,6 +26,8 @@ ROOT = Path(__file__).resolve().parents[2]
 
 SECTION_LABEL = {"box": "box (4 chords)", "triangle": "triangle (3 chords, apex up)"}
 GROUP_LABEL = {"platform": "platform arms (4), L = 50 m", "hubs": "hub arms (12), L = 25 m"}
+MU_OF = {"platform": 9.375, "hubs": 15.0}
+A, B = "per_face_45", "uniform_panel"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -46,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
             a for a in answers if a["group"] == group and a["section"] == section and a.get("found")
         ]
 
-    # ------------------------------------------------------------------ the label
+    # ------------------------------------------------------------------------- label
     w("# FloatFEA — what a truss has to weigh to replace the stand-in tube")
     w()
     w("**INDICATIVE.** An idealised pin-jointed parallel-chord truss, no joint or")
@@ -62,8 +69,9 @@ def main(argv: list[str] | None = None) -> int:
         f"`F_y = {float(inp['fy_pa'])/1e6:.0f} MPa`; tension `0.6 F_y`; compression"
     )
     w(
-        f"§ 3.2.2 at `K = 1.0` with `L` = the panel length; diagonals at "
-        f"`{inp['diagonal_angle_deg']:.0f}°`; joint allowance `{inp['joint_allowance']:.2f}`;"
+        "§ 3.2.2 at `K = 1.0` with `L` = the panel length; diagonals at "
+        f"`{inp['diagonal_angle_deg']:.0f}°`; joint allowance "
+        f"`{inp['joint_allowance']:.2f}`;"
     )
     w(
         f"`ρ = {inp['rho_steel']:.0f} kg/m³`. Loads: F4's governing envelope — the "
@@ -72,49 +80,104 @@ def main(argv: list[str] | None = None) -> int:
     w("ROOT, MID and TIP, signs preserved.")
     w()
 
-    # ---------------------------------------------------------------- the headline
+    # --------------------------------------------------- the geometry, stated once
+    w("## The panel geometry, stated once — and why both readings are reported")
+    w()
+    w("A box of depth `h` and width `b` has **two** face dimensions, so FI1's \"diagonals")
+    w('at 45° (panel length = the face dimension)" has two self-consistent readings, and')
+    w("they do not give the same answer:")
+    w()
+    w("* **`per_face_45`** — 45° on every face, so each face's panel length is its own")
+    w("  dimension. A chord is then braced every `h` by the vertical faces and every `b`")
+    w("  by the horizontal ones, at non-coincident stations; the chord is a circular tube")
+    w("  so `r_y = r_z`, and **its buckling length is `max(h, b)`**.")
+    w("* **`uniform_panel`** — one panel length `min(h, b)` for the whole truss, so the")
+    w("  chord buckles over `min(h, b)` — but then the larger faces' diagonals are **not**")
+    w("  at 45°: across a face of transverse dimension `d` over a panel `p` they sit at")
+    w("  `atan(d/p)` and are `hypot(p, d)` long, costing `hypot(p, d)/p` of their area per")
+    w("  unit length of truss.")
+    w()
+    w("**An earlier version of this document took the shorter buckling length from one")
+    w("reading and the shorter diagonal from the other** — the favourable half of each —")
+    w("and reported a cell that is mass-inconsistent under either. Every table below")
+    w("carries both ratios and **the recommendation is the shallowest cell consistent")
+    w("under both**. Where `h = b` the two readings coincide exactly, which is the control.")
+    w()
+    disagree = [
+        a
+        for a in answers
+        if a.get("found")
+        and (float(a[f"mass_ratio_{A}"]) <= 1.0) != (float(a[f"mass_ratio_{B}"]) <= 1.0)
+    ]
+    w("```")
+    w(f"cells swept                              : {sum(1 for a in answers if a.get('found'))}")
+    w(f"cells where the two readings DISAGREE    : {len(disagree)}")
+    for a in disagree:
+        w(
+            f"  {a['group']:9s} {a['section']:9s} h={float(a['h_m']):.0f} "
+            f"b={float(a['b_m']):.0f}   {float(a[f'mass_ratio_{A}']):.3f} vs "
+            f"{float(a[f'mass_ratio_{B}']):.3f}"
+        )
+    w("```")
+    w()
+
+    # ---------------------------------------------------------------------- headline
     w("## The answer")
     w()
     w(
-        "| group | section | shallowest mass-consistent | chord `A` [m²] | diagonal `A` [m²] "
-        "| truss line mass [t/m] | assumed `μ` [t/m] | ratio |"
+        "| group | section | shallowest, consistent under BOTH | chord `A` [m²] | "
+        "line mass [t/m] | `μ` [t/m] | ratio `per_face_45` | ratio `uniform_panel` |"
     )
     w("|---|---|---|---|---|---|---|---|")
-    mu_of = {"platform": 9.375, "hubs": 15.0}
     for group in ("platform", "hubs"):
         for section in ("box", "triangle"):
-            ok = [a for a in found(group, section) if float(a["mass_ratio"]) <= 1.0]
+            ok = [a for a in found(group, section) if a.get("consistent_under_both")]
             if not ok:
                 w(
                     f"| {GROUP_LABEL[group]} | {SECTION_LABEL[section]} | "
-                    "**none in the declared grid** | — | — | — | "
-                    f"{mu_of[group]:.3f} | — |"
+                    f"**none in the declared grid** | — | — | {MU_OF[group]:.3f} | — | — |"
                 )
                 continue
             s = min(ok, key=lambda a: (float(a["h_m"]), float(a["b_m"])))
             w(
                 f"| {GROUP_LABEL[group]} | {SECTION_LABEL[section]} | "
                 f"`h = {float(s['h_m']):.0f} m`, `b = {float(s['b_m']):.0f} m` | "
-                f"{float(s['chord_A_m2']):.4f} | {float(s['diagonal_A_m2']):.4f} | "
-                f"{float(s['line_mass_kg_per_m'])/1000:.3f} | {mu_of[group]:.3f} | "
-                f"**{float(s['mass_ratio']):.3f}** |"
+                f"{float(s[f'chord_A_m2_{A}']):.4f} | "
+                f"{float(s[f'line_mass_kg_per_m_{A}'])/1000:.3f} | {MU_OF[group]:.3f} | "
+                f"**{float(s[f'mass_ratio_{A}']):.3f}** | "
+                f"**{float(s[f'mass_ratio_{B}']):.3f}** |"
             )
     w()
-    w("The governing chord, at the platform's shallowest box:")
-    w()
-    plat_box = [a for a in found("platform", "box") if float(a["mass_ratio"]) <= 1.0]
+    plat_box = [a for a in found("platform", "box") if a.get("consistent_under_both")]
     head = min(plat_box, key=lambda a: (float(a["h_m"]), float(a["b_m"])))
+    w("The governing chord and diagonal at the platform's shallowest box:")
+    w()
     w("```")
     w(f"governing chord   : {head['chord_governing']}")
-    w(f"chord force       : {float(head['chord_force_N']):.6e} N   ({head['chord_branch']})")
-    w(f"required chord A  : {float(head['chord_A_m2']):.6f} m^2")
+    w(f"chord force       : {float(head['chord_force_N']):.6e} N")
+    w(
+        f"chord buckling L  : {float(head[f'chord_L_m_{A}']):.3f} m  per_face_45 = max(h,b)"
+        f"   |  {float(head[f'chord_L_m_{B}']):.3f} m  uniform_panel = min(h,b)"
+    )
+    w(
+        f"required chord A  : {float(head[f'chord_A_m2_{A}']):.6f} m^2  per_face_45"
+        f"   |  {float(head[f'chord_A_m2_{B}']):.6f} m^2  uniform_panel"
+    )
+    w(f"  branch          : {head[f'chord_branch_{A}']}  |  {head[f'chord_branch_{B}']}")
     w(f"governing diagonal: {head['diagonal_governing']}")
-    w(f"diagonal force    : {float(head['diagonal_force_N']):.6e} N   ({head['diagonal_branch']})")
-    w(f"required diagonal : {float(head['diagonal_A_m2']):.6f} m^2")
+    w(f"diagonal force    : {float(head['diagonal_force_N']):.6e} N")
+    w(
+        f"worst diagonal A  : {float(head['diagonal_A_m2']):.6f} m^2   "
+        "(each face is sized for its OWN shear)"
+    )
+    w(
+        f"diagonal steel/m  : {float(head[f'diagonal_steel_m2_{A}']):.6f} m^2  per_face_45"
+        f"   |  {float(head[f'diagonal_steel_m2_{B}']):.6f} m^2  uniform_panel"
+    )
     w("```")
     w()
 
-    # -------------------------------------------------------- the sweep, per group
+    # ------------------------------------------------------------------------- sweep
     for group in ("platform", "hubs"):
         w(f"## The sweep — {GROUP_LABEL[group]}")
         w()
@@ -123,8 +186,8 @@ def main(argv: list[str] | None = None) -> int:
             hs = sorted({float(a["h_m"]) for a in sel})
             bs = sorted({float(a["b_m"]) for a in sel})
             w(
-                f"**{SECTION_LABEL[section]}** — truss line mass / assumed `μ`. "
-                "Bold is mass-consistent."
+                f"**{SECTION_LABEL[section]}** — truss line mass / assumed `μ`, the WORSE "
+                "of the two readings. Bold is consistent under both."
             )
             w()
             w("| `h` \\ `b` [m] | " + " | ".join(f"{b:.0f}" for b in bs) + " |")
@@ -133,13 +196,13 @@ def main(argv: list[str] | None = None) -> int:
                 cells = []
                 for b in bs:
                     a = next(x for x in sel if float(x["h_m"]) == h and float(x["b_m"]) == b)
-                    r = float(a["mass_ratio"])
-                    cells.append(f"**{r:.3f}**" if r <= 1.0 else f"{r:.3f}")
+                    r = float(a["mass_ratio_worst"])
+                    cells.append(f"**{r:.3f}**" if a.get("consistent_under_both") else f"{r:.3f}")
                 w(f"| **{h:.0f}** | " + " | ".join(cells) + " |")
             w()
             per_width = []
             for b in bs:
-                c = [a for a in sel if float(a["b_m"]) == b and float(a["mass_ratio"]) <= 1.0]
+                c = [a for a in sel if float(a["b_m"]) == b and a.get("consistent_under_both")]
                 per_width.append(
                     f"`b = {b:.0f}` → `h = {min(float(a['h_m']) for a in c):.0f}`"
                     if c
@@ -148,21 +211,20 @@ def main(argv: list[str] | None = None) -> int:
             w("Shallowest per width: " + "; ".join(per_width) + ".")
             w()
 
-    # ------------------------------------------------------------------- findings
+    # ---------------------------------------------------------------------- findings
     w("## Findings")
     w()
     sp = splits["platform"]
-    mzf = float(sp["governing_Mz_fraction_of_resultant"])
-    w("**(i) WIDTH BUYS MORE THAN DEPTH ON THE PLATFORM ARMS, because the larger moment is")
-    w("the HORIZONTAL one.** This inverts the premise behind sizing a *shallow* truss.")
+    w("**(i) WIDTH BUYS MORE THAN DEPTH ON THE PLATFORM ARMS, because the larger moment")
+    w("is the HORIZONTAL one.** This inverts the premise behind sizing a *shallow* truss.")
     w()
     w("```")
-    w(f"governing station        : {sp['governing_station']}, T = {sp['governing_period_s']} s")
+    w(f"governing station        : {sp['governing_station']}, " f"T = {sp['governing_period_s']} s")
     w(f"  My                     : {float(sp['governing_My']):.6e} N.m")
     w(f"  Mz                     : {float(sp['governing_Mz']):.6e} N.m")
     w(
         f"  resultant              : {float(sp['governing_resultant']):.6e} N.m   "
-        f"Mz/resultant = {mzf:.3f}"
+        f"Mz/resultant = {float(sp['governing_Mz_fraction_of_resultant']):.3f}"
     )
     w(
         f"dynamic envelope, group  : max|My| = {float(sp['dynamic_envelope_max_My']):.6e}, "
@@ -177,15 +239,18 @@ def main(argv: list[str] | None = None) -> int:
         w(f"  {m:24s} max|My| = {float(d['My']):.4e}   max|Mz| = {float(d['Mz']):.4e}")
     w("```")
     w()
+    w("`Mz/resultant` is a direction cosine and is named as one rather than as a share —")
+    w("the two components are orthogonal, so nothing is a percentage of the resultant in")
+    w("an additive sense.")
+    w()
     w("**(ii) AND THE SPLIT IS THE ARM'S ORIENTATION, NOT THE PHYSICS — which is why `b`")
     w("MAY NOT BE MADE SMALL.** At heading 0° the arms along the wave direction take the")
     w("demand as `My` and the transverse arms take the same demand as `Mz`; the four arms")
     w("are geometrically identical. One section per arm group therefore has to carry the")
     w("larger moment in **both** planes, and a truss sized from the arm whose `Mz` is")
-    w("~zero would be undersized on the other two. The static case shows the same thing")
-    w("with no wave at all: `max|Mz|` is IDENTICALLY zero there -- gravity is vertical")
-    w("and the arms lie in one plane, so there is no horizontal static load to produce")
-    w("any -- and every bit of the horizontal demand is therefore dynamic.")
+    w("~zero would be undersized on the other two. The static case shows it with no wave")
+    w("at all: `max|Mz|` is **identically** zero there — gravity is vertical and the arms")
+    w("lie in one plane — so every bit of the horizontal demand is dynamic.")
     w()
     hand_lo = min(float(r["compression_over_tension"]) for r in hand)
     hand_hi = max(float(r["compression_over_tension"]) for r in hand)
@@ -194,8 +259,8 @@ def main(argv: list[str] | None = None) -> int:
     w()
     w("```")
     w(
-        f"{'h [m]':>6} {'F = M/h [N]':>14} {'A tension [m2]':>15} {'A compression':>14} "
-        f"{'ratio':>7}  {'branch':>12}"
+        f"{'h [m]':>6} {'F = M/h [N]':>14} {'A tension [m2]':>15} "
+        f"{'A compression':>14} {'ratio':>7}  {'branch':>12}"
     )
     for r in hand:
         w(
@@ -206,24 +271,25 @@ def main(argv: list[str] | None = None) -> int:
     w("```")
     w()
     w(
-        f"**Compression buckling adds {hand_lo - 1:.1%} to {hand_hi - 1:.1%}** — little, "
-        "because `K = 1.0` with `L` = the panel"
+        f"**Compression buckling adds {hand_lo - 1:.1%} to {hand_hi - 1:.1%}** at those "
+        "depths — little, because `K = 1.0` with"
     )
-    w("length leaves the chord stocky, so `F_a` stays near `0.6 F_y`. What the hand table")
-    w("omits that matters more is the **diagonals** and the **joint allowance**:")
+    w("`L` = the panel length leaves the chord stocky, so `F_a` stays near `0.6 F_y`. What")
+    w("the hand table omits that matters more is the **diagonals**, the **joint allowance**,")
+    w("and — for a box with `h ≠ b` — that under `per_face_45` the chord's buckling length")
+    w("is `max(h, b)` and not the depth:")
     w()
-    chord_steel = 4 * float(head["chord_A_m2"])
-    diag_steel = (
-        float(head["line_mass_kg_per_m"])
-        / (float(inp["rho_steel"]) * float(inp["joint_allowance"]))
-        - chord_steel
-    )
+    chord_steel = 4 * float(head[f"chord_A_m2_{A}"])
+    diag_steel = float(head[f"diagonal_steel_m2_{A}"])
     w("```")
-    w(f"at the headline answer, h = {float(head['h_m']):.0f} m, b = {float(head['b_m']):.0f} m:")
-    w(f"  chord steel    : {chord_steel:.6f} m^2  ({chord_steel/(chord_steel+diag_steel):.1%})")
-    w(f"  diagonal steel : {diag_steel:.6f} m^2  ({diag_steel/(chord_steel+diag_steel):.1%})")
+    w(
+        f"at the headline answer, h = {float(head['h_m']):.0f} m, "
+        f"b = {float(head['b_m']):.0f} m, per_face_45:"
+    )
+    w(f"  chord steel    : {chord_steel:.6f} m^2  " f"({chord_steel/(chord_steel+diag_steel):.1%})")
+    w(f"  diagonal steel : {diag_steel:.6f} m^2  " f"({diag_steel/(chord_steel+diag_steel):.1%})")
     w(f"  joint allowance: x{float(inp['joint_allowance']):.2f}")
-    w(f"  line mass      : {float(head['line_mass_kg_per_m']):.1f} kg/m")
+    w(f"  line mass      : {float(head[f'line_mass_kg_per_m_{A}']):.1f} kg/m")
     w("```")
     w()
     w("**(iv) THE STIFFNESS PROXY, as a note only — forces do not depend on it here.**")
@@ -237,32 +303,37 @@ def main(argv: list[str] | None = None) -> int:
     w(f"the headline truss, A_c b^2  : {float(head['EI_proxy_Ac_b2']):.4f} m^4")
     w("```")
     w()
-    w("A chord pair at separation `h` gives `I ≈ A_c h²/2` per pair, so the proxy above is")
-    w("an upper bound on the truss's own bending stiffness; it is reported because a")
-    w("stiffness that differs by this much from the stand-in's would change the dynamic")
-    w("response, and **this increment does not re-solve for it** (FI0). That is a reason to")
-    w("re-run F4 once a form is chosen, not a correction to anything here.")
+    w("A chord pair at separation `h` gives `I ≈ A_c h²/2` per pair, so the proxy is an")
+    w("**upper** bound on the truss's own bending stiffness. It is reported because a")
+    w("stiffness differing from the stand-in's by this much would change the dynamic")
+    w("response, and **this increment does not re-solve for it** (FI0) — a reason to re-run")
+    w("F4 once a form is chosen, not a correction to anything here.")
     w()
-    w("**(v) TORSION IS NEGLIGIBLE AND WAS KEPT ANYWAY.** `max|T|` over the platform's")
-    w(f"governing envelope is `{float(sp['max_T']):.4e} N·m` against moments of `10⁸ N·m`, so")
+    w("**(v) TORSION IS NEGLIGIBLE AND WAS KEPT ANYWAY.**")
+    w()
+    w("```")
+    w(f"platform  max|T| over the governing envelope : {float(sp['max_T']):.4e} N.m")
+    w("hubs      max|T|                            : " f"{float(splits['hubs']['max_T']):.4e} N.m")
     w(
-        "FI1's shear-flow term `T/(2·A_enclosed)` contributes "
-        f"`{float(head['torsion_share_of_face_shear']):.3e}` of the governing face "
-        "shear, and at most"
+        "the shear-flow term's share of the governing face shear : "
+        f"{float(head['torsion_share_of_face_shear']):.3e}"
     )
     w(
-        f"`{float(head['torsion_share_max']):.3e}` of any face shear at the headline "
-        "answer. Formed from the term's own formula,"
+        "  and of any face shear at the headline answer          : "
+        f"{float(head['torsion_share_max']):.3e}"
     )
-    w("not by differencing two resolutions: at the governing row the two differ in the")
-    w("17th significant figure, so a subtraction returns exactly zero. It is")
-    w("implemented as specified rather than dropped: a term removed because someone expected")
-    w("it to be small is how a missing load survives.")
+    w("```")
+    w()
+    w("Formed from the term's own formula, **not** by differencing two resolutions: at the")
+    w("governing row the two differ in the 17th significant figure, so a subtraction")
+    w("returns exactly zero and would publish a cancellation as a result. The term is")
+    w("implemented as FI1 specifies rather than dropped — a term removed because someone")
+    w("expected it to be small is how a missing load survives.")
     w()
     w("**(vi) THE CoG FLAG, AND IT IS THE FINDING THAT REACHES INCREMENT 2.** The")
-    w("remainder's height is **not a modelling choice** — it is forced. `_build_body` places")
-    w("it at `(deck_mass·deck_cog − first_moment)/remainder_mass`, and every arm midpoint")
-    w("lies in the joint plane, so")
+    w("remainder's height is **not a modelling choice** — it is forced. `_build_body`")
+    w("places it at `(deck_mass·deck_cog − first_moment)/remainder_mass`, and every arm")
+    w("midpoint lies in the joint plane, so")
     w()
     w("```")
     w("  z_remainder(f) = (z_cog - f z_joint) / (1 - f)")
@@ -275,7 +346,8 @@ def main(argv: list[str] | None = None) -> int:
     w(
         f"  remainder       z = {float(cog['z_remainder_m']):.3f} m   "
         f"({float(cog['remainder_above_joints_m']):.2f} m above), mass "
-        f"{float(cog['remainder_mass_kg']):.4e} kg at f = {float(cog['mass_fraction']):.2f}"
+        f"{float(cog['remainder_mass_kg']):.4e} kg at f = "
+        f"{float(cog['mass_fraction']):.2f}"
     )
     w(
         f"  closed form       {float(cog['closed_form_z_remainder_m']):.3f} m, "
@@ -291,37 +363,40 @@ def main(argv: list[str] | None = None) -> int:
     w()
     w("  the highest CoG a truss of depth h can reach is z_joint + h/2:")
     for r in cog["reachability"]:
-        short = float(r["cog_shortfall_m"])
         w(
-            f"    h = {float(r['h_m']):5.1f} m  ->  CoG at most {float(r['max_cog_m']):7.3f} m"
-            f"   shortfall {short:+7.3f} m"
+            f"    h = {float(r['h_m']):5.1f} m  ->  CoG at most "
+            f"{float(r['max_cog_m']):7.3f} m   shortfall "
+            f"{float(r['cog_shortfall_m']):+7.3f} m"
         )
     w("```")
     w()
     w(
-        f"**The deck CoG needs a truss "
+        "**The deck CoG needs a truss "
         f"{float(cog['truss_depth_needed_for_the_cog_m']):.2f} m deep for steel to reach "
         "it**, against a sweep that"
     )
     w(
-        f"stops at `h = {max(float(x) for x in inp['h_grid']):.0f} m`. So the "
-        "inconsistency FI4(v) flags is not between the truss and the"
+        f"stops at `h = {max(float(x) for x in inp['h_grid']):.0f} m`. And `h/2` is the "
+        "generous ceiling — a box reaches it only"
     )
-    w("remainder's *height* — it is between the truss and the **deck CoG itself**. At every")
-    w("depth in the sweep the CoG is unreachable by any distribution of the arms' own steel,")
-    w("whatever `f` is, because the closed form puts the leftover mass higher as `f` falls.")
+    w("with chords at the very top, and a triangle's centroid is at `h/3`. So the")
+    w("inconsistency FI4(v) flags is not between the truss and the remainder's *height* —")
+    w("it is between the truss and the **deck CoG itself**, at every depth in the sweep,")
+    w("whatever `f` is, because the closed form puts the leftover mass **higher** as `f`")
+    w("falls.")
     w()
     w("**What that means for the horizontal moment, stated as narrowly as it was measured.**")
     w("The remainder sits on the centreline, so its weight produces no horizontal-plane")
+    w("moment at all; a horizontal acceleration at")
     w(
-        "moment at all; a horizontal acceleration at "
-        f"`{float(cog['remainder_above_joints_m']):.2f} m` produces an overturning couple"
+        f"`{float(cog['remainder_above_joints_m']):.2f} m` produces an overturning couple "
+        "about a HORIZONTAL axis, which the"
     )
-    w("about a HORIZONTAL axis, which the arms carry as `My`, not as `Mz`. **So none of the")
-    w("governing horizontal moment comes from the remainder's height** — the horizontal")
-    w("demand is in-plane loading of the transverse arms, which finding (ii) shows is the")
-    w("same demand the along-wave arms see as `My`. The height's consequence is in `My` and")
-    w("in the CoG arithmetic above, and increment 2's mass budget is where it lands.")
+    w("arms carry as `My`, not as `Mz`. **So none of the governing horizontal moment comes")
+    w("from the remainder's height** — the horizontal demand is in-plane loading of the")
+    w("transverse arms, which finding (ii) shows is the same demand the along-wave arms")
+    w("see as `My`. The height's consequence is in `My` and in the CoG arithmetic above,")
+    w("and increment 2's mass budget is where it lands.")
     w()
     w("**What this does not answer:** the real joint and connection design, secondary")
     w("bending, system buckling of the bracing, any heading but 0°, the mass iteration")

@@ -296,3 +296,241 @@ heading but 0°, no mass iteration, and no re-solve — so the stiffness note in
 pointer to a future F4 run and not a result. It also does not attribute `My` between the
 remainder and the arms' own mass, which § 3's narrow answer says plainly and which a
 re-solve is what it would take.
+
+# Revision 2 — R801: the panel geometry had two readings and I used half of each
+
+Answers: verdict 124 @ 6e32716
+Answers file: `docs/reports/F6b/step-1-answers.json`
+
+**2026-10-11.**
+
+## 1. The schedule, and what this revision is
+
+**Still measured against FI5's 3 days, i.e. 14 October.** Revision 1 landed on 11 October
+and this repair lands the same day. **The date holds.**
+
+Verdict 124 held on one item. It is a real geometry defect of mine, it is CZ0 (a) as
+amended by EZ0, and **it moved the headline** — which is the strongest form the finding
+could have taken.
+
+## 2. R801 — the defect, and why the repair is not a patch
+
+**What was wrong.** `f6b_truss_sizing.py` sized the chord with `panel_length=min(h, b)`
+while its own comment said *"panel length = the face dimension"*. A box of depth `h` and
+width `b` has **two** face dimensions, so FI1's "diagonals at 45° (panel length = the face
+dimension)" has two self-consistent readings — and I took **the shorter buckling length
+from one and the shorter diagonal from the other**. That is the favourable half of each,
+and it is not a reading of FI1 at all.
+
+```
+claim  the two readings, and that the published cell fails under BOTH of them
+cmd    the sweep re-run with each reading computed separately
+out    platform box h=3 b=8   per_face_45 = 1.023 (chord L = 8 m)
+                              uniform_panel = 1.027 (chord L = 3 m)
+                              consistent under both: False
+       the cell revision 1 published as 0.979
+rule   mass-consistency is `truss line mass / assumed μ ≤ 1.0`
+judge  **the answer was taken at the grid's most extreme aspect ratio, 8:3, which is
+       exactly where `min(h, b)` is most wrong.** Under `per_face_45` a corner chord is
+       braced every `h` by the vertical faces and every `b` by the horizontal ones; the
+       chord is a circular tube so `r_y = r_z`, and it buckles over `max(h, b) = 8`, not
+       3. Under `uniform_panel` the chord's `L = 3` stands but the two 8 m faces'
+       diagonals are then at `atan(8/3)` and `hypot(3, 8)` long, not `3·√2`.
+```
+
+**What the repair is.** The geometry is **stated once**, in a named constant and a single
+`panel_and_diagonal()` that returns the chord's buckling length, the diagonal's length and
+the diagonal's steel per unit length for a given reading — so the two cannot drift apart
+again. **Both readings are swept and both are published**, because which one FI means
+changes the answer and a reader needs to see the recommendation survive either.
+
+**Three things changed with it**, and each is a consequence rather than an extra:
+
+* **Each face's diagonals are sized for that face's own shear.** Revision 1 sized one
+  diagonal area from the worst face shear anywhere and applied it to all four faces. FI2
+  asks for each member's governing case and station, which that cannot give.
+* **The diagonal's buckling length is its own length**, `hypot(panel, dimension)`, not the
+  panel.
+* **`mass_ratio` is gone as a single column.** The CSV and JSON now carry
+  `mass_ratio_per_face_45`, `mass_ratio_uniform_panel` and `mass_ratio_worst`, and the
+  headline is keyed on `consistent_under_both`. **BP0: the `A` column, the line-mass
+  column and both ratio tables are regenerated, not patched** — the deliverable is
+  produced end to end from the new JSON.
+
+**The corrected answer.**
+
+```
+claim  the shallowest truss consistent under BOTH readings, per group and section
+cmd    the regenerated sweep
+out    platform box       h = 4 m, b = 6 m   per_face_45 0.970   uniform_panel 0.963
+       platform triangle  h = 4 m, b = 8 m               0.923               0.917
+       hubs     box       h = 2 m, b = 2 m               0.652               0.652
+       hubs     triangle  h = 2 m, b = 2 m               0.662               0.662
+rule   FI3's headline: the shallowest mass-consistent truss per group
+judge  **the platform box moves from (3, 8) to (4, 6)**, which is the verdict's own
+       answer. The platform triangle stays at (4, 8). The hub answers are untouched
+       because they sit at `h = b = 2`, where the two readings coincide.
+```
+
+**The control, and it is the reason to trust the rest of the grid:** where `h = b` the two
+readings must give identical numbers, and they do.
+
+```
+claim  at h = b the two readings coincide, exactly
+cmd    the regenerated sweep, the cells where h equals b
+out    hubs     box       h=2 b=2   0.652 vs 0.652
+       hubs     triangle  h=2 b=2   0.662 vs 0.662
+       platform box       h=5 b=5   0.964 vs 0.964
+rule   at h = b, `min(h,b) = max(h,b)` and every face has the same dimension, so the two
+       readings are the same geometry and must give the same number
+judge  they do, which is what says the difference elsewhere is the geometry and not a
+       bug in one of the two paths.
+```
+
+```
+claim  how much of the grid the choice of reading actually decides
+cmd    count the cells where the two readings disagree about mass-consistency
+out    cells swept                           : 168
+       cells where the two readings DISAGREE :   1
+         platform  triangle  h=5 b=6   1.003 vs 0.999
+rule   consistency is `ratio ≤ 1.0` under each reading separately
+judge  **one cell in 168**, and it is not a headline. So publishing both and requiring
+       both costs almost nothing and the conclusion is robust to the reading — which is
+       the fact revision 1 could not state, because it had computed neither reading.
+```
+
+**My figures differ from the verdict's at the old cell, and the reason is a change it did
+not make.** It measured the two readings with revision 1's single diagonal area; I also
+moved to per-face diagonal sizing, so the diagonal steel differs.
+
+```
+claim  the two measurements of the same cell, and what the difference is
+cmd    the verdict's own figures for (platform, box, 3, 8), against mine
+out    verdict 124 : per_face_45 = 1.007   uniform_panel = 1.009
+       this sweep  : per_face_45 = 1.023   uniform_panel = 1.027
+rule   both exceed 1.0, so the cell is mass-inconsistent under either, which is the
+       finding and is unaffected by the difference
+judge  mine are higher because each face is now sized for its OWN shear and each diagonal
+       for its OWN length; the verdict's are the same geometry with revision 1's single
+       diagonal. **The verdict's conclusion and its headline `(4, 6)` are reproduced.**
+```
+
+## 3. The two closure items
+
+**The `1 skipped`, named — and it is NOT new this milestone.** The verdict records it as
+"new this milestone, the only line my run has that F6a's did not". Measured:
+
+```
+claim  which test skips, why, and whether it is new
+cmd    grep the skip site; then grep F6's own step-2 verdict for the same line
+out    tests/test_report_carried.py:2771
+         test_a_RED_suite_is_named_in_the_report
+         pytest.skip("reported by test_the_report_carries_a_WHOLE_SUITE_count")
+       docs/reviews/F6/step-2.md:3524
+         out    SKIPPED [1] tests/test_report_carried.py:2429: reported by
+rule   the project's rule is that an empty parameter set is an error, not a skip -- so a
+       skip has to be accounted for by name
+judge  **it is a deliberate deferral, not a gap**: `test_a_RED_suite_is_named_in_the_report`
+       needs the whole-suite line, and when that line is absent it defers to the test whose
+       job is to report its absence rather than double-reporting. **It is state-dependent,
+       not new** -- it fires in exactly the states where the report has no whole-suite line
+       yet, which is every pre-follow-on-commit state, and F6's step-2 verdict records it at
+       the then line number 2429. The verdict's F6a runs were at commits where the line was
+       already present.
+```
+
+**The caution is accepted and recorded.**
+
+```
+claim  the two declared inputs the answer scales most directly with
+cmd    the sizing run's own `inputs` block
+out    D_over_t         : 24
+       joint_allowance  : 1.15
+rule   the line mass is linear in the joint allowance and the chord area scales with
+       `D/t` through both the area formula and `r`
+judge  they do behave like tolerances in that sense, which is the verdict's point.
+``` They stay declared inputs rather than entries in
+`tolerances.py` because neither was chosen to make two numbers agree — which is the test
+`CLAUDE.md` applies — but **a reader sizing steel from this document should treat both as
+dials, and the deliverable's label says INDICATIVE for that reason among others.** If
+increment 2 wants either as a tolerance with a justification, that is a directive, not a
+discretionary edit.
+
+## 4. What the reviewer confirmed, recorded so it is not re-derived
+
+**Every figure in this section is the reviewer's, quoted from verdict 124 rather than
+re-measured by me** — that is the point of recording them, so the next revision does not
+re-derive what has been checked.
+
+```
+claim  what verdict 124 confirmed, in its own figures
+cmd    python -c "print the lines of this milestone's verdict that carry each result"
+out    FI5's hand recomputation: chord force exact, area to five figures
+         (A = 0.22345 by hand against the published 0.223439, at the old cell)
+       FI1(b)'s triangle derived from first principles, independently: correct
+       FI4(iii)'s four values confirmed by hand: 324/639, 324/852, 324/1065, 324/1278
+       monotonicity: 7.54M evaluations, zero non-monotone pairs, never more than one
+         sign change -- plus a proof, since at fixed D/t `r` is proportional to `D` so
+         `F_a` rises to 0.6 F_y while |F|/A falls as D^2, and section 3.2.2(b)'s local
+         reduction depends on D/t alone, which is held
+       the torsion figure confirmed to six figures
+       FI4(v)'s narrow answer: acceptable, no cell required
+       the CoG closed form: reproduced independently
+rule   FI5 asks the reviewer to recompute the governing chord force and its area by hand
+judge  **the monotonicity result answers the one thing I flagged as unproven** -- I had
+       said the bisection assumes a single root and that I had not shown it. It is shown,
+       and the bisection's root is the root. The warning I gave about FI1(b) was also
+       right: both equilibrium checks close for a wrong `I` with consistent levers, so the
+       derivation and not the checks is what had to be read, and it was.
+```
+
+## 5. Tolerances
+
+**None, unchanged.**
+
+```
+claim  no tolerance was added or moved by this revision either
+cmd    git diff --stat HEAD -- floatfea tests floatfea/tolerances.py
+out    (empty)
+rule   no counter is declared, so EU1 does not arise
+```
+
+## 6. The suite, lint and the boundary state
+
+```
+claim  lint, format and types at this tree
+cmd    python -m ruff check floatfea tests scripts ; python -m black --check ... ; mypy
+out    All checks passed!
+       137 files would be left unchanged.
+       Success: no issues found in 37 source files
+```
+
+The deliverable regenerates byte-identically from the new JSON. **The suite is not re-run
+and the reason is still a measurement:** `git diff --stat HEAD -- floatfea tests` is empty,
+so no test's subject changed by this revision.
+
+**The boundary state is EG3 state (2) now:** verdict 124 exists and this revision answers
+it, so the state-(2) ids are red until this commit lands and clear with it. The
+whole-suite line and the CI table remain FC1's class.
+
+## 7. Carried
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R788 | **not classified in this verdict** — carried in from an earlier one | no clause this generator can cut -- see the verdict's Carried section |
+| R791 | **not classified in this verdict** — carried in from an earlier one | no clause this generator can cut -- see the verdict's Carried section |
+| R800 | **not classified in this verdict** — carried in from an earlier one | no clause this generator can cut -- see the verdict's Carried section |
+| R801 | **answered** — §2 | The declared truss geometry is self-inconsistent for h ≠ b, and BOTH ways of resolving it move... |
+
+Every site verdict 124 names is touched: `scripts/measure/f6b_truss_sizing.py:298` and its
+line 309 comment are both gone, replaced by `GEOMETRIES` and `panel_and_diagonal()`; the
+deliverable and the CSV are regenerated.
+
+## 8. What this revision does NOT do
+
+It does not choose between the two readings. FI1's words admit both, the answer survives
+both, and picking one is a design decision rather than a measurement — so the deliverable
+reports both and says which cell survives either. If FI meant one of them specifically,
+that is a one-line directive and the sweep already carries the numbers.

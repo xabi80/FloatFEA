@@ -13,90 +13,121 @@ Declared inputs: chords and diagonals are tubes at `D/t = 24`; `F_y = 355 MPa`; 
 `ρ = 7850 kg/m³`. Loads: F4's governing envelope — the per-instant basis at the 4 in-band periods, at
 ROOT, MID and TIP, signs preserved.
 
+## The panel geometry, stated once — and why both readings are reported
+
+A box of depth `h` and width `b` has **two** face dimensions, so FI1's "diagonals
+at 45° (panel length = the face dimension)" has two self-consistent readings, and
+they do not give the same answer:
+
+* **`per_face_45`** — 45° on every face, so each face's panel length is its own
+  dimension. A chord is then braced every `h` by the vertical faces and every `b`
+  by the horizontal ones, at non-coincident stations; the chord is a circular tube
+  so `r_y = r_z`, and **its buckling length is `max(h, b)`**.
+* **`uniform_panel`** — one panel length `min(h, b)` for the whole truss, so the
+  chord buckles over `min(h, b)` — but then the larger faces' diagonals are **not**
+  at 45°: across a face of transverse dimension `d` over a panel `p` they sit at
+  `atan(d/p)` and are `hypot(p, d)` long, costing `hypot(p, d)/p` of their area per
+  unit length of truss.
+
+**An earlier version of this document took the shorter buckling length from one
+reading and the shorter diagonal from the other** — the favourable half of each —
+and reported a cell that is mass-inconsistent under either. Every table below
+carries both ratios and **the recommendation is the shallowest cell consistent
+under both**. Where `h = b` the two readings coincide exactly, which is the control.
+
+```
+cells swept                              : 168
+cells where the two readings DISAGREE    : 1
+  platform  triangle  h=5 b=6   1.003 vs 0.999
+```
+
 ## The answer
 
-| group | section | shallowest mass-consistent | chord `A` [m²] | diagonal `A` [m²] | truss line mass [t/m] | assumed `μ` [t/m] | ratio |
+| group | section | shallowest, consistent under BOTH | chord `A` [m²] | line mass [t/m] | `μ` [t/m] | ratio `per_face_45` | ratio `uniform_panel` |
 |---|---|---|---|---|---|---|---|
-| platform arms (4), L = 50 m | box (4 chords) | `h = 3 m`, `b = 8 m` | 0.2234 | 0.0217 | 9.175 | 9.375 | **0.979** |
-| platform arms (4), L = 50 m | triangle (3 chords, apex up) | `h = 4 m`, `b = 8 m` | 0.2688 | 0.0419 | 8.886 | 9.375 | **0.948** |
-| hub arms (12), L = 25 m | box (4 chords) | `h = 2 m`, `b = 2 m` | 0.2454 | 0.0245 | 10.108 | 15.000 | **0.674** |
-| hub arms (12), L = 25 m | triangle (3 chords, apex up) | `h = 2 m`, `b = 2 m` | 0.3332 | 0.0245 | 9.959 | 15.000 | **0.664** |
+| platform arms (4), L = 50 m | box (4 chords) | `h = 4 m`, `b = 6 m` | 0.2186 | 9.097 | 9.375 | **0.970** | **0.963** |
+| platform arms (4), L = 50 m | triangle (3 chords, apex up) | `h = 4 m`, `b = 8 m` | 0.2753 | 8.649 | 9.375 | **0.923** | **0.917** |
+| hub arms (12), L = 25 m | box (4 chords) | `h = 2 m`, `b = 2 m` | 0.2454 | 9.778 | 15.000 | **0.652** | **0.652** |
+| hub arms (12), L = 25 m | triangle (3 chords, apex up) | `h = 2 m`, `b = 2 m` | 0.3332 | 9.932 | 15.000 | **0.662** | **0.662** |
 
-The governing chord, at the platform's shallowest box:
+The governing chord and diagonal at the platform's shallowest box:
 
 ```
 governing chord   : platform:hub2_arm ROOT T=12.5s chord bot_-b
-chord force       : -4.685711e+07 N   (inelastic)
-required chord A  : 0.223439 m^2
-governing diagonal: platform:hub2_arm TIP T=12.5s face vertical
-diagonal force    : 4.181417e+06 N   (inelastic)
-required diagonal : 0.021670 m^2
+chord force       : -4.495164e+07 N
+chord buckling L  : 6.000 m  per_face_45 = max(h,b)   |  4.000 m  uniform_panel = min(h,b)
+required chord A  : 0.218581 m^2  per_face_45   |  0.215731 m^2  uniform_panel
+  branch          : inelastic  |  inelastic
+governing diagonal: platform:hub2_arm TIP T=12.5s face horizontal
+diagonal force    : 4.064780e+06 N
+worst diagonal A  : 0.024490 m^2   (each face is sized for its OWN shear)
+diagonal steel/m  : 0.133359 m^2  per_face_45   |  0.137244 m^2  uniform_panel
 ```
 
 ## The sweep — platform arms (4), L = 50 m
 
-**box (4 chords)** — truss line mass / assumed `μ`. Bold is mass-consistent.
+**box (4 chords)** — truss line mass / assumed `μ`, the WORSE of the two readings. Bold is consistent under both.
 
 | `h` \ `b` [m] | 2 | 3 | 4 | 5 | 6 | 8 |
 |---|---|---|---|---|---|---|
-| **2** | 2.157 | 1.750 | 1.547 | 1.425 | 1.344 | 1.242 |
-| **3** | 1.885 | 1.488 | 1.285 | 1.162 | 1.081 | **0.979** |
-| **4** | 1.748 | 1.352 | 1.159 | 1.036 | **0.954** | **0.852** |
-| **5** | 1.667 | 1.270 | 1.077 | **0.965** | **0.883** | **0.781** |
-| **6** | 1.612 | 1.215 | 1.022 | **0.911** | **0.841** | **0.738** |
-| **8** | 1.544 | 1.147 | **0.953** | **0.842** | **0.772** | **0.696** |
-| **10** | 1.503 | 1.106 | **0.912** | **0.801** | **0.730** | **0.654** |
+| **2** | 2.155 | 1.757 | 1.564 | 1.457 | 1.393 | 1.334 |
+| **3** | 1.892 | 1.487 | 1.291 | 1.178 | 1.105 | 1.027 |
+| **4** | 1.766 | 1.359 | 1.157 | 1.043 | **0.970** | **0.887** |
+| **5** | 1.699 | 1.286 | 1.084 | **0.964** | **0.891** | **0.807** |
+| **6** | 1.663 | 1.241 | 1.038 | **0.918** | **0.839** | **0.755** |
+| **8** | 1.638 | 1.196 | **0.990** | **0.869** | **0.789** | **0.694** |
+| **10** | 1.650 | 1.189 | **0.971** | **0.850** | **0.770** | **0.674** |
 
-Shallowest per width: `b = 2` → none; `b = 3` → none; `b = 4` → `h = 8`; `b = 5` → `h = 5`; `b = 6` → `h = 4`; `b = 8` → `h = 3`.
+Shallowest per width: `b = 2` → none; `b = 3` → none; `b = 4` → `h = 8`; `b = 5` → `h = 5`; `b = 6` → `h = 4`; `b = 8` → `h = 4`.
 
-**triangle (3 chords, apex up)** — truss line mass / assumed `μ`. Bold is mass-consistent.
+**triangle (3 chords, apex up)** — truss line mass / assumed `μ`, the WORSE of the two readings. Bold is consistent under both.
 
 | `h` \ `b` [m] | 2 | 3 | 4 | 5 | 6 | 8 |
 |---|---|---|---|---|---|---|
-| **2** | 2.609 | 2.000 | 1.695 | 1.679 | 1.679 | 1.679 |
-| **3** | 2.405 | 1.805 | 1.500 | 1.316 | 1.194 | 1.182 |
-| **4** | 2.303 | 1.703 | 1.407 | 1.223 | 1.101 | **0.948** |
-| **5** | 2.242 | 1.641 | 1.346 | 1.172 | 1.049 | **0.896** |
-| **6** | 2.201 | 1.600 | 1.305 | 1.131 | 1.019 | **0.865** |
-| **8** | 2.150 | 1.549 | 1.253 | 1.080 | **0.967** | **0.836** |
-| **10** | 2.119 | 1.519 | 1.223 | 1.049 | **0.936** | **0.805** |
+| **2** | 2.558 | 1.955 | 1.660 | 1.657 | 1.672 | 1.706 |
+| **3** | 2.362 | 1.753 | 1.454 | 1.278 | 1.162 | 1.171 |
+| **4** | 2.270 | 1.659 | 1.355 | 1.178 | 1.062 | **0.923** |
+| **5** | 2.225 | 1.606 | 1.301 | 1.119 | 1.003 | **0.864** |
+| **6** | 2.202 | 1.574 | 1.269 | 1.086 | **0.965** | **0.826** |
+| **8** | 2.194 | 1.548 | 1.237 | 1.054 | **0.932** | **0.782** |
+| **10** | 2.216 | 1.552 | 1.228 | 1.044 | **0.921** | **0.770** |
 
-Shallowest per width: `b = 2` → none; `b = 3` → none; `b = 4` → none; `b = 5` → none; `b = 6` → `h = 8`; `b = 8` → `h = 4`.
+Shallowest per width: `b = 2` → none; `b = 3` → none; `b = 4` → none; `b = 5` → none; `b = 6` → `h = 6`; `b = 8` → `h = 4`.
 
 ## The sweep — hub arms (12), L = 25 m
 
-**box (4 chords)** — truss line mass / assumed `μ`. Bold is mass-consistent.
+**box (4 chords)** — truss line mass / assumed `μ`, the WORSE of the two readings. Bold is consistent under both.
 
 | `h` \ `b` [m] | 2 | 3 | 4 | 5 | 6 | 8 |
 |---|---|---|---|---|---|---|
-| **2** | **0.674** | **0.602** | **0.567** | **0.545** | **0.531** | **0.513** |
-| **3** | **0.550** | **0.482** | **0.446** | **0.425** | **0.410** | **0.392** |
-| **4** | **0.489** | **0.421** | **0.391** | **0.369** | **0.355** | **0.337** |
-| **5** | **0.452** | **0.385** | **0.354** | **0.339** | **0.325** | **0.306** |
-| **6** | **0.427** | **0.360** | **0.330** | **0.315** | **0.307** | **0.289** |
-| **8** | **0.397** | **0.330** | **0.300** | **0.284** | **0.277** | **0.274** |
-| **10** | **0.379** | **0.312** | **0.281** | **0.266** | **0.258** | **0.255** |
+| **2** | **0.652** | **0.583** | **0.552** | **0.537** | **0.530** | **0.530** |
+| **3** | **0.533** | **0.459** | **0.427** | **0.410** | **0.401** | **0.394** |
+| **4** | **0.480** | **0.403** | **0.368** | **0.351** | **0.341** | **0.334** |
+| **5** | **0.454** | **0.371** | **0.336** | **0.316** | **0.306** | **0.299** |
+| **6** | **0.442** | **0.354** | **0.317** | **0.297** | **0.284** | **0.276** |
+| **8** | **0.442** | **0.343** | **0.297** | **0.277** | **0.264** | **0.250** |
+| **10** | **0.460** | **0.348** | **0.296** | **0.271** | **0.258** | **0.244** |
 
 Shallowest per width: `b = 2` → `h = 2`; `b = 3` → `h = 2`; `b = 4` → `h = 2`; `b = 5` → `h = 2`; `b = 6` → `h = 2`; `b = 8` → `h = 2`.
 
-**triangle (3 chords, apex up)** — truss line mass / assumed `μ`. Bold is mass-consistent.
+**triangle (3 chords, apex up)** — truss line mass / assumed `μ`, the WORSE of the two readings. Bold is consistent under both.
 
 | `h` \ `b` [m] | 2 | 3 | 4 | 5 | 6 | 8 |
 |---|---|---|---|---|---|---|
-| **2** | **0.664** | **0.635** | **0.635** | **0.635** | **0.635** | **0.635** |
-| **3** | **0.574** | **0.470** | **0.448** | **0.448** | **0.448** | **0.448** |
-| **4** | **0.528** | **0.425** | **0.376** | **0.357** | **0.357** | **0.357** |
-| **5** | **0.501** | **0.398** | **0.348** | **0.321** | **0.303** | **0.303** |
-| **6** | **0.483** | **0.380** | **0.330** | **0.303** | **0.286** | **0.269** |
-| **8** | **0.461** | **0.357** | **0.307** | **0.280** | **0.264** | **0.248** |
-| **10** | **0.447** | **0.343** | **0.294** | **0.266** | **0.250** | **0.234** |
+| **2** | **0.662** | **0.635** | **0.639** | **0.645** | **0.650** | **0.665** |
+| **3** | **0.576** | **0.469** | **0.447** | **0.450** | **0.454** | **0.462** |
+| **4** | **0.540** | **0.427** | **0.374** | **0.356** | **0.358** | **0.364** |
+| **5** | **0.524** | **0.405** | **0.351** | **0.319** | **0.303** | **0.307** |
+| **6** | **0.519** | **0.394** | **0.337** | **0.305** | **0.285** | **0.270** |
+| **8** | **0.526** | **0.390** | **0.326** | **0.292** | **0.271** | **0.246** |
+| **10** | **0.549** | **0.400** | **0.329** | **0.290** | **0.269** | **0.244** |
 
 Shallowest per width: `b = 2` → `h = 2`; `b = 3` → `h = 2`; `b = 4` → `h = 2`; `b = 5` → `h = 2`; `b = 6` → `h = 2`; `b = 8` → `h = 2`.
 
 ## Findings
 
-**(i) WIDTH BUYS MORE THAN DEPTH ON THE PLATFORM ARMS, because the larger moment is
-the HORIZONTAL one.** This inverts the premise behind sizing a *shallow* truss.
+**(i) WIDTH BUYS MORE THAN DEPTH ON THE PLATFORM ARMS, because the larger moment
+is the HORIZONTAL one.** This inverts the premise behind sizing a *shallow* truss.
 
 ```
 governing station        : platform:hub2_arm ROOT, T = 12.5 s
@@ -112,15 +143,18 @@ per-arm, over the governing envelope:
   platform:hub4_arm        max|My| = 1.8018e+08   max|Mz| = 2.6890e+08
 ```
 
+`Mz/resultant` is a direction cosine and is named as one rather than as a share —
+the two components are orthogonal, so nothing is a percentage of the resultant in
+an additive sense.
+
 **(ii) AND THE SPLIT IS THE ARM'S ORIENTATION, NOT THE PHYSICS — which is why `b`
 MAY NOT BE MADE SMALL.** At heading 0° the arms along the wave direction take the
 demand as `My` and the transverse arms take the same demand as `Mz`; the four arms
 are geometrically identical. One section per arm group therefore has to carry the
 larger moment in **both** planes, and a truss sized from the arm whose `Mz` is
-~zero would be undersized on the other two. The static case shows the same thing
-with no wave at all: `max|Mz|` is IDENTICALLY zero there -- gravity is vertical
-and the arms lie in one plane, so there is no horizontal static load to produce
-any -- and every bit of the horizontal demand is therefore dynamic.
+~zero would be undersized on the other two. The static case shows it with no wave
+at all: `max|Mz|` is **identically** zero there — gravity is vertical and the arms
+lie in one plane — so every bit of the horizontal demand is dynamic.
 
 **(iii) THE HAND TABLE IS CONFIRMED.** Two chords at separation `h`, `M = F h`, so
 `A_c = M/(σ h)` — and `σ` is the tension allowable `0.6 F_y`:
@@ -133,45 +167,53 @@ any -- and every bit of the horizontal demand is therefore dynamic.
      6     5.4000e+07          0.2535         0.2616   1.032     inelastic
 ```
 
-**Compression buckling adds 1.0% to 3.2%** — little, because `K = 1.0` with `L` = the panel
-length leaves the chord stocky, so `F_a` stays near `0.6 F_y`. What the hand table
-omits that matters more is the **diagonals** and the **joint allowance**:
+**Compression buckling adds 1.0% to 3.2%** at those depths — little, because `K = 1.0` with
+`L` = the panel length leaves the chord stocky, so `F_a` stays near `0.6 F_y`. What
+the hand table omits that matters more is the **diagonals**, the **joint allowance**,
+and — for a box with `h ≠ b` — that under `per_face_45` the chord's buckling length
+is `max(h, b)` and not the depth:
 
 ```
-at the headline answer, h = 3 m, b = 8 m:
-  chord steel    : 0.893756 m^2  (87.9%)
-  diagonal steel : 0.122585 m^2  (12.1%)
+at the headline answer, h = 4 m, b = 6 m, per_face_45:
+  chord steel    : 0.874325 m^2  (86.8%)
+  diagonal steel : 0.133359 m^2  (13.2%)
   joint allowance: x1.15
-  line mass      : 9175.0 kg/m
+  line mass      : 9096.9 kg/m
 ```
 
 **(iv) THE STIFFNESS PROXY, as a note only — forces do not depend on it here.**
 
 ```
 the stand-in tube            : I = 0.888 m^4
-the headline truss, A_c h^2  : 2.0110 m^4   = 2.26x the stand-in
-the headline truss, A_c b^2  : 14.3001 m^4
+the headline truss, A_c h^2  : 3.4973 m^4   = 3.94x the stand-in
+the headline truss, A_c b^2  : 7.8689 m^4
 ```
 
-A chord pair at separation `h` gives `I ≈ A_c h²/2` per pair, so the proxy above is
-an upper bound on the truss's own bending stiffness; it is reported because a
-stiffness that differs by this much from the stand-in's would change the dynamic
-response, and **this increment does not re-solve for it** (FI0). That is a reason to
-re-run F4 once a form is chosen, not a correction to anything here.
+A chord pair at separation `h` gives `I ≈ A_c h²/2` per pair, so the proxy is an
+**upper** bound on the truss's own bending stiffness. It is reported because a
+stiffness differing from the stand-in's by this much would change the dynamic
+response, and **this increment does not re-solve for it** (FI0) — a reason to re-run
+F4 once a form is chosen, not a correction to anything here.
 
-**(v) TORSION IS NEGLIGIBLE AND WAS KEPT ANYWAY.** `max|T|` over the platform's
-governing envelope is `2.4832e+02 N·m` against moments of `10⁸ N·m`, so
-FI1's shear-flow term `T/(2·A_enclosed)` contributes `2.984e-17` of the governing face shear, and at most
-`2.275e-04` of any face shear at the headline answer. Formed from the term's own formula,
-not by differencing two resolutions: at the governing row the two differ in the
-17th significant figure, so a subtraction returns exactly zero. It is
-implemented as specified rather than dropped: a term removed because someone expected
-it to be small is how a missing load survives.
+**(v) TORSION IS NEGLIGIBLE AND WAS KEPT ANYWAY.**
+
+```
+platform  max|T| over the governing envelope : 2.4832e+02 N.m
+hubs      max|T|                            : 1.1175e+03 N.m
+the shear-flow term's share of the governing face shear : 3.979e-17
+  and of any face shear at the headline answer          : 1.707e-04
+```
+
+Formed from the term's own formula, **not** by differencing two resolutions: at the
+governing row the two differ in the 17th significant figure, so a subtraction
+returns exactly zero and would publish a cancellation as a result. The term is
+implemented as FI1 specifies rather than dropped — a term removed because someone
+expected it to be small is how a missing load survives.
 
 **(vi) THE CoG FLAG, AND IT IS THE FINDING THAT REACHES INCREMENT 2.** The
-remainder's height is **not a modelling choice** — it is forced. `_build_body` places
-it at `(deck_mass·deck_cog − first_moment)/remainder_mass`, and every arm midpoint
-lies in the joint plane, so
+remainder's height is **not a modelling choice** — it is forced. `_build_body`
+places it at `(deck_mass·deck_cog − first_moment)/remainder_mass`, and every arm
+midpoint lies in the joint plane, so
 
 ```
   z_remainder(f) = (z_cog - f z_joint) / (1 - f)
@@ -198,19 +240,22 @@ lies in the joint plane, so
 ```
 
 **The deck CoG needs a truss 20.66 m deep for steel to reach it**, against a sweep that
-stops at `h = 10 m`. So the inconsistency FI4(v) flags is not between the truss and the
-remainder's *height* — it is between the truss and the **deck CoG itself**. At every
-depth in the sweep the CoG is unreachable by any distribution of the arms' own steel,
-whatever `f` is, because the closed form puts the leftover mass higher as `f` falls.
+stops at `h = 10 m`. And `h/2` is the generous ceiling — a box reaches it only
+with chords at the very top, and a triangle's centroid is at `h/3`. So the
+inconsistency FI4(v) flags is not between the truss and the remainder's *height* —
+it is between the truss and the **deck CoG itself**, at every depth in the sweep,
+whatever `f` is, because the closed form puts the leftover mass **higher** as `f`
+falls.
 
 **What that means for the horizontal moment, stated as narrowly as it was measured.**
 The remainder sits on the centreline, so its weight produces no horizontal-plane
-moment at all; a horizontal acceleration at `41.33 m` produces an overturning couple
-about a HORIZONTAL axis, which the arms carry as `My`, not as `Mz`. **So none of the
-governing horizontal moment comes from the remainder's height** — the horizontal
-demand is in-plane loading of the transverse arms, which finding (ii) shows is the
-same demand the along-wave arms see as `My`. The height's consequence is in `My` and
-in the CoG arithmetic above, and increment 2's mass budget is where it lands.
+moment at all; a horizontal acceleration at
+`41.33 m` produces an overturning couple about a HORIZONTAL axis, which the
+arms carry as `My`, not as `Mz`. **So none of the governing horizontal moment comes
+from the remainder's height** — the horizontal demand is in-plane loading of the
+transverse arms, which finding (ii) shows is the same demand the along-wave arms
+see as `My`. The height's consequence is in `My` and in the CoG arithmetic above,
+and increment 2's mass budget is where it lands.
 
 **What this does not answer:** the real joint and connection design, secondary
 bending, system buckling of the bracing, any heading but 0°, the mass iteration

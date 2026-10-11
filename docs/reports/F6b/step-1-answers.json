@@ -2,29 +2,30 @@
   "_": [
     "POINTERS ONLY (CH4).",
     "",
-    "F6b STEP 1, REVISION 1. Opened by DIRECTIVE FI. There is no prior verdict -- this is",
-    "the milestone's first revision and, under FG1's lighter process, its ONLY reviewed",
-    "one. EQ0 closure follows.",
+    "F6b STEP 1, REVISION 2. Answers verdict 124 @ 6e32716, a HOLD on ONE item -- R801,",
+    "a real geometry defect of mine that MOVED THE HEADLINE.",
     "",
-    "NOTHING IS CARRIED: F6a closed with no blocking item open. Its ledger (R788, R789,",
-    "R790, R791) stays in docs/closure/F6a.md and is not re-opened here.",
+    "R801: I sized the chord with min(h,b) while the comment said 'the face dimension'.",
+    "A box with h != b has TWO face dimensions, so FI1 has two self-consistent readings",
+    "and I took the shorter buckling length from one and the shorter diagonal from the",
+    "other. The published cell (3,8) fails under BOTH. The geometry is now stated once,",
+    "both readings are swept and published, and the headline is keyed on surviving both:",
+    "the platform box moves (3,8) -> (4,6), which is the verdict's own answer.",
     "",
-    "WHAT THE REVIEWER IS ASKED TO ATTACK, per FI5: recompute the governing chord force",
-    "and its required area BY HAND. Section 2 lays out every term of both so that the",
-    "recomputation is a check and not a re-derivation -- N/4, My/(2h) and Mz/(2b)",
-    "separately, then the tension and clause areas.",
+    "WHAT I WOULD ATTACK: the per-face diagonal sizing, which the verdict did not change",
+    "and which is why my figures at the old cell (1.023/1.027) differ from its",
+    "(1.007/1.009). Each face is now sized for its own shear and each diagonal for its own",
+    "length. If that is wrong the diagonal steel is wrong everywhere in the sweep.",
     "",
-    "THE ONE REAL DECISION, and the thing I would attack first: FI3 asks for one section",
-    "per arm group, and Mz is 2.689e+08 on two platform arms and round-off on the other",
-    "two -- the split is the arm's ORIENTATION at heading 0 deg, not the physics. I sized",
-    "each group to the ENVELOPE over its members, so `b` cannot be made small because Mz",
-    "is small on one arm. Section 3(i) argues it; if the reviewer thinks per-arm sizing is",
-    "what FI3 meant, every number in the sweep changes.",
-    "",
-    "AND A FINDING OF MY OWN worth re-checking: the torsion share was first computed by",
-    "differencing two resolutions and returned EXACTLY zero, because they agree to 16",
-    "significant figures. Section 4. The repair was also live for one run while the",
-    "document still said zero, because two stale lines overwrote the new assignment."
+    "AND A CORRECTION TO THE VERDICT: the `1 skipped` is NOT new this milestone. It is",
+    "test_a_RED_suite_is_named_in_the_report deferring to the whole-suite guard when the",
+    "line is absent, and F6's own step-2 verdict records it at line 2429. Section 3."
   ],
-  "answered": {}
+  "answered": {
+    "R801": {
+      "state": "answered",
+      "where": "§2",
+      "site": "scripts/measure/f6b_truss_sizing.py"
+    }
+  }
 }
