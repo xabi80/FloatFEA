@@ -1,4 +1,258 @@
 # Review — F6a step 1
+Reviewed commit: 2f72db8f86ee28354028974aaa860abcbafb171a
+Verdict: PASS
+Tests: not re-run -- `git diff --stat b04b124..HEAD -- floatfea tests` is empty and `pytest` does not execute this hook. The measurements are the controlled pairs below.
+
+## R799's repair, reviewed. **PASS. The STOP is lifted. The deviation from my closing condition was CORRECT and the process you used to make it is the right one.**
+
+**Reviewed commit: `2f72db8` (HEAD).** Range `b04b124..HEAD`: `60bb3f0` (the hook) and
+`2f72db8` (artifact prose).
+
+**Verified, not taken:**
+
+```
+cmd  git diff --stat b04b124..HEAD -- floatfea tests floatfea/tolerances.py
+out  (empty)                                   -> EU1 does not arise
+cmd  git show --stat 60bb3f0
+out  .claude/hooks/require-verdict.sh | 75 +++++++  (1 file, +75 -0)
+cmd  git log -1 --format=%B 60bb3f0 | head -3
+out  process: R799 -- ... | Cites DIRECTIVE FH0 and answers the STOP in the FH2 hook
+     diff. Touches only `.claude/hooks/require-verdict.sh`. No `floatfea/`, no `tests/`.
+cmd  bash -n .claude/hooks/require-verdict.sh ; git status --porcelain
+out  (no output) ; (clean)
+judge **`+75 âˆ’0`. The repair deletes nothing, so the clause I ruled under last round --
+      "a change that removes a guard is a STOP" -- cannot reach it.** That is the
+      structural fact that settles the disposition before any behaviour is examined.
+```
+
+## Carried
+
+| item | status | what I measured |
+|---|---|---|
+| R799 | **ANSWERED. The STOP is lifted.** | all three of its states now refuse -- below. |
+| R793 | **still fixed** | the clean tree still ALLOWS, before and after every plant. |
+| R798 | **withdrawn, unchanged.** | |
+| R788, R789, R790, R791 | **on the ledger, unchanged** | `-- floatfea tests` is empty in this range. |
+
+## R799's three states, re-measured on the real hook
+
+```
+claim  the regression's own states refuse, and the clean tree still allows
+cmd    a throwaway clone at 2f72db8; the real hook, real stdin, every plant removed after
+out    T0  clean tree                                        ALLOW
+       S2b docs/reports/F6a/step-2.md, marker STALE at 1      BLOCK "these step reports
+             have no supervisor verdict: docs/reports/F6a/step-2.md"
+       S7  the SAME report, marker advanced to 2              BLOCK (the same message)
+       S2  docs/reports/F7/step-1.md, marker still F6a 1      BLOCK (names that path)
+       T   clean tree again                                   ALLOW
+rule   the hook's line 2: "the implementer may not end its turn while the newest step
+       report has no supervisor verdict"
+judge  **the refusal no longer depends on the marker.** S2b and S7 now give the SAME
+       answer, which is the whole of what the STOP asked for: the control and the attack
+       are no longer distinguishable by the hook, because the marker is no longer in that
+       decision.
+```
+
+**And two probes of the new code's own edges, neither of which you listed:**
+
+```
+claim  the step comparison is arithmetic, not lexical, and a malformed step name fails
+       safe
+cmd    plant docs/reports/F6a/step-10.md (gate_from = 1)
+out    BLOCK, naming step-10.md
+cmd    plant docs/reports/F6a/step-1-draft.md
+out    BLOCK, naming step-1-draft.md
+rule   `[ "$vs" -lt "$gate_from" ]` and `[ "$rep_step" -ge "$gate_from" ]` are `test`'s
+       ARITHMETIC operators, so numeric by definition, and the `case ... *[!0-9]*`
+       guards precede them so neither can be handed a non-number
+judge  **both correct, and the second fails in the safe direction** -- an unparseable step
+       name is added to the orphans rather than skipped, which is my own "empty parameter
+       set is an error, not a skip" applied to a filename. One blemish, no number: the
+       message then says that file "has no supervisor verdict" when what is wrong is its
+       name. A refusal with a misdiagnosis is still a refusal.
+```
+
+## The deviation, ruled. **Your scope is right, your process was right, and no criterion question goes to Xabier.**
+
+**First: my condition was wrong and your measurement is what shows it.** I verified the
+orphans myself rather than taking the figure:
+
+```
+claim  docs/reports/F2/step-1..3 are real orphans, so the unscoped sweep I specified
+       wedges the clean tree
+cmd    two routes over the real tree: (a) `docs/reviews / p.parent.name / p.name`,
+       (b) `p.as_posix().replace("docs/reports","docs/reviews",1)`
+out    by parent/name  : ['docs/reports/F2/step-1.md','F2/step-2.md','F2/step-3.md']
+       by as_posix swap: ['docs/reports/F2/step-1.md','F2/step-2.md','F2/step-3.md']
+       agree: True   | total reports: 16
+       docs/reviews/F2 holds: ['step-4.md','step-5.md','step-6.md','step-7.md']
+judge  **three real orphans, confirmed by two routes that agree.** My closing condition
+       would have replaced a guard that fails false in one direction with one that fails
+       false in the other, on the first turn after it landed. **The condition was mine and
+       it was wrong.**
+```
+
+**AND MY FIRST ATTEMPT AT THAT VERIFICATION WAS CORRUPTED BY THE SAME CLASS YOU REPORTED,
+IN THE ACT OF CHECKING YOUR REPORT OF IT.** Route (b) was `str(p).replace("docs/reports",
+...)`; on this platform `str(p)` is backslash-separated, so the pattern could not match, and
+it returned `[]` against route (a)'s three. I printed `agree: False` and had to fix my own
+route before the figure meant anything. **That is the fifth instance this session and the
+second to reach a verification of the first** -- and it is why "two independent routes" is
+only worth something when they agree and you say so when they do not.
+
+**Second: the scope you implemented is right, and the reason is structural rather than
+aesthetic.** `gate_from` is computed from `docs/reviews/F<m>/step-*.md` -- a directory
+`protect-reviews.sh` denies the implementer. **So the exemption boundary is
+reviewer-controlled: the implementer can add reports, which never lowers the gate, and
+cannot add a verdict, which is the only thing that raises the exemption.** Adding a report
+can only create an orphan. That is the property a scoped guard needs and it holds.
+
+**Third: deviating was the right call and it needs no pre-agreement.** A closing condition
+names *what must become true*, not the implementation. You did the one thing that makes a
+deviation safe: **implemented my condition literally, ran it, measured it failing false, and
+published the refutation** -- which is my own "convert arguments into measurements" aimed
+back at me. Asking first would have cost a round and produced this same answer. **The rule
+going forward, so it is written down once: a closing condition may be deviated from in the
+commit, provided the commit carries the measurement that refutes it.** A deviation with an
+argument instead of a measurement is the thing I would hold on.
+
+## Findings
+
+**R800. (apparatus, FF0 -- next commit, NOT the ledger) The hole you named is REAL and I
+reached it: a milestone whose first verdict sits at a later step than an unreviewed earlier
+report in the same milestone exempts that report, permanently and silently.**
+
+```
+claim  the state exists and the hook allows it
+cmd    in the clone: docs/reports/F7/step-1.md (no verdict), plus
+       docs/reports/F7/step-2.md AND docs/reviews/F7/step-2.md stamped at HEAD
+out    ALLOW   (exit 0, no output)   -- gate_from = 2, so step-1 is below the gate
+rule   "within ONE milestone, the lowest step that HAS a verdict is where gating began
+       there. A report below it was never gated"
+judge  **"I think it cannot arise" was the right thing to distrust.** Reachability,
+       measured against the mechanism rather than asserted: in a NEW milestone with no
+       verdicts, `gate_from` is empty and every report is gated, so step-1's report blocks
+       the turn the moment it exists -- the ordinary sequence cannot produce this. What
+       produces it is TWO reports created before any verdict and the reviewer invoked on
+       the SECOND one: the turn blocks naming both, a verdict written for step 2 sets
+       `gate_from = 2`, and step 1 is exempt from then on. **It needs a reviewer error, not
+       an implementer action, and once reached it is permanent and silent.**
+```
+
+**Closed when** the historical exemption is DECLARED rather than inferred. There is exactly
+one -- `docs/reports/F2/step-{1,2,3}.md`, because the discipline began at F2 step 4 -- and
+it is now measured twice over in this file and in your commit message. Name those three
+paths in the hook with the measurement beside them and gate every other report from step 1;
+then there is no arithmetic over verdict sets at all and no state in which a verdict's
+absence creates an exemption. **This is R694's own move:** a constant that was right at one
+configuration was replaced by the closed form, with the constant demoted to a floor beneath
+every configuration. Here an inference about history is replaced by the one fact it was
+inferring.
+
+**Why it is PASS and not another STOP.** `60bb3f0` is `+75 âˆ’0`: nothing is removed, the
+guard is a large net strictness gain, and the residual state needs a reviewer mis-invocation
+rather than ordinary implementer work -- where R799 was reachable by the implementer, in the
+ordinary course, in the commit being guarded. FF0 routes it to the next commit; the ledger
+is still the one home it may not have.
+
+## Your three questions, answered
+
+**(1) `block()` is still only moved, and I checked it rather than accepting it twice.**
+
+```
+cmd  awk '/^block\(\) \{/,/^\}/' .claude/hooks/require-verdict.sh | sha256sum
+out  block() body now: 4 lines, sha 42ab11d92c8e7215
+rule 31fe039 -- before FH0 -- gave 42ab11d92c8e7215 for the same extraction
+cmd  git show 60bb3f0 -- .claude/hooks/require-verdict.sh | grep -E "^[-+].*(block\(\)|json.dumps)"
+out  (no output)
+judge **identical sha across three commits, and 60bb3f0 does not touch the function at
+      all.** You have now asserted this twice and it has been true twice.
+```
+
+**(2) THE SWEEP IS NOT THE EXPENSIVE PART AND I MEASURED WHICH IS.** This answers the
+question with a number instead of an opinion, and it corrects the premise:
+
+```
+claim  what the sweep costs, as a fraction of the hook
+cmd    five runs of the whole hook, then three with the sweep's block excised, timed with
+       `date +%s%N` on the real tree
+out    whole hook   : 2831, 2704, 2645, 2657, 2630 ms
+       without sweep: 2398, 2432, 2270 ms
+       -> the sweep is roughly 0.2-0.4 s of ~2.7 s, about 10%
+cmd    the shapes it iterates
+out    16 reports globbed | 5 review dirs | 13 verdict files
+rule   `[ -f "$sib" ] && continue` precedes the inner loop, so the per-milestone verdict
+       scan runs ONLY for a report with no sibling -- three today
+judge  **keep it where it is.** The dominant cost is `pick_reviewed`'s ancestry loop,
+       which is O(n^2) `git merge-base --is-ancestor` calls over the eight shas in F6 step
+       2's file -- up to 56 subprocesses -- and that is FH0's, not R799's. Neither is a
+       defect: 2.7 s at a turn boundary is not a cost anyone notices, and correctness
+       before speed is this repository's own rule.
+```
+
+**And it does NOT belong in `tests/test_report_carried.py`.** Two reasons, and the second
+is the one that settles it. First, the `check_carried.py` comment's logic does not transfer:
+carried-completeness is a property of two files' CONTENTS, which a test can assert, whereas
+"a report exists with no verdict" is a property of the TREE AT A TURN BOUNDARY -- a test can
+observe it but cannot refuse the turn, and refusing the turn is the entire function.
+Second, **`CLAUDE.md` forbids it outright**: "No new apparatus through F6. No new guards,
+scanners, meta-tests, detectors or report generators." A new test is new apparatus; a branch
+restored to an existing hook under a directive is not. **Do not grow it and do not move it.**
+
+**(3) The deviation disposition is ruled above and the answer is no, you do not need my
+agreement first** -- a closing condition names what must become true, and a deviation that
+arrives with the measurement refuting the condition is better than the condition was.
+**Nothing here goes to Xabier as a criterion question.**
+
+## Tolerances touched
+
+**None.** `git diff --stat b04b124..HEAD -- floatfea tests floatfea/tolerances.py` is empty,
+so no value, no counter, no injection: **EU1 does not arise** and I ran the command rather
+than taking it. `tests/conftest.py` untouched. **I did not re-run the suite and the header
+says so** -- `pytest` does not execute this hook, so a green suite would be evidence about
+something else.
+
+**My own instructions: this review is that diff.** `git log b04b124..HEAD -- .claude
+docs/SUPERVISOR.md` gives one commit, `60bb3f0`, standalone, citing FH0, purely additive,
+and I read all 75 lines.
+
+## The corpus (EG4(e))
+
+**Pause held; no batch, no entry.** The substitute was again the direction that weakens:
+your ten replays are ten refusals, and both of this round's results came from the two states
+nobody had run -- the F7 plant that ALLOWS (R800) and my own orphan recount that disagreed
+with itself until I fixed my route. **Three rounds running, the finding has been in the
+state the author did not choose.**
+
+## Next step opens when
+
+**Nothing opens. FH3 stops work and the STOP is lifted, so the tree is in a state where
+work could resume rather than one where it must not.**
+
+1. **R800 is fixed in one `process:` commit citing a directive**, under FF0's next-commit
+   rule -- the three F2 paths declared, every other report gated from step 1, and no
+   arithmetic over verdict sets.
+2. **Everything in `60bb3f0` stays.** R799's three states refuse, the clean tree allows, the
+   step comparison is arithmetic, a malformed step name fails safe, and `block()` is
+   untouched. All measured here.
+3. **The ledger stands at R788, R789, R790, R791.** R793, R798 and R799 are closed; R800 is
+   routed, not ledgered.
+
+## Disagreement with the criterion -- none
+
+Last round I said this file has no comfortable middle, only PASS and STOP. That was right
+about the *verdict* and incomplete about the *routing*: FF0 gives an apparatus finding a home
+in the next commit without a HOLD, which is what R800 uses, and the asymmetry I described
+bites only when a guard is actually removed. **A `+75 âˆ’0` commit cannot be that**, and
+saying so is the correction to my own sentence rather than a complaint about the clause.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6a step 1
 Reviewed commit: 6caef39c3df933c33961f621d2fcf1c584b241e6
 Verdict: STOP
 Tests: not re-run -- no `floatfea/` or `tests/` change in the range (verified below). The hook is not exercised by `pytest`; it is exercised by the controlled pairs in this file.
