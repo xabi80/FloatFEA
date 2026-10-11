@@ -1,4 +1,253 @@
 # Review — F6a step 1
+Reviewed commit: 365fe3fc0e278e0d24fa401ea98d1cc0fcbb4c4d
+Verdict: PASS
+Tests: 3346 passed, 0 failed, 0 skipped   (my run, `python -m pytest -q -p no:randomly`)
+
+## THIRD INTERIM CHECK (ES0) of 2026-10-11 -- no new report revision, so this counts against NO round. **PASS, and no fourth check is needed.**
+
+**Reviewed commit: `365fe3f` (HEAD).** Scanned `2457ef3..HEAD` -- `24282fa`, `365fe3f`.
+Light scope, one target. **Nothing is (a)-(d).**
+
+**Verified, not taken -- all six:**
+
+```
+cmd  git diff --stat 2457ef3..HEAD -- floatfea/tolerances.py
+     git diff 2457ef3..HEAD | grep -nE "^[-+].*(_COUNTER|Final\[float\])"
+     git log --oneline 2457ef3..HEAD -- .claude .claude/hooks docs/SUPERVISOR.md
+     git diff --stat 2457ef3..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+     git log --oneline 2457ef3..HEAD -- docs/reports
+out  (empty) x 5
+cmd  git diff 2457ef3..HEAD -- floatfea/ | grep -E "^[-+]" | grep -vE "^[-+]{3}" | grep -vE "^[-+]\s*#"
+out  (empty -- so the `floatfea/` change is comment text only, as you said)
+judge **EU1 does not arise**, no STOP-class finding, no conftest, EK3 holds, and neither
+      EG3 boundary state exists.
+```
+
+## Carried
+
+| item | status | what I measured |
+|---|---|---|
+| R793 | **still open and still not yours** | `.claude/hooks/` untouched by both commits. |
+| R796 | **answered, and the case is sound at the level that was missing** -- ruled below | |
+| R797 | **answered at both sites, and the form is now right** -- ruled below | |
+
+## The one target: R796's case. It holds, and all three of your attacks fail.
+
+**(1) `monkeypatch.setitem(globals(), ...)` reaches the dictionary the guard reads, and the
+case carries its OWN positive control.** You said the mutation was your only evidence. It
+is not -- there are two more, and one of them is inside the case.
+
+```
+claim  the dict the case writes is the dict the guard reads, by identity
+cmd    import the module; compare
+       `test_R796_....__globals__` with `test_a_report_does_not_say_CLOSED.__globals__`
+out    R796.__globals__  is  guard.__globals__ : True
+                   ...  is  module.__dict__   : True
+       CARRIED and EXPECTED live there        : (True, True)
+rule   `globals()` inside a function in this module IS the module `__dict__`, and a
+       function defined in the same module resolves its free names through that same
+       object -- so `setattr(module, ...)` and `setitem(globals(), ...)` write to one
+       dictionary here, and no import is needed to reach it
+cmd    POSITIVE CONTROL: delete the two `setitem` lines, keep everything else
+out    E  +  where [('R781', '**answered** ...'), ... 5 rows] = _status_cells()
+       tests/test_report_carried.py:878: AssertionError
+       FAILED ...::test_R796_the_GUARD_actually_CALLS_the_exemption_predicate
+judge  **the case cannot be vacuous in the way you feared, and it tells you so itself.**
+       Without the monkeypatch it goes RED at its own `assert not _status_cells()` --
+       which prints the real five rows -- rather than reaching `pytest.raises`. And the
+       third independent argument: if the patch did not reach the guard, the guard would
+       read the real `CARRIED`, return normally, and `pytest.raises(AssertionError)`
+       would fail. **Green-as-shipped is itself proof the patch lands.**
+```
+
+**And it survives the ordering you did not mention.** `monkeypatch` undoes at teardown, so
+I measured the leak rather than assuming it:
+
+```
+cmd    python -m pytest tests/test_report_carried.py -q     (DEFAULT order, pytest-randomly
+       enabled, three times)
+out    133 passed in 1.66s / 133 passed in 1.74s / 133 passed in 1.83s
+judge  stable across three random orderings, and `test_a_report_does_not_say_CLOSED` is
+       collected and run separately on the real globals in every one of them. No leak.
+```
+
+**(2) The needle is `assert cells`'s and no other assertion's. Checked mechanically, which
+is the only way this one can be settled.**
+
+```
+claim  "no status cell parsed" belongs to `assert cells` and to nothing else, and no
+       assertion can fire before it
+cmd    grep -n "no status cell parsed" tests/test_report_carried.py
+out    789:        "no status cell parsed from the newest revision's Carried table, ..."
+       891:    assert "no status cell parsed" in str(caught.value), (
+cmd    sed -n '788,800p' tests/test_report_carried.py
+out    788: assert cells, (
+       789:     "no status cell parsed from the newest revision's Carried table, and the
+              section "
+       ...
+       796: assert not guilty, (
+       797:     f"{[g[0] for g in guilty]} are recorded with a word only a verdict may use.
+rule   your worry: "if the guard ever fails earlier for an unrelated reason, this case
+       would read that as success"
+judge  **it cannot.** Line 789 is the only occurrence besides the case's own grep at 891,
+       `assert cells` is the FIRST assertion in the guard -- what precedes it is
+       `cells = _status_cells()` and the exemption's `return`, neither of which asserts
+       -- and the next assertion's message shares no phrase with it ("a word only a
+       verdict may use"). So the needle is both unique and first. **Your replacement is
+       right, and the capital-`T` failure was the construct working**: a vacuity check
+       that fails in the safe direction is a vacuity check.
+```
+
+**(3) Calling another test function directly is a new pattern in this repository, nothing
+forbids it, and its failure mode is loud.**
+
+```
+claim  the pattern is used once and only here
+cmd    grep -rn "    test_[a-zA-Z_]*(" tests/*.py
+out    tests/test_report_carried.py:886:        test_a_report_does_not_say_CLOSED(capsys)
+rule   `CLAUDE.md` and `docs/SUPERVISOR.md` prohibit no such thing; `tests/conftest.py` is
+       unchanged and adds no collection rule that would interact with it
+judge  **no finding.** The two interactions worth naming are both safe: pytest also
+       collects the callee and runs it on the real globals -- measured above, three
+       random orderings -- and if the callee ever gains a fixture the caller does not
+       request, the call raises `TypeError` rather than silently skipping, which is a red
+       test naming the right line. The one thing I would not do is let this spread; as a
+       single case reaching a guard that reads module globals, it is the only level at
+       which "the guard calls this predicate" is a measurement rather than a reading, and
+       that is exactly what it is for.
+```
+
+**And the thing you found that I did not ask for is the best part of the commit.** R795's
+`contradictory` section cannot serve for this case, because its row parses, so `cells` is
+non-empty, so `not cells` is false and the two-clause form refuses the exemption there too
+-- a case both forms treat alike pins neither. The discriminating input is the one where
+`cells` is empty and `EXPECTED` is not. **That reasoning is the whole of what makes a
+counter-case a counter-case**, it is recorded in the docstring, and nobody asked for it.
+
+## R797 -- the form is right now, and the quotation is not a problem. Ruled, so there is no fifth.
+
+```
+claim  the live pointer carries no inventory, at either site
+cmd    grep -n 'docs/closure/F6a.md` records' floatfea/model/platform.py
+       tests/verification/rung3/test_platform_skeleton.py
+out    floatfea/model/platform.py:798:    # ... `docs/closure/F6a.md` records what was
+         measured once.
+       tests/verification/rung3/test_platform_skeleton.py:807:
+         `docs/closure/F6a.md` records them.
+cmd    grep -n 'It used to' (both files)
+out    platform.py:800: ... (R797).** It used to add "with its ...
+       test_platform_skeleton.py:809: ... (R797).** It used to
+judge  **bare at both sites, which is the form I ruled for, and the single remaining grep
+       hit is inside a past-tense attribution.**
+```
+
+**Quoting a withdrawn false clause in order to explain it is NOT a CW0 problem.** CW0
+prohibits prose that *claims* something about this repository. A clause quoted in the past
+tense with its refutation in the same sentence is a record of a retraction, not a claim --
+and it is the device by which the defect cannot come back, which this repository uses
+everywhere (`"BY A MARGIN ASSERTED IN" IS WHAT THIS SAID`). The test to apply is one
+question: *can a reader mistake it for a live claim?* Here the refutation is eight words
+later. No. **The form is right and I have no further ask on this sentence.**
+
+**One residual, stated once and deliberately given NO number.** The paragraph that explains
+the deletion makes two checkable claims about `docs/closure/F6a.md` -- that it carries no
+date, and that its `cmd` field cites a verdict rather than giving a runnable line -- and it
+carries its command inline for the first. **Both are true and I checked both this round**,
+so the record holds them:
+
+```
+cmd  sed -n '380,412p' docs/closure/F6a.md | grep -cE "2026|October"
+out  0
+cmd  sed -n '389,391p' docs/closure/F6a.md
+out  claim  the admissibility margin by body, over the span the gate asserts
+     cmd    the reviewer's own 210-build sweep, reported in verdict 123
+judge CW0's second option is "a triple", and in substance this is one -- claim, command,
+      asserted result. It is not in the form `tests/test_tree_prose_consistent.py` parses,
+      so nothing in the tree re-checks it. **I am recording it rather than numbering it,
+      because a sentence about where a measurement lives has now been rewritten four
+      times and a fifth finding from me would be the defect rather than the cure.** The
+      verification above is the answer: the claims are true at this commit and a reviewer
+      checked them, which is what the fourth iteration was for.
+```
+
+## Findings
+
+**NONE NEW, and that is a ruling rather than an empty section.** Three attacks on R796's
+case and all three fail; R797's form is right at both sites; the one residual above is
+verified true at this commit rather than left open. **I numbered nothing deliberately:** a
+sentence about where a measurement lives has been rewritten four times in these two files,
+each rewrite answering my previous finding, and a fifth finding from me would be the defect
+rather than the cure. What the record needs from this check is the verification, and it is
+in the two blocks above with its commands.
+
+## Tolerances touched
+
+**None.** Both commands are in the verified block at the top: `floatfea/tolerances.py`
+untouched, and the diff contains no `_COUNTER` or `Final[float]` line at all. **EU1 does not
+arise**, and your reason is right -- the `floatfea/` change is comment text only, which I
+confirmed by filtering comment lines out of the diff and getting nothing back.
+
+## The suite, lint and CI at the reviewed commit (CA2, CK2)
+
+```
+cmd  python -m pytest -q -p no:randomly          (mine, at 365fe3f, tree clean)
+out  3346 passed, 2 warnings in 679.68s (0:11:19)
+cmd  python -m ruff check floatfea tests scripts
+     python -m black --check floatfea tests scripts
+     python -m mypy floatfea
+out  All checks passed! / 135 files would be left unchanged. /
+     Success: no issues found in 37 source files
+cmd  gh api .../runs/38121064579 --jq status,conclusion   then its /jobs   (head 365fe3f)
+out  run 38121064579 head 365fe3f: status=completed conclusion=success
+       the verification ladder   success   runner "GitHub Actions 1000001668"
+       lint, unit and guards     success   runner "GitHub Actions 1000001669"
+       CI determinism -- leg / ten legs agree   skipped  runner null
+cmd  the same at 24282fa (run 38120436492)
+out  status=completed conclusion=success ; both jobs success
+```
+
+**`3346` is `3345` plus exactly one, and the one is R796's case** -- counted from my own
+runs at both commits, not by differencing yours. **I waited for HEAD's run a third time**:
+`365fe3f` was `in_progress` with `lint, unit and guards` at `conclusion: null` while the
+ladder had already gone green, which is exactly the state that would have read as a pass
+from the job list alone. CK2 does not apply: no job in either run has `runner_name: ""`
+with a payment annotation, and the two determinism jobs are `skipped` by their
+`workflow_dispatch` condition.
+
+## Next step opens when
+
+**Nothing opens, and NO FOURTH CHECK IS NEEDED. Stated plainly, because you asked.**
+
+**The reason is not that the tree is green -- it is that there is nothing left for a check
+to read.** An interim check's substance under ES0 is the CZ0 (a)-(d) scan of the diff, and
+you have committed that no further commit will touch `floatfea/` or `tests/`. A check whose
+diff can only contain `docs/closure/F6a.md` is a check of prose that EQ0 already exempts
+from review. **If one is forced anyway, it has no content, and saying so now is cheaper
+than discovering it in a fourth verdict.**
+
+1. **R793 is the only thing that ends the loop and it is with Xabier.** For the record, so
+   the directive request carries its full cost: **three interim checks have now been forced
+   by a `%03d` format string**, every one of them PASS, and the two findings they produced
+   (R796, R797) came from attacking the repairs rather than from the scan the hook was
+   asking for. The hook asked the right question three times for the wrong reason.
+2. **R796 and R797 are answered. Nothing from this check goes on the ledger**, because the
+   one residual above is verified rather than open, and I have numbered nothing new.
+3. **The ledger stands at R788, R789, R790, R791** -- plus R793 pending its directive.
+
+## Disagreement with the criterion -- none
+
+Three attacks on R796's case and all three fail, which is the right outcome for a case
+written to answer a finding about assertion level. The thing I would record about this
+increment, if it is recorded anywhere, is that its last four findings were each in the
+repair of the one before, and each was found by running the thing rather than reading it.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6a step 1
 Reviewed commit: a522ae42e45f30f85ed509ae60a341f561abb2ae
 Verdict: PASS
 Tests: 3345 passed, 0 failed, 0 skipped   (my run, `python -m pytest -q -p no:randomly`, 676.58s)
