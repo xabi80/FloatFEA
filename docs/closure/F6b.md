@@ -172,6 +172,28 @@ Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 124 at `
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
 
+**FJ1 -- THE WHOLE SUITE AND CI, GREEN WITH ZERO WAIVED REDS, at this block's own
+commit `c416768`.** The first fully green state of the increment, and the nine reds
+cleared because the locator reads the record the rules put the outputs in -- not because
+anything was waived.
+
+```
+claim  the whole suite, no exclusions, and the pushed run at the same commit
+cmd    python -m pytest -q
+out    3341 passed, 2 warnings in 776.64s
+cmd    gh run list --commit c416768561dfd982c792bdb21f8dacfbd9888280 ; gh api repos/:owner/:repo/actions/runs/38184783138/jobs
+out    completed / success
+       lint, unit and guards             success
+       the verification ladder           success
+       CI determinism -- leg             skipped   (workflow_dispatch only, by design)
+       CI determinism -- ten legs agree  skipped   (same)
+rule   FJ1: the tree must be green with zero waived reds, locally and in CI at the
+       commit's own sha
+judge  **zero waived reds, and no EG3 trace to paste** -- there is nothing to waive. The
+       two warnings are the corpus entry `orient_norm_overflow`'s own designed overflow,
+       unchanged. CZ1 (iv) is satisfied at an increment's end for the first time.
+```
+
 <!-- /cz1-closure-outputs -->
 
 **CZ1 (iv) WAS DEADLOCKED AT AN INCREMENT'S END UNTIL DIRECTIVE FJ0 (option (a)) RESOLVED IT. THAT IS A STRUCTURAL
