@@ -1,4 +1,692 @@
 # Review — F6a step 1
+Reviewed commit: 09559f8f0afcc3ba1731de4ce92172140a901c3f
+Verdict: PASS
+Tests: 3344 passed, 0 failed, 0 skipped   (my run, `python -m pytest -q -p no:randomly`, 667.64s, exit 0)
+
+## Round of 2026-10-10 -- F6a, the EQ0 closure review. **PASS. The increment closes.**
+
+**Reviewed commit: `09559f8` (HEAD).** The range is `1d2be7b..HEAD`: `35de6cb`, `740221d`,
+`15bb18f`, `09559f8`.
+
+**Which clause I ruled under.** `CLAUDE.md` Â§ "Step gating": **EQ0**, because `35de6cb`
+changes a gate assertion and adds one, so this commit is reviewed; **EB4**, so it counts
+against no step's rounds and FG1's one reviewed revision is intact. CZ0 (a)-(d) as amended
+by EZ0, with FG1's restatement that a wrong figure in `results/F6a/` or in the script
+producing it blocks. CA2 and CK2 for the CI reading (stated in my own definition, because
+`CLAUDE.md` does not carry them). EG3/EH1/EJ2/FC1 for the boundary reds in the range.
+EH4 for the boundaries. EG4(e) for the corpus. FF0 for the apparatus items. **ES0/EU1 do
+not arise: no tolerance value and no declared counter moved anywhere in the range.**
+
+**The implementer was right and verdict 122's item 6 was wrong.** Item 6 reasoned the
+closure commit would change no gate. `35de6cb` changes
+`test_a_report_does_not_say_CLOSED`'s exemption condition and adds
+`test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION`. EQ0 applies on its own
+terms. **Item 6 is withdrawn**, and the asking was worth it: this review found the items
+below, two of them in the repair of a repair, and one of them a correction to a figure I
+published myself.
+
+## Carried
+
+**Every open item of verdict 122, with its status. Five findings and five closure items.**
+
+| item | status | where, and what I measured |
+|---|---|---|
+| R781 | **answered** | report Â§ 2. The provenance sentence now reads "No MEASURED figure is typed into this document or its generator -- what is written literally is the declared inputs and the clause's own constants". I audited the enumeration rather than taking it: all 20 digit-bearing string literals in `scripts/measure/f6a_report.py` are a path, a column header, a clause number (`3.2.2(b)`, `3.2.3`, `3.3.1`, `3.3.2`), a declared input (FG3's `2.5 m`/`180 mm`, heading `0Â°`, `K = 2.0`, `F_y = 355 MPa`, `0.75 F_y`), a decision threshold (`1.0`, `max U = 1`) or a label. **The claim holds as scoped.** The three premise figures are now in `results/F6a/premise_check.json` and read from it. |
+| R782 | **answered, and with more than I asked for** | `dynamic_half` at `scripts/measure/f6a_premise_check.py:156` re-solves the increment at both sections, runs at all three searches x two groups, and the docstring states what the file does. Its `max U` is taken over **every step** of the governing periods, which is verdict 122's own adversarial case, now in the repository and reproducing my figures to the digit. R788 is the residual. |
+| R783 | **answered** | The continuum requirement `W_req = 1.215739 mÂ³` and the bending fraction `99.98595%` are published; the six-figure agreement is named as `4.2e-04` of one grid step. **And my own `8.054e-05` is withdrawn** -- see R787(b). |
+| R784 | **answered, and my own closing condition is refuted** | The substitution is right and I measured it in both directions. Ruling below. R792 is the residual. |
+| R785 | **answered** | `--milestone` takes a label. `_milestone` accepts `6`, `6a`, `F6a`, refuses anything else, `re` is imported, and the value becomes the path segment at lines 99/103/105. **I wrote this file with `--milestone 6a` and nothing patched.** |
+| C98 | **fixed** (`35de6cb`) | and checked against my own recomputation of the sweep, not against the report's. |
+| C99 | **fixed** (`35de6cb`) | the claim moved from a comment into a test, which is CW0's own route. R786 and R787(a) are the residuals. |
+| C100 | **fixed** | the fence count is 38 and the fences balance. |
+| C101 | **fixed** | `EIGHTEENTH` became `SEVENTEENTH` at line 270. |
+| C102 | **fixed** | the restated column is gone from the document I read; the grep count is 0. |
+| HOLD item 4 | **UNVERIFIABLE BY ME, and recorded as such** | "the corrected deliverable is re-sent to Xabier". `docs/closure/F6a.md:115-116` states it -- "Sent to Xabier twice: the first version on 10 October, the corrected version the same day, with a PDF rendered outside the repository." Nothing in this repository can refute that. It is the one item of the HOLD I am taking on the implementer's word, and I am saying so rather than counting it answered. |
+| HOLD item 6 | **withdrawn, by me** | its premise was false. See above. |
+
+**On my own instruction 1b.** The newest revision's header is `Answers: verdict 122 @
+1d2be7b` and verdict 122 at `1d2be7b` is the latest verdict. One comparison, correct.
+
+## Findings
+
+**Nothing blocks. Every one is a closure item, an apparatus item, or one line for F2a's
+frozen list, and I say under each why it is not (a)-(d) rather than leaving the class
+implied.**
+
+**R786. (closure) `tests/verification/rung3/test_platform_skeleton.py:813` -- the new gate's
+ONLY failure branch raises before its assertion.** The assertion is sound and the gate does
+detect the defect. What it cannot do is say what it caught.
+
+```
+claim  break the property the gate claims and the gate reddens -- but not through its
+       assertion
+cmd    inject a section term into `_build_body`:
+         member_mass = fraction * deck_mass * (1.0 + 0.01 * section.A)
+       then run the one test
+out    E   AttributeError: 'Section' object has no attribute 'd_outer'
+       tests/verification/rung3/test_platform_skeleton.py:813: AttributeError
+       FAILED ...::test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION
+cmd    python -c "from floatfea.model.material import Section; print([f for f in
+       dir(Section.circular_tube(2.5,0.18)) if f[0]!='_'])"
+out    ['A', 'I_y', 'I_z', 'J', 'circular_tube', 'kappa', 'shape']
+cmd    grep -rn "[.]d_outer" floatfea/ tests/ scripts/ --include=*.py | grep -v "d_outer_m|d_outer="
+out    tests/verification/rung3/test_platform_skeleton.py:813
+       scripts/measure/f6a_required_section.py:68,69,73,74,78,82,90,346,371
+rule   my own recorded guard: "A gate carries its own failure: break the claimed property
+       and confirm the assertion goes red." It goes red; the assertion does not run.
+judge  `d_outer` is `f6a_required_section.py`'s own `Candidate` attribute, not
+       `floatfea`'s `Section` -- the diagnostic was written against the wrong class.
+       **And it cannot be fixed by renaming**: `Section` does not record `D` or `t` at
+       all, so the repair is to carry `(d, t)` from the loop. The failure mode is
+       specific: a real mass-basis change presents in rung 3 as an `AttributeError`,
+       which under the ladder's own discipline reads as a stale test, and the natural
+       repair makes the red disappear into a message nobody reads. **The assertion
+       message -- "the chosen mass fraction or the member mass moved with the measurement
+       section" -- has never been printed and cannot be.** Nobody broke the property and
+       watched it go red, which is the whole of why this is here.
+```
+
+**Why it is not (c).** CZ0 (c) is "a gate assertion -- what a gate claims, on which
+quantity, at what threshold", and all three are intact: `assert not moved`, on the chosen
+fraction and the member mass, at exact equality. What is broken is the path to it. CZ0 puts
+guards and apparatus in the closure list and I am not smuggling this one past that. **I did
+consider blocking** -- my definition's carve-out covers "a generator whose output *is* a
+gate's assertion" -- and an f-string inside a failure branch is not that.
+
+**And two sentences around it, one of them in `floatfea/`:**
+
+```
+claim  the docstring says the eigenvalue margin is printed, and nothing prints it
+cmd    python -m pytest ".../test_platform_skeleton.py::test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION" -q -s
+out      42 sections x 5 bodies: 0 mass changes
+       1 passed in 3.09s
+rule   the test's own docstring: "The eigenvalue margin is printed so a future reader can
+       see how much room the answer has rather than taking the word 'cannot'."
+cmd    sed -n '783,785p' floatfea/model/platform.py
+out    # **The section reaches the mass decision.** It does not change it, by a margin
+       # asserted in `tests/verification/rung3/test_platform_skeleton.py`, by
+       # `test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION`
+judge  **no margin is printed and no margin is asserted anywhere.** Both sentences are
+       CW0-class claims about the code, one of them in `floatfea/`, in the repair of a
+       CW0 finding (C99) that was itself in that comment. Per CW0 each is a test, a
+       triple, or deleted. The quantity they promise is R787.
+```
+
+**R787. (a) A CORRECTION TO VERDICT 122, MEASURED -- MY OWN `442x` IS WRONG BY TWO ORDERS
+OF MAGNITUDE ON THE BINDING BODY; AND (b) MY `8.054e-05` IS WITHDRAWN.** This is the item I
+would most want read, and it is about my record rather than the implementer's.
+
+**(a) The margin.** Verdict 122's C99 cell printed "the platform remainder-inertia
+eigenvalues" and concluded "the margin is 4.6558e+09 against a 1.0523e+07 section effect --
+**442x** -- so the behaviour is safe by a wide measured margin". I swept one body of five.
+
+```
+claim  admissible()'s margin on EVERY body, over the test's own 42-section span
+cmd    my own scratch script: 42 sections x 5 bodies = 210 builds of the superstructure;
+       at each, the min eigenvalue of the symmetrised remainder inertia against the
+       boundary `-MASS_PROPERTY_AGREEMENT * scale` that `admissible()` tests
+out    body       min eig range                   section effect  dist-to-boundary  margin
+       platform   4.655562e+09 .. 4.667382e+09    1.181955e+07    4.655562e+09      393.9x
+       hub1       3.148140e+07 .. 3.857313e+07    7.091729e+06    3.148140e+07        4.4x
+       hub2       3.148140e+07 .. 3.857313e+07    7.091729e+06    3.148140e+07        4.4x
+       hub3       3.148140e+07 .. 3.857313e+07    7.091729e+06    3.148140e+07        4.4x
+       hub4       3.148140e+07 .. 3.857313e+07    7.091729e+06    3.148140e+07        4.4x
+       smallest min-eigenvalue anywhere in the span: 3.148140e+07 at D=6.0 t=0.005 (hub4)
+rule   `admissible()`: `m_r >= 0` and `min eig(J_r) >= -MASS_PROPERTY_AGREEMENT * scale`,
+       with `MASS_PROPERTY_AGREEMENT = 1e-13`, so the boundary is -3.125e-05 and the
+       margin is the distance to zero divided by the span's full excursion
+judge  **4.4x, not 442x.** The platform is the loosest body by a hundredfold and it is the
+       one I measured. **Nothing flips anywhere in the span, so no F6a answer moves** --
+       and the sentence a future caller would have read was two orders of magnitude
+       optimistic about how much room there is. This is R755, this milestone's first
+       blocking finding, in my own verdict one round later: a figure right about the axis
+       its author swept and silent about the four with the answer on them.
+cell   one variable moved: which body the eigenvalue is read from. Same 42 sections, same
+       builds, same boundary.
+```
+
+**So the implementer's choice -- assert the outcome, not the margin -- was the right one,
+and for a reason stronger than the report gives.** C99 offered "state the measured margin
+(442x)" as the first of two options. **Taking that option would have published a figure
+wrong by 89x on the governing body**, in `floatfea/`, under my own name. The implementer
+took the option that did not inherit my error. The answer to the invocation's question is
+therefore: asserting the outcome is correct, and the only thing missing is that the comment
+and the docstring still promise a margin (R786).
+
+**And the span is the right span, checked rather than assumed.** The test's corner is
+`D = 6.0 m, t = 5 mm`, which is exactly the corner of FG3's own grid, and it is the corner
+that minimises the hub eigenvalue -- so the 4.4x is measured where the span is tightest and
+not at a convenient interior point. Outside the span nothing is reachable: at `D = 20 m`
+`check_limits` refuses at `L/D = 1.250` before `admissible()` is consulted at all.
+
+**(b) `8.054e-05` is withdrawn in favour of `7.994e-05`.** The report attributes the
+difference to "the bisections differ in their last digits". It is simpler than that, and it
+is mine.
+
+```
+claim  the exact spread, recomputed from the two W* the deliverable publishes
+cmd    my own scratch script: abs(1.2159102795078853 - 1.2160074798261564)
+       / 1.2159102795078853
+out    7.994037052670982e-05   -- the published figure, to every digit
+rule   their bisection endpoints and mine are the same number: `t* = 406.49845 mm`,
+       `D* = 3.193772 m`. With the same endpoints the spread cannot differ.
+judge  **`7.994e-05` is derivable from the published pair and `8.054e-05` is not.** It was
+       a normalisation slip in verdict 122, not a bisection difference, and the
+       deliverable carries the right one. Nothing downstream moves: the conclusion is the
+       same at either and it is still 31x the grid agreement.
+```
+
+**R788. (closure) `results/F6a/required_section.md` Â§ (vi): the dynamic block's "worst
+component rel" does not name its quantity, and the quantity the search actually reads moves
+by `6.9e-01`.** Ruling on the invocation's item 7: **a real distinction, not a narrowing.**
+
+```
+claim  what `worst_component_relative_change` is a change IN
+cmd    sed -n '200,215p' scripts/measure/f6a_premise_check.py
+out    store[key] = (total if prev is None
+                     else np.where(np.abs(total) > np.abs(prev), total, prev))
+       ...
+       rel, where, abso, _ = _worst_change(stores["shipped"], stores["sized"])
+rule   `store[key]` is the componentwise max-abs over every step, so its components may
+       come from different instants. It is a per-component ENVELOPE.
+judge  mine (`6.860008e-01`) is the change in the GOVERNING ROW when the instant selection
+       is re-run; theirs is the change in the envelope under a fixed selection rule. Two
+       different quantities, and the report's Â§ 2 says so in exactly those words. **The
+       deliverable does not**, and the deliverable is the file Xabier has: a reader of
+       "the forces do move ... worst component rel 5.692647e-05" has no way to know that
+       the row the search reads moves four orders of magnitude further.
+```
+
+**Why it is not (a).** The figure is correct for what it measures, and the load-bearing
+claim beside it -- `max U` -- is both the right quantity and published on the right basis.
+**The right basis is stronger than the search's own:**
+
+```
+claim  the script's `max U` is taken over EVERY step, not at the stored sigma-peak instant
+cmd    sed -n '208,212p' scripts/measure/f6a_premise_check.py
+out      u = _u_of(cands[group], total, lengths[member.label])
+         if u > best.get(group, -1.0): best[group] = u
+rule   verdict 122's adversarial case was precisely this: the stored basis keeps one row
+       per station where `sigma` peaks, and `sigma` is not `U`
+out    the deliverable now publishes, at answer (i), `platform 0.995702`, `hubs 0.989907`
+       -- identical to the figures I measured over 4081 steps x 5 bodies x 16 members x 3
+       stations in verdict 122; and at (iii) `hubs 0.991135 -> 0.991139`, also identical
+judge  **my adversarial case is now in the repository and it reproduces to the digit.**
+       That is the strongest statement anyone has made about these six answers and it is
+       no longer only in a verdict. The missing sentence is one line.
+```
+
+**R789. (closure) Measured figures typed in `scripts/measure/f6a_required_section.py`, which
+is inside EZ0's phrase -- R781's species, one file upstream.** No defect today; nothing ties
+them.
+
+```
+claim  the search's answers are typed into the script that computes two published figures
+cmd    sed -n '429,434p' scripts/measure/f6a_required_section.py
+out    "published_spread_relative": abs(
+           Candidate(2.5, 0.410).section_modulus - Candidate(3.2, 0.180).section_modulus)
+           / Candidate(2.5, 0.410).section_modulus,
+       "grid_step_W_at_D_2.5": Candidate(2.5, 0.410).section_modulus
+           - Candidate(2.5, 0.405).section_modulus,
+cmd    my own scratch script: W from my own tube algebra at (2.5,0.410) and (3.2,0.180),
+       compared bit-for-bit with the two published `W_m3`
+out    (2.5,0.410) W = 1.2211589864838892  matches answer (i)  : True
+       (3.2,0.180) W = 1.2211621186517647  matches answer (ii) : True
+rule   `t = 0.410` and `D = 3.2` are the ANSWERS of searches (i) and (ii), not declared
+       inputs. `2.5` and `0.180` are FG3's.
+judge  correct today and correct to the last bit, which is why it is a closure item and
+       not (a). But if an answer moved, `2.565e-06` and `4.2e-04` would be published as
+       "the two GRID answers" about a section that is not an answer, and the sentence
+       would be false with nothing red. One line: read `t_m` and `D_m` from `found`.
+```
+
+**Same species, two lines further on:** `continuum["grid_t_step_m"] = 0.005` and
+`grid_D_step_m = 0.1` at lines 521-522 are typed, while `grid_D_max_m = max(D_STEPS)` and
+`grid_D_min_m = min(D_STEPS)` on the two lines **above** are derived. The grid steps are two
+of the figures the deliverable now reads from the JSON per the invocation's item 6, so they
+reached the document from a literal that must agree with `_frange(0.005, 0.600, 0.005)` and
+`_frange(2.0, 6.0, 0.1)` and nothing checks that it does.
+
+**R790. (one line for `docs/milestones/F2a.md`, and NOT a request for new apparatus)
+`results/F6a/` is under no regeneration gate, and F6's is -- which is the gate that caught
+the one stale figure this increment shipped.**
+
+```
+claim  F6's deliverable has a regeneration gate and F6a's has none
+cmd    grep -rn "required_section|F6a" tests/regression/*.py
+out    (empty)
+cmd    grep -rln "F6a" tests/ --include=*.py
+out    tests/test_report_carried.py
+       tests/verification/rung3/test_platform_skeleton.py
+rule   `tests/regression/test_f6_deliverable_agrees_with_itself.py::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree`
+       is what reddened the ladder at `35de6cb` and nothing else did
+cmd    python scripts/measure/f6a_required_section.py && python scripts/measure/f6a_report.py
+       && git diff --stat -- results/F6a/ && git status --porcelain
+out    (empty, both) -- CRLF warnings only; no tracked content differs
+judge  **there is no defect today: the deliverable regenerates byte-identically at HEAD,
+       and I ran it rather than reading the report's claim of it.** The finding is the
+       asymmetry. A figure in F6's report going stale is caught by CI; the same class of
+       staleness in F6a's own deliverable, which is the increment's entire output and is
+       in Xabier's hands, is caught by nothing. `CLAUDE.md` forbids me asking for the
+       apparatus -- "No new apparatus through F6 ... a finding that needs one goes onto
+       [F2a's] list" -- so this is a line on that list and not a condition. I checked:
+       `grep -n "F6a|regeneration|R756" docs/milestones/F2a.md` is empty, so it is new.
+```
+
+**R791. (closure, low) The continuum block publishes three numbers for the same requirement
+and recommends the smallest without saying why they differ -- though the number that
+explains it is already on the line above.**
+
+```
+claim  the gap between the pure-bending requirement and the exact inversion IS the
+       published bending fraction, and the document never says so
+cmd    python -c "from the JSON: (exact_W_at_D_2.5 - W_req_continuum)/W_req_continuum,
+       and 1 - bending_fraction_of_U"
+out    gap                    = 1.405473e-04
+       1 - bending fraction   = 1.405275e-04
+rule   R783's closing condition: "the deliverable publishes the continuum requirement and
+       the bending fraction -- the two numbers that ARE the mechanism"
+judge  **the pair R783 asked for is complete and exact to four figures, which is better
+       than the condition required** -- `W_req = 1.215739` ignores the axial term and
+       `99.98595%` is precisely the size of what it ignores. Only the sentence joining
+       them is absent, so a reader sees `1.215739`, `1.21591028` and `1.21600748` for one
+       quantity and is told to transfer the lowest. Nothing is wrong; one clause is
+       missing.
+```
+
+**R792. (apparatus, FF0 -- fixed in the next commit, not ledgered) `_ROW_CELLS` is a
+byte-for-byte duplicate of `_status_cells`'s body and nothing keeps the two in sync.**
+
+```
+claim  the two parsers are the same code twice
+cmd    diff the body of `_status_cells` (tests/test_report_carried.py:710-724) against
+       `_ROW_CELLS` (727-741)
+out    identical but for `CARRIED` -> `section` and
+       `cells = [c for c in rest.split("|")]` -> `cells = list(rest.split("|"))`
+rule   the invocation asked: "check it is not a second parser that can drift from
+       `_status_cells`"
+judge  it is one, and it can. If `_status_cells` changes -- it has changed at least twice,
+       per its own docstring on the third column and CH4 -- the two R784 counter-cases
+       keep measuring a parser the production path no longer uses, and they would stay
+       green while doing it. **The repair is `_status_cells(section: str | None = None)`
+       defaulting to `CARRIED`**, which is a repair and not an extension (EK2). The
+       counter-cases' own non-vacuity asserts (`not _ROW.findall(broken)`,
+       `_LOOSE_MENTION.findall(honest)`) are good and do not cover this.
+       **If FG6 means there is no next commit, this goes on F2a's list with R790.**
+```
+
+### The things the invocation asked me to attack, ruled
+
+**(1) R784's third clause. THE SUBSTITUTION IS RIGHT AND MY OWN CLOSING CONDITION IS
+REFUTED BY BOTH COUNTER-CASES, IN TWO DIRECTIONS.** I did not take this from the report; I
+mutated the function.
+
+```
+claim  the counter-cases are not vacuous -- revert the repair and the case reddens
+cmd    MUTATION A: `return not outstanding` -> `return True` (the two-clause version R784
+       named), then the two R784 ids plus `test_a_report_does_not_say_CLOSED`
+out    E  AssertionError: the exemption fired with a finding outstanding, on a section
+          carrying three rows the parser cannot read, one of them saying CLOSED.
+       FAILED ...::test_R784_the_SANCTIONED_SENTENCE_does_not_exempt_a_BROKEN_table
+       1 failed, 5 passed
+rule   a gate carries its own failure
+judge  non-vacuous, and it reddens on state B of verdict 122's own cell.
+```
+
+```
+claim  MY condition -- "no finding mentioned in the section at all" -- is worse, and
+       measurably
+cmd    MUTATION B: `return not _LOOSE_MENTION.findall(section)`, the clause verdict 122's
+       `Closed when` asked for
+out    FAILED ...::test_R784_the_SANCTIONED_SENTENCE_does_not_exempt_a_BROKEN_table
+       FAILED ...::test_R784_the_THIRD_CLAUSE_does_not_refuse_a_DECLARATION_THAT_NAMES_ITEMS
+       2 failed, 3 passed
+rule   EH4: every boundary is solved in BOTH directions, including the ones that weaken
+judge  **my clause fails BOTH cases, in opposite directions.** It refuses the honest
+       declaration that names what it is not carrying -- which is the shipped revision 1,
+       and which the implementer measured before adopting anything -- AND it refuses the
+       flip-back half of the first case. `CLAUDE.md` says a guard that fails false is
+       fixed or deleted rather than lived with; mine would have failed false on the first
+       input it met. **The implementer was right to substitute and right to say so.**
+```
+
+**And the weakening direction of the new clause, converted from an argument into a
+measurement, because the report argues it.** The report's case for `not EXPECTED` is that
+the verdict is hook-protected and prose is not. That is true and it is the right reason. But
+the exemption is reachable by emptying `EXPECTED` instead of emptying `cells`, so I checked
+whether an empty `EXPECTED` is itself caught:
+
+```
+claim  can a report reach the exemption with something outstanding, through EXPECTED?
+cmd    my own scratch script: import the module, call `_is_the_sanctioned_empty_carry` on
+       a broken section with EXPECTED real and with EXPECTED forced to []; then plant a
+       verdict text with no `**R<n>.` heading and call
+       `test_the_parse_found_something_to_check`
+out    live tree:  EXPECTED = ['R781','R782','R783','R784','R785'];  cells = 5
+                   exemption fires on the SHIPPED report: False
+       broken section, real EXPECTED      : False
+       broken section, EXPECTED = []      : True   <-- reachable this way
+       planted verdict with no heading    -> EXPECTED would be []
+       test_the_parse_found_something_to_check: RED -- "no `**R<n>.` finding heading
+         parsed from the verdict -- the format changed and every assertion below would
+         pass on anything"
+rule   EH4, the direction that weakens the gate
+judge  **the composition holds and it is now measured.** The only route to the exemption
+       with something outstanding requires making a different, non-vacuous guard red. The
+       production path is live at this commit -- 5 cells parsed, 0 saying `closed`,
+       exemption not fired -- so the exemption is not silently swallowing this report.
+       One recorded dependency, pre-existing and not this round's: a genuinely
+       zero-finding verdict would redden `test_the_parse_found_something_to_check` on a
+       legitimate state, which is R586's shape. It has not occurred and I am not asking
+       for it to be changed.
+```
+
+**(2) C99's test. `admissible()` IS consulted on all 42 builds, the test is non-vacuous as
+a regression guard, and no flipping section is reachable in the span.** Ruled in R786/R787.
+
+```
+claim  the measurement section reaches `admissible()` rather than being swapped in after
+       the fraction is chosen
+cmd    sed -n '837,849p' floatfea/model/platform.py
+out    for fraction in MASS_FRACTION_LADDER:
+           candidate = _build_body(name, geometry[name], bodies[name], fraction,
+                                   (measurement_sections or {}).get(name, section), ...)
+           if admissible(candidate): built.append(candidate); break
+rule   the invocation's question: "whether `admissible()` is actually consulted on those
+       builds"
+judge  **it is -- the section goes into `_build_body` INSIDE the ladder loop**, so every
+       rung is tested at the measurement section, and the comment's new mechanism
+       sentence is true. 42 is the right span: `len(sections) == 42` is asserted, and the
+       corner `D = 6.0, t = 5 mm` is both FG3's own corner and the hub eigenvalue's
+       minimum. A flipping section is NOT reachable in the span -- margin 4.4x at the
+       tightest body -- nor outside it, where `check_limits` refuses at `L/D = 1.250`
+       before `admissible()` runs. **The gate is a regression guard on the shipped
+       behaviour and a good one; mutation A above shows it detects. R786 is that it
+       cannot report.**
+```
+
+**(3) C98's boundary sweep and the monotonicity sentence. The replacement sentence is
+right, the crossing claim is EXACTLY right, and I checked both against the sweep rather than
+against the report.**
+
+```
+claim  every shape and crossing figure the deliverable publishes, recomputed from the
+       sweep rows
+cmd    my own scratch script over `boundary_sweep`, both groups
+out    platform: steps 36 (theirs 36) | rises 9 (9) | largest rise 2.378121% (2.378121%)
+                 fall 0.665533 (0.665533)
+       hubs    : steps 40 (40) | rises 18 (18) | largest rise 3.316750% (3.316750%)
+                 fall 0.628115 (0.628115)
+       platform: max D with ratio>1 = 4.9 ; min D with ratio<=1 = 5.0
+                 SINGLE CROSSING: all D>4.9 are <=1 -> True ; all D<5.0 are >1 -> True
+       both    : min-A-at-or-below-the-bound monotone non-increasing -> True
+rule   `max U <= 1.0` with `refused == 0`, the search's own rule
+judge  **"above 1.0 up to and including D = 4.9 and at or below it from D = 5.0" is true
+       of every one of the 37 passing rows, not just of the two extremes** -- I checked
+       the whole range in both directions because the two JSON fields the sentence is
+       built from (`largest_D_with_ratio_above_1`, `smallest_D_with_ratio_below_1`) would
+       print a self-contradictory sentence on a double crossing and nothing asserts there
+       is only one. There is only one. **My own (f) ruling said "between D = 4 and D = 5"
+       and 4.9 is the sharper answer; 4.9 supersedes it.** And the two sequences are
+       correctly distinguished: the per-D sequence is not monotone (9 of 36, 18 of 40)
+       and the min-at-or-below-the-bound sequence is, which is exactly what the
+       replacement paragraph claims and not what the first one did. **The implementer
+       caught its own instance of this milestone's recurring species, in its own repair,
+       by running the check the sentence implied.** That is the right reflex and it is
+       worth saying so.
+```
+
+**(4) R756's red. The record in the repository is right; THE INVOCATION'S SUMMARY TO ME IS
+NOT, and the ladder red is on the other commit.**
+
+```
+claim  which commit shipped the ladder red
+cmd    gh run list --limit 20 --json headSha,databaseId,conclusion ; then
+       gh api repos/:owner/:repo/actions/runs/<id>/jobs for each
+out    35de6cb  lint, unit and guards FAILURE | the verification ladder FAILURE
+       740221d  lint, unit and guards FAILURE | the verification ladder SUCCESS
+       15bb18f  both SUCCESS
+       09559f8  both SUCCESS
+rule   the invocation says "At `740221d` CI was red in two jobs: 13 boundary ids in
+       `lint, unit and guards`, and one in `the verification ladder` which was R756's
+       gate"
+judge  **the ladder was red at `35de6cb` and green at `740221d`**, which is the correct
+       chronology: `35de6cb` added the test and made the count stale, `740221d` repaired
+       it. `docs/reports/F6a/step-1.md` Â§ 0a lists `test_R756_...` under run
+       `38110136837` at `35de6cb`, and Â§ 7 and `docs/closure/F6a.md` Â§ 0 both say "RED
+       one commit earlier" / "RED at the previous commit". **The artifacts are right and
+       the invocation merged the two commits.** Recorded because my definition says a
+       claim I cannot locate in the diff or the test output is recorded -- here I located
+       its refutation, and the refutation exonerates the record.
+```
+
+```
+claim  nothing but the count moved in F6's deliverable, and the CSVs are byte-identical
+cmd    git diff --stat 35de6cb..740221d -- results/F6/
+       git diff 35de6cb..740221d -- results/F6/floatfea_results_report.md
+out    results/F6/floatfea_results_report.md | 2 +-   (one file, one line)
+       -  G3.1a            53 passed
+       +  G3.1a            54 passed
+cmd    python -m pytest tests/verification/rung3/test_platform_skeleton.py -q -p no:randomly
+out    54 passed in 3.27s
+rule   the G3.1a row of `scripts/measure/f6_results_report.py:95-100` counts the WHOLE
+       file `tests/verification/rung3/test_platform_skeleton.py`
+judge  **confirmed, both halves.** One file, one line, one count, and `54` is pytest's own
+       number at this tree. No engineering figure moved and no CSV was touched at all --
+       the `--stat` names one file, so byte-identity of the CSVs is not a claim I have to
+       take on anyone's word.
+```
+
+**(5) The deliverable's new content. Every figure reproduces, several from my own algebra,
+and the published sentence uses the denominator it names.**
+
+```
+claim  the continuum block, recomputed independently of the search
+cmd    my own scratch script: tube properties from A = pi/4(D^2 - di^2) and
+       W = (pi/64)(D^4 - di^4)/(D/2), with no import of f6a_required_section
+out    quantity                      mine                     published
+       published_spread_relative     2.564914077671898e-06    2.565e-06   (identical)
+       grid_step_W_at_D_2.5          0.00751490364838614      0.007515    (identical)
+         as a fraction of the answer 0.006153910941624376
+         spread / that step          4.1679e-04               "4.2e-04"
+       exact_spread_relative         7.994037052670982e-05    7.994e-05   (identical)
+       W_req = M_res / F_b           1.215739410615924        1.215739
+       0.75 * 355 MPa                266250000.0              266.25 MPa
+       bending_fraction_of_U         0.9998594724505246       99.98595%
+rule   the sentence names its denominator: "one grid step in W at D = 2.5 m is
+       0.007515 m^3, so that agreement is 4.2e-04 of ONE step"
+judge  **it is the denominator the sentence names.** And I found the draft's error the
+       invocation asked about: dividing the same spread by the `t = 180 mm` search's
+       D-step in W (`0.08144670`) gives `3.845665589633503e-05`, which is the `3.85e-05`
+       the closure artifact records as corrected. One grid, one step, the right one.
+       `M_res = 3.236906e+08` is `hypot(My, Mz)` at the row I measured independently in
+       verdict 122 (`My = 1.8018e+08`, `Mz = 2.6890e+08` -> `3.2369e+08`).
+```
+
+**(6) R781's enumeration.** Audited above and recorded in `Carried`. Two notes inside the
+sentence's own carve-out and not against it: `F_y = 355 MPa` is typed at
+`f6a_report.py:399` while line 72 reads `FY_S355`, and `K = 2.0` is typed at line 73 beside
+`CM_JOINT_TRANSLATION` read from `floatfea.checks.api_wsd`. Both are declared inputs and the
+sentence permits those literally. `K` is not a named constant anywhere in `floatfea`, so
+typing it is the only option; `F_y` is, and reading it twice from one place would cost one
+character.
+
+**(7) R782's dynamic half.** Ruled in R788: a real distinction, not a narrowing, and the
+basis published is stronger than the search's own.
+
+## Tolerances touched
+
+**None, across the whole increment, and I checked it as its own diff rather than taking the
+report's statement.**
+
+```
+cmd  git diff --stat ca611e3..HEAD -- floatfea/tolerances.py
+out  (empty)
+cmd  git diff --stat 1d2be7b..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+     git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out  (empty) ; tests/conftest.py
+cmd  git log --oneline ca611e3..HEAD -- .claude docs/SUPERVISOR.md
+out  (empty)
+```
+
+**No tolerance value, no form, no counter, no injection -- so EU1 does not arise and
+neither does the adversarial-ladder requirement it attaches.** Â§ 7 of the plan and Â§ 6 of
+the report agree, and I agree with the reason: `max U <= 1.0` is the clause's own threshold,
+the grid steps are FG3's and declared, and `MASS_PROPERTY_AGREEMENT` is read and not moved
+-- it is what R787's margin is measured against.
+
+**`tests/conftest.py` is unchanged**, so no rung's green is read through new in-tree code
+(CH2/CI0/CJ0). The one conftest in the repository is at depth one and the glob pair finds
+it, as my definition says it must.
+
+**My own instructions: `git log ca611e3..HEAD -- .claude docs/SUPERVISOR.md` is EMPTY.** The
+invocation predicted one commit, `4013d61`; `git show --stat 4013d61` touches `CLAUDE.md`
+only, 24 insertions, and nothing under `.claude/` or `docs/SUPERVISOR.md`. The conclusion is
+therefore stronger than the one offered: **not one of the four commits, and not `4013d61`
+either, touches a line of my own instructions.** No STOP-class finding. `docs/reviews/` and
+`tests/corpus/` are untouched by the range (`git log 1d2be7b..HEAD -- docs/reviews
+tests/corpus` is empty).
+
+## The suite, lint and CI at the reviewed commit (CA2, CK2)
+
+```
+cmd  python -m pytest -q -p no:randomly          (mine, at 09559f8, clean tree)
+out  3344 passed, 2 warnings in 667.64s (0:11:07)   [exited with code 0]
+cmd  python -m ruff check floatfea tests scripts
+     python -m black --check floatfea tests scripts
+     python -m mypy floatfea
+out  All checks passed!
+     135 files would be left unchanged.
+     Success: no issues found in 37 source files
+cmd  gh api repos/:owner/:repo/actions/runs/38112961531/jobs     (head 09559f8)
+out  the verification ladder    success   runner "GitHub Actions 1000001656"  13 steps
+     lint, unit and guards      success   runner "GitHub Actions 1000001657"  14 steps
+     CI determinism -- leg               skipped  runner null  0 steps
+     CI determinism -- ten legs agree    skipped  runner null  0 steps
+```
+
+**Nothing is red, locally or in CI, and there is no boundary state to waive.** `3344
+passed, 0 failed, 0 skipped` is the whole suite with no exclusion -- it reconciles exactly
+with the report's split, `3165 + 179 = 3344` -- so **the increment's final state is green in
+a way no commit in its own record could claim**, which is FC1's control working as designed:
+a closure commit creates neither boundary state.
+
+**A note on the command my own definition prescribes.** `gh run list --commit <sha> --json
+name,conclusion,workflowName` returns `[]` for every one of these four shas on this machine
+while the runs plainly exist; `gh run list --limit 20 --json headSha,databaseId,conclusion`
+finds all four. **An empty result from `--commit` here is a broken flag, not an unavailable
+check**, and recording it as CK2's third state would have been wrong. CK2 does not apply:
+no job in any of the four runs has `runner_name: ""` with a payment annotation. The two
+determinism jobs are `skipped` under `if: github.event_name == 'workflow_dispatch'` -- not
+run by design, which is neither red nor unavailable.
+
+**The two intermediate reds, traced by name, both self-clearing (EG3, EH1, EJ2, FC1).**
+`35de6cb`: 13 ids in `lint, unit and guards`, all in the two report-guard files and all
+state-boundary, **plus one in the ladder that is NOT a boundary red** --
+`test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree`, CZ1 (iv), named as
+such in the report and in the closure artifact, repaired at `740221d` with the ladder's
+green there as the measurement. `740221d`: the boundary set alone. `15bb18f` and `09559f8`:
+green in both jobs. **The one red in the range that was not designed was found by CI and not
+by the implementer, the implementer says so in those words, and the trace is individual
+rather than by family -- which is EG3(i) doing its job.**
+
+**CZ1's four outputs exist and I verified the ones that matter.** `docs/closure/F6a.md` Â§ 0
+carries (ii) and (iii) at `740221d` and (iv) at `15bb18f`; `09559f8` adds the green
+follow-on. I re-ran (ii) myself at HEAD, above, and read (iii) from `gh` rather than from
+the artifact. **CZ1 is satisfied and `09559f8`'s own pushed run is green too**, which the
+artifact could not state for the reason CZ1 itself gives.
+
+## The corpus (EG4(e))
+
+**The pause held. No corpus file was added by the implementer or by me, and no batch ran.**
+`git log 1d2be7b..HEAD -- tests/corpus` is empty, so there are **0 new entries and no
+coverage measurement to report** -- the pause's intended consequence, not an omission. The
+two exceptions EG4(e) keeps open -- mutation work on F4's load-mapping gate and EB6's
+label-provenance gate -- are not touched: nothing in the range goes near either surface.
+
+**What I ran instead, which is the recorded substitute, both halves:**
+
+* **A continuum grid over the parameter space the decision rules guard.** The whole boundary
+  sweep recomputed from my own tube algebra (77 D-rows across two groups), every continuum
+  figure re-derived, the `rho A / mu = 1.0` crossing solved in **both** directions over all
+  37 passing platform rows, and `admissible()`'s margin measured over the new test's full
+  42-section span on **all five bodies** rather than one. **R787 came out of the fifth body
+  and nothing else**; the 4.9/5.0 sharpening of my own (f) ruling came out of the full range
+  rather than the five rows I sampled last round.
+* **A regeneration check on the published deliverables.** `results/F6a/` regenerates
+  byte-identically at HEAD (`git status --porcelain` clean after both generators);
+  `results/F6/` diffs to one count line across `35de6cb..740221d` and to nothing else.
+* **And mutation, three cells, on the two gates the commit moves**: the R784 repair reverted
+  to its two-clause form and then to my own rejected clause, and a section term injected
+  into `_build_body`. **The first refuted my closing condition and the third produced R786.**
+
+## Try to break it
+
+The case I built is the one the invocation pointed me at, and it is where the round's value
+came from: **the new gate's own failure.** Verdict 122 could not test a gate that did not
+exist; this round could, and the result is R786 -- the assertion is right, it detects the
+defect, and it raises an `AttributeError` on the way to saying so. **The adversarial case
+did not break the engineering; it broke the instrument's voice.**
+
+The second case was my own figure. Asking *which bodies did I sweep* of a margin I had
+published as "safe by a wide measured margin" turned `442x` into `4.4x` on the body that
+binds. The engineering survives -- nothing flips, no answer moves -- and the record did not.
+
+Everything else held. Six required sections, verified independently last round and unmoved;
+a crossing claim exact over 37 rows and not just at its two endpoints; a spread, a grid step
+and a denominator each reproduced from first principles; a premise whose dynamic half now
+carries my own adversarial case to the digit. **FG1 asked for the numbers and the numbers
+are right, twice over.**
+
+## Next step opens when
+
+**There is no next step. FG6 stops work after this verdict and the increment is closed by
+this PASS.** What remains is a list, not a condition:
+
+1. **R786 and R792 are the two items that should not wait, and they are the two that
+   `CLAUDE.md` says do not.** R792 is a report guard and so FF0's class -- fixed in the next
+   commit, not ledgered -- and R786 is the failure branch of a gate that is live in the
+   ladder today. If FG6 means there is no next commit, both go on `docs/milestones/F2a.md`
+   with R790.
+2. **R788, R789, R791 and R787(a)'s two sentences go to `docs/closure/F6a.md`'s ledger**, by
+   name, with their files and lines, and are not re-reviewed item by item.
+3. **R790 is one line on `docs/milestones/F2a.md`**, and explicitly not a request to build
+   anything before the apparatus freeze lifts.
+4. **R787 is a correction to `docs/reviews/F6a/step-1.md` and it is in this file**, which is
+   the only place it can be. `442x` is withdrawn; `393.9x` on the platform and `4.4x` on
+   each hub supersede it, and `8.054e-05` is withdrawn in favour of `7.994e-05`. Anything
+   downstream quoting either of my two numbers quotes a withdrawn figure; nothing in the
+   repository does, which I checked.
+5. **Increment 2 inherits the contradiction, not a question about it.** `rho A / mu` of
+   `2.254` and `1.430` on the platform arms, two of three platform answers implying more
+   static root moment than the whole static case carries (`1.752x` and `1.258x`), and the
+   boundary now stated with its direction and its turning point. That is a closed finding
+   handed over, which is what FG4 asked for.
+
+## Disagreement with the criterion -- none this round, and one observation about EQ0
+
+I ruled under CZ0 (a)-(d) as amended by EZ0 and under EQ0, and EQ0 earned its invocation
+here. **The best finding of this round is in the repair of a repair** -- the failure branch
+of the gate written to answer C99 -- and the second best is a figure I published myself that
+nobody else could have corrected, because it is in a verdict and the verdict is the one
+document the implementer may not touch. A green suite saw neither: `3344 passed`, both CI
+jobs, `ruff`, `black` and `mypy` are green on all of it. That is EQ0's own stated reason,
+observed once more.
+
+**I have nothing for Xabier that is about the criterion rather than about the work.** FF0
+did what it was adopted for again -- R792 routes to a commit instead of onto a ledger that
+would outlive the milestone. The one procedural thing worth recording is not a disagreement:
+**the invocation's summary of the CI reds was wrong about which commit carried the ladder
+failure, and the repository's own record was right.** Reading the artifacts last, as my
+definition requires, is what made that difference visible.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6a step 1
 Reviewed commit: 8c1493133d2ee67351f44b7f4fe1542eedbbd01d
 Verdict: HOLD
 Reviewed commit: 8c1493133d2ee67351f44b7f4fe1542eedbbd01d
