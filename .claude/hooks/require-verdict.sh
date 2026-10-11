@@ -30,43 +30,89 @@ fi
 root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 cd "$root" || exit 0
 
-# Newest report by (milestone, step) — sort numerically on both.
-#
-# THE MILESTONE IS `$3`, AND IT WAS `$2` FOR THE WHOLE OF F3 (EC0). The field
-# separator is `[/-]`, so on `docs/reports/F3/step-1.md` the fields are `docs`,
-# `reports`, `F3`, `step`, `1.md` — `$2` is the literal string `reports`, which
-# `sub(/^F/,"",m)` does not touch and `%03d` prints as `000`. Every report
-# therefore ranked at milestone 0 and the sort fell back to the step number
-# alone, so `docs/reports/F2/step-7.md` beat `docs/reports/F3/step-1.md` on
-# `7 > 1`.
-#
-# WHAT THAT COST: this hook spent all of F3 anchored on F2 step 7's verdict and
-# its reviewed commit `8b4b687`, comparing `floatfea`/`tests` against an F2-era
-# tree. Seven verdicts were written on F3 step 1 and the hook read none of them,
-# because the condition it blocks on — "changed since the verdict" — could only
-# be cleared by reverting F3's work. The `check_carried.py` call below was
-# comparing F2 step 7's report against its own verdict for the same reason.
-#
-# AND IT FAILS LOUDLY RATHER THAN RANKING AT ZERO. A path this cannot read a
-# milestone from is the defect's own shape, so printing `000` for it is what let
-# the defect survive: the ranking stayed plausible. `F2a` and the like rank on
-# their integer part, which is what `m+0` takes.
-ranked=$(ls docs/reports/F*/step-*.md 2>/dev/null \
-  | awk -F'[/-]' '{
-      m=$3; sub(/^F/,"",m);
-      if (m !~ /^[0-9]/) {
-        printf "cannot read a milestone number from %s (field 3 is %s)\n", $0, $3 > "/dev/stderr";
-        exit 2
-      }
-      s=$NF; sub(/\.md$/,"",s);
-      printf "%03d %03d %s\n", m+0, s+0, $0
-    }' 2>&1) || {
-  printf '{"decision":"block","reason":"require-verdict: %s. The newest-report ranking refuses a path it cannot read a milestone from rather than ranking it at zero (EC0)."}\n' \
-    "$(printf '%s' "$ranked" | grep -F 'cannot read a milestone' | tr -d '\r' | tr '\n' ' ' | sed 's/"/\\"/g')"
-  exit 2
+# `block` is defined HERE, above its first use, and that is the whole of the change
+# to it. The refusals FH0 adds below run BEFORE the point it used to be defined at,
+# and bash resolves a function at CALL time -- so an earlier call printed
+# `block: command not found` and, with `set -u` but no `set -e`, the script CARRIED
+# ON PAST THE REFUSAL. A guard that cannot refuse is worse than one that is absent.
+block() {
+  printf '{"decision":"block","reason":%s}\n' "$(printf '%s' "$1" | "$PY_BIN" -c 'import json,sys;print(json.dumps(sys.stdin.read()))')"
+  exit 0
 }
-report=$(printf '%s\n' "$ranked" | sort | tail -1 | awk '{print $3}')
-[ -z "$report" ] && exit 0   # no reports yet: gating not active
+
+
+# THE ACTIVE STEP COMES FROM THE PLAN'S MARKER, NOT FROM SORTING PATHS (FH0).
+#
+# It used to rank `docs/reports/F*/step-*.md` with
+#     m=$3; sub(/^F/,"",m); printf "%03d %03d", m+0, s+0
+# and take the last. `m+0` on a SUFFIXED milestone takes its integer part, so `6a`
+# became `6`:
+#
+#     006 001 docs/reports/F6/step-1.md
+#     006 001 docs/reports/F6a/step-1.md      <-- collides with F6 step 1
+#     006 002 docs/reports/F6/step-2.md       <-- and loses on 2 > 1
+#
+# so the whole of F6a was gated against F6 step 2's verdict and its reviewed commit.
+# The comparison base was a commit in the past, `floatfea`/`tests` had differed from
+# it since F6a's first step commit, and NO commit and NO verdict could clear it -- a
+# verdict written into F6a's review file does not touch the file the ranking picked.
+# Three interim checks were forced by it, all three PASS.
+#
+# This is EC0 a second time, one notch less visible: EC0 ranked every report at
+# milestone `000`, and this ranked a suffixed milestone at its base.
+#
+# AND EC0's LOUD-FAILURE GUARD COULD NOT SEE IT, which is the part worth keeping.
+# `if (m !~ /^[0-9]/)` asks whether the field STARTS with a digit, and `6a` does;
+# the defect was that it is not WHOLLY a digit after the documented suffix. EC0's
+# own comment says why that survives: "printing `000` for it is what let the defect
+# survive: the ranking stayed plausible."
+#
+# So the milestone and the step are read from the one place that already decides
+# them: the `<!-- step-under-execution: N -->` marker. That is the resolver
+# `tests/test_report_carried.py::_active_plan` uses, and
+# `test_the_plan_names_the_step_under_execution` holds it to EXACTLY ONE plan, so
+# the milestone cannot advance without the previous plan's marker being retired.
+#
+# THE PATTERN IS STRICT AND THAT IS LOAD-BEARING. A retired marker reads
+# `<!-- step-under-execution: moved to F3 at step 1 (DY8c) -->`, so requiring
+# `[0-9]+` between the colon and `-->` is what separates the live marker from the
+# four retired ones and from prose naming it. A loose grep for the phrase finds
+# five files; this finds one.
+marker_re='<!--[[:space:]]*step-under-execution:[[:space:]]*[0-9]+[[:space:]]*-->'
+plans=$(grep -lE "$marker_re" docs/milestones/F*.md 2>/dev/null || true)
+plan_count=$(printf '%s' "$plans" | grep -c . || true)
+
+# A TIE IS REFUSED, NEVER BROKEN BY PATH STRING (FH0). The old ranking resolved a
+# collision with `sort | tail -1` -- alphabetically -- so which milestone this hook
+# gated was an accident of spelling. Two live markers is the state `_active_plan`'s
+# docstring calls impossible by construction; if it happens, the answer is not to
+# pick one of them.
+if [ "$plan_count" -ne 1 ]; then
+  block "require-verdict: $plan_count plans carry a live step-under-execution marker$([ -n "$plans" ] && printf ' (%s)' "$(printf '%s' "$plans" | tr '\n' ' ')"). EXACTLY ONE must. With none, nothing is under execution and this hook has no report to read. With two, the milestone advanced without the previous plan's marker being retired -- and the ranking this replaced would have silently picked whichever path sorted last (FH0). Retire the stale marker, or add the missing one."
+fi
+
+milestone=$(basename "$plans" .md)
+step=$(grep -oE "$marker_re" "$plans" | head -1 | grep -oE '[0-9]+')
+
+# THE MILESTONE LABEL IS WHOLLY NUMERIC AFTER ITS ONE OPTIONAL SUFFIX LETTER (FH0).
+# EC0's guard with the hole closed: not "starts with a digit" but "a digit run, then
+# at most one lowercase letter, and nothing else". `F6` and `F6a` pass; `F6ab`,
+# `Freports` and `F6-draft` are refused rather than ranked plausibly.
+case "$milestone" in
+  F*) m_body=${milestone#F} ;;
+  *)  m_body="" ;;
+esac
+if ! printf '%s' "$m_body" | grep -qE '^[0-9]+[a-z]?$'; then
+  block "require-verdict: cannot read a milestone label from $plans (got '$milestone'). A label is F<digits> with at most one lowercase suffix letter -- F6, F6a. EC0's guard asked only whether the field STARTS with a digit, which is how F6a passed it while ranking as 6 (FH0)."
+fi
+if [ -z "$step" ]; then
+  block "require-verdict: $plans carries a step-under-execution marker with no readable step number. The marker is the single source for which step is under execution (FH0)."
+fi
+
+report="docs/reports/$milestone/step-$step.md"
+if [ ! -f "$report" ]; then
+  block "require-verdict: $plans says step $step of $milestone is under execution and $report does not exist. The marker is advanced in the commit that adds the next step's report, never before it."
+fi
 
 review=${report/docs\/reports/docs\/reviews}
 
@@ -105,11 +151,6 @@ for r in $(ls docs/reviews/F*/step-*.md 2>/dev/null); do
   fi
 done
 
-block() {
-  printf '{"decision":"block","reason":%s}\n' "$(printf '%s' "$1" | "$PY_BIN" -c 'import json,sys;print(json.dumps(sys.stdin.read()))')"
-  exit 0
-}
-
 if [ ! -f "$review" ]; then
   block "Step report $report has no supervisor verdict at $review. Invoke the gating-supervisor subagent on this step before ending the turn. Do not write the verdict yourself."
 fi
@@ -125,7 +166,68 @@ fi
 # implementer can change unseen -- protect-reviews.sh denies it those paths --
 # but note the KNOWN LIMITATION both hooks share: they see Write|Edit|MultiEdit,
 # not a shell redirect through Bash.
-reviewed=$(grep -m1 -E '^Reviewed commit:' "$review" | awk '{print $3}')
+# THE REVIEWED COMMIT IS CHOSEN BY ANCESTRY, NOT BY FILE ORDER (FH0).
+#
+# This was `grep -m1`, and `-m1` was CORRECT for the convention: `write_verdict.py`
+# PREPENDS, so a verdict file is newest-first (DY6), and C105 recorded `re.search`
+# as right for the same reason. Measured in F6 step 2's file, which carries eight
+# distinct reviewed commits across 3431 lines: the first is `bf5fdf0`, and
+# `bf5fdf0` is the one every other listed commit is an ancestor of. **So `-m1`
+# returned the NEWEST, and an earlier claim of mine that it returned the oldest
+# (R798) was wrong and is withdrawn.**
+#
+# It is replaced anyway, because it depended on file ORDER in a file whose order is
+# a convention one generator holds in place. Ancestry does not depend on it: the
+# newest reviewed commit is the one every other listed commit is an ancestor of. If
+# no single such commit exists -- a rebase, a cherry-pick, two branches' verdicts in
+# one file -- the hook REFUSES, for the same reason a tie above is refused.
+pick_reviewed() {
+  local file=$1 shas sha other ok found=""
+  shas=$(grep -E '^Reviewed commit:' "$file" | awk '{print $3}' | awk 'NF' | sort -u)
+  if [ -z "$shas" ]; then
+    REVIEWED_PICK=""
+    REVIEWED_WHY="no 'Reviewed commit:' line"
+    return 1
+  fi
+  for sha in $shas; do
+    git cat-file -e "$sha" 2>/dev/null || continue
+    ok=1
+    for other in $shas; do
+      [ "$other" = "$sha" ] && continue
+      git cat-file -e "$other" 2>/dev/null || continue
+      git merge-base --is-ancestor "$other" "$sha" 2>/dev/null || { ok=0; break; }
+    done
+    if [ "$ok" = 1 ]; then
+      if [ -n "$found" ]; then
+        REVIEWED_PICK=""
+        REVIEWED_WHY="two commits ($found and $sha) each have every other listed commit as an ancestor"
+        return 1
+      fi
+      found=$sha
+    fi
+  done
+  if [ -z "$found" ]; then
+    REVIEWED_PICK=""
+    REVIEWED_WHY="no single commit among [$(printf '%s' "$shas" | tr '\n' ' ')] has every other as an ancestor"
+    return 1
+  fi
+  REVIEWED_PICK=$found
+  REVIEWED_WHY="every other listed commit is its ancestor"
+  return 0
+}
+
+REVIEWED_PICK=""
+REVIEWED_WHY=""
+if pick_reviewed "$review"; then
+  reviewed=$REVIEWED_PICK
+elif [ "$REVIEWED_WHY" = "no 'Reviewed commit:' line" ]; then
+  # Unchanged behaviour: an empty `reviewed` skips the comparison below, exactly as
+  # a missing line did before. A verdict with no reviewed commit is the reviewer's
+  # own defect and `write_verdict.py` stamps it, so this hook does not duplicate it.
+  reviewed=""
+else
+  block "require-verdict: cannot choose the reviewed commit in $review -- $REVIEWED_WHY. The newest reviewed commit is the one every other listed commit is an ancestor of; with no single such commit this hook refuses rather than taking one by file order (FH0)."
+fi
 
 # EVERY FINDING IN THE NEWEST VERDICT IS CARRIED BY THE NEWEST REPORT (BS0).
 # Twice in three rounds the report's `Carried` section dropped a whole verdict's
