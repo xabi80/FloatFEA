@@ -595,6 +595,30 @@ mangled `docs\reports` into a carriage-return escape, the pattern matched nothin
 every report reported OK. A figure from a command that cannot do what its text says is not
 a measurement, and I acted on one.
 
+**Then the scoped repair had a hole of its own, which is R800.** It *inferred* the
+exemption from each milestone's lowest reviewed step, and the reviewer reached the state
+I had explicitly said I could not rule out: a milestone whose first verdict is written
+for a later step than an earlier unreviewed report leaves that report exempt,
+permanently and silently. Replaced at `6de156e` by **three declared paths** —
+`docs/reports/F2/step-{1,2,3}.md`, measured three times by two independent routes —
+with every arithmetic comparison removed. **This is R694's move in the other
+direction:** there, a constant right at one configuration was replaced by the quantity
+it stood in for; here, an inference is replaced by the one fact it was inferring.
+
+**Two rules came out of this sequence, both in the reviewer's wording.** First: *a
+closing condition may be deviated from in the commit, provided the commit carries the
+measurement that refutes it* — a condition names what must become true, not the
+implementation, and a deviation carrying an argument instead of a measurement is what
+would be held on. Second, on where this check belongs: **a test cannot refuse a turn**,
+so "a report exists with no verdict" cannot move out of the hook the way
+carried-completeness did — and it is not to grow.
+
+**The cost of the whole sequence, beside the directive request it answered:** three
+forced interim checks, one FH2 hook diff, one STOP and its repair, one further apparatus
+finding. **Every finding in the last four rounds came from a state its author did not
+choose** — the inverted boundary, the `f = 0.5` rung, the F7 plant, and twice a recount
+that disagreed with itself.
+
 ## 6c. The second interim check, and the species a fourth time
 
 The hook forced a second check after the FF0 repairs, for the reason R793 names. **It
@@ -717,7 +741,8 @@ it, and no commit in this repository may fix it.
 | R789 | the two `Candidate(...)` literals in the search are the answers, typed; bit-identical today, tied to nothing |
 | R791 | R783's three numbers are complete and exact — `1 − bending_fraction = 1.405275e-04` against the gap to `W*`, `1.405473e-04` — but the clause joining them is missing |
 | ~~R793~~ | the Stop hook's milestone ranking — **FIXED** at `4862f6e` under DIRECTIVE FH0, with FH1's replay and EH4's other direction. Off the ledger. |
-| ~~R799~~ | **the regression `4862f6e` introduced** — reading the step from the marker made the no-verdict refusal depend on the marker having been *advanced*, which the implementer does in the commit it guards. A **STOP** in the FH2 hook diff, fixed at `60bb3f0`. Not ledgered (FF0). |
+| ~~R799~~ | **the regression `4862f6e` introduced** — reading the step from the marker made the no-verdict refusal depend on the marker having been *advanced*, which the implementer does in the commit it guards. A **STOP** in the FH2 hook diff, fixed at `60bb3f0`, and the STOP was lifted. Not ledgered (FF0). |
+| ~~R800~~ | **the hole in R799's own repair** — the exemption was *inferred* from each milestone's lowest reviewed step, and the reviewer reached the state I had said I could not rule out: a milestone whose first verdict is written for a later step leaves the earlier report permanently exempt. Replaced by three declared paths at `6de156e`, with no arithmetic left. Not ledgered (FF0). |
 | ~~R798~~ | **WITHDRAWN** — its premise was wrong; `write_verdict.py` prepends, so `grep -m1` took the newest. § 6b carries the measurement. |
 | R790 | **`results/F6a/` is under no regeneration gate.** F6's is, and that gate is what caught this increment's one stale figure. On `docs/milestones/F2a.md`'s list, because apparatus goes through that plan and not into a step commit. |
 
