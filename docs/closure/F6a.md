@@ -547,6 +547,13 @@ cmd    python -m pytest -q
 out    3346 passed, 2 warnings in 680.90s
 rule   `3345` one commit earlier; `+1` is R796's case. R797 deletes prose and adds no
        test, so the arithmetic is exactly `+1`
+cmd    gh run list --commit 24282fa7b7710172bb75692907395c70804baa88 ;
+       gh api repos/:owner/:repo/actions/runs/38120436492/jobs
+out    {"conclusion":"success","status":"completed"}
+       the verification ladder           success
+       lint, unit and guards             success
+       CI determinism -- leg             skipped   (workflow_dispatch only, by design)
+       CI determinism -- ten legs agree  skipped   (same)
 ```
 
 **This is the fourth iteration of one sentence in those two files** — R787 said the false
