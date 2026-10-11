@@ -1,4 +1,374 @@
 # Review — F6a step 1
+Reviewed commit: 683f91012e45b0261faf2fc80662ecd06f444e1a
+Verdict: PASS
+Tests: 3344 passed, 0 failed, 0 skipped   (my run, `python -m pytest -q -p no:randomly`, 672.51s, exit 0)
+
+## INTERIM CHECK (ES0) of 2026-10-11 -- no new report revision, so this counts against NO round. **PASS.**
+
+**Reviewed commit: `683f910` (HEAD).** Scanned: `810e979..HEAD` -- `7e94440`, `683f910`.
+
+**Which clause I ruled under.** `CLAUDE.md` Â§ "Step gating": **ES0**, light scope -- the
+suite and CI at the commit plus a CZ0 (a)-(d) scan of the diff since verdict 123. No corpus
+batch and no closure list, per ES0's own words. **EU1 does not arise and I verified it
+rather than taking it** (below). CA2/CK2 for the CI reading. EG3/FC1 for the boundary states
+-- there are none. FF0 for the apparatus items. CW0 for the margin sentence, which is where
+the one new finding in `floatfea/` comes from.
+
+**Nothing is (a)-(d).** The suite is green with no exclusion, CI is green in both jobs at
+HEAD, `floatfea/tolerances.py` is untouched, no gate assertion is weakened -- both are
+measurably stronger -- and the two figures now in `floatfea/model/platform.py` are correct,
+re-measured at HEAD rather than carried from the commit I took them at.
+
+## Carried
+
+**Verdict 123's seven items.**
+
+| item | status | what I measured, not what the commit says |
+|---|---|---|
+| R786 | **answered, and verified by my own mutation at HEAD** | the failure branch now fails on its own `AssertionError`. **Both limbs of the `or` report, which the commit does not claim**: injecting a section term into `member_mass` gives `platform at D=2.0 t=5mm f 0.75 -> 0.75, member_mass 1.899599e+06 -> 1.875588e+06` (the mass limb), and raising `admissible()`'s floor to `3.5e7` -- between the hub span's `3.148e7` and `3.857e7` -- gives `hub1 at D=5.0 t=5mm f 0.75 -> 0.5, member_mass 1.125000e+06 -> 7.500000e+05` (the fraction limb). No `AttributeError` in either. |
+| R787 | **answered in substance; its repair produced R794** | "by a margin asserted in" is gone from `floatfea/model/platform.py` and from the docstring, and `8.054e-05` is withdrawn for `7.994e-05` in `docs/closure/F6a.md:406-407`. What replaced the sentence is two figures with no mechanism behind them, which is R794. |
+| R788 | **ledgered** | `docs/closure/F6a.md:416`. |
+| R789 | **ledgered** | `docs/closure/F6a.md:417`. |
+| R790 | **routed, and the entry is accurate** | `docs/milestones/F2a.md:287-310`, with the grep as its own `claim/cmd/out/rule` and labelled "a missing gate rather than a present defect", which is what I ruled. |
+| R791 | **ledgered** | `docs/closure/F6a.md:418`, and it carries the two numbers that make the point (`1.405275e-04` against `1.405473e-04`). |
+| R792 | **answered, and both my mutations still refute** | measured below. |
+
+### The three things you asked me to look hardest at, ruled
+
+**(1) R786's repair did NOT make the span assertion vacuous, and `len(sections) == 42`
+still measures the span it claims.** I mutated it rather than reading it.
+
+```
+claim  the span assertion still bites after the tuple refactor
+cmd    drop `0.600` from the wall tuple, then run the one test
+out    >       assert len(sections) == 42, "the span this is asserted over is part of
+                  the claim"
+       E       AssertionError: the span this is asserted over is part of the claim
+       FAILED ...::test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION
+rule   a gate carries its own failure
+judge  **not vacuous.** 6 diameters x 7 walls, none removed by `wall < 0.5 * d` (the
+       largest wall is 0.600 against the smallest half-diameter 1.0), so 42 is the
+       product and the assertion fires on any change to either tuple. The docstring's
+       "walls from 5 mm to 600 mm, diameters from 2 m to 6 m" still describes it.
+       And `Section`'s field list in the new docstring is EXACT, which I checked
+       because I thought it was one short: `dataclasses.fields` gives
+       `['A','I_y','I_z','J','shape']` and `kappa` is a method, not a field.
+```
+
+**(2) R792's repair did not weaken either case. Both mutations still refute, through the
+production parser.**
+
+```
+claim  the two counter-cases still fail on the two mutations I ran in verdict 123, now
+       that they call `_status_cells(section)` instead of a copy
+cmd    baseline, as shipped
+out    6 passed, 125 deselected      (and `5 status cells parsed, 0 say closed`)
+cmd    MUTATION A: `return not outstanding` -> `return True`
+out    FAILED ...::test_R784_the_SANCTIONED_SENTENCE_does_not_exempt_a_BROKEN_table
+       1 failed, 5 passed
+cmd    MUTATION B: `return not _LOOSE_MENTION.findall(section)` (my own rejected clause)
+out    FAILED ...::test_R784_the_SANCTIONED_SENTENCE_does_not_exempt_a_BROKEN_table
+       FAILED ...::test_R784_the_THIRD_CLAUSE_does_not_refuse_a_DECLARATION_THAT_NAMES_ITEMS
+       2 failed, 4 passed
+rule   the same two mutations, the same two ids, the same counts as at `09559f8`
+judge  **identical to before: A reddens one case, B reddens both.** Routing through the
+       real parser did not weaken either, and the reason it could not is that
+       `_ROW.findall` is the only thing either case depends on and both helpers always
+       called the same regex -- the risk R792 named was drift in the FUTURE, not a
+       difference today. The default argument is the right repair: one parser, and
+       `CARRIED if section is None else section` leaves the production call
+       byte-identical in behaviour. **I also checked the one way this could have gone
+       wrong -- `_status_cells("")` returns `[]`, as `_ROW_CELLS("")` did.**
+```
+
+**But one clause of the three has no counter-case, and that is new (R795).**
+
+**(3) The margin sentence. YOUR QUESTION'S ANSWER IS YES -- IT IS NONE OF THE THREE -- AND
+NO, NOT RE-DERIVING THEM WAS THE WRONG CALL, SO I DID IT.** Both halves measured.
+
+```
+claim  the two figures now in `floatfea/model/platform.py` are correct AT THE COMMIT THAT
+       PUBLISHES THEM, not at the commit I took them at (CP3)
+cmd    my own scratch script re-run at HEAD: 42 sections x 5 bodies = 210 builds, min
+       eigenvalue of the symmetrised remainder inertia against
+       `-MASS_PROPERTY_AGREEMENT * scale`
+out    platform  min eig 4.655562287e+09 .. 4.667381836e+09  effect 1.181955e+07  margin 393.9x
+       hub1..4   min eig 3.148139570e+07 .. 3.857312500e+07  effect 7.091729e+06  margin   4.4x
+       smallest min-eigenvalue anywhere in the span: 3.148139570e+07 at D=6.0 t=0.005 (hub4)
+rule   the comment's own claim: "`393.9x` on the platform and `4.4x` on the hub bodies,
+       minimum at `D = 6.0 m, t = 5 mm` -- FG3's own corner"
+judge  **correct, to every digit, at HEAD.** `7e94440` changes `build_superstructure` in a
+       comment only, so nothing could have moved -- but that is an argument and this is
+       the measurement, and CP3's whole point is that a figure correct when taken can
+       describe a tree that has moved. You should have run it; it costs 40 seconds. R794
+       is not that the figures are wrong.
+```
+
+## Findings
+
+**Three. None is (a)-(d), and I say under each why.**
+
+**R793. (apparatus, FF0 class, BUT IT NEEDS A DIRECTIVE AND YOU WERE RIGHT NOT TO TOUCH IT)
+-- `.claude/hooks/require-verdict.sh:56` ranks `F6a` as `F6`, so the hook is anchored on F6
+step 2's verdict and will refuse every turn that touches `floatfea/` or `tests/` for the
+rest of this repository's life.** You reported the symptom; here is the mechanism, measured,
+so whoever writes the `process:` commit has a diagnosis.
+
+```
+claim  which report the hook's own ranking picks, and why
+cmd    the awk block from require-verdict.sh:56-65, run verbatim over
+       `ls docs/reports/F*/step-*.md`
+out    004 003 docs/reports/F4/step-3.md
+       006 001 docs/reports/F6/step-1.md
+       006 001 docs/reports/F6a/step-1.md      <-- F6a COLLIDES with F6 step 1
+       006 002 docs/reports/F6/step-2.md       <-- and loses to F6 step 2 on `2 > 1`
+cmd    the same pipeline's `sort | tail -1`, then the derived review and its stamp
+out    report=docs/reports/F6/step-2.md
+       review=docs/reviews/F6/step-2.md
+       Reviewed commit: bf5fdf0adca9bfc46b477cec10f0a50132a495d4
+cmd    printf 'docs/reports/F6a/step-1.md' | awk -F'[/-]' '{m=$3; sub(/^F/,"",m);
+       printf "m=%s starts-with-digit=%s m+0=%d\n", m, (m ~ /^[0-9]/ ? "yes":"no"), m+0}'
+out    m=6a  starts-with-digit=yes  m+0=6
+rule   the hook's own comment at lines 50-56: "`F2a` and the like rank on their integer
+       part, which is what `m+0` takes" -- stated as intended behaviour, and it is the
+       defect
+judge  **TWO sub-findings, and the second is the one that will outlive this.**
+       **(i) A suffixed milestone COLLIDES with its base rather than sorting after it.**
+       `F6a` and `F6` both rank `006`, so `F6/step-1` and `F6a/step-1` TIE EXACTLY at
+       `006 001` and `sort | tail -1` would resolve that tie by path string. Even with no
+       F6 step 2 the hook would pick between them by alphabetical accident.
+       **(ii) EC0's loud-failure guard CANNOT SEE THIS.** The guard is
+       `if (m !~ /^[0-9]/)` -- it checks that the field STARTS with a digit, and `6a`
+       does. The defect is that the field is not ONLY a digit. That is assertion domain
+       blindness: the collection the check inspects cannot contain the failure. EC0's own
+       comment says "printing `000` for it is what let the defect survive: the ranking
+       stayed plausible" -- and `006` for `F6a` is the same thing one notch less visible.
+```
+
+**And that it cannot be cleared, which is the half that makes it worth a directive:**
+
+```
+claim  no F6a verdict can clear the refusal, because the hook does not read one
+cmd    git diff --quiet bf5fdf0 -- docs/reports/F6/step-2.md floatfea tests
+       ':(exclude)tests/corpus'   (the hook's exact pathspec, at HEAD)
+out    DIFFERS -> BLOCKS
+       floatfea/model/platform.py                          |  52 ++++++-
+       tests/test_report_carried.py                        | 153 +++++++++++++++-
+       tests/verification/rung3/test_platform_skeleton.py  |  75 ++++++++++
+rule   require-verdict.sh:166-170 blocks on that pathspec, and it runs BEFORE the
+       `case $verdict in PASS) exit 0` branch -- so F6 step 2's PASS does not exempt it
+judge  **the only thing that would clear it is reverting F6a's work**, which is EC0's
+       recorded cost word for word: "this hook spent all of F3 anchored on F2 step 7's
+       verdict ... the condition it blocks on -- 'changed since the verdict' -- could
+       only be cleared by reverting F3's work." **That paragraph describes the state the
+       repository is in right now**, with F6 for F2 and F6a for F3. The refusal also
+       names `docs/reports/F6/step-2.md`, a report closed by a PASS two milestones' worth
+       of verdicts ago, which is how a reader can tell at a glance that it is misaimed.
+```
+
+**You were right not to fix it, and FF0 does not override that -- I am ruling, not
+agreeing out of politeness.** `CLAUDE.md` Â§ "The reviewer's own instructions are not edited
+inside a step" puts `.claude/hooks/` behind "a standalone `process:` commit that cites the
+directive asking for the change", and says a change inside a commit that also touches
+`floatfea/` or `tests/` is **STOP-class**. `7e94440` touches both. There is no directive
+asking for this change, so there was no permitted route, and you identified that correctly.
+**Where FF0's "fixed in the next commit" meets the standalone-commit rule, the
+standalone-commit rule is the specific one and it names its own consequence.** FF0 governs
+*when* an apparatus item is fixed; it is not an authorisation to edit the one class of file
+`CLAUDE.md` places behind a directive. **This needs a directive from Xabier, and R793 is the
+number for it.** What that directive has to authorise is narrow: make the ranking sort a
+suffixed milestone AFTER its base and refuse a tie, and make EC0's guard reject a field that
+is not wholly numeric rather than one that merely does not start with a digit.
+
+**Why it is not (a)-(d).** It is not in `floatfea/`, not a published deliverable, not a
+tolerance, and not a gate assertion -- a hook is not a test. No test is red at HEAD. So it
+does not block this check, and I am not manufacturing a HOLD out of something outside the
+four heads. **It will block work mechanically until the directive lands, which is a
+statement about the hook and not a verdict about the tree.**
+
+
+**R794. (closure) `floatfea/model/platform.py:792-793` now carries `393.9x` and `4.4x`, and
+under CW0 that is none of the three things a claim about this repository may be.** Your own
+question, answered: **yes, it is none of the three.**
+
+```
+claim  the two figures are asserted by no test, sit in no triple the tree runs, and are
+       derivable only from a verdict nothing reads
+cmd    grep -rn "393\.9\|4\.4x\|442x" floatfea/ tests/ scripts/
+out    floatfea/model/platform.py:792:    # (R787).** The margin is also not one number: it is `393.9x` on the platform and
+       floatfea/model/platform.py:793:    # `4.4x` on the hub bodies, minimum at `D = 6.0 m, t = 5 mm` -- FG3's own corner. A
+       tests/verification/rung3/test_platform_skeleton.py:796:    not to publish a margin here is a measurement: the reviewer's `442x` was the
+       tests/verification/rung3/test_platform_skeleton.py:798:    `4.4x`, minimum at `D = 6.0 m, t = 5 mm` -- FG3's own corner. A figure in a
+       (two corpus files match `4.4x` and `0442x` on unrelated numbers)
+cmd    grep -rn "remainder_inertia" tests/ --include=*.py
+out    tests/verification/rung3/test_platform_skeleton.py:168:    parts.append((body.remainder_mass, body.remainder_point, body.remainder_inertia))
+rule   CW0: "A claim about this repository written in a comment, a docstring or a plan is
+       one of three things: a test, a triple (`claim:`/`cmd:`/`out:`, run by
+       `tests/test_tree_prose_consistent.py`), or deleted."
+judge  **none of the three, and at TWO sites rather than one.** The grep is the finding:
+       `test_platform_skeleton.py:796-798` is the docstring that says "A figure in a
+       docstring is a report nothing regenerates" and it carries `442x` and `4.4x`
+       itself, three lines later. Line 168 is a mass-properties helper; **no test
+       computes an eigenvalue margin over a section span anywhere.**
+       The figures are CORRECT -- I re-measured them at HEAD above -- and that is not
+       the finding. The finding is BI3's own reasoning landing on this comment a third
+       time: "A comment that carries measurements is a report that never gets
+       regenerated unless something regenerates it." The sentence that stood here
+       over-claimed a margin; the sentence replacing it publishes two margins whose only
+       derivation is `docs/reviews/F6a/step-1.md`. Either they go and the comment says
+       only what the test asserts -- that the outcome holds over the span -- or they
+       become a triple. **R787 asked for the false sentence to go; it did not ask for
+       these to be published.**
+```
+
+**And I nearly wrote this triple's `out` from memory and had it wrong by one file.** My
+draft said "the comment itself, and nothing else". Running it found the docstring too. CP3's
+ordering is why this one is right, and the species is the one this milestone keeps producing.
+
+**R795. (apparatus, FF0 class) One of `_is_the_sanctioned_empty_carry`'s three clauses has
+no counter-case: deleting `if cells: return False` reddens nothing.** It predates this diff
+-- it is `35de6cb`'s, which I passed in verdict 123 without measuring this clause -- and I
+found it only because you asked whether routing through the production parser weakened
+anything.
+
+```
+claim  clause (1) of the three is unguarded
+cmd    delete `if cells: return False` from `_is_the_sanctioned_empty_carry`, then run
+       the whole file
+out     tests/test_report_carried.py | 2 --
+        131 passed in 1.59s
+rule   a gate carries its own failure; R784's own two counter-cases pin clauses (2) and
+       (3) and I measured both, twice
+judge  **no present defect.** With `EXPECTED` non-empty, clause (3) refuses the exemption
+       whatever clause (1) says, so clause (1) is load-bearing only when the verdict
+       names no finding -- a milestone's first revision -- and in that state there is no
+       item for a report to wrongly close. So it is defence in depth, not a hole. **But
+       it is one third of a condition that has never been exercised, and the direction it
+       fails in is the weakening one** (more reports exempt). This is R784's own shape one
+       level down: a clause that reads green on the state it exists for. One case, the
+       mirror of the existing pair -- real parsed cells plus the sentence plus an empty
+       `outstanding` -- would pin it.
+```
+
+## Tolerances touched
+
+**None, and EU1 is verified rather than taken -- which is what you asked.**
+
+```
+cmd  git diff --stat 810e979..HEAD -- floatfea/tolerances.py
+out  (empty)
+cmd  git diff 810e979..HEAD | grep -nE "^[-+].*(_COUNTER|COUNTER|Final\[float\]|tolerance)"
+out  15:-verdict 122's item 6 reasoned that the closure commit would change no gate and no tolerance
+     29:+122's item 6 reasoned that the closure commit would change no gate and no tolerance and
+     46:+rule   EQ0: a closure commit that changes a gate or a tolerance is reviewed
+     247:+    # R792: THE PARAMETER IS HOW A COUNTER-CASE REACHES THIS PARSE. R784's cases need
+rule  EU1: an interim check whose diff moves a tolerance VALUE or a declared counter
+      includes the adversarial case
+judge **no value moves and no counter is declared or moved.** All four hits are the WORD
+      in prose -- three in `docs/closure/F6a.md` quoting EQ0, one the word `COUNTER-CASE`
+      in a new comment. So EU1 does not arise, and your reason for saying so is the right
+      one: with no tolerance in the diff there is no configuration axis for an adversarial
+      case to range over. **I ran the ladder-adjacent case anyway, for a different
+      reason** -- `MASS_PROPERTY_AGREEMENT` is the constant R794's figures are measured
+      against, and raising its effective floor to `3.5e7` is what exercised the
+      `mass_fraction` limb under R786. That is a probe, not a tolerance change; the file
+      is untouched and the tree was restored.
+```
+
+**And the three diffs my own definition asks for separately:**
+
+```
+cmd  git log --oneline 810e979..HEAD -- .claude docs/SUPERVISOR.md
+out  (empty)
+cmd  git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+     git diff --stat 810e979..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out  tests/conftest.py ; (empty)
+cmd  git log --oneline 810e979..HEAD -- docs/reports
+out  (empty)
+```
+
+**No STOP-class finding.** Neither commit touches a line of my instructions -- which is
+exactly what R793 is about and why reporting it instead of repairing it was correct. No
+conftest change, so no rung's green is read through new in-tree code (CH2/CI0/CJ0). **No
+step report is touched, so EK3 is satisfied and neither EG3 boundary state exists** -- which
+is why the suite below is green with nothing waived.
+
+## The suite, lint and CI at the reviewed commit (CA2, CK2)
+
+```
+cmd  python -m pytest -q -p no:randomly          (mine, at 683f910, tree clean)
+out  3344 passed, 2 warnings in 672.51s (0:11:12)
+cmd  python -m ruff check floatfea tests scripts
+     python -m black --check floatfea tests scripts
+     python -m mypy floatfea
+out  All checks passed!
+     135 files would be left unchanged.
+     Success: no issues found in 37 source files
+cmd  gh api repos/:owner/:repo/actions/runs/38116312029 --jq '.status, .conclusion'
+     gh api repos/:owner/:repo/actions/runs/38116312029/jobs
+out  completed / success                                   (head 683f910)
+     the verification ladder    success   runner "GitHub Actions 1000001661"
+     lint, unit and guards      success   runner "GitHub Actions 1000001660"
+     CI determinism -- leg               skipped  runner null  0 steps
+     CI determinism -- ten legs agree    skipped  runner null  0 steps
+cmd  the same, at 7e94440 (run 38115644910)
+out  the verification ladder success ; lint, unit and guards success
+```
+
+**I WAITED FOR THE RUN AT HEAD RATHER THAN RECORDING AN UNFINISHED ONE AS A PASS.** When I
+first polled it, `683f910`'s `lint, unit and guards` job had `conclusion: null` and the run
+was `in_progress`; my own definition says a run that has not finished is not a pass, so I
+polled until `completed`. It is green. The two determinism jobs are `skipped` under
+`if: github.event_name == 'workflow_dispatch'` -- not run by design, which is neither red
+nor CK2's third state: no job in either run has `runner_name: ""` with a payment
+annotation. **`3344 passed, 0 failed, 0 skipped` is the whole suite with no exclusion and
+nothing waived**, the three report-guard files included, and the two warnings are
+`orient_norm_overflow`'s own designed overflow.
+
+## The corpus (EG4(e))
+
+**Not applicable: ES0 says an interim check runs no corpus batch, and I ran none.**
+`git log 810e979..HEAD -- tests/corpus` is empty from both sides. The two exceptions the
+pause keeps open -- F4's load-mapping gate and EB6's label-provenance gate -- are not
+touched by either commit.
+
+## Next step opens when
+
+**There is no next step: FG6 stops work and this check exists because the hook demanded it,
+not because there is increment work left.** The list, in the order I would act on it:
+
+1. **R793 goes to Xabier as a directive request**, and the number is for whoever writes the
+   `process:` commit. You have already put it to him; the diagnosis above is what that
+   commit needs -- sort a suffixed milestone AFTER its base, refuse a tie rather than
+   resolving it by path string, and make EC0's guard reject a field that is not wholly
+   numeric instead of one that merely does not start with a digit. **Until it lands the
+   hook refuses every turn touching `floatfea/` or `tests/`, and no F6a verdict can clear
+   it.**
+2. **R794 and R795 are FF0's class and go in the next commit if there is one** -- R794 is
+   two lines of comment and one docstring paragraph, R795 is one counter-case. If FG6 means
+   there is no next commit, both join R790 on `docs/milestones/F2a.md`.
+3. **Nothing else.** Verdict 123's other five items are repaired, ledgered or routed, and I
+   checked each at its named site rather than reading the commit message.
+
+## Disagreement with the criterion -- none, and I am ruling FOR you on the one you raised
+
+**You asked whether you should have fixed the hook under FF0 despite the standalone-commit
+rule. No.** The reasoning is in R793 and it is a ruling, not a courtesy: FF0 governs *when*
+an apparatus item is fixed, and `CLAUDE.md` Â§ "The reviewer's own instructions are not
+edited inside a step" governs *who may touch that one class of file and in what commit*. The
+second is the specific rule, it names its own consequence -- STOP-class -- and `7e94440`
+touches `floatfea/` and `tests/`, so there was no permitted route. **Reporting it was the
+only correct action available and you took it.** I have nothing for Xabier about the
+criterion; R793 is about the apparatus and it goes to him as a directive request, which is
+the channel `CLAUDE.md` already provides for it.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6a step 1
 Reviewed commit: 09559f8f0afcc3ba1731de4ce92172140a901c3f
 Verdict: PASS
 Tests: 3344 passed, 0 failed, 0 skipped   (my run, `python -m pytest -q -p no:randomly`, 667.64s, exit 0)
