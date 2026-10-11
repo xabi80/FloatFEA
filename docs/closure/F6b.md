@@ -19,7 +19,96 @@ below are answered on my own record and nobody checks them.**
 
 ## 0. Verification at closure (CZ1)
 
-{{SECTION_0}}
+**CZ1 (ii) and (iii) at `30f50f6`, tree clean.** CZ1 says the four outputs go in the step
+report's closure section "or -- where that report is already closed -- in the next report's
+`Carried`". **There is no next report: FI5 stops work after this.** So they are here, which
+is the only remaining container.
+
+```
+claim  the whole suite outside the three report-guard files, clean worktree at the commit
+cmd    python scripts/suite_count.py
+out    **Whole suite at `30f50f6`: 3169 passed, 0 failed, 0 skipped.** **The excluded set:
+       157 passed, 9 failed, 1 skipped.** ... The first count excludes 167 tests in 3 files
+       parametrised over this report (tests/test_report_carried.py,
+       tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py)
+judge  **3169 passed, 0 failed outside the report guards.** The nine excluded failures are
+       the set § 5's C1 pastes by id, and they are the SAME nine in three independent runs
+       -- my local run of the three files, this clean-worktree run, and CI.
+```
+
+```
+claim  lint, format and types
+cmd    python -m ruff check floatfea tests scripts ; python -m black --check floatfea
+       tests scripts ; python -m mypy floatfea
+out    All checks passed!
+       137 files would be left unchanged.
+       Success: no issues found in 37 source files
+rule   CZ1 (ii): the lint gate is what `pytest` does not run, and it shipped red once
+```
+
+```
+claim  the pushed run at this commit, job by job, with the guards step seen to have RUN
+cmd    gh run list --commit 30f50f6... ; gh api repos/:owner/:repo/actions/runs/38156755521/jobs
+out    {"conclusion":"failure","status":"completed"}
+       lint, unit and guards             failure   -- only failing step: `guards and meta-tests`
+       the verification ladder           success
+       CI determinism -- leg             skipped   (workflow_dispatch only, by design)
+       CI determinism -- ten legs agree  skipped   (same)
+       guards and meta-tests: 9 failed, 1008 passed, 1 skipped in 604.32s
+       the nine ids are IDENTICAL to the local set, by name
+rule   CZ1 (iii): the `guards and meta-tests` step must be seen to have RUN rather than
+       skipped behind an earlier red. `actionlint`, `ruff`, `black`, `mypy` and the unit
+       tests all succeeded before it, so it ran.
+judge  CI is red by the boundary set and nothing else, and the ladder is green on a second
+       runner. The two determinism jobs are not run by design -- `workflow_dispatch` only
+       -- which is neither red nor CK2's third state.
+```
+
+**AND CZ1 (iv) CANNOT BE SATISFIED AT THE END OF THIS INCREMENT. THAT IS A STRUCTURAL
+FINDING AND IT NEEDS A DIRECTIVE RATHER THAN AN INVENTION BY ME.**
+
+CZ1 (iv) says a closure commit is not finished until a pushed run at its own sha, or at a
+follow-on's, is green. The nine reds are FC1's pair plus the seven planted states that
+cascade off them. **FC1's pair can only clear by adding the whole-suite line and the CI
+table to the step report** — that is what those two guards read. And doing so breaks a
+different guard:
+
+```
+claim  touching the report now would redden `test_the_answered_verdict_is_the_NEWEST_one`
+cmd    read the newest commit touching the report and the verdict, and the report's
+       `Answers:` sha, then evaluate the guard's ancestry branch
+out    newest commit touching the REPORT : 6ebe4c0
+       newest commit touching the VERDICT: d509e44
+       the report NAMES                  : 6e32716
+       verdict is newer than report      : True -> the guard returns early, so it PASSES
+                                           today
+       IF the report were touched now, head_report would be newest and the guard would
+       require the report to NAME d509e44, but it names 6e32716 -> it would FAIL.
+rule   the guard's own words: "the report ... is newer than the verdict ... Written with
+       the newest verdict available, it must answer that one"
+judge  so clearing FC1's pair requires the report to name `d509e44` -- i.e. a REVISION 3
+       answering a PASS verdict that held nothing, which is a round for nothing -- and
+       **EK3 separately forbids a closure commit from touching a step report after that
+       report's final verdict.** Three rules, and no state satisfies all three.
+```
+
+**The shape is R793's**: two rules that cannot both be satisfied, discovered at the point
+where one of them finally bites. R793 was resolved by directive FH after being reported
+rather than worked around, and the same applies here. **The nine reds are therefore this
+increment's documented end state, traced by id in § 5, and they are not a defect in the
+tree** — `3169 passed, 0 failed` outside the three files, on three independent runs.
+
+**What a directive would have to choose between**, stated so the decision is cheap:
+
+* **let the closure artifact carry the whole-suite line and the CI table**, which is where
+  CZ1 already routes them when the report is closed — and teach FC1's pair to read the
+  artifact when no newer report exists; or
+* **exempt FC1's pair at an increment's final commit**, the way EG3 exempts the step
+  boundary, since neither can pass there by construction; or
+* **allow a revision that only carries CZ1's outputs**, naming the final verdict, which
+  makes the report edit legal and costs no review round.
+
+I have no preference and would not pick one unasked: all three change what a green means.
 
 ---
 
