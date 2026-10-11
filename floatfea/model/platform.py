@@ -789,9 +789,15 @@ def build_superstructure(
     # claim lives because a comment is not the place for it (CW0).
     #
     # **"BY A MARGIN ASSERTED IN" IS WHAT THIS SAID, AND NO MARGIN IS ASSERTED ANYWHERE
-    # (R787).** The margin is also not one number: it is `393.9x` on the platform and
-    # `4.4x` on the hub bodies, minimum at `D = 6.0 m, t = 5 mm` -- FG3's own corner. A
-    # caller who needs it measures it at the section they care about.
+    # (R787).** The margin is also not one number -- it differs by two orders between the
+    # platform and the hub bodies, and its minimum is at a corner of F6a's own search grid.
+    # **THE FIGURES ARE NOT REPEATED HERE (R794).** They were, for one commit, and a
+    # comment carrying measurements is a report nothing regenerates (BI3); under CW0 a
+    # claim about this repository is a test, a triple, or deleted, and no test computes an
+    # eigenvalue margin over a section span. A caller who needs the number measures it at
+    # the section they care about. `docs/closure/F6a.md` records what was measured once,
+    # with its date and its command, which is where a measurement that nothing regenerates
+    # belongs.
     #
     # A build made this way therefore carries the deck's mass on a different geometry,
     # which is precisely the inconsistency F6a's FG4 reports and deliberately does not

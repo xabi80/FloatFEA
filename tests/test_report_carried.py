@@ -840,6 +840,45 @@ def test_R784_the_SANCTIONED_SENTENCE_does_not_exempt_a_BROKEN_table() -> None:
     assert _is_the_sanctioned_empty_carry(broken, cells, [])
 
 
+def test_R795_the_FIRST_CLAUSE_refuses_the_exemption_when_a_TABLE_PARSED() -> None:
+    """R795. The `if cells` clause had no case, and it fails in the weakening direction.
+
+    Deleting `if cells: return False` from `_is_the_sanctioned_empty_carry` left the
+    whole file green -- `131 passed` -- so one third of the condition was never
+    exercised. There is no present defect: with a finding outstanding, clause (3)
+    refuses the exemption whatever the table parsed to, and clause (1) is load-bearing
+    only when the verdict names no finding, where there is no item to wrongly close.
+    **That is an argument, and an argument is what R784 was about.** The clause is
+    asserted instead.
+
+    The case is the state the argument says is harmless: a section that BOTH declares
+    the empty carry and carries a readable item row saying `CLOSED`, with nothing
+    outstanding. Clauses (2) and (3) are both satisfied there, so clause (1) is the only
+    thing standing between that section and an exemption that would skip
+    `test_a_report_does_not_say_CLOSED`'s own assertion.
+    """
+    contradictory = "\n".join(
+        [
+            "checked, nothing carried",
+            "",
+            "| R9101 | **closed** |",
+            "",
+        ]
+    )
+    cells = _status_cells(contradictory)
+    assert cells, (
+        "this case depends on the row PARSING; if `_ROW` misses it the case is about "
+        "clause (3) again and clause (1) is still unexercised"
+    )
+    assert _NOTHING_CARRIED.search(contradictory), "clause (2) is satisfied"
+    assert not _is_the_sanctioned_empty_carry(contradictory, cells, []), (
+        "the exemption fired on a section that declares the empty carry AND carries a "
+        "parsed item row saying `closed`. With nothing outstanding, clause (1) is the "
+        "only clause that refuses it -- and a section cannot both carry nothing and "
+        "carry an item."
+    )
+
+
 def test_R784_the_THIRD_CLAUSE_does_not_refuse_a_DECLARATION_THAT_NAMES_ITEMS() -> None:
     """And the clause that failed false, kept as a case so it cannot come back.
 

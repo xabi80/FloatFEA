@@ -792,12 +792,19 @@ def test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION(capsys) -> 
     **IT ASSERTS THE OUTCOME AND NOT A MARGIN, AND THAT IS DELIBERATE (R787).** An
     earlier draft of this docstring said the eigenvalue margin was printed; nothing
     printed it, and `floatfea/model/platform.py` said the fact held "by a margin
-    asserted in" this test, which asserted none. Both sentences are gone. The reason
-    not to publish a margin here is a measurement: the reviewer's `442x` was the
-    PLATFORM's, and over this test's own 42-section span the hub bodies' margin is
-    `4.4x`, minimum at `D = 6.0 m, t = 5 mm` -- FG3's own corner. A figure in a
-    docstring is a report nothing regenerates, and this one would have been wrong by
-    about 89x on the body that binds.
+    asserted in" this test, which asserted none. Both sentences are gone.
+
+    The reason not to publish a margin is that the first figure available to publish
+    was the PLATFORM's and the hub bodies' is two orders smaller, with its minimum at a
+    corner of F6a's own search grid -- so a single number here would have been wrong by
+    about two orders on the body that binds.
+
+    **AND THE FIGURES THEMSELVES ARE NOT HERE EITHER (R794).** They were, in the
+    paragraph above, three lines before the sentence saying a figure in a docstring is a
+    report nothing regenerates -- which is BI3 landing on this comment a third time.
+    Under CW0 a claim about this repository is a test, a triple, or deleted; no test
+    computes an eigenvalue margin over a section span, so these are deleted.
+    `docs/closure/F6a.md` holds the measurement with its command and its date.
 
     **AND THE FAILURE BRANCH IS EXERCISED (R786).** Its first version formatted
     `section.d_outer`, and `Section` carries `A`, `I_y`, `I_z`, `J`, `shape` and

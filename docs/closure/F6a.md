@@ -409,6 +409,88 @@ the two published `W*` and recorded its own figure as a normalisation slip. **Th
 deliverable's number was right and my explanation of the difference was wrong**, which is
 BG0's own species — a correct figure with an unmeasured cause attached.
 
+## 6b. The interim check (ES0), and the one finding that needs a directive
+
+The Stop hook forced a verdict at the turn boundary after `7e94440`. **It was an interim
+check under ES0 — light scope, counting against no round — and it PASSED**, scanning
+`810e979..HEAD` with nothing in CZ0 (a)–(d). EU1 did not arise and the reviewer verified
+that rather than taking it. It confirmed R786's repair exercises **both limbs** of the gate's
+`or` — the `mass_fraction` limb too, which my own commit had not claimed — and that neither
+of R784's counter-cases weakened when they were routed through the production parser.
+
+**Two of its three findings are repaired in the commit after it, under FF0.**
+
+**R794 — the margin figures were published at TWO sites, and neither is a test or a
+triple.** `floatfea/model/platform.py` carried them, and so did C99's own docstring, **three
+lines before the sentence saying a figure in a docstring is a report nothing regenerates.**
+That is BI3 landing on this comment a third time. Under CW0 the figures are deleted from
+both; what remains at each site is the shape of the fact — the margin differs by two orders
+between the platform and the hub bodies and is smallest at a corner of F6a's own grid — and
+a pointer here, because this artifact is a measurement with a date and a command rather than
+a comment that nothing re-takes. **The reviewer re-derived the figures at HEAD over 210
+builds and they reproduce to every digit**, which is why they are recorded above and not
+merely withdrawn.
+
+**R795 — one of `_is_the_sanctioned_empty_carry`'s three clauses had no counter-case.**
+
+```
+claim  deleting clause (1) left the file green, and now reddens exactly one test
+cmd    delete `if cells: return False`; python -m pytest -q tests/test_report_carried.py
+       -p no:randomly ; restore
+out    before the repair: 131 passed
+       after:  1 failed, 131 passed
+               FAILED test_R795_the_FIRST_CLAUSE_refuses_the_exemption_when_a_TABLE_PARSED
+rule   R784's own shape one level down: a clause whose only justification is an argument,
+       failing in the weakening direction
+judge  there was no present defect -- with a finding outstanding, clause (3) refuses the
+       exemption whatever the table parses to -- but "no present defect" is an argument,
+       and an argument is what R784 was about. The case is the state the argument calls
+       harmless: a section declaring the empty carry that ALSO carries a parsed row
+       saying `closed`, with nothing outstanding. **All three clauses now have a case.**
+       The reviewer found it only because I asked whether routing the cases through the
+       production parser had weakened anything.
+```
+
+```
+claim  the whole suite at the commit repairing R794 and R795
+cmd    python -m pytest -q
+out    3345 passed, 2 warnings in 676.14s
+rule   `3344 passed` one commit earlier; `+1` is R795's counter-case and nothing else
+judge  R794 deletes prose and adds no test, so the arithmetic is exactly `+1`. Zero reds
+       and zero waived reds -- this commit creates neither EG3 boundary state, touching
+       no step report (EK3) and preceding no verdict.
+```
+
+**R793 — THE STOP HOOK IS ANCHORED ON THE WRONG MILESTONE, AND IT NEEDS A DIRECTIVE.**
+
+`.claude/hooks/require-verdict.sh:56` ranks report files with `m=$3; sub(/^F/,"",m);
+printf "%03d ...", m+0` — and `m+0` on `"6a"` is `6`:
+
+```
+006 001 docs/reports/F6/step-1.md
+006 001 docs/reports/F6a/step-1.md      <-- COLLIDES with F6 step 1
+006 002 docs/reports/F6/step-2.md       <-- and loses on 2 > 1
+```
+
+So the hook compares against **F6 step 2's** verdict, `bf5fdf0`, and its pathspec has
+differed at every F6a commit. Two sub-findings: a suffixed milestone **collides with its
+base** rather than sorting after it, with the tie broken by path string; and **EC0's
+loud-failure guard cannot see it**, because `if (m !~ /^[0-9]/)` tests that the field starts
+with a digit, which `6a` does — the defect is that it is not *only* a digit. EC0's own
+comment names that species: *"printing `000` for it is what let the defect survive: the
+ranking stayed plausible."* `006` is the same thing one notch less visible.
+
+**I did not fix it, and the reviewer ruled that was correct rather than merely permitted.**
+FF0 governs *when* an apparatus item is fixed; § "The reviewer's own instructions are not
+edited inside a step" governs *who may touch that class of file and in which commit*, names
+its own consequence (STOP-class), and `7e94440` touches `floatfea/` and `tests/`. **There was
+no permitted route.** A directive needs to authorise exactly three things: sort a suffixed
+milestone after its base, refuse a tie rather than resolving it by path string, and make
+EC0's guard reject a field that is not wholly numeric.
+
+**Until that directive exists, the hook will refuse every turn that touches `floatfea/` or
+`tests/`**, citing a report that closed two milestones ago.
+
 **Ledgered, not fixed** (none is (a)–(d), and FG6 stops work after this):
 
 | item | what it is |
@@ -416,6 +498,7 @@ BG0's own species — a correct figure with an unmeasured cause attached.
 | R788 | the deliverable's § (vi) does not name the quantity "worst component rel" is of |
 | R789 | the two `Candidate(...)` literals in the search are the answers, typed; bit-identical today, tied to nothing |
 | R791 | R783's three numbers are complete and exact — `1 − bending_fraction = 1.405275e-04` against the gap to `W*`, `1.405473e-04` — but the clause joining them is missing |
+| R793 | the Stop hook's milestone ranking — **needs a directive**, § 6b; nothing in this repository may fix it from here |
 | R790 | **`results/F6a/` is under no regeneration gate.** F6's is, and that gate is what caught this increment's one stale figure. On `docs/milestones/F2a.md`'s list, because apparatus goes through that plan and not into a step commit. |
 
 ## 7. The limitations every F6a number carries
