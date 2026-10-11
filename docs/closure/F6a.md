@@ -78,6 +78,25 @@ judge  **CI is red by the boundary set and nothing else, and the ladder is green
 ```
 
 ```
+claim  CZ1 (iv) is satisfied at the follow-on's sha: a pushed run, GREEN
+cmd    gh run list --commit 15bb18f2d1b5c0353756faa40bbbbc779cd253ef
+       gh api repos/:owner/:repo/actions/runs/<id>/jobs
+out    completed / success
+       lint, unit and guards            success
+       the verification ladder          success
+       CI determinism -- leg            skipped   (workflow_dispatch only, by design)
+       CI determinism -- ten legs agree skipped   (same)
+rule   CZ1: "A closure commit is not finished until a pushed CI run at its own sha, or at
+       the follow-on's, is green." `740221d` is red by the boundary set; `15bb18f` carries
+       the whole-suite line that clears it and is **green in both jobs**.
+judge  **this is the first fully green pushed run of the increment**, and it is green
+       because the boundary state cleared rather than because anything was waived. The two
+       determinism jobs are not run by design -- `workflow_dispatch` only -- which is
+       neither red nor CK2's third state: no job in the run has an empty runner name with
+       a payment annotation.
+```
+
+```
 claim  the boundary set clears in the commit that carries the whole-suite line
 cmd    (at the follow-on commit) python -m pytest -q tests/test_report_carried.py
        tests/test_report_guard_states.py tests/test_report_numbers_are_sourced.py
