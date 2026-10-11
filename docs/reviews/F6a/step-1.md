@@ -1,4 +1,280 @@
 # Review — F6a step 1
+Reviewed commit: 6caef39c3df933c33961f621d2fcf1c584b241e6
+Verdict: STOP
+Tests: not re-run -- no `floatfea/` or `tests/` change in the range (verified below). The hook is not exercised by `pytest`; it is exercised by the controlled pairs in this file.
+
+## FH2 -- DIFF THE HOOK, of 2026-10-11. **STOP on ONE missing branch. FH0's substance is correct and must NOT be reverted.**
+
+**Reviewed commit: `6caef39` (HEAD).** Range `31fe039..HEAD` is **four** commits, not two:
+`52f33d7`, `a559a8c`, `4862f6e`, `6caef39`. The two the invocation did not name touch
+`docs/closure/F6a.md` only, so the scope statement is right in substance -- one code file in
+the range -- and I record the count because I checked it.
+
+**Placement is compliant and I verified it rather than taking it.** `4862f6e` is a
+standalone `process:` commit, one file, `+144 -42`, citing DIRECTIVE FH0.
+`git diff --stat 31fe039..HEAD -- floatfea tests` is empty and so is
+`-- floatfea/tolerances.py`. **So this is NOT the STOP-class finding my definition attaches
+to a change mixed into a step commit.** It is the other clause in the same paragraph, and
+that is the one I rule under.
+
+## Why STOP, and the three dispositions I rejected first
+
+**I found the state you asked for.** My definition's section on my own instructions ends:
+*"a change that removes a guard is a STOP."* One branch of this hook's headline guard is
+gone, measured in a controlled pair, and the three softer homes are each closed:
+
+* **HOLD is not available.** Not CZ0 (a)-(d) -- not `floatfea/`, not a published
+  deliverable, not a tolerance, not a test assertion, and no test is red. My definition
+  forbids expressing a non-(a)-(d) finding as a HOLD and I will not.
+* **The ledger is FORBIDDEN here, by `CLAUDE.md` and not by my preference.** FF0: *"A
+  CLOSURE ITEM IN THE GATING APPARATUS IS NOT LEDGERED ... `.claude/hooks/` ... is fixed in
+  the next commit."* Your offer to put anything outside (a)-(d) on the artifact is the one
+  home this item may not have.
+* **PASS would open increment 2 on a hook that lets a turn end with an unreviewed report in
+  the tree**, which is the sentence this hook's own second line claims it prevents.
+
+**STOP costs nothing operationally** -- FH3 stops work anyway -- so all it does is require
+one `process:` commit before step work resumes. That is proportionate, and it is the
+disposition my instructions name rather than one I reached for.
+
+## Carried
+
+| item | status | what I measured |
+|---|---|---|
+| R793 | **ANSWERED, and it is really fixed** | the wedge is gone: on the tree as committed OLD blocks on `bf5fdf0` and NEW allows (S1). Three interim checks' worth of refusals end here. **R799 is a different branch of the same rewrite, not R793 reopening.** |
+| R798 | **WITHDRAWN, correctly, and I reproduced the measurement** | 8 distinct shas, file order starts `bf5fdf0`, ancestry pick `bf5fdf0`, the two agree -- so `-m1` took the newest. Ruled below. |
+| R796 | **answered at verdict 127** and untouched by this range. |
+| R797 | **answered at verdict 127** and untouched by this range. |
+| R788, R789, R790, R791 | **on the ledger, unchanged** | `git diff --stat 31fe039..HEAD -- floatfea tests` is empty, so nothing in this range could have moved them. |
+
+**Nothing else carries.** The one blocking item is new and is R799.
+
+## Findings
+
+**R799. (STOP) The no-verdict refusal now depends on the marker having been advanced, and
+the marker is advanced by the implementer in the same commit it is supposed to guard.**
+
+```
+claim  a report with no verdict ends a turn, if the marker has not been advanced to it
+cmd    a throwaway clone at 6caef39; OLD (31fe039:.claude/hooks/require-verdict.sh) and
+       NEW run on the SAME tree with the same stdin, {"stop_hook_active": false}
+out    S2b  docs/reports/F6a/step-2.md planted, marker still says 1
+         OLD: BLOCK "Step report docs/reports/F6a/step-2.md has no supervisor verdict at
+                     docs/reviews/F6a/step-2.md. Invoke the gating-supervisor subagent on
+                     this step before ending the turn. Do not write the verdict yourself."
+         NEW: ALLOW (exit 0, no output)
+       S7   the SAME report, marker advanced to 2
+         OLD: BLOCK (the no-verdict message)
+         NEW: BLOCK (the same message, identical)
+       S2   docs/reports/F7/step-1.md planted instead
+         OLD: BLOCK "Step report docs/reports/F7/step-1.md has no supervisor verdict"
+         NEW: ALLOW
+cell   S2b against S7: one variable, the marker's number. Same tree, same report, same
+       stdin, same two scripts. **S7 is the control and it is why this is a domain
+       reduction rather than a broken guard** -- NEW's refusal works exactly when the
+       convention is honoured.
+rule   the hook's own line 2: "the implementer may not end its turn while **the newest
+       step report** has no supervisor verdict"
+judge  **"the newest step report" has been silently redefined as "the report the marker
+       names".** FH0 was asked to stop the ranking colliding; it also moved the DOMAIN of
+       the no-verdict sweep, and the comment it left states the replacement as a
+       convention -- "The marker is advanced in the commit that adds the next step's
+       report, never before it" -- where the hook used to depend on nothing.
+```
+
+**AND I CHECKED THAT OLD'S REFUSAL WAS A REAL CATCH AND NOT R793's WEDGE, because the exit
+code alone would have misled me.** R793 makes OLD block on almost every state in this tree,
+so "OLD refused and NEW allows" is nearly vacuous unless the message is read:
+
+```
+claim  OLD's S2b refusal is the no-verdict check, which PRECEDES the dirty-tree check
+cmd    the same plant, OLD's full `reason` parsed out of its JSON
+out    Step report docs/reports/F6a/step-2.md has no supervisor verdict at
+       docs/reviews/F6a/step-2.md. Invoke the gating-supervisor subagent on this step
+       before ending the turn. Do not write the verdict yourself.
+rule   R793's wedge produces "floatfea/, tests/, or docs/reports/F6/step-2.md changed
+       since the verdict at bf5fdf0..." -- a different string, from a later check
+judge  **a genuine catch, not the wedge.** Three of my seven states had OLD blocking for
+       the wedge's reason and would have read as findings on the exit code alone. This is
+       my own definition's "a residual destroys information", applied to a hook.
+```
+
+**AND THE REDUNDANCY THAT USED TO COVER THIS IS GONE, WHICH IS WHAT MAKES IT A STOP RATHER
+THAN A GAP.** This is the half neither of us had looked at.
+
+```
+claim  every other resolver of the active step is ALSO the marker, and nothing anywhere
+       checks that the marker names the newest report
+cmd    grep -rn "step-under-execution\|_active_plan" tests/*.py
+out    tests/test_report_carried.py:67,71,109
+       tests/test_report_guard_states.py:42,45,77
+       tests/test_report_numbers_are_sourced.py:50
+cmd    grep -rn 'glob("docs/reports\|docs/reports/F\*' tests/*.py
+out    (no sweep of docs/reports/F*/step-*.md for a missing verdict, in any file)
+cmd    the guard FH0's comment cites, read in full
+out    `test_the_plan_names_the_step_under_execution` asserts `len(carrying) == 1` --
+       EXACTLY ONE PLAN CARRIES A MARKER. It says nothing about which report it names.
+rule   FH0's own justification: "That is the resolver
+       `tests/test_report_carried.py::_active_plan` uses, and
+       `test_the_plan_names_the_step_under_execution` holds it to EXACTLY ONE plan"
+judge  **that is true and it is not the property needed. One marker is not the right
+       marker.** Before `4862f6e` the hook resolved the active step INDEPENDENTLY, by path
+       ranking -- badly, which is R793 -- and that independence WAS the redundancy: when
+       the marker was stale the hook and the guards disagreed, and the disagreement is
+       what caught a stray report. **FH0 made the hook agree with the three guards it was
+       the only thing able to contradict.** One marker line, in a prose file the
+       implementer writes, is now the sole resolver for the entire gating apparatus.
+```
+
+**Closed when** the no-verdict sweep stops depending on the marker. The marker should stay
+the anchor for *which verdict is read* -- that half of FH0 is right and R793 is really
+fixed -- but "a report exists with no verdict" needs a domain that does not come from the
+thing being guarded. The check I would describe rather than write: after the marker
+resolves, refuse if any `docs/reports/F*/step-*.md` has no sibling under `docs/reviews/`,
+naming the paths. That restores OLD's catch without restoring OLD's ranking -- no `sort`,
+no `tail -1`, no numeric parse of a label -- so it cannot bring EC0 or R793 back with it.
+
+### What is right, verified and not to be reverted
+
+**FH0's four changes all work, and `block()` really was only moved.**
+
+```
+claim  `block()`'s body is byte-identical and only its position moved
+cmd    awk '/^block\(\) \{/,/^\}/' on both versions, then sha256sum and diff
+out    hook_old: 4 lines, sha 42ab11d92c8e7215
+       hook_new: 4 lines, sha 42ab11d92c8e7215
+       diff: (empty)
+cmd    bash -n .claude/hooks/require-verdict.sh
+out    (no output)
+cmd    diff the `verdict=` tail of both versions
+out    (empty -- the PASS/HOLD/STOP tail is unchanged)
+rule   "'I only moved it' is exactly the claim a weakened guard would make"
+judge  **verified.** And the move was necessary: the refusals FH0 adds run above the old
+       definition point, bash resolves a function at call time, and with `set -u` and no
+       `set -e` an unresolved `block` printed to stderr and the script ran on. Your own
+       account of that is correct.
+```
+
+```
+claim  the tie, the label and the ancestry pick each refuse where they should
+cmd    the same clone, the real hook, real stdin
+out    S5  zero live markers        -> BLOCK "0 plans carry a live step-under-execution
+                                      marker. EXACTLY ONE must."
+       S4  one sha, unresolvable    -> BLOCK "cannot choose the reviewed commit ... no
+                                      single commit among [deadbeef...] has every other
+                                      as an ancestor"
+       S1  the tree as committed    -> ALLOW   (OLD: BLOCK on bf5fdf0 -- R793's wedge)
+judge  **R793 is really fixed and the refusals are real.** S1 is the measurement that
+       says so: OLD wedges on `bf5fdf0`, NEW allows a clean tree.
+```
+
+**Your attack point 4 is answered and your description of your own code is wrong in the
+safe direction.** You wrote that "a file naming one commit that no longer exists still
+resolves". It does not: with one sha and `git cat-file -e` failing, the `continue` leaves
+`found` empty and `pick_reviewed` returns 1 with the "no single commit" reason, which
+**blocks** -- S4 above. And where one bad sha sits among good ones, skipping it picks the
+newest *resolvable* commit and the dirty-tree check still runs, whereas OLD's
+`[ -n "$reviewed" ] && git cat-file -e "$reviewed"` would have skipped **both** checks
+and fallen through to the verdict line. **The `continue` is strictly stricter than what it
+replaced, which is the opposite of what you feared.**
+
+**Attack point 1: `[0-9]+` is the right discriminator.** It is what separates the live
+marker from the four retired `moved to F3 at step 1 (DY8c)` forms, and your stated failure
+mode -- a future retirement written with a bare number, picking two and refusing -- is a
+refusal, which is the direction a resolver must fail in. The thing that makes it safe is not
+the regex, it is that a tie refuses rather than sorting; both are in place.
+
+### R798's withdrawal is the right disposition, and I verified the measurement
+
+```
+claim  `grep -m1` returned the NEWEST reviewed commit, so R798's premise was false
+cmd    my own script: list every `Reviewed commit:` of F6 step 2 in FILE order, then ask
+       which one has every other as an ancestor (`git merge-base --is-ancestor`)
+out    distinct: 8
+       FILE order: bf5fdf0, af674e6, 6f3bd0d, c0e3165, 4bc359f, 9567893, ba1527e, 838e00e
+       ancestry pick: ['bf5fdf0']
+       file-first == ancestry pick: True
+rule   `write_verdict.py` PREPENDS (DY6), which C105 already recorded as the reason
+       `re.search` is correct for reading one
+judge  **withdraw it, and the withdrawal is already written.** `-m1` took the newest, so
+       "and therefore the oldest" did not follow from "the first". Your own account of the
+       species is accurate and is the one this milestone is remembered for -- a sentence
+       right about what it inspected and silent about the axis that decides it. **It
+       changes nothing about R793**, which was a different defect in the same three lines
+       and is really fixed; and replacing `-m1` with ancestry anyway is right for the
+       reason given at the site -- file order is a convention one generator holds in
+       place, and ancestry is not.
+```
+
+## Tolerances touched
+
+**None, and no `floatfea/` or `tests/` line changed at all.**
+
+```
+cmd  git diff --stat 31fe039..HEAD -- floatfea tests floatfea/tolerances.py
+out  (empty)
+cmd  git show --stat 4862f6e
+out  .claude/hooks/require-verdict.sh | 186 +++++++++++------  (1 file, +144 -42)
+cmd  git diff --stat 31fe039..HEAD
+out  .claude/hooks/require-verdict.sh | 186 ++++++++++---
+     docs/closure/F6a.md              | 141 +++++++++-
+```
+
+**EU1 does not arise** and I did not take it: no tolerance value, no counter, no
+`Final[float]`. `tests/conftest.py` is untouched. **I did not re-run the suite and I say so
+in the header rather than omitting it** -- `pytest` does not execute this hook, so a green
+suite would be evidence about something else, and the measurements that bear on the change
+are the controlled pairs above.
+
+**My own instructions: this review IS that diff.** `git log 31fe039..HEAD -- .claude
+docs/SUPERVISOR.md` gives one commit, `4862f6e`, standalone, citing FH0, and I read all 186
+changed lines rather than the hunk headers.
+
+## The corpus (EG4(e))
+
+**The pause held; no batch, no entry.** The substitute this round was the thing the pause's
+clause exists for: **the repair measured from the side that WEAKENS it.** FH1 asked for four
+replays and all four are refusals the new hook makes. I ran three more in the other
+direction -- S2, S2b, S7 -- and the finding is in those three and in nothing else. Corpus
+batch 31's recorded fault, which is why EH4 exists, is exactly this: *every boundary solved
+from the side that makes a gate look strong.* **Your own instinct in the invocation was
+right and your cases 5-7 were still all refusals.** The direction that matters is the one
+where the new hook says yes.
+
+## Next step opens when
+
+**Nothing opens, and the STOP is narrow. Do not revert `4862f6e`.**
+
+1. **R799 is fixed in one `process:` commit citing a directive**, under FF0's
+   next-commit rule and under the standalone-commit rule, before any step work resumes. The
+   repair is additive -- a sweep that does not read the marker -- and it must not reintroduce
+   a ranking.
+2. **The ranking fix, the tie refusal, the label regex, the ancestry pick and the `block()`
+   move all stay.** Each is verified above. R793 is really fixed: a clean tree now allows,
+   and that is measured, not argued.
+3. **R798 stays withdrawn.** The withdrawal in `docs/closure/F6a.md` is correct and I
+   reproduced its measurement independently.
+4. **Nothing from this review goes on the ledger**, because FF0 forbids this class there
+   and the one finding is a STOP.
+
+## Disagreement with the criterion -- none, and one note on the instrument
+
+I ruled under my own definition's clause on changes to my instructions, because CZ0's four
+heads do not reach a hook and FF0 forbids the ledger -- so for an item in this file the only
+dispositions available are PASS and STOP, and that is a sharp edge rather than a complaint.
+**I am not asking for it to be changed**: the asymmetry is deliberate, a file that gates the
+gate should have no comfortable middle, and this is the first time in the milestone it has
+had to bite. The thing worth recording is that **you invited the check, named the criterion
+it should be judged by, and the criterion found something** -- which is the second time in
+three rounds that attacking a repair has outperformed the scan the hook was asking for.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6a step 1
 Reviewed commit: 365fe3fc0e278e0d24fa401ea98d1cc0fcbb4c4d
 Verdict: PASS
 Tests: 3346 passed, 0 failed, 0 skipped   (my run, `python -m pytest -q -p no:randomly`)
