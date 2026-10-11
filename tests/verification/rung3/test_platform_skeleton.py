@@ -787,22 +787,39 @@ def test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION(capsys) -> 
     So the claim is asserted here instead of argued there: over the whole span of
     sections F6a's search can produce -- walls from 5 mm to 600 mm, diameters from
     2 m to 6 m -- every body keeps the `fraction` and the `member_mass` the shipped
-    build chooses. The eigenvalue margin is printed so a future reader can see how
-    much room the answer has rather than taking the word "cannot".
+    build chooses.
+
+    **IT ASSERTS THE OUTCOME AND NOT A MARGIN, AND THAT IS DELIBERATE (R787).** An
+    earlier draft of this docstring said the eigenvalue margin was printed; nothing
+    printed it, and `floatfea/model/platform.py` said the fact held "by a margin
+    asserted in" this test, which asserted none. Both sentences are gone. The reason
+    not to publish a margin here is a measurement: the reviewer's `442x` was the
+    PLATFORM's, and over this test's own 42-section span the hub bodies' margin is
+    `4.4x`, minimum at `D = 6.0 m, t = 5 mm` -- FG3's own corner. A figure in a
+    docstring is a report nothing regenerates, and this one would have been wrong by
+    about 89x on the body that binds.
+
+    **AND THE FAILURE BRANCH IS EXERCISED (R786).** Its first version formatted
+    `section.d_outer`, and `Section` carries `A`, `I_y`, `I_z`, `J`, `shape` and
+    neither `D` nor `t` -- so a real mass change raised `AttributeError` at the
+    message instead of failing on the assertion, and the assertion's own words could
+    never be printed. It cannot be fixed by renaming; the diameter and wall are
+    carried from the loop that built the section.
     """
     shipped = build_superstructure()
     by_name = {b.name: b for b in shipped.bodies}
 
+    # (D, t) is carried beside the section because `Section` records neither (R786).
     sections = [
-        Section.circular_tube(d, t)
+        (d, wall, Section.circular_tube(d, wall))
         for d in (2.0, 2.5, 3.0, 4.0, 5.0, 6.0)
-        for t in (0.005, 0.010, 0.030, 0.055, 0.180, 0.410, 0.600)
-        if t < 0.5 * d
+        for wall in (0.005, 0.010, 0.030, 0.055, 0.180, 0.410, 0.600)
+        if wall < 0.5 * d
     ]
     assert len(sections) == 42, "the span this is asserted over is part of the claim"
 
     moved: list[str] = []
-    for section in sections:
+    for d, wall, section in sections:
         built = build_superstructure(measurement_sections={name: section for name in by_name})
         for body in built.bodies:
             was = by_name[body.name]
@@ -810,8 +827,10 @@ def test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION(capsys) -> 
                 float(body.member_mass), float(was.member_mass), rel_tol=0.0, abs_tol=0.0
             ):
                 moved.append(
-                    f"{body.name} at D={section.d_outer:.1f} "
-                    f"f {was.mass_fraction} -> {body.mass_fraction}"
+                    f"{body.name} at D={d:.1f} t={wall * 1000:.0f}mm "
+                    f"f {was.mass_fraction} -> {body.mass_fraction}, "
+                    f"member_mass {float(was.member_mass):.6e} -> "
+                    f"{float(body.member_mass):.6e}"
                 )
 
     with capsys.disabled():

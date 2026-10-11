@@ -686,7 +686,7 @@ def nothing_carried() -> bool:
     return bool(_NOTHING_CARRIED.search(CARRIED))
 
 
-def _status_cells() -> list[tuple[str, str]]:
+def _status_cells(section: str | None = None) -> list[tuple[str, str]]:
     """`(items, status)` -- the SECOND cell of each Carried row.
 
     It read every cell after the first, because a third column had hidden a
@@ -707,8 +707,12 @@ def _status_cells() -> list[tuple[str, str]]:
     nothing fails `test_every_carried_item_carries_one_of_the_report_words`
     whatever a later column says.
     """
+    # R792: THE PARAMETER IS HOW A COUNTER-CASE REACHES THIS PARSE. R784's cases need
+    # `_status_cells` over a section they supply, and the first version of them got it by
+    # COPYING the loop below into a second helper -- a parser nothing ties to this one, so
+    # a change here would silently stop being tested. One default argument, one parser.
     out: list[tuple[str, str]] = []
-    for items, rest in _ROW.findall(CARRIED):
+    for items, rest in _ROW.findall(CARRIED if section is None else section):
         if not _LOOSE_MENTION.findall(items):
             continue
         cells = [c for c in rest.split("|")]
@@ -719,25 +723,6 @@ def _status_cells() -> list[tuple[str, str]]:
         # it. The item cell is not a status, so it is checked for the words a
         # report may not use and for nothing else -- it is appended here under
         # its own text so the message names the right cell.
-        if any(w in _plain(items) for w in VERDICT_ONLY):
-            out.append((items.strip(), items.strip()))
-    return out
-
-
-def _ROW_CELLS(section: str) -> list[tuple[str, str]]:
-    """`_status_cells()` over an ARBITRARY section, for the counter-cases.
-
-    `_status_cells()` reads the module-level `CARRIED`, which a counter-case cannot
-    set. This is the same parse over a given string and is the only reason it exists;
-    the production path still goes through `_status_cells()`.
-    """
-    out: list[tuple[str, str]] = []
-    for items, rest in _ROW.findall(section):
-        if not _LOOSE_MENTION.findall(items):
-            continue
-        cells = list(rest.split("|"))
-        if cells and cells[0].strip():
-            out.append((items.strip(), cells[0].strip()))
         if any(w in _plain(items) for w in VERDICT_ONLY):
             out.append((items.strip(), items.strip()))
     return out
@@ -841,7 +826,7 @@ def test_R784_the_SANCTIONED_SENTENCE_does_not_exempt_a_BROKEN_table() -> None:
         "case is vacuous and tests the wrong thing"
     )
     assert _NOTHING_CARRIED.search(broken), "and on the sentence being present"
-    cells = _ROW_CELLS(broken)
+    cells = _status_cells(broken)
     assert not cells, "both clauses of the two-clause version are satisfied"
 
     assert not _is_the_sanctioned_empty_carry(broken, cells, ["R9001"]), (
@@ -875,7 +860,7 @@ def test_R784_the_THIRD_CLAUSE_does_not_refuse_a_DECLARATION_THAT_NAMES_ITEMS() 
         "the case depends on the section naming items; if it names none it is not the "
         "input that refuted the first clause"
     )
-    assert _is_the_sanctioned_empty_carry(honest, _ROW_CELLS(honest), []), (
+    assert _is_the_sanctioned_empty_carry(honest, _status_cells(honest), []), (
         "a section that declares the empty carry and names what it is NOT carrying is "
         "the sanctioned state. The first version of the third clause refused it."
     )

@@ -782,10 +782,16 @@ def build_superstructure(
     # wrong: `fraction` is not given, it is chosen by `admissible()` descending
     # `MASS_FRACTION_LADDER`, and `admissible()` reads the remainder inertia, which
     # `assemble_mass_dense`'s rotary term `rho_eq * I = mu * r^2` makes a function of `r`.
-    # **The section reaches the mass decision.** It does not change it, by a margin
-    # asserted in `tests/verification/rung3/test_platform_skeleton.py`, by
-    # `test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION` -- which is where
-    # that claim lives now, because a comment is not the place for it (CW0).
+    # **The section reaches the mass decision.** It does not change it over the whole span
+    # of sections F6a's search can produce, and that is ASSERTED -- not quantified -- in
+    # `tests/verification/rung3/test_platform_skeleton.py` by
+    # `test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION`, which is where the
+    # claim lives because a comment is not the place for it (CW0).
+    #
+    # **"BY A MARGIN ASSERTED IN" IS WHAT THIS SAID, AND NO MARGIN IS ASSERTED ANYWHERE
+    # (R787).** The margin is also not one number: it is `393.9x` on the platform and
+    # `4.4x` on the hub bodies, minimum at `D = 6.0 m, t = 5 mm` -- FG3's own corner. A
+    # caller who needs it measures it at the section they care about.
     #
     # A build made this way therefore carries the deck's mass on a different geometry,
     # which is precisely the inconsistency F6a's FG4 reports and deliberately does not

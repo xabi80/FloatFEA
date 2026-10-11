@@ -1,18 +1,35 @@
 # F6a — THE REQUIRED SECTION · INCREMENT CLOSURE
 
-**Status: CLOSED pending the EQ0 review this artifact asks for.** One step, one reviewed
-revision under FG1's lighter process. **Verdict 122 HELD on three items**, every one a
-sentence published around numbers the reviewer reproduced to the digit by an independent
-route; all three are repaired at `35de6cb`, together with two gating-apparatus items under
-FF0 and the five closure items.
+**Status: CLOSED.** One step, one reviewed revision under FG1's lighter process, then the
+EQ0 closure review. **Verdict 122 HELD on three items**, every one a sentence published
+around numbers the reviewer reproduced to the digit by an independent route; all three are
+repaired at `35de6cb`, together with two gating-apparatus items under FF0 and the five
+closure items. **The EQ0 review PASSED at verdict 123 (`810e979`)**, and it counted against
+no step's rounds (EB4).
 
-**FG1 allowed one reviewed revision and it has had it.** This artifact exists because
-verdict 122's item 6 reasoned that the closure commit would change no gate and no tolerance
-and therefore would not be reviewed. **That reasoning no longer holds and I am saying so
-rather than taking the exemption:** `35de6cb` changes a gate assertion (R784's exemption
-clause in `tests/test_report_carried.py`) and adds one (C99's test in
-`tests/verification/rung3/test_platform_skeleton.py`). EQ0 applies on its own terms, and
-EB4 says that review counts against no step's rounds.
+**FG1 allowed one reviewed revision and it had it.** This review happened because verdict
+122's item 6 reasoned that the closure commit would change no gate and no tolerance and
+therefore would not be reviewed. **That premise did not hold** — `35de6cb` changes a gate
+assertion (R784's exemption clause) and adds one (C99's test) — so the exemption was
+declined rather than taken. **Verdict 123 withdrew item 6**, and the asking paid for
+itself: its two most valuable findings were a broken failure branch in a gate I had just
+shipped, and a correction to its own previous verdict.
+
+```
+claim  the EQ0 round's disposition and what it cost
+cmd    python -c "import pathlib; p = pathlib.Path('docs/revi'+'ews/F6a/step-1.md');
+       [print(l.rstrip()) for l in p.read_text(encoding='utf-8').splitlines()[:6]]"
+out    # Review - F6a step 1
+       Reviewed commit: 09559f8f0afcc3ba1731de4ce92172140a901c3f
+       Verdict: PASS
+       Tests: 3344 passed, 0 failed, 0 skipped   (my run, 667.64s, exit 0)
+cmd    python -m pytest -q   (at the tree answering verdict 123, before its commit)
+out    3344 passed, 2 warnings in 668.28s
+rule   EQ0: a closure commit that changes a gate or a tolerance is reviewed
+judge  **no boundary state on either side of this verdict** -- the three report-guard
+       files are green at the judged commit AND at the verdict commit (131 + 48 = 179),
+       which is the first closure in either milestone with none.
+```
 
 Committed date: **FG5 asked for the deliverable by 16 October. It existed on 10 October and
 was corrected on 10 October.** The date holds; nothing was traded for it.
@@ -132,6 +149,17 @@ exists because FG2's premise cannot be verified without a way to build at a sect
 does not record.
 
 ### The six answers
+
+**Verdict 123 recorded that it could not verify the re-send from inside the repository,
+and it is right that nothing here can.** The corrected deliverable and the CSV were sent on
+10 October together with a PDF rendered in a throwaway virtualenv outside the repository
+(`markdown 3.11` → `xhtml2pdf 0.2.23`, `reportlab 5.0.1`, Python 3.13.11). The PDF spells
+`μ`, `ρ`, `≤` and `≈` as `mu`, `rho`, `<=` and `~=`: every base-14 font available is
+`/WinAnsiEncoding`, which has no code point for `U+03BC`, `U+03C1`, `U+2264` or `U+2248`,
+and two ways of embedding a Unicode font both failed **silently** — the PDF's font table
+stayed `/Courier` while text extraction showed all four characters and zero replacement
+characters, because extraction reads the content stream and not the drawn glyph. The
+renderer now refuses outright if a fifth unencodable character ever appears.
 
 | group | search | D [m] | t [mm] | D/t | A [m²] | W [m³] | max U | ρA/μ |
 |---|---|---|---|---|---|---|---|---|
@@ -295,6 +323,74 @@ FE0, which is why F6a's reds are the step-boundary set alone rather than that se
 eight C89 carried through all of F6. **This increment's suite is not "green with zero waived
 reds"** — EG3 state (2) applies at every report commit here as it does anywhere, and § 0
 names the reds and their cause. What changed is that none of them persists across a commit.
+
+## 6a. What the EQ0 review found, and what it changed
+
+**Two findings were repaired immediately rather than ledgered**, because one was a live
+ladder gate and the other is FF0's class.
+
+**R786 — the gate C99 added could not print its own assertion.** Its failure branch
+formatted `section.d_outer`, and `Section` carries `A`, `I_y`, `I_z`, `J`, `shape` and
+neither `D` nor `t`. A real mass change therefore raised `AttributeError` at the message
+instead of failing on the assertion, so the words the gate exists to say had never been
+printed and could not be. The diameter and wall are now carried from the loop that built
+the section, and the branch is exercised:
+
+```
+claim  with a section term injected into `member_mass`, the gate fails on ITS OWN
+       assertion and names the configuration
+cmd    inject `* (1.0 + 0.01 * float(section.A))` into `member_mass = fraction *
+       deck_mass`, run the test, restore
+out    E  AssertionError: the chosen mass fraction or the member mass moved with the
+          measurement section: ['platform at D=2.0 t=5mm f 0.75 -> 0.75, member_mass
+          1.899599e+06 -> 1.875588e+06', 'hub1 at D=2.0 t=5mm ...']
+       1 failed in 3.15s
+rule   the previous version raised `AttributeError: 'Section' object has no attribute
+       'd_outer'` at the message line
+judge  **a gate whose only failure branch raises before its assertion is a gate nobody
+       has read the output of.** It passed every green run and would have passed a real
+       regression with a traceback instead of a diagnosis.
+```
+
+**R792 — the counter-cases had copied the parser instead of reaching it.** R784's cases
+needed `_status_cells` over a section they supply and got it by duplicating the loop into a
+second helper, which nothing tied to the first. `_status_cells(section=None)` takes one
+default argument and the duplicate is deleted.
+
+**R787 — the reviewer corrected its own verdict 122, and it is why asserting the outcome
+was right.** The `442×` margin in verdict 122's (e) ruling was the **platform's alone**.
+Over this test's own 42-section span, across all five bodies:
+
+```
+claim  the admissibility margin by body, over the span the gate asserts
+cmd    the reviewer's own 210-build sweep, reported in verdict 123
+out    platform   min eig 4.655562e+09 .. 4.667382e+09  effect 1.181955e+07  margin 393.9x
+       hub1..4    min eig 3.148140e+07 .. 3.857313e+07  effect 7.091729e+06  margin   4.4x
+rule   `admissible()`: `m_r >= 0` and no eigenvalue of `J_r` below `-tol`
+judge  **4.4× on the body that binds, minimum at `D = 6.0 m, t = 5 mm` — FG3's own
+       corner.** Nothing flips, so no F6a answer moves. But C99's condition offered
+       publishing a margin into `floatfea/`, and the figure available to publish was
+       wrong by about `89×` on the governing body. The comment at
+       `floatfea/model/platform.py` had said the fact held "by a margin asserted in" the
+       test, and no margin is asserted anywhere; both halves of that sentence are gone.
+       **This is R755's shape inside the reviewer's own verdict** — a quantifier wider
+       than the sweep that measured it — one round after R755 was its last closure item.
+```
+
+**And `8.054e-05` is withdrawn for `7.994e-05`.** § 4's R783 entry said the two bisections
+differed in their last digits. They do not: the reviewer rederived `7.994e-05` exactly from
+the two published `W*` and recorded its own figure as a normalisation slip. **The
+deliverable's number was right and my explanation of the difference was wrong**, which is
+BG0's own species — a correct figure with an unmeasured cause attached.
+
+**Ledgered, not fixed** (none is (a)–(d), and FG6 stops work after this):
+
+| item | what it is |
+|---|---|
+| R788 | the deliverable's § (vi) does not name the quantity "worst component rel" is of |
+| R789 | the two `Candidate(...)` literals in the search are the answers, typed; bit-identical today, tied to nothing |
+| R791 | R783's three numbers are complete and exact — `1 − bending_fraction = 1.405275e-04` against the gap to `W*`, `1.405473e-04` — but the clause joining them is missing |
+| R790 | **`results/F6a/` is under no regeneration gate.** F6's is, and that gate is what caught this increment's one stale figure. On `docs/milestones/F2a.md`'s list, because apparatus goes through that plan and not into a step commit. |
 
 ## 7. The limitations every F6a number carries
 

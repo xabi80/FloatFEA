@@ -284,3 +284,27 @@ why they are here and not in `docs/milestones/F2.md`.
 | R472 | `ci_table_defects()` reads the outcome cell and nothing else, and asks for non-emptiness rather than completeness. |
 | R473 | The suite now requires an authenticated `gh` to pass anywhere. |
 | R474 | The section 0c out block is not what its cmd prints. |
+
+## R790 — `results/F6a/` is under no regeneration gate
+
+*Added by verdict 123 (F6a's EQ0 closure). Apparatus goes through this plan and not into a
+step commit, which is why it is here and not fixed.*
+
+`results/F6/floatfea_results_report.md` has `tests/regression/test_f6_deliverable_agrees_with_itself.py`,
+and **that gate is what caught F6a's one stale published figure** — C99's new test changed a
+gate-table count from `53` to `54` in a document already in Xabier's hands, and CI found it
+rather than the implementer. `results/F6a/required_section.md` and its CSV have no
+equivalent:
+
+```
+claim  nothing in tests/regression mentions the F6a deliverable
+cmd    grep -rn "required_section\|F6a" tests/regression/*.py
+out    (empty)
+rule   R756's gate exists because a deliverable that no longer regenerates is a
+       deliverable whose figures describe a tree that has moved
+```
+
+The generators are deterministic today — verdict 123 regenerated the deliverable at HEAD and
+got a byte-identical file, and so did I twice — so this is a missing gate rather than a
+present defect. What it would assert is R756's own assertion over `results/F6a/`: the
+committed document is what the tree regenerates.
