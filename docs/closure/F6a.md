@@ -455,7 +455,17 @@ judge  there was no present defect -- with a finding outstanding, clause (3) ref
 claim  the whole suite at the commit repairing R794 and R795
 cmd    python -m pytest -q
 out    3345 passed, 2 warnings in 676.14s
-rule   `3344 passed` one commit earlier; `+1` is R795's counter-case and nothing else
+cmd    gh run list --commit 5485ed0b6b0892d17900f120a4986706fefdff02
+       gh api repos/:owner/:repo/actions/runs/38118207969/jobs
+out    {"conclusion":"success","status":"completed"}
+       lint, unit and guards            success
+       the verification ladder          success
+       CI determinism -- ten legs agree skipped   (workflow_dispatch only, by design)
+       CI determinism -- leg            skipped   (same)
+rule   `3344 passed` one commit earlier; `+1` is R795's counter-case and nothing else.
+       The run-level `status` is read as well as the jobs, because the interim check
+       found me reading an `in_progress` run's job list and an unfinished run is not a
+       pass
 judge  R794 deletes prose and adds no test, so the arithmetic is exactly `+1`. Zero reds
        and zero waived reds -- this commit creates neither EG3 boundary state, touching
        no step report (EK3) and preceding no verdict.
