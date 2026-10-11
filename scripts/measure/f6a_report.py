@@ -140,7 +140,6 @@ def main(argv: list[str] | None = None) -> int:
         # time in the document looking like a different quantity. The ratio that is not
         # a restatement is the one in the block below, which carries the remainder mass
         # -- so the table is dropped and the block does the work.
-        w("")
         w("**How big the inconsistency is, and the arm-weight term alone UNDERSTATES it.**")
         w("The published static root moment carries two independent loads: the arm's own")
         w("uniform weight, and the body's remainder mass at its own node. **Only the first")

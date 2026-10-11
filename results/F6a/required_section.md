@@ -63,7 +63,6 @@ section, and so on.
 **This is not iterated here.** Closing that loop needs a mass budget, which is
 increment 2.
 
-
 **How big the inconsistency is, and the arm-weight term alone UNDERSTATES it.**
 The published static root moment carries two independent loads: the arm's own
 uniform weight, and the body's remainder mass at its own node. **Only the first

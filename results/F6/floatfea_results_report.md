@@ -156,7 +156,7 @@ every numerical tolerance in this repository lives.
 ```
 pytest's own summary for each row, at this commit:
   G2.1             2 passed
-  G3.1a            53 passed
+  G3.1a            54 passed
   G4.1 force       114 passed
   G4.1 moment      114 passed
   G4.4             1 passed
