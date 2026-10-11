@@ -728,6 +728,7 @@ def build_superstructure(
     path: Path | None = None,
     froude_lambda: float = 50.0,
     measurement_fraction: float | None = None,
+    measurement_sections: dict[str, Section] | None = None,
 ) -> Superstructure:
     """The five-body superstructure at full scale, or a refusal.
 
@@ -763,6 +764,31 @@ def build_superstructure(
     section = Section.circular_tube(ARM_OUTER_DIAMETER, ARM_WALL)
     geometry = _member_geometry(joints, hub_joints, z)
 
+    # `measurement_sections`: A SENSITIVITY ENTRY POINT, NOT A SHIPPING KNOB, exactly as
+    # `measurement_fraction` above and for the same reason (ES1). F6a asks what section each
+    # arm group would need, and FG2's premise -- that section choice does not move the member
+    # forces -- is VERIFIED by rebuilding at the answer and comparing, which cannot be done
+    # without a way to build at a section the deck does not record.
+    #
+    # It is a mapping from body name to `Section`; a body absent from it keeps the recorded
+    # stand-in. The shipped path passes nothing and is byte-identical to before: there is no
+    # default, no environment variable and no file it can be set from.
+    #
+    # **IT DOES NOT MOVE THE MASS, AND THAT IS NOT THIS PARAMETER BEING CAREFUL -- IT IS
+    # `_build_body`'s arithmetic.** `member_mass = fraction * deck_mass` carries no section
+    # term, and `density = line_mass / section.A` then back-computes `rho` so that
+    # `rho * A` is the deck's own `mu` whatever `A` is. So a build made this way carries the
+    # deck's mass on a different geometry, which is precisely the inconsistency F6a's FG4
+    # reports and deliberately does not resolve.
+    if measurement_sections is not None:
+        for body_name in measurement_sections:
+            if body_name not in bodies:
+                raise ValueError(
+                    f"measurement_sections names {body_name!r}, which is not a body in "
+                    f"this deck ({sorted(bodies)}). A typo here would silently build the "
+                    "recorded section and report it as the measured one."
+                )
+
     built: list[BodyModel] = []
     for name in ["platform", *sorted(j["body_a"] for j in hub_joints)]:
         preliminary = name == "platform"
@@ -791,7 +817,7 @@ def build_superstructure(
                     geometry[name],
                     bodies[name],
                     measurement_fraction,
-                    section,
+                    (measurement_sections or {}).get(name, section),
                     preliminary,
                     note,
                     laddered=False,
@@ -800,7 +826,13 @@ def build_superstructure(
             continue
         for fraction in MASS_FRACTION_LADDER:
             candidate = _build_body(
-                name, geometry[name], bodies[name], fraction, section, preliminary, note
+                name,
+                geometry[name],
+                bodies[name],
+                fraction,
+                (measurement_sections or {}).get(name, section),
+                preliminary,
+                note,
             )
             if admissible(candidate):
                 built.append(candidate)

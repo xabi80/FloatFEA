@@ -667,6 +667,25 @@ _ROW = re.compile(r"^[ \t]*\|([^|]*R[\s\u2010-\u2015-]*\d+[^|]*)\|(.+?)\s*\|?\s*
 _LOOSE_MENTION = re.compile(r"\bR[\s\u2010-\u2015-]*\d+")
 
 
+# THE SANCTIONED EMPTY CARRY (FF0, EK2). `CLAUDE.md` section Step gating asks the report
+# for "a `Carried` section answering each open item from the previous review -- **or stating
+# 'checked, nothing carried'**", so an empty carry is a state the criterion names. The
+# parser could not read it: with no item rows, `_status_cells()` returns `[]` and every
+# guard built on it failed with "the table format changed", which is a LEGITIMATE STATE AND
+# A BROKEN ONE READING IDENTICALLY -- C89's shape, on the milestone whose first revision has
+# no prior verdict to carry from.
+#
+# So the declaration is parsed. It is not a waiver: `nothing_carried()` is true only for the
+# exact sanctioned sentence, and a table with item rows the parser cannot read still fails,
+# which is the half the assertion exists for.
+_NOTHING_CARRIED = re.compile(r"checked,\s+nothing\s+carried", re.IGNORECASE)
+
+
+def nothing_carried() -> bool:
+    """Does the newest revision's `Carried` section make `CLAUDE.md`'s declaration?"""
+    return bool(_NOTHING_CARRIED.search(CARRIED))
+
+
 def _status_cells() -> list[tuple[str, str]]:
     """`(items, status)` -- the SECOND cell of each Carried row.
 
@@ -715,9 +734,16 @@ def test_a_report_does_not_say_CLOSED(capsys) -> None:
     failure mode rather than detecting it.
     """
     cells = _status_cells()
+    if not cells and nothing_carried():
+        # The sanctioned empty carry. There is no status to check because there is no
+        # item, and `CLAUDE.md` names this state in the same sentence that asks for the
+        # section. The guard below has nothing to do; it does not pass on anything,
+        # because there is nothing.
+        return
     assert cells, (
-        "no status cell parsed from the newest revision's Carried table. The "
-        "table format changed and every check below passes on anything."
+        "no status cell parsed from the newest revision's Carried table, and the section "
+        "does not state `checked, nothing carried` either. The table format changed and "
+        "every check below passes on anything."
     )
     guilty = [(i, st) for i, st in cells if any(w in _plain(st) for w in VERDICT_ONLY)]
     with capsys.disabled():
