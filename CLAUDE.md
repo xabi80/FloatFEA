@@ -179,6 +179,30 @@ not move a gate, and the coverage measurement that would have justified the
 spend went *down* over those rounds — 2 of 22 unseen defect shapes caught, then
 1 of 19.
 
+**A CLOSURE ITEM IN THE GATING APPARATUS IS NOT LEDGERED (FF0).** Adopted by
+directive FF0. Anything that reads the gating record, or decides whether a green
+is believed — the report guards, `scripts/ci_section.py`, `scripts/suite_count.py`,
+`.claude/hooks/`, the EG3 lists — is **fixed in the next commit**, under EK2's
+repair-not-extend rule: a guard that fails false is fixed or deleted, never
+extended. **Report-prose closure items are ledgered as before.**
+
+Earned at a cost that can be stated exactly. C88 and C89 were ruled closure items
+and ledgered, correctly under CZ0 as it then stood. **C89 then kept `pytest -q`
+and CI red by eight for the whole of F6** — four consecutive commits each needed
+their eight reds traced by name under EG3, each trace a paragraph in a verdict and
+real work in a round, and the eighth member of exactly such a group had already
+turned out to be a real defect once (R629), which is why EG3(i) demands the
+individual trace. **One commit fixed both the moment one was spent on them**, and
+the repair of C88 immediately exposed two stale figures it had been hiding —
+`10160` of `48740` characters of one revision, 21%, invisible to all three guards
+keyed on `_hand_written`.
+
+The reviewer asked for this twice and the second time named the reason the ledger
+could not carry it: *an item in the apparatus that decides whether other greens
+are believed is a different kind of closure item from a sentence in a report, and
+the ledger has no way to say so.* A tree that is red by design is a tree in which
+the next real red is harder to see.
+
 **Three verdicts per step. After the third, the step closes.** **A plan
 re-lock inside a step does not restart that count (DK0)** — if reopening the
 plan bought three more rounds, every reopen would buy them and the cap would
