@@ -582,6 +582,19 @@ string, all three PASS, and both findings they produced (R796, R797) came from a
 repairs rather than from the scan the hook was asking for. The hook asked the right question
 three times for the wrong reason.
 
+**AND THE REPAIR ITSELF CARRIED A REGRESSION, WHICH IS R799 AND WAS A STOP.** Reading the
+active step from the marker removed the hook's independence from the three report guards
+that resolve it the same way — and that independence *was* the redundancy: nothing else
+sweeps `docs/reports/` for a missing verdict, so a stale marker let a turn end with an
+unreviewed report. Reproduced, repaired at `60bb3f0`, and replayed on ten states. **The
+repair differs from the closing condition** — the sweep the verdict specified wedged the
+clean tree on F2 steps 1–3, which have no verdict because gating began at F2 step 4 — so the
+domain is scoped per milestone to the range that milestone's own gating covers. **And the
+"zero orphans" measurement I made before writing the unscoped sweep was false**: the shell
+mangled `docs\reports` into a carriage-return escape, the pattern matched nothing, and
+every report reported OK. A figure from a command that cannot do what its text says is not
+a measurement, and I acted on one.
+
 ## 6c. The second interim check, and the species a fourth time
 
 The hook forced a second check after the FF0 repairs, for the reason R793 names. **It
@@ -704,6 +717,7 @@ it, and no commit in this repository may fix it.
 | R789 | the two `Candidate(...)` literals in the search are the answers, typed; bit-identical today, tied to nothing |
 | R791 | R783's three numbers are complete and exact — `1 − bending_fraction = 1.405275e-04` against the gap to `W*`, `1.405473e-04` — but the clause joining them is missing |
 | ~~R793~~ | the Stop hook's milestone ranking — **FIXED** at `4862f6e` under DIRECTIVE FH0, with FH1's replay and EH4's other direction. Off the ledger. |
+| ~~R799~~ | **the regression `4862f6e` introduced** — reading the step from the marker made the no-verdict refusal depend on the marker having been *advanced*, which the implementer does in the commit it guards. A **STOP** in the FH2 hook diff, fixed at `60bb3f0`. Not ledgered (FF0). |
 | ~~R798~~ | **WITHDRAWN** — its premise was wrong; `write_verdict.py` prepends, so `grep -m1` took the newest. § 6b carries the measurement. |
 | R790 | **`results/F6a/` is under no regeneration gate.** F6's is, and that gate is what caught this increment's one stale figure. On `docs/milestones/F2a.md`'s list, because apparatus goes through that plan and not into a step commit. |
 
