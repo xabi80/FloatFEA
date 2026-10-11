@@ -795,9 +795,15 @@ def build_superstructure(
     # comment carrying measurements is a report nothing regenerates (BI3); under CW0 a
     # claim about this repository is a test, a triple, or deleted, and no test computes an
     # eigenvalue margin over a section span. A caller who needs the number measures it at
-    # the section they care about. `docs/closure/F6a.md` records what was measured once,
-    # with its date and its command, which is where a measurement that nothing regenerates
-    # belongs.
+    # the section they care about. `docs/closure/F6a.md` records what was measured once.
+    #
+    # **THE POINTER CARRIES NO INVENTORY OF ITS REFERENT (R797).** It used to add "with its
+    # date and its command", and that section carries no date -- `grep -nE "2026|October"`
+    # over it is empty -- while its `cmd` field cites a verdict rather than giving a
+    # runnable line. A pointer that describes what is at the other end is a claim about a
+    # file this one cannot check, which is the same defect one level out. Fourth iteration
+    # of this sentence; the direction was right every time and the clause added on the way
+    # out was not.
     #
     # A build made this way therefore carries the deck's mass on a different geometry,
     # which is precisely the inconsistency F6a's FG4 reports and deliberately does not

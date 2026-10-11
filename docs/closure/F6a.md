@@ -501,6 +501,60 @@ EC0's guard reject a field that is not wholly numeric.
 **Until that directive exists, the hook will refuse every turn that touches `floatfea/` or
 `tests/`**, citing a report that closed two milestones ago.
 
+## 6c. The second interim check, and the species a fourth time
+
+The hook forced a second check after the FF0 repairs, for the reason R793 names. **It
+PASSED and counted against no round.** It found that one of my two worries about R795's
+case was wrong in the safe direction — `assert cells` is an assertion rather than a branch,
+so if `_ROW` ever stops parsing that row the case goes **red** and names the parser — and
+that the other was right, and worse than I had put it.
+
+**R796 — four cases pinned the predicate; nothing pinned that the guard CALLS it.**
+
+```
+claim  the guard can carry R784's own defect with the predicate intact, and nothing says so
+cmd    replace `if _is_the_sanctioned_empty_carry(CARRIED, cells, EXPECTED)` with
+       `if not cells and nothing_carried()`; leave the predicate untouched;
+       python -m pytest -q tests/test_report_carried.py -p no:randomly
+out    before this repair:  132 passed
+       after:               1 failed, 132 passed
+                            FAILED test_R796_the_GUARD_actually_CALLS_the_exemption_predicate
+rule   one production call site, four assertion sites, nothing between them
+judge  **the cases' own domain excluded the thing they protect** -- which is the species
+       this milestone is remembered for, occurring inside the repair of a finding about
+       that species. The new case is R784's own scenario reaching the GUARD: an
+       unreadable table beside the sanctioned sentence with a finding outstanding, where
+       the three-clause predicate refuses the exemption and the two-clause form grants it.
+       R795's own section cannot serve, because its row PARSES and both forms treat it
+       alike; a case both forms agree on cannot pin which is wired in.
+```
+
+**And the case's first version failed on its own needle.** It looked for `the table format
+changed` where the message says `The`. The guard had behaved exactly as designed; the
+vacuity check was wrong — in the safe direction, which is the only reason it cost a minute
+rather than a round. The needle is now `assert cells`'s own opening words.
+
+**R797 — the pointer described its referent, and the description was false.** Both
+sentences R794 left behind said `docs/closure/F6a.md` holds the measurement "with its
+date"; `grep -nE "2026|October|date"` over that section is empty, and its `cmd` field cites
+a verdict rather than giving a runnable line. **A bare pointer is fine; a pointer that
+inventories what is at the other end is a claim about a file the pointing file cannot
+check.** The inventory clause is deleted from both.
+
+```
+claim  the whole suite at the commit repairing R796 and R797
+cmd    python -m pytest -q
+out    3346 passed, 2 warnings in 680.90s
+rule   `3345` one commit earlier; `+1` is R796's case. R797 deletes prose and adds no
+       test, so the arithmetic is exactly `+1`
+```
+
+**This is the fourth iteration of one sentence in those two files** — R787 said the false
+sentence must go, R794 deleted the figures and added a false clause on the way out, R797
+deletes the clause. Each was a claim about where a measurement lives and each was refuted
+by one command. The direction was right every time; the sentence written around the fix
+inherited none of the discipline applied to the fix, which is CP2's own observation.
+
 **Ledgered, not fixed** (none is (a)–(d), and FG6 stops work after this):
 
 | item | what it is |

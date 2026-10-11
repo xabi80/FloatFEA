@@ -840,6 +840,60 @@ def test_R784_the_SANCTIONED_SENTENCE_does_not_exempt_a_BROKEN_table() -> None:
     assert _is_the_sanctioned_empty_carry(broken, cells, [])
 
 
+def test_R796_the_GUARD_actually_CALLS_the_exemption_predicate(monkeypatch, capsys) -> None:
+    """R796. Four cases pinned the predicate; nothing pinned that the guard USES it.
+
+    Replacing the call inside `test_a_report_does_not_say_CLOSED` with the two-clause
+    form R784 was raised about -- `if not cells and nothing_carried()` -- left this file
+    at `132 passed` with `_is_the_sanctioned_empty_carry` completely intact. One
+    production call site, four assertion sites, and nothing between them: **the cases'
+    own domain excluded the thing they protect**, which is the species this milestone is
+    remembered for, in the repair of a finding about that species.
+
+    The case is R784's own scenario reaching the GUARD rather than the predicate: an
+    unreadable table beside the sanctioned sentence, with a finding outstanding. The
+    three-clause predicate refuses the exemption there, so the guard falls through to
+    `assert cells` and fails on it; the two-clause form exempts and the guard returns
+    green on a section it cannot read.
+
+    **R795's `contradictory` section cannot serve for this** and that is worth recording,
+    because it was the obvious choice: its row PARSES, so `cells` is non-empty and `not
+    cells` is false, which means the two-clause form refuses the exemption there too. A
+    case that both forms treat alike cannot pin which one is wired in. The discriminating
+    input is the one where `cells` is empty and `EXPECTED` is not.
+    """
+    unreadable = "\n".join(
+        [
+            "checked, nothing carried",
+            "",
+            "R9001 closed | answered |",
+            "",
+        ]
+    )
+    # `setitem(globals(), ...)` rather than `setattr(module, ...)`: this file imports no
+    # `sys`, and a case that needs a new import to reach the guard beside it is a case
+    # that has drifted away from it.
+    monkeypatch.setitem(globals(), "CARRIED", unreadable)
+    monkeypatch.setitem(globals(), "EXPECTED", ["R9001"])
+
+    assert not _status_cells(), (
+        "this case depends on the rows being UNREADABLE to `_ROW`; if they parse, both "
+        "forms of the condition refuse the exemption and the case pins nothing"
+    )
+    assert _NOTHING_CARRIED.search(unreadable), "and on the sentence being present"
+
+    with pytest.raises(AssertionError) as caught:
+        test_a_report_does_not_say_CLOSED(capsys)
+    # The needle is `assert cells`'s own opening words. The first version of this line
+    # looked for "the table format changed" and the message says "The" -- so the case
+    # failed on its own needle while the guard behaved exactly as intended, which is a
+    # vacuity check that was wrong in the SAFE direction rather than the dangerous one.
+    assert "no status cell parsed" in str(caught.value), (
+        "the guard refused the exemption but failed somewhere other than `assert cells`: "
+        f"{str(caught.value)[:200]}"
+    )
+
+
 def test_R795_the_FIRST_CLAUSE_refuses_the_exemption_when_a_TABLE_PARSED() -> None:
     """R795. The `if cells` clause had no case, and it fails in the weakening direction.
 

@@ -804,7 +804,12 @@ def test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION(capsys) -> 
     report nothing regenerates -- which is BI3 landing on this comment a third time.
     Under CW0 a claim about this repository is a test, a triple, or deleted; no test
     computes an eigenvalue margin over a section span, so these are deleted.
-    `docs/closure/F6a.md` holds the measurement with its command and its date.
+    `docs/closure/F6a.md` records them.
+
+    **AND THAT POINTER SAYS NOTHING ABOUT WHAT IS AT THE OTHER END (R797).** It used to
+    say "with its command and its date"; that section carries no date, and its `cmd`
+    field cites a verdict rather than giving a runnable line. Describing a referent is a
+    claim about a file this one cannot check.
 
     **AND THE FAILURE BRANCH IS EXERCISED (R786).** Its first version formatted
     `section.d_outer`, and `Section` carries `A`, `I_y`, `I_z`, `J`, `shape` and
