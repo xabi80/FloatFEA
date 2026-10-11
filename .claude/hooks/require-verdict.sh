@@ -114,6 +114,81 @@ if [ ! -f "$report" ]; then
   block "require-verdict: $plans says step $step of $milestone is under execution and $report does not exist. The marker is advanced in the commit that adds the next step's report, never before it."
 fi
 
+# A REPORT WITH NO VERDICT IS REFUSED WHATEVER THE MARKER SAYS (R799).
+#
+# THIS IS THE REGRESSION FH0 INTRODUCED AND IT WAS A STOP. Reading the active step
+# from the marker made the no-verdict refusal depend on the marker having been
+# ADVANCED -- and the marker is advanced by the implementer, in the commit it is
+# meant to guard. Measured, one variable moved, both scripts on the same tree:
+#
+#   docs/reports/F6a/step-2.md planted, marker still says 1
+#     before FH0: BLOCK "Step report docs/reports/F6a/step-2.md has no supervisor
+#                        verdict at docs/reviews/F6a/step-2.md"
+#     after  FH0: ALLOW   <-- a turn could end with an unreviewed report
+#   the SAME report, marker advanced to 2
+#     before: BLOCK      after: BLOCK   (identical message -- the control)
+#   docs/reports/F7/step-1.md instead, marker still F6a step 1
+#     before: BLOCK      after: ALLOW
+#
+# WHAT WAS LOST WAS REDUNDANCY, which is the part worth writing down. All three
+# report guards resolve the active step from this same marker, and nothing anywhere
+# sweeps `docs/reports/` for a missing verdict -- `test_the_plan_names_the_step_under_execution`
+# asserts that ONE marker exists, not that it names the newest report. Before FH0
+# this hook resolved the step INDEPENDENTLY, badly (that was R793), and the
+# independence was the redundancy: when the marker was stale the hook and the guards
+# disagreed, and the disagreement is what caught a stray report. FH0 made the hook
+# agree with the three guards it was the only thing able to contradict.
+#
+# So the marker keeps deciding WHICH VERDICT IS READ, and "a report exists with no
+# verdict" gets a domain that does not come from the thing being guarded: every
+# report, compared against its own sibling. NO `sort`, NO `tail -1` and NO numeric
+# label parse, so this cannot bring EC0 or R793 back -- it is a set difference, and
+# a set difference has no ranking to get wrong.
+# THE DOMAIN EXCLUDES PRE-GATING REPORTS, AND THAT EXCLUSION IS MEASURED (R799).
+#
+# The first version of this swept EVERY report and wedged the clean tree:
+#
+#   BLOCKS: these step reports have no supervisor verdict: docs/reports/F2/step-1.md
+#           docs/reports/F2/step-2.md docs/reports/F2/step-3.md
+#
+# Those three are real orphans -- `docs/reviews/F2/` holds step-4 through step-7 and
+# nothing earlier -- because the review discipline began at F2 step 4. A sweep that
+# refuses them is a guard failing false, and I had "measured" zero orphans before
+# writing it with a command whose pattern could not match (a `\r` escape where a
+# literal backslash was meant), which is why the wedge reached the file at all.
+#
+# So the domain is: within ONE milestone, the lowest step that HAS a verdict is where
+# gating began there. A report below that was never gated and is left alone; a report
+# at or above it must have one. A milestone with NO verdicts at all is gated from its
+# first report, because a new milestone cannot be pre-gating.
+#
+# COMPARISONS ARE WITHIN A SINGLE MILESTONE ONLY, which is what keeps EC0 and R793
+# out: there is no ranking ACROSS milestones here and no label arithmetic -- `F6` and
+# `F6a` are different directories and are never compared with each other.
+orphans=""
+for rep in docs/reports/F*/step-*.md; do
+  [ -f "$rep" ] || continue
+  sib=${rep/docs\/reports/docs/reviews}
+  [ -f "$sib" ] && continue
+  rep_dir=$(dirname "$rep")
+  rev_dir=${rep_dir/docs\/reports/docs/reviews}
+  rep_step=$(basename "$rep" .md); rep_step=${rep_step#step-}
+  gate_from=""
+  for v in "$rev_dir"/step-*.md; do
+    [ -f "$v" ] || continue
+    vs=$(basename "$v" .md); vs=${vs#step-}
+    case "$vs" in (*[!0-9]*|"") continue ;; esac
+    if [ -z "$gate_from" ] || [ "$vs" -lt "$gate_from" ]; then gate_from=$vs; fi
+  done
+  case "$rep_step" in (*[!0-9]*|"") orphans="$orphans $rep"; continue ;; esac
+  if [ -z "$gate_from" ] || [ "$rep_step" -ge "$gate_from" ]; then
+    orphans="$orphans $rep"
+  fi
+done
+if [ -n "$orphans" ]; then
+  block "require-verdict: these step reports have no supervisor verdict:$orphans. Invoke the gating-supervisor subagent on each before ending the turn, and do not write the verdict yourself. This sweeps EVERY report at or after the step its own milestone's gating began at, rather than only the one the step marker names, because the marker is advanced by the implementer in the commit it would otherwise be guarding (R799)."
+fi
+
 review=${report/docs\/reports/docs\/reviews}
 
 # Any earlier step still on HOLD/STOP while a later report exists is a
