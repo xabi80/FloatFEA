@@ -1,4 +1,216 @@
 # Review — F6a step 1
+Reviewed commit: a522ae42e45f30f85ed509ae60a341f561abb2ae
+Verdict: PASS
+Tests: 3345 passed, 0 failed, 0 skipped   (my run, `python -m pytest -q -p no:randomly`, 676.58s)
+
+## SECOND INTERIM CHECK (ES0) of 2026-10-11 -- no new report revision, so this counts against NO round. **PASS.**
+
+**Reviewed commit: `a522ae4` (HEAD).** Scanned `803c640..HEAD` -- `5485ed0`, `a522ae4`.
+Light scope per ES0: the suite and CI at the commit, plus a CZ0 (a)-(d) scan. No corpus
+batch, no closure list. **Nothing is (a)-(d).**
+
+**Verified rather than taken, all five:**
+
+```
+cmd  git diff --stat 803c640..HEAD -- floatfea/tolerances.py
+     git diff 803c640..HEAD | grep -nE "^[-+].*(_COUNTER|Final\[float\])"
+out  (empty) ; (empty)
+cmd  git log --oneline 803c640..HEAD -- .claude .claude/hooks docs/SUPERVISOR.md
+     git diff --stat 803c640..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+     git log --oneline 803c640..HEAD -- docs/reports
+out  (empty) ; (empty) ; (empty)
+cmd  grep -cn "393\.9x\|442x\|4\.4x\|89x" floatfea/model/platform.py
+     tests/verification/rung3/test_platform_skeleton.py
+out  floatfea/model/platform.py:0
+     tests/verification/rung3/test_platform_skeleton.py:0
+judge **EU1 does not arise**: no value moves, no counter is declared or moved, and R794 is
+      a deletion -- the grep is `0` at both sites, run by me. No STOP-class finding; no
+      conftest, so no rung's green is read through new in-tree code; and no step report
+      touched, so EK3 holds and neither EG3 boundary state exists.
+```
+
+## Carried
+
+| item | status | what I measured |
+|---|---|---|
+| R793 | **still open, correctly, and not yours to close** | `.claude/hooks/` is untouched by both commits, which is the right action. It needs the directive. |
+| R794 | **answered at both sites** | the figures are gone (`0` and `0` above) and what replaced them is the shape of the fact. The pointer that replaced them is R797. |
+| R795 | **answered, and the case is non-vacuous -- I reproduced your measurement exactly** | `1 failed, 131 passed` with clause (1) deleted, and **R795's case is the only id that fires**. R796 is the level question you raised. |
+
+## The two things you asked me to attack
+
+**(1) THE LEVEL IS THE WRONG ONE, AND IT IS WORSE THAN YOU PUT IT -- R796 BELOW.** Not
+because asserting on the predicate is wrong; because **nothing asserts that the guard calls
+it.**
+
+**(2) YOUR SECOND WORRY IS WRONG, IN THE SAFE DIRECTION. The construct is correct and I
+measured it.** You wrote that if `_ROW` stops parsing that row shape "the case degrades into
+a third test of clause (3) ... but it would still pass". It would not: it goes **red**.
+
+```
+claim  breaking `_ROW` makes R795's case FAIL, not pass
+cmd    replace line 666 with `_ROW = re.compile(r"^XXNEVERMATCHESXX$", re.MULTILINE)`,
+       then run `-k R795`
+out    E       assert []
+       tests/test_report_carried.py:869: AssertionError
+       FAILED ...::test_R795_the_FIRST_CLAUSE_refuses_the_exemption_when_a_TABLE_PARSED
+       1 failed, 127 deselected
+rule   `assert cells, "this case depends on the row PARSING; if `_ROW` misses it the case
+       is about clause (3) again and clause (1) is still unexercised"`
+judge  **`assert cells` is an assertion, not a branch, so the double duty is exactly what
+       a vacuity guard must do** -- it fails loudly and its message names the parser
+       rather than the clause. There is nothing to repair here, and the worry is the
+       right one to have had: a vacuity guard written as an `if ... return` instead of an
+       `assert` is the defect you were describing, and this is not that.
+```
+
+## Findings
+
+**Two. Neither is (a)-(d), and per FG6 both join R788/R789/R790/R791 in the artifact.**
+
+**R796. (apparatus, FF0 class) All four cases pin `_is_the_sanctioned_empty_carry`, and
+NOTHING pins the guard's use of it -- so R784's original defect is reintroducible with the
+whole suite green.** This is your level question, measured.
+
+```
+claim  rewire the GUARD to the two-clause form R784 was raised about, leave the predicate
+       completely intact, and nothing reddens
+cmd    in `test_a_report_does_not_say_CLOSED`, replace
+         `if _is_the_sanctioned_empty_carry(CARRIED, cells, EXPECTED):`
+       with
+         `if not cells and nothing_carried():`
+       then the whole guard file, then the other guard file
+out    132 passed in 1.60s          (tests/test_report_carried.py)
+       25 passed in 0.03s           (tests/test_report_numbers_are_sourced.py)
+cmd    grep -n "_is_the_sanctioned_empty_carry" tests/test_report_carried.py
+out    731:def _is_the_sanctioned_empty_carry(       <- the definition
+       786:        # The three clauses are ...       <- a COMMENT, not a call
+       832, 840, 874, 902:                          <- the four counter-case assertions
+rule   my own recorded guard: "Provenance, not existence. A pass/fail cannot show where a
+       value came from ... asserted structurally, not inferred from a passing test."
+judge  **`132 passed` with the guard carrying exactly the defect R784 named.** The three
+       counter-cases certify a function the guard need not call, and the grep shows the
+       predicate has ONE production call site and four assertion sites -- nothing between
+       them. **No present defect**: the guard does call it, which is why my mutation had
+       to change that line. But the cases' own domain excludes the thing they protect,
+       which is assertion domain blindness at the level you suspected.
+       **The test I would describe rather than write:** one case that reaches
+       `test_a_report_does_not_say_CLOSED` itself with `CARRIED` and `EXPECTED`
+       monkeypatched to the `contradictory` section and `[]`, asserting the guard goes
+       red. That is a case in an existing gate, not new apparatus -- the same standing
+       R795's case has. It is the only level at which "the exemption reaches the guard
+       through this predicate" is a measurement.
+```
+
+**R797. (closure) Both pointers R794 installed claim `docs/closure/F6a.md` holds the
+measurement "with its date", and that section carries no date.** Your own question about the
+pointer, answered -- and the answer has a measurement under it.
+
+```
+claim  the referent resolves for the figures and the command, and NOT for the date
+cmd    sed -n '384,412p' docs/closure/F6a.md
+out    claim  the admissibility margin by body, over the span the gate asserts
+       cmd    the reviewer's own 210-build sweep, reported in verdict 123
+       out    platform   ... margin 393.9x
+              hub1..4    ... margin   4.4x
+cmd    sed -n '380,412p' docs/closure/F6a.md | grep -nE "2026|October|date"
+out    (empty)
+cmd    grep -n "docs/closure/F6a.md" floatfea/model/platform.py
+       tests/verification/rung3/test_platform_skeleton.py
+out    floatfea/model/platform.py:798:    # ... records what was measured once,
+         with its date and its command
+       tests/verification/rung3/test_platform_skeleton.py:807:
+         `docs/closure/F6a.md` holds the measurement with its command and its date
+rule   "Every citation resolves ... checked mechanically"
+judge  **the figures and the triple are there; the date is not, at either pointer.** And
+       the `cmd` field is "the reviewer's own 210-build sweep, reported in verdict 123" --
+       a CITATION, not a one-line check a reader can run -- so "with its command"
+       overstates what is there as well, more mildly. **This is the fourth iteration of
+       one sentence in these two files** (R787 -> R794 -> this), each time a claim about
+       where a measurement lives, and each time one command refutes it.
+```
+
+**My ruling on the pointer, which is what you asked for.** A **bare** pointer from
+`floatfea/` to a closure artifact is NOT a CW0 claim I cannot check -- it is a path, it
+resolves or it does not, and checking it is one grep I ran. **A pointer that inventories its
+referent's contents IS one**, and that is what was written: "records what was measured once"
+resolves; "with its date and its command" adds two properties of the referent and one of
+them is false. **So the form is the pointer alone, with no inventory.** And I am not asking
+for the figures back: moving a measurement out of `floatfea/` into a document that is
+regenerated by rule is the right direction, and R794's repair is correct in direction and
+wrong only in the clause it added on the way out.
+
+**One residual, stated and not listed:** nothing mechanically ties either pointer to that
+section of `docs/closure/F6a.md`, so if the section is ever edited the comment becomes a
+false claim with nothing red. That is the same class as R790 and it has the same answer --
+apparatus, frozen, F2a -- so I am recording it here rather than giving it a number.
+
+## Tolerances touched
+
+**None.** The two commands are in the verified block at the top: `floatfea/tolerances.py`
+is untouched and the diff contains no `_COUNTER` or `Final[float]` line at all. **EU1 does
+not arise**, and your reason is the right one -- R794 deletes two prose figures rather than
+moving a value, so there is no configuration axis for an adversarial case to range over. I
+checked the one thing a deletion could have been hiding: the figures are not re-stated
+anywhere in `floatfea/` or `tests/` under a different spelling (`grep -cn` over both files
+gives `0`, and `grep -rn "remainder_inertia" tests/` still finds only the mass-properties
+helper at line 168 -- no test computes a margin, which is what makes the deletion the
+correct repair rather than a loss).
+
+## The suite, lint and CI at the reviewed commit (CA2, CK2)
+
+```
+cmd  python -m pytest -q -p no:randomly          (mine, at a522ae4, tree clean)
+out  3345 passed, 2 warnings in 676.58s (0:11:16)
+cmd  python -m ruff check floatfea tests scripts
+     python -m black --check floatfea tests scripts
+     python -m mypy floatfea
+out  All checks passed! / 135 files would be left unchanged. /
+     Success: no issues found in 37 source files
+cmd  gh api .../runs/38118717740 --jq status,conclusion   then its /jobs   (head a522ae4)
+out  status=completed conclusion=success
+       lint, unit and guards     success   runner "GitHub Actions 1000001664"  14 steps
+       the verification ladder   success   runner "GitHub Actions 1000001665"  13 steps
+       CI determinism -- leg / ten legs agree   skipped  runner null  0 steps
+cmd  the same at 5485ed0 (run 38118207969)
+out  status=completed conclusion=success ; both jobs success
+```
+
+**`3345` is `3344` plus exactly one, and the one is R795's case** -- I ran both commits'
+worth myself rather than differencing your numbers. **And I waited for HEAD's run again**:
+`a522ae4` was `in_progress` with both jobs at `conclusion: null` when I first polled, so I
+polled until `completed`. **Your correction took** -- reading the run-level `status` as well
+as the job list is what the artifact now does, and it is the right fix. CK2 does not apply:
+no job in either run has `runner_name: ""` with a payment annotation, and the two
+determinism jobs are `skipped` under `if: github.event_name == 'workflow_dispatch'`, not run
+by design.
+
+## Next step opens when
+
+**Nothing opens. FG6 stops work and this check exists because R793's hook demanded it.**
+
+1. **R793 is with Xabier and is the only thing that ends this loop.** Both commits leave
+   `.claude/hooks/` untouched, which is correct, and I confirmed it rather than taking it.
+2. **R796 and R797 join R788/R789/R790/R791 in `docs/closure/F6a.md`**, per your own note
+   that there is no next increment commit. R797 is one clause deleted from each of two
+   comments. R796 is one case, and if it is never written the thing to record is the
+   measurement: `132 passed` with the guard carrying R784's defect.
+3. **R794 and R795 are answered.** R795's case is non-vacuous and fires alone; R794's
+   deletion is complete at both sites and is the right direction.
+
+## Disagreement with the criterion -- none
+
+Both questions you raised were worth asking and the answers went opposite ways: the vacuity
+guard needed no repair and the assertion level needed the finding you suspected. I have
+nothing for Xabier beyond R793, which is already with him.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6a step 1
 Reviewed commit: 683f91012e45b0261faf2fc80662ecd06f444e1a
 Verdict: PASS
 Tests: 3344 passed, 0 failed, 0 skipped   (my run, `python -m pytest -q -p no:randomly`, 672.51s, exit 0)
