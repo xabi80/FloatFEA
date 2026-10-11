@@ -6,6 +6,7 @@ docs/reviews/ by a PreToolUse hook; this is the one sanctioned path in.
 
 Usage:
     python scripts/write_verdict.py --milestone 2 --step 5 < review.md
+    python scripts/write_verdict.py --milestone 6a --step 1 < review.md
 
 The review body is read from stdin. The script stamps the reviewed commit and
 refuses FOUR things -- the count, not a summary of it:
@@ -52,13 +53,35 @@ REQUIRED = ("## Carried", "## Findings", "## Tolerances touched", "## Next step 
 VERDICTS = ("PASS", "HOLD", "STOP")
 
 
+def _milestone(value: str) -> str:
+    """A milestone LABEL, not a number (R785).
+
+    `type=int` made `F2a` and `F6a` inexpressible: the reviewer could not write a
+    verdict for either through the one sanctioned path in, and docs/reviews/F2a and
+    docs/reviews/F6a both exist. The suffixed form is how this repository has named an
+    increment since F2a, so it is the argument's domain and `int` was never it.
+
+    A label and not a free string: the value becomes a path segment, so it is the
+    shape the directories already use and nothing else. `F6a` is accepted too -- the
+    reviewer writes the milestone as it is spelt everywhere else, and refusing the
+    `F` would be the same defect in the other direction.
+    """
+    cleaned = value[1:] if value[:1] in "Ff" else value
+    if not re.fullmatch(r"\d+[a-z]?", cleaned):
+        raise argparse.ArgumentTypeError(
+            f"milestone {value!r} is not a label of the form 2, 2a, 6, 6a, F6a -- "
+            "the value becomes a path segment"
+        )
+    return cleaned
+
+
 def sha() -> str:
     return subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--milestone", type=int, required=True)
+    ap.add_argument("--milestone", type=_milestone, required=True)
     ap.add_argument("--step", type=int, required=True)
     args = ap.parse_args()
 

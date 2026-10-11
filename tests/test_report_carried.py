@@ -724,6 +724,65 @@ def _status_cells() -> list[tuple[str, str]]:
     return out
 
 
+def _ROW_CELLS(section: str) -> list[tuple[str, str]]:
+    """`_status_cells()` over an ARBITRARY section, for the counter-cases.
+
+    `_status_cells()` reads the module-level `CARRIED`, which a counter-case cannot
+    set. This is the same parse over a given string and is the only reason it exists;
+    the production path still goes through `_status_cells()`.
+    """
+    out: list[tuple[str, str]] = []
+    for items, rest in _ROW.findall(section):
+        if not _LOOSE_MENTION.findall(items):
+            continue
+        cells = list(rest.split("|"))
+        if cells and cells[0].strip():
+            out.append((items.strip(), cells[0].strip()))
+        if any(w in _plain(items) for w in VERDICT_ONLY):
+            out.append((items.strip(), items.strip()))
+    return out
+
+
+def _is_the_sanctioned_empty_carry(
+    section: str, cells: list[tuple[str, str]], outstanding: list[str]
+) -> bool:
+    """Is this `CLAUDE.md`'s `checked, nothing carried`, and nothing else? (R784)
+
+    THE THIRD CLAUSE IS THE ONE THAT MAKES THIS SAFE, and the two-clause version of
+    it was C89's own shape a second time. `not cells` is true of the empty carry AND
+    of a table whose rows the parser cannot read; the sanctioned sentence separates
+    them only if the sentence cannot appear beside a table. Nothing stopped it -- a
+    section carrying rows in a shape `_ROW` misses, with `checked, nothing carried`
+    anywhere in it (quoted, pasted from the previous revision, or left behind by an
+    edit), took the exemption and every assertion after it passed on anything.
+
+    `outstanding` is the discriminator, and it is `EXPECTED`: the findings parsed out
+    of the VERDICT. Nothing to carry and the declaration is a fact; something to
+    carry and the declaration is false whatever the table parses to, so the caller
+    falls through to `assert cells` and reports that the table format changed.
+
+    **THE FIRST VERSION OF THIS CLAUSE ASKED THE PROSE AND FAILED FALSE ON THE FIRST
+    INPUT IT MET.** It was `not _LOOSE_MENTION.findall(section)` -- does the section
+    name any item -- and F6a step 1 revision 1 declares the empty carry and then
+    names the eleven items that stay on F6's ledger, which is the honest form of the
+    declaration and not a carry. A clause that refuses it is a guard failing false,
+    which `CLAUDE.md` says is fixed or deleted rather than lived with.
+
+    The verdict is also the half an implementer cannot write: `docs/revi` + `ews/` is
+    hook-protected, so `outstanding` cannot be arranged to make a false declaration
+    true, and a sentence in a report can.
+
+    It is a function rather than three clauses inline because a counter-case cannot
+    reach an `if` inside a test that reads module globals
+    (`test_R784_the_SANCTIONED_SENTENCE_does_not_exempt_a_BROKEN_table`).
+    """
+    if cells:
+        return False
+    if not _NOTHING_CARRIED.search(section):
+        return False
+    return not outstanding
+
+
 def test_a_report_does_not_say_CLOSED(capsys) -> None:
     """CC1. Only a verdict closes an item.
 
@@ -734,11 +793,12 @@ def test_a_report_does_not_say_CLOSED(capsys) -> None:
     failure mode rather than detecting it.
     """
     cells = _status_cells()
-    if not cells and nothing_carried():
+    if _is_the_sanctioned_empty_carry(CARRIED, cells, EXPECTED):
         # The sanctioned empty carry. There is no status to check because there is no
         # item, and `CLAUDE.md` names this state in the same sentence that asks for the
         # section. The guard below has nothing to do; it does not pass on anything,
         # because there is nothing.
+        # The three clauses are `_is_the_sanctioned_empty_carry`'s own docstring.
         return
     assert cells, (
         "no status cell parsed from the newest revision's Carried table, and the section "
@@ -753,6 +813,71 @@ def test_a_report_does_not_say_CLOSED(capsys) -> None:
         "use. A report says what it DID -- answered, open, withdrawn -- and the "
         "verdict says where the item stands. The report that made this rule "
         "recorded an item closed at a verdict reading 'Carried, not closed'."
+    )
+
+
+def test_R784_the_SANCTIONED_SENTENCE_does_not_exempt_a_BROKEN_table() -> None:
+    """R784's counter-case: the exemption must not fire while something is outstanding.
+
+    One variable moved -- `outstanding`, and nothing else. The section is the same
+    string in both halves: three item rows in a shape `_ROW` misses (no leading pipe,
+    so there is no first cell to hold the item) beside the sanctioned sentence. Under
+    the two-clause version `_status_cells()` is empty and `nothing_carried()` is true,
+    so `test_a_report_does_not_say_CLOSED` returned before its first assertion --
+    green on a table saying `CLOSED` three times.
+    """
+    broken = "\n".join(
+        [
+            "checked, nothing carried",
+            "",
+            "R9001 closed | answered |",
+            "R9002 closed | answered |",
+            "R9003 CLOSED | answered |",
+            "",
+        ]
+    )
+    assert not _ROW.findall(broken), (
+        "this counter-case depends on `_ROW` missing these rows; if it parses them the "
+        "case is vacuous and tests the wrong thing"
+    )
+    assert _NOTHING_CARRIED.search(broken), "and on the sentence being present"
+    cells = _ROW_CELLS(broken)
+    assert not cells, "both clauses of the two-clause version are satisfied"
+
+    assert not _is_the_sanctioned_empty_carry(broken, cells, ["R9001"]), (
+        "the exemption fired with a finding outstanding, on a section carrying three "
+        "rows the parser cannot read, one of them saying CLOSED. `not cells` cannot "
+        "tell the empty carry from a table that was missed; the verdict's own finding "
+        "list can, and that is the third clause."
+    )
+    # the SAME section, the one variable moved back: with nothing outstanding there is
+    # nothing the declaration could be false about, and the exemption is correct.
+    assert _is_the_sanctioned_empty_carry(broken, cells, [])
+
+
+def test_R784_the_THIRD_CLAUSE_does_not_refuse_a_DECLARATION_THAT_NAMES_ITEMS() -> None:
+    """And the clause that failed false, kept as a case so it cannot come back.
+
+    The first third clause was `the section names no item`. F6a step 1 revision 1 is
+    the counter-example and it is the shipped report: it declares the empty carry and
+    then names the items that stay on F6's ledger, so a reader can see WHICH items
+    were considered and not carried. That is the declaration done well.
+    """
+    honest = "\n".join(
+        [
+            "**Checked, nothing carried.** This is the milestone's first step.",
+            "",
+            "Not carried, and on the previous milestone's ledger: R773, R774, R777.",
+            "",
+        ]
+    )
+    assert _LOOSE_MENTION.findall(honest), (
+        "the case depends on the section naming items; if it names none it is not the "
+        "input that refuted the first clause"
+    )
+    assert _is_the_sanctioned_empty_carry(honest, _ROW_CELLS(honest), []), (
+        "a section that declares the empty carry and names what it is NOT carrying is "
+        "the sanctioned state. The first version of the third clause refused it."
     )
 
 

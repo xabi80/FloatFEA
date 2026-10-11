@@ -774,12 +774,22 @@ def build_superstructure(
     # stand-in. The shipped path passes nothing and is byte-identical to before: there is no
     # default, no environment variable and no file it can be set from.
     #
-    # **IT DOES NOT MOVE THE MASS, AND THAT IS NOT THIS PARAMETER BEING CAREFUL -- IT IS
-    # `_build_body`'s arithmetic.** `member_mass = fraction * deck_mass` carries no section
-    # term, and `density = line_mass / section.A` then back-computes `rho` so that
-    # `rho * A` is the deck's own `mu` whatever `A` is. So a build made this way carries the
-    # deck's mass on a different geometry, which is precisely the inconsistency F6a's FG4
-    # reports and deliberately does not resolve.
+    # **IT DOES NOT MOVE THE MASS, AND THE REASON IS MEASURED RATHER THAN ARGUED (C99).**
+    # `member_mass = fraction * deck_mass` carries no section term and
+    # `density = line_mass / section.A` back-computes `rho` so that `rho * A` is the deck's
+    # own `mu` whatever `A` is -- so for a GIVEN `fraction` the section cannot move the
+    # mass. That is the easy half and it was published here as the whole of it, which was
+    # wrong: `fraction` is not given, it is chosen by `admissible()` descending
+    # `MASS_FRACTION_LADDER`, and `admissible()` reads the remainder inertia, which
+    # `assemble_mass_dense`'s rotary term `rho_eq * I = mu * r^2` makes a function of `r`.
+    # **The section reaches the mass decision.** It does not change it, by a margin
+    # asserted in `tests/verification/rung3/test_platform_skeleton.py`, by
+    # `test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION` -- which is where
+    # that claim lives now, because a comment is not the place for it (CW0).
+    #
+    # A build made this way therefore carries the deck's mass on a different geometry,
+    # which is precisely the inconsistency F6a's FG4 reports and deliberately does not
+    # resolve.
     if measurement_sections is not None:
         for body_name in measurement_sections:
             if body_name not in bodies:

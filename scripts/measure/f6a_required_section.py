@@ -42,6 +42,7 @@ sys.path.insert(0, str(ROOT))
 from floatfea.basis import E_STEEL, FY_S355, RHO_STEEL  # noqa: E402
 from floatfea.checks.api_wsd import (  # noqa: E402
     CM_JOINT_TRANSLATION,
+    allowable_bending,
     check_member,
 )
 from floatfea.model.platform import build_superstructure  # noqa: E402
@@ -230,6 +231,53 @@ def search_min_area(rows, lengths) -> tuple[Candidate | None, Outcome | None, in
     return best[0], best[1], tried
 
 
+def min_area_at_diameter(d_outer: float, rows, lengths) -> Candidate | None:
+    """The least-area passing tube at ONE diameter, for the boundary sweep (C98).
+
+    `search_min_area` prunes on area across the whole grid, so it cannot answer "what
+    does each diameter cost" -- a diameter whose best candidate is worse than the
+    running best is skipped entirely. This asks each diameter on its own.
+    """
+    best: Candidate | None = None
+    for wall in T_STEPS:
+        if wall >= 0.5 * d_outer:
+            break
+        cand = Candidate(d_outer, wall)
+        if best is not None and cand.area >= best.area:
+            continue
+        ok, _ = _passes(cand, rows, lengths)
+        if ok:
+            best = cand
+    return best
+
+
+def boundary_sweep(rows, lengths, mu_group: float) -> list[dict[str, object]]:
+    """C98: minimum passing area at each diameter, with the mass ratio at each.
+
+    THE DIRECTION THAT WEAKENS THE CONCLUSION IS THE ONE THIS IS FOR (EH4). Raising the
+    bound makes `A` smaller and `rho A / mu` smaller, so answer (iii)'s mass consistency
+    only gets safer; LOWERING it raises both, and somewhere it crosses 1.0. Where it
+    crosses is the sentence the deliverable was missing, and it cannot be read off the
+    grid the search chose.
+    """
+    out: list[dict[str, object]] = []
+    for d in D_STEPS:
+        cand = min_area_at_diameter(d, rows, lengths)
+        if cand is None:
+            out.append({"D_m": d, "passes": False})
+            continue
+        out.append(
+            {
+                "D_m": d,
+                "passes": True,
+                "t_m": cand.wall,
+                "A_m2": cand.area,
+                "rho_A_over_mu": RHO_STEEL * cand.area / mu_group,
+            }
+        )
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--forces", type=Path, default=ROOT / "docs" / "F4_member_forces.csv")
@@ -325,6 +373,191 @@ def main(argv: list[str] | None = None) -> int:
                 f"rho*A/mu={line_mass / mu[group]:6.3f}"
             )
 
+    # ------------------------------------------------------------------ R783
+    # THE CONTINUUM REQUIREMENT, because the grid's six-figure agreement is luck.
+    # Inverting the decision rule instead of sampling it gives the exact requirement in
+    # each constrained search, and the two differ by ~8e-05 -- while the two GRID answers
+    # agree to 2.6e-06, which is 4e-05 of one grid step. The mechanism (bending binds, so
+    # `W` binds) is real; the precision was not, and publishing six figures invited a
+    # reader to transfer them.
+    plat_rows = _governing(rows_all, "platform:")
+
+    def _max_u(d: float, t: float) -> tuple[float, int]:
+        o = evaluate(Candidate(d, t), plat_rows, lengths)
+        return o.max_u, o.refused
+
+    def _bisect(lo: float, hi: float, f) -> float:
+        for _ in range(60):
+            mid = 0.5 * (lo + hi)
+            u, refused = f(mid)
+            if refused or u > 1.0:
+                lo = mid
+            else:
+                hi = mid
+        return hi
+
+    exact_t = _bisect(0.005, 0.600, lambda x: _max_u(2.5, x))
+    exact_d = _bisect(2.0, 6.0, lambda x: _max_u(x, 0.180))
+    c_i, c_ii = Candidate(2.5, exact_t), Candidate(exact_d, 0.180)
+    worst_row = max(plat_rows, key=lambda r: math.hypot(float(r["My"]), float(r["Mz"])))
+    m_res = math.hypot(float(worst_row["My"]), float(worst_row["Mz"]))
+    fb_compact, fb_branch = allowable_bending(2.5, exact_t, FY_S355, E_STEEL)
+    got = check_member(
+        axial_n=float(worst_row["N"]),
+        shear_y_n=float(worst_row["Vy"]),
+        shear_z_n=float(worst_row["Vz"]),
+        torsion_nm=float(worst_row["T"]),
+        moment_y_nm=float(worst_row["My"]),
+        moment_z_nm=float(worst_row["Mz"]),
+        area_m2=c_i.area,
+        section_modulus_m3=c_i.section_modulus,
+        torsional_modulus_m3=c_i.torsional_modulus,
+        d_outer_m=c_i.d_outer,
+        wall_m=c_i.wall,
+        k_l_over_r=K_LOCKED * lengths[worst_row["member"]] / c_i.radius_of_gyration,
+        fy=FY_S355,
+        e=E_STEEL,
+        cm=CM_JOINT_TRANSLATION,
+    )
+    continuum = {
+        "exact_t_at_D_2.5_m": exact_t,
+        "exact_W_at_D_2.5": c_i.section_modulus,
+        "exact_D_at_t_180mm": exact_d,
+        "exact_W_at_t_180mm": c_ii.section_modulus,
+        "exact_spread_relative": abs(c_i.section_modulus - c_ii.section_modulus)
+        / c_i.section_modulus,
+        "published_spread_relative": abs(
+            Candidate(2.5, 0.410).section_modulus - Candidate(3.2, 0.180).section_modulus
+        )
+        / Candidate(2.5, 0.410).section_modulus,
+        "grid_step_W_at_D_2.5": Candidate(2.5, 0.410).section_modulus
+        - Candidate(2.5, 0.405).section_modulus,
+        "W_req_continuum": m_res / fb_compact,
+        "M_res_nm": m_res,
+        "F_b_compact_pa": fb_compact,
+        "F_b_branch": fb_branch,
+        "bending_fraction_of_U": got.u_bending / got.utilisation,
+        "governing_station": f"{worst_row['member']} {worst_row['station']}",
+        "governing_period_s": worst_row["period_full_s"],
+    }
+
+    # ------------------------------------------------------------------ FG4 / (d)
+    # THE MODEL-IMPLIED ROOT MOMENT, REMAINDER HELD. The arm-weight closed form alone is a
+    # LOWER bound on what the required section implies, because the body's remainder mass
+    # sits at its own node and does not move with the section. Hold it at its published
+    # value and scale only the arm:
+    #     M(mu) = (g L^2 / 2) mu + [ M_published - (g L^2 / 2) mu_published ]
+    #
+    # **A TWO-POINT FIT ALONG THE `measurement_fraction` LINE IS THE WRONG INSTRUMENT FOR
+    # THIS AND THE SIGN SAYS SO:** raising `f` takes mass OFF the remainder node and spreads
+    # it along the arm, and the remainder's lever is larger per kilogram, so that slope comes
+    # out NEGATIVE (-1.226e+04) and extrapolating it says a heavier arm lowers the root
+    # moment. The two loads are independent; the f-line couples them.
+    static_rows = [
+        r
+        for r in rows_all
+        if r["basis"] == "static" and r["station"] == "ROOT" and r["member"].startswith("platform:")
+    ]
+    m_published = max(abs(float(r["My"])) for r in static_rows)
+    span_plat = max(lengths[r["member"]] for r in plat_rows)
+    arm_coeff = GRAVITY * span_plat * span_plat / 2.0
+    remainder_share = m_published - arm_coeff * mu["platform"]
+    for a in answers:
+        if not a.get("found") or a["group"] != "platform":
+            continue
+        arm = arm_coeff * a["steel_line_mass_kg_per_m"]
+        a["model_implied_root_moment_nm"] = arm + remainder_share
+        a["model_implied_over_published"] = (arm + remainder_share) / m_published
+    continuum["arm_coeff_nm_per_kg_per_m"] = arm_coeff
+    continuum["remainder_share_nm"] = remainder_share
+    continuum["remainder_fraction_of_published"] = remainder_share / m_published
+    continuum["published_static_root_nm"] = m_published
+    # C98: the boundary in both directions, per group.
+    sweeps: dict[str, list[dict[str, object]]] = {}
+    for group, prefix in GROUPS:
+        sweeps[group] = boundary_sweep(_governing(rows_all, prefix), lengths, mu[group])
+    continuum["boundary_sweep"] = sweeps
+    # and the crossing: the largest diameter at which the minimum-area answer would NOT
+    # be mass-consistent, so the caveat can say where the verdict turns over.
+    crossings: dict[str, object] = {}
+    for group, rowsd in sweeps.items():
+        passing = [r for r in rowsd if r["passes"]]
+        over = [r for r in passing if float(r["rho_A_over_mu"]) > 1.0]
+        crossings[group] = {
+            "largest_D_with_ratio_above_1": max((float(r["D_m"]) for r in over), default=None),
+            "smallest_D_with_ratio_below_1": min(
+                (float(r["D_m"]) for r in passing if float(r["rho_A_over_mu"]) <= 1.0),
+                default=None,
+            ),
+            "smallest_passing_D_m": min((float(r["D_m"]) for r in passing), default=None),
+        }
+    continuum["boundary_crossing"] = crossings
+    # IS `A` MONOTONE IN `D` ON THE GRID? NO, AND THE FIRST SENTENCE WRITTEN ABOUT THIS
+    # SWEEP SAID IT WAS. The 5 mm wall step quantises the answer, so a 0.1 m step in `D`
+    # can land on a thicker admissible wall and cost more area than the diameter below it.
+    # The trend falls; the sequence does not. Measured rather than asserted, both groups,
+    # and the running minimum -- which is what a BOUND actually selects -- is reported
+    # beside it because that one does fall by construction.
+    shape: dict[str, object] = {}
+    for group, rowsd in sweeps.items():
+        ps = [r for r in rowsd if r["passes"]]
+        areas = [float(r["A_m2"]) for r in ps]
+        rises = [
+            areas[i + 1] / areas[i] - 1.0 for i in range(len(areas) - 1) if areas[i + 1] > areas[i]
+        ]
+        shape[group] = {
+            "steps": len(ps) - 1,
+            "rises": len(rises),
+            "largest_rise_relative": max(rises, default=0.0),
+            "A_at_smallest_passing_D": float(ps[0]["A_m2"]) if ps else None,
+            "A_at_largest_D": float(ps[-1]["A_m2"]) if ps else None,
+            "fall_over_the_range_relative": (
+                1.0 - float(ps[-1]["A_m2"]) / float(ps[0]["A_m2"]) if ps else None
+            ),
+        }
+    continuum["boundary_shape"] = shape
+    continuum["grid_D_max_m"] = max(D_STEPS)
+    continuum["grid_D_min_m"] = min(D_STEPS)
+    continuum["grid_t_step_m"] = 0.005
+    continuum["grid_D_step_m"] = 0.1
+
+    print()
+    print("R783 -- the CONTINUUM requirement, by inverting maxU = 1:")
+    print(f"  D=2.5 fixed : t* = {exact_t*1000:.4f} mm -> W* = {c_i.section_modulus:.8f}")
+    print(f"  t=180 fixed : D* = {exact_d:.6f} m  -> W* = {c_ii.section_modulus:.8f}")
+    print(
+        f"  the two EXACT requirements differ by "
+        f"{continuum['exact_spread_relative']:.6e}; the two GRID answers by "
+        f"{continuum['published_spread_relative']:.6e}"
+    )
+    print(
+        f"  W_req = M_res / F_b = {continuum['W_req_continuum']:.6f} m^3  "
+        f"(bending is {continuum['bending_fraction_of_U']:.5%} of U)"
+    )
+    print()
+    print("C98 -- the boundary in BOTH directions: minimum passing A at each D")
+    for group, rowsd in sweeps.items():
+        shown = [r for r in rowsd if r["passes"] and round(float(r["D_m"]) * 10) % 10 == 0]
+        cells = " | ".join(
+            f"{float(r['D_m']):.1f} A={float(r['A_m2']):.4f} r={float(r['rho_A_over_mu']):.3f}"
+            for r in shown
+        )
+        print(f"  {group:9s} {cells}")
+        c = crossings[group]
+        print(
+            f"            ratio > 1 up to D = {c['largest_D_with_ratio_above_1']}, "
+            f"<= 1 from D = {c['smallest_D_with_ratio_below_1']}"
+        )
+
+    print()
+    print("FG4 -- the MODEL-implied root moment, remainder held:")
+    for a in answers:
+        if a.get("found") and a["group"] == "platform":
+            print(
+                f"  {a['search']:28s} {a['model_implied_root_moment_nm']:.6e} N.m  "
+                f"= {a['model_implied_over_published']:.3f}x the published total"
+            )
+
     args.out.parent.mkdir(parents=True, exist_ok=True)
     cols = sorted({k for a in answers for k in a})
     with args.out.open("w", encoding="utf-8", newline="") as fh:
@@ -335,7 +568,10 @@ def main(argv: list[str] | None = None) -> int:
         w.writeheader()
         for a in answers:
             w.writerow(a)
-    args.json.write_text(json.dumps(answers, indent=2), encoding="utf-8")
+    args.json.write_text(
+        json.dumps({"answers": answers, "continuum": continuum}, indent=2),
+        encoding="utf-8",
+    )
     print(f"\n  wrote {args.out.relative_to(ROOT).as_posix()} ({len(answers)} rows)")
     print(f"  wrote {args.json.relative_to(ROOT).as_posix()}")
     return 0

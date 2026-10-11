@@ -1,0 +1,94 @@
+{
+  "static": {
+    "i_min_wall_at_D_2.5": {
+      "stations": 48,
+      "worst_relative_change": 1.206246184067537e-15,
+      "worst_relative_at": "hub4/hub4:buoy11_arm MID Vz: -5.109375e+06 -> -5.109375e+06",
+      "worst_absolute_change": 1.341104507446289e-07,
+      "worst_absolute_at": "hub3/hub3:buoy9_arm ROOT My",
+      "max_u_from_rebuilt_static": {
+        "platform": 0.5893010571557019,
+        "hubs": 0.8269487768726274
+      }
+    },
+    "ii_min_diameter_at_t_180mm": {
+      "stations": 48,
+      "worst_relative_change": 1.7423555992086642e-15,
+      "worst_relative_at": "hub4/hub4:buoy11_arm MID Vz: -5.109375e+06 -> -5.109375e+06",
+      "worst_absolute_change": 3.2782554626464844e-07,
+      "worst_absolute_at": "platform/platform:hub4_arm ROOT My",
+      "max_u_from_rebuilt_static": {
+        "platform": 0.5892995456530007,
+        "hubs": 0.813310636972615
+      }
+    },
+    "iii_min_area": {
+      "stations": 48,
+      "worst_relative_change": 1.6083282454233826e-15,
+      "worst_relative_at": "hub1/hub1:buoy3_arm MID Vz: -5.109375e+06 -> -5.109375e+06",
+      "worst_absolute_change": 1.6391277313232422e-07,
+      "worst_absolute_at": "hub2/hub2:buoy5_arm ROOT My",
+      "max_u_from_rebuilt_static": {
+        "platform": 0.5819538557076585,
+        "hubs": 0.821926991692177
+      }
+    }
+  },
+  "dynamic": {
+    "i_min_wall_at_D_2.5": {
+      "max_u_shipped": {
+        "platform": 0.9957016591931744,
+        "hubs": 0.9899073645437507
+      },
+      "steps_per_build": 4081,
+      "max_u_sized": {
+        "platform": 0.9957016591931589,
+        "hubs": 0.9899073848389501
+      },
+      "worst_component_relative_change": 1.0766085367524016e-06,
+      "worst_component_at": "platform/platform:hub4_arm ROOT T: 1.784889e+03 -> 1.495275e+03",
+      "worst_component_absolute_change": 289.6142659059915,
+      "max_u_change": {
+        "platform": 1.554312234475219e-14,
+        "hubs": 2.0295199409936515e-08
+      }
+    },
+    "ii_min_diameter_at_t_180mm": {
+      "max_u_shipped": {
+        "platform": 0.9957795405551974,
+        "hubs": 0.9725804544041534
+      },
+      "steps_per_build": 4081,
+      "max_u_sized": {
+        "platform": 0.9957795405552058,
+        "hubs": 0.9725803527704788
+      },
+      "worst_component_relative_change": 4.58042648575176e-06,
+      "worst_component_at": "platform/platform:hub2_arm ROOT T: -1.784889e+03 -> -3.017052e+03",
+      "worst_component_absolute_change": 1232.1626746606917,
+      "max_u_change": {
+        "platform": 8.43769498715119e-15,
+        "hubs": 1.0163367458737582e-07
+      }
+    },
+    "iii_min_area": {
+      "max_u_shipped": {
+        "platform": 0.9835155205858492,
+        "hubs": 0.9911351642075069
+      },
+      "steps_per_build": 4081,
+      "max_u_sized": {
+        "platform": 0.9835155205858068,
+        "hubs": 0.9911386604115572
+      },
+      "worst_component_relative_change": 5.6926465063041066e-05,
+      "worst_component_at": "hub1/hub1:buoy3_arm ROOT T: 2.743239e+03 -> 1.805681e+04",
+      "worst_component_absolute_change": 15313.566470119236,
+      "max_u_change": {
+        "platform": 4.241051954068098e-14,
+        "hubs": 3.4962040502684033e-06
+      }
+    }
+  },
+  "mass_held": true
+}

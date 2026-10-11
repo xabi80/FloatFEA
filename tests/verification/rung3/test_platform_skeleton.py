@@ -770,3 +770,59 @@ def test_the_BUOY_NODE_MAP_names_its_body(superstructure) -> None:
         "no node index is shared between buoys, so this map would have been "
         "unambiguous without the body and the test is not measuring DY4's reason."
     )
+
+
+def test_C99_a_MEASUREMENT_SECTION_does_not_move_the_CHOSEN_FRACTION(capsys) -> None:
+    """C99. `measurement_sections` reaches the mass decision and does not change it.
+
+    `build_superstructure(measurement_sections=...)` exists so F6a can rebuild at a
+    section the deck does not record. The comment at its site used to say it cannot
+    move the mass because `member_mass = fraction * deck_mass` has no section term.
+    **That is true for a GIVEN `fraction` and it is not the whole chain**: `fraction`
+    is chosen by `admissible()` descending `MASS_FRACTION_LADDER`, and `admissible()`
+    tests the remainder inertia, which `assemble_mass_dense`'s rotary term
+    `rho_eq * I = mu * r^2` makes a function of the radius of gyration. The section
+    reaches the decision.
+
+    So the claim is asserted here instead of argued there: over the whole span of
+    sections F6a's search can produce -- walls from 5 mm to 600 mm, diameters from
+    2 m to 6 m -- every body keeps the `fraction` and the `member_mass` the shipped
+    build chooses. The eigenvalue margin is printed so a future reader can see how
+    much room the answer has rather than taking the word "cannot".
+    """
+    shipped = build_superstructure()
+    by_name = {b.name: b for b in shipped.bodies}
+
+    sections = [
+        Section.circular_tube(d, t)
+        for d in (2.0, 2.5, 3.0, 4.0, 5.0, 6.0)
+        for t in (0.005, 0.010, 0.030, 0.055, 0.180, 0.410, 0.600)
+        if t < 0.5 * d
+    ]
+    assert len(sections) == 42, "the span this is asserted over is part of the claim"
+
+    moved: list[str] = []
+    for section in sections:
+        built = build_superstructure(measurement_sections={name: section for name in by_name})
+        for body in built.bodies:
+            was = by_name[body.name]
+            if body.mass_fraction != was.mass_fraction or not math.isclose(
+                float(body.member_mass), float(was.member_mass), rel_tol=0.0, abs_tol=0.0
+            ):
+                moved.append(
+                    f"{body.name} at D={section.d_outer:.1f} "
+                    f"f {was.mass_fraction} -> {body.mass_fraction}"
+                )
+
+    with capsys.disabled():
+        print(
+            f"\n  {len(sections)} sections x {len(shipped.bodies)} bodies: "
+            f"{len(moved)} mass changes"
+        )
+
+    assert not moved, (
+        f"the chosen mass fraction or the member mass moved with the measurement "
+        f"section: {moved[:6]}. A measurement entry point that changes the mass basis "
+        "reports a section's forces under a different model than the shipped one, and "
+        "F6a's premise is measured through this parameter."
+    )
