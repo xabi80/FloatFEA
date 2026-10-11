@@ -1,4 +1,281 @@
 # Review — F6b step 1
+Reviewed commit: 6ebe4c062fa54cc42e721179b1dbf7ed20857e2a
+Verdict: PASS
+Tests: 3322 passed, 9 failed, 1 skipped   (my own run, `python -m pytest -q -p no:randomly`, 2418.58s)
+
+## Round of 2026-10-11 -- F6b step 1, revision 2. **PASS. R801 is answered and I verified the repair exhaustively.**
+
+**Reviewed commit: `6ebe4c0`.** Revision 2 of at most three (ES0); FI5 stops work after this.
+
+**Which clause I ruled under.** CZ0 (a)-(d) as amended by EZ0; CA2/CK2 for the CI reading;
+EG3/EH1/FC1 for the boundary red; EG4(e) for the corpus. **EU1 does not arise and I verified
+it:** `git diff --stat e001aec..HEAD -- floatfea tests floatfea/tolerances.py` is empty, as
+is the conftest pathspec, and `git log e001aec..HEAD -- .claude docs/SUPERVISOR.md` is empty.
+No STOP-class finding.
+
+**THE REPAIR REPRODUCES EXACTLY, AND I RE-DERIVED IT RATHER THAN CHECKING IT.** My own CSV
+read, my own FI1 resolution formulas, my own tube algebra, my own clause calls, my own
+geometry for both readings, my own per-face sizing -- no import of `f6b_truss_sizing`:
+
+```
+claim  every published cell, both readings, against an independent re-derivation
+cmd    my own scratch script: 2 sections x 2 groups x 7 h x 6 b x 2 readings, compared
+       cell by cell with results/F6b/truss_sizing.json
+out    published cells: 168
+       cells recomputed and compared: 168
+       worst relative disagreement, mass_ratio : 0.000e+00
+       worst relative disagreement, chord area : 0.000e+00
+rule   FI2's line mass = (Σ chord A + Σ_faces count·A_d·L_d/p)·ρ·1.15, and § 3.2.2 at
+       `K = 1.0` with `L` = the reading's own chord buckling length
+judge  **identical to the last bit on all 336 (cell, reading) pairs.** The headline cells:
+         platform box      h=3 b=8   A=1.0231 (L=8m)  B=1.0267 (L=3m)  both<=1: False
+         platform box      h=4 b=6   A=0.9703 (L=6m)  B=0.9631 (L=4m)  both<=1: True
+         platform triangle h=4 b=8   A=0.9226 (L=8m)  B=0.9175 (L=4m)  both<=1: True
+       **R801 is fixed and my `(4, 6)` is reproduced from my own arithmetic**, not read off
+       your table. The old cell exceeds 1.0 under both readings.
+```
+
+**And the repair is structural, which is the part that matters.** `GEOMETRIES` plus one
+`panel_and_diagonal()` returning `(chord buckling length, diagonal length, diagonal steel
+per unit length)` means the chord's length and the diagonal's length can no longer be taken
+from different readings -- which is precisely what R801 was. **Publishing both readings is
+the right call**, because which one FI means changes the answer and that is a plan question,
+not a generator question.
+
+## Carried
+
+| item | status | what I measured |
+|---|---|---|
+| R801 | **ANSWERED and verified** | 168 cells x 2 readings at `0.000e+00`. The defect's own cell now fails under both readings; `(4, 6)` passes under both. |
+| the `1 skipped` | **MY CLAIM IS WITHDRAWN -- you are right and I was wrong** | I called it "new this milestone". It is state-dependent: `test_a_RED_suite_is_named_in_the_report` defers whenever `_suite_line()` is None, and F6's own step-2 verdict records it at the then line 2429. My F6a runs were at commits where the whole-suite line was already present. **Item disposed of; nothing to fix.** The mechanism I verified last round stands: `_suite_line()` is None on absence *or* malformation and both route to the same red guard, so the skip hides nothing. |
+| `D/t = 24` / `1.15` | **accepted as recorded** | they stay declared inputs -- neither was chosen to make two numbers agree -- and the report now says a reader sizing steel treats both as dials. That is the right disposition. |
+
+## The three things you asked me to attack, ruled
+
+**(1) The per-face diagonal sizing is CORRECT, it is what FI means, and it repairs a SECOND
+defect that I did not find.** Your doubt was the right one to raise and the answer is in
+your favour.
+
+```
+claim  FI requires per-face sizing, so one area from the worst shear anywhere cannot
+       satisfy it
+rule   FI1: "Shear `Vz` goes to the vertical faces and `Vy` to the horizontal faces" --
+       which gives the two kinds of face DIFFERENT shears; and FI2: "report each member's
+       governing case and station" -- which is per member, so per face
+judge  **revision 1's single worst-shear-everywhere satisfied neither clause.** You have
+       repaired something beyond R801 and you found it yourself. The direction is not
+       obvious and is worth stating: revision 1 was CONSERVATIVE on the lower-shear faces
+       (over-sized) and UNDERSTATED the length factor on the wide ones, and the length term
+       wins -- which is why your `1.023 / 1.027` sits above my `1.007 / 1.009`. **My
+       figures held revision 1's single-area convention fixed and moved only the
+       geometry**, which was right for isolating R801 and wrong as an absolute mass; yours
+       are the correct absolute masses. The finding held under either convention, and the
+       masses are now checked too: 168 cells, both readings, `0.000e+00`.
+```
+
+**(2) THE `h = b` CONTROL CANNOT FAIL, AND THAT IS WHY IT CERTIFIES LESS THAN YOU ARE
+LEANING ON IT FOR.** You asked me to construct a case where the two readings must differ at
+`h = b`. **No such case can exist, and that impossibility is the finding about the control
+rather than a reassurance.**
+
+```
+claim  the two readings are the SAME FUNCTION at h = b, by algebra and not by coincidence
+cmd    panel_and_diagonal, both branches, at h = b = s, for a face of dimension s
+out    per_face_45  : panel = dim = s      -> (max(h,b)=s, s*sqrt2,           sqrt2)
+       uniform_panel: panel = min(h,b)=s   -> (s,          hypot(s,s)=s*sqrt2, s*sqrt2/s = sqrt2)
+       identical in ALL THREE returned components, for every face
+cmd    my own run over every h == b cell in the grid
+out    24 cells, max |ratio_A - ratio_B| = 2.220e-16
+rule   "a gate carries its own failure: break the claimed property and confirm the
+       assertion goes red"
+judge  **`2.22e-16` is round-off -- the identity -- not agreement between two
+       computations.** So the control DOES establish what you claimed, that the divergence
+       at `h != b` is geometry and not a bug in one path; and it CANNOT establish that
+       either path is right, because it passes unchanged if both are wrong the same way. It
+       is a consistency check, not a correctness check. **Correctness has to come from
+       outside the pair, and the 168-cell re-derivation above is what supplies it.** Lean
+       on the control for the one claim it carries and no more.
+```
+
+**(3) The 1-of-168 count is EXACTLY right, and the sentence would be stronger with one
+clause added.**
+
+```
+claim  the number of cells where the two readings disagree on mass-consistency
+cmd    my own sweep, comparing (ratio_A <= 1.0) against (ratio_B <= 1.0) in all 168 cells
+out    cells where the TWO READINGS disagree: 1
+           ('triangle', 'platform', 5.0, 6.0, 1.0032, 0.9989)
+judge  **one, and it is the cell you name.** The clause I would add: it disagrees because
+       it STRADDLES the line -- `1.0032` and `0.9989` are both within `0.33%` of `1.0`, a
+       spread of `0.43%` -- not because the two readings diverge strongly there. So "robust
+       to the reading" is true, and the reason is stronger than the bare count: the single
+       disagreement is a marginal cell rather than a geometry effect. As written it invites
+       a reader to think one cell is geometrically ambiguous; what is true is that one cell
+       is within half a percent of the threshold.
+```
+
+## Findings
+
+**Two, both closure items, both about the RED TRACE rather than the tree. Nothing blocks.**
+
+**C1. (closure) § 6 asserts the boundary classes in prose and does not paste the trace,
+which is the one thing EG3(i) requires of it -- and the number is 9, not 1.**
+
+```
+claim  the reds at the reviewed commit, by name, and what each traces to
+cmd    my own run: the whole suite, then the guard files on their own
+out    whole suite: 9 failed, 3322 passed, 1 skipped
+       tests/test_report_carried.py (2):
+         test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+         test_the_report_carries_a_WHOLE_SUITE_count
+       tests/test_report_guard_states.py (7):
+         [baseline] [non_numeric_step_suffix] [superscript_digit_step_number]
+         [draft_suffix_beside_a_step_report] [step_number_is_the_empty_string]
+         [verdict_amended_after_the_commit_the_report_answers] [zero_padded_step_number]
+       tests/test_report_numbers_are_sourced.py: 0 failed   <- the control, and it holds
+cmd    the CI-table guard's own message, and one planted state's nested log
+out    run 38148740215: the table says `**no result** (status `queued`)`, gh says `failure`
+       step_number_is_the_empty_string: ... test_the_report_carries_a_WHOLE_SUITE_count
+         ... tests/test_report_carried.py:1821: AssertionError
+rule   EG3(i): the waiver is conditional on the trace, and the trace is pasted -- each
+       FAILED id matched to the state's own list, and "only those" carries the FAILED list
+       as its command
+judge  **ALL NINE TRACE, so the tree is fine and this does not block** -- and I had to
+       establish that myself. Two are FC1's pair directly; `[baseline]` is red because its
+       nested run sees that pair; the other six cascade off `[baseline]` (EH1), which I
+       confirmed on one by its own failure line rather than by family. **§ 6 gives two
+       class assertions, no ids, no counts, no FAILED list** -- and the invocation said
+       "ONE RED REMAINS". The measured number is nine. EG3(i) exists because the eighth
+       member of exactly such a group turned out to be a real defect once (R629), and a
+       class assertion cannot tell nine designed reds from eight designed and one real.
+```
+
+**And no, I will not hold for the whole-suite line, and the offer should not have been
+needed.** FC1 says neither of that pair can pass in the commit it describes -- the line
+names a sha and cannot sit inside it, and the CI table snapshots run states that keep
+moving, as its own message shows (`queued` when generated, `failure` now). Holding would
+demand a state FC1 declares impossible. CZ1 (iii)/(iv) put both in the follow-on.
+
+**C2. (closure, the sharper of the two) "No test's subject changed" is the wrong measurement
+for the question it answers.**
+
+```
+claim  the stated reason for not re-running is false of exactly the tests that are red
+cmd    the report's own command, then the one it needed
+out    git diff --stat HEAD -- floatfea tests    -> (empty)
+       git diff --stat e001aec..HEAD -- docs/reports/F6b/step-1.md
+         -> revision 2 +341 lines, then 6ebe4c0 +103 more
+       the three report-guard files: 37 reds at e001aec -> 9 at 6ebe4c0
+rule   § 6: "the reason is still a measurement: `git diff --stat HEAD -- floatfea tests` is
+       empty, so no test's subject changed"
+judge  **that command shows no TEST CODE changed; it does not show no test's SUBJECT
+       changed.** The three report-guard files read `docs/reports/F6b/step-1.md`, which
+       this revision rewrote and this commit extended -- **their subject changed more than
+       anything else in the tree**, and the proof is that their red count moved by 28. The
+       reason is sound for the 3300 tests whose subject is `floatfea/` and exactly inverted
+       for the nine that are red. The right command names the pathspec each test reads.
+```
+
+**One note, no number.** `chord_L = panel_and_diagonal(geometry, h, b, faces(...)[0])[0]`
+takes a quantity that is not per-face out of a per-face call, and is correct today only
+because both readings return a face-independent first element. A third reading that made the
+chord length face-dependent would have `[0]` silently pick one face. One comment at the site
+would fix it; I am not asking for a commit.
+
+## Tolerances touched
+
+**None, verified not taken.** `git diff --stat e001aec..HEAD -- floatfea tests
+floatfea/tolerances.py` is empty, so no value, no counter, no injection -- **EU1 does not
+arise.** `tests/conftest.py` untouched, so no rung's green is read through new in-tree code.
+`git log e001aec..HEAD -- .claude docs/SUPERVISOR.md` is empty: **no STOP-class finding.**
+
+## The suite, lint and CI at the reviewed commit (CA2, CK2)
+
+```
+cmd  python -m pytest -q -p no:randomly          (mine, at 6ebe4c0)
+out  9 failed, 3322 passed, 1 skipped, 2 warnings in 2418.58s (0:40:18)
+     all nine traced by name in C1; the third guard file is 0 failed
+cmd  python -m ruff check floatfea tests scripts ; black --check ... ; mypy floatfea
+out  All checks passed! / 137 files would be left unchanged. /
+     Success: no issues found in 37 source files
+cmd  regenerate both artefacts, then git diff --stat -- results/F6b/
+out  (empty -- byte-identical; I ran it rather than reading the claim of it)
+```
+
+**CI IS UNAVAILABLE AT THE REVIEWED COMMIT AND I RECORD IT AS THAT RATHER THAN SKIPPING
+OVER IT (CK2).**
+
+```
+cmd  gh run list --limit 8 --json headSha,databaseId, filtered to 6ebe4c0
+out  runId=NONE   -- the commit IS pushed (origin/F3 is at it, ahead by 0) and no run exists
+cmd  the last run that EXECUTED, and whether the tree has moved since
+out  75e31ec  completed/failure   (revision 2's own code commit)
+       the verification ladder   success
+       lint, unit and guards     failure -- steps: actionlint OK, ruff OK, black OK,
+                                 mypy OK, unit tests OK, guards and meta-tests FAILURE
+       its own summary: 13 failed, 1000 passed, 1 skipped
+     git diff --stat 75e31ec..HEAD  ->  docs/reports/F6b/step-1.md | 103 +
+rule  my own definition: a workflow that did not run on the reviewed commit is an
+      unavailable check, recorded as unavailable rather than skipped over
+judge **this is NOT CK2's third state** -- no job has an empty runner name with a payment
+      annotation; there is simply no run. **The last executed run is one commit back and
+      the only change since is the report**, so its green ladder and its
+      ruff/black/mypy/unit greens do describe this tree's code. Its 13 guard reds are the
+      same family as my 9, at a commit where the CI sections did not yet exist. **The
+      `guards and meta-tests` step is seen to have RUN rather than been skipped behind an
+      earlier red, which is CZ1 (iii)'s own concern.** CA2 is not engaged: there is no red
+      CI run at the reviewed commit to hold on.
+```
+
+## The corpus (EG4(e))
+
+**Pause held: no corpus file added by either of us, no batch.** The substitute was the
+recorded one, both halves -- **a continuum grid** (all 168 cells re-derived independently
+under both readings, plus the `h = b` identity over 24 cells) and **a regeneration check**
+(byte-identical, from my own run). **Both of this round's items came from the grid and from
+reading § 6 against my own run**, neither from the one cell the document reports.
+
+## Try to break it
+
+I attacked the three things you named and the repair survived all three; where it gave was
+not in the numbers but in the account of them. **The strongest thing I can say is the one I
+could not say last round: 168 cells and two readings reproduce at `0.000e+00` from an
+independent derivation, so the sizing is not merely self-consistent, it is right.**
+
+## Next step opens when
+
+**FI5 says STOP after this, so what remains is a short list and no gate:**
+
+1. **C1 and C2 go to `docs/closure/F6b.md`** -- the nine-id trace pasted by name with its
+   two causes, and § 6's non-re-run reason stated against the pathspec each test reads.
+   Neither blocks and neither is re-reviewed item by item.
+2. **CZ1's four outputs** at the closure commit, with the whole-suite line and a settled CI
+   table -- where FC1 says they belong and where the nine clear.
+3. **The corrected deliverable goes to Xabier**, because the one he holds leads with
+   `h = 3 m, b = 8 m` at `0.979`, and that cell fails under both readings.
+4. **EQ0 applies if the closure commit changes a gate or a tolerance.** On current scope it
+   changes neither, so it is not reviewed -- say so plainly in the artifact rather than
+   implying a review that will not happen.
+
+**And what this PASS rests on.** R801 was a real geometry defect; you reproduced it before
+touching it, repaired it structurally rather than patching a cell, published both readings
+because the choice is FI's and not yours, and found a second defect in the diagonal sizing
+that I had missed. The two items I leave are both about the red trace, and a trace is cheap.
+
+## Disagreement with the criterion -- none this round
+
+Both items are report sections, which CZ0 names as closure items, and I have classed them
+that way rather than reaching for a blocking head. The one place I pushed back on process --
+declining to hold for the whole-suite line -- is FC1 applied as written, not a disagreement
+with it.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6b step 1
 Reviewed commit: e001aec0648b1b3b8b2a1cc37ae5897f7c658b63
 Verdict: HOLD
 Tests: 3289 passed, 37 failed, 1 skipped   (my own run, `python -m pytest -q -p no:randomly`, 769.92s)
