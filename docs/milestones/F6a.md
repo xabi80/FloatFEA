@@ -1,6 +1,6 @@
 # F6a — THE REQUIRED SECTION
 
-<!-- step-under-execution: 1 -->
+<!-- step-under-execution: moved to F6b at step 1 (FI) -->
 
 Increment 1 after F6's closure. **One step.** Opened by **DIRECTIVE FG**, recorded below
 verbatim in the form `F6.md` uses for FA/FB/FC, so the plan and the directive do not have to

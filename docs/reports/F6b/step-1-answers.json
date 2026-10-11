@@ -1,0 +1,30 @@
+{
+  "_": [
+    "POINTERS ONLY (CH4).",
+    "",
+    "F6b STEP 1, REVISION 1. Opened by DIRECTIVE FI. There is no prior verdict -- this is",
+    "the milestone's first revision and, under FG1's lighter process, its ONLY reviewed",
+    "one. EQ0 closure follows.",
+    "",
+    "NOTHING IS CARRIED: F6a closed with no blocking item open. Its ledger (R788, R789,",
+    "R790, R791) stays in docs/closure/F6a.md and is not re-opened here.",
+    "",
+    "WHAT THE REVIEWER IS ASKED TO ATTACK, per FI5: recompute the governing chord force",
+    "and its required area BY HAND. Section 2 lays out every term of both so that the",
+    "recomputation is a check and not a re-derivation -- N/4, My/(2h) and Mz/(2b)",
+    "separately, then the tension and clause areas.",
+    "",
+    "THE ONE REAL DECISION, and the thing I would attack first: FI3 asks for one section",
+    "per arm group, and Mz is 2.689e+08 on two platform arms and round-off on the other",
+    "two -- the split is the arm's ORIENTATION at heading 0 deg, not the physics. I sized",
+    "each group to the ENVELOPE over its members, so `b` cannot be made small because Mz",
+    "is small on one arm. Section 3(i) argues it; if the reviewer thinks per-arm sizing is",
+    "what FI3 meant, every number in the sweep changes.",
+    "",
+    "AND A FINDING OF MY OWN worth re-checking: the torsion share was first computed by",
+    "differencing two resolutions and returned EXACTLY zero, because they agree to 16",
+    "significant figures. Section 4. The repair was also live for one run while the",
+    "document still said zero, because two stale lines overwrote the new assignment."
+  ],
+  "answered": {}
+}
