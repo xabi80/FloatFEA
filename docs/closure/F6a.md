@@ -523,25 +523,64 @@ judge  **the comparison base is frozen.** `bf5fdf0` is in the past, the three fi
        R784/R795/R796 cases and the C99 test -- each already reviewed and passed.
 ```
 
-**AND THERE IS A SECOND DEFECT IN THE SAME THREE LINES, found by running them (R798).**
-`grep -m1` takes the **FIRST** `Reviewed commit:` of an accumulating verdict file. F6 step
-2's file carries several; its first is `bf5fdf0` and its last is `838e00e`. So even with
-R793's ranking corrected, the hook would compare against the OLDEST commit that file ever
-reviewed rather than the newest — and a verdict file accumulates by design, which
-`CLAUDE.md`'s DD1 paragraph is entirely about. **The same construct that makes DD1 necessary
-makes `-m1` wrong.**
+**R798 IS WITHDRAWN. ITS PREMISE WAS WRONG AND DIRECTIVE FH0(4) CAUGHT IT.** R798 claimed
+`grep -m1` takes the **first** `Reviewed commit:` of an accumulating verdict file and
+therefore the **oldest**. The second half does not follow from the first, because
+`scripts/write_verdict.py` **PREPENDS** — a verdict file is newest-first (DY6), which is the
+same reason C105 recorded `re.search` as correct for reading one. Measured before anything
+was changed:
 
-**So the directive needs a fourth clause**, and it is the one with the longest reach:
+```
+claim  which reviewed commit the F6 step-2 file's order gives, and which its ancestry gives
+cmd    list every `Reviewed commit:` in file order, then ask which one has every other
+       listed commit as an ancestor
+out    distinct reviewed commits: 8
+       FILE order: bf5fdf0, af674e6, 6f3bd0d, c0e3165, 4bc359f, 9567893, ba1527e, 838e00e
+       ancestry pick: ['bf5fdf0']
+       -> the two agree: True
+rule   `git merge-base --is-ancestor` over every pair, which does not depend on file order
+judge  **`-m1` returned the NEWEST, not the oldest.** R798 reasoned from "first" to
+       "oldest" without checking which end of the file is new, and the directive asked
+       for the measurement rather than taking the finding. I had the file in front of me
+       and did not look at it — which is the species this milestone is remembered for,
+       committed by me in the course of reporting it.
+```
 
-> take the LAST `Reviewed commit:` in a verdict file, not the first.
+**The ancestry rule went in anyway, and FH0(4) is why that is not inconsistency.** `-m1` is
+correct *for a convention one generator holds in place*; ancestry does not depend on the
+convention at all, and it refuses rather than guessing when no single descendant exists —
+a rebase, a cherry-pick, or two branches' verdicts in one file. The repair is in
+`4862f6e`, a standalone `process:` commit citing FH0.
 
-**Three checks' worth of evidence says the guard fails false and cannot self-clear**, which
-is the condition `CLAUDE.md` describes as fixed-or-deleted rather than lived-with — but the
-file is one the implementer may not touch inside a step, and there is no commit in this
-repository that may fix it. **This is where it stops and waits.** The precedent is the step-5
-episode `CLAUDE.md` § Step gating records: a guard refusing every turn with no exit, resolved
-by a disposition written by hand rather than by editing the hook. The record is the
-mechanism; the directive is the exit.
+**So R793 was the only real defect, and it is fixed.** Replayed on FH1's four cases plus
+three that solve the boundary in the other direction (EH4), every one on the real hook with
+real stdin:
+
+```
+claim  the hook clears this tree and still refuses everything it refused before
+cmd    bash .claude/hooks/require-verdict.sh  with {"stop_hook_active": false}
+out    1. this tree                        exit 0, ALLOWS
+       2. F6 step 2's record               ancestry picks bf5fdf0, agreeing with file order
+       3. a constructed tie                BLOCKS, naming docs/milestones/F4.md and
+                                           docs/milestones/F6a.md
+       4. a non-numeric label (F6ab)       BLOCKS, naming the label it could not read
+       5. floatfea/ changed since the
+          ACTIVE verdict                   BLOCKS at `365fe3f` -- F6a's own commit, not
+                                           bf5fdf0
+       6. the active verdict file absent   BLOCKS
+       7. the active report absent         BLOCKS
+       CONTROL, this tree again            exit 0, ALLOWS
+rule   FH1's four, plus EH4 -- a boundary is solved in both directions, including the
+       ones that WEAKEN the thing being checked
+judge  cases 5-7 are the half FH1 did not ask for and the half that matters: a repair
+       measured only from the side that makes it look fixed is corpus batch 31's fault.
+       The hook now compares against F6a's own newest reviewed commit.
+```
+
+**What the wedge cost, recorded once:** three interim checks forced by a `%03d` format
+string, all three PASS, and both findings they produced (R796, R797) came from attacking the
+repairs rather than from the scan the hook was asking for. The hook asked the right question
+three times for the wrong reason.
 
 ## 6c. The second interim check, and the species a fourth time
 
@@ -664,7 +703,8 @@ it, and no commit in this repository may fix it.
 | R788 | the deliverable's § (vi) does not name the quantity "worst component rel" is of |
 | R789 | the two `Candidate(...)` literals in the search are the answers, typed; bit-identical today, tied to nothing |
 | R791 | R783's three numbers are complete and exact — `1 − bending_fraction = 1.405275e-04` against the gap to `W*`, `1.405473e-04` — but the clause joining them is missing |
-| R793 | the Stop hook's milestone ranking — **needs a directive**, § 6b; nothing in this repository may fix it from here |
+| ~~R793~~ | the Stop hook's milestone ranking — **FIXED** at `4862f6e` under DIRECTIVE FH0, with FH1's replay and EH4's other direction. Off the ledger. |
+| ~~R798~~ | **WITHDRAWN** — its premise was wrong; `write_verdict.py` prepends, so `grep -m1` took the newest. § 6b carries the measurement. |
 | R790 | **`results/F6a/` is under no regeneration gate.** F6's is, and that gate is what caught this increment's one stale figure. On `docs/milestones/F2a.md`'s list, because apparatus goes through that plan and not into a step commit. |
 
 ## 7. The limitations every F6a number carries
