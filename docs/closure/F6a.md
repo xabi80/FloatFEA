@@ -562,6 +562,59 @@ deletes the clause. Each was a claim about where a measurement lives and each wa
 by one command. The direction was right every time; the sentence written around the fix
 inherited none of the discipline applied to the fix, which is CP2's own observation.
 
+## 6d. The third interim check — PASS, no new findings, and the loop's cost named
+
+The hook forced a third check. **It PASSED with no new findings, and ruled that a fourth is
+not needed** — not because the tree is green, but because an interim check's substance under
+ES0 is the CZ0 (a)–(d) scan of the diff, and with no further commit to `floatfea/` or
+`tests/` that diff can only contain this artifact, which EQ0 already exempts from review.
+
+**All three of my own attacks on R796's case failed, and two arguments for it were supplied
+that I had not made:**
+
+```
+claim  `monkeypatch.setitem(globals(), ...)` reaches the dictionary the guard reads
+cmd    the reviewer's own probe: identity of the three dictionaries, then a POSITIVE
+       CONTROL deleting the two setitem lines
+out    R796.__globals__ is guard.__globals__ : True
+       ...             is module.__dict__    : True
+       CARRIED and EXPECTED live there       : (True, True)
+       control, patch removed: the case goes RED at its own
+         `assert not _status_cells()`, before reaching `pytest.raises`
+rule   the mutation was my ONLY evidence; this is three independent ones
+judge  **green-as-shipped is itself proof**, which I had not seen: if the patch did not
+       land, the guard would read the real `CARRIED`, return normally, and `pytest.raises`
+       would fail. And `133 passed` three times in the DEFAULT RANDOM ORDER, with the
+       callee collected and run separately on the real globals each time -- no leak, which
+       is the ordering question I did not think to raise.
+```
+
+**The needle is unique and FIRST.** `no status cell parsed` occurs at the guard's own line
+and at the case's grep, nowhere else; `assert cells` is the guard's first assertion, and the
+next one shares no phrase with it. So the case cannot read an earlier failure as success.
+**The capital-`T` slip was the construct working** — a vacuity check that fails in the safe
+direction is a vacuity check.
+
+**Calling another test function directly is a new pattern here** (one occurrence), nothing
+forbids it, and its failure mode is a `TypeError` naming the line rather than a silent skip.
+Recorded with the reviewer's one caution: not to let it spread.
+
+**R797's form is right and the quotation is not a CW0 problem.** CW0 prohibits prose that
+*claims* something about the repository; a clause quoted in the past tense with its
+refutation eight words later is a record of a retraction, and the record is the device by
+which the defect cannot return. The live pointer is bare at both sites.
+
+**And the ruling that matters most, which is about this artifact's own process:** a sentence
+about where a measurement lives has been rewritten four times in these two files, each
+rewrite answering the previous finding. **The reviewer ruled that a fifth finding from it
+would be the defect rather than the cure**, and stopped.
+
+**What the loop cost, so the directive request carries it.** Three interim checks forced by
+a `%03d` format string, all three PASS. **Both findings they produced — R796 and R797 — came
+from attacking the repairs rather than from the scan the hook was asking for.** The hook
+asked the right question three times for the wrong reason. R793 is the only thing that ends
+it, and no commit in this repository may fix it.
+
 **Ledgered, not fixed** (none is (a)–(d), and FG6 stops work after this):
 
 | item | what it is |
