@@ -57,6 +57,7 @@ import importlib.util
 import json
 import re
 import subprocess
+import sys
 import unicodedata
 from functools import lru_cache
 from pathlib import Path
@@ -1803,7 +1804,7 @@ def test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW() -> None:
     goes quiet when the tool is missing is the shape three verdicts have
     now named.
     """
-    zero = _generated_text(_newest_revision(REPORT_TEXT))
+    zero = _generated_text(cz1_record())
     rows = _ROUNDS_ROW.findall(zero)
     # C89: THE ZERO-RUN ROW IS A THIRD STATE, not the absence of rows. This
     # asserted `rows` outright, so the generator's own truthful
@@ -2649,14 +2650,149 @@ def test_a_docs_commit_does_not_also_edit_the_guard_that_judges_it() -> None:
 # was red on a test in none of the seven -- and the failing declaration was
 # written by the commit that published the report, so it was true when it was
 # measured and false when it shipped. Subsets cannot see that. One line can.
+# WHERE CZ1's OUTPUTS LIVE, AND IT IS NOT ALWAYS THE STEP REPORT (FJ0).
+#
+# Adopted by directive FJ0, option (a). It is a LOCATOR REPAIR and not an extension: the
+# two guards below assert exactly what they asserted before, about exactly the same
+# quantities, and the only change is which record they read them from -- the one the rules
+# require the outputs to be in.
+#
+# THE DEADLOCK IT RESOLVES, measured at F6b's closure before the repair. CZ1 (iv) wants a
+# green pushed run at the closure commit. The two guards below read the step report, so
+# they clear only if the whole-suite line and the CI table are added to it. But:
+#
+#   newest commit touching the REPORT : 6ebe4c0
+#   newest commit touching the VERDICT: d509e44   (a closing PASS)
+#   the report NAMES                  : 6e32716
+#
+# touching the report makes it the newer of the two, and
+# `test_the_answered_verdict_is_the_NEWEST_one` then requires it to NAME `d509e44` -- i.e.
+# a REVISION 3 answering a PASS that held nothing. And EK3 forbids a closure commit from
+# touching a step report after that report's final verdict. **Three rules, and no state
+# satisfied all three**, so the nine reds could not clear at an increment's end.
+#
+# CZ1 ALREADY SAYS WHERE THEY GO: "in the step report's closure section, or -- where that
+# report is already closed -- in the next report's `Carried`". At an increment's end there
+# is no next report. `docs/closure/<milestone>.md` is the only remaining container, and
+# option (a) of FJ0 names it.
+#
+# SO THE RULE IS: after a closing PASS, with a closure artifact present, these two read the
+# artifact's marked block. Otherwise they read the step report, exactly as before -- which
+# is every mid-step tree, and `test_FJ0_a_MID_STEP_tree_still_reads_the_REPORT` holds that
+# half.
+#
+# THE REPORT'S OWN SECTIONS 0 AND 0a ARE NOT DUPLICATED BY THIS AND ARE NOT DRIFT. They are
+# about the commit the VERDICT JUDGED; the closure block is about the CLOSURE COMMIT. Two
+# different commits and two different questions, which is why four other CI guards still
+# read the report and are untouched here.
+CLOSURE = ROOT / "docs" / "closure" / f"{MILESTONE}.md"
+
+_CZ1_BLOCK = re.compile(
+    r"<!--\s*cz1-closure-outputs\s*-->(.*?)<!--\s*/cz1-closure-outputs\s*-->", re.S
+)
+
+
+def _newest_verdict_disposition() -> str:
+    """The FIRST `Verdict:` of the newest verdict file, which is the newest verdict.
+
+    `scripts/write_verdict.py` PREPENDS, so a verdict file is newest-first (DY6) -- the
+    same reason C105 recorded `re.search` as correct for reading one, and the same reason
+    R798's "first means oldest" was withdrawn. Reads the working copy, because the question
+    is what the newest verdict SAYS and not what it said at some commit.
+    """
+    try:
+        text = VERDICT.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+    found = re.search(r"^Verdict:\s*(\w+)", text, re.MULTILINE)
+    return found.group(1) if found else ""
+
+
+def cz1_record() -> str:
+    """The text CZ1's outputs are to be read from, per FJ0.
+
+    Returns `""` when a closing PASS and a closure artifact exist but the artifact has no
+    marked block -- so the guards fail with their own messages rather than falling back to
+    the report, which would be the locator going quiet. FJ0's second counter-case is that
+    state.
+    """
+    if _newest_verdict_disposition() == "PASS" and CLOSURE.exists():
+        found = _CZ1_BLOCK.search(CLOSURE.read_text(encoding="utf-8", errors="replace"))
+        return found.group(1) if found else ""
+    return _newest_revision(REPORT_TEXT)
+
+
 _SUITE = re.compile(
     r"Whole suite at `([0-9a-f]{7,40})`:\s*(\d+) passed, (\d+) failed, (\d+) skipped"
 )
 
 
 def _suite_line() -> tuple[str, int, int, int] | None:
-    m = _SUITE.search(_newest_revision(REPORT_TEXT))
+    m = _SUITE.search(cz1_record())
     return (m.group(1), int(m.group(2)), int(m.group(3)), int(m.group(4))) if m else None
+
+
+def test_FJ0_a_CLOSURE_BLOCK_with_a_WRONG_COUNT_reddens(tmp_path, monkeypatch) -> None:
+    """FJ0's first counter-case: the locator moved the record, not the assertion.
+
+    A guard that reads a new place and asserts nothing about what it finds there is a
+    guard that has been deleted and relabelled. The block's whole-suite line is held to
+    the same `passed > 100` the report's was.
+    """
+    block = (
+        "<!-- cz1-closure-outputs -->\n"
+        "**Whole suite at `30f50f6`: 7 passed, 0 failed, 0 skipped.**\n"
+        "<!-- /cz1-closure-outputs -->\n"
+    )
+    artifact = tmp_path / f"{MILESTONE}.md"
+    artifact.write_text(block, encoding="utf-8")
+    monkeypatch.setitem(globals(), "CLOSURE", artifact)
+    monkeypatch.setattr(sys.modules[__name__], "_newest_verdict_disposition", lambda: "PASS")
+
+    found = _suite_line()
+    assert found is not None, "the case depends on the block's line being READ"
+    assert found[1] == 7, "and on the wrong count reaching the guard"
+    with pytest.raises(AssertionError) as caught:
+        test_the_report_carries_a_WHOLE_SUITE_count()
+    assert "was not the whole suite" in str(caught.value), (
+        "the guard read the block and accepted 7 passed as a whole-suite count: "
+        f"{str(caught.value)[:200]}"
+    )
+
+
+def test_FJ0_a_MISSING_CLOSURE_BLOCK_reddens(tmp_path, monkeypatch) -> None:
+    """FJ0's second counter-case: no silent fall back to the report.
+
+    If a closing PASS and an artifact exist but the artifact carries no marked block, the
+    outputs are simply absent and the guard must say so. Falling back to the step report
+    would let a closure commit ship with no CZ1 record at all, which is the hole the
+    locator would otherwise open -- and it would be invisible, because the report's own
+    older line would answer in its place.
+    """
+    artifact = tmp_path / f"{MILESTONE}.md"
+    artifact.write_text("# closure, with no marked block\n", encoding="utf-8")
+    monkeypatch.setitem(globals(), "CLOSURE", artifact)
+    monkeypatch.setattr(sys.modules[__name__], "_newest_verdict_disposition", lambda: "PASS")
+
+    assert cz1_record() == "", "a PASS plus an artifact with no block reads as empty"
+    assert _suite_line() is None, "so there is no whole-suite line to find"
+    with pytest.raises(AssertionError) as caught:
+        test_the_report_carries_a_WHOLE_SUITE_count()
+    assert "carries no whole-suite line" in str(caught.value)
+
+
+def test_FJ0_a_MID_STEP_tree_still_reads_the_REPORT(monkeypatch) -> None:
+    """FJ0's third counter-case: the old behaviour is unchanged mid-step.
+
+    The locator may not quietly redirect a tree that is still working a step. With the
+    newest verdict a HOLD, the record is the step report's newest revision whatever the
+    closure artifact says -- and the artifact is deliberately left in place here, so the
+    case fails if the disposition is not what decides.
+    """
+    monkeypatch.setattr(sys.modules[__name__], "_newest_verdict_disposition", lambda: "HOLD")
+    assert cz1_record() == _newest_revision(
+        REPORT_TEXT
+    ), "mid-step, CZ1's outputs are read from the step report, as they were before FJ0"
 
 
 def test_the_report_carries_a_WHOLE_SUITE_count() -> None:
