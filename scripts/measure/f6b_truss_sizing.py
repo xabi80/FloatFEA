@@ -297,6 +297,17 @@ def faces(section: str, h: float, b: float) -> tuple[Face, ...]:
     return (Face(2, h, "vertical"), Face(1, b, "horizontal"))
 
 
+def chord_buckling_length(geometry: str, h: float, b: float) -> float:
+    """The chord's unbraced length, which depends on the reading and not on a face.
+
+    Under `per_face_45` a corner chord is braced every `h` by the vertical faces and every
+    `b` by the horizontal ones, at non-coincident stations; the chord is a circular tube so
+    `r_y = r_z`, and the governing length is `max(h, b)`. Under `uniform_panel` every face
+    shares one panel, so it is `min(h, b)`.
+    """
+    return max(h, b) if geometry == "per_face_45" else min(h, b)
+
+
 def panel_and_diagonal(geometry: str, h: float, b: float, face: Face) -> tuple[float, float, float]:
     """`(chord buckling length, diagonal length, diagonal steel per unit truss length)`.
 
@@ -365,7 +376,12 @@ def size(
                 torsion_share = share
 
     # --- the chord ------------------------------------------------------------------
-    chord_L = panel_and_diagonal(geometry, h, b, faces(section, h, b)[0])[0]
+    # THE CHORD'S BUCKLING LENGTH IS NOT A PER-FACE QUANTITY, so it is not taken out of a
+    # per-face call. It used to be `panel_and_diagonal(geometry, h, b, faces(...)[0])[0]`,
+    # which was correct only because both readings happen to return a face-independent
+    # first element -- a reading that made it face-dependent would have been silently
+    # resolved by whichever face sorted first.
+    chord_L = chord_buckling_length(geometry, h, b)
     a_t = area_for_tension(worst_t[0])
     a_c, branch_c = area_for_compression(-worst_c[0], panel_length=chord_L)
     if a_t >= a_c:
