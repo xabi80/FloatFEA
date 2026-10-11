@@ -498,8 +498,50 @@ no permitted route.** A directive needs to authorise exactly three things: sort 
 milestone after its base, refuse a tie rather than resolving it by path string, and make
 EC0's guard reject a field that is not wholly numeric.
 
-**Until that directive exists, the hook will refuse every turn that touches `floatfea/` or
-`tests/`**, citing a report that closed two milestones ago.
+**Until that directive exists, the hook refuses EVERY turn, not only those touching
+`floatfea/` or `tests/`** — the last block came on a commit that touched this artifact and
+nothing else. Measured by running the hook's own three steps rather than inferring:
+
+```
+claim  no commit and no verdict can clear the block
+cmd    reproduce the hook's ranking, its `grep -m1 "Reviewed commit:"`, and its diff
+out    1. the hook picks       : docs/reports/F6/step-2.md
+          its review file      : docs/reviews/F6/step-2.md
+       2. `grep -m1` takes     : bf5fdf0 F6 closure: R775 and R776 recorded, and the
+                                 species count corrected to six
+          that file's LAST is  : 838e00e
+       3. diff vs that commit  : DIFFERS -> block
+       4. files differing      : 3
+            floatfea/model/platform.py
+            tests/test_report_carried.py
+            tests/verification/rung3/test_platform_skeleton.py
+rule   `require-verdict.sh`: `reviewed=$(grep -m1 -E '^Reviewed commit:' "$review" | awk
+       '{print $3}')`, then `git diff --quiet "$reviewed" -- "$report" floatfea tests`
+judge  **the comparison base is frozen.** `bf5fdf0` is in the past, the three files are
+       F6a's own work, and a verdict written into this milestone's review file does not
+       touch the file the hook reads. The three differing files are the C99 comment, the
+       R784/R795/R796 cases and the C99 test -- each already reviewed and passed.
+```
+
+**AND THERE IS A SECOND DEFECT IN THE SAME THREE LINES, found by running them (R798).**
+`grep -m1` takes the **FIRST** `Reviewed commit:` of an accumulating verdict file. F6 step
+2's file carries several; its first is `bf5fdf0` and its last is `838e00e`. So even with
+R793's ranking corrected, the hook would compare against the OLDEST commit that file ever
+reviewed rather than the newest — and a verdict file accumulates by design, which
+`CLAUDE.md`'s DD1 paragraph is entirely about. **The same construct that makes DD1 necessary
+makes `-m1` wrong.**
+
+**So the directive needs a fourth clause**, and it is the one with the longest reach:
+
+> take the LAST `Reviewed commit:` in a verdict file, not the first.
+
+**Three checks' worth of evidence says the guard fails false and cannot self-clear**, which
+is the condition `CLAUDE.md` describes as fixed-or-deleted rather than lived-with — but the
+file is one the implementer may not touch inside a step, and there is no commit in this
+repository that may fix it. **This is where it stops and waits.** The precedent is the step-5
+episode `CLAUDE.md` § Step gating records: a guard refusing every turn with no exit, resolved
+by a disposition written by hand rather than by editing the hook. The record is the
+mechanism; the directive is the exit.
 
 ## 6c. The second interim check, and the species a fourth time
 
