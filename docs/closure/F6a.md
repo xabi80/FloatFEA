@@ -326,6 +326,32 @@ names the reds and their cause. What changed is that none of them persists acros
 
 ## 6a. What the EQ0 review found, and what it changed
 
+**CZ1 at the commit that answers verdict 123 (`7e94440`).** The verdict's own two
+unwaitable findings are repaired in it, so it is measured on the same terms as the closure
+commit:
+
+```
+claim  the whole suite, the lint gate and the pushed run at the answering commit
+cmd    python -m pytest -q ; python -m ruff check floatfea tests scripts ;
+       python -m black --check floatfea tests scripts ; python -m mypy floatfea ;
+       gh run list --commit 7e9444063e2a1809f69bfbfd876034db42cc4ba9
+out    3344 passed, 2 warnings in 668.28s
+       All checks passed!
+       135 files would be left unchanged.
+       Success: no issues found in 37 source files
+       completed / success
+         the verification ladder          success
+         lint, unit and guards            success
+         CI determinism -- leg            skipped   (workflow_dispatch only, by design)
+         CI determinism -- ten legs agree skipped   (same)
+rule   CZ1 (ii) and (iii), and (iv): a pushed run at the commit's own sha, green
+judge  **zero reds and zero waived reds, including the three report-guard files**, because
+       this commit creates neither boundary state: it touches no step report (EK3) and no
+       verdict follows it. The two warnings are the corpus entry `orient_norm_overflow`'s
+       own designed overflow, unchanged.
+```
+
+
 **Two findings were repaired immediately rather than ledgered**, because one was a live
 ladder gate and the other is FF0's class.
 
