@@ -144,49 +144,58 @@ fi
 # report, compared against its own sibling. NO `sort`, NO `tail -1` and NO numeric
 # label parse, so this cannot bring EC0 or R793 back -- it is a set difference, and
 # a set difference has no ranking to get wrong.
-# THE DOMAIN EXCLUDES PRE-GATING REPORTS, AND THAT EXCLUSION IS MEASURED (R799).
+# THE PRE-GATING EXEMPTION IS DECLARED, NOT INFERRED (R800).
 #
-# The first version of this swept EVERY report and wedged the clean tree:
+# R799's first repair inferred it: within a milestone, the lowest step holding a
+# verdict was taken as the step gating began at, and anything below it was exempt.
+# That was measured and it did not wedge -- but an INFERENCE has states its author
+# did not pick, and the reviewer reached one:
 #
-#   BLOCKS: these step reports have no supervisor verdict: docs/reports/F2/step-1.md
-#           docs/reports/F2/step-2.md docs/reports/F2/step-3.md
+#   docs/reports/F7/step-1.md with no verdict
+#   + docs/reports/F7/step-2.md AND a verdict for step 2
+#   -> ALLOW, because `gate_from` became 2 and step 1 sat below it
 #
-# Those three are real orphans -- `docs/reviews/F2/` holds step-4 through step-7 and
-# nothing earlier -- because the review discipline began at F2 step 4. A sweep that
-# refuses them is a guard failing false, and I had "measured" zero orphans before
-# writing it with a command whose pattern could not match (a `\r` escape where a
-# literal backslash was meant), which is why the wedge reached the file at all.
+# Reachable by a reviewer invoked on the second of two new reports: the turn blocks
+# naming both, a verdict at step 2 lifts the gate past step 1, and step 1 is exempt
+# from then on -- permanently and silently. **THIS IS R694's OWN MOVE**: a constant
+# that was right at one configuration replaced by the quantity it was standing in
+# for. Here it is the other direction -- an inference replaced by the one fact it
+# was inferring -- and there is exactly one such fact in this repository.
 #
-# So the domain is: within ONE milestone, the lowest step that HAS a verdict is where
-# gating began there. A report below that was never gated and is left alone; a report
-# at or above it must have one. A milestone with NO verdicts at all is gated from its
-# first report, because a new milestone cannot be pre-gating.
+# MEASURED, TWICE, BY TWO INDEPENDENT ROUTES, and once more by the reviewer:
 #
-# COMPARISONS ARE WITHIN A SINGLE MILESTONE ONLY, which is what keeps EC0 and R793
-# out: there is no ranking ACROSS milestones here and no label arithmetic -- `F6` and
-# `F6a` are different directories and are never compared with each other.
+#   claim  the complete set of reports with no verdict sibling
+#   cmd    compare every docs/reports/F*/step-*.md against its sibling, by
+#          parent/name and again by string swap
+#   out    by parent/name : [F2/step-1.md, F2/step-2.md, F2/step-3.md]
+#          by string swap : [F2/step-1.md, F2/step-2.md, F2/step-3.md]
+#          agree          : True
+#   rule   `docs/reviews/F2/` holds step-4 through step-7 and nothing earlier,
+#          because the review discipline began at F2 step 4
+#
+# So those three paths are named, every other report is gated from its first step,
+# and NO arithmetic over verdict sets survives here. There is nothing left to infer,
+# so there is no state left for an inference to be wrong in.
+#
+# A note for whoever reads this next: adding to this list is adding an exemption to
+# the only sweep that catches an unreviewed report. It takes a directive, and it
+# takes the measurement showing the path predates its milestone's first verdict.
+pre_gating="docs/reports/F2/step-1.md docs/reports/F2/step-2.md docs/reports/F2/step-3.md"
+
 orphans=""
 for rep in docs/reports/F*/step-*.md; do
   [ -f "$rep" ] || continue
   sib=${rep/docs\/reports/docs/reviews}
   [ -f "$sib" ] && continue
-  rep_dir=$(dirname "$rep")
-  rev_dir=${rep_dir/docs\/reports/docs/reviews}
-  rep_step=$(basename "$rep" .md); rep_step=${rep_step#step-}
-  gate_from=""
-  for v in "$rev_dir"/step-*.md; do
-    [ -f "$v" ] || continue
-    vs=$(basename "$v" .md); vs=${vs#step-}
-    case "$vs" in (*[!0-9]*|"") continue ;; esac
-    if [ -z "$gate_from" ] || [ "$vs" -lt "$gate_from" ]; then gate_from=$vs; fi
+  exempt=0
+  for known in $pre_gating; do
+    [ "$rep" = "$known" ] && { exempt=1; break; }
   done
-  case "$rep_step" in (*[!0-9]*|"") orphans="$orphans $rep"; continue ;; esac
-  if [ -z "$gate_from" ] || [ "$rep_step" -ge "$gate_from" ]; then
-    orphans="$orphans $rep"
-  fi
+  [ "$exempt" = 1 ] && continue
+  orphans="$orphans $rep"
 done
 if [ -n "$orphans" ]; then
-  block "require-verdict: these step reports have no supervisor verdict:$orphans. Invoke the gating-supervisor subagent on each before ending the turn, and do not write the verdict yourself. This sweeps EVERY report at or after the step its own milestone's gating began at, rather than only the one the step marker names, because the marker is advanced by the implementer in the commit it would otherwise be guarding (R799)."
+  block "require-verdict: these step reports have no supervisor verdict:$orphans. Invoke the gating-supervisor subagent on each before ending the turn, and do not write the verdict yourself. This sweeps EVERY report except the three that predate their milestone's first verdict, rather than only the one the step marker names, because the marker is advanced by the implementer in the commit it would otherwise be guarding (R799, R800)."
 fi
 
 review=${report/docs\/reports/docs\/reviews}
