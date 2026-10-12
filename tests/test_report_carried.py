@@ -2716,10 +2716,41 @@ def cz1_record() -> str:
     the report, which would be the locator going quiet. FJ0's second counter-case is that
     state.
     """
-    if _newest_verdict_disposition() == "PASS" and CLOSURE.exists():
-        found = _CZ1_BLOCK.search(CLOSURE.read_text(encoding="utf-8", errors="replace"))
-        return found.group(1) if found else ""
-    return _newest_revision(REPORT_TEXT)
+    report = _newest_revision(REPORT_TEXT)
+    if _newest_verdict_disposition() != "PASS" or not CLOSURE.exists():
+        return report
+    found = _CZ1_BLOCK.search(CLOSURE.read_text(encoding="utf-8", errors="replace"))
+    # R802: A PASS IS NOT NECESSARILY A *CLOSING* PASS, and the first version of this
+    # router did not ask -- while FJ0's own statement of the rule puts the weight on that
+    # word. An INTERIM check under ES0 is a verdict on a tree with NO new report
+    # revision, and it is a PASS like any other. Measured at F6a's three interim-check
+    # commits (`683f910`, `a522ae4`, `365fe3f`), identical in each:
+    #
+    #   newest F6a verdict's first Verdict:   PASS   (interim, closing nothing)
+    #   docs/closure/F6a.md exists            yes
+    #   cz1-closure-outputs block in it       0
+    #   report carries a whole-suite line     2
+    #
+    # so both guards would have been RED at each, on trees measured at
+    # `3344 / 3345 / 3346 passed, 0 failed`. It failed SAFE -- red, never green -- but
+    # EK2 forbids living with a guard that fails false, and the state had NO EXIT: a
+    # mid-step implementer cannot write a CZ1 record for a closure commit that does not
+    # exist. **FJ0's own deadlock in mirror image**, which is the shape to expect
+    # whenever a router is added to break a tie.
+    #
+    # THE DISCRIMINATOR IS THE RECORD'S OWN CONTENT, not a flag anyone sets: the step
+    # report carries its own whole-suite line mid-step, and CANNOT carry one after a
+    # closing PASS, because EK3 keeps the closure commit out of it -- which is the whole
+    # reason FJ0 exists.
+    #
+    # AND COUNTER-CASE 2's PROTECTION IS KEPT. A block that EXISTS is also a route, so a
+    # closure commit with an artifact, no block and no report line of its own still reads
+    # `""` and reddens rather than being answered by a stale line. **This is one clause
+    # stronger than the condition asked for**: that clause would route to the report
+    # whenever the report had a line, so a fresh block would lose to a stale report line.
+    if found is None and _SUITE.search(report):
+        return report
+    return found.group(1) if found else ""
 
 
 _SUITE = re.compile(
@@ -2779,6 +2810,47 @@ def test_FJ0_a_MISSING_CLOSURE_BLOCK_reddens(tmp_path, monkeypatch) -> None:
     with pytest.raises(AssertionError) as caught:
         test_the_report_carries_a_WHOLE_SUITE_count()
     assert "carries no whole-suite line" in str(caught.value)
+
+
+def test_R802_an_INTERIM_PASS_does_not_demand_a_CLOSURE_BLOCK(tmp_path, monkeypatch) -> None:
+    """R802. A PASS is not necessarily a CLOSING pass, and the router did not ask.
+
+    An interim check under ES0 is a verdict on a tree with no new report revision, and
+    it is a PASS like any other. At F6a's three interim-check commits the newest verdict
+    was PASS, `docs/closure/F6a.md` already existed, and it carried no block -- so the
+    first router sent both guards to an empty record and reddened them on trees measured
+    at `3344 / 3345 / 3346 passed, 0 failed`. It failed SAFE, and it had no exit: a
+    mid-step implementer cannot write a CZ1 record for a closure commit that does not
+    exist yet.
+
+    **The reviewer judged no test necessary for the one-clause repair. This is here
+    anyway**, because R795 and R796 in this same milestone were both clauses whose only
+    justification was an argument, and because R802 itself came out of running a state
+    nobody had run. It pins the asymmetry the router depends on -- a mid-step report has
+    its own whole-suite line and a closed one cannot -- rather than the clause's
+    spelling.
+    """
+    artifact = tmp_path / f"{MILESTONE}.md"
+    artifact.write_text("# an early closure artifact, no block yet", encoding="utf-8")
+    monkeypatch.setitem(globals(), "CLOSURE", artifact)
+    monkeypatch.setattr(sys.modules[__name__], "_newest_verdict_disposition", lambda: "PASS")
+    mid_step = (
+        "# Revision 1"
+        + chr(10) * 2
+        + "**Whole suite at `abc1234`: 3344 passed, 0 failed, 0 skipped.**"
+        + chr(10)
+    )
+    monkeypatch.setattr(sys.modules[__name__], "_newest_revision", lambda _t: mid_step)
+
+    assert cz1_record() == mid_step, (
+        "an INTERIM PASS with an early closure artifact and no block must read the step "
+        "report, which carries its own whole-suite line. Routing to the artifact there "
+        "is R802: red with no exit, because the closure commit does not exist yet."
+    )
+    found = _suite_line()
+    assert (
+        found is not None and found[1] == 3344
+    ), "and the line it reads is the report's own, not an empty record"
 
 
 def test_FJ0_a_MID_STEP_tree_still_reads_the_REPORT(monkeypatch) -> None:
