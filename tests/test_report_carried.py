@@ -2650,123 +2650,83 @@ def test_a_docs_commit_does_not_also_edit_the_guard_that_judges_it() -> None:
 # was red on a test in none of the seven -- and the failing declaration was
 # written by the commit that published the report, so it was true when it was
 # measured and false when it shipped. Subsets cannot see that. One line can.
-# WHERE CZ1's OUTPUTS LIVE, AND IT IS NOT ALWAYS THE STEP REPORT (FJ0).
+# WHERE CZ1's OUTPUTS LIVE: THE REVIEWER RECORDS IT, NOTHING INFERS IT (FK2).
 #
-# Adopted by directive FJ0, option (a). It is a LOCATOR REPAIR and not an extension: the
-# two guards below assert exactly what they asserted before, about exactly the same
-# quantities, and the only change is which record they read them from -- the one the rules
-# require the outputs to be in.
+# The two guards below assert exactly what they have always asserted, about exactly the
+# same quantities. What changed, three times, is which record they read them from -- and
+# the first three attempts each inferred it:
 #
-# THE DEADLOCK IT RESOLVES, measured at F6b's closure before the repair. CZ1 (iv) wants a
-# green pushed run at the closure commit. The two guards below read the step report, so
-# they clear only if the whole-suite line and the CI table are added to it. But:
+#   "the newest verdict is PASS"             (FJ0)   red at F6a's 3 interims  FAIL-SAFE
+#   "the report has no whole-suite line"      (cond)  prefers a stale line
+#   "block if present, else report w/ line"   (R802)  green on F6a's end shape FAIL-GREEN
 #
-#   newest commit touching the REPORT : 6ebe4c0
-#   newest commit touching the VERDICT: d509e44   (a closing PASS)
-#   the report NAMES                  : 6e32716
+# Each was correct on the states its author swept and wrong on one nobody did. A boolean
+# was standing in for a distinction this repository did not record anywhere, so the fix
+# was never a better proxy -- **it was to record the distinction** (FK0/FK1/FK2).
 #
-# touching the report makes it the newer of the two, and
-# `test_the_answered_verdict_is_the_NEWEST_one` then requires it to NAME `d509e44` -- i.e.
-# a REVISION 3 answering a PASS that held nothing. And EK3 forbids a closure commit from
-# touching a step report after that report's final verdict. **Three rules, and no state
-# satisfied all three**, so the nine reds could not clear at an increment's end.
+# FK0 gave `scripts/write_verdict.py` a `--closes <milestone[/step]>` flag that writes one
+# `Closes:` line into the entry. FK1 requires a closing verdict to use it and forbids any
+# other verdict from carrying the line. **EK2: ONE ROUTER, ON A RECORDED SIGNAL** -- the
+# three proxies are deleted, not stacked behind it.
 #
-# CZ1 ALREADY SAYS WHERE THEY GO: "in the step report's closure section, or -- where that
-# report is already closed -- in the next report's `Carried`". At an increment's end there
-# is no next report. `docs/closure/<milestone>.md` is the only remaining container, and
-# option (a) of FJ0 names it.
+# WHY THIS SIGNAL AND NOT A BETTER GUESS. A correct signal must be
+#   (a) unsettable by the constrained party, and
+#   (b) false mid-step, true at closure.
+# `docs/reviews` is the only record the implementer cannot write -- the editing tools and
+# Bash are both refused there -- so (a) holds by construction rather than by convention,
+# and (b) is the reviewer's own judgement written down instead of reconstructed.
 #
-# SO THE RULE IS: after a closing PASS, with a closure artifact present, these two read the
-# artifact's marked block. Otherwise they read the step report, exactly as before -- which
-# is every mid-step tree, and `test_FJ0_a_MID_STEP_tree_still_reads_the_REPORT` holds that
-# half.
-#
-# THE REPORT'S OWN SECTIONS 0 AND 0a ARE NOT DUPLICATED BY THIS AND ARE NOT DRIFT. They are
-# about the commit the VERDICT JUDGED; the closure block is about the CLOSURE COMMIT. Two
-# different commits and two different questions, which is why four other CI guards still
-# read the report and are untouched here.
+# THE REPORT'S SECTIONS 0 AND 0a ARE NOT DUPLICATED BY THIS. They are about the commit the
+# VERDICT JUDGED; the closure block is about the CLOSURE COMMIT. Two commits, two
+# questions, which is why four other CI guards still read the report and are untouched.
 CLOSURE = ROOT / "docs" / "closure" / f"{MILESTONE}.md"
 
 _CZ1_BLOCK = re.compile(
     r"<!--\s*cz1-closure-outputs\s*-->(.*?)<!--\s*/cz1-closure-outputs\s*-->", re.S
 )
 
+# The `Closes:` line of the NEWEST entry. The file accumulates newest-first (DX2), so the
+# first match is the current round's -- the same reason C105 recorded `re.search` as
+# correct for reading one, and the same reason R798's "first means oldest" was withdrawn.
+_CLOSES = re.compile(r"^Closes:\s*(\S+)\s*$", re.MULTILINE)
 
-def _newest_verdict_disposition() -> str:
-    """The FIRST `Verdict:` of the newest verdict file, which is the newest verdict.
 
-    `scripts/write_verdict.py` PREPENDS, so a verdict file is newest-first (DY6) -- the
-    same reason C105 recorded `re.search` as correct for reading one, and the same reason
-    R798's "first means oldest" was withdrawn. Reads the working copy, because the question
-    is what the newest verdict SAYS and not what it said at some commit.
+def _newest_verdict_closes() -> str:
+    """What the newest verdict says it CLOSES, or `""`.
+
+    Reads the working copy, because the question is what the newest verdict SAYS and not
+    what it said at some commit.
     """
     try:
         text = VERDICT.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return ""
-    found = re.search(r"^Verdict:\s*(\w+)", text, re.MULTILINE)
+    found = _CLOSES.search(text)
     return found.group(1) if found else ""
 
 
 def cz1_record() -> str:
-    """The text CZ1's outputs are to be read from, per FJ0.
+    """The text CZ1's outputs are to be read from (FK2).
 
-    Returns `""` when a closing PASS and a closure artifact exist but the artifact has no
-    marked block -- so the guards fail with their own messages rather than falling back to
-    the report, which would be the locator going quiet. FJ0's second counter-case is that
-    state.
+    Routes on the `Closes:` line ALONE: the newest verdict closing THIS increment sends
+    the guards to the closure artifact's block; anything else -- no line, a line naming
+    another increment, no artifact -- sends them to the step report.
+
+    Returns `""` when this increment is closed and the artifact has no block, so the
+    guards fail with their own messages rather than falling back to a step report whose
+    older line would answer in their place. That fall-back is R803, and it failed GREEN.
     """
     report = _newest_revision(REPORT_TEXT)
-    if _newest_verdict_disposition() != "PASS" or not CLOSURE.exists():
+    closes = _newest_verdict_closes()
+    if not closes:
+        return report
+    # `Closes: F6b` and `Closes: F6b/step-1` both close THIS increment; `Closes: F7`
+    # closes another one and must not route.
+    if closes.split("/", 1)[0] != MILESTONE:
+        return report
+    if not CLOSURE.exists():
         return report
     found = _CZ1_BLOCK.search(CLOSURE.read_text(encoding="utf-8", errors="replace"))
-    # R802/R803: A PASS IS NOT NECESSARILY A *CLOSING* PASS, AND NOTHING HERE CAN TELL.
-    #
-    # An ES0 interim check is a verdict on a tree with NO new report revision, and it is
-    # a PASS like any other. Measured at F6a's three interim-check commits (`683f910`,
-    # `a522ae4`, `365fe3f`), identical in each: verdict PASS, closure artifact present,
-    # cz1 block 0, report whole-suite lines 2. So this router sends both guards to an
-    # empty record and reddens them on trees measured at `3344 / 3345 / 3346 passed`.
-    #
-    # **THAT RED IS KNOWN, IT IS FAIL-SAFE, AND IT IS THE CHOSEN STATE OF THE TREE.**
-    # `test_R802_an_INTERIM_PASS_does_not_demand_a_CLOSURE_BLOCK` is the standing red
-    # that names it. It is not deleted, skipped or xfailed to restore a green.
-    #
-    # THREE PROXIES HAVE EACH FAILED A MEASURED STATE, which is the finding rather than
-    # a history note -- a boolean is standing in for a distinction this repository does
-    # not record anywhere, so the fix is to record the distinction, not to improve the
-    # proxy:
-    #
-    #   "the newest verdict is PASS"            (FJ0)   red at F6a's 3 interims  SAFE
-    #   "the report has no whole-suite line"    (cond)  prefers a stale line
-    #   "block if present, else report w/ line" (R802)  green on F6a's end shape UNSAFE
-    #
-    # THE THIRD WAS MINE AND IT WAS REVERTED HERE, BY RULING, ON A MEASUREMENT I HAD
-    # NOT TAKEN. Both routers were built and the three separating states run. The first
-    # two rows below are THE SAME INPUT -- neither router distinguishes a closing PASS
-    # from an interim one -- so the only question is which way the ambiguity resolves:
-    #
-    #   state                                        (A) shipped        (B) this
-    #   closing PASS + no block + report HAS a line  REPORT -> PASS     '' -> RED
-    #                                                FAIL-GREEN         correct
-    #   interim PASS + no block + report HAS a line  REPORT (correct)   '' -> RED,
-    #                                                                   no exit
-    #   fresh block + stale report line              BLOCK (correct)    BLOCK (correct)
-    #
-    # and the cost I traded against is IDENTICAL -- `3 failed, 121 passed, 1 skipped`
-    # under both, one named red either way plus the same two boundary ids. So the only
-    # argument for (A) was that it was cheaper in reds, and that was false. **Fail-safe
-    # beats fail-green**, and the same rule that justified holding R803 has to apply to
-    # its remedy. Reachability is asymmetric the same way: (A)'s hole needs only a
-    # future increment whose report carries a line before closure -- which F6a did, at
-    # four measured commits -- while (B)'s needs work to continue before the directive
-    # lands, which FJ2 forbids.
-    #
-    # A CORRECT SIGNAL must be unsettable by the constrained party, false mid-step and
-    # true at closure. `docs/revi` + `ews/` is the only record the implementer cannot
-    # write, so a closing verdict SAYING it is closing satisfies both by construction --
-    # and that changes what the reviewer writes, so it needs a directive and not an
-    # edit from here.
     return found.group(1) if found else ""
 
 
@@ -2780,69 +2740,108 @@ def _suite_line() -> tuple[str, int, int, int] | None:
     return (m.group(1), int(m.group(2)), int(m.group(3)), int(m.group(4))) if m else None
 
 
-def test_FJ0_a_CLOSURE_BLOCK_with_a_WRONG_COUNT_reddens(tmp_path, monkeypatch) -> None:
-    """FJ0's first counter-case: the locator moved the record, not the assertion.
+def _closes_line(value: str) -> str:
+    """A verdict file's text carrying one `Closes:` line, for the cases below."""
+    return "# Review" + chr(10) + f"Closes: {value}" + chr(10) + "Verdict: PASS" + chr(10)
 
-    A guard that reads a new place and asserts nothing about what it finds there is a
-    guard that has been deleted and relabelled. The block's whole-suite line is held to
-    the same `passed > 100` the report's was.
-    """
+
+def test_FK2_the_CLOSES_line_routes_to_the_CLOSURE_BLOCK(tmp_path, monkeypatch) -> None:
+    """FK2. The newest verdict closing THIS increment sends the guards to the block."""
     block = (
-        "<!-- cz1-closure-outputs -->\n"
-        "**Whole suite at `30f50f6`: 7 passed, 0 failed, 0 skipped.**\n"
-        "<!-- /cz1-closure-outputs -->\n"
+        "<!-- cz1-closure-outputs -->"
+        + chr(10)
+        + "**Whole suite at `30f50f6`: 3171 passed, 0 failed, 0 skipped.**"
+        + chr(10)
+        + "<!-- /cz1-closure-outputs -->"
+        + chr(10)
     )
     artifact = tmp_path / f"{MILESTONE}.md"
     artifact.write_text(block, encoding="utf-8")
+    verdict = tmp_path / "step-1.md"
+    verdict.write_text(_closes_line(MILESTONE), encoding="utf-8")
     monkeypatch.setitem(globals(), "CLOSURE", artifact)
-    monkeypatch.setattr(sys.modules[__name__], "_newest_verdict_disposition", lambda: "PASS")
+    monkeypatch.setitem(globals(), "VERDICT", verdict)
+    # A step report carrying its OWN line, so the case fails if the report is preferred.
+    stale = (
+        "# Revision 1"
+        + chr(10) * 2
+        + "**Whole suite at `aaaaaaa`: 1 passed, 0 failed, 0 skipped.**"
+        + chr(10)
+    )
+    monkeypatch.setattr(sys.modules[__name__], "_newest_revision", lambda _t: stale)
 
     found = _suite_line()
-    assert found is not None, "the case depends on the block's line being READ"
-    assert found[1] == 7, "and on the wrong count reaching the guard"
-    with pytest.raises(AssertionError) as caught:
-        test_the_report_carries_a_WHOLE_SUITE_count()
-    assert "was not the whole suite" in str(caught.value), (
-        "the guard read the block and accepted 7 passed as a whole-suite count: "
-        f"{str(caught.value)[:200]}"
+    assert found is not None and found[1] == 3171, (
+        "a verdict closing this increment must route to the closure block, and the block's "
+        f"line must win over the report's stale one; got {found!r}"
     )
 
 
-def test_FJ0_a_MISSING_CLOSURE_BLOCK_reddens(tmp_path, monkeypatch) -> None:
-    """FJ0's second counter-case: no silent fall back to the report.
+def test_FK2_an_INTERIM_verdict_routes_to_the_REPORT(tmp_path, monkeypatch) -> None:
+    """FK2, and it is R802's state. An interim check carries NO `Closes:` line.
 
-    If a closing PASS and an artifact exist but the artifact carries no marked block, the
-    outputs are simply absent and the guard must say so. Falling back to the step report
-    would let a closure commit ship with no CZ1 record at all, which is the hole the
-    locator would otherwise open -- and it would be invisible, because the report's own
-    older line would answer in its place.
+    This is the state three proxies got wrong in the fail-safe direction: at F6a's three
+    interim-check commits the newest verdict was a PASS, the closure artifact already
+    existed and carried no block, and the report carried its own whole-suite line. FK1
+    forbids an interim verdict from carrying the line, so the router reads the report --
+    and there is no state in which the implementer cannot reach a green.
+    """
+    artifact = tmp_path / f"{MILESTONE}.md"
+    artifact.write_text("# an early closure artifact, no block yet", encoding="utf-8")
+    verdict = tmp_path / "step-1.md"
+    verdict.write_text("# Review" + chr(10) + "Verdict: PASS" + chr(10), encoding="utf-8")
+    monkeypatch.setitem(globals(), "CLOSURE", artifact)
+    monkeypatch.setitem(globals(), "VERDICT", verdict)
+    mid_step = (
+        "# Revision 1"
+        + chr(10) * 2
+        + "**Whole suite at `abc1234`: 3344 passed, 0 failed, 0 skipped.**"
+        + chr(10)
+    )
+    monkeypatch.setattr(sys.modules[__name__], "_newest_revision", lambda _t: mid_step)
+
+    assert _newest_verdict_closes() == "", "an interim verdict carries no Closes: line"
+    assert cz1_record() == mid_step, "so the record is the step report"
+    found = _suite_line()
+    assert found is not None and found[1] == 3344
+
+
+def test_FK2_a_CLOSES_naming_ANOTHER_increment_does_not_route(tmp_path, monkeypatch) -> None:
+    """FK2. `Closes: F7` closes another increment and must not route this one."""
+    artifact = tmp_path / f"{MILESTONE}.md"
+    artifact.write_text("# an artifact with no block", encoding="utf-8")
+    verdict = tmp_path / "step-1.md"
+    verdict.write_text(_closes_line("F999"), encoding="utf-8")
+    monkeypatch.setitem(globals(), "CLOSURE", artifact)
+    monkeypatch.setitem(globals(), "VERDICT", verdict)
+    mine = (
+        "# Revision 1"
+        + chr(10) * 2
+        + "**Whole suite at `abc1234`: 3344 passed, 0 failed, 0 skipped.**"
+        + chr(10)
+    )
+    monkeypatch.setattr(sys.modules[__name__], "_newest_revision", lambda _t: mine)
+
+    assert _newest_verdict_closes() == "F999", "the line is read"
+    assert cz1_record() == mine, (
+        "a Closes: naming another increment must not route this one's guards -- otherwise "
+        "one increment's closure would silently retarget another's record"
+    )
+
+
+def test_FK2_a_CLOSED_increment_with_NO_BLOCK_reddens(tmp_path, monkeypatch) -> None:
+    """FK2. No silent fall back to the report, which is R803 and failed GREEN.
+
+    The report is given its OWN whole-suite line here, which is exactly what made R803
+    invisible: the fall-back answered with a line describing an earlier commit. With the
+    increment recorded as closed, the absent block is simply an absent record.
     """
     artifact = tmp_path / f"{MILESTONE}.md"
     artifact.write_text("# closure, with no marked block", encoding="utf-8")
+    verdict = tmp_path / "step-1.md"
+    verdict.write_text(_closes_line(MILESTONE), encoding="utf-8")
     monkeypatch.setitem(globals(), "CLOSURE", artifact)
-    monkeypatch.setattr(sys.modules[__name__], "_newest_verdict_disposition", lambda: "PASS")
-    # R803: THE REPORT IS PINNED TOO, AND NOT PINNING IT IS WHAT MADE THIS CASE
-    # TREE-COUPLED. It patched `CLOSURE` and the disposition and left
-    # `_newest_revision` alone, so `cz1_record() == ""` held only because F6b's real
-    # report happens to carry no whole-suite line. Against an F6a-shaped report -- two
-    # whole-suite lines, closing PASS, artifact present, no block -- the router returns
-    # the REPORT and the guard PASSES on a stale line, which is the exact state this
-    # case's own docstring says must not be reachable.
-    #
-    # **SO THIS CASE IS CURRENTLY RED, AND THAT IS THE POINT.** It names R803 rather
-    # than being deleted, skipped or xfailed to restore a green: `CLAUDE.md`'s
-    # non-negotiable is to report the failure instead. R802's repair traded FJ0's
-    # fail-SAFE hole for a fail-GREEN one, and no signal available to this file
-    # distinguishes a closing PASS from an interim one -- three proxies have each
-    # failed a measured state:
-    #
-    #   "the newest verdict is PASS"            (FJ0)   red at F6a's 3 interims  SAFE
-    #   "the report has no whole-suite line"    (cond)  prefers a stale line
-    #   "block if present, else report w/ line" (R802)  green on F6a's end shape UNSAFE
-    #
-    # The repair needs a record the implementer cannot write -- `docs/reviews/` is the
-    # only one -- which changes what the REVIEWER writes and therefore needs a
-    # directive, not an edit from here.
+    monkeypatch.setitem(globals(), "VERDICT", verdict)
     f6a_shaped = (
         "# Revision 2"
         + chr(10) * 2
@@ -2852,71 +2851,42 @@ def test_FJ0_a_MISSING_CLOSURE_BLOCK_reddens(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(sys.modules[__name__], "_newest_revision", lambda _t: f6a_shaped)
 
     assert cz1_record() == "", (
-        "R803: a closing PASS with an artifact carrying no block read the STEP REPORT "
-        "and found its stale whole-suite line, so the guard passed on a record that "
-        "describes an earlier commit. A closure commit can ship with no CZ1 record at "
-        "all and nothing says so -- which is this case's own docstring. The router "
-        "needs a signal the implementer cannot set; see the comment above."
+        "a closed increment whose artifact carries no block has NO CZ1 record, and the "
+        "step report's own older line must not answer in its place (R803)"
     )
-    assert _suite_line() is None, "so there is no whole-suite line to find"
+    assert _suite_line() is None
     with pytest.raises(AssertionError) as caught:
         test_the_report_carries_a_WHOLE_SUITE_count()
     assert "carries no whole-suite line" in str(caught.value)
 
 
-def test_R802_an_INTERIM_PASS_does_not_demand_a_CLOSURE_BLOCK(tmp_path, monkeypatch) -> None:
-    """R802. A PASS is not necessarily a CLOSING pass, and the router did not ask.
+def test_FK2_a_WRONG_COUNT_in_the_block_still_reddens(tmp_path, monkeypatch) -> None:
+    """FK2. The locator moved the record, not the assertion.
 
-    An interim check under ES0 is a verdict on a tree with no new report revision, and
-    it is a PASS like any other. At F6a's three interim-check commits the newest verdict
-    was PASS, `docs/closure/F6a.md` already existed, and it carried no block -- so the
-    first router sent both guards to an empty record and reddened them on trees measured
-    at `3344 / 3345 / 3346 passed, 0 failed`. It failed SAFE, and it had no exit: a
-    mid-step implementer cannot write a CZ1 record for a closure commit that does not
-    exist yet.
-
-    **The reviewer judged no test necessary for the one-clause repair. This is here
-    anyway**, because R795 and R796 in this same milestone were both clauses whose only
-    justification was an argument, and because R802 itself came out of running a state
-    nobody had run. It pins the asymmetry the router depends on -- a mid-step report has
-    its own whole-suite line and a closed one cannot -- rather than the clause's
-    spelling.
+    A guard that reads a new place and asserts nothing about what it finds there is a
+    guard that has been deleted and relabelled, so the block's line faces the same
+    `passed > 100` the report's did.
     """
-    artifact = tmp_path / f"{MILESTONE}.md"
-    artifact.write_text("# an early closure artifact, no block yet", encoding="utf-8")
-    monkeypatch.setitem(globals(), "CLOSURE", artifact)
-    monkeypatch.setattr(sys.modules[__name__], "_newest_verdict_disposition", lambda: "PASS")
-    mid_step = (
-        "# Revision 1"
-        + chr(10) * 2
-        + "**Whole suite at `abc1234`: 3344 passed, 0 failed, 0 skipped.**"
+    block = (
+        "<!-- cz1-closure-outputs -->"
+        + chr(10)
+        + "**Whole suite at `30f50f6`: 7 passed, 0 failed, 0 skipped.**"
+        + chr(10)
+        + "<!-- /cz1-closure-outputs -->"
         + chr(10)
     )
-    monkeypatch.setattr(sys.modules[__name__], "_newest_revision", lambda _t: mid_step)
+    artifact = tmp_path / f"{MILESTONE}.md"
+    artifact.write_text(block, encoding="utf-8")
+    verdict = tmp_path / "step-1.md"
+    verdict.write_text(_closes_line(MILESTONE), encoding="utf-8")
+    monkeypatch.setitem(globals(), "CLOSURE", artifact)
+    monkeypatch.setitem(globals(), "VERDICT", verdict)
 
-    assert cz1_record() == mid_step, (
-        "an INTERIM PASS with an early closure artifact and no block must read the step "
-        "report, which carries its own whole-suite line. Routing to the artifact there "
-        "is R802: red with no exit, because the closure commit does not exist yet."
-    )
     found = _suite_line()
-    assert (
-        found is not None and found[1] == 3344
-    ), "and the line it reads is the report's own, not an empty record"
-
-
-def test_FJ0_a_MID_STEP_tree_still_reads_the_REPORT(monkeypatch) -> None:
-    """FJ0's third counter-case: the old behaviour is unchanged mid-step.
-
-    The locator may not quietly redirect a tree that is still working a step. With the
-    newest verdict a HOLD, the record is the step report's newest revision whatever the
-    closure artifact says -- and the artifact is deliberately left in place here, so the
-    case fails if the disposition is not what decides.
-    """
-    monkeypatch.setattr(sys.modules[__name__], "_newest_verdict_disposition", lambda: "HOLD")
-    assert cz1_record() == _newest_revision(
-        REPORT_TEXT
-    ), "mid-step, CZ1's outputs are read from the step report, as they were before FJ0"
+    assert found is not None and found[1] == 7, "the block's line is READ"
+    with pytest.raises(AssertionError) as caught:
+        test_the_report_carries_a_WHOLE_SUITE_count()
+    assert "was not the whole suite" in str(caught.value)
 
 
 def test_the_report_carries_a_WHOLE_SUITE_count() -> None:
