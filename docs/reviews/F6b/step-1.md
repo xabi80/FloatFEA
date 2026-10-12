@@ -1,4 +1,193 @@
 # Review — F6b step 1
+Reviewed commit: 69ce1570e7004db49c8542de4011361c329f8a8e
+Verdict: HOLD
+Tests: 3342 passed, 0 failed, 0 skipped   (my own run, `python -m pytest -q -p no:randomly`, 702.17s, no exclusions)
+
+## INTERIM CHECK (ES0) of 2026-10-11 -- R802's repair. **HOLD on ONE item, CZ0 (c), and the direction changed from safe to unsafe.**
+
+**Reviewed commit: `69ce157` (HEAD).** Counts against no round.
+
+**Your deviation was RIGHT and MY CONDITION WAS WRONG -- in a third state I never swept.**
+Taken literally, my clause routes to the report whenever the report has a line, so a fresh
+block loses to a stale one. You caught that and I did not. **It is this milestone's own
+recurring species, in my own closing condition**: a sentence right about the two axes its
+author swept and silent about the one with nothing on it. I checked my clause against F6b
+and F6a's interims and never against a tree holding both a block and a report line.
+
+**But the repair reopens FJ0's own hole, and that is the HOLD.**
+
+## Carried
+
+| item | status | what I measured |
+|---|---|---|
+| R802 | **genuinely fixed** | an interim PASS no longer demands a block; the clause is pinned by a non-vacuous case. |
+| the `30f50f6` script note | **recorded in the artifact** as asked. |
+| R803 | **NEW, and blocking** -- below. |
+
+## Findings
+
+**R803. (c, BLOCKING) The fall-back lets a closure commit ship with NO CZ1 record, answered
+invisibly by the report's older line -- the exact state FJ0's counter-case 2 was written to
+prevent. Measured on the live module, not inferred.**
+
+```
+claim  a closing PASS + an artifact with NO block + a report carrying its own line reads
+       the REPORT, and the guard passes
+cmd    my own harness: point CLOSURE at an artifact with no marked block, set REPORT_TEXT
+       to F6a's measured shape (a whole-suite line present), call the guard
+out    disposition: PASS | artifact exists: True | block present: False
+       cz1_record() routed to the REPORT: True
+       the line the guard reads: ('aaaaaaa', 3171, 0, 0)
+       test_the_report_carries_a_WHOLE_SUITE_count -> PASS
+rule   FJ0's own words, kept verbatim in the docstring this commit did not change:
+       "Falling back to the step report would let a closure commit ship with no CZ1 record
+       at all, which is the hole the locator would otherwise open -- and it would be
+       invisible, because the report's own older line would answer in its place."
+judge  **green, with no CZ1 block anywhere.** R802 failed SAFE -- red where it should have
+       been green. This fails GREEN. That is the distinction that decides the disposition,
+       and it is why I am not carrying this as PASS-with-a-note the way I carried R802.
+```
+
+**And the state is F6a's measured final shape, at four commits:**
+
+```
+claim  the comment's load-bearing claim is false of the previous increment
+cmd    at each of 365fe3f, 4862f6e, 6caef39, b48f63c: the newest F6a verdict, the report's
+       whole-suite lines, and the artifact's block count
+out    all four identical:
+         newest F6a verdict          Verdict: PASS
+         report whole-suite lines    2
+         closure artifact exists     yes
+         cz1-closure-outputs block   0
+rule   the comment at `cz1_record`: "the step report carries its own whole-suite line
+       mid-step, and CANNOT carry one after a closing PASS, because EK3 keeps the closure
+       commit out of it"
+judge  **false of F6a, including at `b48f63c`, its last commit, after its closing PASS.**
+       EK3 forbids ADDING a line after the final verdict; it does not remove one added
+       legitimately BEFORE it. F6a's went in at `15bb18f`, a closure commit written while
+       no final verdict existed, which was legal. So "cannot" is "did not, in F6b" -- and
+       F6b's report carries no line for reasons that have nothing to do with EK3.
+```
+
+**And the case that was written to prevent this can no longer detect it.**
+
+```
+claim  counter-case 2 does not pin `REPORT_TEXT`, so it passes on an incidental property
+       of F6b's report
+cmd    read it, then evaluate `cz1_record()` under its own patches with an F6a-shaped report
+out    it patches CLOSURE and the disposition and nothing else
+       F6b report has a whole-suite line: False     <- why `cz1_record() == ""` holds today
+       with an F6a-shaped report, cz1_record() == '# r\n\nAnswers: v\n\n**Whole suite'
+judge  **the guard that named this hole now passes because of a property of F6b's report,
+       and would go RED in the tree where the hole is live.** So the hole is unguarded and
+       the case is tree-coupled. Whatever the fix, that case must pin `REPORT_TEXT`.
+```
+
+**Closed when** the router distinguishes a closing PASS from an interim one on a signal with
+two properties: **(a) the party the guard constrains cannot set it, and (b) it is false
+mid-step and true at closure.** Three proxies have now each failed on a measured state:
+
+```
+proxy                                          fails on                      direction
+"the newest verdict is PASS"          (FJ0)    F6a's three interim checks    SAFE (R802)
+"the report has no whole-suite line"  (mine)   a closure holding both        prefers stale
+"block if present, else report if it
+ has a line"                          (yours)  F6a's final shape             UNSAFE (R803)
+```
+
+**The only record here the implementer cannot write is `docs/reviews/`** --
+`protect-reviews.sh` denies it -- so a closing verdict saying it is closing is the one signal
+that satisfies (a) by construction and (b) by my own hand. **That changes what I write, so it
+needs a directive rather than your edit**, and I am naming the property rather than the
+mechanism so Xabier can choose. If a cheaper signal exists, the test it must pass is the
+table above: green at F6a's three interim commits, red at a closure with an artifact and no
+block, and the fresh block preferred over a stale report line.
+
+## The counter-case you added: KEEP IT. My "no new test" was wrong.
+
+**You were right and my words were not.** EK2's "fixed or deleted, never extended" is about
+widening a guard's REACH, and "no new apparatus" names guards, scanners, meta-tests,
+detectors and report generators -- **a counter-case pinning an existing clause of an existing
+guard is none of those, and R795's case in this same milestone set that precedent with my
+agreement.** Your reason is the better one: R795 and R796 were both clauses whose only
+justification was an argument, and R802 came out of running a state nobody had run. **Do not
+delete it.** One note: it pins the clause that produces R803, so it changes with the fix.
+
+**And withholding your attack-B measurement while I was mid-review was the right call.** A
+gate that moves under a reader produces a verdict about a tree that no longer exists, which
+is CP3's reasoning applied to a review instead of a figure. The spare route -- `ci_table_defects("")`
+returning `['the 0a table is missing its header']` on its own -- belongs in the record,
+because my own finding rested on the `assert rows` line ordering and a reordering would have
+removed my reason without removing the protection.
+
+## Tolerances touched
+
+**None, verified not taken.** `git diff --stat 793fc87..HEAD -- floatfea
+floatfea/tolerances.py` is empty, so no value, no counter, no injection: **EU1 does not
+arise.** `tests/conftest.py` untouched. `git log 793fc87..HEAD -- .claude .claude/hooks
+docs/SUPERVISOR.md` is empty -- **no STOP-class finding**, checked precisely because one of
+these commits touches `tests/`. `ff418ce` is a standalone `process:` commit, one file,
+citing FJ.
+
+## The suite, lint and CI at the reviewed commit (CA2, CK2)
+
+```
+cmd  python -m pytest -q -p no:randomly          (mine, at 69ce157, tree clean)
+out  3342 passed, 2 warnings in 702.17s          -- 0 failed, 0 skipped, no exclusions
+cmd  python -m ruff check floatfea tests scripts ; black --check ... ; mypy floatfea
+out  All checks passed! / 137 files would be left unchanged. /
+     Success: no issues found in 37 source files
+cmd  gh api .../runs/38188462486 --jq status,conclusion   then its /jobs
+out  status=completed conclusion=success ; both jobs success ; determinism skipped by design
+cmd  python -m pytest -k "FJ0 or R802"
+out  4 passed, 121 deselected
+```
+
+**Everything is green, and that is the finding rather than a reassurance.** `3342 passed,
+0 failed` is a tree in which the hole above is green, which is the only kind of hole worth
+holding on. I polled HEAD's run to `completed` rather than reading an unfinished one. CK2
+does not apply: no job has an empty runner name with a payment annotation.
+
+## The corpus (EG4(e))
+
+**Pause held; no entry, no batch** -- ES0's light scope asks for none. The substitute was
+again the direction that weakens: your four cases are all refusals, so I built the one state
+none of them builds -- an artifact without a block beside a report that HAS a line -- and
+checked it against the previous increment's own history. **R803 came out of that and nothing
+else.**
+
+## Next step opens when
+
+**Nothing opens, and I am not softening this.** F6b is closed at `d509e44` and DD1 says this
+HOLD does not reopen it -- a step's disposition is its closure verdict, not the last line of
+its file. The HOLD's force is on what comes next:
+
+1. **R803 is repaired before any further commit relies on these two guards**, in a standalone
+   `process:` commit citing FJ, on a signal with properties (a) and (b) above. **Green is not
+   the test; the table of three failed proxies is.**
+2. **Counter-case 2 pins `REPORT_TEXT`** as part of that repair, whatever the discriminator
+   turns out to be.
+3. **R802's own counter-case stays**, updated with the clause.
+4. **Everything else in `ff418ce` is sound**: R802 is genuinely fixed, the six states you
+   tabulated are the right six to tabulate, and five of the six route correctly.
+
+## Disagreement with the criterion -- none
+
+R803 is CZ0 (c) by subject -- what the gate claims, on which record -- which is the
+classification I applied to FJ0's locator last round, so ruling otherwise now would be
+inconsistent rather than lenient. **The thing worth recording is the pattern: three routers
+in three commits, each correct on the states its author swept, each wrong on one nobody
+did.** That is not carelessness; it is what happens when a boolean stands in for a
+distinction the repository does not record anywhere. **The fix is to record the distinction,
+not to improve the proxy** -- and that is a directive's call, not yours or mine.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6b step 1
 Reviewed commit: 4c327c19548857b2a2ed1e975698da411b2f5691
 Verdict: PASS
 Tests: 3341 passed, 0 failed, 0 skipped   (my own run, `python -m pytest -q -p no:randomly`, 703.26s, no exclusions)
