@@ -194,6 +194,34 @@ judge  **zero waived reds, and no EG3 trace to paste** -- there is nothing to wa
        unchanged. CZ1 (iv) is satisfied at an increment's end for the first time.
 ```
 
+**R802 -- FJ0's ROUTER COULD NOT TELL A CLOSING PASS FROM AN INTERIM ONE, and the repair
+is `ff418ce`.** The FJ0 interim check's one latent (c)-class finding, and it is FJ0's own
+deadlock in mirror image: an ES0 interim check is a PASS like any other, so at F6a's three
+interim-check commits the newest verdict was PASS, the closure artifact already existed and
+carried no block -- and both guards would have been red on trees measured at
+`3344 / 3345 / 3346 passed, 0 failed`. It failed SAFE and had NO EXIT, because a mid-step
+implementer cannot write a CZ1 record for a closure commit that does not exist.
+
+The discriminator is the record's own content: a step report carries its own whole-suite
+line mid-step and cannot carry one after a closing PASS, because EK3 keeps the closure
+commit out of it. **The repair is one clause stronger than the closing condition asked
+for** -- a block that exists is also a route, so a fresh block cannot lose to a stale
+report line -- and all six states were measured, with counter-case 2's protection kept.
+
+```
+claim  the whole suite and CI at the R802 commit
+cmd    python -m pytest -q ; gh run list --commit ff418ce... ; gh api .../runs/38187704872/jobs
+out    3342 passed, 2 warnings in 697.67s        (+1, R802's own counter-case)
+       completed / success
+       the verification ladder           success
+       lint, unit and guards             success
+       CI determinism -- leg             skipped   (workflow_dispatch only, by design)
+       CI determinism -- ten legs agree  skipped   (same)
+rule   FJ1: green with zero waived reds, locally and in CI at the commit's own sha
+judge  **zero waived reds, and no EG3 trace to paste** -- there is nothing to waive. The
+       two warnings are `orient_norm_overflow`'s own designed overflow.
+```
+
 <!-- /cz1-closure-outputs -->
 
 **CZ1 (iv) WAS DEADLOCKED AT AN INCREMENT'S END UNTIL DIRECTIVE FJ0 (option (a)) RESOLVED IT. THAT IS A STRUCTURAL
