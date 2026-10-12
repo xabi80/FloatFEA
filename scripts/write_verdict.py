@@ -75,6 +75,41 @@ def _milestone(value: str) -> str:
     return cleaned
 
 
+def _closes(value: str) -> str:
+    """A milestone label, or `milestone/step`, for the `Closes:` line (FK0).
+
+    THE WHOLE POINT IS THAT THIS IS RECORDED AND NOT INFERRED. Three routers in three
+    commits tried to infer "is this verdict closing something?" from the tree -- the
+    newest verdict's disposition, the step report's own whole-suite line, the closure
+    artifact's block -- and each was correct on the states its author swept and wrong on
+    one nobody did (R802, R803). A boolean was standing in for a distinction the
+    repository did not record anywhere.
+
+    So the reviewer records it. This argument is the only way the line is written, and
+    `docs/reviews/` is hook-protected, so the line is settable only by the party whose
+    judgement it is -- which is the property the proxies could not have.
+
+    The shape is the one the directories already use, because the value is read back as
+    a milestone and optionally a step: `F6b`, `6b`, `F6b/step-1`, `6b/1`.
+    """
+    raw = value.strip()
+    milestone, _, step = raw.partition("/")
+    cleaned = milestone[1:] if milestone[:1] in "Ff" else milestone
+    if not re.fullmatch(r"\d+[a-z]?", cleaned):
+        raise argparse.ArgumentTypeError(
+            f"--closes {value!r}: the milestone part is not a label of the form 2, 2a, "
+            "6, 6a, F6a"
+        )
+    if step:
+        bare = step[5:] if step.startswith("step-") else step
+        if not bare.isdigit():
+            raise argparse.ArgumentTypeError(
+                f"--closes {value!r}: the step part must be a number, as in F6b/step-1"
+            )
+        return f"F{cleaned}/step-{int(bare)}"
+    return f"F{cleaned}"
+
+
 def sha() -> str:
     return subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
 
@@ -83,6 +118,16 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--milestone", type=_milestone, required=True)
     ap.add_argument("--step", type=int, required=True)
+    ap.add_argument(
+        "--closes",
+        type=_closes,
+        default=None,
+        help=(
+            "this verdict CLOSES that step or increment; writes one `Closes:` line "
+            "into this entry (FK0). FK1: a closing verdict must use it, and no other "
+            "verdict may carry the line."
+        ),
+    )
     args = ap.parse_args()
 
     body = sys.stdin.read()
@@ -103,6 +148,13 @@ def main() -> int:
     out = root / f"docs/reviews/F{args.milestone}/step-{args.step}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     header = f"# Review — F{args.milestone} step {args.step}\nReviewed commit: {sha()}\n"
+    # FK0: ONE LINE, INTO THIS ENTRY, AND NOTHING OTHERWISE. It goes in the header so
+    # that a reader of the NEWEST entry finds it beside `Reviewed commit:` -- the file
+    # accumulates newest-first (DX2), so a parser taking the first match gets the
+    # current round's line and not an earlier round's. Nothing else about the tool
+    # changes: the four refusals, the report check and the accumulation are untouched.
+    if args.closes:
+        header += f"Closes: {args.closes}\n"
 
     # THE FILE ACCUMULATES. IT USED TO BE OVERWRITTEN (DX2, R567).
     #
