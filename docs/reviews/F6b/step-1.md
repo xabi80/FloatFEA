@@ -1,4 +1,173 @@
 # Review — F6b step 1
+Reviewed commit: 3e106f6d8b50247456de45d437d879d52a776f59
+Verdict: HOLD
+Tests: 3331 passed, 10 failed, 1 skipped   (my own run, `python -m pytest -q -p no:randomly`, 699.42s)
+
+## INTERIM CHECK (ES0) of 2026-10-11 -- R803's partial answer. **HOLD stands. RULED: REVERT TO (B).**
+
+**Reviewed commit: `3e106f6`.** Counts against no round. You said you cannot clear this HOLD
+and you are right; it stays open on R803.
+
+## Carried
+
+| item | status |
+|---|---|
+| R803 | **still open.** This commit makes it visible; it does not fix it. |
+| R802 | **still open**, as the same item: the router has no closing signal. |
+| R802's counter-case; the withheld-measurement note | **recorded as asked.** |
+
+## The ruling you asked for: **(B).** Revert the router. Measurement, not preference.
+
+**I built both routers in memory and ran the three states that separate them.** No file was
+touched for this.
+
+```
+claim  each router is wrong in exactly one state, and the two states differ in DIRECTION
+cmd    my own harness: redefine `cz1_record` to (A) as shipped and to (B) FJ0's form, then
+       probe three states against the live guard
+out    state                                        (A) R802's router      (B) FJ0's router
+       closing PASS + no block + report HAS a line  REPORT -> guard PASS   '' -> guard RED
+                                                    <-- FAIL-GREEN         (correct)
+       interim PASS + no block + report HAS a line  REPORT (correct)       '' -> RED, no exit
+                                                                           <-- FAIL-SAFE
+       fresh block + stale report line              BLOCK (correct)        BLOCK (correct)
+judge  **the first two rows are THE SAME INPUT.** Neither router distinguishes a closing
+       PASS from an interim one -- that is R802's unfixed root -- so the only question is:
+       when the router cannot tell which state it is in, does it resolve toward RED or
+       toward GREEN? (A) resolves toward green. (B) resolves toward red.
+```
+
+**And the cost you traded against is identical, which empties the only argument for (A).** I
+expected (A) to be cheaper in reds. It is not:
+
+```
+claim  the red count and the named ids under each option
+cmd    run tests/test_report_carried.py as shipped; then with R802's clause removed; restore
+out    (A) 3 failed, 121 passed, 1 skipped
+             test_the_report_carries_a_WHOLE_SUITE_count
+             test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+             test_FJ0_a_MISSING_CLOSURE_BLOCK_reddens          <- names the FAIL-GREEN hole
+       (B) 3 failed, 121 passed, 1 skipped
+             test_the_report_carries_a_WHOLE_SUITE_count
+             test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+             test_R802_an_INTERIM_PASS_does_not_demand_a_CLOSURE_BLOCK  <- names the FAIL-SAFE hole
+judge  **one named red either way, the same count, the same two boundary ids.** So FF0's
+       "a tree red by design is one in which the next real red is harder to see" applies
+       equally, and your "(A) leaves one red that names the defect" is true of (B) too --
+       R802's case is just as explicit and you already keep it. With the cost equal, the
+       tiebreak is purely which defect sits in the tree.
+```
+
+**The tiebreak, and it is not close.** I used this exact distinction to justify the HOLD --
+"R802 failed SAFE... This fails GREEN. That is the distinction that decides the
+disposition." **Applying it to the HOLD and refusing to apply it to the remedy would be the
+inconsistency I accused the router of.** And reachability is asymmetric the same way:
+
+* **(A)'s fail-green state is reachable by NORMAL PRACTICE** -- it needs only a future
+  increment that writes a whole-suite line into its report before closure, which is what
+  F6a did, measured at four of its commits.
+* **(B)'s fail-safe state is reachable only by CONTINUING TO WORK BEFORE THE DIRECTIVE
+  LANDS**, which FJ2 already forbids. Its red has no exit and no occasion to need one.
+
+**So: revert to (B), keep both counter-cases, carry R802's red instead.** Your "not
+reachable in this tree today" was the right thing to distrust -- it is "I think it cannot
+arise" with a different subject, and F6a is the state it cannot see.
+
+## Your fourth question: NO fourth finding, and your reading is now MEASURED
+
+```
+claim  reds 2 and 3 are the boundary and not the routing
+cmd    the same two runs, comparing the red sets
+out    `test_the_report_carries_a_WHOLE_SUITE_count` and
+       `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` are red under BOTH routers
+judge  **red under both, so the router cannot be their cause.** Your reading is correct --
+       the disposition is HOLD, so it routes to the report, which is R802's intended
+       mid-step behaviour, and the report carries no whole-suite line because the FJ0
+       deadlock kept it out. This is the control that proves it rather than asserting it.
+       EG3 state (2) plus FC1's pair; the seven cascade off a red `[baseline]` whose
+       nested run sees those two (EH1). **3 + 7 = 10, which is my own count.**
+```
+
+## What I did NOT find
+
+**No defect in this commit.** Counter-case 2 pins `REPORT_TEXT` exactly as my condition
+asked, with an F6a-shaped report; it fails; it was not deleted, skipped or xfailed; and the
+three failed proxies sit at the site as a finding rather than a history note. Its assertion
+message is the best in the file -- "a closure commit can ship with no CZ1 record at all and
+nothing says so". **This is correct work on a question that was mine to answer, and the only
+thing wrong with it is the judgement call you flagged yourself.**
+
+## Findings
+
+**No new finding. R803 and R802 remain open as one item** -- the router has no signal that
+distinguishes a closing PASS from an interim one -- and the ruling above says which of the
+two available states to sit in while the directive is pending. **I am numbering nothing
+new**, because a fourth number on the same unfixed root would be bookkeeping rather than a
+finding.
+
+## Tolerances touched
+
+**None, verified not taken.** `git diff --stat 95fef83..HEAD -- floatfea
+floatfea/tolerances.py` is empty: no value, no counter, no injection, so **EU1 does not
+arise.** `tests/conftest.py` untouched. `git log 95fef83..HEAD -- .claude .claude/hooks
+docs/SUPERVISOR.md` is empty -- **no STOP-class finding**, checked precisely because this
+commit touches `tests/`. `3e106f6` is a standalone `process:` commit, one file, citing FJ.
+
+## The suite, lint and CI at the reviewed commit (CA2, CK2)
+
+```
+cmd  python -m pytest -q -p no:randomly          (mine, at 3e106f6, tree clean)
+out  10 failed, 3331 passed, 1 skipped, 2 warnings in 699.42s
+     3 in tests/test_report_carried.py + 7 in tests/test_report_guard_states.py
+cmd  python -m ruff check floatfea tests scripts ; black --check ... ; mypy floatfea
+out  All checks passed! / 137 files would be left unchanged. /
+     Success: no issues found in 37 source files
+cmd  gh api .../runs/38189981647 --jq status,conclusion   then its /jobs
+out  status=completed conclusion=failure
+       the verification ladder   success
+       lint, unit and guards     failure
+       CI determinism -- leg / ten legs agree   skipped (workflow_dispatch only, by design)
+```
+
+**CI is RED and it does not add anything to this HOLD, because the red IS what I am holding
+on and every id is named.** Nine of the ten are EG3 state (2) and its cascade; the tenth is
+counter-case 2, which is R803 made visible rather than a separate failure. **Your trace of
+all ten is exact and I reproduced it independently.** CK2 does not apply: no job has an
+empty runner name with a payment annotation.
+
+## The corpus (EG4(e))
+
+**Pause held; no entry, no batch.** The substitute was the one this question needed: both
+routers built and run against the three states that separate them, plus the red-count
+comparison. **The ruling came out of the SECOND measurement, not the first** -- the matrix
+told me which defect each router carries, and the red counts told me the argument for
+keeping the worse one was empty.
+
+## Next step opens when
+
+1. **Revert to (B)**, FJ0's router, in a standalone `process:` commit citing FJ. Keep both
+   counter-cases; R802's becomes the standing red and names what remains.
+2. **R802 and R803 stay open as one item** until the router gets a signal the constrained
+   party cannot set, false mid-step and true at closure. The request is with Xabier and the
+   acceptance test is the table in my previous verdict. **Until it lands, (B)'s single
+   fail-safe red is the correct state of the tree.**
+3. **Nothing else.** F6b stays closed at `d509e44` (DD1), and this HOLD does not reopen it.
+
+## Disagreement with the criterion -- none
+
+One thing about process rather than work, and it is in your favour: **you put a judgement
+call to me instead of keeping it, and escalating was right.** The measurement that decided
+it -- equal red counts under both options -- is one I would not have taken had you simply
+asserted that (A) was cheaper, and I would probably have accepted the assertion. Asking cost
+one round of mine and bought a measurement neither of us had.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6b step 1
 Reviewed commit: 69ce1570e7004db49c8542de4011361c329f8a8e
 Verdict: HOLD
 Tests: 3342 passed, 0 failed, 0 skipped   (my own run, `python -m pytest -q -p no:randomly`, 702.17s, no exclusions)
