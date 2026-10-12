@@ -2720,36 +2720,53 @@ def cz1_record() -> str:
     if _newest_verdict_disposition() != "PASS" or not CLOSURE.exists():
         return report
     found = _CZ1_BLOCK.search(CLOSURE.read_text(encoding="utf-8", errors="replace"))
-    # R802: A PASS IS NOT NECESSARILY A *CLOSING* PASS, and the first version of this
-    # router did not ask -- while FJ0's own statement of the rule puts the weight on that
-    # word. An INTERIM check under ES0 is a verdict on a tree with NO new report
-    # revision, and it is a PASS like any other. Measured at F6a's three interim-check
-    # commits (`683f910`, `a522ae4`, `365fe3f`), identical in each:
+    # R802/R803: A PASS IS NOT NECESSARILY A *CLOSING* PASS, AND NOTHING HERE CAN TELL.
     #
-    #   newest F6a verdict's first Verdict:   PASS   (interim, closing nothing)
-    #   docs/closure/F6a.md exists            yes
-    #   cz1-closure-outputs block in it       0
-    #   report carries a whole-suite line     2
+    # An ES0 interim check is a verdict on a tree with NO new report revision, and it is
+    # a PASS like any other. Measured at F6a's three interim-check commits (`683f910`,
+    # `a522ae4`, `365fe3f`), identical in each: verdict PASS, closure artifact present,
+    # cz1 block 0, report whole-suite lines 2. So this router sends both guards to an
+    # empty record and reddens them on trees measured at `3344 / 3345 / 3346 passed`.
     #
-    # so both guards would have been RED at each, on trees measured at
-    # `3344 / 3345 / 3346 passed, 0 failed`. It failed SAFE -- red, never green -- but
-    # EK2 forbids living with a guard that fails false, and the state had NO EXIT: a
-    # mid-step implementer cannot write a CZ1 record for a closure commit that does not
-    # exist. **FJ0's own deadlock in mirror image**, which is the shape to expect
-    # whenever a router is added to break a tie.
+    # **THAT RED IS KNOWN, IT IS FAIL-SAFE, AND IT IS THE CHOSEN STATE OF THE TREE.**
+    # `test_R802_an_INTERIM_PASS_does_not_demand_a_CLOSURE_BLOCK` is the standing red
+    # that names it. It is not deleted, skipped or xfailed to restore a green.
     #
-    # THE DISCRIMINATOR IS THE RECORD'S OWN CONTENT, not a flag anyone sets: the step
-    # report carries its own whole-suite line mid-step, and CANNOT carry one after a
-    # closing PASS, because EK3 keeps the closure commit out of it -- which is the whole
-    # reason FJ0 exists.
+    # THREE PROXIES HAVE EACH FAILED A MEASURED STATE, which is the finding rather than
+    # a history note -- a boolean is standing in for a distinction this repository does
+    # not record anywhere, so the fix is to record the distinction, not to improve the
+    # proxy:
     #
-    # AND COUNTER-CASE 2's PROTECTION IS KEPT. A block that EXISTS is also a route, so a
-    # closure commit with an artifact, no block and no report line of its own still reads
-    # `""` and reddens rather than being answered by a stale line. **This is one clause
-    # stronger than the condition asked for**: that clause would route to the report
-    # whenever the report had a line, so a fresh block would lose to a stale report line.
-    if found is None and _SUITE.search(report):
-        return report
+    #   "the newest verdict is PASS"            (FJ0)   red at F6a's 3 interims  SAFE
+    #   "the report has no whole-suite line"    (cond)  prefers a stale line
+    #   "block if present, else report w/ line" (R802)  green on F6a's end shape UNSAFE
+    #
+    # THE THIRD WAS MINE AND IT WAS REVERTED HERE, BY RULING, ON A MEASUREMENT I HAD
+    # NOT TAKEN. Both routers were built and the three separating states run. The first
+    # two rows below are THE SAME INPUT -- neither router distinguishes a closing PASS
+    # from an interim one -- so the only question is which way the ambiguity resolves:
+    #
+    #   state                                        (A) shipped        (B) this
+    #   closing PASS + no block + report HAS a line  REPORT -> PASS     '' -> RED
+    #                                                FAIL-GREEN         correct
+    #   interim PASS + no block + report HAS a line  REPORT (correct)   '' -> RED,
+    #                                                                   no exit
+    #   fresh block + stale report line              BLOCK (correct)    BLOCK (correct)
+    #
+    # and the cost I traded against is IDENTICAL -- `3 failed, 121 passed, 1 skipped`
+    # under both, one named red either way plus the same two boundary ids. So the only
+    # argument for (A) was that it was cheaper in reds, and that was false. **Fail-safe
+    # beats fail-green**, and the same rule that justified holding R803 has to apply to
+    # its remedy. Reachability is asymmetric the same way: (A)'s hole needs only a
+    # future increment whose report carries a line before closure -- which F6a did, at
+    # four measured commits -- while (B)'s needs work to continue before the directive
+    # lands, which FJ2 forbids.
+    #
+    # A CORRECT SIGNAL must be unsettable by the constrained party, false mid-step and
+    # true at closure. `docs/revi` + `ews/` is the only record the implementer cannot
+    # write, so a closing verdict SAYING it is closing satisfies both by construction --
+    # and that changes what the reviewer writes, so it needs a directive and not an
+    # edit from here.
     return found.group(1) if found else ""
 
 
