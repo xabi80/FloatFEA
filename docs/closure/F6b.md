@@ -459,7 +459,60 @@ in § 2.
 **F6a's ledger stays on `docs/closure/F6a.md`** — R788, R789, R790, R791 — and nothing in it
 was touched by this increment.
 
-## 5a. OPEN AND NOT CLOSABLE FROM HERE — R802/R803, the CZ1 router
+## 5a. CLOSED BY DIRECTIVE FK — R802/R803, the CZ1 router
+
+**Closed.** The distinction is now recorded instead of inferred, in three standalone
+`process:` commits and one reviewer addendum.
+
+| | commit | what it does |
+|---|---|---|
+| FK0 | `d4ff5fd` | `scripts/write_verdict.py --closes <milestone[/step]>` writes one `Closes:` line into that entry, and nothing otherwise |
+| FK1 | `d6e282a` | the reviewer's definition: a closing verdict MUST use it; no other verdict may carry the line |
+| FK2 | `a6e4252` | the FC1 guards route on that line alone; **the three proxies are deleted, not stacked** (EK2) |
+| FK3 | `d29bf6b` | the reviewer's closing addendum, `Closes: F6b`, no new findings, against no round (EB4) |
+
+```
+claim  the signal is recorded, the proxies are gone, and the guards route on it
+cmd    grep -c for the three proxies' names in tests/test_report_carried.py
+       the addendum's header
+out    0
+       # Review — F6b step 1
+       Reviewed commit: a6e42525bab1e848f30587472d2eb6ad958e913d
+       Closes: F6b
+       Verdict: PASS
+rule   a correct signal must be (a) unsettable by the constrained party and (b) false
+       mid-step, true at closure. The verdict tree is the only record the implementer
+       cannot write, so (a) holds by construction and (b) is the reviewer's own judgement
+       written down rather than reconstructed.
+judge  **R802's standing fail-safe red is gone with its proxy.** Under a recorded signal
+       there is no state in which the implementer cannot reach a green -- which is the
+       property FJ0 and R802 could not both have, and the reason all three proxies failed
+       somewhere.
+```
+
+**The reusable finding, and it is the reviewer's:** three routers in three commits, each
+correct on the states its author swept and wrong on one nobody did, because **a boolean was
+standing in for a distinction this repository did not record anywhere.** The fix was never
+a better proxy. Four rounds went on one question — *is this verdict closing something?* —
+and the answer that held was the one that stopped asking the tree.
+
+**Two predictions of mine were wrong and both were guesses dressed as inferences.** I
+predicted the CZ1 block's rounds table would be stale against `gh` after three further
+commits and need regenerating; the reviewer measured it and the CI-table guard passes. And
+I predicted the addendum would clear one of the two guards and not the other; it cleared
+both. Neither prediction carried a command.
+
+**Two planted states the reviewer measured red are not reproducible here, and the cause is
+NOT established.** `shallow_clone_depth_1` and
+`shallow_clone_depth_1_reports_one_diagnosis_not_sixteen` pass at the addendum commit AND
+at `a6e4252` before it, in a clean worktree — so the commit content is not the cause. The
+planter does `git clone --depth 1 --no-local ROOT.as_uri()`, and I verified the clone
+honours the worktree's own HEAD (`a6e4252`, `Closes:` lines `0`) rather than the main
+repository's, so the measurement is sound rather than accidentally testing the wrong tree.
+**No expectation was adjusted** — EG3(i), and R629 was the eighth member of exactly such a
+group. It is back with the reviewer to re-run.
+
+## 5b. The earlier state of 5a, kept because the sequence is the finding
 
 **One item, not two**, and no commit of mine closes it. FJ0's locator resolved a three-rule
 deadlock and introduced a one-clause version of the same deadlock on the other side of the
