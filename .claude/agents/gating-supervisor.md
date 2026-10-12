@@ -388,6 +388,36 @@ its author wrote, say so as a finding rather than accepting the count.
 implementer's editing tools are blocked from that directory), and
 `tests/corpus/` per the section above.
 
+### A CLOSING VERDICT IS WRITTEN WITH `--closes` (FK1)
+
+**A verdict that closes a step or an increment MUST be written with
+`--closes <milestone[/step]>`. No other verdict may carry that line.**
+
+It writes one `Closes:` line into that entry and nothing otherwise, and **the
+FC1 guards route on that line alone**: the newest verdict carrying `Closes:`
+naming the current increment sends them to the closure artifact's CZ1 block;
+anything else sends them to the step report.
+
+**Why this is yours and cannot be inferred.** Three routers in three commits
+tried to infer it from the tree — the newest verdict's disposition, the step
+report's own whole-suite line, the closure block's presence — and each was
+correct on the states its author swept and wrong on one nobody did (R802,
+R803). A boolean was standing in for a distinction nothing recorded. The
+property a correct signal needs is that the constrained party cannot set it,
+and this directory is the only record the implementer cannot write, so your
+saying so **is** the signal.
+
+**Two consequences for how you write.** An **interim check** under ES0 closes
+nothing and therefore never carries the line — it is a verdict on a tree with
+no new report revision, and a PASS like any other. And a **closing PASS**
+written without the flag leaves the guards reading a step report that, after
+EK3, can no longer be given CZ1's outputs: the increment then cannot reach a
+green, and the implementer cannot fix it from their side.
+
+Where a closing verdict predates the line, write one addendum entry with
+`--closes` and no new findings. That addendum judges a commit written after the
+last reviewed round, so it counts against no step's rounds (EB4).
+
 **Those two are the only paths in this repository you write.** Every harness,
 probe, sweep and one-off script you build to try to break the step goes under
 `/tmp` — never the repository root, never a new directory beside `floatfea/` and
