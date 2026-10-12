@@ -2801,11 +2801,46 @@ def test_FJ0_a_MISSING_CLOSURE_BLOCK_reddens(tmp_path, monkeypatch) -> None:
     older line would answer in its place.
     """
     artifact = tmp_path / f"{MILESTONE}.md"
-    artifact.write_text("# closure, with no marked block\n", encoding="utf-8")
+    artifact.write_text("# closure, with no marked block", encoding="utf-8")
     monkeypatch.setitem(globals(), "CLOSURE", artifact)
     monkeypatch.setattr(sys.modules[__name__], "_newest_verdict_disposition", lambda: "PASS")
+    # R803: THE REPORT IS PINNED TOO, AND NOT PINNING IT IS WHAT MADE THIS CASE
+    # TREE-COUPLED. It patched `CLOSURE` and the disposition and left
+    # `_newest_revision` alone, so `cz1_record() == ""` held only because F6b's real
+    # report happens to carry no whole-suite line. Against an F6a-shaped report -- two
+    # whole-suite lines, closing PASS, artifact present, no block -- the router returns
+    # the REPORT and the guard PASSES on a stale line, which is the exact state this
+    # case's own docstring says must not be reachable.
+    #
+    # **SO THIS CASE IS CURRENTLY RED, AND THAT IS THE POINT.** It names R803 rather
+    # than being deleted, skipped or xfailed to restore a green: `CLAUDE.md`'s
+    # non-negotiable is to report the failure instead. R802's repair traded FJ0's
+    # fail-SAFE hole for a fail-GREEN one, and no signal available to this file
+    # distinguishes a closing PASS from an interim one -- three proxies have each
+    # failed a measured state:
+    #
+    #   "the newest verdict is PASS"            (FJ0)   red at F6a's 3 interims  SAFE
+    #   "the report has no whole-suite line"    (cond)  prefers a stale line
+    #   "block if present, else report w/ line" (R802)  green on F6a's end shape UNSAFE
+    #
+    # The repair needs a record the implementer cannot write -- `docs/reviews/` is the
+    # only one -- which changes what the REVIEWER writes and therefore needs a
+    # directive, not an edit from here.
+    f6a_shaped = (
+        "# Revision 2"
+        + chr(10) * 2
+        + "**Whole suite at `aaaaaaa`: 3171 passed, 0 failed, 0 skipped.**"
+        + chr(10)
+    )
+    monkeypatch.setattr(sys.modules[__name__], "_newest_revision", lambda _t: f6a_shaped)
 
-    assert cz1_record() == "", "a PASS plus an artifact with no block reads as empty"
+    assert cz1_record() == "", (
+        "R803: a closing PASS with an artifact carrying no block read the STEP REPORT "
+        "and found its stale whole-suite line, so the guard passed on a record that "
+        "describes an earlier commit. A closure commit can ship with no CZ1 record at "
+        "all and nothing says so -- which is this case's own docstring. The router "
+        "needs a signal the implementer cannot set; see the comment above."
+    )
     assert _suite_line() is None, "so there is no whole-suite line to find"
     with pytest.raises(AssertionError) as caught:
         test_the_report_carries_a_WHOLE_SUITE_count()
