@@ -1,4 +1,239 @@
 # Review — F6b step 1
+Reviewed commit: 4c327c19548857b2a2ed1e975698da411b2f5691
+Verdict: PASS
+Tests: 3341 passed, 0 failed, 0 skipped   (my own run, `python -m pytest -q -p no:randomly`, 703.26s, no exclusions)
+
+## INTERIM CHECK (ES0) of 2026-10-11 -- F6b after FJ0. **Counts against no round. PASS, with one (c)-class latent finding.**
+
+**Reviewed commit: `4c327c1` (HEAD).** It is substantive on its merits, as you say: FJ0
+changes what a green means, which is CZ0 (c).
+
+**THE RANGE IS FIVE COMMITS, NOT FOUR, AND ONE OF THEM TOUCHES `scripts/measure/`.** I found
+both myself and neither is a defect, but the record should name them:
+
+```
+cmd  git log --oneline d509e44..HEAD ; git diff --stat d509e44..HEAD
+out  4c327c1, c416768, 53382dc, e8f97fe, 30f50f6      <- five
+     docs/closure/F6b.md | 502 ++  scripts/measure/f6b_truss_sizing.py | 18 +-
+     tests/test_report_carried.py | 140 ++
+cmd  git log --oneline d509e44..HEAD -- scripts/measure/f6b_truss_sizing.py
+out  30f50f6   <- the commit the invocation did not name
+judge **`30f50f6` is my own unnumbered note implemented** -- `chord_L` is no longer taken
+      out of a per-face call, it comes from a new `chord_buckling_length()`. `scripts/
+      measure/` is EZ0's phrase, so a change there is exactly the class CZ0 (a) covers and
+      it should have been named. It is benign and I verified that rather than assuming it.
+```
+
+```
+claim  the refactor moves no published figure
+cmd    my own regeneration of both artefacts, then git diff --stat -- results/F6b/
+out    (empty -- byte-identical)
+cmd    my own check that element 0 of `panel_and_diagonal` is face-independent for every
+       (h, b, face dimension) in the grid, under both readings
+out    per_face_45   face-dependent disagreements: 0
+       uniform_panel face-dependent disagreements: 0
+judge  value-identical by construction AND byte-identical in the artefacts. Clean.
+```
+
+**Verified, not taken:** `git diff --stat d509e44..HEAD -- floatfea floatfea/tolerances.py`
+empty, so **EU1 does not arise**; `tests/conftest.py` untouched; and
+`git log d509e44..HEAD -- .claude .claude/hooks docs/SUPERVISOR.md` empty -- **no STOP-class
+finding**, which I checked precisely because one of these commits does touch `tests/`.
+`53382dc` is a standalone `process:` commit, one file, citing DIRECTIVE FJ0 option (a).
+
+## Carried
+
+| item | status | what I measured |
+|---|---|---|
+| C1 (the nine-id trace) | **answered, and FJ1's result confirmed by my own run** | `3341 passed, 0 failed, 0 skipped`, no exclusions, nothing waived. And your account of the cascade is now the measured one: the seven cleared with FC1's pair, which is what my C1 said a class assertion could not establish. |
+| C2 ("no test's subject changed") | **answered** in `docs/closure/F6b.md` § 5. |
+| the unnumbered `chord_L` note | **implemented in `30f50f6`** and verified above. |
+
+## The one question you asked: does the locator weaken either guard?
+
+**No. The assertions and the quantities are unchanged, and I measured that rather than
+reading it. But the ROUTING is wrong in a reachable state -- R802 below.**
+
+**(2) ATTACK B -- answered in your favour, and it was the sharpest of the three.** `""`
+reddens **both** guards, each on its own assertion, and the CI-table guard never reaches
+`ci_table_defects`:
+
+```
+claim  a closing PASS + an artifact present + no marked block reddens BOTH guards
+cmd    my own harness: import the module, point CLOSURE at an artifact with no block,
+       call each guard directly
+out    cz1_record() == ''
+       test_the_report_carries_a_WHOLE_SUITE_count       -> RED "carries no whole-suite line"
+       test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW    -> RED "the 0a table has neither a
+                                                            run row nor the generator's
+                                                            zero-run row"
+rule   your own worry: "does not, say, make `_generated_text("")` vacuous in a way that
+       lets `ci_table_defects` pass on nothing"
+judge  **it cannot, and the reason is structural rather than lucky.** C89's
+       `assert rows or _ROUNDS_NO_RUN.search(zero)` sits BEFORE the
+       `assert not ci_table_defects(...)`, so on an empty record the guard fails on the
+       zero-row assertion and `ci_table_defects("")` is never evaluated. The vacuity you
+       were looking for is fenced off by a guard added for a different reason.
+```
+
+**(1) `_newest_verdict_disposition()`'s use of the prepend convention is correct.** I
+verified the convention itself last round (eight shas in F6 step 2, file order newest-first,
+the ancestry pick agreeing -- the reason R798 was withdrawn), and this use of it is the same
+one: `re.search(r"^Verdict:\s*(\w+)", text, re.MULTILINE)` on the working copy takes the
+first, which is the newest. **The conditional you feared -- "if that convention ever fails,
+a HOLD tree would read the closure block" -- is real but it is not this repair's to carry**:
+every other reader of a verdict file in this suite depends on the same convention, and
+`write_verdict.py` is the single writer that establishes it.
+
+**(3) Your two-commits-two-questions distinction is RIGHT, and I checked which guard reads
+which rather than taking the argument.** `grep -n "cz1_record()"` gives exactly two
+production call sites -- `_suite_line()` and the CI-table guard's `zero =` -- and the four
+other CI guards still read `_newest_revision(REPORT_TEXT)`. So §0/§0a are checked against
+the commit the verdict judged and the block's rows are checked against `gh` for the closure
+commit. **Two records, two subjects, both checked, and no path by which one can satisfy the
+other's assertion.** Not duplicates and not drift.
+
+**And counter-case 1, attacked hardest as you asked -- it holds.**
+
+```
+claim  the three cases are non-vacuous, tested by reverting the repair under them
+cmd    mutate `cz1_record()` to `return _newest_revision(REPORT_TEXT)`, then run -k FJ0
+out    FAILED test_FJ0_a_CLOSURE_BLOCK_with_a_WRONG_COUNT_reddens
+       FAILED test_FJ0_a_MISSING_CLOSURE_BLOCK_reddens
+       2 failed, 1 passed
+cmd    grep -c "was not the whole suite" tests/test_report_carried.py
+out    1
+judge  **cases 1 and 2 pin the repair in both directions; the needle is unique to the
+       `passed > 100` assertion, so it cannot read an earlier failure as success.** Case 3
+       PASSES under the reversion, and that is correct rather than a weakness: it asserts a
+       mid-step tree reads the report, which a revert-to-always-report satisfies trivially.
+       **So case 3 is the non-regression half and not a pin on the repair** -- worth knowing
+       which of the three is load-bearing, because it is not the one that reads most like a
+       control.
+```
+
+## Findings
+
+**R802. (c-class, LATENT, and it fails SAFE) `cz1_record()` cannot distinguish a CLOSING
+PASS from an interim or early PASS, so a mid-step tree with a closure artifact and no block
+reads as empty and reddens both guards. It is not hypothetical: all four conditions held at
+each of F6a's three interim-check commits.**
+
+```
+claim  the routing condition asks only whether the newest verdict is PASS
+cmd    tests/test_report_carried.py:2719
+out    if _newest_verdict_disposition() == "PASS" and CLOSURE.exists():
+rule   FJ0's own statement of the rule: "after a closing PASS with a closure artifact
+       present" -- the word doing the work is CLOSING, and nothing in the code asks it
+cmd    the four conditions, at each F6a interim-check commit
+out    683f910 / a522ae4 / 365fe3f, all three identical:
+         (a) newest F6a verdict's first Verdict:   PASS   (an INTERIM check, closing nothing)
+         (b) docs/closure/F6a.md exists            yes
+         (c) cz1-closure-outputs block in it       0
+         (d) report carries a whole-suite line     2
+judge  **had FJ0 been in the tree, both guards would have been RED at each of those three
+       commits** -- on trees I measured at `3344 passed, 0 failed`, `3345 passed, 0 failed`
+       and `3346 passed, 0 failed`. An interim check returns PASS and closes nothing (ES0),
+       and a closure artifact written early in an increment is normal; F6a had both. **It
+       fails in the SAFE direction -- red, never green -- so it cannot pass a defect**,
+       which is why this is not a hold on a closed increment. But EK2 is "a guard that
+       fails false is fixed or deleted, never lived with", and the state has no exit: a
+       mid-step implementer cannot add a CZ1 closure record for a closure commit that does
+       not exist. **That is FJ0's own deadlock in mirror image.**
+```
+
+**Closed when** the router asks a question that is true only at an increment's end. **One
+clause suffices and I verified it against both states rather than proposing it blind:**
+
+```
+claim  "route to the artifact only if the report has no whole-suite line of its own"
+       separates the two states, with no new apparatus
+cmd    my own check of `_SUITE.search(_newest_revision(REPORT_TEXT))` in each
+out    F6b, this tree  : report has a whole-suite line? False -> artifact required: CORRECT
+       F6a interims    : report has a whole-suite line? True  -> read the report:  CORRECT
+judge  it keeps counter-case 2's whole protection -- a closure commit with neither a block
+       nor a report line still reddens, which is the "answered invisibly by the report's
+       older line" case FJ0 refuses -- while a mid-step tree whose report carries its own
+       line is read where it is. **It is one `and` and it needs no new test**, so it is a
+       repair under EK2 and not an extension. If you prefer a different discriminator, the
+       property to hold it to is the one measured above: PASS at all three F6a commits and
+       artifact-required at F6b.
+```
+
+**Why this is PASS and not a hold.** Nothing is miscertified at the reviewed commit: the
+artifact carries the block, both guards read it, both assert what they asserted before, and
+the whole suite is green on my own run. The defect is a latent routing domain that fails
+safe. **The force of the finding is on what opens next, not on what closed:** F6b is closed
+at `d509e44` and FJ2 stops work, so the honest disposition is that the next increment does
+not open until R802 is repaired, in a standalone `process:` commit citing FJ -- the same
+route FJ0 itself took.
+
+## Tolerances touched
+
+**None, verified not taken.** `git diff --stat d509e44..HEAD -- floatfea
+floatfea/tolerances.py` is empty: no value, no counter, no injection, so **EU1 does not
+arise** and the adversarial-ladder requirement it attaches does not either. `tests/conftest.py`
+untouched.
+
+## The suite, lint and CI at the reviewed commit (CA2, CK2)
+
+```
+cmd  python -m pytest -q -p no:randomly          (mine, at 4c327c1, tree clean)
+out  3341 passed, 2 warnings in 703.26s (0:11:43)      -- 0 failed, 0 skipped, no exclusions
+cmd  python -m ruff check floatfea tests scripts ; black --check ... ; mypy floatfea
+out  All checks passed! / 137 files would be left unchanged. /
+     Success: no issues found in 37 source files
+cmd  gh api .../runs/38185709667 --jq status,conclusion   then its /jobs   (head 4c327c1)
+out  status=completed conclusion=success
+       the verification ladder   success
+       lint, unit and guards     success
+       CI determinism -- leg / ten legs agree   skipped (workflow_dispatch only, by design)
+```
+
+**Green on both machines with NOTHING WAIVED, and I confirmed FJ1's claim with my own run
+rather than accepting the count.** This is the first state of the increment with no EG3
+trace to paste, and there is none to paste. **I polled HEAD's run to `completed` again** --
+it was `in_progress` with the ladder already green and the lint job at `null` when I first
+read it, which is the state that would read as a pass from the job list alone. CK2 does not
+apply: no job has an empty runner name with a payment annotation.
+
+## The corpus (EG4(e))
+
+**Pause held; no entry, no batch** -- and ES0's light scope does not ask for one. The
+substitute this round was the direction that weakens: **FJ0's three counter-cases are all
+refusals, so I reverted the repair under them and ran the two states nobody had run** -- the
+empty-record case against both guards, and the mid-step-PASS case against F6a's own history.
+**R802 came out of the second and nothing else.**
+
+## Next step opens when
+
+**FJ2 stops work, so this is a list and not a gate:**
+
+1. **R802 is repaired in a standalone `process:` commit citing FJ**, before the next
+   increment opens -- one clause, held to the two states measured above.
+2. **Everything else in FJ0 stays.** The assertions are unchanged, `""` reddens both guards
+   non-vacuously, the four other CI guards are correctly left alone, and cases 1 and 2 pin
+   the repair in both directions. All measured here.
+3. **`30f50f6`'s script change should be named in the artifact** as a `scripts/measure/`
+   change, since that is EZ0's phrase -- it is benign and I verified it byte-identical, but
+   a reader should not have to find it from a `--stat`.
+
+## Disagreement with the criterion -- none
+
+R802 is (c) by its subject and latent by its state, and I have said both rather than picking
+whichever classification carried more force. The one thing worth recording for Xabier is
+not a disagreement: **FJ0 resolved a three-rule deadlock correctly and introduced a
+one-clause version of the same deadlock on the other side of the step boundary** -- which is
+the shape to expect whenever a router is added to break a tie, and is why the mid-step half
+needed a case of its own.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6b step 1
 Reviewed commit: 6ebe4c062fa54cc42e721179b1dbf7ed20857e2a
 Verdict: PASS
 Tests: 3322 passed, 9 failed, 1 skipped   (my own run, `python -m pytest -q -p no:randomly`, 2418.58s)
