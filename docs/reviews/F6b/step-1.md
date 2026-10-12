@@ -1,4 +1,147 @@
 # Review — F6b step 1
+Reviewed commit: ce91cdef4d6a58c78ec0400eb41eba3891f5f2d7
+Verdict: HOLD
+Tests: 3332 passed, 10 failed, 1 skipped   (my own run, `python -m pytest -q -p no:randomly`, 678.34s)
+
+## INTERIM CHECK (ES0) of 2026-10-11 -- the revert to (B). **Faithful. No new finding. HOLD stands on R802/R803, which only a directive closes.**
+
+**Reviewed commit: `ce91cde`.** Counts against no round. **This commit is not why the HOLD
+stands** -- it did exactly what I ruled, and the item it leaves open is not yours to close.
+
+## Carried
+
+| item | status |
+|---|---|
+| the ruling: revert to (B) | **done, faithfully** -- measured below, two code lines. |
+| R802 / R803 | **still open as one item**, waiting on the directive. The acceptance table is with Xabier. |
+| my process note | recorded, and your narrowing of it is better than my wording -- last section. |
+
+## (1) Is the revert faithful? **Yes, and the measurement is sharper than the diff.**
+
+```
+claim  exactly the two lines of the R802 clause were removed and no other code moved
+cmd    git diff 90fba08..HEAD -- tests/test_report_carried.py | the +/- lines with
+       comment lines and blanks filtered out
+out    -    if found is None and _SUITE.search(report):
+       -        return report
+judge  **two deletions, nothing else.** The other `+43 -26` in the `--stat` is comment
+       text. That is the whole of surface 1 and it needed no reading of intent.
+```
+
+**And the shipped router behaves as (B) did in my own harness, which the diff cannot show:**
+
+```
+claim  the ambiguous state resolves toward RED, and a fresh block still beats a stale line
+cmd    my own probe against the live module at this commit
+out    closing/interim PASS + no block + report HAS a line -> record '' | guard RED (correct)
+       fresh block + stale report line                     -> the BLOCK (correct)
+cmd    the counts and the standing red
+out    tests/test_report_carried.py                : 3 failed, 121 passed, 1 skipped
+       + tests/test_report_numbers_are_sourced.py  : 3 failed, 144 passed, 1 skipped
+       FAILED test_R802_an_INTERIM_PASS_does_not_demand_a_CLOSURE_BLOCK
+       FAILED test_the_report_carries_a_WHOLE_SUITE_count
+       FAILED test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+judge  **both of your counts reproduce exactly** -- `121` on the single file, which is my
+       own (B) figure, and `144` across the two, which is yours. The standing red is
+       R802's case and the FJ0 case passes again. **The tree is in the state I ruled it
+       should be in**, and neither counter-case was deleted, skipped or xfailed.
+```
+
+## (2) Your restated figures. **I checked every one against my own verdicts. All faithful.**
+
+You were right to name this surface -- it is where R794, R797 and R803's "cannot" each went
+wrong -- so I read the comment against the source rather than for plausibility.
+
+```
+claim  each figure of mine restated in the new comment is the figure I measured
+cmd    the comment, line by line, against verdicts 127 and 128
+out    "F6a's three interim-check commits (683f910, a522ae4, 365fe3f), identical in each:
+          verdict PASS, artifact present, cz1 block 0, report whole-suite lines 2"   OK
+       "trees measured at 3344 / 3345 / 3346 passed"                                 OK
+       the three-proxy table, all three rows and all three directions                OK
+       the three-state matrix, both columns, all three rows                          OK
+       "3 failed, 121 passed, 1 skipped under both"                                  OK
+       "which F6a did, at four measured commits"                                     OK
+       "unsettable by the constrained party, false mid-step, true at closure"         OK
+judge  **and the one I expected to find wrong is right.** "Three interim-check commits"
+       and "four measured commits" are two DIFFERENT measurements of mine -- the R802
+       fail-safe state at three commits, and F6a's final shape for R803 at four -- and
+       the comment uses each in its own place without conflating them. That is the
+       distinction a restatement most easily loses, and it did not.
+```
+
+**One note, no number.** `3 failed, 121 passed, 1 skipped` does not say which file it was
+measured on, and this invocation quotes `144 passed` for two files -- both true of what they
+measured, but a reader running the obvious command gets the second. One clause
+(`tests/test_report_carried.py`) closes it. That is the figure's scope rather than its value,
+so it is not CW0's class and I am not numbering it.
+
+## Findings
+
+**None.** Surface 1 is two deletions; surface 2 is faithful. **R802/R803 remain open as one
+item and are not findings against this commit.**
+
+## Tolerances touched
+
+**None, verified not taken.** `git diff --stat 90fba08..HEAD -- floatfea
+floatfea/tolerances.py` is empty: no value, no counter, no injection, so **EU1 does not
+arise.** `tests/conftest.py` untouched. `git log 90fba08..HEAD -- .claude .claude/hooks
+docs/SUPERVISOR.md` is empty -- **no STOP-class finding**, checked precisely because this
+commit touches `tests/`. `ce91cde` is a standalone `process:` commit, one file, citing FJ.
+
+## The suite, lint and CI (CA2, CK2)
+
+```
+cmd  python -m pytest -q -p no:randomly          (mine, at ce91cde, tree clean)
+out  10 failed, 3332 passed, 1 skipped, 2 warnings in 678.34s      -- 3 + 7, as traced
+cmd  python -m ruff check floatfea tests scripts ; black --check ... ; mypy floatfea
+out  All checks passed! / 137 files would be left unchanged. / Success: no issues found
+cmd  gh api .../runs/38191268461 --jq status,conclusion   then its /jobs
+out  status=completed conclusion=failure
+       lint, unit and guards     failure
+       the verification ladder   success
+       CI determinism -- leg / ten legs agree   skipped (workflow_dispatch only, by design)
+```
+
+**The ten are the state I chose and the state I expected.** One is R802's case -- the
+fail-safe red, by ruling; two are EG3 state (2) and FC1's pair, which I measured red under
+BOTH routers last round, so the router is not their cause; seven cascade off a red
+`[baseline]` (EH1). **CI adds nothing to the HOLD** -- its red is the same set, the ladder is
+green on a second runner, and the guards step is the only failing step. CK2 does not apply.
+
+## The corpus (EG4(e))
+
+**Pause held; no entry, no batch.** The substitute was the two surfaces you named, run
+rather than read: the comment-stripped diff, and the live router against the three
+separating states. **Nothing came out of either, which is the first time in four checks that
+is true** -- and it is worth saying plainly rather than hedging, because you were right not
+to predict it and I would have been wrong to assume it.
+
+## Next step opens when
+
+1. **The directive lands.** R802/R803 close on a router signal that is unsettable by the
+   constrained party, false mid-step and true at closure; the acceptance table is in the
+   previous verdict and the request is with Xabier. **Nothing you can commit closes this**,
+   which is why the HOLD is not a criticism of `ce91cde`.
+2. **Until then this is the correct state of the tree**: one named fail-safe red, both
+   counter-cases kept, and no fail-green state anywhere in the router.
+3. F6b stays closed at `d509e44` (DD1), and this HOLD does not reopen it.
+
+## Disagreement with the criterion -- none
+
+**And your narrowing of my process note is better than my wording.** I wrote that escalating
+bought a measurement; you wrote that **"cheaper" is a claim with a command, and you made it
+without one.** That is the rule, and it is BD0/BF0 applied to a judgement call rather than to
+a figure -- a place neither clause obviously reaches, and where it turns out to bite hardest.
+Take the credit for the sharper statement.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6b step 1
 Reviewed commit: 3e106f6d8b50247456de45d437d879d52a776f59
 Verdict: HOLD
 Tests: 3331 passed, 10 failed, 1 skipped   (my own run, `python -m pytest -q -p no:randomly`, 699.42s)
