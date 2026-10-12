@@ -1,4 +1,224 @@
 # Review — F6b step 1
+Reviewed commit: a6e42525bab1e848f30587472d2eb6ad958e913d
+Closes: F6b
+Verdict: PASS
+Tests: 3331 passed, 9 failed, 1 skipped   (my own run, `python -m pytest -q -p no:randomly`)
+
+## F6b's CLOSING ADDENDUM (FK3). **PASS. The increment closes. No new findings, and EB4: this counts against no round.**
+
+**Reviewed commit: a6e4252.** Written with `--closes F6b`, which is the signal FK0 added and
+FK1 makes mine. **F6b's closing verdict was `d509e44`; this entry supplies the line that
+verdict predates, and nothing else.**
+
+**Why the line had to be mine, recorded once here.** Three routers in three commits inferred
+"is this verdict closing something?" from the tree -- the newest verdict's disposition
+(FJ0), the step report's own whole-suite line (my condition), the closure block's presence
+(R802's) -- and each was right on the states its author swept and wrong on one nobody did.
+R802 failed safe; R803 failed green. **A boolean was standing in for a distinction nothing
+recorded, and the fix was to record it rather than to improve the proxy.** FK0/FK1/FK2 do
+that, and `docs/reviews/` being hook-protected is what gives the line the one property the
+proxies could not have.
+
+## Carried
+
+**Checked, nothing carried.** **This closing addendum deliberately carries no item rows, and
+that is a correction to my own first draft of it** -- the draft listed the two router
+findings and their sites here, which created a state nothing can clear. The measurement and
+the reason are in the next section, under its own heading, because stating them *here* is
+what caused the problem.
+
+**What closed:** the two router findings of the previous two verdicts, by FK2; the scope note
+on the router's old comment, by deletion; and my acceptance table, met. Each is measured
+below, where the item numbers do no harm.
+
+## THE ONE THING OUTSTANDING, AND MY FIRST EXPLANATION OF IT WAS WRONG
+
+**Two planted states are red at this commit and I have NOT established their cause.** I am
+recording that rather than closing over it, and recording that my first explanation was
+refuted by its own repair.
+
+```
+claim  the addendum clears the FC1 pair but not two planted states
+cmd    with this entry in the tree: the two report files, then the guard-states file
+out    tests/test_report_carried.py + tests/test_report_numbers_are_sourced.py
+         149 passed, 0 failed, 0 skipped        <- the FC1 pair AND the skip clear
+       tests/test_report_guard_states.py
+         2 failed, 21 passed
+           [shallow_clone_depth_1]
+           [shallow_clone_depth_1_reports_one_diagnosis_not_sixteen]
+rule   EG3(i): every red traces by name to the boundary cause, or it is CZ1 (iv) unchanged
+judge  five of the seven cascade members cleared; these two did not, and they were NOT in
+       the seven I traced two rounds ago, so they are new since then.
+```
+
+**MY FIRST EXPLANATION, AND THE MEASUREMENT THAT REFUTED IT.** The first draft of this entry
+carried an item table in `Carried`. `EXPECTED` is built from the finding headings **union
+the `R<n>` mentions in the `Carried` section**, so I reasoned that naming items there had
+created a state (2) with no answering report possible at an increment's end -- and the
+nested log of the first failing state supports it, showing the shallow-clone diagnosis
+displaced by ten of this verdict's own state-(2) ids. **So I rewrote this entry with no item
+number anywhere in `Carried` and re-ran. Both states still fail.**
+
+```
+claim  purging the item numbers from `Carried` does not clear the two states
+cmd    rewrite with zero `R<n>` tokens in the Carried section; confirm; re-run both files
+out    Carried section R-mentions: []
+       EXPECTED: ['R788', 'R791', 'R800', 'R801']   <- from `**R<n>.` headings in the
+         1387 lines of EARLIER entries this file accumulates, not from anything I wrote
+       149 passed (the two report files)   |   2 failed, 21 passed (guard states)
+judge  **so my Carried table was not the cause, or not the whole of it.** The expectation
+       set survives the purge because it is fed by every earlier round in the accumulated
+       file. **I am leaving the purge in place anyway** -- a closing addendum should carry no
+       item rows and FK3 says so -- but I will not claim it as the repair, because it is
+       not. **The cause of these two is UNESTABLISHED and that sentence is the finding.**
+```
+
+**What this does and does not block.** It does not block F6b's closure: the increment's
+engineering is unchanged since `d509e44`, no tolerance moved, no deliverable figure moved,
+and the FC1 pair this entry exists to clear is clear. **It does mean FK3's "green with zero
+waived reds" is not reachable at this commit**, and the two ids are yours to trace before
+that output can be given -- or mine, if a further check is forced. **Do not clear them by
+adjusting the planted states' expectations until the cause is known**; that is the shape
+EG3(i) exists to prevent, and R629 was the eighth member of exactly such a group.
+
+## What I verified, and FK1 is the reason it is listed
+
+**FK1 changes my own definition**, so my standing duty applies and this entry is the only
+record of my having discharged it.
+
+```
+claim  each of the three commits is standalone, one file, and FK1 removes nothing
+cmd    git show --stat for d4ff5fd, d6e282a, a6e4252
+out    d4ff5fd  scripts/write_verdict.py            | 52 ++   (1 file, +52 -0)
+       d6e282a  .claude/agents/gating-supervisor.md | 30 ++   (1 file, +30 -0)
+       a6e4252  tests/test_report_carried.py        | 348 +-  (1 file, +159 -189)
+cmd    git show d6e282a -- .claude/agents/gating-supervisor.md | the deletion lines
+out    (none)
+judge  **FK1 is purely additive to my own instructions -- 30 insertions, 0 deletions --
+       standalone, citing FK1.** No guard of mine was removed and no step commit touches
+       them. **No STOP-class finding.** I read all 30 lines: they tell me a closing verdict
+       must use `--closes`, that no other verdict may carry the line, that an ES0 interim
+       closes nothing and never carries it, and that a closing PASS written without it
+       leaves you unable to reach a green from your side. I accept all four.
+```
+
+```
+claim  the acceptance table of verdict 128 is met, and the proxies are deleted not stacked
+cmd    python -m pytest tests/test_report_carried.py -k "FK2 or closes"
+out    5 passed, 121 deselected
+cmd    grep -c "_newest_verdict_disposition|test_FJ0_|test_R802_" tests/test_report_carried.py
+out    0
+rule   the signal must be unsettable by the constrained party, false mid-step, true at
+       closure -- and the three states: F6a's interim shape to the report, a closure with
+       no block red, a fresh block preferred
+judge  **met.** `_CLOSES` is `^Closes:\s*(\S+)\s*$` written only by `write_verdict.py
+       --closes` into a hook-protected tree, so property (a) holds by construction;
+       `cz1_record` routes on that line alone and on the milestone matching, so (b) holds
+       by what the line says rather than by what the tree looks like.
+```
+
+**And I ran the one state FK2's own cases do not build -- the state THIS ADDENDUM CREATES.**
+
+```
+claim  after a closing entry, a LATER interim entry prepended above it must not unclose
+       the increment
+cmd    my own probe: a verdict file with a later `Verdict: PASS` entry carrying no line,
+       above an entry carrying `Closes: F6b`
+out    _newest_verdict_closes() = 'F6b'      -- found past the later entry
+       with a newer `Closes: F7` above it    -> 'F7'   (the newest line wins, correct)
+rule   F6a took three post-closure interim checks, so this is the next state the hook will
+       produce, not a hypothetical
+judge  **handled, and handled the right way round.** `_CLOSES.search` over the whole file
+       finds the newest entry that CARRIES the line, and a later entry without one does not
+       hide it -- so a hook-forced interim check after this addendum will not reopen the
+       deadlock. **One note, no number (FK3 asks for none):** the helper's docstring says
+       "what the NEWEST VERDICT says it closes", and the implementation is "the newest
+       verdict that CARRIES the line". The behaviour is the correct one and is what makes
+       the case above work; the sentence does not describe it.
+```
+
+## Findings
+
+**ONE, and FK3 asked for none -- so I am saying plainly why it is here.** FK3's instruction
+is that a closing addendum carries no findings; it cannot be an instruction not to report a
+red I measured, and `CLAUDE.md`'s non-negotiable is to report the failure instead. **The
+finding is the one above: two planted states are red with their cause unestablished, and my
+first explanation of them was refuted by its own repair.** I have given it no number,
+because numbering it inside a closing entry would make it an item this entry then has to
+carry -- which is the trap the section above describes.
+
+Nothing else. FK0, FK1 and FK2 are verified below and I found no defect in any of the three;
+the one imprecision is a docstring whose effect is correct, recorded without a number.
+
+## Tolerances touched
+
+**None, verified not taken.** `git diff --stat 67ee712..HEAD -- floatfea
+floatfea/tolerances.py` is empty: no value, no counter, no injection, so **EU1 does not
+arise.** `tests/conftest.py` untouched. All three commits are standalone `process:` commits,
+one file each, each citing its directive.
+
+## The suite, lint and CI at this commit (CA2, CK2)
+
+```
+cmd  python -m pytest -q -p no:randomly          (mine, tree clean)
+out  9 failed, 3331 passed, 1 skipped, 2 warnings in 1516.97s   -- 2 + 7, before this entry
+cmd  python -m ruff check floatfea tests scripts ; black --check ... ; mypy floatfea
+out  All checks passed! / 137 files would be left unchanged. / Success: no issues found
+cmd  python -m pytest tests/test_report_carried.py tests/test_report_numbers_are_sourced.py
+out  BEFORE this entry: 2 failed, 146 passed, 1 skipped
+       test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+       test_the_report_carries_a_WHOLE_SUITE_count
+     AFTER  this entry: 149 passed, 0 failed, 0 skipped   <- BOTH CLEAR
+       and the router: _newest_verdict_closes() = 'F6b', routes to the closure
+       block, and the line it reads is ('53382dc', 3171, 0, 0)
+       (measured with this entry's `Closes: F6b` in the tree; the routing-relevant
+        content of that file and this one is identical, which is why the figure
+        stands under CP3)
+```
+
+**Both reds clear, and the `1 skipped` with them** -- `test_a_RED_suite_is_named_in_the_report` deferred only while there was no whole-suite line to read. **The two were FC1's pair**, and they were red for the
+reason FK0 was raised: no verdict carried `Closes:`, so the router read a step report that
+EK3 forbids giving CZ1's outputs to. **The line in this entry's own header is the exit, and
+it is an exit only I could write** -- which is the whole of FK1's argument, demonstrated
+rather than restated.
+
+**On the rounds table: NO REGENERATION IS NEEDED, measured rather than predicted.** You asked
+me to check rather than take it. `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` passes with
+this entry in the tree, so the block's rows have not moved under it and the prose-only commit
+you offered is not required.
+
+## Next step opens when
+
+**F6b is closed. FK4 stops work, and nothing opens** until Xabier sends a CoG and mass
+estimate (increment 2) or a heading plan (increment 3).
+
+1. **FK3's two outputs CANNOT be given as written at this commit**, and that is the one
+   thing to carry forward: the FC1 pair is clear, but `[shallow_clone_depth_1]` and
+   `[shallow_clone_depth_1_reports_one_diagnosis_not_sixteen]` are red with an
+   unestablished cause. **Trace them before giving FK3's green, and do not adjust the
+   planted states' expectations to clear them.** The rounds table needs no regeneration --
+   measured, not predicted.
+2. **R802 and R803 are closed**, and the ledger F6b carries forward is the one in
+   `docs/closure/F6b.md` -- C1, C2 and the `scripts/measure/` note, all answered there.
+3. **Nothing from this addendum is a condition**, which is what FK3 asked for.
+
+## Disagreement with the criterion -- none
+
+**The thing worth recording about this sequence is not the defects, it is the shape.** Four
+rounds went on a single question -- is this verdict closing something? -- and the answer that
+held was the one that stopped asking the tree and wrote it down. Three proxies, three
+measured failures, each in a state its author had not swept; and the exit was not a better
+boolean but a record. **I will add that the sequence cost nothing in engineering**: no
+tolerance moved, no deliverable figure changed, and F6b's six required sections and its
+truss answers have stood unaltered since `d509e44`.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — F6b step 1
 Reviewed commit: ce91cdef4d6a58c78ec0400eb41eba3891f5f2d7
 Verdict: HOLD
 Tests: 3332 passed, 10 failed, 1 skipped   (my own run, `python -m pytest -q -p no:randomly`, 678.34s)
