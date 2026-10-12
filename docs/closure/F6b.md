@@ -459,6 +459,45 @@ in § 2.
 **F6a's ledger stays on `docs/closure/F6a.md`** — R788, R789, R790, R791 — and nothing in it
 was touched by this increment.
 
+## 5a. OPEN AND NOT CLOSABLE FROM HERE — R802/R803, the CZ1 router
+
+**One item, not two**, and no commit of mine closes it. FJ0's locator resolved a three-rule
+deadlock and introduced a one-clause version of the same deadlock on the other side of the
+step boundary; R802 repaired that and reopened FJ0's own hole in the *unsafe* direction;
+the router was reverted to the fail-safe reading by ruling. **Three proxies, each correct
+on the states its author swept and wrong on one nobody did:**
+
+| proxy | fails on | direction |
+|---|---|---|
+| "the newest verdict is PASS" (FJ0) | F6a's three interim-check commits | **safe** |
+| "the report has no whole-suite line" (the condition) | prefers a stale line over a fresh block | — |
+| "block if present, else report with a line" (R802, mine) | F6a's final shape, at four measured commits | **unsafe** |
+
+**The diagnosis is the reviewer's and it is the useful part:** a boolean is standing in for
+a distinction this repository does not record anywhere, so the fix is to **record the
+distinction**, not to improve the proxy. A correct signal must be **unsettable by the
+constrained party, false mid-step and true at closure** — and the verdict tree is the only
+record the implementer cannot write, so a closing verdict *saying* it is closing satisfies
+both by construction. That changes `scripts/write_verdict.py` and the reviewer's own
+instructions, which is why it needs a directive and not an edit from here.
+
+**Acceptance test for any cheaper signal**, so the decision is cheap: green at F6a's three
+interim commits; red at a closure commit with an artifact and no block; and a fresh block
+preferred over a stale report line.
+
+**Until it lands, the current state of the tree is the correct one** and is not a defect:
+one named fail-safe red (`test_R802_an_INTERIM_PASS_does_not_demand_a_CLOSURE_BLOCK`), both
+counter-cases kept, and **no fail-green state anywhere in the router**. The two other reds
+are EG3 state (2) and were measured red under *both* routers, which is the control showing
+the router is not their cause; seven more cascade off a red `[baseline]` (EH1).
+
+**Pending, to be folded into that repair rather than committed on its own:** the comment at
+the router's site reports `3 failed, 121 passed, 1 skipped` without naming the file it was
+measured on, while `144` is the two-file figure. Both are true of what they measured, and a
+reader running the obvious command gets the second. It is scope rather than value, so not
+CW0's class — and the repair must rewrite that comment anyway, so a separate commit would
+spend a review round on a clause.
+
 ## 6. The limitations every F6b number carries
 
 1. **The truss is a pin-jointed idealisation** with no joint or connection design and no
