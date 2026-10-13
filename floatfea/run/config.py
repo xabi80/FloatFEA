@@ -45,6 +45,40 @@ __all__ = [
 ]
 
 
+class _NoDuplicateLoader(yaml.SafeLoader):
+    """A YAML loader that REFUSES a duplicate mapping key (R811).
+
+    `yaml.safe_load` is last-wins and silent, which is the worst of the three possible
+    behaviours. Measured on this schema before the fix: `Fy` given twice took 275 MPa over
+    355, `platform.f` took 0.30 over 0.75, and `K` took 3.0 over 2.0 -- each a different
+    structure analysed under a value the reader can see with their own eyes in the file and
+    did not get.
+
+    It is exactly the failure mode `_reject_unknown` exists to prevent, arriving by a
+    route that check cannot see: the key IS known, and there are simply two of it. A diff
+    that adds a field without removing the old one is how it happens, and nothing about
+    the file looks wrong afterwards.
+    """
+
+
+def _no_duplicates(loader: yaml.SafeLoader, node: Any, deep: bool = False) -> Any:
+    seen: set[Any] = set()
+    for key_node, _value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)  # type: ignore[no-untyped-call]
+        if key in seen:
+            raise ConfigError(
+                f"duplicate key {key!r} at line {key_node.start_mark.line + 1}. YAML's "
+                f"default is last-wins and silent, so the run would have used the second "
+                f"value while the first sits in the file looking authoritative. Remove "
+                f"one."
+            )
+        seen.add(key)
+    return loader.construct_mapping(node, deep)
+
+
+_NoDuplicateLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _no_duplicates)
+
+
 class ConfigError(ValueError):
     """A configuration this tool refuses to run.
 
@@ -294,6 +328,23 @@ class RunConfig:
     load_cases: LoadCases
     code_check: CodeCheck
     outputs: Outputs
+    study_only: bool = False
+    """FN1. A STUDY configuration: one the tool will build but will not vouch for.
+
+    The default is `False`, and that is the point. Before R1, `build_superstructure()`
+    descended `MASS_FRACTION_LADDER` consulting `admissible()` at every rung, so a body
+    with a non-PSD remainder was UNREACHABLE. A configuration handing `f` in bypasses
+    that ladder, which made `f = 1.0` (the whole body mass on the members) and `f = 0.0`
+    (massless members) reachable for the first time -- and R810 measured both running to
+    completion and PUBLISHING.
+
+    With this flag, such a run is permitted and every output it writes says
+    `STUDY -- NOT FOR DESIGN` in its label and header. Without it, the run refuses. The
+    flag cannot be inferred from anything in the tree: ES1's reasoning about the
+    sensitivity entry point applies to the configuration too -- a build made this way
+    must not be mistakable for one to ship.
+    """
+
     raw: dict[str, Any] = field(default_factory=dict)
 
     def _relative(self, path: Path) -> str:
@@ -344,6 +395,13 @@ class RunConfig:
                 else f"{len(self.load_cases.cases)} declared wave case(s)"
             ),
             "governing_periods_s": list(self.load_cases.governing_periods),
+            # R812: DECLARED AND CONSUMED. This field was accepted, stored and read by
+            # nothing -- not the provenance, not an artifact, not a test -- so a reader
+            # could state the window rule their npz was exported under and have it reach
+            # no output at all. It is a fact about the dynamic inputs, so it belongs
+            # wherever those are described.
+            "window_rule": self.load_cases.window_rule or "(not declared)",
+            "study_only": ("YES -- STUDY, NOT FOR DESIGN" if self.study_only else "no"),
             "code_check": (
                 f"K = {self.code_check.k:g}, Cm = {self.code_check.cm:g}, "
                 f"one-third increase {'ON' if self.code_check.one_third_increase else 'OFF'}"
@@ -354,7 +412,15 @@ class RunConfig:
 # ---------------------------------------------------------------------------
 # Parsing
 # ---------------------------------------------------------------------------
-_TOP = ("floatsim", "mass_distribution", "sections", "load_cases", "code_check", "outputs")
+_TOP = (
+    "floatsim",
+    "mass_distribution",
+    "sections",
+    "load_cases",
+    "code_check",
+    "outputs",
+    "study_only",
+)
 
 
 def _parse_floatsim(block: Any, base: Path) -> FloatsimRef:
@@ -631,7 +697,7 @@ def load_config(path: Path | str) -> RunConfig:
     if not source.is_file():
         raise ConfigError(f"{source} does not exist.")
     try:
-        loaded = yaml.safe_load(source.read_text(encoding="utf-8"))
+        loaded = yaml.load(source.read_text(encoding="utf-8"), _NoDuplicateLoader)
     except yaml.YAMLError as exc:
         raise ConfigError(f"{source} is not valid YAML: {exc}") from exc
     if not isinstance(loaded, dict):
@@ -647,8 +713,16 @@ def load_config(path: Path | str) -> RunConfig:
                 f"{source.name}: required section {section!r} is missing. Present: "
                 f"{sorted(loaded)}."
             )
+    study_only = loaded.get("study_only", False)
+    if not isinstance(study_only, bool):
+        raise ConfigError(
+            f"{source.name}: study_only must be true or false, got {study_only!r}. It "
+            f"governs whether an inadmissible mass distribution is permitted at all, so "
+            f"it is not a value to be coerced."
+        )
     return RunConfig(
         source=source,
+        study_only=study_only,
         floatsim=_parse_floatsim(loaded["floatsim"], base),
         mass_distribution=_parse_mass(loaded["mass_distribution"]),
         sections=_parse_sections(loaded["sections"]),

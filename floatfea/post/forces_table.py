@@ -80,15 +80,29 @@ def _gravity_field(n_dof: int) -> NDArray[np.float64]:
     return field
 
 
-FROUDE_LAMBDA = 50.0
-"""`docs/conventions.md`'s scale. The FE model is FULL scale; FloatSim runs at MODEL."""
-
 ROWS_PER_JOINT_YAW_LOCKED = 4
 """Three translations plus the one locked axis. `floatfea.io.froude`'s composite width."""
 
 
-def _lam_full_scale(lam_row: NDArray[np.float64]) -> NDArray[np.float64]:
+def _lam_full_scale(lam_row: NDArray[np.float64], froude_lambda: float) -> NDArray[np.float64]:
     """One timestep's multipliers, model scale to FULL scale, per joint block.
+
+    **`froude_lambda` IS A PARAMETER AND THERE IS NO MODULE CONSTANT (R805, FN0).** This
+    read `FROUDE_LAMBDA = 50.0` from module scope while `build_superstructure` took its
+    scale from the caller. A configuration declaring `floatsim.froude_lambda: 25.0`
+    therefore built the deck at scale 25 -- platform `deck_mass` 312500 against 2500000,
+    arms 25 m against 50 m -- and scaled the joint reactions by 50 anyway. The composite
+    goes as `lam^3` on force and `lam^4` on the locked moment, so that is **8x on force
+    and 16x on the moment**, with `provenance()` printing `25.0` as though it had been
+    used.
+
+    Nothing was red. The declared range is `[1, 1000]` and the example sits on the one
+    point in three decades where the constant and the configuration agree, so the golden
+    test could not see it either. **That is the shape this project exists to prevent: a
+    plausible wrong answer, not a crash.**
+
+    So the scale is passed in, every caller states it, and there is no default -- a
+    default would be the same constant wearing a different hat.
 
     **THIS IS THE ONE PLACE A SCALE CHANGE HAPPENS AND IT NEARLY DID NOT HAPPEN AT ALL.**
     `data/f4/dynamic_inputs.npz` holds FloatSim's own output, which is MODEL scale: the
@@ -117,7 +131,7 @@ def _lam_full_scale(lam_row: NDArray[np.float64]) -> NDArray[np.float64]:
     for start in range(0, row.size, ROWS_PER_JOINT_YAW_LOCKED):
         block = row[start : start + ROWS_PER_JOINT_YAW_LOCKED]
         out[start : start + ROWS_PER_JOINT_YAW_LOCKED] = to_full_scale(
-            block, "joint_multiplier_yaw_locked", FROUDE_LAMBDA
+            block, "joint_multiplier_yaw_locked", froude_lambda
         )
     return out
 
@@ -413,6 +427,7 @@ def compute_rows(
     inp: Any,
     raw: Any,
     governing_periods: tuple[float, ...],
+    froude_lambda: float,
     progress: Any = None,
 ) -> ComputedForces:
     """Every basis, over every case and step. Moved verbatim from the script's `main`.
@@ -424,6 +439,9 @@ def compute_rows(
 
     `progress` is called with one line per case when given, so the script keeps printing
     what it printed and the library stays silent by default.
+
+    `froude_lambda` is required for the same reason `governing_periods` is: it is a
+    property of the RUN and not of this module. R805 is what a module constant here cost.
     """
     by_name = {b.name: b for b in built.bodies}
 
@@ -450,7 +468,9 @@ def compute_rows(
         worst_hi: dict[tuple[str, str, str], NDArray[np.float64]] = {}
         worst_lo: dict[tuple[str, str, str], NDArray[np.float64]] = {}
         for step in range(lam.shape[0]):
-            loads = map_joint_reactions(_lam_full_scale(lam[step]), joint_order, nodes, n_dof_of)
+            loads = map_joint_reactions(
+                _lam_full_scale(lam[step], froude_lambda), joint_order, nodes, n_dof_of
+            )
             for name, body in by_name.items():
                 # NO GRAVITY: `lam` is the dynamic increment about equilibrium (see the
                 # module docstring). Adding gravity here put the body in free fall.

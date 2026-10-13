@@ -131,6 +131,15 @@ from floatfea.post.member_forces import (  # noqa: E402
 )
 from floatfea.solve.inertia_relief import solve_inertia_relief  # noqa: E402,F401
 
+FROUDE_LAMBDA = 50.0
+"""`docs/conventions.md`'s scale. The FE model is FULL scale; FloatSim runs at MODEL.
+
+STATED HERE, BY THE CALLER, because `floatfea.post.forces_table` no longer carries it
+(R805 / FN0): a module constant there silently overrode a configured scale. This script
+analyses the committed npz, which `data/f4/dynamic_inputs.provenance.json` records as
+exported at `run.lambda = 50.0`, so this is the file's own scale and not a default.
+"""
+
 WAVE_HEIGHT_FULL_M = 24.2
 """The DS1 design wave at full scale, `0.484 m` model times the Froude factor."""
 
@@ -270,6 +279,7 @@ def main(argv: list[str] | None = None) -> int:
         inp,
         raw,
         GOVERNING_PERIODS,
+        FROUDE_LAMBDA,
         progress=lambda line: print(line, flush=True),
     )
     rows = computed.rows

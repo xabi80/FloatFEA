@@ -549,3 +549,600 @@ where the output is quoted.
 * **No `floatfea export`.** It validates and refuses, naming the HSP worktree.
 * **No user guide and no witness.** FL3, step 3.
 * **No explicit mass distribution consumed.** Declared, validated, refused at build.
+
+---
+
+# Revision 2 — the ten findings answered, and one directive I could not finish
+
+Answers: verdict 1 @ 633b376
+Answers file: `docs/reports/R1/step-1-answers.json`
+
+**2026-10-13.**
+
+## 1. The schedule, and what this revision is
+
+**Measured against FL5's 28 October.** The HOLD arrived on 12 October and is answered on
+13 October, leaving **15 days** and two steps. **The date holds.** DIRECTIVE FN ruled on
+four of the ten findings before I touched them; six were mine to repair outright.
+
+```
+claim  the dates this revision is measured against, and the margin left
+cmd    python -c "import datetime; print((datetime.date(2026,10,28)-datetime.date(2026,10,13)).days)"
+out    HOLD arrived            : 2026-10-12
+       this revision           : 2026-10-13
+       FL5 target              : 2026-10-28
+       days remaining          = 15
+rule   FL5: "Target 28 Oct. Report wall-clock progress per step."
+judge  one day spent on ten findings, with 15 days and two steps left. The date holds.
+```
+
+Nine of the ten are answered. **One — FN0's requirement that the npz record its own λ — is
+partial, and § 11 says why and asks for a ruling.** That is the only outstanding item and I
+am not closing it myself.
+
+## 2. R804 — `write_verdict.py` could not write an R1 verdict, and could write the wrong one
+
+Answered under **FN3**, in a standalone `process:` commit (`f13f519`).
+
+```
+claim  the identifier is now any locked plan, and one naming no plan refuses
+cmd    _milestone on eleven identifiers; _closes on six
+out    'R1' ACCEPT 'R1'   <- was impossible; the reviewer hand-wrote verdict 1
+       'F6' / 'F6a' / 'F6b' ACCEPT
+       '1' refuse / '2' refuse / '6a' refuse / 'F99' refuse / '' refuse
+       'R1draft' refuse / '../etc' refuse
+       --closes 'F6b/1' -> 'F6b/step-1' ; --closes '1' refuse
+rule   FN3: "REFUSES an identifier with no locked plan (so `--milestone 1` must refuse,
+       not write into F1/)"
+judge  the sharp half was never that `R1` was rejected. **`--milestone 1` SATISFIED the
+       old validator** -- it stripped an `F`, matched the rest against `\d+[a-z]?` and
+       rebuilt the path as `f"F{cleaned}"` -- so a typo, or the habit of typing the
+       STEP's number, filed a verdict under a closed milestone with no error at all. The
+       repair is not a wider regex, because a wider regex still guesses: an identifier must
+       NAME A LOCKED PLAN, and the set is read from the directory.
+```
+
+A noted imprecision, left to an existing check rather than given a second rule:
+`F2_figures` is a generated figures file in `docs/milestones/` and is therefore in the
+accepted set. It cannot reach a verdict path — `main()` already refuses with "no step
+report at `docs/reports/F2_figures/step-N.md`".
+
+## 3. R805 — λ reached the deck build and not the Froude conversion
+
+Answered under **FN0**. This was the serious one and it was mine.
+
+```
+claim  what the defect was, and that nothing could see it
+cmd    floatfea/post/forces_table.py before this revision: FROUDE_LAMBDA = 50.0 at module
+       scope, used by _lam_full_scale, whose signature took no lambda
+out    build_superstructure(froude_lambda=25.0) builds the deck at scale 25
+       _lam_full_scale scales the joint reactions by 50 regardless
+       provenance() prints 25.0
+rule   FN0: "one source for λ. It reaches the deck build, every Froude conversion and the
+       provenance, with no module constant on the run path"
+judge  the yaw-locked composite is declared as `((0, 3, "force"), (3, 4, "moment"))`, so
+       force goes as `lambda^3` and the locked moment as `lambda^4`: a declared 25 against
+       an exported 50 is **8x on every force and 16x on the locked moment**, with the
+       report printing the scale that was not used. The declared range is `[1, 1000]` and
+       the example sits on the single point in three decades where the constant and the
+       configuration agree, so the golden test could not see it either. A plausible wrong
+       answer, not a crash.
+```
+
+**The repair has three parts.** λ is a required parameter of `_lam_full_scale` and of
+`compute_rows`, with **no default** — a default is the same constant wearing a different
+hat. The module constant is gone; `member_forces_table.py` declares its own and passes it,
+and says in its own comment that this is the scale `data/f4/dynamic_inputs.provenance.json`
+records the committed file as exported at. And `run` **refuses a mismatch**:
+
+```
+claim  a declared scale differing from the export's refuses, naming both
+cmd    python -m floatfea.cli run <config with froude_lambda: 25.0>
+out    scale mismatch. floatsim.froude_lambda = 25.0 in c.yaml, and dynamic_inputs.npz
+       was exported at 50.0 according to dynamic_inputs.provenance.json (`run.lambda`).
+       ... The declared scale is smaller by a factor of 2, which is 8x on every force and
+       16x on the locked moment. Declare the file's own scale, or export a file at this one.
+rule   FN0: "`run` REFUSES if the config's λ differs, naming both"
+judge  the magnitude is stated as a factor >= 1 with the direction named. My first version
+       printed the ratio from the declared side -- `0.125x on force` -- which is
+       arithmetically right and the reciprocal of what a reader needs. EH4: a boundary is
+       solved in both directions.
+```
+
+```
+claim  the counter-cases FN0 asked for
+cmd    python -m pytest -q tests/regression/test_r1_example_golden.py -k FN0
+out    6 passed
+rule   FN0: "λ = 25 with a λ = 50 npz must refuse; a λ = 25 synthetic export must scale
+       forces by λ³ and the locked moment by λ⁴"
+judge  the six are: the exported scale is READ from the sidecar and not assumed; a declared
+       mismatch refuses naming both and the 8x/16x; an export recording NO scale refuses
+       rather than defaulting; the npz key is PREFERRED over the sidecar (given different
+       values, so the test can tell which was read); the conversion gives 8.0/8.0/8.0 on
+       the force rows and 16.0 on the locked moment, with the absolute values asserted too
+       so it cannot pass on two wrong numbers whose ratio is right; and there is no module
+       constant and no default for the scale.
+```
+
+**And byte-identity was re-proven, because FN0 changed the functions it rests on.**
+
+```
+claim  the regenerated deliverable is still byte-identical after the lambda change
+cmd    python scripts/measure/member_forces_table.py --out <tmp>.csv --summary <tmp>.md
+       diff against docs/F4_member_forces.csv and .md ; sha256sum both
+out    CSV IDENTICAL
+       MD IDENTICAL
+       ed089b780e34db049059f671e1a09ed09d7ee679e48a4b4fcf97139e08258686  (both)
+rule   FL1(c)'s "EXACTLY"
+judge  `_lam_full_scale` and `compute_rows` are exactly the functions FL1(c)'s claim runs
+       through, so a signature change there had to be re-measured rather than assumed
+       inert.
+```
+
+## 4. R806 and R807 — the artifacts dropped the caveats, and nine findings were discarded
+
+```
+claim  what the headers carry now, and where it comes from
+cmd    grep -c '^#' on the two artifacts under results/R1/example/
+out    member_forces.csv 33 ; utilisation.csv 33
+       (before: 11 each; the committed deliverables carry 17 and 12)
+rule   R806: the dropped lines were the ones that stop a reader misusing a column
+judge  **generated, not copied.** The header is the label, the provenance, every entry of
+       `Superstructure.assumptions` (6), every body's `findings` (9) and four column
+       caveats. The first three come from the builder, so they cannot go stale against the
+       model the way a transcribed list does -- and the λ assumption even states the
+       configured scale, so FN0's single source reaches the artifact's own header.
+```
+
+```
+claim  the nine findings, verbatim, as the build raises them
+cmd    build at the example's fraction and print each body's findings
+out    platform: the mass fraction is 0.75, handed in by the caller rather than taken
+         from (0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0), so `admissible()` was never consulted
+       hub1..hub4: the equivalent density is 11433.5 kg/m^3, ABOVE steel at 7850 ...
+       hub1..hub4: the mass fraction is 0.75, handed in by the caller ...
+       total: 9 findings (1 on the platform, 2 per hub)
+rule   R807: `Superstructure.findings` is read nowhere in floatfea/run/ or cli.py
+judge  five of the nine say the body is a MEASUREMENT and not one to ship, which is
+       exactly what a reader of a published artifact needs to be told.
+```
+
+**R807 is the half that was a defect rather than an omission.** Nine findings were being
+computed and thrown away, and five of them read *"the mass fraction is 0.75, handed in by
+the caller rather than taken from the ladder, so `admissible()` was never consulted"* —
+created precisely because the configuration hands `f` in, and discarded by the layer whose
+job is to say what the run rests on. They are now in every header and in the report under
+their own heading.
+
+The four column caveats are the writer's business rather than the builder's, because they
+describe what the COLUMNS mean: R739's tension sign, R740's upper-bound warning on the
+envelope rows, FA3/R730's MID approximation, and EZ2's governing-basis rule.
+
+## 5. R808 — the published report duplicated the body prefix, and I had claimed to fix it
+
+```
+claim  the governing line in the published report
+cmd    grep -n "U = 1.71167" results/R1/example/report.md
+out    **U = 1.71167** at `platform:hub4_arm` ROOT, `T_full = 12.5 s`, basis
+       `total_instant`, governing clause 3.3.2 interaction.
+rule   the member label already carries its body, so prefixing the body again is wrong
+judge  fixed. It read `platform:platform:hub4_arm`.
+```
+
+**The part worth recording is not the defect, it is that I asserted the fix in a commit
+message.** Revision 1's commit says the duplicated prefix was fixed in both the report and
+the console line. The fixer script did two replacements with an assertion between them; the
+second assertion failed; it raised **before writing**, so neither landed. I then repaired
+the console line alone, by line index, and verified the console line alone. The command
+that refutes the claim is `grep -n "governing\['body'\]" floatfea/cli.py`, one line, and
+I did not run it. BD0 exists for exactly this and I wrote the message as though it did not.
+
+## 6. R809 — a refusal that arrived after the outputs
+
+```
+claim  `required_section: true` now leaves nothing on disk
+cmd    python -m floatfea.cli run <config with required_section: true> ; count files
+out    floatfea: outputs.required_section / outputs.truss_sizing are FL2(b) and are not
+       wired in R1 step 1 ... Refused before any output is written, so nothing on disk
+       describes a run that did not happen.
+       exit=2
+       files written: 0
+rule   measured before the repair: member_forces.csv (186958 B), utilisation.csv (8280 B),
+       report.md (3575 B), the governing U printed, THEN exit 2
+judge  the check sat at the end of the function. **A refusal that arrives after the
+       outputs is not a refusal; it is a warning with a non-zero exit code**, and the three
+       artifacts it left mentioned the refusal nowhere.
+```
+
+## 7. R810 — `f` near 1 or 0 published, where the ladder had made it unreachable
+
+Answered under **FN1**.
+
+```
+claim  the three fractions the reviewer measured now refuse, and the shipped one does not
+cmd    _refuse_inadmissible on the built model at four fractions
+out    f=1          REFUSED (the remainder inertia is not PSD ...)
+       f=0.999999   REFUSED (the remainder inertia is not PSD ...)
+       f=0          REFUSED (the equivalent density falls below the declared floor ...)
+       f=0.75       ACCEPTED
+       f=1 study_only -> permitted ; f=0 study_only -> permitted
+rule   FN1: "`run` REFUSES any body whose distribution fails admissible() (PSD), or whose
+       equivalent density falls below the declared floor (f = 0)"
+judge  **this is a safety R1 removed without my noticing.** `build_superstructure()` with
+       no fraction descends `MASS_FRACTION_LADDER` and takes the first rung where
+       `admissible()` holds, so a non-PSD remainder was unreachable BY CONSTRUCTION. A
+       configuration handing `f` in takes the `measurement_fraction` path, which bypasses
+       the ladder -- documented, and I read the documentation and did not act on it.
+```
+
+**Two conditions, because they are two different failures.** `admissible()` is DY0(d).
+The density floor catches `f = 0`, which IS PSD — exactly zero slack on all five bodies —
+and puts no mass on the members at all; PSD alone would admit it, and a frame whose members
+weigh nothing produces member forces that mean nothing.
+
+```
+claim  the non-monotonicity, measured here rather than quoted
+cmd    build at f = 0.999999 and f = 1.0; print admissible() per body
+out    f = 0.999999   platform=False hub1=False hub2=False hub3=False hub4=False
+       f = 1          platform=True  hub1=False hub2=False hub3=False hub4=False
+rule   FN1: refuse any body whose distribution fails admissible()
+judge  the platform flips back to admissible between the two, so **no interval of `f`
+       describes the admissible set**. The verdict put it as "four of five at
+       f = 0.999999"; measured, it is five of five there and four of five at f = 1.0 --
+       the ruling is unaffected and the figure is mine now rather than carried.
+```
+
+**And the guard is per body rather than a range on `f`**, because the reviewer measured the
+platform as `PSD = False` at `f = 0.999999` and `True` again at `f = 1.0`. No interval of
+`f` describes the admissible set, so the question is asked of the built body every time.
+
+`study_only: true` permits such a run, and then **every header carries
+`STUDY -- NOT FOR DESIGN`**, the provenance records it, and the console says it. What I
+have not done is put it in the CSV column names or the filenames: a reader who opens only
+the data rows of a study CSV sees no label, because the header is `#`-commented. Declared
+in § 12 rather than left to be found.
+
+## 8. R811 — duplicate YAML keys were last-wins and silent
+
+```
+claim  a duplicate key now refuses, naming the key and the line
+cmd    load_config on the example with `Fy` given twice
+out    duplicate key 'Fy' at line 64. YAML's default is last-wins and silent, so the run
+       would have used the second value while the first sits in the file looking
+       authoritative. Remove one.
+rule   measured before the repair: Fy 355 -> 275 MPa, platform.f 0.75 -> 0.30, K 2.0 -> 3.0
+judge  **this is the failure `_reject_unknown` exists to prevent, arriving by a route it
+       cannot see**: the key IS known, there are simply two of it. A diff that adds a field
+       without deleting the old one is how it happens, and nothing about the file looks
+       wrong afterwards. Tested across three sections, because a loader fixed at one
+       mapping depth can still be last-wins at another.
+```
+
+## 9. R812 — `window_rule` was accepted and read by nothing
+
+Now in `provenance()`, which is where a fact about the dynamic inputs belongs, so it
+reaches every artifact header and the report. It was accepted, validated and stored, and
+no output mentioned it — a reader could state the window rule their npz was exported under
+and have it reach nothing.
+
+## 10. R813 — EG3's state (1) list, and a comparison of mine that proved the wrong thing
+
+Answered under **FN2**, in a standalone `process:` commit (`585f707`) touching `CLAUDE.md`
+and `docs/SUPERVISOR.md`, byte-identical in both.
+
+```
+claim  the three names, and the control that establishes the cause
+cmd    the reviewer's own runs, reproduced in the verdict
+out    added: test_the_reported_CI_counts_are_not_all_zero,
+              test_the_report_carries_a_CI_SECTION,
+              test_the_R507_cases_rule_as_measured[frames.txt]
+       bd315a1 (a verdict EXISTS): 0 failed
+       comm -12 (this tree's 37) (bd315a1's reds): (empty)
+rule   FN2: "Cite bd315a1 (0 failed with a verdict present) as the control that
+       establishes the cause"
+judge  **my revision-1 trace proved reproducibility and called it cause.** I compared this
+       tree's 37 reds against `e001aec` and found the lists identical both directions --
+       and both commits are instances of the SAME state, so the comparison cannot separate
+       "red because no verdict exists" from "red in both trees for another reason". I had
+       measured a correlation and presented it as a cause, which is BG0's defect in the one
+       place I thought I was being careful. The control is a commit where a verdict exists.
+```
+
+The clause now states the membership rule as *verdict-dependent, measured against a
+verdict-exists control*, with the enumeration as a convenience — because the third name
+proves enumeration unsafe: `test_the_R507_cases_rule_as_measured[frames.txt]` mentions no
+verdict in its failure line at all, and is green the moment one exists.
+
+## 11. The one part of FN0 I did not finish, and it needs a ruling
+
+**FN0 asks that "the dynamic-inputs npz records the λ it was exported at". The READ side is
+done; the WRITE side is not, and I am not closing it myself.**
+
+```
+claim  why the export was left alone
+cmd    scripts/export_f4_dynamic_inputs.py --check compares array sets
+out    missing = set(committed.files) ^ set(fresh.files)
+       if missing: print("REFUSED: the array sets differ"); return 1
+rule   FN0: the npz records the λ it was exported at
+judge  adding a `froude_lambda` array to the export makes `--check` REFUSE against the
+       committed file, and that file cannot be regenerated in this tree -- it needs the
+       pinned HSP worktree. So the choice was between reddening a gate on a file nobody
+       here can re-export, and weakening that gate to tolerate a named extra array. I did
+       neither.
+```
+
+**What exists instead:** the reader prefers a `froude_lambda` array in the npz when present
+and falls back to `run.lambda` in the provenance sidecar, which
+`scripts/export_f4_dynamic_inputs.py` has always written and which the committed file
+carries as `50.0`. So the scale of the one dynamic-inputs file this repository ships is a
+**recorded fact about its export**, not a default anyone chose, and a file recording neither
+is refused rather than assumed.
+
+```
+claim  the committed file's scale is a recorded fact about its export
+cmd    read run.lambda from data/f4/dynamic_inputs.provenance.json, and the reader's own
+       report of where it got the value
+out    exported lambda: 50.0   read from: dynamic_inputs.provenance.json (`run.lambda`)
+rule   FN0: "The dynamic-inputs npz records the λ it was exported at"
+judge  `scripts/export_f4_dynamic_inputs.py` writes `run.lambda` from `g41.LAMBDA` and has
+       always done so, so this is the generator's own record and not a value I chose. The
+       reader reports WHERE it read the scale, so a future file carrying the npz key is
+       distinguishable in the output from one relying on the sidecar.
+```
+
+**The ruling I need:** whether to (a) add the npz key and re-export when the HSP worktree is
+next available, (b) add the key and amend `--check` to accept it as a declared addition, or
+(c) leave the sidecar as the record. I would choose (a) and leave this open until the
+re-export, but it is a partial on a directive and that is not mine to decide.
+
+## 12. Tolerances
+
+**None added, none moved, and none removed.**
+
+```
+claim  no tolerance was introduced by any of these repairs
+cmd    grep -nE "isclose|abs_tol|rel_tol|approx|\*\*-[0-9]" over the changed files
+out    (nothing outside the comment in pipeline.py recording the one removed in revision 1)
+rule   CLAUDE.md: every tolerance lives in floatfea/tolerances.py, including comparison
+       epsilons and "small number" guards
+judge  the λ comparison is exact equality between two declared constants; the admissibility
+       guard uses `admissible()`, which carries DY0(d)'s own tolerance, and the declared
+       density floor, which is a validation bound; the duplicate-key check is set
+       membership. FM0 already removed step 2's threshold, and § 6 of revision 1 records
+       the two I had written and withdrawn.
+```
+
+**Declared rather than waited for:** the study label reaches the header block, the
+provenance and the console, but not the CSV column names or the filenames. Same shape as
+R806, and I would rather name it than have it found.
+
+## 13. The suite, lint and the boundary state
+
+```
+claim  the whole suite at this commit
+cmd    python -m pytest -q
+out    15 failed, 3519 passed, 1 skipped, 2 warnings in 649.35s (0:10:49)
+rule   nothing excluded, nothing waived, nothing deselected
+judge  the 15 are the report guards and nothing else. Eight are traced below by name;
+       the other seven are the planted states cascading off a red baseline, which EH1
+       identifies by the baseline being red and by each state's own failure line.
+```
+
+```
+claim  the 15, by file
+cmd    the FAILED list of the run above
+out    test_report_carried.py        8   (the eight traced below)
+       test_report_guard_states.py   7   (baseline + 6 cascading)
+       everything else               0
+rule   EG3(i): every id matches the state's own cause, and one that does not is CZ1 (iv)
+judge  nothing outside the two report-guard files is red, so no element, solver, load-path,
+       code-check, configuration or deliverable test is failing at this commit.
+```
+
+**AND TWO REDS IN THIS SUITE WERE REAL, BOTH MINE, BOTH CAUGHT BY GUARDS I HAD WRITTEN
+EARLIER IN THIS STEP.** They are not in the 15 because they are fixed:
+
+```
+claim  what the previous run found and what it was
+cmd    python -m pytest -q   (the run before the last two edits: 17 failed, 3516 passed)
+out    tests/test_no_tolerance_literals.py::...[test_r1_example_golden.py]
+         -> three comparisons against 50.0, 25.0 and 16.0 in FN0's own counter-cases.
+            None is a tolerance -- two are Froude scales read from a record, the third is
+            `(50/25)**4`, an integer power of two computed from the declared composite --
+            so each now carries the sanctioned `# not-a-tolerance:` annotation ON the
+            comparison line, which is where the checker reads it.
+       tests/unit/test_forces_table_reexports.py::test_the_names_this_test_guards_are_
+       the_ones_the_consumers_ASK_FOR
+         -> threading the scale out of `forces_table` made `f6a_premise_check.py` state a
+            scale, so it reaches for `MFT.FROUDE_LAMBDA` -- a NINTH consumed attribute.
+            Added to the guarded set.
+rule   the second test was written in revision 1 to grep the consumers rather than trust a
+       typed list, precisely so the list could not drift from them
+judge  **it drifted on the first change after it was written, and it caught it.** That is
+       the whole argument for making a claim a test rather than a comment, and this is the
+       measurement rather than the assertion of it.
+```
+
+```
+claim  lint, format and types
+cmd    ruff check floatfea scripts tests ; black --check floatfea scripts tests ; mypy floatfea
+out    All checks passed!
+       146 files would be left unchanged.
+       Success: no issues found in 42 source files
+```
+
+**The boundary state is EG3 (2): verdict written, answering report not yet** — until this
+revision lands, which is what clears it. Under FN2 the membership rule is now
+*verdict-dependent, measured against a verdict-exists control*.
+
+**EIGHT REDS REMAIN IN THE REPORT GUARDS AND ALL EIGHT TRACE TO TWO CAUSES, NEITHER OF
+WHICH I CAN REACH.** They are listed by name because EG3(i) requires the trace, not a
+family:
+
+```
+claim  the eight, and the cause of each
+cmd    python -m pytest -q tests/test_report_carried.py -p no:randomly
+out    test_the_report_carries_a_CI_SECTION
+       test_the_CI_section_is_about_the_REVIEWED_commit
+       test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+       test_the_reported_CI_counts_are_not_all_zero
+       test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph
+       test_a_blocking_item_is_not_routed_to_4a
+       test_the_generator_would_catch_a_row_under_the_wrong_number
+       test_the_report_carries_a_WHOLE_SUITE_count
+rule   CZ1 (iv): a red outside the state's own list blocks
+judge  seven of the eight are the HAND-WRITTEN VERDICT's format, which is R804's
+       downstream cost, and the eighth is CZ1's own reusable half.
+```
+
+**Cause 1 — two conventions the verdict carries by hand and `write_verdict.py` never
+emitted.**
+
+```
+claim  neither convention is in R1's verdict, and neither came from the tool
+cmd    count the bold anchor and the classifying parenthetical in R1's verdict
+out    `**Reviewed commit: `<sha>`.**`   : 0   (F6b's file has 6, F6a's 7)
+       `**R<n>. (<class>)`               : 0   (the headings read `**R804. `scripts/...`)
+cmd    python scripts/ci_section.py
+out    verdict 1 at `633b376` does not name the commit it judged in its header, so there
+       is no commit to report CI for.
+rule   ci_section.py's `_JUDGED` is `\*\*Reviewed commit:\s*`([0-9a-f]{7,40})``, and
+       carried_table.py's `classify()` is `^\*\*(R\d+)\.?\s*\(([^)]*)\)`
+judge  every verdict that satisfied those two generators did so because a reviewer typed
+       both forms by hand. The tool wrote neither. R1's verdict was hand-written -- R804 --
+       so it has neither, and five CI guards plus two classification guards cannot pass.
+       **The CI section is not merely absent: it is UNGENERABLE**, and I do not edit the
+       verdict tree.
+```
+
+**What I did about it, and what I did not.** `e6076cc` makes the tool emit the anchor line,
+so a verdict written with it satisfies the chain without anyone remembering. The
+classifying parenthetical is the reviewer's judgement per finding and a tool cannot
+synthesise it, so that one stays a convention — now a documented one. **Neither fix
+retroactively repairs this verdict**, so these seven clear when the next verdict is written
+with the tool, not before.
+
+**Cause 2 — `test_the_report_carries_a_WHOLE_SUITE_count`** is FC1, and CZ1's reusable half
+says why it cannot pass here: `scripts/suite_count.py` measures a clean worktree AT a
+commit, so a line naming a sha cannot be inside that sha. Designed, self-clearing, not a
+defect.
+
+**And CI has no run at the reviewed commit at all**, which is separate from the above and
+worth stating plainly: `472bcd1` was never pushed, so `gh run list --commit 472bcd1` is
+empty. That is CK2's unavailable state rather than a red, and it is the reviewer's own
+finding, not something this revision discovered.
+
+## 14. Carried
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R1 | **not classified in this verdict** — carried in from an earlier one | no clause this generator can cut -- see the verdict's Carried section |
+| R788 | **not classified in this verdict** — carried in from an earlier one | no clause this generator can cut -- see the verdict's Carried section |
+| R791 | **not classified in this verdict** — carried in from an earlier one | no clause this generator can cut -- see the verdict's Carried section |
+| R804 | **answered** — §2 | carried, and the verdict says nothing further about it here |
+| R805 | **answered** — §3 | carried, and the verdict says nothing further about it here |
+| R806 | **answered** — §4 | carried, and the verdict says nothing further about it here |
+| R807 | **answered** — §4 | carried, and the verdict says nothing further about it here |
+| R808 | **answered** — §5 | carried, and the verdict says nothing further about it here |
+| R809 | **answered** — §6 | carried, and the verdict says nothing further about it here |
+| R810 | **answered** — §7 | carried, and the verdict says nothing further about it here |
+| R811 | **answered** — §8 | carried, and the verdict says nothing further about it here |
+| R812 | **answered** — §9 | carried, and the verdict says nothing further about it here |
+| R813 | **answered** — §10 | carried, and the verdict says nothing further about it here |
+
+**Three rows are not findings of this verdict and one of them is a name collision worth
+recording.** R788 and R791 are mentioned in the verdict and stay on `docs/closure/F6a.md`
+and `docs/closure/F6b.md`'s ledgers. **The `R1` row is the milestone's own name**: the
+generator's `MENTION` pattern is `\bR\d+\b`, which matches `R1` wherever the verdict names
+the milestone, so every R-series report will carry a spurious `R1` row. It is FF0-class
+apparatus and I have not touched it inside a step commit; it is declared here instead, the
+way the reviewer declared its own site-parser artifacts.
+
+## 14a. The named sites, declared one by one
+
+**Every site below is declared `no change` AT THAT EXACT LINE NUMBER, and the substance of its finding is answered in the section named beside it.** The two are not in tension: the repairs moved the lines, so a line number taken from the verdict's prose is not a line number in this diff.
+
+**The reviewer said this would happen and said why: its site parser expands a line RANGE into one site per line**, and bare filenames appear as sites of their own. Those are parser artifacts rather than places anyone intended to name; the reviewer listed the sites it actually meant, and ruled the range-expansion itself FF0 class. I have not touched it inside a step commit.
+
+`CLAUDE.md` appears because R813's repair touches it — that is `585f707`, a standalone `process:` commit under FN2, outside this step's diff by rule.
+
+```
+claim  every site the verdict names is answered or declared, by exact name
+cmd    python -m pytest -q tests/test_report_carried.py::test_every_named_site_is_touched_or_declared
+out    60 sites named across 7 findings, each declared below
+rule   CZ0: half of an item is not the item -- a closing condition that names sites is closed site by site
+judge  the line numbers are the content of this section, so they are inside this block rather than in prose beside it.
+
+  R806  floatfea/cli.py:31 -- no change at that exact line; answered in section 4
+  R806  floatfea/cli.py:32 -- no change at that exact line; answered in section 4
+  R806  floatfea/cli.py:35 -- no change at that exact line; answered in section 4
+  R807  floatfea/model/platform.py:607 -- no change at that exact line; answered in section 4
+  R807  floatfea/model/platform.py:608 -- no change at that exact line; answered in section 4
+  R807  floatfea/model/platform.py:609 -- no change at that exact line; answered in section 4
+  R807  floatfea/model/platform.py:610 -- no change at that exact line; answered in section 4
+  R807  floatfea/model/platform.py:611 -- no change at that exact line; answered in section 4
+  R807  floatfea/model/platform.py:612 -- no change at that exact line; answered in section 4
+  R807  floatfea/model/platform.py:613 -- no change at that exact line; answered in section 4
+  R807  floatfea/model/platform.py:614 -- no change at that exact line; answered in section 4
+  R807  floatfea/model/platform.py:615 -- no change at that exact line; answered in section 4
+  R807  floatfea/model/platform.py:616 -- no change at that exact line; answered in section 4
+  R807  floatfea/model/platform.py:617 -- no change at that exact line; answered in section 4
+  R807  floatfea/model/platform.py:618 -- no change at that exact line; answered in section 4
+  R808  floatfea/cli.py:126 -- no change at that exact line; answered in section 5
+  R808  floatfea/cli.py:128 -- no change at that exact line; answered in section 5
+  R808  floatfea/cli.py:129 -- no change at that exact line; answered in section 5
+  R809  .../report.md -- no change at that exact line; answered in section 6
+  R810  cli.py:148 -- no change at that exact line; answered in section 7
+  R810  pipeline.py:290 -- no change at that exact line; answered in section 7
+  R811  floatfea/run/config.py:113 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:114 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:115 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:116 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:117 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:118 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:119 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:120 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:121 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:122 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:123 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:124 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:125 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:126 -- no change at that exact line; answered in section 8
+  R811  floatfea/run/config.py:127 -- no change at that exact line; answered in section 8
+  R812  config.py:234 -- no change at that exact line; answered in section 9
+  R812  config.py:510 -- no change at that exact line; answered in section 9
+  R812  config.py:562 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:10 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:11 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:12 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:13 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:14 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:15 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:16 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:17 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:18 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:19 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:20 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:21 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:22 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:23 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:24 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:25 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:26 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:27 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:28 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:8 -- no change at that exact line; answered in section 9
+  R812  pipeline.py:9 -- no change at that exact line; answered in section 9
+```
+
+## 15. What this revision does NOT do
+
+* **FL2 is untouched.** No member topology from the config, no `required_section` or
+  `truss_sizing` (both refuse, now before writing), no headings beyond the npz's, no
+  per-case band check.
+* **`floatfea export` still refuses**, naming the HSP worktree.
+* **No user guide and no witness.** FL3, step 3.
+* **The explicit mass distribution is still declared-and-refused**, not consumed.
+* **The npz does not yet record its own λ** — § 11, awaiting a ruling.

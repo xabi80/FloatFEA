@@ -30,18 +30,88 @@ __all__ = ["main"]
 
 LABEL = (
     "INDICATIVE SIZING SCREEN -- NOT A CODE CASE. Produced by `floatfea run` from a "
-    "declared configuration; every assumption it rests on is listed in the run report, "
-    "and the section is a stiffness stand-in for a truss of undecided depth."
+    "declared configuration. The section is a stiffness stand-in for a truss of "
+    "undecided depth (docs/milestones/F1.md:389-390)."
 )
+
+STUDY_LABEL = "STUDY -- NOT FOR DESIGN. "
+"""FN1. Prefixed to every label and header when `study_only` is set.
+
+A study run is one the shipped builder would never have reached -- a mass distribution
+that fails `admissible()`, or members below the declared density floor. It is permitted
+only behind the flag, and then it says so on every artifact it writes, because the one
+thing worse than refusing a study is publishing one that reads like a design.
+"""
+
+TABLE_CAVEATS = (
+    "R739: the N column is TENSION-POSITIVE (docs/conventions.md:320). Published "
+    "compression-positive it put every over-unity station on section 3.3.1 instead of "
+    "3.3.2.",
+    "R740: a utilisation must be read from the `total_instant` rows -- the six components "
+    "AT the step where sigma peaks. `total_max` / `total_min` max each component "
+    "INDEPENDENTLY over the window, so their six values do not occur together and a "
+    "stress formed from them is an UPPER BOUND, not a stress at any instant.",
+    "FA3: ROOT and TIP are the element's two ends and are exact. MID is a closed form "
+    "whose bending term is a measured 4.0% approximation, unverified against a refined "
+    "mesh (R730).",
+    "EZ2: only the declared governing periods may set the envelope. Cases outside the "
+    "associated-period range for this wave height -- and any exceeding the deep-water "
+    "breaking steepness -- are reported as SENSITIVITY ONLY and cannot govern.",
+)
+"""What the COLUMNS mean, which is the writer's business rather than the builder's.
+
+**R806 IS WHY THIS EXISTS AND WHY IT IS SHORT.** The first version of these outputs
+carried 11 header lines against the committed deliverables' 17 and 12, and the lines it
+dropped were the ones that stop a reader misusing a column -- the tension sign, the
+upper-bound caveat on 576 envelope rows, the MID approximation, the governing-basis rule
+-- while `LABEL` claimed "every assumption it rests on is listed in the run report" and
+the report mentioned none of them.
+
+Everything that is a property of the BUILD is NOT repeated here. It is read from
+`Superstructure.assumptions`, `Superstructure.label` and each body's `findings`, which the
+builder generates, so those cannot go stale against the model the way a copied list does.
+"""
+
+
+def _header_lines(result: RunResult) -> list[str]:
+    """Every label, assumption and finding this run rests on, for an artifact's header.
+
+    Generated rather than typed: `Superstructure.assumptions` and each body's `findings`
+    come from the builder, so a change in the model reaches every artifact without anyone
+    remembering to copy it. R807 is the other half -- nine findings were being computed
+    and discarded, five of them saying in as many words "this body is a MEASUREMENT, not
+    one to ship".
+    """
+    study = STUDY_LABEL if result.config.study_only else ""
+    lines = [study + LABEL]
+    for key, value in result.config.provenance().items():
+        lines.append(f"{key}: {value}")
+    if result.built.label:
+        lines.append(f"build label: {result.built.label}")
+    lines.extend(f"assumption: {a}" for a in result.built.assumptions)
+    for body in result.built.bodies:
+        lines.extend(f"finding: {f}" for f in body.findings)
+    lines.extend(f"caveat: {c}" for c in TABLE_CAVEATS)
+    if result.config.study_only:
+        lines.append(
+            "STUDY: this run's mass distribution is one the shipped builder would never "
+            "have reached. It is permitted only because `study_only: true` is declared. "
+            "Nothing here is a design value."
+        )
+    return lines
+
+
+def _write_header(fh: Any, result: RunResult) -> None:
+    """The header block, one `#` line each, commas stripped so a CSV reader is safe."""
+    for line in _header_lines(result):
+        fh.write("# " + line.replace(",", ";") + "\n")
 
 
 def _write_member_forces(path: Path, result: RunResult) -> int:
     """F4's table, from this run. One row per (member, station, case, basis)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as fh:
-        fh.write("# " + LABEL.replace(",", ";") + "\n")
-        for key, value in result.config.provenance().items():
-            fh.write(f"# {key}: {str(value).replace(',', ';')}\n")
+        _write_header(fh, result)
         writer = csv.writer(fh)
         writer.writerow(
             [
@@ -87,9 +157,7 @@ def _write_utilisations(path: Path, result: RunResult) -> int:
     path.parent.mkdir(parents=True, exist_ok=True)
     rows = result.utilisations
     with path.open("w", newline="", encoding="utf-8") as fh:
-        fh.write("# " + LABEL.replace(",", ";") + "\n")
-        for key, value in result.config.provenance().items():
-            fh.write(f"# {key}: {str(value).replace(',', ';')}\n")
+        _write_header(fh, result)
         writer = csv.DictWriter(fh, fieldnames=list(rows[0]))
         writer.writeheader()
         for row in rows:
@@ -108,10 +176,11 @@ def _write_report(path: Path, result: RunResult) -> None:
     """
     cfg = result.config
     governing = result.governing()
+    study = STUDY_LABEL if cfg.study_only else ""
     lines: list[str] = [
         "# FloatFEA run report",
         "",
-        f"**{LABEL}**",
+        f"**{study}{LABEL}**",
         "",
         "## What was configured",
         "",
@@ -119,12 +188,27 @@ def _write_report(path: Path, result: RunResult) -> None:
     for key, value in cfg.provenance().items():
         lines.append(f"* **{key}** — {value}")
 
+    lines += ["", "## What this run assumes, as the builder records it", ""]
+    if result.built.label:
+        lines.append(f"* **build label** — {result.built.label}")
+    lines += [f"* {a}" for a in result.built.assumptions]
+
+    lines += ["", "## Findings the build raised, per body", ""]
+    raised = [(b.name, f) for b in result.built.bodies for f in b.findings]
+    if raised:
+        lines += [f"* `{name}` — {text}" for name, text in raised]
+    else:
+        lines.append("* none.")
+
+    lines += ["", "## What the columns mean", ""]
+    lines += [f"* {c}" for c in TABLE_CAVEATS]
+
     lines += [
         "",
         "## The governing utilisation",
         "",
         f"**U = {float(governing['utilisation']):.6g}** at "
-        f"`{governing['body']}:{governing['member']}` {governing['station']}, "
+        f"`{governing['member']}` {governing['station']}, "
         f"`T_full = {float(governing['period_full_s']):g} s`, basis "
         f"`{governing['basis']}`, governing clause {governing['governing_clause']}.",
         "",
@@ -176,6 +260,23 @@ def _write_report(path: Path, result: RunResult) -> None:
 
 def _cmd_run(args: argparse.Namespace) -> int:
     cfg: RunConfig = load_config(args.config)
+
+    # R809: REFUSED BEFORE ANYTHING IS WRITTEN, NOT AFTER. This check sat at the end of
+    # the function, so `required_section: true` wrote member_forces.csv (186958 B),
+    # utilisation.csv (8280 B) and report.md (3575 B), printed the governing U, and THEN
+    # exited 2 -- leaving three artifacts on disk that mention the refusal nowhere. A
+    # refusal that arrives after the outputs is not a refusal; it is a warning with a
+    # non-zero exit code.
+    if cfg.outputs.required_section or cfg.outputs.truss_sizing:
+        raise ConfigError(
+            "outputs.required_section / outputs.truss_sizing are FL2(b) and are not wired "
+            "in R1 step 1. Under FM0 they must propose from fixed forces and then "
+            "RE-SOLVE at the selected sections, reporting the iteration count and both "
+            "max U values; running them off a single fixed force set is what FM0 ruled "
+            "out. Refused before any output is written, so nothing on disk describes a "
+            "run that did not happen."
+        )
+
     print(f"floatfea run {cfg.source.name}")
     result = run_pipeline(cfg, progress=lambda line: print(line, flush=True))
 
@@ -191,6 +292,8 @@ def _cmd_run(args: argparse.Namespace) -> int:
         print(f"  wrote {out / 'report.md'}")
 
     governing = result.governing()
+    if cfg.study_only:
+        print(f"\n  {STUDY_LABEL.strip()}")
     print(
         f"\n  governing U = {float(governing['utilisation']):.6g} at "
         f"{governing['member']} {governing['station']} "
@@ -198,14 +301,6 @@ def _cmd_run(args: argparse.Namespace) -> int:
     )
     print(f"  total wall time {result.timings['total']:.2f} s")
 
-    if cfg.outputs.required_section or cfg.outputs.truss_sizing:
-        raise ConfigError(
-            "outputs.required_section / outputs.truss_sizing are FL2(b) and are not wired "
-            "in R1 step 1. Under FM0 they must propose from fixed forces and then RE-SOLVE "
-            "at the selected sections, reporting the iteration count and both max U values; "
-            "running them off a single fixed force set is what FM0 ruled out. Refused "
-            "rather than silently skipped."
-        )
     return 0
 
 

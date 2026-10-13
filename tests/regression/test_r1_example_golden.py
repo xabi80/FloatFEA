@@ -27,14 +27,18 @@ the generalisation is wrong.
 from __future__ import annotations
 
 import csv
+import json
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pytest
+import yaml
 
 from floatfea.checks.api_wsd import check_member
-from floatfea.run.config import load_config
-from floatfea.run.pipeline import _k_l_over_r, _section_properties
+from floatfea.post.forces_table import _lam_full_scale
+from floatfea.run.config import ConfigError, load_config
+from floatfea.run.pipeline import _k_l_over_r, _section_properties, exported_froude_lambda
 from floatfea.run.pipeline import run as run_pipeline
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -352,3 +356,160 @@ def test_the_mass_residual_is_reported_PER_BODY_and_every_body_is_admissible(
             f"the deck total and must account for it exactly; a nonzero residual is a "
             f"real inconsistency, not round-off."
         )
+
+
+# ---------------------------------------------------------------------------
+# FN0: the Froude scale has ONE source, and a mismatch refuses
+# ---------------------------------------------------------------------------
+#
+# R805 is why these exist. `floatsim.froude_lambda` reached `build_superstructure` and
+# NOT `_lam_full_scale`, which carried `FROUDE_LAMBDA = 50.0` at module scope. A
+# configuration declaring 25.0 built the deck at scale 25 and scaled the joint reactions
+# by 50 -- 8x on force, 16x on the locked moment -- while `provenance()` printed 25.0.
+#
+# **NOTHING WAS RED, AND THE GOLDEN ABOVE COULD NOT SEE IT**: the declared range is
+# [1, 1000] and the example sits on the single point in three decades where the constant
+# and the configuration agree. A test that only exercises the shipped configuration
+# cannot find a constant that is right there and wrong everywhere else.
+
+
+def test_FN0_the_exported_scale_is_READ_and_not_assumed() -> None:
+    """The committed npz's scale is a RECORDED fact, not a default anyone chose.
+
+    `scripts/export_f4_dynamic_inputs.py` has always written `run.lambda` into the
+    provenance sidecar, so the one dynamic-inputs file this repository ships states its
+    own scale. That is what makes refusing a mismatch possible without assuming anything.
+    """
+    npz = ROOT / "data" / "f4" / "dynamic_inputs.npz"
+    exported, where = exported_froude_lambda(npz)
+    # not-a-tolerance: the Froude scale the committed npz was EXPORTED at, read
+    # from its provenance sidecar. It is an input recorded by the generator, and
+    # the comparison is exact equality against that record -- nothing is being
+    # allowed to differ by it.
+    assert exported == 50.0, (  # not-a-tolerance: the scale the npz was EXPORTED at
+        exported,
+        where,
+    )
+    assert "provenance" in where, (
+        f"the scale must be reported as coming from the sidecar so a reader can check it; "
+        f"got {where!r}"
+    )
+
+
+def test_FN0_a_DECLARED_scale_that_differs_from_the_export_REFUSES(tmp_path) -> None:
+    """FN0's first counter-case: lambda = 25 against a lambda = 50 npz must refuse.
+
+    And the message must carry BOTH numbers and the consequence, because the whole defect
+    was that the two scales never met: a refusal naming only one of them would leave the
+    reader to work out which side to change.
+    """
+    data = yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))
+    data["floatsim"]["deck"] = str((EXAMPLE.parent / data["floatsim"]["deck"]).resolve())
+    data["load_cases"]["npz"] = str((EXAMPLE.parent / data["load_cases"]["npz"]).resolve())
+    data["outputs"]["directory"] = str(tmp_path / "out")
+    data["floatsim"]["froude_lambda"] = 25.0
+    path = tmp_path / "lambda25.yaml"
+    path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(ConfigError) as caught:
+        run_pipeline(load_config(path))
+    message = str(caught.value)
+    assert "scale mismatch" in message, message
+    assert (
+        "25.0" in message and "50.0" in message
+    ), f"the refusal must name BOTH scales; got: {message}"
+    assert "8" in message and "16" in message, (
+        f"the refusal must state the consequence -- lambda^3 on force, lambda^4 on the "
+        f"locked moment -- so the reader sees what the mismatch would have cost: {message}"
+    )
+
+
+def test_FN0_an_export_recording_NO_scale_REFUSES(tmp_path) -> None:
+    """A file whose scale nobody recorded is refused, not guessed.
+
+    Assuming 50 here would be R805 wearing a different coat: the defect was never the
+    number, it was that a scale nobody declared got used as though it had been.
+    """
+    npz = tmp_path / "no_scale.npz"
+    np.savez(npz, periods_full_s=np.array([12.5]))
+    exported, where = exported_froude_lambda(npz)
+    assert exported is None, (exported, where)
+    assert "records the export scale" in where or "is absent" in where, where
+
+
+def test_FN0_the_npz_key_is_PREFERRED_over_the_sidecar(tmp_path) -> None:
+    """When both record a scale, the one travelling with the arrays wins.
+
+    A sidecar can be separated from its npz by a copy; the key cannot. They are given
+    DIFFERENT values here on purpose -- a test where both agree cannot tell which was
+    read.
+    """
+    npz = tmp_path / "both.npz"
+    np.savez(npz, periods_full_s=np.array([12.5]), froude_lambda=np.array(25.0))
+    (tmp_path / "both.provenance.json").write_text(
+        json.dumps({"run": {"lambda": 50.0}}), encoding="utf-8"
+    )
+    exported, where = exported_froude_lambda(npz)
+    assert (
+        # not-a-tolerance: the scale written into the synthetic npz two lines
+        # above. The test asserts the reader returned the value it was GIVEN.
+        exported
+        == 25.0
+    ), f"the npz's own key must win over the sidecar; got {exported!r} from {where!r}"
+    assert where == "the npz", where
+
+
+def test_FN0_the_scale_reaches_the_FROUDE_CONVERSION_as_cubed_and_fourth() -> None:
+    """FN0's second counter-case: forces go as lambda^3, the locked moment as lambda^4.
+
+    Measured against the declared composite rather than asserted from the exponents:
+    `joint_multiplier_yaw_locked` is `((0, 3, "force"), (3, 4, "moment"))`, so rows 0-2
+    carry the force factor and row 3 the locked moment's. Writing one factor for all four
+    rows would be wrong by one power of lambda on the fourth, which is why the composite
+    is declared rather than computed here.
+    """
+    block = np.ones(4, dtype=np.float64)
+    at50 = _lam_full_scale(block, 50.0)
+    at25 = _lam_full_scale(block, 25.0)
+
+    ratio = at50 / at25
+    assert list(ratio[:3]) == [8.0, 8.0, 8.0], (
+        f"force rows must go as lambda^3, so halving lambda is a factor of 8; got "
+        f"{list(ratio[:3])}"
+    )
+    # not-a-tolerance: `(50/25)**4`, the exact exponent the yaw-locked composite
+    # declares for the locked moment. An integer power of two, computed from the
+    # declared composite rather than chosen, and exact in binary floating point.
+    assert ratio[3] == 16.0, (  # not-a-tolerance: (50/25)**4, the declared exponent
+        f"the locked moment row must go as lambda^4, so halving lambda is a factor of 16; "
+        f"got {ratio[3]}"
+    )
+    # The absolute values too, so this cannot pass on a pair of wrong numbers whose ratio
+    # happens to be right.
+    assert list(at50) == [125000.0, 125000.0, 125000.0, 6250000.0], list(at50)
+    assert list(at25) == [15625.0, 15625.0, 15625.0, 390625.0], list(at25)
+
+
+def test_FN0_there_is_NO_module_constant_on_the_run_path() -> None:
+    """The repair, asserted rather than described.
+
+    `_lam_full_scale` must take the scale as a required argument and
+    `floatfea.post.forces_table` must carry no module-level scale for it to fall back on.
+    A default would be the same constant wearing a different hat, so its absence is
+    checked too.
+    """
+    import inspect
+
+    from floatfea.post import forces_table
+
+    assert not hasattr(forces_table, "FROUDE_LAMBDA"), (
+        "floatfea.post.forces_table must carry no module-level FROUDE_LAMBDA; a "
+        "configured scale was silently overridden by exactly such a constant (R805)."
+    )
+    signature = inspect.signature(forces_table._lam_full_scale)
+    assert "froude_lambda" in signature.parameters, signature
+    assert signature.parameters["froude_lambda"].default is inspect.Parameter.empty, (
+        "the scale must be REQUIRED. A default is a module constant with extra steps, and "
+        "every caller would then be free not to state its scale."
+    )
+    assert "froude_lambda" in inspect.signature(forces_table.compute_rows).parameters

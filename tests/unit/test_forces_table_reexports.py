@@ -43,6 +43,13 @@ SCRIPT = ROOT / "scripts" / "measure" / "member_forces_table.py"
 # cannot execute -- so nothing would ever have checked it. A triple whose command cannot
 # run is exactly what CW0 calls not a triple.
 CONSUMED = (
+    # ADDED BY FN0, AND THIS TEST IS WHAT NOTICED. Threading the Froude scale out of
+    # `floatfea.post.forces_table` meant `f6a_premise_check.py` had to state a scale when
+    # it calls `_lam_full_scale`, and the nearest declared one is the script's own
+    # `MFT.FROUDE_LAMBDA`. That made the consumers reach for a NINTH attribute, which the
+    # second test below caught on the first whole-suite run after the change -- exactly
+    # the drift it was written to prevent.
+    "FROUDE_LAMBDA",
     "_joint_wiring",
     "_lam_full_scale",
     "_net_field",

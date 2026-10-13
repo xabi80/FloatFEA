@@ -30,10 +30,12 @@ the one solved. That is refused, by name, in `_check_material`.
 
 from __future__ import annotations
 
+import json
 import math
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -47,11 +49,12 @@ from floatfea.model.platform import (
     build_superstructure,
 )
 from floatfea.post.forces_table import Row, compute_rows
-from floatfea.run.config import ConfigError, RunConfig
+from floatfea.run.config import DENSITY, ConfigError, RunConfig
 
 __all__ = [
     "RunResult",
     "build_model",
+    "exported_froude_lambda",
     "run",
 ]
 
@@ -245,6 +248,73 @@ def _check_material(cfg: RunConfig, built: Any) -> tuple[str, ...]:
     return tuple(notes)
 
 
+def _refuse_inadmissible(cfg: RunConfig, built: Any) -> None:
+    """Refuse a mass distribution the ladder would never have reached (R810, FN1).
+
+    **WHAT R1 REMOVED WITHOUT NOTICING.** `build_superstructure()` with no fraction
+    descends `MASS_FRACTION_LADDER` and takes the first rung where `admissible(body)` is
+    true, so a non-PSD remainder was unreachable by construction. A configuration handing
+    `f` in goes down the `measurement_fraction` path, which bypasses the ladder and does
+    not consult `admissible()` -- documented, and I relied on the documentation instead of
+    acting on it.
+
+    Measured, before this guard: `f = 1.0` and `f = 0.999999` give `PSD = False` on four
+    of the five bodies and the run COMPLETED AND PUBLISHED, the only trace being the word
+    `FAILS` in one column of a table. `f = 0.0` gives massless members at
+    `rho_eq = 0.0` -- below the configuration's own declared density floor -- and also
+    published.
+
+    Two conditions, because they are two different failures:
+
+    `admissible(body)` is DY0(d): `m_r >= 0` and no eigenvalue of `J_r` below `-tol`. A
+    body whose remainder inertia is not PSD is not a body.
+
+    The equivalent density against the declared floor catches `f = 0`, which IS PSD --
+    exactly zero slack on all five bodies -- and puts no mass on the members at all. PSD
+    alone would admit it, and a frame whose members weigh nothing produces member forces
+    that mean nothing.
+
+    **AND THE NON-MONOTONICITY IS WHY THIS IS A PER-BODY TEST AND NOT A RANGE ON `f`.**
+    The platform is `PSD = False` at `f = 0.999999` and flips back to `True` at
+    `f = 1.0`, so no interval of `f` describes the admissible set. The question is asked
+    of the built body, every time.
+    """
+    floor = DENSITY[1]
+    bad_psd = [b.name for b in built.bodies if not admissible(b)]
+    thin = [
+        (b.name, float(b.equivalent_density))
+        for b in built.bodies
+        if float(b.equivalent_density) < floor
+    ]
+    if not bad_psd and not thin:
+        return
+
+    trouble: list[str] = []
+    if bad_psd:
+        trouble.append(
+            f"the remainder inertia is not PSD on {bad_psd} (DY0(d): m_r >= 0 and no "
+            f"eigenvalue of J_r below -tol)"
+        )
+    if thin:
+        trouble.append(
+            "the equivalent density falls below the declared floor of "
+            f"{floor:g} kg/m^3 on "
+            + ", ".join(f"{name} ({value:g})" for name, value in thin)
+            + " -- members this light carry no mass, so their forces mean nothing"
+        )
+
+    if not cfg.study_only:
+        raise ConfigError(
+            "this mass distribution is one the shipped builder would never have reached: "
+            + "; and ".join(trouble)
+            + ". `build_superstructure()` descends MASS_FRACTION_LADDER consulting "
+            "admissible() at every rung, so a configuration declaring `f` directly is "
+            "the only way here. Set `study_only: true` to run it anyway -- every output "
+            "will then carry `STUDY -- NOT FOR DESIGN` -- or declare a fraction whose "
+            "bodies are admissible."
+        )
+
+
 def build_model(cfg: RunConfig) -> Any:
     """The superstructure this configuration describes, or a refusal.
 
@@ -414,6 +484,55 @@ def _utilisations(cfg: RunConfig, built: Any, rows: list[Row]) -> list[dict[str,
     return out
 
 
+def _ratio(a: float, b: float) -> float:
+    """The discrepancy between two scales as a factor >= 1, direction stated separately.
+
+    EH4: a boundary is solved in both directions. `a / b` alone reports `0.125x on force`
+    when the declared scale is the smaller one, which is arithmetically right and the
+    reciprocal of what the reader is trying to find out -- how big the error would have
+    been.
+    """
+    return max(a, b) / min(a, b)
+
+
+def exported_froude_lambda(npz: Path) -> tuple[float | None, str]:
+    """The scale a dynamic-inputs file was EXPORTED at, and where that was read from.
+
+    Returns `(None, reason)` when the file records no scale anywhere, so the caller can
+    refuse rather than assume one. **Assuming one is R805's failure mode with a different
+    coat on**: the whole point of FN0 is that a scale nobody declared cannot be inferred.
+
+    Two places are consulted, in order:
+
+    `froude_lambda` IN THE NPZ, which `scripts/export_f4_dynamic_inputs.py` writes from
+    FN0 onward. Preferred because it travels with the array data and cannot be separated
+    from it by a file copy.
+
+    `run.lambda` IN THE PROVENANCE SIDECAR beside it, which that script has always
+    written. The committed `data/f4/dynamic_inputs.npz` predates the npz key and its
+    sidecar records `run.lambda = 50.0`, so the scale of the one file this repository
+    ships is a RECORDED FACT about its export and not a default anyone chose.
+    """
+    try:
+        with np.load(npz, allow_pickle=False) as raw:
+            if "froude_lambda" in raw.files:
+                return float(np.asarray(raw["froude_lambda"]).reshape(()).item()), "the npz"
+    except (OSError, ValueError) as exc:  # pragma: no cover - unreadable npz
+        return None, f"the npz could not be read ({exc})"
+
+    sidecar = npz.with_suffix(".provenance.json")
+    if not sidecar.is_file():
+        return None, f"the npz records no `froude_lambda` and {sidecar.name} is absent"
+    try:
+        recorded = json.loads(sidecar.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return None, f"{sidecar.name} could not be read ({exc})"
+    value = recorded.get("run", {}).get("lambda")
+    if value is None:
+        return None, f"neither the npz nor {sidecar.name} records the export scale"
+    return float(value), f"{sidecar.name} (`run.lambda`)"
+
+
 @dataclass(frozen=True)
 class _Inputs:
     """The minimum `compute_rows` needs from a dynamic-inputs file.
@@ -443,11 +562,42 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
     timings["build"] = time.perf_counter() - t0
     say(f"  built {len(built.bodies)} bodies in {timings['build']:.2f} s")
 
+    _refuse_inadmissible(cfg, built)
     notes = _check_material(cfg, built)
     mass = _mass_report(built)
 
     t0 = time.perf_counter()
     raw: Any = np.load(cfg.load_cases.npz, allow_pickle=False)
+
+    # ONE SOURCE FOR THE SCALE (R805, FN0). The configuration's lambda reaches the deck
+    # build, every Froude conversion and the provenance -- and a dynamic-inputs file
+    # exported at a DIFFERENT scale cannot be mixed with it, because the joint reactions
+    # in that file are already scaled. Refused, naming both, rather than silently applying
+    # one scale to the geometry and another to the loads.
+    exported, where = exported_froude_lambda(cfg.load_cases.npz)
+    if exported is None:
+        raise ConfigError(
+            f"{cfg.load_cases.npz.name}: {where}, so there is no way to know what scale "
+            f"its joint reactions are at. The configuration declares "
+            f"floatsim.froude_lambda = {cfg.floatsim.froude_lambda!r}. Re-export the file "
+            f"-- `floatfea export` records the scale from FN0 onward -- rather than "
+            f"assuming it matches, which is exactly the defect FN0 closed."
+        )
+    if exported != cfg.floatsim.froude_lambda:
+        raise ConfigError(
+            f"scale mismatch. floatsim.froude_lambda = {cfg.floatsim.froude_lambda!r} in "
+            f"{cfg.source.name}, and {cfg.load_cases.npz.name} was exported at "
+            f"{exported!r} according to {where}. The deck would be built at one scale "
+            f"while the joint reactions in that file carry another: the yaw-locked "
+            f"composite goes as lambda^3 on force and lambda^4 on the locked moment. The "
+            f"declared scale is "
+            f"{'larger' if cfg.floatsim.froude_lambda > exported else 'smaller'} by a "
+            f"factor of {_ratio(cfg.floatsim.froude_lambda, exported):g}, which is "
+            f"{_ratio(cfg.floatsim.froude_lambda, exported) ** 3:g}x on every force and "
+            f"{_ratio(cfg.floatsim.froude_lambda, exported) ** 4:g}x on the locked "
+            f"moment. Declare the file's own scale, or export a file at this one."
+        )
+
     periods = tuple(float(x) for x in raw["periods_full_s"])
     unknown = sorted(set(cfg.load_cases.governing_periods) - set(periods))
     if unknown:
@@ -461,7 +611,12 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
 
     t0 = time.perf_counter()
     computed = compute_rows(
-        built, _Inputs(periods_full_s=periods), raw, cfg.load_cases.governing_periods, progress=say
+        built,
+        _Inputs(periods_full_s=periods),
+        raw,
+        cfg.load_cases.governing_periods,
+        cfg.floatsim.froude_lambda,
+        progress=say,
     )
     timings["solve"] = time.perf_counter() - t0
     say(f"  {len(computed.rows)} member-force rows in {timings['solve']:.1f} s")

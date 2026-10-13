@@ -184,7 +184,9 @@ def dynamic_half(shipped, sized, answers: list[dict]) -> dict[str, object]:
             lam = raw[f"case{i}/lam"]
             for step in range(lam.shape[0]):
                 steps += 1
-                loads = MFT.map_joint_reactions(MFT._lam_full_scale(lam[step]), order, nodes, n_dof)
+                loads = MFT.map_joint_reactions(
+                    MFT._lam_full_scale(lam[step], MFT.FROUDE_LAMBDA), order, nodes, n_dof
+                )
                 for name, body in by_name.items():
                     relief = MFT.solve_inertia_relief(
                         body, np.asarray(loads[name], dtype=np.float64)

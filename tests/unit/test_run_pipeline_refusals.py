@@ -24,7 +24,12 @@ import pytest
 import yaml
 
 from floatfea.run.config import ConfigError, load_config
-from floatfea.run.pipeline import _check_material, _utilisations, build_model
+from floatfea.run.pipeline import (
+    _check_material,
+    _refuse_inadmissible,
+    _utilisations,
+    build_model,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE = ROOT / "examples" / "platform12_placeholder.yaml"
@@ -262,3 +267,175 @@ def test_provenance_records_every_declared_thing(write: Any) -> None:
     assert prov["governing_periods_s"] == [12.5, 14.0, 15.0, 16.2]
     assert "platform12_deck.yaml" in str(prov["deck"])
     assert copy.deepcopy(prov) == prov, "provenance must be plain data"
+
+
+# ---------------------------------------------------------------------------
+# FN1: an inadmissible mass distribution refuses, and a study says so
+# ---------------------------------------------------------------------------
+#
+# R810 is why these exist, and the shape of it is worth stating once. Before R1,
+# `build_superstructure()` with no fraction descended `MASS_FRACTION_LADDER` and took the
+# first rung where `admissible()` held, so a non-PSD remainder was unreachable BY
+# CONSTRUCTION. A configuration handing `f` in goes down the `measurement_fraction` path,
+# which bypasses the ladder -- documented, and I read the documentation and did not act on
+# it. Measured: `f = 1.0` and `f = 0.999999` gave `PSD = False` on four of five bodies and
+# the run COMPLETED AND PUBLISHED; the only trace was the word `FAILS` in one table cell.
+
+
+@pytest.mark.parametrize("fraction", [1.0, 0.999999, 0.0])
+def test_FN1_an_inadmissible_fraction_is_REFUSED(write: Any, fraction: float) -> None:
+    """FN1's three counter-cases, one per case so each is named when it fails.
+
+    `1.0` and `0.999999` fail PSD; `0.0` is PSD with exactly zero slack and fails the
+    density floor instead, because it puts no mass on the members at all. Two different
+    conditions, which is why the guard asks both.
+    """
+
+    def mutate(data: dict[str, Any]) -> None:
+        for body in data["mass_distribution"]:
+            data["mass_distribution"][body] = {"f": fraction}
+
+    cfg = load_config(write(mutate))
+    with pytest.raises(ConfigError) as caught:
+        _refuse_inadmissible(cfg, build_model(cfg))
+    message = str(caught.value)
+    assert "the shipped builder would never have reached" in message, message
+    assert "study_only: true" in message, (
+        f"the refusal must name the one way to run it anyway, or a reader cannot act on "
+        f"it: {message}"
+    )
+
+
+def test_FN1_the_SHIPPED_fraction_is_admissible(built: Any) -> None:
+    """The control. Without it every refusal above could be refusing for free."""
+    cfg = load_config(EXAMPLE)
+    assert cfg.study_only is False
+    _refuse_inadmissible(cfg, built)
+
+
+@pytest.mark.parametrize("fraction", [1.0, 0.0])
+def test_FN1_study_only_PERMITS_it_and_the_label_says_so(write: Any, fraction: float) -> None:
+    """With the flag, the run proceeds -- and every artifact carries the study label.
+
+    Asserted on the LABEL and not only on the permission, because a study that runs and
+    publishes without saying it is a study is worse than one that is refused.
+    """
+
+    def mutate(data: dict[str, Any]) -> None:
+        for body in data["mass_distribution"]:
+            data["mass_distribution"][body] = {"f": fraction}
+        data["study_only"] = True
+
+    cfg = load_config(write(mutate))
+    assert cfg.study_only is True
+    _refuse_inadmissible(cfg, build_model(cfg))  # must not raise
+    assert "STUDY" in cfg.provenance()["study_only"], cfg.provenance()["study_only"]
+
+
+def test_FN1_study_only_must_be_a_BOOLEAN(write: Any) -> None:
+    """It governs whether an inadmissible distribution runs at all, so it is not coerced."""
+
+    def mutate(data: dict[str, Any]) -> None:
+        data["study_only"] = "yes"
+
+    with pytest.raises(ConfigError) as caught:
+        load_config(write(mutate))
+    assert "must be true or false" in str(caught.value), caught.value
+
+
+# ---------------------------------------------------------------------------
+# R811: a duplicate YAML key refuses
+# ---------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    ("needle", "addition"),
+    [
+        ("    Fy: 355000000.0", "    Fy: 275000000.0"),
+        ("  platform: {f: 0.75}", "  platform: {f: 0.30}"),
+        ("  K: 2.0", "  K: 3.0"),
+    ],
+)
+def test_R811_a_DUPLICATE_KEY_is_REFUSED(tmp_path: Path, needle: str, addition: str) -> None:
+    """YAML's default is last-wins and SILENT, which is the worst of three behaviours.
+
+    Each of these takes the second value while the first sits in the file looking
+    authoritative: a different grade, a different mass split, a different effective-length
+    factor. `_reject_unknown` cannot see it -- the key IS known, there are simply two of
+    it -- and a diff that adds a field without removing the old one is how it happens.
+
+    Parametrised across three sections because a loader fixed for one mapping depth can
+    still be last-wins at another.
+    """
+    base = EXAMPLE.read_text(encoding="utf-8")
+    assert needle in base, f"the example no longer contains {needle!r}"
+    damaged = base.replace(needle, needle + chr(10) + addition, 1)
+    path = tmp_path / "duplicate.yaml"
+    path.write_text(damaged, encoding="utf-8")
+
+    with pytest.raises(ConfigError) as caught:
+        load_config(path)
+    message = str(caught.value)
+    assert "duplicate key" in message, message
+    assert "last-wins and silent" in message, message
+
+
+# ---------------------------------------------------------------------------
+# R806 / R807: what an artifact's header must carry
+# ---------------------------------------------------------------------------
+def test_R806_R807_the_header_carries_the_BUILDERS_OWN_assumptions_and_findings(
+    built: Any,
+) -> None:
+    """Generated from the build, not copied, so it cannot go stale against the model.
+
+    R806: the first version of these artifacts carried 11 header lines against the
+    committed deliverables' 17 and 12, and the dropped lines were the ones that stop a
+    reader misusing a column. R807: nine findings were computed and discarded, five of
+    them saying in as many words that the body is a measurement and not one to ship.
+    """
+    from floatfea.cli import _header_lines
+    from floatfea.run.pipeline import RunResult
+
+    cfg = load_config(EXAMPLE)
+    stub = RunResult(
+        config=cfg,
+        built=built,
+        rows=[],
+        utilisations=[],
+        mass=(),
+        timings={},
+    )
+    lines = _header_lines(stub)
+    blob = " ".join(lines)
+
+    assert built.assumptions, "the build records no assumptions; this test is vacuous"
+    for assumption in built.assumptions:
+        assert assumption in blob, f"header drops a recorded assumption: {assumption[:80]}"
+
+    raised = [f for body in built.bodies for f in body.findings]
+    assert len(raised) == 9, (
+        f"the example build must raise nine findings -- one on the platform and two per "
+        f"hub -- and this test is checking they reach the header; got {len(raised)}"
+    )
+    for finding in raised:
+        assert finding in blob, f"header drops a build finding: {finding[:80]}"
+
+    for marker in ("R739", "R740", "FA3", "EZ2"):
+        assert marker in blob, (
+            f"header drops the {marker} column caveat. These say what the COLUMNS mean, "
+            f"and a reader without them can take an envelope bound for a stress."
+        )
+    assert "STUDY" not in blob, "a non-study run must not carry the study label"
+
+
+def test_R806_a_STUDY_run_says_so_in_EVERY_header_line_block(write: Any, built: Any) -> None:
+    """The study label is on the artifact, not only on the console."""
+    from floatfea.cli import _header_lines
+    from floatfea.run.pipeline import RunResult
+
+    def mutate(data: dict[str, Any]) -> None:
+        data["study_only"] = True
+
+    cfg = load_config(write(mutate))
+    stub = RunResult(config=cfg, built=built, rows=[], utilisations=[], mass=(), timings={})
+    lines = _header_lines(stub)
+    assert "STUDY -- NOT FOR DESIGN" in lines[0], lines[0]
+    assert any("permitted only because" in line for line in lines), lines[-3:]
