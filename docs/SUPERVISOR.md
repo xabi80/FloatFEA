@@ -563,6 +563,35 @@ unparaphrased:
 > In both states the cascade is identified by the baseline being red and by each
 > cascading state's own failure line, not by its name.*
 
+**STATE (1)'s LIST GAINS THREE NAMES (R813, adopted by directive FN2).** The reviewer's
+wording, adopted unparaphrased:
+
+> *state (1)'s list gains `test_the_reported_CI_counts_are_not_all_zero`,
+> `test_the_report_carries_a_CI_SECTION` and
+> `test_the_R507_cases_rule_as_measured[frames.txt]`, and the reason is that each is
+> verdict-dependent and each needed its own run to establish it.*
+
+**And the control that establishes the CAUSE, which the implementer's own trace could not.**
+R1 step 1's report compared its 37 reds against `e001aec` — F6b's first-report commit — and
+found the two FAILED lists identical, both directions empty. That was reproduced exactly and
+it is the wrong comparison: **both commits are instances of the SAME state**, so it shows
+reproducibility and cannot separate "red because no verdict exists" from "red in both trees
+for some other reason". The control that separates them is a commit where a verdict EXISTS:
+
+    bd315a1, the two report-guard files          ->  0 failed
+    comm -12 (this tree's 37) (bd315a1's reds)   ->  (empty)
+
+Not one of the 37 is red where a verdict is present, so all 37 are verdict-dependent BY
+MEASUREMENT rather than by family, and no red in that state is CZ1 (iv).
+
+The third name is the one that makes enumeration unsafe: `test_the_R507_cases_rule_as_measured[frames.txt]`
+**mentions no verdict in its failure line at all** — it reports `_is_a_site('frames.txt')` is
+`True` where `False` was expected — and is nonetheless green the moment a verdict exists. A
+list of names cannot be checked against a failure message; only running the id at a
+verdict-exists commit can. **So the membership rule is "verdict-dependent, measured against a
+verdict-exists control", and the enumeration is a convenience that has now been short twice**
+— by two names on each side at EH1, and by three here.
+
 **R644, adopted by directive EJ2 — the reviewer withdrew two placements of its own,
 and the measurement is why.** At `b7c05e7`, with eighteen reds traced individually
 rather than by family:
