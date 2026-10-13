@@ -79,7 +79,22 @@ block() {
 # four retired ones and from prose naming it. A loose grep for the phrase finds
 # five files; this finds one.
 marker_re='<!--[[:space:]]*step-under-execution:[[:space:]]*[0-9]+[[:space:]]*-->'
-plans=$(grep -lE "$marker_re" docs/milestones/F*.md 2>/dev/null || true)
+# EVERY PLAN, NOT EVERY `F`-PLAN (FF0). This globbed `docs/milestones/F*.md`, which is
+# every milestone this repository had ever had -- and R1 is the first one whose name does
+# not start with `F`. With R1's marker live and invisible, `plan_count` was 0 and this
+# hook refused every turn with "0 plans carry a live marker ... add the missing one",
+# naming the one state that was not true: the marker was there.
+#
+# The marker grep is what identifies a plan, so widening the glob costs nothing. A
+# non-plan file in this directory (`F2_figures.md`) carries no marker and is filtered out
+# by the same expression that filtered it before.
+#
+# THE SAME DEFECT WAS IN ALL FOUR RESOLVERS, which is the part worth remembering:
+# `scripts/ci_section.py`'s comment says "all four read one thing", and they did --
+# including this blind spot and a fall-back to `F2`. A resolver that cannot see the
+# active milestone does not fail loudly; `tests/test_report_carried.py` would have gone
+# on measuring F2's reports and reviews while R1 was under execution.
+plans=$(grep -lE "$marker_re" docs/milestones/*.md 2>/dev/null || true)
 plan_count=$(printf '%s' "$plans" | grep -c . || true)
 
 # A TIE IS REFUSED, NEVER BROKEN BY PATH STRING (FH0). The old ranking resolved a
@@ -94,16 +109,25 @@ fi
 milestone=$(basename "$plans" .md)
 step=$(grep -oE "$marker_re" "$plans" | head -1 | grep -oE '[0-9]+')
 
-# THE MILESTONE LABEL IS WHOLLY NUMERIC AFTER ITS ONE OPTIONAL SUFFIX LETTER (FH0).
-# EC0's guard with the hole closed: not "starts with a digit" but "a digit run, then
-# at most one lowercase letter, and nothing else". `F6` and `F6a` pass; `F6ab`,
+# THE MILESTONE LABEL IS ONE UPPERCASE LETTER, THEN DIGITS, THEN AT MOST ONE LOWERCASE
+# SUFFIX (FH0, widened by FF0).
+#
+# EC0's guard with the hole closed: not "starts with a digit" but "a digit run, then at
+# most one lowercase letter, and nothing else". `F6`, `F6a` and `R1` pass; `F6ab`,
 # `Freports` and `F6-draft` are refused rather than ranked plausibly.
-case "$milestone" in
-  F*) m_body=${milestone#F} ;;
-  *)  m_body="" ;;
-esac
-if ! printf '%s' "$m_body" | grep -qE '^[0-9]+[a-z]?$'; then
-  block "require-verdict: cannot read a milestone label from $plans (got '$milestone'). A label is F<digits> with at most one lowercase suffix letter -- F6, F6a. EC0's guard asked only whether the field STARTS with a digit, which is how F6a passed it while ranking as 6 (FH0)."
+#
+# **THE SERIES LETTER WAS HARD-CODED TO `F` AND R1 IS THE FIRST MILESTONE THAT IS NOT.**
+# FH0 was written when every milestone was `F<n>`, so `${milestone#F}` was a safe way to
+# reach the numeric body. Against `R1` it strips nothing, `m_body` is set to the empty
+# string by the fall-through, and this refused with a message asserting that a label is
+# `F<digits>` -- which is a statement about the old naming scheme, not about this
+# repository. The message was precise, confident, and wrong.
+#
+# What FH0 actually needs from the label is that it PARSES: one series letter, a digit
+# run, an optional suffix. The series letter is not the hook's business, so it is
+# matched rather than named.
+if ! printf '%s' "$milestone" | grep -qE '^[A-Z][0-9]+[a-z]?$'; then
+  block "require-verdict: cannot read a milestone label from $plans (got '$milestone'). A label is one uppercase series letter, then digits, then at most one lowercase suffix letter -- F6, F6a, R1. EC0's guard asked only whether the field STARTS with a digit, which is how F6a passed it while ranking as 6 (FH0); FF0 widened the series letter when R1 became the first milestone that is not an F."
 fi
 if [ -z "$step" ]; then
   block "require-verdict: $plans carries a step-under-execution marker with no readable step number. The marker is the single source for which step is under execution (FH0)."
