@@ -242,10 +242,11 @@ LABELS = (
 # `f6_results_report.py` working -- both load this file by path and reach for
 # `MFT._station_values` and friends.
 #
-#   claim: the eight attributes those two consumers reach for all still resolve here
-#   cmd:   python -c "import importlib.util,sys; ..." -- the triple is in R1 step 1's
-#          report, where it is run at the commit rather than described
-#   out:   see that report
+# That the eight still resolve is A TEST, not a sentence here:
+# `tests/unit/test_forces_table_reexports.py` loads this file by path the way those two
+# consumers do and checks each name individually. It has to be a test -- a lint autofix
+# dropped four of them once already, with nothing red, and a comment cannot survive a
+# tool that rewrites the lines it describes.
 
 
 def main(argv: list[str] | None = None) -> int:

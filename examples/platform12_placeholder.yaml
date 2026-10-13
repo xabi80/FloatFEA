@@ -1,0 +1,107 @@
+# The placeholder configuration, as a declared run (R1 / FL1(c)).
+#
+# This file reproduces F4's member-force envelope, F6's governing utilisation
+# `U = 1.71167` and the static analytic figures EXACTLY, and a CI regression test asserts
+# that it does -- `tests/regression/test_r1_example_golden.py`.
+#
+# **IT IS A FIXTURE, NOT A RECOMMENDATION.** Every number below carries the placeholder
+# masses, one heading and an assumed grade, exactly as F4/F6/F6a/F6b did. R1's whole
+# subject is that the TOOL is ready for the final configuration; the placeholder stops
+# being the thing analysed and becomes the thing regressed against. See docs/milestones/R1.md.
+#
+# Relative paths resolve against THIS FILE'S directory, so the configuration means the
+# same thing wherever it is run from.
+
+floatsim:
+  # The deck is the authority for every coordinate, every body total, the centre of
+  # gravity and the inertia. Nothing here overrides those; see `mass_distribution`.
+  deck: ../data/platform/platform12_deck.yaml
+  tag: "(pinned HSP state; see docs/hsp-coupling.md and floatfea/hsp_pin.py)"
+  froude_lambda: 50.0          # -   docs/conventions.md's scale. FE is FULL scale.
+
+mass_distribution:
+  # `f` is the fraction of each body's DECK mass carried by its members, with DY0's
+  # remainder rule: the remainder's position is FORCED by the deck's own CoG,
+  # `z_r(f) = (z_cog - f z_joint) / (1 - f)`, not chosen. The PSD / realisability result
+  # is reported per body, never assumed.
+  #
+  # 0.75 is the top rung of MASS_FRACTION_LADDER and what the shipped default descends
+  # to. Declaring it explicitly is physically identical to that descent -- same
+  # equivalent density, remainder mass, remainder point, remainder inertia, member mass
+  # and link length -- and the step-1 report carries that measurement.
+  platform: {f: 0.75}
+  hub1:     {f: 0.75}
+  hub2:     {f: 0.75}
+  hub3:     {f: 0.75}
+  hub4:     {f: 0.75}
+
+sections:
+  # Per member group. For the current star each body's members are one group, so the
+  # group names are the body names; FL2(a) replaces this with a member list carrying its
+  # own group labels.
+  #
+  # **THE TUBE IS A STIFFNESS STAND-IN FOR A TRIANGULATED TRUSS OF UNDECIDED DEPTH**
+  # (docs/milestones/F1.md:389-390), which is why F6b sized a truss against it. I_y
+  # works out at 0.888 m^4.
+  groups:
+    platform: {d_outer: 2.5, wall: 0.180}    # m, m  -> D/t = 13.9
+    hub1:     {d_outer: 2.5, wall: 0.180}
+    hub2:     {d_outer: 2.5, wall: 0.180}
+    hub3:     {d_outer: 2.5, wall: 0.180}
+    hub4:     {d_outer: 2.5, wall: 0.180}
+  material:
+    E: 210000000000.0            # Pa      S355 steel
+    # G is DERIVED by the model from E and nu = 0.3, and is checked here for EXACT
+    # agreement rather than injected: 210e9 / (2 * 1.3). Declaring anything else is
+    # refused, because a G the stiffness does not use would still appear in the report.
+    G: 80769230769.23077         # Pa
+    # NOMINAL only. The builder BACK-COMPUTES an equivalent density per body so that
+    # rho * A is the deck's own line mass whatever the section is, which is why the hub
+    # arms come out at 11433.5 kg/m^3 -- above steel (DZ5 / ER1(e)). The run reports
+    # every equivalent density against this nominal.
+    rho: 7850.0                  # kg/m^3
+    Fy: 355000000.0              # Pa      ASSUMED grade (S355), not a certificate
+
+load_cases:
+  # FL1 runs "on existing data": this points at the committed dynamic inputs, so the
+  # example needs no HSP worktree and no FloatSim run. `floatfea export` is what produces
+  # such a file.
+  npz: ../data/f4/dynamic_inputs.npz
+  # EZ2(a): the only cases allowed to SET THE ENVELOPE. For H = 24.2 m the associated
+  # period range is sqrt(6.5 H) .. sqrt(11 H) = 12.542 .. 16.316 s. T = 10 s and T = 20 s
+  # are outside it -- and T = 10 s exceeds the deep-water breaking steepness 1/7 -- so the
+  # npz's six cases are all computed and those two are reported as SENSITIVITY ONLY and
+  # cannot govern.
+  #
+  # T = 12.5 s sits 0.042 s below the lower bound and FA0 rules it IN: the response rises
+  # as T falls across the band, so the lower edge governs and 12.5 s represents it.
+  #
+  # Four periods are admitted here; only three of them win a station in the result
+  # (12.5 s on 26 of 32, 15 s on 4, 16.2 s on 2). T = 14 s is a candidate everywhere and
+  # peaks nowhere -- see docs/milestones/R1.md section 2b, which checked that for a
+  # dropped period and found a loser.
+  governing_periods: [12.5, 14.0, 15.0, 16.2]
+  window_rule: "the committed window per case; see data/f4/dynamic_inputs.provenance.json"
+
+code_check:
+  # API RP 2A-WSD working-stress checks. These are the clause's own options, not
+  # tolerances: the report states which were used.
+  K: 2.0                         # -  EZ4 Q3: a cantilever from the body centre, the
+                                 #    gimbal end giving no reliable lateral restraint.
+  Cm: 0.85                       # -  section 3.3's joint-translation value
+  one_third_increase: false      # -  EZ4 Q2, LOCKED OFF. Section 3.1.2's increase is
+                                 #    written for a declared extreme event and these are
+                                 #    screening design waves with no return period. The
+                                 #    tool REFUSES `true` rather than ignoring it.
+  K_sensitivity: 1.0             # -  one variable moved: K = 1.0 reported alongside
+  Cm_sensitivity: 1.0            # -  one variable moved: Cm = 1.0 reported alongside
+
+outputs:
+  directory: ../results/R1/example
+  report: true
+  member_forces_csv: true
+  utilisation_csv: true
+  # FL2(b): both OFF by default. Under FM0 they propose from fixed forces and then
+  # RE-SOLVE at the selected sections; neither is part of step 1.
+  required_section: false
+  truss_sizing: false

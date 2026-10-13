@@ -495,7 +495,11 @@ def test_the_plan_names_the_step_under_execution() -> None:
     # from whichever plan sorted first.
     carrying = [
         plan.name
-        for plan in sorted(_MILESTONES.glob("F*.md"))
+        # EVERY PLAN, NOT EVERY `F`-PLAN (FF0) -- a SECOND glob in this file, and the
+        # first repair missed it. `_active_plan` above was fixed and this assertion was
+        # not, so the module resolved R1 correctly while the guard that exists to hold
+        # the marker to exactly one plan went on counting zero.
+        for plan in sorted(_MILESTONES.glob("*.md"))
         if _STEP_LINE.search(plan.read_text(encoding="utf-8", errors="replace"))
     ]
     assert len(carrying) == 1, (

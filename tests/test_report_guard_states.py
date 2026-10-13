@@ -66,7 +66,9 @@ def _active_plan() -> Path:
     try:
         carrying = [
             plan
-            for plan in sorted(milestones.glob("F*.md"))
+            # EVERY PLAN, NOT EVERY `F`-PLAN (FF0). R1 is the first milestone whose
+            # name does not start with `F`.
+            for plan in sorted(milestones.glob("*.md"))
             if _STEP_LINE.search(plan.read_text(encoding="utf-8", errors="replace"))
         ]
     except OSError:

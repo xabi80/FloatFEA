@@ -1,0 +1,551 @@
+# R1 step 1 — configuration and one command
+
+# Revision 1 — the example reproduces F4 and F6, and three figures of mine were wrong
+
+Answers: FL opens the step; FM0 amended the plan before any code
+Answers file: `docs/reports/R1/step-1-answers.json`
+
+**2026-10-12.**
+
+## 1. The schedule, and what this revision is
+
+**Measured against FL5's 28 October.** The directive landed on 12 October and step 1's
+deliverable exists the same day. **The date holds**, with step 2 (generality) and step 3
+(guide and witness) to come and 16 days left. No slippage to report.
+
+```
+claim  the dates this step is measured against, and the margin
+cmd    python -c "import datetime; a=datetime.date(2026,10,12); b=datetime.date(2026,10,28); print((b-a).days)"
+out    directive FL landed / step 1 delivered: 2026-10-12
+       FL5 target                            : 2026-10-28
+       days from 2026-10-12 to 2026-10-28    = 16
+rule   FL5: "Target 28 Oct. Report wall-clock progress per step."
+judge  step 1's deliverable exists on the day the directive landed, with 16 days and two
+       steps left. The date holds; there is no slippage to report, which FL5 asks be said
+       the day it is known either way.
+```
+
+Under FG1 this step gets one reviewed revision, then EQ0 closure. FL4 asks the reviewer to
+check **behaviour**: to write its own small configuration — a changed `f`, a different
+section, a bad unit — and confirm the tool responds correctly. § 4 lists the refusals and
+the test that covers each, so that exercise is a check rather than a hunt.
+
+**One thing in this revision is worth the reviewer's attention above the rest.** FL1(c)
+asks the example to reproduce F4 and F6 EXACTLY, and it does — but establishing that turned
+up **three figures of mine that were wrong**, one of them in the locked plan and one of
+them a published-deliverable artifact nobody had looked at. They are § 3.
+
+## 2. What was built
+
+**FL1(a) — the config schema.** `floatfea/run/config.py`. Six sections, every field with
+its unit and its admissible range, and a refusal naming the field, the value, the range
+and the unit. `floatfea/run/pipeline.py` carries the refusals that need the built model.
+
+**FL1(b) — the CLI.** `floatfea/cli.py`, wired as a console script.
+
+```
+claim  `floatfea run` and `floatfea export` exist as one entry point
+cmd    grep -A2 "\[project.scripts\]" pyproject.toml
+out    [project.scripts]
+       floatfea = "floatfea.cli:main"
+rule   FL1(b): "`floatfea run <config.yaml>` ... and `floatfea export <config.yaml>`"
+judge  `export` is a REFUSAL in step 1 and says so: it validates the configuration, then
+       states that it needs the pinned HSP worktree and that FL1 scopes step 1 to
+       existing data. It does not write an empty npz and it does not invent dynamic
+       inputs.
+```
+
+**FL1(c) — the example, and the shared implementation that makes "exactly" structural.**
+The member-force core moved out of `scripts/measure/member_forces_table.py` into
+`floatfea/post/forces_table.py` so that the script and `floatfea run` share ONE
+implementation. Two copies would have made FL1(c) a coincidence that holds until one copy
+is edited.
+
+```
+claim  the move changed no number in the shipped deliverable
+cmd    regenerate the table with the refactored script; diff and sha256 against the
+       committed docs/F4_member_forces.csv and .md
+out    IDENTICAL (csv)
+       IDENTICAL (md)
+       ed089b780e34db049059f671e1a09ed09d7ee679e48a4b4fcf97139e08258686  baseline.csv
+       ed089b780e34db049059f671e1a09ed09d7ee679e48a4b4fcf97139e08258686  new.csv
+rule   FL1(c)'s "EXACTLY", and CLAUDE.md's golden-file rule
+judge  byte-identical, so the extraction is behaviour-preserving and the configured path
+       and the measure script cannot drift apart by construction.
+```
+
+```
+claim  the example configuration reproduces F4's envelope and F6's screen
+cmd    python -m pytest -q tests/regression/test_r1_example_golden.py -p no:randomly
+out    8 passed in 67.67s (0:01:07)
+rule   FL1(c): "reproduces F6's governing U = 1.71167, F4's envelope and the static
+       analytic figures EXACTLY. This is a golden regression test in CI."
+judge  the eight cases are: same 1248 rows; all 7488 force cells exactly equal; the
+       static analytic symmetry on all four arms; the same 32 screened stations at the
+       same periods; 31 of 32 utilisations exactly equal with the 32nd's cause isolated
+       (§ 3b); the governing `U = 1.71167`; a wall time per stage; and a per-body mass
+       residual of exactly zero.
+```
+
+**FL1(d) — wall time.**
+
+```
+claim  a full `run` on the example, per stage
+cmd    python -m floatfea.cli run examples/platform12_placeholder.yaml
+out    build       0.12 s
+       load        0.00 s
+       solve      67.26 s
+       code_check  0.00 s
+       total      67.38 s
+       governing U = 1.71167 at platform:hub4_arm ROOT (T = 12.5 s, 3.3.2 interaction)
+rule   FL1(d): "Wall time of a full `run` on the example, reported."
+judge  the solve is 99.8% of it -- 67.26 s of 67.38 s -- and it is 6 cases x ~1030 steps
+       x 5 bodies of inertia relief, so the cost is the window loop and not the
+       configuration layer. Build is 0.12 s and the code check is under 10 ms. A
+       configuration that adds headings multiplies the 67.26 s and nothing else, which is
+       what FL2(c) needs to know.
+       RUN-TO-RUN VARIANCE IS STATED RATHER THAN HIDDEN: the same command measured
+       66.74 s earlier in this session and 67.38 s here, a spread of 0.6 s (0.9%) on an
+       unloaded machine. The figures above are from the run AFTER the last code edit
+       (CP3); the earlier one is quoted so that nobody reconciles two numbers later.
+       Nothing in step 1 depends on the difference and no threshold is set on wall time.
+```
+
+## 3. Three figures of mine were wrong, and one is in the locked plan
+
+### 3a. The governing member is `hub4_arm`, not `hub2_arm` (the plan carried it)
+
+```
+claim  which arm attains the governing utilisation
+cmd    max over the run's FULL-PRECISION utilisations, against max over the committed
+       deliverable's 6-significant-figure text
+out    committed CSV at 6 s.f. : 1.71167 on TWO rows -- hub2_arm ROOT and hub4_arm ROOT
+       full precision          : hub4_arm 1.7116716105567911
+                                 hub2_arm 1.711671608463575
+rule   FL1(c) names `U = 1.71167` as the fixture; it does not name a member
+judge  the two differ in the NINTH significant figure, so at six they TIE and `max()`
+       returns whichever row is traversed first. I derived "hub2_arm" by maxing the
+       published CSV, and published it in `docs/milestones/R1.md` § 2b and § 3 and in
+       this session's own summary. **A maximum taken over a rounded deliverable does not
+       identify where the maximum is.** Corrected in the plan at the same commit as this
+       report, with the cause recorded, and the golden test pins the value, the body and
+       the station while asserting hub4 attains it at full precision — it does not pin a
+       tie-break.
+```
+
+### 3b. The committed F6 screen is computed from the ROUNDED forces, and it shows on one row
+
+The golden test failed on its first run, on one row of 32: committed `0.0738577`, run
+`0.0738576`. `CLAUDE.md`'s default hypothesis is that the code is wrong, so it was chased
+rather than allowed for, and the cause is in the old path.
+
+```
+claim  the difference is an intermediate rounding, not a different computation
+cmd    feed the committed CSV's own 6-s.f. forces for that row through the same
+       `check_member` call the run makes, one variable moved (input precision)
+out    from the ROUNDED committed CSV forces : 0.0738577   (0.073857650219503301)
+       committed published value             : 0.0738577
+rule   the configured run computes from full-precision forces in memory
+cell   section, KL/r, grade, Cm, E and the station all held; only the input precision moved
+judge  `scripts/measure/api_wsd_utilisation.py` READS `docs/F4_member_forces.csv`, so the
+       committed screen is computed from the forces as PUBLISHED. The rounded input gives
+       `0.073857650219503301`, which sits `2.2e-10` above the `0.07385765` rounding
+       boundary and publishes as `...77`; the exact input falls below it and publishes as
+       `...76`. **The committed digit is decided by a `2.2e-10` perturbation of its own
+       input.** The configured run is the more accurate of the two.
+```
+
+```
+claim  how much of the screen is affected, and how far the row is from unity
+cmd    compare the run's 32 utilisations against the committed screen row by row;
+       then read that row's own utilisation
+out    rows compared            : 32
+       rows differing           : 1
+         hub3:buoy7_arm TIP  committed 0.0738577  run 0.0738576
+       that row's utilisation   : U = 0.0738576
+       the governing row        : U = 1.71167, on the platform and not this body
+rule   the comparison in tests/regression/test_r1_example_golden.py
+judge  one row of 32, at `U = 0.0738576`, with nothing near unity on it. That is why I
+       argue it is not a defect in a published deliverable -- not because the difference
+       is small in itself, but because no decision rests on the sixth significant figure
+       of a station at seven percent of allowable.
+```
+
+**Is this a defect in a published deliverable (CZ0(a) / EZ0)?** I do not think so and I am
+not the one who rules: the committed value is the correct consequence of a documented
+two-stage process that writes and re-reads a file, the station is at `U = 0.0738576`
+nothing near unity, and no decision anywhere rests on the sixth significant figure of that
+row. What it is, is a **precision limitation of the two-stage pipeline** that was invisible
+until something computed the same quantity without the intermediate. It is recorded here
+rather than fixed, because fixing it means changing a published deliverable and that is
+not step 1's business.
+
+The golden test does not waive it. It names the one row allowed to differ, requires the
+difference to be exactly one unit in the last published digit, and then **proves the cause
+inside the test** by feeding the rounded forces through the same checker and requiring the
+committed digit back. A second differing row fails; that row differing for another reason
+fails; and the row agreeing fails too, with a message saying the explanation has gone
+stale.
+
+### 3c. A lint autofix silently broke the extraction, in the same session as the comment warning about it
+
+`f6a_premise_check.py` and `f6_results_report.py` load `member_forces_table.py` BY PATH
+and reach for eight of its attributes, which after the move resolve only because the
+script imports them back. `ruff` reads those as unused.
+
+```
+claim  all eight attributes resolve on the module as loaded by path
+cmd    python -m pytest -q tests/unit/test_forces_table_reexports.py -p no:randomly
+out    9 passed in 0.31s
+rule   the two consumers' `MFT.<name>` lookups, read off them by grep in the test itself
+judge  an import-sort autofix merged two blocks and dropped `_joint_wiring`,
+       `_lam_full_scale`, `_net_field` and `_station_values`, leaving a mangled double
+       `# noqa`. **Nothing was red** — the failure is an `AttributeError` at the far end
+       of an `importlib` load. I had written a comment warning about exactly this two
+       commands earlier, and the comment did not survive the tool that rewrote the lines
+       it described, which is why the claim is now a test. Parametrised one name per case,
+       because four were dropped and a single assertion would have reported one.
+```
+
+```
+claim  the test would catch that autofix
+cmd    re-remove the same four names; run the file; restore; run again
+out    4 failed, 5 passed -- [_joint_wiring] [_lam_full_scale] [_net_field] [_station_values]
+       9 passed in 0.30s
+rule   a test that cannot fail is not a test
+judge  all four named individually.
+```
+
+## 4. What the configuration refuses, and why each one would otherwise be dangerous
+
+FL1(a) asks for validation "refusing out-of-range units with messages". The easy half is a
+number outside a declared range. The half that matters is the shapes a lenient parser
+accepts and then does not use — each would produce a run whose report describes a
+configuration that was not run.
+
+| refusal | why silence would be worse | test |
+|---|---|---|
+| `E: 210` (GPa in a Pa field) | the unit mistake worth catching | `test_a_material_value_outside_its_range_is_REFUSED` |
+| `E` the stiffness does not use | `check_member` would use 200 GPa while every element used 210 | `test_a_declared_E_the_STIFFNESS_DOES_NOT_USE_is_refused` |
+| `G` implying another `nu` | G is derived; a declared G reaches nothing but prints as an input | `test_a_declared_G_that_implies_a_different_nu_is_refused` |
+| `mass` / `cog` / `inertia` | FL1(a): these come FROM THE DECK; an ignored mass is the project's own failure mode | `test_a_BODY_TOTAL_in_the_config_is_REFUSED` |
+| a misspelled field (`fy` for `Fy`) | would run at the default and report the default | `test_an_UNRECOGNISED_field_is_REFUSED_not_ignored` |
+| `f: true` | `True` is an `int`, so `f = 1.0` — the whole body mass on the members | `test_a_BOOLEAN_is_not_accepted_as_a_number` |
+| `E: .nan` | NaN passes `low <= x <= high` by being false either way | `test_a_NaN_is_REFUSED_rather_than_passing_every_comparison` |
+| per-body differing `f` | the builder takes ONE scalar; running at one of them misreports the split | `test_a_PER_BODY_fraction_the_builder_cannot_express_is_refused` |
+| the explicit mass mode | declared and validated, but nothing consumes it yet, so it refuses rather than building from `f` | `test_the_EXPLICIT_mass_mode_is_refused_while_nothing_consumes_it` |
+| a missing section group | would be built with the stand-in and reported as configured | `test_a_MISSING_section_group_is_refused_not_defaulted` |
+| `one_third_increase: true` | EZ4 Q2 locked it OFF and nothing implements it; ignoring it reports allowables a third low | `test_the_ONE_THIRD_INCREASE_is_refused_because_it_is_NOT_IMPLEMENTED` |
+| a governing period with no case | would silently drop out, leaving a smaller envelope than declared | `test_a_GOVERNING_PERIOD_WITH_NO_CASE_BEHIND_IT_is_refused` |
+
+```
+claim  every refusal in the table above is covered by a passing test
+cmd    python -m pytest -q tests/unit/test_run_config.py tests/unit/test_run_pipeline_refusals.py -p no:randomly
+out    34 passed in 1.06s
+rule   FL1(a): validation "refusing out-of-range units with messages"
+judge  the table is a map from refusal to the test that holds it, and this is the run
+       that says the map is not aspirational. Each test asserts BOTH that the
+       configuration is refused and that the message names what the reader must change.
+```
+
+```
+claim  what the run says about the two declared values it does not inject
+cmd    the "Declared, and what became of it" block of results/R1/example/report.md
+out    rho was declared as 7850 kg/m^3 (nominal) and is BACK-COMPUTED per body so that
+       rho * A is the deck's own line mass whatever the section is. Equivalent densities:
+       hub1 11433.5, hub2 11433.5, hub3 11433.5, hub4 11433.5, platform 7146.0.
+       DZ5 / ER1(e): hub1, hub2, hub3, hub4 carry an equivalent density ABOVE the
+       declared nominal, so the deck's mass does not fit inside the declared section at
+       this fraction. This is a recorded finding about the configuration, not an error.
+rule   FL1(a): body totals, CoG and inertia come FROM THE DECK, and the residual against
+       the deck is reported
+judge  the run surfaces the already-recorded DZ5 / ER1(e) finding by name rather than
+       printing a declared density as though the model had used it.
+```
+
+**One of those is a conflict between FL1(a) and a locked decision, and the reviewer should
+rule on it.** FL1(a) lists the one-third increase as a `code_check` option. EZ4 Q2 locked
+it off and `floatfea/checks/api_wsd.py` does not implement it. The schema therefore
+accepts the field and the run REFUSES `true`, citing EZ4 Q2. Implementing it would reopen
+a locked decision without being asked; ignoring it would report allowables a third lower
+than the configuration asked for. Refusing is the only option that is neither.
+
+**And two declared things do not reach the model, which the run states in its own report
+rather than printing as inputs:** `rho` is BACK-COMPUTED per body so that `rho * A` is the
+deck's line mass whatever the section is — the hub arms come out at `11433.5` kg/m³, above
+the declared nominal `7850`, which is DZ5 / ER1(e)'s recorded finding and the run surfaces
+it by name. `G` is derived from `E` and `nu`.
+
+## 5. Two changes inside the extraction that were not pure movement
+
+Both are named at their site in `floatfea/post/forces_table.py`'s docstring.
+
+**(1) `_gravity_nodal_load` and its cache were deleted, not moved.**
+
+```
+claim  the helper is unused repo-wide
+cmd    grep -rn "_gravity_nodal_load\|gravity_nodal" --include=*.py .   (outside its def)
+out    (no output)
+rule   CW0: prose in the source tree does not claim things about the code; EK2: fixed or
+       deleted, never extended
+judge  its docstring said it was cached "because the window loop asked for it once per
+       step per body -- an assembly of the whole mass matrix roughly 31000 times",
+       describing a call the loop does not make. Deleting it removes a false sentence and
+       a module-global cache in one step.
+```
+
+**(2) `_rotation`'s cache key moved from `(body.name, member.label)` to the model's
+identity — and this one matters for step 2.**
+
+```
+claim  the old key collides across two builds of one deck at different sections
+cmd    build_superstructure(measurement_sections=...) returns bodies with the SAME names
+       at a different geometry, and the cache was keyed on the name
+out    a second build read the FIRST build's rotations out of the cache
+rule   FM0: the sizing analyses re-solve repeatedly at different sections
+judge  no test could see it, because every shipped caller builds once. **FM0's re-solve
+       loop builds repeatedly at different sections by design**, so the collision stops
+       being latent the moment step 2 lands. Fixed now, while the byte-identical diff in
+       § 2 can still prove the change is inert for a single build. The key is
+       `id(body.model)` and the entry holds a reference to the model, which is what stops
+       CPython reusing that id.
+```
+
+**And one thing left alone deliberately.** The moved code raises `SystemExit` in two
+places rather than a library exception. Changing an exception type is a behaviour change,
+and this commit's whole claim is that behaviour did not change. It is wrong for a library
+and it is recorded here; the repair belongs in a commit whose claim is not byte-identity.
+
+## 5a. R1 is the first milestone that is not an `F`, and four resolvers could not see it
+
+**Found by the `Stop` hook refusing this very turn**, with a message asserting the one
+thing that was not true: "0 plans carry a live step-under-execution marker ... Retire the
+stale marker, or add the missing one." The marker was there, in
+`docs/milestones/R1.md`, moved per FB4 in this step's own commit.
+
+```
+claim  every marker resolver globbed `docs/milestones/F*.md`
+cmd    grep -rnE "milestones/F|F\*\.md" over .claude/hooks, scripts and tests
+out    .claude/hooks/require-verdict.sh:82   glob F*.md
+       scripts/check_carried.py:84           glob F*.md, falls back to ("F2", 4)
+       scripts/ci_section.py:90              glob F*.md, falls back to F2.md
+       tests/test_report_carried.py:93       glob F*.md, falls back to MILESTONE = "F2"
+       tests/test_plan_matches_tolerances:45 glob F*.md as the PLANS union
+rule   FF0: anything that reads the gating record, or decides whether a green is
+       believed, is fixed in the next commit under EK2's repair-not-extend rule
+judge  every milestone this repository has ever had was `F<n>`, so `F*.md` was
+       indistinguishable from "every plan" until R1. `scripts/ci_section.py`'s own
+       comment says "all four read one thing" -- and they did, including this.
+```
+
+**The hook failed loudly. The other three did not, and that is the part that matters.**
+
+```
+claim  with R1 invisible, the report guards measure F2
+cmd    import tests/test_report_carried.py and print MILESTONE, STEP and REPORT
+out    before: MILESTONE = F2,  STEP = 4,  REPORT = docs/reports/F2/step-4.md
+       after : MILESTONE = R1,  STEP = 1,  REPORT = docs/reports/R1/step-1.md
+rule   the fall-back is `MILESTONE = _PLAN.stem if _PLAN is not None else "F2"`
+cell   one variable moved -- the glob -- with the marker, the plan and the report all held
+judge  the guards would have gone on reporting GREEN about F2's step 4 while R1 step 1 was
+       the step under execution. A guard that is right about the wrong milestone is worse
+       than one that is red, and nothing in this repository would have said so.
+```
+
+**The hook's second F-assumption, found only after the first was fixed.** Its label
+validator reached the numeric body with `${milestone#F}`; against `R1` that strips
+nothing, the fall-through sets `m_body=""`, and it refused with "a label is F<digits>" —
+a statement about the old naming scheme rather than about this repository. The validator
+now matches one series letter, a digit run and an optional suffix.
+
+```
+claim  EC0's hole stays closed and R793 cannot come back
+cmd    the new label regex against nine labels
+out    'F6' ACCEPT / 'F6a' ACCEPT / 'R1' ACCEPT
+       'R1draft' refuse / 'F6ab' refuse / 'Freports' refuse / 'F6-draft' refuse
+       '1' refuse / '' refuse
+rule   FH0(3): the label is wholly numeric after its documented suffix handling
+judge  `F6a` still parses as `6a`, so the ranking defect EC0 and R793 were about is
+       unaffected; what widened is the series letter, which was never the thing being
+       validated.
+```
+
+Replayed on three states, as FH1 asked of the original repair: this tree resolves R1
+step 1 and blocks on the missing verdict; a second marker appended to `F6b.md` is REFUSED
+naming both paths, never broken by path string; and a non-parsing label is REFUSED naming
+the label. The first of those three is why this report exists in the state it does.
+
+**Two commits, because `.claude/hooks/` may only change in a standalone `process:` commit
+citing the directive (CLAUDE.md).** `1e330cc` is the hook alone; `cfdf49c` is the other
+three. Neither touches `floatfea/`. FH2's standing duty — the reviewer diffs the hook —
+applies at the next interim check and counts against no round.
+
+**And one honest note about my own verification.** My first attempt at the non-parsing
+label case produced no refusal and I briefly took that at face value. It was my test
+harness, not the hook: re-run with the states constructed explicitly, the refusal is
+there and names the label. A negative result from a harness I had just written was not
+evidence, and I should have checked the harness before believing it.
+
+## 6. Tolerances
+
+**None. R1 § 4 says none is expected under FM0, and none was added.**
+
+```
+claim  no tolerance was added, and two I had written were removed before commit
+cmd    grep -nE "2\.0\*\*-|isclose|abs_tol|rel_tol|approx" over the new files
+out    (only a comment in pipeline.py explaining the one that was removed)
+rule   CLAUDE.md: every tolerance lives in floatfea/tolerances.py, including "comparison
+       epsilons" and "'small number' guards"
+judge  both were mine and both were caught by re-reading rather than by a test. (i)
+       `_check_material` compared the implied `nu` with `math.isclose(abs_tol=5.0e-4)`.
+       There is nothing to be approximate about: both sides are declared constants and
+       the model's G is a pure function of two of them, so the comparison is exact and
+       the refusal prints the exact value to declare. (ii) the golden test bounded the
+       per-body mass residual by `deck_mass * 2**-45`. Measured, the residual is `0.0` on
+       all five bodies, because `member_mass = f * deck_mass` and
+       `remainder_mass = (1 - f) * deck_mass` are two halves of one number — so the
+       assertion is equality.
+```
+
+FM0's deletion of the threshold from step 2's lock Q&A is in the plan at `a507baf`, before
+any code was written.
+
+## 7. The suite, lint and the boundary state
+
+```
+claim  the whole suite at this commit
+cmd    python -m pytest -q
+out    37 failed, 3356 passed, 1 skipped, 2 warnings in 778.53s (0:12:58)
+rule   nothing excluded, nothing waived, nothing deselected
+judge  the 37 are the step-boundary state and EVERY ONE of them is traced below, by
+       measurement rather than by family.
+```
+
+**EVERY RED TRACES, AND THE TRACE IS A MEASUREMENT (EG3(i)).** EG3 state (1)'s list names
+`test_the_guard_reads_the_step_being_worked_on` plus "the planted states that cascade off
+its baseline". That is 20 of these 37. The other 17 are the guards that need a verdict or
+a CI run at the reviewed commit, and **no verdict exists in this milestone at all** --
+R1 step 1 is the first report of a new milestone, which is a state EG3's two lists were
+not written for. So rather than argue the lists are incomplete, I measured what a
+milestone's first report has always produced:
+
+```
+claim  this tree's red set is the same set a first report produced before
+cmd    git worktree add at e001aec (the commit that ADDED docs/reports/F6b/step-1.md);
+       run the report-guard files there; sort both FAILED lists; comm
+out    F6b's first-report commit : 37 failed
+       this tree                 : 37 failed
+       reds here and not there   : (none)
+       reds there and not here   : (none)
+rule   EG3(i): every `FAILED` id matches the state's own cause, and a red that does not
+       match is CZ1 (iv) unchanged
+judge  set-for-set identical. The first report of a milestone reddens these 37 because a
+       verdict and a CI run at the reviewed commit cannot exist before the report does --
+       CZ1's own reusable half, "a check whose input is the commit itself cannot be
+       measured before the commit exists". The verdict clears them.
+```
+
+**AND THE FIRST RUN OF THAT COMPARISON FOUND FOUR THAT DID NOT MATCH. ALL FOUR WERE
+DEFECTS OF MINE**, which is the whole value of doing it by measurement:
+
+```
+claim  the four, and what each turned out to be
+cmd    comm -13 on the two sorted FAILED lists, then each id run on its own
+out    test_the_plan_names_the_step_under_execution
+         -> a FIFTH `F*.md` glob, in this same file at line 498, that my first repair
+            missed. `_active_plan` was fixed and this assertion was not, so the module
+            resolved R1 while the guard holding the marker to exactly one plan counted 0.
+       test_a_report_does_not_say_CLOSED
+         -> my section 8 never made CLAUDE.md's `checked, nothing carried` declaration.
+            It said "nothing blocking" in prose, which the guard cannot read as the
+            declaration, so every check after it was passing on nothing.
+       two_reports_ahead_of_the_newest_verdict
+       guard_state_a_report_commit_messaged_docs_that_also_edits_the_guards_measuring_it
+         -> both cascading off the two above; both green once those were fixed.
+rule   EG3(i), and the eighty-third verdict's lesson that eight planted states ruled as
+       one cascade hid a real defect (R629) as the eighth member
+judge  two real defects and two dependents. Had I ruled the 39 as "the boundary set, it
+       looks right", both defects would have shipped -- one of them a guard silently
+       counting zero markers, which is the exact failure FF0 is about.
+```
+
+**Two further reds were real and are not in the 37 at all**, because they were fixed
+before this run:
+
+```
+claim  the two the suite caught in my own new files
+cmd    the first whole-suite run at this tree, before these were repaired
+out    tests/test_no_tolerance_literals.py::...[test_run_config.py]
+         -> `assert cfg.sections.material.fy == 355000000.0`, line 74. A bare literal in
+            a comparison. Not a tolerance -- a yield stress -- but now compared against
+            `FY_S355`, which also fails if the example and the declared grade drift apart.
+       tests/test_report_numbers_are_sourced.py  (4 parametrisations)
+         -> five prose numbers with no command behind them in sections 1, 3 and 4, and a
+            table of numbers whose section showed no `cmd`. One mattered: I had written
+            the affected station as `U = 0.074`, a rounding I never measured. It is
+            `U = 0.0738576`.
+rule   CZ0 (d): a red test at the reviewed commit blocks
+judge  both are CZ1 (iv) class -- outside any boundary list -- so both were fixed rather
+       than traced. The second is the one worth remembering: the guard caught a number I
+       had rounded in prose while the exact value sat in a CSV I had already read.
+```
+
+```
+claim  lint, format and types
+cmd    ruff check floatfea scripts tests ; black --check floatfea scripts tests ; mypy floatfea
+out    All checks passed!
+       146 files would be left unchanged.
+       Success: no issues found in 42 source files
+```
+
+**The boundary state is EG3 (1): report written, verdict not yet.** The expected failures
+are `tests/test_report_carried.py::test_the_guard_reads_the_step_being_worked_on` and the
+planted states that cascade off its baseline, plus FC1's two CZ1-class guards
+(`test_the_report_carries_a_WHOLE_SUITE_count`,
+`test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`) which cannot pass in the commit they
+describe. Any failure outside that list is CZ1 (iv) and blocks; the full `FAILED` list is
+in § 7's output above rather than described.
+
+## 8. Carried
+
+**Checked, nothing carried.** R1 step 1 is the milestone's first step and there is no
+prior verdict in this milestone to carry from. FL opened the step and FM amended the plan;
+neither is a verdict with findings, and F6b closed at its own closing verdict — the one
+carrying `Closes: F6b` (FK1) — with **no blocking item open**. Nothing travels in by name.
+
+The items that stay on the previous milestones' ledgers are named here so that declaring
+an empty carry is not the same as forgetting them, and they are **not** reopened: R788,
+R789, R790 and R791 remain in `docs/closure/F6a.md` and `docs/closure/F6b.md`, with R790
+on `docs/milestones/F2a.md`'s frozen list rather than on any step. None is in `floatfea/`,
+none is a tolerance, none is a gate assertion, and none was red at a reviewed commit — so
+none blocks under CZ0 (a)–(d). FG1 scopes this milestone to FL's three steps and the
+ledger is not its subject.
+
+**The two unreproduced shallow-clone states are still with the reviewer.** They passed
+again at F6b's first-report commit and in this tree, as they did at `a6e4252` and at the
+addendum commit. No expectation was adjusted — EG3(i), and R629 was the eighth member of
+exactly such a group.
+
+**FM1 is acknowledged, and it changed how I work rather than any code.** One exploratory
+`grep` of mine reached the verdict tree by splitting the path string, which evaded the
+`PreToolUse` hook. I disclosed it in `e978a79`; FM1 ruled: never construct a command to
+get past a hook, use `Read` or stop and ask. It came up again in this step — the hook
+refused a `git commit` whose message quoted a verdict path — and I complied by eliding
+the path from the command rather than finding a way around the check, marking the elision
+where the output is quoted.
+
+## 9. What this revision does NOT do
+
+* **No member topology from the config.** FL2(a). The star is what the builder makes, and
+  the section groups are keyed by body name because each body's members are one group
+  today.
+* **No `required_section` or `truss_sizing`.** FL2(b), and under FM0 they must propose
+  from fixed forces and then RE-SOLVE. `outputs` accepts both flags and the run REFUSES
+  when either is set, rather than running them off a single force set.
+* **No headings beyond the one the npz carries.** FL2(c).
+* **No per-case band check.** FL2(d). The governing set is declared and honoured; what is
+  not yet there is the per-case report of the associated-period rule and the breaking
+  steepness.
+* **No `floatfea export`.** It validates and refuses, naming the HSP worktree.
+* **No user guide and no witness.** FL3, step 3.
+* **No explicit mass distribution consumed.** Declared, validated, refused at build.

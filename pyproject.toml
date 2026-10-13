@@ -16,6 +16,12 @@ dependencies = [
     "h5py>=3.10",
 ]
 
+# FL1(b): `floatfea run <config.yaml>` and `floatfea export <config.yaml>`. One entry
+# point with two subcommands rather than two scripts, so that a configuration file is the
+# only thing a user has to know about.
+[project.scripts]
+floatfea = "floatfea.cli:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",

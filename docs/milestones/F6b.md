@@ -1,6 +1,8 @@
 # F6b — TRUSS SIZING FROM THE BEAM FORCES (increment 1b)
 
-<!-- step-under-execution: 1 -->
+<!-- CLOSED. The step marker moved to docs/milestones/R1.md with R1 step 1's report
+     (FB4: "the marker moves in the commit that adds the step's report"). F6b closed
+     at its closing verdict, which carries `Closes: F6b` (FK1). -->
 
 Opened by **DIRECTIVE FI**. Lighter process as FG1: **one step, one reviewed report
 revision, then EQ0 closure.** CZ0's blocking criterion is unchanged, including EZ0's

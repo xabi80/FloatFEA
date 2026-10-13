@@ -35,7 +35,11 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parents[3]  # tests/verification/rung3/<file>
-CLOSURE = sorted((REPO / "docs" / "closure").glob("F*.md"))
+# EVERY CLOSURE ARTIFACT, NOT EVERY `F`-ONE (FF0). R1 is the first milestone whose name
+# does not start with `F`, so its closure artifact would have been outside every
+# assertion in this file -- which is the one place that checks a closure artifact carries
+# its evidence at all.
+CLOSURE = sorted((REPO / "docs" / "closure").glob("*.md"))
 
 # Backticked paths that look like repository files.
 _PATH = re.compile(r"`((?:HSP:)?(?:tests|floatfea|docs)/[A-Za-z0-9_./-]+\.(?:py|md))`")
@@ -47,7 +51,7 @@ def _cited(doc: Path) -> list[str]:
 
 def test_there_are_closure_artifacts_to_check() -> None:
     """Meta-test: this whole module is vacuous if the glob finds nothing."""
-    assert CLOSURE, "no docs/closure/F*.md found -- every test below is vacuous"
+    assert CLOSURE, "no docs/closure/*.md found -- every test below is vacuous"
 
 
 @pytest.mark.parametrize("doc", CLOSURE, ids=lambda d: d.stem)

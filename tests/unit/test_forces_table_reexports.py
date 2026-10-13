@@ -29,13 +29,19 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "measure" / "member_forces_table.py"
 
-# The eight attributes the two consumers actually reach for. Taken from the tree rather
-# than from memory:
+# The eight attributes the two consumers actually reach for.
 #
-#   claim: these are exactly the `MFT.<name>` lookups the two consumers make
-#   cmd:   grep -ohE "MFT\.[A-Za-z_]+" scripts/measure/f6a_premise_check.py \
-#            scripts/measure/f6_results_report.py | sort -u
-#   out:   the eight names below
+# This list is a claim about the repository, and under CW0 such a claim is a test, a
+# triple, or deleted. It is A TEST: the second test function below greps both consumers
+# for their `MFT` attribute lookups and fails if they ask for anything this tuple does
+# not list.
+#
+# It was briefly written here as a `claim:`/`cmd:` comment instead, and
+# `tests/test_tree_prose_consistent.py` rejected it on sight for two good reasons: the
+# `cmd:` wrapped onto a second line, which that parser forbids because a wrapping command
+# swallows whatever follows it, and the command was a shell pipeline the triple runner
+# cannot execute -- so nothing would ever have checked it. A triple whose command cannot
+# run is exactly what CW0 calls not a triple.
 CONSUMED = (
     "_joint_wiring",
     "_lam_full_scale",
