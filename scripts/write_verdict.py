@@ -182,7 +182,28 @@ def main() -> int:
 
     out = root / f"docs/reviews/{args.milestone}/step-{args.step}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
-    header = f"# Review — {args.milestone} step {args.step}\nReviewed commit: {sha()}\n"
+    # THE ANCHOR LINE THE CI SECTION GENERATOR NEEDS, EMITTED BY THE TOOL (FN3).
+    #
+    # `scripts/ci_section.py` walks `report -> Answers: verdict N @ <sha> -> that
+    # verdict's header -> the commit it judged`, and the pattern it reads is
+    # `_JUDGED = r"\*\*Reviewed commit:\s*`([0-9a-f]{7,40})`"` -- BOLD, WITH BACKTICKS.
+    # This tool wrote only the plain `Reviewed commit: <sha>` line, so every verdict that
+    # satisfied that generator did so because a reviewer also typed the bold form into the
+    # body by hand. Six times in F6b's file, seven in F6a's.
+    #
+    # R1's verdict was hand-written -- that is R804 -- and it carries the plain line and
+    # not the bold one, so `ci_section.py` refuses with "does not name the commit it judged
+    # in its header" and the report's CI section cannot be generated at all.
+    #
+    # **FN3's goal is that the reviewer can USE the tool.** A tool whose output does not
+    # satisfy the next gate in the chain has not met that goal, so the anchor is emitted
+    # here rather than left to a convention that happened to hold nine times.
+    anchor = f"**Reviewed commit: `{sha()}`.**"
+    header = (
+        f"# Review — {args.milestone} step {args.step}\n"
+        f"Reviewed commit: {sha()}\n"
+        f"{anchor}\n"
+    )
     # FK0: ONE LINE, INTO THIS ENTRY, AND NOTHING OTHERWISE. It goes in the header so
     # that a reader of the NEWEST entry finds it beside `Reviewed commit:` -- the file
     # accumulates newest-first (DX2), so a parser taking the first match gets the
