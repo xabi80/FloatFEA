@@ -89,36 +89,47 @@ import argparse
 import csv
 import math
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import numpy as np
-from numpy.typing import NDArray
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from floatfea import basis  # noqa: E402
-from floatfea.io.frames import GRAVITY_VECTOR  # noqa: E402
-from floatfea.io.froude import to_full_scale  # noqa: E402
-from floatfea.loads.joint_reactions import map_joint_reactions  # noqa: E402
+
+# RE-EXPORTED ON PURPOSE, AND `ruff` CANNOT TELL (FL1). This file is not only a script:
+# `f6a_premise_check.py` and `f6_results_report.py` both load it BY PATH through
+# `importlib` and then reach for these as attributes of the loaded module. Before the
+# core moved to `floatfea.post.forces_table` they were defined here, so the attribute
+# lookups resolved; after the move they resolve only because these names are imported
+# back into this namespace. Removing them as "unused" breaks two scripts silently --
+# an `AttributeError` at the far end of an `importlib` load, with nothing in this file
+# to point at.
+from floatfea.loads.joint_reactions import map_joint_reactions  # noqa: E402,F401
 from floatfea.model.platform import (  # noqa: E402
     BodyModel,
     Member,
-    Superstructure,
     _outer_diameter,
     build_superstructure,
-    rigid_projection,
+)
+from floatfea.post.forces_table import (  # noqa: E402,F401
+    Row,
+    _joint_wiring,
+    _lam_full_scale,
+    _net_field,
+    _section_properties,
+    _static_rows,
+    _station_values,
+    _stresses,
+    compute_rows,
 )
 from floatfea.post.member_forces import (  # noqa: E402
     COMPONENTS,
-    element_equivalent_load,
-    member_forces,
 )
-from floatfea.solve.inertia_relief import solve_inertia_relief  # noqa: E402
-from floatfea.solve.static import solve_superstructure_static  # noqa: E402
+from floatfea.solve.inertia_relief import solve_inertia_relief  # noqa: E402,F401
 
 WAVE_HEIGHT_FULL_M = 24.2
 """The DS1 design wave at full scale, `0.484 m` model times the Froude factor."""
@@ -217,339 +228,24 @@ LABELS = (
 )
 
 
-@dataclass(frozen=True)
-class Row:
-    body: str
-    member: str
-    station: str
-    period_full_s: float
-    basis: str
-    values: NDArray[np.float64]  # (6,) N, Vy, Vz, T, My, Mz
-
-
-def _gravity_field(n_dof: int) -> NDArray[np.float64]:
-    """`g` on every translational DOF, zero on every rotational one."""
-    field = np.zeros(n_dof, dtype=np.float64)
-    for start in range(0, n_dof, 6):
-        field[start : start + 3] = GRAVITY_VECTOR
-    return field
-
-
-_GRAVITY_LOAD: dict[str, NDArray[np.float64]] = {}
-
-
-def _gravity_nodal_load(body: BodyModel) -> NDArray[np.float64]:
-    """The consistent nodal load of self-weight, from the assembler's own mass.
-
-    `M @ g_field`, which is the same route `element_equivalent_load` takes per element --
-    so the total and the per-element pieces cannot disagree about the mass.
-
-    CACHED, because it is a constant of the body and the window loop asked for it once per
-    step per body -- an assembly of the whole mass matrix roughly 31000 times.
-    """
-    if body.name not in _GRAVITY_LOAD:
-        from floatfea.assemble.system import assemble_mass_dense
-
-        mass = assemble_mass_dense(body.model, body.elements)
-        _GRAVITY_LOAD[body.name] = np.asarray(
-            mass @ _gravity_field(body.model.n_dof), dtype=np.float64
-        )
-    return _GRAVITY_LOAD[body.name]
-
-
-FROUDE_LAMBDA = 50.0
-"""`docs/conventions.md`'s scale. The FE model is FULL scale; FloatSim runs at MODEL."""
-
-ROWS_PER_JOINT_YAW_LOCKED = 4
-"""Three translations plus the one locked axis. `floatfea.io.froude`'s composite width."""
-
-
-def _lam_full_scale(lam_row: NDArray[np.float64]) -> NDArray[np.float64]:
-    """One timestep's multipliers, model scale to FULL scale, per joint block.
-
-    **THIS IS THE ONE PLACE A SCALE CHANGE HAPPENS AND IT NEARLY DID NOT HAPPEN AT ALL.**
-    `data/f4/dynamic_inputs.npz` holds FloatSim's own output, which is MODEL scale: the
-    solve runs at `T/sqrt(50)` with `H = 0.484 m`. The FE model is built at FULL scale.
-    The first version of this script applied `lam` straight to it, and the symptom was a
-    PLAUSIBLE WRONG ANSWER rather than a crash -- the wave contribution came out 125000x
-    too small, so the total case peaked at 40.5 MPa where static alone reads 269.7 MPa at
-    the same station, and the table would have said the dynamic loads are negligible.
-
-    It was caught by one comparison: `max |lam| = 6.4436e+01` against a gravity nodal load
-    of `1.9160e+07` on the same body. `CLAUDE.md`: never assume a unit.
-
-    The factors are NOT written here. `joint_multiplier_yaw_locked` is a DECLARED
-    composite -- `((0, 3, "force"), (3, 4, "moment"))` -- so force goes as `lam^3` and the
-    locked moment as `lam^4`, which is `125000` and `6250000` at this scale. Writing one
-    factor for all four rows would have been wrong by `lam` on the fourth.
-    """
-    row = np.asarray(lam_row, dtype=np.float64)
-    if row.size % ROWS_PER_JOINT_YAW_LOCKED != 0:
-        raise SystemExit(
-            f"`lam` has {row.size} rows, which is not a whole number of "
-            f"{ROWS_PER_JOINT_YAW_LOCKED}-row yaw-locked joint blocks. The composite this "
-            "scales by would be the wrong one."
-        )
-    out = np.empty_like(row)
-    for start in range(0, row.size, ROWS_PER_JOINT_YAW_LOCKED):
-        block = row[start : start + ROWS_PER_JOINT_YAW_LOCKED]
-        out[start : start + ROWS_PER_JOINT_YAW_LOCKED] = to_full_scale(
-            block, "joint_multiplier_yaw_locked", FROUDE_LAMBDA
-        )
-    return out
-
-
-def _joint_wiring(
-    built: Superstructure, deck_a: list[str], deck_b: list[str]
-) -> tuple[list[tuple[str, str, str]], dict[tuple[str, str], int], dict[str, int]]:
-    """`(joint_order, nodes, n_dof_of)`, with the DECK's order checked against the builder.
-
-    The deck is the authority for the block order of `lam`. The builder is the authority
-    for which node a joint attaches to. Neither is derived from the other here, and the
-    one place they must agree -- that joint `i` of the deck connects the pair the builder
-    thinks it does -- is ASSERTED. The rung-4 mapper gate cannot do this check because it
-    must run without an HSP worktree; a driver can and must.
-    """
-    by_name = {b.name: b for b in built.bodies}
-    n_dof_of = {b.name: b.model.n_dof for b in built.bodies}
-    joint_order: list[tuple[str, str, str]] = []
-    nodes: dict[tuple[str, str], int] = {}
-
-    for i, (child, parent) in enumerate(zip(deck_a, deck_b, strict=True)):
-        owner = built.deck_joint_owner.get(child)
-        if owner != parent:
-            raise SystemExit(
-                f"deck joint {i} connects {child!r} to {parent!r} and the builder has "
-                f"{child!r} owned by {owner!r}. The two disagree about the topology, so a "
-                "reaction would be attributed to the wrong joint."
-            )
-        joint_order.append((child, child, parent))
-        if child in built.buoy_joint_nodes:
-            _owner, node = built.buoy_joint_nodes[child]
-            nodes[(child, parent)] = node
-        else:
-            nodes[(child, child)] = by_name[child].centre_node
-            nodes[(child, parent)] = by_name[parent].model.nodes.index(f"{parent}:{child}_arm_tip")
-    if len(joint_order) != 16:
-        raise SystemExit(f"{len(joint_order)} joints; the deck declares 16.")
-    return joint_order, nodes, n_dof_of
-
-
-def _net_field(body: BodyModel, relief: Any) -> NDArray[np.float64]:
-    """`-a_rigid`: the d'Alembert field of the DYNAMIC acceleration increment.
-
-    No gravity term. `lam` is the increment about static equilibrium, so the static
-    weight is carried entirely by the `static` basis and adding `g` here would count it
-    twice -- which is what the first version did, putting the body in near free fall
-    (`-7.37 m/s^2` against FloatSim's `-0.0094`).
-    """
-    coords = body.model.nodes.coords()
-    rigid = rigid_projection(coords, relief.reference_point) @ relief.acceleration
-    return -np.asarray(rigid, dtype=np.float64)
-
-
-_ROTATION: dict[tuple[str, str], NDArray[np.float64]] = {}
-
-
-def _rotation(body: BodyModel, member: Member) -> NDArray[np.float64]:
-    """The member's local axes. A constant of the geometry, so cached (31000 steps)."""
-    key = (body.name, member.label)
-    if key not in _ROTATION:
-        from floatfea.element.transform import rotation_matrix
-
-        coords = body.model.nodes.coords()
-        _ROTATION[key] = rotation_matrix(coords[member.node_a], coords[member.node_b])
-    return _ROTATION[key]
-
-
-def _station_values(
-    body: BodyModel, member: Member, u_full: NDArray[np.float64], net: NDArray[np.float64]
-) -> dict[str, NDArray[np.float64]]:
-    """ROOT, MID and TIP in the member's local frame.
-
-    ROOT and TIP are the element's two ends and are exact. MID is closed-form for a
-    uniform net load: shear linear, so its mid value is the chord mean; moment parabolic,
-    so its mid value is the chord mean plus `w L^2 / 8` with `w` the local transverse
-    load per unit length. `N` and `T` are taken as the chord mean.
-
-    **AND "THE NET FIELD IS A TRANSLATION" WAS FALSE (R730).** That sentence stood here
-    to justify treating `N` and `T` as constant along the member. `_net_field` is
-    `-rigid_projection(coords, ref) @ relief.acceleration`, which includes the ANGULAR
-    part, so the field varies along a member whenever the body has angular acceleration.
-    Measured over ninety (case, step, body) samples:
-
-        worst |alpha| L_max / |a|  =  0.2239
-
-    The rotational contribution is not zero. But the conclusion I drew from that was wrong
-    in BOTH directions (R736):
-
-    * **`N` is provably exact, not an approximation.** The angular part of the field is
-      `alpha x r`, which is perpendicular to `r`; along a member `r` is the member axis, so
-      the axial projection of the angular field is identically zero and `N` is constant
-      whatever `alpha` is. Measured end-to-end variation: `0.000` everywhere.
-    * **The BENDING closed form is the approximation**, and the figure for it was stated
-      nowhere. It is a measured `4.0%`.
-
-    And `0.2239` is itself one operating point: over the window the table envelopes, the
-    same ratio reaches `17.067` sampling every twentieth step and `50.297` every seventh.
-    A refined mesh would settle the bending term; F4 closes carrying that into F5's ledger.
-    """
-    f_eq = element_equivalent_load(body, member, net)
-    mf = member_forces(body, member, u_full, f_eq)
-    root = np.asarray(mf.end_a, dtype=np.float64)
-    tip = np.asarray(mf.end_b, dtype=np.float64)
-
-    # The local transverse load per unit length, from the net field at the member's own
-    # nodes. `mu = rho A` is the prismatic line mass -- independent of the assembler (EA4).
-    r = _rotation(body, member)
-    a_mid = 0.5 * (
-        net[6 * member.node_a : 6 * member.node_a + 3]
-        + net[6 * member.node_b : 6 * member.node_b + 3]
-    )
-    mu = float(body.material.rho * member.section.A)
-    w_local = r @ (mu * np.asarray(a_mid, dtype=np.float64))  # (3,) local x, y, z
-
-    # R730 -- THE CONVENTION, WHICH THE FIRST VERSION AVERAGED ACROSS.
-    #
-    # `member_forces` returns the forces the ELEMENT EXERTS ON ITS NODES, so `end_a` and
-    # `end_b` are an ACTION AND A REACTION -- its own docstring says so. The internal
-    # action is `end_a` at `x = 0` and `-end_b` at `x = L`. Averaging the two raw ends
-    # therefore computes a LOAD, not an internal force, and the arithmetic says so
-    # exactly: conservation gives `Vz_a + Vz_b = weight`, so `0.5 * (end_a + end_b)` on
-    # `Vz` is HALF THE MEMBER'S WEIGHT. Measured on `platform:hub2_arm` under self-weight:
-    #
-    #   0.5 * (a + b)  ->  Vz = +2299218.75   = exactly mu g L / 2
-    #   0.5 * (a - b)  ->  Vz = -3832031.25   = the internal shear at midspan
-    #
-    # The published column was 46% LOW on stress -- 94.4 MPa against 175.3 -- which is the
-    # direction that matters, and it reached a sent deliverable.
-    #
-    # ALL THREE STATIONS ARE NOW ONE CONVENTION, so the profile has a meaning: the
-    # internal action as seen from the A end. `TIP` is therefore `-end_b` and not `end_b`.
-    # The shear then varies monotonically from `-1532812.5` to `-6131250.0` over the span,
-    # a change of exactly `-mu g L`, where the raw ends had a spurious zero crossing.
-    # R739 -- THE AXIAL COLUMN WAS COMPRESSION-POSITIVE, against a convention locked at F0.
-    #
-    # `docs/conventions.md:320`: "Positive axial force: **tension positive**." `member_forces`
-    # returns `k_local @ (t @ u) - t @ f_eq`, and `k u` is the NODAL force on the element --
-    # uniformly, for every component. For the transverse components that coincides with the
-    # internal action at the A end, which is why R730's segment-equilibrium cut validated
-    # `ROOT = end_a` and `TIP = -end_b`. **For the axial it does not.** Measured on a sense
-    # that cannot be argued with -- node B moved 1 mm OUTWARD along the member axis:
-    #
-    #     end_a[0]                              = -5.5101e+06
-    #     EA/L x 1e-3  (true tension, Hooke)    = +5.5101e+06
-    #     published N  (= end_a[0])             = -5.5101e+06     <-- for a STRETCH
-    #
-    # So a member in tension published a negative `N`, and `floatfea/checks/api_wsd.py` read
-    # `axial_n >= 0.0` as tension: every over-unity station went to section 3.3.1 with
-    # `F_a = 0.6 F_y` instead of 3.3.2 with the column allowable.
-    #
-    # Corrected HERE, at the publishing boundary, because that is where the locked
-    # convention applies: the CSV is a published deliverable (EZ0) and `conventions.md` is
-    # what it has to agree with.
-    span = float(member.length)
-    tip_internal = -tip
-    root = root.copy()
-    root[0] = -root[0]
-    tip_internal[0] = -tip_internal[0]
-    mid = 0.5 * (root + tip_internal)
-    # THE PARABOLIC SAG, AND THE TWO PLANES CARRY OPPOSITE SIGNS (R734).
-    #
-    # Derived, not calibrated. `e_x x F = (0, -F_z, +F_y)`, so the standard beam relations
-    # are `dM_z/dx = +V_y` and `dM_y/dx = -V_z`, with `dV/dx = -w`. Hence
-    # `M_z'' = -w_y` and `M_y'' = +w_z`, and for a parabola `f(L/2) = chord - f'' L^2/8`:
-    #
-    #     mid My  =  chord  -  w_z L^2 / 8
-    #     mid Mz  =  chord  +  w_y L^2 / 8        <-- the OPPOSITE sign
-    #
-    # **THE FIRST REPAIR GAVE BOTH PLANES THE SAME SIGN, so one of them was always going
-    # to be wrong.** It was calibrated against one measured cell rather than derived, and
-    # the cell could not see the error: `w_local[1]` is EXACTLY ZERO on all sixteen members
-    # on the static basis, so the `Mz` term is unobservable there. Both of my published
-    # cells, both static controls my own closing condition asked for, and both of the
-    # reviewer's independent figures sat at `w_y = 0`.
-    #
-    # **A control that can only be taken where the quantity is zero is not a control.**
-    # Measured on the row where it is largest -- `hub4:buoy12_arm`, `T_full = 12.5 s`,
-    # step 219, `w_y = -7.1836e+03` -- the subtracting form gives `Mz = +1.091976e+06` and
-    # the adding form `-3.046460e+04`, and the second is what segment equilibrium gives.
-    chord_my, chord_mz = float(mid[4]), float(mid[5])
-    sag_y = -w_local[2] * span * span / 8.0
-    sag_z = +w_local[1] * span * span / 8.0
-    mid[4] = mid[4] + sag_y
-    mid[5] = mid[5] + sag_z
-
-    # THE CONTROL THE FIRST REPAIR DID NOT HAVE, and it runs where the quantity is
-    # NONZERO. A control that can only be taken where the quantity is zero is not a
-    # control: `w_local[1]` is exactly `0.0` on all sixteen members on the static basis,
-    # which is why one calibrated cell, two static controls and two independent reviewer
-    # figures all missed a flipped sign on `Mz`.
-    #
-    # **IT ASSERTS ON THE PUBLISHED VALUE, NOT ON THE INTERMEDIATE (R744).** It compared
-    # `sag_y` and `sag_z` -- the two local variables -- against their own load components,
-    # which is a check on the two lines that DEFINE them and on nothing else. A one-
-    # character reversion at the line that APPLIES them (`mid[5] = mid[5] - sag_z`) leaves
-    # both intermediates correct and the published `Mz` wrong, and the control passed.
-    # What the published MID carries is `mid - chord`, so that is the subject: the chord
-    # mean is taken before the sags are applied and the difference is what is signed.
-    #
-    # NO THRESHOLD AND NO TOLERANCE. The derivation fixes the SIGN of each sag against the
-    # sign of its own load component -- `M_y'' = +w_z` and `M_z'' = -w_y` give sags of
-    # `-w_z L^2/8` and `+w_y L^2/8` -- so the check is a sign comparison and needs no
-    # constant. It catches exactly the defect that shipped, and it cannot be satisfied by
-    # a configuration that happens to sit at zero because it skips those.
-    published = (
-        (w_local[2], float(mid[4]) - chord_my, -1.0, "My/w_z"),
-        (w_local[1], float(mid[5]) - chord_mz, +1.0, "Mz/w_y"),
-    )
-    for load, applied, want, plane in published:
-        if load == 0.0 or applied == 0.0:
-            continue
-        if math.copysign(1.0, applied) != math.copysign(1.0, want * load):
-            raise SystemExit(
-                f"{member.label}: the {plane} parabolic sag reaches the PUBLISHED MID "
-                f"with the wrong sign -- load {load!r}, published sag {applied!r}. "
-                "`M_y'' = +w_z` and `M_z'' = -w_y`, so the two planes carry OPPOSITE "
-                "signs; giving them the same one is R734 and flipping one at the line "
-                "that applies it is R744."
-            )
-    return {"ROOT": root, "MID": mid, "TIP": tip_internal}
-
-
-def _static_rows(built: Superstructure) -> dict[tuple[str, str, str], NDArray[np.float64]]:
-    """The supported structure under its own weight. One set, shared by every case."""
-    cases = solve_superstructure_static(built)
-    out: dict[tuple[str, str, str], NDArray[np.float64]] = {}
-    for body in built.bodies:
-        net = _gravity_field(body.model.n_dof)
-        for member in body.members:
-            for station, values in _station_values(
-                body, member, cases[body.name].u_full, net
-            ).items():
-                out[(body.name, member.label, station)] = values
-    return out
-
-
-def _section_properties(member: Member) -> tuple[float, float, float, float, float]:
-    """`(A, W, J, W_t, A_shear)` for the stand-in tube, all derived (AS1)."""
-    section = member.section
-    d_outer = _outer_diameter(section)
-    area = float(section.A)
-    w_bend = 2.0 * float(section.I_y) / d_outer
-    w_tors = 2.0 * float(section.J) / d_outer
-    a_shear = basis.kappa(section.shape) * area
-    return area, w_bend, float(section.J), w_tors, a_shear
-
-
-def _stresses(member: Member, values: NDArray[np.float64]) -> tuple[float, float]:
-    """EY0's indicative sigma and tau. No code check, no von Mises (see the docstring)."""
-    area, w_bend, _j, w_tors, a_shear = _section_properties(member)
-    axial = abs(float(values[0])) / area
-    bending = math.hypot(float(values[4]), float(values[5])) / w_bend
-    shear = math.hypot(float(values[1]), float(values[2])) / a_shear
-    torsion = abs(float(values[3])) / w_tors
-    return axial + bending, torsion + shear
+# EVERYTHING BELOW THIS LINE USED TO BE ABOVE IT (FL1).
+#
+# `Row`, the station arithmetic, the joint wiring, the scale change and the two stress
+# helpers now live in `floatfea/post/forces_table.py`, and so does the window loop, as
+# `compute_rows`. They were MOVED, not rewritten -- see that module's docstring for why,
+# and for the two things that did change on the way (a dead helper deleted, one cache
+# key corrected).
+#
+# This script is unchanged in what it PUBLISHES: the CLI, `LABELS`, the CSV writer and
+# the summary are all still here, and the names it used to define are imported back into
+# its namespace below, which is what keeps `f6a_premise_check.py` and
+# `f6_results_report.py` working -- both load this file by path and reach for
+# `MFT._station_values` and friends.
+#
+#   claim: the eight attributes those two consumers reach for all still resolve here
+#   cmd:   python -c "import importlib.util,sys; ..." -- the triple is in R1 step 1's
+#          report, where it is run at the commit rather than described
+#   out:   see that report
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -565,91 +261,18 @@ def main(argv: list[str] | None = None) -> int:
     built = build_superstructure()
     by_name = {b.name: b for b in built.bodies}
 
-    deck_a = [str(x) for x in raw["case0/joint_body_a"]]
-    deck_b = [str(x) for x in raw["case0/joint_body_b"]]
-    joint_order, nodes, n_dof_of = _joint_wiring(built, deck_a, deck_b)
-
-    static = _static_rows(built)
-    rows: list[Row] = []
-    # THE PER-INSTANT WORST STRESS, which is the physically meaningful one. The envelope
-    # below takes each component's max INDEPENDENTLY over the window, so its six values do
-    # not occur together and a stress formed from them is an UPPER BOUND, not a stress at
-    # any instant. Both are reported and both are labelled; a reader given only the bound
-    # would take 762.2 MPa for a real stress.
-    instant: dict[tuple[str, str, str], tuple[float, float]] = {}
-    instant_sens: dict[tuple[str, str, str], tuple[float, float]] = {}
-    peak: dict[tuple[str, str, str], tuple[float, float, Any]] = {}
-
-    for i, period in enumerate(inp.periods_full_s):
-        lam = raw[f"case{i}/lam"]
-        # The worst of each component over the window, per member-station, keeping the
-        # max and the min separately -- `CLAUDE.md` forbids averaging a per-case
-        # diagnostic, and a signed envelope needs both ends.
-        worst_hi: dict[tuple[str, str, str], NDArray[np.float64]] = {}
-        worst_lo: dict[tuple[str, str, str], NDArray[np.float64]] = {}
-        for step in range(lam.shape[0]):
-            loads = map_joint_reactions(_lam_full_scale(lam[step]), joint_order, nodes, n_dof_of)
-            for name, body in by_name.items():
-                # NO GRAVITY: `lam` is the dynamic increment about equilibrium (see the
-                # module docstring). Adding gravity here put the body in free fall.
-                applied = np.asarray(loads[name], dtype=np.float64)
-                relief = solve_inertia_relief(body, applied)
-                net = _net_field(body, relief)
-                for member in body.members:
-                    for station, values in _station_values(
-                        body, member, relief.u_full, net
-                    ).items():
-                        key = (name, member.label, station)
-                        worst_hi[key] = (
-                            values if key not in worst_hi else np.maximum(worst_hi[key], values)
-                        )
-                        worst_lo[key] = (
-                            values if key not in worst_lo else np.minimum(worst_lo[key], values)
-                        )
-                        at_instant = static[key] + values
-                        sigma_now, _tau_now = _stresses(member, at_instant)
-                        # R740: KEEP THE COMPONENTS AT THE PEAK INSTANT, not just sigma.
-                        # The CSV carried `static`, `dynamic_*` and `total_*` only -- all
-                        # ENVELOPES -- so a consumer computing a utilisation got the
-                        # per-component bound while a label said per-instant. The gap at the
-                        # governing station is `0.103` in U, `4.3x` the K sensitivity.
-                        # ONLY WITHIN THE GOVERNING BASIS. Tracking the global peak
-                        # dropped every station whose largest response is at `T = 10 s` --
-                        # the breaking wave, which is most of them -- so the first version
-                        # of this emitted 2 `total_instant` rows instead of 32. The peak
-                        # that matters is the peak of the cases allowed to govern.
-                        if (
-                            period in GOVERNING_PERIODS
-                            and sigma_now > peak.get(key, (0.0, 0.0, None))[0]
-                        ):
-                            peak[key] = (sigma_now, float(period), at_instant)
-                        # EZ2(a)/(b): only the IN-RANGE cases may govern. The two outside
-                        # are tracked separately and reported in their own block -- a
-                        # breaking wave and a wave too long for this height cannot set a
-                        # design envelope, and letting them would have been the finding.
-                        target = instant if period in GOVERNING_PERIODS else instant_sens
-                        if sigma_now > target.get(key, (0.0, 0.0))[0]:
-                            target[key] = (sigma_now, float(period))
-        for key in sorted(worst_hi):
-            for tag, dyn in (("max", worst_hi[key]), ("min", worst_lo[key])):
-                rows.append(Row(key[0], key[1], key[2], period, f"dynamic_{tag}", dyn))
-                rows.append(Row(key[0], key[1], key[2], period, f"total_{tag}", static[key] + dyn))
-        print(f"  T_full = {period:4g} s: {lam.shape[0]} steps", flush=True)
-
-    # R740: one `total_instant` row per station -- the six components AT the step where
-    # sigma peaks, on EZ2's governing basis. This is the row a code check must read, and
-    # until it existed the only honest label for a utilisation was "envelope bound".
-    if len(peak) != len(static):
-        raise SystemExit(
-            f"{len(peak)} per-instant rows for {len(static)} member-stations. Every station "
-            "must have a governing-basis peak; a shortfall means a station's peak was taken "
-            "outside the governing cases and then dropped."
-        )
-    for key, (_sigma, period, values) in sorted(peak.items()):
-        rows.append(Row(key[0], key[1], key[2], period, "total_instant", values))
-
-    for key, values in sorted(static.items()):
-        rows.append(Row(key[0], key[1], key[2], float("nan"), "static", values))
+    # THE NUMBERS COME FROM `floatfea`, NOT FROM HERE (FL1). `GOVERNING_PERIODS` is
+    # passed in rather than read as a module constant by the library, because that set is
+    # exactly what a configuration changes about this loop.
+    computed = compute_rows(
+        built,
+        inp,
+        raw,
+        GOVERNING_PERIODS,
+        progress=lambda line: print(line, flush=True),
+    )
+    rows = computed.rows
+    instant, instant_sens = computed.instant, computed.instant_sens
 
     _write_csv(args.out, rows, by_name)
     _write_summary(args.summary, rows, by_name, inp, instant, instant_sens)
