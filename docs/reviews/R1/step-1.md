@@ -1,4 +1,514 @@
 # Review — R1 step 1
+Reviewed commit: 582cde72c72d85b9f3cb9d0019e297eb5e04f4b1
+**Reviewed commit: `582cde72c72d85b9f3cb9d0019e297eb5e04f4b1`.**
+Verdict: HOLD
+Tests: 3519 passed, 15 failed, 1 skipped   (my own run, `python -m pytest -q`, 711.75s)
+
+Written with `scripts/write_verdict.py --milestone R1 --step 1`, which now works: R804 is
+answered and this entry carries the bold anchor the tool emits, so `ci_section.py` has a
+commit to walk from the next revision on.
+
+## Carried
+
+**Verdict 1's ten items, each with its status and where.** Eight were (a)-class, two FF0.
+
+| item | status | where |
+|---|---|---|
+| R804 | **answered** | `f13f519` + `e6076cc`. `_plan_labels()` reads `docs/milestones/`; `--milestone R1` resolves and `--milestone 1` refuses. Verified: `MILESTONE = R1`, `VERDICT_IN_REPO = docs/reviews/R1/step-1.md`. The anchor is emitted. |
+| R805 | **answered** | `floatfea/post/forces_table.py:87,:430` -- the scale is a required parameter with no default, the module constant is gone, `run` refuses a mismatch naming both. Byte-identity re-verified by me, below. |
+| R806 | **PARTLY -- still open as R815** | four of the nine named caveats travel; five do not. |
+| R807 | **answered** | `floatfea/cli.py` `_header_lines` -- all six `assumptions` and all nine body `findings` reach both CSV headers and the report, generated from the build. Measured in the published artifacts. |
+| R808 | **PARTLY -- still open as R816** | the line reads `platform:hub4_arm`; nothing asserts the published string. |
+| R809 | **answered** | `floatfea/cli.py:263-278` -- the check is the first thing after `load_config`. My run: exit 2, output directory absent, nothing written. |
+| R810 | **PARTLY -- still open as R814** | the two sampled ends refuse; the range named in the condition is not gated and the boundary was sampled, not solved. |
+| R811 | **answered** | `floatfea/run/config.py` `_NoDuplicateLoader`. Five shapes I wrote, none of them the implementer's, all refused, below. One closure item on the message. |
+| R812 | **answered on substance; C11 open** | `window_rule` is in `provenance()` and reaches every header. `pipeline.py:9-28`'s enumeration is still "Four declared things" and is now short by two. |
+| R813 | **answered** | `585f707`, standalone `process:` citing FN2, `CLAUDE.md` plus `docs/SUPERVISOR.md`, additive only, byte-identical block in both. Not a STOP. |
+
+**Verdict 1's closure items.** C9 done in `585f707`. C10 done -- the utilisation CSV's
+trailing columns are now `utilisation, governing_clause, utilisation_K_sens,
+utilisation_Cm_sens` with no repeat. C2 was ruled FF0 class and due in the next commit; it
+is not done and is re-listed as C11. C1, C3, C4, C5, C6, C7 and C8 remain open and are not
+re-reviewed.
+
+## Findings
+
+Three. Each is a carried item whose named condition is half-met, and in each case the half
+that is missing is the half that decides something. None is a new subject.
+
+**R814. (BLOCKS -- CZ0 heads b and c) The admissibility floor is a threshold on a computed
+result, borrowed from a bound written for a declared input, and it admits a frame whose
+members carry 1% of the body mass -- which then publishes `U = 2.15615` with no label.**
+
+`floatfea/run/pipeline.py:287` reads `floor = DENSITY[1]`, i.e. `config.py:100`'s
+`("kg/m^3", 100.0, 25000.0)`, and compares `body.equivalent_density` against it. Verdict
+1's own ruling on claim 4 held that a `Bound` is not a tolerance BECAUSE "no result is
+compared against it", and named R810 as the limit of that ruling. The repair compared a
+result against it.
+
+```
+claim  the boundary, solved in BOTH directions rather than sampled (EH4)
+cmd    bisect f to 12 digits over the real build-plus-guard path, both edges
+out    UPPER  largest f PSD on EVERY body = 0.951684564548 (platform fails first)
+       LOWER  smallest f the GUARD ACCEPTS = 0.010495432737
+              at that edge: platform rho_eq = 100.0000, member_mass = 26238.58 kg
+              of a 2.5e+06 kg body; hubs rho_eq = 160.0000
+              rho_eq is 1/78.5 of steel and every body is PSD
+rule   the guard's own sentence, "members this light carry no mass, so their forces mean
+       nothing", and verdict 1's condition "solve the boundary both ways"
+judge  the review asked for a range and got four samples. 0.0 and near-1.0 refuse; the
+       decade from 0.0105 to 0.75 is ungated.
+```
+
+```
+claim  what the tool does just inside that edge
+cmd    python -m floatfea.cli run <example with f: 0.0106 on every body>
+out    exit 0 ; member_forces.csv 190984 B, utilisation.csv 12252 B, report.md 7415 B
+       governing U = 2.15615 at platform:hub4_arm ROOT (T = 12.5 s, 3.3.2 interaction)
+       STUDY label present: False
+       mass row: | `platform` | 0.0106 | 2.500000e+06 | 2.650000e+04 | ... | 101.0 | OK |
+rule   FN1: "run REFUSES any body whose equivalent density is below the declared floor"
+judge  26% above the shipped governing utilisation, published, unlabelled, with `OK` in
+       the PSD column and `101.0` in the density column. This is R810's own shape at a
+       fraction R810 did not sample.
+```
+
+```
+claim  nothing holds the threshold's VALUE in place -- the weakening direction (EH4)
+cmd    patch pipeline.DENSITY's lower bound and re-evaluate FN1's three counter-cases
+       and its control at each value
+out    floor=100     FN1 green: True    f=0.0106 ACCEPTED
+       floor=1       FN1 green: True    f=0.005  ACCEPTED
+       floor=1e-09   FN1 green: True    f=1e-09  ACCEPTED
+       floor=1e-300  FN1 green: True
+       floor=0       FN1 green: False
+rule   tests/unit/test_run_pipeline_refusals.py::test_FN1_an_inadmissible_fraction_is_REFUSED
+       at [1.0, 0.999999, 0.0], plus test_FN1_the_SHIPPED_fraction_is_admissible
+judge  the floor may fall 302 DECADES with every counter-case and the control still
+       green. The only thing pinned is a strict inequality at exactly zero, because the
+       only case in the suite is f = 0.0, where rho_eq is exactly 0.0. The number 100 is
+       undetectable, unasserted and underived.
+```
+
+And the refusal's sentence is false of one of the values it refuses:
+
+```
+claim  f = 0.0 is a rung of the ladder, and is admissible there
+cmd    MASS_FRACTION_LADDER ; admissible() per body at f = 0.0
+out    MASS_FRACTION_LADDER = (0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0)
+       f = 0.0 -> psd_false = []   (all five bodies admissible)
+rule   the refusal reads "this mass distribution is one the shipped builder would never
+       have reached ... admissible() at every rung"
+judge  the ladder's last rung is 0.0 and admissible() holds there, so the builder
+       descending the ladder COULD reach it. The guard refuses a rung and accepts
+       0.0105, which is not a rung at all.
+```
+
+**Closed when** the condition is on a quantity with a non-arbitrary zero -- `member_mass
+> 0`, or membership of the ladder -- so no threshold exists; OR, if a threshold is the
+answer, its value is derived, lives in `floatfea/tolerances.py`, is relative to a stated
+scale rather than absolute in kg/m^3, and arrives with the counter CLAUDE.md requires: the
+smallest member-mass deficit the same assertion detects, in the same quantity. Either way
+the boundary is pinned by a test at BOTH edges -- the largest accepted and the smallest
+refused -- so that the 302 decades above cannot happen, and the refusal's own sentence is
+true of every value it refuses.
+
+**R815. (BLOCKS -- CZ0 heads a and c) R806's named minimum list is met for four of nine;
+five caveats are absent from all three published artifacts, and the gate asserts only the
+four that are present.**
+
+```
+claim  which of the nine named caveats reach the published deliverables
+cmd    grep -c each marker in the three files under results/R1/example/
+out    R739   present     R740   present     FA3    present     R730   present (in FA3)
+       R724   0 0 0       EX3    0 0 0       heading 0 0 0
+       R743   0 0 0       "LESS onerous" 0 0 0
+       FA0    0 0 0       FA1    0 0 0       R741   0 0 0       R742   0 0 0
+       ASSUMED 0 0 0      PRELIMINARY 0 0 0  FA2 0 0 0          "K = 1.0" 0 0 0
+rule   verdict 1, "Next step opens when" item 2: "(R739, R740, EX3/R724, R743, FA0, FA1,
+       FA3, R730, R741/R742 at minimum)"
+judge  the published utilisation CSV carries U = 1.71167 and does not say that every case
+       is heading 0 and the heading dependence is UNTESTED, that C_m = 0.85 is the LESS
+       onerous of the two reported, that T = 12.5 s sits below the band's lower bound and
+       was chosen to represent its edge, or that F_b is capped at 0.75 Fy and D/t > 300 is
+       refused rather than extrapolated. All four are in the committed
+       docs/F6_utilisation.csv header that this artifact replaces for a reader.
+```
+
+The report's stated reason for the split is sound and does not cover these. Section 4 says
+the column caveats are the writer's business and the build's properties come from the
+builder; the invocation adds that the placeholder masses and the assumed grade are
+configuration properties sitting in the provenance block. I agree with the split -- a
+generated header cannot go stale, which is the right property -- and none of the five above
+is a configuration property. They are clause caveats, exactly like the four that are there.
+
+```
+claim  what the gate asserts
+cmd    grep the marker tuple in tests/unit/test_run_pipeline_refusals.py
+out    for marker in ("R739", "R740", "FA3", "EZ2"):
+rule   CZ0(c): what a gate claims, on which quantity
+judge  the gate is the condition's own list minus five, so the four that travel are
+       pinned and the five that do not are pinned absent.
+```
+
+**Closed when** each of the five named is in the artifact that carries the numbers, or is
+declared in the report as left with the reason; and the gate's marker list is the same list
+as the condition, so a sixth cannot quietly go missing. Regenerated at the answering
+commit (CP3).
+
+**R816. (BLOCKS -- CZ0 head c) No test in this repository reads any artifact under
+`results/R1/example/`, so the three published deliverables are asserted by nothing, and
+R808's second half is not done.**
+
+```
+claim  nothing reads the published artifacts or the code that writes them
+cmd    grep -rn for _write_report, _write_member_forces, _write_utilisations, _cmd_run,
+       cli.main and results/R1 over tests/
+out    (no output)
+cmd    grep -rln "floatfea.cli" tests/
+out    tests/unit/test_run_pipeline_refusals.py      -- imports _header_lines only
+rule   verdict 1, R808: "Closed when the line names platform:hub4_arm AND the golden test
+       asserts the published string, not only the dict fields"
+judge  the new header test builds a stub RunResult and asserts the return value of
+       _header_lines. It cannot see _write_header, _write_report, the governing line, the
+       comma-to-semicolon escaping or the file on disk. R808 was a defect in _write_report
+       whose repair had already been asserted once in a commit message without having been
+       made -- section 5 of the report says so in its own words -- and the published
+       string is still the thing nothing checks.
+```
+
+This is one assertion in an existing regression file, not new apparatus, and FL1(c) already
+makes the example a golden. **Closed when** a test reads the committed artifacts, or a
+fresh run's, and asserts the governing line verbatim, with the measurement that re-doubling
+the body prefix reddens it.
+
+## The five things the report asked to have attacked -- my rulings
+
+**1. The one part of FN0 left open: THERE IS A FOURTH OPTION, AND IT IS THAT THE PREMISE IS
+FALSE.** The dilemma rests on "that npz cannot be regenerated here -- it needs the pinned
+HSP worktree". It is here.
+
+```
+claim  the pinned HSP worktree is present beside this repository, and the export runs
+cmd    ls -d ../HSP-stable ../HSP-runs ; git -C each describe --tags ;
+       python scripts/export_f4_dynamic_inputs.py --check
+out    ../HSP-stable  floatfea-ref-1
+       ../HSP-runs    floatfea-ref-1
+       --check: imported g41_dynamic, applied the ER0 override
+         ("platform mass/inertia OVERRIDDEN in memory (ER0): mass 10.0 -> 20.0 ...")
+         and began solving "## T_full = 10 s  (model 1.4142 s)"
+rule   scripts/export_f4_dynamic_inputs.py:146-148, which records the three checkouts and
+       their tags: "../HSP-runs floatfea-ref-1 / ../HSP-stable floatfea-ref-1"
+judge  the script's own docstring names the worktrees, both are at the pin, and the
+       generator starts. Anyone who can run --check can run the export, because --check IS
+       the export plus a comparison -- so the first horn, "reddening a gate on a file
+       nobody here can re-export", is self-cancelling, and option (a) needs no waiting and
+       no ruling.
+```
+
+If the re-export turns out not to complete, the fourth option is still not (b): it is
+**make the sidecar the single record and delete the npz-key branch.** A preferred
+read-path that no file this repository can produce will ever populate is a second source
+exercised only by a synthetic test, which is the structure R805 was. One record, read one
+way, and a file recording nothing refuses -- which is what FN0 is for.
+
+**2. Byte-identity after the signature change: VERIFIED, independently, both files.**
+
+```
+claim  the deliverable regenerates byte-identically after FN0 changed _lam_full_scale and
+       compute_rows
+cmd    python scripts/measure/member_forces_table.py --out <tmp>.csv --summary <tmp>.md ;
+       diff -q and sha256sum against docs/F4_member_forces.csv and .md
+out    CSV IDENTICAL   MD IDENTICAL
+       ed089b780e34db049059f671e1a09ed09d7ee679e48a4b4fcf97139e08258686  both .csv
+       5492b591c57b420531f7e14247922d02bb4f76473a4d98600a5a83aa49c7bba0  both .md
+rule   FL1(c)'s "EXACTLY"
+judge  it did not move. The .md sha is new information -- the report pasted one sha for
+       both files -- and it matches too. Every figure in both revisions stands.
+```
+
+**3. FN1's per-body guard: the SHAPE is right, and your re-measurement agrees with my
+verdict rather than correcting it.** Measured here: f = 0.999999 gives
+`platform=False hub1..hub4=False`, five of five, and f = 1.0 gives
+`platform=True, hub1..hub4=False`, four of five. Verdict 1's text reads "f = 0.999999 all
+four hubs and the platform PSD=False" and "f = 1.0 the four hubs PSD=False, the platform
+PSD=True" -- the same two numbers. The report's section 7 attributes "four of five at
+f = 0.999999" to the verdict; the verdict said all five. The measurement is not in dispute
+and the citation is C15. Independently: the largest f admissible on every body is
+0.951684564548, the platform is the first to fail, and f = 1.0 is admissible on the
+platform again -- so non-monotone is confirmed, and **per body is the only correct shape.**
+The guard's condition is not over-engineered; its threshold is R814.
+
+**4. The study label's reach: a closure item, and I rule with you.** Measured on a real
+run rather than on `_header_lines`:
+
+```
+cmd    run at f = 1.0 with study_only: true, then grep the written files
+out    console: "STUDY -- NOT FOR DESIGN."   governing U = 1.58583
+       member_forces.csv : STUDY in file True ; in non-comment lines False
+       utilisation.csv   : STUDY in file True ; in non-comment lines False
+       report.md         : STUDY in file True ; in non-comment lines True
+```
+
+FN1 asks that every output carry it and every output does. A reader who strips comment
+lines from a CSV has stripped the provenance, the deck, the material and nine findings
+along with it -- the label is no worse served than anything else in that block. C16, and it
+is the right call to have declared it rather than waited.
+
+**5. R806's header split: the split is right and the list is short.** One list would make
+the builder's half copyable and therefore stale, which is the property section 4 correctly
+protects. The five missing caveats are not configuration properties, so the split does not
+explain them -- see R815.
+
+## The adversarial cases I ran, and what the gates detect
+
+Beyond R814's three cells: five duplicate-key shapes the implementer did not write, all
+refused, including the two that a loader fixed at one depth would miss.
+
+```
+cmd    load_config on five duplications I constructed
+out    REFUSED  a second top-level code_check block        -> names 'code_check', line 109
+       REFUSED  a FLOW mapping, platform: {f: 0.75, f: 0.30} -> names 'f', line 32
+       REFUSED  a QUOTED key beside a bare one, K then "K"   -> names 'K', line 90
+       REFUSED  a duplicate inside sections.groups           -> names 'platform', line 48
+       REFUSED  a duplicate governing_periods                -> names it, line 84
+rule   floatfea/run/config.py _no_duplicates, registered on DEFAULT_MAPPING_TAG
+judge  R811 is closed on substance and the registration covers every mapping depth and
+       both YAML styles. The message names the key and the line and not the two values,
+       which the condition asked for -- C14, because the key and the line locate it.
+```
+
+And the mismatch refusal, inverted (EH4): the smallest declared mismatch that refuses is
+one ULP, which is correct -- an exact comparison with no epsilon is what CLAUDE.md requires
+-- but the message it then prints is C13.
+
+## CI at the reviewed commit: UNAVAILABLE (not red, not green)
+
+```
+cmd    gh run list --commit 582cde7 --json name,conclusion,workflowName
+out    []
+cmd    the same for 585f707, f13f519, e6076cc
+out    []  []  []
+cmd    git ls-remote --heads origin | grep F3 ; git rev-parse HEAD
+out    bd315a17...  refs/heads/F3
+       582cde72...  (local, unpushed)
+```
+
+Not CK2's exhausted-allowance state: there are no started-but-unrun jobs, no empty
+`runner_name` and no spending annotation -- `gh run list --limit 5` returns five completed
+runs with real conclusions. There is simply no run. The last run that executed is `bd315a1`
+(workflow CI, `success`), and CK2's follow-up question again has a non-empty answer:
+
+```
+cmd    git diff bd315a1..HEAD --stat -- tests/verification scripts .github
+out    scripts/check_carried.py 12 +- / scripts/ci_section.py 12 +- /
+       scripts/measure/f6a_premise_check.py 4 +- /
+       scripts/measure/member_forces_table.py 492 +------ /
+       scripts/write_verdict.py 120 +--- /
+       tests/verification/rung3/test_closure_evidence_exists.py 8 +-
+```
+
+So that green does not describe this tree, and the step is judged on everything else. My
+own gates: `ruff check floatfea tests scripts` gives `All checks passed!`;
+`black --check floatfea tests scripts` gives `146 files would be left unchanged.`;
+`mypy floatfea` gives `Success: no issues found in 42 source files`.
+
+**And this is the second consecutive round in which FL1(c)'s gate has not run.**
+`.github/workflows/ci.yml:130` runs `pytest tests/regression` and `:277` records that CI is
+canonical for `tests/regression` under Q8 -- which is exactly where
+`test_r1_example_golden.py` lives. The golden that FL1(c) calls "a golden regression test in
+CI" has never executed in CI. That is an unavailable check and not a red, so it does not
+block; it is a named condition below, because a gate that has never run is not yet a gate.
+
+## The boundary red, traced by name
+
+15 failed, all in the two report-guard files. Eight in `tests/test_report_carried.py`, each
+run with its own failure line read individually (EG3(i), R644's discipline):
+
+```
+test_a_blocking_item_is_not_routed_to_4a      "no blocking finding parsed from step-1.md.
+                                               The heading format changed"
+test_the_generator_would_catch_a_row_under_the_wrong_number
+                                              StopIteration at :1141 -- gen.blocks() empty
+test_the_CI_section_is_about_the_REVIEWED_commit
+                                              "step-1.md does not name the commit it
+                                               judged ... carries **Reviewed commit:**"
+test_the_report_carries_a_CI_SECTION          "no CI section in the newest revision"
+test_the_reported_CI_counts_are_not_all_zero  "every CI row reports zero and zero"
+test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph
+                                              "no 0a table in the newest revision"
+test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+                                              "the 0a table has neither a run row nor the
+                                               generator's zero-run row"
+test_the_report_carries_a_WHOLE_SUITE_count   "carries no whole-suite line"
+```
+
+The other seven are `tests/test_report_guard_states.py` -- `[baseline]` plus six planted
+states, each failing with the inner run's own `8 failed, 224 passed` embedded in its
+assertion, which is EH1's identification rule: the baseline is red and each cascading
+state's own failure line says so.
+
+**Seven of the eight are MY defect, not the implementer's, and I measured the cause rather
+than inferring it.** `python scripts/ci_section.py` prints "verdict 1 at `633b376` does not
+name the commit it judged in its header", and `carried_table.classify()` returns `{}`
+because verdict 1's headings carry no `(class)` parenthetical. Verdict 1 was hand-written --
+that is R804 -- so neither convention is in it, and the CI section is UNGENERABLE rather
+than absent. `MILESTONE` resolves to `R1` correctly, so the R1-awareness repairs are sound
+and the format is the whole of it. The eighth,
+`test_the_report_carries_a_WHOLE_SUITE_count`, is FC1: it cannot pass in the commit it
+describes.
+
+**This is neither EG3 state**, because the verdict and the answering report both exist, and
+I am not ruling it CZ1 (iv) against the implementer: the cause is in a file they are
+forbidden to edit and no action of theirs could clear it. It clears from their side when
+revision 3 names THIS verdict in its `Answers:` header -- `ci_section.py` reads the verdict
+out of git at the sha the report names, so it needs this commit to exist first. EG3(ii)
+applies: run the two report-guard files at this verdict's commit and paste the counts in
+revision 3.
+
+Separately, `test_a_blocking_item_is_not_routed_to_4a` is a guard doing exactly what a
+guard should: it refused to pass vacuously on a verdict whose format it could not parse,
+and said so in one sentence. Nothing about it is to be changed.
+
+## Corpus (EG4(e))
+
+**The pause held. No batch, and no entry added -- zero new entries this round**, so there
+is no coverage count to report. R1 step 1 touches neither exception: not F4's load-mapping
+gate and not EB6's label-provenance gate. I ran the recorded substitute instead, both
+halves, and both produced a blocking finding:
+
+* **a continuum grid over the parameter space the decision rules guard** -- `f` over
+  sixteen points plus a twelve-digit bisection at BOTH edges, the density floor swept over
+  five values spanning 302 decades, `froude_lambda` at one ULP, 1e-10, 1e-3, 1, 25 and 49,
+  and five duplicate-key shapes. This produced R814.
+* **a regeneration check on a published deliverable** -- regenerating
+  `docs/F4_member_forces.csv` and `.md` through the refactored script, both sha256
+  identical, and comparing `results/R1/example/*` against the committed deliverables'
+  caveat blocks marker by marker. This produced R815, and R816 followed from asking what
+  asserts the artifacts it compared.
+
+## Tolerances touched
+
+**One, and it is R814.** `git diff 472bcd1..HEAD -- floatfea/tolerances.py` is empty and no
+entry in that file moved. But `floatfea/run/pipeline.py:287` introduced a comparison of a
+COMPUTED equivalent density against `DENSITY[1] = 100.0 kg/m^3`, which is a "small number
+guard" under CLAUDE.md's own list and therefore a tolerance under another name:
+
+```
+old      none -- the quantity was not compared against anything
+new      rho_eq < 100.0 kg/m^3 refuses, read from config.py:100's declared NOMINAL bound
+form     ABSOLUTE and dimensional, kg/m^3. Not relative to any stated response scale.
+counter  none declared. Measured: the value may fall 302 decades with every FN1
+         counter-case and the control still green, so the smallest defect the assertion
+         detects is "rho_eq is exactly 0.0" and nothing else.
+justif.  located nowhere. The docstring justifies the CONDITION -- "f = 0 puts no mass on
+         the members" -- and not the VALUE, and the condition it justifies is equally true
+         at f = 0.0106, where the guard passes.
+```
+
+My own grep over the changed files for `isclose`, `abs_tol`, `rel_tol`, `approx`, `atol`,
+`rtol` and `2**-n` finds nothing else. The three new `# not-a-tolerance:` annotations are
+correct: two are Froude scales read from a record and compared exactly, the third is
+`(50/25)**4`, an integer power of two exact in binary floating point. The one-ULP mismatch
+refusal confirms no epsilon was introduced on the scale comparison, which is the right
+call.
+
+## Closure items
+
+Fixed once, in the step's closure commit; not re-reviewed item by item. C11 is FF0 class
+and belongs in the next commit rather than the ledger. Verdict 1's C1, C3, C4, C5, C6, C7
+and C8 remain open and carry forward unchanged.
+
+* **C11.** `floatfea/run/pipeline.py:9-28` -- still "Four declared things reach the model
+  today", and now short by two in both directions: `froude_lambda` reaches
+  `build_superstructure` at `:324` and `:332` and `compute_rows` at `:618`, and
+  `window_rule` reaches `provenance()`. Neither is in the reaching list or the refused
+  list, which is the structure R805 hid inside. Verdict 1 ruled this FF0 class and due in
+  the next commit; it is prose a reader uses as a contract and CW0 applies to it.
+* **C12.** The two deliverable-producing scripts each carry their own
+  `FROUDE_LAMBDA = 50.0` -- `scripts/measure/member_forces_table.py:134` -- while the build
+  beside it takes `build_superstructure()`'s default, `floatfea/model/platform.py:727`,
+  `froude_lambda: float = 50.0`. Two sources in one function, currently equal, in a file
+  EZ0 classes as producing a published deliverable. `forces_table`'s own new docstring says
+  "a default would be the same constant wearing a different hat"; the function it feeds has
+  one. I did NOT block: no declared input can make the two disagree, so no reader can reach
+  it, which is what separates this from R805. One keyword at `member_forces_table.py:271`
+  and `:318` and `f6a_premise_check.py:251`, `:255`, `:277`, `:310` closes it.
+* **C13.** The scale-mismatch refusal prints its consequence through `{:g}`, so at a
+  one-ULP mismatch it reads "The declared scale is larger by a factor of 1, which is 1x on
+  every force and 1x on the locked moment." The refusal is right and its own stated
+  consequence is "none".
+* **C14.** `floatfea/run/config.py` `_no_duplicates` names the key and the line, not the
+  two values. Verdict 1's condition named both values; the key and the line locate it, so
+  the substance is closed.
+* **C15.** `docs/reports/R1/step-1.md` section 7 attributes "four of five at f = 0.999999"
+  to verdict 1. The verdict reads "all four hubs and the platform PSD=False" there -- five
+  of five -- and four of five at f = 1.0. The measurement agrees; the citation does not.
+* **C16.** The study label reaches every header block, the provenance and the console, and
+  not the CSV column names or the filenames. Declared in section 12 rather than found,
+  which is the right way round.
+* **C17.** `scripts/write_verdict.py` `_plan_labels` globs `docs/milestones/*.md`, so
+  `F2_figures` -- a figures file, not a locked plan -- is in the accepted set, and the
+  refusal's own message calls the set "locked plan". `main()`'s report check stops it
+  reaching a path. FF0 class, declared in section 2.
+* **C18.** `scripts/carried_table.py`'s `MENTION = r"\bR\d+\b"` matches the milestone name
+  `R1`, so every R-series report carries a spurious `R1` row. FF0 class, declared in
+  section 14.
+
+## Next step opens when
+
+Step 2 does not open. ES0: this is the SECOND reviewed revision, so revision 3 is the last
+one this step gets, and any item still blocking then carries by name into step 2's
+`Carried` section and stays blocking there. The plan's FG1 wording, "one reviewed report
+revision per step", was already overtaken by the HOLD; ES0's cap is what governs.
+
+1. **R814** -- the floor is a derived quantity or it is not a threshold. If it stays a
+   threshold it lives in `floatfea/tolerances.py`, relative to a stated scale, with its
+   counter measured in the same quantity; either way the boundary is pinned at BOTH edges
+   so it cannot fall 302 decades green, and the refusal's sentence is true of every value
+   it refuses -- including f = 0.0, which is a rung.
+2. **R815** -- EX3/R724, R743, FA0, FA1 and R741/R742 travel with the artifacts that carry
+   the numbers, or each is declared left with its reason; and the gate's marker list is the
+   condition's list.
+3. **R816** -- one assertion reads the published governing line and reddens on a re-doubled
+   prefix.
+4. **C11**, as the FF0-class item: `pipeline.py`'s enumeration is complete in both
+   directions.
+5. **FN0's open half** -- re-export with the key, now that the premise is refuted, or take
+   the sidecar as the single record and delete the unexercised branch. Either closes it
+   without a ruling, and `--check`'s array-set gate is weakened by neither.
+6. **EG3(ii)** -- the two report-guard files run at THIS verdict's commit, counts pasted in
+   revision 3.
+7. **Push the branch** so that a CI run exists at the reviewed commit, because `ci.yml:277`
+   makes CI canonical for `tests/regression` and FL1(c)'s golden has not run there in two
+   rounds. If pushing is not available from this environment, that is a fact to report in
+   revision 3 under its own heading -- not a step to pass over.
+
+The substance of this revision is good and the repairs are real: R805 was the serious one
+and it is properly fixed, with no module constant, no default, a required parameter, a
+refusal that names both scales and the 8x and 16x it would have cost, and byte-identity
+re-proven on BOTH deliverable files after the signature moved. R807 turned nine discarded
+findings into generated header lines that cannot go stale. R809's refusal now arrives
+before its own side effects, measured empty. R811 refuses five shapes I invented, at two
+depths and in both YAML styles. The three findings have one thing in common and it is worth
+naming: **each is the half of a condition that decides something, left behind by the half
+that is visible.** A guard whose condition is right and whose threshold is held in place by
+nothing; a caveat list that travels for the four markers a test names and not the five it
+does not; a published string fixed in the artifact and asserted by nothing -- one round
+after that same string's repair had been claimed and not made. The pattern is not
+carelessness. It is that the verifiable half gets verified and the deciding half gets
+described, and under CZ0 the deciding half is the half that blocks.
+
+The schedule is not at risk. Fifteen days, two steps, and these three are each smaller than
+any of the ten that came before them.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 1
 Reviewed commit: 472bcd1a22175eae6e8e43aeffdbf109be0eaab0
 Verdict: HOLD
 Tests: 3356 passed, 37 failed, 1 skipped   (my own run, `python -m pytest -q`, 703.78s)
