@@ -42,7 +42,11 @@ ROOT = Path(__file__).resolve().parents[1]
 # The rule a tolerance has to meet is "some locked plan fixes its value", not "F2
 # does", so the union is what is read. F2.md states all 49 of F2's; F3.md states
 # F3's.
-PLANS = sorted((ROOT / "docs" / "milestones").glob("F*.md"))
+# EVERY PLAN, NOT EVERY `F`-PLAN (FF0). The rule is "some locked plan fixes its value",
+# and R1 is a locked plan whose name does not start with `F`. The union is what is read,
+# so a plan this missed could state a tolerance value that nothing here checked against
+# `floatfea/tolerances.py`.
+PLANS = sorted((ROOT / "docs" / "milestones").glob("*.md"))
 
 # `NAME = value` or `NAME` followed by `= value` inside a backticked span, which
 # is how the plan writes them. The name must be a declared tolerance, so prose

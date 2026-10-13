@@ -85,9 +85,19 @@ def _active_plan() -> Path:
     all four read one thing.
     """
     milestones = ROOT / "docs" / "milestones"
+    # EVERY PLAN, NOT EVERY `F`-PLAN (FF0). The glob was `F*.md`, which was every
+    # milestone this repository had ever had until R1, whose name does not start with
+    # `F`. The marker grep is what identifies a plan, so widening the glob costs
+    # nothing: a non-plan file here (`F2_figures.md`) carries no marker and is filtered
+    # out by the same expression as before.
+    #
+    # **IT DID NOT FAIL LOUDLY, WHICH IS WHY IT IS FF0 AND NOT A CLOSURE ITEM.** With no
+    # plan matching, this returns the F2 fall-back below, so every one of these four
+    # resolvers would have gone on measuring F2's reports and reviews while R1 was the
+    # milestone under execution -- a guard reporting green about the wrong milestone.
     carrying = [
         plan
-        for plan in sorted(milestones.glob("F*.md"))
+        for plan in sorted(milestones.glob("*.md"))
         if re.search(
             r"<!--\s*step-under-execution:\s*(\d+)\s*-->",
             plan.read_text(encoding="utf-8", errors="replace"),

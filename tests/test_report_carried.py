@@ -90,7 +90,12 @@ def _active_plan() -> tuple[Path | None, int]:
     message.
     """
     try:
-        plans = sorted(_MILESTONES.glob("F*.md"))
+        # EVERY PLAN, NOT EVERY `F`-PLAN (FF0). R1 is the first milestone whose name
+        # does not start with `F`, and with its marker invisible here `MILESTONE` fell
+        # back to `"F2"` -- so these guards would have measured F2's reports and reviews
+        # while R1 was under execution, and reported green for doing it. The marker grep
+        # below is what identifies a plan, so the wider glob admits no non-plan file.
+        plans = sorted(_MILESTONES.glob("*.md"))
     except OSError:
         return None, 0
     carrying: list[tuple[Path, int]] = []
