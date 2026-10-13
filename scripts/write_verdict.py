@@ -5,8 +5,12 @@ Used only by the gating-supervisor agent. The editing tools are blocked from
 docs/reviews/ by a PreToolUse hook; this is the one sanctioned path in.
 
 Usage:
-    python scripts/write_verdict.py --milestone 2 --step 5 < review.md
-    python scripts/write_verdict.py --milestone 6a --step 1 < review.md
+    python scripts/write_verdict.py --milestone F2 --step 5 < review.md
+    python scripts/write_verdict.py --milestone F6a --step 1 < review.md
+    python scripts/write_verdict.py --milestone R1 --step 1 < review.md
+
+The milestone is the LOCKED PLAN's own name (FN3). `--milestone 1` refuses: it names
+no plan, and the old validator would have written it into `docs/reviews/F1/`.
 
 The review body is read from stdin. The script stamps the reviewed commit and
 refuses FOUR things -- the count, not a summary of it:
@@ -53,26 +57,61 @@ REQUIRED = ("## Carried", "## Findings", "## Tolerances touched", "## Next step 
 VERDICTS = ("PASS", "HOLD", "STOP")
 
 
-def _milestone(value: str) -> str:
-    """A milestone LABEL, not a number (R785).
+def _plan_labels() -> list[str]:
+    """Every locked plan's label, read from the directory rather than assumed.
 
-    `type=int` made `F2a` and `F6a` inexpressible: the reviewer could not write a
-    verdict for either through the one sanctioned path in, and docs/reviews/F2a and
-    docs/reviews/F6a both exist. The suffixed form is how this repository has named an
-    increment since F2a, so it is the argument's domain and `int` was never it.
+    This is the whole of FN3's generalisation: the set of valid milestones is the set of
+    plans that EXIST, so a new series needs no edit here.
 
-    A label and not a free string: the value becomes a path segment, so it is the
-    shape the directories already use and nothing else. `F6a` is accepted too -- the
-    reviewer writes the milestone as it is spelt everywhere else, and refusing the
-    `F` would be the same defect in the other direction.
+    Resolved from `__file__` rather than from `git rev-parse`, because an argparse `type=`
+    callable runs before `main()` computes the root, and because a validator that shells
+    out once per argument would fail differently outside a work tree than inside one.
     """
-    cleaned = value[1:] if value[:1] in "Ff" else value
-    if not re.fullmatch(r"\d+[a-z]?", cleaned):
+    plans = Path(__file__).resolve().parents[1] / "docs" / "milestones"
+    return sorted(q.stem for q in plans.glob("*.md"))
+
+
+def _resolve(label: str, what: str) -> str:
+    """`label` if a locked plan carries that exact name, else a refusal naming the set.
+
+    **THE OLD VALIDATOR STRIPPED AN `F` AND RE-ADDED IT, AND R1 IS WHY THAT FAILED (R804).**
+    It accepted `2`, `2a`, `6a` or `F6a`, normalised to the numeric body, and rebuilt the
+    path as `f"F{cleaned}"`. Against `R1` it refused outright -- the reviewer could not
+    write an R1 verdict through the one sanctioned path in, and hand-wrote it instead --
+    and that is the mild half.
+
+    **THE SHARP HALF: `--milestone 1` SATISFIED IT AND WOULD HAVE WRITTEN INTO
+    `docs/reviews/F1/step-1.md`.** A typo, or the habit of typing the step's number, put a
+    verdict under a closed milestone with no error of any kind. FN3's counter-case is
+    exactly that, and the repair is not a wider regex: it is that an identifier must NAME A
+    LOCKED PLAN. `1` names none, so it refuses; `F1` names one and would be written where it
+    belongs.
+
+    No `F` is added and none is stripped. The label is a path segment and it is used as
+    given, which is the only form that cannot silently mean a different milestone.
+    """
+    got = label.strip()
+    if not got:
+        raise argparse.ArgumentTypeError(f"{what}: an empty milestone names no plan")
+    known = _plan_labels()
+    if got not in known:
         raise argparse.ArgumentTypeError(
-            f"milestone {value!r} is not a label of the form 2, 2a, 6, 6a, F6a -- "
-            "the value becomes a path segment"
+            f"{what}: {label!r} is not a locked plan. `docs/milestones/` carries "
+            f"{known}. The identifier becomes a path segment, so it is used exactly as "
+            f"given -- no `F` is added and none is stripped, because a bare number would "
+            f"otherwise resolve to a milestone nobody named."
         )
-    return cleaned
+    return got
+
+
+def _milestone(value: str) -> str:
+    """A milestone label naming a locked plan (R785, generalised by FN3).
+
+    `type=int` made `F2a` and `F6a` inexpressible, which R785 fixed by taking a label.
+    FN3 finishes the job: the label is validated against the plans that exist rather
+    than against a pattern that assumed every milestone starts with `F`.
+    """
+    return _resolve(value, f"--milestone {value!r}")
 
 
 def _closes(value: str) -> str:
@@ -85,29 +124,25 @@ def _closes(value: str) -> str:
     one nobody did (R802, R803). A boolean was standing in for a distinction the
     repository did not record anywhere.
 
-    So the reviewer records it. This argument is the only way the line is written, and
-    `docs/reviews/` is hook-protected, so the line is settable only by the party whose
+    So the reviewer records it. This argument is the only way the line is written, and the
+    verdict tree is hook-protected, so the line is settable only by the party whose
     judgement it is -- which is the property the proxies could not have.
 
-    The shape is the one the directories already use, because the value is read back as
-    a milestone and optionally a step: `F6b`, `6b`, `F6b/step-1`, `6b/1`.
+    The milestone part goes through the same plan resolution as `--milestone` (FN3), so
+    `Closes: 1` cannot name a milestone nobody declared. FK2's router compares this
+    against the plan stem carrying the step marker, and the label IS that stem.
     """
     raw = value.strip()
     milestone, _, step = raw.partition("/")
-    cleaned = milestone[1:] if milestone[:1] in "Ff" else milestone
-    if not re.fullmatch(r"\d+[a-z]?", cleaned):
-        raise argparse.ArgumentTypeError(
-            f"--closes {value!r}: the milestone part is not a label of the form 2, 2a, "
-            "6, 6a, F6a"
-        )
+    label = _resolve(milestone, f"--closes {value!r}")
     if step:
         bare = step[5:] if step.startswith("step-") else step
         if not bare.isdigit():
             raise argparse.ArgumentTypeError(
                 f"--closes {value!r}: the step part must be a number, as in F6b/step-1"
             )
-        return f"F{cleaned}/step-{int(bare)}"
-    return f"F{cleaned}"
+        return f"{label}/step-{int(bare)}"
+    return label
 
 
 def sha() -> str:
@@ -141,13 +176,13 @@ def main() -> int:
         sys.exit("refused: '## Carried' is empty — write 'checked, nothing carried' if so")
 
     root = Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip())
-    report = root / f"docs/reports/F{args.milestone}/step-{args.step}.md"
+    report = root / f"docs/reports/{args.milestone}/step-{args.step}.md"
     if not report.exists():
         sys.exit(f"refused: no step report at {report}")
 
-    out = root / f"docs/reviews/F{args.milestone}/step-{args.step}.md"
+    out = root / f"docs/reviews/{args.milestone}/step-{args.step}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
-    header = f"# Review — F{args.milestone} step {args.step}\nReviewed commit: {sha()}\n"
+    header = f"# Review — {args.milestone} step {args.step}\nReviewed commit: {sha()}\n"
     # FK0: ONE LINE, INTO THIS ENTRY, AND NOTHING OTHERWISE. It goes in the header so
     # that a reader of the NEWEST entry finds it beside `Reviewed commit:` -- the file
     # accumulates newest-first (DX2), so a parser taking the first match gets the
