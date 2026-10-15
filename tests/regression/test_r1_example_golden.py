@@ -382,17 +382,27 @@ def test_FN0_the_exported_scale_is_READ_and_not_assumed() -> None:
     """
     npz = ROOT / "data" / "f4" / "dynamic_inputs.npz"
     exported, where = exported_froude_lambda(npz)
-    # not-a-tolerance: the Froude scale the committed npz was EXPORTED at, read
-    # from its provenance sidecar. It is an input recorded by the generator, and
-    # the comparison is exact equality against that record -- nothing is being
-    # allowed to differ by it.
+    # not-a-tolerance: the Froude scale the committed npz was EXPORTED at. It is an input
+    # recorded by the generator, and the comparison is exact equality against that record
+    # -- nothing is being allowed to differ by it.
     assert exported == 50.0, (  # not-a-tolerance: the scale the npz was EXPORTED at
         exported,
         where,
     )
-    assert "provenance" in where, (
-        f"the scale must be reported as coming from the sidecar so a reader can check it; "
-        f"got {where!r}"
+    # **THE SOURCE MOVED, BY DIRECTIVE, AND THIS EXPECTATION MOVED WITH IT (FO1).** Until
+    # the re-export the committed npz recorded no scale and this read the provenance
+    # sidecar, so the assertion was `"provenance" in where` -- it pinned the FALLBACK as
+    # the expected source. FO1 had the file re-exported with `froude_lambda` written into
+    # the npz, which is the stronger state: the scale now travels with the arrays and
+    # cannot be separated from them by a file copy.
+    #
+    # Golden-file discipline (`CLAUDE.md`) asks why an expectation moved: because the DATA
+    # moved, on instruction, and the re-export was verified bit-identical on all 99
+    # pre-existing arrays before the key was added. `exported_froude_lambda` reports WHERE
+    # it read the value precisely so this is checkable rather than assumed.
+    assert where == "the npz", (
+        f"the committed npz must now record its own scale, and the reader must say so -- a "
+        f"fallback to the sidecar would mean the re-export did not take. Got {where!r}."
     )
 
 

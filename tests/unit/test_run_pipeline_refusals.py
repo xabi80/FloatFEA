@@ -282,13 +282,20 @@ def test_provenance_records_every_declared_thing(write: Any) -> None:
 # the run COMPLETED AND PUBLISHED; the only trace was the word `FAILS` in one table cell.
 
 
-@pytest.mark.parametrize("fraction", [1.0, 0.999999, 0.0])
-def test_FN1_an_inadmissible_fraction_is_REFUSED(write: Any, fraction: float) -> None:
-    """FN1's three counter-cases, one per case so each is named when it fails.
+@pytest.mark.parametrize(
+    ("fraction", "because"),
+    [
+        (1.0, "not PSD"),
+        (0.999999, "not PSD"),
+        (0.0, "no mass at all"),
+    ],
+)
+def test_FO0_only_a_NON_STRUCTURE_is_refused(write: Any, fraction: float, because: str) -> None:
+    """The two refusals FO0 permits, and nothing else. One case each.
 
-    `1.0` and `0.999999` fail PSD; `0.0` is PSD with exactly zero slack and fails the
-    density floor instead, because it puts no mass on the members at all. Two different
-    conditions, which is why the guard asks both.
+    `1.0` and `0.999999` fail `admissible()`; `0.0` is PSD with exactly zero slack and
+    fails because the members carry no mass. Two different conditions, so two different
+    sentences, and the message must name the one that fired.
     """
 
     def mutate(data: dict[str, Any]) -> None:
@@ -299,37 +306,81 @@ def test_FN1_an_inadmissible_fraction_is_REFUSED(write: Any, fraction: float) ->
     with pytest.raises(ConfigError) as caught:
         _refuse_inadmissible(cfg, build_model(cfg))
     message = str(caught.value)
-    assert "the shipped builder would never have reached" in message, message
-    assert "study_only: true" in message, (
-        f"the refusal must name the one way to run it anyway, or a reader cannot act on "
-        f"it: {message}"
+    assert "not a structure" in message, message
+    assert because in message, f"the message must name the condition that fired: {message}"
+    assert "study_only: true" in message, message
+    # R814: the old message opened "one the shipped builder would never have reached",
+    # which is FALSE of f = 0 -- the ladder's last rung, admissible on all five bodies.
+    assert "never have reached" not in message, (
+        f"the refusal must be true of every value it refuses, and f = 0 IS reachable by "
+        f"the shipped ladder: {message}"
     )
 
 
-def test_FN1_the_SHIPPED_fraction_is_admissible(built: Any) -> None:
-    """The control. Without it every refusal above could be refusing for free."""
-    cfg = load_config(EXAMPLE)
-    assert cfg.study_only is False
-    _refuse_inadmissible(cfg, built)
+def test_FO0_a_SMALL_fraction_is_a_LEGITIMATE_INPUT(write: Any) -> None:
+    """`f = 0.0106` runs. This is the case R814 was about and the guard must NOT refuse it.
 
-
-@pytest.mark.parametrize("fraction", [1.0, 0.0])
-def test_FN1_study_only_PERMITS_it_and_the_label_says_so(write: Any, fraction: float) -> None:
-    """With the flag, the run proceeds -- and every artifact carries the study label.
-
-    Asserted on the LABEL and not only on the permission, because a study that runs and
-    publishes without saying it is a study is worse than one that is refused.
+    Measured: the equivalent density there is `100.9963 kg/m^3`, which the old floor of
+    `100.0` admitted by `1 kg/m^3` -- so the run published `U = 2.15615` unlabelled while
+    the platform's members carried `26500 kg` of a `2.5e+06 kg` body. **The defect was
+    never that this configuration ran; it was that a threshold nobody justified decided
+    whether it ran.** FO0: it is a legitimate input, it runs, and the mass table shows the
+    split.
     """
 
     def mutate(data: dict[str, Any]) -> None:
         for body in data["mass_distribution"]:
-            data["mass_distribution"][body] = {"f": fraction}
-        data["study_only"] = True
+            data["mass_distribution"][body] = {"f": 0.0106}
 
     cfg = load_config(write(mutate))
-    assert cfg.study_only is True
-    _refuse_inadmissible(cfg, build_model(cfg))  # must not raise
-    assert "STUDY" in cfg.provenance()["study_only"], cfg.provenance()["study_only"]
+    built = build_model(cfg)
+    _refuse_inadmissible(cfg, built)  # must not raise
+
+    platform = next(b for b in built.bodies if b.name == "platform")
+    assert float(platform.equivalent_density) > 0.0
+    assert float(platform.member_mass) > 0.0
+    assert cfg.study_only is False, (
+        "a legitimate small fraction must not need the study flag; needing it would mean "
+        "the guard still judges it inadmissible"
+    )
+
+
+def test_FO0_NO_THRESHOLD_REMAINS_on_a_computed_quantity(write: Any) -> None:
+    """The proof that the floor is gone, not merely moved or widened.
+
+    **R814's sharpest half was that the threshold was held by NOTHING**: patching the floor
+    from `100` to `1e-300` -- 302 decades -- left every counter-case and its control green,
+    because the only case pinned was `f = 0.0` where the density is exactly zero. A test
+    suite that cannot tell 100 from 1e-300 was not testing the number.
+
+    So this asserts the absence structurally rather than by sweeping values: the guard's
+    source must not compare an equivalent density against anything but zero, and must not
+    reference the config's range bounds at all.
+    """
+    import inspect
+
+    from floatfea.run import pipeline
+
+    source = inspect.getsource(pipeline._refuse_inadmissible)
+    body = source[source.index('"""', source.index('"""') + 3) + 3 :]
+
+    assert "DENSITY" not in body, (
+        "the guard must not compare a computed quantity against a declared range bound; "
+        "that is R814, and `DENSITY` is config.py's bound on the declared NOMINAL."
+    )
+    assert "== 0.0" in body, (
+        "the degenerate case is tested by EQUALITY with zero. A bound would be a "
+        "tolerance under another name."
+    )
+    for forbidden in ("<", ">", "<=", ">="):
+        assert f"equivalent_density) {forbidden}" not in body, (
+            f"the guard orders an equivalent density against something with "
+            f"`{forbidden}`; only equality with zero is permitted (FO0)."
+        )
+    # And the module as a whole no longer imports the bound.
+    assert not hasattr(
+        pipeline, "DENSITY"
+    ), "floatfea.run.pipeline must not import config.py's DENSITY bound at all"
 
 
 def test_FN1_study_only_must_be_a_BOOLEAN(write: Any) -> None:
@@ -418,7 +469,22 @@ def test_R806_R807_the_header_carries_the_BUILDERS_OWN_assumptions_and_findings(
     for finding in raised:
         assert finding in blob, f"header drops a build finding: {finding[:80]}"
 
-    for marker in ("R739", "R740", "FA3", "EZ2"):
+    # ALL NINE (FO2). R815: this asserted four, and the other five -- EX3/R724, R743,
+    # FA0, FA1, R741/R742 -- grepped `0 0 0` across the report and both CSVs while the
+    # gate passed. A gate that lists a subset of what it is for is the shape R806 was.
+    for marker in (
+        "R739",
+        "R740",
+        "FA3",
+        "EZ2",
+        "EX3",
+        "R724",
+        "R743",
+        "FA0",
+        "FA1",
+        "R741",
+        "R742",
+    ):
         assert marker in blob, (
             f"header drops the {marker} column caveat. These say what the COLUMNS mean, "
             f"and a reader without them can take an envelope bound for a stress."

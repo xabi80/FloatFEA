@@ -1146,3 +1146,476 @@ judge  the line numbers are the content of this section, so they are inside this
 * **No user guide and no witness.** FL3, step 3.
 * **The explicit mass distribution is still declared-and-refused**, not consumed.
 * **The npz does not yet record its own λ** — § 11, awaiting a ruling.
+
+---
+
+# Revision 3 — the floor removed, the scale recorded, the caveats complete
+
+Answers: verdict 2 @ d511a0c
+Answers file: `docs/reports/R1/step-1-answers.json`
+
+**2026-10-14.**
+
+## 1. The schedule, and what this revision is
+
+**Measured against FL5's 28 October.**
+
+```
+claim  the dates this revision is measured against, and the margin left
+cmd    python -c "import datetime; print((datetime.date(2026,10,28)-datetime.date(2026,10,14)).days)"
+out    verdict 2 arrived : 2026-10-13
+       this revision     : 2026-10-14
+       FL5 target        : 2026-10-28
+       days remaining    = 14
+rule   FL5/FO3: "Target 28 Oct; report the date the moment it is at risk."
+judge  14 days and two steps. **The date is not at risk and I am not reporting it as
+       such.** FO3 rules that anything still carried at this step's close goes into step
+       2's first commit without a slip, so step 1 closing with items does not move it.
+```
+
+**This is the third reviewed revision, which under ES0 is the last one this step gets.**
+Three findings came in — R814, R815, R816 — and DIRECTIVE FO ruled on all three before I
+touched them. All three are answered.
+
+## 2. R814 — the floor is gone, and nothing replaced it
+
+**FO0 accepted my proposal and I implemented exactly it: no density floor, two refusals,
+neither a threshold.**
+
+```
+claim  what the guard refuses now, and what it does not
+cmd    _refuse_inadmissible on the built model at five fractions
+out    f=1         REFUSED (not PSD)
+       f=0.999999  REFUSED (not PSD)
+       f=0         REFUSED (no mass at all)
+       f=0.0106    RUNS
+       f=0.75      RUNS
+rule   FO0: refuse exactly (a) any body admissible() rejects, (b) any member group whose
+       equivalent mass is exactly 0.0; small f such as 0.0106 is a legitimate input
+judge  `f = 0.0106` is the case R814 was about. It used to be ACCEPTED by one kg/m^3 of a
+       threshold nobody justified, publishing `U = 2.15615` unlabelled. It now runs
+       because it is a legitimate input, which is the difference between a guard that
+       judges a configuration and one that refuses a non-structure.
+```
+
+**The refusal message is now true of every value it refuses**, which it was not:
+
+```
+claim  the message for f = 0, the value whose old sentence was false
+cmd    the ConfigError raised at f = 0.0
+out    this mass distribution is not a structure: the members carry no mass at all on
+       ['platform', 'hub1', 'hub2', 'hub3', 'hub4'] (equivalent density exactly 0.0,
+       which is f = 0), so their member forces would mean nothing. Set `study_only: true`
+       to run it anyway ... or declare a distribution whose bodies are admissible and
+       whose members have mass.
+rule   FO0: "Correct the refusal message so it is true of every value it refuses."
+judge  it used to open "one the shipped builder would never have reached". `f = 0.0` is
+       `MASS_FRACTION_LADDER`'s LAST RUNG with `admissible()` true on all five bodies, so
+       the shipped builder reaches it by construction and the sentence was false of a
+       value it refused.
+```
+
+**And FO0's hardest ask — proving no threshold remains — is structural rather than a
+sweep**, because a sweep is exactly what failed to hold the old one:
+
+```
+claim  no comparison against a range bound, and no ordering on a computed density
+cmd    python -m pytest -q tests/unit/test_run_pipeline_refusals.py -k FO0
+out    5 passed, 17 deselected
+rule   FO0: "patching any removed threshold changes nothing (proves none remains)"
+judge  verdict 2's sharpest half was that patching the floor from `100` to `1e-300` --
+       302 decades -- left every counter-case and its control green, because the only
+       case pinned was `f = 0.0` where the density is exactly zero. **A suite that cannot
+       tell 100 from 1e-300 was not testing the number**, so asserting the absence by
+       sweeping values would reproduce the defect. The test reads the guard's own source
+       instead: no `DENSITY`, no `<`/`>`/`<=`/`>=` against an equivalent density, `== 0.0`
+       present, and the module no longer imports the bound at all.
+```
+
+## 3. R815 and R816 — all nine caveats, and a test that reads the files
+
+```
+claim  every caveat reaches every published artifact
+cmd    grep each of the eleven markers in all three files under results/R1/example/
+out    report.md          11/11
+       member_forces.csv  11/11
+       utilisation.csv    11/11
+rule   FO2: "all nine caveats in the header"
+judge  nine caveats, eleven markers -- `EX3/R724` and `R741/R742` each name two findings,
+       which is how the committed deliverables write them. The five that were missing are
+       `EX3/R724`, `R743`, `FA0`, `FA1` and `R741/R742`, and each was taken from the
+       committed deliverable it belongs to and then REWORDED to be true of any
+       configuration: the originals quote the placeholder's own `C_m = 0.85` and
+       `T = 12.5 s`, and a caveat that names a value a different run would not use is a
+       new R806 in waiting.
+```
+
+```
+claim  the published files are read as files, and the gate reddens per file and per caveat
+cmd    remove FA0 from the generator; regenerate; run the published-artifact tests
+out    3 failed, 40 passed
+       [report.md-FA0] [member_forces.csv-FA0] [utilisation.csv-FA0]
+cmd    restore FA0; regenerate; re-run
+out    43 passed
+rule   FO2: "a test that reads the published .md and .csv files, not a stub. Each must
+       redden when one caveat is removed from the generator."
+judge  three reds, one per artifact, each naming BOTH the file and the marker. The
+       previous gate asserted four markers against a hand-built `RunResult`, which
+       checks the function and not the file -- everything between `_header_lines` and the
+       bytes on disk was unexercised, which is how R808 survived a round.
+```
+
+`tests/regression/test_r1_published_artifacts.py` also asserts what R808 was: no
+`body:body:` doubling anywhere in the published report; the governing station named in
+full with its member, station, period and clause; the mass table present per body; the
+build's own findings in the file; and — as the control — that a non-study run carries no
+study label, so a generator that stamped everything could not pass by stamping.
+
+## 4. FO1 — the scale now travels with the arrays
+
+**MY PREMISE IN REVISION 2 WAS FALSE AND THE REVIEWER CAUGHT IT.** I told Xabier the npz
+could not be re-exported here because it needs the pinned HSP worktree, and asked for a
+ruling between three options. Both worktrees are present:
+
+```
+claim  the HSP worktrees the export needs are beside this repository
+cmd    ls -d ../HSP-stable ../HSP-runs ; sed -n '144,150p' scripts/export_f4_dynamic_inputs.py
+out    ../HSP-runs
+       ../HSP-stable
+       (and the script's own docstring lists both, at floatfea-ref-1)
+rule   FO1: "re-export with λ recorded in the npz"
+judge  **I asserted a blocker without running the one command that tests it.** That is the
+       same failure as the truncated grep in revision 1 and the unverified fixer in R808,
+       and it cost Xabier a question that did not need asking. `--check` IS the export
+       plus a comparison, so anyone who can run the gate can run the re-export.
+```
+
+**The control came first, because the re-export overwrites a committed data file** that
+every figure in F4, F6, F6a, F6b and both earlier revisions reads from:
+
+```
+claim  a re-export reproduces the committed arrays before anything is added to them
+cmd    python scripts/export_f4_dynamic_inputs.py --check    (before the froude_lambda key)
+out    wrote data\f4\dynamic_inputs.check.npz  (12.21 MiB, 99 arrays)
+       worst relative difference 0.000000e+00  at (none)
+rule   EX0(c): regenerate and compare against the committed file
+judge  bit-identical over all 99 arrays, so the re-export changes no number and the only
+       difference the key can make is the key itself. Running this FIRST is what made
+       overwriting the file safe rather than hopeful.
+```
+
+**Then the re-export, and the scale now travels with the arrays:**
+
+```
+claim  the npz records its own scale, and the reader prefers it over the sidecar
+cmd    python scripts/export_f4_dynamic_inputs.py ; then read the key and the reader
+out    wrote data\f4\dynamic_inputs.npz  (12.21 MiB, 100 arrays)
+       wrote data\f4\dynamic_inputs.provenance.json  sha256 dea555d933fb9fd0...
+       arrays: 100 ; froude_lambda in npz: True -> 50.0 ; sidecar run.lambda: 50.0
+       exported_froude_lambda(...) -> (50.0, 'the npz')
+rule   FO1: the npz records the λ it was exported at
+judge  99 arrays became 100 and the extra one is the scale. The reader reports WHERE it
+       read the value, so "the npz" rather than the sidecar is the measurable difference
+       between a file that carries its own scale and one that relies on a companion a copy
+       can leave behind.
+```
+
+**And `--check` run to completion on the re-exported file, which FO1 asks for by name:**
+
+```
+claim  a fresh export matches the committed file, key included
+cmd    python scripts/export_f4_dynamic_inputs.py --check
+out    wrote data\f4\dynamic_inputs.check.npz  (12.21 MiB, 100 arrays)
+       worst relative difference 0.000000e+00  at (none)
+       (clean exit; data/f4/ holds only the npz and its sidecar afterwards)
+rule   FO1: "run `--check` to completion, and paste both"
+judge  it completes now. Before this revision it raised `PermissionError: [WinError 32]`
+       on `target.unlink()` -- `np.load`'s handles were still open -- so a `--check` that
+       had just reported `0.000000e+00` exited on a traceback and left a 12 MiB
+       `dynamic_inputs.check.npz` behind. The comparison was right and the gate looked
+       broken, which is the worst of the two.
+```
+
+**The golden still passes, which is the condition FO1 attaches to all of this:**
+
+```
+claim  every golden figure is unchanged against the re-exported npz
+cmd    python -m pytest -q tests/regression/test_r1_example_golden.py
+out    14 passed in 68.69s (0:01:08)
+rule   FO1: "The golden must still pass byte-identically."
+judge  the envelope's 1248 rows, all 7488 force cells, the static analytic symmetry on all
+       four arms and `U = 1.71167` are all unmoved by the re-export.
+```
+
+**One expectation of mine moved with the data, and it is a golden change with a reason.**
+`test_FN0_the_exported_scale_is_READ_and_not_assumed` asserted `"provenance" in where` --
+it pinned the FALLBACK as the expected source, because until the re-export the committed
+npz recorded no scale. It now asserts `where == "the npz"`. The data moved on instruction;
+the re-export was verified bit-identical before the key was added; and the reader reports
+its source precisely so this is checkable rather than assumed.
+
+## 5. Tolerances
+
+**One was REMOVED and none was added.**
+
+```
+claim  the floor is gone from the code and nothing took its place
+cmd    grep -n "DENSITY" floatfea/run/pipeline.py
+out    one hit, and it is the docstring sentence recording what was removed and why
+rule   CLAUDE.md: a comparison epsilon or a "small number" guard is a tolerance under
+       another name, and every tolerance lives in floatfea/tolerances.py
+judge  `DENSITY[1] = 100.0` was `config.py`'s bound on the DECLARED NOMINAL, used as a
+       comparison on a COMPUTED density. Verdict 1 ruled the config's ranges are not
+       tolerances *precisely because no result is compared against one*; the FN1 repair
+       crossed that line and verdict 2 caught it. Nothing replaced it: `admissible()`
+       carries `tolerances.py`'s own declared value, and equality with zero needs none.
+```
+
+## 6. The suite, lint and the boundary state
+
+```
+claim  the whole suite at this commit
+cmd    python -m pytest -q
+out    13 failed, 3554 passed, 1 skipped, 2 warnings in 662.01s (0:11:02)
+rule   nothing excluded, nothing waived, nothing deselected
+judge  all 13 are in the two report-guard files: six traced in the boundary block below,
+       seven the planted cascade off a red baseline. **Nothing outside them is red** -- no
+       element, solver, load-path, code-check, configuration or deliverable test.
+       Revision 2 had 15, and the two that went are the verdict-format pair, which is the
+       measurable half of e6076cc working.
+```
+
+```
+claim  the 13, by file
+cmd    the FAILED list of the run above
+out    test_report_carried.py        6
+       test_report_guard_states.py   7   (baseline + 6 cascading)
+       everything else               0
+rule   EG3(i): every id matches the state's own cause, and one that does not is CZ1 (iv)
+judge  five of the six need a CI run at the reviewed commit, which needs a push this
+       environment refused me; the sixth is FC1's whole-suite line, which CZ1's own
+       reusable half says cannot pass in the commit it describes.
+```
+
+```
+claim  lint, format and types
+cmd    ruff check floatfea scripts tests ; black --check floatfea scripts tests ; mypy floatfea
+out    All checks passed!
+       147 files would be left unchanged.
+       Success: no issues found in 42 source files
+```
+
+**The boundary state is EG3 (2): verdict written, answering report not yet** — until this
+revision lands, which is what clears it.
+
+**THE ANCHOR DEFECT IS FIXED AND THE CI SECTION IS STILL UNGENERABLE, FOR A DIFFERENT
+REASON.** Verdict 2 expected these to clear at revision 3, and the half that was mine did:
+
+```
+claim  the tool's anchor line now resolves, and the generator reaches the right question
+cmd    head -3 docs/reviews/R1/step-1.md ; python scripts/ci_section.py
+out    **Reviewed commit: `582cde72c72d85b9f3cb9d0019e297eb5e04f4b1`.**
+       no CI run at 582cde72c72d85b9f3cb9d0019e297eb5e04f4b1, and the commit touches
+       paths the workflow does NOT ignore -- so it is a commit that was never pushed, not
+       one the workflow declined. A report cannot publish a table for it.
+rule   FN3 / e6076cc: the tool emits the anchor `ci_section.py`'s `_JUDGED` requires
+judge  verdict 2 was written WITH the tool and carries the anchor, so the generator no
+       longer fails at "does not name the commit it judged" -- it now fails at the next
+       question, which is the honest one: **there is no run because nothing was pushed.**
+       That is CK2's unavailable state and not a red.
+```
+
+**I asked to push and was refused by this environment's permission policy.** Thirteen
+commits sit unpushed on `F3`, including both verdicts, so **none of R1's work has ever
+been built** — and the lint job's `guards and meta-tests` step is precisely the class
+`pytest` does not run, which is why CZ1 (iii) exists. I am recording that as an open
+request rather than working around it; the decision is Xabier's.
+
+**So five CI guards and FC1's whole-suite guard remain red, and the cause is now entirely
+outside the repository:**
+
+```
+claim  the six, and that each is the push and not the tree
+cmd    python -m pytest -q tests/test_report_carried.py -p no:randomly
+out    test_the_report_carries_a_CI_SECTION
+       test_the_CI_section_is_about_the_REVIEWED_commit
+       test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+       test_the_reported_CI_counts_are_not_all_zero
+       test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph
+       test_the_report_carries_a_WHOLE_SUITE_count
+rule   CZ1 (iv): a red outside the state's own list blocks
+judge  the first five need a run at the reviewed commit, which needs a push. The sixth is
+       FC1 and CZ1's own reusable half -- `scripts/suite_count.py` measures a clean
+       worktree AT a commit, so a line naming a sha cannot be inside that sha. **The two
+       verdict-format reds of revision 2 are gone**, which is the measurable half of
+       e6076cc working.
+```
+
+**EG3(ii), measured at the verdict commit as the clause requires:**
+
+```
+claim  the report-guard files at d511a0c, the verdict's own commit
+cmd    git worktree at d511a0c; python -m pytest -q on the two report-guard files
+out    15 failed, 240 passed, 1 skipped in 76.97s (0:01:16)
+rule   EG3(ii): after the verdict commit exists, the report-guard files are run AT that
+       commit and the counts pasted in the next revision
+judge  state (2) is the half no verdict measures, because the reviewer runs at the judged
+       commit before writing.
+```
+
+## 7. Carried
+
+<!-- generated: scripts/carried_table.py -->
+
+
+
+| item | status | the verdict's own subject |
+
+|---|---|---|
+
+| R1 | **not classified in this verdict** — carried in from an earlier one | no clause this generator can cut -- see the verdict's Carried section |
+
+| R788 | **not classified in this verdict** — carried in from an earlier one | no clause this generator can cut -- see the verdict's Carried section |
+
+| R791 | **not classified in this verdict** — carried in from an earlier one | no clause this generator can cut -- see the verdict's Carried section |
+
+| R804 | **not classified in this verdict** — carried in from an earlier one | carried, and the verdict says nothing further about it here |
+
+| R805 | **not classified in this verdict** — carried in from an earlier one | carried, and the verdict says nothing further about it here |
+
+| R806 | **not classified in this verdict** — carried in from an earlier one | carried, and the verdict says nothing further about it here |
+
+| R807 | **not classified in this verdict** — carried in from an earlier one | carried, and the verdict says nothing further about it here |
+
+| R808 | **not classified in this verdict** — carried in from an earlier one | carried, and the verdict says nothing further about it here |
+
+| R809 | **not classified in this verdict** — carried in from an earlier one | carried, and the verdict says nothing further about it here |
+
+| R810 | **not classified in this verdict** — carried in from an earlier one | carried, and the verdict says nothing further about it here |
+
+| R811 | **not classified in this verdict** — carried in from an earlier one | carried, and the verdict says nothing further about it here |
+
+| R812 | **not classified in this verdict** — carried in from an earlier one | carried, and the verdict says nothing further about it here |
+
+| R813 | **not classified in this verdict** — carried in from an earlier one | carried, and the verdict says nothing further about it here |
+
+| R814 | **answered** — §2 | The admissibility floor is a threshold on a computed result, borrowed from a bound written for... |
+
+| R815 | **answered** — §3 | R806's named minimum list is met for four of nine; five caveats are absent from all three... |
+
+| R816 | **answered** — §3 | No test in this repository reads any artifact under results/R1/example/, so the three published... |
+
+
+**Thirteen of the sixteen rows are not findings of this verdict.** R804-R813 were answered
+in revision 2 and verdict 2 mentions them without re-filing them, which is what
+"not classified in this verdict" says; R788 and R791 stay on the F6a and F6b ledgers. **The
+`R1` row is the milestone's own name** -- the generator's mention pattern matches `R1`
+wherever the verdict names the milestone, so every R-series report carries a spurious `R1`
+row. FF0-class apparatus, declared rather than touched inside a step commit, as in
+revision 2.
+
+## 7a. The named sites, declared one by one
+
+**Every site below is declared `no change` AT THAT EXACT LINE NUMBER**, and where the site belongs to one of this round's three findings the substance is answered in the section named beside it. The repairs moved the lines, so a line number taken from a verdict's prose is not a line number in this diff.
+
+Three groups are in this list and only one of them is this round's work. **The R804-R813 sites were answered in revision 2** and are declared again because the guard reads the NEWEST revision, so a declaration in revision 2 no longer counts for revision 3 -- that is the mechanism, not a re-opening. **The range-expansion artifacts are the reviewer's own, ruled FF0 class in verdict 1** and not touched inside a step commit. And `CLAUDE.md`, `floatfea/tolerances.py` and `config.py:100` appear under R814 because the verdict cites them as the RULE the floor broke, not as places to edit: the floor was removed from `pipeline.py` and neither of those files needed to change, which is the point of the finding.
+
+```
+claim  every site the two verdicts name is answered or declared, by exact name
+cmd    python -m pytest -q tests/test_report_carried.py::test_every_named_site_is_touched_or_declared
+out    80 sites named across 10 findings, each declared below
+rule   CZ0: a closing condition that names sites is closed site by site -- half of an item is not the item
+judge  the line numbers are this section's content, so they are inside this block rather than in prose beside it.
+
+  R804  scripts/write_verdict.py -- no change at that exact line; answered in revision 2
+  R805  CLAUDE.md -- no change at that exact line; answered in revision 2
+  R805  floatfea/post/forces_table.py -- no change at that exact line; answered in revision 2
+  R806  floatfea/cli.py:31 -- no change at that exact line; answered in revision 2
+  R806  floatfea/cli.py:32 -- no change at that exact line; answered in revision 2
+  R806  floatfea/cli.py:33 -- no change at that exact line; answered in revision 2
+  R806  floatfea/cli.py:34 -- no change at that exact line; answered in revision 2
+  R806  floatfea/cli.py:35 -- no change at that exact line; answered in revision 2
+  R807  floatfea/model/platform.py:607 -- no change at that exact line; answered in revision 2
+  R807  floatfea/model/platform.py:608 -- no change at that exact line; answered in revision 2
+  R807  floatfea/model/platform.py:609 -- no change at that exact line; answered in revision 2
+  R807  floatfea/model/platform.py:610 -- no change at that exact line; answered in revision 2
+  R807  floatfea/model/platform.py:611 -- no change at that exact line; answered in revision 2
+  R807  floatfea/model/platform.py:612 -- no change at that exact line; answered in revision 2
+  R807  floatfea/model/platform.py:613 -- no change at that exact line; answered in revision 2
+  R807  floatfea/model/platform.py:614 -- no change at that exact line; answered in revision 2
+  R807  floatfea/model/platform.py:615 -- no change at that exact line; answered in revision 2
+  R807  floatfea/model/platform.py:616 -- no change at that exact line; answered in revision 2
+  R807  floatfea/model/platform.py:617 -- no change at that exact line; answered in revision 2
+  R807  floatfea/model/platform.py:618 -- no change at that exact line; answered in revision 2
+  R807  floatfea/post/forces_table.py -- no change at that exact line; answered in revision 2
+  R808  floatfea/cli.py:126 -- no change at that exact line; answered in revision 2
+  R808  floatfea/cli.py:127 -- no change at that exact line; answered in revision 2
+  R808  floatfea/cli.py:128 -- no change at that exact line; answered in revision 2
+  R808  floatfea/cli.py:129 -- no change at that exact line; answered in revision 2
+  R808  results/R1/example/report.md:20 -- no change at that exact line; answered in revision 2
+  R809  .../report.md -- no change at that exact line; answered in revision 2
+  R809  CLAUDE.md -- no change at that exact line; answered in revision 2
+  R809  floatfea/cli.py:201 -- no change at that exact line; answered in revision 2
+  R809  floatfea/cli.py:202 -- no change at that exact line; answered in revision 2
+  R809  floatfea/cli.py:203 -- no change at that exact line; answered in revision 2
+  R809  floatfea/cli.py:204 -- no change at that exact line; answered in revision 2
+  R809  floatfea/cli.py:205 -- no change at that exact line; answered in revision 2
+  R809  floatfea/cli.py:206 -- no change at that exact line; answered in revision 2
+  R809  floatfea/cli.py:207 -- no change at that exact line; answered in revision 2
+  R809  floatfea/cli.py:208 -- no change at that exact line; answered in revision 2
+  R810  cli.py:148 -- no change at that exact line; answered in revision 2
+  R810  pipeline.py:290 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:113 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:114 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:115 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:116 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:117 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:118 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:119 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:120 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:121 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:122 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:123 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:124 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:125 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:126 -- no change at that exact line; answered in revision 2
+  R811  floatfea/run/config.py:127 -- no change at that exact line; answered in revision 2
+  R812  config.py:234 -- no change at that exact line; answered in revision 2
+  R812  config.py:510 -- no change at that exact line; answered in revision 2
+  R812  config.py:562 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:10 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:11 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:12 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:13 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:14 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:15 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:16 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:17 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:18 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:19 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:20 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:21 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:22 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:23 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:24 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:25 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:26 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:27 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:28 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:8 -- no change at that exact line; answered in revision 2
+  R812  pipeline.py:9 -- no change at that exact line; answered in revision 2
+  R814  CLAUDE.md -- no change at that exact line; answered in section 2
+  R814  config.py:100 -- no change at that exact line; answered in section 2
+  R814  floatfea/tolerances.py -- no change at that exact line; answered in section 2
+```
+
+## 8. What this revision does NOT do
+
+* **FL2 is untouched.** No member topology from the config, no `required_section` or
+  `truss_sizing` (both refuse, before writing anything), no headings beyond the npz's, no
+  per-case band check.
+* **`floatfea export` still refuses**, naming the HSP worktree — which, as verdict 2
+  established and § 4 confirms, is present and usable; the refusal is about the command
+  not being wired, not about the worktree being absent.
+* **No user guide and no witness.** FL3, step 3.
+* **The explicit mass distribution is still declared-and-refused**, not consumed.

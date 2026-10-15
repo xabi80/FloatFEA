@@ -418,6 +418,16 @@ def main(argv: list[str] | None = None) -> int:
     flat["fe_bodies"] = np.array(list(g41.FE_BODIES))
     flat["periods_full_s"] = np.array([c["period_full_s"] for c in cases], dtype=np.float64)
     flat["mass_eps"] = np.array(g41.MASS_EPS, dtype=np.float64)
+    # THE SCALE TRAVELS WITH THE ARRAYS (FO1, answering R805). The provenance sidecar has
+    # always carried `run.lambda`, and that was the only record -- so a reader had to find
+    # a second file, and a copy that left it behind took the scale with it. `floatfea run`
+    # prefers this key and falls back to the sidecar.
+    #
+    # R805 is why it matters: the joint reactions in `lam` are at MODEL scale and the
+    # consumer multiplies by `lambda^3` on force and `lambda^4` on the locked moment. A
+    # file whose scale is not recorded beside its data is a file whose loads cannot be
+    # used without an assumption, and the assumption was wrong by 8x and 16x.
+    flat["froude_lambda"] = np.array(g41.LAMBDA, dtype=np.float64)
 
     target = NPZ if not args.check else NPZ.with_suffix(".check.npz")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -432,14 +442,24 @@ def main(argv: list[str] | None = None) -> int:
         if not NPZ.exists():
             print(f"  REFUSED: {NPZ.relative_to(ROOT)} is not committed; nothing to compare")
             return 1
-        committed = np.load(NPZ, allow_pickle=False)
-        fresh = np.load(target, allow_pickle=False)
-        missing = set(committed.files) ^ set(fresh.files)
+        # CLOSED BEFORE THE UNLINK (FO1). These were left open, and `target.unlink()`
+        # below then raised `PermissionError: [WinError 32] ... being used by another
+        # process` on Windows -- so a `--check` that had just reported
+        # `worst relative difference 0.000000e+00` exited on a traceback and left a
+        # 12 MiB `dynamic_inputs.check.npz` in `data/f4/`. The comparison was right and
+        # the gate looked broken, which is the worst of both.
+        committed_npz = np.load(NPZ, allow_pickle=False)
+        fresh_npz = np.load(target, allow_pickle=False)
+        committed = dict(committed_npz)
+        fresh = dict(fresh_npz)
+        committed_npz.close()
+        fresh_npz.close()
+        missing = set(committed) ^ set(fresh)
         if missing:
             print(f"  REFUSED: the array sets differ: {sorted(missing)[:6]}")
             return 1
         worst, where = 0.0, ""
-        for key in sorted(committed.files):
+        for key in sorted(committed):
             a, b = committed[key], fresh[key]
             if a.dtype.kind not in "fc":
                 if not np.array_equal(a, b):

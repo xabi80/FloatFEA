@@ -2,101 +2,49 @@
   "_": [
     "POINTERS ONLY (CH4).",
     "",
-    "R1 STEP 1, REVISION 2. Answers verdict 1 on R1 @ 472bcd1 -- a HOLD with ten findings,",
-    "eight of them in floatfea/ or a published deliverable. DIRECTIVE FN ruled on four:",
-    "FN0 (lambda), FN1 (admissibility and study_only), FN2 (R813, authorised), FN3",
-    "(write_verdict.py). The other six are repaired here.",
+    "R1 STEP 1, REVISION 3 -- the THIRD reviewed revision, which under ES0 is the last",
+    "this step gets. Answers verdict 2 @ d511a0c: a HOLD with three findings, all three",
+    "ruled on by DIRECTIVE FO before I touched them.",
     "",
-    "WHAT I WOULD ATTACK FIRST, in order of what a reader loses if I am wrong:",
+    "WHAT I WOULD ATTACK FIRST:",
     "",
-    "1. BYTE-IDENTITY HAD TO BE RE-PROVEN AND IT WAS. FN0 changed `_lam_full_scale`'s",
-    "   signature and `compute_rows`', which are the functions the whole FL1(c) claim",
-    "   rests on. Regenerated: CSV and .md both identical, sha256 ed089b78...86 on each",
-    "   side. If that had moved, every figure in revision 1 would have needed re-taking.",
+    "1. FO1's RE-EXPORT REWRITES A COMMITTED DATA FILE, and every figure in F4, F6, F6a,",
+    "   F6b and both earlier revisions reads from it. The control `--check` before the",
+    "   change reported `worst relative difference 0.000000e+00` over all 99 arrays, so",
+    "   the re-export is bit-identical and the only change is the added `froude_lambda`.",
+    "   If that control was wrong, everything downstream moved. Section 4 carries the",
+    "   re-export, the `--check` after it, and the golden re-verified byte-identically.",
     "",
-    "2. FN0 IS NOT COMPLETE AND I SAY SO IN SECTION 11. The directive asks that the npz",
-    "   RECORD the lambda it was exported at. I wired the READ side (npz key preferred,",
-    "   provenance sidecar as the fallback, and the committed file's sidecar carries",
-    "   run.lambda = 50.0) but did NOT make the export write the key, because",
-    "   `export_f4_dynamic_inputs.py --check` refuses when the array sets differ and the",
-    "   npz cannot be regenerated here -- it needs the HSP worktree. Adding the key would",
-    "   redden that gate on a file nobody in this tree can re-export. This is a partial on",
-    "   a directive and it is Xabier's to rule on, not mine to close.",
+    "2. R814's PROOF IS STRUCTURAL, NOT A SWEEP, and that is a choice I should defend.",
+    "   Verdict 2 showed a 302-decade patch of the old floor left every test green, so a",
+    "   sweep cannot hold the absence of a threshold. The test reads the guard's source:",
+    "   no DENSITY, no ordering comparison on a computed density, `== 0.0` present. If",
+    "   source-reading is the wrong instrument here, the alternative is a property test",
+    "   over f, and I think that reproduces the defect rather than catching it.",
     "",
-    "3. R810's GUARD IS PER-BODY AND NOT A RANGE ON f, and the reason is the reviewer's",
-    "   own measurement: the platform is PSD=False at f = 0.999999 and flips back to True",
-    "   at f = 1.0, so no interval of f describes the admissible set. If that",
-    "   non-monotonicity is wrong, a range check would have been simpler and I chose the",
-    "   harder thing for a bad reason.",
+    "3. THE FIVE RESTORED CAVEATS WERE REWORDED, not copied. The committed deliverables'",
+    "   originals quote the placeholder's own C_m = 0.85 and T = 12.5 s; a caveat naming a",
+    "   value a different configuration would not use is a new R806 in waiting. If the",
+    "   rewording lost something the original said, that is the finding.",
     "",
-    "4. THE STUDY LABEL IS ON THE HEADER BLOCK AND THE CONSOLE. I did not put it in the",
-    "   CSV column names or the filenames. A reader who opens only the data rows of a",
-    "   study CSV sees no label, because the header is `#`-commented. That is the same",
-    "   shape as R806 and I am declaring it rather than waiting to be told.",
-    "",
-    "5. R806's HEADER IS NOW GENERATED FROM THE BUILD -- 33 lines against the committed",
-    "   deliverables' 17 and 12 -- so it cannot go stale against the model. What it does",
-    "   NOT carry is the committed files' prose about the placeholder masses and the",
-    "   assumed grade, because those are properties of the CONFIGURATION and are in the",
-    "   provenance block instead. If that split is wrong, the right fix is one list.",
-    "",
-    "AND ONE FALSE CLAIM OF MINE IN REVISION 1's COMMIT MESSAGE, which the reviewer",
-    "found as R808: I said the duplicated body prefix was fixed in the published report.",
-    "It was not. The fixer script did two replacements with an assertion between them, the",
-    "second assertion failed, and it raised BEFORE writing -- so neither landed. I then",
-    "fixed only the console line, by index, and verified only the console line. The grep",
-    "that refutes the claim is one line long and I did not run it."
+    "4. MY PREMISE IN REVISION 2 WAS FALSE AND THE REVIEWER CAUGHT IT. I told Xabier the",
+    "   npz could not be re-exported here because it needs the HSP worktree. `../HSP-stable`",
+    "   and `../HSP-runs` are both present and the export script's own docstring names",
+    "   them. I asserted a blocker without running the command that tests it -- the same",
+    "   failure as the truncated grep in revision 1 and the unverified fixer in R808."
   ],
   "answered": {
-    "R804": {
+    "R814": {
       "state": "answered",
-      "where": "§2",
-      "site": "scripts/write_verdict.py"
+      "where": "§2"
     },
-    "R805": {
+    "R815": {
       "state": "answered",
-      "where": "§3",
-      "site": "floatfea/post/forces_table.py"
+      "where": "§3"
     },
-    "R806": {
+    "R816": {
       "state": "answered",
-      "where": "§4",
-      "site": "floatfea/cli.py"
-    },
-    "R807": {
-      "state": "answered",
-      "where": "§4",
-      "site": "floatfea/run/pipeline.py"
-    },
-    "R808": {
-      "state": "answered",
-      "where": "§5",
-      "site": "results/R1/example/report.md"
-    },
-    "R809": {
-      "state": "answered",
-      "where": "§6",
-      "site": "floatfea/cli.py"
-    },
-    "R810": {
-      "state": "answered",
-      "where": "§7",
-      "site": "floatfea/run/config.py"
-    },
-    "R811": {
-      "state": "answered",
-      "where": "§8",
-      "site": "floatfea/run/config.py"
-    },
-    "R812": {
-      "state": "answered",
-      "where": "§9",
-      "site": "floatfea/run/config.py"
-    },
-    "R813": {
-      "state": "answered",
-      "where": "§10",
-      "site": "CLAUDE.md"
+      "where": "§3"
     }
   }
 }

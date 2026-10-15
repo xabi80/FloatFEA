@@ -45,6 +45,11 @@
 * R740: a utilisation must be read from the `total_instant` rows -- the six components AT the step where sigma peaks. `total_max` / `total_min` max each component INDEPENDENTLY over the window, so their six values do not occur together and a stress formed from them is an UPPER BOUND, not a stress at any instant.
 * FA3: ROOT and TIP are the element's two ends and are exact. MID is a closed form whose bending term is a measured 4.0% approximation, unverified against a refined mesh (R730).
 * EZ2: only the declared governing periods may set the envelope. Cases outside the associated-period range for this wave height -- and any exceeding the deep-water breaking steepness -- are reported as SENSITIVITY ONLY and cannot govern.
+* EX3 / R724: every case in a run carries the heading its load cases declare. Where that is a single heading the heading dependence is UNTESTED, and the governing component on the transverse arms is entirely dynamic.
+* FA0: a governing period sitting just below the band's lower bound is IN by FA0's ruling rather than by rounding -- the response rises as the period falls across the band, so the lower edge governs and the period nearest it represents that edge.
+* FA1: a generic 0.6*Fy reference stress is NOT the API bending allowable and is SUPERSEDED by the clause results in these columns. Section 3.2.3's branches decide the bending allowable from D/t, not from 0.6*Fy.
+* R741 / R742: section 3.2.2(b) local buckling is implemented and D/t > 300 is refused rather than extrapolated; F_b is capped at 0.75*Fy, the first reduction below the compact branch. Every clause is verified against an independent hand calculation in tests/verification/rung5/.
+* R743: C_m MULTIPLIES the bending term in section 3.3.1's interaction, so a LARGER C_m RAISES the compression utilisation. The value used is in the provenance above, and the run reports a one-variable sensitivity beside it.
 
 ## The governing utilisation
 
@@ -72,9 +77,9 @@ body rather than summed, because two bodies out in opposite directions would can
 |---|---|
 | build | 0.12 |
 | load | 0.00 |
-| solve | 65.95 |
+| solve | 70.76 |
 | code_check | 0.00 |
-| total | 66.08 |
+| total | 70.88 |
 
 ## Declared, and what became of it
 

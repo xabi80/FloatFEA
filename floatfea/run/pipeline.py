@@ -49,7 +49,7 @@ from floatfea.model.platform import (
     build_superstructure,
 )
 from floatfea.post.forces_table import Row, compute_rows
-from floatfea.run.config import DENSITY, ConfigError, RunConfig
+from floatfea.run.config import ConfigError, RunConfig
 
 __all__ = [
     "RunResult",
@@ -249,69 +249,73 @@ def _check_material(cfg: RunConfig, built: Any) -> tuple[str, ...]:
 
 
 def _refuse_inadmissible(cfg: RunConfig, built: Any) -> None:
-    """Refuse a mass distribution the ladder would never have reached (R810, FN1).
+    """Refuse a mass distribution that is not a structure (R810, FN1, corrected by FO0).
 
-    **WHAT R1 REMOVED WITHOUT NOTICING.** `build_superstructure()` with no fraction
-    descends `MASS_FRACTION_LADDER` and takes the first rung where `admissible(body)` is
-    true, so a non-PSD remainder was unreachable by construction. A configuration handing
-    `f` in goes down the `measurement_fraction` path, which bypasses the ladder and does
-    not consult `admissible()` -- documented, and I relied on the documentation instead of
-    acting on it.
+    **EXACTLY TWO CASES, AND NEITHER IS A THRESHOLD:**
 
-    Measured, before this guard: `f = 1.0` and `f = 0.999999` give `PSD = False` on four
-    of the five bodies and the run COMPLETED AND PUBLISHED, the only trace being the word
-    `FAILS` in one column of a table. `f = 0.0` gives massless members at
-    `rho_eq = 0.0` -- below the configuration's own declared density floor -- and also
-    published.
+    (a) `admissible(body)` is false -- DY0(d): `m_r >= 0` and no eigenvalue of `J_r` below
+        `-tol`. A body whose remainder inertia is not PSD is not a body. The tolerance
+        inside that predicate is `tolerances.py`'s, declared and justified there.
 
-    Two conditions, because they are two different failures:
+    (b) a body's equivalent density is EXACTLY `0.0`, which is `f = 0`: the members carry
+        no mass at all. A frame whose members weigh nothing produces member forces that
+        mean nothing, and the test is equality rather than a bound because zero is the
+        only degenerate value.
 
-    `admissible(body)` is DY0(d): `m_r >= 0` and no eigenvalue of `J_r` below `-tol`. A
-    body whose remainder inertia is not PSD is not a body.
+    **WHAT THIS REPLACED, AND WHY IT WAS WRONG (R814).** The first version compared the
+    COMPUTED `equivalent_density` against `DENSITY[1] = 100.0 kg/m^3` -- the bound declared
+    in `config.py` for the DECLARED NOMINAL. Verdict 1 ruled that the config's ranges are
+    not tolerances *precisely because no result is compared against one*, and this repair
+    crossed that line: a range bound became a comparison on a computed quantity, which is a
+    tolerance under another name with a local literal and no entry in `tolerances.py`.
 
-    The equivalent density against the declared floor catches `f = 0`, which IS PSD --
-    exactly zero slack on all five bodies -- and puts no mass on the members at all. PSD
-    alone would admit it, and a frame whose members weigh nothing produces member forces
-    that mean nothing.
+    Three measurements say how bad it was. At `f = 0.0106` the equivalent density is
+    `100.9963`, so the guard ACCEPTED it and the run published `U = 2.15615` unlabelled
+    while the platform's members carried `26500 kg` of a `2.5e+06 kg` body. **Nothing held
+    the threshold**: patching `100` to `1e-300` -- 302 decades -- left every counter-case
+    and its control green, because the only case pinned was `f = 0.0`, where the density is
+    exactly zero. And the refusal's own sentence was false of a value it refused: `f = 0.0`
+    is `MASS_FRACTION_LADDER`'s LAST RUNG with `admissible()` true on all five bodies, so
+    the shipped builder reaches it by construction.
 
-    **AND THE NON-MONOTONICITY IS WHY THIS IS A PER-BODY TEST AND NOT A RANGE ON `f`.**
-    The platform is `PSD = False` at `f = 0.999999` and flips back to `True` at
-    `f = 1.0`, so no interval of `f` describes the admissible set. The question is asked
-    of the built body, every time.
+    **SMALL `f` IS A LEGITIMATE INPUT (FO0).** `f = 0.0106` runs normally now and its mass
+    table shows the split, which is the honest output: the configuration is unusual and the
+    report says what it is rather than a guard deciding it is inadmissible on a number
+    nobody justified.
+
+    **AND THE NON-MONOTONICITY IS WHY (a) IS ASKED PER BODY.** The platform is `PSD = False`
+    at `f = 0.999999` and `True` again at `f = 1.0`, so no interval of `f` describes the
+    admissible set. The question is asked of each built body, every time.
     """
-    floor = DENSITY[1]
     bad_psd = [b.name for b in built.bodies if not admissible(b)]
-    thin = [
-        (b.name, float(b.equivalent_density))
-        for b in built.bodies
-        if float(b.equivalent_density) < floor
-    ]
-    if not bad_psd and not thin:
+    massless = [b.name for b in built.bodies if float(b.equivalent_density) == 0.0]
+    if not bad_psd and not massless:
         return
 
     trouble: list[str] = []
     if bad_psd:
         trouble.append(
             f"the remainder inertia is not PSD on {bad_psd} (DY0(d): m_r >= 0 and no "
-            f"eigenvalue of J_r below -tol)"
+            f"eigenvalue of J_r below -tol), so those bodies are not bodies"
         )
-    if thin:
+    if massless:
         trouble.append(
-            "the equivalent density falls below the declared floor of "
-            f"{floor:g} kg/m^3 on "
-            + ", ".join(f"{name} ({value:g})" for name, value in thin)
-            + " -- members this light carry no mass, so their forces mean nothing"
+            f"the members carry no mass at all on {massless} (equivalent density exactly "
+            f"0.0, which is f = 0), so their member forces would mean nothing"
         )
 
     if not cfg.study_only:
+        # THE MESSAGE IS TRUE OF EVERY VALUE IT REFUSES (FO0). It used to open "this mass
+        # distribution is one the shipped builder would never have reached", which is
+        # false of `f = 0`: that is the ladder's last rung and `admissible()` holds on all
+        # five bodies there. A refusal that misdescribes its own cause teaches the reader
+        # the wrong thing about their configuration.
         raise ConfigError(
-            "this mass distribution is one the shipped builder would never have reached: "
+            "this mass distribution is not a structure: "
             + "; and ".join(trouble)
-            + ". `build_superstructure()` descends MASS_FRACTION_LADDER consulting "
-            "admissible() at every rung, so a configuration declaring `f` directly is "
-            "the only way here. Set `study_only: true` to run it anyway -- every output "
-            "will then carry `STUDY -- NOT FOR DESIGN` -- or declare a fraction whose "
-            "bodies are admissible."
+            + ". Set `study_only: true` to run it anyway -- every output will then carry "
+            "`STUDY -- NOT FOR DESIGN` -- or declare a distribution whose bodies are "
+            "admissible and whose members have mass."
         )
 
 
