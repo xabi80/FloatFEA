@@ -500,6 +500,51 @@ three blocking findings came from inverting the direction and nothing else: a
 production ceiling that widens `100x` with the measuring half of the suite green,
 and an injection size that rises eight decades with every assertion getting easier.
 
+### Every directive is recorded verbatim before it is acted on (FP0)
+
+**On receipt, a directive is committed verbatim to `docs/directives/<ID>.md` as the FIRST
+commit of the turn — a standalone `plan:` commit.** Plans and reports cite those files
+rather than paraphrasing them.
+
+*Adopted by directive FP0, which is itself the first file the rule produced.*
+
+**Earned as C25, and the measurement is the whole argument.** Directives were being
+implemented, and cited as the governing rule, without their text existing anywhere in the
+repository. At the interim check on R1 step 1: `FO0`, `FO1` and `FO2` were cited as the
+governing rule in **five shipped files**, and `grep -c "FO0\|FO1\|FO2\|FO3"
+docs/milestones/R1.md` was **0**. FM0 had got a plan section, FN2 and FN3 had got
+`process:` commits, FO had got neither — and a blocking finding's repair condition was
+"what FO0 actually requires", which no file in the repository said.
+
+**A rule cited by five files and recorded in none is a rule nobody can check a repair
+against.** `docs/directives/README.md` carries the provenance of each file, including
+which ones are verbatim and which were reconstructed, because a record that misstates
+where its text came from is worse than no record.
+
+### The judged commit always has a CI run (FP1)
+
+**The report commit and the verdict commit are PUSHED BEFORE the reviewer is invoked**, so
+the commit under judgement always has a CI run, and the report's CI section is generated
+from that run.
+
+*Adopted by directive FP1.*
+
+**Why: CE1 made the CI section mandatory because CI had been red at three consecutive
+reviewed commits and no revision said so — and R1 step 1 then ran three full revisions
+with no CI run at any reviewed commit at all.** `scripts/ci_section.py` anchors on the
+commit the report answers and GitHub builds the push tip, so a branch pushed after the
+fact never gives the judged commit a run. Five report guards were red for three rounds for
+that reason and nothing in the loop could clear them.
+
+**And the first push bought a finding within minutes, which is the measurement that
+settles it.** `mypy` failed in CI at a commit that was green on `ruff`, `black` and `mypy`
+locally, because `types-PyYAML` types `construct_object` at the version CI resolved and
+leaves it untyped at the version pinned locally — so a narrow `type: ignore` was REQUIRED
+locally and UNUSED there. That red then **skipped** the `unit tests` and
+`guards and meta-tests` steps, which is exactly the hiding CZ1 (iii) warns about: CI had
+never run R1's unit tests or its guards. Three rounds of local greens could not have found
+either fact.
+
 ### The reviewer's own instructions are not edited inside a step
 
 `.claude/agents/`, `.claude/hooks/` and `docs/SUPERVISOR.md` define what the
