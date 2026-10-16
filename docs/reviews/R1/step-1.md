@@ -1,4 +1,647 @@
 # Review — R1 step 1
+Reviewed commit: cfb76fff4cb1f726a8edeb765ccb10a5615b11b6
+**Reviewed commit: `cfb76fff4cb1f726a8edeb765ccb10a5615b11b6`.**
+Verdict: PASS
+Tests: 3563 passed, 13 failed, 1 skipped   (my own run, `python -m pytest -q`, 845.74s)
+
+**THIS IS AN INTERIM CHECK UNDER ES0 AND IT COUNTS AGAINST NO ROUND.** There is no new
+report revision. The judged commit is `cfb76fff4cb1f726a8edeb765ccb10a5615b11b6`, step 2's
+FIRST commit under FO3/FP2, carrying step 1's five items. **The implementer's reading of
+ES0/FB4 is correct and I rule with it:** ES0 keys the exemption on whether a new report
+revision exists, this tree has none, so this is an interim check and the three revisions
+remain available for FL2. It is written into step 1's file because
+`scripts/write_verdict.py:63` refuses a step with no report, and because that is the
+container the last interim check used.
+
+**THE DISPOSITION WORD IS `PASS` AND IT IS NOT AN ENDORSEMENT -- FOUR FINDINGS BLOCK.**
+R825, R826, R827 and R828, each under CZ0 (a) or (c). The reasoning for the word rather
+than HOLD is the previous interim check's, unchanged and said once below: step 1's
+disposition is its closure verdict (DD1), step 2 has begun, and a HOLD written into a
+closed step's file re-creates the `Stop`-hook deadlock `CLAUDE.md` documents at a cost of
+two verdicts. ES0 designs the alternative -- *"its findings join the step's list and are
+answered in the next revision"* -- and that is what I am using.
+
+**EU1: it does not attach, and I ran the adversarial case anyway.**
+`git diff 24cd716..HEAD -- floatfea/tolerances.py` is empty, the diff declares no counter,
+and the only value it REMOVES (`len(head) >= 20`) is a magic floor going away. But the
+scan of the diff is not what found anything here. Running the loader and the clause
+functions at configurations the diff did not choose is, and that produced three of the
+four blocking findings.
+
+**FIVE OF SIX GUARDS I DIFF SEPARATELY ARE CLEAN.** `floatfea/tolerances.py`,
+`tests/conftest.py` (`git ls-files -- tests/conftest.py 'tests/**/conftest.py'` gives the
+one file, as my instructions say it must), `.claude/` and `docs/SUPERVISOR.md` are all
+untouched by the diff. `CLAUDE.md` gained FP0 and FP1 in the standalone `plan:` commit
+`093d37a`, which touches no `floatfea/` or `tests/` path -- purely additive, two new
+sections, no guard removed, verified line by line. Not a STOP.
+
+## Carried
+
+**Step 1's five blocking items, each measured rather than read.** Three are answered in
+part and two in full. The pattern of the last four rounds holds for a fifth: every repair
+is real and what fails is the half that would fail if the repair were undone.
+
+| item | status | where |
+|---|---|---|
+| R817 (heading and wave height in no artifact) | **answered in part** | the two values reach all three artifacts (`results/R1/example/report.md:21-25`, both CSV headers' `wave basis:` line) and I checked them against the sidecar. **Two named halves are open:** the band's two bounds are in no artifact while two caveats refer to the band, and the "one case reddens when a field is dropped" half holds the committed FILE and not the generator -- R828. |
+| R818 (the two sensitivities reach no artifact) | **answered in part** | `code_check_sensitivities` is in `provenance()` (`floatfea/run/config.py:504`) and in all three artifacts. The reddening half is held by nothing -- R828. |
+| R819 (the R741/R742 caveat refuted by the code) | **NOT closed** | both sentences were rewritten and half (i) is now correct. Half (ii) replaced a false threshold with one 15% above where the code actually refuses, at every grade, and the condition's named site `floatfea/checks/api_wsd.py:228` is untouched -- R827. |
+| R820 (the floor's absence held by nothing) | **answered** | `test_FP2_NO_FLOOR_REMAINS_measured_as_ACCEPTANCE` is behaviour and the previous round's mutation reddens it 3 of 4. Its residual reach is measured below and is not a defect. |
+| R821 (`study_only` asserted by no test) | **answered** | and it carries its own failure by my own measurement: `if not cfg.study_only:` -> `if True:` gives `1 failed, 25 passed`, with the refusal's promise in the captured stderr. End to end through the CLI, with all three files checked for the label, was the right instrument. |
+| R822 (the duplicate check keyed on text) | **answered on the code, NOT held, and incomplete one layer down** | the five collapse classes are refused again and a text-identical control still refuses -- my own probe. R825 and R826. |
+| R823 (merge keys, undeclared widening) | **answered** | `<<` is refused at depth 1, inside a sequence, and as a list of merges -- my own probe, three forms. Anchors and aliases remain accepted and undocumented; FL3(a) still has to state the input language. |
+| R824 (the toolchain divergence) | **answered on the six tools** | local now reads mypy 2.4.0, ruff 0.17.1, black 24.10.0, pytest 9.1.1 -- I checked each. The direction is right and the file's own claim is wider than the file -- R830. |
+
+**The named conditions from the last two verdicts.**
+
+| condition | status |
+|---|---|
+| C22 (FF0 class, **due in this commit and not the ledger**) | **NOT DONE.** `git diff --stat 24cd716..HEAD -- scripts/ci_section.py tests/test_report_carried.py` is empty and `python scripts/ci_section.py` still exits 1 on the never-pushed anchor. Four guards still report a push policy as a red tree, which is the thing FF0 exists to stop carrying. |
+| The push (FP1) | **DONE, and it is the most valuable line in this history.** `git ls-remote --heads origin` gives `cfb76fff... refs/heads/F3`, CI ran at the judged commit, and CA2 is measurable for the first time in this milestone. |
+| C25 (the directive text) | **done differently and better than asked.** `docs/directives/FL..FP.md` plus a README stating provenance per file, including that FL is reconstructed and not verbatim. A record that says where its text came from is the half that mattered. |
+| C20, C21, C23 | addressed in this commit (`--check` is a gate; the two placeholder measurements point at the columns; the magic `>= 20` is gone). Not re-reviewed item by item -- ES0's light scope writes no closure list, so the remaining C-items carry unchanged. |
+
+## Findings
+
+Four block. Two are recorded and named. Every one came from running something the diff did
+not choose.
+
+**R825. (BLOCKS -- CZ0 head a) THE DUPLICATE-KEY COLLAPSE SURVIVES ONE LAYER DOWN, AT THE
+SCHEMA'S OWN `str()`. Two declared values become one, silently, last-wins, through two
+declared fields -- and the new count check cannot contain it, because PyYAML keeps the two
+keys distinct and `config.py` collapses them afterwards.**
+
+The repair closed the YAML layer. The previous verdict's R822 named the next line as the
+reachability route -- *"`floatfea/run/config.py:527-529` -- the comprehension keyed on
+`str(g)` over `lines.items()`"* -- and that comprehension is unchanged.
+
+```
+claim  two keys PyYAML keeps DISTINCT are collapsed by the schema, last-wins and silent,
+       through `mass_distribution.<body>.line_masses`
+cmd    the shipped example with paths absolutised, `platform: {f: 0.75}` replaced by an
+       explicit `line_masses`, through the real `load_config`
+out    1: 100.0  / '1': 900.0       -> REFUSED  "duplicate key '1' at line 9"  (text check)
+       1: 100.0  / 01: 900.0        -> REFUSED  "2 keys ... became 1"         (count check)
+       true: 100.0 / 'True': 900.0  -> LOADED   line_masses={'True': 900.0}
+       ~: 100.0  / 'None': 900.0    -> LOADED   line_masses={'None': 900.0}
+       control a: 100.0 / b: 900.0  -> LOADED   line_masses={'a': 100.0, 'b': 900.0}
+rule   `floatfea/run/config.py:611` -- `{str(g): _checked(...) for g, v in lines.items()}`
+judge  PyYAML builds `{True: 100.0, 'True': 900.0}` -- two keys, so
+       `len(mapping) == len(node.value)`, and the count check is silent and correct to be
+       silent. `str()` then maps both to `'True'`. The reader sees two line masses in
+       kg/m; the configuration object carries one, under a name indistinguishable from a
+       legitimate group name. **A line mass is a load.** This is R822's own failure mode,
+       one line further down, at the line R822 named.
+```
+
+```
+claim  the same collapse reaches `sections.groups`, where the value is a stiffness
+cmd    two extra groups added beside the five real ones, through `load_config`
+out    true: {d_outer: 2.5, wall: 0.18} / 'True': {d_outer: 9.9, wall: 0.01}
+       -> LOADED  groups = {'True': (9.9, 0.01), 'platform': (2.5, 0.18), 'hub1': ...}
+rule   `floatfea/run/config.py:661` -- `groups[str(name)] = sec`
+judge  one of the two declared tubes is gone with no message. `sections.groups` is wired
+       to the model in step 1, and FL2(a) makes group labels user-chosen, which is the
+       free-form key space R822 was ruled reachable through.
+```
+
+```
+claim  the docstring states a guarantee the measurement above refutes (CW0)
+cmd    floatfea/run/config.py:107-110
+out    "The COUNT check catches everything else: `len(mapping) != len(node.value)` means
+        PyYAML collapsed two entries into one, whatever made them equal. That is the
+        check that holds R811's guarantee rather than approximating it."
+rule   R811's guarantee as the module states it -- a reader can see the effective value
+       at its own key
+judge  the count check holds the guarantee up to PyYAML's key identity, and the schema's
+       key identity is `str()` of it. That sentence is the only statement in this
+       repository of where the guarantee ends, and it puts the end in the wrong place --
+       which is how R822 happened the first time.
+```
+
+One further channel, measured, and NOT part of the blocking half because no declared field
+can reach it: the constructor is registered for the default mapping tag only, so
+`s: !!set {a: ~, a: ~}` loads as `{'s': {'a'}}` with the duplicate gone. A `!!set` cannot
+satisfy any declared field, so nothing load-bearing reaches it today.
+
+**Closed when** two keys that differ in text and agree after `str()` are refused at both
+sites (`:611` and `:661`), with a clean two-key control still accepted, and the docstring
+sentence says where the guarantee ends. The cheapest repair is to compare the schema's own
+coerced key count against the mapping's, at the two comprehensions: no new apparatus and
+no tolerance.
+
+**R826. (BLOCKS -- CZ0 head c) NOTHING IN `tests/` HOLDS THE R822 OR R823 REPAIR. Both
+halves of this commit's loader fix can be reverted with the whole suite green, and the
+R811 gate's three parametrisations are the same three text-identical duplicates the
+previous verdict measured blind.**
+
+This is the exact condition verdict 3's R822 wrote: *"the R811 gate gains at least one
+case whose two keys differ in TEXT and agree after construction, so the collection can
+contain the failure."*
+
+```
+claim  no test in the tree detects the loss of either half of the repair
+cmd    git archive HEAD into the scratchpad; in the copy remove the `_refuse_merge_keys`
+       call and restore `return loader.construct_mapping(node, deep)` -- the TEXT check
+       left byte-identical -- then run the whole suite bar the two report-guard files
+out    sanity, in the mutated copy: `1: a` / `01: b` -> {1: 'b'}  (silent last-wins, back)
+       python -m pytest -q tests --ignore=tests/test_report_carried.py
+                                 --ignore=tests/test_report_guard_states.py
+       4 failed, 3313 passed in 729.62s
+       the four are tests/test_supervisor_conftest_pathspec.py, which needs a git
+       worktree and fails in any `git archive` copy; all four are GREEN in the real tree
+rule   verdict 3's R822 closing condition, quoted above
+judge  **the round's own blocking repair is held by nothing.** grep over `tests/` for
+       "implicit typing", "R822", "R823", "merge key" and "collapsed" finds no case
+       outside `tests/corpus/`, and `tests/unit/test_run_pipeline_refusals.py:444-451` is
+       still `("    Fy: 355000000.0", ...)`, `("  platform: {f: 0.75}", ...)`,
+       `("  K: 2.0", ...)` -- three text-identical duplicates, green under either keying.
+       The commit message's own `judge` paragraph says the count check "is the one that
+       holds R811's guarantee"; what holds the count check is a paragraph.
+```
+
+**Closed when** one case refuses a text-differing/construction-equal pair and one refuses
+a merge key, each reddening when its half of `_no_duplicates` is reverted. The
+counter-case is already written -- it is the two-tree table in the commit message -- and
+it needs to be in `tests/`.
+
+**R827. (BLOCKS -- CZ0 head a, EZ0) THE CORRECTED R741/R742 CAVEAT NAMES A D/t CEILING 15%
+ABOVE WHERE THE CODE ACTUALLY REFUSES, AT EVERY GRADE -- and it states as the clause's
+settled ceiling a reading the module's own declaration records as one of two, with the
+discrepancy open with Xabier. It is in all three published artifacts, and the new gate
+pins the wording.**
+
+```
+claim  the published sentence misplaces the refusal boundary by a constant factor at
+       every grade
+cmd    bisect the lowest refused D/t through allowable_bending(2.5, 2.5/dt, fy=...),
+       four grades
+out    Fy = 235 MPa  published 300000/Fy = 1276.6   lowest REFUSED D/t = 1109.3  (0.869)
+       Fy = 355 MPa  published            =  845.1  lowest REFUSED        734.3  (0.869)
+       Fy = 460 MPa  published            =  652.2  lowest REFUSED        566.7  (0.869)
+       Fy = 690 MPa  published            =  434.8  lowest REFUSED        377.8  (0.869)
+       F_b immediately below the boundary: +0.0000 MPa, branch reduced_2
+rule   the published caveat -- "the D/t ceiling is 300000/Fy[MPa] -- 845.1 at Fy = 355 MPa
+       -- above which the section is refused rather than extrapolated"
+       (results/R1/example/report.md:57 and both CSV headers)
+judge  refusal begins where (0.72 - 0.58 Fy D/(E t)) Fy crosses zero -- at
+       0.72 E / (0.58 Fy), which is 0.869 of the published ceiling at EVERY Fy and not
+       only at 355. A reader sizing at D/t = 800, Fy = 355 expects a number from the
+       published sentence and gets a refusal. **This is R819 (ii) with the number moved:**
+       the first version said 300 where the code computes to 845; this one says 845 where
+       the code refuses from 734.
+```
+
+```
+claim  the repository already carries the correct boundary, in the module the caveat
+       describes, and records the clause reading as UNRESOLVED
+cmd    floatfea/checks/api_wsd.py:73-92
+out    "At F_y = 355 MPa the limit is 845.1, and the third branch ... crosses zero at
+        D/t = 0.72 E / (0.58 F_y) = 734.3 ... the discrepancy goes back to Xabier: the
+        editions I can check give the third range a FLAT D/t <= 300 ... the boundary is
+        wrong in one of the two readings and it is declared here rather than chosen
+        silently"
+rule   CW0, and BF0 -- a published sentence states what was measured
+judge  the artifact now publishes 300000/Fy as the clause's ceiling with no sign that it
+       is one of two readings under an open question, and the reading it replaced -- a
+       flat 300 -- is the one the editions give. The tree's own declaration says the
+       choice was "declared rather than chosen silently"; the deliverable chose silently.
+```
+
+```
+claim  the condition's second named site was not closed and nothing says it was left
+cmd    git diff --stat 24cd716..HEAD -- floatfea/checks/api_wsd.py ; then read lines 227-230
+out    (empty)
+       "**D/t > 300 IS REFUSED RATHER THAN EXTRAPOLATED.** The clause's third branch is
+        written only to D/t = 300; beyond it local buckling governs"
+rule   verdict 3's R819 -- "Closed when both statements are true of the code at any Fy
+       ... **and the same correction reaches floatfea/checks/api_wsd.py:228**"
+judge  :228 carries the refuted sentence verbatim and the commit message does not mention
+       the site. A docstring alone would be a closure item; a named half of a blocking
+       item's condition is the item (CLAUDE.md, "A closing condition that names sites is
+       closed site by site"), so R819 is not closed.
+```
+
+```
+claim  the gate added for R819 pins the imprecise wording rather than the boundary
+cmd    tests/regression/test_r1_published_artifacts.py:218-225
+out    assert "300000/Fy" in text
+rule   CZ0 (c) -- what a gate claims, on which quantity
+judge  the needle requires the published ceiling to BE the one measured above as 15% high,
+       in all three files. The gate now holds the wrong number in place.
+```
+
+**Closed when** the published sentence states the boundary the code enforces -- the branch
+table and both refusals, or the single statement that the admitted range ends where the
+third branch crosses zero at 0.72E/(0.58 Fy) -- and says the flat-300 reading is open with
+Xabier; api_wsd.py:228 carries the same correction; and the gate's needle is the corrected
+text. Regenerated at the answering commit (CP3).
+
+**R828. (BLOCKS -- CZ0 head c) R817's AND R818's REDDENING HALF HOLDS THE COMMITTED FILE
+AND NOT THE GENERATOR. The heading, the wave height and both sensitivity operating points
+can stop reaching every artifact with the suite green -- which is the half of each
+condition that was written down.**
+
+```
+claim  deleting the code that carries the heading and the height to every artifact
+       reddens nothing
+cmd    in the archive copy, exported_wave_basis returns an empty mapping as its first
+       statement -- one variable, nothing else touched -- then
+       python -m pytest -q tests/unit tests/regression/test_r1_published_artifacts.py
+out    195 passed in 69.05s
+cmd    the same value removed from the COMMITTED report.md instead, code untouched
+out    1 failed, 47 passed
+       FAILED ...::test_R817_every_artifact_states_the_HEADING_and_the_WAVE_HEIGHT[report.md]
+rule   verdict 3's R817 -- "and one case reddens when a field is dropped"
+judge  the gate holds the bytes of a frozen fixture. R1's whole subject is a tool pointed
+       at a DIFFERENT configuration (R1.md section 0), and for that configuration the
+       heading would stop being stated with every test green and the committed example
+       green forever.
+```
+
+```
+claim  the same for R818, and the header-key check moves its own domain with the defect
+cmd    in the copy, delete the code_check_sensitivities entry from provenance() -- one
+       hunk -- then the same two suites
+out    195 passed in 81.96s
+rule   verdict 3's R818 -- "and one case reddens when a declared sensitivity does not
+       reach the header"
+judge  test_the_csv_header_is_COMMENTED_... builds expected_keys from
+       load_config(...).provenance() itself, so a key dropped from provenance()
+       disappears from the expectation too -- the collection the assertion inspects
+       cannot contain that failure. Its docstring's "dropping one from the writer fails it
+       by name" is true of the WRITER and false of the schema it reads, and that is the
+       difference that matters here.
+```
+
+```
+claim  R817's other named half -- the band's two bounds -- is in no artifact
+cmd    grep -inE "band|lower bound|steepness|sqrt" results/R1/example/report.md
+out    two hits, both caveat text (EZ2's "associated-period range for this wave height",
+       FA0's "just below the associated-period band's lower bound"); no bound, no rule
+cmd    examples/platform12_placeholder.yaml:71-73
+out    "For H = 24.2 m the associated period range is sqrt(6.5 H) .. sqrt(11 H) =
+        12.542 .. 16.316 s"
+rule   verdict 3's R817 -- "with the band's two bounds wherever a caveat refers to them"
+judge  the bounds are in the configuration's comments and in no artifact. Publishing H is
+       a real improvement and it is not the named half: a reader still cannot check that
+       12.5 s sits 0.042 s below the lower bound without knowing the rule, and that check
+       is the whole content of FA0.
+```
+
+**Closed when** one case asserts the wave basis and both sensitivity operating points on a
+header built from a RunResult -- tests/unit/test_run_pipeline_refusals.py:489 and :548
+already build one and already call _header_lines, so this is a field on an existing stub
+plus two assertions, not new apparatus -- and the band's two bounds reach the artifacts
+whose caveats refer to them. Keep the committed-file gate; it catches the other direction.
+
+**R829. (DOES NOT BLOCK -- recorded and named) The implementer's question 5, answered:
+(not recorded) is the right choice, and the caveat beside it does not move in the same
+branch, so one of the two sentences in the file is false whenever the fallback fires.**
+
+```
+claim  with a sidecar recording no basis, a CSV asserts both that the heading is in the
+       provenance and that it is not recorded
+cmd    floatfea/cli.py:107-117 against floatfea/cli.py:60-62
+out    header, unconditional: "wave basis: heading {} deg ..." with
+       basis.get("heading_deg", "(not recorded)")
+       caveat, unconditional: "EX3 / R724: the heading these loads were exported at is in
+       the provenance above."
+rule   CLAUDE.md -- a fallback is recorded and surfaced, so a result computed under one
+       cannot be mistaken for one computed under full data
+judge  _write_report handles it -- the empty-basis branch says the heading and height are
+       "not stated by this run" -- and the CSV path does not. FL1(a) admits "a path to an
+       existing dynamic-inputs npz", so an npz with no sidecar reaches this. The fallback
+       is right; the caveat has to move with it, which is the same shape as R817 itself: a
+       caveat about a fact the file does not carry.
+```
+
+Also recorded here, because it is the one carried condition due in THIS commit and
+untouched: **C22.** scripts/ci_section.py exits 1 at HEAD on the never-pushed anchor
+582cde72..., --rounds exits 0, and scripts/ci_section.py, tests/test_report_carried.py and
+scripts/suite_count.py are all absent from the diff. FF0's reason is exactly this
+situation -- a tree red by design is a tree in which the next real red is harder to see --
+and four of this commit's thirteen reds are that guard.
+
+**R830. (DOES NOT BLOCK -- recorded and named) The implementer's question 2, answered: the
+direction is right, and constraints-dev.txt's own claim is wider than the file. The two
+packages that decide a NUMBER rather than a type check are still unpinned on both sides.**
+
+```
+claim  the six dev tools now agree exactly and the numerical stack does not
+cmd    local mypy, ruff, black and pytest versions, and numpy/scipy/pyyaml from the
+       interpreter
+out    mypy 2.4.0 ; ruff 0.17.1 ; black 24.10.0 ; pytest 9.1.1
+       numpy 2.4.0 ; scipy 1.17.1 ; pyyaml 6.0.3
+cmd    the CI install log at run 38927091674
+out    mypy-2.4.0 ; ruff-0.17.1 ; black-24.10.0 ; pytest-9.1.1 ; hypothesis-6.170.0 ;
+       types-PyYAML-6.0.12.20260906
+       numpy-2.5.4 ; scipy-1.18.1 ; h5py-3.16.0 ; pyyaml-6.0.3
+rule   constraints-dev.txt:4-6 -- "ONE FILE, USED BY CI AND BY THE DOCUMENTED LOCAL SETUP,
+       so that a green here means a green there"
+judge  **pinning FORWARD is the right call and I endorse it**: ci.yml:277 makes CI
+       canonical for tests/regression, the major-version jump was re-run locally under the
+       pin, and all four local gates are green at the pinned set -- I ran them myself.
+       What the sentence does not cover is numpy two minor versions apart and scipy one,
+       which are where my own instructions put the risk (different libm, different BLAS)
+       and where the ladder's exactness tolerances are ULP multiples. The pinned set
+       closes the type-checker gap and leaves the numerics gap open. One line each in the
+       same file, or one sentence saying the file pins the tools and not the stack.
+```
+
+## The five things the report asked to have attacked -- my rulings
+
+**1. R820's ACCEPTANCE PIN IS LOAD-BEARING, THE SHAPE IS RIGHT, AND "THE LOWEST ADMISSIBLE
+f THE MODEL CAN EXPRESS" DOES NOT EXIST -- which is the answer to the question.**
+
+```
+claim  there is no lowest admissible fraction, so no acceptance VALUE can cover the range
+cmd    floatfea/run/config.py:188, and the guard's own two cases
+out    MASS_FRACTION = ("-", 0.0, 1.0)  -- any positive double is admissible
+       the guard refuses equality with 0.0, and admissible(), and nothing else
+cmd    in the archive copy, the floor reintroduced by a local binding at 1e-06 instead of
+       100 -- v == 0.0 or v < 1e-06 -- then tests/unit plus the published-artifact file
+out    195 passed in 89.74s
+rule   verdict 3's R820 -- "the acceptance edge is pinned behaviourally far below any
+       plausible floor, so that the mutation above reddens"
+judge  **the condition is met and R820 is answered.** f = 1e-09 reddens under any floor
+       above 9.53e-06 by any route, which is every floor anyone would write, and keeping
+       the value case at f = 0.0106 is right because that is the case R814 was about. What
+       a value pin cannot do is close an OPEN interval: a floor below 9.5e-06 is
+       undetected. **And the deleted source-reading test did not detect it either** -- the
+       previous verdict's own mutation binds the density to a name first and leaves
+       equality-with-zero in place, so all four needles held. I therefore WITHDRAW the
+       "keep the source-reading test beside it" half of my predecessor's ruling as a
+       requirement: measured, it adds nothing the acceptance case does not. What remains
+       is prose -- the test NAME claims NO_FLOOR_REMAINS where the measurement is "no
+       floor above 9.5e-06 remains" -- and that is a closure item, not a gate defect.
+```
+
+**2. R824's direction: right, and ruled above as R830.** Pin forward, keep CI canonical,
+and say in the file that it pins the tools and not the stack.
+
+**3. THE G4.1 EQUILIBRIUM GATES DID NOT MOVE, AND I HAVE THE CONTROLLED CELL RATHER THAN
+THE ARGUMENT.** This was the claim you were least able to falsify, and it is verified three
+ways with one variable each.
+
+```
+claim  the npz the gates read is byte-identical across this step, so no input moved
+cmd    git ls-tree 24cd716 data/f4/dynamic_inputs.npz ; git ls-tree HEAD (same path) ;
+       git hash-object on the worktree file
+out    4265fd9d02e018b7dcacd9e6af1652df8c31e2b1  at both commits and in the worktree
+cmd    git log --oneline -3 -- data/f4/dynamic_inputs.npz
+out    62a8281 (step 1 revision 3), 4ace816, 8ae9acc  -- not this commit
+rule   EX0(c) and FO1 -- the committed inputs are a binary golden
+judge  the blob has not moved since verdict 3 measured its 99 shared arrays bit-identical,
+       and the provenance diff moves only the export script's sha, so the gates' own
+       measurement module scripts/measure/g41_dynamic.py is unchanged as well.
+```
+
+```
+claim  the single red was the staleness gate, and the 113 equilibrium gates are
+       independent of the variable that reddened it
+cmd    in the archive copy, the provenance generating_script.blob_sha set to 40 zeros --
+       one variable, nothing else -- then
+       python -m pytest -q tests/verification/rung4/test_f4_g41_dynamic.py
+out    1 failed, 113 passed in 2.17s
+       FAILED ...::test_the_npz_is_NOT_STALE_against_the_code_that_generated_it
+       assert not [export_f4_dynamic_inputs.py: tree 3127f6ffe524 vs provenance 0000...]
+cmd    the same file at HEAD, unperturbed
+out    114 passed in 1.97s
+rule   the staleness gate at tests/verification/rung4/test_f4_g41_dynamic.py:305-328
+judge  **your one-cause claim reproduces exactly, and the cell is what makes it a finding
+       rather than a story (BG0).** 1 failed, 113 passed is what a wrong script sha alone
+       produces, the 113 are unaffected by it, and the gate carries its own failure. **No
+       rung-4 finding.** One correction: the commit message attributes
+       "G4.1 force 1 failed, 113 passed" to the F6 REPORT, and grep over docs/reports for
+       "113 passed" returns only two hits, both in docs/reports/F4/step-3.md and both from
+       a ceiling-mutation cell. The tally row you mean is generated by
+       scripts/measure/f6_results_report.py into results/F6/floatfea_results_report.md.
+       The figure is right; the file named for it is not.
+```
+
+**4. THE NPZ IS BYTE-UNCHANGED, AND YES -- git diff CAN HIDE AN NPZ CHANGE FOR ANOTHER
+REASON. Two reasons, and one of them is in this repository.**
+
+```
+claim  git diff is the wrong instrument for this file and the blob sha is the right one
+cmd    cat .gitattributes
+out    data/f4/*.npz binary merge=binary -diff
+cmd    the distinct ZIP member timestamps in the committed npz
+out    [(1980, 1, 1, 0, 0, 0)] over all 100 members
+rule   CZ1's reusable half, applied to an instrument rather than to a commit
+judge  -diff means the content never appears in a diff at all, and --stat shows a binary
+       as Bin with no counts, which reads as "unchanged" to a quick eye. The second reason
+       is the opposite of a trap and worth knowing: every member carries the ZIP epoch, so
+       savez_compressed here is byte-deterministic and a re-export CAN reproduce the file
+       exactly -- which is why your claim is true. **Treat bit-identity as the blob sha
+       and not as an empty diff.** I used git ls-tree at both commits and git hash-object
+       on the worktree, and all three agree.
+```
+
+**5. R817's (not recorded): the right choice, and the caveat has to move with it -- R829.**
+
+## The adversarial cases I ran, and what they found
+
+* **The key-identity space swept one layer further than the repair** -- ten documents
+  through _NoDuplicateLoader (merge at three positions, a quoted literal, anchor/alias,
+  alias-as-key, !!set, !!omap, a collapse pair, a clean control) and six configurations
+  through the REAL schema at both line_masses and sections.groups. **R825.**
+* **Both halves of this commit's loader repair reverted, whole suite re-run.** **R826.**
+* **The clause's refusal boundary SOLVED rather than sampled, at four grades**, by
+  bisection through allowable_bending. **R827.** This is the EH4 direction that weakens
+  the claim: not "is 845.1 refused" but "where does refusal begin", and the answer is
+  0.869x of the published number at every grade.
+* **Three one-variable mutations against the artifact gates** -- the wave basis deleted in
+  the CODE (195 passed), the sensitivities deleted from provenance() (195 passed), the
+  same value deleted from the committed FILE (1 failed, by name). **R828.**
+* **The floor reintroduced at 1e-06 instead of 100**, to measure the reach of the new
+  acceptance pin (195 passed), and the study_only escape made unconditional to confirm the
+  new pin fails (1 failed, 25 passed).
+* **The staleness gate's own controlled cell** (1 failed, 113 passed) and the rung at HEAD
+  (114 passed).
+* **The verdict-exists control at bd315a1** for the thirteen reds: 149 passed, 0 failed.
+* **Both toolchains compared package by package**, local against CI's resolved set. **R830.**
+
+What I did not find: the merge refusal is thorough -- three syntactic positions, each
+refused with a located message -- and the count check carries its own failure in both
+directions I could reach. The hole was not in the repair. It was one layer below where the
+repair stops.
+
+## CI at the reviewed commit: RED, traced by name, and it does not HOLD
+
+**This is the first commit in this milestone whose CI run I could read, and FP1 bought it.**
+
+```
+cmd    gh run list --commit cfb76fff4cb1f726a8edeb765ccb10a5615b11b6
+       --json name,conclusion,workflowName,status
+out    [{"conclusion":"failure","databaseId":38927091674,"status":"completed",
+        "workflowName":"CI"}]
+cmd    gh run view 38927091674 --json jobs, read at step level
+out    lint, unit and guards : FAILURE
+         actionlint success / ruff success / black --check success / mypy SUCCESS /
+         unit tests SUCCESS / guards and meta-tests FAILURE
+       the verification ladder : SUCCESS, rungs 1, 2, 3, 6, 4, 5 all success
+       CI determinism -- leg / ten legs agree : skipped (workflow_dispatch only, CK0)
+cmd    comm -3 (the CI FAILED ids) (my own run's FAILED ids)
+out    (empty)  -- the two lists are IDENTICAL, 13 each
+```
+
+**Not CK2's exhausted-allowance state:** both real jobs ran for six and five minutes with
+per-step conclusions, so the empty runner name is not the never-started signal CK2
+describes. The two determinism jobs are skipped by the workflow's own event gate, which is
+CK0 by design and recorded as that rather than as an unavailable check.
+
+The 13, each matched to its state's own list (EG3 as corrected by EH1, EJ2, FC1, FN2):
+
+* test_the_report_carries_a_CI_SECTION -- state (1), FN2
+* test_the_reported_CI_counts_are_not_all_zero -- state (1), FN2
+* test_the_CI_section_is_about_the_REVIEWED_commit -- state (2), EG3
+* test_the_report_carries_a_WHOLE_SUITE_count -- state (2), FC1
+* test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW -- state (2), FC1
+* test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph -- **off both lists**,
+  measured verdict-dependent again below, as the last interim check measured it
+* test_the_guard_survives_the_state[baseline] and the six planted states
+  (non_numeric_step_suffix, superscript_digit_step_number,
+  draft_suffix_beside_a_step_report, step_number_is_the_empty_string,
+  verdict_amended_after_the_commit_the_report_answers, zero_padded_step_number) --
+  the cascade, identified as EH1 requires by the baseline being red and by each state's
+  own failure line carrying the inner run's 6 failed, 230 passed, 1 skipped
+
+```
+claim  not one of the 13 is red where report and verdict are in sync
+cmd    a git worktree at bd315a1 in the scratchpad; then python -m pytest -q
+       tests/test_report_carried.py tests/test_report_guard_states.py
+out    149 passed in 130.48s   -- 0 failed
+rule   FN2's membership rule -- verdict-dependent, measured against a verdict-exists
+       control
+judge  this tree is EG3 state (2), and this time it is state (2) BY CHOICE: the step's
+       first commit carries no report revision, so the state cannot clear until step 2's
+       report exists. EG3's sharpening applies with its full force -- "if no answering
+       report is written the state does not clear, and a tree red with no revision in
+       sight must read as what it is." There IS a revision in sight, it is step 2's, and
+       the clearing gets measured there. Every red traces, so the waiver's condition is
+       met and none is CZ1 (iv).
+```
+
+**On CA2, which I keep in full because CLAUDE.md does not carry it.** A red CI is a HOLD
+regardless of the local run; EG3 is the clause that qualifies CZ0's head (d) for a step's
+own boundary red on either side of the verdict, and it is written about the pushed run.
+All 13 are that boundary red, by name and by control, so the red is recorded as red with
+its cause named and it does not HOLD. What would HOLD is a fourteenth, and there is none:
+mypy, ruff, black, unit tests and all six ladder rungs are green in CI at this sha. **And
+C22 is why four of the 13 exist**, which is the cost FF0 names.
+
+## Corpus (EG4(e))
+
+**The pause held. Zero new entries this round.** tests/corpus/ is untouched by me and the
+working tree carries nothing of mine. ES0's light scope writes no corpus batch, and R1
+step 2's first commit touches neither exception -- not F4's load-mapping gate, not EB6's
+label-provenance gate.
+
+I ran the recorded substitute instead, both halves, and both produced blocking findings:
+
+* **a continuum grid over the parameter space the decision rules guard** -- the loader's
+  key-identity space swept through the schema's own str() coercion at two sites, and the
+  clause's refusal boundary SOLVED by bisection at four grades rather than sampled.
+  **R825, R827.**
+* **a regeneration check on a published deliverable, run in the direction that weakens the
+  gate** -- not "does the committed file carry the field" but "does anything notice when
+  the code stops putting it there". Three one-variable mutations. **R828.**
+
+## Tolerances touched
+
+**None.**
+
+```
+cmd    git diff 24cd716..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    the diff searched for isclose, abs_tol, rel_tol, approx, atol, rtol, 2**-n and bare
+       numeric comparisons
+out    new comparisons: len(mapping) != len(node.value) (a count), np.isfinite(...).all()
+       (a domain test), a.shape != b.shape, a.dtype != b.dtype, not np.array_equal(a, b)
+       (exact), and one tag-string equality
+       REMOVED: len(head) >= 20, a magic floor with 2x slack; and --check's
+       gap = max|a-b| / scale relative comparison, replaced by exact equality
+```
+
+None of those is a tolerance under any name. **The one movement in this diff is a
+tolerance-shaped thing being deleted in the strict direction**, twice: a header floor
+replaced by the schema's own key set, and a relative difference replaced by array_equal
+plus a non-finite refusal. --check is run neither by CI nor by any test (it needs the HSP
+worktree), so the exact rule carries no false-fire risk from the unpinned numpy in R830.
+
+**EU1 therefore does not attach, and I say so having run its measurement anyway.** No
+declared counter moved, and the four fractions in the new parametrisation are inputs
+rather than counters.
+
+## Next step opens when
+
+Step 2 is open and this verdict closes nothing. What this check changes is the content of
+its next commit, and these are the conditions rather than "the above". **Schedule: R1's
+target is 28 October (FL5), today is 16 October -- 12 days and two steps.** Four of these
+are smaller than any of step 1's five and none needs new apparatus.
+
+1. **R825** -- a text-differing, str()-equal pair refused at floatfea/run/config.py:611
+   and :661, a clean two-key control still accepted, and the docstring at :107-110 saying
+   where the guarantee ends.
+2. **R826** -- one case in tests/ that reddens when the count check is reverted and one
+   that reddens when the merge refusal is reverted. The counter-case already exists in the
+   commit message; it has to exist in the suite.
+3. **R827** -- the published sentence states the boundary the code enforces and says the
+   flat-300 reading is open with Xabier; floatfea/checks/api_wsd.py:228 carries the same
+   correction; the gate's needle is the corrected text. **R819 is not closed until all
+   three.**
+4. **R828** -- the wave basis and both sensitivity operating points asserted on a header
+   built from a RunResult, and the band's two bounds in the artifacts whose caveats refer
+   to them.
+5. **C22, now overdue by one commit** (FF0: fixed in the next commit, not ledgered). Four
+   of the thirteen reds are that guard, and a tree red by design is where the next real
+   red hides.
+6. **R829 and R830** -- recorded, not blocking. The CSV caveat moves with the
+   (not recorded) fallback; constraints-dev.txt says it pins the tools and not the
+   numerical stack, or pins that too.
+7. **The push, continued exactly as done here.** It is no longer an open item and should
+   not become one again: one push gave this check a readable CI run at the judged commit,
+   an identical 13 in two environments, and six green ladder rungs on a machine neither of
+   us controls.
+
+**If my reading of ES0 and DD1 is wrong, it is wrong about the criterion and not about the
+work**, and it goes to Xabier through the implementer rather than becoming another round.
+Said once: a blocking finding wants a HOLD; HOLD is not available on a closed step's file
+without re-creating the documented deadlock; and ES0's "the findings join the step's list"
+is the mechanism this project chose instead. The four findings above are blocking whatever
+the word at the top of this file says.
+
+**What this commit got right, and it is the larger part.** The loader repair replaced the
+comparison with the one PyYAML actually uses rather than patching the symptom, and it
+needs no type ignore under either stub -- the harder and the correct choice. --check
+stopped being a report that could print 0.000000e+00 for a NaN and became a gate with no
+tolerance in it. The study_only pin is end to end through the CLI and fails when the
+escape is removed, which makes it the first of step 1's five repairs to carry its own
+failure. The toolchain is one file on both sides and the local re-run under a new major
+mypy was done rather than asserted. And the staleness reds were reported as reds with a
+cause, traced to one variable, and the trace reproduces exactly -- including the part that
+was hardest for the author to check.
+
+**The pattern, named for a fifth round because it has moved again.** Verdict 2: the
+verifiable half gets verified and the deciding half gets described. Verdict 3: the deciding
+half is what holds the repair. The last interim check: the deciding half is the axis the
+author did not sweep. This round: **the deciding half is one layer below where the repair
+stops.** The loader was fixed at YAML's key identity and the schema's key identity is one
+str() further down. The caveat's threshold was corrected to the limit the code names, and
+the code refuses at 0.869 of it. The artifacts gained the two facts, and the gate that
+would notice them leaving reads a frozen file. In each case the repair is correct about the
+layer it was aimed at, and the question that catches it is: **what is immediately
+downstream of the thing I just fixed?**
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 1
 Reviewed commit: 60f3176a0796c298d55d79494c7aa013abb1fd16
 **Reviewed commit: `60f3176a0796c298d55d79494c7aa013abb1fd16`.**
 Verdict: PASS
