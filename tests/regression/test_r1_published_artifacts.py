@@ -75,10 +75,25 @@ def test_the_csv_header_is_COMMENTED_and_the_data_is_parseable(path: Path) -> No
     """
     lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
     head = [line for line in lines if line.startswith("#")]
-    assert len(head) >= 20, (
-        f"{path.name} carries {len(head)} comment lines. The header is the label, the "
-        f"provenance, the build's assumptions, its findings and the column caveats; a "
-        f"short header means one of those is missing (R806)."
+    # C23: NO MAGIC COUNT. This read `len(head) >= 20` against 40 actual lines, so it
+    # would have passed with half the header missing -- a floor with 2x slack is not a
+    # check, and "20" was a number nothing derived.
+    #
+    # Every PROVENANCE KEY instead, taken from the schema rather than counted: the key set
+    # comes from `RunConfig.provenance()`, so adding a provenance field extends this check
+    # automatically and dropping one from the writer fails it by name.
+    from floatfea.run.config import load_config
+
+    expected_keys = sorted(
+        load_config(ROOT / "examples" / "platform12_placeholder.yaml").provenance()
+    )
+    blob = "\n".join(head)
+    missing = [key for key in expected_keys if key not in blob]
+    assert not missing, (
+        f"{path.name}'s header is missing provenance key(s) {missing}. The header is the "
+        f"label, the provenance, the build's assumptions, its findings and the column "
+        f"caveats; a reader who cannot see what was configured cannot audit the run "
+        f"(R806)."
     )
     rows = list(csv.DictReader([line for line in lines if not line.startswith("#")]))
     assert rows, f"{path.name} has a header and no data rows"
@@ -144,4 +159,67 @@ def test_a_NON_STUDY_run_carries_no_STUDY_label_anywhere() -> None:
         assert "STUDY -- NOT FOR DESIGN" not in text, (
             f"{path.name} carries the study label and the example declares "
             f"`study_only: false`. A label on everything distinguishes nothing."
+        )
+
+
+@pytest.mark.parametrize("path", ARTIFACTS, ids=lambda p: p.name)
+def test_R817_every_artifact_states_the_HEADING_and_the_WAVE_HEIGHT(path: Path) -> None:
+    """The two facts the caveats are ABOUT (R817).
+
+    The EX3/R724 caveat is about the heading and the EZ2/FA0 caveat is about the wave
+    height's associated-period band, and neither value appeared in any artifact. The
+    committed deliverables these replaced said "all cases are heading 0 degrees" and
+    "H = 24.2 m" outright; the reworded caveat said "every case carries the heading its
+    load cases declare", which in a file declaring no heading says nothing.
+
+    Asserted per artifact, because carrying it in the report and not in the CSVs is the
+    same defect one file over.
+    """
+    text = path.read_text(encoding="utf-8", errors="replace")
+    assert "heading" in text.lower(), f"{path.name} does not state a heading"
+    assert "0.0 deg" in text or "heading 0.0" in text, (
+        f"{path.name} states no heading VALUE. The caveat about heading dependence is "
+        f"unreadable without it."
+    )
+    assert "24.2" in text, (
+        f"{path.name} states no wave height. EZ2's associated-period band is derived from "
+        f"H, so a reader cannot check which periods may govern without it."
+    )
+
+
+def test_R818_the_report_states_the_SENSITIVITY_OPERATING_POINTS() -> None:
+    """Two published columns had no operating point anywhere (R818).
+
+    `utilisation_K_sens` and `utilisation_Cm_sens` are published per station. Run at a
+    configuration the diff did not choose -- `K_sensitivity` equal to `K`,
+    `Cm_sensitivity = 0.1` -- the two columns collapse onto the base on 32 of 32 rows and
+    the header differed from the shipped run by ONE line, the config filename. A column
+    whose operating point is unpublished cannot be read, and R743's caveat delegates the
+    Cm direction to exactly that column.
+    """
+    text = REPORT.read_text(encoding="utf-8", errors="replace")
+    assert "K_sensitivity" in text, "the report states no K sensitivity operating point"
+    assert "Cm_sensitivity" in text, "the report states no Cm sensitivity operating point"
+
+
+def test_R819_the_artifacts_do_not_MISSTATE_the_clause_limits() -> None:
+    """Two statements the code refutes, in all three artifacts (R819).
+
+    (i) `F_b = 0.75*Fy` IS the compact allowable -- it was published as "the first
+        reduction below the compact branch".
+    (ii) the D/t ceiling is `300000/Fy[MPa]`, which is `845.1` at Fy = 355 -- it was
+        published as `300`, inherited verbatim from `docs/F6_utilisation.csv:5`. What was
+        new was a generator shipping it at any Fy.
+    """
+    for path in ARTIFACTS:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        assert (
+            "D/t > 300 is refused" not in text
+        ), f"{path.name} still says the D/t ceiling is 300; it is 300000/Fy[MPa]."
+        assert (
+            "first reduction below the compact branch" not in text
+        ), f"{path.name} still calls 0.75*Fy a reduction below compact; it IS compact."
+        assert "300000/Fy" in text, (
+            f"{path.name} does not state the real D/t ceiling, so a reader at another Fy "
+            f"cannot tell where it is."
         )

@@ -61,28 +61,79 @@ class _NoDuplicateLoader(yaml.SafeLoader):
     """
 
 
-def _no_duplicates(loader: yaml.SafeLoader, node: Any, deep: bool = False) -> Any:
-    """The duplicate check, keyed on the SCALAR TEXT of each key node.
+def _refuse_merge_keys(node: Any) -> None:
+    """Refuse a YAML merge key (R823). The input language does not widen silently.
 
-    **IT READ `loader.construct_object(key_node)` AND THAT NEEDED A `type: ignore`, WHICH
-    IS WHAT CI CAUGHT.** `types-PyYAML` leaves `construct_object` untyped in the version
-    pinned here (6.0.12.20260408) and types it in the version CI resolved, so the narrow
-    ignore was REQUIRED locally and UNUSED there -- and `warn_unused_ignores` makes an
-    unused one an error. Both runs were right; the code was conditional on a stub.
+    `<<: *anchor` merges another mapping's keys in. **It went from a hard
+    `ConstructorError` to WORKING between two commits of mine**, as a side effect of
+    routing mapping construction through a custom constructor, and merged keys bypass the
+    duplicate check entirely because `flatten_mapping` runs inside `construct_mapping`,
+    after the loop. Measured through the real schema: an anchored `platform: {f: 0.75}`
+    merged into `hub1` and overridden gave `hub1 f = 0.1`.
 
-    `mypy floatfea` and even CI's own `mypy floatfea scripts/f4_dynamic_residual.py` both
-    passed on this machine, so no local command could have found it. That is CZ1 (iii)'s
-    whole point, and this is the first time any of R1's work was built.
+    That is not a defect in YAML -- explicit keys winning over merged ones is the spec --
+    but it is an **undeclared widening of the accepted input language**, which nothing
+    documented and nothing tested. A configuration schema whose accepted language grows as
+    a side effect of an unrelated repair is one nobody can review.
 
-    A config key is a YAML scalar -- these are field names -- so its text is the identity
-    the check wants, and `ScalarNode.value` is that text without constructing anything. A
-    non-scalar key cannot be a field in this schema, so it is left to the normal
-    constructor rather than compared here: skipping it loses no duplicate a configuration
-    could actually express.
+    Refused rather than supported, because the schema has no use for it: every section is
+    a flat declared field set, `_reject_unknown` refuses anything it does not name, and a
+    reader who wants two bodies to share a distribution can write it twice and have the
+    duplicate check confirm they match.
     """
+    for key_node, _value_node in node.value:
+        if getattr(key_node, "tag", None) == "tag:yaml.org,2002:merge":
+            raise ConfigError(
+                f"merge key `<<` at line {key_node.start_mark.line + 1} is not accepted. "
+                f"A merged mapping bypasses the duplicate-key check -- YAML flattens it "
+                f"after this check runs -- and an explicit key silently overrides a merged "
+                f"one, so a field could take a value from either place with nothing in the "
+                f"file saying which. Write the fields out."
+            )
+
+
+def _no_duplicates(loader: yaml.SafeLoader, node: Any, deep: bool = False) -> Any:
+    """Refuse a duplicate key, comparing the keys PyYAML will actually build (R822).
+
+    **TWO CHECKS, BECAUSE ONE QUESTION HAS TWO ANSWERS AND BOTH MATTER.**
+
+    The TEXT check catches a key written twice the same way and can name it and its line,
+    which is what a reader needs in order to fix the file.
+
+    The COUNT check catches everything else: `len(mapping) != len(node.value)` means
+    PyYAML collapsed two entries into one, whatever made them equal. That is the check
+    that holds R811's guarantee rather than approximating it.
+
+    **R822 IS WHY THE SECOND ONE EXISTS, AND IT WAS MY DEFECT.** Keying only on
+    `ScalarNode.value` keys on the key's TEXT, and PyYAML builds the mapping from the
+    key's CONSTRUCTED value. YAML 1.1 implicit typing makes those different functions, so
+    five classes of duplicate were silently last-wins -- `no`/`No` both `False`,
+    `yes`/`true` both `True`, `~`/`null` both `None`, `1`/`01` both `1`, `1.0`/`1.00` both
+    `1.0` -- which is R811's exact stated failure mode in a narrower form. Reachable
+    through a declared field: `line_masses: {1: 100.0, 01: 900.0}` loaded as
+    `{'1': 900.0}`, the first value gone, and `str(g)` made the collapsed key look like a
+    legitimate group name.
+
+    It got there because the text check was a repair for a TYPE error -- the construct
+    call needed a stub-conditional `type: ignore` -- and I replaced the comparison instead
+    of the call. The count check needs no construct call of its own, so it is typed in the
+    pinned stubs with no ignore.
+
+    **AND MY OWN COMMAND COULD NOT REFUTE IT**: all three of R811's parametrisations are
+    text-identical duplicates, so they are green under either keying. The gate was
+    parametrised over mapping DEPTH and the change moved key IDENTITY.
+
+    `flatten_mapping` runs FIRST so the counts are comparable, and that is also where R823
+    is refused -- see `_refuse_merge_keys`.
+    """
+    _refuse_merge_keys(node)
+
     seen: set[str] = set()
     for key_node, _value_node in node.value:
         if not isinstance(key_node, yaml.ScalarNode):
+            # Every non-scalar value `SafeLoader` constructs is unhashable, so PyYAML
+            # refuses such a document downstream with a located `ConstructorError`. There
+            # is nothing to compare and nothing is lost by passing it on.
             continue
         key = str(key_node.value)
         if key in seen:
@@ -93,7 +144,22 @@ def _no_duplicates(loader: yaml.SafeLoader, node: Any, deep: bool = False) -> An
                 f"one."
             )
         seen.add(key)
-    return loader.construct_mapping(node, deep)
+
+    mapping = loader.construct_mapping(node, deep)
+    if len(mapping) != len(node.value):
+        # The keys that collapsed, named by the TEXT the reader wrote rather than by the
+        # value YAML turned it into -- `no` and `No` are what is in the file; `False` is
+        # not.
+        texts = [str(k.value) for k, _v in node.value if isinstance(k, yaml.ScalarNode)]
+        raise ConfigError(
+            f"{len(node.value)} keys in this mapping became {len(mapping)} after YAML's "
+            f"implicit typing, so at least two of {texts} are THE SAME KEY and one value "
+            f"was silently discarded. YAML 1.1 reads `no`, `No`, `false` and `off` as the "
+            f"same boolean, `~` and `null` as the same null, and `1`, `01` and `1.0` as "
+            f"the same number. Quote the keys you mean as strings, or remove the "
+            f"duplicate."
+        )
+    return mapping
 
 
 _NoDuplicateLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _no_duplicates)
@@ -337,6 +403,11 @@ class FloatsimRef:
     froude_lambda: float = 50.0
 
 
+def _or_none(value: float | None) -> str:
+    """A declared option's value, or `(none)` when the run reports no sensitivity."""
+    return "(none)" if value is None else f"{value:g}"
+
+
 @dataclass(frozen=True)
 class RunConfig:
     """One validated run. Every field is declared; nothing is inferred at use time."""
@@ -422,6 +493,18 @@ class RunConfig:
             # wherever those are described.
             "window_rule": self.load_cases.window_rule or "(not declared)",
             "study_only": ("YES -- STUDY, NOT FOR DESIGN" if self.study_only else "no"),
+            # R818: THE SENSITIVITY OPERATING POINTS, which reach two PUBLISHED columns
+            # and reached no artifact. Run at a configuration the diff did not choose --
+            # `K_sensitivity` equal to `K`, `Cm_sensitivity = 0.1` -- the two columns
+            # collapse onto the base on 32 of 32 rows and the header differed from the
+            # shipped run by ONE line, the config filename. A column whose operating point
+            # is unpublished cannot be read, and that is also the half of R743 the
+            # rewording dropped: the caveat delegates the direction to a column nobody can
+            # locate.
+            "code_check_sensitivities": (
+                f"K_sensitivity = {_or_none(self.code_check.k_sensitivity)}, "
+                f"Cm_sensitivity = {_or_none(self.code_check.cm_sensitivity)}"
+            ),
             "code_check": (
                 f"K = {self.code_check.k:g}, Cm = {self.code_check.cm:g}, "
                 f"one-third increase {'ON' if self.code_check.one_third_increase else 'OFF'}"

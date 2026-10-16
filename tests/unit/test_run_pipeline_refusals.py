@@ -345,42 +345,86 @@ def test_FO0_a_SMALL_fraction_is_a_LEGITIMATE_INPUT(write: Any) -> None:
     )
 
 
-def test_FO0_NO_THRESHOLD_REMAINS_on_a_computed_quantity(write: Any) -> None:
-    """The proof that the floor is gone, not merely moved or widened.
+@pytest.mark.parametrize("fraction", [1e-09, 1e-04, 0.0053, 0.0106])
+def test_FP2_NO_FLOOR_REMAINS_measured_as_ACCEPTANCE(write: Any, fraction: float) -> None:
+    """Every positive density is accepted, however small. R820, and it is BEHAVIOUR.
 
-    **R814's sharpest half was that the threshold was held by NOTHING**: patching the floor
-    from `100` to `1e-300` -- 302 decades -- left every counter-case and its control green,
-    because the only case pinned was `f = 0.0` where the density is exactly zero. A test
-    suite that cannot tell 100 from 1e-300 was not testing the number.
+    **THE TEST THIS REPLACES COULD NOT FAIL, AND THAT WAS THE FINDING.** It read
+    `_refuse_inadmissible`'s own source and asserted the absence of `DENSITY`, of ordering
+    comparisons and of the import. The reviewer reintroduced the SAME 100 kg/m^3 floor
+    through a local binding and got 22 passed, then 186 passed over `tests/unit` plus the
+    published-artifact file, with the source test green. Four of five rungs changed
+    behaviour and no test moved. Source-reading is a legitimate instrument; my needles
+    were the defect, because a floor can arrive by a route no needle names.
 
-    So this asserts the absence structurally rather than by sweeping values: the guard's
-    source must not compare an equivalent density against anything but zero, and must not
-    reference the config's range bounds at all.
+    **THE PIN IS AN ACCEPTANCE CASE, NOT AN ABSENCE.** `f = 1e-09` gives an equivalent
+    density of `9.52795e-06` kg/m^3 -- positive, and seven orders of magnitude below any
+    floor anyone would write. It is accepted today and it reddens under ANY positive
+    floor, by any route, while introducing no threshold of its own: the assertion is
+    "accepted", not "accepted above X".
+
+    `f = 0.0106` is here because it is the case R814 was about -- the old floor admitted it
+    by `0.996` kg/m^3 and published `U = 2.15615` unlabelled -- and `1e-04` and `0.0053`
+    sit between, so a floor placed anywhere across six decades fails at least one case.
     """
-    import inspect
 
-    from floatfea.run import pipeline
+    def mutate(data: dict[str, Any]) -> None:
+        for body in data["mass_distribution"]:
+            data["mass_distribution"][body] = {"f": fraction}
 
-    source = inspect.getsource(pipeline._refuse_inadmissible)
-    body = source[source.index('"""', source.index('"""') + 3) + 3 :]
+    cfg = load_config(write(mutate))
+    built = build_model(cfg)
+    _refuse_inadmissible(cfg, built)  # must not raise, at any positive density
 
-    assert "DENSITY" not in body, (
-        "the guard must not compare a computed quantity against a declared range bound; "
-        "that is R814, and `DENSITY` is config.py's bound on the declared NOMINAL."
+    platform = next(b for b in built.bodies if b.name == "platform")
+    assert float(platform.equivalent_density) > 0.0, platform.equivalent_density
+    assert cfg.study_only is False, (
+        "a positive density must not need the study flag; needing it would mean the guard "
+        "still judges the fraction rather than refusing a non-structure"
     )
-    assert "== 0.0" in body, (
-        "the degenerate case is tested by EQUALITY with zero. A bound would be a "
-        "tolerance under another name."
-    )
-    for forbidden in ("<", ">", "<=", ">="):
-        assert f"equivalent_density) {forbidden}" not in body, (
-            f"the guard orders an equivalent density against something with "
-            f"`{forbidden}`; only equality with zero is permitted (FO0)."
+
+
+def test_FP2_study_only_PERMITS_the_run_and_LABELS_EVERY_OUTPUT(write: Any, tmp_path: Path) -> None:
+    """R821. Without the flag: refusal. With it: the run completes and says it is a study.
+
+    **THIS TEST WAS DELETED BY THE COMMIT THAT REPLACED FN1's FLOOR-ERA CASES**, and with
+    it went the only assertion that `study_only` does anything at all. The reviewer
+    measured the hole: making the refusal unconditional -- `if not cfg.study_only:` to
+    `if True:` -- left 186 passed, while the refusal message went on promising the escape.
+
+    END TO END THROUGH THE CLI rather than through `_refuse_inadmissible`, because FP2's
+    requirement is that the run COMPLETES and the label reaches EVERY output, and a stub
+    cannot see the files. R816 is the finding that says a stub is not enough. It costs a
+    real solve.
+    """
+    import floatfea.cli as cli
+
+    def mutate(data: dict[str, Any]) -> None:
+        for body in data["mass_distribution"]:
+            data["mass_distribution"][body] = {"f": 0.0}
+        data["outputs"]["directory"] = str(tmp_path / "study")
+
+    refused = load_config(write(mutate))
+    with pytest.raises(ConfigError) as caught:
+        _refuse_inadmissible(refused, build_model(refused))
+    assert "not a structure" in str(caught.value), caught.value
+
+    def mutate_study(data: dict[str, Any]) -> None:
+        mutate(data)
+        data["study_only"] = True
+
+    path = write(mutate_study)
+    assert cli.main(["run", str(path)]) == 0, "a declared study must COMPLETE, not refuse"
+
+    out = tmp_path / "study"
+    written = sorted(q.name for q in out.iterdir())
+    assert written == ["member_forces.csv", "report.md", "utilisation.csv"], written
+    for name in written:
+        text = (out / name).read_text(encoding="utf-8", errors="replace")
+        assert "STUDY -- NOT FOR DESIGN" in text, (
+            f"{name} carries no study label. A study that publishes without saying so is "
+            f"worse than one that is refused."
         )
-    # And the module as a whole no longer imports the bound.
-    assert not hasattr(
-        pipeline, "DENSITY"
-    ), "floatfea.run.pipeline must not import config.py's DENSITY bound at all"
 
 
 def test_FN1_study_only_must_be_a_BOOLEAN(write: Any) -> None:

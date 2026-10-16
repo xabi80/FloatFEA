@@ -87,6 +87,14 @@ class RunResult:
     utilisations: list[dict[str, Any]]
     mass: tuple[MassReport, ...]
     timings: dict[str, float]
+    wave_basis: dict[str, Any] = field(default_factory=dict)
+    """R817. The heading and wave height the dynamic inputs were exported at.
+
+    Carried on the result so every artifact can state them. They are the subjects of two
+    caveats the artifacts already carried -- EX3/R724 on the heading, EZ2/FA0 on the
+    height's associated-period band -- and neither value appeared in any of them.
+    """
+
     notes: tuple[str, ...] = ()
     section_properties: dict[str, tuple[float, float, float, float, float]] = field(
         default_factory=dict
@@ -499,6 +507,37 @@ def _ratio(a: float, b: float) -> float:
     return max(a, b) / min(a, b)
 
 
+def exported_wave_basis(npz: Path) -> dict[str, Any]:
+    """The heading and wave height a dynamic-inputs file was exported at (R817).
+
+    **THE ARTIFACTS CARRIED CAVEATS ABOUT THESE TWO FACTS AND NOT THE FACTS.** The
+    EX3/R724 caveat is about the heading and the EZ2/FA0 caveat is about the wave height's
+    associated-period band, and neither value appeared anywhere in the published report or
+    either CSV. The committed deliverables they replaced said "all cases are heading 0
+    degrees" and "H = 24.2 m" outright; my reworded caveat said "every case carries the
+    heading its load cases declare", which in a file that declares no heading is a
+    tautology.
+
+    Read from the provenance sidecar the export has always written, which
+    `run()` already opens for the scale. A provenance line, not a measurement: nothing
+    here is computed, and a file that records neither returns an empty mapping so the
+    report can say "(not recorded)" rather than invent one.
+    """
+    sidecar = npz.with_suffix(".provenance.json")
+    if not sidecar.is_file():
+        return {}
+    try:
+        recorded = json.loads(sidecar.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    run_block = recorded.get("run", {})
+    return {
+        key: run_block[key]
+        for key in ("heading_deg", "wave_height_full_m", "wave_height_model_m", "window")
+        if key in run_block
+    }
+
+
 def exported_froude_lambda(npz: Path) -> tuple[float | None, str]:
     """The scale a dynamic-inputs file was EXPORTED at, and where that was read from.
 
@@ -636,6 +675,7 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
     return RunResult(
         config=cfg,
         built=built,
+        wave_basis=exported_wave_basis(cfg.load_cases.npz),
         rows=computed.rows,
         utilisations=utilisations,
         mass=mass,

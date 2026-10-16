@@ -100,7 +100,10 @@ jobs:
           python-version: "3.13"
           # CK0: the wheel cache, on every job that installs.
           cache: pip
-      - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+      # R824 / FP2: ONE PINNED SET, used here and by the documented local setup.
+      # Five of six tools differed between CI and local at R1 step 1, and the gap
+      # was a CI-only mypy red that then skipped this job's unit tests and guards.
+      - run: python -m pip install --upgrade pip && pip install -c constraints-dev.txt -e ".[dev]"
 
       - name: "measure: the machine, the kernel, and a fresh render"
         run: |
@@ -358,7 +361,10 @@ jobs:
           python-version: "3.13"
           # CK0: the wheel cache, on every job that installs.
           cache: pip
-      - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+      # R824 / FP2: ONE PINNED SET, used here and by the documented local setup.
+      # Five of six tools differed between CI and local at R1 step 1, and the gap
+      # was a CI-only mypy red that then skipped this job's unit tests and guards.
+      - run: python -m pip install --upgrade pip && pip install -c constraints-dev.txt -e ".[dev]"
       # CM2: THE WORKFLOW IS LINTED BEFORE IT IS TRUSTED. A duplicate `if:`
       # key silently discarded a gate and nothing in this repository noticed
       # -- `yaml.safe_load` keeps the last key and reports nothing, which is
@@ -490,7 +496,10 @@ jobs:
           python-version: "3.13"
           # CK0: the wheel cache, on every job that installs.
           cache: pip
-      - run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+      # R824 / FP2: ONE PINNED SET, used here and by the documented local setup.
+      # Five of six tools differed between CI and local at R1 step 1, and the gap
+      # was a CI-only mypy red that then skipped this job's unit tests and guards.
+      - run: python -m pip install --upgrade pip && pip install -c constraints-dev.txt -e ".[dev]"
       - name: "ladder 1 -- the solver is a solver"
         run: sh scripts/run_rung.sh full:tests/verification/rung1
       - name: "ladder 2 -- the element is the element"

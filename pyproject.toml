@@ -22,6 +22,13 @@ dependencies = [
 [project.scripts]
 floatfea = "floatfea.cli:main"
 
+# THESE ARE FLOORS; THE EXACT VERSIONS ARE IN `constraints-dev.txt` (R824 / FP2).
+# Install the dev set with that file, both locally and in CI:
+#
+#     pip install -c constraints-dev.txt -e ".[dev]"
+#
+# A floor alone let CI resolve mypy 2.4.0 against a local 1.20.2 -- five of six tools
+# differed -- and the gap was a CI-only red that skipped CI's unit tests and guards.
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",

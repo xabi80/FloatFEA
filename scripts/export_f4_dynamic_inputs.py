@@ -458,19 +458,45 @@ def main(argv: list[str] | None = None) -> int:
         if missing:
             print(f"  REFUSED: the array sets differ: {sorted(missing)[:6]}")
             return 1
-        worst, where = 0.0, ""
+        # **A GATE, NOT A REPORT (FP2, closing C20).** This printed
+        # `worst relative difference` and returned 0 whatever it printed, so it could not
+        # fail a regeneration: `gap` was kept only `if gap > worst`, and `np.abs(nan)`
+        # compares false against everything, so a NaN pair left `worst` at `0.0` and the
+        # line read `0.000000e+00`. The exact sentence a reader trusts most was the one it
+        # could not earn.
+        #
+        # THE RULE IS Q8's GOLDEN RULE: a regeneration either reproduces the committed file
+        # or it does not. There is no tolerance here and none is wanted -- `np.array_equal`
+        # on the raw arrays, and a non-finite value anywhere is a failure in its own right
+        # because it cannot be compared.
+        nonfinite: list[str] = []
+        differing: list[str] = []
         for key in sorted(committed):
             a, b = committed[key], fresh[key]
-            if a.dtype.kind not in "fc":
-                if not np.array_equal(a, b):
-                    print(f"  REFUSED: {key} differs and is not numeric")
-                    return 1
+            if a.dtype.kind in "fc" and not (np.isfinite(a).all() and np.isfinite(b).all()):
+                nonfinite.append(key)
                 continue
-            scale = float(np.max(np.abs(a))) or 1.0
-            gap = float(np.max(np.abs(a - b))) / scale
-            if gap > worst:
-                worst, where = gap, key
-        print(f"  worst relative difference {worst:.6e}  at {where or '(none)'}")
+            if a.shape != b.shape or a.dtype != b.dtype or not np.array_equal(a, b):
+                differing.append(key)
+
+        if nonfinite:
+            print(
+                f"  REFUSED: NaN or inf in {len(nonfinite)} array(s): "
+                f"{nonfinite[:6]}. A non-finite value cannot be compared, so this is a "
+                f"failure rather than a difference of zero -- which is what the old "
+                f"`worst relative difference` printed for it."
+            )
+            target.unlink()
+            return 1
+        if differing:
+            print(
+                f"  REFUSED: {len(differing)} array(s) differ from the committed file: "
+                f"{differing[:6]}. A regeneration either reproduces it exactly or it does "
+                f"not (Q8); there is no tolerance on this comparison."
+            )
+            target.unlink()
+            return 1
+        print(f"  {len(committed)} arrays reproduce the committed file EXACTLY")
         target.unlink()
         return 0
 
