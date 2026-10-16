@@ -62,9 +62,29 @@ class _NoDuplicateLoader(yaml.SafeLoader):
 
 
 def _no_duplicates(loader: yaml.SafeLoader, node: Any, deep: bool = False) -> Any:
-    seen: set[Any] = set()
+    """The duplicate check, keyed on the SCALAR TEXT of each key node.
+
+    **IT READ `loader.construct_object(key_node)` AND THAT NEEDED A `type: ignore`, WHICH
+    IS WHAT CI CAUGHT.** `types-PyYAML` leaves `construct_object` untyped in the version
+    pinned here (6.0.12.20260408) and types it in the version CI resolved, so the narrow
+    ignore was REQUIRED locally and UNUSED there -- and `warn_unused_ignores` makes an
+    unused one an error. Both runs were right; the code was conditional on a stub.
+
+    `mypy floatfea` and even CI's own `mypy floatfea scripts/f4_dynamic_residual.py` both
+    passed on this machine, so no local command could have found it. That is CZ1 (iii)'s
+    whole point, and this is the first time any of R1's work was built.
+
+    A config key is a YAML scalar -- these are field names -- so its text is the identity
+    the check wants, and `ScalarNode.value` is that text without constructing anything. A
+    non-scalar key cannot be a field in this schema, so it is left to the normal
+    constructor rather than compared here: skipping it loses no duplicate a configuration
+    could actually express.
+    """
+    seen: set[str] = set()
     for key_node, _value_node in node.value:
-        key = loader.construct_object(key_node, deep=deep)  # type: ignore[no-untyped-call]
+        if not isinstance(key_node, yaml.ScalarNode):
+            continue
+        key = str(key_node.value)
         if key in seen:
             raise ConfigError(
                 f"duplicate key {key!r} at line {key_node.start_mark.line + 1}. YAML's "
