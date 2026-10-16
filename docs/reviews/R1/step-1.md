@@ -1,4 +1,479 @@
 # Review — R1 step 1
+Reviewed commit: 60f3176a0796c298d55d79494c7aa013abb1fd16
+**Reviewed commit: `60f3176a0796c298d55d79494c7aa013abb1fd16`.**
+Verdict: PASS
+Tests: 3554 passed, 13 failed, 1 skipped   (my own run, `python -m pytest -q`, 679.10s)
+
+**THIS IS AN INTERIM CHECK UNDER ES0 AND IT COUNTS AGAINST NO ROUND.** There is no new
+report revision and there cannot be one: step 1 closed at verdict 3 with
+`Closes: R1/step-1`, and ES0 caps the step at three reviewed revisions. The `Stop` hook
+forced this check because `floatfea/run/config.py` moved after that verdict. Light scope
+as ES0 writes it: the suite and CI at the commit, plus a CZ0 (a)-(d) scan of the diff.
+No corpus batch, no closure list.
+
+**THE DISPOSITION WORD IS `PASS` AND IT IS NOT AN ENDORSEMENT -- R822 BLOCKS.** The
+reasoning is set out once, under its own heading below, because the honest reading of my
+own instructions is that a blocking finding wants a HOLD and HOLD is not available here.
+R822 joins step 1's carried list and is answered in step 2's FIRST commit, before any FL2
+work, alongside R817 to R821 under FO3.
+
+**EU1: I agree it does not attach, and I ran the adversarial case anyway -- and that is
+what found R822.** `git diff 2042c56..HEAD -- floatfea/tolerances.py` is empty, the diff
+declares no counter, and nothing in it is a value chosen to make two numbers agree. But
+the scan of the diff is not what found the finding; running the loader at inputs the diff
+did not choose is, which is EU1's own stated reason rather than its scope.
+
+## Carried
+
+**Verdict 3's five blocking items: NOT RE-REVIEWED AND ALL FIVE STILL OPEN.** The diff
+since verdict 3 is one function body in `floatfea/run/config.py` and touches none of
+them.
+
+| item | status | where |
+|---|---|---|
+| R817 (heading and wave height absent from all three artifacts) | **still open** | the diff is `floatfea/run/config.py` alone, 22 insertions, 2 deletions; `results/` and `floatfea/run/pipeline.py` are untouched |
+| R818 (the two declared sensitivities reach no artifact) | **still open** | same diff; `provenance()` at `floatfea/run/config.py:405` is outside the changed hunk, which is `:62-96` |
+| R819 (the R741/R742 caveat refuted by the code at any `Fy`) | **still open** | `floatfea/checks/api_wsd.py` and `floatfea/cli.py` untouched |
+| R820 (R814's repair held in place by nothing) | **still open** | `tests/unit/test_run_pipeline_refusals.py` untouched |
+| R821 (`study_only` asserted by no test) | **still open** | same |
+
+That is correct and expected: 60f3176 is a CZ1 (iv) follow-on answering the CI red at
+2042c56, not a revision answering verdict 3. Recorded so the list is re-read rather than
+assumed, which is the one thing this project has already failed once.
+
+**Verdict 3's named conditions 6 and 7 have both MOVED, and condition 7 is CLOSED.**
+
+| condition | status |
+|---|---|
+| 7. Push the branch | **DONE, and it is the most valuable thing in this commit history.** `git ls-remote --heads origin` gives `60f3176a... refs/heads/F3`. The first CI run any R1 work has ever had found a red that four local gates on this machine cannot produce, and it had skipped `unit tests` and `guards and meta-tests` behind it. CI has now RUN R1's unit tests (success) and its guards. Three verdicts asked for this; it bought a finding immediately, which is CZ1 (iii) measured rather than argued. |
+| 6. EG3(ii), the verdict commit measured | **done by me instead, and it produced the control the EG3 enumeration needed.** See the trace section. |
+
+**C22's premise has moved and the item narrows.** With the branch pushed,
+`python scripts/ci_section.py --rounds` now exits 0 and emits the table; only the
+per-commit form still refuses, and for a different reason than verdict 3 recorded.
+
+```
+claim  the rounds generator works now and the per-commit generator still does not
+cmd    python scripts/ci_section.py --rounds > /dev/null ; echo exit=$?
+out    exit=0      and the table carries both runs: 38834673534 at 2042c56, failure;
+                   38835420645 at 60f3176, failure, 13 failing test names
+cmd    python scripts/ci_section.py > /dev/null ; echo exit=$?
+out    exit=1      no CI run at 582cde72..., and the commit touches paths the workflow
+                   does NOT ignore
+rule   verdict 3's C22 -- scripts/ci_section.py refuses with exit 1 where it should emit
+       the section body
+judge  the remaining refusal is no longer about a push policy. It anchors on the commit
+       the newest REPORT revision answers, 582cde7 at verdict 2, and that commit predates
+       the push, so no run will ever exist for it. C22's repair is unchanged in substance
+       and its justification sentence is now wrong. Re-measure it in step 2's first
+       commit rather than carrying verdict 3's wording.
+```
+
+## Findings
+
+One blocks. Two are recorded, named and do not block. One is a correction to the EG3
+enumeration, measured, which is Xabier's directive to adopt and not mine.
+
+**R822. (BLOCKS -- CZ0 heads a and c) THE DUPLICATE-KEY GUARD NOW KEYS ON THE KEY'S TEXT
+WHILE PyYAML BUILDS THE DICT FROM THE KEY'S CONSTRUCTED VALUE. Where the two differ the
+duplicate is accepted and silently resolved last-wins -- five measured classes, refused
+one commit earlier -- and the gate that should hold it cannot contain the failure.**
+
+The commit's own sentence is the claim: *"A config key is a YAML scalar -- these are field
+names -- so `ScalarNode.value` is the identity the duplicate check wants."* `ScalarNode.value`
+is the key's TEXT. The identity PyYAML uses when it builds the mapping is the key's
+CONSTRUCTED value, and YAML 1.1 implicit typing makes those two different functions.
+
+```
+claim  five classes of duplicate key are refused at 2042c56 and silently last-wins at
+       60f3176, one variable moved -- the commit
+cmd    the same 17-case table loaded through `_NoDuplicateLoader` in two trees: HEAD, and
+       `git archive 2042c56` unpacked into the scratchpad
+out                        2042c56                      60f3176
+       no: / No:           ConfigError duplicate False   OK  {False: 2}
+       yes: / true:        ConfigError duplicate True    OK  {True: 2}
+       ~: / null:          ConfigError duplicate None    OK  {None: 2}
+       1: / 01:            ConfigError duplicate 1       OK  {1: 'b'}
+       1.0: / 1.00:        ConfigError duplicate 1.0     OK  {1.0: 'b'}
+       control, a: twice   ConfigError duplicate 'a'     ConfigError duplicate 'a'
+rule   `floatfea/run/config.py:48-61` -- "A YAML loader that REFUSES a duplicate mapping
+       key (R811). `yaml.safe_load` is last-wins and silent, which is the worst of the
+       three possible behaviours."
+judge  in every one of the five the reader sees two values in the file and the run gets
+       the second. That sentence is R811's whole content, and the module docstring is the
+       only place this repository states it.
+```
+
+```
+claim  it is reachable through a DECLARED FIELD of the shipped schema, and the surviving
+       key looks legitimate
+cmd    the shipped example with paths absolutised, `platform: {f: 0.75}` replaced by an
+       explicit distribution, through `load_config`
+out    line_masses: {1: 100.0, 01: 900.0}   -> LOADED  line_masses={'1': 900.0}
+       line_masses: {no: 100.0, No: 900.0}  -> LOADED  line_masses={'False': 900.0}
+       control, 1: twice                    -> REFUSED "duplicate key '1' at line 35"
+rule   `floatfea/run/config.py:527-529` -- the comprehension keyed on `str(g)` over
+       `lines.items()`
+judge  `line_masses` is keyed by member group and the group names are the USER's, which is
+       the one free-form key space the step-1 schema has. `str(g)` then turns the collapsed
+       key back into a plausible string: the file declares two line masses in kg/m and the
+       configuration object carries one, under a name (`'1'`) indistinguishable from the
+       first of them. A line mass is a load.
+```
+
+```
+claim  no number ships from this today, and the exposure opens in the very next step
+cmd    floatfea/run/pipeline.py:155-163
+out    the modes check raises -- "only the `f` (fraction) mode is wired to the builder in
+       R1 step 1 ... FL2 wires it; until then this is refused rather than half-applied."
+rule   CZ0 (a), a defect in `floatfea/`
+judge  the pipeline refuses explicit mode, so the silently-wrong configuration object
+       cannot reach a member force at this commit. **It is still a defect in `floatfea/`**
+       -- the loader's stated guarantee is false for a measured class of its own declared
+       input -- and the step that wires explicit mode is FL2(a), which is the step this
+       finding carries into. The fix and the exposure are in the same step, which is why
+       the condition is "step 2's first commit" and not "eventually".
+```
+
+```
+claim  the gate's three parametrisations cannot contain the failure, and the commit
+       message's own behavioural command is blind on exactly the axis the diff moved
+cmd    tests/unit/test_run_pipeline_refusals.py:400-407 -- the three needle/addition pairs
+out    ("    Fy: 355000000.0", "    Fy: 275000000.0")
+       ("  platform: {f: 0.75}", "  platform: {f: 0.30}")
+       ("  K: 2.0", "  K: 3.0")
+cmd    python -m pytest -q tests/unit/test_run_pipeline_refusals.py
+out    22 passed
+rule   the gate's own docstring -- "Parametrised across three sections because a loader
+       fixed for one mapping depth can still be last-wins at another"
+judge  all three duplicates are TEXT-IDENTICAL, so all three are green under either
+       keying. The gate is parametrised over mapping DEPTH and the change moved key
+       IDENTITY; the collection the assertion inspects cannot contain the failure. The
+       commit message attaches `-k "R811 or FO0 or duplicate" -> 8 passed, 37 deselected`
+       to the sentence "loses no duplicate a configuration could express", and that
+       command cannot refute that sentence. This is R755's shape -- right about the axes
+       its author swept, silent about the one with nothing on it -- and R820's shape one
+       verdict earlier: a behavioural claim carrying a command that measures something
+       adjacent.
+```
+
+```
+claim  a repair exists that is complete, typed under BOTH stub versions, and needs no
+       ignore -- so the condition is closeable rather than a wish
+cmd    mypy --python-version 3.13 --strict --warn-unreachable --warn-unused-ignores on a
+       scratch file calling loader.construct_scalar, flatten_mapping, construct_mapping
+out    construct_scalar -> str ;  construct_mapping -> dict[Hashable, Any] ;
+       flatten_mapping typed ;  Success: no issues found in 1 source file
+cmd    the same 11-case table through a prototype that flattens merges first, keeps the
+       text check, then compares len(mapping) against len(node.value)
+out    all five collapse classes REFUSED, "collapsed duplicate: 2 keys -> 1 entries";
+       plain dup REFUSED; clean nested OK; a single merge OK; a two-source merge OK
+rule   CZ0 (a) -- the condition has to be closeable without reintroducing the ignore CI
+       rejected
+judge  **this is a demonstration that a typed route exists, NOT a prescription.** The
+       property the repair needs is that the check's key identity is the identity PyYAML
+       uses to build the dict; how that is spelled is the implementer's. Note that
+       `construct_scalar` alone does NOT fix it -- it returns the text.
+```
+
+**Closed when** the five classes above are refused again (the two-tree table is the
+counter-case, and a text-identical control stays refused so the check is not simply a
+blanket raise); the R811 gate gains at least one case whose two keys differ in TEXT and
+agree after construction, so the collection can contain the failure; and the docstring
+sentence at `floatfea/run/config.py:77-81` is corrected or deleted (CW0 -- it is the only
+statement in this repository of what the loader guarantees, which is why it closes with
+the code and not in a ledger). Regenerated at the answering commit (CP3).
+
+**R823. (DOES NOT BLOCK -- recorded and named) The implementer's own question, answered:
+the `continue` loses nothing, by measurement, and the reason given for it is not the
+operative one.**
+
+```
+claim  no non-scalar key node can carry a duplicate past the check
+cmd    six documents through `_NoDuplicateLoader` at HEAD, one per non-scalar tag
+       SafeLoader can construct, plus a duplicate pair
+out    a !!seq key     ConstructorError, found unhashable key
+       a !!map key     ConstructorError
+       a !!set key     ConstructorError
+       an !!omap key   ConstructorError
+       a !!pairs key   ConstructorError
+       a seq key twice ConstructorError
+rule   the docstring's claim -- "skipping it loses no duplicate a configuration could
+       actually express"
+judge  **the claim is TRUE and I confirm it.** The operative reason is not "a non-scalar
+       key cannot be a field in this schema" -- the loop runs over EVERY mapping in the
+       document, not only the field mappings -- it is that every non-scalar node
+       SafeLoader can construct is UNHASHABLE, so PyYAML refuses the document downstream.
+       The behaviour is right; the sentence attributes it to the wrong mechanism. At
+       2042c56 the same six gave a bare `TypeError: unhashable type` from inside the
+       check, so the `continue` also turned that into a located YAML error. An improvement.
+```
+
+```
+claim  merge keys went from a hard crash to working, and merged keys bypass the duplicate
+       check entirely
+cmd    the same documents in two trees, then a merge through the real schema
+out    2042c56  a merge key gave ConstructorError, could not determine a constructor for
+                the tag tag:yaml.org,2002:merge -- ANY merge key crashed
+       60f3176  the same document loads: {'base': {'x': 1}, 'd': {'x': 1, 'y': 2}}
+       60f3176  the example with an anchored `platform: {f: 0.75}` and a `hub1` that
+                merges it and then overrides -- LOADED, hub1 f = 0.1, platform f = 0.75
+rule   `SafeConstructor.construct_mapping` calls `flatten_mapping` INSIDE itself, so
+       `config.py:96` runs the merge AFTER the loop at `:84-95` has finished
+judge  not a defect -- merge is YAML's own feature and explicit-wins is its own rule, so
+       no explicitly written value is silently lost. It is an UNDECLARED WIDENING of the
+       accepted input language: `_NoDuplicateLoader` now admits anchors, aliases and
+       merges that it rejected outright one commit ago, nothing in the schema documents
+       them, no test exercises them, and R811's premise is that a reader can see the
+       effective value at its own key. Named for step 2's list rather than ledgered,
+       because step 1 has no open ledger and FL3(a) has to document the input language.
+```
+
+**R824. (DOES NOT BLOCK -- recorded and named) The environment divergence that produced
+this red is STRUCTURAL, not a one-off, and "no local command could have found it" is true
+of the pinned tree and false of the cause.**
+
+```
+claim  both type-checking inputs are unpinned floors and CI resolved different ones
+cmd    grep -n types-PyYAML and mypy in pyproject.toml ; mypy --version ; the CI install log
+out    pyproject:  "types-PyYAML>=6.0"   "mypy>=1.9"
+       local:      types-PyYAML 6.0.12.20260408 ; mypy 1.20.2
+       CI run 38835420645: types-PyYAML-6.0.12.20260906 ; mypy-2.4.0
+cmd    mypy --python-version 3.13 --strict on a scratch call to construct_object, locally
+out    error: Call to untyped function "construct_object" in typed context [no-untyped-call]
+rule   CZ1's reusable half -- a check whose input is the commit itself cannot be measured
+       before the commit exists -- and its sibling, a check whose input is a RESOLUTION
+       cannot be measured in a different one
+judge  the diagnosis in the commit message is exact and I reproduced every figure in it.
+       What it does not say is that CI runs a different MAJOR version of the type checker,
+       2.4.0 against 1.20.2, so `mypy floatfea` locally and `mypy` in CI are two
+       instruments, and this class of red will recur on the next stub or checker release.
+       Not (a)-(d): `pyproject.toml` is project configuration, not `floatfea/` behaviour,
+       not a tolerance, not a gate assertion, and no test is red for it. Named because the
+       cheap options -- pin both, or resolve CI's set locally before pushing -- are a line
+       each, and because "no local command could have found it" will otherwise be read as
+       a permanent property of the tree.
+```
+
+## THE EG3 ENUMERATION IS SHORT BY ONE NAME, MEASURED (not adopted by me)
+
+13 failed locally and 13 failed in CI, and the two sets are identical. Twelve map onto
+EG3's two lists as corrected by EH1, EJ2, FC1 and FN2. **One is on neither list**, and I
+ran it individually rather than as part of a cascade, which is what EG3(i) exists to force:
+
+```
+tests/test_report_carried.py::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph
+    AssertionError: no `## 0a` table in the newest revision.
+```
+
+```
+claim  it is verdict-dependent by measurement, against a verdict-exists control
+cmd    a git worktree at bd315a1, a commit where report and verdict are in sync; then
+       python -m pytest -q tests/test_report_carried.py tests/test_report_guard_states.py
+out    149 passed in 134.82s    -- 0 failed
+rule   FN2's membership rule -- "verdict-dependent, measured against a verdict-exists
+       control, and the enumeration is a convenience that has now been short twice"
+judge  it is green where an answering revision exists and red here, so it belongs on
+       **state (2)'s** list: only the answering report can add the `## 0a` table, and EK3
+       bars adding one to step 1's closed report. The enumeration has now been found short
+       four times -- two names each side at EH1, two placements at EJ2, three at FN2, and
+       this one. **The pattern is the finding, not the name:** a list of names cannot be
+       checked against a failure message, and only running the id at a control settles it.
+       I record the measurement; adopting it into `CLAUDE.md` is a directive and Xabier's,
+       not mine.
+```
+
+## The 13 reds, traced by name (EG3(i)), and why CA2 does not HOLD here
+
+**CI at the reviewed commit is RED and I am not ruling it a blocking (d).** The trace is
+the condition and it is pasted.
+
+```
+cmd    gh run list --commit 60f3176a0796c298d55d79494c7aa013abb1fd16 --json name,conclusion,workflowName,status
+out    [{"conclusion":"failure","name":"CI","status":"completed","workflowName":"CI"}]
+cmd    gh run view 38835420645 --json jobs, step conclusions
+out    lint, unit and guards : FAILURE
+         actionlint success / ruff success / black --check success / mypy SUCCESS /
+         unit tests SUCCESS / guards and meta-tests FAILURE
+       the verification ladder : SUCCESS, rungs 1, 2, 3, 6, 4, 5 all success
+       CI determinism -- leg, and ten legs agree : skipped
+cmd    sed -n '85,95p' .github/workflows/ci.yml
+out    the determinism jobs are gated on the workflow_dispatch event -- CK0, by hand only
+cmd    the CI log's outer short-summary, against my own python -m pytest -q
+out    CI    : 13 failed, 1124 passed, 1 skipped in 458.16s
+       local : 13 failed, 3554 passed, 1 skipped in 679.10s
+       the two FAILED id lists are IDENTICAL
+```
+
+The 13, each matched to its state's own list:
+
+* `test_the_report_carries_a_CI_SECTION` -- state (1), FN2
+* `test_the_reported_CI_counts_are_not_all_zero` -- state (1), FN2
+* `test_the_CI_section_is_about_the_REVIEWED_commit` -- state (2), EG3
+* `test_the_report_carries_a_WHOLE_SUITE_count` -- state (2), FC1
+* `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` -- state (2), FC1
+* `test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph` -- **off both lists**,
+  measured verdict-dependent at the bd315a1 control above
+* `test_the_guard_survives_the_state[baseline]` and six planted states --
+  `non_numeric_step_suffix`, `superscript_digit_step_number`,
+  `draft_suffix_beside_a_step_report`, `step_number_is_the_empty_string`,
+  `verdict_amended_after_the_commit_the_report_answers`, `zero_padded_step_number` --
+  the cascade, identified as EH1 requires by the baseline being red and by each state's
+  own failure line embedding the inner run's `6 failed, 230 passed, 1 skipped`
+
+```
+claim  not one of the 13 is red where an answering revision exists
+cmd    the two report-guard files at bd315a1, a verdict-exists commit
+out    149 passed, 0 failed
+rule   EG3 as corrected by FN2 -- membership is verdict-dependent, measured against a
+       verdict-exists control
+judge  this tree is EG3 state (2): verdict 3 at 2042c56 is newer than report revision 3,
+       whose `Answers: verdict 2 @ d511a0c` line is correct for the revision it is. The
+       state clears BY THE ANSWERING REPORT and not by time, and step 1's answering report
+       cannot be written -- ES0 caps the step and EK3 bars touching a closed report. **So
+       the state clears at step 2's report and nowhere earlier.** Every red traces, so the
+       waiver's condition is met and none is CZ1 (iv).
+```
+
+**On CA2, which I keep in full because `CLAUDE.md` does not carry it.** CA2 says a red CI
+is a HOLD regardless of the local run. EG3 is the clause that qualifies CZ0's head (d) for
+a step's own boundary red on EITHER side of the verdict, and it is written about CZ1 step
+(iii), which IS the pushed run. Every one of the 13 is that boundary red, by name and by
+control. **The red is recorded as red with its cause named, and it does not HOLD.** What
+would HOLD is a fourteenth, and there is none: `mypy`, `ruff`, `black`, `unit tests` and
+all six ladder rungs are green in CI at this sha, which is the first time in this
+milestone that any of it has been true.
+
+## Why PASS and not HOLD, said once
+
+R822 blocks under CZ0 (a) and (c). My instructions say not to soften a HOLD into a PASS,
+and I am not: I am recording that **HOLD's own definition is unavailable at this commit**,
+and saying so where it can be disagreed with.
+
+HOLD means "the step stays open; the listed items are answered before anything else, and
+the next step does not begin." Step 1 does not stay open -- verdict 3 is its closure
+verdict, PASS, carrying `Closes: R1/step-1`, and DD1 says a step's disposition is read
+from its closure verdict and that a later verdict about the state of the TREE does not
+reopen it. Step 2 has already begun. And a HOLD written into this file puts the `Stop`
+hook, which reads the last line, into exactly the documented conflict with DD1 that cost
+two verdicts in F6, neither of which was about the work.
+
+ES0 designs the alternative and I am using it rather than inventing one: *"Its findings
+join the step's list and are answered in the next revision."* R822 joins R817 to R821,
+stays blocking, and goes into step 2's FIRST commit before any FL2 work under FO3 -- which
+is also when its exposure opens, because FL2(a) is what wires the explicit mass
+distribution the finding is reachable through. The practical effect of a HOLD is obtained
+without re-creating the trap.
+
+**If that reading of ES0 and DD1 is wrong, it is wrong about the criterion and not about
+the work**, and it goes to Xabier through the implementer rather than becoming another
+round. Said once.
+
+## The adversarial cases I ran, and what they found
+
+* **The loader's key-identity space, 17 cases in TWO TREES** -- text duplicates, the five
+  YAML 1.1 implicit-type collapses, quoted against plain, alias-as-key, nested depth, and
+  six non-scalar key tags. One variable moved: the commit. **R822** and **R823**.
+* **The configuration the diff did not choose, through the real schema** -- the shipped
+  example with an explicit `line_masses` distribution, at numeric and boolean-looking group
+  names, with a text-identical control. That is what turned R822 from a property of a
+  loader into a property of a declared field.
+* **A merge key through the real schema**, shadowing an anchored `f: 0.75` with `f: 0.10`
+  on `hub1`: loads, where it crashed one commit earlier. **R823.**
+* **A typed repair prototyped against all 11 cases**, so R822's condition is closeable
+  without reintroducing the ignore CI rejected.
+* **The verdict-exists control at bd315a1**, which made the 13 a measurement rather than a
+  family resemblance -- and which found the off-list name.
+* **Both type-checking instruments compared**, local against CI's resolved set. **R824.**
+
+What I did NOT find: the `continue` the report asked me to attack is sound. Six non-scalar
+key tags, every one refused. I tried to build a non-scalar key that reaches the schema and
+there is none, because every non-scalar value `SafeLoader` constructs is unhashable. The
+hole is one line above it, on the axis nobody was looking at.
+
+## Corpus (EG4(e))
+
+**The pause held. Zero new entries this round** -- `tests/corpus/` is untouched by me, and
+ES0's light scope says no corpus batch for an interim check, so there is no coverage count
+to report. R1 step 1 touches neither exception: not F4's load-mapping gate, not EB6's
+label-provenance gate.
+
+I ran **the recorded substitute's first half** instead -- a continuum grid over the
+parameter space a decision rule guards, here the key-identity space of
+`_NoDuplicateLoader`, swept in two trees. It produced this round's only blocking finding.
+The second half, a regeneration check on a published deliverable, I did not run: the diff
+touches nothing any deliverable reads, and verdict 3 regenerated all three artifacts line
+for line one commit ago.
+
+## Tolerances touched
+
+**None.**
+
+```
+cmd    git diff 2042c56..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff 2042c56..HEAD, searched for isclose, abs_tol, rel_tol, approx, atol, rtol
+       and bare numeric comparisons
+out    no new comparison; the diff's only comparisons are a set membership test on a
+       string and an isinstance against yaml.ScalarNode
+```
+
+Neither is a tolerance under any name: one is set membership on a string, the other a type
+test. The five collapse classes in R822 are not a tolerance either -- nothing in them is a
+value chosen to make two numbers agree, and the repair direction is a stricter refusal,
+not a wider one. **EU1 therefore does not attach, and I say so having run its measurement
+anyway rather than having inferred it from the diff.**
+
+## Next step opens when
+
+Step 2 is already open (verdict 3). What this check changes is the content of its first
+commit, and these are the conditions rather than "the above":
+
+1. **R822** -- the five collapse classes refused again, with a text-identical control still
+   refused; one R811 case whose two keys differ in text and agree after construction, so
+   the gate's collection can contain the failure; and `floatfea/run/config.py:77-81`
+   corrected or deleted. In the SAME commit as R817 to R821 under FO3, before any FL2
+   work, and before FL2(a) wires the explicit mass distribution it is reachable through.
+2. **R817, R818, R819, R820, R821** -- unchanged from verdict 3, all five still open, each
+   with its own condition in that verdict's `Next step opens when`.
+3. **R823 and R824** -- recorded, not blocking. The merge and anchor widening is documented
+   or refused, and the two type-checking floors are pinned or CI's resolution is run
+   locally before a push. Neither is (a)-(d) and neither should consume a round.
+4. **C22, re-measured rather than re-quoted.** Its repair stands; its justification
+   sentence does not, because `--rounds` now works and the per-commit form refuses for a
+   reason the push cannot fix.
+5. **The push, continued.** It is closed as an open item and it should not become one
+   again: push the report commit BEFORE invoking me, as the report proposes -- **and push
+   the verdict commit too**, because `scripts/ci_section.py` anchors on the commit the
+   report answers, and FC1's two guards need a run at the commit they describe. **Yes to
+   the process change, with that addition.** It makes CA2 measurable at every reviewed
+   commit for the first time in this milestone, and this commit is the argument for it:
+   one push found a red that four green local gates could not produce.
+
+**What this commit got right, and it is most of it.** The repair removes the condition
+rather than the symptom, which is the right instinct; the diagnosis of the stub divergence
+is exact and every figure in it reproduced; the commit is a standalone CZ1 (iv) follow-on
+that touches nothing else, with `floatfea/tolerances.py`, `tests/conftest.py`, `.claude/`
+and `docs/SUPERVISOR.md` all untouched, each diffed separately; and the question the report
+asked me to attack was the right question, asked honestly, about the right line of the
+diff. It was one line away from the hole.
+
+**The pattern, named once more because it has now held for four consecutive rounds.**
+Verdict 2: the verifiable half gets verified and the deciding half gets described.
+Verdict 3: the deciding half is no longer the repair, it is what holds the repair. This
+round: **the deciding half is the axis the author did not sweep.** The commit carried a
+behavioural command for its behavioural claim -- which is more than BF0 asks -- and that
+command was parametrised over mapping depth while the change moved key identity. R755 was
+this. R820 was this. The cheap question that catches it is not "is there a command?" but
+"can that command fail on the axis this diff moved?"
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 1
 Reviewed commit: 62a8281cd0eba008c6c135775199dec86749f7e7
 **Reviewed commit: `62a8281cd0eba008c6c135775199dec86749f7e7`.**
 Closes: R1/step-1
