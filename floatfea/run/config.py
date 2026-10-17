@@ -230,6 +230,38 @@ def _require(mapping: Any, key: str, where: str) -> Any:
     return mapping[key]
 
 
+def _require_string(value: Any, where: str) -> str:
+    """A declared NAME or provenance string IS a string, or it is refused (R834, FQ1's argument).
+
+    **THE SCALAR HALF OF `_require_name_keys`, AND THE COERCION FQ1 ORDERED DELETED SURVIVED
+    HERE.** FQ1's letter covers "a mapping whose keys are names", so `lumped[].label` was
+    outside it -- the same defect one field across. Measured before this check, through the
+    real `load_config` on the shipped example with two lumped masses labelled `true`
+    (unquoted) and `"True"` (quoted):
+
+        LOADED. lumped labels: ["True", "True"]
+        two DECLARED labels, both arrive as: ["True"]
+
+    `LumpedMass.label` is the only identifier a point mass has, so two masses the reader
+    distinguished became two masses with one name -- and an explicit `lumped_0` can collide
+    with the `lumped_{i}` default. Nothing consumes a lumped mass yet; FL2 wires it, which
+    is why this is named now rather than after the consumer ships.
+
+    **AND THE REVIEWER NAMED ONE SITE; THERE WERE THREE.** `tag` and `window_rule` coerce the
+    same way and both reach PUBLISHED provenance, so `tag: no` would publish `False` as the
+    FloatSim tag. The schema's discipline is refuse-not-coerce -- `_checked` rejects a `bool`
+    by name for every declared NUMBER -- and these were the declared STRINGS that did not.
+    """
+    if not isinstance(value, str):
+        raise ConfigError(
+            f"{where}: {value!r} ({type(value).__name__}) is not a string. YAML reads bare "
+            f"words like `no`, `yes`, `true`, `null` and `~` as booleans and nulls, and bare "
+            f"digits as numbers, so a name written without quotes arrives as a different "
+            f"type and can collide with a quoted one. **Quote the name.**"
+        )
+    return value
+
+
 def _require_name_keys(mapping: dict[Any, Any], where: str) -> None:
     """Every key of a NAME-KEYED mapping is a string, or the mapping is refused (FQ1/R825).
 
@@ -577,7 +609,7 @@ def _parse_floatsim(block: Any, base: Path) -> FloatsimRef:
     lam = block.get("froude_lambda", 50.0)
     return FloatsimRef(
         deck=deck,
-        tag=str(block.get("tag", "")),
+        tag=_require_string(block.get("tag", ""), f"{where}.tag"),
         froude_lambda=_checked(lam, f"{where}.froude_lambda", FROUDE_LAMBDA),
     )
 
@@ -666,7 +698,7 @@ def _parse_mass(block: Any) -> dict[str, MassDistribution]:
                 )
             lumped.append(
                 LumpedMass(
-                    label=str(item.get("label", f"lumped_{i}")),
+                    label=_require_string(item.get("label", f"lumped_{i}"), f"{at}.label"),
                     mass=_checked(_require(item, "mass", at), f"{at}.mass", LUMPED_MASS),
                     position=tuple(  # type: ignore[arg-type]
                         _checked(c, f"{at}.at[{j}]", ("m", -1.0e4, 1.0e4))
@@ -767,7 +799,7 @@ def _parse_load_cases(block: Any, base: Path) -> LoadCases:
         npz=npz,
         cases=tuple(cases),
         governing_periods=periods,
-        window_rule=str(block.get("window_rule", "")),
+        window_rule=_require_string(block.get("window_rule", ""), f"{where}.window_rule"),
     )
 
 

@@ -13,8 +13,16 @@ fix in a commit message. A test over `_header_lines` would not have caught it ei
 
 **THE ARTIFACTS ARE COMMITTED, SO THIS READS THEM RATHER THAN REGENERATING THEM.** A full
 run is 67 s and `test_r1_example_golden.py` already pays it to check the NUMBERS. What is
-checked here is the published FORM, and reading the committed files also catches a
-regeneration that was never committed -- which a test that regenerates cannot.
+checked here is the published FORM.
+
+**AND THE CLAIM THAT USED TO FOLLOW THAT SENTENCE WAS FALSE, WHICH R831 MEASURED.** It read
+"reading the committed files also catches a regeneration that was never committed -- which a
+test that regenerates cannot". It did not: the caveat gate's needle was the MARKER, and
+`EX3` appears in the stale sentence as well as the repaired one, so all three deliverables
+published the pre-R829 wording with 33 of 33 cases green. A needle that matches both sides
+of the change it is meant to detect catches nothing. The needle is now the caveat TEXT, out
+of `floatfea.cli.TABLE_CAVEATS`, so a reworded caveat reddens until the files are
+regenerated.
 """
 
 from __future__ import annotations
@@ -24,16 +32,32 @@ from pathlib import Path
 
 import pytest
 
+from floatfea.cli import TABLE_CAVEATS
+
 ROOT = Path(__file__).resolve().parents[2]
 PUBLISHED = ROOT / "results" / "R1" / "example"
 REPORT = PUBLISHED / "report.md"
 FORCES = PUBLISHED / "member_forces.csv"
 UTILISATION = PUBLISHED / "utilisation.csv"
 
-# The nine caveats FO2 requires, by the marker each one is identified by in the tree.
-# `EX3/R724` and `R741/R742` are single caveats naming two findings each, which is how the
-# committed deliverables write them.
-CAVEAT_MARKERS = ("R739", "R740", "FA3", "EZ2", "EX3", "R724", "FA0", "FA1", "R741", "R742", "R743")
+# **THE NEEDLE IS THE CAVEAT TEXT, NOT ITS MARKER (R831).** This was
+# `CAVEAT_MARKERS = ("R739", "R740", ... "R743")` -- eleven markers for nine caveats,
+# `EX3/R724` and `R741/R742` each naming two findings. The marker is present in a REWORDED
+# caveat too, so when R829's repair changed `TABLE_CAVEATS[4]` in `cli.py` and the files
+# were not regenerated afterwards, all 33 (file, marker) cases stayed green while all three
+# deliverables published the sentence R829 had named false.
+#
+# Reading the source of truth makes the comparison one that can fail.
+
+
+def _normalised(text: str) -> str:
+    """`_write_header` writes `line.replace(",", ";")` so a CSV reader is safe.
+
+    Both sides are normalised the same way, so one needle serves the markdown report and
+    the two CSVs without a per-file branch that could pass for the wrong reason.
+    """
+    return text.replace(",", ";")
+
 
 ARTIFACTS = (REPORT, FORCES, UTILISATION)
 
@@ -48,21 +72,34 @@ def test_the_artifact_was_published_at_all(path: Path) -> None:
     assert path.stat().st_size > 0, path
 
 
-@pytest.mark.parametrize("marker", CAVEAT_MARKERS)
+@pytest.mark.parametrize("index", range(len(TABLE_CAVEATS)), ids=lambda i: f"caveat{i}")
 @pytest.mark.parametrize("path", ARTIFACTS, ids=lambda p: p.name)
-def test_every_caveat_reaches_EVERY_published_artifact(path: Path, marker: str) -> None:
-    """All nine caveats, in all three files, one case per (file, marker).
+def test_every_caveat_reaches_EVERY_published_artifact(path: Path, index: int) -> None:
+    """All nine caveats, VERBATIM, in all three files, one case per (file, caveat).
 
     **R815 IS WHY THIS IS PARAMETRISED THIS WAY.** The previous gate asserted four markers
     in one `for` loop over a single stub, and the other five grepped `0 0 0` across the
     report and both CSVs while it passed. One case per pair means a missing caveat names
-    both the file and the marker.
+    both the file and the caveat.
+
+    **R831 IS WHY THE NEEDLE IS THE TEXT.** With the marker as the needle this was green on
+    three deliverables publishing the pre-R829 wording, because `EX3` is in both wordings.
+    Measured at that commit:
+
+        results/R1/example/report.md          caveats: 9   NOT PRESENT verbatim: [4]
+        results/R1/example/member_forces.csv  caveats: 9   NOT PRESENT verbatim: [4]
+        results/R1/example/utilisation.csv    caveats: 9   NOT PRESENT verbatim: [4]
+
+    The counter is a rewording: change one element of `TABLE_CAVEATS` and leave the files
+    alone, and this reddens on three cases rather than staying green on 33.
     """
-    text = path.read_text(encoding="utf-8", errors="replace")
-    assert marker in text, (
-        f"{path.name} does not mention {marker}. The caveats say what the COLUMNS mean; a "
-        f"reader without them can take an envelope bound for a stress (R740) or read the "
-        f"axial column with the wrong sign (R739)."
+    caveat = TABLE_CAVEATS[index]
+    text = _normalised(path.read_text(encoding="utf-8", errors="replace"))
+    assert _normalised(caveat) in text, (
+        f"{path.name} does not carry caveat {index} VERBATIM. A caveat reworded in "
+        f"`floatfea/cli.py` and not regenerated into the files is R831, and the fix is to "
+        f"re-run `floatfea run` AFTER the last edit to `cli.py` (CP3). Missing: "
+        f"{caveat[:160]}"
     )
 
 

@@ -2,38 +2,80 @@
   "_": [
     "POINTERS ONLY (CH4).",
     "",
-    "R1 STEP 2, REVISION 1 -- the FIRST reviewed revision of step 2. Answers the interim",
-    "check at a777cc3, which judged cfb76ff and ruled PASS with four blocking findings.",
-    "Under ES0 that check counted against no round, so all three revisions remain.",
+    "R1 STEP 2, REVISION 2 -- the SECOND of three reviewed revisions under ES0. Answers",
+    "verdict 6 @ 43bcd0c, a HOLD with four blocking findings: R831, R832, R833, R834.",
     "",
-    "EVERY ONE OF THE FOUR BLOCKING FINDINGS WAS RULED ON BY DIRECTIVE FQ BEFORE I TOUCHED",
-    "IT: R827 by FQ0 (the flat 300), R825 by FQ1 (name keys are strings), R826 and R828 by",
-    "FQ2 (show the revert-red-restore cycle), R829 and R830 by FQ3.",
+    "THE REVIEWER'S OWN SUMMARY OF THE PATTERN, BECAUSE IT IS THE RIGHT ONE: every one of",
+    "the four is THE OTHER INSTANCE OF THE THING I HAD JUST FIXED. CP3 found, named and",
+    "fixed for one deliverable, repeated for three in the same commit. The cycle run for",
+    "the five repairs a directive named, not the sixth in the same commit. The name-key",
+    "check cycled at one of the three sites it was installed at. The str() coercion",
+    "deleted at the two spellings my own grep knew.",
     "",
-    "WHAT I WOULD ATTACK FIRST, IF I WERE READING THIS COLD:",
+    "SO THE QUESTION I APPLIED TO THIS REVISION, IN THE REVIEWER'S WORDS: what else in",
+    "this commit is an instance of the thing I just fixed? It found two more sites for",
+    "R834 that the verdict did not name -- `floatsim.tag` and `load_cases.window_rule`,",
+    "both reaching PUBLISHED provenance -- and it is why every gate below is parametrised",
+    "over the CALL SITE rather than over the finding.",
     "",
-    "1. FQ0's CEILING REACHED FURTHER THAN THE FOUR TESTS THE DIRECTIVE NAMED. The",
-    "   directive said `refuse D/t > 300 at every site`. I found a THIRD site nobody had",
-    "   named -- `local_buckling_stress`, public and exported -- which refused nothing and",
-    "   returned a NEGATIVE F_xc beyond D/t = 2585. See section 3. The gate that was",
-    "   supposed to close FQ0 drove only `allowable_bending`.",
+    "WHAT I WOULD ATTACK FIRST:",
     "",
-    "2. THE GOLDEN MOVED UNDER FQ3's PIN AND THE PIN WAS NOT THE MOVER. FQ3 says STOP and",
-    "   report. I did not re-baseline; I ran the one-variable cell that separates the two",
-    "   causes and it says the mover is FQ0's own rule. Section 5. If that cell is wrong,",
-    "   a published figure is wrong with it, so it is the first thing to attack.",
+    "1. R831's needle change. I replaced CAVEAT_MARKERS with floatfea.cli.TABLE_CAVEATS.",
+    "   Check the normalisation: `_write_header` turns `,` into `;`, so both sides are",
+    "   normalised and a per-file branch that could pass for the wrong reason is avoided.",
+    "   Section 2 carries the rewording counter.",
     "",
-    "3. C22's CAUSE WAS NOT WHAT THE LAST TWO VERDICTS SAID IT WAS. It is not a defect in",
-    "   `scripts/ci_section.py`, whose refusal is correct. The plan's step marker still",
-    "   read `1` while step 2 was being worked, so the generator was faithfully generating",
-    "   for a CLOSED step whose anchor predates FP1. Section 6.",
+    "2. The deliverables were regenerated AFTER the last cli.py edit this time, and the",
+    "   timing table moved 65.85 -> 97.08 s because four production FloatSim jobs hold",
+    "   this machine. A wall-time figure in a published artifact is now a contended",
+    "   measurement and section 2 says so.",
     "",
-    "4. THE EG3 ENUMERATION IS SHORT AGAIN, by measurement and not by argument. Section 7."
+    "3. The whole-suite figure. Section 7 states what was measured and when."
   ],
   "answered": {
     "C22": {
       "state": "answered",
       "where": "§6"
+    },
+    "C26": {
+      "state": "later",
+      "where": "§9"
+    },
+    "C27": {
+      "state": "later",
+      "where": "§9"
+    },
+    "C28": {
+      "state": "later",
+      "where": "§9"
+    },
+    "C29": {
+      "state": "answered",
+      "where": "§6"
+    },
+    "C30": {
+      "state": "later",
+      "where": "§9"
+    },
+    "C31": {
+      "state": "later",
+      "where": "§9"
+    },
+    "C32": {
+      "state": "later",
+      "where": "§9"
+    },
+    "C33": {
+      "state": "later",
+      "where": "§9"
+    },
+    "C34": {
+      "state": "later",
+      "where": "§9"
+    },
+    "C35": {
+      "state": "later",
+      "where": "§9"
     },
     "R814": {
       "state": "answered",
@@ -69,11 +111,11 @@
     },
     "R822": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R823": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R824": {
       "state": "answered",
@@ -81,7 +123,7 @@
     },
     "R825": {
       "state": "answered",
-      "where": "§2"
+      "where": "§4"
     },
     "R826": {
       "state": "answered",
@@ -89,19 +131,43 @@
     },
     "R827": {
       "state": "answered",
-      "where": "§3"
+      "where": "§8a"
     },
     "R828": {
       "state": "answered",
-      "where": "§4"
+      "where": "§3"
     },
     "R829": {
       "state": "answered",
-      "where": "§5"
+      "where": "§3"
     },
     "R830": {
       "state": "answered",
+      "where": "§8a"
+    },
+    "R831": {
+      "state": "answered",
+      "where": "§2"
+    },
+    "R832": {
+      "state": "answered",
+      "where": "§3"
+    },
+    "R833": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R834": {
+      "state": "answered",
       "where": "§5"
+    },
+    "R835": {
+      "state": "answered",
+      "where": "§7"
+    },
+    "R836": {
+      "state": "answered",
+      "where": "§7"
     }
   }
 }

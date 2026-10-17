@@ -354,36 +354,145 @@ def test_FQ2_R823_a_MERGE_KEY_is_REFUSED() -> None:
     assert "merge key" in message and "bypasses the duplicate-key check" in message, message
 
 
-@pytest.mark.parametrize(
-    ("label", "block"),
-    [
-        ("bool and quoted bool", "{true: 100.0, 'True': 900.0}"),
-        ("null and quoted null", "{~: 100.0, 'None': 900.0}"),
-        ("a bare number", "{1: 100.0}"),
-        ("a bare word", "{no: 100.0}"),
-    ],
+def _at_line_masses(data: dict[str, Any], keys: Any) -> None:
+    """`mass_distribution.<body>.line_masses` -- a mass per member group."""
+    data["mass_distribution"]["platform"] = {"line_masses": keys}
+
+
+def _at_sections_groups(data: dict[str, Any], keys: Any) -> None:
+    """`sections.groups` -- THE SITE WHERE THE COLLAPSED VALUE IS A STIFFNESS (R833)."""
+    data["sections"]["groups"] = keys
+
+
+def _at_body_names(data: dict[str, Any], keys: Any) -> None:
+    """`mass_distribution` itself -- the BODY names."""
+    data["mass_distribution"] = keys
+
+
+_TUBE = {"d_outer": 2.5, "wall": 0.18}
+
+# THE CALL SITE IS A PARAMETER, WHICH IS R833's WHOLE CONTENT. The check was installed at
+# three sites and held at one, and the one it was held at is the one the cycle chose. A
+# finding that names sites is closed SITE BY SITE, so the site is an axis here.
+_NAME_KEY_SITES = (
+    ("line_masses", _at_line_masses, 100.0),
+    ("sections.groups", _at_sections_groups, _TUBE),
+    ("mass_distribution body names", _at_body_names, {"f": 0.75}),
 )
-def test_FQ2_R825_a_NON_STRING_NAME_KEY_is_REFUSED(cfg_path: Any, label: str, block: str) -> None:
-    """A name key must be a string (R825 / FQ1), one case per type that can arrive.
+
+_NAME_KEY_SHAPES = (
+    ("bool and quoted bool", (True, "True")),
+    ("null and quoted null", (None, "None")),
+    ("a bare number", (1,)),
+    ("a bare word", (False,)),
+)
+
+
+@pytest.mark.parametrize(
+    ("site_label", "place", "value"), _NAME_KEY_SITES, ids=[s[0] for s in _NAME_KEY_SITES]
+)
+@pytest.mark.parametrize(
+    ("shape_label", "keys"), _NAME_KEY_SHAPES, ids=[s[0] for s in _NAME_KEY_SHAPES]
+)
+def test_FQ2_R825_a_NON_STRING_NAME_KEY_is_REFUSED(
+    cfg_path: Any,
+    site_label: str,
+    place: Any,
+    value: Any,
+    shape_label: str,
+    keys: tuple[Any, ...],
+) -> None:
+    """A name key must be a string, AT EVERY CALL SITE (R825 / FQ1 / R833).
 
     **THE LAYER BELOW R822, WHICH R822's REPAIR DID NOT REACH.** PyYAML keeps the bool
     `True` and the string `'True'` as DISTINCT keys, so the count check is correctly
     silent -- and the schema then coerced both with `str()`, so one of two declared line
-    masses vanished. The first two cases are that; the last two are a name arriving as a
-    number or a boolean in the first place.
+    masses vanished.
+
+    **AND R833 IS WHY THE SITE IS A PARAMETER.** The first version of this test drove
+    `line_masses` only. Measured by removing one call-site line at a time against a
+    baseline of 171:
+
+        `_require_name_keys(lines, ...)`      removed   4 failed, 167 passed
+        `_require_name_keys(groups_raw, ...)` removed   171 passed      <- unheld
+        `_require_name_keys(block, where)`    removed   171 passed      <- unheld
+
+    `sections.groups` is the site verdict 5 ranked higher, because the value that
+    disappears there is a STIFFNESS: two declared tubes become one with no message, and
+    FL2(a) makes the group labels user-chosen.
     """
     data = _example()
-    data["mass_distribution"]["platform"] = {"line_masses": yaml.safe_load(block)}
+    place(data, {k: value for k in keys})
     with pytest.raises(ConfigError) as caught:
         load_config(cfg_path(data))
     message = str(caught.value)
-    assert "are not strings" in message, (label, message)
+    assert "are not strings" in message, (site_label, shape_label, message)
+    assert "Quote the name" in message, (site_label, shape_label, message)
+
+
+@pytest.mark.parametrize(
+    ("site_label", "place", "value"), _NAME_KEY_SITES, ids=[s[0] for s in _NAME_KEY_SITES]
+)
+def test_FQ2_R825_a_STRING_name_key_LOADS_at_every_site(
+    cfg_path: Any, site_label: str, place: Any, value: Any
+) -> None:
+    """The control PER SITE, so none of the refusals above is refusing everything there."""
+    data = _example()
+    place(data, {"platform": value})
+    load_config(cfg_path(data))
+
+
+@pytest.mark.parametrize(
+    ("label", "place"),
+    [
+        ("lumped[].label", "lumped"),
+        ("floatsim.tag", "tag"),
+        ("load_cases.window_rule", "window_rule"),
+    ],
+)
+def test_FQ2_R834_a_DECLARED_STRING_FIELD_refuses_a_non_string(
+    cfg_path: Any, label: str, place: str
+) -> None:
+    """A declared string is a string, or it is refused (R834).
+
+    **THE SCALAR HALF, AND THE COERCION FQ1 ORDERED DELETED SURVIVED AT THREE OF THEM.**
+    `LumpedMass.label` is the only identifier a point mass has, and measured before the
+    repair through the real `load_config`, two labels the reader distinguished arrived as
+    one:
+
+        LOADED. lumped labels: ["True", "True"]
+
+    The reviewer named `lumped[].label`. `tag` and `window_rule` coerce the same way and
+    both reach PUBLISHED provenance, so `tag: no` would publish `False` as the FloatSim
+    tag -- which is why the site is a parameter here rather than one case.
+    """
+    data = _example()
+    if place == "lumped":
+        data["mass_distribution"]["platform"] = {
+            "lumped": [
+                {"label": True, "mass": 1000.0, "at": [0.0, 0.0, 0.0]},
+                {"label": "True", "mass": 2000.0, "at": [1.0, 0.0, 0.0]},
+            ]
+        }
+    elif place == "tag":
+        data["floatsim"]["tag"] = False
+    else:
+        data["load_cases"]["window_rule"] = 1
+    with pytest.raises(ConfigError) as caught:
+        load_config(cfg_path(data))
+    message = str(caught.value)
+    assert "is not a string" in message, (label, message)
     assert "Quote the name" in message, (label, message)
 
 
-def test_FQ2_R825_a_STRING_name_key_still_loads(cfg_path: Any) -> None:
-    """The control, so the refusals above are not refusing everything."""
+def test_FQ2_R834_two_QUOTED_labels_stay_two(cfg_path: Any) -> None:
+    """The control: the repair refuses the collapse, it does not refuse labels."""
     data = _example()
-    data["mass_distribution"]["platform"] = {"line_masses": {"platform": 9375.0}}
+    data["mass_distribution"]["platform"] = {
+        "lumped": [
+            {"label": "fore", "mass": 1000.0, "at": [0.0, 0.0, 0.0]},
+            {"label": "aft", "mass": 2000.0, "at": [1.0, 0.0, 0.0]},
+        ]
+    }
     cfg = load_config(cfg_path(data))
-    assert cfg.mass_distribution["platform"].line_masses == {"platform": 9375.0}
+    assert [m.label for m in cfg.mass_distribution["platform"].lumped] == ["fore", "aft"]

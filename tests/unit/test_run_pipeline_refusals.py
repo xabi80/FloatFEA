@@ -601,6 +601,70 @@ def test_FQ2_R817_the_HEADER_carries_the_basis_the_reader_returned(built: Any) -
     assert "24.2" in blob, blob[:200]
 
 
+def test_FQ3_R832_an_EMPTY_basis_says_so_AND_no_caveat_contradicts_it(built: Any) -> None:
+    """The branch FQ3 required, asserted in BOTH halves (R832).
+
+    **FQ3 NAMED THIS REPAIR AND NOTHING HELD IT.** The reviewer reverted the `if basis:` /
+    `else` hunk to the old field-by-field `.get(..., "(not recorded)")` form and the
+    measuring half of the suite was green at the identical count -- `113 passed` reverted,
+    `113 passed` restored -- because the only test driving `_header_lines` passes the REAL
+    sidecar's basis, so it exercises the `if` and never the `else`.
+
+    That is R826's own finding one round later, inside a repair made to answer it: five
+    repairs were cycled because a directive named five, and the sixth repair in the same
+    commit was not.
+
+    **BOTH HALVES, because one alone is what was wrong.** The old code produced a file
+    carrying "heading (not recorded) deg" AND a caveat asserting the heading "is in the
+    provenance above" -- two sentences that cannot both be true. So this asserts that the
+    line says NOT RECORDED, and that nothing in the same output claims the heading is
+    available. FL1(a) admits a sidecar-less npz, so the state is reachable.
+    """
+    from floatfea.cli import _header_lines
+    from floatfea.run.pipeline import RunResult
+
+    cfg = load_config(EXAMPLE)
+    stub = RunResult(
+        config=cfg,
+        built=built,
+        rows=[],
+        utilisations=[],
+        mass=(),
+        timings={},
+        wave_basis={},
+    )
+    blob = " ".join(_header_lines(stub))
+    assert "NOT RECORDED by the export" in blob, blob[:400]
+    assert "(not recorded) deg" not in blob, blob[:400]
+    # AND NO CAVEAT SUPPLIES THE HEADING THE HEADER SAYS IS ABSENT.
+    #
+    # THE NEEDLE IS THE RETIRED SENTENCE, NOT THE PHRASE IT CONTAINED. My first version
+    # asserted `"is in the provenance above" not in blob` and it failed on `cli.py:77` --
+    # a DIFFERENT caveat, correctly saying the `C_m` value used is in the provenance. A
+    # test that reddens on a true sentence about another quantity is not this gate.
+    assert "the heading these loads were exported at" not in blob, blob[:400]
+
+
+def test_FQ3_R832_a_RECORDED_basis_still_states_it(built: Any) -> None:
+    """The control: the `else` branch did not swallow the `if`."""
+    from floatfea.cli import _header_lines
+    from floatfea.run.pipeline import RunResult, exported_wave_basis
+
+    cfg = load_config(EXAMPLE)
+    stub = RunResult(
+        config=cfg,
+        built=built,
+        rows=[],
+        utilisations=[],
+        mass=(),
+        timings={},
+        wave_basis=exported_wave_basis(cfg.load_cases.npz),
+    )
+    blob = " ".join(_header_lines(stub))
+    assert "heading 0.0 deg" in blob, blob[:300]
+    assert "NOT RECORDED by the export" not in blob, blob[:300]
+
+
 def test_FQ2_R818_the_PROVENANCE_carries_the_sensitivity_operating_points() -> None:
     """Two published columns need their operating point published (R818).
 

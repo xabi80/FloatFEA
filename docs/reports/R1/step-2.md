@@ -394,7 +394,8 @@ judge  the tally moved because this revision ADDS ten G6.1 cases. No member forc
 claim  this machine cannot complete the suite today
 cmd    Get-CimInstance Win32_Process -Filter "Name='python.exe'" | ? CommandLine -like *tilted_dynamics*
 out    8 x tilted_dynamics.py (platform/cluster runs), 8000+ s CPU each, started 07:33
-cmd    tr -d '' < <the re-run's log> | grep -oE "\[ *[0-9]+%\]" | tail -1
+cmd    tr -d '
+' < <the re-run's log> | grep -oE "\[ *[0-9]+%\]" | tail -1
 out    [  9%]     after ~45 min -> ~8 h projected, against a 931 s idle-machine baseline
 judge  the suite is contending with PRODUCTION FloatSim runs on this machine. I stopped my
        own run and left the production ones alone. The whole-suite line arrives in the
@@ -774,3 +775,524 @@ cmd    git diff --stat -- floatfea/ | tail -1
 out    the diff touches no member-topology, sizing, heading or band-check code
 rule   CZ0: what blocks is a defect, a tolerance, a gate assertion or a red test
 ```
+
+# Revision 2 — the other instance of each thing, and the call site as a parameter
+
+Answers: verdict 6 @ 43bcd0c
+
+## 0. CI at `09d5bc9`, the commit verdict 6 judged — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 6 at `09d5bc9` through the report's own `Answers:` line. Run `39044715217`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint, unit and guards | 1303 | 9 | 1 |
+| the verification ladder | 2302 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 1 not green.**
+
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 9.**
+
+- `tests/test_report_carried.py::test_the_guard_reads_the_step_being_worked_on` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 0a. Runs since the commit verdict 6 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 6 at `09d5bc9` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `39044715217` | push | `09d5bc9` | conclusion **failure** |
+
+**Run `39044715217`, conclusion **failure**: 9 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_guard_reads_the_step_being_worked_on` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 1. The schedule, and what this revision is
+
+**Revision 2 of the three ES0 allows.** Verdict 6 was a HOLD with four blocking findings —
+R831, R832, R833, R834 — and all four are answered below, each held by a test that reddens
+when its own repair is reverted, cycled **per call site** rather than per finding.
+
+**The reviewer's statement of the pattern is the right one and I am adopting it as the
+question I now ask of my own diffs:** *what else in this commit is an instance of the thing
+I just fixed?* Every one of the four findings was the other instance of something I had
+already found, understood and written down correctly, and then fixed only where I was
+looking. Applying that question to R834 found **two further sites the verdict did not
+name**, both reaching published provenance.
+
+**The date is unchanged at 5 November, and nothing has slipped since revision 1.** Verdict
+6 endorsed it and corrected one thing about the method, which §7 records. **This machine is
+running four production FloatSim jobs**, which is why §2's regenerated timing table moved
+and why §7's whole-suite figure is what it is; that is a measurement constraint, not a
+schedule change.
+
+## 2. R831 — three deliverables stale, and a needle that can fail
+
+The three artifacts under `results/R1/example/` published the pre-R829 wording of
+`TABLE_CAVEATS[4]` — the sentence R829 named false and FQ3 ordered repaired. They had been
+regenerated in revision 1, **between my two `cli.py` edits**: the same CP3 ordering error
+§7 of revision 1 confessed for the F6 deliverable, a second time in the same commit and
+undeclared. The reviewer is right that I declared it once and repeated it.
+
+**The gate could not see it, and the new needle can.** The needle was the MARKER `EX3`,
+which appears in both wordings, so the published text could drift arbitrarily with 33 of 33
+cases green.
+
+```
+claim  the needle is now the caveat TEXT, and it reproduces the finding
+cmd    python -m pytest -q tests/regression/test_r1_published_artifacts.py   (before the
+       deliverables were regenerated, with the needle already changed)
+out    3 failed, 39 passed
+       test_every_caveat_reaches_EVERY_published_artifact[report.md-caveat4]
+       test_every_caveat_reaches_EVERY_published_artifact[member_forces.csv-caveat4]
+       test_every_caveat_reaches_EVERY_published_artifact[utilisation.csv-caveat4]
+cmd    git show 09d5bc9:tests/regression/test_r1_published_artifacts.py | grep -c CAVEAT_MARKERS
+out    the old needle was 11 markers x 3 files = 33 cases, every one green on stale text
+cmd    git log -1 --format=%B 43bcd0c | grep -o "C35"
+out    C35        <- the docstring claim R831 refutes, corrected in this same commit
+rule   verdict 6's closing condition -- the needle is the caveat TEXT rather than its
+       marker, which is a needle change to a gate that already exists
+judge  one case per (file, caveat), and the index that reddens is 4: exactly the caveat
+       R829 reworded. The marker needle was green on all three.
+```
+
+**The normalisation, because one needle serves three files.** `_write_header` writes
+`line.replace(",", ";")` so a CSV reader is safe, so both sides are normalised the same way
+rather than branching per file — a per-file branch is a second thing that can pass for the
+wrong reason.
+
+```
+claim  the regeneration happened AFTER the last edit to the code it publishes (CP3)
+cmd    git diff --stat floatfea/cli.py        (immediately before the run)
+out    (empty -- cli.py was already committed at 09d5bc9 and unedited since)
+cmd    python -m floatfea.cli run examples/platform12_placeholder.yaml
+out    governing U = 1.71167 at platform:hub4_arm ROOT (T = 12.5 s, 3.3.2 interaction)
+       total wall time 97.27 s
+rule   CP3 -- generate, edit, re-run, paste, and if an edit follows the paste the paste is
+       void
+judge  step 1's gate fixture reproduces exactly, so the regeneration changed the CAVEAT and
+       not the result.
+```
+
+```
+claim  no physical number moved, and what did move is the caveat and the wall clock
+cmd    python -m pytest -q tests/regression/test_r1_example_golden.py
+out    14 passed in 109.86s
+cmd    git diff results/R1/example/report.md | grep -E "^[-+][^-+]"
+out    - * EX3 / R724: the heading these loads were exported at is in the provenance above...
+       + * EX3 / R724: where a run covers a SINGLE heading the heading dependence is...
+       - | build | 0.12 |      + | build | 0.19 |
+       - | solve | 65.85 |     + | solve | 97.08 |
+       - | total | 65.97 |     + | total | 97.27 |
+rule   the golden checks the NUMBERS; this gate checks the published FORM
+judge  **the timing table is a CONTENDED measurement and the artifact now carries it.**
+       Four production `tilted_dynamics.py` jobs hold this machine, so `solve` went
+       `65.85 -> 97.08 s` with no code change on that path. It is a wall clock, not a
+       result, and FL1(d) asks for it — but a reader should know it was taken under load,
+       which is why it is said here rather than left to look like a regression.
+```
+
+**And C35's sentence is corrected in the same commit**, because R831 is the measurement
+that refutes it: the file's docstring claimed that reading committed files "catches a
+regeneration that was never committed", and it did not.
+
+## 3. R832 and R829 — the empty-basis branch, now held
+
+FQ3 named this repair in its own words and nothing in the tree detected it. The reviewer
+reverted the `if basis:` / `else` hunk and the measuring half of the suite was green at the
+identical count, because the only test driving `_header_lines` passes the real sidecar's
+basis — it exercises the `if` and never the `else`. **That is R826's and R828's own finding
+one round later, inside a repair made to answer them.**
+
+```
+claim  the branch now reddens when it is made unreachable, and the control still passes
+cell   `if basis:` -> `if False:` at `_header_lines` ONLY -- the CSV path's branch, not
+       `_write_report`'s, which is the one FQ3/R829 added; nothing else touched
+cmd    python -m pytest -q tests/unit/test_run_pipeline_refusals.py
+       tests/regression/test_r1_published_artifacts.py -p no:randomly -k R832
+out    reverted -> 1 failed, 1 passed, 71 deselected
+       restored -> 2 passed, 71 deselected
+rule   verdict 6's closing condition -- one case builds a RunResult with `wave_basis={}`,
+       passes it through `_header_lines`, and asserts BOTH halves
+judge  both halves, because one alone is what was wrong: the line must say NOT RECORDED,
+       and no caveat in the same output may assert the heading is available.
+```
+
+**One thing the first version of that gate got wrong, recorded because it is the same class
+of error as the findings above.** I asserted `"is in the provenance above" not in blob`,
+which reddened on `cli.py:77` — a *different* caveat, correctly saying the `C_m` value used
+is in the provenance.
+
+```
+claim  the needle is the RETIRED SENTENCE, not a phrase it happened to contain
+cmd    grep -n "in the provenance above" floatfea/cli.py
+out    77:    "C_m RAISES the compression utilisation. The value used is in the provenance
+           above, "
+       113:    # carrying BOTH "the heading ... is in the provenance above" and
+rule   a test that reddens on a true sentence about another quantity is not this gate
+judge  the needle is now "the heading these loads were exported at", which is the clause
+       R829 retired. A needle that is too wide fails for the wrong reason, which is the
+       mirror of R831's needle being too narrow to fail at all.
+```
+
+## 4. R833, R825, R822, R826 — the name-key refusal, held at all three sites
+
+Verdict 5's R825 named both `:611` and `:661`. The check was installed at three sites and
+held at one — and the one it was held at is the one revision 1's cycle chose.
+`sections.groups` is the site where the value that disappears is a **stiffness**.
+
+```
+claim  every call site is now held, measured ONE SITE AT A TIME
+cell   one `_require_name_keys(...)` line removed at a time; nothing else touched
+cmd    python -m pytest -q tests/unit/test_run_config.py
+       tests/unit/test_run_pipeline_refusals.py
+       tests/regression/test_r1_published_artifacts.py -p no:randomly -k R825
+out    site: line_masses                    reverted -> 4 failed, 11 passed
+                                            restored -> 15 passed
+       site: sections.groups                reverted -> 4 failed, 11 passed
+                                            restored -> 15 passed
+       site: mass_distribution body names   reverted -> 4 failed, 11 passed
+                                            restored -> 15 passed
+cmd    git log -1 --format=%B a777cc3 | grep -oE "config.py:6[0-9][0-9]" | sort -u
+out    config.py:611        <- line_masses, the site revision 1's cycle chose
+       config.py:661        <- sections.groups, the one verdict 5 ranked higher
+rule   verdict 6 -- "Paste the cycle PER CALL SITE, not per finding"; and CLAUDE.md, a
+       closing condition that names sites is closed site by site
+judge  the CALL SITE is a parameter of the test now, which is what makes the three
+       independent. The string control runs per site too, so none of the refusals is
+       refusing everything at its own site.
+```
+
+R822's and R823's repairs are unchanged and still held by the cycles revision 1 pasted;
+R826's finding is what the per-site parametrisation above answers at the layer it named.
+
+## 5. R834 — the `str()` coercion, at three sites and not one
+
+`lumped[].label` coerced, so two labels a reader wrote differently arrived as one name.
+**FQ1's letter covers "a mapping whose keys are names", so a label was outside it** — the
+same defect one field across, named before FL2 ships the consumer.
+
+**And asking the reviewer's question found two more.** `floatsim.tag` and
+`load_cases.window_rule` coerce identically and both reach **published provenance**.
+
+```
+claim  three declared string fields coerced, and the command that reaches all three
+cmd    grep -nE "=\s*str\(" floatfea/run/config.py        (before this revision)
+out    580:        tag=str(block.get("tag", "")),
+       669:                    label=str(item.get("label", f"lumped_{i}")),
+       770:        window_rule=str(block.get("window_rule", "")),
+cmd    the same command, now
+out    (no output)
+rule   FQ1's argument -- a name is a string, and `_checked` already rejects a `bool` by
+       name for every declared NUMBER; these were the declared STRINGS that did not
+judge  the verdict named one. `tag: no` would have published `False` as the FloatSim tag in
+       all three artifacts, which is EZ0 ground. **This is the needle lesson again:**
+       revision 1's §2 claimed no coercion survived "anywhere in the schema" and searched
+       for the two spellings the same commit had deleted (C27).
+```
+
+```
+claim  each site is held independently, and the labels still load
+cell   one `_require_string(...)` reverted to `str(...)` at a time
+cmd    python -m pytest -q <the three files> -p no:randomly -k R834
+out    site: floatsim.tag            reverted -> 1 failed, 3 passed   restored -> 4 passed
+       site: lumped[].label          reverted -> 1 failed, 3 passed   restored -> 4 passed
+       site: load_cases.window_rule  reverted -> 1 failed, 3 passed   restored -> 4 passed
+rule   verdict 6 -- "one case that reddens when it is removed"
+judge  and the control: two QUOTED labels still arrive as two, `['fore', 'aft']`, so the
+       repair refuses the collapse rather than refusing labels.
+```
+
+## 6. C29 — the refusal names the marker it read (FF0, this commit)
+
+C29 is FF0-class and is fixed here rather than ledgered. The refusals named the missing RUN
+and not the stale `step-under-execution` marker, which sent two rounds reading the generator
+instead of the marker.
+
+```
+claim  a stale marker now says so, in whichever refusal fires
+cell   the marker set to 1 while step 2 is worked; nothing else touched
+cmd    python scripts/ci_section.py
+out    the report answers verdict 2 at `d511a0c`, and the verdict file
+       docs/re[v]iews/R1/step-2.md cannot be read at that commit. CHECK THE STEP MARKER
+       FIRST (C29): this generator read R1.md's `step-under-execution` line as 1 and is
+       generating for step-1.md. If a LATER step is being worked, the marker is stale and
+       this is anchored on a CLOSED step's report -- which is exactly C22. Move the marker
+       with the step's report (FB4) before concluding the run or the verdict is missing.
+cmd    python scripts/ci_section.py >/dev/null ; echo $?     (marker correct)
+out    0
+rule   FF0 with EK2 -- a guard that fails false is fixed or deleted, never extended; and
+       this is a message change, not a new state
+judge  **WHICH refusal fires depends on the tree, so both carry one shared sentence.**
+       Before a verdict file exists for the newer step, `run_for` raises about the missing
+       run — the C22 case. Once one exists, `_anchor` raises about the verdict file that
+       cannot be read at the answered commit, which is what fires today. Same cause, so
+       the hint is one function and both call it.
+```
+
+## 7. The suite, lint, and the boundary state
+
+```
+claim  all four gates green in CI's OWN forms, which C34 asked for
+cmd    ruff check floatfea tests scripts
+out    All checks passed!
+cmd    black --check floatfea tests scripts
+out    147 files would be left unchanged.
+cmd    mypy floatfea scripts/f4_dynamic_residual.py
+out    Success: no issues found in 43 source files
+rule   C34 -- the paste should be the gate CI runs, not a narrower form of it
+judge  revision 1 pasted `black --check floatfea tests` and `mypy floatfea`. Both pass in
+       both forms here, but the narrower form is not the gate.
+```
+
+**THE WHOLE SUITE, MEASURED ON A FREED MACHINE.** The four production FloatSim jobs
+finished, so revision 1's owed figure is paid here as a measurement rather than a
+projection — and taken after the last edit to the code it measures (CP3).
+
+```
+claim  the whole suite at this tree
+cmd    python -m pytest -q --tb=no -rf
+out    8 failed, 3623 passed, 1 skipped, 2 warnings in 1158.59s (0:19:18)
+rule   CLAUDE.md § Step gating -- "the test counts from your own run"; and CZ1 (iv), any
+       red outside a boundary state's own list blocks
+judge  nineteen minutes idle against the ~8 h projected under load, which is the same
+       suite and the same tree; the contention was the whole of revision 1's shortfall.
+```
+
+```
+claim  all eight reds traced BY NAME to a boundary cause, none outside the lists
+out    test_the_report_carries_a_WHOLE_SUITE_count                            FC1
+       test_the_guard_survives_the_state[baseline]                            EH1 cascade
+       test_the_guard_survives_the_state[non_numeric_step_suffix]             EH1 cascade
+       test_the_guard_survives_the_state[superscript_digit_step_number]       EH1 cascade
+       test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]   EH1 cascade
+       test_the_guard_survives_the_state[step_number_is_the_empty_string]     EH1 cascade
+       test_the_guard_survives_the_state[verdict_amended_after_the_commit...] EH1 cascade
+       test_the_guard_survives_the_state[zero_padded_step_number]             EH1 cascade
+rule   EG3(i) -- the waiver is conditional on the trace, and the trace is pasted: every
+       FAILED id matched to the state's own list, not "the failures look like the set"
+judge  **AND `test_the_guard_reads_the_step_being_worked_on` IS GREEN.** It was one of
+       revision 1's two reds and verdict 6 measured it clearing at the verdict commit
+       under EG3(ii), which is exactly what state (1) predicts. The cascade is identified
+       by `[baseline]` being red, per EH1, and not by its name.
+```
+
+**`scripts/suite_count.py`'s own line is still not here, and FC1 is the reason rather than
+an omission:** it measures a clean worktree AT A COMMIT, so a line naming a sha cannot be
+inside that sha. It arrives in the follow-on commit together with CZ1 (ii) and (iii)'s four
+outputs. Verdict 6 ruled on exactly this and agreed — "what is absent is the report's own
+`suite_count.py` line, which FC1 already rules cannot be inside the commit it describes" —
+and it declined the missing figure as a STOP on that measurement.
+
+**R835 — EG3's enumeration, and I agree with the reviewer's proposal.** Verdict 6 measured
+a fourth name and proposes, once, that **the lists be deleted and the membership rule
+kept**. I agree, and I am carrying it to Xabier rather than acting on it: CLAUDE.md's lists
+are adopted by directive.
+
+```
+claim  the list has now been corrected five times and the rule has never been wrong
+cmd    grep -c "state (1)'s list gains\|list gains\|short by two names\|short twice" CLAUDE.md
+out    the corrections are EH1 (two on each side), EJ2 (two mis-filed), FN2/R813 (three
+       names), revision 1 §7 (three more), and verdict 6's R835 (a fourth)
+rule   EG3's own membership rule -- verdict-dependent, measured against a verdict-exists
+       control
+judge  and verdict 6 adds the half I had not measured: `test_the_report_carries_a_WHOLE_SUITE_count`
+       is red in BOTH boundary states, so it is **commit-dependent, not verdict-dependent**
+       — FC1's reason covers it and FC1's state filing does not. Three names FC1 and EJ2
+       place on state (2) did not fire at all, so the enumeration over-lists as well as
+       under-lists.
+```
+
+**R836 — the r754 margin, corrected.** Revision 1 measured the margin in the value the
+script *constructs* rather than in `d_outer / wall`, which is what the guard *compares*.
+
+```
+claim  the conclusion stands and the measurement was taken in the wrong variable
+cmd    python -c "D=2.5; print(max(D/(D/(5.0+i*0.01)) for i in range(29501)))"
+out    300.0000000000001        <- the ROUND-TRIPPED ratio, which is what is compared
+cmd    python -c "print(max(5.0+i*0.01 for i in range(29501)))"
+out    300.0                    <- what revision 1 measured
+cmd    grep -n "^DT_LO, DT_HI, DT_STEP" scripts/measure/r754_stress_vs_grade.py
+out    45:DT_LO, DT_HI, DT_STEP = 5.00, 300.00, 0.01
+rule   BP0 -- a figure carries the rule it was measured against, and the rule here is
+       `d_t > BENDING_THIRD_BRANCH_MAX_D_OVER_T` on the DIVIDED value
+judge  the round trip can exceed the ceiling by one ULP, and the producer still exits 0
+       because `local_buckling_stress` is not called at the top of its own sweep. So the
+       fragility is real, the margin is one ULP rather than exactly zero, and it remains a
+       recorded item rather than a change.
+```
+
+## 8. Carried
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R819 | **answered** — §8a | (the ceiling) | answered, and more completely than FQ0 asked | the constant, both message... |
+| R822 | **answered** — §4 | no clause this generator can cut -- see the verdict's Carried section |
+| R823 | **answered** — §4 | no clause this generator can cut -- see the verdict's Carried section |
+| R825 | **answered** — §4 | (the str() collapse one layer down) | answered in the code; HELD AT ONE OF THREE SITES |... |
+| R826 | **answered** — §4 | (nothing holds the R822/R823 repair) | answered |... |
+| R827 | **answered** — §8a | no clause this generator can cut -- see the verdict's Carried section |
+| R828 | **answered** — §3 | (the reddening half holds a frozen file) | answered | asserted on exported_wave_basis and on... |
+| R829 | **answered** — §3 | no clause this generator can cut -- see the verdict's Carried section |
+| R830 | **answered** — §8a | no clause this generator can cut -- see the verdict's Carried section |
+| R831 | **answered** — §2 | ALL THREE PUBLISHED ARTIFACTS UNDER results/R1/example/ ARE STALE AGAINST THE CODE AT THIS... |
+| R832 | **answered** — §3 | THE R829 / FQ3 EMPTY-BASIS BRANCH IS HELD BY NOTHING. The branch FQ3 named in its own words can... |
+| R833 | **answered** — §4 | THE NAME-KEY REFUSAL IS HELD AT ONE OF ITS THREE CALL SITES, AND THE ONE IT IS HELD AT IS THE... |
+| R834 | **answered** — §5 | THE str() COERCION FQ1 ORDERED DELETED SURVIVES AT A FOURTH DECLARED NAME,... |
+| R835 | **answered** — §7 | EG3's ENUMERATION IS SHORT OR MIS-FILED A FIFTH TIME, AND I MEASURED A NAME SECTION 7 DOES NOT... |
+| R836 | **answered** — §7 | The r754 sweep's zero margin is correctly recorded, and the margin was measured in the wrong... |
+
+**Fifteen rows and no `not classified` among them**, because verdict 6 rules on each of the
+carried items by name in its own Carried section rather than leaving them to the generator.
+The `R1` row that revision 1 carried is absent for the same reason: this verdict's text
+does not name the milestone in a position the mention pattern matches.
+
+## 8a. The named sites, declared one by one
+
+**Every site below is declared at that exact line number.** The repairs moved lines, so a
+line number quoted from a verdict's prose is not a line number in this diff.
+
+**R819, R827 and R830** are the ceiling and the pin: R819 closed in revision 1 §3 under FQ0
+and nothing reopened it, R827 is the same ruling, and R830's pins are unchanged — the golden
+question they raised is answered in revision 1 §5 and the deliverable regenerated there and
+again here. **R822 and R823** are held by revision 1's cycles, unchanged. The groups below
+are declared again because the guard reads the NEWEST revision, so a declaration in an
+earlier one no longer counts — the mechanism, not a re-opening.
+
+```
+  R831  cli.py -- no change at that exact site; answered in §2
+  R831  cli.py:140 -- no change at that exact site; answered in §2
+  R831  cli.py:265 -- no change at that exact site; answered in §2
+  R831  floatfea/cli.py -- no change at that exact site; answered in §2
+  R831  floatfea/cli.py:60 -- no change at that exact site; answered in §2
+  R831  floatfea/cli.py:61 -- no change at that exact site; answered in §2
+  R831  floatfea/cli.py:62 -- no change at that exact site; answered in §2
+  R831  results/F6/floatfea_results_report.md -- no change at that exact site; answered in §2
+  R831  tests/regression/test_r1_published_artifacts.py:14 -- no change at that exact site; answered in §2
+  R831  tests/regression/test_r1_published_artifacts.py:15 -- no change at that exact site; answered in §2
+  R831  tests/regression/test_r1_published_artifacts.py:18 -- no change at that exact site; answered in §2
+  R832  floatfea/cli.py:111 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:112 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:113 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:114 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:115 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:116 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:117 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:118 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:119 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:120 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:121 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:122 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:123 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:124 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:125 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:126 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:127 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:128 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:129 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:130 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:131 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:132 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:133 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:134 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:135 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:136 -- no change at that exact site; answered in §3
+  R832  floatfea/cli.py:137 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:585 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:586 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:587 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:588 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:589 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:590 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:591 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:592 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:593 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:594 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:595 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:596 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:597 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:598 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:599 -- no change at that exact site; answered in §3
+  R832  tests/unit/test_run_pipeline_refusals.py:600 -- no change at that exact site; answered in §3
+  R833  CLAUDE.md -- no change at that exact site; answered in §4
+  R833  tests/unit/test_run_config.py:381 -- no change at that exact site; answered in §4
+  R834  floatfea/run/config.py:248 -- no change at that exact site; answered in §5
+  R834  floatfea/run/config.py:249 -- no change at that exact site; answered in §5
+  R834  floatfea/run/config.py:250 -- no change at that exact site; answered in §5
+  R834  floatfea/run/config.py:251 -- no change at that exact site; answered in §5
+  R834  floatfea/run/config.py:252 -- no change at that exact site; answered in §5
+  R834  floatfea/run/pipeline.py:163 -- no change at that exact site; answered in §5
+  R834  floatfea/run/pipeline.py:164 -- no change at that exact site; answered in §5
+  R834  floatfea/run/pipeline.py:165 -- no change at that exact site; answered in §5
+  R834  floatfea/run/pipeline.py:166 -- no change at that exact site; answered in §5
+  R834  floatfea/run/pipeline.py:167 -- no change at that exact site; answered in §5
+  R834  floatfea/run/pipeline.py:168 -- no change at that exact site; answered in §5
+  R834  floatfea/run/pipeline.py:169 -- no change at that exact site; answered in §5
+  R834  floatfea/run/pipeline.py:170 -- no change at that exact site; answered in §5
+  R834  floatfea/run/pipeline.py:171 -- no change at that exact site; answered in §5
+  R835  CLAUDE.md -- no change at that exact site; recorded in §7; a directive for Xabier, not an edit
+  R835  tests/test_report_carried.py -- no change at that exact site; recorded in §7; a directive for Xabier, not an edit
+  R835  tests/test_report_guard_states.py -- no change at that exact site; recorded in §7; a directive for Xabier, not an edit
+  R836  scripts/measure/r754_stress_vs_grade.py -- no change at that exact site; recorded in §7, with the margin re-measured
+  R836  scripts/measure/r754_stress_vs_grade.py:81 -- no change at that exact site; recorded in §7, with the margin re-measured
+  R836  scripts/measure/r754_stress_vs_grade.py:82 -- no change at that exact site; recorded in §7, with the margin re-measured
+  R836  scripts/measure/r754_stress_vs_grade.py:83 -- no change at that exact site; recorded in §7, with the margin re-measured
+  R836  scripts/measure/r754_stress_vs_grade.py:84 -- no change at that exact site; recorded in §7, with the margin re-measured
+```
+
+## 9. What this revision does NOT do
+
+- **None of FL2's five gate items is built.** This revision is verdict 6's four blocking
+  findings and C29. FL2 is §9 of revision 1's table and the next commits of this step.
+- **No tolerance is added, moved or widened.** `floatfea/tolerances.py` is untouched by
+  this revision.
+- **No new apparatus.** R831 is a needle change to an existing gate; R832, R833 and R834
+  are parametrisations of existing tests; C29 is a message. Nothing new is added and
+  nothing is extended.
+- **The closure items are NOT fixed here.** C26, C27, C28, C30, C31, C32, C33, C34 and C35
+  are carried to the step's closure commit, which is where CZ0 puts them — except C34,
+  whose commands §7 now runs in CI's forms, and C35, which R831's needle change required in
+  the same commit as the needle. **C29 is FF0-class and is in this commit.**
+- **CLAUDE.md is not edited**, though verdict 6 and §7 both measure its EG3 lists wrong.
+  R835 goes to Xabier.
+
+```
+claim  which closure items are in this commit and which are carried
+cmd    python -c "import json; d=json.load(open('docs/reports/R1/step-2-answers.json'));
+       print(' '.join(f'{k}={v[chr(34)+chr(34)]}' for k,v in d['answered'].items()
+       if k.startswith('C')))"
+out    C22=answered  C26=later  C27=later  C28=later  C29=answered  C30=later
+       C31=later     C32=later  C33=later  C34=later  C35=later
+rule   CZ0 -- a closure item is fixed once, in the step's closure commit; FF0 excepts
+       gating apparatus, which is fixed in the NEXT commit and is not ledgered
+judge  C29 is the FF0 one and it is in this commit. C34 and C35 are listed `later` and are
+       in fact DONE here -- C34's commands run in CI's own forms above, C35's sentence went
+       with R831's needle because the needle change required it. The pointer file is the
+       ledger, so it keeps the whole list until the closure commit clears it at once.
+```
+- **The corpus pause holds.** `tests/corpus/` is untouched by me.

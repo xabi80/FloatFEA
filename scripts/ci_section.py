@@ -182,6 +182,24 @@ _ANSWERS = re.compile(r"^Answers:\s*verdict\s*(\d+)\s*@\s*(\S+)", re.MULTILINE)
 _JUDGED = re.compile(r"\*\*Reviewed commit:\s*`([0-9a-f]{7,40})`")
 
 
+def _marker_hint() -> str:
+    """The sentence C29 asks every no-run refusal to carry.
+
+    C22 was a stale `step-under-execution` marker and the refusals named the missing RUN,
+    so two rounds were spent reading this generator instead of the marker. Which refusal
+    fires depends on whether a verdict file exists for the newer step: before one does,
+    `run_for` raises about the missing run; after, `_anchor` raises about the verdict file
+    that cannot be read at the answered commit. Both are the same cause, so both say it.
+    """
+    return (
+        f" CHECK THE STEP MARKER FIRST (C29): this generator read {_PLAN.name}'s "
+        f"`step-under-execution` line as {STEP} and is generating for {REPORT.name}. If a "
+        "LATER step is being worked, the marker is stale and this is anchored on a CLOSED "
+        "step's report -- which is exactly C22. Move the marker with the step's report "
+        "(FB4) before concluding the run or the verdict is missing."
+    )
+
+
 def _anchor() -> tuple[str, str]:
     """`(verdict number, the commit that verdict judged)`, from the report.
 
@@ -206,7 +224,7 @@ def _anchor() -> tuple[str, str]:
     if out.returncode != 0:
         raise SystemExit(
             f"the report answers verdict {number} at `{verdict_sha}`, and the "
-            "verdict file cannot be read at that commit."
+            f"verdict file {VERDICT_IN_REPO} cannot be read at that commit." + _marker_hint()
         )
     j = _JUDGED.search(out.stdout.decode("utf-8", errors="replace"))
     if not j:
@@ -627,7 +645,7 @@ def section() -> str:
             raise SystemExit(
                 f"no CI run at {sha}, and the commit touches paths the workflow does "
                 "NOT ignore -- so it is a commit that was never pushed, not one the "
-                "workflow declined. A report cannot publish a table for it."
+                "workflow declined. A report cannot publish a table for it." + _marker_hint()
             )
         return report_only_section(number, sha)
     jobs = json.loads(_gh("run", "view", str(run["databaseId"]), "--json", "jobs"))["jobs"]
