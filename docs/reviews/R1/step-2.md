@@ -1,4 +1,474 @@
 # Review — R1 step 2
+Reviewed commit: 129747bcec6357b16229b2811b0000d434d954af
+**Reviewed commit: `129747bcec6357b16229b2811b0000d434d954af`.**
+Verdict: HOLD
+**Reviewed commit: `129747bcec6357b16229b2811b0000d434d954af`.** Revision 2 of 3 under ES0.
+Tests: 3623 passed, 8 failed, 1 skipped
+
+**THE TEST LINE IS MY OWN RUN THIS TIME.** `python -m pytest -q --tb=no -rf` at the reviewed
+commit, tree clean: `8 failed, 3623 passed, 1 skipped, 2 warnings in 1554.92s (0:25:54)`. The
+eight `FAILED` ids are identical to the report's Â§7 list and to CI's. The machine that could
+not run its own suite last round ran it in twenty-six minutes, so the figure the report owed is
+paid and independently reproduced rather than reconciled.
+
+**THE `Answers:` HEADER IS CORRECT (step 1b).** `docs/reports/R1/step-2.md:781` reads
+`Answers: verdict 6 @ 43bcd0c`, and `43bcd0c` is the newest verdict commit in `git log`. One
+comparison, it holds, no HOLD on that head.
+
+**ALL SIX GUARDS I DIFF SEPARATELY ARE UNTOUCHED, AND THERE IS NO STOP-CLASS FINDING.**
+`git diff --stat 43bcd0c..HEAD -- .claude docs/SUPERVISOR.md CLAUDE.md` is empty;
+`git diff 43bcd0c..HEAD -- tests/conftest.py 'tests/**/conftest.py'` is empty, and
+`git ls-files` on that pathspec gives the one file `tests/conftest.py`, as my instructions say
+it must; `git diff --stat 43bcd0c..HEAD -- floatfea/tolerances.py` is empty.
+
+**EU1 DOES NOT ATTACH AND THIS IS NOT AN INTERIM CHECK.** No tolerance value and no declared
+counter moves in this diff -- measured, not asserted: the diff of `floatfea tests scripts`
+grepped for `isclose|abs_tol|rel_tol|approx|atol|rtol` and for any new numeric comparison
+returns nothing. A new report revision exists, so this is a reviewed round under ES0 and it is
+the second of three.
+
+## Carried
+
+**Verdict 6's four blocking findings: ALL FOUR ANSWERED, AND I VERIFIED EVERY ONE BY MUTATION
+RATHER THAN BY READING THE REPORT.** Twelve revert-red-restore cycles of my own, in a
+`git archive` copy, against a baseline of **123 passed in 119.85s** on
+`tests/unit/test_run_config.py` + `tests/unit/test_run_pipeline_refusals.py` +
+`tests/regression/test_r1_published_artifacts.py`.
+
+| item | status | where, measured by me |
+|---|---|---|
+| R831 (three deliverables stale; the marker needle) | **ANSWERED, and I checked it the strongest way available** | the needle is `floatfea.cli.TABLE_CAVEATS` at `tests/regression/test_r1_published_artifacts.py:75`, 9 x 3 = 27 verbatim cases. Rewording one caveat in `cli.py` with the files left alone gives **3 failed, 120 passed**; restored **123 passed**. And rather than trust the caveats alone I regenerated all three artifacts from this tree and diffed the WHOLE file: `report.md` 2 differing lines, both the config filename my probe used; the CSVs 2 each, the same. **Nothing else in any deliverable is stale.** Closed. Two blind directions recorded as **R838** -- neither is the unmet half of the condition. |
+| R832 (the FQ3 empty-basis branch held by nothing) | **ANSWERED, both halves live** | `test_FQ3_R832_an_EMPTY_basis_says_so_AND_no_caveat_contradicts_it` at `tests/unit/test_run_pipeline_refusals.py:604`. Reverting the `if basis:`/`else` hunk to the field-by-field form: **1 failed, 122 passed**, and the one red is that test. The implementer asked whether the narrowed needle is now too narrow to fail -- **it is not**: restoring the pre-R829 caveat wording gives **4 failed**, the three artifact cases plus that same test. The two halves redden under two different mutations, which is what makes them two halves. Closed. |
+| R833 (the name-key refusal held at one of three sites) | **ANSWERED AT ALL THREE, bound per site** | the call site is a parameter at `tests/unit/test_run_config.py:375-385`. Removing one `_require_name_keys` line at a time: `sections.groups` **4 failed** on exactly the four `[*-sections.groups]` ids, `mass_distribution` body names **4 failed** on exactly the four `[*-mass_distribution body names]` ids, `line_masses` **4 failed**; restored **15 passed**. Each site's four shapes redden and no other site's do. R825's two named lines are both held. Closed. |
+| R834 (`str()` on a declared string) | **ANSWERED AT THREE SITES, AND A FOURTH EXISTS -- R837** | `_require_string` at `floatfea/run/config.py:233`, applied at `:612`, `:701`, `:802`. Reverting each to `str(...)` reddens exactly its own parametrisation -- `[floatsim.tag-tag]`, `[lumped[].label-lumped]`, `[load_cases.window_rule-window_rule]`, one id each, control `4 passed`. **The two extra sites were NOT scope you should not have taken** -- they are the finding, and `tag`/`window_rule` reaching `provenance()` is verified at `config.py:530` and `:560`. The scope was right and it was one site short. **R837.** |
+| R835 (EG3's enumeration) | **recorded, carried to Xabier, and I measured it again** | this commit's eight reds give the fifth independent confirmation. See **R839**. |
+| R836 (the r754 margin in the wrong variable) | **answered** | Â§7 re-measures it as the round-tripped ratio, `300.0000000000001`, and keeps it as a recorded item rather than a change. That is the right disposition. |
+| C29 (FF0 class, overdue) | **DONE in this commit** | `scripts/ci_section.py:185-199`. `python scripts/ci_section.py` exits 0 and reproduces the report's Â§0 **byte-identically**, which I ran. |
+| C34, C35 | **done here**, though the pointer file still lists them `later` | `ruff check floatfea tests scripts`, `black --check floatfea tests scripts` (147 files) and `mypy floatfea scripts/f4_dynamic_residual.py` (43 files) are green on my machine in CI's own wider forms, and C35's sentence went with the needle. The pointer-file discrepancy is declared in Â§9 and is correct as a ledger. |
+| C26, C27, C28, C30, C31, C32, C33 | carry to the closure commit | not re-reviewed item by item. **C27 recurs in the code -- see R837.** |
+| `scripts/suite_count.py`'s own line | **still owed, correctly** | FC1: a line naming a sha cannot be inside that sha. It goes in the follow-on commit with CZ1 (ii)/(iii)'s four outputs, which is where verdict 6 ruled it belongs. Not a finding. |
+
+## Findings
+
+**ONE BLOCKS. It is the fifth consecutive round in which the deciding half is the other
+instance of the thing just fixed -- and this round the pattern moved into the NEEDLE that was
+used to prove the class closed.**
+
+**R837. (BLOCKS -- CZ0 head a) THE str() COERCION SURVIVES AT A FOURTH DECLARED STRING,
+`outputs.directory`, AND IT IS THE FIELD THE THREE PUBLISHED DELIVERABLES ARE WRITTEN TO.
+Every other key in the same function refuses by type four lines below it. And section 5's
+command cannot reach it, which is C27 one round later in the same shape.**
+
+```
+claim  outputs.directory is a declared string that coerces rather than refuses, and the
+       three EZ0 artifacts land in a directory named after the coerced value
+cmd    every declared string field in the schema offered a bare YAML word, through the real
+       load_config, on a fresh `git archive HEAD` copy of the shipped example
+out    floatsim.tag = False          REFUSED : floatsim.tag: False (bool) is not a string...
+       floatsim.tag = 2024           REFUSED : floatsim.tag: 2024 (int) is not a string...
+       load_cases.window_rule = 1    REFUSED : load_cases.window_rule: 1 (int) is not a...
+       floatsim.deck = False         REFUSED : ...False does not exist. The deck is...
+       load_cases.npz = False        REFUSED : ...does not exist...
+       outputs.directory = False     LOADED  : outdir=WindowsPath('.../examples/False')
+       outputs.directory = 12        LOADED  : outdir=WindowsPath('.../examples/12')
+       outputs.directory = None      LOADED  : dir='None'
+       CONTROL: untouched            LOADED  : dir='example'
+cmd    floatfea/run/config.py:852, and the nine lines after it
+out    852:  directory = Path(str(block.get("directory", "results/run")))
+       856:  for name in known[1:]:
+       858:      if not isinstance(value, bool):
+       859:          raise ConfigError(f"{where}.{name}: expected true or false, got ...")
+cmd    where those three artifacts are written
+out    floatfea/cli.py:343  out = cfg.outputs.directory
+       :345 / :348 / :351   out / "member_forces.csv" | "utilisation.csv" | "report.md"
+       and _write_member_forces does path.parent.mkdir(parents=True, exist_ok=True)
+rule   _require_string's own docstring, written in THIS commit at
+       floatfea/run/config.py:233 -- "A declared NAME or provenance string IS a string, or
+       it is refused"; and CLAUDE.md, "Never let a validation failure degrade to a warning.
+       The reader rejects bad records"
+judge  **the asymmetry is inside one function and visible in nine consecutive lines.**
+       known[1:] skips `directory` deliberately, so the five booleans beside it are refused
+       by name -- `outputs.report: expected true or false, got 'no'`, which I measured -- and
+       the one declared STRING in the block is coerced. `directory: no` is the exact typo the
+       block invites, because three of its five siblings ARE booleans in the shipped example;
+       the reader gets the three published deliverables in a directory literally named
+       `False` instead of a refusal. This is verdict 6's R834 one field across, under the
+       reasoning verdict 6 itself gave: the loader's guarantee is false for a measured class
+       of its own declared input. **Milder than the label case** -- no number moves, and the
+       CLI prints the path it wrote -- and CZ0's heads are about WHERE, not about severity.
+```
+
+```
+claim  section 5's refutation command cannot refute section 5's claim, which is C27's defect
+cmd    docs/reports/R1/step-2.md:1002-1008
+out    claim  three declared string fields coerced, and the command that reaches all three
+       cmd    grep -nE "=\s*str\(" floatfea/run/config.py        (before this revision)
+       cmd    the same command, now
+       out    (no output)
+cmd    the command that does reach the fourth site
+out    grep -nE "Path\(str\(" floatfea/run/config.py
+       600:    deck = Path(str(_require(block, "deck", where)))
+       762:    npz = Path(str(npz_raw))
+       852:    directory = Path(str(block.get("directory", "results/run")))
+rule   BF0, and verdict 6's C27 verbatim -- "the needle is the two spellings the same commit
+       deleted, so it searches for its own repair and reports success"
+judge  the needle requires str( immediately after the `=`, so it sees three keyword arguments
+       and cannot see a str( nested one call in. `(no output)` is then published as evidence
+       that the class is closed. **C27 was ruled a closure item last round and the identical
+       needle shipped again one round later** -- which is the argument for blocking on the
+       code rather than only ledgering the sentence. `deck` and `npz` are the same spelling
+       and happen to refuse, via an existence check rather than a type check; `directory` has
+       no existence check because it is created.
+```
+
+**Closed when** `outputs.directory` refuses a non-string -- _require_string already exists and
+already takes a scalar -- with one row on the existing
+`test_FQ2_R834_a_DECLARED_STRING_FIELD_refuses_a_non_string` parametrisation that reddens when
+that one call site is reverted, pasted per call site as verdict 6 required. **Or** the report
+states that the site was deliberately left and why, with the command that reaches it. And the
+census is published as a command that finds a str( at any nesting depth, not as the spelling
+the repair used.
+
+**R838. (DOES NOT BLOCK -- recorded) R831's NEEDLE IS SOLVED IN ONE DIRECTION. The gate asserts
+that the code's text is a subset of the file's, not that the two agree: a caveat DELETED from
+cli.py leaves the retired sentence in all three deliverables with nothing red, which is R831's
+own species. And the one non-caveat header line in the same block, LABEL, is asserted against
+the F6 deliverable and not against these three.**
+
+```
+claim  the artifact gate's boundary, solved in BOTH directions (EH4)
+cell   one element of TABLE_CAVEATS changed at a time in a `git archive HEAD` copy; the
+       deliverables never regenerated; tests/regression/test_r1_published_artifacts.py +
+       test_f6_deliverable_agrees_with_itself.py, baseline 62 passed
+out    a caveat REWORDED            (the direction built for)   3 failed, 59 passed
+       a caveat ADDED to the code                               3 failed, 62 passed
+       a caveat DELETED from the code   (WEAKENS)               59 passed, 0 failed
+       a COMMA in a caveat becomes a SEMICOLON   (WEAKENS)      62 passed, 0 failed
+       CONTROL: a WORD in the same caveat changes               3 failed, 59 passed
+       LABEL reworded in cli.py, files left alone              123 passed, 0 failed
+       restored                                                 62 passed
+rule   EH4 -- the ceiling falls toward the clean value and the injection rises until a clean
+       case trips; and my own recorded guard, check that the collection the assertion
+       inspects can contain the failure
+judge  **the two green rows are the two that weaken the gate, and nobody swept either.** A
+       deleted caveat is exactly what R831 was -- a published sentence the code has retired --
+       and the new needle cannot see it, because the assertion quantifies over what the code
+       still says. The comma row is _normalised's own blind spot and is narrow (punctuation
+       only); the control one position away reddens, so the gate is live there. LABEL is
+       asserted at tests/regression/test_f6_deliverable_agrees_with_itself.py:191 for
+       results/F6/ and nowhere for results/R1/example/, which is the asymmetry verdict 6's
+       R831 already named. **I am not blocking on it:** the gate's own claim is
+       one-directional and honestly stated, verdict 6's closing condition is met in full, and
+       my whole-file regeneration diff says no deliverable is stale in ANY direction today.
+       The repair is one command and it closes all three directions at once.
+```
+
+**Would close it** -- a regeneration comparison for results/R1/example/, the shape
+test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree already has for results/F6/:
+run, write to a temp directory, compare the header blocks line for line with the timing table
+excluded. Not new apparatus, and test_r1_example_golden.py already pays the run. It reddens on a
+reword, a deletion, an addition and a LABEL change alike.
+
+**R839. (DOES NOT BLOCK -- recorded; it is R835's fifth measurement) ALL EIGHT REDS AT THIS
+COMMIT HAVE ONE CAUSE, AND IT IS FC1's. The report files seven of them as the EH1 cascade and
+one as FC1, as two causes. Traced individually per EG3(i), the seven cascade off the same
+missing suite_count.py line as the eighth -- and NEITHER boundary state's own named member
+fired.**
+
+```
+claim  each of the eight, traced by running the id on its own rather than by family
+cmd    each of the 8 FAILED ids, one pytest invocation each
+out    test_the_report_carries_a_WHOLE_SUITE_count
+         "the newest revision carries no whole-suite line ... Generate it with
+          python scripts/suite_count.py"                       -> FC1, commit-dependent
+       test_the_guard_survives_the_state[baseline] and the six others
+         inner run, all seven identical:
+           FAILED tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count
+           1 failed, 247 passed, 1 skipped
+         then  assert 1 == 0
+cmd    test_the_guard_reads_the_step_being_worked_on, on its own
+out    PASSED      -- state (1)'s own named baseline did not fire
+cmd    the verdict-exists control, in a real WORKTREE at bd315a1, both report-guard files
+out    149 passed in 205.35s        -- 0 failed
+cmd    the same control as a git archive copy instead of a worktree
+out    30 failed, 124 passed        -- these guards read git log; an archive has no .git
+rule   EG3(i) -- each FAILED id matched to the state's own list, not "the failures look like
+       the boundary set"; EH1 -- the cascade is identified by the baseline being red and by
+       each cascading state's own failure line, not by its name; FC1 -- neither of the two
+       can pass in the commit it describes
+judge  **the report's claim is TRUE and its attribution of cause is one cause too many.** All
+       eight are the single commit-dependent cause FC1 names, every one absent at a commit
+       where the line exists, so not one is CZ1 (iv) and the step-boundary waiver applies in
+       full. The cascade is correctly identified by EH1's rule; what section 7 does not say is
+       what [baseline] is red ABOUT. **This is the fifth independent demonstration that the
+       enumeration cannot be reasoned with and the rule can:** here the list would have had a
+       reviewer looking for a verdict-dependent red that is green, and filing seven
+       commit-dependent reds under a verdict-dependent heading. **And the control has a trap
+       of its own that no directive records:** git archive gives 30 failed at the very commit
+       CLAUDE.md cites as 0 failed, because the guards read git. A control for a git-reading
+       guard is a worktree or it is nothing. I endorse R835's proposal unchanged; it is
+       Xabier's, not a round's.
+```
+
+**R840. (DOES NOT BLOCK -- FF0-class gating apparatus, fixed in the next commit, NOT ledgered)
+scripts/carried_table.py DOES NOT ESCAPE THE CELL SEPARATOR, SO FOUR OF THE FIFTEEN ROWS --
+the ones whose subject was lifted from a verdict's own TABLE -- RENDER WITH EXTRA CELLS IN A
+THREE-COLUMN TABLE.**
+
+```
+claim  the report's section 8 is exactly what the generator emits, and the generator emits
+       broken markdown rows
+cmd    python scripts/carried_table.py docs/reviews/R1/step-2.md
+              docs/reports/R1/step-2-answers.json    -- compared with the report's section 8
+out    15 rows, byte-identical to the report's. Rows whose cell count is not 3:
+         4 ['R819', 'R825', 'R826', 'R828']
+       each of those four ends in a truncated fragment of my own Carried table rather than
+       in a subject
+rule   FF0 with EK2 -- anything that reads the gating record is fixed in the next commit, and
+       a guard that fails false is fixed or deleted, never extended
+judge  my Carried section is a table, so its cells contain the separator character, and the
+       generator pastes them raw into a cell of its own table. The implementer did not write
+       these rows and could not have fixed them by writing differently. Nothing green is made
+       to mean the wrong thing, so it is not blocking; it is in the class FF0 says is not
+       ledgered. One escape on the subject cell.
+```
+
+**One housekeeping note, not a finding against this commit.** `git worktree list` carries
+eleven live suite-count registrations under TEMP, and `ls .git/worktrees | wc -l` is **185**
+stale entries that `git worktree prune` cannot delete on this machine. scripts/suite_count.py creates
+one per invocation. The working tree is clean and nothing is wrong with any measurement; it is
+state accumulating in .git/ that a later reader will have to reason about.
+
+## The three things the report asked to have attacked -- my rulings
+
+**1. R831's NEEDLE AND ITS PARAMETRISATION ARE RIGHT, AND 9 x 3 IS THE RIGHT COUNT.** The
+EX3/R724 and R741/R742 caveats each name two findings and are each ONE element of
+TABLE_CAVEATS, so one case per element is one case per published sentence -- which is the
+object that can go stale. The eleven-marker list was the thing that was wrong about the count,
+not the nine. The normalisation does not let a rewording through: a word changed one position
+from the comma reddens three cases. It lets a comma/semicolon substitution through, which is
+R838's narrow half. **And the hole I went looking for is not there:** deriving the
+parametrisation from len(TABLE_CAVEATS) looked like the "empty parameter set reads green"
+defect, and pyproject.toml:81 carries `empty_parameter_set_mark = "fail_at_collect"`, so
+emptying the tuple gives `1 error in 0.98s` and not a green skip. That is the second argument
+this round I converted to a measurement and lost.
+
+**2. THE CONTENDED WALL CLOCK: a closure item, and the reason is not indulgence.** I ran the
+same configuration a third time while my own suite and twelve mutation cycles held the machine
+and got `total wall time 126.26 s` against the published 97.27 and revision 1's 65.97. So the
+published figure is not reproducible within a factor of two, and that is a property of the
+quantity rather than of this run. It is nonetheless TRUE of the run that produced the artifact,
+no engineering number moved -- my whole-file regeneration diff puts every other line identical
+-- and CZ0 retires the truth of a published figure as a blocking head. **What is actually wrong
+is where the mitigation lives:** section 2 says it was taken under load, and section 2 is a step
+report, which is not what goes to Xabier. The deliverable itself says nothing. Closure item
+**C36**, and the fix is a generated line beside the table rather than a decision to stop
+publishing it -- FL1(d) asks for the wall time, and a withheld figure is worse than a noisy one
+carrying its operating point.
+
+**3. R832's NARROWED NEEDLE IS NOT TOO NARROW.** Measured, not argued: restoring the pre-R829
+caveat text reddens that test. The first version reddening on cli.py:77's C_m caveat was the
+right thing to notice and the right repair -- a gate that reddens on a true sentence about
+another quantity is a gate that will be widened by whoever next trips it.
+
+## Try to break it -- the adversarial cases I ran, and what they found
+
+* **Every declared string field in the schema, offered False, an int and None, through the real
+  load_config** -- the type space rather than the three fields the diff chose. **R837**, and it
+  is the round's only blocking finding.
+* **Every declared BOOLEAN in the same block, offered 'no', 0 and 'false'.** All five refuse by
+  name. Found nothing, and it is what makes R837 an asymmetry inside one function rather than a
+  missing feature of the schema.
+* **A whole-file regeneration of all three published deliverables, diffed line for line against
+  the committed files.** The strongest form of the check that found R831 last round.
+  **Found nothing** -- two lines per file, all of them the config filename my own probe used.
+  That is the measurement that closes R831, rather than the caveat gate's 27 green cases.
+* **The artifact gate's boundary in BOTH directions** -- reworded, added, deleted, and a comma
+  turned into a semicolon, with a word-level control at the same position. **R838**: the two
+  weakening directions are the two that are green.
+* **Twelve revert-red-restore cycles, one per call site**, against a 123-passed baseline: three
+  _require_name_keys sites, three _require_string sites, the `if basis:` branch, the retired
+  caveat, a reworded caveat, LABEL, and the emptied tuple. **Every repair in this commit is
+  held, and bound to its own site** -- I confirmed the binding by id, not by count.
+* **The eight reds traced one id at a time instead of as a family.** **R839** -- one cause, not
+  two, and neither state's named member fired.
+* **The verdict-exists control run two ways**, archive and worktree: 30 failed against 0 failed
+  at the same commit. The control CLAUDE.md prescribes is only valid as a worktree.
+* **python scripts/ci_section.py re-run and diffed against the committed section 0.**
+  Byte-identical. C29's hint fires in both refusal paths and does not fire on a correct marker.
+* **The emptied-tuple probe**, looking for a parametrisation that reads green over nothing.
+  Lost: fail_at_collect is configured.
+
+**What I did not find, and it is the larger part.** The reviewer's question was adopted as a
+method and it worked: the call site is a parameter in three separate gates now, every repair in
+this commit reddens when it is reverted, and the two sites nobody asked for were the right two.
+R831's repair went further than its condition -- the needle, the regeneration taken after the
+last edit, and the false docstring sentence deleted in the same commit. R832's needle was
+narrowed for a stated reason and the narrowing was then measured rather than assumed. The
+whole-suite figure that was owed was paid, from the implementer's own machine, matching mine to
+the test. **The one blocking finding is the fourth instance of a three-instance repair, found by
+the type space and not by the diff -- and the needle that certified the class closed is the same
+needle verdict 6 named as C27.**
+
+## CI at the reviewed commit: RED, eight reds, all one boundary cause, and it does not HOLD
+
+```
+cmd    gh run list --commit 129747bcec6357b16229b2811b0000d434d954af
+         --json name,conclusion,workflowName,status
+out    [{"conclusion":"failure","name":"CI","status":"completed","workflowName":"CI"}]
+       -- it was in_progress when I began and completed while I measured; a run that has not
+          finished is not a pass, so this is read only after completion
+cmd    gh run view 39053434877 --json jobs, read at STEP level
+out    lint, unit and guards : FAILURE
+         actionlint SUCCESS / ruff SUCCESS / black --check SUCCESS / mypy SUCCESS /
+         unit tests SUCCESS / guards and meta-tests FAILURE
+         -> 8 failed, 1148 passed, 1 skipped in 648.51s
+       the verification ladder : SUCCESS
+         rungs 1, 2, 3, 6+regression, 4, 5 -- all six SUCCESS
+       CI determinism -- leg / ten legs agree : SKIPPED
+cmd    gh run view 39053434877 --log-failed, the eight FAILED ids
+out    identical to my own local eight, and to the report's section 7 list
+```
+
+**Not CK2's exhausted-allowance state.** Both real jobs ran with per-step conclusions and real
+counts -- ten minutes on the guards step alone -- so the absent runner name is not the
+never-started signal CK2 describes. The two determinism jobs are skipped by the workflow's own
+event gate (CK0 by design) and are recorded as that, not as an unavailable check.
+
+**On CA2, which I keep in full because CLAUDE.md does not carry it:** a red CI is a HOLD
+regardless of the local run, and EG3 is the clause that qualifies CZ0's head (d) for a step's
+own boundary red. Every one of the eight traces by name to FC1's cause, individually and not by
+family, and every one is green at a verdict-exists worktree control. So the red is recorded as
+red with its cause named and **CI does not HOLD on head (d)**. What would HOLD is a ninth, and
+there is none. mypy -- which was CI-only red at 60f3176 -- is green here, and the `unit tests`
+and `guards and meta-tests` steps both RAN rather than being skipped behind an earlier red,
+which is the thing CZ1 (iii) exists to see.
+
+**EG3(ii): I measure state (1) clearing at my own verdict commit and the counts go in the next
+revision's Carried.** My instructions have me run before writing, so it is measured after this
+file exists.
+
+## Corpus (EG4(e))
+
+**The pause held. Zero new entries this round, tests/corpus/ is untouched by me, and
+`git status --porcelain` is empty.** Neither exception opens: this revision touches no part of
+F4's load-mapping gate, and EB6's label-provenance gate is about buoy-centre labels in
+tests/verification/rung4/, not about the declared config strings this revision refuses -- the
+same check verdict 6 made, re-made here because R837 is again a declared-identifier finding.
+
+**I ran the recorded substitute instead, both halves, and this round only one of them produced
+the blocking finding** -- which is the honest count, and the first time in five rounds they have
+not both paid:
+
+* **a continuum grid over the parameter space a decision rule guards** -- every declared string
+  field and every declared boolean in the schema, offered False / int / None / 'no' / 0 /
+  'false' through the real load_config; and the artifact gate's text boundary in four
+  directions with a control at each. **R837 and R838.**
+* **a regeneration check on a published deliverable** -- all three artifacts regenerated from
+  this tree and diffed over the whole file rather than over the needle. **Found nothing**,
+  which is what closes R831 and is worth as much here as a finding would have been: it is the
+  only measurement in this round that says the deliverables are clean in every direction,
+  including the two R838 shows no gate covers.
+
+## Tolerances touched
+
+**None.** No value, no form, no counter, no injection.
+
+```
+cmd    git diff --stat 43bcd0c..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff 43bcd0c..HEAD -- floatfea tests scripts | grep "^+" | grep -E
+       "isclose|abs_tol|rel_tol|approx|atol|rtol|[<>]=? *[0-9]"
+out    (no output)
+rule   CLAUDE.md section Tolerances, and its clause on anything that functions as a tolerance
+       under another name
+judge  the diff is one type guard, three call sites, three test parametrisations, a generated
+       deliverable regeneration and one refusal message. The only new comparison anywhere in
+       it is `not isinstance(value, str)`, which is a type test and carries no number.
+```
+
+## Closure items (CZ0, fixed once in the step's closure commit)
+
+C26, C27, C28, C30, C31, C32 and C33 carry unchanged from verdict 6 and are not re-reviewed
+item by item. C29 is done; C34 and C35 are done. R840 is FF0-class and is fixed in the next
+commit rather than ledgered. New:
+
+* **C36.** results/R1/example/report.md's timing table publishes a contended wall clock with no
+  operating point in the artifact. Measured three times on three machine states: 65.97, 97.27
+  and 126.26 s total. The mitigation is in the step report, which is not what goes to Xabier.
+  A generated line beside the table, not a withdrawal of the figure.
+* **C37.** _require_string's message says "a name written without quotes ... Quote the name."
+  and it now fires for load_cases.window_rule, which is a sentence rather than a name. The
+  refusal is right; the noun is wrong for one of its three call sites.
+* **C38.** docs/reports/R1/step-2.md:1002-1008 -- the claim is "three declared string fields
+  coerced" and the command is the spelling the repair used. The sentence is the prose half of
+  R837 and is C27 recurring; it is ledgered here and the code is what blocks.
+* **C39.** docs/reports/R1/step-2.md:1086-1101 attributes the seven cascading reds to the EH1
+  cascade and the eighth to FC1, as two causes. R839's trace says there is one. The
+  classification of the cascade is correct; the cause behind [baseline] is not stated.
+* **C40.** tests/regression/test_r1_published_artifacts.py:16 -- the module docstring now says
+  "What is checked here is the published FORM", which is broader than the file checks: LABEL,
+  the provenance block and the wave-basis line are published form and are not asserted against
+  these three artifacts. R838 is the measurement. CW0.
+
+## Next step opens when
+
+**Step 2 stays open. Revision 2 of 3 is spent; ONE reviewed revision remains, and none of step
+2's own gate is built.** Section 9 says so correctly, and verdict 6 ruled that is not a finding
+for a revision answering findings. It is a schedule fact, and after this round it is the
+schedule fact that matters most.
+
+**THE ESCALATION CLAUSE IS NOW LIVE AND I AM STATING IT RATHER THAN LETTING IT BE INFERRED.**
+Step 1 closed at the ES0 cap carrying five blocking items. Step 2 has spent two of its three
+revisions on findings, has FL2's five gate items entirely unbuilt, and carries one blocking item
+out of this round. If revision 3 does not carry both R837 and FL2's five items, step 2 closes at
+the cap with blocking items and that is **two consecutive steps**, which CLAUDE.md says is
+escalated with the choice stated: **slip the 5 November date, or reduce FL2's scope.** I endorse
+neither -- FQ4 forbids the implementer trimming scope, and the date is Xabier's judgement rather
+than mine. What I will say is that the findings per round are not what is slowing this step
+down: each has been one line of code or one test row, and all twelve of the repairs I cycled
+this round held. The cost is the round, not the repair.
+
+1. **R837** -- outputs.directory refuses a non-string, with one row on the existing R834
+   parametrisation reddening when that one call site is reverted, pasted per call site. Or the
+   report states the site was deliberately left, with the command that reaches it. And the
+   census published as a needle that finds str( at any nesting depth.
+2. **R838 and R840** -- not blocking, and both are one line. If revision 3 has room, the
+   regeneration comparison for results/R1/example/ closes R838's three directions at once and
+   retires C40 with it; carried_table.py's separator escape is FF0-class and is due in the next
+   commit regardless.
+3. **FL2's five gate items**, which is what step 2 is for.
+4. **The closure list** -- C26, C27, C28, C30, C31, C32, C33, C36, C37, C38, C39, C40 -- fixed
+   once in the step's closure commit.
+5. **scripts/suite_count.py's line and CZ1 (ii)/(iii)'s four outputs**, in the follow-on commit,
+   as already ruled.
+6. **The push (FP1), continued exactly as done here.** It gave this round a completed CI run at
+   the judged commit, eight reds that match mine id for id, a green mypy on a machine neither of
+   us controls, and six green ladder rungs. It is not an open item and must not become one.
+
+**Where I disagree with the CRITERION rather than with the work: nothing new.** R835 stands as
+verdict 6 wrote it, the implementer is right to carry it to Xabier rather than act on it, and
+R839 is its fifth measurement rather than a second proposal.
+
+**What this commit got right, and it is much the larger part.** Four blocking findings answered,
+and every one of them answered at the layer the finding was about rather than at the layer the
+repair was first written: the call site became a parameter in three separate gates, each bound
+to its own site, which I verified by id. The needle that could not fail was replaced by one that
+can, and the sentence claiming otherwise was deleted in the same commit instead of being
+ledgered. A first attempt at the R832 gate reddened on a true sentence about another quantity,
+and that was recorded as the mirror of R831 rather than quietly narrowed. Two sites nobody asked
+for were found by asking the right question, and both were real. The deliverables were
+regenerated after the last edit to the code they publish, and I verified that over the whole
+file and not over the caveats. The whole-suite figure that was owed, on a machine that could not
+produce it last round, was produced and matches mine to the test.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 2
 Reviewed commit: 09d5bc9acc3d9eea0a77a21b3e2bf8943ae8f50e
 **Reviewed commit: `09d5bc9acc3d9eea0a77a21b3e2bf8943ae8f50e`.**
 Verdict: HOLD
