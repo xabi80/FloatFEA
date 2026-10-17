@@ -57,9 +57,9 @@ TABLE_CAVEATS = (
     "EZ2: only the declared governing periods may set the envelope. Cases outside the "
     "associated-period range for this wave height -- and any exceeding the deep-water "
     "breaking steepness -- are reported as SENSITIVITY ONLY and cannot govern.",
-    "EX3 / R724: the heading these loads were exported at is in the provenance above. "
-    "Where a run covers a SINGLE heading the heading dependence is UNTESTED, and no "
-    "column here is evidence about any other heading.",
+    "EX3 / R724: where a run covers a SINGLE heading the heading dependence is UNTESTED, "
+    "and no column here is evidence about any other heading. The heading itself is in the "
+    "wave-basis line above WHEN THE EXPORT RECORDED ONE; that line says so either way.",
     "FA0: a governing period sitting just below the associated-period band's lower "
     "bound is admitted by FA0's ruling rather than by rounding. Which period governs is "
     "a RESULT of this run and is in the period column; it is not a property of the "
@@ -67,9 +67,10 @@ TABLE_CAVEATS = (
     "FA1: a generic 0.6*Fy reference stress is NOT the API bending allowable and is "
     "SUPERSEDED by the clause results in these columns. Section 3.2.3's branches decide "
     "the bending allowable from D/t, not from 0.6*Fy.",
-    "R741 / R742: section 3.2.2(b) local buckling is implemented, and the D/t ceiling is "
-    "300000/Fy[MPa] -- 845.1 at Fy = 355 MPa -- above which the section is refused rather "
-    "than extrapolated. F_b = 0.75*Fy IS the compact allowable; section 3.2.3's reductions "
+    "R741 / R742 / FQ0: section 3.2.2(b) local buckling is implemented and applies for "
+    "60 < D/t <= 300. Section 3.2.3's third range ends at a FLAT D/t <= 300 -- not a "
+    "grade-dependent limit -- above which the section is refused rather than "
+    "extrapolated. F_b = 0.75*Fy IS the compact allowable; section 3.2.3's reductions "
     "apply above the compact limit, not below it. Every clause is verified against an "
     "independent hand calculation in tests/verification/rung5/.",
     "R743: C_m MULTIPLIES the bending term in section 3.3.1's interaction, so a LARGER "
@@ -107,15 +108,30 @@ def _header_lines(result: RunResult) -> list[str]:
     # R817: THE HEADING AND THE WAVE HEIGHT, which two of the caveats below are about and
     # which no artifact stated. `(not recorded)` rather than a guess when the export did
     # not write them.
+    # **TWO BRANCHES, NOT FOUR FALLBACKS (R829 / FQ3).** This emitted one line with
+    # `(not recorded)` substituted field by field, so a sidecar-less npz produced a file
+    # carrying BOTH "the heading ... is in the provenance above" and
+    # "heading (not recorded) deg" -- two sentences that cannot both be true. FL1(a) admits
+    # such an npz, so this is a reachable state and not a hypothetical.
+    #
+    # `_write_report` already had the branch; the CSV path did not, which is why the
+    # contradiction only appeared in two of the three artifacts.
     basis = result.wave_basis
-    lines.append(
-        "wave basis: heading {} deg, H_full {} m, H_model {} m; window {}".format(
-            basis.get("heading_deg", "(not recorded)"),
-            basis.get("wave_height_full_m", "(not recorded)"),
-            basis.get("wave_height_model_m", "(not recorded)"),
-            basis.get("window", "(not recorded)"),
+    if basis:
+        lines.append(
+            "wave basis: heading {} deg, H_full {} m, H_model {} m; window {}".format(
+                basis["heading_deg"],
+                basis["wave_height_full_m"],
+                basis["wave_height_model_m"],
+                basis["window"],
+            )
         )
-    )
+    else:
+        lines.append(
+            "wave basis: NOT RECORDED by the export of this dynamic-inputs file. The "
+            "heading and wave height of these loads are not stated by this run, and no "
+            "caveat below should be read as supplying them."
+        )
     if result.built.label:
         lines.append(f"build label: {result.built.label}")
     lines.extend(f"assumption: {a}" for a in result.built.assumptions)

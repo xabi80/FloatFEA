@@ -549,3 +549,67 @@ def test_R806_a_STUDY_run_says_so_in_EVERY_header_line_block(write: Any, built: 
     lines = _header_lines(stub)
     assert "STUDY -- NOT FOR DESIGN" in lines[0], lines[0]
     assert any("permitted only because" in line for line in lines), lines[-3:]
+
+
+# ---------------------------------------------------------------------------
+# FQ2: R817 and R818 at the GENERATOR, not at the committed file
+# ---------------------------------------------------------------------------
+#
+# **R828 IS WHY THESE EXIST.** R817's and R818's reddening half held the committed
+# artifacts: blanking `exported_wave_basis` to `{}` or deleting
+# `code_check_sensitivities` from `provenance()` left 195 passed, because the only
+# assertions were over files that had already been generated. Worse, the CSV header check
+# DERIVES its expectation from `provenance()`, so it moves with the defect.
+
+
+def test_FQ2_R817_the_READER_returns_the_wave_basis_from_the_sidecar() -> None:
+    """The heading and height come from the export's own record (R817).
+
+    At the generator, so blanking the reader reddens this rather than waiting for someone
+    to regenerate an artifact.
+    """
+    from floatfea.run.pipeline import exported_wave_basis
+
+    basis = exported_wave_basis(ROOT / "data" / "f4" / "dynamic_inputs.npz")
+    assert basis, "the committed npz's sidecar records a wave basis; the reader found none"
+    assert basis["heading_deg"] == 0.0, basis
+    # not-a-tolerance: the wave height the EXPORT declared, read back out of its own
+    # sidecar. It is an input carried through the file, and the assertion is that the
+    # reader returns what was recorded -- exact equality is the point of it.
+    assert basis["wave_height_full_m"] == 24.2, basis  # not-a-tolerance: a declared input
+    assert "window" in basis, basis
+
+
+def test_FQ2_R817_the_HEADER_carries_the_basis_the_reader_returned(built: Any) -> None:
+    """The generator puts it in the header -- not a committed file's copy of it."""
+    from floatfea.cli import _header_lines
+    from floatfea.run.pipeline import RunResult, exported_wave_basis
+
+    cfg = load_config(EXAMPLE)
+    basis = exported_wave_basis(cfg.load_cases.npz)
+    stub = RunResult(
+        config=cfg,
+        built=built,
+        rows=[],
+        utilisations=[],
+        mass=(),
+        timings={},
+        wave_basis=basis,
+    )
+    blob = " ".join(_header_lines(stub))
+    assert "heading 0.0 deg" in blob, blob[:200]
+    assert "24.2" in blob, blob[:200]
+
+
+def test_FQ2_R818_the_PROVENANCE_carries_the_sensitivity_operating_points() -> None:
+    """Two published columns need their operating point published (R818).
+
+    Asserted on `provenance()` itself, which is the generator. The CSV header check cannot
+    serve here: it derives its expected key set FROM `provenance()`, so deleting a key
+    moves the expectation with it.
+    """
+    prov = load_config(EXAMPLE).provenance()
+    assert "code_check_sensitivities" in prov, sorted(prov)
+    text = str(prov["code_check_sensitivities"])
+    assert "K_sensitivity" in text and "Cm_sensitivity" in text, text
+    assert "1" in text, text

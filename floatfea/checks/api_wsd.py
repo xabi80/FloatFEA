@@ -70,25 +70,30 @@ LOCAL_BUCKLING_DT: Final[float] = 60.0
 ELASTIC_LOCAL_BUCKLING_C: Final[float] = 0.3
 """§ 3.2.2(b)'s `C` in `F_xe = 2 C E t / D`."""
 
-BENDING_THIRD_BRANCH_NUMERATOR: Final[float] = 300000.0
-"""§ 3.2.3's third-range upper limit as `this / F_y[MPa]` (FB1).
+BENDING_THIRD_BRANCH_MAX_D_OVER_T: Final[float] = 300.0
+"""§ 3.2.3's third-range upper limit, a FLAT `D/t`. Above it the clause is refused.
 
-**FB1 SETS THIS AND IT ADMITS A NEGATIVE ALLOWABLE, WHICH IS MEASURED AND REFUSED RATHER
-THAN PASSED ON.** At `F_y = 355 MPa` the limit is `845.1`, and the third branch
-`(0.72 - 0.58 F_y (D/t) / E) F_y` crosses zero at `D/t = 0.72 E / (0.58 F_y) = 734.3`:
+**CLOSED BY DIRECTIVE FQ0, WHICH OVERRULES FB1 AND NAMES IT AS XABIER'S OWN ERROR.** This
+was `BENDING_THIRD_BRANCH_NUMERATOR = 300000.0`, read as `this / F_y[MPa]`, and the
+docstring here recorded the discrepancy as an OPEN QUESTION for Xabier rather than choosing
+between the two readings. FQ0 rules:
 
-    D/t = 300  ->  Fb = +151.18 MPa
-    D/t = 500  ->  Fb =  +81.57 MPa
-    D/t = 734  ->  Fb =   +0.12 MPa
-    D/t = 845  ->  Fb =  -38.52 MPa
+    § 3.2.3's ranges in ksi are `1,500/F_y`, `3,000/F_y`, `300` -- the first two scale with
+    grade and THE THIRD DOES NOT. § 3.2.2(b) applies for `60 < D/t <= 300`.
 
-FB1 also asks for `F_b <= 0.75 F_y` everywhere, and that assertion cannot see a negative.
-So `allowable_bending` refuses a non-positive result as well, and the discrepancy goes back
-to Xabier: the editions I can check give the third range a FLAT `D/t <= 300`, which at this
-`F_y` is `2.8x` tighter and never reaches the sign change. In practice § 3.2.2(b)'s
-`D/t > 60` refusal fires long before either limit on any compression member, so nothing in
-F6 reaches this branch -- but the boundary is wrong in one of the two readings and it is
-declared here rather than chosen silently.
+So `limit_1` and `limit_2` keep their `/F_y` forms (`10340/F_y[MPa]`, `20680/F_y[MPa]`) and
+this one is flat. At `F_y = 355 MPa` the old reading gave `845.1`, which is `2.8x` looser.
+
+**AND THE RULING MAKES THE NON-POSITIVE GUARD IN `allowable_bending` UNREACHABLE**, which
+is recorded at that guard rather than used as a reason to delete it. The third branch
+`(0.72 - 0.58 F_y (D/t) / E) F_y` crosses zero at `D/t = 0.72 E / (0.58 F_y) = 734.3` at
+this grade, and `734.3 > 300`, so no admitted section can reach a negative allowable now.
+It was reachable under FB1's reading and that is why it exists.
+
+What three figures this corrects, because each was published somewhere: FB1's `300000/F_y`
+(the instruction), `845.1` (shipped in three artifacts under R819's repair), and `734.3`
+(the reviewer's bisection against the code as it then stood, finding R827). All three
+described the old reading correctly; the reading was wrong.
 """
 
 ALLOWABLE_SHEAR_FACTOR: Final[float] = 0.4
@@ -135,7 +140,7 @@ class SectionClass:
     limit_2: float
     """`20680 / F_y`. Between the two, the first reduced branch."""
     limit_3: float
-    """`300000 / F_y` (FB1). Beyond it § 3.2.3 is not written and is refused."""
+    """A FLAT `300` (FQ0). Beyond it § 3.2.3 is not written and is refused."""
     branch: str
     """`"compact"`, `"reduced_1"`, `"reduced_2"`, or `"slender"`."""
 
@@ -243,7 +248,8 @@ def section_class(d_outer: float, wall: float, fy: float = FY_S355) -> SectionCl
     fy_mpa = fy / PASCAL_PER_MPA
     limit_1 = 10340.0 / fy_mpa
     limit_2 = 20680.0 / fy_mpa
-    limit_3 = BENDING_THIRD_BRANCH_NUMERATOR / fy_mpa
+    # FLAT, not `/F_y` (FQ0). `limit_1` and `limit_2` scale with grade; this does not.
+    limit_3 = BENDING_THIRD_BRANCH_MAX_D_OVER_T
     if d_t <= limit_1:
         branch = "compact"
     elif d_t <= limit_2:
@@ -304,6 +310,29 @@ def local_buckling_stress(
     _require_plausible_fy(fy)
     _require_tube(d_outer, wall)
     d_t = d_outer / wall
+    # **THIS SITE ADMITTED EVERYTHING, AND FQ0 SAYS EVERY SITE REFUSES.** FQ0 rules the
+    # third range ends at a flat `D/t = 300` and that "section 3.2.2(b) applies for
+    # 60 < D/t <= 300", so 300 bounds THIS clause as well as section 3.2.3's -- which is
+    # why a constant named for the bending branch is the right one to read here.
+    #
+    # Measured before this guard, at S355, through this function:
+    #
+    #     D/t =     300.01  ->  F_xc = +2.423869e+08   (outside the clause, returned)
+    #     D/t =      845.0  ->  F_xc = +1.419794e+08   (outside the clause, returned)
+    #     D/t =     10000   ->  F_xc = -2.343000e+08   (NEGATIVE)
+    #     D/t =   1000000   ->  F_xc = -1.999800e+09   (NEGATIVE)
+    #
+    # `F_xc = F_y [1.64 - 0.23 (D/t)^(1/4)]` crosses zero at `(1.64/0.23)^4 = 2585`, so
+    # far outside the clause this returned a NEGATIVE buckling stress -- a capacity with
+    # the wrong sign, which `min(f_xc, f_xe)` then propagated as the governing value.
+    # `allowable_axial_compression` refused above 300 and so never saw it; this function
+    # is public and exported, and a direct caller did.
+    if d_t > BENDING_THIRD_BRANCH_MAX_D_OVER_T:
+        raise ValueError(
+            f"D/t = {d_t:.6g} exceeds {BENDING_THIRD_BRANCH_MAX_D_OVER_T:.0f}, beyond "
+            "which API section 3.2.2(b) is not written. Refused rather than extrapolated "
+            "(R741, FQ0)."
+        )
     if d_t <= LOCAL_BUCKLING_DT:
         return fy
     f_xe = 2.0 * ELASTIC_LOCAL_BUCKLING_C * e * wall / d_outer
@@ -337,10 +366,22 @@ def allowable_axial_compression(
     _require_plausible_fy(fy)
     _require_tube(d_outer, wall)
     d_t = d_outer / wall
-    if d_t > 300.0:
+    # THE LITERAL WAS A SECOND COPY OF FQ0's CEILING and it is now the named constant:
+    # two sites carrying the same number as a literal is how the `845.1` / `300` split
+    # happened in the first place.
+    #
+    # AND `:.1f` MADE THE MESSAGE FALSE AT THE BOUNDARY. Measured before this change, the
+    # refusal for an input of `D/t = 300.01` read:
+    #
+    #     D/t = 300.0 exceeds 300, beyond which API section 3.2.2 is not written.
+    #
+    # which is self-refuting on its face -- `300.0` does not exceed `300` -- and sends a
+    # reader to look for a defect in the comparison. `:.6g` prints `300.01`.
+    if d_t > BENDING_THIRD_BRANCH_MAX_D_OVER_T:
         raise ValueError(
-            f"D/t = {d_t:.1f} exceeds 300, beyond which API section 3.2.2 is not written. "
-            "Refused rather than extrapolated (R741)."
+            f"D/t = {d_t:.6g} exceeds {BENDING_THIRD_BRANCH_MAX_D_OVER_T:.0f}, beyond "
+            "which API section 3.2.2 is not written. Refused rather than extrapolated "
+            "(R741, FQ0)."
         )
     # § 3.2.2(b): `F_y` is replaced by the local buckling stress on a slender tube.
     f_xc = local_buckling_stress(d_outer, wall, fy, e)
@@ -381,8 +422,8 @@ def allowable_bending(
         f_b = (0.72 - 0.58 * fy * d_outer / (e * wall)) * fy
     else:
         raise ValueError(
-            f"D/t = {klass.d_over_t:.1f} exceeds {klass.limit_3:.1f} "
-            f"(= {BENDING_THIRD_BRANCH_NUMERATOR:g}/F_y), where API section 3.2.3 is not "
+            f"D/t = {klass.d_over_t:.6g} exceeds {klass.limit_3:.0f}, the flat upper "
+            f"limit of API section 3.2.3's third range (FQ0), where the clause is not "
             "written. Extrapolating it would be an invented clause; DNV-RP-C202 is the "
             "reference and it is F7 sub-model work."
         )
@@ -397,16 +438,22 @@ def allowable_bending(
     if f_b > cap:
         f_b = cap
 
-    # AND THE CAP CANNOT SEE A NEGATIVE, which FB1's third limit admits (see
-    # `BENDING_THIRD_BRANCH_NUMERATOR`). A non-positive allowable is refused rather than
+    # AND THE CAP CANNOT SEE A NEGATIVE. A non-positive allowable is refused rather than
     # returned: it would make every utilisation on that member negative or infinite.
+    #
+    # **UNREACHABLE UNDER FQ0's CEILING, AND KEPT ANYWAY.** The third branch crosses zero
+    # at `D/t = 0.72 E / (0.58 F_y) = 734.3` at this grade, and the `slender` refusal above
+    # fires at `300`, so no admitted section reaches it. It was reachable under FB1's
+    # `300000/F_y` reading, which is why it exists. A safety net deleted because today's
+    # constant happens to clear it is a net that is missing the next time the constant
+    # moves, so it stays and this comment says what it is.
     if f_b <= 0.0:
         raise ValueError(
             f"D/t = {klass.d_over_t:.1f} gives F_b = {f_b:.4e} Pa, which is not positive. "
             "Section 3.2.3's third branch crosses zero at "
-            f"D/t = 0.72 E / (0.58 F_y) = {0.72 * e / (0.58 * fy):.1f}, inside the range "
-            f"FB1's limit {klass.limit_3:.1f} admits. The clause does not describe a "
-            "section this slender."
+            f"D/t = 0.72 E / (0.58 F_y) = {0.72 * e / (0.58 * fy):.1f}. Under FQ0's flat "
+            f"ceiling of {klass.limit_3:.0f} this is unreachable, so reaching it means the "
+            "ceiling moved and this branch was not re-derived with it."
         )
     return f_b, klass.branch
 

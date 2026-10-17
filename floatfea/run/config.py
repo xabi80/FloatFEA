@@ -230,6 +230,40 @@ def _require(mapping: Any, key: str, where: str) -> Any:
     return mapping[key]
 
 
+def _require_name_keys(mapping: dict[Any, Any], where: str) -> None:
+    """Every key of a NAME-KEYED mapping is a string, or the mapping is refused (FQ1/R825).
+
+    **THIS IS THE LAYER BELOW THE DUPLICATE CHECK, AND R822's REPAIR DID NOT REACH IT.**
+    `_no_duplicates` compares the keys PyYAML will build, so it catches `no`/`No` (both
+    `False`) and `1`/`01` (both `1`). It is correctly SILENT when YAML builds two DISTINCT
+    keys -- and `{true: 100.0, 'True': 900.0}` is exactly that: the bool `True` and the
+    string `'True'` are different keys and PyYAML keeps both.
+
+    Then the schema coerced with `str(g)`, both became `'True'`, and one of two declared
+    line masses was gone. Measured before this check:
+
+        line_masses: {true: 100.0, 'True': 900.0}  ->  {'True': 900.0}
+        line_masses: {~: 100.0, 'None': 900.0}     ->  {'None': 900.0}
+
+    and the same at `sections.groups`, where two declared tubes became one.
+
+    So the coercion was the defect, not the comparison. These keys are NAMES -- member
+    groups, body names -- and a name is a string: `true` is a boolean the reader did not
+    mean and `1` is a number. Refused with "quote the name", because that is the fix the
+    reader applies.
+    """
+    offenders = [key for key in mapping if not isinstance(key, str)]
+    if offenders:
+        shown = ", ".join(f"{key!r} ({type(key).__name__})" for key in offenders)
+        raise ConfigError(
+            f"{where}: the key(s) {shown} are not strings. These keys are NAMES, and YAML "
+            f"reads bare words like `no`, `yes`, `true`, `null` and `~` as booleans and "
+            f"nulls, and bare digits as numbers -- so a name written without quotes can "
+            f"arrive as a different type and collide with a quoted one. **Quote the "
+            f"name.**"
+        )
+
+
 def _reject_unknown(mapping: dict[str, Any], known: tuple[str, ...], where: str) -> None:
     """An unrecognised field is REFUSED, not ignored.
 
@@ -555,6 +589,9 @@ def _parse_mass(block: Any) -> dict[str, MassDistribution]:
             f"{where}: expected a mapping of body name to a distribution, got "
             f"{type(block).__name__}. Every body the deck declares needs one."
         )
+    # The BODY names are name keys too, by the same argument: `mass_distribution: {no: ...}`
+    # would arrive as `False` and match no body the deck declares.
+    _require_name_keys(block, where)
     forbidden = ("mass", "total_mass", "cog", "centre_of_gravity", "inertia")
     out: dict[str, MassDistribution] = {}
     for body, spec in block.items():
@@ -607,8 +644,9 @@ def _parse_mass(block: Any) -> dict[str, MassDistribution]:
                 f"{here}.line_masses: expected a mapping of member group to kg/m, got "
                 f"{type(lines).__name__}."
             )
+        _require_name_keys(lines, f"{here}.line_masses")
         line_masses = {
-            str(g): _checked(v, f"{here}.line_masses.{g}", LINE_MASS) for g, v in lines.items()
+            g: _checked(v, f"{here}.line_masses.{g}", LINE_MASS) for g, v in lines.items()
         }
         lumped_raw = spec.get("lumped", []) or []
         if not isinstance(lumped_raw, list):
@@ -649,6 +687,7 @@ def _parse_sections(block: Any) -> Sections:
             f"{where}.groups: expected a mapping of member group to a tube, got "
             f"{type(groups_raw).__name__}."
         )
+    _require_name_keys(groups_raw, f"{where}.groups")
     groups: dict[str, TubeSection] = {}
     for name, spec in groups_raw.items():
         here = f"{where}.groups.{name}"
@@ -658,7 +697,7 @@ def _parse_sections(block: Any) -> Sections:
             wall=_checked(_require(spec, "wall", here), f"{here}.wall", TUBE_WALL),
         )
         sec.validate(here)
-        groups[str(name)] = sec
+        groups[name] = sec
 
     mat_where = f"{where}.material"
     mat = _require(block, "material", where)

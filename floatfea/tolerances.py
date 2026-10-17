@@ -2930,13 +2930,14 @@ F6_API_CLAUSE_AGREEMENT: Final[float] = 1.0e-14
 #
 #   * `ELASTIC_LOCAL_BUCKLING_C` was dead because `F_xe = 2 C E t / D` NEVER governs
 #     `min(F_xc, F_xe)` at `F_y = 355 MPa` -- not at any `D/t` the clause admits. Solved,
-#     it first governs at `D/t = 491.94` for S460, which is outside `D/t <= 300`, and at
+#     it first governs at `D/t = 491.94` for S460, which is outside `D/t <= 300` -- FQ0's
+#     flat ceiling, and since FQ0 the only reading of it -- and at
 #     `D/t = 252.53` for S690, which is inside. So half of section 3.2.2(b) is unreachable
 #     at the grade F6 locks, and the hand calculation takes it at `F_y = 690 MPa` instead.
 #   * `CM_JOINT_TRANSLATION` was dead because `check_member`'s `cm` default is bound at
 #     IMPORT, so perturbing the module global is inert. It is injected through the
 #     parameter. Same shape for `fy` and `e`.
-#   * `LOCAL_BUCKLING_DT` and `BENDING_THIRD_BRANCH_NUMERATOR` are THRESHOLDS, and a
+#   * `LOCAL_BUCKLING_DT` and `BENDING_THIRD_BRANCH_MAX_D_OVER_T` are THRESHOLDS, and a
 #     relative nudge of a threshold responds only where a point sits within `eps` of it.
 #     They are not in this family at all; their counter-cases MOVE THE LIMIT PAST A POINT
 #     and assert the branch changes.

@@ -202,24 +202,43 @@ def test_R818_the_report_states_the_SENSITIVITY_OPERATING_POINTS() -> None:
     assert "Cm_sensitivity" in text, "the report states no Cm sensitivity operating point"
 
 
-def test_R819_the_artifacts_do_not_MISSTATE_the_clause_limits() -> None:
-    """Two statements the code refutes, in all three artifacts (R819).
+def test_R819_FQ0_the_artifacts_state_the_FLAT_D_over_t_ceiling() -> None:
+    """The clause limits as FQ0 rules them, in all three artifacts.
 
-    (i) `F_b = 0.75*Fy` IS the compact allowable -- it was published as "the first
-        reduction below the compact branch".
-    (ii) the D/t ceiling is `300000/Fy[MPa]`, which is `845.1` at Fy = 355 -- it was
-        published as `300`, inherited verbatim from `docs/F6_utilisation.csv:5`. What was
-        new was a generator shipping it at any Fy.
+    **THIS GATE PINNED THE WRONG NUMBER AND IS THE REASON TO DISTRUST A GATE WRITTEN
+    BESIDE ITS OWN REPAIR.** R819 said the artifacts misstated two things, and I corrected
+    them to `0.75*Fy IS compact` (right) and `300000/Fy[MPa] = 845.1` (wrong), then wrote
+    this test to assert the wrong one. The reviewer's bisection found the code's first
+    refusal at `734.3`, which matched neither, and FQ0 then ruled the ceiling is a FLAT
+    `300` and named `300000/Fy` as FB1's own error.
+
+    So three figures were published for one limit -- `845.1`, `734.3`, `300` -- and the
+    gate asserted the first. What it checks now is the ruling, and it checks the CODE's
+    boundary too, so a caveat and a clause cannot drift apart again.
     """
+    from floatfea.basis import FY_S355
+    from floatfea.checks.api_wsd import BENDING_THIRD_BRANCH_MAX_D_OVER_T, allowable_bending
+
     for path in ARTIFACTS:
         text = path.read_text(encoding="utf-8", errors="replace")
+        assert "D/t <= 300" in text, f"{path.name} does not state FQ0's flat D/t <= 300 ceiling."
         assert (
-            "D/t > 300 is refused" not in text
-        ), f"{path.name} still says the D/t ceiling is 300; it is 300000/Fy[MPa]."
+            "300000/Fy" not in text
+        ), f"{path.name} still carries FB1's grade-dependent reading, which FQ0 overruled."
+        assert "845.1" not in text, f"{path.name} still carries the 845.1 figure."
         assert (
             "first reduction below the compact branch" not in text
         ), f"{path.name} still calls 0.75*Fy a reduction below compact; it IS compact."
-        assert "300000/Fy" in text, (
-            f"{path.name} does not state the real D/t ceiling, so a reader at another Fy "
-            f"cannot tell where it is."
-        )
+
+    # AND THE CODE AGREES WITH THE CAVEAT, at the boundary and on both sides of it.
+    # not-a-tolerance: FQ0's flat clause ceiling. API RP 2A-WSD section 3.2.3's third
+    # range ends at a D/t of 300 in the standard's own text, so this pins a CLAUSE
+    # CONSTANT against the caveat the artifacts publish -- not a comparison epsilon.
+    assert BENDING_THIRD_BRANCH_MAX_D_OVER_T == 300.0  # not-a-tolerance: a clause constant
+    allowable_bending(d_outer=2.5, wall=2.5 / 300.0, fy=FY_S355)  # must not raise
+    with pytest.raises(ValueError, match="the flat upper limit"):
+        allowable_bending(d_outer=2.5, wall=2.5 / 300.01, fy=FY_S355)
+    # FLAT: the ceiling does not move with grade, which is the whole content of FQ0.
+    for fy in (235e6, 355e6, 460e6, 690e6):
+        with pytest.raises(ValueError, match="the flat upper limit"):
+            allowable_bending(d_outer=2.5, wall=2.5 / 300.01, fy=fy)

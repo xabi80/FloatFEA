@@ -1,0 +1,107 @@
+{
+  "_": [
+    "POINTERS ONLY (CH4).",
+    "",
+    "R1 STEP 2, REVISION 1 -- the FIRST reviewed revision of step 2. Answers the interim",
+    "check at a777cc3, which judged cfb76ff and ruled PASS with four blocking findings.",
+    "Under ES0 that check counted against no round, so all three revisions remain.",
+    "",
+    "EVERY ONE OF THE FOUR BLOCKING FINDINGS WAS RULED ON BY DIRECTIVE FQ BEFORE I TOUCHED",
+    "IT: R827 by FQ0 (the flat 300), R825 by FQ1 (name keys are strings), R826 and R828 by",
+    "FQ2 (show the revert-red-restore cycle), R829 and R830 by FQ3.",
+    "",
+    "WHAT I WOULD ATTACK FIRST, IF I WERE READING THIS COLD:",
+    "",
+    "1. FQ0's CEILING REACHED FURTHER THAN THE FOUR TESTS THE DIRECTIVE NAMED. The",
+    "   directive said `refuse D/t > 300 at every site`. I found a THIRD site nobody had",
+    "   named -- `local_buckling_stress`, public and exported -- which refused nothing and",
+    "   returned a NEGATIVE F_xc beyond D/t = 2585. See section 3. The gate that was",
+    "   supposed to close FQ0 drove only `allowable_bending`.",
+    "",
+    "2. THE GOLDEN MOVED UNDER FQ3's PIN AND THE PIN WAS NOT THE MOVER. FQ3 says STOP and",
+    "   report. I did not re-baseline; I ran the one-variable cell that separates the two",
+    "   causes and it says the mover is FQ0's own rule. Section 5. If that cell is wrong,",
+    "   a published figure is wrong with it, so it is the first thing to attack.",
+    "",
+    "3. C22's CAUSE WAS NOT WHAT THE LAST TWO VERDICTS SAID IT WAS. It is not a defect in",
+    "   `scripts/ci_section.py`, whose refusal is correct. The plan's step marker still",
+    "   read `1` while step 2 was being worked, so the generator was faithfully generating",
+    "   for a CLOSED step whose anchor predates FP1. Section 6.",
+    "",
+    "4. THE EG3 ENUMERATION IS SHORT AGAIN, by measurement and not by argument. Section 7."
+  ],
+  "answered": {
+    "C22": {
+      "state": "answered",
+      "where": "§6"
+    },
+    "R814": {
+      "state": "answered",
+      "where": "§8a"
+    },
+    "R815": {
+      "state": "answered",
+      "where": "§8a"
+    },
+    "R816": {
+      "state": "answered",
+      "where": "§8a"
+    },
+    "R817": {
+      "state": "answered",
+      "where": "§8a"
+    },
+    "R818": {
+      "state": "answered",
+      "where": "§8a"
+    },
+    "R819": {
+      "state": "answered",
+      "where": "§8a"
+    },
+    "R820": {
+      "state": "answered",
+      "where": "§8a"
+    },
+    "R821": {
+      "state": "answered",
+      "where": "§8a"
+    },
+    "R822": {
+      "state": "answered",
+      "where": "§8a"
+    },
+    "R823": {
+      "state": "answered",
+      "where": "§8a"
+    },
+    "R824": {
+      "state": "answered",
+      "where": "§8a"
+    },
+    "R825": {
+      "state": "answered",
+      "where": "§2"
+    },
+    "R826": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R827": {
+      "state": "answered",
+      "where": "§3"
+    },
+    "R828": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R829": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R830": {
+      "state": "answered",
+      "where": "§5"
+    }
+  }
+}

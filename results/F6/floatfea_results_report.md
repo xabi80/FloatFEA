@@ -39,7 +39,7 @@ the stand-in tube, from the built section:
   D/t = 13.8889          r = sqrt(I/A) = 0.822709 m
   A   = 1.311929 m^2    I = 0.887979 m^4
   W   = 0.710383 m^3     W_torsion = 1.420767 m^3
-  section class (3.2.3)   : compact   limits 29.1268 / 58.2535 / 845.0704
+  section class (3.2.3)   : compact   limits 29.1268 / 58.2535 / 300.0000
 ```
 
 **Each arm is a cantilever from its body's centre node.** The gimbal end bears on a
@@ -162,7 +162,7 @@ pytest's own summary for each row, at this commit:
   G4.4             1 passed
   EB6              2 passed
   static analytic  2 passed
-  G6.1             77 passed
+  G6.1             87 passed
 ```
 
 The two G4.1 rows are asserted by the same module, so their summary lines are the

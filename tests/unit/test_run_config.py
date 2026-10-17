@@ -23,7 +23,7 @@ import pytest
 import yaml
 
 from floatfea.basis import FY_S355
-from floatfea.run.config import ConfigError, load_config
+from floatfea.run.config import ConfigError, _NoDuplicateLoader, load_config
 
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE = ROOT / "examples" / "platform12_placeholder.yaml"
@@ -282,3 +282,108 @@ def test_relative_paths_resolve_against_THE_CONFIG_FILE(cfg_path: Any) -> None:
     assert cfg.floatsim.deck == (ROOT / "data" / "platform" / "platform12_deck.yaml")
     assert cfg.load_cases.npz == (ROOT / "data" / "f4" / "dynamic_inputs.npz")
     assert cfg.outputs.directory == (ROOT / "results" / "R1" / "example")
+
+
+# ---------------------------------------------------------------------------
+# FQ2: the loader repairs, each held by a test that fails when it is reverted
+# ---------------------------------------------------------------------------
+#
+# **R826 IS WHY THESE EXIST.** R822's and R823's repairs shipped with nothing holding
+# them: the reviewer reverted both halves and the suite stayed green, because the only
+# duplicate-key cases in the tree were TEXT-IDENTICAL ones (`Fy` twice, `platform.f`
+# twice, `K` twice) which are caught by either keying. I had demonstrated the five typing
+# classes by hand, pasted the output into a commit message, and never turned the
+# demonstration into a gate.
+
+
+@pytest.mark.parametrize(
+    ("label", "document"),
+    [
+        ("no / No", "{no: 1, No: 2}"),
+        ("yes / true", "{yes: 1, true: 2}"),
+        ("tilde / null", "{~: 1, null: 2}"),
+        ("1 / 01", "{1: 1, 01: 2}"),
+        ("1.0 / 1.00", "{1.0: 1, 1.00: 2}"),
+    ],
+)
+def test_FQ2_R822_YAML_TYPING_collapses_are_REFUSED(label: str, document: str) -> None:
+    """Two keys YAML's implicit typing makes equal are a duplicate (R822).
+
+    One case per class, because the five are different productions of the YAML 1.1 schema
+    -- booleans, nulls, integers with a leading zero, and floats with trailing zeros -- and
+    a loader fixed for one is not fixed for another.
+
+    The COUNT check is what catches these: the text differs, so the text check cannot.
+    """
+    with pytest.raises(ConfigError) as caught:
+        yaml.load(document, _NoDuplicateLoader)
+    message = str(caught.value)
+    assert "became" in message and "THE SAME KEY" in message, (label, message)
+
+
+def test_FQ2_R822_the_TEXT_IDENTICAL_control_still_names_its_key_and_line() -> None:
+    """The text check survives the count check and still gives the better message.
+
+    Both checks would refuse `{a: 1, a: 2}`. The text one runs first because it can name
+    the key and the line, which is what a reader fixes the file with; the count check can
+    only say that two of them collapsed.
+    """
+    with pytest.raises(ConfigError) as caught:
+        yaml.load("{a: 1, a: 2}", _NoDuplicateLoader)
+    message = str(caught.value)
+    assert "duplicate key 'a'" in message and "line 1" in message, message
+
+
+def test_FQ2_R822_a_CLEAN_document_still_loads() -> None:
+    """The control. Nested mappings and repeated keys at DIFFERENT depths are legal."""
+    got = yaml.load("{a: {b: 1, c: 2}, d: {b: 3}}", _NoDuplicateLoader)
+    assert got == {"a": {"b": 1, "c": 2}, "d": {"b": 3}}
+
+
+def test_FQ2_R823_a_MERGE_KEY_is_REFUSED() -> None:
+    """`<<` is refused with a message (R823).
+
+    It went from a hard `ConstructorError` to WORKING as a side effect of routing mapping
+    construction through a custom constructor, and merged keys bypass the duplicate check
+    entirely because `flatten_mapping` runs inside `construct_mapping`, after the loop.
+    """
+    document = "base: &b {x: 1}" + chr(10) + "use:" + chr(10) + "  <<: *b" + chr(10) + "  y: 2"
+    with pytest.raises(ConfigError) as caught:
+        yaml.load(document, _NoDuplicateLoader)
+    message = str(caught.value)
+    assert "merge key" in message and "bypasses the duplicate-key check" in message, message
+
+
+@pytest.mark.parametrize(
+    ("label", "block"),
+    [
+        ("bool and quoted bool", "{true: 100.0, 'True': 900.0}"),
+        ("null and quoted null", "{~: 100.0, 'None': 900.0}"),
+        ("a bare number", "{1: 100.0}"),
+        ("a bare word", "{no: 100.0}"),
+    ],
+)
+def test_FQ2_R825_a_NON_STRING_NAME_KEY_is_REFUSED(cfg_path: Any, label: str, block: str) -> None:
+    """A name key must be a string (R825 / FQ1), one case per type that can arrive.
+
+    **THE LAYER BELOW R822, WHICH R822's REPAIR DID NOT REACH.** PyYAML keeps the bool
+    `True` and the string `'True'` as DISTINCT keys, so the count check is correctly
+    silent -- and the schema then coerced both with `str()`, so one of two declared line
+    masses vanished. The first two cases are that; the last two are a name arriving as a
+    number or a boolean in the first place.
+    """
+    data = _example()
+    data["mass_distribution"]["platform"] = {"line_masses": yaml.safe_load(block)}
+    with pytest.raises(ConfigError) as caught:
+        load_config(cfg_path(data))
+    message = str(caught.value)
+    assert "are not strings" in message, (label, message)
+    assert "Quote the name" in message, (label, message)
+
+
+def test_FQ2_R825_a_STRING_name_key_still_loads(cfg_path: Any) -> None:
+    """The control, so the refusals above are not refusing everything."""
+    data = _example()
+    data["mass_distribution"]["platform"] = {"line_masses": {"platform": 9375.0}}
+    cfg = load_config(cfg_path(data))
+    assert cfg.mass_distribution["platform"].line_masses == {"platform": 9375.0}

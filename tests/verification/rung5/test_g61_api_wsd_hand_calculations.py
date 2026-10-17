@@ -430,13 +430,16 @@ def test_G61_bending_first_reduced_branch(d_over_t: float) -> None:
     assert_close(got, expected, TOL, floor=FLOOR, what="section 3.2.3 reduced_1")
 
 
-@pytest.mark.parametrize("d_over_t", [60.0, 100.0, 300.0, 700.0])
+@pytest.mark.parametrize("d_over_t", [60.0, 100.0, 299.0, 300.0])
 def test_G61_bending_second_reduced_branch(d_over_t: float) -> None:
     """Section 3.2.3: `F_b = [0.72 - 0.58 F_y D/(E t)] F_y`.
 
-    # expected: the clause worked here. `D/t = 700` is inside FB1's limit 300000/F_y =
-    # 845.07 and is included deliberately: it is the point nearest the sign change at
-    # D/t = 0.72 E / (0.58 F_y) = 734.3.
+    # expected: the clause worked here. **`700.0` WAS IN THIS LIST AND IS NOW REFUSED
+    # (FQ0).** It was included because it was the admissible point nearest the sign change
+    # at `D/t = 0.72 E / (0.58 F_y) = 734.3`, which only existed under FB1's
+    # `300000/F_y = 845.07` reading. FQ0 rules the third range ends at a FLAT `300`, so
+    # `700` is outside the clause and `299.0`/`300.0` -- the two points nearest the real
+    # ceiling -- replace it.
     """
     wall = D_OUTER / d_over_t
     expected = min((0.72 - 0.58 * 355e6 * D_OUTER / (210e9 * wall)) * 355e6, 0.75 * 355e6)
@@ -455,67 +458,119 @@ def test_G61_bending_never_exceeds_the_compact_value() -> None:
     this module runs at `210000 MPa`, so the converted limit and the SI `E` disagree.
     """
     cap = 0.75 * 355e6
-    worst, where, checked = 0.0, 0.0, 0
-    for i in range(1, 8460):
-        d_over_t = i / 10.0
+    # **THE DOMAIN IS DERIVED FROM THE CEILING, NOT COUNTED (FQ0, and BP0).** This swept
+    # `D/t` to `845.9` and asserted `checked > 7000`, both of which were figures of FB1's
+    # `300000/F_y = 845.07` reading. Under FQ0's flat `300` the same sweep returns `2980`,
+    # so the literal failed -- correctly, because the number described a domain that no
+    # longer exists.
+    #
+    # Lowering `7000` would have put a second stale literal where the first was. What the
+    # assertion is FOR is that the sweep covers the whole admissible band, so that the cap
+    # check is not vacuous, and that is structural: the accepted points run contiguously
+    # from the thinnest valid tube up to the ceiling, and the top of the band IS the
+    # ceiling.
+    ceiling = api_wsd.BENDING_THIRD_BRANCH_MAX_D_OVER_T
+    sweep = [i / 10.0 for i in range(1, int(round(ceiling * 10)) + 1)]
+    accepted: list[float] = []
+    worst, where = 0.0, 0.0
+    for d_over_t in sweep:
         try:
             f_b, _branch = allowable_bending(D_OUTER, D_OUTER / d_over_t, FY, E)
         except ValueError:
             continue
-        checked += 1
+        accepted.append(d_over_t)
         if f_b / cap > worst:
             worst, where = f_b / cap, d_over_t
-    assert checked > 7000, f"only {checked} of 8459 D/t values returned -- domain too narrow"
+    assert accepted, "the sweep accepted nothing; the cap check below is vacuous"
+    assert accepted[-1] == ceiling, (
+        f"the admissible band must run up to the ceiling itself; it stops at "
+        f"{accepted[-1]} against a ceiling of {ceiling}"
+    )
+    assert accepted == [d for d in sweep if d >= accepted[0]], (
+        "the accepted points must be CONTIGUOUS from the thinnest valid tube to the "
+        "ceiling -- a gap means something other than the tube geometry is refusing, and "
+        "the cap check would then be silent over that gap"
+    )
     assert worst <= 1.0, f"F_b reaches {worst:.6f} of the 0.75 F_y cap at D/t = {where}"
 
 
-def test_G61_a_non_positive_bending_allowable_is_REFUSED() -> None:
-    """FB1's third limit admits one, the cap cannot see it, so it is refused separately.
+def test_G61_the_SIGN_CHANGE_is_UNREACHABLE_under_FQ0s_ceiling() -> None:
+    """The negative allowable FB1's reading admitted is now outside the clause (FQ0).
 
-    `0.72 - 0.58 F_y (D/t) / E` crosses zero at `D/t = 0.72 E / (0.58 F_y) = 734.3`, inside
-    the `300000/F_y = 845.07` the directive sets.
+    **THIS TEST'S PREMISE WAS REMOVED BY A DIRECTIVE, AND THE TEST IS KEPT AS THE PROOF.**
+    It asserted that a non-positive `F_b` is refused separately from the `0.75 F_y` cap,
+    because `0.72 - 0.58 F_y (D/t) / E` crosses zero at `D/t = 734.3`, which FB1's
+    `300000/F_y = 845.07` admitted. FQ0 rules the ceiling is a FLAT `300`, and
+    `300 < 734.3`, so no section the clause admits can reach the sign change.
+
+    The guard in `allowable_bending` is KEPT -- a safety net removed because today's
+    constant clears it is missing the next time the constant moves -- and what this test
+    now pins is that the CEILING is what refuses first, so the guard is unreachable through
+    the public entry rather than merely unused.
     """
     crossing = 0.72 * 210e9 / (0.58 * 355e6)
     assert crossing == 734.3370568237008  # not-a-tolerance: the hand value of the crossing, exact
-    assert allowable_bending(D_OUTER, D_OUTER / 734.0, FY, E)[0] > 0.0
-    with pytest.raises(ValueError, match="not positive"):
-        allowable_bending(D_OUTER, D_OUTER / 800.0, FY, E)
+    assert crossing > section_class(D_OUTER, D_OUTER / 100.0, FY).limit_3, (
+        "FQ0's ceiling must sit BELOW the sign change; if it ever sits above, the "
+        "non-positive guard becomes reachable again and this test is the one that says so"
+    )
+    # Both of these used to reach the branch arithmetic. Now the ceiling refuses first, and
+    # the message says which limit fired.
+    for d_over_t in (734.0, 800.0):
+        with pytest.raises(ValueError, match="exceeds 300"):
+            allowable_bending(D_OUTER, D_OUTER / d_over_t, FY, E)
 
 
 def test_G61_the_third_branch_LIMIT_is_what_decides_the_refusal() -> None:
-    """`BENDING_THIRD_BRANCH_NUMERATOR`'s counter-case: move the limit past a point.
+    """`BENDING_THIRD_BRANCH_MAX_D_OVER_T`'s counter-case: move the limit past a point.
 
     The second of the two thresholds, same mechanism as the local-buckling limit: lower the
-    numerator and a `D/t` that was inside the clause must be refused.
+    ceiling and a `D/t` that was inside the clause must be refused. The test point moved
+    from `700` to `250` with FQ0, because `700` is no longer inside the clause to begin
+    with and a counter-case whose control is already refused measures nothing.
     """
-    wall = D_OUTER / 700.0
+    wall = D_OUTER / 250.0
     assert allowable_bending(D_OUTER, wall, FY, E)[1] == "reduced_2"
-    old = api_wsd.BENDING_THIRD_BRANCH_NUMERATOR
-    api_wsd.BENDING_THIRD_BRANCH_NUMERATOR = 200000.0
+    old = api_wsd.BENDING_THIRD_BRANCH_MAX_D_OVER_T
+    api_wsd.BENDING_THIRD_BRANCH_MAX_D_OVER_T = 200.0
     try:
-        with pytest.raises(ValueError, match="where API section 3.2.3 is not"):
+        with pytest.raises(ValueError, match="the flat upper limit"):
             allowable_bending(D_OUTER, wall, FY, E)
     finally:
-        api_wsd.BENDING_THIRD_BRANCH_NUMERATOR = old
+        api_wsd.BENDING_THIRD_BRANCH_MAX_D_OVER_T = old
     assert allowable_bending(D_OUTER, wall, FY, E)[1] == "reduced_2"
 
 
-def test_G61_the_two_clauses_DISAGREE_about_the_slenderness_limit() -> None:
-    """Section 3.2.2 refuses at a flat `D/t = 300`; section 3.2.3 at `300000/F_y = 845.07`.
+def test_G61_the_two_clauses_AGREE_about_the_slenderness_limit() -> None:
+    """Both sections refuse at a flat `D/t = 300` (FQ0). They used to disagree.
 
-    Both readings are in the module and they do not agree. Neither function is defective --
-    each refuses rather than extrapolating, which is what the plan asks -- but the two
-    numbers come from different transcriptions of the same edition, and the narrower one is
-    what binds any member carrying both bending and compression. **Flagged for Xabier**:
-    the editions available to me print a flat `300` in section 3.2.3's third range, where
-    FB1 gives `300000/F_y`.
+    **THIS TEST RECORDED AN OPEN QUESTION AND NOW RECORDS ITS ANSWER.** Section 3.2.2
+    refused at a flat `300` and section 3.2.3 at `300000/F_y = 845.07`; both readings were
+    in the module, neither function was defective -- each refused rather than extrapolating
+    -- and the discrepancy was flagged for Xabier because the editions available print a
+    flat `300` in the third range.
+
+    FQ0 rules the flat `300` correct and names `300000/F_y` as FB1's own error. So the two
+    clauses now agree, and what this test pins is that agreement: the ceiling is the same
+    number on both paths, and it does not move with grade.
     """
     limit_3 = section_class(D_OUTER, D_OUTER / 100.0, FY).limit_3
-    assert limit_3 == 845.0704225352113  # not-a-tolerance: the hand value of 300000/355, exact
-    # bending admits D/t = 700; compression does not
-    assert allowable_bending(D_OUTER, D_OUTER / 700.0, FY, E)[1] == "reduced_2"
+    assert limit_3 == 300.0  # not-a-tolerance: FQ0's flat ceiling, a clause constant
+    # FLAT: the same on every grade, unlike limit_1 and limit_2 which scale with F_y.
+    for fy in (235e6, 355e6, 460e6, 690e6):
+        # The same clause constant at every grade. That it does NOT move with F_y is the
+        # whole content of FQ0, so the literal here is the assertion.
+        klass = section_class(D_OUTER, D_OUTER / 100.0, fy)
+        assert klass.limit_3 == 300.0, fy  # not-a-tolerance: a clause constant
+    # **BOTH REFUSE AT 700 NOW, WHICH IS THE AGREEMENT (FQ0).** This read "bending admits
+    # D/t = 700; compression does not" and was the contrast the old title was about.
+    with pytest.raises(ValueError, match="the flat upper limit"):
+        allowable_bending(D_OUTER, D_OUTER / 700.0, FY, E)
     with pytest.raises(ValueError, match="exceeds 300"):
         allowable_axial_compression(60.8, D_OUTER, D_OUTER / 700.0, FY, E)
+    # And both admit the ceiling itself, so the agreement is at the boundary and not merely
+    # in refusing something far outside it.
+    assert allowable_bending(D_OUTER, D_OUTER / 300.0, FY, E)[1] == "reduced_2"
     # so a combined check on such a section refuses, which is the conservative direction
     with pytest.raises(ValueError, match="exceeds 300"):
         _member(axial_n=-1.0e6, moment_y_nm=1.0e6, wall_m=D_OUTER / 700.0)
@@ -827,12 +882,21 @@ _FB_POINTS = (
     58.3,
     60.0,
     100.0,
+    299.0,
     300.0,
-    700.0,
 )
 """R749: `29.2` and `58.3` are inside each branch limit's own neighbourhood. The sweep's
 nearest points were `29.0`/`30.0` and `58.0`/`60.0` -- `0.44%` below each limit and `3.0%`
-above -- so a limit moved by a digit swap crossed no point and nothing reddened."""
+above -- so a limit moved by a digit swap crossed no point and nothing reddened.
+
+**`700.0` WAS HERE AND IS NOW OUTSIDE THE CLAUSE (FQ0).** It sat inside FB1's
+`300000/F_y = 845.07` and was the point nearest the sign change at `734.3`. FQ0's ceiling
+is a flat `300`, so `700` is refused and a domain point that raises cannot measure a
+family. `299.0` replaces it, which is R749's own rule applied to the new limit: a point
+just inside the ceiling means a ceiling moved by a digit crosses it. There is no point just
+ABOVE the ceiling in this list because such a point is refused by definition -- that
+direction is covered by `test_G61_the_third_branch_LIMIT_is_what_decides_the_refusal`,
+which moves the ceiling instead of the point."""
 
 
 def _quantities(cm: float | None = None) -> dict[str, float]:
@@ -1553,11 +1617,128 @@ def test_the_NEGATIVE_D_over_t_would_otherwise_have_returned_the_BEST_allowable(
 
     # expected: 0.75 * 355e6 = 266.25e6 Pa is the compact value and the maximum over the
     # three branches, so returning it on a nonsense section is the worst outcome available.
+    #
+    # The point list ended at `700.0`, which FQ0 puts outside the clause -- it now raises
+    # rather than contributing a value, so it cannot take part in a maximum. `299.0` and
+    # `300.0` are the slenderest the clause admits, which is the end of the range this
+    # claim needs: the assertion is that `compact` is the HIGHEST allowable, so the
+    # slender end is what must be shown to stay below it.
     """
     compact = 0.75 * 355e6
     over_the_range = [
         allowable_bending(D_OUTER, D_OUTER / d_over_t, FY, E)[0]
-        for d_over_t in (13.888888888888889, 40.0, 100.0, 300.0, 700.0)
+        for d_over_t in (13.888888888888889, 40.0, 100.0, 299.0, 300.0)
     ]
     assert max(over_the_range) == compact, (max(over_the_range), compact)
     assert all(v <= compact for v in over_the_range)
+
+
+# ---------------------------------------------------------------------------
+# FQ0's ceiling, at every public entry point and on both sides of it
+# ---------------------------------------------------------------------------
+
+
+def _capacity_entries() -> tuple[tuple[str, object], ...]:
+    """The public entries that return a CAPACITY, so each must refuse above the ceiling.
+
+    `section_class` is deliberately absent: it classifies and returns no capacity. Its
+    behaviour above the ceiling is pinned separately, below.
+    """
+    return (
+        ("local_buckling_stress", lambda w, fy: local_buckling_stress(D_OUTER, w, fy, E)),
+        (
+            "allowable_axial_compression",
+            lambda w, fy: allowable_axial_compression(50.0, D_OUTER, w, fy, E),
+        ),
+        ("allowable_bending", lambda w, fy: allowable_bending(D_OUTER, w, fy, E)),
+    )
+
+
+@pytest.mark.parametrize("fy", [235e6, 355e6, 460e6, 690e6])
+def test_FQ0_the_ceiling_is_FLAT_and_EVERY_capacity_entry_refuses_above_it(fy: float) -> None:
+    """`D/t = 300` is accepted and `300.01` is refused, at every capacity entry (FQ0).
+
+    **ONE OF THE THREE ENTRIES ADMITTED EVERYTHING, AND THE GATE THAT WAS MEANT TO CLOSE
+    FQ0 ONLY DROVE ANOTHER.** `test_R819_FQ0_the_artifacts_state_the_FLAT_D_over_t_ceiling`
+    checked the boundary through `allowable_bending` alone. Measured at S355 before the
+    repair, through `local_buckling_stress` -- public, exported, and called directly by
+    `scripts/measure/r754_stress_vs_grade.py`:
+
+        D/t =     300.01  ->  F_xc = +2.423869e+08   returned
+        D/t =      845.0  ->  F_xc = +1.419794e+08   returned
+        D/t =    10000    ->  F_xc = -2.343000e+08   returned, NEGATIVE
+        D/t =  1000000    ->  F_xc = -1.999800e+09   returned, NEGATIVE
+
+    `F_xc = F_y [1.64 - 0.23 (D/t)^(1/4)]` crosses zero at `(1.64/0.23)**4 = 2585`, so this
+    entry returned a buckling stress with the WRONG SIGN far outside the clause.
+
+    FLAT is asserted by running every grade: FQ0's whole content is that the third range's
+    limit does not scale with `F_y` where the first two do, so a ceiling that moved with
+    grade would pass a single-grade test and fail here.
+    """
+    for name, call in _capacity_entries():
+        call(D_OUTER / 300.0, fy)  # must not raise: 300 is INSIDE the clause
+        with pytest.raises(ValueError, match="exceeds 300"):
+            call(D_OUTER / 300.01, fy)
+        assert name  # the label is in the failure context above
+
+
+@pytest.mark.parametrize("fy", [235e6, 355e6, 460e6, 690e6])
+def test_FQ0_no_ADMITTED_section_yields_a_non_positive_capacity(fy: float) -> None:
+    """The physical content of the refusal, not just its existence.
+
+    A negative `F_xc` was reachable through a public entry. The ceiling is what makes it
+    unreachable, so this asserts the consequence over the whole admitted domain rather
+    than asserting the guard that delivers it -- a guard can be moved, this cannot be
+    satisfied by moving one.
+    """
+    for d_t in (2.0001, 10.0, 60.0, 60.5, 100.0, 200.0, 299.99, 300.0):
+        wall = D_OUTER / d_t
+        assert local_buckling_stress(D_OUTER, wall, fy, E) > 0.0, d_t
+        assert allowable_axial_compression(50.0, D_OUTER, wall, fy, E)[0] > 0.0, d_t
+        assert allowable_bending(D_OUTER, wall, fy, E)[0] > 0.0, d_t
+
+
+def test_FQ0_section_class_CLASSIFIES_above_the_ceiling_and_hands_off_the_refusal() -> None:
+    """`section_class` returns no capacity, so `slender` is the honest answer above 300.
+
+    Recorded because "refuse at every site" could be read as making this raise too. It is
+    a classifier: above the ceiling it labels `slender` and every capacity entry then
+    refuses that section. The split is asserted in both halves so neither can drift.
+    """
+    assert section_class(D_OUTER, D_OUTER / 300.0, FY).branch == "reduced_2"
+    for d_t in (300.01, 845.0, 2585.0, 1.0e6):
+        klass = section_class(D_OUTER, D_OUTER / d_t, FY)
+        assert klass.branch == "slender", (d_t, klass.branch)
+        assert klass.limit_3 == 300.0, d_t  # not-a-tolerance: FQ0's flat clause constant
+        with pytest.raises(ValueError, match="exceeds 300"):
+            allowable_bending(D_OUTER, D_OUTER / d_t, FY, E)
+
+
+def test_FQ0_the_refusal_MESSAGE_is_true_of_the_value_it_refuses() -> None:
+    """The message names the input, not a rounded copy of the ceiling.
+
+    **IT WAS SELF-REFUTING AT THE BOUNDARY.** `allowable_axial_compression` formatted the
+    ratio `{d_t:.1f}`, so refusing an input of `D/t = 300.01` printed
+
+        D/t = 300.0 exceeds 300, beyond which API section 3.2.2 is not written.
+
+    which sends a reader looking for a defect in the comparison instead of at their own
+    section. FO0 required this of the density refusal in the same words -- the message is
+    true of every value it refuses -- and this site had the same shape.
+    """
+    import re
+
+    for d_t, shown in ((300.01, "300.01"), (2585.0, "2585"), (1.0e6, "1e+06")):
+        for _name, call in _capacity_entries():
+            with pytest.raises(ValueError) as caught:
+                call(D_OUTER / d_t, FY)
+            message = str(caught.value)
+            assert shown in message, (d_t, message)
+            # and the value it prints is NOT the ceiling restated
+            printed = re.search(r"D/t = (\S+) exceeds", message)
+            assert printed is not None, message
+            # not-a-tolerance: a STRUCTURAL claim about the message -- the value it
+            # prints must be the refused input, which exceeds the ceiling, rather than
+            # the ceiling restated. 300.0 is the clause bound being exceeded.
+            assert float(printed.group(1)) > 300.0, message  # not-a-tolerance: the bound exceeded
