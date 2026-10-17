@@ -1,4 +1,509 @@
 # Review — R1 step 2
+Reviewed commit: d205833943b7a4fa56c349d06fbd6f0d0f86e5fc
+**Reviewed commit: `d205833943b7a4fa56c349d06fbd6f0d0f86e5fc`.**
+Verdict: HOLD
+**Reviewed commit: `d205833943b7a4fa56c349d06fbd6f0d0f86e5fc`.**
+Tests: 3625 passed, 9 failed, 1 skipped
+Scope: **ES0 INTERIM CHECK.** No new report revision exists, so this counts against no
+round and revision 3 of 3 remains available. One blocking finding.
+
+**MY OWN RUN, AT THE REVIEWED COMMIT, TREE CLEAN.** `python -m pytest -q --tb=no -rf`:
+`9 failed, 3625 passed, 1 skipped, 2 warnings in 903.55s (0:15:03)`. I did not take the
+report's count, and there is no report revision to take one from. The implementer ran
+`tests/unit tests/regression/test_r1_published_artifacts.py` only (224 passed) and asked
+whether the light scope requires the full suite. **It did, and that is where the finding
+is:** the subset the implementer chose cannot contain the red this commit creates. ES0's
+light scope is "the suite and CI at the commit", and an eight-file subset is not the
+suite. Nine reds locally, nine in CI, identical ids.
+
+**EU1 DOES NOT ATTACH, AND I RAN ITS CASE ANYWAY.** No tolerance value and no declared
+counter moves:
+
+```
+cmd    git diff 62e48af..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff 62e48af..HEAD -- floatfea tests scripts | grep "^+" |
+       grep -cE "isclose|abs_tol|rel_tol|approx|atol|rtol"
+out    0
+```
+
+The adversarial case was run regardless, at a configuration the diff did not choose: the
+whole declared type space rather than the three fields the diff names. See Findings and
+Corpus.
+
+**THE SEPARATE DIFFS, ALL EMPTY, NO STOP-CLASS FINDING.**
+
+```
+cmd    git diff --stat 62e48af..HEAD -- .claude docs/SUPERVISOR.md CLAUDE.md
+out    (empty)
+cmd    git diff 62e48af..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py            -- a file, as my instructions say it must be
+cmd    git diff --stat 62e48af..HEAD
+out    floatfea/run/config.py 18+/3-, scripts/carried_table.py 16+/1-,
+       tests/unit/test_run_config.py 42+/5-     -- three files, nothing else
+```
+
+**STEP 1b DOES NOT FIRE AND I AM SAYING SO RATHER THAN SKIPPING IT.** There is no new
+report revision, so there is no new `Answers:` header to compare. The newest revision
+reads `Answers: verdict 6 @ 43bcd0c` and verdict 7 is newer, which is precisely the state
+ES0 describes as legitimate -- a report predating the findings it has not yet answered.
+Revision 3 must read `Answers: verdict 8 @ <this verdict's commit>`.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R837** (the `str()` coercion survives at a fourth declared string) | **ANSWERED, AND WIDER THAN THE CONDITION ASKED** | `_require_string` now wraps all three `Path(str(...))` sites: `config.py:600` deck, `:762` npz, `:852` directory. Verified by my own mutation, not by reading the report: baseline **126 passed**; reverting one site at a time gives `1 failed, 125 passed` and the one red is that site's own parametrisation -- `[floatsim.deck-deck]`, `[load_cases.npz-npz]`, `[outputs.directory-directory]`, one id each. All three reverted at once: `3 failed, 123 passed`. The condition asked for one row per call site; three rows shipped. Closed. |
+| **R837's census half** | **NOT MET -- third round on the same needle. R842.** | the condition was "the census published as a needle that finds `str(` at any nesting depth". The census I was given reports the wrong count by six. Non-blocking (a sentence in a report that does not exist yet), recorded as **R842** so revision 3 publishes a measurement rather than a grep. |
+| **R838** (R831's needle solved in one direction only) | **STILL OPEN, untouched by this diff** | `git diff 62e48af..HEAD -- tests/regression/` is empty. Correctly deferred: it does not block and the implementer named it revision-3 work. The two weakening directions are still green. |
+| **R839** (the eight reds have one cause, section 7 states two) | **STILL OPEN, AND IT MOVED: there are now TWO causes and the second is new** | traced again, one id at a time per EG3(i). The cascade's `[baseline]` inner run now names **two** reds where last round it named one. The second is this commit's own. See **R841**. |
+| **R840** (`carried_table.py` does not escape the cell separator) | **DONE, THE REPAIR IS CORRECT -- and it is in the wrong commit. R841.** | `_cell` at `scripts/carried_table.py:219`. I reproduced both figures: the committed revision-2 table has 4 rows with the wrong cell count (R819, R825, R826, R828); the new generator gives `rows with cell count != 3: 0` over 19 rows, counted with an escape-aware splitter. The escape is right. What it also does is redden a guard at a pushed, reviewed commit for a cause no clause covers. |
+| **R835** (EG3's enumeration) | **still open, still Xabier's** | not a round's work. This commit is its sixth measurement, and this time the enumeration is not SHORT -- it is LONG. Recorded under R841's judge paragraph as a new direction for the same proposal rather than as a second proposal. |
+| **R836** (the r754 margin in the wrong variable) | **answered at verdict 7, unchanged** | recorded item, no change in this diff. |
+| **C29, C34, C35** | **done at verdict 7, unchanged** | `ruff check floatfea tests scripts`, `black --check floatfea tests scripts` (147 files) and `mypy floatfea scripts/f4_dynamic_residual.py` (43 files) green on my machine, and green in CI at this commit. I ran all three. |
+| **C26, C27, C28, C30, C31, C32, C33, C36, C37, C38, C39, C40** | **carry to the closure commit** | not re-reviewed item by item. **C27 recurs -- R842.** **C37 widens: the "Quote the name." sentence now fires at three PATH fields** (`outputs.directory`, `floatsim.deck`, `load_cases.npz`), so the noun is wrong for five of six call sites rather than one of three. Same item, bigger. |
+| `scripts/suite_count.py`'s own line + CZ1 (ii)/(iii)'s four outputs | **still owed, correctly** | FC1: a line naming a sha cannot be inside that sha. Due in the follow-on commit, as verdict 6 ruled and verdict 7 affirmed. Not a finding. |
+| **EG3(ii): state (1) measured at verdict 7's own commit** | **DONE; the number is inside R841** | the report-guard files run in a real worktree at this tree with verdict 7 present. |
+
+## Findings
+
+**ONE BLOCKS, and it is not in `floatfea/`.** The R837 repair is complete, bound site by
+site, and survives the whole declared type space. The blocking finding is the ninth red
+this commit creates in its own gating apparatus -- which the implementer's eight-file run
+could not see, and which wears a boundary-state name while having a non-boundary cause.
+
+**R841. (BLOCKS -- CZ0 head (d), with CA2) THE NINTH RED AT THIS COMMIT IS CAUSED BY THIS
+COMMIT'S OWN GENERATOR CHANGE AND BY NEITHER EG3 BOUNDARY STATE. One variable moved,
+everything else held: removing the escape takes the suite from 9 failed to 8. The red
+carries a name that is ON STATE (2)'s LIST, so a reader matching nine ids against EG3's
+enumeration concludes all nine are designed -- which is R629's shape exactly, and the
+reason EG3(i) demands the individual trace.**
+
+```
+claim  of the nine reds at this commit, eight are the step-boundary cause and the ninth
+       is the R840 escape, measured rather than classified
+cmd    python -m pytest -q --tb=no -rf     (mine, at the reviewed commit, tree clean)
+out    9 failed, 3625 passed, 1 skipped in 903.55s
+         test_the_Carried_table_is_what_the_generator_produces
+         test_the_report_carries_a_WHOLE_SUITE_count
+         test_the_guard_survives_the_state[baseline] + 6 others
+cmd    gh run view 39057667873 --log-failed      (CI, same commit)
+out    9 failed, 1147 passed, 1 skipped in 635.58s -- the same nine ids
+cell   a WORKTREE at HEAD (not a git archive -- these guards read git), `_cell` removed
+       from the one row it is applied to, nothing else touched:
+out    with the escape      9 failed, 262 passed, 1 skipped
+       escape REMOVED       8 failed, 263 passed, 1 skipped
+       the test that moved  test_the_Carried_table_is_what_the_generator_produces
+       the other eight      unchanged, id for id
+cmd    the failing assertion's own message, at HEAD
+out    "4 generated rows are not in the report's Carried section, the first being:
+          | R819 | **answered** ... | (the ceiling) \| answered, and more completely ..."
+       -- the four rows are R819, R825, R826, R828: the four R840 named
+cmd    tests/test_report_carried.py:1117-1121, and what it compares
+out    VERDICT_TEXT = _verdict_text_at(ANSWERED)   -- the verdict the REPORT ANSWERS
+       CARRIED      = _section(_newest_revision(REPORT_TEXT), "Carried")
+       -- so it compares the generator's output for verdict 6 against revision 2's
+          published table, and revision 2 is CLOSED: verdict 7 exists, and EK3 forbids
+          any commit touching a closed report before a newer verdict
+cmd    the cascade, traced individually per EG3(i): [baseline] on its own
+out    "baseline: expected a clean run", and the inner log names TWO failures --
+         test_the_Carried_table_is_what_the_generator_produces
+         test_the_report_carries_a_WHOLE_SUITE_count
+       At verdict 7 the same inner run named ONE. The seven cascading states now inherit
+       a second cause, and it is this commit's.
+cmd    test_the_guard_reads_the_step_being_worked_on, on its own
+out    PASSED  -- state (1)'s own named baseline did not fire, as expected: a verdict
+                  exists and the tree is in state (2)
+rule   CZ0 (d), a red test at the reviewed commit; CA2, which CLAUDE.md does not carry so
+       I keep it in full -- a red CI is a HOLD regardless of what the local run says;
+       EG3(i) -- EVERY red traces by name to the step-boundary cause or it is CZ1 (iv)
+       unchanged; FN2/R813 -- "the membership rule is verdict-dependent, measured against
+       a verdict-exists control, and the enumeration is a convenience"; BP0 -- when a
+       decision rule changes, every figure citing the old rule is regenerated or withdrawn
+       IN THE SAME COMMIT; EK3 -- a commit never touches a closed step report
+judge  **the ablation is the whole finding.** This red is not verdict-dependent: a verdict
+       exists at this commit and the red is caused by the escape, which I established by
+       removing the escape and nothing else. By FN2's rule it is not a member of state
+       (2), and the fact that its NAME is on state (2)'s enumeration is the hazard rather
+       than the defence -- the enumeration has been short twice (EH1, FN2) and this is the
+       first time it is LONG. A list of names cannot distinguish a designed boundary red
+       from an apparatus change that reddens a listed name; only running the id under a
+       one-variable ablation can.
+       **And BP0 with EK3 decides which commit the escape belonged in.** BP0 says the
+       figure is regenerated in the same commit as the rule; EK3 says a closed report may
+       not be touched; so the only commit that may carry a change to `carried_table.py` is
+       the commit that writes the next report revision, because that is the only commit
+       that may regenerate the table the generator feeds. FF0's "fixed in the next commit"
+       is satisfied by revision 3's commit and does not license leaving a pushed, reviewed
+       commit red for a cause no clause covers. **The escape itself is correct and must
+       not be reverted** -- 4 of 15 malformed rows before, 0 of 19 after, both reproduced
+       here. What is wrong is that the step's own record now reads nine reds where eight
+       are designed, and nothing in the tree says which is which.
+       **This is also R839 one round later in the same shape:** verdict 7 found section 7
+       claiming two causes where the trace gave one; this commit creates a second cause
+       and there is no revision in which to say so.
+```
+
+**Closed when** revision 3's commit carries the regenerated section 8 from this generator
+-- which clears the red by construction, since the guard reads the newest revision's
+Carried section and the sha in that revision's own `Answers:` line -- **and** its section 7
+traces all reds individually with the ninth's cause named as the generator change,
+established by the ablation, rather than filed under the EH1 cascade or under FC1. If any
+pushed commit before that one still carries this red, that commit's report states which of
+the three causes each red has. **Reverting `_cell` is not the repair and would re-open
+R840.** The reusable half, which is what I want recorded: a change to a generator whose
+output is published inside a closed artifact lands in the commit that next regenerates
+that artifact, and in no earlier one.
+
+**R842. (DOES NOT BLOCK -- recorded; the census, for the THIRD consecutive round) THE
+NEEDLE THAT CERTIFIES THE str() CLASS CLOSED IS STILL THE WRONG INSTRUMENT, AND THE
+COUNT I WAS GIVEN IS WRONG BY SIX. The class IS closed -- I closed it with the type space,
+not with a grep -- and that is the point.**
+
+```
+claim  the unanchored census does not return "only two docstring-prose mentions"
+cmd    grep -c "str(" floatfea/run/config.py
+out    8
+cmd    grep -n "str(" floatfea/run/config.py
+out    114, 274     docstring prose
+       138          key = str(key_node.value)
+       153          texts = [str(k.value) for k, _v in node.value if ...]
+       517,521,523  return str(path.relative_to(...)) / str(path)
+       894          _reject_unknown(loaded, _TOP, str(source.name))
+cmd    what each of the six live ones does, read rather than counted
+out    138/153  yaml.ScalarNode.value is ALREADY a str: these are the TEXT half of the
+                duplicate check and the message that names collapsed keys -- R822's own
+                repair. No declared input VALUE passes through either.
+       517-523  Path -> text on the provenance OUTPUT path, not on an input
+       894      source.name is already a str
+rule   verdict 7's closing condition on R837 -- "the census is published as a command that
+       finds a str( at any nesting depth, not as the spelling the repair used"; C27
+       verbatim -- "the needle searches for its own repair and reports success"; BF0
+judge  the class is genuinely closed and the needle still cannot say so. `= str(` missed
+       three sites; `str(` unanchored finds eight and the claim attached to it says two,
+       so the instrument is now wrong in the other direction. **A census over a spelling
+       cannot answer a question about a type.** The measurement that does answer it is in
+       Corpus below: every declared field in the schema crossed with seven YAML shapes,
+       154 cases through the real load_config, zero coercions. Non-blocking because the
+       sentence is in a report that does not exist yet; recorded so revision 3 publishes
+       the grid rather than the grep. If the grep ships with "two" beside it, that is C27
+       for a fourth round.
+```
+
+**R843. (DOES NOT BLOCK -- recorded) THE ONE VALUE IN THE STRING SPACE THAT STILL LOADS
+AND IS STILL NOT A DIRECTORY: an EMPTY STRING at `outputs.directory` RESOLVES TO THE
+CONFIG FILE'S OWN DIRECTORY, so the three EZ0 deliverables are written beside the config
+-- for the shipped example, into the tracked `examples/`. EH4's weakening direction on the
+check this commit added.**
+
+```
+claim  the new type check's boundary, solved from the side that WEAKENS it
+cmd    outputs.directory offered each of False / True / 12 / None / [] / {} / the empty
+       string, through the real load_config on the shipped example
+out    False         REFUSED   outputs.directory: False (bool) is not a string...
+       True          REFUSED   ...
+       12            REFUSED   ...
+       None          REFUSED   ...
+       []            REFUSED   ...
+       {}            REFUSED   ...
+       empty string  LOADED    dir=examples        <- the config file's own directory
+       CONTROL: ../results/R1/example   LOADED     dir=example
+cmd    where the artifacts then go
+out    floatfea/cli.py:343  out = cfg.outputs.directory, and _write_member_forces does
+       path.parent.mkdir(parents=True, exist_ok=True)
+rule   EH4 -- the injection falls toward the clean value until a clean case passes; and
+       (base / the empty string).resolve() is base, which is the config's own folder
+judge  **milder than R837 and in the same family.** A `directory:` key written with nothing
+       after it is None and is now refused, which is the invited typo; an empty string
+       takes deliberate quotes, so this is not a plausible slip. But it is the one
+       admissible member of the string space that is not a usable directory, and the
+       consequence is three deliverables written into whatever folder holds the config --
+       a TRACKED source directory for the shipped example, which _absolutise's own
+       docstring says the tests take care to avoid. One line, at that site alone: `tag`
+       and `window_rule` legitimately default to the empty string and must keep doing so.
+       Not blocking; if revision 3 leaves it, it leaves it with that sentence.
+```
+
+**R844. (DOES NOT BLOCK -- closure item C41, and the figure is MINE) "THREE OF ITS FIVE
+SIBLINGS ARE BOOLEANS IN THE SHIPPED EXAMPLE" IS WRONG AT TWO SOURCE-TREE SITES. FIVE OF
+FIVE ARE. It is verdict 7's own figure, republished into `floatfea/` and `tests/` without
+being re-measured, and the argument it supports gets STRONGER when corrected -- which is
+why nobody checked it.**
+
+```
+claim  the outputs block's five non-directory keys, as the shipped example declares them
+cmd    yaml.safe_load of examples/platform12_placeholder.yaml, the outputs block minus
+       directory, each value with its type
+out    siblings declared: 5
+       report: (True, bool)            member_forces_csv: (True, bool)
+       utilisation_csv: (True, bool)   required_section: (False, bool)
+       truss_sizing: (False, bool)
+       booleans: 5
+cmd    where the sentence is
+out    floatfea/run/config.py:858         three of its five siblings ARE booleans in the
+                                          shipped example
+       tests/unit/test_run_config.py:507  THREE of its five siblings are booleans in the
+                                          shipped example
+       docs/reviews/R1/step-2.md:93       -- verdict 7, where it came from
+rule   CW0 -- prose in the source tree is a test, a triple, or deleted; BP0/CP3 -- a figure
+       is taken against the tree it describes, after the last edit
+judge  a reviewer's figure copied into two shipped files is still a claim about the code,
+       and one command refutes it. Closure item, not blocking: the sentence is a comment
+       and a docstring, the refusal it argues for is correct, and correcting the count
+       makes the asymmetry argument stronger rather than weaker. **The reason to record it
+       is the direction of travel.** Verdict 7 measured every declared BOOLEAN in the same
+       block and recorded that all five refuse by name -- five -- then wrote "three of its
+       five" one paragraph later. The implementer carried the wrong half into `floatfea/`.
+       A number a reviewer publishes is a number the implementer will paste, so it is
+       subject to CP3 like any other.
+```
+
+**THE IMPLEMENTER'S OWN QUESTION, ANSWERED BY MEASUREMENT RATHER THAN BY READING, AND IT
+IS NOT A FINDING.** "Does the `_absolutise` change make some OTHER case in that file
+vacuous?"
+
+```
+claim  the conditional fixture diverges from the unconditional one on exactly the three
+       cases under test, and on nothing else in the file
+cell   _absolutise instrumented to print every divergence -- non-string, missing block,
+       missing key, empty string -- and the whole file run
+out    53 tests, 3 divergences, all three the new rows:
+         non-string bool  outputs.directory=False
+         non-string bool  floatsim.deck=False
+         non-string int   load_cases.npz=1
+       missing-block: 0   missing-key: 0   empty-string: 0
+cell   the fixture reverted to the unconditional form, config.py untouched
+out    3 failed, 123 passed   -- exactly the three new rows, by id
+rule   my own recorded guard: a fixture that silently stops transforming an input is the
+       shape of a test that cannot fail, so check that the collection the assertion
+       inspects can still contain the failure
+judge  **50 of the 53 take a byte-identical path, and the three that do not are the three
+       the change exists for.** Nothing in the file is made vacuous today, and the
+       ablation says the change was NECESSARY rather than incidental: with the old fixture
+       the three cases die inside the fixture and never reach load_config. One latent
+       weakening, recorded and not a finding: the new form silently skips when the BLOCK or
+       the KEY is absent, where the old form raised KeyError for floatsim.deck and
+       outputs.directory. Zero tests exercise that today -- measured, not assumed, by the
+       two counters above -- so a future case that deletes `outputs` would run against an
+       unresolved relative path instead of erroring loudly. One line to make the skip say
+       which of the two reasons it skipped for.
+```
+
+## Try to break it -- the adversarial cases I ran, and what they found
+
+* **The whole declared type space, not the three fields the diff names.** 22 declared
+  leaves x 7 YAML shapes = 154 cases through the real `load_config`. **Zero coercions, zero
+  non-ConfigError exceptions, zero refusals that fail to name the field.** Every LOADED row
+  is legitimate: a number in range, a boolean in a boolean field, None in the two optional
+  sensitivities, and three empty-string cases of which two are documented defaults.
+  **R843** is the third.
+* **Fifteen revert-red-restore cycles of my own**, baseline 126: the three new call sites
+  one at a time (1 failed each, bound by id), all three at once (3 failed), the fixture
+  reverted (3 failed), and the escape ablated in a real worktree (9 -> 8). **Every repair
+  in this commit is held and bound to its own site.**
+* **The nine reds traced ONE ID AT A TIME, not as a family.** That is what found **R841**.
+  Ruling the cascade by class would have filed a new cause under an old heading for the
+  second round running.
+* **The verdict-exists control, and I did it in a WORKTREE.** The previous round recorded
+  that `git archive` gives 30 failed at a commit CLAUDE.md cites as 0 failed, because these
+  guards read git. I took that warning: every report-guard measurement here is in a real
+  worktree at `d205833`, and only the mutation cycles that touch no git-reading guard are
+  in an archive.
+* **A whole-file regeneration of all three published deliverables**, run from this tree and
+  diffed line for line against the committed artifacts. `governing U = 1.71167 at
+  platform:hub4_arm ROOT (T = 12.5 s, 3.3.2 interaction)`, 1248 rows, 32 rows. Differences:
+  the provenance path prefix (my run was from a worktree, so the relative deck path renders
+  with a `wt/` segment) and one timing cell, build 0.19 -> 0.12. **No engineering number
+  moved.** 8, 8 and 20 diff lines on the three files, all accounted for.
+* **The escape's own output, counted with an escape-aware splitter** rather than taking the
+  implementer's figure: 0 of 19 rows with the wrong cell count, and 4 of 15 in the committed
+  revision-2 table. Both figures reproduce.
+* **ruff, black --check and mypy in CI's own wider forms**, on my machine: green, 147 files,
+  43 source files. And green in CI at this commit, on a machine neither of us controls.
+
+**What I did not find, and it is the larger part.** R837's repair is the strongest of the
+step so far: the finding named one site, the repair took three, each is bound to its own
+parametrisation by id, and the class survives a 154-case type grid rather than a needle.
+The fixture repair that came with it was necessary, was reasoned about in writing, and the
+implementer asked to have it attacked rather than asserting it was safe -- which is the
+right instinct and the reason I could answer it with a divergence count instead of an
+opinion. R840's escape is correct and reproduces in both directions. The blocking finding
+is not in the engineering code and not in the repair; it is that fixing a gating generator
+one commit early left a pushed, reviewed tree red for a reason no clause names, in a step
+whose last two rounds were both about reds being filed under the wrong cause.
+
+## CI at the reviewed commit: RED, nine reds, EIGHT designed and ONE not
+
+```
+cmd    gh run list --commit d205833943b7a4fa56c349d06fbd6f0d0f86e5fc
+         --json name,conclusion,workflowName,status
+out    [{"conclusion":"failure","name":"CI","status":"completed","workflowName":"CI"}]
+       -- NOTE FOR THE NEXT READER: `gh run list --commit d205833` (the SHORT sha)
+          returns an empty list. The run exists; the flag needs the full sha. A reviewer
+          who takes the short form reaches CK2's unavailable state by accident.
+cmd    gh run view 39057667873 --json jobs, read at STEP level
+out    lint, unit and guards : FAILURE
+         actionlint SUCCESS / ruff SUCCESS / black --check SUCCESS / mypy SUCCESS /
+         unit tests SUCCESS / guards and meta-tests FAILURE
+         -> 9 failed, 1147 passed, 1 skipped in 635.58s
+       the verification ladder : SUCCESS   -- rungs 1, 2, 3, 6+regression, 4, 5, all six
+       CI determinism -- leg / ten legs agree : SKIPPED
+cmd    gh run view 39057667873 --log-failed, the nine FAILED ids
+out    identical to my own local nine
+```
+
+**Not CK2's exhausted-allowance state.** Both real jobs ran with per-step conclusions and
+real counts -- fourteen minutes on the lint job, seven on the ladder -- so this is a
+completed red build and not a never-started one. The two determinism jobs are skipped by
+the workflow's own event gate (CK0 by design) and are recorded as that, not as an
+unavailable check. `mypy` is green here, and the `unit tests` and `guards and meta-tests`
+steps both RAN rather than being skipped behind an earlier red, which is the thing CZ1
+(iii) exists to see.
+
+**On CA2, which I keep in full because CLAUDE.md does not carry it:** a red CI is a HOLD
+regardless of the local run, and EG3 is the only clause that qualifies CZ0's head (d).
+Eight of the nine trace by name and by ablation to the step-boundary cause and are waived.
+**The ninth does not, so head (d) stands and this HOLDS.** The waiver is conditional on
+every red tracing, and one does not.
+
+## Corpus (EG4(e))
+
+**The pause held. Zero new entries, `tests/corpus/` untouched by me, `git status
+--porcelain` empty.** Neither exception opens: this diff touches no part of F4's
+load-mapping gate, and EB6's label-provenance gate is about buoy-centre labels in
+`tests/verification/rung4/`, not about the declared config strings this diff refuses --
+the same check verdicts 6 and 7 made, re-made here because R837 is again a
+declared-identifier finding.
+
+**I ran the recorded substitute, both halves, and this round BOTH paid:**
+
+* **A continuum grid over the parameter space a decision rule guards** -- every declared
+  leaf in the schema (22) crossed with the seven YAML shapes a lenient parser takes
+  (False, True, 12, None, the empty string, the empty list, the empty map), 154 cases
+  through the real `load_config`. **R843**, and the measurement that actually closes
+  R837's class and so grounds **R842**.
+* **A regeneration check on a published deliverable** -- all three R1 artifacts regenerated
+  from this tree and diffed over the whole file rather than over a needle. **Found
+  nothing**: the only differences are the provenance path prefix of my own run and one
+  timing cell. U = 1.71167 reproduces at platform:hub4_arm ROOT. That is what says
+  `floatfea/run/config.py` changing did not move a published figure, and it is worth as
+  much here as a finding would have been.
+
+## Tolerances touched
+
+**None.** No value, no form, no counter, no injection.
+
+```
+cmd    git diff --stat 62e48af..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff 62e48af..HEAD -- floatfea tests scripts | grep "^+" |
+       grep -cE "isclose|abs_tol|rel_tol|approx|atol|rtol"
+out    0
+rule   CLAUDE.md section Tolerances, and its clause on anything that functions as a
+       tolerance under another name
+judge  the diff is one type-guard call at three sites, three test parametrisations, one
+       conditional in a fixture and one string escape. The only comparisons it introduces
+       are `not isinstance(value, str)` and `isinstance(value, str)`, which carry no
+       number. EU1 therefore does not attach; the adversarial case was run anyway.
+```
+
+## Closure items (CZ0)
+
+ES0 says an interim check writes no closure list, so this is not one. Two entries are
+recorded because they amend items that already exist, and one is new because its content
+is a figure of mine:
+
+* **C37 widens.** `_require_string`'s "a name written without quotes ... Quote the name."
+  now fires at three PATH fields as well. The noun is wrong for five of its six call sites,
+  not one of three. Same item.
+* **C27 recurs for a third round** -- see R842. Still a closure item; the code it was about
+  is now closed.
+* **C41 (new).** The "three of its five siblings" sentence at `floatfea/run/config.py:858`
+  and `tests/unit/test_run_config.py:507`. Five of five. **It is my predecessor's figure**
+  (`docs/reviews/R1/step-2.md:93`), and the ledger entry should say so.
+
+Everything else carries unchanged: C26, C28, C30, C31, C32, C33, C36, C38, C39, C40.
+
+## Next step opens when
+
+**Step 2 stays open, and NOTHING in this check consumes a round.** Revision 3 of 3 is
+intact and is the last one. ES0: a verdict forced at a turn boundary on a tree with no new
+report revision counts against none.
+
+1. **R841** -- revision 3's commit carries the regenerated section 8 from the escaping
+   generator, and its section 7 traces the nine reds individually with the ninth's cause
+   named as the generator change, established by an ablation, rather than filed under the
+   EH1 cascade or FC1. Do not revert `_cell`. If a pushed commit intervenes and still
+   carries the red, its report states which of the three causes each red has.
+2. **FL2's five gate items**, which is what step 2 is for and of which none is built.
+3. **R842 and R843** -- not blocking, both one line. R842 is retired by publishing the grid
+   instead of the grep; R843 by refusing an empty `directory` at that site alone, or by
+   stating that the site was left and why.
+4. **R838 and C40** -- unchanged from verdict 7: the regeneration comparison for
+   `results/R1/example/` closes R838's three directions at once and retires C40 with it.
+5. **The closure list** -- C26, C27, C28, C30, C31, C32, C33, C36, C37, C38, C39, C40, C41
+   -- fixed once in the step's closure commit.
+6. **`scripts/suite_count.py`'s line and CZ1 (ii)/(iii)'s four outputs**, in the follow-on
+   commit, as already ruled twice.
+7. **Run the WHOLE suite before invoking me, not a subset.** The eight-file run this commit
+   reports (224 passed) is green and true and cannot contain R841. ES0's light scope is the
+   suite; a subset chosen by the author of the diff is the same shape as a needle chosen by
+   the author of the repair.
+8. **The push (FP1), continued.** It gave this round a completed CI run at the judged
+   commit, nine reds matching mine id for id, and a green `mypy` and six green ladder rungs
+   on a machine neither of us controls.
+
+**ON THE ESCALATION, which is already with Xabier and which I am not re-opening.** The
+implementer has relayed it verbatim and I endorse that relay. I add only the measurement
+this round contributes, because it sharpens the choice rather than restating it: **the
+findings are still cheap and the rounds are still expensive.** R837 was three one-line call
+sites and three test rows, all three bound by id; R841 is a question of which commit
+carries sixteen lines; R842, R843 and C41 are one line each. Nothing in two rounds has cost
+more than an hour of work. What has cost the step is that each round ends and the next
+cannot begin until a verdict exists. That is Xabier's trade to make, not mine and not the
+implementer's.
+
+**Where I disagree with the CRITERION rather than with the work -- one thing, and I am
+saying it once.** FF0 says an apparatus closure item is "fixed in the next commit"; BP0
+says a changed rule's figures are regenerated in the same commit; EK3 says a closed report
+may not be touched. For a change to a generator whose output is published inside a closed
+report revision, those three can be satisfied together only by the commit that writes the
+next revision -- and no clause says so, which is why this commit shipped a red that no
+state's list covers and that the implementer could not have cleared from where they stood.
+I have ruled under CZ0 (d) and EG3(i) as written, and the repair I ask for costs nothing
+beyond what revision 3 already owes. **The clause I think is missing is one sentence:** an
+FF0-class repair to a generator lands in the commit that next regenerates the artifact it
+feeds. It goes to Xabier through the implementer; it is not a round, and it is not a HOLD
+on anything but the red itself.
+
+**One housekeeping consequence of my own measurement, declared rather than left to be
+found.** The report-guard ablation needed a real worktree, because these guards read git
+and a `git archive` copy gives 30 failed at a commit that is 0 failed. `git worktree
+remove` then could not delete `.git/worktrees/wt23` on this machine -- Permission denied,
+the same failure the previous round recorded -- so the count went from 185 to 187. The
+working tree is clean, `git status --porcelain` is empty, no measurement is affected, and
+no file outside `docs/reviews/` was written by me.
+
+**What this commit got right, and it is much the larger part.** The one blocking finding
+from verdict 7 was answered at the layer the finding was about: the condition asked for one
+call site and one row, and the repair took three call sites and three rows, each bound to
+its own id by mutation. The class is now closed against a type space rather than a
+spelling, which I verified with 154 cases the diff did not choose. The fixture repair was
+necessary, was reasoned about in writing, and was offered for attack rather than asserted
+safe -- which is why I could answer it with a divergence count instead of an opinion.
+R840's escape is correct and reproduces in both directions. `ruff`, `black`, `mypy` and six
+ladder rungs are green here and in CI, and the three published deliverables regenerate from
+this tree with no engineering number moved.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 2
 Reviewed commit: 129747bcec6357b16229b2811b0000d434d954af
 **Reviewed commit: `129747bcec6357b16229b2811b0000d434d954af`.**
 Verdict: HOLD
