@@ -56,7 +56,12 @@ def _absolutise(data: dict[str, Any]) -> dict[str, Any]:
     out = copy.deepcopy(data)
     for block, key in (("floatsim", "deck"), ("load_cases", "npz"), ("outputs", "directory")):
         value = out.get(block, {}).get(key)
-        if isinstance(value, str):
+        # **AND A BLANK STRING IS PASSED THROUGH TOO (R843).** `(EXAMPLE.parent / "")`
+        # resolves to the examples directory, so absolutising a blank turned the case
+        # under test into a perfectly good absolute path and the refusal never fired. A
+        # blank directory IS the input R843 is about, so it has to reach `load_config`
+        # unchanged -- the same reason a non-string does.
+        if isinstance(value, str) and value.strip():
             out[block][key] = str((EXAMPLE.parent / value).resolve())
     return out
 
@@ -503,8 +508,11 @@ def test_FQ2_R834_a_DECLARED_STRING_FIELD_refuses_a_non_string(
     elif place == "window_rule":
         data["load_cases"]["window_rule"] = 1
     elif place == "directory":
-        # `no` is the typo this block invites: THREE of its five siblings are booleans in
-        # the shipped example, and every one of those five refuses a non-bool by name.
+        # `no` is the typo this block invites: FIVE of its five siblings are booleans in
+        # the shipped example -- `report`, `member_forces_csv`, `utilisation_csv`,
+        # `required_section`, `truss_sizing`, all written and all bool -- and every one of
+        # them refuses a non-bool by name. R844: the `THREE` here was verdict 7's figure,
+        # pasted into two shipped files without re-measurement.
         data["outputs"]["directory"] = False
     elif place == "deck":
         data["floatsim"]["deck"] = False
@@ -515,6 +523,38 @@ def test_FQ2_R834_a_DECLARED_STRING_FIELD_refuses_a_non_string(
     message = str(caught.value)
     assert "is not a string" in message, (label, message)
     assert "Quote the name" in message, (label, message)
+
+
+@pytest.mark.parametrize("value", ["", "   ", "	"], ids=["empty", "spaces", "tab"])
+def test_R843_an_EMPTY_outputs_directory_is_REFUSED(cfg_path: Any, value: str) -> None:
+    """A directory that names nothing is refused (R843), EH4's weakening direction.
+
+    `_require_string` closed R837 by refusing a non-string -- and it admits `""`. Then
+    `base / Path("")` is `base`, so `directory: ""` resolved to the CONFIGURATION FILE's
+    OWN directory. Measured before the check, on the shipped example:
+
+        directory: ''     LOADED -> <repo>/examples
+        directory: '   '  LOADED -> <repo>/examples
+
+    `examples/` is TRACKED, so `floatfea run` would have written the three published
+    deliverables into the source tree. This is the direction that WEAKENS the refusal --
+    the one EH4 says is solved too -- and it was open because R837 was solved only from
+    the side that makes the gate look strong.
+    """
+    data = _example()
+    data["outputs"]["directory"] = value
+    with pytest.raises(ConfigError) as caught:
+        load_config(cfg_path(data))
+    assert "empty directory name" in str(caught.value), str(caught.value)
+
+
+def test_R843_a_NAMED_relative_directory_still_loads(cfg_path: Any) -> None:
+    """The control: the refusal is about a directory that names NOTHING, not about
+    relative paths, which `test_relative_paths_resolve_against_THE_CONFIG_FILE` pins."""
+    data = _example()
+    data["outputs"]["directory"] = "../results/R1/example"
+    cfg = load_config(cfg_path(data))
+    assert cfg.outputs.directory.name == "example", cfg.outputs.directory
 
 
 def test_FQ2_R834_two_QUOTED_labels_stay_two(cfg_path: Any) -> None:
