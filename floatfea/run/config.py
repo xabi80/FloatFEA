@@ -597,7 +597,7 @@ def _parse_floatsim(block: Any, base: Path) -> FloatsimRef:
     _reject_unknown(
         block if isinstance(block, dict) else {}, ("deck", "tag", "froude_lambda"), where
     )
-    deck = Path(str(_require(block, "deck", where)))
+    deck = Path(_require_string(_require(block, "deck", where), f"{where}.deck"))
     if not deck.is_absolute():
         deck = (base / deck).resolve()
     if not deck.is_file():
@@ -759,7 +759,7 @@ def _parse_load_cases(block: Any, base: Path) -> LoadCases:
         )
     npz: Path | None = None
     if npz_raw is not None:
-        npz = Path(str(npz_raw))
+        npz = Path(_require_string(npz_raw, f"{where}.npz"))
         if not npz.is_absolute():
             npz = (base / npz).resolve()
         if not npz.is_file():
@@ -849,7 +849,19 @@ def _parse_outputs(block: Any, base: Path) -> Outputs:
         "truss_sizing",
     )
     _reject_unknown(block if isinstance(block, dict) else {}, known, where)
-    directory = Path(str(block.get("directory", "results/run")))
+    # **R837: THE FOURTH DECLARED STRING, AND THE ONE THE DELIVERABLES LAND IN.**
+    # Measured through the real `load_config` before this check:
+    #
+    #     directory: no   ->  Path("False")    LOADED
+    #     directory: 12   ->  Path("12")       LOADED
+    #     directory: ~    ->  Path("None")     LOADED
+    #
+    # Four lines below, `known[1:]` refuses all five of its sibling flags by name --
+    # `outputs.report: expected true or false, got 'no'` -- so `directory: no` was the
+    # one key in this block that took a boolean silently, and three of its five siblings
+    # ARE booleans in the shipped example. The three EZ0 artifacts then land in a
+    # directory named `False`.
+    directory = Path(_require_string(block.get("directory", "results/run"), f"{where}.directory"))
     if not directory.is_absolute():
         directory = (base / directory).resolve()
     flags: dict[str, bool] = {}

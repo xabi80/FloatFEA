@@ -48,11 +48,16 @@ def _absolutise(data: dict[str, Any]) -> dict[str, Any]:
     tracked source tree. Writing them next to the example worked -- the teardown removed
     them -- but a test that dies mid-run would leave a stray in a tracked directory.
     """
+    # **A NON-STRING PATH IS PASSED THROUGH UNTOUCHED (R837).** `base / value` raises
+    # `TypeError: unsupported operand type(s) for /: 'WindowsPath' and 'bool'`, so a
+    # fixture that absolutises unconditionally kills the test before `load_config` is
+    # reached -- and the case under test is precisely a path field that is not a string.
+    # Leaving it alone is what lets the SCHEMA refuse it, which is the thing being checked.
     out = copy.deepcopy(data)
-    out["floatsim"]["deck"] = str((EXAMPLE.parent / out["floatsim"]["deck"]).resolve())
-    if out["load_cases"].get("npz"):
-        out["load_cases"]["npz"] = str((EXAMPLE.parent / out["load_cases"]["npz"]).resolve())
-    out["outputs"]["directory"] = str((EXAMPLE.parent / out["outputs"]["directory"]).resolve())
+    for block, key in (("floatsim", "deck"), ("load_cases", "npz"), ("outputs", "directory")):
+        value = out.get(block, {}).get(key)
+        if isinstance(value, str):
+            out[block][key] = str((EXAMPLE.parent / value).resolve())
     return out
 
 
@@ -448,6 +453,11 @@ def test_FQ2_R825_a_STRING_name_key_LOADS_at_every_site(
         ("lumped[].label", "lumped"),
         ("floatsim.tag", "tag"),
         ("load_cases.window_rule", "window_rule"),
+        # R837: THE PATH STRINGS, WHICH ARE THE SAME CLASS WRAPPED IN `Path(...)`.
+        # `outputs.directory` is the one the three EZ0 deliverables are written to.
+        ("outputs.directory", "directory"),
+        ("floatsim.deck", "deck"),
+        ("load_cases.npz", "npz"),
     ],
 )
 def test_FQ2_R834_a_DECLARED_STRING_FIELD_refuses_a_non_string(
@@ -465,6 +475,20 @@ def test_FQ2_R834_a_DECLARED_STRING_FIELD_refuses_a_non_string(
     The reviewer named `lumped[].label`. `tag` and `window_rule` coerce the same way and
     both reach PUBLISHED provenance, so `tag: no` would publish `False` as the FloatSim
     tag -- which is why the site is a parameter here rather than one case.
+
+    **AND IT WAS STILL ONE SITE SHORT, WHICH IS R837.** The census command that reported
+    the class closed was a needle anchored on `= str(`, which requires `str(`
+    immediately after the `=` and
+    therefore cannot see `Path(str(...))`. Three sites hid behind that needle. Measured
+    through the real `load_config`:
+
+        outputs.directory: no   ->  Path("False")   LOADED
+        outputs.directory: 12   ->  Path("12")      LOADED
+        outputs.directory: ~    ->  Path("None")    LOADED
+
+    `outputs.directory` is where the three published deliverables are WRITTEN, and four
+    lines below it `known[1:]` refuses all five of its sibling flags by name. So the one
+    key in that block which took a boolean silently was the one naming a directory.
     """
     data = _example()
     if place == "lumped":
@@ -476,8 +500,16 @@ def test_FQ2_R834_a_DECLARED_STRING_FIELD_refuses_a_non_string(
         }
     elif place == "tag":
         data["floatsim"]["tag"] = False
-    else:
+    elif place == "window_rule":
         data["load_cases"]["window_rule"] = 1
+    elif place == "directory":
+        # `no` is the typo this block invites: THREE of its five siblings are booleans in
+        # the shipped example, and every one of those five refuses a non-bool by name.
+        data["outputs"]["directory"] = False
+    elif place == "deck":
+        data["floatsim"]["deck"] = False
+    else:
+        data["load_cases"]["npz"] = 1
     with pytest.raises(ConfigError) as caught:
         load_config(cfg_path(data))
     message = str(caught.value)

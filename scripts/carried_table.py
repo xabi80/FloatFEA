@@ -216,6 +216,20 @@ def _starts_a_sentence(text: str) -> bool:
     return bool(text) and (text[0].isupper() or text[0].isdigit() or text[0] in "\"'(")
 
 
+def _cell(text: str) -> str:
+    """Escape the cell separator, so the verdict's own words cannot add columns (R840).
+
+    The subject is cut from the verdict's prose and interpolated into a pipe table. A
+    verdict whose Carried section reads `(the ceiling) | answered | the constant` produced
+    a row with five cells instead of three, and markdown then silently shifts or drops the
+    rest. Measured on the step-2 verdict: 4 of 15 rows.
+
+    The pipe is the one character that is SYNTAX inside a cell, so it is the only one
+    escaped; the rest of the cell is the verdict's words and is left alone.
+    """
+    return text.replace("|", chr(92) + "|")
+
+
 def rows(
     order: list[str],
     classes: dict[str, str],
@@ -247,7 +261,7 @@ def rows(
             # so the row says where the item came from and stops, and the
             # subject beside it is the verdict's own words.
             status = "**not classified in this verdict** — carried in from an earlier one"
-        out.append(f"| {item} | {status} | {subject(item, verdict_text, by_block)} |")
+        out.append(f"| {item} | {status} | {_cell(subject(item, verdict_text, by_block))} |")
     return out
 
 
