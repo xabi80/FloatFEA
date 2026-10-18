@@ -294,6 +294,52 @@ if it disagrees with *the criterion* rather than with the work. That
 disagreement leaves the loop and goes to Xabier; it does not become another
 round.
 
+### What blocks for the rest of R1: a SILENTLY WRONG result (FR1)
+
+*Adopted by directive FR1, in the directive's own words, unparaphrased. It narrows CZ0
+for the remainder of R1; CZ0's four heads are unchanged everywhere else.*
+
+> A finding BLOCKS only if it can cause a SILENTLY WRONG result: a wrong number in a
+> gate, a CSV, a report or any published deliverable (EZ0), or an input accepted and
+> used other than as declared. All of these go to the R1 ledger and are listed in the
+> closure, but do not block:
+>
+> - a refusal whose message is unclear but whose outcome is right;
+> - a census, needle or grep that is too narrow where no wrong result follows;
+> - report prose and figure wording;
+> - closure items.
+>
+> The reviewer states, for each blocking finding, the silently wrong result it produces.
+
+**The second clause of the head is the one that is easy to read past.** "An input
+accepted and used other than as declared" is a blocking head in its own right, and it
+is what the R825/R834/R837 family was: a declared name or path arriving as a different
+type, accepted, and used. No number was wrong in any artifact at the time, and the
+input was used other than as declared, so that family blocks under FR1 exactly as it
+did under CZ0 (a). What drops out is the *census* that failed to find all its sites,
+not the sites.
+
+**The last sentence is what makes the criterion checkable rather than a matter of
+taste.** A blocking finding now names the silently wrong result it produces. A finding
+that cannot be given that sentence is a ledger item, and the reviewer saying so costs
+one line instead of a round.
+
+**Why it exists, stated as the measurement and not as a complaint about either side.**
+R1 step 1 closed at the ES0 cap carrying five blocking items; step 2 then spent three
+revisions and four interim checks, and every repair in them was one line of code or one
+test row. All fifteen cycled and all fifteen held. Two reviewers reached the same
+conclusion independently and in their own words -- **the cost is the round, not the
+repair** -- and the escalation CLAUDE.md requires was raised with the choice stated and
+answered by FR0: slip the date, keep the scope.
+
+**Three of the four non-blocking classes are findings this milestone actually produced,
+and each was real.** A refusal message that was false at its own boundary
+(`"D/t = 300.0 exceeds 300"` for an input of `300.01`). A census needle anchored on
+`= str(` that could not see `Path(str(`, three rounds running. A figure pasted from a
+verdict without re-measurement (`three of five siblings` where five of five are). None
+of them could put a wrong number in front of anyone, and each consumed part of a round
+in which FL2 was not built.
+
 ### A closure commit is verified after it exists (CZ1)
 
 *Adopted by directive EB1, in the reviewer's wording, unparaphrased. It was
