@@ -2,112 +2,141 @@
   "_": [
     "POINTERS ONLY (CH4).",
     "",
-    "R1 STEP 2, REVISION 2 -- the SECOND of three reviewed revisions under ES0. Answers",
-    "verdict 6 @ 43bcd0c, a HOLD with four blocking findings: R831, R832, R833, R834.",
+    "R1 STEP 2, REVISION 3 -- the THIRD and LAST revision ES0 allows, and the one FR2 says",
+    "the step CLOSES at. Answers verdict 8 @ a7b2f62, the ES0 interim check at d205833.",
     "",
-    "THE REVIEWER'S OWN SUMMARY OF THE PATTERN, BECAUSE IT IS THE RIGHT ONE: every one of",
-    "the four is THE OTHER INSTANCE OF THE THING I HAD JUST FIXED. CP3 found, named and",
-    "fixed for one deliverable, repeated for three in the same commit. The cycle run for",
-    "the five repairs a directive named, not the sixth in the same commit. The name-key",
-    "check cycled at one of the three sites it was installed at. The str() coercion",
-    "deleted at the two spellings my own grep knew.",
+    "FR1 IS THE CRITERION FROM HERE ON: a finding blocks only if it can cause a SILENTLY",
+    "WRONG RESULT. Under it, one of the four items carried into this revision blocks and",
+    "three are ledgered, and section 4 states which and why rather than leaving the",
+    "classification to be inferred.",
     "",
-    "SO THE QUESTION I APPLIED TO THIS REVISION, IN THE REVIEWER'S WORDS: what else in",
-    "this commit is an instance of the thing I just fixed? It found two more sites for",
-    "R834 that the verdict did not name -- `floatsim.tag` and `load_cases.window_rule`,",
-    "both reaching PUBLISHED provenance -- and it is why every gate below is parametrised",
-    "over the CALL SITE rather than over the finding.",
+    "WHAT BLOCKS, AND THE SILENTLY WRONG RESULT IT PRODUCES:",
     "",
-    "WHAT I WOULD ATTACK FIRST:",
+    "  R838  a caveat DELETED from TABLE_CAVEATS left the gate green, so the next run",
+    "        would publish a CSV missing the caveat that says the axial column is",
+    "        TENSION-POSITIVE (R739) or that a column is an envelope bound and not a",
+    "        stress (R740). A reader then takes a published number with the wrong sign",
+    "        or the wrong meaning. Both EH4 directions are closed in section 2.",
     "",
-    "1. R831's needle change. I replaced CAVEAT_MARKERS with floatfea.cli.TABLE_CAVEATS.",
-    "   Check the normalisation: `_write_header` turns `,` into `;`, so both sides are",
-    "   normalised and a per-file branch that could pass for the wrong reason is avoided.",
-    "   Section 2 carries the rewording counter.",
+    "LEDGERED UNDER FR1, each with the reason it cannot produce a wrong result:",
     "",
-    "2. The deliverables were regenerated AFTER the last cli.py edit this time, and the",
-    "   timing table moved 65.85 -> 97.08 s because four production FloatSim jobs hold",
-    "   this machine. A wall-time figure in a published artifact is now a contended",
-    "   measurement and section 2 says so.",
+    "  R839  the nine reds have one cause and revision 2 section 7 stated two. Report",
+    "        prose. Corrected in section 5 anyway, because it is one sentence.",
+    "  R842  the census grep is still the wrong instrument -- grep -c is 8, not 2. FR1",
+    "        names a needle too narrow where no wrong result follows as non-blocking, and",
+    "        the class IS closed: by a 154-case type grid, not by the grep. Section 4.",
+    "  C26-C42  the closure list. C29, C34, C35, C41 are done; C38 and C40 are retired by",
+    "        the needle and docstring repairs; C42 is the reviewer's, per FR2.",
     "",
-    "3. The whole-suite figure. Section 7 states what was measured and when."
+    "R841 is not a finding to answer so much as an ordering: the Carried table could not be",
+    "regenerated in revision 2's commit because EK3 forbids touching a closed revision. It",
+    "is regenerated here, which is the commit the verdict named, and section 3 traces the",
+    "ninth red to the generator change by ablation rather than filing it under the cascade."
   ],
   "answered": {
     "C22": {
       "state": "answered",
-      "where": "§6"
+      "where": "§4"
     },
     "C26": {
       "state": "later",
-      "where": "§9"
+      "where": "§4"
     },
     "C27": {
       "state": "later",
-      "where": "§9"
+      "where": "§7"
     },
     "C28": {
       "state": "later",
-      "where": "§9"
+      "where": "§7"
     },
     "C29": {
       "state": "answered",
-      "where": "§6"
+      "where": "§4"
     },
     "C30": {
       "state": "later",
-      "where": "§9"
+      "where": "§7"
     },
     "C31": {
       "state": "later",
-      "where": "§9"
+      "where": "§7"
     },
     "C32": {
       "state": "later",
-      "where": "§9"
+      "where": "§7"
     },
     "C33": {
       "state": "later",
-      "where": "§9"
+      "where": "§7"
     },
     "C34": {
-      "state": "later",
-      "where": "§9"
+      "state": "answered",
+      "where": "§4"
     },
     "C35": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "C36": {
       "state": "later",
-      "where": "§9"
+      "where": "§7"
+    },
+    "C37": {
+      "state": "later",
+      "where": "§7"
+    },
+    "C38": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "C39": {
+      "state": "later",
+      "where": "§7"
+    },
+    "C40": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "C41": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "C42": {
+      "state": "withdrawn",
+      "where": "§4"
     },
     "R814": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R815": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R816": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R817": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R818": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R819": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R820": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R821": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R822": {
       "state": "answered",
@@ -119,7 +148,7 @@
     },
     "R824": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R825": {
       "state": "answered",
@@ -131,19 +160,19 @@
     },
     "R827": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R828": {
       "state": "answered",
-      "where": "§3"
+      "where": "§4"
     },
     "R829": {
       "state": "answered",
-      "where": "§3"
+      "where": "§4"
     },
     "R830": {
       "state": "answered",
-      "where": "§8a"
+      "where": "§4"
     },
     "R831": {
       "state": "answered",
@@ -151,23 +180,55 @@
     },
     "R832": {
       "state": "answered",
-      "where": "§3"
+      "where": "§4"
     },
     "R833": {
       "state": "answered",
-      "where": "§4"
+      "where": "§6a"
     },
     "R834": {
       "state": "answered",
-      "where": "§5"
+      "where": "§6a"
     },
     "R835": {
       "state": "answered",
-      "where": "§7"
+      "where": "§5"
     },
     "R836": {
       "state": "answered",
-      "where": "§7"
+      "where": "§6a"
+    },
+    "R837": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R838": {
+      "state": "answered",
+      "where": "§2"
+    },
+    "R839": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R840": {
+      "state": "answered",
+      "where": "§3"
+    },
+    "R841": {
+      "state": "answered",
+      "where": "§3"
+    },
+    "R842": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R843": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R844": {
+      "state": "answered",
+      "where": "§4"
     }
   }
 }

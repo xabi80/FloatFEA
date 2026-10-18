@@ -12,8 +12,15 @@ survived a round because I verified the console line and not the file, and asser
 fix in a commit message. A test over `_header_lines` would not have caught it either.
 
 **THE ARTIFACTS ARE COMMITTED, SO THIS READS THEM RATHER THAN REGENERATING THEM.** A full
-run is 67 s and `test_r1_example_golden.py` already pays it to check the NUMBERS. What is
-checked here is the published FORM.
+run is 67 s and `test_r1_example_golden.py` already pays it to check the NUMBERS.
+
+**WHAT IS CHECKED HERE, NAMED RATHER THAN CALLED "THE PUBLISHED FORM" (C40).** That phrase
+was broader than the file: the nine caveats and their count, the screen disclaimer `LABEL`,
+the commented CSV header and its parseability, the clause limits, and the sensitivity
+operating points. **NOT** checked against these three files: the provenance block and the
+wave-basis line, which are per-run values rather than constants and are asserted at the
+generator in `tests/unit/test_run_pipeline_refusals.py`. A docstring that claims a whole
+category covers the next hole in it by accident.
 
 **AND THE CLAIM THAT USED TO FOLLOW THAT SENTENCE WAS FALSE, WHICH R831 MEASURED.** It read
 "reading the committed files also catches a regeneration that was never committed -- which a
@@ -32,7 +39,7 @@ from pathlib import Path
 
 import pytest
 
-from floatfea.cli import TABLE_CAVEATS
+from floatfea.cli import LABEL, TABLE_CAVEATS
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLISHED = ROOT / "results" / "R1" / "example"
@@ -70,6 +77,58 @@ def test_the_artifact_was_published_at_all(path: Path) -> None:
         f"examples/platform12_placeholder.yaml` produces it, and `results/` is tracked."
     )
     assert path.stat().st_size > 0, path
+
+
+def test_R838_FO2s_NINE_caveats_are_still_NINE() -> None:
+    """The count, because the membership check cannot see a DELETED caveat (R838).
+
+    **EH4's WEAKENING DIRECTION, WHICH R831's REPAIR LEFT OPEN.** R831 made the needle the
+    caveat TEXT, which closed the direction where a caveat is REWORDED. It did nothing for
+    the direction where one is REMOVED: the parametrisation is over `TABLE_CAVEATS`, so
+    deleting an element deletes its own three cases. Measured by cutting `R743` out of the
+    tuple:
+
+        baseline                            42 passed
+        one caveat DELETED from the tuple   39 passed, 0 failed
+
+    Three cases vanished and nothing went red. **And the next `floatfea run` would publish
+    artifacts carrying eight caveats, with this gate green on all eight**, because the
+    comparison is code-subset-of-artifact in both halves.
+
+    FO2 asks for nine caveats in all three artifacts and for a test that reddens when one
+    is removed. The membership cases are the first half; this is the second.
+
+    The reason it is a result and not a wording question, under FR1: the caveats are what
+    say the axial column is tension-positive (R739) and that a column is an envelope bound
+    rather than a stress (R740). A published CSV missing one of those is a published number
+    a reader takes with the wrong sign or the wrong meaning.
+    """
+    assert len(TABLE_CAVEATS) == 9, (  # not-a-tolerance: FO2's own count
+        f"FO2 requires NINE caveats and `floatfea.cli.TABLE_CAVEATS` has "
+        f"{len(TABLE_CAVEATS)}. If a caveat was deliberately retired, FO2 is what changes "
+        f"first -- and the three published artifacts are regenerated in the same commit "
+        f"(CP3), because this gate compares the code against the FILES."
+    )
+
+
+@pytest.mark.parametrize("path", ARTIFACTS, ids=lambda p: p.name)
+def test_R838_the_SCREEN_DISCLAIMER_reaches_every_artifact(path: Path) -> None:
+    """`LABEL` is the sentence that stops a screen being read as a code case.
+
+    The other half of R838. Measured by rewording it and leaving the files alone:
+
+        LABEL reworded    42 passed, 0 failed
+
+    so nothing in the tree asserted that the disclaimer the code emits is the disclaimer
+    the published files carry. It is checked here the same way the caveats are, against the
+    committed artifacts and comma-normalised for the CSV writer.
+    """
+    text = _normalised(path.read_text(encoding="utf-8", errors="replace"))
+    assert _normalised(LABEL) in text, (
+        f"{path.name} does not carry the screen disclaimer VERBATIM. It is the one "
+        f"sentence saying this is not a code case, so a stale or missing copy is a "
+        f"published artifact misdescribing what it is. Missing: {LABEL[:120]}"
+    )
 
 
 @pytest.mark.parametrize("index", range(len(TABLE_CAVEATS)), ids=lambda i: f"caveat{i}")
