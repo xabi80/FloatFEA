@@ -1,4 +1,599 @@
 # Review — R1 step 3
+Reviewed commit: d89566d09019dc3bb744c3ad21e859d268ca21de
+**Reviewed commit: `d89566d09019dc3bb744c3ad21e859d268ca21de`.**
+Verdict: PASS
+Tests: 3553 passed, 89 failed, 1 skipped, 2 warnings in 974.92 s (0:16:14)   (my own run, at the reviewed commit, tree clean)
+Scope: **ES0 INTERIM CHECK, the third in step 3.** No report revision exists for step 3, so
+this counts against no round and all three reviewed revisions remain available. **Nothing
+blocks.** R860 is answered at the site its condition named, and I checked the refactor
+against artifacts committed three commits before it rather than against the diff. Four
+findings below, none blocking, plus the one ruling the implementer asked for by name (R855)
+and an answer to the sequencing question taken from the hook's own text.
+
+**I RULED UNDER FR1 WITH EZ0** (`docs/directives/FR.md:14-26`, `CLAUDE.md` section "What
+blocks for the rest of R1"). For each finding I say the silently wrong result it would
+produce, or that it produces none. **This file is HAND-WRITTEN because the one sanctioned
+path in refuses it -- R856, third measured occurrence.**
+
+```
+cmd    git diff --name-status 948b36a..HEAD
+out    M  floatfea/cli.py
+       M  tests/regression/test_r1_example_regenerates.py
+       -- two files, 67 insertions, 12 deletions, nothing else
+cmd    git diff --stat 948b36a..HEAD -- .claude docs/SUPERVISOR.md CLAUDE.md
+out    (empty)                                   -- no STOP-class finding
+cmd    git diff 948b36a..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff 948b36a..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py                          -- a file, as my instructions say it must be
+cmd    git ls-files | grep -i conftest             -- the whole-tree census, since the ladder's
+                                                     gate reads a record a rung's own conftest
+                                                     could write (CH2/CI0)
+out    tests/conftest.py
+       tests/test_supervisor_conftest_pathspec.py  -- one conftest, at depth one, unchanged
+cmd    git diff --stat 948b36a..HEAD -- results scripts docs
+out    (empty)                                   -- no published deliverable moved
+cmd    git status --porcelain
+out    (empty)                                   -- clean before I ran anything and after
+cmd    printf <the four mandatory sections, with the Verdict line first> |
+         python scripts/write_verdict.py --milestone R1 --step 3
+out    refused: no step report at ...\docs\reports\R1\step-3.md
+       -- R856 again, at scripts/write_verdict.py:181. I also measured the ORDER of its
+          refusals, which no previous round did: a body that does not begin with the
+          Verdict line is refused FIRST, so the no-report refusal is reached only by a
+          well-formed verdict and the file cannot be written by accident.
+```
+
+**STEP 1b DOES NOT FIRE, AND I SAY SO RATHER THAN SKIPPING IT.** There is no step-3 report,
+so there is no `Answers: verdict N @ <sha>` header to compare against the newest verdict.
+The newest revision in the tree is still step 2's third (`Answers: verdict 8 @ a7b2f62`) and
+three verdicts are newer than it. That is EG3 state (2) by definition, and it is the whole
+of this tree's red.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R860** (`_TIMING_STAGES` was a hand copy of the literal at `floatfea/cli.py:297` and nothing compared them) | **ANSWERED AT THE SITE THE CONDITION NAMED, and I verified both halves myself. It has a REMAINDER that "there is no second copy" misses -- R862.** | `floatfea/cli.py:37-43` defines `WALL_TIME_STAGES`, `:320` iterates it, `tests/regression/test_r1_example_regenerates.py:45` imports it. The provenance is structural rather than inferred from a green: `grep -n "WALL_TIME_STAGES\|for stage in" floatfea/cli.py` is two lines, `37` and `320`, and the gate has no tuple of its own left. I reproduced their red (a sixth name in the tuple -> `10 passed, 1 failed`, `EXCLUSION_pin ('the SHIPPED report', ['build','code_check','load','solve','total'])`) and their baseline (`11 passed`). **And the pin cannot fail false**, which I measured rather than inferring from the generator's defensive `if stage in result.timings`: `grep -rn "RunResult(" floatfea` is ONE construction (`pipeline.py:675`), all five `timings[...]` assignments above it are unconditional, and every branch between them RAISES rather than returning. |
+| **R857** (the comparable counts were measured against the rule the same commit deleted) | **ANSWERED, and the figure is right at this commit by my own measurement rather than by taking theirs** | `tests/regression/test_r1_example_regenerates.py:99` now reads 97/1286/70 and the file records all three wrong versions. Mine, through the gate's own `_lines()`: report.md total 105 comparable 97 timing 5 prov 3; member_forces.csv 1289 / 1286 / 0 / 3; utilisation.csv 73 / 70 / 0 / 3. The published arithmetic 105 - 8 = 97 holds, and the two CSV figures are unmoved because neither carries a timing row. **The rule did not move in this commit** -- the tuple's five names and their order are unchanged -- so 97 is measured against the rule the file runs (BP0), and the third statement of this number is the first correct one. |
+| **R858** (the file claimed both excluded classes were "checked separately") | **ANSWERED, and the replacement sentence is TRUE -- I measured it over all FIVE rows and not the two it names** | `:55-66`. Mine: `| load |`, `| code_check |`, `| solve |`, `| total |` and `| build |` each edited in the shipped report, one at a time, each through the real eleven cases -> **11 passed, 0 failed on every one of the five**. And the broad half of the sentence, which is the half I could have let pass on the file's own authority: `grep -rn "Wall time\|wall_time\|timings" --include=*.py tests` reaches exactly one assertion on a wall clock, `test_the_run_reports_a_wall_time_for_every_stage`, and it reads `result.timings` from a LIVE run and never a published file. **So "no test in this repository reads a published wall-clock VALUE" is true as written.** |
+| **R859** (the new comment named the wrong assertion) | **HALF ANSWERED. The pin comment is corrected and I confirmed every clause of it. THE DOCSTRING OF THE SAME FUNCTION, WHICH R859's OWN JUDGE NAMED, IS UNTOUCHED AND STILL FALSE -- R865.** "Half of an item is not the item" is CLAUDE.md's own sentence, and I apply it to my predecessor's condition rather than to the implementer's reading of it. | Corrected at `:241-245`, each clause measured: a sixth unrecognised `| mesh |` row reddens REGENERATES[report.md] (16 line(s) differ, shipped has 98 comparable lines against 97) with the pin GREEN; a duplicate `| total |` reddens the pin; a deleted `| code_check |` reddens the pin. Untouched: `:228`, "a fourth non-deterministic line reaching the deliverable reddens here instead of being absorbed". |
+| **R861** (the baseline of nine was wrong within one commit; the trace is a predicate and not a count) | **ANSWERED, and the implementer did the half I could not check -- it corrected the figure TO XABIER and not only here** | I applied the predicate rather than a number: **89 reds, all 89 inside tests/test_report_carried.py (79) and tests/test_report_guard_states.py (10)**; the 17 carries_the_finding cases parametrised on exactly R845-R861; the 57 named_site cases on sites of R850-R861; ten survives_the_state cases whose inner runs read 77 failed, 160 passed, 1 skipped (two read 78) and name those. **And my set and CI's set are the SAME SET**: comm -23 and comm -13 over the two sorted id lists are both empty, 89 against 89. |
+| **R855** (the suite was not run at a pushed reviewed commit, third occurrence; the implementer asks me to rule it once rather than keep deciding it) | **WITHDRAWN FOR A COMMIT THAT CARRIES NO REPORT REVISION, with one standing condition. Ruled once, in its own section below.** | The condition is met in this commit: it names the runs it made and states plainly that it has NOT measured the whole suite at this sha. An unmeasured green would be a different matter, and that section says what I would do about one. |
+| **R847** (section 3's "0 of 49 rows" does not reproduce; the generator emits 23) | **still open, correctly -- C43, and there is no report revision in which it could be answered** | FR1's third class. Unchanged by this diff. |
+| **R848** (the empty-directory refusal admits a bare dot, a dot-slash, a double dot and a padded dot) | **still open, untouched, correctly so** | `git diff 948b36a..HEAD -- floatfea` is floatfea/cli.py alone, and its two hunks are the constant and its use. Non-blocking, ruled three times. |
+| **R849 with R854** (the caveat, disclaimer, provenance AND regeneration gates quantify over hard-coded three-file tuples, and step 3 publishes two more deliverables) | **still open, both sites, and it is the oldest live item FL2 lands on** | NAMES at tests/regression/test_r1_example_regenerates.py:51; ARTIFACTS at tests/regression/test_r1_published_artifacts.py:69. Answered WHILE step 3 is built, as verdict 9 ruled and verdicts 10 and 11 repeated. **R862 is the same species in a third place**, which is the reason to do it once rather than file by file. |
+| **R852** (a caveat truncated to its own marker is green on 31 of 31) | **with Xabier, relayed verbatim, unchanged by this diff** | not the implementer's to repair in code. |
+| **R856** (write_verdict.py refuses a step with no report) | **with Xabier; THIRD measured occurrence, in my command block above, with its refusal ORDER measured for the first time** | apparatus, not ledgered (FF0); the exit is a clause and not a commit. |
+| **R835, R836** (EG3's enumeration; and R836) | **still open, still Xabier's; this commit is the TENTH measurement and it over-lists again** | run on their own rather than read off a cascade, which is EJ2's discipline: the two off-list state-(2) names give **24 passed in 0.29s**. Two of the enumerated names are green while seven fire. Relayed unchanged. |
+| **C29, C34, C35** (ruff, black, mypy) | **green at this commit, locally AND on a machine neither of us controls** | mine: All checks passed! / 148 files would be left unchanged / Success: no issues found in 43 source files. CI run 39176380750, job `lint, unit and guards`, read at STEP level: actionlint SUCCESS, ruff SUCCESS, black --check SUCCESS, mypy SUCCESS, unit tests SUCCESS (186 passed in 163.91s), guards and meta-tests FAILURE. Every one RAN rather than being skipped behind an earlier red, which is what CZ1 (iii) exists to see. |
+| **C42** (U+FFFD in historical verdict headers) | **mine, accepted, carried -- and I nearly filed a false sibling to it** | the em dash in _PROVENANCE_PATH and in the three published provenance lines is `e2 80 94`, U+2014, in BOTH files. My terminal rendered it as a replacement character and I was one step from writing a mojibake finding against a published deliverable; the bytes refuted it. Recorded because "verify the reference" is my own guard and this is the round it caught me rather than the code. |
+| **C43, C44, C45** | **C43 and C44 carry; C45 unchanged and still unpayable before step 3's report exists** | verdict 10's process note stands, with verdict 11's correction to its baseline figure. |
+| **C26, C27, C28, C30, C31, C32, C33, C36, C37, C39** | **carry to the closure artifact as a list** | not re-reviewed item by item, per CZ0. An interim check writes no closure list (ES0); this row is the pointer and not the list. |
+| **EG3(ii): the verdict commit measured** | **DONE at the reviewed commit; the measurement AT the verdict commit is owed to the next revision, as always, because I run before I write** | the two report-guard files hold 89 of the suite's 89 reds and the two id sets are identical to CI's, so no red sits outside the boundary. |
+| scripts/suite_count.py's own line + CZ1 (ii)/(iii)'s four outputs | **still owed and still structurally unpayable until step 3's report exists** | not a finding against the implementer. |
+
+## The R855 ruling, said once
+
+**The implementer asked me to rule it rather than let it be re-decided every commit, and
+that is the right request. R855 IS WITHDRAWN FOR A COMMIT THAT CARRIES NO REPORT REVISION,
+with one standing condition.**
+
+```
+claim  nothing in the governing documents puts the whole suite on an interim COMMIT; ES0
+       puts it on the interim CHECK, and the check is mine
+cmd    CLAUDE.md, ES0's third bullet
+out    "An interim check is light: the suite and CI at the commit, plus a CZ0 (a)-(d) scan
+        of the diff since the last verdict."
+       -- the subject of that sentence is the check
+cmd    CLAUDE.md, section Step gating, item 1 -- where the implementer's own run IS required
+out    "Write docs/reports/F<n>/step-<k>.md: what was built, the test counts from your own
+        run ..."
+       -- the obligation attaches to a REPORT, and an interim commit has none by FR3's
+          own design
+cmd    EG3(i), the clause R855 was argued from
+out    "The PRE-INVOCATION GREEN REQUIREMENT is waived only if EVERY red traces by name to
+        the step-boundary cause."
+       -- it waives a requirement stated elsewhere; it does not create one, and the tree it
+          speaks of is red by construction for the whole of step 3
+cell   what the double run has bought where both halves were measured: verdict 10 ran the
+       suite at e818375 against an implementer who had run a 400-case subset, and verdict
+       11 at e6a20e3 against one who had run a single file
+out    9 reds and 78 reds; in both, the whole suite's set and the two report-guard files'
+       set were THE SAME SET, so nothing was hiding in either, and the reviewer's run
+       produced the number both times. This commit is the third: 89 and 89, same set.
+judge  **the information is never lost, because I run the suite at the reviewed commit by
+       rule and I have no discretion to skip it.** A second sixteen-minute run inside the
+       same turn boundary reaches no reader the first does not, and the loop pays for it
+       twice at every turn against a 5 November date. **What I am NOT withdrawing is the
+       claim discipline, and it is the whole of the condition:** a commit that has not
+       measured the suite SAYS SO, as this one does, and never states or implies a green it
+       did not take. An unmeasured green is a different finding with a different name --
+       it is a claim with no command (BF0) about the one measure this loop cannot
+       re-derive -- and I would hold the next revision on one.
+       R855 stands unchanged for a commit that CARRIES a report revision (item 1's own
+       words) and for a closure commit (CZ1 (ii)). It is withdrawn for an interim commit,
+       and it is withdrawn by me rather than argued down by the implementer, which is the
+       part of the record that matters.
+rule   ES0 as written; CLAUDE.md Step gating item 1; EG3(i); and my own instruction to run
+       the suite myself and never to accept a pass count from a report
+```
+
+## The sequencing question, answered from the hook's own text
+
+**The implementer's premise is false, and that is the whole answer: five commits in ONE
+TURN is ONE interim check, not five.**
+
+```
+claim  the hook fires at a TURN BOUNDARY on a TREE COMPARISON and has no notion of how
+       many commits reached that tree
+cmd    .claude/hooks/require-verdict.sh, the only comparison in the file that can refuse a
+       step commit
+out    if ! git diff --quiet "$reviewed" -- "$report" floatfea tests
+             ':(exclude)tests/corpus' 2>/dev/null; then
+         block "floatfea/, tests/, or $report changed since the verdict at $reviewed."
+       -- a diff between two TREES. There is no commit walk and no commit count anywhere
+          in the file; I read all of it.
+cmd    the directive the implementer read as pointing the other way
+out    docs/directives/FR.md, FR3: "Build ALL of it before the first reviewed revision.
+       Interim checks run as the hook requires and count against no round."
+       -- "all of it before the first reviewed REVISION" constrains the revision, not the
+          commit, and the sentence after it anticipates interim checks in the plural
+judge  **commit granularity is yours and it costs you nothing either way.** The number of
+       interim checks is the number of turn boundaries. **I would rather have the five
+       commits than the one**, and the reason is not reviewability in the abstract: three
+       of the last four rounds' findings came from running the model at a configuration the
+       commit did not choose, and with five commits each item's own diff tells me which
+       configuration its author chose. One undifferentiated diff adding member topology,
+       two optional analyses with a re-solve loop, a headings list with a refusal and a
+       per-case band check gives me one surface and an ES0 scope that is light by rule.
+       **But if the build is naturally one turn, make it one turn and as many commits as
+       the work has shapes.** I will not spend a round on either choice, and I am not
+       asking you to change the plan.
+```
+
+## Findings
+
+**NOTHING BLOCKS.** The diff is one `floatfea/` refactor with no behavioural change and one
+test file's comments. No tolerance moved. No published deliverable moved -- and I
+established that by regenerating all three from this tree, not by reading the diff. Under
+FR1 none of the four findings below can put a wrong number in front of anyone **at this
+commit**, and for the two that could at a later one I name the number and what makes it
+live.
+
+**THE IMPLEMENTER'S OWN REQUEST IS WHERE TWO OF THE FOUR CAME FROM.** It asked me to check
+independently that the refactor changed no published figure -- "the one thing I would least
+like to have got wrong". The answer is that **the claim is true and the measurement offered
+for it cannot see the thing it claims** (R864), and that the refactor's remainder is in the
+copy nobody looked at (R862).
+
+**R862. (DOES NOT BLOCK -- ledgered) "THERE IS NO SECOND COPY" IS REFUTED BY ONE GREP.
+THREE HAND COPIES OF THE STAGE SET REMAIN AND ONE OF THEM COMPUTES THE PUBLISHED
+`| total |`. The commit unified the WRITER and the EXCLUSION and left the PRODUCER. At
+FL2's shape the published total understates the run by 40.000 s with both gates green.**
+
+```
+claim  the stage set still exists in three places the new constant does not reach
+cmd    grep -rn 'for stage in ("build"' --include=*.py . and
+       grep -rn '("build", "load", "solve", "code_check")' --include=*.py .
+out    tests/regression/test_r1_example_golden.py:318
+         for stage in ("build", "load", "solve", "code_check", "total"):   <- FIVE, a copy
+       tests/regression/test_r1_example_golden.py:321
+         parts = sum(result.timings[s] for s in ("build","load","solve","code_check"))
+       floatfea/run/pipeline.py:673
+         timings[k] for k in ("build", "load", "solve", "code_check") if k in timings
+       -- the last of these IS the published `| total |` row
+cmd    what the golden gate claims, in its own failure message
+out    "`total` is ... and its parts sum to ...; the reported total must be the sum of the
+        stages, not a separate measurement."
+cell   FL2's shape, one variable moved: a sixth timed stage at 40.0 s, pipeline.py:673
+       untouched, the REAL test_the_run_reports_a_wall_time_for_every_stage called on it
+out    TODAY (five stages)     PASSED   published total 97.273 s, real 97.273 s
+       a SIXTH timed stage     PASSED   published total 97.273 s, real 137.273 s
+                                        -> understated by 40.000 s, and the gate whose own
+                                           message is "total must be the sum of the
+                                           stages" is GREEN
+cmd    why the five-name copy at :318 cannot see it either
+out    it asserts PRESENCE (`stage in result.timings`) over its own list, so a stage ADDED
+       to the set is outside the collection the assertion inspects, by construction
+rule   my own recorded guard, verbatim -- check that the collection the assertion inspects
+       can actually contain the failure; FR1's first head, a wrong number in a report
+judge  **it does not block at this commit, and I measured that rather than asserting it.**
+       `| total | 97.27 |` is correct today: the five published rows are
+       0.19 + 0.00 + 97.08 + 0.00 = 97.27, `grep -n "timings\[" pipeline.py` is five lines
+       of which one IS total, so the four summands are the only timed stages, and the
+       full-precision identity is green. **The silently wrong result it produces, for the
+       record, is a published `| total |` row that is labelled the total and is not** --
+       and it arrives from ONE new `timings[...] = ...` line, whether or not the new row is
+       published, with test_the_run_reports_a_wall_time_for_every_stage certifying it.
+       That is R860's own argument one level down: R860 said a hand copy cannot know, and
+       the repair unified the copy that decides the COMPARISON and left the copy that
+       decides the NUMBER. **At the commit that adds a timed stage this is a wrong number
+       in a published deliverable and it blocks then.**
+```
+
+**Closed when** `floatfea/run/pipeline.py:673` derives its summands from `WALL_TIME_STAGES`
+rather than restating four of them, and the two literals at
+`tests/regression/test_r1_example_golden.py:318` and `:321` come from the same place -- at
+the latest in the commit that adds a timed stage.
+
+**R863. (DOES NOT BLOCK -- ledgered; it is the EH4 direction the repair opened) THE
+EXCLUSION SET IS NOW DEFINED BY THE CODE UNDER TEST, SO A SIXTH PUBLISHED ROW IS EXEMPTED
+SILENTLY. Measured: a sixth stage published AND named is green on 11 of 11 -- green even
+when the shipped value is 4521.30 against a fresh 0.00.**
+
+```
+claim  the repair moves the exclusion's declaration from a place a reviewer reads to a
+       place the generator decides, and the widening then needs no test-file diff
+cell   the real gate's eleven cases, fresh side held fixed at my own 70.37 s regeneration,
+       PUBLISHED redirected to a copy so the committed artifacts were never written
+out    BASELINE (unmodified, HEAD as committed)                      11 passed,  0 failed
+       a SIXTH stage in the TUPLE ONLY (the implementer's cell)      10 passed,  1 failed
+         FAILED EXCLUSION_pin ('the SHIPPED report', [the five])
+       a sixth stage PUBLISHED and NAMED (FL2's shape)               11 passed,  0 failed
+       ... and its published value DIFFERS from the fresh run
+           (| sizing | 4521.30 | against a fresh | sizing | 0.00 |)  11 passed,  0 failed
+       RESTORED                                                      11 passed,  0 failed
+cmd    the two configurations side by side, which is the whole of the finding
+out    BEFORE this commit: widening the exemption meant editing `_TIMING_STAGES` in
+         tests/regression/test_r1_example_regenerates.py -- a diff in a test file.
+       AFTER: it means adding the name to WALL_TIME_STAGES in floatfea/cli.py, which is the
+         SAME one-line change that makes the row publishable at all. The exemption becomes
+         a side effect of the publication.
+cmd    the row shape the exclusion keys on
+out    r"^\|\s*(build|load|solve|code_check|total)\s*\|\s*[0-9.]+\s*\|\s*$"
+       -- a NAME and a number. Nothing in it says "a time", and nothing says "inside the
+          Wall time table".
+cmd    whether a non-time quantity can reach an exempted row today, read rather than assumed
+out    floatfea/run/pipeline.py:605, 653, 664, 669, 672 -- every member of the tuple is a
+       time.perf_counter() delta, and the branches between them raise rather than return
+cmd    the direction that is CLOSED, measured before I claimed the one that is open
+out    an engineering `| total | 4521.30 |` row elsewhere in report.md  9 passed, 2 failed
+         FAILED REGENERATES[report.md] -- 14 line(s) differ, 102 against 97
+         FAILED EXCLUSION_pin -- (... ['total','total'])   the duplicate is caught
+rule   EH4 -- the boundary is solved in the direction that WEAKENS the gate, and the
+       injection rises until a clean case trips; my own guard that a gate carries its own
+       failure
+judge  **it does not block, and the reason is a measurement rather than a judgement of
+       severity.** Every member of the tuple is a wall clock on every admissible config, so
+       no engineering number is reachable through this door today, and a second occurrence
+       of any of the five is caught by the pin. **What is reachable with no signal at all
+       is a sixth wall clock** -- the thing R860 was about, in the direction R860 did not
+       look. The repair is still the right one: before it the gate was machine-dependent,
+       which is worse. **But the exclusion is no longer DECLARED, it is DERIVED, and a
+       derived exemption cannot be reviewed in the diff that widens it.** Neither close
+       below is new apparatus: anchor the regex to the `## Wall time` section so that an
+       exempted row is exempt for WHERE it is; or state in the report, with the two green
+       rows above, that adding a name to WALL_TIME_STAGES exempts a published row from
+       comparison with nothing red, and that this is accepted for a wall clock.
+```
+
+**Closed when** an exempted row is exempt by its position in the `## Wall time` table rather
+than by its name matching a tuple the generator controls -- or the report states that
+widening with those two measurements beside it.
+
+**R864. (DOES NOT BLOCK -- ledgered, FR1's third class) "THE REFACTOR PRODUCES BYTE-IDENTICAL
+DELIVERABLES" IS TRUE, AND THE REGENERATION GATE CANNOT SEE IT EITHER WAY. The five lines
+the refactor touches are the five it excludes: reordered, or with every value replaced, the
+comparable-line lists are IDENTICAL and the pin is GREEN.**
+
+```
+claim  the witness offered for the claim is blind to the claim's own subject
+cell   the gate's own _lines() and pin applied to the shipped report and to two mutations
+       of it, one variable moved each, nothing regenerated
+out    REORDERED (| total | first)      comparable lines identical: True   pin green: True
+       ALL FIVE VALUES -> 999.99        comparable lines identical: True   pin green: True
+cmd    the five single-value edits through the real eleven cases
+out    | load | -> 999.99        11 passed       | total | -> 0.01      11 passed
+       | code_check | -> 999.99  11 passed       | build | -> 999.99    11 passed
+       | solve | -> 0.01         11 passed
+cmd    the cell that DOES isolate the claim, which is the diff and not a run
+out    git diff 948b36a..HEAD -- floatfea/cli.py: the five names and their order are
+       unchanged, `_write_report`'s loop body is unchanged, and `if stage in
+       result.timings` is unchanged. **That is the evidence, and it is sufficient.**
+cmd    the independent half, which is stronger than the diff and which the implementer did
+       not claim
+out    the three artifacts were last written at 129747b, THREE commits before this refactor
+       (git log --oneline -1 -- results/R1/example/), and my regeneration from THIS tree
+       differs from them on 0 of 97, 0 of 1286 and 0 of 70 comparable lines, at
+       governing U = 1.71167 at platform:hub4_arm ROOT (T = 12.5 s, 3.3.2 interaction)
+       -- a writer refactored at d89566d reproducing files written at 129747b is the
+          statement that wanted making
+cmd    and the claim as WORDED, tested
+out    the deliverable is NOT byte-identical and never was: my run published
+       `| solve | 70.20 |` against the shipped `| solve | 97.08 |`. It is identical on
+       every COMPARABLE line, which is a different and true sentence.
+rule   BF0 with BG0 -- a causal sentence carries the cell that isolates it, one variable
+       moved; and my own guard that a residual destroys information, applied to a gate that
+       drops the very lines it is being asked about
+judge  **it does not block**: the claim is true, nothing in the deliverable moved, and I
+       verified it by two routes. It is recorded for its shape, which is this project's own
+       recurring one -- **the measurement cited for a claim excluded the claim's subject by
+       construction.** The same constant's docstring says it is "the stages the published
+       report's table carries, IN ORDER", and the order of that table is the one property
+       of it nothing in the tree checks, which is the first measurement above.
+```
+
+**Closed when** the step's report states the claim as "identical on every comparable line,
+and the five excluded rows are not compared in either direction", with the regeneration
+against `129747b`'s artifacts as its command -- or drops the claim and cites the diff, which
+is what actually carries it.
+
+**R865. (DOES NOT BLOCK -- ledgered; R859's THIRD SITE, the one R859's own judge named) THE
+DOCSTRING OF THE FUNCTION WHOSE COMMENT WAS CORRECTED STILL SAYS "A FOURTH NON-DETERMINISTIC
+LINE REACHING THE DELIVERABLE REDDENS HERE INSTEAD OF BEING ABSORBED", AND IT IS FALSE IN
+BOTH HALVES. The line is not absorbed, and this assertion cannot see it.**
+
+```
+claim  the pin's second assertion cannot fail in the direction the docstring claims for it
+cmd    tests/regression/test_r1_example_regenerates.py:224-229, untouched by this diff
+out    "This pins the excluded set by KEY in both the shipped and the fresh report, so a
+        fourth non-deterministic line reaching the deliverable reddens here instead of
+        being absorbed."
+cell   a fourth provenance key injected into the shipped report, one line, nothing else
+out    `# npz: /home/someone-else/junk/other_cases.npz`
+       matched by _PROVENANCE_PATH : False      -> it is NOT absorbed
+       excluded from the comparison: False
+       comparable lines 97 -> 99                -> the COMPARISON reddens, loudly
+       the pin's key set                        -> ['config','deck','load_cases'], GREEN
+cmd    why it can never be otherwise, from the regex rather than from the run
+out    ^(?:#\s*|\*\s+\*\*)(config|deck|load_cases)(?:\*\*)?\s*[:<em-dash>-]\s*(.+?)\s*$
+       -- `keys` is drawn from that three-way alternation, so
+          assert keys == ["config","deck","load_cases"] can fail only by OMISSION. A
+          fourth key is outside the collection the assertion inspects.
+rule   my own guard -- check that the collection the assertion inspects can contain the
+       failure; CW0 -- prose in the source tree is a test, a triple, or deleted
+judge  **it does not block**: the behaviour is the safe one, the red is loud, and no number
+       moves. It carries because R859's judge named this docstring explicitly -- "the
+       pre-existing docstring of that test has the same shape" -- and the comment eight
+       lines below it was corrected while this was not. **The sentence is wrong in the
+       direction that makes the gate sound stronger**, which is the direction R853, R857
+       and R859 were each wrong in, in this same file, in three consecutive commits.
+```
+
+**Closed when** that docstring says which assertion fires for a fourth excluded line -- the
+comparison, not the pin -- and says that the key assertion bounds omission only; or says
+nothing and lets the five test functions speak.
+
+## Try to break it -- what I ran, and what it found
+
+* **One full regeneration of all three deliverables from this tree into a temporary
+  directory**, with the fixture's own recipe: 70.37 s, `governing U = 1.71167 at
+  platform:hub4_arm ROOT (T = 12.5 s, 3.3.2 interaction)`, **0 differing comparable lines
+  in all three files** at 97 / 1286 / 70. That is the control for everything below and the
+  independent answer to the one thing the implementer asked me to check -- and it is a
+  stronger answer than the diff, because the committed artifacts were written at `129747b`,
+  three commits before this refactor.
+* **Sixteen injections against the five real test functions**, fresh side held fixed, one
+  edit each, with the gate's `PUBLISHED` root redirected to a copy so the committed
+  artifacts were never written: baseline; a sixth stage in the tuple only; a sixth stage
+  published and named; the same with a value differing by 4521.30 from the fresh run; an
+  engineering `| total |` row elsewhere in the report; all five wall-clock values one at a
+  time; the governing U; a duplicate `| total |`; a deleted `| code_check |`; a sixth
+  unrecognised `| mesh |` row; a timing row in a CSV; and a restore.
+  **Each of the gate's five functions was shown to carry its own failure by at least one
+  red, and every injection was red somewhere except the rows the exclusion tolerates by
+  design -- which is R863, and it now includes a sixth row nobody has published yet.**
+* **Both EH4 directions on the thing the diff changed.** Strengthening: the pin requires
+  exactly five rows, and I showed it cannot fail false by reading `pipeline.py` --
+  `grep -rn "RunResult(" floatfea` is one construction, all five `timings[...]` are
+  unconditional above it, and the branches between them raise rather than return.
+  Weakening: the exclusion's membership now comes from the code under test (R863).
+* **The gate's blindness to its own excluded rows, solved in the two directions the diff
+  did not choose**: the five rows reordered, and all five values replaced -- identical
+  comparable lines and a green pin in both. That is R864, and it is what makes the
+  implementer's byte-identity claim true-but-unwitnessed rather than wrong.
+* **A census of the stage set rather than a reading of the diff**, which is what found
+  R862: three hand copies remain and one of them computes the published `| total |`. Then
+  the FL2 cell on the real golden gate: a sixth timed stage, the published total 40.000 s
+  short, and the gate that asserts the sum GREEN.
+* **The fourth-provenance-key direction** of the pin, from the regex rather than from a
+  run: the key assertion can fail only by omission (R865).
+* **The 89 reds one id at a time**, with the cascade identified by its inner FAILED lists
+  and by `[baseline]` being red rather than by its names, and the two off-list state-(2)
+  names run on their own (24 passed).
+* **The bytes of the one thing I was about to get wrong.** My terminal rendered the em dash
+  in `_PROVENANCE_PATH` and in the three published provenance lines as a replacement
+  character, and I was one command from filing a mojibake finding against a published
+  deliverable. `e2 80 94` in both files. Recorded under C42.
+
+**What I did not find, and it is the larger part.** The repair does what R860's condition
+asked and the provenance is structural rather than inferred from a green: one definition in
+`floatfea/cli.py`, one import, no tuple left in the test. The deliverables are unmoved and I
+proved it against artifacts written three commits earlier rather than by reading the diff.
+The pin's new strictness cannot fail false on any admissible config. R857's figure is right
+at the third attempt and the file records all three versions, which is the behaviour BP0
+wants and is rarer than it should be. R858's replacement sentence is true in the broad form
+and not only in the two rows it names -- I checked the broad form. **All four of my findings
+are in a copy, a derivation, a witness or a sentence; not one of them is a number in a gate
+or in a deliverable at this commit.**
+
+## CI at the reviewed commit: RED, 89 reds, ALL 89 traced to EG3 state (2)
+
+```
+cmd    gh run list --commit d89566d09019dc3bb744c3ad21e859d268ca21de
+         --json conclusion,status,databaseId,workflowName
+out    [{"conclusion":"failure","databaseId":39176380750,"status":"completed",
+         "workflowName":"CI"}]
+       -- the run was IN PROGRESS when I began and I waited for it. An unfinished run is
+          not a pass and I did not record one. The judged commit had a run because it was
+          pushed first (FP1).
+cmd    gh run view 39176380750 --json jobs, read at STEP level
+out    the verification ladder : SUCCESS
+         run_rung: ladder 1  1276 collected, 0 failed, 0 errored, 0 skipped
+                   ladder 2    66 / ladder 3   314 / ladder 6   225 /
+                   ladder 4   343 / ladder 5    87      -- all OK, all 0 failed
+         -- 225 at e6a20e3 and 225 here, which is right: this commit adds no case
+       lint, unit and guards : FAILURE
+         actionlint SUCCESS / ruff SUCCESS / black --check SUCCESS / mypy SUCCESS /
+         unit tests SUCCESS (186 passed in 163.91s) /
+         guards and meta-tests FAILURE (89 failed, 1056 passed, 1 skipped, 1 warning
+                                        in 711.21s)
+       CI determinism -- leg / ten legs agree : SKIPPED (the workflow's own event gate, CK0)
+cmd    gh run view 39176380750 --log-failed, unique ids, matched against state (2)'s list
+out    57  test_every_named_site_is_touched_or_declared[R850..R861-<site>]  -> state (2)
+       17  test_the_report_carries_the_finding[R845..R861]                  -> state (2)
+        1  test_the_CI_section_is_about_the_REVIEWED_commit                 -> state (2)
+        1  test_the_Carried_table_is_what_the_generator_produces            -> state (2)
+        1  test_the_generator_would_catch_a_row_under_the_wrong_number      -> state (2)
+        1  test_the_report_carries_a_WHOLE_SUITE_count                      -> FC1
+        1  test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW                   -> FC1
+       10  test_the_guard_survives_the_state[baseline + 9]                  -> the cascade
+       --- 57 + 17 + 1 + 1 + 1 + 1 + 1 + 10 = 89 exactly, with no remainder
+cmd    the control that makes the trace a measurement rather than a classification: my own
+       89 sorted against CI's 89, both directions
+out    comm -23 (mine) (CI's)   (empty)
+       comm -13 (mine) (CI's)   (empty)
+       -- the SAME SET, id for id, on two machines and two operating systems
+cmd    the cascade identified by its own failure lines rather than by its names (EH1)
+out    each inner run reads "77 failed, 160 passed, 1 skipped" (two read 78) and names the
+       report-guard ids above; the [baseline] state is red, which is EH1's other half
+cmd    the two state-(2) names that did NOT fire, run on their own (EJ2, R835)
+out    test_the_answered_verdict_is_the_NEWEST_one and
+       test_a_carried_row_points_at_a_section_that_discusses_it  -> 24 passed in 0.29s
+cmd    the one warning, traced rather than left as a count
+out    numpy/linalg/_linalg.py:2784 RuntimeWarning: overflow encountered in dot, raised by
+       tests/verification/rung1/test_corpus_configurations.py::
+         test_the_corpus_entry_behaves_as_the_reviewer_recorded[orient_norm_overflow]
+       -- a reviewer corpus entry whose whole purpose is to overflow a norm. Designed.
+rule   CA2, which I keep in full because CLAUDE.md does not carry it -- a red CI is a HOLD
+       regardless of the local run; EG3 with EH1, EJ2 and FC1; EG3(i) -- EVERY red traces
+       by name or it is CZ1 (iv) unchanged
+judge  **all 89 trace, and the waiver applies in full: CZ0 (d) / FR1's red-test head does
+       not stand and CA2's HOLD is not reached.** The predicate, not a count (R861): every
+       red is in one of the two report-guard files, and each names a finding or a site of
+       the newest verdict or is a survives_the_state case whose inner list names those.
+       Both FC1 reds are unclearable before step 3's report exists. Every step in the lint
+       job RAN rather than being skipped behind an earlier red, which is what CZ1 (iii)
+       exists to see, and mypy is green there, so the CI-only types-PyYAML red FP1 found
+       has stayed fixed.
+```
+
+**Not CK2's exhausted-allowance state.** `runnerName` is null for all four jobs including
+the two that SUCCEEDED, so an empty runner name cannot separate the states in this
+repository and I did not use it. What separates them: both real jobs carry per-step
+conclusions, real counts and five- and fifteen-minute durations (23:24:27Z -> 23:29:11Z and
+23:24:28Z -> 23:39:46Z), and the two skipped jobs are the determinism workflow's own event
+gate (CK0) with empty step lists at a zero-second duration, which arises from a designed
+`if:` and not from an unstarted runner.
+
+## Corpus (EG4(e))
+
+**The pause held. Zero new entries. `tests/corpus/` is untouched by me and the working tree
+was clean before and after I wrote this file.** Neither exception opens: this diff touches
+no part of F4's load-mapping gate, and EB6's label-provenance gate is about buoy-centre
+labels in `tests/verification/rung4/`, not about a wall-clock table. The last corpus commit
+remains `ba1527e` (batch 47).
+
+**I ran the recorded substitute, and both halves paid again:**
+
+* **A regeneration check on a published deliverable, in both directions** -- all three R1
+  artifacts regenerated from this tree and diffed line for line (0 differing at 97 / 1286 /
+  70), then sixteen injections against the gate that guards them, plus the two mutations
+  the diff did not choose (reorder, and all five values). It produced **R863 and R864**.
+* **A continuum grid over the parameter space the decision rule guards** -- the stage-set
+  axis this time, since that is the axis the diff moved: the set's SOURCE (restated vs
+  imported), its SIZE (five, six-in-tuple-only, six-published-and-named), the value axis
+  (`0.00`, `0.01`, `999.99`, `1234.00`, `4521.30`), the position axis (inside the table,
+  elsewhere in the report, in a CSV), and the order axis. It produced **R862**, from the
+  one point on the source axis nobody swept: the copies that are not the gate's.
+
+**This is the seventh consecutive round in which the regeneration check's weakening
+direction produced the round's findings.**
+
+## Tolerances touched
+
+**None.** No value, no form, no counter, no injection -- and I treated the EXCLUSION as a
+tolerance under another name and ran EU1's adversarial case anyway.
+
+```
+cmd    git diff 948b36a..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff 948b36a..HEAD | grep "^+" |
+       grep -nE "isclose|abs_tol|rel_tol|approx|atol|rtol|_COUNTER|tolerance|slack|epsilon"
+out    "tolerance because the rows are two-decimal, and that is a threshold this gate has
+        no business introducing."   -- an unchanged line moved by context, recording a
+        DECLINED threshold. No value is introduced.
+claim  the one thing in this diff that functions as a tolerance under another name is the
+       EXCLUSION, and its FORM moved even though no value did
+cmd    the form, before and after
+out    before: a tuple DECLARED in the test file
+       after:  the same five names IMPORTED from the code under test
+rule   CLAUDE.md section Tolerances, its clause on anything that functions as a tolerance
+       under another name; EU1 -- an interim check whose diff moves a value or a declared
+       counter includes the adversarial case, the model run at a configuration the diff did
+       not choose
+judge  **EU1 does not attach by its own words** -- no value and no declared counter moves --
+       **and I ran it anyway, because R694's lesson is that a value which does not move is
+       the worst case and not the safest.** The configuration the diff did not choose is a
+       sixth stage published and named, and it is R863: eleven of eleven green with a
+       published value 4521.30 away from the fresh one. The diff's own cell chose the
+       tuple-only case, which reddens. **A form change with no value change is exactly the
+       shape EU1 was earned on**, and it is why I ran the model at three stage-set sizes
+       rather than reading the grep.
+```
+
+## Next step opens when
+
+**This is an interim check, so it closes nothing and opens nothing (ES0, FK1 -- no `Closes:`
+line, deliberately).** Step 3 remains open with all three reviewed revisions available.
+Nothing blocks, so FR3's instruction stands and it is the only thing that matters this
+week: **build the rest of FL2.**
+
+1. **FL2, complete, before step 3's first reviewed revision (FR3).** Five items, none
+   built: member topology from the config with the star as the default; `required_section`
+   and `truss_sizing` in `floatfea run` with FM0's re-solve loop; the optional analyses off
+   by default; headings as a list with the BEM refusal; the band check per case with
+   out-of-band cases unable to govern. **This is the third commit of step 3 and all three
+   have been spent on gate items the plan routes to the ledger.** I am recording the
+   arithmetic and not a fault: FR0's date is 5 November, eighteen days out, five items.
+2. **R862 IN THE COMMIT THAT ADDS A TIMED STAGE, not after it.** It is the one of my four
+   that becomes a wrong number in a published deliverable, and `truss_sizing` with a
+   re-solve loop is the thing that adds the stage. One derivation at
+   `floatfea/run/pipeline.py:673`, and the two literals in
+   `tests/regression/test_r1_example_golden.py` with it.
+3. **R849 with R854, over TWO files, still answered WHILE step 3 is built**, and R862 makes
+   it three places where the same set is restated. Two new deliverables are coming.
+4. **R863, R864, R865 in the first reviewed revision**, each with its figure regenerated at
+   that commit (CP3). R847, R848 unchanged; R850 is half paid and R851, R853, R857, R858
+   are paid; R859 is paid at two of its three sites.
+5. **R852 and R856 remain with Xabier**, relayed correctly this turn, and R835's tenth
+   measurement with them. Neither R852 nor R856 is the implementer's to repair in code.
+6. **R855 is withdrawn for interim commits, with the condition in its own section.** The
+   whole-suite number at a reviewed commit is mine to produce, and I have produced it at
+   all three commits of this step. A commit that has not measured it says so.
+7. **The push (FP1) continued.** It gave this round a completed run at the judged commit, 89
+   reds identical to mine id for id on a different operating system, and all six ladder
+   rungs green with rung 6 at the same 225 collected as before -- which is the right
+   number for a commit that adds no case.
+8. **The schedule.** FR0's 5 November stands and nothing has slipped against it yet. Step 3
+   opened on 18 October; three commits in, FL2 is unbuilt by design under FR3. I am not
+   re-opening the escalation FR0 answered. **The next progress statement is step 3's first
+   reviewed revision (FR5), and the sequencing answer above says that revision may arrive
+   on as many commits as the work has shapes, in one turn.**
+
+**What this commit got right, and it is much the larger part.** It took R860 before FL2
+rather than after, which was the whole reason the previous verdict named it, and it took it
+in the form that removes a copy rather than the form that adds an assertion -- one
+definition, one import, no tuple left in the test. It corrected a figure that had been wrong
+twice and **recorded both wrong versions and why each was wrong**, which is what BP0 asks
+for and what nothing in this repository would otherwise do. It replaced a false sentence
+about the wall clock with a true one, and the true one is true in the broad form I tested
+and not only in the two rows it cites. It corrected its own mechanism sentence to the
+assertion that actually fires. **And it asked me to check the one thing it least wanted to
+have got wrong, which is how two of my four findings exist**: the byte-identity claim is
+true, its witness is blind, and the copy that decides the published number was never in the
+diff.
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Hand-appended in the form
+     scripts/write_verdict.py uses, under DX2: each round is added and no prior
+     round is rewritten or removed. The tool refused this step (R856). -->
+
+# Review — R1 step 3
 Reviewed commit: e6a20e330fa1afc91fdc32b3d4eb3292f45898a2
 **Reviewed commit: `e6a20e330fa1afc91fdc32b3d4eb3292f45898a2`.**
 Verdict: PASS
