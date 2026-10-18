@@ -51,17 +51,36 @@ NAMES = ("report.md", "member_forces.csv", "utilisation.csv")
 # SEPARATELY. An excluded line is a line nothing checks unless something else checks it.
 #
 # (1) THE WALL CLOCK. FL1(d) asks for the run time, so the report carries a
-#     `| stage | seconds |` table whose three rows cannot agree between two runs. Measured
-#     across three machine states: total 65.97, 97.27 and 126.26 s.
-_TIMING_ROW = re.compile(r"^\|\s*(build|solve|total)\s*\|\s*[0-9.]+\s*\|\s*$")
+#     `| stage | seconds |` table whose rows cannot agree between two runs. Measured across
+#     three machine states: total 65.97, 97.27 and 126.26 s.
+#
+#     **FIVE STAGES, NOT THREE (R850), AND THE FIRST VERSION OF THIS GATE FAILED FALSE.**
+#     `floatfea/cli.py:297` writes `build`, `load`, `solve`, `code_check`, `total`. Naming
+#     only three left `| load |` and `| code_check |` INSIDE the byte comparison, and both
+#     are sub-10-ms stages printed at two decimals: the row flips between `0.00` and `0.01`
+#     at 5 ms, against a load stage measured at 1.6 ms cold and 0.7 ms warm -- a 3.1x
+#     margin. So the gate was machine-dependent and would have reddened on a faster or
+#     slower box with nothing wrong. EK2: a guard that fails false is fixed.
+#
+#     The repair is to name the whole set, NOT to compare the numbers with slack. The
+#     obvious alternative -- assert `total` equals the sum of the stages -- needs 0.02 of
+#     tolerance because the rows are two-decimal, and that is a threshold this gate has no
+#     business introducing. The reviewer proposed it against itself and withdrew it; I am
+#     recording that so the next reader does not re-propose it.
+_TIMING_STAGES = ("build", "load", "solve", "code_check", "total")
+_TIMING_ROW = re.compile(r"^\|\s*(" + "|".join(_TIMING_STAGES) + r")\s*\|\s*[0-9.]+\s*\|\s*$")
 
 # (2) THE PROVENANCE PATHS, which the first run of this gate found rather than assumed. The
 #     fixture writes its configuration to a temporary directory with ABSOLUTE deck and npz
 #     paths, because a configuration's relative paths resolve against its own directory. So
 #     three provenance lines name this machine's paths where the shipped ones name
 #     repository-relative paths. Those three lines and the timing rows were the ONLY
-#     differences across all three files: 102, 1289 and 73 comparable lines agreed
+#     differences across all three files: **99, 1286 and 70 COMPARABLE lines** agree
 #     otherwise, which is the measurement that says the numbers are reproduced.
+#
+#     (R853: those three figures read 102, 1289 and 73 when this file was written, which
+#     are the TOTAL line counts -- the exclusions were never subtracted. The substantive
+#     claim was true and the numbers were not the ones the test compares.)
 #
 #     Their CONTENT is compared by `test_R845_the_PROVENANCE_values_agree_by_BASENAME`.
 _PROVENANCE_PATH = re.compile(
@@ -100,6 +119,23 @@ def _excluded(line: str) -> bool:
 
 def _lines(text: str) -> list[str]:
     return [ln.rstrip("\r") for ln in text.splitlines() if not _excluded(ln.rstrip("\r"))]
+
+
+def _provenance_lines(text: str) -> list[tuple[str, str]]:
+    """Every excluded provenance line, IN ORDER and with duplicates kept (R851).
+
+    **`_provenance` returns a dict, so a second contradictory `# deck:` line collapsed into
+    the first and vanished.** A deliverable carrying two different deck lines is a
+    deliverable that contradicts itself about which deck produced its numbers, and the
+    excluded set is exactly where such a line would hide. This keeps them so
+    `test_R845_each_PROVENANCE_key_appears_EXACTLY_ONCE` can count them.
+    """
+    out: list[tuple[str, str]] = []
+    for raw in text.splitlines():
+        m = _PROVENANCE_PATH.match(raw.rstrip("\r"))
+        if m:
+            out.append((m.group(1), m.group(2).replace("\\", "/").rsplit("/", 1)[-1]))
+    return out
 
 
 def _provenance(text: str) -> dict[str, str]:
@@ -172,9 +208,36 @@ def test_R845_the_EXCLUSION_is_exactly_the_DECLARED_lines(
         stages = sorted(
             m.group(1) for ln in text.splitlines() if (m := _TIMING_ROW.match(ln.rstrip("\r")))
         )
-        assert stages == ["build", "solve", "total"], (label, stages)
+        # ALL FIVE STAGES `cli.py` WRITES (R850), so a sixth reddens here rather than
+        # being absorbed, and so `load` and `code_check` stop sitting inside the byte
+        # comparison where their two-decimal rows flip between machines.
+        assert stages == sorted(_TIMING_STAGES), (label, stages)
         keys = sorted(_provenance(text))
         assert keys == ["config", "deck", "load_cases"], (label, keys)
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_R845_each_PROVENANCE_key_appears_EXACTLY_ONCE(
+    name: str, regenerated: dict[str, str]
+) -> None:
+    """A second, contradictory provenance line cannot hide in the excluded set (R851).
+
+    `_provenance` returns a dict, so a duplicate `# deck:` line collapsed into the first
+    and was invisible -- and the key-set pin above reads `report.md` alone, so the two CSVs
+    had no check of this kind at all. **A deliverable carrying two different deck lines
+    contradicts itself about which deck produced its numbers**, and the excluded set is
+    exactly where such a line would sit.
+    """
+    for label, text in (
+        ("shipped", (PUBLISHED / name).read_text(encoding="utf-8")),
+        ("fresh", regenerated[name]),
+    ):
+        seen = [k for k, _v in _provenance_lines(text)]
+        assert sorted(seen) == ["config", "deck", "load_cases"], (
+            f"{label} {name} carries provenance keys {sorted(seen)}; each of `config`, "
+            f"`deck` and `load_cases` appears exactly once in a file that is not "
+            f"contradicting itself."
+        )
 
 
 @pytest.mark.parametrize("name", NAMES)
