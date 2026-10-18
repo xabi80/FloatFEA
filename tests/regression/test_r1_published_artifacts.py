@@ -103,6 +103,18 @@ def test_R838_FO2s_NINE_caveats_are_still_NINE() -> None:
     rather than a stress (R740). A published CSV missing one of those is a published number
     a reader takes with the wrong sign or the wrong meaning.
     """
+    # **NINE DISTINCT, NON-BLANK (R846).** `len(...) == 9` is green when a caveat is a
+    # DUPLICATE of another (`len 9, distinct 8`) and when one is the empty string, and the
+    # per-caveat membership test is green on an empty needle too because `"" in text`
+    # cannot fail. Each of those publishes artifacts missing a caveat while this gate
+    # certifies nine of nine. Measured at `46 passed, 0 failed` for all three injections
+    # before this line.
+    assert len({c.strip() for c in TABLE_CAVEATS if c.strip()}) == 9, (
+        f"FO2 requires NINE DISTINCT, non-blank caveats. `TABLE_CAVEATS` has "
+        f"{len(TABLE_CAVEATS)} entries and "
+        f"{len({c.strip() for c in TABLE_CAVEATS if c.strip()})} distinct non-blank ones, "
+        f"so a duplicate or an emptied caveat is publishing in place of a real one."
+    )
     assert len(TABLE_CAVEATS) == 9, (  # not-a-tolerance: FO2's own count
         f"FO2 requires NINE caveats and `floatfea.cli.TABLE_CAVEATS` has "
         f"{len(TABLE_CAVEATS)}. If a caveat was deliberately retired, FO2 is what changes "
@@ -123,6 +135,8 @@ def test_R838_the_SCREEN_DISCLAIMER_reaches_every_artifact(path: Path) -> None:
     the published files carry. It is checked here the same way the caveats are, against the
     committed artifacts and comma-normalised for the CSV writer.
     """
+    # AN EMPTY DISCLAIMER CANNOT FAIL EITHER (R846). `LABEL = ""` gave 46 passed.
+    assert LABEL.strip(), "LABEL is blank, so the disclaimer check below is vacuous"
     text = _normalised(path.read_text(encoding="utf-8", errors="replace"))
     assert _normalised(LABEL) in text, (
         f"{path.name} does not carry the screen disclaimer VERBATIM. It is the one "
@@ -153,6 +167,8 @@ def test_every_caveat_reaches_EVERY_published_artifact(path: Path, index: int) -
     alone, and this reddens on three cases rather than staying green on 33.
     """
     caveat = TABLE_CAVEATS[index]
+    # AN EMPTY NEEDLE CANNOT FAIL (R846): `"" in text` is True for every file.
+    assert caveat.strip(), f"caveat {index} is blank, so its membership check is vacuous"
     text = _normalised(path.read_text(encoding="utf-8", errors="replace"))
     assert _normalised(caveat) in text, (
         f"{path.name} does not carry caveat {index} VERBATIM. A caveat reworded in "
