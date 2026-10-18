@@ -41,14 +41,29 @@ from typing import Any
 import pytest
 import yaml
 
+# **IMPORTED, NOT RESTATED (R860).** See the note at `_TIMING_ROW` below.
+from floatfea.cli import WALL_TIME_STAGES as _TIMING_STAGES
+
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE = ROOT / "examples" / "platform12_placeholder.yaml"
 PUBLISHED = ROOT / "results" / "R1" / "example"
 
 NAMES = ("report.md", "member_forces.csv", "utilisation.csv")
 
-# TWO DECLARED CLASSES OF LINE ARE EXCLUDED FROM THE BYTE COMPARISON, AND BOTH ARE CHECKED
-# SEPARATELY. An excluded line is a line nothing checks unless something else checks it.
+# TWO DECLARED CLASSES OF LINE ARE EXCLUDED FROM THE BYTE COMPARISON.
+#
+# **THE PROVENANCE CLASS IS CHECKED ELSEWHERE; THE WALL CLOCK IS NOT, AND SAYING SO IS THE
+# POINT (R858).** An earlier version of this comment claimed both were "checked
+# separately". The provenance values are compared by basename and counted per key. **No
+# test in this repository reads a published wall-clock VALUE** -- `| load |` and
+# `| code_check |` set to `999.99` are green on every case here. What IS checked is the
+# SHAPE of that table: exactly the five declared stages, each exactly once, in both the
+# shipped and the fresh report, so a stage appearing, vanishing or duplicating reddens.
+#
+# That is deliberate and it is the honest limit of this gate: a wall clock cannot be
+# compared between two runs without a threshold, and FL1(d) asks for the figure to be
+# published anyway. The number is published and unverified, and the deliverable itself is
+# where a reader should be told so -- which is C36 on the R1 ledger, not this file.
 #
 # (1) THE WALL CLOCK. FL1(d) asks for the run time, so the report carries a
 #     `| stage | seconds |` table whose rows cannot agree between two runs. Measured across
@@ -67,7 +82,13 @@ NAMES = ("report.md", "member_forces.csv", "utilisation.csv")
 #     tolerance because the rows are two-decimal, and that is a threshold this gate has no
 #     business introducing. The reviewer proposed it against itself and withdrew it; I am
 #     recording that so the next reader does not re-propose it.
-_TIMING_STAGES = ("build", "load", "solve", "code_check", "total")
+# **THE STAGE SET IS IMPORTED, NOT RESTATED (R860).** A hand copy of this tuple is what
+# R850 was: the literal lived in `floatfea/cli.py` and this file named three of its five
+# stages. Writing five names here would have removed the drift between the regex and the
+# pin and LEFT the drift that caused it -- nothing compared the test's list against the
+# writer's. FL2 is what makes that live, because a `truss_sizing` re-solve loop that times
+# itself publishes a sixth sub-10-ms two-decimal row and a hand copy cannot know.
+
 _TIMING_ROW = re.compile(r"^\|\s*(" + "|".join(_TIMING_STAGES) + r")\s*\|\s*[0-9.]+\s*\|\s*$")
 
 # (2) THE PROVENANCE PATHS, which the first run of this gate found rather than assumed. The
@@ -75,12 +96,17 @@ _TIMING_ROW = re.compile(r"^\|\s*(" + "|".join(_TIMING_STAGES) + r")\s*\|\s*[0-9
 #     paths, because a configuration's relative paths resolve against its own directory. So
 #     three provenance lines name this machine's paths where the shipped ones name
 #     repository-relative paths. Those three lines and the timing rows were the ONLY
-#     differences across all three files: **99, 1286 and 70 COMPARABLE lines** agree
+#     differences across all three files: **97, 1286 and 70 COMPARABLE lines** agree
 #     otherwise, which is the measurement that says the numbers are reproduced.
 #
-#     (R853: those three figures read 102, 1289 and 73 when this file was written, which
-#     are the TOTAL line counts -- the exclusions were never subtracted. The substantive
-#     claim was true and the numbers were not the ones the test compares.)
+#     THAT FIGURE HAS NOW BEEN WRONG TWICE AND IS WORTH THE THREE LINES (R853, R857).
+#     It read 102/1289/73 first -- the TOTAL counts, with no exclusion subtracted. It was
+#     corrected to 99/1286/70, which was measured against the THREE-stage rule that the
+#     same commit replaced with five (BP0: when the rule moves, the figure citing it is
+#     regenerated in that commit, and it was not). The report excludes eight lines, five
+#     timing and three provenance, so 105 - 8 = 97; the CSVs carry no timing row, so
+#     1289 - 3 and 73 - 3 are unchanged. The test's own failure message prints the count,
+#     which is the only copy of it that cannot go stale.
 #
 #     Their CONTENT is compared by `test_R845_the_PROVENANCE_values_agree_by_BASENAME`.
 _PROVENANCE_PATH = re.compile(
@@ -208,9 +234,15 @@ def test_R845_the_EXCLUSION_is_exactly_the_DECLARED_lines(
         stages = sorted(
             m.group(1) for ln in text.splitlines() if (m := _TIMING_ROW.match(ln.rstrip("\r")))
         )
-        # ALL FIVE STAGES `cli.py` WRITES (R850), so a sixth reddens here rather than
-        # being absorbed, and so `load` and `code_check` stop sitting inside the byte
-        # comparison where their two-decimal rows flip between machines.
+        # ALL FIVE STAGES `cli.py` WRITES (R850), imported rather than restated, so
+        # `load` and `code_check` stop sitting inside the byte comparison where their
+        # two-decimal rows flip between machines.
+        #
+        # **WHAT THIS PIN ACTUALLY BOUNDS, MEASURED RATHER THAN CLAIMED (R859).** A
+        # SIXTH, unrecognised row reddens the BYTE COMPARISON, not this assertion -- the
+        # regex does not match it, so it is simply compared and differs. This pin catches
+        # the cases the comparison cannot see: a DUPLICATE `| total |`, and a MISSING
+        # stage. The earlier comment here said a sixth row reddened the pin; it does not.
         assert stages == sorted(_TIMING_STAGES), (label, stages)
         keys = sorted(_provenance(text))
         assert keys == ["config", "deck", "load_cases"], (label, keys)

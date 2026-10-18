@@ -18,7 +18,7 @@ import argparse
 import csv
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 from floatfea.post.forces_table import _stresses
 from floatfea.post.member_forces import COMPONENTS
@@ -33,6 +33,29 @@ LABEL = (
     "declared configuration. The section is a stiffness stand-in for a truss of "
     "undecided depth (docs/milestones/F1.md:389-390)."
 )
+
+WALL_TIME_STAGES: Final[tuple[str, ...]] = (
+    "build",
+    "load",
+    "solve",
+    "code_check",
+    "total",
+)
+"""The stages the published report's `| stage | seconds |` table carries, in order.
+
+**A MODULE CONSTANT BECAUSE A HAND COPY OF IT DRIFTED ONCE ALREADY (R860).** This was a
+literal inside `_write_report`, and the gate that excludes these rows from its byte
+comparison -- `tests/regression/test_r1_example_regenerates.py` -- carried its own copy
+naming three of the five. `| load |` and `| code_check |` then sat inside the comparison
+as sub-10-ms values printed at two decimals, so the row flipped between `0.00` and `0.01`
+at 5 ms and the gate was machine-dependent (R850).
+
+Repairing that by writing five names in the test would have left the drift that caused it:
+these rows are WALL CLOCKS, so a sixth stage must be excluded the moment it is published,
+and the test cannot know. **FL2 is what makes that live** -- a `truss_sizing` re-solve loop
+that times itself adds exactly such a row -- so the tuple is exported and the gate imports
+it rather than restating it.
+"""
 
 STUDY_LABEL = "STUDY -- NOT FOR DESIGN. "
 """FN1. Prefixed to every label and header when `study_only` is set.
@@ -294,7 +317,7 @@ def _write_report(path: Path, result: RunResult) -> None:
         )
 
     lines += ["", "## Wall time", "", "| stage | seconds |", "|---|---|"]
-    for stage in ("build", "load", "solve", "code_check", "total"):
+    for stage in WALL_TIME_STAGES:
         if stage in result.timings:
             lines.append(f"| {stage} | {result.timings[stage]:.2f} |")
 
