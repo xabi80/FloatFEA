@@ -1,4 +1,495 @@
 # Review — R1 step 2
+Reviewed commit: 8542d79e8919401b26558a89d1d9de46ccb8d7ad
+**Reviewed commit: `8542d79e8919401b26558a89d1d9de46ccb8d7ad`.**
+Closes: R1/step-2
+Verdict: PASS
+Tests: 3684 passed, 9 failed, 1 skipped   (my own run, at the reviewed commit, tree clean)
+Scope: **REVISION 3 of 3 -- the step closes here.** ES0's cap is reached and FR2 names this
+revision as the one it closes at. **PASS means the step closes, not that nothing is open:**
+two findings below BLOCK under FR1 and carry BY NAME into step 3's `Carried` section, where
+they stay blocking (`CLAUDE.md` section Step gating, the cap's own carry rule; the same
+disposition step 1 closed under at `2042c56`).
+
+**I RULED UNDER FR1 WITH EZ0, AND I STATE THE SILENTLY WRONG RESULT FOR EACH BLOCKING
+FINDING.** `docs/directives/FR.md` is committed verbatim at `749aa1d` before any of it was
+acted on (FP0), `321e9e2` is standalone and touches CLAUDE.md only, and `5e894bc` is the
+plan re-lock. I checked that order rather than taking it:
+
+```
+cmd    git show --name-only --format="" 321e9e2 / 5e894bc / 749aa1d
+out    321e9e2  CLAUDE.md                              -- standalone process:, cites FR1
+       5e894bc  docs/milestones/R1.md                  -- standalone plan:, cites FR0
+       749aa1d  docs/directives/FR.md, README.md       -- the record, first
+cmd    git diff --stat a7b2f62..HEAD -- .claude docs/SUPERVISOR.md
+out    (empty)                                         -- no STOP-class finding
+cmd    git diff a7b2f62..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py                               -- a file, as my instructions say
+cmd    git diff a7b2f62..HEAD -- floatfea/tolerances.py
+out    (empty)
+```
+
+**STEP 1b: the header names the LATEST verdict.** The newest revision reads
+`Answers: verdict 8 @ a7b2f62` and verdict 8 is the newest verdict in
+`docs/reviews/R1/step-2.md`. One comparison, and it holds.
+`test_the_answered_verdict_is_the_NEWEST_one` is green in my run, which says the same thing
+mechanically.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R841** (the ninth red was this commit's own generator change) | **ANSWERED, and I reproduced the clearing rather than reading it** | the generator's output is in the report VERBATIM: 27 lines, and the block is a byte-for-byte substring of `docs/reports/R1/step-2.md`. 23 rows, **0 with a cell count other than 3** under an escape-aware splitter; the naive splitter still shows the same four rows the escape protects (R819, R825, R826, R828). `test_the_Carried_table_is_what_the_generator_produces` is **green** in my run. The condition asked for the regeneration in this commit and the ninth red traced by ablation; both shipped. Closed. |
+| **R838** (R831's needle solved in one direction only) | **ANSWERED IN THE DIRECTION THE CONDITION NAMED, AND STILL OPEN ONE INJECTION UP -- see R846** | both halves reproduce under my own mutation, in an archive copy at HEAD: baseline **46 passed**; one element cut from `TABLE_CAVEATS` gives **1 failed, 42 passed** (the count test, by id); `LABEL` reworded by one word gives **3 failed, 43 passed** (one case per artifact); restore gives 46. The two needles do redden. What they do not catch is a deletion that keeps the length, or an emptied string on either side: **R846**, measured. |
+| **R838's "would close it"** (a regeneration comparison for the three R1 artifacts) | **NOT BUILT -- R845, and it is the blocking one** | verdicts 7 and 8 both named this as the repair that closes all three open directions at once. The two narrower needles shipped instead, and the consequence is measured in R845: three published deliverables whose NUMBERS nothing in the tree compares against anything. |
+| **R842** (the census needle, third round) | **LEDGERED, AND THE CLASSIFICATION IS CORRECT -- I looked for the code finding behind it rather than taking the word** | the report retires the grep as evidence instead of publishing a corrected count beside a corrected grep, which is FR1's second non-blocking class. I did not accept it on trust: my own grid this round is **84 cases** (12 declared numeric leaves x 7 YAML shapes) with **82 refused and 2 loaded, both legitimate** (the two optional sensitivities, documented to take None), plus **33 string, list and key cases**, plus the two downstream completeness refusals, which fire with the body named and no default. **Zero coercions, zero non-ConfigError exceptions.** No code finding is hiding behind the needle. |
+| **R839** (the eight reds have one cause, section 7 stated two) | **LEDGERED and corrected anyway in section 5** | the correction is right: at this commit all nine reds reduce to the FC1 pair, and I traced them individually (below). Report prose, FR1's third class. |
+| **R843** (an empty outputs.directory resolved into the tracked examples directory) | **ANSWERED at the site, and the new check's own weakening direction is open -- R848** | the loader now refuses all four blank forms by name, and a named relative path still loads. I re-ran the whole string direction: **a single dot, a dot-slash, a double dot and a spaced dot all still load and still resolve to the config's own directory or its parent**, which is the outcome R843 is about. Non-blocking, same class as R843 itself. |
+| **R844** (three of its five siblings) | **ANSWERED at both source-tree sites** | both files now say five of five and name them; `yaml.safe_load` of the shipped example gives 5 declared siblings, 5 bools. |
+| **R837** (the str() coercion at a fourth declared string) | **answered at `d205833`, verified at verdict 8, unchanged here** | the three `_require_string` sites are intact in this tree; the fixture's new `and value.strip()` condition diverges on **exactly three cases in 57** -- the three new blank rows -- and on nothing else, which I measured by instrumenting the fixture rather than reading it. Nothing in that file is made vacuous. |
+| **R835** (EG3's enumeration) | **still open, still Xabier's; this commit is its seventh measurement** | of state (2)'s enumerated names, **two fire and the rest are green**, and the two that fire do so for FC1's reason. The enumeration over-lists here as it under-listed at EH1 and FN2. Not a round's work; the proposal is relayed unchanged. |
+| **R836** | **recorded, no change in this diff** | unchanged from verdict 7. |
+| **C29, C34, C35** | **done, re-measured by me** | `ruff check floatfea tests scripts` -> All checks passed; `black --check floatfea tests scripts` -> 147 files would be left unchanged; `mypy floatfea scripts/f4_dynamic_residual.py` -> Success, 43 source files. Green in CI at this commit too, with every one of those steps RUN rather than skipped. |
+| **C38, C40, C41** | **done** | C40's docstring now names what the file checks and what it does not, and the "asserted at the generator" citation resolves in `tests/unit/test_run_pipeline_refusals.py`. One narrowing is itself one step wide -- the provenance KEY SET is checked against all three files, so "not checked against these three files" is true of the provenance VALUES only. Ledger (C44). |
+| **C26, C27, C28, C30, C31, C32, C33, C36, C37, C39** | **carry to the closure artifact as a list** | not re-reviewed item by item, per CZ0. The pointer file agrees with the report's own command. |
+| **C42** (U+FFFD in historical verdict headers) | **mine, accepted** | FR2 assigns it to me. Not repaired in this verdict: the characters are in rounds already on the page, and `write_verdict.py` already decodes a legacy file and writes UTF-8 back, so the file is repaired by the rounds that touch it. Carried to R1's closure as mine. |
+| `scripts/suite_count.py`'s own line + CZ1 (ii)/(iii)'s four outputs | **still owed, correctly, in the follow-on commit** | FC1: a line naming a sha cannot be inside that sha. Ruled three times now; not a finding. |
+| **EG3(ii): the verdict commit measured** | **DONE, and it is in the report** | 8, 9 and 9 reds at the three verdict commits. A new verdict landing cleared nothing, which is the second independent argument that none of the nine is verdict-dependent in state (1)'s sense. A third: `test_the_guard_reads_the_step_being_worked_on` is **green** at this commit, in my run. |
+
+## Findings
+
+**TWO BLOCK UNDER FR1 AND BOTH ARE THE SAME SPECIES: a published deliverable guarded by a
+needle over what the CODE says, with nothing comparing the FILES against what the code
+produces.** Neither is in the engineering path and neither is new work: one is the repair
+verdicts 7 and 8 both named and this revision replaced with two narrower ones, and the other
+is the next injection up on the needles that shipped.
+
+**R845. (BLOCKS -- FR1, a wrong number in a CSV and in a published report; EZ0, anything
+under `results/`) NOT ONE NUMBER IN THE THREE PUBLISHED R1 DELIVERABLES IS COMPARED AGAINST
+ANYTHING. I published a utilisation 10x low, an axial force 10x high and a governing U edited
+from 1.71167 to 0.99999 -- over unity to under unity -- and the suite gave 400 passed, 0
+failed, including the 67-second golden run.**
+
+```
+claim  the three artifacts under results/R1/example/ carry no numeric gate, measured by
+       injection rather than by reading the test file
+cell   an archive copy at HEAD, code untouched, three committed artifacts edited:
+         utilisation.csv    the governing row's `utilisation` 0.711606 -> 0.0711606
+         member_forces.csv  the first row's N 4.992194e+06 -> 4.992194e+07
+         report.md          `**U = 1.71167` -> `**U = 0.99999`
+cmd    python -m pytest -q --tb=no -rf tests/regression/ tests/unit/
+out    400 passed, 1 warning in 186.22s          -- ZERO failures
+cmd    grep -rln "member_forces.csv|utilisation.csv|report.md" --include=*.py tests
+out    test_f6_deliverable_agrees_with_itself.py   (results/F6/, not these)
+       test_r1_example_golden.py                   (docs/F4_*.csv, docs/F6_*.csv)
+       test_r1_published_artifacts.py              (these three -- form only)
+       tests/unit/test_run_config.py               (the path, not the content)
+cmd    the one test file that reads these three, enumerated by assertion
+out    existence and non-emptiness; the nine caveats VERBATIM; LABEL verbatim; the
+       provenance KEY SET present in the CSV headers; the rows parse; no doubled body
+       prefix; section headings and body rows present; the strings 11433, heading,
+       `0.0 deg`, 24.2, K_sensitivity, Cm_sensitivity, `D/t <= 300`.
+       **Every one is a constant or a string. No value is compared with a computed value.**
+rule   FR1 -- a finding blocks if it can cause a wrong number in a CSV, a report or any
+       published deliverable; EZ0 -- anything under `results/` is one; and the F6 analogue's
+       own docstring at tests/regression/test_f6_deliverable_agrees_with_itself.py:305 --
+       "The tests either side of this one both hold on a deliverable generated from an older
+       tree and never refreshed."
+cell   the mitigating half, measured and not assumed: all three regenerated from this tree
+       (`python -m floatfea.cli run examples/platform12_placeholder.yaml`, 71 s) and diffed
+       whole-file against the committed ones
+out    member_forces.csv   0 diff lines
+       utilisation.csv     0 diff lines
+       report.md          12 diff lines, ALL of them the three wall-clock cells
+       governing U = 1.71167 at platform:hub4_arm ROOT (T = 12.5 s, 3.3.2 interaction)
+judge  **the artifacts are correct TODAY and nothing in the tree would say so if they were
+       not.** That is the state R831 already occurred in, one object over: the files were
+       stale against cli.py and 33 of 33 cases were green, because the needle matched both
+       sides of the change. R831's repair moved the needle onto the caveat TEXT and left the
+       NUMBERS -- the thing the caveats are about -- with no comparison at all.
+       The silently wrong result, stated as FR1 requires: **a published report whose
+       governing line reads under unity while the tool computes 1.71, and a published CSV
+       whose utilisation column is wrong by a decade, with every gate green.** A reader sizes
+       steel against that column; the caveats exist precisely so it is read correctly.
+       **It is not new apparatus and it is not expensive.** The shape exists at
+       test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree; verdict 7 named
+       it; test_r1_example_golden.py already pays the run. And I measured that the comparison
+       PASSES today with the timing rows excluded, so it does not arrive red: 12 diff lines,
+       all three of them timing cells.
+       **Why it blocks rather than being ledgered, under the report's own reasoning.** The
+       report's R838 paragraph blocks because "the NEXT floatfea run would publish artifacts
+       carrying eight caveats and this gate would be green" -- a future wrong result, from a
+       missing comparison, on a published file. That is this finding, in the quantity rather
+       than in the sentence about the quantity.
+```
+
+**Closed when** a test compares the three committed artifacts against a fresh run of this
+tree, whole-file, with the wall-clock rows excluded by name rather than by tolerance -- the
+shape test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree already has -- and
+the report pastes both directions: the comparison green on the committed files, and red on an
+injected digit in each of the three (one cell per file is enough, and the three I used are in
+the cell above). **Or** the report states that the three deliverables are deliberately
+published with no numeric gate, with the command showing what else would catch a wrong digit.
+Nothing is reverted by this: it adds a comparison, it does not change a needle.
+
+**R846. (BLOCKS -- FR1, the same wrong result R838 names, through the door the count cannot
+see) THE R838 REPAIR IS GREEN ON THREE INJECTIONS ONE STEP ABOVE THE ONE IT WAS BUILT FOR.
+`len(TABLE_CAVEATS) == 9` closes "an element is cut". It does not close "an element is
+replaced by a duplicate", "an element is emptied", or "LABEL is emptied" -- and each of those
+publishes artifacts missing the caveat or the disclaimer, with all 46 cases green.**
+
+```
+claim  the repaired gate's boundary, solved in the direction that WEAKENS it (EH4): the
+       injection RISES until a clean case trips, not just the one case the condition named
+cell   an archive copy at HEAD, the three artifacts untouched, one edit to cli.py each time
+cmd    python -m pytest -q --tb=no -rf tests/regression/test_r1_published_artifacts.py
+out    baseline                                               46 passed
+       R743's caveat CUT                  len 8               1 failed, 42 passed  (built for)
+       LABEL reworded by one word                             3 failed, 43 passed  (built for)
+       R743's caveat replaced by a DUPLICATE of R739's
+                                          len 9, distinct 8   46 passed, 0 failed  <-- GREEN
+       R743's caveat replaced by ""       len 9, one empty    46 passed, 0 failed  <-- GREEN
+       LABEL = ""                                             46 passed, 0 failed  <-- GREEN
+       restored                                               46 passed
+rule   my own recorded guard -- a gate carries its own failure, and `needle in text` with an
+       empty needle cannot fail; EH4 -- the injection rises until a clean case trips;
+       FO2 (docs/directives/FO.md:20) -- nine caveats in all three artifacts
+judge  **all three green rows produce the published outcome R838 is about.** In the duplicate
+       row the generator holds nine entries and eight distinct sentences, so the next
+       `floatfea run` writes artifacts from which R743's caveat -- the one saying a larger
+       C_m RAISES the compression utilisation, the caveat that delegates the C_m direction to
+       a published sensitivity column -- is absent, and the count test and all 27 membership
+       cases stay green. In the two empty rows the assertion is `"" in text`, true of every
+       file that exists.
+       The silently wrong result: **a published utilisation column whose C_m direction, or
+       whose "this is not a code case" disclaimer, is missing from the file while the gate
+       certifies nine of nine.** It is the sentence the report itself writes for R838; the
+       repair closed one door of four.
+       **This is EH4's whole content and it is one line.** The count becomes a statement
+       about nine DISTINCT non-blank caveats, and LABEL is asserted non-blank beside it. No
+       new file, no new test, no new apparatus.
+```
+
+**Closed when** the count test asserts nine distinct, non-blank caveats and a non-blank
+LABEL, and the report pastes the four injections above against the repaired gate: the two it
+already reddens on, plus the duplicate and the emptied needle, each going red by id and each
+restoring.
+
+**R847. (DOES NOT BLOCK -- ledgered, FR1's third class) SECTION 3's "0 OF 49 ROWS" DOES NOT
+REPRODUCE. The generator emits 23 rows, 0 malformed; section 6 of the same report says
+twenty-three.**
+
+```
+claim  the row count the R841 repair is measured by
+cmd    python scripts/carried_table.py docs/reviews/R1/step-2.md
+             docs/reports/R1/step-2-answers.json | grep -c "^| R"
+out    23
+cmd    the same output, cells counted with an escape-aware splitter
+out    rows: 23   rows with cell count != 3: 0
+       the naive split, for the contrast R840 measured: 4 rows -- R819, R825, R826, R828
+cmd    the other generators, in case 49 came from one of them
+out    answered_table.py 31 rows   untouched_sites.py 118 site rows
+rule   BF0 with CP3 -- the figure is pasted from the run that produced the artifact, and the
+       paste is the last edit
+judge  the substantive claim is TRUE and I verified it independently: the generated block is
+       a byte-for-byte substring of the report and no row is malformed. Only the denominator
+       is wrong, and the report contradicts itself about it two sections apart. Ledgered
+       under FR1 -- no number in a gate or a deliverable moves -- and recorded because it is
+       the figure the step's own blocking repair is measured by.
+```
+
+**R848. (DOES NOT BLOCK -- ledgered, same class as R843) THE NEW EMPTY-DIRECTORY REFUSAL
+ADMITS A SINGLE DOT, A DOT-SLASH, A DOUBLE DOT AND A SPACED DOT, WHICH RESOLVE TO THE
+CONFIG'S OWN DIRECTORY -- the outcome R843 was about. EH4's weakening direction on the check
+this revision added.**
+
+```
+claim  the new refusal's boundary, solved from the side that weakens it
+cmd    outputs.directory offered the empty string, three spaces, a tab, a newline, a dot, a
+       dot-slash, a double dot and a spaced dot, through the real load_config on the shipped
+       example
+out    empty / spaces / tab / newline   REFUSED  "an empty directory name resolves to the
+                                                 configuration file's own directory..."
+       a single dot                     LOADED   dir=<repo>/examples   <- the config's own
+       a dot-slash                      LOADED   dir=<repo>/examples
+       a spaced dot                     LOADED   dir=<repo>/examples
+       a double dot                     LOADED   dir=<repo>          <- its parent
+       CONTROL ../results/R1/example    LOADED   dir=example
+rule   EH4 -- the injection rises until a clean case passes
+judge  `directory: .` is one character and a plausible way to write "here"; it puts the three
+       deliverables beside the config, which for the shipped example is the tracked
+       `examples/`. The refusal's MESSAGE is true of every value it refuses, so this is not
+       R843's message defect recurring -- it is the same hole one value over, and R843 was
+       ruled non-blocking twice. Ledgered; if it is left, it is left with that sentence.
+```
+
+**R849. (DOES NOT BLOCK -- ledgered, and it is aimed at step 3) THE CAVEAT, DISCLAIMER AND
+PROVENANCE GATES QUANTIFY OVER A HARD-CODED THREE-FILE TUPLE, AND FR3's STEP 3 ADDS TWO MORE
+PUBLISHED FILES.**
+
+```
+claim  the gate's domain is fixed in the source and cannot grow with the tool
+cmd    the module's own constant
+out    tests/regression/test_r1_published_artifacts.py:69
+         ARTIFACTS = (REPORT, FORCES, UTILISATION)
+cmd    what step 3 publishes, from the plan
+out    docs/milestones/R1.md, step 3 -- required_section and truss_sizing in `floatfea run`,
+       both OFF in the shipped example today
+rule   my own recorded guard -- check that the collection the assertion inspects can contain
+       the failure
+judge  not a defect today: the two outputs are off and the files do not exist. It is the
+       shape that produced R815 -- four markers asserted in one loop over a single stub while
+       five others went unchecked -- and step 3 is where it becomes live. Recorded now so the
+       gate is written over the artifact SET the config declares rather than over three
+       names, and so a fourth deliverable cannot arrive carrying no caveats with 46 cases
+       green.
+```
+
+## The three things the report asked to have attacked -- my rulings
+
+**1. R838's LABEL half IS blocking, and I would not have ledgered it.** The implementer
+called it a published artifact misdescribing its own status and put it under FR1's first
+clause rather than its third. I agree, and the sharper statement is the one the measurement
+supports: the failure mode that matters is not a REWORDED disclaimer, it is an ABSENT one --
+a sizing screen published with nothing on its face saying it is not a code case, while the
+numbers on it are read as a code check. That is a published number taken with the wrong
+meaning, which is the first clause. And R846 shows the needle as shipped is green when LABEL
+is empty, which is the absent case.
+
+**2. R842's ledgering is correct, and I looked for the code finding behind it rather than
+accepting the retirement.** 84 numeric cases, 33 string/list/key cases, two downstream
+completeness refusals, zero coercions, two legitimate loads. The grid also found no
+bool-as-number acceptance anywhere -- `code_check.K: true` is refused by name, which is the
+case I most expected to be open, since `isinstance(True, int)` is true in Python. **FR1 is
+not being used to avoid a code finding here: there is no code finding to avoid.** What is
+left is an instrument, and retiring an instrument that has been wrong three times in favour
+of the measurement that answers the question is the right move, not an evasion.
+
+**3. R841 is answered, measured three ways.** The generated block is byte-identical inside
+the report; 0 of 23 rows malformed with an escape-aware splitter against 4 of 23 with a naive
+one; and `test_the_Carried_table_is_what_the_generator_produces` is green at this commit in
+my own run. The ordering argument the previous verdict made -- that a generator whose output
+is published inside a closed artifact lands in the commit that next regenerates it -- held in
+practice: the red cleared by construction and nothing was reverted.
+
+## Try to break it -- the adversarial cases I ran, and what they found
+
+* **Three digits changed in three published deliverables, and the whole of
+  `tests/regression/` and `tests/unit/` run against them.** 400 passed, 0 failed, with a
+  governing U published under unity against a computed 1.71167. **R845**, and it is the
+  round's finding.
+* **The injection RAISED on the gate this revision repaired**, not merely applied at the one
+  case the condition named: a duplicate caveat, an emptied caveat, an emptied LABEL. Three
+  green rows where the repair's own reasoning says they should be red. **R846.**
+* **Five revert-red-restore cycles of my own on the two new tests**, baseline 46: the caveat
+  cut (1 failed, bound by id), LABEL reworded (3 failed, one per artifact), and the three
+  injections above. **The two needles that shipped are live in the directions they were built
+  for** -- I did not take the report's figures for that, I reproduced both.
+* **A whole-file regeneration of all three published deliverables** from this tree, diffed
+  line for line: both CSVs byte-identical, report.md differing in exactly the three
+  wall-clock cells, `U = 1.71167 at platform:hub4_arm ROOT (T = 12.5 s, 3.3.2 interaction)`.
+  **No engineering number moved** -- which is what says `floatfea/run/config.py` changing did
+  not disturb a published figure, and it is also what says R845's repair arrives green rather
+  than red.
+* **The declared type space, 117 cases, at configurations the diff did not choose.** 12
+  numeric leaves x 7 YAML shapes, plus 33 string, list and key shapes, through the real
+  `load_config`; every refusal names its field. The two downstream completeness checks were
+  run too, because `load_config` accepts a mass_distribution or a sections.groups block short
+  of a body and I wanted to know whether anything DEFAULTS: `mass_distribution is missing
+  ['hub4']. Every body the deck declares needs a distribution; there is no default split.`
+  **Nothing defaults.**
+* **The new empty-directory refusal, from the weakening side.** **R848.**
+* **The nine reds traced ONE ID AT A TIME**, in the real tree after my full-suite run
+  finished, with each planted state's inner failure list read rather than assumed.
+* **The fixture's new `and value.strip()` condition, instrumented rather than reasoned
+  about:** 3 blank-skips in 57 tests, all three at `outputs.directory`, the three new rows,
+  and none anywhere else.
+
+**What I did not find, and it is the larger part.** Every repair this revision ships is
+correct at the site it names and bound by a mutation I ran myself. The config loader is in
+better shape than any needle said: 117 adversarial inputs, zero coercions, every refusal
+naming its field, no default anywhere in the completeness path. `ruff`, `black`, `mypy` and
+six ladder rungs are green here and in CI. The three published deliverables regenerate
+byte-identically from this tree. **The two blocking findings are the same shape, and it is
+the shape this step has produced five times: the needle is checked in the direction its
+author built it for, and the direction one step up was not swept.**
+
+## CI at the reviewed commit: RED, nine reds, ALL NINE traced to FC1's designed pair
+
+```
+cmd    gh run list --commit 8542d79e8919401b26558a89d1d9de46ccb8d7ad
+         --json conclusion,status,databaseId
+out    [{"conclusion":"failure","databaseId":39164110433,"status":"completed"}]
+       -- the run was IN PROGRESS when I began and I waited for it. An unfinished run is not
+          a pass, and I did not record one.
+       -- the SHORT sha still returns an empty list; the flag needs the full sha.
+cmd    gh run view 39164110433 --json jobs, read at STEP level
+out    lint, unit and guards : FAILURE
+         actionlint SUCCESS / ruff SUCCESS / black --check SUCCESS / mypy SUCCESS /
+         unit tests SUCCESS / guards and meta-tests FAILURE
+         -> 9 failed, 1198 passed, 1 skipped in 697.24s
+       the verification ladder : SUCCESS -- rungs 1, 2, 3, 6+regression, 4, 5, all six
+       CI determinism -- leg / ten legs agree : SKIPPED (the workflow's own event gate, CK0)
+cmd    gh run view 39164110433 --log-failed, the nine ids
+out    identical to my own local nine, id for id
+cmd    python -m pytest -q --tb=line -rf tests/test_report_carried.py
+         tests/test_report_guard_states.py    (mine, at the reviewed commit, tree clean)
+out    9 failed, 317 passed, 1 skipped
+       test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+         "run 39162423263: the table says no result (status in_progress), gh says
+          failure"                                                          -> FC1
+       test_the_report_carries_a_WHOLE_SUITE_count
+         "the newest revision carries no whole-suite line ... Generate it with
+          python scripts/suite_count.py"                                    -> FC1
+       test_the_guard_survives_the_state[baseline] and the six others
+         each inner run, read individually: 2 failed, 301 passed, 1 skipped, and the two
+         FAILED ids inside each are the two above                           -> the cascade
+cmd    test_the_guard_reads_the_step_being_worked_on, in that same run
+out    PASSED -- state (1) is not in play; a verdict exists and the report answers it
+rule   CA2, which I keep in full because CLAUDE.md does not carry it -- a red CI is a HOLD
+       regardless of the local run; EG3 with FC1 -- the two CZ1-class names are state (2)'s
+       and neither can pass in the commit it describes; EG3(i) -- EVERY red traces by name or
+       it is CZ1 (iv) unchanged; EH1 -- the cascade is identified by the baseline being red
+       and by each cascading state's own failure line, not by its name
+judge  **all nine trace, and they trace to two names rather than to a family.** The waiver
+       applies in full and CZ0 (d) does not stand. Both FC1 reds are self-clearing in the
+       follow-on commit that carries the suite_count line and regenerates the CI table.
+       **One thing I record rather than waive silently:** the second name's message is
+       STALENESS, not absence -- the table recorded run 39162423263 as in_progress and it has
+       since concluded failure. FC1 admits the name because no run exists for a commit before
+       it is pushed; here a run existed and had not finished. It is the same class -- a
+       snapshot of a live system, taken before the commit it describes exists -- and it
+       clears the same way, and half of it is avoidable by generating the section after the
+       previous commit's run concludes. Ledger (C45), not a finding.
+```
+
+**Not CK2's exhausted-allowance state.** Both real jobs ran with per-step conclusions, real
+counts and eleven- and twelve-minute durations. `mypy` is green in CI, and the `unit tests`
+and `guards and meta-tests` steps both RAN rather than being skipped behind an earlier red,
+which is what CZ1 (iii) exists to see.
+
+## Corpus (EG4(e))
+
+**The pause held. Zero new entries. `tests/corpus/` is untouched by me and the working tree
+is clean.** Neither exception opens: this diff touches no part of F4's load-mapping gate, and
+EB6's label-provenance gate is about buoy-centre labels in `tests/verification/rung4/`, not
+about a caveat tuple or a declared config string.
+
+**I ran the recorded substitute, both halves, and BOTH paid this round:**
+
+* **A continuum grid over the parameter space a decision rule guards** -- 117 cases through
+  the real `load_config` (84 numeric leaf x shape, 33 string, list and key), plus the two
+  downstream completeness refusals. It is what lets me rule on R842 by measurement rather
+  than by trust, and it found **R848**.
+* **A regeneration check on a published deliverable** -- all three R1 artifacts regenerated
+  from this tree and diffed whole-file. It found nothing stale; then the INVERSE of it --
+  injecting a digit into each committed file and running the suite -- found **R845**, the
+  round's blocking finding. **The regeneration check taken in the weakening direction is what
+  a corpus batch would have been spent on, and it paid for the fourth round running.**
+
+## Tolerances touched
+
+**None.** No value, no form, no counter, no injection.
+
+```
+cmd    git diff a7b2f62..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff a7b2f62..HEAD -- floatfea tests scripts | grep "^+" |
+       grep -nE "isclose|abs_tol|rel_tol|approx|atol|rtol|_COUNTER|tolerance"
+out    69:+    assert len(TABLE_CAVEATS) == 9, (  # not-a-tolerance: FO2's own count
+       -- one match, and it is the annotation itself
+rule   CLAUDE.md section Tolerances, and its clause on anything that functions as a tolerance
+       under another name
+judge  9 is FO2's own count and the citation resolves: docs/directives/FO.md:20 -- all nine
+       caveats in the header, and each must redden when one caveat is removed from the
+       generator. It is a declared quantity, not a threshold, and it is annotated as the
+       file's existing clause constant at line 333 is. EU1 does not attach -- no value and no
+       declared counter moves -- and the adversarial case was run anyway, at configurations
+       the diff did not choose.
+```
+
+## Closure items (CZ0, fixed once in the step's closure commit)
+
+Carried from the ledger, unchanged and not re-reviewed item by item: **C26, C27, C28, C30,
+C31, C32, C33, C36, C37, C39**. New or amended this round:
+
+* **C43 (new).** R847's 0-of-49 figure -- a report number whose denominator no command
+  produces. The reproducible figure is 0 of 23.
+* **C44 (new).** C40's narrowing is itself one step wide: the provenance KEY SET is checked
+  against all three files, so "not checked against these three files" is true of the
+  provenance VALUES. One clause.
+* **C45 (new).** The CI-table red's cause is staleness, not absence; the generated section can
+  be taken after the previous commit's run concludes.
+* **C42 is mine**, accepted per FR2, and carried to R1's closure rather than repaired inside a
+  verdict.
+* **R848 and R849** are ledgered findings and go on the same list.
+
+## Where I disagree with the CRITERION rather than with the work -- one seam, said once
+
+**FR1's head blocks on a wrong number in a gate, a CSV, a report or any published deliverable
+(EZ0), and its fourth clause exempts report prose and figure wording.** A wrong count in a
+STEP report sits on that seam. I have read "a report" in the head as the published run report
+-- `results/R1/example/report.md`, the thing the tool writes -- and "report prose and figure
+wording" as the step report, which is what the directive's own justification paragraph
+describes and what EZ0's narrowing implies. **R847 is ledgered on that reading.** If the
+intent was the other way round, R847 blocks and so does every non-reproducing figure in a
+revision, which is the six-round pattern EZ0 retired. One sentence would settle it: *"a
+report" in FR1's head means a published run report; a step report's figures are the third
+class.* It goes to Xabier through the implementer and it is not a round.
+
+**And the clause verdict 8 asked for is still unwritten and still earning its keep:** an
+FF0-class repair to a generator lands in the commit that next regenerates the artifact it
+feeds. It held in practice this round. Relayed, not re-argued.
+
+## Next step opens when
+
+**Step 2 IS CLOSED by this verdict (PASS, ES0's cap, FR2). Step 3 may open now**, and it
+opens carrying two blocking items by name.
+
+1. **R845 and R846 carry into step 3's `Carried` section AS BLOCKING** -- CLAUDE.md section
+   Step gating, the cap's own carry rule. Each is one test or one line, each has its
+   injections written above, and both are answered in step 3's first reviewed revision,
+   before FL2's own gate is judged.
+2. **FL2, complete, built before step 3's first reviewed revision (FR3):** member topology
+   from the config with the star as the default; required_section and truss_sizing in
+   `floatfea run` with FM0's re-solve loop, the iteration count and both max U figures; the
+   optional analyses off by default; headings as a list with `export` refusing uncovered ones
+   by name; the band check per case with out-of-band cases unable to govern.
+3. **R849 is answered WHILE step 3 is built, not after it.** required_section and truss_sizing
+   publish two more files under `results/`; the caveat, disclaimer and provenance gates are
+   written over the artifact set the config declares, not over a three-name tuple. A new
+   deliverable carrying no caveats with every case green is R815 with a different file name.
+4. **R847, R848 and the closure list** -- C26, C27, C28, C30, C31, C32, C33, C36, C37, C39,
+   C43, C44, C45 -- fixed once, in the closure commit. C42 is mine.
+5. **`scripts/suite_count.py`'s line and CZ1 (ii)/(iii)'s four outputs** in the follow-on
+   commit, with the two FC1 reds measured clearing at that commit (EG3(ii)).
+6. **The push (FP1) continued.** It gave this round a completed CI run at the judged commit,
+   nine reds matching mine id for id, and mypy, ruff, black and six ladder rungs green on a
+   machine neither of us controls. I waited for the run rather than recording an unfinished
+   one.
+7. **The schedule.** FR0's 5 November is the target and nothing has slipped since the answer.
+   Step 2 closed on 18 October with FL2 unbuilt by design, so step 3 carries the whole of FL2
+   plus two blocking items; the next progress statement is step 3's first reviewed revision
+   (FR5). I am not re-opening the escalation FR0 answered.
+
+**What this revision got right, and it is much the larger part.** The blocking finding from
+verdict 8 was answered at the layer it was about, in the commit the condition named, and the
+red cleared by construction with nothing reverted. R843 and R844 were fixed at their sites
+between rounds under ES0, and the R843 repair came with a control and a passing-case test.
+The one classification the implementer flagged as a judgement call -- R838's LABEL half -- is
+the call I would have made, and the one it ledgered -- R842 -- is ledgered correctly, which I
+established with 117 inputs of my own rather than by agreeing. The config loader refuses every
+adversarial input I could construct and names the field every time. **The two items that block
+are both additions, not reversals, and together they are one test and one line.**
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 2
 Reviewed commit: d205833943b7a4fa56c349d06fbd6f0d0f86e5fc
 **Reviewed commit: `d205833943b7a4fa56c349d06fbd6f0d0f86e5fc`.**
 Verdict: HOLD
