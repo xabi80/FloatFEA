@@ -36,7 +36,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 import numpy as np
 from numpy.typing import NDArray
@@ -49,7 +49,7 @@ from floatfea.model.platform import (
     build_superstructure,
 )
 from floatfea.post.forces_table import Row, compute_rows
-from floatfea.run.config import ConfigError, RunConfig
+from floatfea.run.config import HEADING, ConfigError, RunConfig
 
 __all__ = [
     "RunResult",
@@ -577,6 +577,10 @@ def _recorded_heading(basis: dict[str, Any]) -> float | None:
     instead, and the message says what the shape means, because a list here is a
     multi-heading file meeting a single-heading reader.
     """
+    # A READ, NOT A CHECK (R877). `exported_wave_basis` validates every field at the
+    # single reader, so this cannot be the only place a bad value is caught -- which is
+    # exactly what it was when the check lived here and the shipped example, declaring no
+    # `headings`, returned before reaching it.
     recorded = basis.get("heading_deg")
     if recorded is None:
         return None
@@ -668,6 +672,109 @@ def refuse_uncovered_headings(declared: tuple[float, ...], covered: tuple[float,
     )
 
 
+WAVE_BASIS_KEYS: Final[tuple[str, ...]] = (
+    "heading_deg",
+    "wave_height_full_m",
+    "wave_height_model_m",
+    "window",
+)
+"""The four fields a recorded wave basis carries, and every published artifact states."""
+
+
+def _validated_wave_basis(present: dict[str, Any], sidecar: Path) -> dict[str, Any]:
+    """The recorded basis, validated AT THE READER, or a refusal (R877, R878, R879).
+
+    **R877: VALIDATING AT THE COMPARISON PUT THE CHECK BEHIND A DECLARATION.** The first
+    repair validated `heading_deg` inside `refuse_headings_this_run_cannot_cover`, which
+    returns early when no `load_cases.headings` is declared -- and the shipped example
+    declares none. One variable moved, the same sidecar with `heading_deg = true`, through
+    the real CLI:
+
+        no headings declared  -> EXIT=0, report.md `* **heading** - True deg`
+        headings: [1.0]       -> EXIT=2, refused by name
+
+    So the defect published on the path where nothing was declared, and the refusal's own
+    closing clause -- "or remove `load_cases.headings` so no comparison is claimed" --
+    routed a reader from the refusal to the publication. **Validation belongs at the
+    single READER, where it cannot depend on what the configuration asked for**, and the
+    other three fields get it for the same reason: `wave_height_full_m: true` published
+    `True m full scale` at exit 0.
+
+    **R878: COMPLETE OR EMPTY, because the two consumers disagreed about which.**
+    `cli.py` subscripts all four keys in `_header_lines` and `.get`s the same four in
+    `_write_report`. A sidecar with a heading and no wave height made the dict truthy,
+    took the subscripting branch and raised `KeyError` AFTER the solve -- exit 1, with a
+    zero-byte `member_forces.csv` already in the outputs directory. That is R829/FQ3's
+    single-branch repair never reaching the report path. A partial sidecar is refused by
+    name rather than downgraded to "not recorded", because a sidecar missing one field is
+    WRONG and not ABSENT, and the committed one carries all four.
+
+    **R879: the declared side's discipline is three checks, not one.** `config.py`'s
+    `_checked` rejects a bool by name, rejects a non-number, and range-checks. The first
+    repair had the first two; a recorded `450.0` against a declared `90.0` was accepted,
+    outside `HEADING`'s domain. NaN and infinity are refused here BY NAME rather than one
+    line later by the coverage message, and `10**400` is caught before `float()` raises
+    `OverflowError`.
+    """
+    if not present:
+        return {}
+    missing = [k for k in WAVE_BASIS_KEYS if k not in present]
+    if missing:
+        raise ConfigError(
+            f"{sidecar.name} records a PARTIAL wave basis: {missing} missing from "
+            f"{sorted(present)}. Every published artifact states all four, and the report "
+            f"header subscripts them, so a partial record raised `KeyError` after the "
+            f"solve and left a zero-byte CSV behind. A sidecar missing a field is wrong "
+            f"rather than absent -- delete the sidecar to run with the basis NOT RECORDED, "
+            f"which every artifact then says, or record the missing field."
+        )
+    for key in ("heading_deg", "wave_height_full_m", "wave_height_model_m"):
+        value = present[key]
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ConfigError(
+                f"{sidecar.name}: `run.{key}` is {value!r} ({type(value).__name__}), not "
+                f"a number. A LIST here is a multi-heading export meeting a "
+                f"single-heading reader; a boolean is what YAML and JSON make of `true`. "
+                f"Coercing either would publish `{value} deg` or `{value} m` in all three "
+                f"artifacts, which is what this refusal replaces."
+            )
+        if not math.isfinite(float(value)):
+            raise ConfigError(
+                f"{sidecar.name}: `run.{key}` is {value!r}, which is not finite. It is "
+                f"refused here by name rather than further down, where only a comparison "
+                f"would have noticed and only when one was asked for."
+            )
+    heading = float(present["heading_deg"])
+    low, high = HEADING[1], HEADING[2]
+    # **THE RAW VALUE, NOT THE NORMALISED ONE, AND MY FIRST VERSION GOT THIS WRONG.** It
+    # tested `heading % 360.0`, so a recorded `450.0` passed -- `450 % 360` is `90`, which
+    # is inside the domain -- and the run published `450.0 deg` in all three artifacts at
+    # exit 0. Measured: `member_forces.csv` 193718 bytes against the control's 193716, the
+    # two extra bytes being the digits.
+    #
+    # The two uses of 360 pull in opposite directions and both are right:
+    #   * COMPARING two headings asks whether they are the same DIRECTION, so it
+    #     normalises -- `uncovered_headings` does, and the reviewer measured `450` against
+    #     a covered `90` as correctly the same direction of travel.
+    #   * RANGE-CHECKING a recorded heading asks whether it is a value the configuration
+    #     could legally have declared, and `HEADING` bounds that to `0..360` RAW. A
+    #     sidecar recording `450.0` records something no declaration could express.
+    if not low <= heading <= high:
+        raise ConfigError(
+            f"{sidecar.name}: `run.heading_deg` is {heading}, outside the declared domain "
+            f"{low}..{high} deg that every declared heading is checked against. One domain, "
+            f"not two -- a recorded heading the configuration could not legally declare "
+            f"cannot be compared against one that it could."
+        )
+    if not isinstance(present["window"], str):
+        raise ConfigError(
+            f"{sidecar.name}: `run.window` is {present['window']!r} "
+            f"({type(present['window']).__name__}), not the rule text every artifact "
+            f"publishes."
+        )
+    return dict(present)
+
+
 def exported_wave_basis(npz: Path) -> dict[str, Any]:
     """The heading and wave height a dynamic-inputs file was exported at (R817).
 
@@ -692,11 +799,8 @@ def exported_wave_basis(npz: Path) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError):
         return {}
     run_block = recorded.get("run", {})
-    return {
-        key: run_block[key]
-        for key in ("heading_deg", "wave_height_full_m", "wave_height_model_m", "window")
-        if key in run_block
-    }
+    present = {key: run_block[key] for key in WAVE_BASIS_KEYS if key in run_block}
+    return _validated_wave_basis(present, sidecar)
 
 
 def exported_froude_lambda(npz: Path) -> tuple[float | None, str]:

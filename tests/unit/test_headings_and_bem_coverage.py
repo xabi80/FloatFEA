@@ -32,7 +32,8 @@ import pytest
 import yaml
 
 from floatfea.run.config import ConfigError, load_config
-from floatfea.run.pipeline import (
+from floatfea.run.pipeline import (  # noqa: F401
+    _validated_wave_basis,
     refuse_headings_this_run_cannot_cover,
     refuse_uncovered_headings,
     uncovered_headings,
@@ -301,3 +302,165 @@ def test_R873_a_VALID_recorded_heading_still_passes() -> None:
     """The control, so the refusals above are not refusing every sidecar."""
     refuse_headings_this_run_cannot_cover((0.0,), {"heading_deg": 0.0})
     refuse_headings_this_run_cannot_cover((90.0,), {"heading_deg": 90})
+
+
+# ---------------------------------------------------------------------------
+# R876: the MODULUS is held, not just its two endpoints
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("declared", "covered"),
+    [(180.0, 0.0), (90.0, 0.0), (270.0, 90.0)],
+    ids=["head vs following", "beam vs following", "beam vs beam"],
+)
+def test_R876_a_DIFFERENT_direction_is_not_covered(declared: float, covered: float) -> None:
+    """The row that pins the modulus to 360 rather than to anything coarser.
+
+    **NOTHING HELD THE MODULUS.** `% 180.0` and `% 90.0` both left the suite at `29
+    passed`: the `44.9` case measures fineness WITHIN one turn and the `360`/`0` case
+    measures that ONE turn is identified, and together they admit every modulus from 90
+    to 360. A head sea is not covered by a following sea, and that is the assertion that
+    separates them.
+    """
+    assert uncovered_headings((declared,), (covered,)) == (declared,)
+    with pytest.raises(ConfigError):
+        refuse_headings_this_run_cannot_cover((declared,), {"heading_deg": covered})
+
+
+# ---------------------------------------------------------------------------
+# R877 / R878 / R879: the wave basis is validated AT THE READER
+# ---------------------------------------------------------------------------
+#
+# The first repair validated `heading_deg` inside the comparison, which returns early
+# when no `load_cases.headings` is declared -- and the shipped example declares none, so
+# the defect published on exactly the path the check could not reach. Measured through
+# the CLI with `heading_deg = true`: no headings declared -> EXIT=0 and
+# `* **heading** - True deg` in report.md; `headings: [1.0]` -> EXIT=2.
+
+SIDECAR = Path("dynamic_inputs.provenance.json")
+GOOD = {
+    "heading_deg": 0.0,
+    "wave_height_full_m": 24.2,
+    "wave_height_model_m": 0.484,
+    "window": "the last 5 whole periods",
+}
+
+
+def test_R877_an_EMPTY_basis_is_still_empty() -> None:
+    """No sidecar, or no recorded run block, is NOT RECORDED and not an error."""
+    assert _validated_wave_basis({}, SIDECAR) == {}
+
+
+def test_R877_the_COMMITTED_shape_passes() -> None:
+    """The control: all four fields, the types the real sidecar carries."""
+    assert _validated_wave_basis(dict(GOOD), SIDECAR) == GOOD
+
+
+@pytest.mark.parametrize(
+    ("label", "key", "value"),
+    [
+        ("a bool heading", "heading_deg", True),
+        ("a bool wave height", "wave_height_full_m", True),
+        ("a list heading", "heading_deg", [0.0, 45.0]),
+        ("a string height", "wave_height_model_m", "0.484"),
+        ("a non-string window", "window", 5),
+    ],
+)
+def test_R877_a_BAD_FIELD_is_refused_at_the_reader(label: str, key: str, value: Any) -> None:
+    """Every published field, not only the one a comparison happens to read.
+
+    `wave_height_full_m: true` published `True m full scale` at exit 0 before this.
+    """
+    basis = dict(GOOD) | {key: value}
+    with pytest.raises(ConfigError) as caught:
+        _validated_wave_basis(basis, SIDECAR)
+    assert f"run.{key}" in str(caught.value), (label, str(caught.value))
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+def test_R879_a_NON_FINITE_recorded_value_is_refused_BY_NAME(value: float) -> None:
+    """By name here, rather than one line later by a coverage message.
+
+    R873's condition asked for NaN refused by name and the first repair caught it only
+    where a comparison happened to look -- which is to say, only when one was asked for.
+    """
+    with pytest.raises(ConfigError) as caught:
+        _validated_wave_basis(dict(GOOD) | {"heading_deg": value}, SIDECAR)
+    assert "not finite" in str(caught.value), str(caught.value)
+
+
+@pytest.mark.parametrize("value", [450.0, -10.0, 360.1])
+def test_R879_a_recorded_heading_OUTSIDE_the_declared_domain_is_refused(value: float) -> None:
+    """One domain, not two -- and the RAW value, which the first repair got wrong.
+
+    It tested `heading % 360.0`, so `450.0` passed (`450 % 360` is `90`) and the run
+    published `450.0 deg` in all three artifacts at exit 0: `member_forces.csv` 193718
+    bytes against the control's 193716, the two extra bytes being the digits.
+
+    The two uses of 360 pull opposite ways and both are right: COMPARING asks whether two
+    headings are the same direction and normalises; RANGE-CHECKING asks whether a recorded
+    value is one a configuration could legally declare, and that is `0..360` raw.
+    """
+    with pytest.raises(ConfigError) as caught:
+        _validated_wave_basis(dict(GOOD) | {"heading_deg": value}, SIDECAR)
+    assert "outside the declared domain" in str(caught.value), str(caught.value)
+
+
+@pytest.mark.parametrize("value", [0.0, 360.0, 180.0])
+def test_R879_the_domain_is_INCLUSIVE_at_both_ends(value: float) -> None:
+    """`HEADING` is `(0.0, 360.0)` inclusive, so neither end is excluded here either."""
+    assert _validated_wave_basis(dict(GOOD) | {"heading_deg": value}, SIDECAR)
+
+
+@pytest.mark.parametrize("missing", list(GOOD))
+def test_R878_a_PARTIAL_sidecar_is_refused_rather_than_downgraded(missing: str) -> None:
+    """A sidecar missing a field is WRONG, not absent.
+
+    `_header_lines` subscripts all four keys and `_write_report` `.get`s the same four, so
+    a partial record made the dict truthy, took the subscripting branch and raised
+    `KeyError` AFTER the solve -- exit 1, with a zero-byte `member_forces.csv` already in
+    the outputs directory. That is R829/FQ3's single-branch repair never reaching the
+    report path.
+    """
+    partial = {k: v for k, v in GOOD.items() if k != missing}
+    with pytest.raises(ConfigError) as caught:
+        _validated_wave_basis(partial, SIDECAR)
+    message = str(caught.value)
+    assert "PARTIAL wave basis" in message and missing in message, message
+
+
+def test_R877_the_READER_ITSELF_validates_not_only_the_helper(tmp_path: Path) -> None:
+    """Through `exported_wave_basis`, which is the CALL SITE (R828's shape, third time).
+
+    **THE CASES ABOVE DRIVE `_validated_wave_basis` DIRECTLY AND ARE GREEN WITH THE CALL
+    REMOVED FROM THE READER:** measured `52 passed` with `return _validated_wave_basis(...)`
+    replaced by `return present`. That is the hole R866 was, and the hole R877 was, and
+    testing a helper while nothing holds its caller is how both shipped. So this one reads
+    a real sidecar off disk.
+    """
+    import json as _json
+
+    from floatfea.run.pipeline import exported_wave_basis
+
+    npz = tmp_path / "dynamic_inputs.npz"
+    npz.write_bytes(b"")  # never opened: the sidecar is read from the path alone
+    sidecar = npz.with_suffix(".provenance.json")
+
+    sidecar.write_text(_json.dumps({"run": dict(GOOD)}), encoding="utf-8")
+    assert exported_wave_basis(npz) == GOOD
+
+    sidecar.write_text(_json.dumps({"run": dict(GOOD) | {"heading_deg": True}}), encoding="utf-8")
+    with pytest.raises(ConfigError) as caught:
+        exported_wave_basis(npz)
+    assert "run.heading_deg" in str(caught.value), str(caught.value)
+
+    partial = {k: v for k, v in GOOD.items() if k != "wave_height_full_m"}
+    sidecar.write_text(_json.dumps({"run": partial}), encoding="utf-8")
+    with pytest.raises(ConfigError) as caught:
+        exported_wave_basis(npz)
+    assert "PARTIAL wave basis" in str(caught.value), str(caught.value)
+
+    # AND A MISSING SIDECAR IS STILL NOT RECORDED rather than an error (FL1(a)).
+    sidecar.unlink()
+    assert exported_wave_basis(npz) == {}
