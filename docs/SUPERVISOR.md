@@ -546,15 +546,11 @@ applied it by hand three times before it was written down.*
 >
 > **(2) Verdict written, answering report not yet.** The answering report clears them.
 >
-> In either state the run is recorded as RED WITH ITS CAUSE NAMED -- the full `FAILED` list pasted, and the sentence saying which of the two states it is -- and work proceeds. **Any failure that fails the PREDICATE below is CZ1 (iv) unchanged**, and "only those" is a claim that carries the `FAILED` list as its command. The reviewer measures state (1) clearing at its verdict commit; the implementer measures state (2) clearing at the report commit.
+> In either state the run is recorded as RED WITH ITS CAUSE NAMED -- the full `FAILED` list pasted, and the sentence saying which of the two states it is -- and work proceeds. **Any failure that fails the PREDICATE below is CZ1 (iv) unchanged**, and the claim that every red satisfies it carries the `FAILED` list as its command. The reviewer measures state (1) clearing at its verdict commit; the implementer measures state (2) clearing at the report commit.
 
 **And the sharpening, which is the eighty-third verdict's own sentence:**
 
 > the first-report carve-out should say that state (2) is cleared BY THE ANSWERING REPORT and not by time -- if no answering report is written the state does not clear, and a tree red with no revision in sight must read as what it is.
-
-**The two lists, corrected (EH1).** The clause above was written from one observation
-and was short by two names on each side. The reviewer's wording, adopted
-unparaphrased:
 
 **THE ENUMERATED LISTS ARE REPLACED BY THE PREDICATE (FS1), AND CHECKING IT IS YOURS.**
 Adopted by directive FS1 in your own wording:
