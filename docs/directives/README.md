@@ -18,7 +18,7 @@ against.
 
 Each file records where its text came from. **This is not uniform and the record says so:**
 
-* `FM.md`, `FN.md`, `FO.md`, `FP.md`, `FQ.md`, `FR.md` — **verbatim** from the directive message.
+* `FM.md`, `FN.md`, `FO.md`, `FP.md`, `FQ.md`, `FR.md`, `FS.md` — **verbatim** from the directive message.
 * `FL.md` — **reconstructed from the session summary.** FL arrived before a context
   compaction, so the implementer no longer had the original message when the record was
   backfilled. The summary's rendering is faithful in substance and is not guaranteed
