@@ -442,25 +442,126 @@ def raw_reference(raw: dict[str, Any], name: str) -> list[float]:
     raise KeyError(f"no body named {name!r} in the deck")
 
 
+PLATFORM_CENTRE_NODE = "centre"
+"""The node name the declared topology uses for the platform's own centre (FL2(a))."""
+
+
+def _platform_nodes(
+    hub_joints: list[dict[str, Any]], z: float
+) -> dict[str, tuple[float, float, float]]:
+    """`{node name: point}` for the platform body: its centre, and each hub joint.
+
+    **THE DECK IS THE AUTHORITY FOR WHICH NAMES EXIST (DJ1).** The run configuration
+    declares members by name and this is what those names are resolved against, so a
+    configuration cannot invent a hub and the schema does not keep a second copy of the
+    deck's body list.
+    """
+    nodes = {PLATFORM_CENTRE_NODE: (0.0, 0.0, z)}
+    for j in hub_joints:
+        nodes[str(j["body_a"])] = (j["point"][0], j["point"][1], z)
+    return nodes
+
+
+def _platform_label(a: str, b: str) -> str:
+    """The member label for a declared pair, matching the GENERATED star's form.
+
+    **THE DECLARED STAR MUST BE THE GENERATED STAR, LABELS INCLUDED (FL2(a)).** The
+    generated star names its members `platform:<hub>_arm`, and those labels are published
+    in all three R1 deliverables and named in step 1's own gate fixtures
+    (`platform:hub4_arm` ROOT). A declared member touching the centre therefore takes the
+    same form; anything else would rename every published row for a topology that is
+    identical to the default.
+
+    A member between two hubs has no `_arm` form to match, so it is `platform:<a>_<b>` in
+    declaration order.
+    """
+    if a == PLATFORM_CENTRE_NODE:
+        return f"platform:{b}_arm"
+    if b == PLATFORM_CENTRE_NODE:
+        return f"platform:{a}_arm"
+    return f"platform:{a}_{b}"
+
+
+def _declared_platform_members(
+    declared: tuple[tuple[str, str], ...],
+    nodes: dict[str, tuple[float, float, float]],
+) -> list[tuple[str, tuple[float, float, float], tuple[float, float, float]]]:
+    """The platform's members as the configuration declared them (FL2(a)).
+
+    Refused by name against the deck's own node list. A configuration naming a hub the
+    deck does not carry is a configuration describing a different platform, and building
+    four arms when five were declared would be a silent substitution of this model for
+    the one the reader asked for.
+    """
+    out = []
+    for a, b in declared:
+        for end in (a, b):
+            if end not in nodes:
+                raise ValueError(
+                    f"topology.platform.members names {end!r}, which is not a node of "
+                    f"this deck. The platform's nodes are "
+                    f"{sorted(nodes)} -- `{PLATFORM_CENTRE_NODE}` and the deck's own hub "
+                    f"bodies. A member to a node that does not exist cannot be built, "
+                    f"and building the rest without it would publish a frame the "
+                    f"configuration did not describe."
+                )
+        out.append((_platform_label(a, b), nodes[a], nodes[b]))
+    return out
+
+
+def _body_centres(
+    hub_joints: list[dict[str, Any]], z: float
+) -> dict[str, tuple[float, float, float]]:
+    """`{body name: its own centre point}`, from the deck's joints.
+
+    **A COMPANION TO `_member_geometry` BECAUSE THE CENTRE IS NO LONGER DERIVABLE FROM
+    THE MEMBERS (FL2(a)).** `_build_body` used to read the first member's start point,
+    which is the centre for a star and a hub for a topology whose first member does not
+    touch the centre. The platform's centre is the origin of the joint plane; a hub's is
+    its own joint with the platform. Both come from the same joints the members do, so
+    the two cannot disagree about where a body is.
+    """
+    centres: dict[str, tuple[float, float, float]] = {
+        "platform": (0.0, 0.0, z),
+    }
+    for j in hub_joints:
+        centres[str(j["body_a"])] = (j["point"][0], j["point"][1], z)
+    return centres
+
+
 def _member_geometry(
-    joints: list[dict[str, Any]], hub_joints: list[dict[str, Any]], z: float
+    joints: list[dict[str, Any]],
+    hub_joints: list[dict[str, Any]],
+    z: float,
+    platform_members: tuple[tuple[str, str], ...] = (),
 ) -> dict[str, list[tuple[str, tuple[float, float, float], tuple[float, float, float]]]]:
     """Per body, its members as `(label, start, end)` in the joint plane.
 
     Separated from the mass work so the geometry is decided once and the `f` ladder
     can rebuild a body without re-deriving where its members are.
+
+    **`platform_members` EMPTY MEANS GENERATE THE STAR (FL2(a)).** That is what this
+    function did unconditionally before FL2(a) -- one member from the centre to each hub
+    joint, sorted by hub name -- and the gate for the item is that declaring the star
+    explicitly reproduces the generated one member for member, including the labels.
+    Only the PLATFORM body is configurable: each hub's tripod is three cluster arms to
+    its own buoys, which is a count this builder already refuses to vary.
     """
     buoy_joints = [j for j in joints if j["body_a"].startswith("buoy")]
     out: dict[str, list[tuple[str, tuple[float, float, float], tuple[float, float, float]]]] = {}
-    centre = (0.0, 0.0, z)
-    out["platform"] = [
-        (
-            f"platform:{j['body_a']}_arm",
-            centre,
-            (j["point"][0], j["point"][1], z),
-        )
-        for j in sorted(hub_joints, key=lambda j: j["body_a"])
-    ]
+    nodes = _platform_nodes(hub_joints, z)
+    if platform_members:
+        out["platform"] = _declared_platform_members(platform_members, nodes)
+    else:
+        centre = nodes[PLATFORM_CENTRE_NODE]
+        out["platform"] = [
+            (
+                f"platform:{j['body_a']}_arm",
+                centre,
+                (j["point"][0], j["point"][1], z),
+            )
+            for j in sorted(hub_joints, key=lambda j: j["body_a"])
+        ]
     for hub in sorted(j["body_a"] for j in hub_joints):
         node = next((j["point"][0], j["point"][1], z) for j in hub_joints if j["body_a"] == hub)
         cluster = sorted((j for j in buoy_joints if j["body_b"] == hub), key=lambda j: j["body_a"])
@@ -489,6 +590,7 @@ def _build_body(
     preliminary: bool,
     basis_note: str,
     laddered: bool = True,
+    centre: tuple[float, float, float] | None = None,
 ) -> BodyModel:
     """One body at one `f`, with its remainder placed to match the deck's CoG.
 
@@ -509,11 +611,23 @@ def _build_body(
             node_of[key] = model.nodes.add(Node(point[0], point[1], point[2], name=label))
         return node_of[key]
 
-    centre_node = node(geometry[0][1], f"{name}_centre")
+    # **THE BODY'S CENTRE IS PASSED, NOT INFERRED FROM THE FIRST MEMBER (FL2(a)).** This
+    # read `geometry[0][1]` -- the first member's START point -- which is the centre for a
+    # star and is a HUB for any topology whose first declared member does not touch the
+    # centre. `centre_node` is what `remainder_node` is rigidly linked to (see
+    # `rigid_links`), so the body's entire remainder mass, and the loads that reach it,
+    # would have attached at a hub while the configuration said otherwise. FL2(a) makes
+    # non-star topologies declarable, so that inference stops being safe the moment this
+    # feature exists.
+    #
+    # `None` keeps the old behaviour for callers that do not know a centre, and the only
+    # such caller is a test building a body directly.
+    body_centre = centre if centre is not None else geometry[0][1]
+    centre_node = node(body_centre, f"{name}_centre")
     members: list[Member] = []
     for label, start, end in geometry:
-        a = node(start, f"{name}_centre" if start == geometry[0][1] else f"{label}_a")
-        b = node(end, f"{label}_tip")
+        a = node(start, f"{name}_centre" if start == body_centre else f"{label}_a")
+        b = node(end, f"{name}_centre" if end == body_centre else f"{label}_tip")
         length = math.dist(start, end)
         check_limits(label, length, section)
         members.append(
@@ -729,6 +843,7 @@ def build_superstructure(
     froude_lambda: float = 50.0,
     measurement_fraction: float | None = None,
     measurement_sections: dict[str, Section] | None = None,
+    platform_members: tuple[tuple[str, str], ...] = (),
 ) -> Superstructure:
     """The five-body superstructure at full scale, or a refusal.
 
@@ -762,7 +877,8 @@ def build_superstructure(
     z = elevations.pop()
 
     section = Section.circular_tube(ARM_OUTER_DIAMETER, ARM_WALL)
-    geometry = _member_geometry(joints, hub_joints, z)
+    geometry = _member_geometry(joints, hub_joints, z, platform_members)
+    centres = _body_centres(hub_joints, z)
 
     # `measurement_sections`: A SENSITIVITY ENTRY POINT, NOT A SHIPPING KNOB, exactly as
     # `measurement_fraction` above and for the same reason (ES1). F6a asks what section each
@@ -849,6 +965,7 @@ def build_superstructure(
                     preliminary,
                     note,
                     laddered=False,
+                    centre=centres[name],
                 )
             )
             continue
@@ -861,6 +978,7 @@ def build_superstructure(
                 (measurement_sections or {}).get(name, section),
                 preliminary,
                 note,
+                centre=centres[name],
             )
             if admissible(candidate):
                 built.append(candidate)

@@ -339,11 +339,16 @@ def build_model(cfg: RunConfig) -> Any:
     sections = _sections_for(cfg, body_names)
     fraction = _fraction_for(cfg, body_names)
 
+    # FL2(a): the declared topology, or the star when `topology` is absent. The PROBE
+    # above is built with the default star deliberately -- it exists only to read the
+    # deck's body NAMES for `_sections_for` and `_fraction_for`, and those are a fact
+    # about the deck rather than about which members join its nodes.
     return build_superstructure(
         path=cfg.floatsim.deck,
         froude_lambda=cfg.floatsim.froude_lambda,
         measurement_fraction=fraction,
         measurement_sections=sections,
+        platform_members=cfg.topology.members,
     )
 
 

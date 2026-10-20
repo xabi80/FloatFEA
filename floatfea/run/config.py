@@ -456,6 +456,30 @@ class Outputs:
 
 
 @dataclass(frozen=True)
+class Topology:
+    """Which members the platform body is built from (FL2(a)).
+
+    `members` is a tuple of `(from, to)` NODE NAMES, in declaration order. The names are
+    `centre` and the deck's own hub body names; this schema does not know the hub names,
+    so an unknown name is refused by the BUILDER, which reads them from the deck. That is
+    deliberate -- the deck is the authority for every coordinate (DJ1), and a schema that
+    kept its own list of hub names would be a second copy of the deck.
+
+    `members = ()` means **generate the star**, which is the default and what every run
+    before FL2(a) did: one member from the platform centre to each hub joint. The star is
+    not written out as a default value here, because the number of hubs is the deck's
+    fact and not the schema's.
+    """
+
+    members: tuple[tuple[str, str], ...] = ()
+
+    @property
+    def is_star(self) -> bool:
+        """True when nothing was declared, so the builder generates the star."""
+        return not self.members
+
+
+@dataclass(frozen=True)
 class FloatsimRef:
     """The deck the model is built from, and the scale it is read at.
 
@@ -480,6 +504,7 @@ class RunConfig:
 
     source: Path
     floatsim: FloatsimRef
+    topology: Topology
     mass_distribution: dict[str, MassDistribution]
     sections: Sections
     load_cases: LoadCases
@@ -583,6 +608,7 @@ class RunConfig:
 # ---------------------------------------------------------------------------
 _TOP = (
     "floatsim",
+    "topology",
     "mass_distribution",
     "sections",
     "load_cases",
@@ -590,6 +616,86 @@ _TOP = (
     "outputs",
     "study_only",
 )
+
+
+def _parse_topology(block: Any) -> Topology:
+    """`topology.platform.members`, or the star by default (FL2(a)).
+
+    THE DEFAULT IS THE STAR AND IT IS GENERATED, NOT LISTED. Every run before FL2(a) had
+    the star hard-coded in `_member_geometry`, and the gate for this item is that
+    declaring it explicitly reproduces the generated one member for member -- so the
+    default cannot drift away from the thing it replaced.
+
+    Node names are not validated here. The deck is the authority for which hubs exist
+    (DJ1), so the builder refuses an unknown name against the deck's own list rather than
+    this schema keeping a second copy of it.
+    """
+    where = "topology"
+    if block is None:
+        return Topology()
+    if not isinstance(block, dict):
+        raise ConfigError(
+            f"{where}: expected a mapping with a `platform` key, got " f"{type(block).__name__}."
+        )
+    _reject_unknown(block, ("platform",), where)
+    platform = block.get("platform")
+    if platform is None:
+        return Topology()
+    if isinstance(platform, str):
+        if platform != "star":
+            raise ConfigError(
+                f"{where}.platform: {platform!r} is not a topology this builder knows. "
+                f"The only named topology is `star`, which is also what you get by "
+                f"leaving `{where}` out. To declare members one by one, write "
+                f"`{where}.platform.members` as a list of [from, to] pairs."
+            )
+        return Topology()
+    if not isinstance(platform, dict):
+        raise ConfigError(
+            f"{where}.platform: expected `star` or a mapping with a `members` key, got "
+            f"{type(platform).__name__}."
+        )
+    _reject_unknown(platform, ("members",), f"{where}.platform")
+    raw = platform.get("members")
+    if raw is None:
+        return Topology()
+    if not isinstance(raw, list):
+        raise ConfigError(
+            f"{where}.platform.members: expected a list of [from, to] pairs, got "
+            f"{type(raw).__name__}."
+        )
+    if not raw:
+        raise ConfigError(
+            f"{where}.platform.members: the list is EMPTY. A platform with no members "
+            f"is not a frame, and an empty list is not how the star is requested -- "
+            f"leave `{where}` out, or write `{where}.platform: star`."
+        )
+    members: list[tuple[str, str]] = []
+    seen: set[frozenset[str]] = set()
+    for i, pair in enumerate(raw):
+        at = f"{where}.platform.members[{i}]"
+        if not isinstance(pair, list) or len(pair) != 2:
+            raise ConfigError(
+                f"{at}: expected a [from, to] pair, got {pair!r}. A member joins exactly "
+                f"two nodes."
+            )
+        a = _require_string(pair[0], f"{at}[0]")
+        b = _require_string(pair[1], f"{at}[1]")
+        if a == b:
+            raise ConfigError(
+                f"{at}: both ends are {a!r}. A member from a node to itself has no "
+                f"length, no direction and no stiffness."
+            )
+        key = frozenset((a, b))
+        if key in seen:
+            raise ConfigError(
+                f"{at}: [{a}, {b}] is already declared. Two members between one pair of "
+                f"nodes would double that member's stiffness and its share of the body "
+                f"mass, which is a silent change to the model rather than a second bar."
+            )
+        seen.add(key)
+        members.append((a, b))
+    return Topology(members=tuple(members))
 
 
 def _parse_floatsim(block: Any, base: Path) -> FloatsimRef:
@@ -938,6 +1044,7 @@ def load_config(path: Path | str) -> RunConfig:
         source=source,
         study_only=study_only,
         floatsim=_parse_floatsim(loaded["floatsim"], base),
+        topology=_parse_topology(loaded.get("topology")),
         mass_distribution=_parse_mass(loaded["mass_distribution"]),
         sections=_parse_sections(loaded["sections"]),
         load_cases=_parse_load_cases(loaded["load_cases"], base),

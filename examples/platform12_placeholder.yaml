@@ -19,6 +19,28 @@ floatsim:
   tag: "(pinned HSP state; see docs/hsp-coupling.md and floatfea/hsp_pin.py)"
   froude_lambda: 50.0          # -   docs/conventions.md's scale. FE is FULL scale.
 
+# topology: WHICH MEMBERS THE PLATFORM BODY IS BUILT FROM (FL2(a)).
+#
+# Leaving this block out generates the STAR -- one member from the platform centre to
+# each hub joint -- which is what this example runs and what every run did before
+# FL2(a). `topology: {platform: star}` says the same thing explicitly.
+#
+# To declare the members one by one, name their ends. The node names are `centre` and
+# the DECK's own hub body names; naming a hub the deck does not carry is refused against
+# the deck's list rather than built as something else.
+#
+#   topology:
+#     platform:
+#       members:
+#         - [centre, hub1]        # declaring exactly these four reproduces the star,
+#         - [centre, hub2]        # labels included -- `platform:hub1_arm` and so on
+#         - [centre, hub3]
+#         - [centre, hub4]
+#         - [hub1, hub2]          # and a brace between two hubs is `platform:hub1_hub2`
+#
+# Each hub's tripod is NOT configurable: it is three cluster arms to that hub's own
+# buoys, a count the builder already refuses to vary.
+
 mass_distribution:
   # `f` is the fraction of each body's DECK mass carried by its members, with DY0's
   # remainder rule: the remainder's position is FORCED by the deck's own CoG,
