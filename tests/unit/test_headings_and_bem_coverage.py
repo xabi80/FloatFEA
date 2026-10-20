@@ -231,3 +231,73 @@ def test_R866_the_check_REUSES_the_coverage_function() -> None:
     """
     with pytest.raises(ConfigError):
         refuse_headings_this_run_cannot_cover((44.9,), {"heading_deg": 45.0})
+
+
+# ---------------------------------------------------------------------------
+# R872, R873, R874: the RECORDED side -- the side the R866 repair created
+# ---------------------------------------------------------------------------
+#
+# All three were found on the half my own four-row table said nothing about. The table
+# measured the DECLARED side; the repair introduced a comparison against a value read
+# out of a sidecar, and that value was unvalidated.
+
+
+@pytest.mark.parametrize(
+    ("declared", "recorded"),
+    [(360.0, 0.0), (0.0, 360.0), (360.0, 360.0)],
+    ids=["360 vs 0", "0 vs 360", "360 vs 360"],
+)
+def test_R872_360_and_0_are_ONE_direction(declared: float, recorded: float) -> None:
+    """`heading_deg` is a direction of travel from +X, so 360 names what 0 names.
+
+    `HEADING`'s domain is inclusive at both ends, so `headings: [360.0]` is a legal
+    declaration -- and against an export at 0 it was refused, through the real CLI, with
+    `EXIT=2` and no directory created.
+
+    ARITHMETIC, NOT SLACK: the question is whether two names denote one direction, not
+    whether two directions are close enough. There is no tolerance here to choose.
+    """
+    refuse_headings_this_run_cannot_cover((declared,), {"heading_deg": recorded})
+    assert uncovered_headings((declared,), (recorded,)) == ()
+
+
+def test_R872_a_NEAR_MISS_is_still_refused_after_the_modulo() -> None:
+    """The exactness `refuse_uncovered_headings` documents survives R872's repair.
+
+    `44.9 % 360.0` is `44.9`, so normalising a direction does not round one.
+    """
+    assert uncovered_headings((44.9,), (45.0,)) == (44.9,)
+    with pytest.raises(ConfigError):
+        refuse_headings_this_run_cannot_cover((44.9,), {"heading_deg": 45.0})
+
+
+@pytest.mark.parametrize(
+    ("label", "recorded"),
+    [
+        ("a LIST, which is a multi-heading export", [0.0, 45.0]),
+        ("a bool, which is what YAML makes of `yes`", True),
+        ("a string", "0"),
+    ],
+)
+def test_R873_R874_a_NON_SCALAR_recorded_heading_is_REFUSED_BY_NAME(
+    label: str, recorded: Any
+) -> None:
+    """The declared side refuses a bool in eleven places; the recorded side coerced one.
+
+    `{"heading_deg": True}` against a declared `[1.0]` was ACCEPTED, because `float(True)`
+    is `1.0`, and the run published `heading True deg` with the comparison agreeing. A
+    LIST raised `TypeError` inside `float()`, so the one check that exists to compare
+    declared against covered ABSTAINED instead of refusing.
+    """
+    declared = (1.0,) if recorded is True else (0.0,)
+    with pytest.raises(ConfigError) as caught:
+        refuse_headings_this_run_cannot_cover(declared, {"heading_deg": recorded})
+    message = str(caught.value)
+    assert "recorded `heading_deg`" in message, (label, message)
+    assert "not a single heading" in message, (label, message)
+
+
+def test_R873_a_VALID_recorded_heading_still_passes() -> None:
+    """The control, so the refusals above are not refusing every sidecar."""
+    refuse_headings_this_run_cannot_cover((0.0,), {"heading_deg": 0.0})
+    refuse_headings_this_run_cannot_cover((90.0,), {"heading_deg": 90})

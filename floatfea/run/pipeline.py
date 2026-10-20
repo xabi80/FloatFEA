@@ -536,8 +536,62 @@ def uncovered_headings(
     state nobody declared, so "near enough" is the wrong question and there is no
     tolerance here to choose.
     """
-    have = set(covered)
-    return tuple(h for h in declared if h not in have)
+    # **360 AND 0 ARE THE SAME WAVE DIRECTION, AND EXACT EQUALITY SAID OTHERWISE (R872).**
+    # `docs/conventions.md` defines `heading_deg` as a direction of travel measured from
+    # +X, so the quantity is an ANGLE and `360` names the direction `0` names. `HEADING`'s
+    # declared domain is inclusive at both ends, `(0.0, 360.0)`, so `headings: [360.0]`
+    # is a legal declaration -- and against an export at `0` it was refused.
+    #
+    # Measured through the real CLI before this: `EXIT=2`, no directory created, for a
+    # configuration asking for the heading the file actually carries.
+    #
+    # **THIS IS ARITHMETIC AND NOT SLACK, WHICH IS WHY THERE IS NO TOLERANCE HERE.** The
+    # question is whether two names denote one direction, not whether two directions are
+    # close enough. `h % 360.0` is exact for every value in the declared domain: `360.0
+    # % 360.0` is `0.0` and `45.0 % 360.0` is `45.0`, with no rounding introduced. A
+    # near-miss is still refused -- `44.9 % 360.0` is `44.9` -- so the comparison stays
+    # the exact one `refuse_uncovered_headings` documents.
+    #
+    # The direction of the previous round's conclusion is worth keeping: exact equality
+    # OVER-refuses and cannot under-refuse, so this was safe and wrong rather than
+    # dangerous and wrong.
+    have = {c % 360.0 for c in covered}
+    return tuple(h for h in declared if h % 360.0 not in have)
+
+
+def _recorded_heading(basis: dict[str, Any]) -> float | None:
+    """The export's own heading as a number, `None` if absent, or a refusal (R873, R874).
+
+    **THE DECLARED SIDE REFUSES A BOOL BY NAME IN ELEVEN PLACES AND THE RECORDED SIDE
+    COERCED ONE.** `{"heading_deg": True}` against a declared `[1.0]` was ACCEPTED,
+    because `float(True)` is `1.0` -- so a run published `heading True deg` and the one
+    check that compares declared against covered agreed with it. That is the R834/R837
+    family on the other side of the same comparison, and this repository refuses
+    `isinstance(x, bool)` for every declared number precisely because YAML reads `yes`
+    and `on` as `True`.
+
+    **AND A NON-SCALAR MADE THE CHECK ABSTAIN RATHER THAN REFUSE (R873).** A sidecar
+    whose `heading_deg` is a LIST -- which is what FL(c)'s mechanism half would write if
+    a multi-heading export recorded its set -- raised `TypeError` inside `float()`, so
+    the check crashed out of the one comparison it exists to make. Refused by name
+    instead, and the message says what the shape means, because a list here is a
+    multi-heading file meeting a single-heading reader.
+    """
+    recorded = basis.get("heading_deg")
+    if recorded is None:
+        return None
+    if isinstance(recorded, bool) or not isinstance(recorded, (int, float)):
+        raise ConfigError(
+            f"the dynamic-inputs file's recorded `heading_deg` is {recorded!r} "
+            f"({type(recorded).__name__}), which is not a single heading in degrees. A "
+            f"LIST here is a multi-heading export meeting a reader that compares one "
+            f"heading, and a boolean is what YAML makes of `yes`, `on` or `true` -- "
+            f"neither can be compared against a declared heading, and coercing either "
+            f"would publish an envelope attributed to a direction nobody exported. Fix "
+            f"the sidecar beside the npz, or remove `load_cases.headings` so no "
+            f"comparison is claimed."
+        )
+    return float(recorded)
 
 
 def refuse_headings_this_run_cannot_cover(
@@ -572,7 +626,7 @@ def refuse_headings_this_run_cannot_cover(
     """
     if not declared:
         return
-    recorded = basis.get("heading_deg")
+    recorded = _recorded_heading(basis)
     if recorded is None:
         raise ConfigError(
             f"load_cases.headings declares {list(declared)} deg and this run's "
@@ -583,7 +637,7 @@ def refuse_headings_this_run_cannot_cover(
             f"before any output is written, so nothing on disk describes a run that did "
             f"not happen."
         )
-    covered = (float(recorded),)
+    covered = (recorded,)
     missing = uncovered_headings(declared, covered)
     if not missing:
         return
