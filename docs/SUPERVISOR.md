@@ -546,7 +546,7 @@ applied it by hand three times before it was written down.*
 >
 > **(2) Verdict written, answering report not yet.** The only failures are `test_every_named_site_is_touched_or_declared`, `test_the_report_carries_the_finding`, `test_the_CI_section_is_about_the_REVIEWED_commit`, `test_the_Carried_table_is_what_the_generator_produces` and `test_the_generator_would_catch_a_row_under_the_wrong_number`, each naming a finding or a site of the newest verdict. The answering report clears them.
 >
-> In either state the run is recorded as RED WITH ITS CAUSE NAMED -- the full `FAILED` list pasted, and the sentence saying which of the two states it is -- and work proceeds. **Any failure outside the state's own list is CZ1 (iv) unchanged**, and "only those" is a claim that carries the `FAILED` list as its command. The reviewer measures state (1) clearing at its verdict commit; the implementer measures state (2) clearing at the report commit.
+> In either state the run is recorded as RED WITH ITS CAUSE NAMED -- the full `FAILED` list pasted, and the sentence saying which of the two states it is -- and work proceeds. **Any failure that fails the PREDICATE below is CZ1 (iv) unchanged**, and "only those" is a claim that carries the `FAILED` list as its command. The reviewer measures state (1) clearing at its verdict commit; the implementer measures state (2) clearing at the report commit.
 
 **And the sharpening, which is the eighty-third verdict's own sentence:**
 
@@ -556,77 +556,30 @@ applied it by hand three times before it was written down.*
 and was short by two names on each side. The reviewer's wording, adopted
 unparaphrased:
 
-> *state (1)'s list is `test_the_guard_reads_the_step_being_worked_on`, plus the
-> planted states that cascade off a red baseline; state (2)'s is the five named, plus
-> `test_the_answered_verdict_is_the_NEWEST_one`, plus
-> `test_a_carried_row_points_at_a_section_that_discusses_it`, plus the same cascade.
-> In both states the cascade is identified by the baseline being red and by each
-> cascading state's own failure line, not by its name.*
+**THE ENUMERATED LISTS ARE REPLACED BY THE PREDICATE (FS1), AND CHECKING IT IS YOURS.**
+Adopted by directive FS1 in your own wording:
 
-**STATE (1)'s LIST GAINS THREE NAMES (R813, adopted by directive FN2).** The reviewer's
-wording, adopted unparaphrased:
+> **every red names a finding or a site of the newest verdict; any other red blocks.**
 
-> *state (1)'s list gains `test_the_reported_CI_counts_are_not_all_zero`,
-> `test_the_report_carries_a_CI_SECTION` and
-> `test_the_R507_cases_rule_as_measured[frames.txt]`, and the reason is that each is
-> verdict-dependent and each needed its own run to establish it.*
+**There are no hand lists to read against.** Test each `FAILED` id against the predicate
+individually -- it is a per-id test, not a licence to rule a cascade by family -- and a red
+that fails it blocks under CZ1 (iv).
 
-**And the control that establishes the CAUSE, which the implementer's own trace could not.**
-R1 step 1's report compared its 37 reds against `e001aec` — F6b's first-report commit — and
-found the two FAILED lists identical, both directions empty. That was reproduced exactly and
-it is the wrong comparison: **both commits are instances of the SAME state**, so it shows
-reproducibility and cannot separate "red because no verdict exists" from "red in both trees
-for some other reason". The control that separates them is a commit where a verdict EXISTS:
+The lists were adopted five times (EH1, FN2/R813, EJ2/R644, FC1) and withdrawn from twice,
+and were wrong in both directions: short seven names across four corrections, two of the
+reviewer's own placements withdrawn, and measured from the other side, **two of state (2)'s
+nine enumerated names fired while seven were green**. R861 then withdrew the reviewer's own
+baseline figure one commit after writing it -- nine became 78, 89, 110 -- because two
+guards are parametrised over *the newest verdict's own findings and sites*, so **the
+baseline is a function of what you write**. A fixed list cannot track that; the predicate
+does not have to.
 
-    bd315a1, the two report-guard files          ->  0 failed
-    comm -12 (this tree's 37) (bd315a1's reds)   ->  (empty)
+**The control that makes the predicate checkable, unchanged.** A list of names cannot be
+checked against a failure message; only running the id at a commit where a verdict EXISTS
+can. `test_the_R507_cases_rule_as_measured[frames.txt]` is the case that proves it: its
+failure line mentions no verdict at all, and it is green the moment one exists.
 
-Not one of the 37 is red where a verdict is present, so all 37 are verdict-dependent BY
-MEASUREMENT rather than by family, and no red in that state is CZ1 (iv).
-
-The third name is the one that makes enumeration unsafe: `test_the_R507_cases_rule_as_measured[frames.txt]`
-**mentions no verdict in its failure line at all** — it reports `_is_a_site('frames.txt')` is
-`True` where `False` was expected — and is nonetheless green the moment a verdict exists. A
-list of names cannot be checked against a failure message; only running the id at a
-verdict-exists commit can. **So the membership rule is "verdict-dependent, measured against a
-verdict-exists control", and the enumeration is a convenience that has now been short twice**
-— by two names on each side at EH1, and by three here.
-
-**R644, adopted by directive EJ2 — the reviewer withdrew two placements of its own,
-and the measurement is why.** At `b7c05e7`, with eighteen reds traced individually
-rather than by family:
-
-* `test_the_answered_verdict_is_the_NEWEST_one` was filed under **state (1)** and is
-  a state (2) failure. It fires when a verdict is newer than the report, which is
-  state (2) by definition.
-* `test_a_carried_row_points_at_a_section_that_discusses_it` was on **neither** list
-  and is a state (2) failure — red on two rows at that commit, and all twenty-eight
-  parametrisations green with the answering revision in the tree.
-
-Both were found by running the two off-list ids on their own instead of ruling them
-as part of a sixteen-red cascade, which is the discipline EG3(i) exists to force.
-
-**The two CZ1-class guards join state (2) (FC1).** Adopted by directive FC1 after a
-reviewer admitted them by hand twice.
-
-> *state (2)'s list gains `test_the_report_carries_a_WHOLE_SUITE_count` and
-> `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`, and the reason is that **neither can
-> pass in the commit it describes**.*
-
-`scripts/suite_count.py` measures a clean worktree AT A COMMIT, so the line naming a sha
-cannot be inside that sha; `scripts/ci_section.py --rounds` needs a RUN, and no run exists
-for a commit before it is pushed. Both are CZ1's own reusable half -- "a check whose input
-is the commit itself cannot be measured before the commit exists" -- so both are designed,
-both are self-clearing in the next commit, and neither is a defect.
-
-**Measured rather than argued, three times.** At `a041574` the whole suite was
-`3106 passed, 0 failed` outside the three report-guard files and those two were red; the
-commit that added the line and the table took the same files to `304 passed` and `23 passed`
-with nothing else moved. At `ececa58`, a closure commit, **both are green** -- a closure
-commit creates neither boundary state, which is the control that says the two names belong
-to the boundary and not to the tree.
-
-**They do NOT relax CZ1 (iv).** A red outside the state's own list still blocks, the trace
+**They do NOT relax CZ1 (iv).** A red that fails the predicate still blocks, the trace
 is still pasted by name, and the implementer still measures the clearing at the commit that
 carries the line.
 
@@ -638,7 +591,7 @@ unchanged.
 **(i) The waiver is conditional on the trace, and the trace is pasted.** The
 pre-invocation green requirement is waived only if EVERY red traces by name to the
 step-boundary cause. Not "the failures look like the boundary set" -- each `FAILED`
-id is matched to the state's own list, and a red that does not match is CZ1 (iv)
+id is tested against the predicate, and a red that fails it is CZ1 (iv)
 unchanged. The eighty-third verdict is why the condition is worded that way: eight
 planted states were ruled as one cascade by class across two verdicts, and the
 eighth was a real defect (R629) sitting inside a group nobody was reading
