@@ -1,4 +1,454 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: ff48a6d4b60919485e1bf76fa9a81972f22d31b9
+**Reviewed commit: `ff48a6d4b60919485e1bf76fa9a81972f22d31b9`.**
+Verdict: HOLD
+Reviewed commit: ff48a6d4b60919485e1bf76fa9a81972f22d31b9
+Tests: 3617 passed, 165 failed, 1 skipped, 2 warnings in 1131.79 s (0:18:51)   (my own whole-suite run, at the reviewed commit, tree clean before and after)
+Scope: **ES0 INTERIM CHECK, the sixth in step 3.** No report revision exists for step 3, so
+this counts against no round and all three reviewed revisions remain available.
+**ONE FINDING BLOCKS -- R877 -- and it is a correction to my predecessor's closing condition
+rather than a failure of the repair that answered it.** R872 and R873 are answered and I
+attacked both rather than reading them. R874 is answered AT THE SITE THE CONDITION NAMED and
+the defect it was written about is still live one function away, on the default path.
+
+**I RULED UNDER FR1 WITH EZ0** (`CLAUDE.md` section "What blocks for the rest of R1";
+`docs/directives/FR.md`). For each finding I state the silently wrong result it produces, or
+that it produces none. **R877 blocks under FR1's SECOND LIMB -- "an input accepted and used
+other than as declared" -- which is the limb `CLAUDE.md` says is easy to read past, and which
+my own previous verdict read past on this exact finding.** I say that plainly below because
+the cost of the round is mine, not the implementer's.
+
+```
+cmd    git diff --name-status 0a6edba..HEAD
+out    M docs/SUPERVISOR.md / M floatfea/run/pipeline.py /
+       M tests/unit/test_headings_and_bem_coverage.py
+       -- 3 files, 129 insertions, 9 deletions. TWO commits, correctly split:
+          a4ab04d touches docs/SUPERVISOR.md and NOTHING else; ff48a6d touches
+          floatfea/ and tests/ and NOTHING else.
+cmd    git diff 0a6edba..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff 0a6edba..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py        -- a file, as my instructions say it must be
+cmd    git diff --stat 0a6edba..HEAD -- .claude docs/SUPERVISOR.md
+out    docs/SUPERVISOR.md | 6 +----- (1 insertion, 5 deletions); .claude EMPTY
+       -- NOT a STOP. a4ab04d is a STANDALONE process: commit citing FS1 whose only file is
+          docs/SUPERVISOR.md. I read every one of the six lines: the dangling "The two lists,
+          corrected (EH1)" paragraph goes, and the "only those" clause is rewritten as the
+          claim it actually makes. **No guard was removed and nothing was weakened.** R875 is
+          answered.
+cmd    git diff --stat 0a6edba..HEAD -- results scripts/measure docs/reports
+out    (empty)   -- no published deliverable moved in the diff, and no step report was
+                    touched (EK3). I checked the deliverables by REGENERATING them anyway,
+                    which is where R877 and R878 came from.
+cmd    git status --porcelain
+out    (empty)   -- clean before I ran anything and after. My mutation runs were reverted
+                    from a saved copy and the tree is byte-identical to ff48a6d.
+cmd    ruff check floatfea tests scripts ; black --check floatfea tests scripts ;
+         mypy floatfea scripts/f4_dynamic_residual.py       (CI's own three forms)
+out    All checks passed! / 150 files would be left unchanged /
+       Success: no issues found in 43 source files
+cmd    python -m pytest -q tests/unit            -- the commit's own headline figure, re-taken
+out    236 passed in 133.64s
+       -- the report claims 236 passed. **It reproduces exactly.** So does the prose guard:
+          34 passed.
+```
+
+**STEP 1b DOES NOT FIRE, AND I SAY SO RATHER THAN SKIPPING IT.** There is no step-3 report, so
+there is no `Answers: verdict N @ <sha>` header to compare against the newest verdict. The
+newest revision in the tree is still step 2's third and six verdicts are now newer than it.
+That is EG3 state (2) and it is the whole of this tree's red.
+
+**WHERE MY OWN INSTRUCTIONS DISAGREE WITH `CLAUDE.md`, I RULED UNDER `CLAUDE.md` AND SAY SO.**
+My agent definition cites "**EG3**, **EH1**, **EJ2** and **FC1** -- the two boundary states,
+their two corrected lists". FS1 replaced the lists with the predicate and `CLAUDE.md` carries
+the predicate. I classified all 165 reds under the FS1 PREDICATE, not under any list. That
+disagreement is R880 and it is a `process:` commit for Xabier, not a round.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R872** (`headings: [360.0]` refused against an export at 0 deg, the same wave direction) | **ANSWERED, AND I ATTACKED IT IN THE DIRECTION THE COMMIT DID NOT RUN -- THE COVERED SIDE, WHICH `HEADING` DOES NOT BOUND. The modulo is sound and I can now say so as a measurement rather than as agreement.** | `floatfea/run/pipeline.py:558-559`. The implementer named the gap itself -- "I did not test a negative covered heading" -- so I ran the covered axis as a continuum grid: `-10.0` against declared `350.0` ACCEPTED, `450.0` against `90.0` ACCEPTED, `-360.0` and `720.0` against `0.0` ACCEPTED, and every one of those is the same direction of travel under `docs/conventions.md:143-147`, which fixes heading 0 on +X as direction-of-travel in a right-handed frame and places no bound on the sense. **There is no pair that passes under the modulo and is a different direction**, because mod-360 equivalence on a direction of travel is an identity and not an approximation. `inf`, `nan`, a `dict` and `1e40` are all refused. The near-miss survives: `44.9` against `45.0` refused, and `450.0000000001` against `90.0` refused. **Two caveats recorded rather than left: the repair is at `uncovered_headings` and not at the site my predecessor's condition named (`:586`), so it also normalises the BEM-dataset caller where that condition said exact equality was right -- sound, but wider than asked, and the report revision should say so; and `% 360.0` is NOT canonical at the negative epsilon -- `(-1e-16) % 360.0` is `360.0`, not `359.99...`, so a recorded `-1e-16` against a declared `0.0` or `360.0` is REFUSED. That is an over-refusal at 1e-16 deg and it cannot under-refuse.** Not a finding. |
+| **R873** (a sidecar whose `heading_deg` is a LIST makes the comparison raise `TypeError` instead of comparing) | **ANSWERED on two of the three sites the condition named. THE THIRD -- NaN BY NAME -- IS NOT DONE AND THE COMMIT DOES NOT DECLARE IT UNANSWERED. R879.** | `floatfea/run/pipeline.py:580-593`. A list and a dict are refused by name, verified. The condition read "a non-scalar, a bool and a NaN each refused by name". `{"heading_deg": nan}` passes `_recorded_heading` (`isinstance(nan, float)` is `True`) and is then caught one line later by the COVERAGE message -- "this run covers nan deg" -- not by name. The declared side refuses NaN by name at `floatfea/run/config.py:208-211` with "NaN is not a value", which is the discipline R874's condition asked for. Half of an item is not the item. |
+| **R874** (the declared side refuses a bool by name in eleven places and the recorded side coerces one; a run publishes `heading True deg`) | **ANSWERED AT THE SITE THE CONDITION NAMED AND THE DEFECT IS LIVE ONE FUNCTION AWAY. R877, AND IT BLOCKS.** | `_recorded_heading` is called from inside `refuse_headings_this_run_cannot_cover`, which returns at `:629-630` when `declared` is empty. **With no `load_cases.headings` -- the default, what the shipped example declares and what the regression golden runs -- `_recorded_heading` never executes and `heading True deg` reaches `report.md` and both CSVs at EXIT 0.** Measured through the real CLI. My predecessor's condition named `floatfea/run/pipeline.py:583-586` and that site was the wrong site for the defect its own `cmd` row described (`floatfea/cli.py:146 prints basis["heading_deg"] verbatim`). The condition is mine to correct. |
+| **R875** (`docs/SUPERVISOR.md` carried a paragraph introducing a quote that is gone, and `CLAUDE.md` did not) | **ANSWERED, and the audit the condition asked for is the one that was done.** | The condition read "after the whole EG3 section has been read top to bottom rather than grepped". a4ab04d did exactly that and its commit message says so with the line counts. I re-measured both files: "The two lists, corrected", "short by two names", "only those", "LIST GAINS" and "The only failures are" are all 0 in both. The surviving sentence states the claim and points at no deleted set. |
+| **R867, R868, R869** (of eight non-default topologies only one runs; the rest die in a `platform:hub1_arm_tip` lookup) | **still open, correctly, and correctly NOT in this commit** | the diff over `floatfea/model`, `floatfea/solve` and `tests/unit/test_topology_from_config.py` since 0a6edba is empty. Placed as one repair in the first reviewed revision and the turn carries them there. I did not reopen them. |
+| **R870** (FL2(a) as shipped is a subset of the locked plan's (a); two future-tense sentences) | **still open, untouched** | `floatfea/run/pipeline.py:123` and `:180` unchanged; the only pipeline hunks in this diff are `uncovered_headings`, `_recorded_heading` and two lines in `refuse_headings_this_run_cannot_cover`. |
+| **R862** (three hand copies of the stage set; the published total is the sum of a hand-copied four) | **still open and STILL NOT DUE -- I measured the trigger rather than taking the word for it** | the five `timings[...]` assignments are unchanged, `WALL_TIME_STAGES` at `floatfea/cli.py:37-43` is unchanged, and the diff over `floatfea/cli.py` is EMPTY. No timed stage was added, so the understatement is not reachable at this commit. It blocks in the commit that adds one -- FL2 item 4 or 5. |
+| **R863** (the exclusion set is defined by the code under test), **R864** (the byte-identity claim's witness is blind to its own subject), **R865** (the docstring at `tests/regression/test_r1_example_regenerates.py:224`) | **all three still open, untouched** | the diff over `tests/regression` since 0a6edba is empty; R864's condition is a sentence in a report revision that does not exist. |
+| **R847 / C43** ("0 of 49 rows" does not reproduce), **R848** (the empty-directory refusal admits a bare dot), **R849 with R854** (four gates quantify over hard-coded three-file tuples) | **all still open, all untouched, all correctly so** | the diff over `floatfea/cli.py` is empty, which covers R848; the regression diff is empty, which covers R849 and R854; R847 needs a revision that does not exist. FR1's second and third non-blocking classes. |
+| **R852** (a caveat truncated to its own marker is green on 31 of 31) | **ROUTED, not open -- FS3 ledgers it to FL3** | `docs/directives/FS.md:28`. Not open against step 3. |
+| **R855** (the whole suite at a commit carrying no report revision) | **the standing condition IS MET, and I took the whole-suite number myself as I do by rule** | the turn states plainly which runs it made (`tests/unit` 236, the prose guard 34, the three lint forms) and that it made no whole-suite run at this sha. **No green is claimed that was not measured.** My own whole-suite run: 165 failed, 3617 passed, 1 skipped. |
+| **R856** (write_verdict.py refused a step with no report) | **ANSWERED, and exercised for the third time -- this file went through `--interim`** | `scripts/write_verdict.py:166-180` and `:233-236`, unchanged by this diff. |
+| **R835, R836, R871** (EG3's enumerated lists, and FS1's deletion of FC1's reason) | **ANSWERED by FS1 as completed by 82f922c and a4ab04d, and I applied the PREDICATE PER ID to all 165 reds. 163 under limb one, 2 under limb two. NONE WITHOUT AN EXIT.** | `CLAUDE.md:429-449`, `docs/SUPERVISOR.md`. Measured in the CI section. |
+| **C29, C34, C35** (ruff, black, mypy) | **green at this commit, locally in CI's own three forms AND on a machine neither of us controls** | mine above; CI run 39371705159, job `lint, unit and guards`, read at STEP level: actionlint, ruff, black --check, mypy and **unit tests** all SUCCESS, only `guards and meta-tests` FAILURE. Every step RAN rather than being skipped behind an earlier red, which is what CZ1 (iii) exists to see. The verification ladder job is SUCCESS on all six rungs. |
+| **C42** (U+FFFD in historical verdict headers), **C44** | **mine, accepted, carried** | unchanged by this diff. |
+| **C45** | **DOES NOT RECUR IN `CLAUDE.md` OR `docs/SUPERVISOR.md`. IT RECURS IN MY OWN AGENT DEFINITION, as R880** -- seventh occurrence of the family, and the second running where the divergence is in the file governing the reviewer rather than in the criterion. | measured in R880. |
+| **C26, C27, C28, C30, C31, C32, C33, C36, C37, C39** | **carry to the closure artifact as a list** | not re-reviewed item by item, per CZ0. An interim check writes no closure list (ES0); this row is the pointer and not the list. |
+| **EG3(ii): the verdict commit measured** | **DONE last round by the control at `bd315a1` (149 passed, 0 failed) and I did not redo it** | ES0's light scope. The control's conclusion is unchanged: not one of this tree's reds is red where the boundary state is absent, and this round's 165 are the same two files. |
+| `scripts/suite_count.py`'s own line, and CZ1 (ii)/(iii)'s four outputs | **still owed and still structurally unpayable until step 3's report exists** | not a finding against the implementer; it is limb two of the predicate by construction, and two of this round's 165 reds ARE it. |
+
+## Findings
+
+**ONE BLOCKS. No tolerance moved, no conftest moved, no `.claude` file moved, and the one
+`docs/SUPERVISOR.md` change is a standalone `process:` commit citing FS1 that removes no
+guard.** The three ablation figures the report publishes all reproduce exactly on my machine:
+the modulo reverted gives `2 failed, 27 passed`, `_recorded_heading` bypassed gives
+`3 failed, 26 passed`, and the bool half alone removed gives `1 failed, 28 passed`. The third
+is the one that matters and it is right: the bool check is not redundant with the type check.
+
+---
+
+**R877. (BLOCKS -- FR1 LIMB TWO) R874's REPAIR IS GATED BEHIND `load_cases.headings` BEING
+DECLARED, AND R874's OWN PUBLISHED DEFECT LIVES ON THE PATH WHERE IT IS NOT. A SIDECAR WHOSE
+`heading_deg` IS `true` RUNS TO EXIT 0 AND PUBLISHES `heading True deg` INTO `report.md` AND
+BOTH CSVs -- WHICH IS THE SENTENCE `_recorded_heading`'s OWN DOCSTRING GIVES AS ITS REASON FOR
+EXISTING. AND THE REFUSAL MESSAGE RECOMMENDS THAT PATH BY NAME.**
+
+```
+claim  the repair runs only when a heading set is declared, and the default declares none
+cmd    the early return
+out    floatfea/run/pipeline.py:629-630
+         if not declared:
+             return
+       -- `_recorded_heading` is called at :631, AFTER it. refuse_headings_this_run_cannot_cover
+          is the function's only caller; grep for `_recorded_heading` over floatfea gives two
+          lines, the definition and that one call.
+cmd    whether the default path is a real path
+out    examples/platform12_placeholder.yaml declares NO `headings:` key -- the shipped
+       fixture, and what tests/regression/test_r1_example_golden.py runs
+cell   ONE VARIABLE MOVED: the presence of `load_cases.headings`. Same deck, same npz, same
+       sidecar with `run.heading_deg` set to `true`, outputs to a temporary directory,
+       through the real CLI.
+out    [a] no headings declared   -> EXIT=0
+           report.md:23              * **heading** - True deg
+           member_forces.csv         # wave basis: heading True deg
+           utilisation.csv           same header block
+       [b] headings: [1.0] declared -> EXIT=2
+           floatfea: the dynamic-inputs file's recorded `heading_deg` is True (bool), which
+             is not a single heading in degrees. ... Fix the sidecar beside the npz, OR
+             REMOVE `load_cases.headings` SO NO COMPARISON IS CLAIMED.
+       -- the refusal's own last clause routes the reader from [b] to [a].
+cmd    the three sibling fields read by the same function, in the same dict, from the same
+       file, and published to the same three artifacts
+out    floatfea/run/pipeline.py:695-699 -- exported_wave_basis returns heading_deg,
+       wave_height_full_m, wave_height_model_m and window. ONLY the first is validated, and
+       only when a heading set is declared. With wave_height_full_m `true`,
+       wave_height_model_m `[0.484, 1.0]` and window a mapping, EXIT=0 and report.md reads
+         * **wave height** - True m full scale ([0.484, 1.0] m model)
+         * **window** - {'from': 1, 'to': 2}
+       and member_forces.csv reads
+         # wave basis: heading 0.0 deg; H_full True m; H_model [0.484; 1.0] m; ...
+       -- the comma-stripping for CSV safety has turned the list's comma into a semicolon in
+          the published header.
+rule   FR1's SECOND limb, and CLAUDE.md's own gloss on it: "it is what the R825/R834/R837
+       family was: a declared name or path arriving as a different type, accepted, and used.
+       NO NUMBER WAS WRONG IN ANY ARTIFACT AT THE TIME, and the input was used other than as
+       declared, so that family blocks." `heading_deg` is declared as a number in degrees by
+       docs/conventions.md:143-147 and bounded by HEADING; a bool is accepted and used as the
+       run's published wave basis.
+judge  **IT BLOCKS. THE SILENTLY WRONG RESULT IT PRODUCES, in FR1's required form: an input
+       declared as a heading in degrees is accepted as a bool, a list, a string or a mapping
+       and USED -- published as the wave basis of three deliverables at exit 0 -- other than
+       as declared. No number in those artifacts is wrong at the time, which is exactly the
+       condition under which CLAUDE.md says this family still blocks.**
+```
+
+**AND THE ROUND IS MINE, WHICH I SAY RATHER THAN SMUGGLE.** My predecessor's R874 ruled "it
+does not block ... the published value is the recorded object, so the contradiction is on the
+face of the artifact rather than hidden in it", and set the closing condition at
+`floatfea/run/pipeline.py:583-586`. That ruling applied FR1's FIRST limb and never tested the
+second, and the condition named a site twelve lines below an early return. **The implementer
+satisfied the condition as written.** The condition was wrong about where the defect was, and
+the finding was wrong about which limb it fell under.
+
+**Closed when** the recorded wave basis is validated WHERE IT IS READ -- `exported_wave_basis`
+at `floatfea/run/pipeline.py:687-699`, which is the single reader of the sidecar and already
+filters it key by key -- so that validation does not depend on what the configuration happens
+to declare, and so that all four published fields get it rather than one. Specifically:
+`heading_deg` refused unless it is a real non-bool number (and see R879 for NaN and range);
+`wave_height_full_m` and `wave_height_model_m` the same; `window` refused unless it is the
+string the report prints it as. A run that reaches exit 0 must not be able to publish a
+wave-basis line carrying a bool, a list or a mapping. `_recorded_heading` then becomes a read
+rather than a validator, and R878 is in the same function.
+
+---
+
+**R876. (DOES NOT BLOCK -- ledgered, and it is the highest-value item on the list) R872 PUT AN
+EQUIVALENCE RELATION INSIDE A GATE AND CALLED IT ARITHMETIC. NOTHING IN THE 29 TESTS HOLDS THE
+MODULUS. `% 180.0` IS GREEN ON ALL 29, AND SO IS `% 90.0` -- A MODULUS UNDER WHICH A FOLLOWING
+SEA COVERS A HEAD SEA.**
+
+```
+claim  the gate does not pin the number the repair's own argument rests on
+rule   the assertions in tests/unit/test_headings_and_bem_coverage.py, 29 of them, including
+       the three R872 rows and the 44.9 near-miss
+cmd    the injection that WEAKENS the gate, solved as a grid rather than at one point (EH4):
+       `% 360.0` replaced by `% M` at both sites in uncovered_headings, for M in
+       {180, 90, 45, 1}, test file re-run, file restored from a saved copy each time
+out    modulus 180.0 -> 29 passed            <- declared 180 deg covered by recorded 0 deg
+       modulus  90.0 -> 29 passed
+       modulus  45.0 -> 1 failed, 28 passed
+       modulus   1.0 -> 3 failed, 26 passed
+       baseline      -> 29 passed            (and `git status --porcelain` empty after)
+cmd    why the declared counter does not reach it
+out    the 44.9-against-45.0 row measures the FINENESS of the comparison WITHIN a turn. The
+       360-against-0 row measures that ONE turn is identified. Together they admit every
+       modulus from 90 to 360. **The counter is in the right quantity for slack and in the
+       wrong quantity for the modulus, which is what R872 actually changed.**
+rule   FR1's third non-blocking class, "a census, needle or grep that is too narrow where no
+       wrong result follows" -- a test too narrow is the same class, and the code at this
+       commit is CORRECT.
+judge  **it does not block. THE SILENTLY WRONG RESULT IT PRODUCES AT THIS COMMIT: none** --
+       `360.0` is the right number and I verified the whole covered axis under it. I would
+       have blocked under CZ0 (c), because the modulus is what the gate claims and on which
+       quantity; FR1 narrows that and I am ruling under FR1, not around it. Recorded as the
+       first item on the list because it is one row.
+```
+
+**Closed when** one row asserts that a head sea is not covered by a following sea --
+`uncovered_headings((180.0,), (0.0,)) == (180.0,)` -- which reddens at every modulus below 360
+and is the counter-case in the quantity the repair moved.
+
+---
+
+**R878. (DOES NOT BLOCK -- ledgered) `floatfea/cli.py:146-149` SUBSCRIPTS FOUR KEYS THAT
+`exported_wave_basis` BUILDS ONE KEY AT A TIME. A SIDECAR RECORDING A HEADING AND NOT A WAVE
+HEIGHT IS A `KeyError` AFTER THE SOLVE, AND IT LEAVES A ZERO-BYTE `member_forces.csv` IN THE
+OUTPUTS DIRECTORY.**
+
+```
+claim  the CSV header path and the report path disagree about a partial sidecar
+cmd    the three sites
+out    floatfea/cli.py:146-149  basis["heading_deg"], basis["wave_height_full_m"], ...
+       floatfea/cli.py:262-265  basis.get('heading_deg', '(not recorded)'), ...
+       floatfea/run/pipeline.py:695-699  {key: run_block[key] for ... if key in run_block}
+       -- `if basis:` is true for ANY non-empty subset, and only the report path tolerates one
+cell   the shipped example with `wave_height_full_m` removed from the sidecar's `run` block
+       and nothing else changed, through the real CLI
+out    EXIT=1, traceback, KeyError: 'wave_height_full_m' at cli.py:147, raised from
+       _write_member_forces -> _write_header -> _header_lines
+       and the outputs directory contains:  member_forces.csv   0 bytes
+cmd    the commit that made it reachable
+out    the comment at floatfea/cli.py:136-141 records it -- R829/FQ3 replaced the CSV path's
+       field-by-field `(not recorded)` fallbacks with a single branch, for the right reason,
+       and the report path kept its four `.get` calls. The partial case was not swept.
+rule   FR1's first non-blocking class -- the outcome is right, the message is a traceback
+judge  **it does not block. THE SILENTLY WRONG RESULT IT PRODUCES: none** -- exit 1 and a
+       traceback. What it leaves behind is a zero-length artifact in the outputs directory,
+       which floatfea/cli.py:395-397 names in as many words as the thing this project is
+       built to prevent, and the exit code is what separates the two. Same function as R877.
+```
+
+**Closed when** `exported_wave_basis` returns either the whole wave basis or nothing -- so
+`if basis:` means what both call sites assume -- or the CSV path uses the same four `.get`
+calls the report path does, and either way one test records a partial sidecar's outcome.
+
+---
+
+**R879. (DOES NOT BLOCK -- ledgered) TWO OF THE THREE THINGS R873's AND R874's CONDITIONS NAMED
+ARE NOT DONE AND NOT DECLARED UNANSWERED: NaN IS NOT REFUSED BY NAME, AND THE RECORDED HEADING
+IS NOT RANGE-CHECKED AT ALL.**
+
+```
+claim  "the same discipline the declared side uses" is three checks and the repair has one
+cmd    the declared side, in order
+out    floatfea/run/config.py:202  bool or non-number  -> refused by name
+       floatfea/run/config.py:208  NaN                 -> refused by name, "NaN is not a value"
+       floatfea/run/config.py:212  outside [low, high] -> refused by name
+cmd    the recorded side
+out    floatfea/run/pipeline.py:581-593 -- the first check only
+cell   refuse_headings_this_run_cannot_cover((0.0,), {"heading_deg": float("nan")})
+out    REFUSED, but by the COVERAGE message: "this run covers nan deg -- the one heading its
+       dynamic-inputs file was exported at". Not by name.
+cell   refuse_headings_this_run_cannot_cover((90.0,), {"heading_deg": 450.0})
+out    ACCEPTED -- and 450 is outside HEADING's declared domain, which the declared side
+       refuses at config.py:212. The modulo is what makes it reachable: before R872 an
+       out-of-domain recorded value could only match by exact equality.
+cmd    one more, for the record
+out    {"heading_deg": 10**400} -- a JSON bignum, which json.loads parses as an int -- is
+       isinstance(x, int), passes _recorded_heading, and raises OverflowError inside float().
+       Exit 1 and a traceback, same class as R878.
+rule   FR1's first non-blocking class for the NaN half (the outcome is a refusal); and
+       CLAUDE.md -- "A closing condition that names sites is closed site by site. Half of an
+       item is not the item."
+judge  **it does not block. THE SILENTLY WRONG RESULT IT PRODUCES: none** -- every case here
+       is refused or crashes. It is on the list because a condition named three checks, two
+       are absent, and the commit records neither as left. The range half is the one I would
+       do first: it is what makes the modulo act only on `360.0 -> 0.0` inside the declared
+       domain, which is the whole of what R872 argued for.
+```
+
+**Closed when** `exported_wave_basis` -- with R877 -- refuses a NaN recorded heading by name
+and refuses one outside `HEADING`'s declared domain by name, or the report revision states
+which of the three named checks was left and why.
+
+---
+
+**R880. (DOES NOT BLOCK -- apparatus, FF0 class: fixed in the next commit, not ledgered)
+`.claude/agents/gating-supervisor.md` TELLS ME TO READ "EH1, EJ2 AND FC1 -- THE TWO BOUNDARY
+STATES, THEIR TWO CORRECTED LISTS" FROM `CLAUDE.md`. FS1 DELETED THE LISTS. THE CITATION
+RESOLVES AND THE RULE IT NAMES IS GONE, WHICH IS FE1's OWN TEST FAILING IN THE MIRROR.**
+
+```
+cmd    the citation, in my own instructions
+out    .claude/agents/gating-supervisor.md -- "**CZ1** ... **EG3**, **EH1**, **EJ2** and
+       **FC1** -- the two boundary states, their two corrected lists, and the two CZ1-class
+       guards that cannot pass in the commit they describe."
+cmd    what CLAUDE.md now carries under those codes
+out    CLAUDE.md:429  "**THE ENUMERATED LISTS ARE REPLACED BY THE PREDICATE (FS1).**"
+       EH1, EJ2 and FC1 survive there only as the HISTORY of why the lists went --
+       CLAUDE.md:458-479, "Why the lists went, stated as the count rather than as a
+       preference". There are no lists to read.
+cmd    the grep that shows the lists are gone from all three governing files
+out    "LIST GAINS THREE NAMES"   -> (none in .claude, docs/SUPERVISOR.md, CLAUDE.md)
+       "state (2)'s list gains"   -> (none)
+       "The two lists, corrected" -> (none)
+rule   FE1's own note, inverted: "if a citation does not resolve and the rule is not stated
+       beside it, the rule is gone." Here the citation resolves to a clause whose rule has
+       been superseded, and my instructions still describe the superseded rule. FE1 deleted
+       the copies to stop them going stale; the citations around them can go stale too.
+judge  **it does not block under FR1 -- no wrong result follows -- and it is the gating
+       apparatus, which FF0 takes out of the ledger and into the next commit. THE SILENTLY
+       WRONG RESULT IT PRODUCES: none.** I ruled under CLAUDE.md, as my instructions say to
+       where the two disagree, and I say which: all 165 reds classified under the FS1
+       PREDICATE per id, no list consulted. Seventh occurrence of the C45 family. The reason
+       I record it rather than let it pass is the one C45 was earned on: a reviewer reading
+       an instruction that names a rule nobody can find has no way to know whether the rule
+       was deleted or whether it is looking in the wrong place.
+```
+
+**Closed when** that sentence in `.claude/agents/gating-supervisor.md` names the FS1 predicate
+instead of two lists, in a standalone `process:` commit citing FS1 -- and, as with R875, after
+the paragraph around it is read rather than grepped.
+
+## CI at the reviewed commit: RED, 165 reds, EVERY ONE BOUNDARY BY THE PREDICATE
+
+**`gh run list --commit ff48a6d` returns `[]` and the run EXISTS. I did not take the empty
+result for an unavailable check (CK2).** `gh run list -L 8` gives
+`headSha ff48a6d4b60919485e1bf76fa9a81972f22d31b9, workflowName CI, status completed,
+conclusion failure`, run id **39371705159**. This is not an allowance-exhausted run: it has a
+runner, real steps and a real duration.
+
+```
+job  lint, unit and guards        FAILURE
+     actionlint SUCCESS / ruff SUCCESS / black --check SUCCESS / mypy SUCCESS /
+     unit tests SUCCESS / guards and meta-tests FAILURE
+     -- every step RAN. Nothing was skipped behind an earlier red, which is what CZ1 (iii)
+        exists to see, and FP1's CI-only `types-PyYAML` red has stayed fixed.
+job  the verification ladder      SUCCESS   (rungs 1, 2, 3, 4, 5 and 6 all SUCCESS)
+job  CI determinism -- leg        skipped
+job  CI determinism -- ten legs   skipped
+```
+
+My own whole-suite run agrees with CI's shape: **165 failed, 3617 passed, 1 skipped**, and the
+165 are ENTIRELY inside the two report-guard files -- I ran those two alone and got
+`165 failed, 183 passed, 1 skipped`, the same number. **Nothing outside them is red, which is
+also the control that says my mutation runs did not leak into the whole-suite run: `% 1.0` and
+the three ablations each redden `tests/unit/test_headings_and_bem_coverage.py`, and that file
+is green in the whole-suite output.**
+
+The 165, each id tested against the FS1 predicate rather than against any list:
+
+```
+119  test_every_named_site_is_touched_or_declared[...]   limb one -- each id NAMES a site of
+       a verdict with no answering report revision, R874's three pipeline.py lines among them
+ 31  test_the_report_carries_the_finding[R845..R875]     limb one -- each NAMES a finding
+ 10  test_the_guard_survives_the_state[...]              limb one via the red `baseline`,
+       which is itself in the list; the cascade is identified by the baseline being red and
+       by each state's own failure line, not by its name
+  1  test_the_CI_section_is_about_the_REVIEWED_commit     limb one -- names the reviewed commit
+  1  test_the_Carried_table_is_what_the_generator_produces        limb one
+  1  test_the_generator_would_catch_a_row_under_the_wrong_number  limb one, the generator's
+       own control, keyed on the Carried table it cannot have yet
+  1  test_the_report_carries_a_WHOLE_SUITE_count         LIMB TWO -- scripts/suite_count.py
+       measures a clean worktree AT a commit, so the line naming a sha cannot be inside it
+  1  test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW      LIMB TWO -- needs a RUN, and no run
+       exists for a commit before it is pushed
+---
+165  163 under limb one, 2 under limb two. NONE WITHOUT AN EXIT. No red is CZ1 (iv).
+```
+
+## Corpus (EG4(e))
+
+**THE PAUSE HELD. I added no corpus entries and committed nothing to `tests/corpus/`.** Batches
+are paused until 28 October except mutation work on F4's load-mapping gate and EB6's
+label-provenance gate, and this diff touches neither.
+
+**What I ran instead, which is the recorded substitute, and both halves produced a finding:**
+
+* **A continuum grid over the parameter space the decision rule guards** -- the RECORDED
+  heading axis, which `HEADING` does not bound and which the commit's own report says it did
+  not test: `-10.0`, `-360.0`, `-1e-16`, `405.0`, `450.0`, `450.0000000001`, `720.0`, `1e40`,
+  `10**400`, `nan`, `inf`, `True`, `"0"`, `[0.0, 45.0]`, `{"a": 1}`, `None`; and a grid over
+  the MODULUS itself, `{360, 180, 90, 45, 1}`. The modulus grid produced **R876** and the
+  out-of-domain rows produced **R879**.
+* **A regeneration check on a published deliverable** -- `report.md`, `member_forces.csv` and
+  `utilisation.csv` regenerated from this tree against three perturbed sidecars rather than
+  read in the diff. That produced **R877**, the blocking finding, and **R878**.
+
+Neither would have been found by reading the diff: the diff's configuration is the one the
+commit chose, and R877 lives on the configuration it did not -- a config with no `headings:`
+key, which is the shipped example.
+
+## Tolerances touched
+
+**None.** `git diff 0a6edba..HEAD -- floatfea/tolerances.py` is empty.
+
+**And I considered `% 360.0` against the tolerance rule rather than accepting the commit's
+word for it.** `CLAUDE.md` extends the rule to "anything that functions as a tolerance under
+another name: convergence thresholds, comparison epsilons, 'small number' guards ... and any
+factor introduced to make two numbers agree". The modulus is **not** one: it introduces no
+slack, and I measured that rather than reasoning it -- `h % 360.0` is exactly `h` for every
+value in `[0, 360)` and exactly `0.0` at `360.0`, so the near-miss `44.9` against `45.0` is
+still refused and the comparison is as fine as it was. It is a change to the EQUIVALENCE the
+comparison uses, not to its tolerance, and the quantity it is an equivalence on is a direction
+of travel, where mod-360 is an identity. **The commit's claim that this is arithmetic is
+correct and now measured.** What is missing is not a tolerance entry but a counter in the right
+quantity, which is R876.
+
+## Next step opens when
+
+**This is a HOLD, so step 3 stays open and the next step does not begin. The three reviewed
+revisions are all still available -- this is the sixth interim check and counts against none.**
+
+**R877 is answered first, and it is answered in `exported_wave_basis` rather than at the site
+my predecessor named.** The specific condition: the recorded wave basis is validated where the
+sidecar is read, so that validation does not depend on what the configuration declares, and
+all four published fields get it. A run that reaches exit 0 cannot publish a wave-basis line
+carrying a bool, a list or a mapping in any of the three artifacts, and the measurement that
+shows it is the shipped example -- no `headings:` key -- run against a sidecar whose
+`heading_deg` is `true`, with the exit code and the three regenerated artifacts pasted. The
+refusal message's last clause, which currently reads "or remove `load_cases.headings` so no
+comparison is claimed", stops recommending the unvalidated path.
+
+**R878 and R879's range half are the same function and go in the same commit.** R876 is one
+test row. R880 is a `process:` commit and not the implementer's step work.
+
+**Still blocking by name into the first reviewed revision, unchanged:** R867, R868, R869 as
+one repair, and R870. **R862 remains not due** and blocks in the commit that adds a timed
+stage -- FL2 item 4 or 5, by the implementer's own sequencing.
+
+**What I did NOT ask for.** No new guard, scanner, meta-test or detector: R876 is a row in an
+existing file, R877/R878/R879 are checks inside an existing function, and R880 is a sentence.
+`docs/milestones/F2a.md` is where anything larger goes.
+
+**Schedule, since the turn stated it.** FS4's checkpoint is 26 October, seven days out, and
+FL2 items 3, 4 and 5 plus FM0's re-solve loop are what remains. Step 3 has now spent six
+interim checks and no reviewed revision. **I am not re-escalating**: FR0 already answered the
+escalation `CLAUDE.md` requires with "slip the date, keep the scope", and R877 is one function
+in one commit. What I record is that this round's blocking finding came from running the model
+at a configuration nobody chose, which is the trade EU1 and FR1 were both written to make.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 82f922c4227656e597ea35be7b7aa5137f3cc4f4
 **Reviewed commit: `82f922c4227656e597ea35be7b7aa5137f3cc4f4`.**
 Verdict: PASS
