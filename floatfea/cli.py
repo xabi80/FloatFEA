@@ -403,6 +403,18 @@ def _cmd_export(args: argparse.Namespace) -> int:
             f"({cfg.load_cases.npz}). `export` PRODUCES that file from FloatSim runs; "
             f"declare `cases` instead, or run `floatfea run` with this configuration."
         )
+    # **FL2(c): THE HEADING REFUSAL BELONGS HERE, AND ITS INPUT IS NOT HERE YET.**
+    # `refuse_uncovered_headings` is the naming half and it is complete and tested. What
+    # it needs is the set the BEM dataset actually carries, and that is a fact about the
+    # PINNED HSP STATE: the datasets and their reader live in HSP
+    # (docs/hsp-coupling.md), this repository contains neither, and the committed
+    # dynamic-inputs npz records one heading in its sidecar rather than a coverage list.
+    #
+    # So the call site is written where the dataset is opened, which is inside the export
+    # this command still cannot perform. Hard-coding a covered set here to make the call
+    # reachable would be FloatFEA asserting a fact about HSP's datasets that nothing in
+    # this repository can check -- and the refusal below is the honest state until the
+    # worktree is wired.
     raise ConfigError(
         f"`floatfea export` is not implemented in R1 step 1. It needs the pinned HSP "
         f"worktree (docs/hsp-coupling.md), and FL1 scopes step 1 to existing data. The "

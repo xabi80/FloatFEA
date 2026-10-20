@@ -1,0 +1,171 @@
+"""FL2(c): headings as a declared list, and the BEM coverage refusal.
+
+FL(c) asks for three things and this file carries two of them:
+
+* **headings: any list** -- declared, checked against the same `HEADING` bound a case's
+  own heading uses, with a repeat refused;
+* **`export` refuses a heading the BEM dataset does not cover, naming what is missing** --
+  the naming half, complete and tested here.
+
+**THE THIRD IS UNDERDETERMINED BY WHAT THIS REPOSITORY HOLDS, AND SAYING SO IS THE
+POINT.** FL(c) also asks that "the governing envelope is taken over all headings and
+cases, and the report shows the governing heading". A dynamic-inputs npz records ONE
+heading for the whole file -- `exported_wave_basis` returns a single `heading_deg`, and
+the EX3/R724 caveat on every artifact says the heading dependence is UNTESTED for exactly
+that reason. So an envelope over several headings needs a multi-heading npz, and producing
+one is the `export` path, which needs the pinned HSP worktree that FL1 scoped out of step
+1. Building a multi-heading envelope against a single-heading file would mean inventing
+the other headings' loads.
+
+The same fact is why `refuse_uncovered_headings` TAKES the covered set rather than holding
+one: which headings the BEM dataset carries is a property of the pinned HSP state, whose
+datasets and reader (`readers/capytaine.py`) live in HSP and not here.
+"""
+
+from __future__ import annotations
+
+import copy
+from pathlib import Path
+from typing import Any
+
+import pytest
+import yaml
+
+from floatfea.run.config import ConfigError, load_config
+from floatfea.run.pipeline import refuse_uncovered_headings, uncovered_headings
+
+ROOT = Path(__file__).resolve().parents[2]
+EXAMPLE = ROOT / "examples" / "platform12_placeholder.yaml"
+
+# A set a test supplies, NOT a claim about any real dataset.
+COVERED = (0.0, 45.0, 90.0, 135.0, 180.0)
+
+
+@pytest.fixture
+def cfg_with(tmp_path: Path) -> Any:
+    """The shipped example with `load_cases.headings` set, paths absolutised."""
+
+    def make(headings: Any) -> Path:
+        data = copy.deepcopy(yaml.safe_load(EXAMPLE.read_text(encoding="utf-8")))
+        for block, key in (("floatsim", "deck"), ("load_cases", "npz"), ("outputs", "directory")):
+            value = data.get(block, {}).get(key)
+            if isinstance(value, str) and value.strip():
+                data[block][key] = str((EXAMPLE.parent / value).resolve())
+        if headings is not None:
+            data["load_cases"]["headings"] = headings
+        path = tmp_path / "config.yaml"
+        path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+        return path
+
+    return make
+
+
+# ---------------------------------------------------------------------------
+# The declared list
+# ---------------------------------------------------------------------------
+
+
+def test_FL2c_headings_are_ANY_LIST(cfg_with: Any) -> None:
+    """FL(c)'s own words. Four headings, in the order declared."""
+    cfg = load_config(cfg_with([0.0, 45.0, 90.0, 180.0]))
+    assert cfg.load_cases.headings == (0.0, 45.0, 90.0, 180.0)
+
+
+def test_FL2c_an_ABSENT_headings_key_declares_none(cfg_with: Any) -> None:
+    """The default, which is what the shipped example runs.
+
+    An absent key means "whatever the dynamic-inputs file was exported at", which the
+    wave-basis line states and the EX3/R724 caveat qualifies.
+    """
+    assert load_config(cfg_with(None)).load_cases.headings == ()
+
+
+@pytest.mark.parametrize(
+    ("label", "headings", "needle"),
+    [
+        ("an empty list", [], "the list is EMPTY"),
+        ("a repeat", [0.0, 45.0, 0.0], "contains a repeat"),
+        ("a scalar", 45.0, "expected a list"),
+        ("a string in the list", [0.0, "45"], "deg"),
+        ("below the declared range", [-1.0], "deg"),
+        ("above the declared range", [360.1], "deg"),
+        ("an unquoted bool", [True], "deg"),
+    ],
+)
+def test_FL2c_the_schema_refuses(cfg_with: Any, label: str, headings: Any, needle: str) -> None:
+    """One case per way a declared heading list can be wrong.
+
+    The range cases go through `HEADING`, the same bound a case's own `heading` uses --
+    one declared domain rather than a second copy of it.
+    """
+    with pytest.raises(ConfigError) as caught:
+        load_config(cfg_with(headings))
+    assert needle in str(caught.value), (label, str(caught.value))
+
+
+def test_FL2c_the_declared_bound_is_the_SAME_one_a_case_uses() -> None:
+    """Not a second copy. `0` and `360` are both inside it, so neither end is excluded."""
+    from floatfea.run.config import HEADING
+
+    assert HEADING == ("deg", 0.0, 360.0)  # not-a-tolerance: the declared domain
+
+
+# ---------------------------------------------------------------------------
+# The BEM coverage refusal
+# ---------------------------------------------------------------------------
+
+
+def test_FL2c_a_COVERED_set_is_accepted() -> None:
+    """The control, so the refusals below are not refusing everything."""
+    refuse_uncovered_headings((0.0, 45.0, 180.0), COVERED)
+    assert uncovered_headings((0.0, 45.0, 180.0), COVERED) == ()
+
+
+def test_FL2c_EVERY_missing_heading_is_named_not_just_the_first() -> None:
+    """A reader fixing a configuration needs the whole list.
+
+    Half of an item is not the item -- the same argument CLAUDE.md makes about a closing
+    condition that names sites.
+    """
+    with pytest.raises(ConfigError) as caught:
+        refuse_uncovered_headings((0.0, 30.0, 45.0, 200.0), COVERED)
+    message = str(caught.value)
+    assert "30.0" in message and "200.0" in message, message
+    assert "[30.0, 200.0]" in message, message
+    # and it says what IS carried, so the fix is visible without opening the dataset
+    assert "45.0" in message, message
+
+
+def test_FL2c_the_missing_list_is_in_DECLARATION_order() -> None:
+    """Not sorted. The order a reader wrote is the order they read the refusal in."""
+    assert uncovered_headings((200.0, 30.0), COVERED) == (200.0, 30.0)
+
+
+def test_FL2c_a_NEAR_MISS_is_refused_because_a_heading_is_a_DECLARED_INPUT() -> None:
+    """`44.9` against a covered `45.0` is refused, and there is no tolerance here.
+
+    A run that asked for 45 deg and silently got 44.9 would publish an envelope for a sea
+    state nobody declared. The comparison is exact because the quantity is an input and
+    not a measurement, so "near enough" is the wrong question rather than a value to pick.
+    """
+    assert uncovered_headings((44.9,), COVERED) == (44.9,)
+    with pytest.raises(ConfigError):
+        refuse_uncovered_headings((44.9,), COVERED)
+
+
+def test_FL2c_an_EMPTY_declared_set_asks_for_nothing_and_is_accepted() -> None:
+    """Nothing declared cannot be uncovered. The schema already refuses an empty LIST;
+    this is the tuple that results from the key being absent."""
+    refuse_uncovered_headings((), COVERED)
+    assert uncovered_headings((), ()) == ()
+
+
+def test_FL2c_an_EMPTY_covered_set_refuses_everything_declared() -> None:
+    """EH4's weakening direction: a dataset carrying nothing covers nothing.
+
+    The opposite reading -- "no coverage list means do not check" -- would turn a missing
+    dataset into a silent pass, which is the shape this whole refusal exists to prevent.
+    """
+    assert uncovered_headings((0.0,), ()) == (0.0,)
+    with pytest.raises(ConfigError):
+        refuse_uncovered_headings((0.0,), ())

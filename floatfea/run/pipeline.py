@@ -512,6 +512,49 @@ def _ratio(a: float, b: float) -> float:
     return max(a, b) / min(a, b)
 
 
+def uncovered_headings(
+    declared: tuple[float, ...], covered: tuple[float, ...]
+) -> tuple[float, ...]:
+    """The declared headings the BEM dataset does not cover, in declaration order (FL2(c)).
+
+    FL(c): "`export` refuses a heading the BEM database does not cover, naming what is
+    missing." This is the naming half, and it is a pure function of two sets.
+
+    **THE COVERED SET IS PASSED IN, AND THAT IS NOT AN ACCIDENT OF THE SIGNATURE.** Which
+    headings the BEM dataset carries is a fact about the PINNED HSP STATE, not about
+    FloatFEA: the datasets and `readers/capytaine.py` live in HSP (docs/hsp-coupling.md),
+    this repository contains none of them, and the committed dynamic-inputs npz records a
+    single heading in its sidecar rather than a coverage list. A hard-coded list of
+    covered headings here would be FloatFEA asserting a fact it cannot check -- the same
+    error as inventing a load distribution, one level up.
+
+    So `export` reads the set from the dataset it opens and calls this; the refusal is
+    tested against a set the test supplies.
+
+    An EXACT comparison, because a heading is a declared input and not a measurement. A
+    run that asked for 45 deg and silently got 44.9 would publish an envelope for a sea
+    state nobody declared, so "near enough" is the wrong question and there is no
+    tolerance here to choose.
+    """
+    have = set(covered)
+    return tuple(h for h in declared if h not in have)
+
+
+def refuse_uncovered_headings(declared: tuple[float, ...], covered: tuple[float, ...]) -> None:
+    """Raise naming every declared heading the dataset does not carry (FL2(c))."""
+    missing = uncovered_headings(declared, covered)
+    if not missing:
+        return
+    raise ConfigError(
+        f"load_cases.headings asks for {list(missing)} deg, which the BEM dataset does "
+        f"not cover. It carries {sorted(covered)} deg. Every missing heading is named "
+        f"above rather than the first one, because a reader fixing a configuration needs "
+        f"the whole list; and the comparison is exact, because a heading is a declared "
+        f"input -- exporting 44.9 deg for a declared 45 would publish an envelope for a "
+        f"sea state nobody asked for."
+    )
+
+
 def exported_wave_basis(npz: Path) -> dict[str, Any]:
     """The heading and wave height a dynamic-inputs file was exported at (R817).
 

@@ -418,6 +418,20 @@ class LoadCases:
     cases: tuple[WaveCase, ...] = ()
     governing_periods: tuple[float, ...] = ()
     window_rule: str = ""
+    headings: tuple[float, ...] = ()
+    """FL2(c): the headings this configuration asks for. ANY LIST.
+
+    Declared rather than derived from `cases`, because FL(c) makes the heading set the
+    thing `export` is asked to produce and then refuses when the BEM dataset does not
+    cover it. An empty tuple means none was declared.
+
+    **WHAT THIS DOES NOT DO, STATED HERE BECAUSE A READER WILL EXPECT IT.** It does not
+    make `floatfea run` take an envelope over several headings. A dynamic-inputs npz
+    records ONE heading for the whole file -- that is what `exported_wave_basis` returns
+    and what the EX3/R724 caveat says on every artifact -- so a multi-heading envelope
+    needs a multi-heading npz, and producing one is the `export` path. This field is the
+    half that can be declared and checked without the HSP worktree.
+    """
 
 
 # ---------------------------------------------------------------------------
@@ -849,11 +863,45 @@ def _parse_sections(block: Any) -> Sections:
     return Sections(groups=groups, material=material)
 
 
+def _parse_headings(raw: Any, where: str) -> tuple[float, ...]:
+    """`load_cases.headings`, any list of declared headings (FL2(c)).
+
+    Each is checked against `HEADING`'s declared domain, which is the same bound a case's
+    own `heading` is checked against -- one declared range, not two.
+
+    A REPEAT IS REFUSED. Two identical headings would be exported twice and would enter
+    an envelope twice, which changes nothing about the answer and everything about what
+    the run claims to have covered; the same argument `governing_periods` already makes
+    for a repeated period.
+    """
+    at = f"{where}.headings"
+    if raw is None:
+        return ()
+    if not isinstance(raw, list):
+        raise ConfigError(
+            f"{at}: expected a list of headings in degrees, got {type(raw).__name__}."
+        )
+    if not raw:
+        raise ConfigError(
+            f"{at}: the list is EMPTY. Leave `headings` out if the heading is whatever "
+            f"the dynamic-inputs file was exported at; an empty list declares a run that "
+            f"covers no heading at all."
+        )
+    out = tuple(_checked(h, f"{at}[{i}]", HEADING) for i, h in enumerate(raw))
+    if len(set(out)) != len(out):
+        raise ConfigError(
+            f"{at}: {list(out)} contains a repeat. A heading exported twice enters the "
+            f"envelope twice -- it changes what the run CLAIMS to have covered without "
+            f"changing the answer."
+        )
+    return out
+
+
 def _parse_load_cases(block: Any, base: Path) -> LoadCases:
     where = "load_cases"
     _reject_unknown(
         block if isinstance(block, dict) else {},
-        ("npz", "cases", "governing_periods", "window_rule"),
+        ("npz", "cases", "governing_periods", "window_rule", "headings"),
         where,
     )
     npz_raw = block.get("npz")
@@ -901,8 +949,10 @@ def _parse_load_cases(block: Any, base: Path) -> LoadCases:
             f"{where}.governing_periods: {list(periods)} contains a repeat. A period "
             f"counted twice would weight one case twice in the envelope."
         )
+    headings = _parse_headings(block.get("headings"), where)
     return LoadCases(
         npz=npz,
+        headings=headings,
         cases=tuple(cases),
         governing_periods=periods,
         window_rule=_require_string(block.get("window_rule", ""), f"{where}.window_rule"),
