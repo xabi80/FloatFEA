@@ -163,7 +163,21 @@ def main() -> int:
             "verdict may carry the line."
         ),
     )
+    ap.add_argument(
+        "--interim",
+        action="store_true",
+        help=(
+            "record an ES0 INTERIM CHECK against the open step, with no report required "
+            "(FS2). An interim check closes nothing, so it may not be combined with "
+            "--closes."
+        ),
+    )
     args = ap.parse_args()
+    if args.interim and args.closes:
+        sys.exit(
+            "refused: --interim and --closes are mutually exclusive. An interim check "
+            "closes nothing (FK1), which is why FS2 gives it its own flag."
+        )
 
     body = sys.stdin.read()
     m = re.match(r"\s*Verdict:\s*(\w+)", body)
@@ -176,9 +190,26 @@ def main() -> int:
         sys.exit("refused: '## Carried' is empty — write 'checked, nothing carried' if so")
 
     root = Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip())
+    # **AN INTERIM CHECK HAS NO REPORT, BY DESIGN, AND THIS REFUSAL MADE THE TOOL
+    # UNUSABLE FOR ONE (R856, FS2).** ES0 defines an interim check as a verdict the
+    # `Stop` hook forces mid-step on a tree with NO new report revision, and FR3 makes
+    # "build the whole step, then write the report" the normal order -- so the normal
+    # state of an interim check is exactly the state this line rejected.
+    #
+    # It refused three times in step 3 and the reviewer hand-wrote all three verdicts,
+    # which is the outcome FN3 exists to prevent: a tool the reviewer cannot use is a
+    # tool whose anchor line, section checks and `Closes:` discipline go unapplied.
+    #
+    # A reviewed revision still requires its report. `--interim` says which of the two
+    # this is rather than inferring it from a missing file -- an absent report is also
+    # what a mistyped `--step` looks like.
     report = root / f"docs/reports/{args.milestone}/step-{args.step}.md"
-    if not report.exists():
-        sys.exit(f"refused: no step report at {report}")
+    if not report.exists() and not args.interim:
+        sys.exit(
+            f"refused: no step report at {report}. If this is an ES0 interim check, "
+            f"pass --interim (FS2); an interim check is recorded against the open step "
+            f"and needs no report."
+        )
 
     out = root / f"docs/reviews/{args.milestone}/step-{args.step}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -200,7 +231,9 @@ def main() -> int:
     # here rather than left to a convention that happened to hold nine times.
     anchor = f"**Reviewed commit: `{sha()}`.**"
     header = (
-        f"# Review — {args.milestone} step {args.step}\n"
+        f"# Review — {args.milestone} step {args.step}"
+        + (" — ES0 INTERIM CHECK (counts against no round)" if args.interim else "")
+        + "\n"
         f"Reviewed commit: {sha()}\n"
         f"{anchor}\n"
     )
