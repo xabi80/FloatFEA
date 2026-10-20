@@ -542,9 +542,9 @@ applied it by hand three times before it was written down.*
 
 > **CZ1 step (iii) does not apply to the boundary red a step's own report creates, on EITHER side of the verdict.** Two states, both designed, both self-clearing, and neither is a defect:
 >
-> **(1) Report written, verdict not yet.** The only failures are `tests/test_report_carried.py::test_the_guard_reads_the_step_being_worked_on` and the planted states that cascade off its baseline. The verdict clears them.
+> **(1) Report written, verdict not yet.** The verdict clears them.
 >
-> **(2) Verdict written, answering report not yet.** The only failures are `test_every_named_site_is_touched_or_declared`, `test_the_report_carries_the_finding`, `test_the_CI_section_is_about_the_REVIEWED_commit`, `test_the_Carried_table_is_what_the_generator_produces` and `test_the_generator_would_catch_a_row_under_the_wrong_number`, each naming a finding or a site of the newest verdict. The answering report clears them.
+> **(2) Verdict written, answering report not yet.** The answering report clears them.
 >
 > In either state the run is recorded as RED WITH ITS CAUSE NAMED -- the full `FAILED` list pasted, and the sentence saying which of the two states it is -- and work proceeds. **Any failure that fails the PREDICATE below is CZ1 (iv) unchanged**, and "only those" is a claim that carries the `FAILED` list as its command. The reviewer measures state (1) clearing at its verdict commit; the implementer measures state (2) clearing at the report commit.
 
@@ -560,6 +560,23 @@ unparaphrased:
 Adopted by directive FS1 in your own wording:
 
 > **every red names a finding or a site of the newest verdict; any other red blocks.**
+
+**AND CZ1's REUSABLE HALF IS THE PREDICATE'S SECOND LIMB, WHICH FS1's OWN COMMIT DELETED
+BY ACCIDENT (R871).** FS1 replaced the enumerated LISTS. FC1's clause carried a list of
+two names *and* a reason, and the reason is not a list:
+
+> **a check whose input is the commit itself cannot be measured before the commit
+> exists**, so it cannot pass in the commit it describes.
+
+`test_the_report_carries_a_WHOLE_SUITE_count` and
+`test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` name no finding and no site, so a literal
+reading of the first limb alone leaves them with **no exit at all** -- the reviewer
+measured the predicate at 102 of 104 ids and ruled those two under this half. So the
+predicate is: **a red that names a finding or a site of the newest verdict, OR that cannot
+be measured before the commit it describes exists, is a boundary red; any other red
+blocks.**
+
+Both limbs are reasons and neither is a list of names.
 
 **There are no hand lists to read against.** Test each `FAILED` id against the predicate
 individually -- it is a per-id test, not a licence to rule a cascade by family -- and a red

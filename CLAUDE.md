@@ -431,6 +431,23 @@ in the reviewer's own wording:
 
 > **every red names a finding or a site of the newest verdict; any other red blocks.**
 
+**AND CZ1's REUSABLE HALF IS THE PREDICATE'S SECOND LIMB, WHICH FS1's OWN COMMIT DELETED
+BY ACCIDENT (R871).** FS1 replaced the enumerated LISTS. FC1's clause carried a list of
+two names *and* a reason, and the reason is not a list:
+
+> **a check whose input is the commit itself cannot be measured before the commit
+> exists**, so it cannot pass in the commit it describes.
+
+`test_the_report_carries_a_WHOLE_SUITE_count` and
+`test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` name no finding and no site, so a literal
+reading of the first limb alone leaves them with **no exit at all** -- the reviewer
+measured the predicate at 102 of 104 ids and ruled those two under this half. So the
+predicate is: **a red that names a finding or a site of the newest verdict, OR that cannot
+be measured before the commit it describes exists, is a boundary red; any other red
+blocks.**
+
+Both limbs are reasons and neither is a list of names.
+
 **The reviewer checks the predicate. There are no hand lists.** A red that satisfies it is
 a boundary red and the waiver applies; a red that does not is CZ1 (iv) unchanged. The
 `FAILED` list is still pasted and each id is still matched individually -- EG3 (i) below is
