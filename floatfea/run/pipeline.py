@@ -540,6 +540,65 @@ def uncovered_headings(
     return tuple(h for h in declared if h not in have)
 
 
+def refuse_headings_this_run_cannot_cover(
+    declared: tuple[float, ...], basis: dict[str, Any]
+) -> None:
+    """A declared heading this run does not cover is refused BEFORE any output (R866).
+
+    **THE DEFECT THIS CLOSES WAS MINE AND IT WAS EXACTLY THE SHAPE R809 ALREADY REFUSES
+    TWELVE LINES ABOVE ITS CALL SITE.** `load_cases.headings` was parsed, range-checked
+    and repeat-checked, and then read by nothing. Measured through the real CLI on the
+    shipped example with `headings: [0.0, 45.0, 90.0]` and nothing else changed:
+
+        EXIT=0   wrote member_forces.csv (1248 rows) / utilisation.csv (32) / report.md
+        governing U = 1.71167 at platform:hub4_arm ROOT
+        report.md  * **heading** -- 0.0 deg
+
+    So `utilisation.csv` and `report.md` shipped as the output of a configuration
+    declaring three headings, with `U = 1.71167` presented as THE governing utilisation,
+    when it is the envelope over heading 0 alone. The EX3/R724 caveat is true of the run
+    and false of the configuration, and nothing named the two headings that never
+    happened. Under FR1 that is an input accepted and used other than as declared.
+
+    **THE FACT NEEDED TO CHECK IT IS LOCAL.** `exported_wave_basis` already reads the
+    heading the npz was exported at, with no HSP worktree -- which is why this is not the
+    multi-heading envelope FL(c) also asks for, and why it did not have to wait for the
+    export path. A declared set this run cannot cover is refused; it is not reconciled,
+    narrowed, or noted in a caveat.
+
+    A sidecar-less npz records no heading at all, and a declared set against it is refused
+    for the same reason rather than assumed to be heading 0 -- FL1(a) admits such a file,
+    and `_header_lines` already says "NOT RECORDED by the export" when it arrives.
+    """
+    if not declared:
+        return
+    recorded = basis.get("heading_deg")
+    if recorded is None:
+        raise ConfigError(
+            f"load_cases.headings declares {list(declared)} deg and this run's "
+            f"dynamic-inputs file records NO heading, so nothing here can show that any "
+            f"of them was covered. Remove the declaration to run at whatever the export "
+            f"used -- the artifacts state that it is not recorded -- or point "
+            f"`load_cases.npz` at a file whose export recorded its heading. Refused "
+            f"before any output is written, so nothing on disk describes a run that did "
+            f"not happen."
+        )
+    covered = (float(recorded),)
+    missing = uncovered_headings(declared, covered)
+    if not missing:
+        return
+    raise ConfigError(
+        f"load_cases.headings declares {list(declared)} deg and this run covers "
+        f"{covered[0]} deg -- the one heading its dynamic-inputs file was exported at. "
+        f"{list(missing)} deg would never be computed, and the governing utilisation "
+        f"would be published as THE envelope while being the envelope over "
+        f"{covered[0]} deg alone. An envelope over several headings needs a "
+        f"multi-heading npz, which `floatfea export` produces; `floatfea run` does not "
+        f"invent the loads for a heading it was not given. Refused before any output is "
+        f"written, so nothing on disk describes a run that did not happen."
+    )
+
+
 def refuse_uncovered_headings(declared: tuple[float, ...], covered: tuple[float, ...]) -> None:
     """Raise naming every declared heading the dataset does not carry (FL2(c))."""
     missing = uncovered_headings(declared, covered)
@@ -647,6 +706,15 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
             "invoke FloatSim -- that is `floatfea export`, which needs the HSP worktree. "
             "Run the export first and point `npz` at its output."
         )
+
+    # **R866: THE DECLARED HEADING SET IS CHECKED BEFORE ANYTHING IS BUILT OR WRITTEN.**
+    # Earliest possible point, for R809's recorded reason -- a refusal that arrives after
+    # the outputs is a warning with a non-zero exit code. The npz's own recorded heading
+    # is the only fact needed and `exported_wave_basis` reads it without the HSP
+    # worktree.
+    refuse_headings_this_run_cannot_cover(
+        cfg.load_cases.headings, exported_wave_basis(cfg.load_cases.npz)
+    )
 
     t0 = time.perf_counter()
     built = build_model(cfg)

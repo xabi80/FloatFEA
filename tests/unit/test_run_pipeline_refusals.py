@@ -384,6 +384,66 @@ def test_FP2_NO_FLOOR_REMAINS_measured_as_ACCEPTANCE(write: Any, fraction: float
     )
 
 
+def test_R866_a_declared_heading_the_RUN_CANNOT_COVER_refuses_AT_THE_CALL_SITE(
+    write: Any, tmp_path: Path, capsys: Any
+) -> None:
+    """The CALL SITE, not the function -- which is how R866 happened in the first place.
+
+    **R828's SHAPE, ONE LAYER OVER.** `refuse_headings_this_run_cannot_cover` is asserted
+    directly in `tests/unit/test_headings_and_bem_coverage.py`, and those cases are green
+    with the call REMOVED from `run()`: measured `21 passed` with the line replaced by a
+    no-op. That is exactly the hole R866 itself was -- a function that exists, is correct,
+    is tested, and is called by nothing -- so the repair needs a case that fails when the
+    CALLER goes, and this is it.
+
+    END TO END THROUGH THE CLI, because the other half of the claim is that NOTHING IS
+    WRITTEN. R809's recorded reason is that a refusal arriving after the outputs is a
+    warning with a non-zero exit code, and only the directory can say which happened.
+    It costs no solve: the refusal is before the build.
+    """
+    import floatfea.cli as cli
+
+    out = tmp_path / "published"
+
+    def mutate(data: dict[str, Any]) -> None:
+        data["load_cases"]["headings"] = [0.0, 45.0, 90.0]
+        data["outputs"]["directory"] = str(out)
+
+    # `cli.main` CATCHES ConfigError, prints it and returns 2 (`cli.py:447-449`), so the
+    # contract here is the exit code and the message on stderr -- not an exception. A test
+    # written against `pytest.raises` passed its control and failed this case, which is
+    # how the real contract got measured rather than assumed.
+    code = cli.main(["run", str(write(mutate))])
+    assert code == 2, code
+    message = capsys.readouterr().err
+    assert "45.0" in message and "90.0" in message, message
+    assert "before any output is written" in message, message
+    # THE HALF A STUB CANNOT SEE: the refusal came before anything reached disk.
+    assert not out.exists() or not list(out.iterdir()), sorted(p.name for p in out.iterdir())
+
+
+def test_R866_the_matching_declaration_still_RUNS_and_publishes(write: Any, tmp_path: Path) -> None:
+    """The control, end to end: declaring the heading the file carries is not an error.
+
+    Without this, making the refusal unconditional would leave the test above green --
+    the mistake FP2's own docstring records one paragraph down.
+    """
+    import floatfea.cli as cli
+
+    out = tmp_path / "published"
+
+    def mutate(data: dict[str, Any]) -> None:
+        data["load_cases"]["headings"] = [0.0]
+        data["outputs"]["directory"] = str(out)
+
+    assert cli.main(["run", str(write(mutate))]) == 0
+    assert sorted(p.name for p in out.iterdir()) == [
+        "member_forces.csv",
+        "report.md",
+        "utilisation.csv",
+    ]
+
+
 def test_FP2_study_only_PERMITS_the_run_and_LABELS_EVERY_OUTPUT(write: Any, tmp_path: Path) -> None:
     """R821. Without the flag: refusal. With it: the run completes and says it is a study.
 

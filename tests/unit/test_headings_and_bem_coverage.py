@@ -32,7 +32,11 @@ import pytest
 import yaml
 
 from floatfea.run.config import ConfigError, load_config
-from floatfea.run.pipeline import refuse_uncovered_headings, uncovered_headings
+from floatfea.run.pipeline import (
+    refuse_headings_this_run_cannot_cover,
+    refuse_uncovered_headings,
+    uncovered_headings,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE = ROOT / "examples" / "platform12_placeholder.yaml"
@@ -169,3 +173,61 @@ def test_FL2c_an_EMPTY_covered_set_refuses_everything_declared() -> None:
     assert uncovered_headings((0.0,), ()) == (0.0,)
     with pytest.raises(ConfigError):
         refuse_uncovered_headings((0.0,), ())
+
+
+# ---------------------------------------------------------------------------
+# R866: a declared heading this run cannot cover is refused BEFORE any output
+# ---------------------------------------------------------------------------
+#
+# **THE DEFECT WAS MINE AND IT WAS THE SHAPE R809 ALREADY REFUSES.** `headings` was
+# parsed, range-checked and repeat-checked, and read by nothing. Measured through the
+# real CLI on the shipped example with `headings: [0.0, 45.0, 90.0]`:
+#
+#     EXIT=0  wrote member_forces.csv (1248 rows) / utilisation.csv (32) / report.md
+#     governing U = 1.71167 at platform:hub4_arm ROOT
+#
+# so two artifacts shipped as the output of a configuration declaring three headings,
+# with `U` presented as THE governing utilisation while being the envelope over heading
+# 0 alone. The fact needed to catch it is LOCAL: the npz records its own heading.
+
+
+def test_R866_a_declared_heading_the_RUN_cannot_cover_is_REFUSED() -> None:
+    """The envelope would be published as THE envelope over a set that never ran."""
+    with pytest.raises(ConfigError) as caught:
+        refuse_headings_this_run_cannot_cover((0.0, 45.0, 90.0), {"heading_deg": 0.0})
+    message = str(caught.value)
+    assert "45.0" in message and "90.0" in message, message
+    assert "0.0 deg" in message, "the refusal does not say what the run DOES cover"
+    assert "before any output is written" in message, message
+
+
+def test_R866_the_declared_set_matching_the_run_is_ACCEPTED() -> None:
+    """The control. Declaring exactly what the file carries is not an error."""
+    refuse_headings_this_run_cannot_cover((0.0,), {"heading_deg": 0.0})
+
+
+def test_R866_declaring_NOTHING_is_accepted() -> None:
+    """An absent key means "whatever the export used", which the artifacts state."""
+    refuse_headings_this_run_cannot_cover((), {"heading_deg": 0.0})
+    refuse_headings_this_run_cannot_cover((), {})
+
+
+def test_R866_a_SIDECAR_LESS_npz_refuses_a_declared_set_rather_than_assuming_zero() -> None:
+    """FL1(a) admits an npz whose export recorded no heading.
+
+    Assuming 0 would make the commonest declared value pass by coincidence, which is the
+    weakening direction: the run cannot SHOW it covered anything, so it refuses.
+    """
+    with pytest.raises(ConfigError) as caught:
+        refuse_headings_this_run_cannot_cover((0.0,), {})
+    assert "records NO heading" in str(caught.value), str(caught.value)
+
+
+def test_R866_the_check_REUSES_the_coverage_function() -> None:
+    """One comparison, not two.
+
+    `uncovered_headings` is exact for the reason stated at its own definition, and this
+    check inherits it rather than re-deciding whether 44.9 is 45.
+    """
+    with pytest.raises(ConfigError):
+        refuse_headings_this_run_cannot_cover((44.9,), {"heading_deg": 45.0})
