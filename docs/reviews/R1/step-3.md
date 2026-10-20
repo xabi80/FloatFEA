@@ -1,4 +1,535 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 82f922c4227656e597ea35be7b7aa5137f3cc4f4
+**Reviewed commit: `82f922c4227656e597ea35be7b7aa5137f3cc4f4`.**
+Verdict: PASS
+Tests: 3607 passed, 145 failed, 1 skipped, 2 warnings in 1129.39 s (0:18:49)   (my own run, at the reviewed commit, tree clean before and after)
+Scope: **ES0 INTERIM CHECK, the fifth in step 3.** No report revision exists for step 3, so
+this counts against no round and all three reviewed revisions remain available. **NOTHING
+BLOCKS.** R866 -- my predecessor's single blocking finding -- is answered, and I verified it
+by ABLATION in six directions rather than by reading the diff, including the one direction
+the commit did not run. Three new ledger items and one apparatus item below, plus the
+criterion ruling the turn asked for by name.
+
+**I RULED UNDER FR1 WITH EZ0** (`CLAUDE.md` section "What blocks for the rest of R1";
+`docs/directives/FR.md`). For each finding I state the silently wrong result it produces, or
+that it produces none. **No finding in this check can be given FR1's sentence**, which is
+why the verdict is PASS and not a HOLD with a caveat.
+
+```
+cmd    git diff --name-status d06c577..HEAD
+out    M CLAUDE.md / M docs/SUPERVISOR.md / M floatfea/run/pipeline.py /
+       M tests/unit/test_headings_and_bem_coverage.py /
+       M tests/unit/test_run_pipeline_refusals.py
+       -- 5 files, 227 insertions, 3 deletions. TWO commits, and the split is correct:
+          e945b13 touches floatfea/ and tests/ and NOTHING else; 82f922c touches
+          CLAUDE.md and docs/SUPERVISOR.md and NOTHING else.
+cmd    git diff d06c577..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff d06c577..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py                      -- a file, as my instructions say it must be
+cmd    git ls-files | grep -i conftest        -- the whole-tree census (CH2/CI0)
+out    tests/conftest.py
+       tests/test_supervisor_conftest_pathspec.py  -- one conftest, depth one, unchanged
+cmd    git diff --stat d06c577..HEAD -- .claude docs/SUPERVISOR.md
+out    docs/SUPERVISOR.md | 21 ++++++++--   (19 insertions, 2 deletions); .claude EMPTY
+       -- NOT a STOP. It is in 82f922c, a STANDALONE process: commit citing FS1 whose only
+          other file is CLAUDE.md. I read every line of it: the two enumerations in the EG3
+          quote go (which is what FS1 ordered), and one clause is ADDED. **No guard was
+          removed, and the addition RESTORES one.** The residue it did not catch is R875.
+cmd    git diff --stat d06c577..HEAD -- results scripts/measure docs/reports
+out    (empty)   -- no published deliverable moved, and no step report was touched (EK3)
+cmd    git status --porcelain
+out    (empty)   -- clean before I ran anything and after
+cmd    ruff check floatfea tests scripts ; black --check floatfea tests scripts ;
+         mypy floatfea scripts/f4_dynamic_residual.py      (CI's own three forms)
+out    All checks passed! / 150 files would be left unchanged /
+       Success: no issues found in 43 source files
+cmd    python -m pytest -q tests/unit        -- the commit's own headline figure, re-taken
+out    228 passed in 159.77s
+       -- `e945b13` claims `228 passed in 147.40s`. **The count reproduces exactly.** I
+          re-took it because the previous four rounds each carried one wrong figure
+          (R853, R857, R844, and the 290/267 correction), and this one is right.
+```
+
+**STEP 1b DOES NOT FIRE, AND I SAY SO RATHER THAN SKIPPING IT.** There is no step-3 report,
+so there is no `Answers: verdict N @ <sha>` header to compare against the newest verdict. The
+newest revision in the tree is still step 2's third (`Answers: verdict 8 @ a7b2f62`) and five
+verdicts are now newer than it. That is EG3 state (2), and it is the whole of this tree's red.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R866** (`load_cases.headings` parsed, validated and read by nothing; three deliverables published for a configuration declaring three headings) | **ANSWERED, AND I ATTACKED THE REPAIR RATHER THAN READING IT -- SIX ABLATIONS, ALL CAUGHT, INCLUDING THE ONE THE COMMIT DID NOT RUN.** | `floatfea/run/pipeline.py:543-600` is the refusal; `:711-717` is the call site, above `t0` and before `build_model`. The ablation table is in "Try to break it" below. The row that matters most is **M2, which the commit did not run**: the refusal MOVED to after the three writes -- R809's original defect shape, exit code still 2 -- is caught by the call-site case through its empty-directory assertion. **The placement is BETTER than my predecessor's condition asked for.** That condition named the form at `floatfea/cli.py:354`; the repair sits in `run()`, which `tests/regression/test_r1_example_golden.py:63` and `:425` also call directly, so it covers callers `_cmd_run` does not. A grep for the three writers in `floatfea` reaches only `_cmd_run`, which calls `run_pipeline` before its first write, so the refusal gates every path to a published artifact. The first reviewed revision states the placement choice in prose; the commit message already does. |
+| **The SPECIES, not just the instance** | **I CENSUSED THE WHOLE SCHEMA AND IT IS NOW CLEAN** -- the half of R866 the instance repair does not cover, and nobody asked for it | Every key `_reject_unknown` admits, traced to a consumer: `deck`, `froude_lambda`, `groups`, `material`, `governing_periods`, `f`, `K`, `Cm`, `K_sensitivity`, `Cm_sensitivity`, `directory`, the three output flags, `study_only` and `topology.platform.members` are CONSUMED; `tag` and `window_rule` are PUBLISHED by `config.provenance()` (R812's own repair); `one_third_increase`, `required_section`, `truss_sizing`, `line_masses`/`lumped` and a per-body fraction split are REFUSED by name; and `cases` is mutually exclusive with `npz` at `floatfea/run/config.py:909` while `run()` refuses a config with no `npz`, so a declared wave case can never sit unread beside a dataset. **`headings` was the last field that was none of the three. There is no second instance.** |
+| **R867, R868, R869** (of eight non-default topologies one runs; the test builds the order that cannot run; a declared topology need not reach the centre) | **still open, correctly, and correctly NOT in this commit** | the diff over `floatfea/model`, `floatfea/solve` and `tests/unit/test_topology_from_config.py` since d06c577 is empty. My predecessor placed them as one repair in the first reviewed revision and the turn carried them there. I did not re-open them. |
+| **R870** (FL2(a) as shipped is a subset of the locked plan's (a); two future-tense sentences) | **still open, untouched** | `floatfea/run/pipeline.py:123` and `:180` are unchanged; the only pipeline hunks in this diff are the new function and the new call. |
+| **R871** (FS1's commit left a hand list in `docs/SUPERVISOR.md` and deleted FC1's reason from both files) | **ANSWERED ON BOTH HALVES, and the second half's repair is EXERCISED BY THE VERY RUN THAT JUDGES IT. A SIBLING RESIDUE SURVIVES TWO PARAGRAPHS ABOVE THE ONE THAT WAS FIXED -- R875.** | Half one: a grep for "The only failures are" over both files gives 0 and 0, and the same for `test_every_named_site_is_touched_or_declared`. Half two: the second limb is back at `CLAUDE.md:434-449` and `docs/SUPERVISOR.md:566-581`, and **its first application is in my CI section below** -- the two ids that had NO EXIT at 102 of 104 last round are red again here with failure lines naming no finding and no site, and the restored limb is what admits them. **That is the measurement that settles the turn's criterion question.** |
+| **R862** (three hand copies of the stage set; the published total is the sum of a hand-copied four) | **still open, correctly, and STILL NOT DUE -- I measured the trigger rather than taking the word for it** | the five `timings[...]` assignments in `floatfea/run/pipeline.py` are unchanged (721, 769, 780, 785, with 788-789 summing four of them), `WALL_TIME_STAGES` at `floatfea/cli.py:37-43` is unchanged, and the diff over `floatfea/cli.py` is EMPTY. The new refusal sits ABOVE `t0` and times nothing. **No timed stage was added, so the understatement is not reachable at this commit.** It blocks in the commit that adds one -- FS0's item 4 or 5. |
+| **R863** (the exclusion set is defined by the code under test), **R865** (the docstring at `tests/regression/test_r1_example_regenerates.py:224`) | **both still open, untouched** | the diff over `tests/regression` since d06c577 is empty. |
+| **R864** (the byte-identity claim's witness is blind to its own subject) | **still open; its condition is a sentence in the report and no report revision exists** | unchanged by this diff. |
+| **R847 / C43** ("0 of 49 rows" does not reproduce), **R848** (the empty-directory refusal admits a bare dot), **R849 with R854** (four gates quantify over hard-coded three-file tuples) | **all still open, all untouched, all correctly so** | the diff over `floatfea/cli.py` is empty, which covers R848; the regression diff is empty, which covers R849 and R854; R847 needs a revision that does not exist. FR1's second and third non-blocking classes. |
+| **R852** (a caveat truncated to its own marker is green on 31 of 31) | **ROUTED, not open -- FS3 ledgers it to FL3** | `docs/directives/FS.md:28`. Not open against step 3. |
+| **R855** (the whole suite at a commit carrying no report revision) | **WITHDRAWN, and the standing condition IS MET at this commit** | the turn states plainly which runs it made (228 passed on `tests/unit`, 34 passed on the prose guard) and that it made NO whole-suite run at this sha, relying on the ruling rather than claiming a green it had not taken. **No green is stated that was not measured. I produced the whole-suite number, as I do by rule: 145 failed, 3607 passed, 1 skipped.** |
+| **R856** (write_verdict.py refused a step with no report) | **ANSWERED, and exercised for the second time -- this file went through `--interim`** | `scripts/write_verdict.py:166-180` and `:233-236`, unchanged by this diff. |
+| **R835, R836** (EG3's enumerated lists, wrong in both directions over ten measurements) | **ANSWERED by FS1 as completed by 82f922c, and I applied the predicate PER ID to all 145 reds: 143 under limb one, 2 under limb two. NONE WITHOUT AN EXIT, which is the first round in step 3 where that is true.** | `CLAUDE.md:429-449`, `docs/SUPERVISOR.md:560-581`. Measured in the CI section. |
+| **C29, C34, C35** (ruff, black, mypy) | **green at this commit, locally in CI's own three forms AND on a machine neither of us controls** | mine above; CI run 39367249326, job `lint, unit and guards`, read at STEP level: actionlint, ruff, black --check, mypy and unit tests all SUCCESS, only `guards and meta-tests` FAILURE. Every step RAN rather than being skipped behind an earlier red, which is what CZ1 (iii) exists to see, and mypy is green there, so FP1's CI-only `types-PyYAML` red has stayed fixed. |
+| **C42** (U+FFFD in historical verdict headers) | **mine, accepted, carried** | unchanged by this diff. A replacement character surfaced again inside one guard's own failure message this round; same byte question, same disposition. |
+| **C44, C45** | **C44 carries. C45 DOES NOT RECUR IN `CLAUDE.md` -- the clause was added to both files identically. IT RECURS IN `docs/SUPERVISOR.md` ALONE, as R875**, where a paragraph survives that `CLAUDE.md` does not have. | measured in R875. Sixth occurrence of the family, and the first where the divergence runs the wrong way: the file that governs what I read carries more stale text than the criterion does. |
+| **C26, C27, C28, C30, C31, C32, C33, C36, C37, C39** | **carry to the closure artifact as a list** | not re-reviewed item by item, per CZ0. An interim check writes no closure list (ES0); this row is the pointer and not the list. |
+| **EG3(ii): the verdict commit measured** | **DONE, by the control rather than by family** | at `bd315a1` -- a commit where a verdict exists WITH its answering report -- the two report-guard files are **149 passed, 0 failed**, re-measured by me in a worktree at that sha. Not one of this tree's 145 reds is red where the boundary state is absent. |
+| scripts/suite_count.py's own line, and CZ1 (ii)/(iii)'s four outputs | **still owed and still structurally unpayable until step 3's report exists** | not a finding against the implementer; it is limb two of the predicate by construction. |
+
+## Findings
+
+**NONE BLOCKS.** No tolerance moved, no conftest moved, no published deliverable moved -- and
+I established the last of those by REGENERATING the deliverables from this tree rather than by
+reading the diff: the default path and a config declaring `headings: [0.0]` both reproduce
+`**U = 1.71167** at platform:hub4_arm ROOT` identically with `results/R1/example/report.md:63`.
+**The repair is inert on the default path, measured by running the model.**
+
+**R872. (DOES NOT BLOCK -- ledgered) `headings: [360.0]` IS INSIDE THE DECLARED DOMAIN AND IS
+REFUSED AGAINST AN EXPORT AT 0 DEG, WHICH IS THE SAME WAVE DIRECTION. The exact comparison was
+the right call while `covered` was the CALLER's fact; this commit made the function build
+`covered` ITSELF, and the modular-360 identity became its question at that moment.**
+
+```
+claim  a configuration that declares exactly the heading the run covers can be refused
+cmd    HEADING's declared domain
+out    floatfea/run/config.py:189 -- HEADING = ("deg", 0.0, 360.0), INCLUSIVE, so 360.0 is
+       a declarable heading and `_parse_headings` admits it
+cell   the shipped example with headings: [360.0] and nothing else changed, through the real
+       CLI, outputs redirected to a temporary directory
+out    $ python -m floatfea.cli run <that config>
+       EXIT=2
+       floatfea: load_cases.headings declares [360.0] deg and this run covers 0.0 deg --
+         the one heading its dynamic-inputs file was exported at. [360.0] deg would never
+         be computed ...
+       the output directory was never created
+cmd    the direction it fails in, solved BOTH ways before I claimed either (EH4)
+out    exact equality is strictly FINER than equality mod 360, so there is no pair that
+       passes under exact and fails under modular. 360 declared / 0 recorded -> refused;
+       0 declared / 360 recorded -> refused. **It over-refuses and it cannot under-refuse.**
+       I checked the weakening direction first and there is nothing in it.
+rule   FR1 -- "a refusal whose message is unclear but whose outcome is right" does not block.
+       Here the MESSAGE is right and the OUTCOME is wrong, which is the mirror of that class
+       and is still not a silently wrong result; and BP0, because the figure that cleared
+       this axis last round was measured against a rule this commit moved.
+judge  **it does not block, and the reason is the direction**: nothing is published, no number
+       is wrong, and the failure mode is a refused run rather than an accepted one. **THE
+       SILENTLY WRONG RESULT IT PRODUCES: none.** What it costs is a false refusal on a legal
+       declaration. Recorded now rather than at the close because the previous round swept
+       "360 against 0" on `uncovered_headings` and concluded the function was sound --
+       correctly, because the covered set was then a parameter. The call site is what made
+       that conclusion stale.
+```
+
+**Closed when** either the comparison is taken mod 360 at the one place that builds `covered`
+from a recorded value (`floatfea/run/pipeline.py:586`), or `HEADING`'s upper bound becomes
+exclusive so 360 is refused at parse with a message naming 0 -- and the choice is recorded,
+because the two are different claims about what a declared heading IS.
+
+**R873. (DOES NOT BLOCK AT THIS COMMIT -- ledgered, WITH ITS TRIGGER NAMED) A SIDECAR WHOSE
+`heading_deg` IS A LIST MAKES THE COMPARISON RAISE `TypeError` INSTEAD OF COMPARING. The one
+check that exists to catch a heading mismatch crashes at exactly the shape FL(c)'s mechanism
+would introduce.**
+
+```
+claim  float() on the recorded value is unguarded, so a non-scalar recording is a traceback
+cmd    the coercion
+out    floatfea/run/pipeline.py:586 -- covered = (float(recorded),), with no type check
+cell   refuse_headings_this_run_cannot_cover((0.0,), {"heading_deg": [0.0, 45.0]})
+out    TypeError: float() argument must be a string or a real number, not 'list'
+       -- uncaught; `cli.main` catches only ConfigError, so this is exit 1 and a traceback
+cmd    whether the shape is reachable today
+out    the committed sidecar records heading_deg 0.0 (a float), and the npz carries NO
+       heading key at all -- I listed its hundred keys and `heading` is not among them, so
+       there is no second source that could disagree with the sidecar
+cmd    the trigger, named rather than left as a hypothetical
+out    my predecessor's own scope statement, which Xabier now holds: "a list of npz files,
+       each with its own recorded heading, envelope over the union". A multi-heading export
+       is the commit where `heading_deg` plausibly stops being a scalar, and it is FL(c)'s
+       mechanism half -- the half that "waits on nothing".
+rule   FR1's first head; and my own guard that a gate carries its own failure -- a gate that
+       raises before it compares has not failed, it has abstained
+judge  **it does not block at this commit and it is one export format away from doing so.
+       THE SILENTLY WRONG RESULT IT PRODUCES TODAY: none** -- exit 1, a traceback, nothing
+       written. At the commit that records a heading list, the refusal that is supposed to
+       compare declared against covered raises instead, and whether that is loud depends on
+       where the exception is caught. Same shape as R869 and recorded the same way.
+```
+
+**Closed when** the recorded heading is validated before it is coerced -- a non-scalar, a bool
+and a NaN each refused by name -- or the multi-heading case is handled, at
+`floatfea/run/pipeline.py:583-586`.
+
+**R874. (DOES NOT BLOCK -- ledgered) THE DECLARED SIDE REFUSES A BOOL BY NAME AND THE RECORDED
+SIDE COERCES ONE. `heading_deg: true` IN A SIDECAR IS ACCEPTED AS 1.0, AND A CONFIGURATION
+DECLARING `[1.0]` AGAINST IT RUNS AND PUBLISHES.**
+
+```
+claim  the two sides of the one comparison have different type discipline
+cmd    the declared side
+out    floatfea/run/config.py:199 `_checked` refuses a bool for every declared NUMBER, and
+       :255 `_require_string` refuses one for every declared STRING, with R825's recorded
+       reason -- "YAML reads bare words like `no`, `yes`, `true` ... as booleans"
+cmd    the recorded side
+out    floatfea/run/pipeline.py:586 -- float(recorded), and float(True) is 1.0
+cell   refuse_headings_this_run_cannot_cover((1.0,), {"heading_deg": True})
+out    ACCEPTED -- no refusal; the run proceeds and publishes
+cmd    what the artifact would then say
+out    floatfea/cli.py:146 prints basis["heading_deg"] verbatim, so the header line reads
+       `wave basis: heading True deg` -- the published statement is absurd, not plausible
+rule   FR1's second head, tested and NOT met: the input is accepted and used as 1.0, and the
+       artifact states `True` rather than `1.0`, so nothing downstream reads a wrong number;
+       and the schema's own refuse-not-coerce discipline, which this site departs from
+judge  **it does not block. THE SILENTLY WRONG RESULT IT PRODUCES: none** -- the published
+       value is the recorded object, so the contradiction is on the face of the artifact
+       rather than hidden in it. Recorded because the asymmetry is the finding: this
+       repository refuses a bool by name in eleven places and coerces one here, and the
+       sidecar is JSON rather than YAML only by luck of the format. One line, with R873.
+```
+
+**Closed when** `floatfea/run/pipeline.py:583-586` validates the recorded heading with the same
+discipline the declared side uses, in one place with R873.
+
+**R875. (DOES NOT BLOCK -- apparatus, FF0 class: fixed in the next commit, not ledgered)
+82f922c FIXED THE LIST R871 NAMED AND LEFT ITS SIBLING TWO PARAGRAPHS ABOVE. `docs/SUPERVISOR.md`
+NOW CARRIES A PARAGRAPH THAT INTRODUCES A QUOTE THAT IS NOT THERE AND TELLS ME TO READ AGAINST
+LISTS THAT NO LONGER EXIST -- AND `CLAUDE.md` DOES NOT HAVE IT.**
+
+```
+cmd    the surviving paragraph
+out    docs/SUPERVISOR.md:555-557
+         "**The two lists, corrected (EH1).** The clause above was written from one
+          observation and was short by two names on each side. The reviewer's wording,
+          adopted unparaphrased:"
+       ... and the next line is the FS1 heading. The colon introduces NOTHING: the quote it
+       introduced WAS the list, and e227200 removed the list and left the introduction.
+cmd    the same two phrases in both files
+out    "The two lists, corrected" -> docs/SUPERVISOR.md:555 only; CLAUDE.md: nothing
+       "short by two names"       -> docs/SUPERVISOR.md:556 only; CLAUDE.md: nothing
+       -- the two files DIVERGE, and in the direction that matters: the file that governs
+          what I read carries stale text the criterion does not.
+cmd    the second residue, same commit
+out    docs/SUPERVISOR.md:549 -- 'and "only those" is a claim that carries the `FAILED` list
+       as its command'. "only those" referred to the enumerations. It has no referent now.
+cmd    which commit introduced each
+out    git log -L on those lines -> e227200 (FS1's own commit), not 82f922c. **82f922c is the
+       commit whose whole purpose was to finish cleaning that file, and its needle was "The
+       only failures are" -- which cannot see a paragraph introduced by "The reviewer's
+       wording, adopted unparaphrased:".** That is R871's own defect, repeated inside R871's
+       repair, and it is the shape R842, C27 and R871 already are.
+rule   C45 -- a mirror of a living document is a figure whose rule moves underneath it; and
+       the census shape, a needle whose domain cannot contain the thing it is looking for
+judge  **it does not block under FR1: no wrong result follows, and it is the gating apparatus,
+       which FF0 takes out of the ledger and into the next commit. THE SILENTLY WRONG RESULT
+       IT PRODUCES: none.** I am recording the fix condition as a READING and not as a needle,
+       because three needles in a row have been short: the EG3 section in `docs/SUPERVISOR.md`
+       is forty-five lines, and the only check that has worked on it is someone reading all
+       forty-five.
+```
+
+**Closed when** `docs/SUPERVISOR.md:549` and `:555-557` say what is true -- in one standalone
+`process:` commit citing FS1 -- after the whole EG3 section has been read top to bottom rather
+than grepped.
+
+## The ruling the turn asked for: is restoring CZ1's reusable half a REPAIR or an AMENDMENT?
+
+**IT IS A REPAIR, IT STANDS, AND YOU DID NOT TAKE A RULING THAT WAS NOT YOURS.** You asked me
+to check this and you were right to. The reasoning and the measurement:
+
+```
+claim  FS1 did not ask for FC1's reason to go, so restoring it is not an amendment to FS1
+cmd    FS1's verbatim text
+out    docs/directives/FS.md:17-20 -- "EG3's enumerated LISTS are REPLACED by the predicate
+       ... No more hand lists."
+       -- the object of that sentence is LISTS. FC1's clause was a list of two names AND a
+          reason. Deleting the reason was collateral, not instruction.
+cmd    where the restored sentence comes from
+out    it is a composition of two ALREADY-ADOPTED clauses: FC1's "neither can pass in the
+       commit it describes", and CZ1's reusable half, "a check whose input is the commit
+       itself cannot be measured before the commit exists". Neither is new, and 82f922c
+       names FC1 in the text. **A repair is checkable against an adopted directive; this
+       one is.**
+cmd    the measurement that settles it, taken on this tree rather than argued
+out    at this commit `test_the_report_carries_a_WHOLE_SUITE_count` fails with "the newest
+       revision carries no whole-suite line", and `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`
+       with "run 39162423263: the table says in_progress, gh says failure". **Neither names
+       a finding. Neither names a site.** Under the one-limb predicate they block, CZ1 (iv),
+       and the tree cannot reach a green by any act of the implementer's. Under the restored
+       limb they are boundary reds. **The limb's FIRST application is the run that judges
+       the commit that restored it, and it is load-bearing in that run.**
+rule   CLAUDE.md section "The reviewer's own instructions are not edited inside a step" --
+       a standalone process: commit citing the directive asking for the change. 82f922c is
+       standalone (CLAUDE.md and docs/SUPERVISOR.md, nothing else) and cites FS1 and FC1.
+judge  **A repair. Not a STOP, not a HOLD, and not an amendment you had no standing to make.**
+```
+
+**ONE THING FOR XABIER, SAID ONCE, AND IT IS NOT A HOLD.** The restored limb is BROADER than
+FC1 was. FC1 added two names; the limb adds a reason, and CZ1's own statement of that reason
+names a wide class -- "anything reading `git log`, `git diff` or `git merge-base`", which is
+most of both report-guard files. Read literally, limb two could waive a red that limb one
+correctly blocks. Measured against this tree it does not: of 145 reds, 143 satisfy limb one and
+only 2 reach limb two, and both are self-referential in the exact sense CZ1 means -- a line
+that names its own sha cannot be inside that sha, and a run does not exist for a commit before
+it is pushed. **So the limb is doing the narrow job, and the broadening was my predecessor's
+own proposal, which I am not reversing.** The sentence I would add is one line and it is
+Xabier's to authorise rather than a round's to spend: *limb two is about a check whose SUBJECT
+is the commit carrying it, not about a check that reads the commit graph.* Without that
+distinction the next reviewer has a waiver wide enough to cover every guard in those two files,
+which is the opposite of the problem FS1 solved.
+
+## Try to break it -- what I ran, and what it found
+
+**THE ABLATION TABLE, which is what the turn asked me to attack.** Six mutations, one variable
+moved each, in a detached worktree outside the repository so the judged tree was never touched.
+The three ids are the two new end-to-end cases plus the whole of
+`tests/unit/test_headings_and_bem_coverage.py`.
+
+```
+rule   each row is "the claimed property broken; does the assertion go red"
+out    BASELINE                                        23 passed
+       M1  the call site removed from run()             1 failed   <- the hole R866 WAS
+       M2  the refusal MOVED to AFTER the three writes  1 failed   <- NOT RUN BY THE COMMIT
+       M3  subset -> any-overlap (weakening, EH4)       2 failed
+       M4  the refusal degraded to a warning            3 failed
+       M5  a missing recorded heading assumed zero      1 failed
+       M6  the refusal made unconditional               2 failed   <- the CONTROL earns its
+                                                                       place
+       RESTORED                                        23 passed
+cell   M1 and M2 both leave the FUNCTION's five cases GREEN and are caught only by
+       test_R866_a_declared_heading_the_RUN_CANNOT_COVER_refuses_AT_THE_CALL_SITE
+judge  **M2 is the row that matters and the commit did not run it.** It keeps the refusal, the
+       message and exit code 2, and moves it past `_write_member_forces` -- which is R809's
+       recorded defect verbatim, "a refusal that arrives after the outputs is a warning with a
+       non-zero exit code". It is caught, and it is caught by the ONE assertion in the pair
+       that a weaker test would have left out: `assert not out.exists() or not
+       list(out.iterdir())`. The claim "nothing is written" is held by a measurement of the
+       directory and not by the exit code. **M6 says the control is not decorative**: making
+       the refusal unconditional reddens the accepting case in 0.68 s, so "the refusal fires"
+       and "the right runs still run" are two assertions and not one.
+```
+
+* **A continuum grid over the one parameter space the new rule guards: eleven points on the
+  RECORDED side, which is the side the diff created.** `heading_deg` as `0.0`; `-0.0` declared
+  against it; `360.0` declared against it; a partial overlap `(0.0, 45.0)`; the string `"0.0"`;
+  the int `0`; the bool `True`; `None`; `nan`; a two-element list; and an empty basis with
+  nothing declared. **Three of the eleven produced findings** -- R872 (360), R873 (list), R874
+  (bool) -- all on the axis the commit did not sweep, because its own four-row table is about
+  the DECLARED side.
+* **A regeneration check on a published deliverable, in both directions.** Three full
+  `floatfea run` executions into a temporary directory: the default path reproduces the
+  committed governing `U = 1.71167 at platform:hub4_arm ROOT` on `report.md:63` exactly, with
+  1248 member-force rows and 32 stations; `headings: [0.0]` reproduces the same line, so the
+  repair is inert where it must be inert; `headings: [360.0]` exits 2 with nothing on disk,
+  which is R872.
+* **The whole config schema censused for a second instance of R866's species**, key by key
+  against a consumer, a publisher or a refusal. There is none. It is in the Carried table
+  because it is the half of the finding the instance repair does not cover.
+* **The structural question rather than the pass/fail one (provenance, not existence).** A grep
+  for the three writers in `floatfea` reaches `_cmd_run` only, and `_cmd_run` calls
+  `run_pipeline` before its first write, so the refusal in `run()` gates every path to a
+  published artifact -- asserted from the call graph, not inferred from a green.
+* **The predicate applied to 145 ids one at a time, with the ten cascade ids read off their OWN
+  inner FAILED lists** rather than ruled by family, plus the `bd315a1` control.
+* **My own 145 against CI's 145, both directions.** `comm -3` over the two sorted lists is
+  empty: the SAME SET, id for id, on two operating systems. My first capture looked six short
+  and that was my own `tail -140` truncating pytest's output, not a difference -- I re-ran the
+  two files alone to get the complete list rather than report a discrepancy I had manufactured.
+
+**What I did not find, and it is much the larger part.** The repair is the right size and in
+the right place: it uses only the local fact, it declines the envelope rather than inventing
+it, it refuses a sidecar-less npz instead of assuming the commonest declared value, and it sits
+above `t0` so no stage is timed and R862 stays not-due. **It is held at the place that matters,
+which is the thing R866 was about** -- and the turn found that hole itself, by ablating its own
+first version, which is discipline rather than luck. The CLI contract was measured rather than
+assumed: `pytest.raises(ConfigError)` passed its control and failed its subject, and
+`cli.py:447` is why. The process commit is standalone, cites its directive, removes no guard
+and restores one that is load-bearing in this very run. And the species census came out clean,
+which is a better outcome than the instance repair promised.
+
+## CI at the reviewed commit: RED, 145 reds, ALL 145 BOUNDARY BY THE PREDICATE AND BY THE CONTROL
+
+```
+cmd    gh run list --commit 82f922c4227656e597ea35be7b7aa5137f3cc4f4
+         --json conclusion,status,databaseId,workflowName
+out    one run: databaseId 39367249326, workflowName CI, status completed,
+       conclusion failure
+       -- the run was IN PROGRESS when I began and I waited for it. An unfinished run is not
+          a pass and I did not record one. The judged commit had a run because it was pushed
+          first (FP1).
+cmd    gh run view 39367249326 --json jobs, read at STEP level
+out    the verification ladder : SUCCESS   (04:00:24Z -> 04:04:53Z)
+         ladder 1, 2, 3, 6, 4 and 5 -- all six rungs SUCCESS. No rung is red, so nothing
+         above is uninterpretable and THERE IS NO STOP.
+       lint, unit and guards : FAILURE     (04:00:24Z -> 04:18:08Z)
+         actionlint SUCCESS / ruff SUCCESS / black --check SUCCESS / mypy SUCCESS /
+         unit tests SUCCESS / guards and meta-tests FAILURE
+         -- every step RAN rather than being skipped behind an earlier red (CZ1 (iii))
+       CI determinism -- leg / ten legs agree : SKIPPED (the workflow's own event gate, CK0)
+cmd    gh run view 39367249326 --log-failed, unique ids
+out    103  test_every_named_site_is_touched_or_declared[R8xx-<site>]
+        27  test_the_report_carries_the_finding[R845..R871]
+        10  test_the_guard_survives_the_state[baseline + 9]
+         5  the five singletons named below
+       --- 103 + 27 + 10 + 5 = 145 exactly, with no remainder, and all 145 inside
+           tests/test_report_carried.py and tests/test_report_guard_states.py
+cmd    the two files alone, my own run, for the complete list
+out    145 failed, 181 passed, 1 skipped in 181.89s
+       -- so the whole suite's 145 reds are exactly these two files' 145, and the other 3426
+          tests in the tree are green
+cmd    my 145 against CI's 145, both directions
+out    comm -3 (mine) (CI's)   (empty)   -- the SAME SET, two machines, two OSes
+cmd    THE PREDICATE, PER ID (FS1 as completed by 82f922c), not by family
+out    103  named_site[R8xx-<site>]  every id carries an R-number prefix -- 103 of 103 by a
+              grep count on "^R[0-9]+-" -- so each names a finding AND a site     LIMB 1
+        27  carries_the_finding[R845..R871]  names a finding                      LIMB 1
+        10  survives_the_state[...]  satisfied through its INNER FAILED list, which I read
+              for each of the ten: every inner id is a named_site or carries_the_finding
+              case on R867-R871                                                   LIMB 1
+         1  the_CI_section_is_about_the_REVIEWED_commit  "the CI section's first commit is
+              d205833 and the verdict judged 945d250" -- names the newest verdict's own
+              judged commit                                                       LIMB 1
+         1  the_Carried_table_is_what_the_generator_produces  "32 generated rows are not in
+              the report's Carried section", generated FROM docs/reviews/R1/step-3.md
+                                                                                  LIMB 1
+         1  the_generator_would_catch_a_row_under_the_wrong_number  StopIteration off that
+              same empty baseline -- names nothing in its own line, and is verdict-dependent
+              by the control below, which is the R507/frames.txt lesson            LIMB 1
+         1  the_report_carries_a_WHOLE_SUITE_count  "the newest revision carries no
+              whole-suite line" -- names NO finding, NO site                  **LIMB 2**
+         1  the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW  "run 39162423263: the table says
+              in_progress, gh says failure" -- names NO finding, NO site      **LIMB 2**
+       --- 143 under limb one, 2 under limb two, 145 total, NONE WITHOUT AN EXIT
+cmd    the control that makes the trace a measurement and not a classification
+out    bd315a1 (a verdict WITH its answering report), the two report-guard files, run by me in
+       a worktree at that sha -> **149 passed, 0 failed**
+       -- not one of the 145 is red where the boundary state is absent, so all 145 are
+          boundary-dependent BY MEASUREMENT rather than by family
+cmd    the two warnings, traced rather than left as a count
+out    a numpy overflow in dot, from tests/verification/rung1/test_corpus_configurations.py on
+       the orient_norm_overflow entry -- a reviewer corpus entry whose whole purpose is to
+       overflow a norm. Designed.
+rule   CA2, which I keep in full because CLAUDE.md does not carry it -- a red CI is a HOLD
+       regardless of the local run; EG3 with FS1's predicate as completed by 82f922c; EG3 (i)
+       -- every red tested INDIVIDUALLY or it is CZ1 (iv) unchanged
+judge  **145 of 145 satisfy the predicate, so the waiver applies in full and CA2's HOLD is not
+       reached by CI.** FR1's red-test head does not stand on the boundary reds. **This is the
+       first round in step 3 in which no id had to be ruled by hand**, and that is the restored
+       limb earning its place at its first application.
+```
+
+**Not CK2's exhausted-allowance state.** `runner_name` is null for all four jobs INCLUDING the
+ladder job that SUCCEEDED, so an empty runner name cannot separate the states in this
+repository and I did not use it. What separates them: both real jobs carry per-step
+conclusions, real counts and eighteen- and four-minute durations, and the two skipped jobs are
+the determinism workflow's own event gate (CK0) at a zero-second duration, which arises from a
+designed condition and not from an unstarted runner.
+
+## Corpus (EG4(e))
+
+**The pause held. Zero new entries. `tests/corpus/` is untouched by me and the working tree was
+clean before and after.** Neither exception opens: this diff touches no part of F4's
+load-mapping gate, and EB6's label-provenance gate is about buoy-centre labels in
+`tests/verification/rung4/`, not about a heading field. The last corpus commit remains
+`ba1527e` (batch 47).
+
+**I ran the recorded substitute and both halves paid again, for the ninth consecutive round.**
+The continuum grid was eleven points on the RECORDED side of the new comparison -- the side the
+commit created and did not sweep -- and it produced R872, R873 and R874. The regeneration check
+was three full runs writing the three R1 deliverables, and its control half is what says the
+repair is inert on the default path: `U = 1.71167` reproduced exactly against a deliverable
+committed five commits earlier. **Every finding in this check came from one of those two, and
+none from reading the diff.**
+
+## Tolerances touched
+
+**None.** No value, no form, no counter, no injection.
+
+```
+cmd    git diff d06c577..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    the diff's added lines grepped for isclose, abs_tol, rel_tol, approx, atol, rtol,
+       _COUNTER, tolerance, slack, epsilon and decimal literals
+out    only heading VALUES -- 0.0, 45.0, 90.0, 44.9 -- in docstrings, refusal messages and
+       test arguments. No comparison threshold, no new constant.
+claim  the one thing in this diff that could function as a tolerance under another name is the
+       heading comparison, and it is EXACT by decision
+cmd    the comparison and the reason given for it
+out    floatfea/run/pipeline.py:538 (uncovered_headings) -- "An EXACT comparison, because a
+       heading is a declared input and not a measurement ... there is no tolerance here to
+       choose." I tested the near miss through the NEW caller:
+       refuse_headings_this_run_cannot_cover((44.9,), {"heading_deg": 45.0}) -> REFUSED.
+rule   CLAUDE.md section Tolerances, its clause on anything that functions as a tolerance under
+       another name; EU1
+judge  **EU1 DOES NOT ATTACH BY ITS OWN WORDS** -- no tolerance value and no declared counter
+       moves -- **and I ran the adversarial configuration anyway**, because R694's lesson is
+       that a value which does not move is the worst case and not the safest. The
+       configurations the diff did not choose are the eleven recorded-side points and the three
+       full runs, and three findings came out of them. **The exact comparison remains the right
+       FORM and I am not asking for a tolerance: a declared input compared with a tolerance is
+       how 44.9 becomes 45.** R872 is not a tolerance request -- it is the question of whether
+       360 and 0 are the same VALUE, which is arithmetic and not slack.
+```
+
+## Next step opens when
+
+**This is an interim check, so it closes nothing and opens nothing (ES0; FK1 -- no `Closes:`
+line, deliberately).** Step 3 remains open with all three reviewed revisions available, and
+this check consumes none of them.
+
+1. **FL2's items 3, 4 and 5, which is FS0's order and is where the turn said it is going.**
+   Nothing in this check stands in the way. **R862 goes in the first of those that adds a timed
+   stage, not after it** -- I verified the trigger has not fired rather than taking the word for
+   it, and `floatfea/cli.py` is untouched by this diff.
+2. **R867, R868 and R869 together in the first reviewed revision, or a stated reason not to.**
+   Unchanged and correctly carried. One repair: refuse the topologies that cannot be built into
+   a frame (R869 subsumes five of R867's seven), make the two that should run actually run
+   (R867), and put one declared topology through a run (R868). `U = 1.82047` and `1.71167` are
+   both already measured, so either is an assertable number.
+3. **R872, R873 and R874 are ONE repair at `floatfea/run/pipeline.py:583-586`**, in the first
+   reviewed revision or at the close: validate the recorded heading the way the declared side
+   is validated, and decide once whether 360 is 0. Three lines and one recorded decision.
+4. **R875 in one standalone `process:` commit citing FS1** -- `docs/SUPERVISOR.md:549` and
+   `:555-557`. FF0 takes it into the next commit rather than the closure list, and it is not
+   part of this verdict. **Read the whole EG3 section rather than grepping it**; three needles
+   in a row have been short and the section is forty-five lines.
+5. **R863, R864 and R865 in the first reviewed revision**, each with its figure regenerated at
+   that commit (CP3). R847, R848, and R849 with R854, unchanged. R870 at the close or earlier.
+   R852 is routed to FL3 and is not open.
+6. **The FC1 criterion question is ANSWERED HERE as a repair** -- it does not go to Xabier as a
+   ruling you took wrongly, because you did not. **The one line I would have him authorise** is
+   in my section above and it narrows limb two; it leaves the loop and is not a round.
+7. **The schedule, and FS4's checkpoint.** FR0's 5 November stands. FS4 asks for FL2 in its
+   first reviewed revision by **26 October**: two of five items are built and verified on
+   19 October, and the two sizing items carry FM0's re-solve loop and R862 with them. **Nothing
+   has slipped and I am not re-opening the escalation FR0 answered.** If the 26th arrives with
+   items 4 and 5 unbuilt, FS4 asks for that report ON THE 26TH with a realistic date, not at
+   the step's close.
+8. **The push (FP1) continued.** It gave this round a completed run at the judged commit, 145
+   reds identical to mine id for id on a different operating system, all six ladder rungs green,
+   and mypy green on the machine where it was once red.
+
+**What this turn got right, and it is the larger part.** It took the previous verdict's single
+blocking finding, reproduced it through the CLI before touching anything, repaired it with the
+local fact rather than waiting for the export path, and then **ablated its own first repair and
+found that the new refusal was held by nothing at the call site** -- which is the defect R866
+itself was, one layer over, found by the author rather than by me. The end-to-end pair it added
+survives six mutations including one it did not run. The process commit is standalone, cites
+its directive, deletes no guard, and restores one whose absence would have left this very run
+with two reds and no exit. And it asked me, by name, to attack the one case standing between
+the repair and a repeat of the finding, which is the right question to be asked.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 945d250941b9fe8f79b16bd4170dbef225628348
 **Reviewed commit: `945d250941b9fe8f79b16bd4170dbef225628348`.**
 Verdict: HOLD
