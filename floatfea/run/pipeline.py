@@ -56,6 +56,7 @@ __all__ = [
     "build_model",
     "exported_froude_lambda",
     "run",
+    "wave_basis_from_sidecar",
 ]
 
 STATIONS_CHECKED = ("ROOT", "TIP")
@@ -685,13 +686,26 @@ RECORDED_BOUNDS: Final[dict[str, Bound]] = {
     "wave_height_full_m": WAVE_HEIGHT,
     "wave_height_model_m": WAVE_HEIGHT,
 }
-"""The declared domain each RECORDED numeric field is checked against (R881).
+"""The declared domain each RECORDED numeric field is checked against (R881, R895).
 
-**One domain per quantity, not one per side of the boundary.** A recorded value is
-checked against the same bound its CONFIGURED counterpart gets in `config.py`, because
-the question both ask is identical: is this a value a declaration could legally express?
-A sidecar recording something no `load_cases` block could declare records something the
-run cannot have been computed at.
+**THIS ENTRY'S FIRST JUSTIFICATION WAS FALSE FOR ONE OF ITS THREE KEYS (R895).** It said
+each recorded value is checked against "the same bound its CONFIGURED counterpart gets in
+`config.py`". That holds for `heading_deg` (`load_cases.headings`, and each case's
+`heading`) and for `wave_height_full_m` (each case's `H`, which `WaveCase` documents as
+"Full scale, SI"). It is false for `wave_height_model_m`, which **has no configured
+counterpart at all** -- no declaration anywhere expresses a model-scale wave height.
+
+So `WAVE_HEIGHT` is a FULL-scale domain, and applying it unchanged to the model-scale
+field is a bound that is correct at the configuration R881 chose and loose by exactly
+`froude_lambda` at the other: at `lambda = 50` the declared model headroom is `207x`
+where the legal headroom is `4.1x`, and `FROUDE_LAMBDA` admits `lambda` up to `1000`.
+
+**IT IS STILL A CEILING AND IT IS STILL NOT THE CHECK THIS PAIR NEEDS.** A ceiling on one
+member cannot police a relation between two: a legal model value beside a wrong full value
+passes, and so does a pair that is individually legal and jointly off by `3.9x`. The
+relation (`full = model * lambda`, which the export writes) is tracked as R895 and is NOT
+closed by this mapping. What this mapping does close is R881 -- a NEGATIVE height, or one
+outside every admissible scale, reaching a published artifact.
 
 `window` is absent because it is not a number; it keeps its own `isinstance` check below.
 """
@@ -822,6 +836,31 @@ def exported_wave_basis(npz: Path) -> dict[str, Any]:
     sidecar = npz.with_suffix(".provenance.json")
     if not sidecar.is_file():
         return {}
+    return wave_basis_from_sidecar(sidecar)
+
+
+def wave_basis_from_sidecar(sidecar: Path) -> dict[str, Any]:
+    """The validated wave basis from a provenance sidecar PATH (R896).
+
+    **THE SAME INPUT HAD TWO READERS AND ONLY ONE OF THEM VALIDATED.**
+    `scripts/measure/f6_results_report.py` read `prov["run"]` straight out of the JSON and
+    published `wave_height_full_m`, `wave_height_model_m` and `heading_deg` from it,
+    calling neither this module's validator nor `config.py`'s `_checked`. One sidecar, two
+    readers, one variable moved:
+
+        full=-24.2 model=-0.484   `floatfea run`        -> REFUSED by name
+                                  f6_results_report.py  -> EXIT=0, and published
+            "wave height, full scale  : -24.2 m (-0.484 m model, Froude lambda = 50.0)"
+
+    That generator is a PUBLISHED DELIVERABLE under EZ0 -- it is the `GENERATOR` in
+    `tests/regression/test_f6_deliverable_agrees_with_itself.py`, whose repair instruction
+    is to re-run it -- so R881's subject, "every recorded numeric field has a declared
+    domain", was false at the reader that writes the deliverable.
+
+    This function is the single door. A caller holding an npz goes through
+    `exported_wave_basis`; a caller holding the sidecar itself comes here. Neither reads
+    the `run` block directly, and a reader that does is the defect, not a shortcut.
+    """
     try:
         recorded = json.loads(sidecar.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):

@@ -363,3 +363,62 @@ def test_R757_the_duration_pattern_matches_EVERY_form_pytest_prints(summary: str
         f"{summary!r} is a form pytest prints and the duration pattern does not match it, "
         "so a timing in that form would pass the gate above."
     )
+
+
+def test_R896_the_GENERATOR_refuses_a_sidecar_the_run_reader_refuses(tmp_path) -> None:
+    """The deliverable's generator is the CALL SITE, and it is held here (FT2's rule).
+
+    **R896: ONE INPUT, TWO READERS, ONE OF THEM VALIDATING.** `main` read `prov["run"]`
+    straight out of the JSON and published `heading_deg` and both wave heights from it, so
+    a sidecar `floatfea run` refuses by name was accepted here at exit 0. One variable
+    moved, the committed sidecar with its two heights negated:
+
+        HEAD's generator  -> EXIT=0, "wave height, full scale  : -24.2 m (-0.484 m model,
+                             Froude lambda = 50.0)"
+        repaired          -> EXIT=1, ConfigError, nothing published
+
+    A unit test on `wave_basis_from_sidecar` is green with the call removed from this
+    generator, which is the hole R866, R877 and R881 each shipped through -- so this test
+    runs the real script as a subprocess.
+    """
+    import json as _json
+    import subprocess
+    import sys
+
+    good = ROOT / "data" / "f4" / "dynamic_inputs.provenance.json"
+    recorded = _json.loads(good.read_text(encoding="utf-8"))
+    recorded["run"]["wave_height_full_m"] = -24.2
+    recorded["run"]["wave_height_model_m"] = -0.484
+    bad = tmp_path / "bad.provenance.json"
+    bad.write_text(_json.dumps(recorded, indent=1), encoding="utf-8")
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--out",
+            str(tmp_path / "out.md"),
+            "--provenance",
+            str(bad),
+        ],
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+    )
+    assert proc.returncode != 0, (
+        "the generator accepted a sidecar the `floatfea run` reader refuses by name, and "
+        "a negative wave height reached a published deliverable at exit 0: "
+        + (tmp_path / "out.md").read_text(encoding="utf-8")[:400]
+    )
+    combined = proc.stdout + proc.stderr
+    assert "wave_height_full_m" in combined, combined[-600:]
+
+    # AND THE GOOD SIDECAR STILL GOES THROUGH -- the door refuses the wrong thing only.
+    ok = subprocess.run(
+        [sys.executable, str(GENERATOR), "--out", str(tmp_path / "ok.md")],
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+    )
+    assert ok.returncode == 0, (ok.stdout + ok.stderr)[-600:]
+    assert "24.2 m (0.484 m model" in (tmp_path / "ok.md").read_text(encoding="utf-8")

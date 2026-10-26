@@ -60,6 +60,7 @@ from floatfea.model.platform import (  # noqa: E402
     _outer_diameter,
     build_superstructure,
 )
+from floatfea.run.pipeline import wave_basis_from_sidecar  # noqa: E402
 
 # s.6's `f` sensitivity reuses `member_forces_table.py`'s OWN static solve and stress
 # definition rather than restating either, so the sweep and the published CSV cannot
@@ -272,7 +273,13 @@ def main(argv: list[str] | None = None) -> int:
     forces = _read_csv(args.forces)
     util = _read_csv(args.util)
     prov = json.loads(args.provenance.read_text(encoding="utf-8"))
-    run = prov["run"]
+    # R896: THE WAVE BASIS COMES THROUGH THE VALIDATED DOOR, NOT OUT OF THE RAW BLOCK.
+    # This reader published `heading_deg` and both wave heights straight from
+    # `prov["run"]`, so a sidecar `floatfea run` REFUSES by name was accepted here at exit
+    # 0 and written into a deliverable: measured at `full=-24.2, model=-0.484`, which
+    # published "wave height, full scale  : -24.2 m (-0.484 m model, ...)".
+    basis = wave_basis_from_sidecar(args.provenance)
+    run = {**prov["run"], **basis}
     f_b, f_b_branch = allowable_bending(sec["D"], sec["t"], FY_S355, E_STEEL)
 
     out: list[str] = []
