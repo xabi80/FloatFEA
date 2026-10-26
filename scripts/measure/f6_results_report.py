@@ -55,6 +55,7 @@ from floatfea.checks.api_wsd import (  # noqa: E402
     section_class,
 )
 from floatfea.hsp_pin import HSP_TAG, KNOWN_DEVIATIONS  # noqa: E402
+from floatfea.io.froude import froude_factor  # noqa: E402
 from floatfea.model.platform import (  # noqa: E402
     MASS_FRACTION_LADDER,
     _outer_diameter,
@@ -318,6 +319,45 @@ def main(argv: list[str] | None = None) -> int:
     # two readers, opposite outcomes: that is R908 again at a site R908's own repair did
     # not reach, because the test holding it listed two filenames by hand.
     lam_scale = validated_export_scale(args.npz, args.provenance)
+    # **R938: THE THREE INPUTS ARE NOW JOINED.** This report resolves the scale from
+    # `--npz`, the basis from `--provenance` and every force from `--forces`, and joined
+    # none of them -- so `--forces` pointing at a CSV generated at H = 30 m, with the
+    # default provenance, published "wave height, full scale : 24.2 m (... Froude lambda
+    # = 50.0)" at exit 0 over a table that does not describe the reference sea state.
+    # The R926 repair did not create this; it created the operand, because before it this
+    # reader resolved nothing to join with.
+    #
+    # `member_forces_table.py` writes its SCALE caveat into the CSV's comment header from
+    # the SAME `froude_factor` call, so the expected text is reconstructible here and the
+    # join needs no new input. A format change fails LOUD rather than silently skipping.
+    _expect_force = froude_factor("force", lam_scale)
+    _expect_moment = froude_factor("moment", lam_scale)
+    _want = (
+        f"force x {_expect_force:.0f}"
+        if float(_expect_force).is_integer()
+        else f"force x {_expect_force:.6g}"
+    )
+    _header = chr(10).join(
+        line
+        for line in args.forces.read_text(encoding="utf-8").splitlines()
+        if line.startswith("#")
+    )
+    if "SCALE:" not in _header:
+        raise SystemExit(
+            f"floatfea: {args.forces.name} carries no `SCALE:` line in its comment "
+            f"header, so there is nothing to join the resolved scale against. That "
+            f"header is written by `member_forces_table.py`; regenerate the forces table."
+        )
+    if _want not in _header:
+        raise SystemExit(
+            f"floatfea: {args.forces.name} was generated at a different Froude scale "
+            f"from the one resolved here. This run resolves lambda = {lam_scale:g}, for "
+            f"which the composite is `{_want}`, and that string is not in the CSV's own "
+            f"SCALE line. The forces, the basis and the scale would come from three "
+            f"inputs nobody joined -- which published `24.2 m` over an H = 30 m table at "
+            f"exit 0 (R938). Regenerate the forces table, or point --provenance and "
+            f"--npz at the pair it was generated from."
+        )
     run = {**prov["run"], **basis}
     f_b, f_b_branch = allowable_bending(sec["D"], sec["t"], FY_S355, E_STEEL)
 

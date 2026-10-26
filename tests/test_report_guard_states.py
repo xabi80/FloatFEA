@@ -807,17 +807,33 @@ closure commit is what asserts it is zero.
 """
 
 
-_DESTINATION_ONLY = frozenset(
-    {
-        "empty_verdict",
-        "report_dir",
-        "verdict_dir",
-        "append_finding",
-        "older_answers_sha",
-        "bad_answers_sha",
-    }
-)
-"""Actions that create or edit a destination and copy from nothing (R910)."""
+# **R939: SIX VERBS IN ONE BUCKET, AND THREE OF THEM READ A SOURCE.** R910's arm called
+# all six "destination only" and routed the root with
+# `REVIEWS_DIR if action in ("verdict_dir", "empty_verdict") else REPORTS_DIR` -- which
+# sends `append_finding` to `reports/` while `:233` and the builder both put it in
+# `reviews/`. The one property that arm asserted was asserted about the wrong directory,
+# in the commit whose whole point was that no verb goes unchecked.
+#
+# Each verb is classified by WHAT THE BUILDER DOES with it, and each class carries the
+# property that class actually has. The mapping is data, so there is no second `if` chain
+# to drift from the first.
+_CREATES = {
+    "empty_verdict": "reviews",
+    "report_dir": "reports",
+    "verdict_dir": "reviews",
+}
+"""Writes or mkdirs a destination and reads nothing: the PARENT must be a directory."""
+
+_EDITS_IN_PLACE = {
+    "append_finding": "reviews",
+    "older_answers_sha": "report",
+    "bad_answers_sha": "report",
+}
+"""Reads a file and writes it back: the TARGET ITSELF must exist, or `_build` dies.
+
+`append_finding` edits `reviews/step-{arg}.md`; the two `*_answers_sha` verbs edit the
+report named by `REPORT_NAME`, not an `arg`-numbered file.
+"""
 
 _NO_PLANT_PATH = frozenset(
     {"rename_reports", "rename_reviews", "shallow", "docs_commit_touching_guards"}
@@ -881,6 +897,12 @@ def test_R887_the_plant_base_is_the_step_the_GUARD_reads() -> None:
     # So the pairs are derived from `STATES` itself, which is the only form that tracks a
     # state added later with a destination nobody parametrised.
     for state, actions in STATES.items():
+        # **THE BUILDER CREATES FILES WITHIN A STATE'S OWN SEQUENCE**, so "exists" means
+        # the real tree OR something an earlier action of this state has made.
+        # `two_digit_step_number_discriminating` does `copy_verdict "10"` and only then
+        # `append_finding "10"`, so the in-place edit's target is legitimately absent from
+        # the tree. My first version of the R939 arm read the tree alone and failed on it.
+        made: set[Path] = set()
         for action, arg in actions:
             if action == "copy_report":
                 src, dst = REPORTS_DIR / REPORT_NAME, REPORTS_DIR / f"step-{arg}.md"
@@ -889,14 +911,31 @@ def test_R887_the_plant_base_is_the_step_the_GUARD_reads() -> None:
                 dst = REVIEWS_DIR / f"step-{arg}.md"
             elif action == "report_named":
                 src, dst = REPORTS_DIR / REPORT_NAME, REPORTS_DIR / arg
-            elif action in _DESTINATION_ONLY:
-                # A destination and no source: nothing to compare, but the path must be
+            elif action in _CREATES:
+                # A destination and no source: nothing to compare, but the parent must be
                 # ADDRESSABLE, which is what `report_dir` and `verdict_dir` were not when
                 # the marker moved (R887) and again when NEXT collided (R897).
-                root = REVIEWS_DIR if action in ("verdict_dir", "empty_verdict") else REPORTS_DIR
+                root = REVIEWS_DIR if _CREATES[action] == "reviews" else REPORTS_DIR
+                made.add(root / f"step-{arg}.md")
                 assert root.is_dir(), (
-                    f"state {state!r} plants into {root}, which is not a directory, so "
-                    f"the plant dies in `_build` before the guard runs (R910)."
+                    f"state {state!r} creates {root.name}/step-{arg}.md, but {root} is "
+                    f"not a directory, so the plant dies in `_build` before the guard "
+                    f"runs (R910)."
+                )
+                continue
+            elif action in _EDITS_IN_PLACE:
+                # READ-MODIFY-WRITE, so the TARGET ITSELF must exist (R939). R910 called
+                # these sourceless and checked only that a directory was there.
+                target = (
+                    REVIEWS_DIR / f"step-{arg}.md"
+                    if _EDITS_IN_PLACE[action] == "reviews"
+                    else REPORTS_DIR / REPORT_NAME
+                )
+                assert target.is_file() or target in made, (
+                    f"state {state!r} edits {target.name} in place and it does not "
+                    f"exist. `_build` reads it before writing it back, so the state dies "
+                    f"before planting anything -- which reads as a failure of the thing "
+                    f"it was built to test (R939)."
                 )
                 continue
             elif action in _NO_PLANT_PATH:
@@ -910,8 +949,9 @@ def test_R887_the_plant_base_is_the_step_the_GUARD_reads() -> None:
                 # repair for a hand list.
                 raise AssertionError(
                     f"state {state!r} uses action {action!r}, which this check classifies "
-                    f"nowhere. Every verb in `STATES` is a copying pair, a destination "
-                    f"with no source, or declared as planting no path -- an unclassified "
+                    f"nowhere. Every verb in `STATES` is a copying pair, a created "
+                    f"destination, an in-place edit, or declared as planting no path -- "
+                    f"an unclassified "
                     f"verb is silently unchecked, which is what R910 was."
                 )
             assert src.exists(), (
@@ -925,6 +965,7 @@ def test_R887_the_plant_base_is_the_step_the_GUARD_reads() -> None:
                 f"This is R897's collision, and the two scalar assertions it replaced "
                 f"could not see it here because the destination is {arg!r} (R904)."
             )
+            made.add(dst)
             assert not dst.exists(), (
                 f"state {state!r} plants into {dst.name}, which ALREADY EXISTS in the "
                 f"real tree. The plant would overwrite a real file, so the state no "

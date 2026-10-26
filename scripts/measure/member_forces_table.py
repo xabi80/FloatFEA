@@ -343,8 +343,8 @@ def main(argv: list[str] | None = None) -> int:
         f"SCALE: the npz holds FloatSim's MODEL-scale output; the FE model is FULL scale. "
         f"The multipliers are converted through `floatfea.io.froude`'s declared "
         f"`joint_multiplier_yaw_locked` composite (force x "
-        f"{froude_factor('force', lam_scale):.0f}, locked moment x "
-        f"{froude_factor('moment', lam_scale):.0f})."
+        f"{_factor_text(froude_factor('force', lam_scale))}, locked moment x "
+        f"{_factor_text(froude_factor('moment', lam_scale))})."
     )
     caveats = [_scale_caveat if c.startswith("SCALE: (resolved") else c for c in caveats]
     if _stale:
@@ -381,7 +381,7 @@ def main(argv: list[str] | None = None) -> int:
     instant, instant_sens = computed.instant, computed.instant_sens
 
     _write_csv(args.out, rows, by_name, caveats)
-    _write_summary(args.summary, rows, by_name, inp, instant, instant_sens, h_full, caveats)
+    _write_summary(args.summary, rows, by_name, inp, instant, instant_sens, h_full, caveats, _stale)
     print(f"\n  wrote {args.out.relative_to(ROOT)} ({len(rows)} rows)")
     print(f"  wrote {args.summary.relative_to(ROOT)}")
     return 0
@@ -424,6 +424,24 @@ def f_sensitivity() -> list[tuple[float, str, float, float, float]]:
             out.append((frac, body.name, max(moments), max(sigmas), spread))
         del by_name
     return out
+
+
+def _factor_text(factor: float) -> str:
+    """A published Froude factor, at enough significant figures to be true (R937).
+
+    **`:.0f` IS EXACT ONLY WHERE THE FACTOR IS AN INTEGER**, which is where `lambda**3`
+    and `lambda**4` are. Solved over the whole declared `FROUDE_LAMBDA = (1.0, 1000.0)`:
+    at `lambda = 1.1447` the run converts force by `1.499944` and `:.0f` published
+    `force x 1` -- 33.33% too small -- and the moment factor is 33.32% out at
+    `lambda = 1.1067`. The error is under 1% for `lambda` above about 2.6 and exact at
+    every integer, which is why the committed `lambda = 50` pair never showed it.
+
+    **This is a FORMAT and must never become a margin.** It chooses how many significant
+    figures to print; it does not decide whether two numbers are close enough. An integer
+    prints with no decimal part so the committed deliverables are unchanged, and anything
+    else prints to six significant figures.
+    """
+    return f"{factor:.0f}" if float(factor).is_integer() else f"{factor:.6g}"
 
 
 def _write_csv(
@@ -477,6 +495,7 @@ def _write_summary(
     instant_sens: dict[tuple[str, str, str], tuple[float, float]],
     h_full: float,
     caveats: list[str],
+    stale: bool,
 ) -> None:
     """The envelope over the six cases, the ten most loaded stations, and the f sweep.
 
@@ -491,7 +510,25 @@ def _write_summary(
     _breaking = [T for T in _periods if h_full / (9.81 * T * T / (2.0 * math.pi)) > 1.0 / 7.0]
     _past_long = [T for T in _periods if _hi_b < T]
     _in_b = [T for T in _periods if _lo_b <= T <= _hi_b]
-    _reference = _breaking == [10.0] and _past_long == [20.0] and len(_in_b) == 3
+    # **R936: ONE PREDICATE, NOT TWO THAT DISAGREE.** This was a local
+    # `_reference = _breaking == [10.0] and _past_long == [20.0] and len(_in_b) == 3`,
+    # a MEMBERSHIP test, while `main`'s `_stale` keys on whether the caveat text still
+    # states this run's height and band. They are true on different sets, so one document
+    # carried both branches at once. Measured at H = 30 m, full solve, exit 0:
+    #
+    #   line 20  "... kept only if a rule like FA0 is stated for THIS height, WHICH NONE IS."
+    #   line 67  "... and FA0 RULES THAT IT STAYS.** `10.5%` below the bound is within
+    #             the guidance's own precision"
+    #
+    # The criterion I wrote in the last commit -- "asserted only where a directive
+    # actually ruled" -- is refuted by that run, and the membership predicate is why: it
+    # is True on exactly H in [24.039, 30.153] m, a window nobody chose. The other
+    # direction is in it too: at H = 24.0 the else branch published "sits `-0.010 s`
+    # below ... `-0.1%` below the bound".
+    #
+    # `main` computes the predicate once, against the published caveat text, and passes
+    # it here. There is no second definition to drift.
+    _reference = not stale
     _breaking_txt = ", ".join(f"`T = {T:g} s`" for T in _breaking) if _breaking else "no case"
     _long_txt = ", ".join(f"`T = {T:g} s`" for T in _past_long) if _past_long else "no case"
 
@@ -602,16 +639,32 @@ def _write_summary(
             "8 of the governing top ten. No new FloatSim run."
             if _reference
             else (
-                f"**`T = 12.5 s` sits `{math.sqrt(6.5 * h_full) - 12.5:.3f} s` below "
-                f"`sqrt(6.5 x {h_full:g}) = {math.sqrt(6.5 * h_full):.3f} s`, which is "
-                f"`{(math.sqrt(6.5 * h_full) - 12.5) / math.sqrt(6.5 * h_full):.1%}` below "
-                "the bound.** FA0 ruled that this case STAYS in the governing set at the "
-                "reference sea state, where the offset is `0.3%` and within the guidance's "
-                "own precision. **That ruling is NOT asserted here**: an offset this size "
-                "is not a rounding question, and no directive has ruled on it for this "
-                "height. The direction of the response is unchanged -- it rises as `T` "
-                "falls across the band -- but which case represents the lower edge is a "
-                "question for whoever rules on the sea state."
+                # **AND THE SIGN, WHICH THE FIRST VERSION PUBLISHED AS A NEGATIVE
+                # "BELOW" (R936).** At H = 24.0 m the lower edge is 12.490 s, so
+                # `T = 12.5 s` is ABOVE it and inside the band -- and the sentence read
+                # "sits `-0.010 s` below ... `-0.1%` below the bound". A negative
+                # distance in a direction word is not a smaller version of the same
+                # fact; it is the opposite fact. Where 12.5 is inside the band there is
+                # no FA0 question to answer at all.
+                f"**`T = 12.5 s` is INSIDE the band at this height** -- the lower edge is "
+                f"`sqrt(6.5 x {h_full:g}) = {math.sqrt(6.5 * h_full):.3f} s` and the case "
+                f"sits `{12.5 - math.sqrt(6.5 * h_full):.3f} s` above it. FA0 exists to "
+                "rule on a case that falls BELOW the edge and is kept anyway; no such "
+                "question arises here, so nothing is asserted about it."
+                if math.sqrt(6.5 * h_full) <= 12.5
+                else (
+                    f"**`T = 12.5 s` sits `{math.sqrt(6.5 * h_full) - 12.5:.3f} s` below "
+                    f"`sqrt(6.5 x {h_full:g}) = {math.sqrt(6.5 * h_full):.3f} s`, which "
+                    f"is `{(math.sqrt(6.5 * h_full) - 12.5) / math.sqrt(6.5 * h_full):.1%}` "
+                    "below the bound.** FA0 ruled that this case STAYS in the governing "
+                    "set at the reference sea state, where the offset is `0.3%` and "
+                    "within the guidance's own precision. **That ruling is NOT asserted "
+                    "here**: an offset this size is not a rounding question, and no "
+                    "directive has ruled on it for this height. The direction of the "
+                    "response is unchanged -- it rises as `T` falls across the band -- "
+                    "but which case represents the lower edge is a question for whoever "
+                    "rules on the sea state."
+                )
             )
         ),
         "",
