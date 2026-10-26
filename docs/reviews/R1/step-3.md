@@ -1,4 +1,540 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 4cd04958926d2e9880ca1eaf947159a265902a05
+**Reviewed commit: `4cd04958926d2e9880ca1eaf947159a265902a05`.**
+Verdict: HOLD
+**Reviewed commit: `4cd04958926d2e9880ca1eaf947159a265902a05`.**
+Tests: 621 failed, 3757 passed, 1 skipped, 2 warnings in 1487.52 s (0:24:47)   (my own whole-suite run at the reviewed commit, `-p no:randomly`, tree clean before and after)
+Scope: **ES0 INTERIM CHECK, the thirteenth in step 3.** There is still no `docs/reports/R1/step-3.md`, so no reviewed revision has been consumed -- **0 of 3** -- and this counts against no round. `git diff --stat 46b4c7d..HEAD -- docs/reports` is empty, which is the mechanical form of "no new report revision".
+
+**TWO COMMITS, READ AS ONE STATE, AND THAT IS A RULING AND NOT A COURTESY -- see heading 1.** `ddffa27` shipped two reds and `4cd0495` named and repaired both. **R919 CLOSES. R909's AND R908's BLOCKING SUBSTANCE CLOSES. R907 DOES NOT, AND THREE NEW FINDINGS BLOCK -- R925, R926, R927 -- all three in the `scripts/measure/` publication path this diff moved, two of them created by the repair itself.** R895, R884 and R867-R870 carry blocking, untouched.
+
+**I RULED UNDER FR1 WITH EZ0** (`CLAUDE.md` section "What blocks for the rest of R1"; `docs/directives/FR.md`). For every blocking finding I name the silently wrong result, as FR1's last sentence requires. R910, R928-R935 are not blocking and I say so rather than letting them read as conditions.
+
+```
+cmd    git log --oneline 46b4c7d..HEAD ; git diff --stat 46b4c7d..HEAD
+out    ddffa27 -- R919+R908+R909+R907 as one repair (7 files, 340/12)
+       4cd0495 -- the corrections (3 files, 86/35)
+       floatfea/run/pipeline.py 80/0 | results/F6/floatfea_results_report.md 3/1 |
+       scripts/measure/f6_results_report.py | scripts/measure/f6a_premise_check.py |
+       scripts/measure/member_forces_table.py |
+       tests/regression/test_f6_deliverable_agrees_with_itself.py 42/0 |
+       tests/unit/test_headings_and_bem_coverage.py 97/0 then +11
+cmd    git diff 46b4c7d..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff 46b4c7d..HEAD -- tests/conftest.py and the double-star glob beside it
+out    (empty)
+cmd    git ls-files -- tests/conftest.py and the double-star glob beside it
+out    tests/conftest.py        -- a file, as my instructions say it must be
+cmd    git diff --stat 46b4c7d..HEAD -- .claude docs/SUPERVISOR.md
+out    (empty)  -- my own instruments are untouched. NOT A STOP.
+cmd    git diff --stat 46b4c7d..HEAD -- tests/corpus
+out    (empty)  -- my corpus is untouched by the implementer, as it must be
+cmd    git show --stat 46b4c7d
+out    docs/reviews/R1/step-3.md 399/0 -- the verdict committed SEPARATELY from the code
+       it judges and from the code that answers it
+cmd    ruff check floatfea tests scripts ; black --check floatfea tests scripts ;
+       mypy floatfea scripts/f4_dynamic_residual.py
+out    All checks passed. / 150 files would be left unchanged. /
+       Success: no issues found in 43 source files
+cmd    git status --porcelain  (before anything, and after 1 whole-suite run, 1 targeted
+                               run, 2 collect passes, 5 generator runs and 33 probe cells)
+out    (empty) / (empty)   -- every probe under the scratchpad; nothing written to the tree
+```
+
+**EU1's TRIGGER IS NOT MET AND I RAN THE ADVERSARIAL CASE ANYWAY, WHICH IS WHERE ALL THREE NEW FINDINGS CAME FROM.** No tolerance value moved and no declared counter moved. But this diff moves TWO decision rules -- which file resolves the scale, and whether a published caveat describes the run -- and EU1's reason is that a grep over a diff finds a changed line and cannot find the line that should have changed. So I ran both generators at configurations the diff did not choose. **The diff's own configuration gives byte-identical artifacts. One step off it in `lambda` gives a published scale that is not the scale of the numbers beside it; one step off it in `H` gives a published `0.3%` in the same sentence whose own computed figure says `5.528 s`, which is `30.7%`.** Nothing in the diff pointed at either.
+
+**STEP 1b DOES NOT FIRE, AND I SAY SO RATHER THAN SKIPPING IT.** `ls docs/reports/R1/` is `step-1.md step-2.md` and their two answers files, so there is no `Answers: verdict N @ <sha>` header to compare against the newest verdict. The newest report revision in the tree is still step 2's third, and **thirteen verdicts are now newer than it.** That is EG3 state (2).
+
+**THE HANDED-OVER FIGURE RECONCILES WITH MINE TO THE TEST, SO I REPORT IT RECONCILED RATHER THAN ACCEPTED.** The turn passed me `3505 passed, 0 failed` from a run excluding the two report-guard files, with its provenance stated and with three of its own background runs declared void. I did not take it as a pass count:
+
+```
+claim  the turn's 3505 is the exact complement of the two report-guard files, and my own
+       whole-tree run accounts for every test in both halves
+cmd    pytest --collect-only -q, whole tree; and on the two report-guard files
+out    4379 tests collected   /   874 tests collected
+       4379 - 874 = 3505, which is the turn's figure to the test
+       my own whole-tree run: 621 failed + 3757 passed + 1 skipped = 4379
+       inside the two files : 621 failed +  252 passed + 1 skipped =  874
+       outside them         : 3757 - 252 = 3505, the turn's figure to the test
+cmd    the growth since my last verdict, attributed rather than noted
+out    4307 -> 4379 collected (+72). **54 of it is INSIDE the two guards**, which are
+       parametrised over the newest verdict's own findings and sites -- so 54 of the 72
+       is MY OWN verdict 46b4c7d, which is the R861 measurement. **18 is outside them**,
+       and `pytest --collect-only | grep -cE "R908|R919"` over the two touched test
+       files is **16**, this diff's new cells by name. **2 of the 18 I did not attribute
+       and I say so rather than rounding.** Both are green.
+judge  **The two runs are one measurement split in two and they agree.** Every red in
+       this tree is inside the two report-guard files and there is no red anywhere else,
+       on two operating systems -- the id-for-id control is in the CI section.
+```
+
+**AND THE TURN'S OWN RULE ABOUT VOID RUNS IS CORRECT, IS NOT NEW, AND IS WORTH ONE SENTENCE OF GENERALISATION.** Three background runs measured trees that existed at no single moment, and `nb3` reported `3505 passed, 0 failed` on a tree that still carried the unannotated literal and should have given `3504 passed, 1 failed`. **A measurement whose input moved under it is void whether or not its number is right**, and the reason is R694's verbatim: *a value that does not move is the worst case for this, not the safest.* `nb3` is that sentence in the measuring apparatus rather than in a tolerance. CP3 already says it for pasted figures; the turn has now said it for runs, and I record the wording rather than asking for a directive.
+
+## The two questions the turn asked, ruled
+
+### 1. `ddffa27` + `4cd0495` are ONE STATE for the disposition; the red intermediate commit is NOT a finding, and the sequencing that produced it is
+
+```
+claim  nothing in the governing documents attaches a verdict to a commit that is not the
+       one under review, and `ddffa27` is not a closure commit
+rule   CZ0 (d) as narrowed by FR1 -- "a red test AT THE REVIEWED COMMIT"; EG3's predicate,
+       applied to the reds OF THE REVIEWED COMMIT; CZ1 (iv), which governs CLOSURE commits
+judge  **The reviewed commit is `4cd0495` and that is the tree I measured.** `ddffa27`'s
+       two reds were named, measured, repaired and controlled in the very next commit --
+       the revert-red-restore cycle pasted for the annotation, the real generator run for
+       the refusal. **CZ1 (iv) does not reach a step commit in flight and I am not
+       inventing a head to make it reach.** Read as one state. The turn was right to ask
+       and right to have no view it would defend.
+```
+
+**Where I disagree with the turn is its framing of its own dilemma, and the premise is the finding.**
+
+```
+claim  the `Stop` hook does not force a commit; it refuses to END A TURN
+rule   `CLAUDE.md` section "Step gating": "A `Stop` hook refuses to end a turn while the
+       newest report has no verdict." A long-running command inside a turn does not end
+       the turn.
+cell   ONE VARIABLE MOVED: the ORDER of the run and the commit, everything else held. The
+       turn's own valid figure at `ddffa27`'s tree is `2 failed, 3502 passed in 951.14s`.
+       951 s is 15.9 minutes. **Both of that commit's reds were in that run.** Run first
+       and the commit carries neither; commit first and it carries both. Nothing else
+       differs between the two orderings.
+judge  **Neither "wait, always" nor "commit unverified". RUN, THEN COMMIT** -- the commit
+       is the last act of the turn and the reviewer invocation follows it. That is CP3's
+       ordering (generate, edit, re-run, paste, commit) applied to the suite rather than
+       to a pasted figure, and the turn's own hand-over rule -- do not touch the tree
+       while a measuring run is in flight -- is the same rule from the other side. Both
+       are CP3 and FP1 read as written; **neither needs a directive and I am not asking
+       for one.**
+       **AND IF A TURN GENUINELY CANNOT HOLD THE RUN**, the honest move is to commit with
+       the whole-suite result recorded as NOT TAKEN. That is not what `ddffa27` did: it
+       committed a triple whose claim reached further than its command could, which is
+       the second of its two reds and the sharper one.
+```
+
+### 2. The BF0 fault inside a BF0 triple: the turn's diagnosis is right and under-generalised
+
+```
+claim  the fault is not a stale output; it is a claim whose DOMAIN exceeds its command's
+cmd    the triple as shipped in `ddffa27`'s message
+out    claim  no tolerance moved and NONE WAS ADDED
+       cmd    git diff --stat HEAD~1 -- floatfea/tolerances.py
+       out    (empty)
+rule   BF0: "the one-line check that would REFUTE it"; and CW0's test, "a triple whose
+       command cannot fail is not a triple"
+judge  **The command ran and its output was true, and it could not have been false under
+       a claim false in its second half.** A diff of one file cannot refute a statement
+       about every file. The refuting command existed and was cheap --
+       `pytest tests/test_no_tolerance_literals.py` is **67 passed** in seconds -- and it
+       is the command that caught the literal one commit later.
+       **The generalisation the turn stopped short of: a claim about the TREE takes a
+       command over the TREE.** Where a claim has two halves -- "none moved" and "none was
+       added" -- it takes two commands, or it is written as the one half the command
+       reaches. This is the R755/R772 shape a third time: *a sentence right about the axes
+       its author swept and silent about the one with nothing on it.*
+```
+
+**And the annotation the repair used is NOT a widening, which I measured rather than accepted.**
+
+```
+claim  the exemption mechanism pre-exists, the guard itself did not move, and the list
+       grew by exactly one
+cmd    git diff 4de717f..HEAD -- tests/test_no_tolerance_literals.py ;
+       git grep -c "not-a-tolerance" 4de717f -- tests/ summed, and the same at HEAD
+out    0 lines -- the guard is byte-identical.  188 -> 189, exactly +1.
+rule   `CLAUDE.md` Tolerances, and "never widen a tolerance, skip a test, or mark a test
+       xfail to get a green build"
+judge  **Accepted.** `EXEMPT = "not-a-tolerance:"` is at `test_no_tolerance_literals.py:77`
+       and predates this diff by a long way. The exempted value is `== 50.0` against the
+       scale written into the synthetic sidecar ON THE SAME LINE -- an identity on an
+       input, not a comparison of two computed quantities, so there is nothing here a
+       tolerance could be loosened against. The cited precedent is real. **A parametrised
+       cell would have needed no exemption at all; that is a preference and not a
+       finding.**
+```
+
+## Try to break it -- what I ran, and what it found
+
+**Nothing in the suite runs either generator as a subprocess**, which is the hole every one of R907's, R908's and R909's `Closed when` paragraphs named and which is still open. So I ran them.
+
+```
+claim  no test, no ladder rung and no CI step executes either published generator
+cmd    grep -rn "member_forces_table.py\|f6_results_report.py\|f6a_premise_check.py"
+       --include=*.py tests/ ; and over .github/
+out    tests/: docstrings, a path constant and two text scans. **Not one invocation.**
+       .github/: 0 hits.
+cmd    grep -rn "R907\|R909" tests/ --include=*.py
+out    (empty) -- **no test in this repository names either finding.**
+judge  the 16 new cells all exercise `validated_export_scale` IN THE LIBRARY. Nothing
+       exercises the three files that PUBLISH. The AST test closes the call site, which
+       is real progress on R919 (iii) and R908 (iii), and it is not a run.
+```
+
+* **THE REGENERATION CONTROLS FIRST, so nothing below is vacuous.** `f6_results_report.py` at the shipped sidecar reproduces the committed `results/F6/floatfea_results_report.md`: the only diff is the 20-line gate-status table, which is the `--no-gates` flag I passed and not the generator (`not run` against `pass`, 8 rows). **The R907 correction in that file is real and the deliverable was regenerated with it** -- the band at `H = 24.2 m` is `12.5419..16.3156 s`, three of the six periods are inside it, and the published sentence now says so.
+* **`f6_results_report.py` at `H = 50 m`: EXIT 0, and the computed branch is CORRECT.** 455 lines, `grep -c 24.2` is **1** and that one is the honest provenance line ("the paragraph ... written for `H = 24.2 m`"). The generated paragraph reads `Breaking: [10.0, 12.5, 14.0]. Past the long edge: none. Inside the band: [20.0]. Named as governing by EZ2 but outside the band: [12.5, 14.0, 15.0, 16.2]` and **every clause agrees with the table above it.** The turn's instruction-following here is right and I said so in my last verdict for the opposite reason.
+* **THE ORPHAN REFUSAL, RUN.** A seventh recorded period `25.0` the CSV has no case for: refused by name, both sets printed, **and no artifact written** (`ls` on the output path: no such file). A legitimate pair is admitted. **R909's live defect is closed.**
+* **`member_forces_table.py` at `H = 50 m`: the full solve, 6 cases, 707 to 1415 steps each.** The two height-literal caveats ARE replaced by the computed one. **And three published sites R907's own `Closed when` names by name are still false** -- measured, below, as R907.
+* **`f6_results_report.py` at `run.lambda = 25.0` against an npz recording `50.0`: EXIT 0, and it publishes `Froude lambda = 25.0`.** That is R926.
+* **A CONTINUUM GRID OVER `lambda`, both boundaries solved in BOTH directions (EH4).** 13 cells through `validated_export_scale`: the range is inclusive and exact at `1.0` and `1000.0` (`nextafter` outside each end is refused, `0.999` and `1000.1` refused, `1.0` and `1000.0` admitted); the agreement check detects to **1 ULP** (`nextafter(50.0, inf)` is refused, `delta = 7.1e-15`); the clean shipped value sits `50x` above the floor and `20x` below the ceiling, so the weakening direction -- *how far must the ceiling fall before a clean case trips* -- is a factor of 20. **Neither is a tolerance and neither has slack to lose.**
+* **A CONTINUUM GRID OVER THE RECORDED HEIGHT, 12 rows, three boundaries solved.** `T = 12.5 s` leaves the band at `H = 24.038 m` (**the shipped 24.2 is already past it**), turns BREAKING at `H = 34.851 m`, and `T = 20 s` ENTERS the band at `H = 36.364 m`. `WAVE_HEIGHT` admits `0..100 m`, so all three are inside the declared domain. **That grid is where R907's residue and its size came from.**
+* **THE NEGATIVE CONTROL ON THE NEW AST ASSERTION, measured in both directions.** As shipped: `validated_export_scale in called` is True and `exported_froude_lambda in called` is False, for both files. With the one call reverted: True and False swap, for both files. **The gate carries its own failure.**
+
+## Findings
+
+**R925, R926 AND R927 BLOCK, AND R907 STILL BLOCKS.** R919 closes; R908's and R909's blocking substance closes. R910 is FF0-class and now deferred twice. R928-R935 are ledger items. No tolerance value moved, no conftest moved, nothing in the diff is a tolerance under another name, and my own instruments are untouched.
+
+---
+
+**R925. (BLOCKS) THE FROUDE CONVERSION FACTORS ARE PUBLISHED AS `lambda = 50` LITERALS INTO BOTH F4 DELIVERABLES, IN THE SAME RUN THAT NOW RESOLVES `lambda` FROM A RECORD AND ADMITS ANYTHING IN `[1, 1000]`. AT A LEGITIMATELY RE-EXPORTED NPZ AT `lambda = 25` -- BOTH RECORDS AGREEING, SO ADMITTED BY THE NEW VALIDATOR -- THE PUBLISHED FACTORS ARE 8x TOO LARGE ON FORCE AND 16x TOO LARGE ON MOMENT.**
+
+```
+claim  one caveat line states the scale as two arithmetic constants and nothing recomputes
+       them from the resolved scale
+cmd    grep -rn "125000\|6250000" scripts/measure/*.py docs/F4_member_forces.csv
+       docs/F4_member_forces.md
+out    scripts/measure/member_forces_table.py:252  the LABELS entry, a literal
+       docs/F4_member_forces.csv:17   "# SCALE: ... (force x 125000; locked moment x 6250000)"
+       docs/F4_member_forces.md:21    the same sentence
+cmd    `_write_csv` and `_write_summary` write `caveats`, which is `list(LABELS)` with at
+       most the two HEIGHT entries replaced. Is the SCALE entry ever recomputed?
+out    no. `lam_scale` flows only into `compute_rows`; the caveat is emitted verbatim on
+       both the stale and the fresh branch.
+cell   ONE VARIABLE: the resolved scale. `froude_factor("force", lam)` and
+       `froude_factor("moment", lam)` at the two scales the validator admits either side
+       of the shipped one:
+         lam = 50.0  ->  force 125000.0    moment 6250000.0    (what both files state)
+         lam = 25.0  ->  force  15625.0    moment  390625.0    (what the run would use)
+       ratios 8.0x and 16.0x. `validated_export_scale` admits `lam = 25.0` without a
+       word -- it is inside `FROUDE_LAMBDA = ("-", 1.0, 1000.0)` and both records agree.
+rule   the first limb of FR1 with EZ0 (`scripts/measure/` produces both files); and
+       `validated_export_scale`'s OWN docstring, which cites "the CSV header states the
+       scale" as a reason the two records must agree
+judge  **IT BLOCKS. THE SILENTLY WRONG RESULT IT PRODUCES:** `docs/F4_member_forces.csv`
+       and `docs/F4_member_forces.md` stating "force x 125000, locked moment x 6250000"
+       above a table of forces converted at `15625` and `390625`. The numbers in the
+       table are right; the stated conversion is wrong by 8x and 16x, so a reader
+       converting a published force back to model scale, or checking the conversion at
+       all, is eight times out -- and R1's whole subject is a tool pointed at a
+       configuration that is not this one, where `floatsim.froude_lambda` is a declared
+       config field with a declared domain and `50.0` is only its default
+       (`config.py:507`, `:733`). **The repair's own docstring names this publication
+       site as the reason for the repair, and the repair does not reach it.**
+```
+
+**Closed when** the two factors in `member_forces_table.py:252` are computed from the resolved `lam_scale` through `floatfea.io.froude.froude_factor`, the way the band figures were computed from `h_full` one commit ago, and the deliverables are regenerated in the same commit (BP0). **Two conditions:** (i) `grep -c "125000" ` on both deliverables regenerated at a `lambda = 25` pair is `0` and the two computed values appear instead; (ii) the counter-case is the CALLER -- the same subprocess cell R908 (i) asks for, asserting the caveat text against `froude_factor` at a scale the shipped pair does not carry. **Not a tolerance: these are two multiplications of a resolved number.**
+
+---
+
+**R926. (BLOCKS) THE REPAIR ROUTED TWO OF THE THREE PUBLISHING READERS THROUGH THE VALIDATOR. THE THIRD -- `f6_results_report.py:428`, WHICH PRINTS `Froude lambda` INTO `results/F6/floatfea_results_report.md` -- STILL READS THE SIDECAR AND IS CROSS-CHECKED BY NOTHING. MEASURED: `run.lambda = 25.0` AGAINST AN NPZ RECORDING `50.0` PUBLISHES "Froude lambda = 25.0" AT EXIT 0, ABOVE FORCES AND UTILISATIONS COMPUTED AT 50. THE AST SITE TEST'S FILE LIST IS TWO HAND-TYPED NAMES AND THIS FILE IS NOT ONE OF THEM.**
+
+```
+claim  the domain the new assertion inspects cannot contain the third reader
+cmd    the file tuple in test_R919_every_PUBLISHING_reader_resolves_the_scale_through_the_VALIDATOR
+out    ("f6a_premise_check.py", "member_forces_table.py")  -- two names, typed
+cmd    grep -n "lambda" scripts/measure/f6_results_report.py, the publishing line
+out    :428  f"({run['wave_height_model_m']} m model, Froude lambda = {run['lambda']})"
+       -- the SIDECAR's copy; this file imports no npz and calls no validator
+cell   ONE VARIABLE MOVED: `run.lambda` 50.0 -> 25.0 in the sidecar, npz untouched at
+       50.0, forces CSV untouched (its numbers are at 50), everything else the shipped
+       example, through the real generator.
+out    CONTROL (shipped sidecar) : "wave height, full scale  : 24.2 m (0.484 m model,
+                                    Froude lambda = 50.0)"       EXIT 0
+       CELL    (run.lambda=25.0) : "wave height, full scale  : 24.2 m (0.484 m model,
+                                    Froude lambda = 25.0)"       EXIT 0, no refusal
+       and `member_forces_table.py` at the same pair REFUSES -- so the two generators now
+       disagree about the same pair, one refusing and one publishing.
+rule   the first limb of FR1 with EZ0; and my own R908 sharpening last round -- "the
+       repair must either put both readers on one source or refuse the disagreement"
+judge  **IT BLOCKS. THE SILENTLY WRONG RESULT IT PRODUCES:** `results/F6/floatfea_results_report.md`
+       stating "Froude lambda = 25.0" in the wave-basis block of a document whose every
+       force, stress and utilisation is at 50 -- a factor of 8 on force and 16 on moment
+       between what the document says its numbers are at and what they are at. **This is
+       R908 at a third distance and the repair's own docstring names it**: "Both are
+       published -- the CSV header states the scale and THE REPORT PRINTS IT IN THE
+       WAVE-BASIS LINE". The sentence is in the commit; the line it describes is not.
+       **And it is assertion domain blindness in the new test, not an oversight in the
+       prose:** a two-name tuple cannot contain a third file, so the guard is green on a
+       repository where a third publisher exists.
+```
+
+**Closed when** `f6_results_report.py` resolves the scale it prints through the same door, or states no scale at all. **Three conditions:** (i) the two-name tuple is replaced by something that cannot be short -- every file under `scripts/measure/` that publishes a scale, derived rather than typed, which is the form the R904 loop already uses for `STATES`; (ii) the counter-case is the CALLER, a subprocess cell at the disagreeing pair asserting the refusal or the corrected value; (iii) the revert-red-restore cycle covers `:428`. **No new apparatus:** the comparison exists (`validated_export_scale`), the door exists, and the file already has the npz's path available the way `member_forces_table.py` gets it.
+
+---
+
+**R927. (BLOCKS) `--provenance` IS DECLARED AS "the authority for the scale and the height" AND THIS COMMIT TOOK THE SCALE OFF IT. THE HEIGHT NOW COMES FROM THE FILE THE OPERATOR NAMES AND THE SCALE FROM A DIFFERENT FILE THE CODE PICKS, WITH NOTHING COMPARING THE TWO. FR1's SECOND LIMB, VERBATIM: AN INPUT ACCEPTED AND USED OTHER THAN AS DECLARED.**
+
+```
+claim  the declared meaning of the argument is now false about the code beneath it
+cmd    grep -n "the authority for the scale and the height" scripts/measure/
+out    member_forces_table.py:285  -- the `--provenance` help string, UNCHANGED by this
+       commit
+cmd    what each of the two quantities is read from, at this commit
+out    height : wave_basis_from_sidecar(args.provenance)          <- the OPERATOR's file
+       scale  : validated_export_scale(fdr.NPZ), which opens
+                fdr.NPZ.with_suffix(".provenance.json")            <- a FIXED file
+       -- and `validated_export_scale` compares the npz against ITS OWN sidecar, never
+          against `args.provenance`
+cell   ONE VARIABLE MOVED: `--provenance` pointed at a sidecar recording H = 50 m, npz
+       and its own sidecar untouched at H = 24.2 m / lambda = 50.
+out    EXIT 1 (that exit is R921, after the write), `docs/F4_member_forces.md` WRITTEN,
+       and it publishes `H = 50.0 m full scale` over forces converted at the lambda of a
+       file that records `H = 24.2 m`. **Two provenance records, one artifact, no
+       comparison.** The deliverable states neither file's name.
+rule   FR1's second limb -- "an input accepted and used other than as declared"; and
+       `CLAUDE.md` Non-negotiables, "never let a validation failure degrade to a warning"
+judge  **IT BLOCKS. THE SILENTLY WRONG RESULT IT PRODUCES:** a published F4 deliverable
+       that is a composite of two provenance records -- the band, the breaking verdicts
+       and the printed `H` from one file, the Froude scale of every force in the table
+       from another -- at exit status that says nothing about it. **This is the defect
+       R908 names, with the two records being two FILES rather than two fields**, and it
+       was created by the repair: before this commit `args.provenance` supplied both and
+       the help string was true.
+```
+
+**Closed when** one file is the authority for one artifact. Either the sidecar is derived from the npz and `--provenance` is deleted, or `--provenance` is accepted and `validated_export_scale` is given it so the comparison is against the file the operator named. **Two conditions:** (i) the help string at `:285` says what the code does, or the code does what it says -- not a prose fix on its own; (ii) the counter-case is a subprocess cell at a mismatched pair asserting the refusal. **The exact `!=` already in `validated_export_scale` is the whole comparison; a margin here would be a tolerance and goes to `floatfea/tolerances.py` with its `_COUNTER`.**
+
+---
+
+**R907. (STILL BLOCKS -- ITS LIVE HALF IS CLOSED AND THREE SITES ITS OWN `Closed when` NAMES ARE NOT.** The `results/F6` sentence is corrected and the deliverable regenerated, which was the live contradiction and is real. At any admissible recorded height but `24.2 m`, `docs/F4_member_forces.md` still publishes `0.3%` beside its own computed `5.528 s`, still says `T = 20 s` is "too long for this height" where its own table says that case is the only one IN band, and still labels a BREAKING case `**governing**` while carrying the top-ten envelope over it.**
+
+```
+claim  three published sites named in R907's own closing condition are unmoved, and all
+       three are outside the `_stale` predicate the repair added
+cmd    grep -n "0\.3%\|too long for this height\|two cases OUTSIDE" scripts/measure/member_forces_table.py
+out    :503  "## The two cases OUTSIDE the associated-period range (sensitivity only)"
+       :506  "`T = 20 s` is too long for this height"
+       :544  "`0.3%` below the bound is within the guidance's own precision"
+       -- all three in `_write_summary`'s UNCONDITIONAL `lines +=` blocks. `caveats` is
+          the only thing `_stale` touches.
+cell   ONE VARIABLE MOVED: the recorded height, through the real generator, full solve.
+out    at H = 50 m, in the written `docs/F4_member_forces.md`:
+       :67  "**`T = 12.5 s` sits `5.528 s` below `sqrt(6.5 x 50) = 18.028 s`, and FA0
+             RULES THAT IT STAYS.** `0.3%` below the bound is within the guidance's own
+             precision"            -- the computed figure and the literal in ONE sentence
+       :39  "`T = 20 s` is too long for this height"
+       :65  "| 20 | 624.5 | 0.0801 | in the band 18.028-23.452 s | sensitivity only |"
+       :61  "| 12.5 | 244.0 | 0.2050 | BREAKING (H/L 0.2050 > 1/7); and below the band
+             18.028-23.452 s | **governing** |"
+       :26  "| 1 | platform | `platform:hub4_arm` | ROOT | T = 12.5 s | 455.7 | 482.9 |"
+             -- the governing top ten, taken over that BREAKING case
+cell   THE GRID, so the size is measured and not asserted. 12 heights; `WAVE_HEIGHT`
+       admits `0..100 m`:
+       H = 24.038 m  `T = 12.5 s` LEAVES the band       (24.2 is already past it)
+       H = 34.851 m  `T = 12.5 s` turns BREAKING and stays labelled **governing**
+       H = 36.364 m  `T = 20 s` ENTERS the band, so "too long for this height" inverts
+       the `0.3%` literal against the truth:  24.2 -> 0.3%   50 -> 30.7%   100 -> 51.0%
+       -- a factor of **170x** at the top of the declared domain
+rule   R907's own `Closed when`, which names `12.542`, `0.042 s`, **`0.3%`**, "outside the
+       band at the long end" and "the four in-band periods"; and condition (iii), "no row
+       may be labelled `**governing**` while its own position column says `BREAKING`"
+judge  **IT STILL BLOCKS, and `0.3%` is the clearest of the three because it needs no
+       argument about EZ2's scope: the same sentence publishes a computed `5.528 s` and a
+       hardcoded `0.3%`, and the comment above it says the figures "are derived from
+       `h_full`".** Two of three were derived; the third was not, and the comment
+       quantifies over all of them. That is R925's shape and `ddffa27`'s triple's shape a
+       third time in one diff.
+       **THE SILENTLY WRONG RESULT:** `docs/F4_member_forces.md` justifying the inclusion
+       of a breaking, out-of-band case in the governing envelope on the ground that it is
+       "`0.3%` below the bound ... within the guidance's own precision", where the same
+       sentence's own arithmetic says `30.7%` -- and a top-ten governing table built on
+       that case while the only in-band case is labelled "sensitivity only".
+       **WHAT I AM NOT ASKING FOR.** Making `GOVERNING_PERIODS` follow the band is FT2.3
+       and FT2.3 has not started; I am not asking for it out of order. Condition (iii) is
+       satisfied by FT2.3 when it lands. **The `0.3%` literal and the two sentences at
+       :503-506 are not FT2.3** -- they are three lines in the file this commit changed,
+       and they are what carries forward as blocking.
+```
+
+**Closed when** the three sites above are each closed site by site (`CLAUDE.md`: "a closing condition that names sites is closed site by site"): (a) `0.3%` at `:544` computed from `h_full` or deleted; (b) `:503-506` computed from the band or reduced to what is true at every height; (c) condition (iii) -- no row `**governing**` while its position column says `BREAKING` -- with FT2.3, asserted on the PAIR OF COLUMNS and not on a substring. Condition (ii) -- the subprocess counter-case on `member_forces_table.py` -- is shared with R908 (i), R925 (ii), R926 (ii) and R927 (ii): **it is one test file and it closes five conditions.**
+
+---
+
+**R919. CLOSED, and I say what closed it and what did not.** `validated_export_scale` applies `FROUDE_LAMBDA` to the npz key and refuses a disagreeing pair, both call sites go through it, and the AST site test carries its own failure in both directions (measured). Boundaries solved in both directions: inclusive and exact at `1.0` and `1000.0`, `nextafter` outside each end refused; the agreement check detects to 1 ULP; the clean value has `50x` / `20x` of margin. **Condition (ii) -- a test that DRIVES `f6a_premise_check.py` -- is NOT met**, and the by-hand cell in the test docstring is not a shipped counter-case. It is ledgered as R933 rather than held as a condition, because under FR1 an absent test cannot itself put a wrong number in front of anyone. **The defect is repaired; the holding is owed.**
+
+**R908. BLOCKING SUBSTANCE CLOSED at its two named readers, and R926 is the third.** `member_forces_table.py:287`'s sidecar read is gone, `f6a_premise_check.py:185` resolves through the validator, and the disagreement is refused exactly. Condition (i)'s subprocess counter-case is not met (R933).
+
+**R909. BLOCKING SUBSTANCE CLOSED.** The orphan refusal fires, names the period and both sets, and writes no artifact -- run, not read. Two residues are ledger: the comparison is one-directional where the condition said both (R929), and its counter-case is absent (R933). **R928 is a defect in the repair and it fails LOUD, which is why it does not block.**
+
+---
+
+**R910. (DOES NOT BLOCK -- FF0-class; NOW DEFERRED TWICE AND I AM NOT AUTHORISING A THIRD)** `git diff --stat 46b4c7d..HEAD -- tests/test_report_guard_states.py` is empty. The `else: continue` is at `:874-875` and `report_dir` / `verdict_dir` are still outside the dispatch, so `report_file_is_a_directory` and `zero_padded_step_number_beside_the_unpadded_one` -- both in `STATES`, at `:218` and `:243` -- are built by actions nothing inspects. **And the turn asked me to confirm those two names are still absent from the red set: CONFIRMED, `grep -c` over my 621 is `0` for each**, which is exactly why the silent skip is invisible. FF0 says "fixed in the next commit"; it has now had two. It is two lines inside an assertion that already exists (EK2).
+
+**R928. (DOES NOT BLOCK -- ledger; it fails LOUD, which is the whole reason)** The R909 orphan check compares a sidecar float against a float parsed back out of a `{:g}`-formatted CSV field, so any recorded period above **6 significant digits** is a false orphan. Measured through the real generator at a LEGITIMATE pair -- sidecar records `12.3456789`, the CSV carries that same case written `12.3457` -- and it refuses: "records periods [12.3456789, 12.5] s that forces_prec.csv has no solved case for". `f"{12.3456789:g}"` is `'12.3457'` and `f"{14.00000001:g}"` is `'14'`. **The direction is the safe one -- false refusals only, never a silent admission -- and it will bite FT2.6, whose synthetic and rotated npz pairs are the first ones not drawn from six round numbers.**
+
+**R929. (DOES NOT BLOCK -- ledger)** R909's condition said "in both directions". `set(_recorded) - _solved` is computed; `_solved - set(_recorded)` is not, so a case the CSV carries that the sidecar does not record gets a response-table row with no band row. A missing row, not a wrong number.
+
+**R930. (DOES NOT BLOCK -- ledger; CW0)** `member_forces_table.py:166` says of the `GOVERNING_PERIODS` docstring that "no number for them is written here (R907 -- a literal here was false at every height but one)". `:174` of the same docstring writes `sqrt(6.5 x 24.2) = 12.542 s`, `:173` writes `0.042 s`, and `:170-171` write `H/lambda = 0.1550` and `0.0387`. **A claim about this file, in this file, refuted by a grep over this file** -- the R755 shape once more. **And `:163-164` now reads "... of his own basis.** For / At the recorded height the associated-period range ..." -- a dangling "For" the edit left behind.
+
+**R931. (DOES NOT BLOCK -- ledger)** `SENSITIVITY_PERIODS = (10.0, 20.0)` at `:180` is referenced by nothing -- `grep -rn "SENSITIVITY_PERIODS" --include=*.py .` is one hit, its own definition -- and its docstring states a height-specific fact ("outside the associated-period range"). Delete it, or make it the thing the band computes.
+
+**R932. (DOES NOT BLOCK -- FR1's first non-blocking class)** `validated_export_scale` raises `ConfigError`, and neither generator catches it, so an out-of-domain or disagreeing pair leaves `f6a_premise_check.py` and `member_forces_table.py` on a traceback rather than the named one-line refusal the old `SystemExit` gave. Right outcome, worse message. Same family as R921.
+
+**R933. (DOES NOT BLOCK -- ledger, and it is the single largest gap this step carries)** `grep -rn "R907\|R909" tests/ --include=*.py` is **empty**, and nothing in `tests/` or `.github/` invokes any of the three generators. The counter-cases named in R907 (ii), R908 (i), R909's "the counter-case is the ROW", R919 (ii), R925 (ii), R926 (ii) and R927 (ii) are **one subprocess test file**, and it closes all seven.
+
+**R934. (DOES NOT BLOCK -- ledger)** The two `scripts/measure/` readers now REFUSE a disagreeing npz/sidecar pair; `floatfea run` -- the actual R1 deliverable -- ACCEPTS it. `pipeline.py:1098-1120` compares the npz against the CONFIG and never against the sidecar. **I measured that no wrong number follows**: the CLI publishes `cfg.provenance()["froude_lambda"]`, which `run()` has already proved equals the resolved npz value, and `cli.py:142-150` and `:261-267` print heading, heights and window but never `basis["lambda"]`. So the asymmetry is in loudness, not in output. **Recorded because the stricter check now lives in the scripts and the shipped CLI is the looser one, which is the wrong way round for a tool.**
+
+**R935. (DOES NOT BLOCK -- observation, folded under R886)** The five new cells import `validated_export_scale` function-locally, five times, rather than extending the module-level block at `tests/unit/test_headings_and_bem_coverage.py:34-40` -- which is the block carrying R886's blanket `# noqa: F401`. The choice avoids widening the noqa and leaves the new name outside what the noqa suppresses. Not a defect; recorded so R886's repair does not later be read as covering it.
+
+---
+
+**The standing criterion observation, not a new one, with this round's number.** The predicate reads "a finding or a site of **the newest verdict**". Measured strictly, per id, against the 46110 characters of the newest verdict: **506 reach limb one on the newest verdict's own findings, 10 on its named sites or on test names its prose discusses, 2 reach limb two, and 103 name findings of EARLIER step-3 verdicts** -- R845, R855, R878, R887, R888, R889, R890, R893, R894, R897 and R903, every one present in `docs/reviews/R1/step-3.md` and none with an answering report revision, because `docs/reports/R1/step-3.md` does not exist. My predecessors measured this residue as 67, then 14, then 20, then 98, and now 103; it moves because it is a function of how exhaustively each verdict's prose names earlier findings, which is the R861 lesson applied to the predicate itself. I followed my predecessors' reading -- a finding or site of a verdict with no answering report revision -- under which **all 621 are boundary reds and none blocks**. **This is said once and it is already said: the escalation is open and belongs to Xabier, not to another round.**
+
+## CI at the reviewed commit: RED, 621 reds, ALL 621 BOUNDARY BY THE PREDICATE AND BY AN EXACT CROSS-MACHINE CONTROL -- AND THE GUARDS STEP RAN AGAIN
+
+**The third state of CK2 does NOT apply:** run **40282239470** has real jobs, real steps and real durations (the ladder ran 6 rungs, the guards step ran 1005.91 s), and there is no payments or spending-limit annotation.
+
+```
+job  the verification ladder      SUCCESS
+     ladder 1, 2, 3, 4, 5 and 6 all SUCCESS -- **so NOT A STOP: no low rung is red**
+job  lint, unit and guards        FAILURE
+     Set up job / checkout / setup-python / pip install  SUCCESS
+     actionlint SUCCESS / ruff SUCCESS / black --check SUCCESS / mypy SUCCESS /
+     **unit tests SUCCESS** /
+     **guards and meta-tests FAILURE -- WHICH MEANS IT RAN**
+       (621 failed, 1142 passed, 1 skipped, 1 warning in 1005.91s)
+job  CI determinism -- leg        skipped
+job  CI determinism -- ten legs   skipped
+```
+
+**THE CROSS-MACHINE CONTROL IS EXACT FOR THE SECOND ROUND RUNNING, AND THIS TIME `mypy` DID NOT HIDE ANYTHING EITHER.**
+
+```
+claim  my 621 reds and CI's 621 reds are the SAME 621, on two operating systems
+cmd    comm -23 (mine) (CI ids) ; comm -13 (mine) (CI ids) ; comm -12 | wc -l
+out    0 / 0 / 621
+       -- symmetric difference EMPTY IN BOTH DIRECTIONS. Not a count that matches: the
+          same set, id for id, Windows against ubuntu-latest.
+cmd    which files hold them, in each run
+out    mine : 614 tests/test_report_carried.py   7 tests/test_report_guard_states.py
+       CI   : 614 tests/test_report_carried.py   7 tests/test_report_guard_states.py
+       -- AND NOTHING ELSE IN EITHER SUITE IS RED.
+```
+
+**The 621, each id tested against the FS1 predicate as narrowed by FT1, per id and not by family (EG3(i)):**
+
+```
+506  limb one on a finding of the NEWEST verdict, by substring match against its own
+       46110 characters. 69 distinct findings; the largest are R880 (49), R877 (28),
+       R898 (27), R851 (26), R895 (23), R908 (23), R866 (19), R879 (19), R919 (17)
+103  limb one on a finding of an EARLIER unanswered step-3 verdict: R845, R855, R878,
+       R887, R888, R889, R890, R893, R894, R897, R903. 92 are
+       test_every_named_site_is_touched_or_declared[...] and 11 are
+       test_the_report_carries_the_finding[...]. All present in R1/step-3.md; none has
+       an answering report revision
+  7  test_the_guard_survives_the_state[baseline, draft_suffix_beside_a_step_report,
+       non_numeric_step_suffix, step_number_is_the_empty_string,
+       superscript_digit_step_number, verdict_amended_after_the_commit_the_report_answers,
+       zero_padded_step_number]
+       limb one, and I read each state's REQUIREMENT rather than ruling them as a family:
+       `dict(BUILT_ENTRIES)` gives **2 require=green and 5 require=ignored**, and
+       `:992-998` shows both branches assert `code == 0`. All seven need a CLEAN nested
+       run and none can be clean while the 614 above exist. Boundary consequence.
+       **THE SAME SEVEN AS THE LAST FOUR ROUNDS, id for id and requirement for
+       requirement.**
+  3  test_the_CI_section_is_about_the_REVIEWED_commit,
+       test_the_Carried_table_is_what_the_generator_produces,
+       test_the_generator_would_catch_a_row_under_the_wrong_number
+       limb one -- each keyed on a step-3 report CI section that cannot exist until a
+       step-3 report does
+  2  test_the_report_carries_a_WHOLE_SUITE_count and
+       test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW   **LIMB TWO under FT1** -- the
+       subject of each IS the commit carrying it
+---
+621  boundary reds.  **0 fail the predicate. CZ1 (iv) applies to nothing this round.**
+```
+
+**The growth from last round's 589 to 621 is MY OWN VERDICT and not a new red**, which is the R861 measurement again: `46b4c7d` added R919-R924 and their sites, the two guards are parametrised over the newest verdict's findings and sites, and **54 of the +72 collected tests are inside those two files.** A fixed list of names could not have tracked that; the predicate did, for the second round running.
+
+**EG3(ii), the verdict commit measured: NOT redone this round, and I say so.** The ES0 light scope. What I ran instead is the per-id predicate over all 621 at the judged commit, plus the exact cross-machine control above and the five generator runs under "Try to break it".
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R919** (the R906 repair put a generator on an authority nothing range-checks) | **CLOSED. Both halves, boundaries solved in BOTH directions, call site held** | `validated_export_scale` at `pipeline.py:931-1008`. Range inclusive and exact at `1.0`/`1000.0`, `nextafter` outside each end REFUSED, and `0.5`/`1e-3`/`1e6`/`1e9` refused -- the four decades `froude_factor` admits are now unreachable through this door. Agreement exact, detecting to **1 ULP** (`nextafter(50.0, inf)` refused). Clean value `50x` above the floor, `20x` below the ceiling. Both call sites through it and `exported_froude_lambda` called by neither -- AST test, negative control measured in both directions. **Condition (ii), a test DRIVING `f6a_premise_check.py`, is NOT met and is ledgered R933.** |
+| **R908** (the CSV scale from a recorded field nobody cross-checks) | **BLOCKING SUBSTANCE CLOSED at its two named readers; a THIRD publishing reader is R926** | `member_forces_table.py:301` is `validated_export_scale(fdr.NPZ)` and the sidecar read at the old `:287` is gone. `test_FN0_the_npz_key_is_PREFERRED_over_the_sidecar` stays green, correctly -- preference is about which to READ and the validator is additive, which the turn argued and I verified (194 passed over the four touched test files). **My own sharpening is what R926 answers to: "one source and nothing to compare" is not reached while a third reader publishes the other source.** Condition (i) not met (R933). |
+| **R909** (`periods_full_s` as the band table loop variable) | **BLOCKING SUBSTANCE CLOSED, run rather than read** | `f6_results_report.py:455-463`. A seventh recorded period `25.0` is refused by name, both sets printed, **and no artifact written** (the output path does not exist after the run). A legitimate pair is admitted. Residues ledgered: one-directional (R929), the `{:g}` round-trip false refusal (R928), no counter-case (R933). |
+| **R907** (the published band VERDICTS and figures from a deleted literal) | **STILL OPEN, STILL BLOCKING -- its LIVE half is CLOSED and three sites its own condition NAMES are not** | the `results/F6` contradiction is genuinely fixed and the deliverable regenerated; the regeneration control is byte-identical but for the `--no-gates` status column. **Unmoved:** `0.3%` at `member_forces_table.py:544`, published beside its own computed `5.528 s` at `H = 50 m`; `:503-506`, "`T = 20 s` is too long for this height" against its own table's "in the band"; and condition (iii), a BREAKING row labelled `**governing**` carrying the top-ten envelope. Grid: the three boundaries are `H = 24.038`, `34.851` and `36.364 m`, all inside `WAVE_HEIGHT = ("m", 0.0, 100.0)`. **(iii) is FT2.3's and I am not asking for it out of order; the other two are three lines in the file this commit changed.** |
+| **R895** (the recorded pair never checked against lambda) | **STILL OPEN, STILL BLOCKING, ESCALATED AND UNANSWERED -- and its repair is CHEAPER than it was** | `_validated_wave_basis` is untouched and the relation between the two recorded heights and the scale is still unpoliced. **One thing changed in its favour:** `validated_export_scale` now resolves an authoritative scale for the same file, so the comparison R895 wants has its third operand in hand. The schema call -- exact or tolerant -- is still Xabier's, and the plan heading 4 is why: anything with a margin is a tolerance and re-locks R1 section 4. |
+| **R884** (a list `run` block publishes "NOT RECORDED" at exit 0) | **STILL OPEN, STILL BLOCKING. The trigger did NOT recur, and I correct MY OWN last-round paraphrase rather than converting it into a breach** | the routing is "the next commit that touches `_validated_wave_basis`". That function is at `pipeline.py:751` and this diff does not touch it -- it appends `validated_export_scale` at `:931`. **My last verdict paraphrased the trigger as "the MODULE of `_validated_wave_basis`", which is wider, and under that wording this commit WOULD have fired it.** The original wording governs; the paraphrase was mine and I withdraw it. That is C45's shape inside my own Carried rows. The declaration is owed in the first reviewed revision. |
+| **R882, R883, R885, R886** | **all four still open, untouched** | the R882 and R883 sites are unmoved -- the 80-line insertion is at `:931`, after both; `HEADING`'s raw `0..360` unmoved at `config.py:189`; the blanket `# noqa: F401` still at `tests/unit/test_headings_and_bem_coverage.py:35`, in a file this diff appended 108 lines to -- the five new imports are function-local, which is R935. |
+| **R867, R868, R869, R870** (eight topologies, one runs; FL2(a) a subset of the locked (a)) | **all four still open, blocking by name into the first revision** | `git diff --stat 46b4c7d..HEAD -- floatfea/model floatfea/solve` is EMPTY, for the sixth round running. |
+| **R910** (the loop silent `else: continue`) | **STILL OPEN. FF0-class, deferred TWICE now; ruled above and I am not authorising a third** | `git diff --stat 46b4c7d..HEAD -- tests/test_report_guard_states.py` is empty; `else: continue` at `:874-875`. **And the turn question answered: `report_file_is_a_directory` and `zero_padded_step_number_beside_the_unpadded_one` are still ABSENT from the red set -- `grep -c` over my 621 is 0 for each** -- while both are present in `STATES` at `:218` and `:243`. That absence is the silence R910 is about. |
+| **R911, R905, R912, R913, R914, R915, R916, R917, R918, R920-R924** | **all still open, all ledger** | `floatfea/io/integrator.py:30` still declares `FLOATSIM_RHO_INF = 0.8` and the `pipeline.py` site is unmoved, the insertion being at `:931` below it (R911). **R920 is now WORSE, not merely stale, AND ITS LINE REFERENCE MOVED BECAUSE OF THIS COMMIT:** the sentence "the committed `data/f4/dynamic_inputs.npz` predates the npz key" was at `pipeline.py:944-946` and is now at **`:1024-1026`**, because the 80 lines of `validated_export_scale` were inserted at `:931` above it -- so this commit built a whole validator on the npz key while the docstring 90 lines below still says the committed file predates it. **R922's hand-typed two-file list is the same defect as R926's two-name tuple**, one level up. **R924's site is unmoved at `:151-157` and gains a third falsehood**: it says "this is the file's own scale" of a value that no longer comes from the file it names. |
+| **R898** (`closed_by_a_pass` reads any `Verdict: PASS`) | **CLOSED and it stays closed** | `.claude/hooks/` untouched this round; `git diff --stat 46b4c7d..HEAD -- .claude` is empty. |
+| **R891, R892, R899, R900, R901** | **R901 answered; the rest open** | **R899 recurs unchanged:** `grep -c "FR1" docs/SUPERVISOR.md` is `0` and `grep -c "FF0"` is `0`. The witness trigger is still unspent -- `gh pr list` is one PR, head `F2`, **0 comments**. **R900 does NOT recur:** `4cd0495` has a CI run at its own sha (40282239470) and both the ladder and the guards step executed, which FP1 requires and the turn did. |
+| **R847 / C43, R848, R849 with R854, R852, R862, R863, R864, R865** | **unchanged** | `floatfea/cli.py` and `tests/regression/` untouched but for the one appended AST test; R862's trigger (a commit adding a timed stage) is unspent -- `git diff 46b4c7d..HEAD -- floatfea/cli.py` is empty; R864 still needs a report revision that does not exist. |
+| **R880** (my own definition cites "their two corrected lists", which FS1 deleted) | **STILL OPEN, STILL CORRECTLY NOT TAKEN, and it did not misdirect me an eighth time** | `git diff --stat 46b4c7d..HEAD -- .claude/agents` is empty. I ruled under the `CLAUDE.md` predicate as FT1 narrowed it, applied PER ID to all 621. R880 carries 49 of this round's reds, the largest single block. **Do not take it first.** |
+| **R835, R836, R871** (the EG3 lists; the FS1 deletion of the FC1 reason) | **ANSWERED, and the FT1 narrowing orphans nothing at this commit** | both limb-two ids are present and each has its own commit as subject; the full per-id trace is above. |
+| **C45** (a mirror going stale) | **DOES NOT RECUR in the diff; still live as R899** | `CLAUDE.md`, `docs/SUPERVISOR.md` and `.claude/` are untouched by both commits. The counts my instructions tell me to take by hand still hold: `CA2`, `CK2`, `BU0` and `EE1` in `CLAUDE.md` are `0` each. **And I applied the same test to my OWN prose this round, which is the R884 row above.** |
+| **C29, C34, C35** (ruff, black, mypy) | **green at this commit, locally and on a machine neither of us controls** | mine: `All checks passed`, `150 files would be left unchanged`, `Success: no issues found in 43 source files`. CI run 40282239470: actionlint, ruff, `black --check` and mypy all SUCCESS, **and this time `unit tests` SUCCESS too, so nothing behind mypy was skipped.** For the record: `mypy` covers `floatfea scripts/f4_dynamic_residual.py` and **not** `scripts/measure/` -- but `validated_export_scale` lives in `floatfea/`, so the new code IS type-checked, which is an improvement on R906's. |
+| **C42, C44** | **mine, accepted, carried** | unchanged by this diff. |
+| **C26, C27, C28, C30, C31, C32, C33, C36, C37, C39** | **carry to the closure artifact as a list** | not re-reviewed item by item, per CZ0. An interim check writes no closure list (ES0); this row is the pointer, not the list. |
+| the suite-count line, and the CZ1 (ii)/(iii) outputs | **still owed, still structurally unpayable until a step-3 report exists** | limb two of the predicate by construction; two of this round's 621 reds ARE it. |
+
+## Corpus (EG4(e))
+
+**THE PAUSE HELD. I added no entries and committed nothing to `tests/corpus/`.** Batches are paused until 28 October except mutation work on the F4 load-mapping gate and the EB6 label-provenance gate; today is 26 October, neither of those two gates is the subject of this diff, and the ES0 light scope writes no batch in an interim check either. **0 entries are new this round, so there is no caught-of-new count to report**, and I say that rather than quoting a coverage figure I did not measure. `git diff --stat 46b4c7d..HEAD -- tests/corpus` is empty, so the implementer has not written there; the directory stands at 49 files, last batch 47.
+
+**What I ran instead -- the recorded substitute, and BOTH halves produced this round's blocking findings, for the SEVENTH round running:**
+
+* **A continuum grid over the parameter space each new decision rule guards, solved in BOTH directions (EH4).** 13 cells over `lambda` through `validated_export_scale` -- which is how I know, rather than infer, that the range is inclusive and exact at both ends, that the agreement check detects to 1 ULP, and that the clean value has `50x` / `20x` of margin, so the weakening direction (the ceiling falling toward the clean value) is a factor of 20. 12 cells over the recorded height, which located three boundaries inside the declared `0..100 m` domain -- `24.038`, `34.851`, `36.364 m` -- and measured the `0.3%` literal's error growing to `51.0%`, a factor of **170x**, at the top of that domain. **The height grid is where R907's residue and its size came from, and the lambda grid is where R925 came from.**
+* **A regeneration check on three published deliverables, in BOTH directions.** `results/F6/floatfea_results_report.md` reproduces from the repaired generator (the only diff is the `--no-gates` gate-status table, 8 rows, which is my flag and not the code); the same generator at `run.lambda = 25.0` publishes a scale its own numbers are not at (**R926**); `docs/F4_member_forces.md` regenerated at `H = 50 m` through the full solve -- 6 cases, 707 to 1415 steps each -- carries three statements its own tables contradict (**R907**) and states a conversion factor `8x` away from the one the run would use (**R925**). **That set of runs is what makes all four measurements rather than readings.**
+* **The orphan refusal and its precision boundary, run.** Fires by name, writes no artifact; and a legitimate pair at 9 significant digits is falsely refused (**R928**), which is the kind of thing only running it finds.
+* **The negative control on the one new assertion**, measured in both directions, in the R919 row.
+
+Neither half would have come from reading the diff. **Every number in R925, R926, R927 and R907's residue came from running the three files this diff changed, at a configuration the diff did not choose.**
+
+## Tolerances touched
+
+**None.** `git diff 46b4c7d..HEAD -- floatfea/tolerances.py` is empty, and no value in `floatfea/run/config.py`'s `Bound` set moved either -- `HEADING`, `WAVE_HEIGHT` and `FROUDE_LAMBDA` are unmoved at `("deg", 0.0, 360.0)`, `("m", 0.0, 100.0)` and `("-", 1.0, 1000.0)`, and `RECORDED_BOUNDS`, `WAVE_BASIS_KEYS` and `RECORDED_PROVENANCE_NUMERIC` are byte-identical to last round.
+
+**No declared counter moved either, so EU1's trigger is not met**, and I ran the adversarial case regardless, for the reason given at the top.
+
+**Nothing in the diff is a tolerance under another name, which I checked by solving rather than by reading.** The three new comparisons are: a declared `Bound` applied to a second arrival of the same quantity (`config.py:196`, unchanged, now applied to the npz key as well as the sidecar copy); an exact `!=` between two records of one number; and an exact set difference between a recorded period list and a solved one. **All three solved in both directions above: the range is exact at `1.0` and `1000.0`, the `!=` detects at 1 ULP, and the set difference has no slack to give.** Give any of the three a margin and it becomes a tolerance under another name, goes to `floatfea/tolerances.py` with its `_COUNTER` -- the smallest inconsistency the same assertion in the same quantity detects -- and re-locks the "None expected" row of R1 section 4 in the same commit (DK0).
+
+**One exemption was added to the tolerance-literal guard and it is not a widening.** `188 -> 189` `not-a-tolerance:` annotations, the guard file itself byte-identical, and the exempted `== 50.0` is an identity on an input written on the same line. Measured, not accepted; the reasoning is under question 2.
+
+**R925's repair is not a tolerance either and I say so in advance so it cannot drift into one.** Two multiplications of a resolved number through `froude_factor`, which already exists and is already tested.
+
+## Next step opens when
+
+**This is a HOLD on step 3, which stays open. It is the thirteenth interim check, it counts against no round, and all three reviewed revisions remain available -- 0 of 3 spent.** It is NOT a HOLD on the work: `ddffa27` plus `4cd0495` closed R919, closed R908's and R909's blocking substance, closed R907's live contradiction, and the turn's own correction of its instruction-declining was right and is the reason the generators now run at any sea state. **It is a HOLD because R907 is open at three sites its own condition names, because three new findings block, and because R895, R884 and R867-R870 have still not been started.**
+
+**R925, R926, R927 and R907's three sites together, as ONE commit on ONE publication path.** They are the same defect at four more distances: a conversion factor published as a literal while the scale is resolved, a third reader publishing the other source, an argument whose declared meaning the repair falsified, and three sentences that survive a height they were not written for. **Splitting them repeats the shape that has now produced R866, R877, R881, R896, R902, R908, R919 and R925-R927 in sequence: a correct check that one of the publishers does not use.** The conditions are in their own `Closed when` paragraphs. **The parts I will test myself:** that both F4 deliverables regenerated at a `lambda = 25` pair state the two factors the run used and not `125000`/`6250000`; that `f6_results_report.py` cannot publish a scale its forces are not at; that `--provenance` and the scale come from one file or the mismatch is refused; that no published sentence states `0.3%` where the sentence's own arithmetic says otherwise; and that a BREAKING row is not labelled `**governing**` -- that last one with FT2.3 and not before it. **None of the four needs an answer from Xabier.**
+
+**R933 IS THE CHEAPEST THING ON THIS LIST AND IT CLOSES SEVEN CONDITIONS.** One subprocess test file over the three generators, of the kind `test_R896_the_GENERATOR_refuses_a_sidecar_the_run_reader_refuses` already is, closes R907 (ii), R908 (i), R909's row counter-case, R919 (ii), R925 (ii), R926 (ii) and R927 (ii). **It is not new apparatus** -- it is one more file of the kind the tree already has, and the refusal paths it drives all return before `build_superstructure()`, so the cells cost seconds rather than the 20 minutes a full generator run costs. I measured that: every refusal I triggered this round fired before any solve.
+
+**R910 in that same commit, and not later.** FF0's "fixed in the next commit" has now been deferred twice, the second time without my authorisation. It is two lines.
+
+**R882-R886 are declared by name in the first reviewed revision, or they are taken.** Each with what was left and why. **R884's trigger is NOT spent** -- my own paraphrase of it last round was wider than the original and I have withdrawn the paraphrase, not the item.
+
+**Then FL2, in the FT2 order, and nothing in this list displaces it.** FT2.3 before FT2.6, with the single-source repair folded in, because FT2.3 IS the period-band check that condition (iii) needs and FT2.6 produces the very npz-and-sidecar pairs at which R925, R926, R927 and R928 all publish or refuse at once. R867-R869 are FT2.7.
+
+**R880 still waits**, and for the eighth round running it did not misdirect me: I ruled under the `CLAUDE.md` predicate as FT1 narrowed it, per id, over all 621. Do not take it first.
+
+**What I did NOT ask for.** No new guard, scanner, meta-test, detector or report generator. R925 calls `froude_factor`, which the tree already has and already tests; R926 calls the comparison this commit just wrote; R927 is a help string and an argument already in scope; R907's two live sites are `h_full` arithmetic the same function already does three lines away; R910 is two lines in an existing assertion. R933 is one test file of an existing kind. Everything else is a sentence. `docs/milestones/F2a.md` is where anything larger goes.
+
+**Where I ruled under `CLAUDE.md` against my own instructions, said once.** `docs/SUPERVISOR.md` carries neither FR1 nor FF0 (`grep -c` is `0` for each), so the two clauses deciding what blocks this milestone and what is not ledgered live only in `CLAUDE.md`. I ruled under `CLAUDE.md`, which governs. That is R899 and it belongs to Xabier as a `process:` commit, not to a round.
+
+**Schedule, since FT3 asks for it at every reviewed revision.**
+
+**The turn did not re-escalate and I am not re-escalating. FR0 already answered with "slip the date, keep the scope".** Four observations, each a measurement:
+
+1. **The estimate stayed still for the third round running.** 5-6 Nov for the first FL2 revision and about 12 Nov for R1, against FR0's 5 Nov, unchanged. Three consecutive rounds without a moving estimate.
+2. **The turn's own rate statement is accurate and I will not soften it.** Five of the last six blocking findings were defects the implementer introduced, three inside repairs; this round makes it **three more introduced, two of them inside this repair** (R926 and R927 did not exist before `ddffa27`). **And I will not characterise it as a work problem either, because the pattern has a shape and the shape is not carelessness:** every one of R919, R925, R926 and R927 is *a check applied to the sites its author was looking at and not to the site list the repository has*. R922's two typed filenames, R926's two typed filenames and `ddffa27`'s one-file diff claim are the same defect at three levels -- apparatus, test, commit message. **The repair for that class is a derived list, not more attention**, and R926 (i) asks for exactly that.
+3. **This is the seventh consecutive round in which the round's finding came from RUNNING something rather than reading it, and the fifth in which `scripts/measure/` carried it.** The cost is not the repairs -- all four of this round's are a handful of lines -- **it is that seven rounds have gone to the recorded-input readers while FT2.3 through FT2.7 have not started.** `git diff --stat 46b4c7d..HEAD -- floatfea/model floatfea/solve` is EMPTY for the sixth round running.
+4. **One risk fell again and it is worth naming.** For the second round running CI executed this step's guards at a commit where `unit tests` was green, and for the second round running the two red sets agree exactly, id for id, across two operating systems. **"The suite is green outside the designed boundary" is now a claim about two machines and two consecutive commits**, and that is the only part of this step that has compounded.
+
+**If I disagree with the criterion rather than with the work, I say so once.** I do not. FR1 is the right criterion and it is what let me rule R928, R932 and R934 in one line each instead of a round; every blocking finding above carries the silently wrong result sentence FR1's last clause requires.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 4de717f40fa662a6430f97780f805855aa51e2ae
 **Reviewed commit: `4de717f40fa662a6430f97780f805855aa51e2ae`.**
 Verdict: HOLD
