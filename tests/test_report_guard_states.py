@@ -91,6 +91,12 @@ Every path the harness builds derives from this name, so the place it plants and
 place the guard reads cannot drift apart again."""
 
 
+REPORTS_DIR = _PLAN.parent.parent / "reports" / MILESTONE
+"""The milestone's reports directory. ONE definition, read by `_step()` and by
+`test_R887_the_plant_base_is_the_step_the_GUARD_reads` -- a second copy of a path is how
+R887 happened one level up."""
+
+
 def _step() -> int:
     """The step the guard reads, taken the way the guard takes it (DB2).
 
@@ -104,13 +110,41 @@ def _step() -> int:
     the guard found NOTHING, which is the opposite of the failure the state
     was built to provoke. A disabled negative control is worse than a missing
     one, because it reports green.
+
+    **AND IT TOOK THE RAW MARKER, WHICH IS NOT HOW THE GUARD TAKES IT (R887).** R601a's
+    third occurrence, in the function whose own docstring promises it cannot recur. The
+    guard resolves `max(_PLAN_STEP if _PLAN_STEP in REPORTED else 0, _PAIRED)` -- the
+    newest step that actually HAS a report -- while this returned the marker itself. FR3
+    builds a step before writing its report, so the moment the marker moved to 3 the two
+    diverged:
+
+        test_report_carried.py   : marker=3  STEP the guard READS=2  REPORT=step-2.md
+        test_report_guard_states : marker=3  STEP it PLANTS into=3   step-3.md (absent)
+
+    and **15 of the 23 states died in `_build` on `FileNotFoundError` before planting a
+    defect, 8 of them newly.** One variable moved, same tree: `17 failed, 6 passed` at
+    marker 3 against `10 failed, 13 passed` at marker 2.
+
+    The resolution is the guard's own: the newest step with a report. It agrees with the
+    guard at marker 2 (both 2, the marker being reported) and at marker 3 (both 2 -- by
+    `_PAIRED` there, by `max(reported)` here), and the agreement is asserted by
+    `test_R887_the_plant_base_is_the_step_the_GUARD_reads` rather than left to reading.
     """
     m = _STEP_LINE.search(_PLAN.read_text(encoding="utf-8", errors="replace"))
-    return int(m.group(1)) if m else 0
+    marker = int(m.group(1)) if m else 0
+    reported = {
+        int(mm.group(1))
+        for q in REPORTS_DIR.glob("step-*.md")
+        if (mm := re.fullmatch(r"step-0*([0-9]+)", q.stem))
+    }
+    if marker in reported:
+        return marker
+    return max(reported) if reported else 0
 
 
 STEP = _step()
 REPORT_NAME = f"step-{STEP}.md"
+"""The report every `copy2` below reads FROM. It must exist."""
 
 
 def _verdict_step() -> int:
@@ -133,6 +167,14 @@ def _verdict_step() -> int:
 
 VERDICT_STEP = _verdict_step()
 NEXT = STEP + 1
+"""The step the harness PLANTS INTO. It must NOT already have a report.
+
+**TWO NUMBERS, NOT ONE (R887's caveat).** `STEP` is the copy SOURCE and `NEXT` the
+DESTINATION, and collapsing them brings back a `copy2` src==dst collision in
+`report_file_is_a_directory` -- which is what happened to the reviewer's own probe for this
+repair. `STEP + 1` keeps them distinct and keeps the destination a step with no report, so
+a planted `step-{NEXT}.md` is the "a newer report appeared" state these controls are for.
+"""
 """The step AFTER the one under execution.
 
 Every state below that means "a report for the next step" used the literal
@@ -765,6 +807,47 @@ made "the suite is green" and "the reviewer has stopped finding new shapes" the
 same statement, and the reviewer said so. The count is reported now and the
 closure commit is what asserts it is zero.
 """
+
+
+def test_R887_the_plant_base_is_the_step_the_GUARD_reads() -> None:
+    """The two resolvers agree, asserted rather than promised (R887).
+
+    **R601a's THIRD OCCURRENCE IS WHY THIS EXISTS.** `_step()`'s docstring has promised
+    since DB2 that "the place it plants and the place the guard reads cannot drift apart
+    again", and they drifted twice more: once when DB2 moved the guard off a literal `5`,
+    and again when FR3's ordering let the marker name a step with no report. The second
+    time, 15 of the 23 states died in `_build` on `FileNotFoundError` before planting a
+    defect -- 8 of them having been green one marker value earlier.
+
+    A promise in a docstring is what failed three times. This is the same promise as an
+    assertion, and it is the only thing in the file that fails when the two diverge
+    without any state having to die to show it.
+
+    THREE PROPERTIES, because each failed separately in one of the three occurrences:
+    the bases AGREE; the copy source EXISTS; and the destination is NOT the source.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "_carried_for_R887", Path(__file__).with_name("test_report_carried.py")
+    )
+    assert spec is not None and spec.loader is not None
+    guard = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(guard)
+
+    assert STEP == guard.STEP, (
+        f"the harness plants into step {STEP} and the guard reads step {guard.STEP}. A "
+        f"defect planted in a report nobody reads is not a planted defect, and the "
+        f"states that do not need the file go on reporting green."
+    )
+    assert (REPORTS_DIR / REPORT_NAME).is_file(), (
+        f"the harness copies FROM {REPORT_NAME}, which does not exist. Every state built "
+        f"by a `copy2` dies in `_build` before planting anything."
+    )
+    assert f"step-{NEXT}.md" != REPORT_NAME, (
+        f"the copy source and destination are both {REPORT_NAME}: `copy2` with src == dst "
+        f"is the collision R887's own repair probe hit in `report_file_is_a_directory`."
+    )
 
 
 def test_the_corpus_and_the_states_agree(capsys) -> None:
