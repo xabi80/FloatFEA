@@ -49,7 +49,14 @@ from floatfea.model.platform import (
     build_superstructure,
 )
 from floatfea.post.forces_table import Row, compute_rows
-from floatfea.run.config import HEADING, WAVE_HEIGHT, Bound, ConfigError, RunConfig
+from floatfea.run.config import (
+    FROUDE_LAMBDA,
+    HEADING,
+    WAVE_HEIGHT,
+    Bound,
+    ConfigError,
+    RunConfig,
+)
 
 __all__ = [
     "RunResult",
@@ -677,14 +684,43 @@ WAVE_BASIS_KEYS: Final[tuple[str, ...]] = (
     "heading_deg",
     "wave_height_full_m",
     "wave_height_model_m",
+    "lambda",
     "window",
 )
-"""The four fields a recorded wave basis carries, and every published artifact states."""
+"""The five fields a recorded wave basis carries, and every published artifact states.
+
+**`lambda` JOINED THEM AS R903.** It was read raw by
+`scripts/measure/f6_results_report.py` and published in the SAME PRINTED SENTENCE as the
+two heights this module validates -- so `Froude lambda = fifty`, `= -50.0`, `= True` and
+`= 1e9` each reached a deliverable at exit 0. It is also the one recorded field whose
+configured counterpart genuinely exists (`FROUDE_LAMBDA`, `config.py:196`, applied by
+`_checked` at `:733`), which is what made `RECORDED_BOUNDS`' original justification true
+of the one key that was not in it.
+
+A height is meaningless without the scale it was measured at, so the scale belongs to the
+basis rather than beside it.
+"""
+
+RECORDED_PROVENANCE_NUMERIC: Final[tuple[str, ...]] = ("rho_inf", "dt", "ramp_s")
+"""Recorded numbers the generator PUBLISHES but no computation here consumes (R903).
+
+They get a type check and a finiteness check and **deliberately no range**. There is no
+declared counterpart for any of them in `config.py`, and inventing one would repeat
+exactly the error R895 found in `RECORDED_BOUNDS` -- a bound presented as its configured
+quantity's when no such quantity exists. A type check is what stops
+`rho_inf = True` or `dt = "fast"` being printed into a deliverable, and that is the whole
+claim being made here.
+
+Checked only when present, because unlike the wave basis these are not a
+complete-or-empty set: a sidecar from an export that records no integrator settings is
+not a partial record of them.
+"""
 
 RECORDED_BOUNDS: Final[dict[str, Bound]] = {
     "heading_deg": HEADING,
     "wave_height_full_m": WAVE_HEIGHT,
     "wave_height_model_m": WAVE_HEIGHT,
+    "lambda": FROUDE_LAMBDA,
 }
 """The declared domain each RECORDED numeric field is checked against (R881, R895).
 
@@ -752,7 +788,7 @@ def _validated_wave_basis(present: dict[str, Any], sidecar: Path) -> dict[str, A
     if missing:
         raise ConfigError(
             f"{sidecar.name} records a PARTIAL wave basis: {missing} missing from "
-            f"{sorted(present)}. Every published artifact states all four, and the report "
+            f"{sorted(present)}. Every published artifact states all five, and the report "
             f"header subscripts them, so a partial record raised `KeyError` after the "
             f"solve and left a zero-byte CSV behind. A sidecar missing a field is wrong "
             f"rather than absent -- delete the sidecar to run with the basis NOT RECORDED, "
@@ -807,6 +843,23 @@ def _validated_wave_basis(present: dict[str, Any], sidecar: Path) -> dict[str, A
                 f"quantity is checked against. One domain per quantity, not one per side "
                 f"-- a recorded value the configuration could not legally declare cannot "
                 f"describe the run that produced these artifacts."
+            )
+    for key in RECORDED_PROVENANCE_NUMERIC:
+        if key not in present:
+            continue
+        value = present[key]
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ConfigError(
+                f"{sidecar.name}: `run.{key}` is {value!r} ({type(value).__name__}), not "
+                f"a number. Nothing here computes with it, but the deliverable PRINTS it "
+                f"-- `rho_inf = True` and `dt = fast` each reached a published artifact "
+                f"at exit 0 before this (R903). No range is checked: there is no declared "
+                f"counterpart for this field, and inventing one is the error R895 found."
+            )
+        if not math.isfinite(float(value)):
+            raise ConfigError(
+                f"{sidecar.name}: `run.{key}` is {value!r}, which is not finite, and is "
+                f"printed verbatim into a published artifact."
             )
     if not isinstance(present["window"], str):
         raise ConfigError(
@@ -866,7 +919,11 @@ def wave_basis_from_sidecar(sidecar: Path) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError):
         return {}
     run_block = recorded.get("run", {})
-    present = {key: run_block[key] for key in WAVE_BASIS_KEYS if key in run_block}
+    present = {
+        key: run_block[key]
+        for key in (*WAVE_BASIS_KEYS, *RECORDED_PROVENANCE_NUMERIC)
+        if key in run_block
+    }
     return _validated_wave_basis(present, sidecar)
 
 

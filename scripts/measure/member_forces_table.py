@@ -129,9 +129,22 @@ from floatfea.post.forces_table import (  # noqa: E402,F401
 from floatfea.post.member_forces import (  # noqa: E402
     COMPONENTS,
 )
+from floatfea.run.pipeline import wave_basis_from_sidecar  # noqa: E402
 from floatfea.solve.inertia_relief import solve_inertia_relief  # noqa: E402,F401
 
-FROUDE_LAMBDA = 50.0
+# R902: THE SCALE AND THE HEIGHT COME FROM THE SIDECAR, NOT FROM A LITERAL HERE.
+# `FROUDE_LAMBDA = 50.0` and `WAVE_HEIGHT_FULL_M = 24.2` used to be module constants in
+# this file, and `steepness()` computed the band, the H/lambda ratio and the BREAKING
+# verdict from the second one. The comment a few lines above records R805 / FN0 -- "a
+# module constant there silently overrode a configured scale" -- which is the same defect
+# in the same file, and the docstring on the height asserted a derivation
+# (`0.484 m model times the Froude factor`) that no code performed.
+#
+# Measured in the sibling generator, which had the identical pair: at a sidecar recording
+# `model=1.0, full=50.0` the published band was computed at `H = 24.2 m`, giving
+# `0.0992 ok 0.334% short` where the recorded height gives
+# `0.2050 BREAKING 30.662% short`.
+
 """`docs/conventions.md`'s scale. The FE model is FULL scale; FloatSim runs at MODEL.
 
 STATED HERE, BY THE CALLER, because `floatfea.post.forces_table` no longer carries it
@@ -140,8 +153,6 @@ analyses the committed npz, which `data/f4/dynamic_inputs.provenance.json` recor
 exported at `run.lambda = 50.0`, so this is the file's own scale and not a default.
 """
 
-WAVE_HEIGHT_FULL_M = 24.2
-"""The DS1 design wave at full scale, `0.484 m` model times the Froude factor."""
 
 GOVERNING_PERIODS = (12.5, 14.0, 15.0, 16.2)
 """EZ2(a): the cases the GOVERNING envelope is taken over.
@@ -165,7 +176,7 @@ SENSITIVITY_PERIODS = (10.0, 20.0)
 """EZ2(b): outside the associated-period range; `T = 10 s` exceeds breaking steepness."""
 
 
-def steepness(period_full_s: float) -> tuple[float, float, str]:
+def steepness(period_full_s: float, h_full_m: float) -> tuple[float, float, str]:
     """`(lambda, H/lambda, position)` for one case, deep water.
 
     `lambda = g T^2 / (2 pi)`. The position string is what EZ2(d) asks for on every label
@@ -173,9 +184,9 @@ def steepness(period_full_s: float) -> tuple[float, float, str]:
     period band and the steepness limit -- rather than collapsing them into "outside".
     """
     lam = 9.81 * period_full_s * period_full_s / (2.0 * math.pi)
-    s = WAVE_HEIGHT_FULL_M / lam
-    lo = math.sqrt(6.5 * WAVE_HEIGHT_FULL_M)
-    hi = math.sqrt(11.0 * WAVE_HEIGHT_FULL_M)
+    s = h_full_m / lam
+    lo = math.sqrt(6.5 * h_full_m)
+    hi = math.sqrt(11.0 * h_full_m)
     if s > 1.0 / 7.0:
         where = f"BREAKING (H/L {s:.4f} > 1/7); and below the band {lo:.3f}-{hi:.3f} s"
     elif period_full_s < lo:
@@ -262,7 +273,18 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", type=Path, default=ROOT / "docs" / "F4_member_forces.csv")
     ap.add_argument("--summary", type=Path, default=ROOT / "docs" / "F4_member_forces.md")
+    ap.add_argument(
+        "--provenance",
+        type=Path,
+        default=ROOT / "data" / "f4" / "dynamic_inputs.provenance.json",
+        help="the export's provenance sidecar; the authority for the scale and the height",
+    )
     args = ap.parse_args(argv)
+    # R902 / R903: through the one validated door (R896), so this reader and
+    # `floatfea run` cannot disagree about the same recorded sidecar.
+    _basis = wave_basis_from_sidecar(args.provenance)
+    h_full = float(_basis["wave_height_full_m"])
+    lam_scale = float(_basis["lambda"])
 
     import f4_dynamic_residual as fdr
 
@@ -279,14 +301,14 @@ def main(argv: list[str] | None = None) -> int:
         inp,
         raw,
         GOVERNING_PERIODS,
-        FROUDE_LAMBDA,
+        lam_scale,
         progress=lambda line: print(line, flush=True),
     )
     rows = computed.rows
     instant, instant_sens = computed.instant, computed.instant_sens
 
     _write_csv(args.out, rows, by_name)
-    _write_summary(args.summary, rows, by_name, inp, instant, instant_sens)
+    _write_summary(args.summary, rows, by_name, inp, instant, instant_sens, h_full)
     print(f"\n  wrote {args.out.relative_to(ROOT)} ({len(rows)} rows)")
     print(f"  wrote {args.summary.relative_to(ROOT)}")
     return 0
@@ -378,8 +400,14 @@ def _write_summary(
     inp: Any,
     instant: dict[tuple[str, str, str], tuple[float, float]],
     instant_sens: dict[tuple[str, str, str], tuple[float, float]],
+    h_full: float,
 ) -> None:
-    """The envelope over the six cases, the ten most loaded stations, and the f sweep."""
+    """The envelope over the six cases, the ten most loaded stations, and the f sweep.
+
+    `h_full` is the RECORDED full-scale wave height, passed in rather than read from a
+    module constant (R902), so the band and the breaking verdict this section publishes
+    are computed at the height the sidecar records and the header prints.
+    """
     env: dict[tuple[str, str, str], tuple[float, float, str]] = {}
     for r in rows:
         if not r.basis.startswith("total"):
@@ -437,7 +465,7 @@ def _write_summary(
         "",
         "## The wave basis, per case (EZ2(d))",
         "",
-        f"`H = {WAVE_HEIGHT_FULL_M} m` full scale. Deep-water `lambda = g T^2 / (2 pi)`; the "
+        f"`H = {h_full} m` full scale. Deep-water `lambda = g T^2 / (2 pi)`; the "
         "associated-period band is `sqrt(6.5 H) .. sqrt(11 H)`; the breaking limit is "
         "`H/lambda = 1/7 = 0.1429`.",
         "",
@@ -445,7 +473,7 @@ def _write_summary(
         "|---|---|---|---|---|",
     ]
     for period in sorted(inp.periods_full_s):
-        lam, s, where = steepness(period)
+        lam, s, where = steepness(period, h_full)
         # NOT named `basis`: that shadows the imported `floatfea.basis` module, and the
         # section below reads `basis.chs_class_limits()` -- which is how this was found.
         which = "**governing**" if period in GOVERNING_PERIODS else "sensitivity only"

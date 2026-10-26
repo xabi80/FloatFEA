@@ -422,3 +422,78 @@ def test_R896_the_GENERATOR_refuses_a_sidecar_the_run_reader_refuses(tmp_path) -
     )
     assert ok.returncode == 0, (ok.stdout + ok.stderr)[-600:]
     assert "24.2 m (0.484 m model" in (tmp_path / "ok.md").read_text(encoding="utf-8")
+
+
+def test_R902_the_BAND_is_computed_at_the_RECORDED_height(tmp_path) -> None:
+    """The generator validated the recorded height and then ignored it.
+
+    `WAVE_HEIGHT_FULL_M = 24.2` was a module literal, and the band, the steepness ratio
+    and the BREAKING verdict all came from it while the HEADER printed the recorded value.
+    They agree at `24.2` today, so no shipped artifact was wrong -- the control for that is
+    that both deliverables still regenerate byte-identical. The defect needs a sidecar at
+    a different H, which is FT2.6's own work in this step.
+
+    One variable moved, at `model=1.0, full=50.0` -- inside `WAVE_HEIGHT`'s domain and
+    consistent with the recorded lambda, so R895's relation check would pass it too:
+
+        HEAD      "the associated-period band for H = 24.2 m"   12.5  0.0992  ok
+                                                                      0.334% short
+        repaired  "the associated-period band for H = 50.0 m"   12.5  0.2050  BREAKING
+                                                                      30.662% short
+
+    A breaking, out-of-band sea state published as admissible, at exit 0.
+    """
+    import json as _json
+    import subprocess
+    import sys
+
+    recorded = _json.loads(
+        (ROOT / "data" / "f4" / "dynamic_inputs.provenance.json").read_text(encoding="utf-8")
+    )
+    recorded["run"]["wave_height_full_m"] = 50.0
+    recorded["run"]["wave_height_model_m"] = 1.0
+    side = tmp_path / "h50.provenance.json"
+    side.write_text(_json.dumps(recorded, indent=1), encoding="utf-8")
+
+    out = tmp_path / "h50.md"
+    proc = subprocess.run(
+        [sys.executable, str(GENERATOR), "--out", str(out), "--provenance", str(side)],
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+    )
+    assert proc.returncode == 0, (proc.stdout + proc.stderr)[-600:]
+    text = out.read_text(encoding="utf-8")
+
+    assert "band for H = 50.0 m" in text, (
+        "the band was computed at a height the sidecar does not record. That is R902: a "
+        "module literal deciding the breaking verdict while the header printed the "
+        "recorded value."
+    )
+    assert "band for H = 24.2 m" not in text, "the literal is still deciding the band"
+    assert "BREAKING" in text, (
+        "H = 50 m at T = 12.5 s is H/L = 0.2050, past the 1/7 breaking limit. A "
+        "deliverable that does not say so is the silently wrong result R902 names."
+    )
+
+
+def test_R902_NEITHER_generator_carries_a_module_wave_height_literal() -> None:
+    """`grep -rn WAVE_HEIGHT_FULL_M tests/` was empty while two generators defined it.
+
+    The shape, not the two instances: a module constant in a `scripts/measure/` generator
+    standing in for a recorded input is R805/FN0, which `member_forces_table.py`'s own
+    comment records seven lines above where it was doing it again. This is the assertion
+    that was missing, and it names the symbol so the grep is no longer empty.
+    """
+    import re
+
+    for name in ("f6_results_report.py", "member_forces_table.py"):
+        src = (ROOT / "scripts" / "measure" / name).read_text(encoding="utf-8")
+        for symbol in ("WAVE_HEIGHT_FULL_M", "FROUDE_LAMBDA"):
+            assigned = re.search(rf"(?m)^{symbol}\s*=", src)
+            assert assigned is None, (
+                f"{name} defines a module-level {symbol}. The scale and the height are "
+                f"recorded in the provenance sidecar and read through "
+                f"`wave_basis_from_sidecar`; a constant here overrides the record "
+                f"silently, which is R902 and, before it, R805/FN0."
+            )

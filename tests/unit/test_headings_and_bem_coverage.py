@@ -343,8 +343,10 @@ GOOD = {
     "heading_deg": 0.0,
     "wave_height_full_m": 24.2,
     "wave_height_model_m": 0.484,
+    "lambda": 50.0,
     "window": "the last 5 whole periods",
 }
+"""The committed sidecar's own shape. `lambda` joined the basis as R903."""
 
 
 def test_R877_an_EMPTY_basis_is_still_empty() -> None:
@@ -479,6 +481,32 @@ def test_R878_a_PARTIAL_sidecar_is_refused_rather_than_downgraded(missing: str) 
         _validated_wave_basis(partial, SIDECAR)
     message = str(caught.value)
     assert "PARTIAL wave basis" in message and missing in message, message
+
+
+@pytest.mark.parametrize("value", ["fifty", -50.0, 0.0, True, 1.0e9, 1000.1, float("nan"), [50.0]])
+def test_R903_a_bad_recorded_LAMBDA_is_refused(value: Any) -> None:
+    """The scale was read raw and published in the same sentence as the two heights.
+
+    `scripts/measure/f6_results_report.py` printed `Froude lambda = {run['lambda']}`
+    straight from the JSON, so `fifty`, `-50.0`, `True` and `1e9` each reached a published
+    deliverable at EXIT=0 -- beside two heights that the same line had just validated.
+
+    And lambda is the one recorded field whose CONFIGURED counterpart genuinely exists:
+    `FROUDE_LAMBDA = ("-", 1.0, 1000.0)` in `config.py`, applied by `_checked`. So
+    `RECORDED_BOUNDS`' original justification was literally true of the only key that was
+    not in it (R895's other half).
+    """
+    with pytest.raises(ConfigError) as caught:
+        _validated_wave_basis(dict(GOOD) | {"lambda": value}, SIDECAR)
+    assert "run.lambda" in str(caught.value), str(caught.value)
+
+
+@pytest.mark.parametrize("value", [1.0, 50.0, 1000.0])
+def test_R903_the_LAMBDA_domain_is_inclusive_and_admits_the_committed_scale(
+    value: float,
+) -> None:
+    """`FROUDE_LAMBDA` is `(1.0, 1000.0)` inclusive, and 50 is the committed export."""
+    assert _validated_wave_basis(dict(GOOD) | {"lambda": value}, SIDECAR)
 
 
 def test_R877_the_READER_ITSELF_validates_not_only_the_helper(tmp_path: Path) -> None:

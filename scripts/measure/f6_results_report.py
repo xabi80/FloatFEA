@@ -73,7 +73,26 @@ sys.modules["member_forces_table"] = MFT
 _MFT_SPEC.loader.exec_module(MFT)
 
 GOVERNING_PERIODS = (12.5, 14.0, 15.0, 16.2)
-WAVE_HEIGHT_FULL_M = 24.2
+# R902: NO MODULE LITERAL FOR THE WAVE HEIGHT. `WAVE_HEIGHT_FULL_M = 24.2` used to live
+# here and the band, the steepness and the BREAKING verdict were all computed from it,
+# while the HEADER printed the recorded value from the sidecar. The two agree at `24.2`
+# today, so no shipped artifact is wrong -- but at `model=1.0, full=50.0`, a sidecar
+# inside `WAVE_HEIGHT`'s domain and consistent with its own recorded lambda, the
+# deliverable published:
+#
+#     wave height, full scale  : 50.0 m (1.0 m model, Froude lambda = 50.0)
+#     the associated-period band for H = 24.2 m, DNV practice:
+#     row 12.5   H/lambda 0.0992   ok   no   0.334% short   GOVERNING
+#
+# where the same rows computed at the recorded height are `0.2050 **BREAKING**, 30.662%
+# short`. **A breaking, out-of-band sea state published as admissible**, at exit 0.
+#
+# `member_forces_table.py:138-141` records this exact class -- "a module constant there
+# silently overrode a configured scale" (R805 / FN0) -- seven lines above the constant
+# that did it, whose docstring stated a derivation (`0.484 m model times the Froude
+# factor`) the code never performed.
+#
+# The height now comes from the validated sidecar, through the one door R896 built.
 GRAVITY = 9.80665
 GRADES_MPA = (235.0, 275.0, 355.0, 420.0, 460.0, 690.0)
 DT_CLAUSE_MAX = 300.0
@@ -399,7 +418,8 @@ def main(argv: list[str] | None = None) -> int:
     # --------------------------------------------------------------------- 4. the loads
     w("## 4. The loads")
     w("")
-    lo, hi = _band(WAVE_HEIGHT_FULL_M)
+    h_full = float(run["wave_height_full_m"])
+    lo, hi = _band(h_full)
     w("```")
     w(f"FloatSim pin             : {HSP_TAG}")
     w(f"provenance tag           : {prov['hsp_tag']}")
@@ -414,7 +434,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     w(f"window                   : {run['window']}")
     w("")
-    w(f"the associated-period band for H = {WAVE_HEIGHT_FULL_M} m, DNV practice:")
+    w(f"the associated-period band for H = {h_full} m, DNV practice:")
     w(f"  sqrt(6.5 H) = {lo:.4f} s    sqrt(11 H) = {hi:.4f} s")
     w("")
     w(
@@ -422,7 +442,7 @@ def main(argv: list[str] | None = None) -> int:
         f"{'edge offset':>13s} {'basis':>14s}"
     )
     for period in run["periods_full_s"]:
-        steep = _steepness(period, WAVE_HEIGHT_FULL_M)
+        steep = _steepness(period, h_full)
         in_band = lo <= period <= hi
         if in_band:
             offset = "-"
