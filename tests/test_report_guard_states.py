@@ -166,25 +166,22 @@ def _verdict_step() -> int:
 
 
 VERDICT_STEP = _verdict_step()
-NEXT = STEP + 1
-"""The step the harness PLANTS INTO. It must NOT already have a report.
+NEXT = max(STEP, VERDICT_STEP) + 1
+"""The step the harness PLANTS INTO. It must NOT already have a report OR A VERDICT.
 
-**TWO NUMBERS, NOT ONE (R887's caveat).** `STEP` is the copy SOURCE and `NEXT` the
-DESTINATION, and collapsing them brings back a `copy2` src==dst collision in
-`report_file_is_a_directory` -- which is what happened to the reviewer's own probe for this
-repair. `STEP + 1` keeps them distinct and keeps the destination a step with no report, so
-a planted `step-{NEXT}.md` is the "a newer report appeared" state these controls are for.
-"""
-"""The step AFTER the one under execution.
+**THREE NUMBERS, NOT TWO (R897).** R887's caveat said two -- `STEP` the copy source and
+`NEXT` the destination -- and it was short by one. The harness copies from TWO sources:
+`copy_report` from `reports/step-{STEP}.md` and `copy_verdict` from
+`reviews/step-{VERDICT_STEP}.md`. At a step boundary those are different numbers, and
+`STEP + 1` collided with the SECOND one: with `STEP = 2` and `VERDICT_STEP = 3` it gave
+`NEXT = 3`, so `copy_verdict` copied `step-3.md` onto itself and
+`report_file_is_a_directory` and `zero_padded_step_number_beside_the_unpadded_one` died in
+`_build` before planting anything (`SameFileError`; `PermissionError` from `shutil` on
+Windows).
 
-Every state below that means "a report for the next step" used the literal
-`6`, which was the next step when they were written and is the current one
-now. That is not cosmetic: `report_file_is_a_directory` did
-`(reports/"step-6.md").mkdir()` over a file that exists and raised
-`FileExistsError` inside the builder, before the guard ran at all, and
-`newest_report_has_no_verdict_yet` overwrote the real step-6 report with a
-copy of step 5's. A state that cannot be built reports as a failure of the
-thing it was built to test.
+`max(STEP, VERDICT_STEP) + 1` is past BOTH sources whichever is newer, which is the
+property the destination actually needs: a step with neither a report nor a verdict, so a
+planted `step-{NEXT}.md` is the "a newer report appeared" state these controls are for.
 """
 # THE VERDICT FILE, WHICH IS NOT step-{STEP} AT A BOUNDARY (see _verdict_step).
 REVIEW_PATH = "docs/re" + f"views/{MILESTONE}/step-{VERDICT_STEP}.md"
@@ -824,7 +821,14 @@ def test_R887_the_plant_base_is_the_step_the_GUARD_reads() -> None:
     without any state having to die to show it.
 
     THREE PROPERTIES, because each failed separately in one of the three occurrences:
-    the bases AGREE; the copy source EXISTS; and the destination is NOT the source.
+    the bases AGREE; the copy source EXISTS; and the destination is NOT *EITHER* SOURCE.
+
+    **THE THIRD PROPERTY WAS BLIND ON ITS OWN DOMAIN (R897).** It compared
+    `step-{NEXT}.md` against `REPORT_NAME` -- the REPORT pair -- while the collision that
+    was live is the REVIEW pair, `step-{NEXT}.md` against `step-{VERDICT_STEP}.md`. So it
+    passed, `True` on `step-3.md != step-2.md`, in a tree where `copy_verdict` was copying
+    `step-3.md` onto itself. An assertion written for a defect can be green while that
+    exact defect runs, if it is asserted over the wrong pair of the two that exist.
     """
     import importlib.util
 
@@ -844,9 +848,16 @@ def test_R887_the_plant_base_is_the_step_the_GUARD_reads() -> None:
         f"the harness copies FROM {REPORT_NAME}, which does not exist. Every state built "
         f"by a `copy2` dies in `_build` before planting anything."
     )
-    assert f"step-{NEXT}.md" != REPORT_NAME, (
-        f"the copy source and destination are both {REPORT_NAME}: `copy2` with src == dst "
-        f"is the collision R887's own repair probe hit in `report_file_is_a_directory`."
+    assert NEXT != STEP, (
+        f"the REPORT copy source and destination are both step-{STEP}.md: `copy2` with "
+        f"src == dst is the collision R887's own repair probe hit in "
+        f"`report_file_is_a_directory`."
+    )
+    assert NEXT != VERDICT_STEP, (
+        f"the VERDICT copy source and destination are both step-{VERDICT_STEP}.md. This "
+        f"is the pair the R887 assertion did not cover (R897): it compared NEXT against "
+        f"the REPORT step, which was distinct, and passed while `copy_verdict` copied "
+        f"step-{VERDICT_STEP}.md onto itself."
     )
 
 
