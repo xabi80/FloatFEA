@@ -134,8 +134,38 @@ if [ -z "$step" ]; then
 fi
 
 report="docs/reports/$milestone/step-$step.md"
-if [ ! -f "$report" ]; then
-  block "require-verdict: $plans says step $step of $milestone is under execution and $report does not exist. The marker is advanced in the commit that adds the next step's report, never before it."
+marked_review="docs/reviews/$milestone/step-$step.md"
+
+# THE MARKER MAY NAME A STEP WHOSE *REVIEW* FILE EXISTS; THE REPORT IS NOT REQUIRED (FT0).
+#
+# This required the REPORT, and "the marker is advanced in the commit that adds the next
+# step's report, never before it" was true when the report came first. FR3 inverted that
+# order -- build the whole step, then write the report -- and the two together had no
+# reachable state:
+#
+#   marker 2, step 3 being worked : the gate reads docs/reviews/R1/step-2.md, picks step
+#                                   2's last reviewed commit and diffs floatfea/tests
+#                                   against it. At 5ca5496 that was 9 files and 1654
+#                                   insertions, and NO step-3 verdict could clear it --
+#                                   step-3 verdicts are written into step-3.md, which
+#                                   this hook never opened. 7 of them existed.
+#   marker 3                      : refused HERE, because step 3 had no report.
+#
+# **THIS IS THE F6a SHAPE A SECOND TIME**, and the comment forty lines above describes it
+# exactly: "the whole of F6a was gated against F6 step 2's verdict and its reviewed
+# commit ... NO commit and NO verdict could clear it ... Three interim checks were forced
+# by it, all three PASS." This one forced seven.
+#
+# AND WHAT WAS ENDING THE TURNS WAS `stop_hook_active`, not the work -- the continuation
+# exemption at the top of this file. A gate that only ever blocks once per turn and is
+# then waived is not measuring anything, and it masked the deadlock for seven rounds.
+#
+# The REVIEW file is the right key because it is the one that exists under either
+# ordering: report-first creates it second, build-first creates it first, and a step that
+# has neither has not started. Refusing on neither keeps R799's guarantee -- a report with
+# no verdict is still refused at line 262 below, whatever the marker says.
+if [ ! -f "$report" ] && [ ! -f "$marked_review" ]; then
+  block "require-verdict: $plans says step $step of $milestone is under execution and NEITHER $report NOR $marked_review exists. A step that has started has at least one of them: a report (gating's original order) or a verdict (FR3's order, where the step is built before its report). With neither, nothing is under execution and this hook has no step to read."
 fi
 
 # A REPORT WITH NO VERDICT IS REFUSED WHATEVER THE MARKER SAYS (R799).
