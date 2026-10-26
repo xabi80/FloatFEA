@@ -92,6 +92,7 @@ place the guard reads cannot drift apart again."""
 
 
 REPORTS_DIR = _PLAN.parent.parent / "reports" / MILESTONE
+REVIEWS_DIR = _PLAN.parent.parent / ("re" + "views") / MILESTONE
 """The milestone's reports directory. ONE definition, read by `_step()` and by
 `test_R887_the_plant_base_is_the_step_the_GUARD_reads` -- a second copy of a path is how
 R887 happened one level up."""
@@ -848,17 +849,46 @@ def test_R887_the_plant_base_is_the_step_the_GUARD_reads() -> None:
         f"the harness copies FROM {REPORT_NAME}, which does not exist. Every state built "
         f"by a `copy2` dies in `_build` before planting anything."
     )
-    assert NEXT != STEP, (
-        f"the REPORT copy source and destination are both step-{STEP}.md: `copy2` with "
-        f"src == dst is the collision R887's own repair probe hit in "
-        f"`report_file_is_a_directory`."
-    )
-    assert NEXT != VERDICT_STEP, (
-        f"the VERDICT copy source and destination are both step-{VERDICT_STEP}.md. This "
-        f"is the pair the R887 assertion did not cover (R897): it compared NEXT against "
-        f"the REPORT step, which was distinct, and passed while `copy_verdict` copied "
-        f"step-{VERDICT_STEP}.md onto itself."
-    )
+    # R904: A LOOP OVER `STATES`, NOT TWO SCALARS. R897's condition asked for the
+    # property over "every copy the harness will make, for each entry in STATES", and
+    # what shipped was `NEXT != STEP` and `NEXT != VERDICT_STEP`. Those two cannot see a
+    # state whose destination is a LITERAL: `two_digit_step_number_discriminating` does
+    # `("copy_verdict", "10")`, so at VERDICT_STEP = 10 it copies
+    # `reviews/step-10.md` onto itself and both scalars still read True. Nor can they see
+    # a MISSING VERDICT source, which is every new milestone's first step, where
+    # `_verdict_step()` falls back to STEP and three states die on FileNotFoundError --
+    # R887 verbatim, because the scalars check the REPORT source's existence and never
+    # the VERDICT source's.
+    #
+    # So the pairs are derived from `STATES` itself, which is the only form that tracks a
+    # state added later with a destination nobody parametrised.
+    for state, actions in STATES.items():
+        for action, arg in actions:
+            if action == "copy_report":
+                src, dst = REPORTS_DIR / REPORT_NAME, REPORTS_DIR / f"step-{arg}.md"
+            elif action == "copy_verdict":
+                src = REVIEWS_DIR / f"step-{VERDICT_STEP}.md"
+                dst = REVIEWS_DIR / f"step-{arg}.md"
+            elif action == "report_named":
+                src, dst = REPORTS_DIR / REPORT_NAME, REPORTS_DIR / arg
+            else:
+                continue
+            assert src.exists(), (
+                f"state {state!r} copies FROM {src.name}, which does not exist. Every "
+                f"state built by that `copy2` dies in `_build` before planting anything, "
+                f"and a state that cannot be built reports as a failure of the thing it "
+                f"was built to test (R887, R904)."
+            )
+            assert src != dst, (
+                f"state {state!r}: `copy2` source and destination are both {src.name}. "
+                f"This is R897's collision, and the two scalar assertions it replaced "
+                f"could not see it here because the destination is {arg!r} (R904)."
+            )
+            assert not dst.exists(), (
+                f"state {state!r} plants into {dst.name}, which ALREADY EXISTS in the "
+                f"real tree. The plant would overwrite a real file, so the state no "
+                f"longer builds the condition it names (R904)."
+            )
 
 
 def test_the_corpus_and_the_states_agree(capsys) -> None:
