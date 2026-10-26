@@ -1,4 +1,663 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: a8b049e3d2a21f9a387971179d4be914dfab286a
+**Reviewed commit: `a8b049e3d2a21f9a387971179d4be914dfab286a`.**
+Verdict: HOLD
+**Reviewed commit: `a8b049e3d2a21f9a387971179d4be914dfab286a`.**
+Tests: 1056 failed, 3809 passed, 1 skipped, 2 warnings in 2493.19 s (0:41:33)   (my own whole-suite run at the reviewed commit, `-p no:randomly`, tree clean before and after; **1056 of them are the EG3 state (2) boundary and every one is traced per id below** -- id for id the same set CI produced on Linux)
+Scope: **ES0 INTERIM CHECK, the nineteenth on step 3.** There is still no `docs/reports/R1/step-3.md`, so no reviewed revision has been consumed -- **0 of 3** -- and this counts against no round. `git diff --stat b5bfb22..HEAD -- docs/reports` is empty, the mechanical form of "no new report revision". Written through `scripts/write_verdict.py --interim`; no `--closes`, because an interim check closes nothing (FK1).
+
+**R969 CLOSES AT THE AXIS IT WAS WRITTEN ON. R967 AND R968 DO NOT CLOSE, AND THE REASON IS THE SAME ONE AS LAST ROUND AT THE NEXT AXIS ALONG: THE COMMIT ASKED ME THREE SUFFICIENCY QUESTIONS AND TWO OF THEM ARE REAL DEFECTS. A DUPLICATED UTILISATION ROW PASSES BOTH NEW JOINS AND PUBLISHES `over unity : 5 of 33` WHERE THE TRUTH IS `4 of 32`, WITH ONE STATION RANKED TWICE AND A REAL ROW PUSHED OUT OF THE TOP TEN. AND R968's NEW CONJUNCT READS ITS REFERENCE FROM THE SAME FILE `--provenance` DEFAULTS TO, SO ON THE INVOCATION THAT PRODUCES THE SHIPPED DELIVERABLE IT IS `x == x` -- I REMOVED IT AND GOT A BYTE-IDENTICAL DOCUMENT.** Three findings block: **R976, R977, R978**. R895, R884, R867-R870 and R882-R886 carry blocking, untouched.
+
+**I RULED UNDER FR1 WITH EZ0** (`CLAUDE.md` section "What blocks for the rest of R1"; `docs/directives/FR.md`), and for each blocking finding I name the silently wrong result, as FR1's last sentence requires. All three live in `scripts/measure/`, which EZ0 names explicitly alongside `results/`.
+
+```
+cmd    grep -c "^# Review" docs/reviews/R1/step-3.md
+out    18  -- so this is the nineteenth entry and the nineteenth check on step 3.
+       Not one of the 18 answers a report, because none exists.
+cmd    git log --oneline 6012b61..HEAD ; git show --stat --name-only --format="" a8b049e
+out    a8b049e -- ONE commit, TWO files:
+       scripts/measure/f6_results_report.py (+98/-3)
+       tests/regression/test_generators_refuse_mismatched_inputs.py (+93)
+cmd    git diff 6012b61..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff 6012b61..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py        -- a file, as my instructions say it must be
+cmd    git diff --stat 6012b61..HEAD -- .claude docs/SUPERVISOR.md CLAUDE.md
+out    (empty)  -- my own instructions are untouched. NOT A STOP.
+cmd    git show --name-only --format="" a8b049e -- docs/reviews tests/corpus
+out    (empty)  -- the commit touches neither my verdict file nor my corpus
+cmd    git diff --stat 6012b61..HEAD -- floatfea
+out    (empty)  -- NOTHING in the library moved, for the TWELFTH round running
+cmd    git diff --stat ce448b1..HEAD -- floatfea/model floatfea/solve
+out    (empty)  -- the twelfth round, as the turn itself reports
+cmd    git diff --stat 6012b61..HEAD -- tests/verification scripts/run_rung.sh .github
+out    (empty)  -- the ladder's tests and the CI definition are untouched
+cmd    git diff --stat 6012b61..HEAD -- docs/milestones docs/directives
+out    (empty)  -- the locked plan is unmoved; no re-lock, so DK0 does not arise
+cmd    ruff check floatfea tests scripts ; black --check floatfea tests scripts ; mypy floatfea
+out    All checks passed! / 151 files would be left unchanged. /
+       Success: no issues found in 42 source files
+cmd    diff results/F6/floatfea_results_report.md <(the generator at this commit, defaults)
+out    0 differing lines -- the SHIPPED deliverable regenerates exactly, so no number is
+       wrong in the published artifact TODAY. All three findings below are reachable
+       states that publish a wrong one, which is what FR1's "can cause" covers.
+cmd    git status --porcelain  (before anything, and after 1 whole-suite run, 11 full
+                               generator runs, 1 detached worktree, ~20 probes)
+out    (empty) / (empty)   -- every probe under the scratchpad; the ablation worktree was
+                              OUTSIDE the repository and `git worktree list` no longer
+                              carries it. `.git/worktrees/wt29` could not be pruned
+                              ("Permission denied"), which is R974 recurring on my own
+                              metadata; the directory is gone and `git status` is clean.
+```
+
+**STEP 1b DOES NOT FIRE, AND I SAY SO RATHER THAN SKIPPING IT.** `ls docs/reports/R1/` is `step-1.md step-2.md` and their two answers files, so there is no `Answers: verdict N @ <sha>` header to compare against the newest verdict. The newest report revision in the tree is still step 2's third, and **nineteen verdicts are now newer than it.** That is EG3 state (2) by construction.
+
+**EU1's TRIGGER IS NOT MET AND I RAN THE ADVERSARIAL CASE ANYWAY. ALL THREE BLOCKING FINDINGS CAME FROM IT, AND NOT ONE FROM READING THE DIFF.** No tolerance value and no declared counter moved. But the commit again asserts a sufficiency -- this time naming the derivation itself: "the util's expected key set is `total_instant` x `STATIONS_CHECKED`, one row per pair" -- and asked me to enumerate what else could make it false rather than taking it. **I enumerated the producer's filter chain line by line and ran the generator at six configurations the diff did not choose.** Two of the three questions the turn asked are defects, and the third is not, which I measured rather than ruled.
+
+## The three sufficiency questions the turn asked, answered by measurement
+
+**The turn asked me to enumerate what else could make the derivation false rather than taking it. So the method first, because it is the thing that transfers: I read the PRODUCER's filter chain and counted the conjuncts, then compared it against the CONSUMER's derived expectation.** `api_wsd_utilisation.py` keeps a forces row on FOUR conditions; `f6_results_report.py:610-614` mirrors TWO.
+
+```
+cmd    the producer's chain, scripts/measure/api_wsd_utilisation.py:164-178
+out    :164  if r["station"] not in STATIONS_CHECKED:        continue    <- MIRRORED
+       :172  if r["basis"] != "total_instant":               continue    <- MIRRORED
+       :175  period = float(r["period_full_s"]) / :176 except ValueError: continue
+                                                                        <- NOT mirrored
+       :178  if period not in GOVERNING_PERIODS:             continue    <- NOT mirrored
+cmd    the consumer's derivation, scripts/measure/f6_results_report.py:610-614
+out    _util_expected = {(r["member"], r["station"]) for r in forces
+                         if r.get("basis") == "total_instant"
+                         and r.get("station") in STATIONS_CHECKED}
+       -- two conjuncts of four, and the two it drops are declared in a module it does
+          not import. `STATIONS_CHECKED` comes from `floatfea.run.pipeline`, which does
+          not write this file.
+rule   my own recorded guard -- provenance, not existence: that a value reaches the
+       comparison from the module that PRODUCED the file is asserted structurally
+judge  the two dropped conjuncts are R979 below. They are an OVER-refusal, so FR1 keeps
+       them off the round -- and I measured that rather than reasoning it.
+```
+
+**QUESTION 1 -- "does a forces table with no `total_instant` rows at all make the expected set empty and the join vacuous?" YES, AND THE ONLY THING THAT CATCHES IT IS A CRASH THREE HUNDRED LINES LATER THAT FT2.3 IS ABOUT TO REMOVE.** That is R980, ledgered, with the interaction named.
+
+**QUESTION 2 -- "does a util row duplicated at the same key pass, since I compared sets there too?" YES, AND IT IS THE FINDING OF THE ROUND.** That is R976 and it blocks.
+
+**QUESTION 3 -- "would `STATIONS_CHECKED` changing silently widen or narrow both sides at once?" NO, AND I RAN BOTH DIRECTIONS TO SAY SO RATHER THAN REASONING IT.** Every divergence between the producer's copy and the one the report reads is a LOUD refusal with no artifact, in both directions. The worry does not materialise; what remains is the provenance, which is R983, a note.
+
+## Try to break it -- what I ran, and what it found
+
+* **THE PRODUCER'S FILTER CHAIN ENUMERATED AGAINST THE CONSUMER'S DERIVATION, CONJUNCT BY CONJUNCT.** Four against two. That is the solve, and R979 is its residue.
+* **THE UTILISATION KEY SPACE MEASURED RATHER THAN ASSUMED.** 32 util rows, 32 distinct `(member, station)`, multiplicity histogram `{1: 32}`; 48 `total_instant` forces rows, 32 at ROOT/TIP, one per member-station, periods `{12.5: 26, 15: 4, 16.2: 2}`. **So the commit's description of the committed pair is exactly right**, and that is why the key join holds on it -- which is a different statement from the derivation being right.
+* **SIX FULL GENERATOR RUNS AT CONFIGURATIONS THE DIFF DID NOT CHOOSE**, each a real process: a duplicated utilisation row; an empty util beside a forces table with no `total_instant` rows; a ROOT-only util; a util carrying a MID row; a forces table whose `total_instant` winner sits at a sensitivity period, with the util REGENERATED FROM IT BY THE SHIPPED PRODUCER; and a forces table at 1.5x load with the util left alone.
+* **THE DEFAULT INVOCATION ABLATED IN A DETACHED WORKTREE, THE ABLATION ASSERTED PRESENT AND THE RESTORE ASSERTED TOO.** R968's new conjunct removed -> a BYTE-IDENTICAL document. That is R977 and no amount of reading the diff produces it.
+* **THE COMMITTED SIDECAR REGENERATED AT ANOTHER PERIOD SET IN THAT WORKTREE**, which is one shipped command (`export_f4_dynamic_inputs.py --period ...`, writing `PROVENANCE` at :69), with the forces table made to agree. Exit 0, reference branch, the hand-written paragraph verbatim naming `T = 20 s` twice over a band table printing `25.0`.
+* **THE SHARED QUANTITY, WHICH IS THE AXIS NEITHER OF US HAD NAMED.** `f_a_MPa` in the util and `N / area` in the forces row are the same number by construction, and nothing compares them. One variable: the forces table x1.5, keys and periods held. That is R978.
+* **EH4's OTHER DIRECTION, THROUGH THE REAL PRODUCER.** The committed util regenerated from the committed forces is BYTE-IDENTICAL to the committed file, and the report accepts it: `over unity : 4 of 32`. No false refusal on the clean pair.
+* **THE REGENERATION CHECK ON THE PUBLISHED DELIVERABLE.** `results/F6/floatfea_results_report.md` regenerates with 0 differing lines at this commit.
+* **LINT, TYPES AND CI READ AT JOB AND STEP LEVEL**, with every red tested against the predicate one id at a time.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R969** (sets compared where the document iterates a list) | **CLOSED. The stronger of the two forms I offered.** | `:661` refuses a repeat; my cell gives `EXIT 1, Declared more than once: [10.0]`, no artifact; the form now agrees with `floatfea/run/config.py:949`, which already refuses a repeat in `governing_periods` by name; EH4's other direction gives no false refusal on the clean pair. **Residue: R976**, the same defect at the utilisation table -- a new input and a new finding. |
+| **R967** (the third input joined to nothing) | **CASE-SET HALF CLOSED. CONDITION (i) HALF PAID -- the "EACH direction" half is unmet and the commit does not say it was left.** | the join is at `:610-617`, the expectation is DERIVED from the producer's rule, and the stale-util input refuses with no artifact. Only `_util_absent` has a cell; `_util_extra` at `:617` and all of `_wrong_period` at `:633-651` are held by nothing -- neutralise either and the suite stays green. I drove both through the real generator and both work. **The VALUE axis is R978, blocking.** |
+| **R968 / R957** (the reference paragraph published over a table that contradicts it) | **NOT CLOSED. BLOCKING, as R977.** | the new conjunct's reference is the file `--provenance` DEFAULTS to, so on the deliverable-writing invocation it is `x == x`. Removing it gives a BYTE-IDENTICAL document. One shipped `export_f4_dynamic_inputs.py --period ...` makes the paragraph publish `T = 20 s` twice for a run that does not contain it, at exit 0, reference branch. Both new cells pass `--provenance <mutated>`, the only path where the conjunct bites. |
+| **R976, R977, R978** | **NEW, ALL THREE BLOCKING** | ruled above, each with the silently wrong result FR1's last sentence requires. All three are in `scripts/measure/f6_results_report.py`, inside FT2.3's own surface. |
+| **R979-R985** | **NEW, all ledger or notes** | R979 and R980 answer the turn's questions 1 and 3 with measurements; R981 is R918's census seven sites short, hit live; R982-R985 are message and form notes. |
+| **R959** (the committed CSVs stored LF-normalised) | **stays CLOSED** | `git diff 6012b61..HEAD -- .gitattributes docs` is empty; `test_R918` and `test_R959` are green in my run; and I regenerated `docs/F6_utilisation.csv` with the shipped producer and it is BYTE-IDENTICAL to the committed blob -- the property `*.csv -text` buys, measured on Windows. Residues R970, R971, R972 unchanged. |
+| **R958** (the period join one-directional) | **stays CLOSED** | `_missing` and `_undeclared` are unmoved; `test_R933` and `test_R958` are green in my run and inside CI's rung 6. |
+| **R950, R951 (height axis), R952, R945 (i), R918 / R949 / R955, R956, R954** | **all stay closed** | `git diff 6012b61..HEAD -- floatfea scripts/measure/member_forces_table.py` touches none of them; rung 6 is 0 failed at 256 collected. **R956's class recurs at seven NEW sites as R981**, which is a census finding and not a reopening. |
+| **R895** (the recorded pair never checked against lambda) | **STILL OPEN, STILL BLOCKING, ESCALATED AND UNANSWERED** | `git diff --stat 6012b61..HEAD -- floatfea` is EMPTY. No finding of mine depends on it: every cell this round held the committed npz/sidecar pair or changed only period labels, so lambda was never in question. The exact-or-tolerant call is Xabier's. |
+| **R884** (a list run block publishes NOT RECORDED at exit 0) | **STILL OPEN, STILL BLOCKING. THE TRIGGER DID NOT RECUR, for the FOURTH round** | the routing is the next commit that touches `_validated_wave_basis`; there is no `floatfea/` diff at all, so the trigger cannot have been spent. Owed by name in the first reviewed revision. |
+| **R867, R868, R869, R870** (eight topologies, one runs) | **all four still open, blocking by name into the first revision** | `git diff --stat ce448b1..HEAD -- floatfea/model floatfea/solve` is EMPTY, for the TWELFTH round running. FT2.7. |
+| **R882, R883, R885, R886** | **all four still open, untouched** | `floatfea/` untouched entire. The R882 correction stands as I gave it. Declared by name in the first reviewed revision, or taken. |
+| **R907 (iii)**, **R928**, **R973** | **open, ledger, FT2.3 is the right home -- AND R980 IS NOW A CONDITION ON THEIR REPAIR** | the traceback at `f6_results_report.py:1055` with siblings at `:817` and `:947` stands, and `:906` is a fourth. **Giving any of them a `default=` makes the vacuous util join publish `over unity : 0 of 0` at exit 0**, which is R980 and which the repair answers in the same commit. |
+| **R960-R966, R970-R975** | **all ledger, unchanged, and the implementer was RIGHT to leave them** | R970's sweep stands; nothing in this diff touches a deliverable's bytes, so I did not re-take it. R971 unchanged at `test_generators_refuse_mismatched_inputs.py:504`. **R972 honoured: the CRLF assertion was NOT added, which is correct and which I measured for last round.** R974 recurs on my own metadata -- see the status line. R965's shape recurs twice more, as R982. |
+| **R936, R937 (ii), R938, R939, R933, R946, R947** | **all stay closed** | the R933 file grew 575 -> 668 lines and all three new cells are of the same kind: real processes, the refusal or branch asserted by name, no artifact left behind. `test_R933_the_control_runs_clean` is green for both generators in my run. |
+| **R925, R926, R927** | **blocking substance stays closed; residues R941 and R961** | untouched; the mismatched pair still refuses. |
+| **R940-R943, R929-R935, R948, R911, R905, R912-R917, R920-R924** | **ledger, unchanged** | `floatfea/` is untouched, so every line reference in them is unmoved. |
+| **R856** (`write_verdict.py` refused a verdict for a step with no report) | **stays ANSWERED by FS2, and I used it again** | `--interim`; this verdict went through the sanctioned path, the second of nineteen that did. |
+| **R835, R836, R871** (the EG3 lists; FS1's deletion of the FC1 reason) | **ANSWERED; the predicate did the work, at 1056 ids, with a CONTROL AT THE OPPOSITE STATE** | a fixed list would have had to grow from 1003 to 1056 names in one commit, and would still have mis-attributed the one planted state that differs. |
+| **R898** (closed_by_a_pass reads any Verdict PASS) | **CLOSED and it stays closed** | `git diff --stat 6012b61..HEAD -- .claude` is empty. |
+| **R899, R900, R901, R891, R892** | **R899 recurs; R900 does NOT -- and R899 has a new instance that is MINE** | `grep -c "FR1" docs/SUPERVISOR.md` is 0 and `grep -c "CA2" CLAUDE.md` is 0; the ladder's green is ruled under CA2, which lives in one of the two documents that govern me. The new instance: the `gh run list --commit` form my own instructions give returns `[]` on an abbreviated sha. |
+| **R847 / C43, R848, R849 with R854, R852, R862-R865, R880** | **unchanged** | `floatfea/cli.py` and the `tests/regression/test_r1_*` files untouched. **R849/R854's class has a new instance as R983** -- two declarations of `STATIONS_CHECKED`, three of `GOVERNING_PERIODS`, nothing in `tests/` comparing any pair. **R880 did not misdirect me for the fourteenth round.** |
+| **C45** (a mirror going stale) | **DOES NOT RECUR in the diff; still live as R899** | `CLAUDE.md`, `docs/SUPERVISOR.md` and `.claude/` untouched. The counts my instructions tell me to take by hand still hold: CA2, CK2, BU0 and EE1 in `CLAUDE.md` are 0 each, and BE3 and FE1 are 0 too, which is the sweep R777 narrowed. |
+| **C29, C34, C35** (ruff, black, mypy) | **green at this commit on BOTH machines** | mine: `All checks passed!` / `151 files would be left unchanged` / `Success: no issues found in 42 source files`. CI step level: actionlint, ruff, black, mypy and unit tests all SUCCESS. **mypy still covers `floatfea` and not `scripts/measure/`**, where R976, R977 and R978 all live. |
+| **C42, C44** | **mine, accepted, carried** | unchanged. |
+| **C26-C28, C30-C33, C36, C37, C39** | **carry to the closure artifact as a list** | not re-reviewed item by item, per CZ0. An interim check writes no closure list (ES0); this row is the pointer, not the list. |
+| the suite-count line, and the CZ1 (ii)/(iii) outputs | **still owed, still structurally unpayable until a step-3 report exists** | FT1 limb two by construction; two of this round's 1056 reds ARE it, and they are red at the control commit too, which is the measurement that confirms the limb rather than the family. |
+
+## Findings
+
+**R976, R977 AND R978 BLOCK.** R969 closes. R967's key-set half closes and its condition (i) is HALF PAID. R968 does not close. No tolerance value moved, no conftest moved, nothing in the diff is a tolerance under another name, my own instructions and my corpus are untouched, and no number moved in any shipped deliverable.
+
+---
+
+**R976. (BLOCKS) A DUPLICATED UTILISATION ROW PASSES BOTH NEW JOINS AND IS PUBLISHED TWICE. ONE VARIABLE MOVED -- ONE LINE OF THE COMMITTED UTILISATION CSV REPEATED, FORCES TABLE AND SIDECAR UNTOUCHED -- AND THE DOCUMENT WENT FROM `over unity : 4 of 32` TO `over unity : 5 of 33` AT EXIT 0, WITH `platform:hub3_arm ROOT 16.2` RANKED AT #3 AND #4 AND `hub4:buoy11_arm ROOT` PUSHED OUT OF THE PUBLISHED TOP TEN. THIS IS R969 ONE FUNCTION AWAY, AND THE TURN NAMED IT AS A QUESTION WITHOUT CHECKING IT.**
+
+```
+claim  the key join discards the multiplicity every published figure counts
+cmd    the shipped lines, f6_results_report.py:615-617 against :1079-1085 and :1112
+out    :615  _util_got = {(r["member"], r["station"]) for r in util}       <- a SET
+       :1079 w(f"member-stations checked  : {len(util)} ...")              <- len(LIST)
+       :1085 w(f"over unity               : {len(over)} of {len(util)}")   <- len(LIST)
+       :1112 top = sorted(util, key=...)[:10]                              <- the LIST
+       -- the comparison is on a set and every published figure is on the list, which is
+          exactly the pair of lines R969 is about at :570 and :588-589.
+cell   ONE VARIABLE. Committed sidecar, committed forces CSV, committed npz, committed
+       height, all untouched; defaults everywhere else. `--util` is the committed
+       utilisation CSV with the single row
+       `platform,platform:hub3_arm,ROOT,16.2,...` repeated once. Real process, full build.
+out    CONTROL  EXIT 0   member-stations checked : 32   in tension : 15
+                         over unity : 4 of 32           worst U = 1.71167
+       DUP      EXIT 0   member-stations checked : 33   in tension : 16   <- ACCEPTED
+                         over unity : 5 of 33           worst U = 1.71167
+       and the ranked table, "The ten most utilised member-stations":
+         CONTROL  | 3 | platform:hub3_arm | ROOT | 16.2 | **1.182** |
+                  | 4 | platform:hub1_arm | ROOT | 12.5 | **1.177** |
+                  ... | 10 | hub4:buoy11_arm | ROOT | 12.5 | **0.788** |
+         DUP      | 3 | platform:hub3_arm | ROOT | 16.2 | **1.182** |
+                  | 4 | platform:hub3_arm | ROOT | 16.2 | **1.182** |  <- the SAME station
+                  ... | 10 | hub2:buoy6_arm | ROOT | 12.5 | **0.788** |
+                  -- `hub4:buoy11_arm ROOT` is GONE from the published top ten,
+                     displaced by a repeat.
+cmd    does the new period check see it? f6_results_report.py:639-644
+out    `_wrong_period` asks whether each util row's period is in `_periods_for[key]`.
+       The duplicate's period IS, so it passes. Both new directions are green on it.
+cmd    the same class one layer down, where it is already refused
+out    floatfea/run/config.py:949  refuses a repeat in `governing_periods` by name
+       f6_results_report.py:661    this commit now refuses a repeated DECLARED period
+       -- the rule exists twice in the tree for the sidecar's list and nowhere for the
+          utilisation table's rows.
+rule   my own recorded guard, verbatim: a duplicate removed before the list is built
+       never reaches the assertion that looks for duplicates -- here `set()` removes it
+       at :615 before the comparison that would see it; and R969's own ruling, which
+       this commit answered at one of the two sites the ruling's reason names
+judge  **IT BLOCKS. THE SILENTLY WRONG RESULT IT PRODUCES:**
+       `results/F6/floatfea_results_report.md` sections 6 and 7 publish
+       `member-stations checked : 33`, `in tension : 16` and `over unity : 5 of 33`
+       where the truth is 32, 15 and 4 of 32 -- so BOTH the numerator and the
+       denominator of the headline figure are wrong, in opposite directions -- and the
+       ranked table prints one station twice while dropping a real one, at exit 0, with
+       every join this step has built reporting agreement.
+       **NOT A TOLERANCE.** No slack is wanted: either the utilisation table has one row
+       per member-station or the run is refused.
+       **AND I WANT THE TURN'S OWN WORDING ON THE RECORD.** It wrote: "whether a util
+       row duplicated at the same key passes, since I compared sets there too -- the
+       same defect as R969, one function away, and I did not check it." That is the
+       finding, correctly diagnosed, by its author, before I ran anything. The gap is
+       not the diagnosis. It is that a question asked of the reviewer is cheaper to
+       answer with the cell than with the question: this cell is eighteen seconds.
+```
+
+**Closed when** the utilisation table's multiplicity is compared or refused -- one row per `(member, station)`, or a repeat refused by name. **Two conditions:** (i) a counter-case driving one duplicated utilisation row, asserting the refusal by name with no artifact; (ii) the revert-red-restore cycle on it. **And R967's condition (i) is finished in the same commit**: it named a `--util` differing from `--forces` in EACH direction, and only the `_util_absent` direction has a cell -- `_util_extra` and the whole of `_wrong_period` have none, which is FT2's own rule ("every repair's CALLER is held by a test; the revert-red-restore cycle covers the call site, not just the helper").
+
+---
+
+**R977. (BLOCKS) R968 IS NOT CLOSED. THE NEW CONJUNCT READS ITS REFERENCE FROM THE SAME FILE `--provenance` DEFAULTS TO, SO ON THE INVOCATION THAT WRITES THE SHIPPED DELIVERABLE THE PREDICATE IS `x == x`. I REMOVED THE CONJUNCT AND GOT A BYTE-IDENTICAL DOCUMENT. AND I MEASURED THE CONSEQUENCE THROUGH THE REAL GENERATOR: THE COMMITTED SIDECAR REGENERATED AT ANOTHER PERIOD SET -- ONE SHIPPED COMMAND -- PUBLISHES THE HAND-WRITTEN PARAGRAPH VERBATIM, NAMING `T = 20 s` TWICE, OVER A BAND TABLE AND A RESPONSE TABLE THAT BOTH PRINT `25.0`.**
+
+```
+claim  the repair added a conjunct that is identically true on the default path
+cmd    where each side of the comparison comes from, f6_results_report.py
+out    :308  prov = json.loads(args.provenance.read_text(...))
+       :536  h_full    = float(run["wave_height_full_m"])            <- args.provenance
+       :570  _recorded = [float(x) for x in run["periods_full_s"]]    <- args.provenance
+       :752  _ref_h       = ...(ROOT/"data"/"f4"/"dynamic_inputs.provenance.json")
+       :768  _ref_periods = ...(the SAME hard-coded path)
+       :282  ap.add_argument("--provenance",
+                             default=ROOT/"data"/"f4"/"dynamic_inputs.provenance.json")
+       -- the LEFT side of both conjuncts is `args.provenance`; the RIGHT side is that
+          argument's OWN DEFAULT, read a second time from a hard-coded path. With the
+          default, the predicate compares a file against itself.
+cell   ONE VARIABLE, in a detached worktree at this commit OUTSIDE the repository, the
+       ablation asserted present before the run and the restore asserted after:
+         `_reference = h_full == _ref_h and sorted(_recorded) == _ref_periods`
+           ->  `_reference = h_full == _ref_h`
+out    `cmp` of the two documents: IDENTICAL, byte for byte.
+       **The conjunct R968 asked for is inert on the path that writes the deliverable.**
+cell   THE SECOND CELL -- the consequence rather than the inertness. ONE VARIABLE: the
+       COMMITTED sidecar's `periods_full_s`, `[10, 12.5, 14, 15, 16.2, 20]` ->
+       `[10, 12.5, 14, 15, 16.2, 25]`, with the forces table's 20 s rows relabelled so
+       the R909/R958 join agrees. Height UNCHANGED at 24.2 m. DEFAULT `--provenance`,
+       DEFAULT `--util`. Real process, full build.
+out    EXIT 0, 453 lines, artifact written.
+       `grep -c "not the reference sea state"` = 0, so the REFERENCE branch was taken.
+       The band table reads
+            10.0  0.1551  BREAKING  no  20.267% short  sensitivity
+            12.5 | 14.0 | 15.0 | 16.2                  GOVERNING
+            25.0  0.0248  ok        no  53.227% long   sensitivity
+       and the response table reads `25.0   338.226`. Immediately beneath them, verbatim:
+         "**`T = 10 s` exceeds the deep-water breaking steepness** ... it is also the
+          largest of the six on the bound above. **`T = 20 s` is outside the band at the
+          long end.** The governing basis is the four periods EZ2 admits: the three in
+          band, and `T = 12.5 s` ... The monotonicity holds across the band only --
+          **`T = 20 s` ticks back up above `T = 16.2 s`.**"
+       -- `T = 20 s` named TWICE, in a run that does not contain it.
+cmd    is the pair constructible with shipped tools only, or did I need a hand edit?
+out    scripts/export_f4_dynamic_inputs.py:69   PROVENANCE = OUT_DIR / "dynamic_inputs.provenance.json"
+       scripts/export_f4_dynamic_inputs.py:402  ap.add_argument("--period", type=float, action="append")
+       scripts/export_f4_dynamic_inputs.py:527  "periods_full_s": [float(p) for p in periods]
+       -- ONE shipped command rewrites the exact file the predicate reads as its
+          reference. FT2.6's whole job is producing sidecars at other sea states, and
+          FT2.6 is the item after the one being built.
+cmd    why neither new cell can see it
+out    tests/regression/test_generators_refuse_mismatched_inputs.py:622 (test_R968) and
+       :656 (test_R969) BOTH pass `--provenance str(side)`, a mutated copy under
+       `tmp_path`. That is the ONLY path on which the conjunct is not a tautology. So the
+       suite measures the conjunct exactly where it has an effect, and nowhere on the
+       path that writes the deliverable.
+rule   my own R968 closing condition, verbatim -- "the gate on the hand-written
+       paragraph covers the SOLVED CASE SET as well as the height, or the input that
+       makes those claims false is refused"; and EH4, the boundary solved in the
+       direction that WEAKENS the gate
+judge  **IT BLOCKS, AND IT IS THE SAME SHAPE AS THE FINDING IT REPAIRS, ONE LEVEL IN.**
+       R968 was "`h_full == _ref_h` is true for every npz this pipeline produces, so it
+       gated nothing". The repair added a second conjunct that is true for every
+       invocation that writes the deliverable, so it gates nothing there either.
+       **THE SILENTLY WRONG RESULT:** `results/F6/floatfea_results_report.md` section 4,
+       regenerated with defaults after any export at another period set, publishes a
+       hand-written membership paragraph about `T = 10 s`, `T = 20 s` and "the four
+       periods EZ2 admits: the three in band" for a sea state whose period set is
+       something else -- and that membership IS the governing basis that sets every
+       stress and utilisation in sections 6 and 7.
+       **WHAT THE COMMIT GOT RIGHT, AND IT IS NOT SMALL.** The conjunct is the right
+       QUANTITY: the paragraph is a set of claims about a height AND a case list, the
+       commit said so and acted on it, and R951's no-literal rule is honoured. The
+       defect is the REFERENCE, not the quantity -- and my own wording asked for "the
+       set it was written for", which is a constant of the paragraph and not a field of
+       the input that varies.
+       **NOT A TOLERANCE.** No distance from any number is wanted.
+```
+
+**Closed when** the paragraph's gate compares the run against the set the PARAGRAPH was written for, rather than against the input's own default. **Three conditions:** (i) the reference the predicate compares against is not the file `--provenance` defaults to, and the commit states where it does come from and why that source cannot move underneath the sentence; (ii) the counter-case runs at the DEFAULT `--provenance` -- the path no cell in the repository visits -- with the reference set changed and the forces table agreeing; (iii) the revert-red-restore cycle on that cell. **If the conclusion is that a hand-written paragraph cannot be gated against a moving reference, then FT2.6's generated narrative arrives now and the paragraph goes. That is a decision I am naming, not making.**
+
+---
+
+**R978. (BLOCKS) THE UTIL JOIN COMPARES KEYS AND PERIODS AND NOT THE QUANTITY THE TWO TABLES SHARE. ONE VARIABLE -- THE FORCES TABLE AT 1.5x LOAD, EVERY KEY AND EVERY PERIOD HELD -- AND SECTION 6 PUBLISHES STRESSES 1.5x HIGHER WHILE SECTION 7 PUBLISHES THE IDENTICAL UTILISATIONS, THE IDENTICAL `over unity : 4 of 32`, THE IDENTICAL `worst U = 1.71167` AND THE IDENTICAL `f_a / f_b` BREAKDOWN, AT EXIT 0.**
+
+```
+claim  the report never recomputes a utilisation from the forces it publishes
+cmd    grep -n "check_member" scripts/measure/f6_results_report.py
+out    (no match) -- `floatfea.checks.api_wsd` is imported at :48 for the clause
+       ALLOWABLES only. Every utilisation, every branch, every `f_a`/`f_b` and the whole
+       ranked table come verbatim from `--util` rows; `sigma_Pa` comes from `--forces`.
+       The two tables share `f_a_MPa == N/area` and `f_b_MPa == |M|/W` BY CONSTRUCTION
+       (api_wsd_utilisation.py:196-209) and nothing compares either.
+cell   ONE VARIABLE. Every force and stress column of the committed forces CSV scaled by
+       1.5 -- the same model at a higher load, which is the report's own section-9
+       limitation 1, "every utilisation here scales with the assumed masses". Keys,
+       stations, bases and periods IDENTICAL, so the argmax is preserved and every
+       `total_instant` winner is unchanged. `--util` is the committed file.
+out    EXIT 0, artifact written, every join green.
+       s.6  worst ROOT sigma BOUND [MPa]      CONTROL        CELL
+              T = 10.0                         762.151      1143.230
+              T = 12.5                         483.214       724.821
+              T = 16.2                         330.610       495.915
+       s.7  member-stations checked            32            32
+            over unity                        4 of 32       4 of 32     <- UNCHANGED
+            worst                             U = 1.71167   U = 1.71167 <- UNCHANGED
+            f_b, platform:hub2_arm ROOT       455.7 MPa     455.7 MPa   <- UNCHANGED
+       -- one document, two solves: s.6's 724.821 MPa at T = 12.5 s sits above s.7's
+          `f_b = 455.7` for the station s.6 says governs.
+cmd    is it reachable, or did I need a hand edit?
+out    the commit's own comment, f6_results_report.py:602-603: "`api_wsd_utilisation.py`
+       reads the forces CSV and writes the utilisation CSV, so 'regenerate one, forget
+       the other' is two commands." A load change moves no key and no winning period, so
+       the pair the commit's own staleness story describes passes every join it built.
+cmd    EH4's other direction -- does the new join over-refuse the clean pair?
+out    the committed util REGENERATED by the shipped producer from the committed forces
+       is BYTE-IDENTICAL to the committed file (`cmp` silent), and the report accepts it:
+       `over unity : 4 of 32`. No false refusal on a legitimately regenerated pair.
+rule   FR1's first limb, a wrong number in a published deliverable (EZ0); and my own
+       recorded guard -- check that the collection the assertion inspects can contain
+       the failure. Here the assertion inspects KEYS and the failure is in VALUES.
+judge  **IT BLOCKS. THE SILENTLY WRONG RESULT:** `results/F6/floatfea_results_report.md`
+       section 7 publishes `over unity : 4 of 32` and `worst U = 1.71167` for a forces
+       table whose stresses are half again as large -- an UNDERSTATED utilisation on
+       every one of the thirty-two stations, which is the direction that matters, in the
+       section the whole document exists to produce.
+       **THIS IS NOT A FAILURE TO ANSWER R967's CONDITION, AND I SAY SO.** My condition
+       was "the utilisation CSV's case set is joined to the forces table's and the
+       sidecar's". The commit did that and added a period check I had not asked for. The
+       CASE-SET half of R967 is CLOSED. This is the third axis of the same input and it
+       is a new finding, found by running the generator rather than by re-reading my own
+       wording.
+       **AND IT IS THE ONE PLACE A THRESHOLD MAY BE NEEDED, WHICH I AM NAMING RATHER
+       THAN SMUGGLING.** The two CSVs carry six significant figures by declaration
+       (`api_wsd_utilisation.py:77  _CSV_FIGURES = 6`), so a comparison of the shared
+       quantity is a comparison at a declared precision. **If the repair introduces any
+       margin it is a tolerance under another name**: it goes to `floatfea/tolerances.py`
+       with its `_COUNTER` -- the smallest load change the same assertion detects, in the
+       same quantity -- and it re-locks R1 section 4's "None expected" row in the same
+       commit. An exact comparison of the published six-figure strings needs none of
+       that, and is the form I would reach for first.
+```
+
+**Closed when** the two tables are joined on the quantity they share, or the report states which of its inputs it trusts for values and why that is acceptable. **Three conditions:** (i) a cell whose `--forces` values differ from the `--util`'s basis with keys and periods held, asserting the refusal by name with no artifact; (ii) the revert-red-restore cycle on it; (iii) if any margin is introduced, the `tolerances.py` entry with its counter and the plan row re-locked in the same commit.
+
+---
+
+**R969. CLOSED, AND THE REPAIR IS THE RIGHT ONE OF THE TWO FORMS I OFFERED.** The condition was "the multiplicity is compared or refused -- the declared list is a set in fact, or a repeated declaration is refused by name", with a counter-case and the revert cycle.
+
+```
+cmd    the shipped line, f6_results_report.py:661 and the message at :666
+out    _duplicated = sorted({x for x in _recorded if _recorded.count(x) > 1})
+       "... Declared more than once: {_duplicated or 'none'}. ..."
+cmd    my own cell -- one duplicate in the declared list, everything else committed
+out    EXIT 1, "Declared more than once: [10.0]", and the out directory is EMPTY
+cmd    the form checked against the rule the library already carries
+out    floatfea/run/config.py:949 refuses a repeat in `governing_periods` by name, so
+       the generator now AGREES with the library rather than inventing a second rule
+cmd    EH4's other direction -- can a clean case trip it?
+out    no. `_recorded` is a list of distinct floats for every sidecar the export writes
+       and the control run is EXIT 0; `_duplicated` fires only on a genuine repeat.
+rule   my own R969 closing condition
+judge  **CLOSED.** Multiplicity is REFUSED rather than compared, which is the stronger of
+       the two forms, and the cell asserts the refusal by name with no artifact left
+       behind. **Residue: R976** -- the same defect at the utilisation table, which is a
+       different input and a new finding, not an unmet condition of this one.
+```
+
+**R967. THE CASE-SET HALF CLOSES. CONDITION (i) IS HALF PAID AND THE REPORT DOES NOT SAY THE OTHER HALF WAS LEFT.** The join exists at :610-617, the expectation is DERIVED from the producer's rule rather than naive set equality, and the stale-util input I measured last round is refused -- I re-ran my own cell and the turn's reported `EXIT=1, absent from the utilisations: [('hub3:buoy7_arm', 'ROOT'), ('platform:hub3_arm', 'ROOT')]` is reproduced in kind. **But my condition (i) said "a cell with a `--util` whose case set differs from `--forces` in EACH direction", and there is one cell for one direction.** `_util_extra` at :617 and the entire `_wrong_period` check at :633-651 are unheld: neutralise either and nothing in the suite goes red. I drove both branches myself through the real generator -- a ROOT-only util gives `_util_absent` with 16 TIP keys named, a util carrying a MID row gives `Present in the utilisations with no forces row: [('hub1:buoy1_arm', 'MID')]`, both EXIT 1 with no artifact -- so both branches WORK. What is missing is that the repository does not know it. **Two cells, three lines each, in R976's commit.**
+
+---
+
+**R979. (DOES NOT BLOCK -- ledger; FR1's second class, with the direction MEASURED) THE DERIVATION MIRRORS TWO OF THE PRODUCER'S FOUR CONJUNCTS. IT IS AN OVER-REFUSAL AND NEVER A SILENT PASS -- MEASURED END TO END THROUGH THE SHIPPED PRODUCER, WHOSE REMEDY SENTENCE CANNOT WORK.**
+
+```
+cmd    the producer's chain, api_wsd_utilisation.py:164-178, against the derivation
+out    :164  if r["station"] not in STATIONS_CHECKED:   continue    <- MIRRORED
+       :172  if r["basis"] != "total_instant":          continue    <- MIRRORED
+       :175  float(r["period_full_s"]) -> :176 ValueError: continue <- NOT mirrored
+       :178  if period not in GOVERNING_PERIODS:        continue    <- NOT mirrored
+cell   ONE VARIABLE, both halves real processes. One `total_instant` ROOT row's period
+       moved from 15 to 20 in the committed forces CSV; the util REGENERATED FROM IT by
+       `api_wsd_utilisation.py`; the report run on that pair.
+out    the producer wrote 31 rows for a 32-key forces table -- CORRECTLY, by its own
+       GOVERNING_PERIODS filter -- and the report REFUSED:
+         "absent from the utilisations: [('hub1:buoy1_arm', 'ROOT')] ...
+          Re-run `api_wsd_utilisation.py` against this forces table."
+       **The advice cannot work: re-running it produces the same 31 rows.**
+cmd    is it reachable TODAY, and in which direction?
+out    not today, and it is one-directional. `floatfea/post/forces_table.py:504` already
+       restricts `total_instant` to `period in governing_periods`, so for any forces
+       table this pipeline writes the dropped conjunct is a no-op -- and all three copies
+       of the constant agree at this commit:
+         api_wsd_utilisation.py:56    GOVERNING_PERIODS = (12.5, 14.0, 15.0, 16.2)
+         member_forces_table.py:161   GOVERNING_PERIODS = (12.5, 14.0, 15.0, 16.2)
+         floatfea/run/config.py:419   governing_periods: tuple[float, ...]  (CONFIGURED)
+       `grep -rn "GOVERNING_PERIODS\|STATIONS_CHECKED" tests/` is EMPTY, so nothing holds
+       any pair of them together. A wider expectation can only ADD refusals and never
+       remove one, so no silent pass exists on this axis.
+rule   FR1's second class -- a needle too narrow where no wrong result follows; and
+       floatfea/post/forces_table.py:435, which says `governing_periods` is a PARAMETER
+       rather than a module constant and gives the reason
+judge  **IT DOES NOT BLOCK**, and I name the limb rather than leaving it implicit: the
+       outcome is a loud refusal with no artifact. **It goes live the moment the
+       governing basis is a configured quantity rather than a literal, which is FT2.3's
+       own subject:** `floatfea run` already takes `load_cases.governing_periods` from
+       the config, the two `scripts/measure/` copies are literals, and a forces table
+       written at a configured basis beside a util written at the literal basis is
+       exactly this refusal with nothing the operator can do about it.
+```
+
+**Closed when** the derivation mirrors the producer's chain, or the report states which conjuncts it deliberately omits and why -- and preferably when the constant arrives from the module that WROTE the file rather than from `floatfea.run.pipeline`.
+
+**R980. (DOES NOT BLOCK -- ledger, AND IT IS A CONDITION ON FT2.3 RATHER THAN A STATEMENT ABOUT TODAY) THE JOIN IS VACUOUS WHEN BOTH DERIVED SETS ARE EMPTY, AND THE ONLY THING THAT CATCHES IT IS THE CRASH FT2.3 IS ABOUT TO REMOVE.** This is the turn's question 1, and the answer is yes.
+
+```
+cell   a forces CSV with every `total_instant` row removed (1248 -> 1200 rows) and a
+       utilisation CSV with its header and NO data rows. Both derived sets are EMPTY, so
+       `_util_absent` and `_util_extra` are both empty and NEITHER refusal fires.
+out    the run reaches :906 and dies:
+         File "scripts/measure/f6_results_report.py", line 906, in main
+           worst = max(util, key=lambda r: float(r["utilisation_K2"]))
+         ValueError: max() iterable argument is empty
+       EXIT 1, out directory empty -- no artifact.
+cmd    the one-sided cases, for completeness
+out    empty util + committed forces           -> refused, 32 keys absent, no artifact
+       no-total_instant forces + committed util -> refused, 32 keys extra, no artifact
+rule   my own recorded guard -- an empty parameter set is an error, not a skip: a check
+       whose collection is empty reads green while checking nothing
+judge  **IT DOES NOT BLOCK TODAY**, because the outcome is a crash and nothing is
+       published. **IT IS A CONDITION ON THE NEXT COMMIT.** R973 and R907 (iii) are
+       exactly `:906`'s class and FT2.3 is where the turn says they land. **If those
+       defaultless reducers are given a `default=`, the vacuous pair publishes
+       `member-stations checked : 0` and `over unity : 0 of 0` at exit 0** -- a document
+       stating that no station is over unity when no station was checked. So the repair
+       of R907 (iii) carries this with it: either the join refuses an empty expectation
+       by name, or the reducers refuse rather than default.
+```
+
+**Closed when** an empty derived expectation is refused by name with a cell -- or when the R907 (iii) repair lands and the report states, with the measurement, that the vacuous pair is refused rather than published.
+
+**R981. (DOES NOT BLOCK -- ledger) R918 / R956's REPAIR REACHED TWO FILES AND THE CENSUS IS SEVEN SHORT. I HIT IT LIVE: `api_wsd_utilisation.py` EXITS NON-ZERO AFTER WRITING BOTH ITS DELIVERABLES.**
+
+```
+out    Traceback ... api_wsd_utilisation.py", line 241, in main
+         print(f"  wrote {args.out.relative_to(ROOT)} ({len(out_rows)} rows)")
+       ValueError: '<scratchpad>/util_fresh.csv' is not in the subpath of '<ROOT>'
+       -- and BOTH files were written: 32 rows, byte-identical to the committed CSV.
+cmd    where the repair went, and where it did not
+out    repaired with a `_shown()` helper:
+         f6_results_report.py:250        member_forces_table.py:461
+       still a bare `relative_to(ROOT)` in a terminal print:
+         api_wsd_utilisation.py:241,242  f6a_premise_check.py:360
+         f6a_report.py:411               f6a_required_section.py:575,576
+         f6b_report.py:414               f6b_truss_sizing.py:679,680
+cmd    the cell that would catch it
+out    tests/regression/test_generators_refuse_mismatched_inputs.py:89
+         GENERATORS = ("f6_results_report.py", "member_forces_table.py")
+       -- two of nine generators under `scripts/measure/`.
+rule   FR1 -- the outcome is loud and no number is wrong; and `CLAUDE.md`'s
+       "a closing condition that names sites is closed site by site"
+judge  **IT DOES NOT BLOCK.** Every write precedes every print in all seven, so nothing
+       is left half-written and nothing is published wrong; the process reports failure
+       on a success. Ledgered because this is the fourth round in which a repair's site
+       list was hand-written and short -- R908, R926/R927, R951, now R918 -- and because
+       `GENERATORS` is the list that decides which publishers get driven at all.
+```
+
+**R982. (DOES NOT BLOCK -- ledger; FR1's FIRST class, measured rather than guessed) THE NEW UTIL REFUSAL'S NARRATIVE HALF IS ONE-DIRECTIONAL.** Driving the `_util_extra` branch prints `Screened in the forces table but absent from the utilisations: none. Present in the utilisations with no forces row: [('hub1:buoy1_arm', 'MID')]` and then, unconditionally, "so a missing row removes a station from a published count" -- which is the OTHER direction's story. Outcome right, message wrong at one of its two branches. **And R965's shape recurs twice more in this diff**: `Declared more than once: [10.0]` at :666 and `absent from the utilisations: [('hub1:buoy1_arm', 'ROOT')]` at :622 both interpolate Python containers into prose a reader is meant to act on.
+
+**R983. (DOES NOT BLOCK -- ledger; the turn's question 3, answered with BOTH directions run) `STATIONS_CHECKED` ARRIVES FROM `floatfea.run.pipeline`, WHICH DOES NOT WRITE THE FILE.** `api_wsd_utilisation.py:61` declares its own copy and IS the producer; both are `("ROOT", "TIP")` today and nothing in `tests/` compares them. **The worry does not materialise, and I measured it rather than reasoning it:** the util a producer with `("ROOT",)` would write is refused with all 16 TIP keys named and no artifact; the util a producer with MID discharged would write is refused with the MID key named and no artifact. Every divergence is a loud refusal in one direction or the other; **neither direction silently widens both sides.** What remains is provenance -- R849/R854's class -- plus the observation that a legitimate JOINT widening (MID discharged in both) passes, which is correct behaviour rather than a gap.
+
+**R984. (DOES NOT BLOCK -- note) THE JOIN KEYS DROP `body`.** `_util_expected`, `_util_got` and `_periods_for` key on `(member, station)` while both CSVs carry a `body` column. Measured: 16 distinct member labels across 5 bodies, each label in exactly one body (`platform:hub2_arm`, `hub1:buoy1_arm` -- globally namespaced by the builder), so `{(body, member, station)}` and `{(member, station)}` are both 32 and no collision exists at this commit. A note and not a request: if a label is ever reused across bodies the join merges the two, and `_periods_for` merges their periods.
+
+**R985. (DOES NOT BLOCK -- note) `_wrong_period` COMPARES PERIODS AS STRINGS** (`r.get("period_full_s", "")` against a set of strings) while every other period comparison in the file is on floats. Both shipped writers format with `:g`, so `"15"` matches `"15"` today; a writer emitting `15.0` would be a false refusal. One `float()` on each side removes the dependence on a format.
+
+**A NOTE ON MY OWN INSTRUCTIONS. NOT A FINDING AGAINST THE IMPLEMENTER, AND NOT A ROUND.** My instructions tell me to take CI with `gh run list --commit <sha>`. **That command returns `[]` for a commit that HAS a run, unless the sha is the full forty characters.**
+
+```
+cmd    gh run list --commit a8b049e --json headSha,status
+out    []
+cmd    gh run list --commit a8b049e3d2a21f9a387971179d4be914dfab286a --json headSha,status
+out    [{"headSha":"a8b049e3d2...","status":"in_progress"}]
+cmd    gh run list --commit 27ae08f        (last round's commit, a COMPLETED failure)
+out    []
+judge  a reviewer following the instruction literally with an abbreviated sha records
+       "unavailable" for a run that exists and is RED -- CK2's state applied to a run
+       that is neither unavailable nor green. **It is the same shape as every census
+       finding this milestone has produced: a needle that returns empty, read as an
+       absence.** It belongs to Xabier as a `process:` commit against `.claude/agents/`
+       or `docs/SUPERVISOR.md`. I state it once and spend no round on it; I used the
+       FULL sha for every CI figure in this verdict.
+```
+
+## CI at the reviewed commit: THE LADDER IS GREEN ON ALL SIX RUNGS; the guards step is red and all 1056 reds trace, per id, to the EG3 boundary
+
+**FP1 honoured for the sixth round running:** `a8b049e` has a CI run at its own sha, pushed before I was invoked, and both real jobs executed every step. I waited for it to complete rather than recording an unfinished one.
+
+```
+cmd    gh run list --commit a8b049e3d2a21f9a387971179d4be914dfab286a  (FULL sha; see the
+       note in Findings about what the abbreviated form returns)
+out    run 40383008247, workflow CI, status completed, conclusion failure
+cmd    the job level
+out    the verification ladder        SUCCESS
+       lint, unit and guards          FAILURE
+       CI determinism -- leg          skipped
+       CI determinism -- ten legs agree  skipped
+cmd    the LADDER at step level, with its collection counts
+out    ladder 1  1276 collected, 0 failed    run_rung: OK
+       ladder 2    66 collected, 0 failed    run_rung: OK
+       ladder 3   314 collected, 0 failed    run_rung: OK
+       ladder 6   256 collected, 0 failed    run_rung: OK
+       ladder 4   343 collected, 0 failed    run_rung: OK
+       ladder 5    87 collected, 0 failed    run_rung: OK
+       -- ALL SIX RUNGS RAN AND ALL SIX ARE 0 FAILED. **Rung 6 went 253 -> 256, which is
+          exactly the three cells this commit adds**, so all three RAN on Linux and
+          PASSED there. NO LOW RUNG IS RED: there is no STOP.
+cmd    the LINT job at step level
+out    actionlint SUCCESS / ruff SUCCESS / black --check SUCCESS / mypy SUCCESS /
+       unit tests SUCCESS (301 passed in 324.13s) /
+       guards and meta-tests FAILURE (1056 failed, 1166 passed, 1 skipped in 1217 s)
+       -- the guards step RAN rather than being skipped behind an earlier red, which is
+          the thing CZ1 (iii) exists to check.
+cmd    my own run against CI's, id for id
+out    local 1056 reds, CI 1056 reds; `comm -23` EMPTY and `comm -13` EMPTY.
+       **Both directions empty: the same 1056 ids on Windows and on Linux.**
+```
+
+**THE PREDICATE, TESTED PER ID, WITH A CONTROL AT A COMMIT WHERE THE REPORT ANSWERS THE NEWEST VERDICT.** A list of names cannot be checked against a failure message; only running the ids where the boundary state does NOT hold can. **I used `8542d79`, step 2's revision-3 report commit, where the newest report ANSWERS the newest verdict** -- that is the opposite state, not another instance of the same one, which is the distinction CLAUDE.md records as the reason R1 step 1's control proved nothing.
+
+```
+cmd    python -m pytest -q -p no:randomly tests/test_report_carried.py
+                                          tests/test_report_guard_states.py   @ 8542d79
+out    9 failed, 317 passed, 1 skipped in 154.05s
+       -- of this tree's 1056, **1047 are GREEN there**: all 913
+          `test_every_named_site_is_touched_or_declared`, all 131
+          `test_the_report_carries_the_finding`, and the three singletons
+          `test_the_Carried_table_is_what_the_generator_produces`,
+          `test_the_generator_would_catch_a_row_under_the_wrong_number` and
+          `test_the_CI_section_is_about_the_REVIEWED_commit`.
+       -- the 9 that stay red there are the 2 FT1 limb-two ids and the 7
+          `survives_the_state` cases, which is what limb two and a cascade predict.
+```
+
+**THE SEVEN `survives_the_state` CASES TRACED ONE AT A TIME, NOT AS A FAMILY.** This is the condition EG3 (i) exists for and the group R629 was found in. `_run_guard` writes a junit report, so I read each planted state's INNER failure set rather than the 1500-character tail the test prints:
+
+```
+out    state                                                 inner failed   vs baseline
+       baseline                                                  976          --
+       step_number_is_the_empty_string                            976         0 both ways
+       non_numeric_step_suffix                                     976         0 both ways
+       superscript_digit_step_number                               976         0 both ways
+       draft_suffix_beside_a_step_report                           976         0 both ways
+       zero_padded_step_number                                     976         0 both ways
+       verdict_amended_after_the_commit_the_report_answers         977         +1
+                                   + test_the_report_carries_the_finding[R999]
+       baseline's own inner breakdown:
+         840  test_every_named_site_is_touched_or_declared
+         131  test_the_report_carries_the_finding
+           1  test_the_Carried_table_is_what_the_generator_produces
+           1  test_the_generator_would_catch_a_row_under_the_wrong_number
+           1  test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+           1  test_the_CI_section_is_about_the_REVIEWED_commit
+           1  test_the_report_carries_a_WHOLE_SUITE_count
+       -- the SAME SEVEN test functions as the outer set. Each of the seven outer reds is
+          its inner guard run inheriting the real tree's state (2): `code == 0` is
+          unreachable while no answering report exists.
+       -- and the ONE state that differs is the one that PLANTS a finding: `append_finding`
+          appends `R999` to the verdict and the report cannot carry it, which is the
+          state's own intended effect and names a finding of the verdict under test.
+       **AND THE +1 IS NOT WHERE THE CI LOG PUT IT.** Reading the log's block order
+       attributed the 977 to `step_number_is_the_empty_string`; running the states
+       attributes it to `verdict_amended_after_the_commit_the_report_answers`. I record
+       that because it is the whole reason EG3 (i) says "tested against the predicate per
+       id" rather than "the failures look like the boundary set".
+```
+
+**VERDICT ON THE REDS: all 1056 satisfy the FS1/FT1 predicate and NOT ONE is CZ1 (iv).** 1044 reach limb one by naming a finding or a site of the newest verdict and are green at a commit where the answering report exists; 3 more are green there too and their subject is the newest verdict against the answering report; 2 are FT1's limb two by name; 7 are measured cascades of those. **This is EG3 state (2)** -- verdict written at `6012b61`, answering report not yet -- and it clears when `docs/reports/R1/step-3.md` is written, not by time.
+
+**ONE THING CI CANNOT CLEAR AND I SAY SO:** there is **no CI run at the VERDICT commit `6012b61`** (`gh run list --commit 6012b61...`, full sha, is `[]`), because it was pushed together with `a8b049e` and GitHub builds the push tip. FP1's wording covers "the report commit and the verdict commit"; the judged commit has its run, which is what this round needed, and EG3 (ii)'s measurement at the verdict commit is the implementer's, taken locally.
+
+## Corpus (EG4(e))
+
+**THE PAUSE HELD. I added no entries and committed nothing to `tests/corpus/`.** Batches are paused until 28 October except mutation work on the F4 load-mapping gate and the EB6 label-provenance gate; today is 26 October, `git diff --stat 6012b61..HEAD -- tests/verification` is empty so this diff touches neither of those two gates, and the ES0 light scope writes no batch at an interim check either. **0 entries are new this round, so there is no caught-of-new count to report**, and I say that rather than quoting a coverage figure I did not measure. `git diff --stat 6012b61..HEAD -- tests/corpus` is empty; the directory stands at 49 files and the last corpus commit is still `ba1527e` (batch 47).
+
+**What I ran instead -- the recorded substitute, and BOTH halves produced this round's blocking findings, for the thirteenth round running:**
+
+* **A CONTINUUM GRID OVER THE PARAMETER SPACE THE DECISION RULE GUARDS, ENUMERATED RATHER THAN SAMPLED -- and this time the space was the PRODUCER'S FILTER CHAIN rather than a numeric axis.** The commit asserted a derivation; I counted the producer's conjuncts (four) against the consumer's (two), and then enumerated the util table's key space (32 rows, 32 distinct keys, multiplicity `{1: 32}`) and the forces table's (48 `total_instant` rows, 32 at ROOT/TIP, one per key). **That produced R979 and it is what told me the key join could not see a multiplicity, which is R976.**
+* **THE SAME SOLVE APPLIED TO THE PREDICATE'S OPERANDS RATHER THAN ITS VALUES.** R968's repair was checked not by sampling period sets but by asking where each side of the comparison comes from. Both sides of both conjuncts resolve to `args.provenance` on the default path. **That is R977, and the byte-identical ablation is its control.**
+* **A REGENERATION CHECK ON THE PUBLISHED DELIVERABLES, IN BOTH DIRECTIONS.** `results/F6/floatfea_results_report.md` regenerates with 0 differing lines at this commit; `docs/F6_utilisation.csv` regenerates BYTE-IDENTICAL from the shipped producer. **And the stale-input direction of the same check produced R978** -- the axis where the two tables share a quantity and nothing compares it.
+* **THE CONTROLS, because an exit-0 finding is only evidence if the refusal fires at all.** The unmutated run as a control in every cell; the revert asserted present before each ablation and the restore asserted after; a legitimately regenerated util accepted; and a control run of the report guards AT A COMMIT IN THE OPPOSITE BOUNDARY STATE, which is what makes 1047 of 1056 reds a measurement rather than a family ruling.
+
+## Tolerances touched
+
+**None.** No value, no form, no counter, no injection.
+
+```
+cmd    git diff 6012b61..HEAD -- floatfea/tolerances.py
+out    (empty)
+cmd    git diff 6012b61..HEAD -- floatfea
+out    (empty) -- so no `Bound` moved either; `HEADING`, `WAVE_HEIGHT` and
+       `FROUDE_LAMBDA` are unmoved by the diff itself
+cmd    the added lines of git diff 6012b61..HEAD, grepped for isclose, abs_tol, rel_tol,
+       approx, atol, rtol, _COUNTER, toleran, eps, slack
+out    no tolerance-shaped addition anywhere in the diff
+cmd    python -m pytest -q tests/test_no_tolerance_literals.py
+out    68 passed  -- unchanged from last round, and the collection did not move
+rule   `CLAUDE.md` section Tolerances, and its clause on anything that functions as a
+       tolerance under another name
+judge  **Nothing moves.** The three comparisons this diff adds are a set difference, a
+       set-membership test and a `count(x) > 1`, none with any slack. **EU1 does not
+       attach** -- no value and no declared counter moves -- **and I ran the adversarial
+       case anyway**, at six generator configurations and two solves of a predicate's
+       operands, because R694's lesson is that a value which does not move is the worst
+       case and not the safest. All three blocking findings came from that and none from
+       reading the diff.
+       **AND I AM NAMING THE ONE PLACE THE NEXT COMMIT MAY NEED A THRESHOLD RATHER THAN
+       LETTING IT ARRIVE QUIETLY.** R978's repair compares a quantity the two CSVs both
+       carry at six declared significant figures (`api_wsd_utilisation.py:77`). An exact
+       comparison of the published strings needs no tolerance. **Any margin at all is a
+       tolerance under another name**: it goes to `floatfea/tolerances.py` with a
+       `_COUNTER` that is the smallest load change the same assertion detects, in the
+       same quantity, and it re-locks R1 section 4's "None expected" row in the same
+       commit. R976's and R977's repairs need no number of any kind.
+```
+
+## Next step opens when
+
+**This is a HOLD on step 3, which stays open. It is the nineteenth interim check, it counts against no round, and all three reviewed revisions remain available -- 0 of 3 spent.** It is NOT a HOLD on the work. `a8b049e` closed R969 with the stronger of the two forms, closed R967's case-set half with a derivation rather than a naive equality, added a period check I had not asked for, and got the ladder green on all six rungs with its three new cells running on Linux. **It is a HOLD because three findings block -- R976, R977, R978 -- and because R895, R884 and R867-R870 have still not been started.**
+
+**ANSWERING THE TURN'S DIRECT QUESTION FIRST: YES, MOVE `test_R959`'s READ TO THE INDEX IN THE NEXT COMMIT, AND NO, IT DOES NOT GO FIRST.** The cell is green at the reviewed commit and in CI's rung 6, so nothing hangs on it this round either; it is one line beside the three repairs below and it belongs in the same commit, not ahead of them. **And I confirm the second acceptance: do NOT add the CRLF assertion.** R972's measurement stands.
+
+1. **R976 FIRST, BECAUSE IT IS THE ONE WITH TWO WRONG NUMBERS IN IT.** `over unity : 5 of 33` where the truth is `4 of 32`, a station ranked twice, a real station gone from the published top ten. One multiplicity check at `:615`, or a refusal -- the form the same commit already chose at `:661` for the declared list. **And R967's condition (i) finishes in that commit**: a cell for `_util_extra` and a cell for `_wrong_period`, neither of which exists.
+2. **R977 IN THE SAME COMMIT, BECAUSE IT IS THE SAME GATE AS R968 AND THE REPAIR WAS INERT.** The predicate's reference cannot be the file its own input defaults to. The counter-case runs at the DEFAULT `--provenance`, which is the path no cell in the repository visits and the path that writes the deliverable. **If the answer is that the hand-written paragraph cannot be gated, bring FT2.6's generated narrative forward and delete the paragraph. I am not choosing between those; I am refusing a predicate that is `x == x` where the document is written.**
+3. **R978, WHICH IS NEW AND IS THE AXIS NEITHER OF US HAD NAMED.** Keys and periods are joined; the quantity the two tables share is not. One comparison of `f_a_MPa` against `N/area`, exact on the published figures if possible -- and if not exact then a tolerance entry with its counter, in the same commit, which is the only thing in this list that can introduce a number.
+4. **R980 TRAVELS WITH THE R907 (iii) REPAIR, NOT AFTER IT.** The vacuous join is caught today only by `:906`'s crash. The commit that gives those reducers a default is the commit that must refuse an empty expectation by name.
+5. **R882-R886 are declared by name in the first reviewed revision, or they are taken.** Each with what was left and why. **The R884 trigger is NOT spent** -- there is no `floatfea/` diff this round at all, for the twelfth round running.
+6. **Then FL2, in the FT2 order, and nothing in this list displaces it.** R976, R977, R978 and R980 are all inside FT2.3's own surface (`docs/directives/FT.md:17-19`), as are R928 and R907 (iii) -- so the turn's reading is right and the answer is still yes, one commit. **FT2.6 after it, and R977 may force it earlier.** R867-R869 are FT2.7.
+7. **What I did NOT ask for.** No new guard, scanner, meta-test, detector or report generator. R976 is one multiplicity check. R977 is one operand changed in a predicate that already exists. R978 is one comparison between two columns both files already carry. `docs/milestones/F2a.md` is where anything larger goes. **And R979 through R985 are ledger: do not spend a round on them.**
+8. **The whole-suite run and the EG3 state recorded at every commit of step 3** (R855, fourth occurrence), against the PREDICATE and not against a list. This round's 1056 all reach a limb, 1047 of them with a control at the OPPOSITE boundary state, and the seven cascades traced individually with their inner sets read out of the junit report rather than from the 1500-character tail.
+
+**THE SENTENCE THAT IS NOW FIVE ROUNDS OLD, WITH THIS ROUND'S VERSION OF IT.** R950 was a category read over the configurations the diff chose. R951's repair was a predicate correct over the variable the diff chose. R959 was a byte comparison correct over the machine the diff was written on. Last round was a sufficiency claim over an input space with three members, two joined. **This round is the next one in the sequence and it is worth naming precisely: the repair of a "this predicate gates nothing" finding added a second conjunct that gates nothing EITHER, on the one path that matters, and the suite was extended to cover the conjunct exactly where it has an effect.** A test written for a repair tends to drive the repair's own path; the path the deliverable is written on is the default one, and no cell in this repository visits it. **The transferable question is not "does the new conjunct work?" but "on the invocation that writes the artifact, what are its two operands?"**
+
+**Where my two governing documents disagree, said once.** `docs/SUPERVISOR.md` carries neither FR1 nor FF0, and `CLAUDE.md` carries neither CA2 nor CK2 -- `grep -c` is 0 for all four. I ruled the ladder's green and the absence of a STOP under CA2, a clause that exists in exactly one of the two documents that govern me, and I ruled the three blocking findings under FR1, which exists in the other. **And this round adds a third thing of the same shape, which is mine rather than the documents': the CI command my instructions give returns `[]` on an abbreviated sha, so a reviewer following it literally records "unavailable" for a red run.** All three are R899, all three belong to Xabier as a `process:` commit, and none of them is a round.
+
+**Schedule, since FT3 asks for it at every reviewed revision.**
+
+**The turn did not re-escalate and I am not re-escalating. FR0 already answered with "slip the date, keep the scope".** Four observations, each a measurement:
+
+1. **The estimate stayed still for the ninth round running.** 5-6 Nov for the first FL2 revision and about 12 Nov for R1, against the FR0 date of 5 Nov, unchanged -- and the turn reports it as unchanged rather than re-deriving it, which is correct.
+2. **The rate, stated without softening.** One item closed, one half-closed, three introduced. **But the three are one function and one predicate**, both inside the next planned item, and two of the three are axes of inputs the previous round had already named. That is the second consecutive round in which the findings and the next deliverable are the same work rather than a detour from it.
+3. **This is the thirteenth consecutive round in which the finding came from RUNNING something rather than reading it, and the eleventh in which `scripts/measure/` carried it.** The repairs are small -- a multiplicity check, one operand, one comparison. **The cost is that thirteen rounds have gone to the publishers while FT2.3 through FT2.7 have not started**, and `git diff --stat ce448b1..HEAD -- floatfea/model floatfea/solve` is EMPTY for the twelfth round running. I pass the turn's sequencing observation to Xabier unchanged. **What I add, because the turn asked my view twice:** the reason the publishers keep producing findings is that they are the only layer anything RUNS end to end. Thirteen rounds of green in `floatfea/model` is not evidence about `floatfea/model`; it is evidence that nothing has driven it adversarially, and FT2.4/FT2.5 carry both the most lines and the most EZ0 surface.
+4. **One risk unchanged and one new.** The ladder's rung-6 step is still the long pole, now at 256 collected. **The new one: my own whole-suite run is 41 minutes and 1056 of its reds are by design**, which is the state `CLAUDE.md` names under FF0 as "a tree that is red by design is a tree in which the next real red is harder to see". It is self-clearing by the answering report and I am not asking for anything; I note that the clearing is now overdue by nineteen checks.
+
+**If I disagree with the criterion rather than with the work, I say so once. I do not.** FR1 earned its keep in both directions again: it gave all three blocking findings a one-line silently-wrong-result sentence, and it kept R979 through R985 off the round -- seven items that are each real and none of which can put a wrong number in front of anyone. **The limit I have recorded twice still stands and this round is a third instance of it:** FR1 gives a FALSE REFUSAL no blocking sentence, and R979 is one -- a correctly-generated pair refused, with remedy advice that cannot work. Under FR1 that is a ledger item and I have ledgered it. **I record, without asking for a change, that the class "the generator refuses an input it must accept" is the one thing FR1's four non-blocking classes cover by accident rather than on purpose**, since the class it names is "a refusal whose message is unclear but whose outcome is RIGHT".
+
+**What this commit got right, and it is the larger part.** It took all three findings in one commit, chose a DERIVATION over the naive set equality I had offered -- which is the harder and the correct answer, and its description of the committed pair is exactly right, which I verified by enumerating both tables' key spaces. It added a period check nobody asked for, and that check is real. It refused rather than compared on the multiplicity, which is the stronger form. It reverted each repair separately with the revert asserted to have applied. **And it asked three sufficiency questions about its own derivation instead of asserting one -- which is the change from last round, and two of the three were real defects.** Asking is better than asserting. **Running the cell is better than asking: all three questions were answerable in under twenty seconds each, and the two that were defects are now two of this round's three blocking findings.**
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 27ae08f2b04341901a00bbe9b829a0644b60595c
 **Reviewed commit: `27ae08f2b04341901a00bbe9b829a0644b60595c`.**
 Verdict: HOLD
