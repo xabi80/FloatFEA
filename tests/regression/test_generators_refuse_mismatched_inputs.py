@@ -39,6 +39,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MEASURE = ROOT / "scripts" / "measure"
 SIDECAR = ROOT / "data" / "f4" / "dynamic_inputs.provenance.json"
 FORCES = ROOT / "docs" / "F4_member_forces.csv"
+UTIL = ROOT / "docs" / "F6_utilisation.csv"
 
 
 def _sidecar(tmp: Path, **run_fields: Any) -> Path:
@@ -573,3 +574,95 @@ def test_R959_the_COMMITTED_CSVs_are_byte_identical_to_their_own_BLOBS() -> None
         f"against a checkout can be trusted on any platform (R959). `.gitattributes` "
         f"carries `*.csv -text` for this reason."
     )
+
+
+def _subset_forces(tmp: Path, keep: set[str]) -> Path:
+    """The committed forces table restricted to `keep` periods, header intact."""
+    lines = FORCES.read_text(encoding="utf-8").splitlines(keepends=True)
+    comments = [ln for ln in lines if ln.startswith("#")]
+    body = [ln for ln in lines if not ln.startswith("#")]
+    head, rows = body[0], body[1:]
+    kept = [r for r in rows if r.split(",")[3] in keep | {""}]
+    out = tmp / "subset_forces.csv"
+    out.write_text("".join(comments) + head + "".join(kept), encoding="utf-8")
+    return out
+
+
+def test_R967_a_STALE_UTILISATION_TABLE_is_refused(tmp_path: Path) -> None:
+    """`--util` was joined to nothing, and it is the one with a wrong number in it.
+
+    One variable moved -- the 16.2 s rows deleted from the utilisation CSV, sidecar and
+    forces table untouched:
+
+        CONTROL     EXIT 0  member-stations 32  over unity 4 of 32
+                            #3 = hub3_arm ROOT 16.2  **1.182**
+        STALE UTIL  EXIT 0  member-stations 30  over unity 3 of 30
+                            #3 = hub1_arm ROOT 12.5  **1.177**
+
+    **A station over unity disappeared from the published count and the ranked table**
+    at exit 0, with every other join green. `api_wsd_utilisation.py` reads the forces CSV
+    and writes the utilisation CSV, so "regenerate one, forget the other" is two commands.
+    """
+    out = _out_dir(tmp_path)
+    lines = UTIL.read_text(encoding="utf-8").splitlines(keepends=True)
+    stale = [ln for ln in lines if ln.startswith("#") or ",16.2," not in ln]
+    assert len(stale) < len(lines), "the rows this cell deletes are not in the committed CSV"
+    csv = tmp_path / "stale_util.csv"
+    csv.write_text("".join(stale), encoding="utf-8")
+
+    proc = _run("f6_results_report.py", tmp_path, "--util", str(csv))
+    assert proc.returncode != 0, (
+        "a utilisation table missing member-stations was accepted; the over-unity count "
+        "and the ranked top ten are read from it (R967)."
+    )
+    assert "absent from the utilisations" in proc.stdout + proc.stderr
+    assert not (out / "o.md").exists()
+
+
+def test_R968_an_AGREEING_SUBSET_does_not_publish_the_reference_paragraph(
+    tmp_path: Path,
+) -> None:
+    """The height gate is satisfied by every npz this pipeline produces, so it gated nothing.
+
+    `h_full` is a module-constant product here, so `h_full == _ref_h` is always true, and
+    the branch had no reference to the period sets -- all 63 non-empty subsets reached the
+    hand-written paragraph. Measured at two agreeing pairs at the committed height, both
+    passing every join, both publishing "the largest of THE SIX" and "the FOUR periods
+    EZ2 admits: the THREE in band".
+
+    This pair agrees on both joins -- the sidecar and the forces table carry the same four
+    periods, and dropping only the two sensitivity-only cases leaves all 32 utilisation
+    member-stations intact -- so the predicate is the only thing under test.
+    """
+    out = _out_dir(tmp_path)
+    keep = {"12.5", "14", "15", "16.2"}
+    side = _sidecar(tmp_path, periods_full_s=[12.5, 14.0, 15.0, 16.2])
+    forces = _subset_forces(tmp_path, keep)
+
+    proc = _run(
+        "f6_results_report.py", tmp_path, "--provenance", str(side), "--forces", str(forces)
+    )
+    assert proc.returncode == 0, (proc.stdout + proc.stderr)[-700:]
+    written = (out / "o.md").read_text(encoding="utf-8")
+
+    assert "not the reference sea state" in written, (
+        "a four-period run published the paragraph written for the six-period reference "
+        "set. The paragraph is a set of claims about a height AND a case list (R968)."
+    )
+    assert "largest of the six" not in written
+    assert "four periods EZ2 admits" not in written
+
+
+def test_R969_a_DUPLICATED_period_is_refused(tmp_path: Path) -> None:
+    """Sets were compared and a list was iterated, so one duplicate passed both directions.
+
+    `set(_recorded)` equals `_solved` while `_recorded` has seven entries, giving a
+    seven-row band table with `T = 10 s` twice above a six-row response table, and
+    `Inside the band: [12.5, 14.0, 14.0, 15.0, 16.2]` on the computed branch.
+    """
+    out = _out_dir(tmp_path)
+    side = _sidecar(tmp_path, periods_full_s=[10.0, 10.0, 12.5, 14.0, 15.0, 16.2, 20.0])
+    proc = _run("f6_results_report.py", tmp_path, "--provenance", str(side))
+    assert proc.returncode != 0, (proc.stdout + proc.stderr)[-700:]
+    assert "Declared more than once" in proc.stdout + proc.stderr
+    assert not (out / "o.md").exists()

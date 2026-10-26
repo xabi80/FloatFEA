@@ -63,6 +63,7 @@ from floatfea.model.platform import (  # noqa: E402
     build_superstructure,
 )
 from floatfea.run.pipeline import (  # noqa: E402
+    STATIONS_CHECKED,
     validated_export_scale,
     wave_basis_from_sidecar,
 )
@@ -585,13 +586,85 @@ def main(argv: list[str] | None = None) -> int:
     # Both sides must agree, so the sets are compared as sets. With that, a declaration
     # that is not exactly the solved case set cannot be built -- which is what makes the
     # height comparison sufficient for the reference branch rather than merely narrow.
+    # **R967: `--util` WAS JOINED TO NOTHING, AND IT IS THE ONE WITH A WRONG NUMBER.**
+    # The utilisation rows are read at :307 and used for the over-unity count, the worst
+    # station, the sensitivity extremes and the ranked top ten, with no comparison against
+    # anything. One variable moved -- the 16.2 s rows deleted from the utilisation CSV,
+    # sidecar and forces table untouched:
+    #
+    #   CONTROL     EXIT 0  member-stations 32  over unity 4 of 32
+    #                       #3 = hub3_arm ROOT 16.2  **1.182**
+    #   STALE UTIL  EXIT 0  member-stations 30  over unity 3 of 30
+    #                       #3 = hub1_arm ROOT 12.5  **1.177**
+    #
+    # **A station over unity disappeared from the published count and the ranked table**,
+    # at exit 0, with every other join green. It is reachable with shipped tools:
+    # `api_wsd_utilisation.py` reads the forces CSV and writes the utilisation CSV, so
+    # "regenerate one, forget the other" is two commands.
+    #
+    # The util is a deliberate SUBSET -- `basis = total_instant` at the stations
+    # `STATIONS_CHECKED` names, one row per (member, station) carrying the period that won
+    # the envelope -- so set equality against the whole forces table is the wrong test.
+    # The expectation is DERIVED from the forces table by the producer's own rule, and
+    # compared in both directions.
+    _util_expected = {
+        (r["member"], r["station"])
+        for r in forces
+        if r.get("basis") == "total_instant" and r.get("station") in STATIONS_CHECKED
+    }
+    _util_got = {(r["member"], r["station"]) for r in util}
+    _util_absent = sorted(_util_expected - _util_got)
+    _util_extra = sorted(_util_got - _util_expected)
+    if _util_absent or _util_extra:
+        raise SystemExit(
+            f"floatfea: {args.util.name} and {args.forces.name} do not cover the same "
+            f"member-stations. Screened in the forces table but absent from the "
+            f"utilisations: {_util_absent or 'none'}. Present in the utilisations with no "
+            f"forces row: {_util_extra or 'none'}. The over-unity count, the worst "
+            f"station and the ranked top ten are all read from the utilisation table, so "
+            f"a missing row removes a station from a published count without changing any "
+            f"number that is printed -- one deleted period took an over-unity station out "
+            f"of the ranking at exit 0 (R967). Re-run `api_wsd_utilisation.py` against "
+            f"this forces table."
+        )
+
+    # And each utilisation row's period must be one its own member-station was solved at,
+    # so a stale row cannot carry a period the envelope never selected for it.
+    _periods_for: dict[tuple[str, str], set[str]] = {}
+    for r in forces:
+        if r.get("basis") == "total_instant":
+            _periods_for.setdefault((r["member"], r["station"]), set()).add(
+                r.get("period_full_s", "")
+            )
+    _wrong_period = sorted(
+        (r["member"], r["station"], r.get("period_full_s", ""))
+        for r in util
+        if r.get("period_full_s", "") not in _periods_for.get((r["member"], r["station"]), set())
+    )
+    if _wrong_period:
+        raise SystemExit(
+            f"floatfea: {args.util.name} carries member-stations at periods "
+            f"{args.forces.name} has no `total_instant` row for: {_wrong_period}. The "
+            f"utilisation is computed from that row, so a period the envelope never "
+            f"selected for that station means the two tables describe different solves "
+            f"(R967)."
+        )
+
+    # **R969: SETS WERE COMPARED AND A LIST WAS ITERATED.** One duplicate in
+    # `periods_full_s` passed both new directions -- `set(_recorded)` equals `_solved`
+    # while `_recorded` has seven entries -- giving a seven-row band table with
+    # `T = 10 s` twice above a six-row response table, and
+    # `Inside the band: [12.5, 14.0, 14.0, 15.0, 16.2]` on the computed branch. The band
+    # loop iterates the LIST, so the comparison is on the list.
     _missing = sorted(set(_recorded) - _solved)
     _undeclared = sorted(_solved - set(_recorded))
-    if _missing or _undeclared:
+    _duplicated = sorted({x for x in _recorded if _recorded.count(x) > 1})
+    if _missing or _undeclared or _duplicated:
         raise SystemExit(
             f"floatfea: {args.provenance.name} and {args.forces.name} do not describe the "
             f"same set of cases. Recorded with no solved case: {_missing or 'none'}. "
-            f"Solved with no declaration: {_undeclared or 'none'}. The sidecar records "
+            f"Solved with no declaration: {_undeclared or 'none'}. Declared more than "
+            f"once: {_duplicated or 'none'}. The sidecar records "
             f"{sorted(_recorded)} s and the table carries {sorted(_solved)} s. The band "
             f"table is published per RECORDED period and the response table per SOLVED "
             f"case, so either direction publishes a sea state the other half of the "
@@ -679,7 +752,26 @@ def main(argv: list[str] | None = None) -> int:
             (ROOT / "data" / "f4" / "dynamic_inputs.provenance.json").read_text(encoding="utf-8")
         )["run"]["wave_height_full_m"]
     )
-    _reference = h_full == _ref_h
+    # **R968: THE HEIGHT GATE IS ALWAYS SATISFIED, so it gated nothing.** `h_full` comes
+    # from a module-constant product in this pipeline, so `h_full == _ref_h` is true for
+    # every npz the pipeline produces -- and the branch has no reference to the period
+    # sets, so all 63 non-empty subsets reached the hand-written paragraph. Measured at
+    # two AGREEING pairs at the committed height, both passing every join:
+    #
+    #   [10, 12.5, 14, 15]      -> EXIT 0, 461 lines, four-row table, two in band
+    #   [10, 12.5, 14, 15, 20]  -> EXIT 0, 463 lines, five rows,     two in band
+    #
+    # both publishing "the largest of THE SIX" and "the FOUR periods EZ2 admits: the
+    # THREE in band". The paragraph is a set of claims about a height AND a case list, so
+    # the predicate is both. The reference period set is read from the committed sidecar
+    # beside the height, so there is still no literal.
+    _ref_periods = sorted(
+        float(x)
+        for x in json.loads(
+            (ROOT / "data" / "f4" / "dynamic_inputs.provenance.json").read_text(encoding="utf-8")
+        )["run"]["periods_full_s"]
+    )
+    _reference = h_full == _ref_h and sorted(_recorded) == _ref_periods
     # **AND REFUSING WAS THE WRONG ANSWER, WHICH MY OWN R902 TEST IS WHAT SAID SO.**
     # My first repair ASSERTED these premises and raised when they failed. That made the
     # generator unable to run at any sea state but one -- which destroys the property
