@@ -237,7 +237,19 @@ fi
 pre_gating="docs/reports/F2/step-1.md docs/reports/F2/step-2.md docs/reports/F2/step-3.md"
 
 orphans=""
-for rep in docs/reports/F*/step-*.md; do
+# EVERY MILESTONE, NOT EVERY `F`-MILESTONE (R888). This glob and its sibling below were
+# `F*`, and R1 is the active milestone -- so the sweep that exists to catch an unreviewed
+# report could not see the milestone under execution. Measured, one variable moved, the
+# milestone letter, with the gate otherwise clear and both files committed:
+#
+#   docs/reports/R1/step-4.md, unreviewed            ->  the turn ENDS
+#   the identical file as docs/reports/F7/step-1.md  ->  blocked
+#
+# The refusal's own message says it "sweeps EVERY report". FF0 widened the PLANS glob at
+# :97 when R1 became the first milestone that is not an F, and left these two: the comment
+# at :92 says "THE SAME DEFECT WAS IN ALL FOUR RESOLVERS", and these are a fifth and sixth
+# site in the same file. `[A-Z]*` reaches every label the milestone-label guard admits.
+for rep in docs/reports/[A-Z]*/step-*.md; do
   [ -f "$rep" ] || continue
   sib=${rep/docs\/reports/docs/reviews}
   [ -f "$sib" ] && continue
@@ -273,7 +285,8 @@ stepnum() { local s=${1##*step-}; echo "${s%.md}"; }
 # `grep -c` over `^Verdict: *PASS` rather than the first line only.
 closed_by_a_pass() { grep -cE '^Verdict: *PASS' "$1" 2>/dev/null | grep -qv '^0$'; }
 
-for r in $(ls docs/reviews/F*/step-*.md 2>/dev/null); do
+# R888's second site: the same `F*` blind spot, on the review side.
+for r in $(ls docs/reviews/[A-Z]*/step-*.md 2>/dev/null); do
   [ "$r" = "$review" ] && continue
   v=$(grep -m1 -E '^Verdict:' "$r" | awk '{print $2}')
   if closed_by_a_pass "$r"; then
