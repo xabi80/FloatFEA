@@ -372,7 +372,23 @@ def main(argv: list[str] | None = None) -> int:
     # from the one source that exists at this point.
     _want_h = f"{float(basis['wave_height_full_m']):g}"
     _seen_h = sorted(set(re.findall(r"H = ([0-9.eE+-]+) m", _header)))
-    if _seen_h and _seen_h != [_want_h]:
+    # **R952: THE CONJUNCT WAS THE PERMISSIVE DIRECTION, AND IT ADMITTED THE EXACT CLASS
+    # THE JOIN EXISTS TO REJECT.** `if _seen_h and ...` skipped the check whenever the
+    # header carried no height, so a forces CSV with its three height tokens removed and
+    # everything else byte-identical -- SCALE line, 1248 rows, solved at H = 50 m -- ran
+    # at exit 0 and published `24.2 m`. Nine lines above, a missing SCALE line refuses.
+    # No current generator writes a heightless header (both caveat branches write exactly
+    # one token), so the admitted class is the LEGACY one, which is precisely the stale
+    # input this join is for.
+    if not _seen_h:
+        raise SystemExit(
+            f"floatfea: {args.forces.name} states no wave height in its comment header, "
+            f"so there is nothing to join the resolved basis against. Both caveat "
+            f"branches of `member_forces_table.py` write one; a header without one "
+            f"predates them, which is the stale input this check exists to reject. "
+            f"Regenerate the forces table (R952)."
+        )
+    if _seen_h != [_want_h]:
         raise SystemExit(
             f"floatfea: {args.forces.name} was generated at a different wave height "
             f"from the one this run resolves. The sidecar gives H = {_want_h} m and the "
@@ -621,9 +637,27 @@ def main(argv: list[str] | None = None) -> int:
     # The sentence is corrected below and the deliverable regenerated; the premise checked
     # here is the one that is true: four GOVERNING periods, three in band and one kept at
     # the lower edge by FA0.
-    _reference = (
-        _breaking == [10.0] and _past_long == [20.0] and len(_in_band) == 3 and _kept == [12.5]
+    # **R951: THIS IS THE MEMBERSHIP PREDICATE R936 CONDEMNED, IN THE TWIN FILE.** R936
+    # replaced it in `member_forces_table.py` with `not stale` and I measured the file
+    # the finding was raised in, not its sibling -- so the two generators disagreed about
+    # whether FA0's ruling applies. On one matched H = 30 m pair, legitimate under the new
+    # height join, this report published "... and is kept as the band's lower edge" while
+    # the forces table from the SAME sidecar published "That ruling is NOT asserted here
+    # ... no directive has ruled on it for this height". The reviewer's grid: true on
+    # [24.0385, 30.1538] m here against exactly 24.2 m there, disagreeing on 61153 of
+    # 1e6 points.
+    #
+    # The question is whether THIS run is the sea state the hand-written narrative
+    # describes, and that is a comparison of heights, not of memberships. The reference
+    # height is READ from the committed sidecar -- the one `--provenance` defaults to --
+    # so there is no literal here and no second definition to drift. The four membership
+    # sets stay computed, because the generated paragraph states them.
+    _ref_h = float(
+        json.loads(
+            (ROOT / "data" / "f4" / "dynamic_inputs.provenance.json").read_text(encoding="utf-8")
+        )["run"]["wave_height_full_m"]
     )
+    _reference = h_full == _ref_h
     # **AND REFUSING WAS THE WRONG ANSWER, WHICH MY OWN R902 TEST IS WHAT SAID SO.**
     # My first repair ASSERTED these premises and raised when they failed. That made the
     # generator unable to run at any sea state but one -- which destroys the property

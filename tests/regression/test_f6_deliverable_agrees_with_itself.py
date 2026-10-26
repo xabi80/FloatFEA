@@ -465,9 +465,9 @@ def test_R902_the_BAND_is_computed_at_the_RECORDED_height(tmp_path) -> None:
     # `args.out.relative_to(ROOT)` AFTER writing both files, so a path outside the
     # repository raises `ValueError` once the work is already done (R918, now with a
     # third witness; `scratch/` is gitignored).
-    scratch = ROOT / "scratch" / f"r902_{tmp_path.name}"
-    scratch.mkdir(parents=True, exist_ok=True)
-    forces = scratch / "forces_at_this_sea_state.csv"
+    # R918 is repaired, so this no longer needs a directory inside the repository
+    # (R956: those were gitignored and accumulated one per cell per run).
+    forces = tmp_path / "forces_at_this_sea_state.csv"
     made = subprocess.run(
         [
             sys.executable,
@@ -475,7 +475,7 @@ def test_R902_the_BAND_is_computed_at_the_RECORDED_height(tmp_path) -> None:
             "--out",
             str(forces),
             "--summary",
-            str(scratch / "forces_at_this_sea_state.md"),
+            str(tmp_path / "forces_at_this_sea_state.md"),
             "--provenance",
             str(side),
         ],

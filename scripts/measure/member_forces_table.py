@@ -393,8 +393,8 @@ def main(argv: list[str] | None = None) -> int:
 
     _write_csv(args.out, rows, by_name, caveats)
     _write_summary(args.summary, rows, by_name, inp, instant, instant_sens, h_full, caveats, _stale)
-    print(f"\n  wrote {args.out.relative_to(ROOT)} ({len(rows)} rows)")
-    print(f"  wrote {args.summary.relative_to(ROOT)}")
+    print(f"\n  wrote {_shown(args.out)} ({len(rows)} rows)")
+    print(f"  wrote {_shown(args.summary)}")
     return 0
 
 
@@ -435,6 +435,32 @@ def f_sensitivity() -> list[tuple[float, str, float, float, float]]:
             out.append((frac, body.name, max(moments), max(sigmas), spread))
         del by_name
     return out
+
+
+def _shown(path: Path) -> str:
+    """`path` relative to the repo when it is inside it, absolute when it is not (R918).
+
+    **THIS RAISED AFTER BOTH FILES WERE WRITTEN, THREE TIMES.**
+    `args.out.relative_to(ROOT)` sat in a `print` at the end of `main`, so any `--out`
+    outside the repository produced both artifacts correctly and then exited 1 on a
+    cosmetic line. It blocked a cell in `test_generators_refuse_mismatched_inputs.py`,
+    then one in `test_f6_deliverable_agrees_with_itself.py`, and the reviewer logged a
+    third witness of its own; each time the answer was to route the test under a
+    gitignored `scratch/` rather than fix two lines.
+
+    `f6_results_report.py` already had exactly this helper, written for R756's
+    regeneration gate -- one generator solved it and the others did not, which is the
+    same hand-list shape as R926. A generator that cannot be pointed at a scratch path
+    cannot be checked for determinism, which is part of why the regeneration gates went
+    unasserted for so long.
+
+    The five other `scripts/measure/` scripts still carry the bare form. They are outside
+    this round's conditions and are named here rather than left silent.
+    """
+    try:
+        return path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return str(path)
 
 
 def _factor_text(factor: float) -> str:
@@ -678,7 +704,22 @@ def _write_summary(
                 f"is `{_where_12_5}`, which is what the table above states. FA0 exists to "
                 "rule on a case that falls BELOW the lower edge and is kept anyway; no "
                 "such question arises here, so nothing is asserted about it."
-                if _cat_12_5 != "below"
+                # **R950: `breaking` IS A SUBSET OF BELOW-THE-LOWER-EDGE, so this
+                # guard sent the largest offsets down the "no question arises" branch
+                # and my R944 repair was a REGRESSION there.** Its own string says
+                # "and below the band". At H = 50 m the case is 5.528 s -- 30.7% --
+                # below the edge and sets nine of the ten most loaded stations at
+                # 455.7 MPa, and line 67 said nothing is asserted about it. The
+                # reviewer's grid: wrong on 65150 of 100000 points, H in
+                # [34.851, 100.000] m; the code R944 replaced was wrong on none of
+                # them, because its `else` arm took the correct branch. The boundary
+                # is `lambda(12.5)/7 = 34.8506694583 m`.
+                #
+                # The question this clause answers is "is 12.5 s below the lower
+                # edge", so that is what it asks. `_where_12_5` still supplies the
+                # WORD, from the table's own four-outcome classification (R944), so
+                # the two readers cannot disagree about the position.
+                if math.sqrt(6.5 * h_full) <= 12.5
                 else (
                     f"**`T = 12.5 s` sits `{math.sqrt(6.5 * h_full) - 12.5:.3f} s` below "
                     f"`sqrt(6.5 x {h_full:g}) = {math.sqrt(6.5 * h_full):.3f} s`, which "

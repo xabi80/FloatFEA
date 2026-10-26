@@ -11,8 +11,12 @@ The cells are cheap because every refusal fires before `build_superstructure()`:
     f6_results_report.py       exit=1    0.63 s
     member_forces_table.py     exit=1    0.49 s
 
-against the twenty minutes a full generator run costs. So each mutation gets its own
-subprocess and the whole file is seconds.
+**But the ACCEPTANCE cells are not cheap, and an earlier revision of this docstring said
+otherwise (R954).** It claimed "the whole file is seconds" and cited "the twenty minutes a
+full generator run costs". Both were false once the acceptance cells arrived: every cell
+that requires a generator to SUCCEED runs the full solve, several now do, and the file
+takes minutes. A full `member_forces_table.py` solve is about a minute -- the twenty-minute
+figure belongs to `f6a_premise_check.py --dynamic`, which this file does not drive.
 
 **The mutations are all SIDECAR-side on purpose.** `f4_dynamic_residual.load()` checks the
 npz's sha256 against the sha the provenance declares, so a modified npz needs its declared
@@ -47,16 +51,20 @@ def _sidecar(tmp: Path, **run_fields: Any) -> Path:
 
 
 def _out_dir(tmp: Path) -> Path:
-    """A writable output directory UNDER `ROOT`, because one generator insists on it.
+    """Pytest's own tmp directory, now that a generator can be pointed outside the repo.
 
-    `member_forces_table.py` ends with `args.out.relative_to(ROOT)`, so a path outside the
-    repository raises AFTER both files are written (R918, ledger). `scratch/` is
-    gitignored, and each cell gets its own subdirectory named for the pytest tmp it
-    shadows, so concurrent cells cannot collide.
+    **THIS USED TO RETURN A DIRECTORY UNDER `ROOT` AND THAT WAS A WORKAROUND (R956).**
+    `member_forces_table.py` ended with `args.out.relative_to(ROOT)` in a print, so a
+    path outside the repository raised AFTER both files were written -- R918, worked
+    around here, then again in `test_f6_deliverable_agrees_with_itself.py`, with a third
+    witness from the reviewer. The directories it made were gitignored, so they were
+    invisible to `git status` and accumulated one per cell per run: 15 of them and 1.9 MB
+    by the time anyone looked.
+
+    R918 is repaired at its two lines now, so the workaround and the rubbish both go. The
+    cause is removed rather than cleaned up after.
     """
-    out = ROOT / "scratch" / f"r933_{tmp.name}"
-    out.mkdir(parents=True, exist_ok=True)
-    return out
+    return tmp
 
 
 def _run(script: str, tmp: Path, *extra: str) -> subprocess.CompletedProcess[str]:
@@ -333,3 +341,161 @@ def test_R944_the_PROSE_agrees_with_the_TABLE_about_T_12_5(
     assert (
         expect.lower().replace("above", "above the band").replace("inside", "in the band") in row
     ), (row, expect)
+
+
+@pytest.mark.parametrize("height", [40.0, 50.0, 100.0])
+def test_R950_the_FA0_WARNING_survives_where_the_offset_is_LARGEST(
+    tmp_path: Path, height: float
+) -> None:
+    """`breaking` is a SUBSET of below-the-lower-edge, and R944's guard missed it.
+
+    My R944 repair guarded on `_cat_12_5 != "below"`, and the breaking category's own
+    string says "and below the band". So above
+    `lambda(12.5)/7 = 34.8506694583 m` the document took the "no such question arises"
+    branch for a case that is 30.7% below the edge at H = 50 m and sets nine of the ten
+    most loaded stations at 455.7 MPa. **The code R944 replaced was right there**, so the
+    repair was a regression: wrong on 65150 of 100000 points where the old one was wrong
+    on none.
+
+    The guard now asks the question the clause answers -- is `T = 12.5 s` below the lower
+    edge -- while the WORD still comes from the table's four-outcome classification.
+    """
+    out = _out_dir(tmp_path)
+    side = _sidecar(tmp_path, wave_height_full_m=height, wave_height_model_m=height / 50.0)
+    proc = _run("member_forces_table.py", tmp_path, "--provenance", str(side))
+    assert proc.returncode == 0, (proc.stdout + proc.stderr)[-700:]
+    written = (out / "o.md").read_text(encoding="utf-8")
+
+    assert "That ruling is NOT asserted here" in written, (
+        f"at H = {height} m `T = 12.5 s` is below the band's lower edge and FA0's ruling "
+        f"is not asserted for this height, so the warning must be published. R944's "
+        f"guard sent the breaking category down the no-question branch instead."
+    )
+    assert "no such question arises here" not in written
+
+
+def test_R951_the_TWO_GENERATORS_agree_about_FA0_on_one_sidecar(tmp_path: Path) -> None:
+    """The membership predicate R936 condemned survived in the twin file.
+
+    R936 replaced it in `member_forces_table.py` and I measured the file the finding was
+    raised in, not its sibling. On one matched H = 30 m pair the report published
+    "... and is kept as the band's lower edge" while the forces table from the SAME
+    sidecar published "That ruling is NOT asserted here". The reviewer's grid: true on
+    `[24.0385, 30.1538] m` against exactly `24.2 m`, disagreeing on 61153 of 1e6 points.
+    """
+    out = _out_dir(tmp_path)
+    side = _sidecar(tmp_path, wave_height_full_m=30.0, wave_height_model_m=0.6)
+
+    made = subprocess.run(
+        [
+            sys.executable,
+            str(MEASURE / "member_forces_table.py"),
+            "--out",
+            str(out / "forces.csv"),
+            "--summary",
+            str(out / "forces.md"),
+            "--provenance",
+            str(side),
+        ],
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+    )
+    assert made.returncode == 0, (made.stdout + made.stderr)[-700:]
+
+    proc = _run(
+        "f6_results_report.py",
+        tmp_path,
+        "--provenance",
+        str(side),
+        "--forces",
+        str(out / "forces.csv"),
+    )
+    assert proc.returncode == 0, (proc.stdout + proc.stderr)[-700:]
+
+    table = (out / "forces.md").read_text(encoding="utf-8")
+    report = (out / "o.md").read_text(encoding="utf-8")
+    withheld = "That ruling is NOT asserted here" in table
+    # **THE NEEDLE MUST NOT SPAN A LINE BREAK, AND MY FIRST ONE DID.** The generator
+    # emits that sentence as two `w(...)` lines, so "is kept as the band's lower edge"
+    # appears in the document across lines 128/129 and matched nothing -- the cell passed
+    # whatever the code did, which is the vacuity I had just been shown twice. The
+    # reference branch's own marker is the sentence it opens with, on one line.
+    claimed = "The governing basis is the four periods EZ2 admits" in report
+    assert not (withheld and claimed), (
+        "the two generators disagree about whether FA0's ruling applies at this height: "
+        "the forces table withholds it and the report asserts it, from one sidecar."
+    )
+    assert withheld, "at H = 30 m the forces table should withhold the ruling"
+
+
+def test_R952_a_FORCES_TABLE_WITH_NO_HEIGHT_is_refused(tmp_path: Path) -> None:
+    """`if _seen_h and ...` skipped the join whenever the header carried no height.
+
+    Measured by the reviewer: the real H = 50 m CSV with its three height tokens
+    rewritten and everything else byte-identical -- SCALE line, 1248 rows -- gave exit 0
+    and published `24.2 m`. Nine lines above, a missing SCALE line refuses. No current
+    generator writes a heightless header, so the admitted class is the LEGACY one, which
+    is the stale input the join exists to reject.
+    """
+    import re as _re
+
+    out = _out_dir(tmp_path)
+    stripped = _re.sub(r"H = [0-9.]+ m", "H = (not stated)", FORCES.read_text(encoding="utf-8"))
+    csv = tmp_path / "no_height.csv"
+    csv.write_text(stripped, encoding="utf-8")
+
+    proc = _run("f6_results_report.py", tmp_path, "--forces", str(csv))
+    assert proc.returncode != 0, (proc.stdout + proc.stderr)[-700:]
+    assert "states no wave height" in proc.stdout + proc.stderr
+    assert not (out / "o.md").exists()
+
+
+def test_R945_a_COLLIDING_SCALE_is_refused_not_substring_matched(tmp_path: Path) -> None:
+    """R945's own condition (i): nothing drove the collision the parse exists for.
+
+    `"force x 125000"` sits inside `"force x 125000000"`, so a forces table carrying
+    lambda = 500's factors passed the old substring test at exit 0 over forces 1000x out.
+    The existing mismatch cell uses 15625/390625, which the SUBSTRING test also refused
+    -- so reverting the parse left the suite green, which the reviewer measured.
+    """
+    out = _out_dir(tmp_path)
+    collided = FORCES.read_text(encoding="utf-8").replace(
+        "force x 125000; locked moment x 6250000",
+        "force x 125000000; locked moment x 62500000000",
+    )
+    csv = tmp_path / "lambda_500.csv"
+    csv.write_text(collided, encoding="utf-8")
+
+    proc = _run("f6_results_report.py", tmp_path, "--forces", str(csv))
+    assert proc.returncode != 0, (proc.stdout + proc.stderr)[-700:]
+    assert "different Froude scale" in proc.stdout + proc.stderr
+    assert not (out / "o.md").exists()
+
+
+def test_R918_a_GENERATOR_can_be_pointed_outside_the_repository(tmp_path: Path) -> None:
+    """Three cells were routed around this before it was two lines (R918, R949, R955).
+
+    `args.out.relative_to(ROOT)` sat in a `print` after both files were written, so an
+    `--out` outside the repository produced correct artifacts and then exited 1. A
+    generator that cannot be pointed at a scratch path cannot be checked for determinism,
+    which is part of why the regeneration gates went unasserted.
+
+    `tmp_path` is deliberately NOT under `ROOT` here -- that is the whole property.
+    """
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(MEASURE / "member_forces_table.py"),
+            "--out",
+            str(tmp_path / "outside.csv"),
+            "--summary",
+            str(tmp_path / "outside.md"),
+        ],
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+    )
+    assert proc.returncode == 0, (proc.stdout + proc.stderr)[-700:]
+    assert (tmp_path / "outside.csv").is_file() and (tmp_path / "outside.md").is_file()
+    assert (tmp_path / "outside.csv").read_bytes() == FORCES.read_bytes()
