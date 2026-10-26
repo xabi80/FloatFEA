@@ -516,10 +516,28 @@ def test_the_plan_names_the_step_under_execution() -> None:
         "newest complete report/verdict pair. That is the behaviour DB2 replaced, "
         "and it makes the step boundary permanently red."
     )
-    assert _plan_step() in REPORTED, (
-        f"the plan says step {_plan_step()} is under execution and there is no "
-        f"`step-{_plan_step()}.md` under {REPORTS}. The line is advanced in the "
-        "commit that adds the next step's report, never before it."
+    # THE MARKED STEP HAS A REPORT **OR** A VERDICT (FT0's repair, one file over).
+    #
+    # This asserted `in REPORTED`, which encodes "the line is advanced in the commit that
+    # adds the next step's report, never before it" -- the same premise the `Stop` hook
+    # carried and that FT0 retired. FR3 inverted the order: the step is built first and
+    # the report comes last, so under FR3 the review file exists long before the report
+    # and this guard failed false the moment the marker moved.
+    #
+    # It is the mirror of the deadlock FT0 measured. With the marker left behind, the hook
+    # gated step 3's work against step 2's last reviewed commit and no step-3 verdict could
+    # clear it; with the marker moved, THIS guard went red instead. Both encode the same
+    # retired premise, so both take the same repair rather than one of them being worked
+    # around.
+    #
+    # EK2: a guard that fails false is fixed, not extended. The guarantee kept is the one
+    # that matters -- a step that has STARTED has at least one of the two files, and a
+    # marker naming a step with neither is still refused.
+    assert _plan_step() in REPORTED or _plan_step() in REVIEWED, (
+        f"the plan says step {_plan_step()} is under execution and there is NEITHER a "
+        f"`step-{_plan_step()}.md` under {REPORTS} nor one under {REVIEWS}. A step that "
+        "has started has at least one: a report (gating's original order) or a verdict "
+        "(FR3's order, where the step is built before its report)."
     )
 
 
