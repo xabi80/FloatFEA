@@ -282,14 +282,62 @@ stepnum() { local s=${1##*step-}; echo "${s%.md}"; }
 # that a guard failing false.
 #
 # So a step counts as closed when ANY verdict in its file is a PASS.
-# `grep -c` over `^Verdict: *PASS` rather than the first line only.
-closed_by_a_pass() { grep -cE '^Verdict: *PASS' "$1" 2>/dev/null | grep -qv '^0$'; }
+#
+# **AND THAT READS THE OPEN STEP AS CLOSED, WHICH IS R898.** An ES0 interim check may
+# PASS -- it means "nothing blocks at this commit", not "the step is done" -- so a step
+# under execution accumulates PASS lines while open. Measured on the live file:
+#
+#   grep -c '^Verdict: *PASS' docs/reviews/R1/step-3.md   ->  5
+#   grep -c '^Closes:'        docs/reviews/R1/step-3.md   ->  0
+#
+# so step 3 read CLOSED while it was HOLD and had no report at all.
+#
+# FK1's `Closes:` line is the discriminator, because only a CLOSING verdict carries one
+# and `write_verdict.py` refuses `--interim` together with `--closes`. But keying on it
+# alone is wrong in the other direction, and this is the measurement that says so:
+#
+#   files with a PASS and no `Closes:`  ->  14
+#
+# because FK1 POSTDATES most of the record. Thirteen of those fourteen are genuine
+# closures written before the line existed; keying on `^Closes:` alone would read all
+# thirteen as open and feed them to the HOLD sweep below. **The distinction is
+# historical, not textual**, which is the same problem `pre_gating` above solves, so it
+# gets the same shape: a frozen list, and `^Closes:` for everything else.
+#
+# THE FOURTEENTH IS NOT ON THE LIST, AND THAT IS THE WHOLE POINT. `docs/reviews/R1/step-3.md`
+# has a PASS and no `Closes:` for the OPPOSITE reason -- it is FK1-era and simply not
+# closed yet. FK1 was live from `F6b` onward (`F6b/step-1`, `R1/step-1` and `R1/step-2`
+# each carry the line), so R1 step 3 is an open step, not a pre-FK1 closure, and
+# exempting it would reinstate exactly the defect this repairs.
+#
+# Solved both directions (EH4). An OPEN step cannot read closed: only a closing verdict
+# may carry `Closes:`, and the implementer cannot write one. A CLOSED step can read open
+# only if it is a pre-FK1 closure missing from this list, and that set is finite,
+# enumerated and frozen -- no verdict written from now on can join it.
+#
+# Adding to this list has the same cost as adding to `pre_gating`: it exempts a file from
+# the check that notices an unclosed step. It takes a directive and the measurement
+# showing the file predates FK1.
+pre_fk1="docs/reviews/F2/step-4.md docs/reviews/F2/step-5.md docs/reviews/F2/step-6.md
+docs/reviews/F2/step-7.md docs/reviews/F3/step-1.md docs/reviews/F3/step-2.md
+docs/reviews/F3/step-3.md docs/reviews/F4/step-1.md docs/reviews/F4/step-2.md
+docs/reviews/F4/step-3.md docs/reviews/F6/step-1.md docs/reviews/F6/step-2.md
+docs/reviews/F6a/step-1.md"
+
+# Named for what it READS, because the previous name said PASS and the predicate no
+# longer turns on a PASS except for the frozen pre-FK1 set.
+closed_by_a_closing_verdict() {
+  case " $(echo $pre_fk1) " in
+    *" $1 "*) grep -cE '^Verdict: *PASS' "$1" 2>/dev/null | grep -qv '^0$' ;;
+    *) grep -qE '^Closes:' "$1" 2>/dev/null ;;
+  esac
+}
 
 # R888's second site: the same `F*` blind spot, on the review side.
 for r in $(ls docs/reviews/[A-Z]*/step-*.md 2>/dev/null); do
   [ "$r" = "$review" ] && continue
   v=$(grep -m1 -E '^Verdict:' "$r" | awk '{print $2}')
-  if closed_by_a_pass "$r"; then
+  if closed_by_a_closing_verdict "$r"; then
     continue
   fi
   if [ "$v" = "HOLD" ] || [ "$v" = "STOP" ]; then
