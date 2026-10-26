@@ -442,9 +442,22 @@ two names *and* a reason, and the reason is not a list:
 `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` name no finding and no site, so a literal
 reading of the first limb alone leaves them with **no exit at all** -- the reviewer
 measured the predicate at 102 of 104 ids and ruled those two under this half. So the
-predicate is: **a red that names a finding or a site of the newest verdict, OR that cannot
-be measured before the commit it describes exists, is a boundary red; any other red
-blocks.**
+predicate is: **a red that names a finding or a site of the newest verdict, OR whose
+SUBJECT IS THE COMMIT CARRYING IT, is a boundary red; any other red blocks.**
+
+**LIMB TWO IS NARROWED TO THE SUBJECT, NOT THE INPUT (FT1).** Adopted by directive FT1 in
+the reviewer's wording. It first read "cannot be measured before the commit it describes
+exists", which is CZ1's reusable half -- and that is wider than the limb needs, because a
+great many guards READ the commit graph (`git log`, `git diff`, `git merge-base`) without
+being ABOUT the commit they sit in. Under the wider reading any of them could claim the
+limb.
+
+The two it exists for are the ones whose subject IS their own commit:
+`test_the_report_carries_a_WHOLE_SUITE_count`, because `scripts/suite_count.py` measures a
+clean worktree AT a commit and the line naming a sha cannot be inside that sha; and
+`test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`, because no run exists for a commit
+before it is pushed. Measured at the time: 143 of 145 reds reached limb one, so limb two
+was already doing a narrow job and this keeps it that way.
 
 Both limbs are reasons and neither is a list of names.
 
