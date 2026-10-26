@@ -56,6 +56,14 @@ CONSUMED = (
     # opposite things, with CI's `unit tests` red and `guards and meta-tests` skipped
     # behind it. The entry is removed rather than the newer guard relaxed: the scale
     # belongs to the file, not to a sibling script's namespace.
+    #
+    # R947 ADDED A NINTH NAME, AND THIS LIST IS WHY THAT IS SAFE.
+    # `f6_results_report.py` had re-implemented the published-factor format inline; the
+    # repair was to call the one definition, which made the consumer reach for one more
+    # attribute. That is exactly the drift this list exists to catch -- it caught R906
+    # the same way, on the first whole-suite run after the change -- so the name is
+    # DECLARED rather than the call avoided.
+    "_factor_text",
     "_joint_wiring",
     "_lam_full_scale",
     "_net_field",

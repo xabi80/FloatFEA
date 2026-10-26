@@ -456,8 +456,46 @@ def test_R902_the_BAND_is_computed_at_the_RECORDED_height(tmp_path) -> None:
     side.write_text(_json.dumps(recorded, indent=1), encoding="utf-8")
 
     out = tmp_path / "h50.md"
+    # **AND THE FORCES TABLE MUST BE AT THIS SEA STATE TOO -- R946's shape, here.** This
+    # cell passed `--provenance` alone, so it ran at H = 50 m against the committed
+    # `docs/F4_member_forces.csv`, whose own caveats say H = 24.2 m. Nothing noticed until
+    # R938's height join refused it: the join turned a silent mismatch into a red test,
+    # which is what it is for, and this cell was one of the things relying on the silence.
+    # UNDER `ROOT`, because `member_forces_table.py` prints
+    # `args.out.relative_to(ROOT)` AFTER writing both files, so a path outside the
+    # repository raises `ValueError` once the work is already done (R918, now with a
+    # third witness; `scratch/` is gitignored).
+    scratch = ROOT / "scratch" / f"r902_{tmp_path.name}"
+    scratch.mkdir(parents=True, exist_ok=True)
+    forces = scratch / "forces_at_this_sea_state.csv"
+    made = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "measure" / "member_forces_table.py"),
+            "--out",
+            str(forces),
+            "--summary",
+            str(scratch / "forces_at_this_sea_state.md"),
+            "--provenance",
+            str(side),
+        ],
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+    )
+    assert made.returncode == 0, (made.stdout + made.stderr)[-700:]
+
     proc = subprocess.run(
-        [sys.executable, str(GENERATOR), "--out", str(out), "--provenance", str(side)],
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--out",
+            str(out),
+            "--provenance",
+            str(side),
+            "--forces",
+            str(forces),
+        ],
         capture_output=True,
         text=True,
         cwd=ROOT,

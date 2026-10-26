@@ -35,6 +35,7 @@ import csv
 import importlib.util
 import json
 import math
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -330,33 +331,70 @@ def main(argv: list[str] | None = None) -> int:
     # `member_forces_table.py` writes its SCALE caveat into the CSV's comment header from
     # the SAME `froude_factor` call, so the expected text is reconstructible here and the
     # join needs no new input. A format change fails LOUD rather than silently skipping.
-    _expect_force = froude_factor("force", lam_scale)
-    _expect_moment = froude_factor("moment", lam_scale)
-    _want = (
-        f"force x {_expect_force:.0f}"
-        if float(_expect_force).is_integer()
-        else f"force x {_expect_force:.6g}"
-    )
+    # **R945: `_want not in _header` WAS A SUBSTRING TEST.** `"force x 125000"` sits
+    # inside `"force x 125000000"`, so a forces table carrying lambda = 500's factors
+    # passed with `--npz`/`--provenance` at their defaults -- exit 0, `Froude lambda =
+    # 50.0`, over forces 1000x out. Solved over the declared domain: 428 ordered integer
+    # pairs collide, 225 of them at lambda = 1, and exactly one at the committed
+    # lambda = 50.
+    #
+    # The number is PARSED and compared as a whole token. Not a tolerance: the two values
+    # come from the same formatter, so the comparison is exact string equality on it.
+    #
+    # **R947: ONE FORMATTER, NOT TWO.** This block re-implemented `:.0f`/`:.6g` inline
+    # while `MFT` is already loaded above for exactly this reason -- so that this reader
+    # and the published CSV cannot disagree about what a figure is.
+    _want_force = MFT._factor_text(froude_factor("force", lam_scale))
+    _want_moment = MFT._factor_text(froude_factor("moment", lam_scale))
     _header = chr(10).join(
         line
         for line in args.forces.read_text(encoding="utf-8").splitlines()
         if line.startswith("#")
     )
-    if "SCALE:" not in _header:
+    _scale_line = next((ln for ln in _header.splitlines() if "SCALE:" in ln), None)
+    if _scale_line is None:
         raise SystemExit(
             f"floatfea: {args.forces.name} carries no `SCALE:` line in its comment "
             f"header, so there is nothing to join the resolved scale against. That "
             f"header is written by `member_forces_table.py`; regenerate the forces table."
         )
-    if _want not in _header:
+    # **R938's HEIGHT HALF, WHICH THE LAST COMMIT LEFT OPEN.** The condition named the
+    # SCALE line AND the `H = ... m` the R907 caveats write, and only the scale was
+    # joined. So the real H = 30 m forces table from the previous round, with the default
+    # sidecar, still published `24.2 m` over 1248 rows at exit 0 -- the same three figures
+    # the reviewer first measured.
+    #
+    # Both caveat branches state the height: the reference text says "for H = 24.2 m" and
+    # the computed one "At H = 30 m". Parsed as a token, like the factors, and compared on
+    # the formatter both sides use.
+    # From `basis`, not `h_full`: the join runs before `run` is assembled at :396, and
+    # `basis` is the validated record this reader resolved at :314. Same number, read
+    # from the one source that exists at this point.
+    _want_h = f"{float(basis['wave_height_full_m']):g}"
+    _seen_h = sorted(set(re.findall(r"H = ([0-9.eE+-]+) m", _header)))
+    if _seen_h and _seen_h != [_want_h]:
+        raise SystemExit(
+            f"floatfea: {args.forces.name} was generated at a different wave height "
+            f"from the one this run resolves. The sidecar gives H = {_want_h} m and the "
+            f"CSV's own caveats state H = {_seen_h} m. The band, the breaking verdicts "
+            f"and the printed height would describe one sea state while every force in "
+            f"the table came from another (R938). Regenerate the forces table, or point "
+            f"--provenance at the sidecar it was generated from."
+        )
+    _seen = re.findall(r"force x ([0-9.eE+-]+)[;,)]", _scale_line)
+    _seen_moment = re.findall(r"locked moment x ([0-9.eE+-]+)[;,)]", _scale_line)
+    if [_want_force] != _seen or [_want_moment] != _seen_moment:
         raise SystemExit(
             f"floatfea: {args.forces.name} was generated at a different Froude scale "
             f"from the one resolved here. This run resolves lambda = {lam_scale:g}, for "
-            f"which the composite is `{_want}`, and that string is not in the CSV's own "
-            f"SCALE line. The forces, the basis and the scale would come from three "
-            f"inputs nobody joined -- which published `24.2 m` over an H = 30 m table at "
-            f"exit 0 (R938). Regenerate the forces table, or point --provenance and "
-            f"--npz at the pair it was generated from."
+            f"which the composite is `force x {_want_force}` and "
+            f"`locked moment x {_want_moment}`; its own SCALE line states "
+            f"force {_seen or 'nothing'} and moment {_seen_moment or 'nothing'}. The "
+            f"forces, the basis and the scale would come from three inputs nobody "
+            f"joined -- which published `24.2 m` over an H = 30 m table at exit 0 "
+            f"(R938), and which a substring test let through at lambda = 500 (R945). "
+            f"Regenerate the forces table, or point --provenance and --npz at the pair "
+            f"it was generated from."
         )
     run = {**prov["run"], **basis}
     f_b, f_b_branch = allowable_bending(sec["D"], sec["t"], FY_S355, E_STEEL)

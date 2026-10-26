@@ -183,7 +183,7 @@ SENSITIVITY_PERIODS = (10.0, 20.0)
 """EZ2(b): outside the associated-period range; `T = 10 s` exceeds breaking steepness."""
 
 
-def steepness(period_full_s: float, h_full_m: float) -> tuple[float, float, str]:
+def steepness(period_full_s: float, h_full_m: float) -> tuple[float, float, str, str]:
     """`(lambda, H/lambda, position)` for one case, deep water.
 
     `lambda = g T^2 / (2 pi)`. The position string is what EZ2(d) asks for on every label
@@ -194,15 +194,26 @@ def steepness(period_full_s: float, h_full_m: float) -> tuple[float, float, str]
     s = h_full_m / lam
     lo = math.sqrt(6.5 * h_full_m)
     hi = math.sqrt(11.0 * h_full_m)
+    # **FOUR OUTCOMES, DECIDED ONCE (R944).** The prose below this table used to decide
+    # the same question with `math.sqrt(6.5 * h_full) <= 12.5` -- ONE edge of a two-edged
+    # interval -- so where the band's UPPER edge had fallen past 12.5 s, which happens at
+    # `H = 156.25/11 = 14.2045 m`, the document published "`T = 12.5 s` is INSIDE the
+    # band" while this row said "above the band ... by 2.012 s". Measured at H = 10 m:
+    # three places in one file, two answers. The category is returned so the prose reads
+    # the classification instead of repeating half of it.
     if s > 1.0 / 7.0:
+        category = "breaking"
         where = f"BREAKING (H/L {s:.4f} > 1/7); and below the band {lo:.3f}-{hi:.3f} s"
     elif period_full_s < lo:
+        category = "below"
         where = f"below the band {lo:.3f}-{hi:.3f} s by {lo - period_full_s:.3f} s"
     elif period_full_s > hi:
+        category = "above"
         where = f"above the band {lo:.3f}-{hi:.3f} s by {period_full_s - hi:.3f} s"
     else:
+        category = "in"
         where = f"in the band {lo:.3f}-{hi:.3f} s"
-    return lam, s, where
+    return lam, s, where, category
 
 
 STATIONS = ("ROOT", "MID", "TIP")
@@ -529,6 +540,12 @@ def _write_summary(
     # `main` computes the predicate once, against the published caveat text, and passes
     # it here. There is no second definition to drift.
     _reference = not stale
+    # R944: the position of `T = 12.5 s`, from the SAME call that fills the table below,
+    # so the prose cannot classify it differently from the row that states it.
+    _, _, _where_12_5, _cat_12_5 = steepness(12.5, h_full)
+    _pos_12_5 = {"in": "INSIDE", "above": "ABOVE", "breaking": "BREAKING and below"}.get(
+        _cat_12_5, "BELOW"
+    )
     _breaking_txt = ", ".join(f"`T = {T:g} s`" for T in _breaking) if _breaking else "no case"
     _long_txt = ", ".join(f"`T = {T:g} s`" for T in _past_long) if _past_long else "no case"
 
@@ -615,7 +632,7 @@ def _write_summary(
         "|---|---|---|---|---|",
     ]
     for period in sorted(inp.periods_full_s):
-        lam, s, where = steepness(period, h_full)
+        lam, s, where, _cat = steepness(period, h_full)
         # NOT named `basis`: that shadows the imported `floatfea.basis` module, and the
         # section below reads `basis.chs_class_limits()` -- which is how this was found.
         which = "**governing**" if period in GOVERNING_PERIODS else "sensitivity only"
@@ -646,12 +663,22 @@ def _write_summary(
                 # distance in a direction word is not a smaller version of the same
                 # fact; it is the opposite fact. Where 12.5 is inside the band there is
                 # no FA0 question to answer at all.
-                f"**`T = 12.5 s` is INSIDE the band at this height** -- the lower edge is "
-                f"`sqrt(6.5 x {h_full:g}) = {math.sqrt(6.5 * h_full):.3f} s` and the case "
-                f"sits `{12.5 - math.sqrt(6.5 * h_full):.3f} s` above it. FA0 exists to "
-                "rule on a case that falls BELOW the edge and is kept anyway; no such "
-                "question arises here, so nothing is asserted about it."
-                if math.sqrt(6.5 * h_full) <= 12.5
+                # **R944: THAT GUARD TESTED ONE EDGE OF A TWO-EDGED INTERVAL.** It was
+                # `math.sqrt(6.5 * h_full) <= 12.5` -- the LOWER edge alone -- so once
+                # the UPPER edge had fallen past 12.5 s, which happens at
+                # `H = 156.25/11 = 14.2045 m`, this published "INSIDE the band" over a
+                # table row reading "above the band ... by 2.012 s". Measured at
+                # H = 10 m: three places in one document and two answers, and the
+                # boundary straddled at H = 14.20 against 14.21.
+                #
+                # `steepness()` already decides this in four outcomes for the table, so
+                # the classification is READ from that one call rather than half of it
+                # being recomputed here.
+                f"**`T = 12.5 s` is {_pos_12_5} the band at this height** -- its position "
+                f"is `{_where_12_5}`, which is what the table above states. FA0 exists to "
+                "rule on a case that falls BELOW the lower edge and is kept anyway; no "
+                "such question arises here, so nothing is asserted about it."
+                if _cat_12_5 != "below"
                 else (
                     f"**`T = 12.5 s` sits `{math.sqrt(6.5 * h_full) - 12.5:.3f} s` below "
                     f"`sqrt(6.5 x {h_full:g}) = {math.sqrt(6.5 * h_full):.3f} s`, which "
