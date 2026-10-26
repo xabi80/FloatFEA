@@ -1,4 +1,663 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: cd126a65ffdc7b84d419922e3f54272d1ff0b7b5
+**Reviewed commit: `cd126a65ffdc7b84d419922e3f54272d1ff0b7b5`.**
+Verdict: HOLD
+Tests: 3647 passed, 299 failed, 1 skipped, 2 warnings in 1033.69 s (0:17:13)   (my own whole-suite run, at the reviewed commit, tree clean before and after)
+Scope: **ES0 INTERIM CHECK, the eighth in step 3.** No report revision exists for step 3, so
+this counts against no round and all three reviewed revisions remain available.
+**ONE FINDING BLOCKS -- R887 -- and it is in the commit that moved the marker, not in the
+hook.** FT0's repair is SOUND and I confirmed it by running the gate rather than reading it:
+the deadlock is gone, the gate now names step 3's own reviewed commit, and a step-3 verdict
+clears it. The guard change in `ba0ce03` is a REPAIR and not a widening, and I can say so as
+a 2x2 measurement. What `ba0ce03` also did, and did not measure, is move the plant target of
+the negative-control harness onto a file that does not exist: **fifteen of the twenty-three
+states that exist to prove the report guards CAN fail now die before planting a defect, eight
+of them newly.**
+
+**I RULED UNDER FR1 WITH EZ0** (`CLAUDE.md` section "What blocks for the rest of R1";
+`docs/directives/FR.md`). For each finding I state the silently wrong result it produces, or
+that it produces none. **R887 blocks under CZ1 (iv) with FF0, not under FR1's head**, and I
+say so in its own words rather than stretching FR1 to fit -- see the ruling under R887.
+
+```
+cmd    git log --oneline 5ca5496..HEAD ; git diff --stat 5ca5496..HEAD
+out    cd126a6 ba0ce03 f9954f7 f39cbd6 -- FOUR commits.
+       .claude/hooks/require-verdict.sh 34 ++ | CLAUDE.md 19 ++ |
+       docs/SUPERVISOR.md 19 ++ | docs/directives/FT.md 79 ++ |
+       docs/directives/README.md 2 | docs/milestones/R1.md 2 |
+       tests/test_report_carried.py 26 ++
+       -- 7 files, 167 insertions, 14 deletions
+cmd    git diff --stat 5ca5496..HEAD -- floatfea ; -- scripts ; -- floatfea/tolerances.py
+out    (empty) / (empty) / (empty)
+       -- NO `floatfea/` change in this diff at all, which is why R881..R886 are all still
+          open below and why no regeneration check could differ: the producers did not move.
+cmd    git diff 5ca5496..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py        -- a file, as my instructions say it must be
+cmd    git diff --stat 5ca5496..HEAD -- .claude docs/SUPERVISOR.md
+out    .claude/hooks/require-verdict.sh 34 ++ ; docs/SUPERVISOR.md 19 ++
+       -- **NOT a STOP, and I read every line of both.** `f9954f7` is a standalone
+          `process:` commit citing FT0 whose ONLY file is `.claude/hooks/require-verdict.sh`;
+          `cd126a6` is a standalone `process:` commit citing FT1 whose only files are
+          `CLAUDE.md` and `docs/SUPERVISOR.md`. `ba0ce03`, which touches `tests/`, touches
+          NEITHER -- measured per commit, not over the range.
+cmd    git diff --stat 5ca5496..HEAD -- results scripts/measure docs/reports
+out    (empty)   -- no published deliverable moved, and no step report was touched (EK3)
+cmd    git status --porcelain   (before anything, and after ~30 hook probes, four harness
+                                runs, three mutated-marker test runs and one patched-harness
+                                run, all in a disposable worktree under my scratch directory)
+out    (empty) / (empty)
+cmd    ruff check floatfea tests scripts ; black --check floatfea tests scripts ;
+         mypy floatfea scripts/f4_dynamic_residual.py       (CI's own three forms)
+out    All checks passed! / 150 files would be left unchanged /
+       Success: no issues found in 43 source files
+cmd    the turn's three cited figures, re-taken by me at this commit
+out    tests/test_plan_figures.py                                    -> 195 passed
+       test_report_carried.py -k "plan_names_the_step or guard..."   -> 2 passed
+       tests/test_tree_prose_consistent.py                           -> 34 passed
+       -- all three reproduce EXACTLY. **The file the turn did NOT run is
+          `tests/test_report_guard_states.py`, and that is where R887 is.**
+```
+
+**STEP 1b DOES NOT FIRE, AND I SAY SO RATHER THAN SKIPPING IT.** There is no step-3 report, so
+there is no `Answers: verdict N @ <sha>` header to compare against the newest verdict. The
+newest revision in the tree is still step 2's third and eight verdicts are now newer than it.
+That is EG3 state (2) and it is the cause of 282 of this tree's 299 reds -- but not of all of
+them, which is the whole of R887.
+
+**R855's standing condition is MET.** The turn states plainly that it made no whole-suite run
+at this sha and names exactly what it did run. No green is claimed that was not measured.
+Mine is in the header, and it agrees with CI id-for-id (299 each).
+
+## The question the turn asked: is the gate's new behaviour RIGHT, not merely green?
+
+**YES, AND THE CONFIRMATION IS A RUN OF THE GATE AND NOT A READING OF IT.** I rebuilt every
+replay in `f9954f7`'s message plus five the turn did not run, in a worktree at `cd126a6`.
+
+```
+claim  the deadlock is gone and the gate is now CLEARABLE by a step-3 verdict
+rule   the block at `.claude/hooks/require-verdict.sh:407` -- `git diff --quiet $reviewed --
+       $report floatfea tests ':(exclude)tests/corpus'` -- with `$reviewed` picked by
+       ancestry from the MARKED step's review file
+cmd    printf '{"stop_hook_active":false}' | bash .claude/hooks/require-verdict.sh, at
+       cd126a6, clean tree
+out    BLOCK "floatfea/, tests/, or docs/reports/R1/step-3.md changed since the verdict at
+       154261e..." -- **step 3's OWN newest reviewed commit**, where the old hook named
+       8542d79, step 2's
+cell   ONE VARIABLE MOVED: a step-3 verdict naming `cd126a6` committed into
+       `docs/reviews/R1/step-3.md`, nothing else
+out    (empty) exit=0   <- **THE GATE CLEARS.** This is the property that did not exist
+                           before FT0 and it is the one that matters: the thing the hook
+                           asks for is a thing that can be delivered.
+cmd    the marker at 4, and at 9 -- a step with neither file
+out    BLOCK "...NEITHER docs/reports/R1/step-9.md NOR docs/reviews/R1/step-9.md exists..."
+       -- refused in both, so the new key is not vacuous
+cmd    the OLD hook on THIS tree (the turn's control, re-run with ONE variable moved)
+out    BLOCK "...step 3 of R1 is under execution and docs/reports/R1/step-3.md does not
+       exist." -- the OTHER horn. See R892: the turn's stated control moved two variables
+       and reported the first horn.
+cmd    marker 3, the review file moved aside, a report planted
+out    BLOCK "Step report docs/reports/R1/step-3.md has no supervisor verdict at
+       docs/reviews/R1/step-3.md" -- R799's refusal still fires for the marked step
+cmd    EH4, the direction that WEAKENS the gate: how far forward can the marker go?
+out    admitted markers are exactly {steps with a report} u {steps with a review} = {1,2,3};
+       4 and 9 refused. The implementer CAN admit 4 by writing `docs/reports/R1/step-4.md`
+       -- and the hook then refuses it at `:292` for having no verdict (measured). The
+       review half of the disjunct is a path `protect-reviews.sh` denies the implementer,
+       so **the new escape hatch is one only the reviewer can open.** That is the property
+       I would have asked for had the turn not already had it.
+```
+
+**The one thing I will not certify is enforcement, and it is the turn's own discovery.**
+`stop_hook_active` waives the hook after it has blocked once, so this gate surfaces its reason
+once per turn and cannot bar the turn. That is a property of the mechanism, not of this change
+-- and it means the bound on an unreviewed report is this review, not the hook. That is CJ0's
+sentence in my own instructions ("a gate that reads a record cannot outrank code that writes
+the record. Review is the bound"), reached from the other side.
+
+## Widened, or repaired? REPAIRED, and here is the 2x2 that says so
+
+The turn asked for this judgement explicitly and named it the one it was least certain of.
+
+```
+claim  the new assertion's admissible set is the old one plus exactly the live step, and the
+       addition is reviewer-controlled
+rule   `assert _plan_step() in REPORTED or _plan_step() in REVIEWED`
+       (tests/test_report_carried.py:536)
+cmd    the four states, each run twice -- the shipped assertion and `git show
+       5ca5496:tests/test_report_carried.py` -- one variable moved each time
+out                           marker 2     marker 3     marker 4 / 9 (neither file)
+       old (`in REPORTED`)    1 passed     1 FAILED     1 FAILED
+       new (shipped)          1 passed     1 passed     1 FAILED
+       -- the admissible marker set grew from {1,2} to {1,2,3}: by the live step and nothing
+          else. It is NOT vacuous in either direction.
+cell   does the marker move change WHICH report the module's other guards read? ONE VARIABLE
+       MOVED, the marker, same tree, module re-imported
+out    marker 2 -> STEP=2 STEP_REPORT=2 _PAIRED=2 REPORT=step-2.md VERDICT=step-3.md
+       marker 3 -> STEP=2 STEP_REPORT=2 _PAIRED=2 REPORT=step-2.md VERDICT=step-3.md
+       -- IDENTICAL. `STEP = max(_PLAN_STEP if _PLAN_STEP in REPORTED else 0, _PAIRED)`
+          already falls back, so no sibling guard changed its subject or went vacuous.
+rule   EK2 -- a guard that fails false is fixed, not extended; and the premise the guard
+       encoded ("never before it") is retired by FT0, by directive
+judge  **A REPAIR.** The retired premise was retired by the directive that ordered the marker
+       move; the guard asserted it verbatim; the repair removes exactly that premise, keeps
+       the guarantee that a marker naming a step with neither file is refused, and the new
+       disjunct's domain is a directory the implementer cannot write. I would have objected
+       had the repair been `in REPORTED or True`, or had it moved the sibling guards' subject.
+       Neither happened.
+```
+
+**And the census the family's history demands, because a one-site repair of a premise with
+siblings is how R871, R875 and R813 happened.** `grep -rn "advanced in the commit"` finds five
+live sites: two are the new comments quoting the premise as RETIRED (the hook and the guard,
+correct), two are closed milestones' own records (`docs/milestones/F6.md:145`,
+`docs/reports/F6/step-1.md:22`), and one states it as a LIVE RULE --
+`docs/milestones/F2.md:22`. That is R893.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R881** (two recorded wave heights get two of three checks; `wave_height_full_m: -24.2` publishes a negative height at exit 0) | **STILL OPEN, correctly, and correctly NOT in this diff** | `git diff 5ca5496..HEAD -- floatfea` is EMPTY. My own placement stands: it lands IN the commit that builds FL2 item 3, and **it blocks there if item 3 is built without it.** Nothing in these four commits brings a recorded height nearer a number. |
+| **R882** (the refusal still recommends removing `load_cases.headings`), **R883** (`10**400` "caught before `float()` raises" -- it raises, from inside the check), **R884** (a `run` block of the wrong TYPE publishes "NOT RECORDED" at exit 0), **R885** (the raw domain refuses a legally signed recording), **R886** (a blanket `# noqa: F401` over four names) | **ALL FIVE STILL OPEN, ALL UNTOUCHED, AND CORRECTLY SO** | the `floatfea/` and `tests/unit/` diffs since 5ca5496 are both empty. Under FS0/FT2 the order is the plan's and none of the five is FR1-blocking, so none earns a commit ahead of FL2 item 3. They go in the next commit that touches `_validated_wave_basis`, or into the first reviewed revision as declarations of what was left and why. |
+| **R867, R868, R869** (of eight non-default topologies one runs; the rest die in a `platform:hub1_arm_tip` lookup) | **still open, and now SCOPED BY DIRECTIVE: FT2.7 makes them an item of step 3** | `docs/directives/FT.md:27-29`. The diff over `floatfea/model`, `floatfea/solve` and the topology test file is empty. They remain blocking by name into the first reviewed revision. |
+| **R870** (FL2(a) as shipped is a subset of the locked plan's (a); two future-tense sentences) | **still open, untouched** | the `floatfea/run/pipeline.py` diff since 5ca5496 is empty. |
+| **R862** (three hand copies of the stage set; the published total is the sum of a hand-copied four) | **still open and STILL NOT DUE -- trigger re-measured, not taken on trust** | `git diff 5ca5496..HEAD -- floatfea/cli.py` is EMPTY and no `timings[...]` assignment moved. It blocks in the commit that adds a timed stage, which is FL2 item 4 or 5. |
+| **R863, R864, R865** (the exclusion set defined by the code under test; the byte-identity witness blind to its subject; a docstring in the regenerates test) | **all three still open, untouched** | the `tests/regression` diff since 5ca5496 is empty; R864's condition still needs a report revision that does not exist. |
+| **R847 / C43, R848, R849 with R854** | **all still open, all untouched, all correctly so** | the `floatfea/cli.py` and `tests/regression` diffs are empty. FR1's second and third non-blocking classes. |
+| **R852** | **ROUTED, not open -- FS3 ledgers it to FL3** | `docs/directives/FS.md`. Not open against step 3. |
+| **R880** (my own agent definition cites "their two corrected lists", which FS1 deleted) | **STILL OPEN, STILL CORRECTLY NOT TAKEN, and it did not misdirect me a third time** | I ruled under `CLAUDE.md`'s predicate as narrowed by FT1 and applied it PER ID to all 299 reds. `.claude/agents/` is untouched by this diff -- which is right: it is not FR1-blocking and FS0 says apparatus waits for FL2. **Do not take it first.** |
+| **R855** (the whole suite at a commit carrying no report revision) | **condition MET, and I took the number myself as I do by rule** | see the header: 299 failed, 3647 passed, 1 skipped. |
+| **R856** (the verdict tool refused a step with no report) | **ANSWERED, exercised a fifth time -- this file went through `--interim`** | `scripts/write_verdict.py`, untouched by this diff. |
+| **R835, R836, R871** (EG3's lists; FS1's deletion of FC1's reason) | **ANSWERED, and now NARROWED by FT1 -- and I checked the narrowing in the direction that could have cost something** | the two limb-two ids at this commit are `test_the_report_carries_a_WHOLE_SUITE_count` and `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`; both have their own commit as SUBJECT, so **the narrowing orphans neither.** EH4's weakening direction applied to a criterion edit: no currently-red id loses its exit by FT1. See the CI section. |
+| **C45** (a mirror going stale) | **DOES NOT RECUR in this diff, and the turn took the one precaution that prevents it** | `CLAUDE.md` and `docs/SUPERVISOR.md` were edited in the SAME commit; the two sections now differ in exactly 4 lines, all second-person framing ("in the reviewer's own wording" vs "in your own wording"). The rule text is byte-identical. Measured, not read. |
+| **C29, C34, C35** (ruff, black, mypy) | **green at this commit, locally in CI's own three forms AND on a machine neither of us controls** | mine above; CI run 40251519070, job `lint, unit and guards`, steps `actionlint` `ruff` `black --check` `mypy` `unit tests` all SUCCESS. Every step RAN. |
+| **C42, C44** | **mine, accepted, carried** | unchanged by this diff. |
+| **C26, C27, C28, C30, C31, C32, C33, C36, C37, C39** | **carry to the closure artifact as a list** | not re-reviewed item by item, per CZ0. An interim check writes no closure list (ES0); this row is the pointer, not the list. |
+| **EG3(ii): the verdict commit measured** | **DONE at `bd315a1` two rounds back (149 passed, 0 failed) and not redone** | ES0's light scope; the control's conclusion is unchanged. |
+| the suite-count line, and CZ1 (ii)/(iii)'s four outputs | **still owed, still structurally unpayable until step 3's report exists** | limb two of the predicate by construction; two of this round's 299 reds ARE it. |
+
+## Findings
+
+**R887 BLOCKS. R888..R894 do not.** No tolerance moved, no conftest moved, no `floatfea/`
+file moved, no published deliverable moved.
+
+---
+
+**R887. (BLOCKS) `ba0ce03` MOVED THE MARKER TO A STEP WITH NO REPORT, AND THE NEGATIVE-CONTROL
+HARNESS DERIVES ITS PLANT TARGET FROM THE MARKER. FIFTEEN OF THE TWENTY-THREE STATES IN
+`tests/test_report_guard_states.py` NOW DIE IN `_build` ON A FILE THAT DOES NOT EXIST, BEFORE A
+SINGLE DEFECT IS PLANTED. EIGHT OF THEM WERE GREEN ON THIS SAME TREE ONE MARKER VALUE AGO.
+THIS IS R601a, THIRD OCCURRENCE, AND THE DOCSTRING FORTY LINES ABOVE THE CAUSE PROMISES IT
+CANNOT HAPPEN AGAIN.**
+
+```
+claim  the two resolvers have drifted apart: the guard reads step 2, the harness plants into
+       step 3
+rule   tests/test_report_guard_states.py:90-91 -- "Every path the harness builds derives from
+       this name, so the place it plants and the place the guard reads cannot drift apart
+       again."; and :94 -- "_step(): The step the guard reads, TAKEN THE WAY THE GUARD TAKES
+       IT (DB2)."
+cmd    import both modules at cd126a6 and print what each resolves
+out    test_report_carried.py   : marker=3  STEP the guard READS=2   REPORT=step-2.md
+       test_report_guard_states : marker=3  STEP it PLANTS into=3    REPORT_NAME=step-3.md
+       -- the guard takes `max(_PLAN_STEP if _PLAN_STEP in REPORTED else 0, _PAIRED)`; the
+          harness takes the RAW MARKER. The docstring's claim is false at this commit, and
+          it is false about the one thing it promises.
+cmd    the plant target's existence
+out    docs/reports/R1/step-3.md exists: False      (marker 3, shipped)
+       docs/reports/R1/step-2.md exists: True       (marker 2, before ba0ce03)
+cell   ONE VARIABLE MOVED -- the marker, same tree, same harness, the full file both ways
+out    marker 3 (shipped) : 17 failed,  6 passed in 83.30s
+       marker 2           : 10 failed, 13 passed in 279.89s
+       8 ids GREEN at marker 2 and RED at marker 3:
+         answers_header_names_a_sha_that_is_not_a_commit
+         answers_header_names_an_older_verdict_commit
+         guard_state_a_report_commit_messaged_docs_that_also_edits_the_guards_measuring_it
+         guard_state_declared_GREEN_in_REQUIREMENT_CHANGED_while_the_state_actually_REDDENS_CONTROL
+         newest_verdict_file_present_but_empty
+         two_digit_step_number_discriminating
+         two_reports_ahead_of_the_newest_verdict
+         verdict_file_is_a_directory
+       1 id RED at marker 2 and green at 3 (`report_file_is_a_directory`): at marker 2
+         `NEXT == VERDICT_STEP == 3`, so `_build` ran `shutil.copy2(src, dst)` with src ==
+         dst. A pre-existing collision, surfaced by the same number -- see the repair note.
+cmd    the failure reason for each of the 17, from CI's own log at run 40251519070 (a machine
+       neither of us controls)
+out    15 x FileNotFoundError: .../repo/docs/reports/R1/step-3.md, raised from
+         tests/test_report_guard_states.py:494 inside `_build`
+        1 x [baseline] AssertionError: baseline: expected a clean run.
+        1 x [verdict_amended_after_the_commit_the_report_answers] expected a clean run.
+       -- only the last two have the boundary cause. The 15 die in SETUP.
+rule   the FS1 predicate as narrowed by FT1 -- "a red that names a finding or a site of the
+       newest verdict, OR whose SUBJECT IS THE COMMIT CARRYING IT, is a boundary red; any
+       other red blocks"
+cmd    does any of the 15 name a finding or a site of the newest verdict? (the newest round
+       of docs/reviews/R1/step-3.md, 39829 chars, searched for the path they name)
+out    'docs/reports/R1/step-3.md' : 0 occurrences
+       'docs/reports/R1'           : 0 occurrences
+       'step-3.md'                 : 0 occurrences
+       -- limb one: NO. limb two: their subject is a report that does not exist, not the
+          commit carrying them: NO. **All 15 FAIL THE PREDICATE. They are CZ1 (iv).**
+cell   AND THE REPAIR IS MEASURED, NOT ASSERTED. One variable moved -- the plant target
+       resolved the way the guard resolves it (fall back to the newest step that HAS a
+       report), marker left at 3, in a disposable worktree I then deleted
+out    17 failed, 6 passed   ->   10 failed, 13 passed, and `grep -c FileNotFoundError` = 0
+       -- identical to marker 2's count WITH THE MARKER STILL AT 3. The marker move does not
+          have to be undone; the resolver has to agree with the guard, which is what its own
+          docstring already claims.
+judge  **IT BLOCKS, and I name the clause rather than stretching FR1.** Under FR1's head I
+       cannot name a wrong number in an artifact today, and I will not invent one. It blocks
+       under **CZ1 (iv) with EG3's predicate** -- a red at the reviewed commit that fails the
+       predicate, tested per id -- and its disposition is set by **FF0**, which is
+       unambiguous: "Anything that reads the gating record, or decides whether a green is
+       believed -- the report guards ... -- is FIXED IN THE NEXT COMMIT", under EK2's
+       repair-not-extend rule. `tests/test_report_guard_states.py` IS the witness for the
+       report guards; with 15 of 23 states dark, "the report guards are green" and "the
+       report guards cannot see anything" are the same observation for the whole of FL2's
+       remaining build. That is FF0's own recorded cost -- "a tree that is red by design is a
+       tree in which the next real red is harder to see" -- and the eighth member of exactly
+       such a group was a real defect once (R629). The step-3 report is the artifact these
+       guards protect, and R1's closure is a published deliverable under EZ0.
+```
+
+**Closed when** the harness resolves its plant base the way `tests/test_report_carried.py`
+resolves `STEP` -- the newest step that actually has a report -- or synthesises the missing
+report explicitly, so that no state dies in `_build`; `grep -c FileNotFoundError` over the
+file's own run is `0`; and the full-file count is back to `10 failed, 13 passed` or better
+WITH THE MARKER AT 3. **Two numbers, not one:** `_step()`'s plant base and `NEXT` are
+different concerns -- my probe conflated them and brought back the `copy2` src==dst collision
+in `report_file_is_a_directory` -- so the repair states what each is for. EK2: fixed or
+deleted, never extended, and no new apparatus.
+
+---
+
+**R888. (DOES NOT BLOCK -- FF0-class; fix it in the same commit as R887) THE R799/R800 ORPHAN
+SWEEP GLOBS `docs/reports/F*/step-*.md`, AND R1 IS THE ACTIVE MILESTONE. AN UNREVIEWED
+`docs/reports/R1/step-4.md` ENDS THE TURN. THE SAME FILE AS `docs/reports/F7/step-1.md` DOES
+NOT. THE REFUSAL'S OWN MESSAGE SAYS IT "SWEEPS EVERY REPORT".**
+
+```
+claim  the sweep that exists to catch an unreviewed report cannot see the milestone under
+       execution
+cmd    the two globs, and their blame
+out    .claude/hooks/require-verdict.sh:240  for rep in docs/reports/F*/step-*.md   (60bb3f0)
+       .claude/hooks/require-verdict.sh:276  ls docs/reviews/F*/step-*.md           (ddabd44)
+       -- both PRE-DATE this diff. FF0 widened the PLANS glob at :97 and left these two; the
+          comment at :92 says "THE SAME DEFECT WAS IN ALL FOUR RESOLVERS", and these are a
+          fifth and sixth site in the same file.
+cell   ONE VARIABLE MOVED -- the milestone letter -- with the gate otherwise CLEAR (a probe
+       verdict naming cd126a6 committed first, so nothing else can block) and both files
+       COMMITTED so git diff can see them
+out    docs/reports/R1/step-4.md, unreviewed  -> exit=0, (empty)      <- ALLOWED
+       docs/reports/F7/step-1.md, unreviewed  -> BLOCK "these step reports have no
+                                                 supervisor verdict: docs/reports/F7/step-1.md
+                                                 ... This sweeps EVERY report except the three
+                                                 that predate their milestone's first verdict"
+rule   CW0 -- prose in the source tree does not claim things about the code; and the hook's
+       own FT0 comment at :165, "Refusing on neither keeps R799's guarantee -- a report with
+       no verdict is still refused at line 262 below, whatever the marker says"
+cmd    is the guarantee kept for the MARKED step? (the half the comment is right about)
+out    marker 3, step-3 report committed, no newer verdict -> BLOCK (check_carried, then the
+       diff at :407). YES for the marked step; NO for any other step of R1. And the line the
+       comment cites, 262, is inside the DD1/DE1 comment; the refusals are at :251 and :292.
+judge  **it does not block. THE SILENTLY WRONG RESULT IT PRODUCES: none today** -- no number
+       is wrong anywhere and the marked step is still gated. It is FF0-class rather than
+       ledgered because it is the sweep that decides whether an unreviewed report can end a
+       turn, and the repair is one character of glob. The line-276 blindness has no
+       consequence at this commit (R1 steps 1, 2 and 3 each carry a Verdict: PASS, so that
+       loop would skip them anyway) and is named here so one repair covers both.
+```
+
+**Closed when** both globs reach every milestone, as `:97` already does -- and the refusal
+message's "sweeps EVERY report" is true, or says what it actually sweeps.
+
+---
+
+**R889. (DOES NOT BLOCK -- ledgered, and it is the one going to Xabier) "A DEADLOCK THAT HAD
+ABSORBED SEVEN INTERIM CHECKS" IS A CAUSAL CLAIM IN THREE SHIPPED PLACES WITH NO CELL, AND THE
+TIMELINE DOES NOT SUPPORT IT. THE SEVEN CHECKS EACH REVIEWED A REAL COMMIT AND PRODUCED FORTY
+FINDINGS, TWO OF THEM BLOCKING DEFECTS IN `floatfea/run/`.**
+
+```
+claim  the deadlock did not consume the seven rounds; it made the hook's message useless for
+       seven rounds, which is a different loss
+cmd    docs/directives/FT.md:44 ; .claude/hooks/require-verdict.sh:157 ; f9954f7's message
+out    "FT0 resolves a deadlock that had absorbed seven interim checks." / "This one forced
+       seven." / "it masked the deadlock for seven rounds"
+cell   the counterfactual, from the commit timeline: WHAT WOULD HAVE HAPPENED WITH A CORRECT
+       HOOK? Each of the seven checks sits at a turn boundary that carried NEW implementer
+       commits (0aa0c4a after e818375, 948b36a after e6a20e3, eb85d08 after d89566d,
+       d06c577 after 945d250, 0a6edba after 82f922c, 52d3b7a after ff48a6d, 5ca5496 after
+       154261e)
+out    ES0 forces an interim check at exactly such a boundary REGARDLESS of the hook's
+       message, so the COUNT is unchanged by FT0. What the deadlock changed is the MESSAGE:
+       the gate named a diff against 8542d79 that no step-3 verdict could clear, so for
+       seven rounds nothing in the loop was measuring "has this work been reviewed" -- that
+       measurement came from the reviewer being invoked, which happened anyway. And the seven
+       were not idle: R866 and R877 are two defects in floatfea/run/ those rounds found.
+rule   BG0 -- a causal sentence carries the cell that isolates it; one variable moved, the
+       rest held, or the sentence is rewritten as the bare measurement
+judge  **it does not block. THE SILENTLY WRONG RESULT IT PRODUCES: none.** It is on the list
+       because FT3's checkpoint report goes to Xabier in this same turn and this sentence is
+       part of the slippage account. Seven rounds attributed to a hook bug reads as seven
+       rounds wasted; the measurement says the hook's SIGNAL was wasted and the rounds bought
+       two element-adjacent defects. The honest form is the second, and it is also the better
+       argument for FT0.
+```
+
+**Closed when** the sentence in `docs/directives/FT.md`'s commentary -- not the verbatim
+directive block, which is Xabier's text and stays as received -- and in the hook comment says
+what was measured: the gate's refusal named an unclearable diff for seven rounds, and
+`stop_hook_active` is what ended the turns.
+
+---
+
+**R890. (DOES NOT BLOCK -- ledgered) THE CHECKPOINT'S "OF STEP 3'S NINE CODE COMMITS, TWO WERE
+NEW FL2 ITEMS AND FIVE WERE REPAIRS TO THOSE TWO" DOES NOT REPRODUCE. THREE WERE. TWO OF THE
+FIVE PREDATE BOTH FL2 COMMITS AND CANNOT BE REPAIRS TO THEM.**
+
+```
+claim  the 2-vs-5 input to the x1.5 loading is a miscount
+cmd    git log --reverse --format="%h %ad %s" --date=short 8542d79..HEAD -- floatfea tests
+out    10-18 e818375  R845/R846, step 2's carried items          <- repair, not to FL2
+       10-18 e6a20e3  R850/R851/R853, "my own gate failed false" <- repair, PREDATES FL2
+       10-18 d89566d  R860 "BEFORE FL2 LANDS", three figures     <- repair, PREDATES FL2
+       10-19 d3306a6  FL2(a) member topology                     <- NEW ITEM 1
+       10-19 cadbbf7  FL2(c) headings as a declared list         <- NEW ITEM 2
+       10-19 e945b13  R866                                       <- repair TO item 2
+       10-19 ff48a6d  R872/R873/R874                             <- repair TO that repair
+       10-19 154261e  R877                                       <- repair TO that repair
+       10-25 ba0ce03  the marker and the guard                   <- apparatus
+       -- nine commits: 2 items, 3 repairs to them, 3 repairs to other step-3 findings (two
+          of which are EARLIER in history than the items), 1 apparatus.
+cmd    the two figures in the same table that DO reproduce
+out    wc -l scripts/measure/f6a_required_section.py scripts/measure/f6b_truss_sizing.py
+         -> 581 + 685 = 1266                                      EXACT
+       grep -n "| total |" results/R1/example/report.md
+         -> results/R1/example/report.md:89 carries | total | 97.27 |   EXACT
+judge  **it does not block. THE SILENTLY WRONG RESULT IT PRODUCES: none in this repository**
+       -- the checkpoint report is a message and not a file, so neither FR1's head nor EZ0's
+       surface reaches it, and I cannot review a document that is not in the tree. It is on
+       the list because the number is the stated basis for the x1.5 loading and one command
+       refutes it. **My schedule reading is below and it does not turn on this figure.**
+```
+
+**Closed when** the figure is re-derived from the log at the commit it is published at, or the
+sentence states what it actually counts: repairs TO the two items, 3; repair commits in the
+step, 6 of 9.
+
+---
+
+**R891. (DOES NOT BLOCK -- ledgered) REPLAY 1 IN `f9954f7`'s MESSAGE -- "(empty) exit=0 <- THIS
+TREE CLEARS" -- IS FALSE AT HEAD. AT `cd126a6` THE HOOK BLOCKS, AND IT BLOCKS CORRECTLY.**
+
+```
+claim  the paste was taken before a later edit in the same turn changed its subject
+cmd    the hook, at cd126a6, clean tree
+out    BLOCK "floatfea/, tests/, or docs/reports/R1/step-3.md changed since the verdict at
+       154261e..."  -- because `ba0ce03`, the NEXT commit, changed
+       `tests/test_report_carried.py`, which is inside the gate's own pathspec
+rule   CP3 -- a figure is pasted from the run that produced the artifact it is pasted into,
+       and the pasting is the LAST edit; if an edit follows the paste, the paste is void
+judge  **it does not block. THE SILENTLY WRONG RESULT IT PRODUCES: none** -- and the state
+       that makes the figure false is itself the gate working: a tests/ change since the last
+       verdict blocks until a new verdict covers it. The SUBSTANCE of replay 1 -- the deadlock
+       is gone and the gate is clearable -- I verified independently by committing a step-3
+       verdict at cd126a6 and watching it clear. The figure, not the finding.
+```
+
+**Closed when** the replay is re-run at the tip of the group it describes, or the message says
+which commit each output was taken at.
+
+---
+
+**R892. (DOES NOT BLOCK -- ledgered) "AND THE CONTROL, ONE VARIABLE MOVED -- THE OLD HOOK ON
+THIS SAME TREE" MOVED TWO. THE STASH RESTORED THE OLD HOOK AND THE OLD MARKER TOGETHER.**
+
+```
+claim  the control's output is the marker-2 horn, not the one-variable horn
+cmd    old hook (git show 5ca5496:.claude/hooks/require-verdict.sh), marker left at 3 --
+       ONE variable moved
+out    BLOCK "...step 3 of R1 is under execution and docs/reports/R1/step-3.md does not
+       exist." -- the OUTRIGHT REFUSAL horn
+cmd    old hook, marker reverted to 2 -- TWO variables moved, which is what the stash did
+out    BLOCK "...docs/reports/R1/step-2.md changed since the verdict at 8542d79..."
+       -- the turn's stated output, reproduced exactly
+rule   BG0 -- the cell is one variable moved, everything else held
+judge  **it does not block. THE SILENTLY WRONG RESULT IT PRODUCES: none**, and the deadlock is
+       established either way: both horns are described in the commit's prose and I measured
+       both. The label is what is wrong, and labelling a two-variable cell as one-variable is
+       the specific thing BG0 was earned on.
+```
+
+**Closed when** the control says which two states it compares, or is re-run with the marker
+held.
+
+---
+
+**R893. (DOES NOT BLOCK -- ledgered) ONE LIVE SITE STILL STATES THE PREMISE FT0 RETIRED AS A
+RULE, AND NO LIVE PLAN STATES THE RULE THAT REPLACED IT.**
+
+```
+claim  a reader who finds the convention before finding the hook finds the retired version
+cmd    grep -rn "advanced in the commit" (five live sites, classified)
+out    docs/milestones/F2.md:22 -- "**It is advanced in the commit that adds the next step's
+       report, not before.**"   <- stated as a RULE, in a plan
+       docs/milestones/F6.md:145, docs/reports/F6/step-1.md:22 <- closed milestones' records
+       the hook and the guard <- the new comments, quoting it as RETIRED (correct)
+cmd    does the LIVE plan say what the rule is now?
+out    docs/milestones/R1.md:5-6 -- the FB4 comment explains how the marker ARRIVED, not when
+       it advances. grep -c "FT0" docs/milestones/R1.md -> 0
+rule   CW0; and FP0 -- plans cite the directive files rather than paraphrasing them
+judge  **it does not block. THE SILENTLY WRONG RESULT IT PRODUCES: none.** F2 is closed and
+       its plan is a record; the gap that matters is the live one -- R1's plan carries a
+       marker at a step with no report and nothing beside it says that is now legal.
+```
+
+**Closed when** `docs/milestones/R1.md` names FT0 beside the marker (one line), and F2.md's
+sentence is marked as the convention of its own milestone.
+
+---
+
+**R894. (DOES NOT BLOCK -- ledgered) R1's STEP-3 GATE ROW DOES NOT CARRY FT2's ITEMS 6 AND 7,
+AND THE STEP WILL BE CLOSED AGAINST THAT ROW.**
+
+```
+claim  the plan's step-3 gate is now a strict subset of what step 3 must build
+cmd    docs/milestones/R1.md:352-358, the step 3 row
+out    it names: topology with the star default; the sizing analyses re-solving; optional
+       analyses off by default; headings as a list with export refusing uncovered ones; the
+       band check per case. **It does not name the multi-npz heading envelope (FT2.6) or
+       R867-R869's eight topologies (FT2.7).**
+cmd    grep -c "FT2\|FT0\|FT1" docs/milestones/R1.md
+out    0
+rule   FP0 -- "Plans and reports cite those files rather than paraphrasing them"; and R870,
+       which is this same shape with the subset on the other side
+judge  **it does not block. THE SILENTLY WRONG RESULT IT PRODUCES: none.** It is on the list
+       because a step's closure is judged against its gate row, and two of the five remaining
+       items are not in it. One line citing `docs/directives/FT.md` closes it.
+```
+
+**Closed when** the step-3 row cites FT2's list, or the plan is re-locked with it (DK0: a
+re-lock does not restart the round count, and this step has spent none of its three).
+
+---
+
+**One criterion observation, not a finding, said once.** The predicate reads "a finding or a
+site of **the newest verdict**". 67 of this round's 299 reds name findings of EARLIER
+unanswered verdicts (R846, R851, R853, R857-R860, R866, R873, R875), because the guard
+parametrises over every unanswered finding in the file rather than over the newest round. My
+predecessor read limb one as "the findings of verdicts with no answering report revision" and
+I followed that reading, because the CAUSE is identical per id and EG3(i) asks for the cause.
+A literal reading would make 67 reds blocking at every boundary, which cannot be the
+intention. **If that reading is wrong, it is a criterion question for Xabier and not a round.**
+
+## CI at the reviewed commit: the run EXISTS, the ladder is GREEN, the guards step is RED
+
+**`gh run list --commit cd126a6` returns `[]` and the run EXISTS -- I did not take the empty
+result for an unavailable check (CK2).** `gh run list -L 5` gives
+`headSha cd126a65ffdc7b84d419922e3f54272d1ff0b7b5, workflowName CI`, run id **40251519070**,
+with a runner, real steps and real durations, so CK2's third state does not apply. **It was
+`in_progress` when I began and `completed / failure` when I read it, and I waited rather than
+recording a conclusion I had not seen** -- which is the half my predecessor could not finish.
+
+```
+job  the verification ladder      SUCCESS   (rungs 1, 2, 3, 4, 5 and 6 all SUCCESS)
+job  lint, unit and guards        FAILURE
+     actionlint SUCCESS / ruff SUCCESS / black --check SUCCESS / mypy SUCCESS /
+     unit tests SUCCESS / guards and meta-tests FAILURE
+     -- every step RAN. Nothing was skipped behind an earlier red, which is what CZ1 (iii)
+        exists to see, and FP1's CI-only types-PyYAML red has stayed fixed.
+job  CI determinism -- leg        skipped
+job  CI determinism -- ten legs   skipped
+```
+
+**And the previous commit's run, which my predecessor could only record as unfinished:** run
+39376665176 at `154261e` concluded **failure**, in the same `guards and meta-tests` step, with
+the ladder green. The state has not changed shape between the two commits; the COUNT has.
+
+CI: `299 failed, 1076 passed, 1 skipped in 663.08s` (305 FAILED lines, 299 unique -- three ids
+appear three times each in the fetched log). Mine: `299 failed, 3647 passed, 1 skipped in
+1033.69s`. **The two agree on 299 and on the per-test breakdown**, which is also the control
+saying my probes did not leak: every probe ran in a worktree I then deleted, and the main
+tree's `git status --porcelain` is empty.
+
+The 299, each id tested against the FS1 predicate AS NARROWED BY FT1, per id and not by family:
+
+```
+235  test_every_named_site_is_touched_or_declared[<finding>-<path>[:line]]   limb one. Every
+       finding prefix lies in R845..R886 -- the findings of step 3's seven interim verdicts,
+       none of which has an answering report revision. Zero prefixes outside that range,
+       checked mechanically.
+ 42  test_the_report_carries_the_finding[R845..R886]     limb one -- each NAMES a finding
+  1  test_the_CI_section_is_about_the_REVIEWED_commit    limb one -- names 154261e, the
+       newest verdict's reviewed commit
+  1  test_the_Carried_table_is_what_the_generator_produces          limb one -- "47 generated
+       rows are not in the report's Carried section", keyed on a table that cannot exist yet
+  1  test_the_generator_would_catch_a_row_under_the_wrong_number    limb one, that generator's
+       own control, same premise
+  1  test_the_report_carries_a_WHOLE_SUITE_count         LIMB TWO under FT1 -- its subject IS
+       the commit carrying it: suite_count.py measures a clean worktree AT a commit, so the
+       line naming a sha cannot be inside that sha
+  1  test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW      LIMB TWO under FT1 -- same shape: no
+       run exists for a commit before it is pushed
+  2  test_the_guard_survives_the_state[baseline] and
+       [verdict_amended_after_the_commit_the_report_answers] -- both "expected a clean run",
+       which no state can get on a tree carrying 282 boundary reds. Boundary consequence.
+ 15  test_the_guard_survives_the_state[...]  **FAIL BOTH LIMBS. CZ1 (iv). THIS IS R887.**
+       FileNotFoundError in `_build` on docs/reports/R1/step-3.md, a path the newest verdict
+       does not name (0 occurrences, measured).
+---
+299  284 with an exit, 15 WITHOUT. **FT1's narrowing orphans none of the 284** -- the two
+     limb-two ids both have their own commit as subject, so the direction that could have
+     cost something costs nothing (EH4 applied to a criterion edit).
+```
+
+## Corpus (EG4(e))
+
+**THE PAUSE HELD. I added no corpus entries and committed nothing to `tests/corpus/`.**
+Batches are paused until 28 October except mutation work on F4's load-mapping gate and EB6's
+label-provenance gate; this diff touches neither.
+
+**What I ran instead -- the recorded substitute, and the grid half produced the blocking
+finding:**
+
+* **A continuum grid over the parameter space the decision rule guards.** The decision rules
+  here are the hook's refusal and the guard's assertion, and their parameter space is
+  (marker value) x (which of the two files exist) x (which version of the rule). I ran it:
+  markers 2, 3, 4 and 9; report-only, review-only, both, neither; the shipped hook and
+  `5ca5496`'s; the shipped assertion and `5ca5496`'s; with and without a committed verdict at
+  cd126a6; the planted report tracked and untracked; and the milestone letter swapped R1 ->
+  F7 with everything else held. **That grid produced R887, R888, R891 and R892.** Twelve of
+  its cells are pasted above with their outputs.
+* **A regeneration check on a published deliverable: NOT RUN, and the premise is why.**
+  `git diff 5ca5496..HEAD` over `floatfea`, `scripts` and `results` is empty on all three, so
+  a regeneration cannot differ from the committed artifacts by construction. I verified the
+  one deliverable figure the checkpoint cites instead (`results/R1/example/report.md:89`,
+  exact). I record the substitution rather than claiming a run I did not make.
+* **Twenty-three-state mutation work over the step's own apparatus, four full harness runs**
+  (marker 3, marker 2, marker 3 with the probe repair, and the whole suite) -- the measured
+  pair and the repair demonstration under R887.
+
+Neither half would have come from reading the diff: the diff's configuration is the one the
+commit chose, and R887 lives in the one file the turn did not run.
+
+## Tolerances touched
+
+**None.** `git diff 5ca5496..HEAD -- floatfea/tolerances.py` is empty, and the diff contains
+no `floatfea/` change of any kind.
+
+**And nothing in the diff is a tolerance under another name**, which I checked rather than
+assumed: the hook change is a file-existence disjunction, the guard change is a set-membership
+disjunction, and the two documentation changes move no number. The only numerals in the diff
+are line counts and commit shas inside comments. No convergence threshold, no comparison
+epsilon, no "small number" guard, no factor introduced to make two numbers agree.
+
+## Next step opens when
+
+**This is a HOLD on step 3, which stays open. It is the eighth interim check and it counts
+against no round, so all three reviewed revisions remain available.**
+
+**R887 is answered in the NEXT commit** -- that is FF0's own wording for this class, not my
+preference -- together with **R888**, which is the same file and one character of glob. Both
+are one-line resolver repairs and neither is new apparatus. **The condition is measured, so
+there is nothing to interpret:** `tests/test_report_guard_states.py` runs with
+`grep -c FileNotFoundError` equal to `0` and a full-file count of `10 failed, 13 passed` or
+better, with the marker left at 3.
+
+**Then FL2, in FT2's order, and nothing in this list displaces it.** R881 goes IN the commit
+that builds FL2 item 3 and blocks there if item 3 ships without it. R882-R886 go in the next
+commit that touches `_validated_wave_basis`, or into the first reviewed revision as
+declarations of what was left and why. R867-R869 are FT2.7. R889-R894 are sentences and one
+plan line; the two worth doing before the checkpoint goes out are **R889** and **R890**,
+because both are in the account of the slippage.
+
+**R880 still waits**, and for the third round running it did not misdirect me: I ruled under
+`CLAUDE.md`'s predicate as FT1 narrowed it. Do not take it first.
+
+**What I did NOT ask for.** No new guard, scanner, meta-test, detector or report generator.
+R887 and R888 are repairs to existing apparatus under EK2; everything else is a sentence, a
+glob, or a plan line. `docs/milestones/F2a.md` is where anything larger goes.
+
+**Schedule, since FT3 asks for it at every reviewed revision and the turn asked me for a
+sentence on the x1.5.**
+
+**The loading is defensible as an average and it is on the wrong axis.** Three measurements:
+
+1. **The build was fast and so were the repairs.** FL2(a), FL2(c) and all three repairs to
+   them landed between 19:46 and 22:46 on 10-19 -- two items and three repairs in three hours,
+   with four interim reviews inside the same window.
+2. **The calendar cost was elsewhere.** `git log` shows no commit of any kind between
+   `5ca5496` (10-19 23:22) and `f39cbd6` (10-25 17:46): **six days, and FT0's deadlock sat
+   across all of them.** A repair-tail multiplier cannot model that, and x1.5 on 11 nominal
+   days reserves nothing for it. The schedule has no line for interim checks either, and step
+   3 has had eight.
+3. **The risk is concentrated in items 4 and 5, not spread.** Those two move
+   `scripts/measure/f6a_required_section.py` and `scripts/measure/f6b_truss_sizing.py` --
+   1266 lines, measured, the figure reproduces -- onto the production path, and
+   `scripts/measure/` is EZ0 surface: every number they publish becomes a number
+   `floatfea run` publishes, and FM0's re-solve loop changes those numbers. That is the one
+   remaining blocking head under FR1, and four consecutive rounds found their blocking finding
+   by regenerating a deliverable. **I would load 4 and 5 by more than x1.5, 3, 6 and 7 close
+   to nominal, and I would hold a day for the apparatus** -- this round is the second time in
+   step 3 that gating apparatus, not the element, took the round.
+
+**17 November is a credible date for the work. It is not credible for the work plus another
+six-day apparatus stall, and FT0 removes the specific stall that caused the last one.** I am
+not re-escalating: FR0 answered the escalation with "slip the date, keep the scope", the turn
+is reporting the trajectory to Xabier on the day it is known, and FT2.6 and FT2.7 are new
+scope added after 5 November was set -- which belongs in the checkpoint beside the date, and
+the turn says it is there.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 154261e77740692b08917a1ff89b5fdfc7e5ced5
 **Reviewed commit: `154261e77740692b08917a1ff89b5fdfc7e5ced5`.**
 Verdict: PASS
