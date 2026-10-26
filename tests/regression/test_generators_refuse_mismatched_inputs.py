@@ -666,3 +666,126 @@ def test_R969_a_DUPLICATED_period_is_refused(tmp_path: Path) -> None:
     assert proc.returncode != 0, (proc.stdout + proc.stderr)[-700:]
     assert "Declared more than once" in proc.stdout + proc.stderr
     assert not (out / "o.md").exists()
+
+
+def test_R976_a_DUPLICATED_utilisation_row_is_refused(tmp_path: Path) -> None:
+    """The R967 join compared a set; every published count reads the list.
+
+    R969's defect, one function away, inside the repair for R967. One committed row
+    repeated, forces and sidecar untouched:
+
+        member-stations checked : 33   (true 32)
+        in tension              : 16   (true 15)
+        over unity              : 5 of 33   (true 4 of 32)
+
+    numerator and denominator wrong in opposite directions, with
+    `platform:hub3_arm ROOT 16.2` ranked at BOTH #3 and #4 and `hub4:buoy11_arm ROOT`
+    pushed out of the published top ten, at exit 0.
+    """
+    out = _out_dir(tmp_path)
+    lines = UTIL.read_text(encoding="utf-8").splitlines(keepends=True)
+    body = [ln for ln in lines if not ln.startswith("#")]
+    assert len(body) > 2, "the utilisation CSV has no data rows to duplicate"
+    csv = tmp_path / "duplicated_util.csv"
+    csv.write_text("".join([*lines, body[3]]), encoding="utf-8")
+
+    proc = _run("f6_results_report.py", tmp_path, "--util", str(csv))
+    assert proc.returncode != 0, (
+        "a repeated member-station was accepted; it inflates both halves of "
+        "`over unity : N of M` and ranks one station twice (R976)."
+    )
+    assert "carries more than one row for" in proc.stdout + proc.stderr
+    assert not (out / "o.md").exists()
+
+
+def test_R976_a_UTILISATION_ROW_WITH_NO_FORCES_ROW_is_refused(tmp_path: Path) -> None:
+    """R967's condition (i) named EACH direction, and only one was held.
+
+    `_util_extra` -- a utilisation row for a member-station the forces table does not
+    screen -- was asserted by nothing.
+    """
+    out = _out_dir(tmp_path)
+    lines = UTIL.read_text(encoding="utf-8").splitlines(keepends=True)
+    body = [ln for ln in lines if not ln.startswith("#")]
+    invented = body[3].split(",")
+    invented[1] = "platform:not_a_member_arm"
+    csv = tmp_path / "extra_util.csv"
+    csv.write_text("".join([*lines, ",".join(invented)]), encoding="utf-8")
+
+    proc = _run("f6_results_report.py", tmp_path, "--util", str(csv))
+    assert proc.returncode != 0, (proc.stdout + proc.stderr)[-700:]
+    assert "no forces row" in proc.stdout + proc.stderr
+    assert not (out / "o.md").exists()
+
+
+def test_R976_a_UTILISATION_ROW_AT_A_WRONG_PERIOD_is_refused(tmp_path: Path) -> None:
+    """R967's `_wrong_period` arm, which was also held by nothing."""
+    out = _out_dir(tmp_path)
+    lines = UTIL.read_text(encoding="utf-8").splitlines(keepends=True)
+    rebased = []
+    for ln in lines:
+        if ln.startswith("#"):
+            rebased.append(ln)
+            continue
+        cols = ln.split(",")
+        if cols[3] not in ("period_full_s", ""):
+            cols[3] = "99"
+        rebased.append(",".join(cols))
+    csv = tmp_path / "wrong_period_util.csv"
+    csv.write_text("".join(rebased), encoding="utf-8")
+
+    proc = _run("f6_results_report.py", tmp_path, "--util", str(csv))
+    assert proc.returncode != 0, (proc.stdout + proc.stderr)[-700:]
+    assert "no `total_instant` row for" in proc.stdout + proc.stderr
+    assert not (out / "o.md").exists()
+
+
+def test_R977_a_SHIFTED_PERIOD_SET_does_not_publish_the_reference_paragraph(
+    tmp_path: Path,
+) -> None:
+    """Both sides of the old predicate came from one argument's own default.
+
+    `_reference` compared `args.provenance`'s height and periods against that argument's
+    DEFAULT, re-read from a hard-coded path -- so on the default invocation it was
+    `x == x`, and the reviewer ablated it to a byte-identical document. The consequence it
+    let through, measured through the real generator: the sidecar regenerated to
+    `[10, 12.5, 14, 15, 16.2, 25]` with one shipped `export_f4_dynamic_inputs.py --period`,
+    an agreeing forces table and the height unchanged, published the hand-written
+    paragraph naming `T = 20 s` TWICE over tables that both print `25.0`.
+
+    **Which sea state a directive ruled on is a property of the directive**, so the
+    reference is declared and cited rather than read from an input that cannot answer the
+    question about itself.
+    """
+    out = _out_dir(tmp_path)
+    side = _sidecar(tmp_path, periods_full_s=[10.0, 12.5, 14.0, 15.0, 16.2, 25.0])
+
+    # the forces table relabelled to agree, so both joins pass and the predicate is the
+    # only thing under test
+    lines = FORCES.read_text(encoding="utf-8").splitlines(keepends=True)
+    comments = [ln for ln in lines if ln.startswith("#")]
+    body = [ln for ln in lines if not ln.startswith("#")]
+    head, rows = body[0], body[1:]
+    shifted = []
+    for r in rows:
+        cols = r.split(",")
+        if cols[3] == "20":
+            cols[3] = "25"
+            r = ",".join(cols)
+        shifted.append(r)
+    forces = tmp_path / "shifted_forces.csv"
+    forces.write_text("".join(comments) + head + "".join(shifted), encoding="utf-8")
+
+    proc = _run(
+        "f6_results_report.py", tmp_path, "--provenance", str(side), "--forces", str(forces)
+    )
+    assert proc.returncode == 0, (proc.stdout + proc.stderr)[-700:]
+    written = (out / "o.md").read_text(encoding="utf-8")
+
+    assert "not the reference sea state" in written, (
+        "a run whose period set is not the one FA0 and EZ2 ruled on published the "
+        "paragraph written for that set (R977)."
+    )
+    assert (
+        "T = 20 s" not in written
+    ), "the hand-written paragraph names a period this run does not record."

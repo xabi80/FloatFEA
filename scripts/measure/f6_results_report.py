@@ -612,7 +612,30 @@ def main(argv: list[str] | None = None) -> int:
         for r in forces
         if r.get("basis") == "total_instant" and r.get("station") in STATIONS_CHECKED
     }
-    _util_got = {(r["member"], r["station"]) for r in util}
+    # **R976: THE JOIN COMPARED A SET AND THE REPORT COUNTS THE LIST** -- R969's defect,
+    # one function away, in the repair for R967. One committed row repeated, forces and
+    # sidecar untouched:
+    #
+    #   member-stations checked : 33   (true 32)
+    #   in tension              : 16   (true 15)
+    #   over unity              : 5 of 33   (true 4 of 32)
+    #
+    # numerator and denominator wrong in opposite directions, with
+    # `platform:hub3_arm ROOT 16.2` ranked at BOTH #3 and #4 and
+    # `hub4:buoy11_arm ROOT` pushed out of the published top ten, at exit 0.
+    # `len(util)` and `sorted(util)[:10]` read the list, so the list is what is checked.
+    _util_rows = [(r["member"], r["station"]) for r in util]
+    _util_dupes = sorted({k for k in _util_rows if _util_rows.count(k) > 1})
+    if _util_dupes:
+        raise SystemExit(
+            f"floatfea: {args.util.name} carries more than one row for "
+            f"{_util_dupes}. Every published count and the ranked top ten are taken from "
+            f"the row LIST, so a repeated member-station inflates both the numerator and "
+            f"the denominator of `over unity : N of M`, ranks one station twice and "
+            f"pushes another out of the top ten -- at exit 0, with every other join green "
+            f"(R976). Re-run `api_wsd_utilisation.py` against this forces table."
+        )
+    _util_got = set(_util_rows)
     _util_absent = sorted(_util_expected - _util_got)
     _util_extra = sorted(_util_got - _util_expected)
     if _util_absent or _util_extra:
@@ -747,31 +770,27 @@ def main(argv: list[str] | None = None) -> int:
     # height is READ from the committed sidecar -- the one `--provenance` defaults to --
     # so there is no literal here and no second definition to drift. The four membership
     # sets stay computed, because the generated paragraph states them.
-    _ref_h = float(
-        json.loads(
-            (ROOT / "data" / "f4" / "dynamic_inputs.provenance.json").read_text(encoding="utf-8")
-        )["run"]["wave_height_full_m"]
-    )
-    # **R968: THE HEIGHT GATE IS ALWAYS SATISFIED, so it gated nothing.** `h_full` comes
-    # from a module-constant product in this pipeline, so `h_full == _ref_h` is true for
-    # every npz the pipeline produces -- and the branch has no reference to the period
-    # sets, so all 63 non-empty subsets reached the hand-written paragraph. Measured at
-    # two AGREEING pairs at the committed height, both passing every join:
+    # **R977: BOTH SIDES OF MY PREDICATE CAME FROM THE SAME ARGUMENT'S DEFAULT.** The
+    # left side was `args.provenance`'s height and period list; the right side re-read
+    # that argument's OWN DEFAULT from a hard-coded path. On the default invocation the
+    # predicate is `x == x`, and the reviewer ablated it: removing the conjunct gave a
+    # byte-identical document. Measured consequence through the real generator -- the
+    # committed sidecar regenerated to `[10, 12.5, 14, 15, 16.2, 25]` with one shipped
+    # `export_f4_dynamic_inputs.py --period`, forces agreeing, height unchanged: EXIT 0,
+    # the reference branch, the hand-written paragraph naming `T = 20 s` TWICE over a band
+    # table and a response table that both print `25.0`.
     #
-    #   [10, 12.5, 14, 15]      -> EXIT 0, 461 lines, four-row table, two in band
-    #   [10, 12.5, 14, 15, 20]  -> EXIT 0, 463 lines, five rows,     two in band
-    #
-    # both publishing "the largest of THE SIX" and "the FOUR periods EZ2 admits: the
-    # THREE in band". The paragraph is a set of claims about a height AND a case list, so
-    # the predicate is both. The reference period set is read from the committed sidecar
-    # beside the height, so there is still no literal.
-    _ref_periods = sorted(
-        float(x)
-        for x in json.loads(
-            (ROOT / "data" / "f4" / "dynamic_inputs.provenance.json").read_text(encoding="utf-8")
-        )["run"]["periods_full_s"]
+    # **WHICH SEA STATE A DIRECTIVE RULED ON IS A PROPERTY OF THE DIRECTIVE**, not of any
+    # file the caller passes, so it is declared here and cited. That is not R902's defect
+    # returning: R902 was a literal standing in for a RECORDED quantity, where the band
+    # must track whatever height this run carries. This is the opposite -- the question is
+    # whether this run is the one FA0 and EZ2 ruled about, and no input can answer that
+    # about itself.
+    FA0_EZ2_REFERENCE_H_M = 24.2
+    FA0_EZ2_REFERENCE_PERIODS_S = (10.0, 12.5, 14.0, 15.0, 16.2, 20.0)
+    _reference = (
+        h_full == FA0_EZ2_REFERENCE_H_M and tuple(sorted(_recorded)) == FA0_EZ2_REFERENCE_PERIODS_S
     )
-    _reference = h_full == _ref_h and sorted(_recorded) == _ref_periods
     # **AND REFUSING WAS THE WRONG ANSWER, WHICH MY OWN R902 TEST IS WHAT SAID SO.**
     # My first repair ASSERTED these premises and raised when they failed. That made the
     # generator unable to run at any sea state but one -- which destroys the property
