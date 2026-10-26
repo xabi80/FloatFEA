@@ -552,3 +552,100 @@ def test_R877_the_READER_ITSELF_validates_not_only_the_helper(tmp_path: Path) ->
     # AND A MISSING SIDECAR IS STILL NOT RECORDED rather than an error (FL1(a)).
     sidecar.unlink()
     assert exported_wave_basis(npz) == {}
+
+
+# --------------------------------------------------------------- R919 / R908: the scale
+#
+# `exported_froude_lambda` is a READER. It reports WHERE it found a value and validates
+# nothing about WHAT it found, and R906's commit message called it "the validated door",
+# which it is not. `validated_export_scale` is the resolver every PUBLISHING path uses.
+
+
+def _pair(tmp: Path, npz_lam, side_lam) -> Path:
+    """A synthetic npz and sidecar, each optionally recording a scale."""
+    import json as _json
+
+    import numpy as np
+
+    npz = tmp / "x.npz"
+    arrays: dict[str, object] = {"periods_full_s": np.array([12.5])}
+    if npz_lam is not None:
+        arrays["froude_lambda"] = np.array(npz_lam)
+    np.savez(npz, **arrays)
+    run: dict[str, object] = {}
+    if side_lam is not None:
+        run["lambda"] = side_lam
+    npz.with_suffix(".provenance.json").write_text(_json.dumps({"run": run}), encoding="utf-8")
+    return npz
+
+
+@pytest.mark.parametrize(
+    ("npz_lam", "side_lam"),
+    [(50.0, 25.0), (25.0, 50.0), (1.0, 1000.0), (50.0, 50.000001)],
+)
+def test_R908_the_two_RECORDS_of_the_scale_must_agree(
+    tmp_path: Path, npz_lam: float, side_lam: float
+) -> None:
+    """FN0's PREFERENCE says which to read; it is not a licence to publish from one.
+
+    `exported_froude_lambda` prefers the npz key deliberately -- a sidecar can be
+    separated from its npz by a copy and the key cannot -- and
+    `test_FN0_the_npz_key_is_PREFERRED_over_the_sidecar` gives them different values on
+    purpose to prove which wins. That test stays green: this is a different question.
+
+    Two `scripts/measure/` readers were resolving this quantity for the same file from
+    DIFFERENT sources, and both publish it -- the CSV header states the scale and the
+    report prints it. Measured at `run.lambda = 25.0`: 2402 diff lines in
+    `docs/F4_member_forces.csv` and governing ROOT stress `455.7 -> 275.3 MPa`, at exit 0.
+
+    The comparison is `!=`, the form `run()` already uses at the config/npz door. Give it
+    a margin and it becomes a tolerance under another name.
+    """
+    from floatfea.run.pipeline import validated_export_scale
+
+    with pytest.raises(ConfigError) as caught:
+        validated_export_scale(_pair(tmp_path, npz_lam, side_lam))
+    assert "scale disagreement" in str(caught.value), str(caught.value)
+
+
+@pytest.mark.parametrize("lam", [0.5, 1.0e-3, 1.0e6, 1.0e9, 0.999, 1000.1])
+def test_R919_a_scale_outside_the_DECLARED_domain_is_refused(tmp_path: Path, lam: float) -> None:
+    """One domain per quantity, whichever side of the I/O boundary it arrives from.
+
+    `froude_factor("force", lam)` refuses `0.0`, a negative and a non-finite and ADMITS
+    `0.5`, `1e-3`, `1e6` and `1e9` -- four decades beyond the range a CONFIGURED
+    `floatsim.froude_lambda` is held to by `_checked`. Nothing applied `FROUDE_LAMBDA` to
+    the value read out of a file, so every force and stress published downstream carried
+    whatever was there.
+    """
+    from floatfea.run.pipeline import validated_export_scale
+
+    with pytest.raises(ConfigError) as caught:
+        validated_export_scale(_pair(tmp_path, lam, lam))
+    assert "outside the admissible range" in str(caught.value), str(caught.value)
+
+
+@pytest.mark.parametrize("lam", [1.0, 50.0, 1000.0])
+def test_R919_the_domain_is_inclusive_and_the_committed_scale_passes(
+    tmp_path: Path, lam: float
+) -> None:
+    """`FROUDE_LAMBDA` is `(1.0, 1000.0)` inclusive; 50 is the committed export."""
+    from floatfea.run.pipeline import validated_export_scale
+
+    assert validated_export_scale(_pair(tmp_path, lam, lam)) == lam
+
+
+def test_R919_a_file_recording_NO_scale_is_refused_not_defaulted(tmp_path: Path) -> None:
+    """FN0: a scale nobody declared cannot be inferred, and is not assumed here either."""
+    from floatfea.run.pipeline import validated_export_scale
+
+    with pytest.raises(ConfigError) as caught:
+        validated_export_scale(_pair(tmp_path, None, None))
+    assert "no way to know what scale" in str(caught.value), str(caught.value)
+
+
+def test_R919_the_SIDECAR_alone_still_answers(tmp_path: Path) -> None:
+    """FN0's fallback is intact: the sidecar answers when the npz carries no key."""
+    from floatfea.run.pipeline import validated_export_scale
+
+    assert validated_export_scale(_pair(tmp_path, None, 50.0)) == 50.0

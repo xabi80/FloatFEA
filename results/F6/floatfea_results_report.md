@@ -123,7 +123,8 @@ below is made on it; the stresses that are checked in s.7 are per-instant.
 **`T = 10 s` exceeds the deep-water breaking steepness**, so it cannot describe a
 real wave of this height. It is reported as sensitivity only, and it is also the
 largest of the six on the bound above. `T = 20 s` is outside the band at the long
-end. **The governing basis is the four in-band periods.** `T = 12.5 s` sits just
+end. **The governing basis is the four periods EZ2 admits: the three in band, and
+`T = 12.5 s`, which is NOT in band.** It sits just
 below `sqrt(6.5 H)` by the offset in the block and is kept as the band's lower
 edge: across the band the bound falls monotonically as `T` rises, so the lower edge
 is what governs and this case is the one that represents it. The monotonicity holds

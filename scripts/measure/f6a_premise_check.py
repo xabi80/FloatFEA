@@ -61,7 +61,7 @@ from floatfea.basis import E_STEEL, FY_S355  # noqa: E402
 from floatfea.checks.api_wsd import CM_JOINT_TRANSLATION, check_member  # noqa: E402
 from floatfea.model.material import Section  # noqa: E402
 from floatfea.model.platform import build_superstructure  # noqa: E402
-from floatfea.run.pipeline import exported_froude_lambda  # noqa: E402
+from floatfea.run.pipeline import validated_export_scale  # noqa: E402
 
 
 def _load(name: str, path: Path):
@@ -182,9 +182,11 @@ def dynamic_half(shipped, sized, answers: list[dict]) -> dict[str, object]:
     # sidecar's `run.lambda` second, so the scale is the one THIS FILE was exported at --
     # which is the scale its `lam` multipliers are already in. A constant in a sibling
     # script was never that, and FN0 is the finding that said so.
-    lam_scale, lam_where = exported_froude_lambda(fdr.NPZ)
-    if lam_scale is None:
-        raise SystemExit(f"floatfea: {fdr.NPZ.name}: {lam_where}. The scale is not assumed.")
+    # R919: the RESOLVER, not the reader. `exported_froude_lambda` reports where it read
+    # a value and validates nothing about it, so routing this line onto it in R906 left
+    # `froude_lambda = 25.0` -- legal inside `FROUDE_LAMBDA` -- publishing 78 changed
+    # lines with the premise still reading HELD and every utilisation some 40% low.
+    lam_scale = validated_export_scale(fdr.NPZ)
     deck_a = [str(x) for x in raw["case0/joint_body_a"]]
     deck_b = [str(x) for x in raw["case0/joint_body_b"]]
     by_answer = {a["group"]: a for a in answers}

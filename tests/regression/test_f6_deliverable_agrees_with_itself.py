@@ -497,3 +497,45 @@ def test_R902_NEITHER_generator_carries_a_module_wave_height_literal() -> None:
                 f"`wave_basis_from_sidecar`; a constant here overrides the record "
                 f"silently, which is R902 and, before it, R805/FN0."
             )
+
+
+def test_R919_every_PUBLISHING_reader_resolves_the_scale_through_the_VALIDATOR() -> None:
+    """The call site, not the helper (FT2's rule, and R906's lesson one level up).
+
+    R906 moved `f6a_premise_check.py:185` off a sibling script's module constant and onto
+    `exported_froude_lambda`, and the commit called that "the validated door". It is the
+    FN0 READER: it reports where it found a value and validates nothing about it. So the
+    repair for one finding created another at the same line, which is the fourth time in
+    this step that a defect arrived inside a repair.
+
+    The resolver cells in `tests/unit/test_headings_and_bem_coverage.py` are all green
+    with these call sites pointing back at the reader -- that is exactly the hole R866,
+    R877, R881 and R896 each shipped through. This asserts the SITES.
+
+    Measured by hand at the call site, with the npz and sidecar restored byte-identical
+    afterwards (`git status --porcelain data/` empty, sha256 unchanged): an npz at
+    `froude_lambda = 25.0` carrying a MATCHING declared sha -- the state a real re-export
+    produces, and the one needed to get past `f4_dynamic_residual`'s own sha guard --
+    gives EXIT=1, `ConfigError: ... scale disagreement ... The npz key says 25 ... records
+    `run.lambda = 50``, and no artifact written.
+    """
+    import ast
+
+    for name in ("f6a_premise_check.py", "member_forces_table.py"):
+        src = (ROOT / "scripts" / "measure" / name).read_text(encoding="utf-8")
+        called = {
+            node.func.id
+            for node in ast.walk(ast.parse(src))
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        }
+        assert "validated_export_scale" in called, (
+            f"{name} does not CALL `validated_export_scale`. Every reader that publishes "
+            f"a force, a stress or a scale resolves it through the validator: the range "
+            f"is applied to the npz key and the two records of the scale must agree."
+        )
+        assert "exported_froude_lambda" not in called, (
+            f"{name} calls `exported_froude_lambda`, which is the FN0 READER and "
+            f"validates nothing about the value it returns. That is R919: the same line "
+            f"was routed onto it by R906's repair, and `froude_lambda = 25.0` then "
+            f"published 78 changed lines with the premise still reading HELD."
+        )

@@ -129,7 +129,10 @@ from floatfea.post.forces_table import (  # noqa: E402,F401
 from floatfea.post.member_forces import (  # noqa: E402
     COMPONENTS,
 )
-from floatfea.run.pipeline import wave_basis_from_sidecar  # noqa: E402
+from floatfea.run.pipeline import (  # noqa: E402
+    validated_export_scale,
+    wave_basis_from_sidecar,
+)
 from floatfea.solve.inertia_relief import solve_inertia_relief  # noqa: E402,F401
 
 # R902: THE SCALE AND THE HEIGHT COME FROM THE SIDECAR, NOT FROM A LITERAL HERE.
@@ -158,8 +161,10 @@ GOVERNING_PERIODS = (12.5, 14.0, 15.0, 16.2)
 """EZ2(a): the cases the GOVERNING envelope is taken over.
 
 **EZ2 corrects the case selection, and it is Xabier's correction of his own basis.** For
-`H = 24.2 m` the associated-period range by DNV practice is
-`sqrt(6.5 H) <= T <= sqrt(11 H)`, which is `12.542 .. 16.316 s`. The two cases outside it
+At the recorded height the associated-period range by DNV practice is
+`sqrt(6.5 H) <= T <= sqrt(11 H)`; the wave-basis table in the summary prints the edges it
+was computed at, and no number for them is written here (R907 -- a literal here was false
+at every height but one). The two cases outside it
 are reported separately and are not allowed to govern:
 
     T = 10 s   H/lambda = 0.1550  -- EXCEEDS the deep-water breaking steepness 1/7 = 0.1429
@@ -284,12 +289,46 @@ def main(argv: list[str] | None = None) -> int:
     # `floatfea run` cannot disagree about the same recorded sidecar.
     _basis = wave_basis_from_sidecar(args.provenance)
     h_full = float(_basis["wave_height_full_m"])
-    lam_scale = float(_basis["lambda"])
 
     import f4_dynamic_residual as fdr
 
     inp = fdr.load()
     raw = np.load(fdr.NPZ, allow_pickle=False)
+    # R908: ONE RESOLVED SCALE, not the sidecar's copy of it. This read was
+    # `float(_basis["lambda"])`, which made a published CSV's Froude scale the sidecar's
+    # `run.lambda` with nothing comparing it against the npz's own key -- 2402 diff lines
+    # and governing ROOT stress 455.7 -> 275.3 MPa at `run.lambda = 25.0`, at exit 0.
+    lam_scale = validated_export_scale(fdr.NPZ)
+    # R907: THE CAVEAT BLOCK STATES WHICH PERIODS ARE WHERE, AT ONE HEIGHT. Two entries
+    # name `H = 24.2 m`, `sqrt(6.5*H) = 12.542 s` and the exact governing set, and they
+    # are published verbatim into the summary. R902 made the band track the recorded
+    # height and did not touch them, so at another height the caveats contradict the
+    # wave-basis table printed a few lines below them. The premises are asserted and the
+    # generator refuses, rather than a published caveat being false; generating the
+    # caveat text from the computed sets is FT2.6's business, since FT2.6 is what
+    # produces a sidecar at another sea state (FS3 already queues the caveat record).
+    # NO HEIGHT LITERAL IN THE CHECK EITHER. My first version of this assertion was
+    # `abs(h_full - 24.2) > 0.0` -- exact equality written in the shape of a tolerance,
+    # against a hardcoded height, in the generator R902 had just removed a hardcoded
+    # height from. What the check actually needs to know is whether the PUBLISHED caveat
+    # text still agrees with the computed band, so it asks that directly: the figures the
+    # caveats state must be the figures this run computes.
+    _lo, _hi = math.sqrt(6.5 * h_full), math.sqrt(11.0 * h_full)
+    _in = sorted(float(T) for T in inp.periods_full_s if _lo <= float(T) <= _hi)
+    _kept = sorted(set(GOVERNING_PERIODS) - set(_in))
+    _text = " ".join(LABELS)
+    _stated = (f"H = {h_full:g} m" in _text) and (f"= {_lo:.3f} s" in _text)
+    if not _stated or _kept != [12.5] or len(_in) != 3:
+        raise SystemExit(
+            f"floatfea: the caveat block states a height and an associated-period band "
+            f"verbatim, and they no longer match what this run computes. The recorded "
+            f"height is {h_full:g} m, giving a band of {_lo:.3f}..{_hi:.3f} s with "
+            f"{len(_in)} periods inside it and governing-but-outside={_kept}; the caveat "
+            f"text states {'a matching' if _stated else 'DIFFERENT'} figures. Those "
+            f"caveats are published verbatim into the summary, so the summary is not "
+            f"written rather than carrying a false one. Regenerate the caveat text from "
+            f"the computed sets (R907, FS3)."
+        )
     built = build_superstructure()
     by_name = {b.name: b for b in built.bodies}
 
@@ -480,7 +519,13 @@ def _write_summary(
         lines.append(f"| {period:g} | {lam:.1f} | {s:.4f} | {where} | {which} |")
     lines += [
         "",
-        "**`T = 12.5 s` sits `0.042 s` below `sqrt(6.5 x 24.2) = 12.542 s`, and FA0 RULES "
+        # R907: COMPUTED, NOT WRITTEN. The two figures here were literals -- `0.042 s`
+        # and `sqrt(6.5 x 24.2) = 12.542 s` -- so at any other recorded height this
+        # published sentence stated an offset and a band edge that the table two lines
+        # above contradicts. They are derived from `h_full` for the same reason the band
+        # itself now is (R902).
+        f"**`T = 12.5 s` sits `{math.sqrt(6.5 * h_full) - 12.5:.3f} s` below "
+        f"`sqrt(6.5 x {h_full:g}) = {math.sqrt(6.5 * h_full):.3f} s`, and FA0 RULES "
         "THAT IT STAYS.** `0.3%` below the bound is within the guidance's own precision, "
         "and the case was CHOSEN as the band's lower edge. The reason it matters is the "
         "direction: **the response rises as `T` falls across the band**, so the lower edge "

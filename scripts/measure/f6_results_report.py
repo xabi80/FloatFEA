@@ -441,7 +441,29 @@ def main(argv: list[str] | None = None) -> int:
         f"{'T_full [s]':>11s} {'H/lambda':>10s} {'vs 1/7':>9s} {'in band':>9s} "
         f"{'edge offset':>13s} {'basis':>14s}"
     )
-    for period in run["periods_full_s"]:
+    # R909: THE BAND TABLE'S ROWS AND THE RESPONSE TABLE'S MUST COME FROM THE SAME CASES.
+    # This loop ran over the SIDECAR's `periods_full_s` while the response table below is
+    # built from `forces`, which carries one row per case actually solved. A seventh
+    # recorded period the npz has no case for therefore published a full sea-state row --
+    # `25.0  0.0248  ok  no  53.227% long  sensitivity` -- above a six-row response table,
+    # at exit 0. A period with no case behind it has no steepness and no basis; printing
+    # one states a sea state that was never analysed.
+    #
+    # The comparison is a set difference, the form `run()` already uses at
+    # `pipeline.py:1123-1130` for the CONFIGURED list. Not a tolerance: give it any
+    # slack and a period with no case rejoins the table.
+    _solved = {float(r["period_full_s"]) for r in forces if r.get("period_full_s")}
+    _recorded = [float(x) for x in run["periods_full_s"]]
+    _orphans = sorted(set(_recorded) - _solved)
+    if _orphans:
+        raise SystemExit(
+            f"floatfea: {args.provenance.name} records periods {_orphans} s that "
+            f"{args.forces.name} has no solved case for; it carries {sorted(_solved)} s. "
+            f"The band table is published per recorded period and the response table per "
+            f"solved case, so a recorded period with no case behind it prints a sea state "
+            f"that was never analysed. Re-export, or re-run the member forces."
+        )
+    for period in _recorded:
         steep = _steepness(period, h_full)
         in_band = lo <= period <= hi
         if in_band:
@@ -474,10 +496,49 @@ def main(argv: list[str] | None = None) -> int:
         w(f"{period:11.1f} {peak_by_period[period] / 1e6:30.3f}")
     w("```")
     w("")
+    # R907: THE PARAGRAPH BELOW ASSERTS WHICH PERIODS ARE WHERE, AND THOSE ARE FACTS
+    # ABOUT ONE SEA STATE. R902 made the band track the recorded height; it did not touch
+    # this narrative, which names `T = 10 s` as the breaking case, `T = 20 s` as the only
+    # one past the long edge and "the four in-band periods" as the governing basis. At
+    # `H = 50 m` the same table reads `in band: no` on all four governing periods and
+    # `yes` on `T = 20 s`, so every clause here inverts while the sentences stay put --
+    # which is a wrong statement in a published deliverable, not a wrong number in it.
+    #
+    # The premises are asserted rather than the prose regenerated. Generating these
+    # sentences from the computed sets is the right end state and it is FT2.6's business,
+    # because FT2.6 is what produces a sidecar at another sea state; until then a height
+    # these sentences were not written for gets a REFUSAL, which is the one outcome that
+    # cannot mislead. No fallback and no warning: the deliverable is not written.
+    _breaking = sorted(T for T in _recorded if _steepness(T, h_full) > 1.0 / 7.0)
+    _past_long = sorted(T for T in _recorded if hi < T)
+    _in_band = sorted(T for T in _recorded if lo <= T <= hi)
+    _kept = sorted(set(GOVERNING_PERIODS) - set(_in_band))
+    # **AND THE FIRST VERSION OF THIS ASSERTION FAILED AT THE SHIPPED SEA STATE, WHICH IS
+    # HOW THE PROSE DEFECT TURNED OUT TO BE LIVE RATHER THAN LATENT.** I wrote
+    # `len(_in_band) != 4` from the sentence "the governing basis is the four in-band
+    # periods" and the control refused at H = 24.2 m, because the band is
+    # 12.5419 .. 16.3156 s and only THREE of the six periods are inside it. `T = 12.5 s`
+    # is 0.042 s BELOW the lower edge -- which the next sentence of the same paragraph
+    # says -- so "four in-band" contradicted its own next line in the published file.
+    # The sentence is corrected below and the deliverable regenerated; the premise checked
+    # here is the one that is true: four GOVERNING periods, three in band and one kept at
+    # the lower edge by FA0.
+    if _breaking != [10.0] or _past_long != [20.0] or len(_in_band) != 3 or _kept != [12.5]:
+        raise SystemExit(
+            f"floatfea: the narrative in s.4 states that `T = 10 s` is the breaking case, "
+            f"that `T = 20 s` alone sits past the long edge, and that the governing basis "
+            f"is three in-band periods plus `T = 12.5 s` kept at the lower edge by FA0. "
+            f"At H = {h_full} m the computed sets are breaking={_breaking}, past the long "
+            f"edge={_past_long}, in band={_in_band}, governing-but-outside={_kept}. Those "
+            f"sentences are facts about ONE sea state and would be false here, so the "
+            f"report is not written. Regenerate that paragraph from the computed sets "
+            f"(R907) before publishing at a height other than the one it describes."
+        )
     w("**`T = 10 s` exceeds the deep-water breaking steepness**, so it cannot describe a")
     w("real wave of this height. It is reported as sensitivity only, and it is also the")
     w("largest of the six on the bound above. `T = 20 s` is outside the band at the long")
-    w("end. **The governing basis is the four in-band periods.** `T = 12.5 s` sits just")
+    w("end. **The governing basis is the four periods EZ2 admits: the three in band, and")
+    w("`T = 12.5 s`, which is NOT in band.** It sits just")
     w("below `sqrt(6.5 H)` by the offset in the block and is kept as the band's lower")
     w("edge: across the band the bound falls monotonically as `T` rises, so the lower edge")
     w("is what governs and this case is the one that represents it. The monotonicity holds")

@@ -63,6 +63,7 @@ __all__ = [
     "build_model",
     "exported_froude_lambda",
     "run",
+    "validated_export_scale",
     "wave_basis_from_sidecar",
 ]
 
@@ -925,6 +926,85 @@ def wave_basis_from_sidecar(sidecar: Path) -> dict[str, Any]:
         if key in run_block
     }
     return _validated_wave_basis(present, sidecar)
+
+
+def validated_export_scale(npz: Path) -> float:
+    """The ONE scale a reader of this file may publish at (R919, R908).
+
+    **`exported_froude_lambda` IS A READER, NOT A CHECK, AND I MISTOOK IT FOR ONE.** R906
+    moved `f6a_premise_check.py` off a sibling script's module constant and onto that
+    function, and the commit message called it "the validated door". It is the FN0 door: it
+    reports WHERE it read a value and validates nothing about WHAT it read. Measured
+    through the real generator at `froude_lambda = 25.0`, legal inside `FROUDE_LAMBDA`:
+    78 diff lines in `results/F6a/premise_check.json`, `max_u_shipped` platform
+    `0.995780 -> 0.602180` and hubs `0.972580 -> 0.819713`, with `max_u_change` about
+    `1e-8` both times -- **so the premise still read HELD while every utilisation under it
+    was some 40% low.**
+
+    And the domain is not enforced anywhere downstream either:
+    `froude_factor("force", lam)` refuses `0.0`, a negative and a non-finite, and ADMITS
+    `0.5`, `1e-3`, `1e6` and `1e9` -- four decades outside the range the same quantity is
+    held to when it arrives from a configuration.
+
+    Two checks, both EXACT and neither a tolerance:
+
+    **(1) The declared domain, applied to the npz key.** `FROUDE_LAMBDA` is the range a
+    configured `floatsim.froude_lambda` is held to by `_checked`; a scale read out of a
+    file is the same quantity and gets the same range.
+
+    **(2) The two sources must AGREE when both carry one.** `exported_froude_lambda`
+    PREFERS the npz key, deliberately and by FN0 -- a sidecar can be separated from its
+    npz by a copy and the key cannot -- and
+    `test_FN0_the_npz_key_is_PREFERRED_over_the_sidecar` gives them different values on
+    purpose to prove which wins. That preference is about which to READ. It is not a
+    licence to PUBLISH from one while the other says something else, which is the state
+    R908 names: two `scripts/measure/` readers resolving the same quantity for the same
+    file from different sources. A disagreement means the pair has been separated or one
+    was edited, and that is precisely the state that must not reach a CSV silently.
+
+    So this function is additive: `exported_froude_lambda` keeps its contract and its
+    test, and everything that PUBLISHES comes through here. The comparison is `!=`, the
+    same form `run()` already uses at the config/npz door, and the period check below is a
+    set difference -- give either a margin instead and it becomes a tolerance under
+    another name, and goes to `tolerances.py` with a justification.
+    """
+    exported, where = exported_froude_lambda(npz)
+    if exported is None:
+        raise ConfigError(
+            f"{npz.name}: {where}, so there is no way to know what scale its joint "
+            f"reactions are at. A reader that assumes one publishes every force and "
+            f"stress at a scale nobody declared, which is the defect FN0 closed."
+        )
+    unit, low, high = FROUDE_LAMBDA
+    if not low <= exported <= high:
+        raise ConfigError(
+            f"{npz.name}: the exported scale is {exported:g} {unit} according to {where}, "
+            f"outside the admissible range [{low:g}, {high:g}] {unit} that a configured "
+            f"`floatsim.froude_lambda` is held to. One domain per quantity, whichever "
+            f"side of the I/O boundary it arrives from: `froude_factor` admits four "
+            f"decades beyond this range without complaint, and every force and stress "
+            f"published downstream would carry the error (R919)."
+        )
+
+    sidecar = npz.with_suffix(".provenance.json")
+    if sidecar.is_file():
+        try:
+            recorded = json.loads(sidecar.read_text(encoding="utf-8")).get("run", {})
+        except (OSError, json.JSONDecodeError):
+            recorded = {}
+        beside = recorded.get("lambda")
+        if beside is not None and float(beside) != exported:
+            raise ConfigError(
+                f"{npz.name}: scale disagreement between the two records of it. The npz "
+                f"key says {exported:g} (read from {where}) and {sidecar.name} records "
+                f"`run.lambda = {float(beside):g}`. Both are published -- the CSV header "
+                f"states the scale and the report prints it in the wave-basis line -- so "
+                f"a reader taking one while an artifact states the other cannot tell "
+                f"which the numbers are at. The npz key WINS when they agree (FN0); when "
+                f"they differ the pair has been separated or edited, and that is refused "
+                f"rather than resolved by preference (R908)."
+            )
+    return exported
 
 
 def exported_froude_lambda(npz: Path) -> tuple[float | None, str]:
