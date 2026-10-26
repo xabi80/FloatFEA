@@ -99,6 +99,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from floatfea import basis  # noqa: E402
+from floatfea.io.froude import froude_factor  # noqa: E402
 
 # RE-EXPORTED ON PURPOSE, AND `ruff` CANNOT TELL (FL1). This file is not only a script:
 # `f6a_premise_check.py` and `f6_results_report.py` both load it BY PATH through
@@ -167,11 +168,12 @@ was computed at, and no number for them is written here (R907 -- a literal here 
 at every height but one). The two cases outside it
 are reported separately and are not allowed to govern:
 
-    T = 10 s   H/lambda = 0.1550  -- EXCEEDS the deep-water breaking steepness 1/7 = 0.1429
-    T = 20 s   H/lambda = 0.0387  -- below the range; the wave is too long for this height
-
-**AND T = 12.5 s SITS 0.042 s BELOW THE LOWER BOUND IT IS BEING INCLUDED UNDER.**
-`sqrt(6.5 x 24.2) = 12.542 s`. EZ2(a) names it as governing and that is what ships, but the
+**AND AT THE REFERENCE SEA STATE T = 12.5 s SITS BELOW THE LOWER BOUND IT IS BEING
+INCLUDED UNDER.** Which cases fall where, and by how much, is computed per run and printed
+in the summary's wave-basis table -- no figure for any of it is written here, because a
+figure here was true at one height and false at every other (R907, R930: an earlier
+revision of this paragraph said "no number for them is written here" two lines above a
+line that wrote one). EZ2(a) names it as governing and that is what ships, but the
 directive's own criterion and its own case list disagree by that much, so the fact is here
 rather than passed over. It is the lowest-period governing case and therefore the one most
 likely to carry the envelope, which is why the discrepancy is worth a reader's attention.
@@ -247,9 +249,14 @@ LABELS = (
     "The load path is validated against FloatSim's own per-body accelerations: 1.55% on all "
     "five bodies, 2.78% worst over eighteen samples.",
     "No code check is applied. API RP 2A-WSD checks are F5 (EY4).",
-    "SCALE: the npz holds FloatSim's MODEL-scale output; the FE model is FULL scale. The "
-    "multipliers are converted through `floatfea.io.froude`'s declared "
-    "`joint_multiplier_yaw_locked` composite (force x 125000, locked moment x 6250000).",
+    # R925: the two factors here were LITERALS at lambda = 50 -- "force x 125000, locked
+    # moment x 6250000" -- published verbatim into `docs/F4_member_forces.csv:17` and
+    # `docs/F4_member_forces.md:21` on BOTH caveat branches. At an npz legitimately
+    # exported at lambda = 25, which the R908 validator ADMITS because both records agree,
+    # `froude_factor` gives 15625 and 390625: the deliverables would state a conversion
+    # 8x too large on force and 16x on moment, above a table whose numbers are right.
+    # The placeholder is replaced in `main` from `froude_factor(..., lam_scale)`.
+    "SCALE: (resolved per run; see main)",
 )
 
 
@@ -282,7 +289,10 @@ def main(argv: list[str] | None = None) -> int:
         "--provenance",
         type=Path,
         default=ROOT / "data" / "f4" / "dynamic_inputs.provenance.json",
-        help="the export's provenance sidecar; the authority for the scale and the height",
+        help=(
+            "the export's provenance sidecar; the authority for the scale AND the "
+            "height, and the single record both are resolved from (R927)"
+        ),
     )
     args = ap.parse_args(argv)
     # R902 / R903: through the one validated door (R896), so this reader and
@@ -298,7 +308,8 @@ def main(argv: list[str] | None = None) -> int:
     # `float(_basis["lambda"])`, which made a published CSV's Froude scale the sidecar's
     # `run.lambda` with nothing comparing it against the npz's own key -- 2402 diff lines
     # and governing ROOT stress 455.7 -> 275.3 MPa at `run.lambda = 25.0`, at exit 0.
-    lam_scale = validated_export_scale(fdr.NPZ)
+    # R927: THE SAME RECORD the height came from, not `fdr.NPZ`'s own sidecar.
+    lam_scale = validated_export_scale(fdr.NPZ, args.provenance)
     # R907: THE CAVEAT BLOCK STATES WHICH PERIODS ARE WHERE, AT ONE HEIGHT. Two entries
     # name `H = 24.2 m`, `sqrt(6.5*H) = 12.542 s` and the exact governing set, and they
     # are published verbatim into the summary. R902 made the band track the recorded
@@ -325,6 +336,17 @@ def main(argv: list[str] | None = None) -> int:
     # always written and never carries a false caveat.
     _stale = not _stated or _kept != [12.5] or len(_in) != 3
     caveats = list(LABELS)
+    # R925: THE SCALE CAVEAT IS ALWAYS COMPUTED, on both branches, because both published
+    # it. `froude_factor` is the declared conversion and the only thing entitled to state
+    # these numbers.
+    _scale_caveat = (
+        f"SCALE: the npz holds FloatSim's MODEL-scale output; the FE model is FULL scale. "
+        f"The multipliers are converted through `floatfea.io.froude`'s declared "
+        f"`joint_multiplier_yaw_locked` composite (force x "
+        f"{froude_factor('force', lam_scale):.0f}, locked moment x "
+        f"{froude_factor('moment', lam_scale):.0f})."
+    )
+    caveats = [_scale_caveat if c.startswith("SCALE: (resolved") else c for c in caveats]
     if _stale:
         caveats = [
             c
@@ -462,6 +484,17 @@ def _write_summary(
     module constant (R902), so the band and the breaking verdict this section publishes
     are computed at the height the sidecar records and the header prints.
     """
+    # R907: the membership this section states, computed once, and the reference
+    # predicate that decides whether the hand-written clause still describes the run.
+    _lo_b, _hi_b = math.sqrt(6.5 * h_full), math.sqrt(11.0 * h_full)
+    _periods = sorted(float(x) for x in inp.periods_full_s)
+    _breaking = [T for T in _periods if h_full / (9.81 * T * T / (2.0 * math.pi)) > 1.0 / 7.0]
+    _past_long = [T for T in _periods if _hi_b < T]
+    _in_b = [T for T in _periods if _lo_b <= T <= _hi_b]
+    _reference = _breaking == [10.0] and _past_long == [20.0] and len(_in_b) == 3
+    _breaking_txt = ", ".join(f"`T = {T:g} s`" for T in _breaking) if _breaking else "no case"
+    _long_txt = ", ".join(f"`T = {T:g} s`" for T in _past_long) if _past_long else "no case"
+
     env: dict[tuple[str, str, str], tuple[float, float, str]] = {}
     for r in rows:
         if not r.basis.startswith("total"):
@@ -502,11 +535,29 @@ def _write_summary(
         "",
         "## The two cases OUTSIDE the associated-period range (sensitivity only)",
         "",
-        "**EZ2(b): these do not govern and are not in the table above.** `T = 10 s` exceeds "
-        "the deep-water breaking steepness and `T = 20 s` is too long for this height, so "
-        "neither can set a design envelope. They are reported because the response at "
-        "`T = 10 s` is the largest in the whole sweep and a reader who saw only the "
-        "governing block would not know that.",
+        # R907: WHICH cases are outside, and WHY each is, are facts about one sea state.
+        # At H = 50 m `T = 20 s` is IN the band (18.028..23.452 s) while this sentence
+        # calls it "too long for this height", and `T = 12.5 s` is BREAKING while the
+        # heading above calls the outside set two. Same two-branch form as
+        # `f6_results_report.py`: the hand-written clause for the sea state it describes,
+        # a computed one otherwise, so neither contradicts the table above it.
+        (
+            "**EZ2(b): these do not govern and are not in the table above.** `T = 10 s` "
+            "exceeds the deep-water breaking steepness and `T = 20 s` is too long for "
+            "this height, so neither can set a design envelope. They are reported "
+            "because the response at `T = 10 s` is the largest in the whole sweep and a "
+            "reader who saw only the governing block would not know that."
+            if _reference
+            else (
+                "**EZ2(b): these do not govern and are not in the table above.** This is "
+                f"not the reference sea state (`H = {h_full:g} m`), so the membership is "
+                "computed rather than stated: breaking, and so unable to describe a real "
+                f"wave of this height, {_breaking_txt}; longer than the band's upper edge "
+                f"{_long_txt}. The reasoning in EZ2(b) is unchanged; which cases it "
+                "applies to is not carried over, and the wave-basis table below gives "
+                "each case's position."
+            )
+        ),
         "",
         "| body | member | station | case | sigma at the instant (MPa) |",
         "|---|---|---|---|---|",
@@ -539,13 +590,30 @@ def _write_summary(
         # published sentence stated an offset and a band edge that the table two lines
         # above contradicts. They are derived from `h_full` for the same reason the band
         # itself now is (R902).
-        f"**`T = 12.5 s` sits `{math.sqrt(6.5 * h_full) - 12.5:.3f} s` below "
-        f"`sqrt(6.5 x {h_full:g}) = {math.sqrt(6.5 * h_full):.3f} s`, and FA0 RULES "
-        "THAT IT STAYS.** `0.3%` below the bound is within the guidance's own precision, "
-        "and the case was CHOSEN as the band's lower edge. The reason it matters is the "
-        "direction: **the response rises as `T` falls across the band**, so the lower edge "
-        "is what governs and `12.5 s` is what represents it -- which is also why it carries "
-        "8 of the governing top ten. No new FloatSim run.",
+        (
+            f"**`T = 12.5 s` sits `{math.sqrt(6.5 * h_full) - 12.5:.3f} s` below "
+            f"`sqrt(6.5 x {h_full:g}) = {math.sqrt(6.5 * h_full):.3f} s`, and FA0 RULES "
+            f"THAT IT STAYS.** "
+            f"`{(math.sqrt(6.5 * h_full) - 12.5) / math.sqrt(6.5 * h_full):.1%}` below the "
+            "bound is within the guidance's own precision, "
+            "and the case was CHOSEN as the band's lower edge. The reason it matters is the "
+            "direction: **the response rises as `T` falls across the band**, so the lower edge "
+            "is what governs and `12.5 s` is what represents it -- which is also why it carries "
+            "8 of the governing top ten. No new FloatSim run."
+            if _reference
+            else (
+                f"**`T = 12.5 s` sits `{math.sqrt(6.5 * h_full) - 12.5:.3f} s` below "
+                f"`sqrt(6.5 x {h_full:g}) = {math.sqrt(6.5 * h_full):.3f} s`, which is "
+                f"`{(math.sqrt(6.5 * h_full) - 12.5) / math.sqrt(6.5 * h_full):.1%}` below "
+                "the bound.** FA0 ruled that this case STAYS in the governing set at the "
+                "reference sea state, where the offset is `0.3%` and within the guidance's "
+                "own precision. **That ruling is NOT asserted here**: an offset this size "
+                "is not a rounding question, and no directive has ruled on it for this "
+                "height. The direction of the response is unchanged -- it rises as `T` "
+                "falls across the band -- but which case represents the lower edge is a "
+                "question for whoever rules on the sea state."
+            )
+        ),
         "",
         "## The section these stresses are computed on",
         "",

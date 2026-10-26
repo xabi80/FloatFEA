@@ -928,7 +928,7 @@ def wave_basis_from_sidecar(sidecar: Path) -> dict[str, Any]:
     return _validated_wave_basis(present, sidecar)
 
 
-def validated_export_scale(npz: Path) -> float:
+def validated_export_scale(npz: Path, sidecar: Path | None = None) -> float:
     """The ONE scale a reader of this file may publish at (R919, R908).
 
     **`exported_froude_lambda` IS A READER, NOT A CHECK, AND I MISTOOK IT FOR ONE.** R906
@@ -986,7 +986,17 @@ def validated_export_scale(npz: Path) -> float:
             f"published downstream would carry the error (R919)."
         )
 
-    sidecar = npz.with_suffix(".provenance.json")
+    # **R927: THE CALLER SAYS WHICH RECORD TO COMPARE AGAINST, BECAUSE IT MAY BE READING
+    # TWO.** `member_forces_table.py` declares `--provenance` as "the authority for the
+    # scale and the height" and R919's repair took the scale off it: the height came from
+    # `args.provenance` and the scale from this function, which opened
+    # `npz.with_suffix(...)` -- a DIFFERENT file whenever `--provenance` is overridden. A
+    # deliverable then had its band, its breaking verdicts and its printed `H` from one
+    # provenance record and its Froude scale from another, with nothing comparing them.
+    # Measured at an H = 50 m run, and the repair is what created it.
+    #
+    # Defaulting to the npz's own sidecar keeps every other caller unchanged.
+    sidecar = sidecar if sidecar is not None else npz.with_suffix(".provenance.json")
     if sidecar.is_file():
         try:
             recorded = json.loads(sidecar.read_text(encoding="utf-8")).get("run", {})

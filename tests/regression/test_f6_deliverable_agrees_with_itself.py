@@ -499,43 +499,88 @@ def test_R902_NEITHER_generator_carries_a_module_wave_height_literal() -> None:
             )
 
 
-def test_R919_every_PUBLISHING_reader_resolves_the_scale_through_the_VALIDATOR() -> None:
-    """The call site, not the helper (FT2's rule, and R906's lesson one level up).
+def test_R926_every_SCRIPT_THAT_TOUCHES_A_RECORDED_SCALE_resolves_it() -> None:
+    """The domain is DERIVED from the tree, not typed (R926, and the repair for its class).
 
-    R906 moved `f6a_premise_check.py:185` off a sibling script's module constant and onto
-    `exported_froude_lambda`, and the commit called that "the validated door". It is the
-    FN0 READER: it reports where it found a value and validates nothing about it. So the
-    repair for one finding created another at the same line, which is the fourth time in
-    this step that a defect arrived inside a repair.
+    **THE LIST WAS TWO FILENAMES AND THAT IS WHY R926 EXISTED.** The R919 version of this
+    test named `f6a_premise_check.py` and `member_forces_table.py` by hand, so
+    `f6_results_report.py` -- which printed `Froude lambda = {run['lambda']}` from the
+    sidecar, cross-checked by nothing -- was outside its domain and published `25.0`
+    beside an npz recording `50.0` at exit 0, while the other generator refused the
+    identical pair. Same quantity, same file pair, two readers, opposite outcomes.
 
-    The resolver cells in `tests/unit/test_headings_and_bem_coverage.py` are all green
-    with these call sites pointing back at the reader -- that is exactly the hole R866,
-    R877, R881 and R896 each shipped through. This asserts the SITES.
+    That is the shape of R919, R925, R926 and R927 alike: **a check applied to the sites
+    its author was looking at rather than to the site list the repository has.** Three
+    hand lists did it at three levels -- a commit message's claim, this test's filenames,
+    and the caveat tuple -- so the repair is a derived list and not more attention.
 
-    Measured by hand at the call site, with the npz and sidecar restored byte-identical
-    afterwards (`git status --porcelain data/` empty, sha256 unchanged): an npz at
-    `froude_lambda = 25.0` carrying a MATCHING declared sha -- the state a real re-export
-    produces, and the one needed to get past `f4_dynamic_residual`'s own sha guard --
-    gives EXIT=1, `ConfigError: ... scale disagreement ... The npz key says 25 ... records
-    `run.lambda = 50``, and no artifact written.
+    Three properties, each over every `.py` under `scripts/`:
+
+    **(i) Nothing READS a recorded scale by subscript.** A scale is RESOLVED, not echoed.
+    The load/store distinction is what separates a consumer from the export that writes
+    the record, so no filename has to be exempted: `export_f4_dynamic_inputs.py` writes
+    `run["lambda"]` and reads none.
+
+    **(ii) Nothing calls `exported_froude_lambda`.** It reports where it read a value and
+    validates nothing about it -- the FN0 reader, library-internal, and R919's defect was
+    a publisher being routed onto it.
+
+    **(iii) A file that converts with `froude_factor` resolves a scale first.** A
+    conversion is only as good as the number it is given, which is R925: two factors
+    published as `lambda = 50` literals, 8x and 16x wrong at a legitimate `lambda = 25`.
     """
     import ast
 
-    for name in ("f6a_premise_check.py", "member_forces_table.py"):
-        src = (ROOT / "scripts" / "measure" / name).read_text(encoding="utf-8")
-        called = {
+    read_sites: list[str] = []
+    reader_sites: list[str] = []
+    unresolved_converters: list[str] = []
+
+    for path in sorted((ROOT / "scripts").rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
+        calls = {
             node.func.id
-            for node in ast.walk(ast.parse(src))
+            for node in ast.walk(tree)
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
         }
-        assert "validated_export_scale" in called, (
-            f"{name} does not CALL `validated_export_scale`. Every reader that publishes "
-            f"a force, a stress or a scale resolves it through the validator: the range "
-            f"is applied to the npz key and the two records of the scale must agree."
-        )
-        assert "exported_froude_lambda" not in called, (
-            f"{name} calls `exported_froude_lambda`, which is the FN0 READER and "
-            f"validates nothing about the value it returns. That is R919: the same line "
-            f"was routed onto it by R906's repair, and `froude_lambda = 25.0` then "
-            f"published 78 changed lines with the premise still reading HELD."
-        )
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Subscript)
+                and isinstance(node.slice, ast.Constant)
+                and node.slice.value in ("lambda", "froude_lambda")
+                and isinstance(node.ctx, ast.Load)
+            ):
+                read_sites.append(f"{path.name}:{node.lineno}")
+        if "exported_froude_lambda" in calls:
+            reader_sites.append(path.name)
+        if "froude_factor" in calls and "validated_export_scale" not in calls:
+            unresolved_converters.append(path.name)
+
+    assert not read_sites, (
+        f"these sites READ a recorded scale instead of resolving one: {read_sites}. A "
+        f"scale echoed out of a sidecar is cross-checked by nothing -- that is R926, and "
+        f"it published `Froude lambda = 25.0` above forces computed at 50."
+    )
+    assert not reader_sites, (
+        f"{reader_sites} call `exported_froude_lambda`, which validates nothing about the "
+        f"value it returns (R919). Publishers go through `validated_export_scale`."
+    )
+    assert not unresolved_converters, (
+        f"{unresolved_converters} convert with `froude_factor` without resolving a scale "
+        f"first, so the factor is whatever was lying around (R925)."
+    )
+
+    # AND THE DOMAIN IS NOT EMPTY, so none of the three can pass by finding nothing.
+    resolvers = [
+        path.name
+        for path in sorted((ROOT / "scripts").rglob("*.py"))
+        if "validated_export_scale"
+        in {
+            node.func.id
+            for node in ast.walk(ast.parse(path.read_text(encoding="utf-8", errors="replace")))
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        }
+    ]
+    assert len(resolvers) >= 3, (
+        f"only {resolvers} resolve a scale. Three generators publish one; a sweep that "
+        f"finds fewer is measuring nothing, which is how two typed filenames passed."
+    )

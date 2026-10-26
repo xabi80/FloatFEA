@@ -807,6 +807,24 @@ closure commit is what asserts it is zero.
 """
 
 
+_DESTINATION_ONLY = frozenset(
+    {
+        "empty_verdict",
+        "report_dir",
+        "verdict_dir",
+        "append_finding",
+        "older_answers_sha",
+        "bad_answers_sha",
+    }
+)
+"""Actions that create or edit a destination and copy from nothing (R910)."""
+
+_NO_PLANT_PATH = frozenset(
+    {"rename_reports", "rename_reviews", "shallow", "docs_commit_touching_guards"}
+)
+"""Actions that plant no file at all -- they move a directory or touch the commit graph."""
+
+
 def test_R887_the_plant_base_is_the_step_the_GUARD_reads() -> None:
     """The two resolvers agree, asserted rather than promised (R887).
 
@@ -871,8 +889,31 @@ def test_R887_the_plant_base_is_the_step_the_GUARD_reads() -> None:
                 dst = REVIEWS_DIR / f"step-{arg}.md"
             elif action == "report_named":
                 src, dst = REPORTS_DIR / REPORT_NAME, REPORTS_DIR / arg
-            else:
+            elif action in _DESTINATION_ONLY:
+                # A destination and no source: nothing to compare, but the path must be
+                # ADDRESSABLE, which is what `report_dir` and `verdict_dir` were not when
+                # the marker moved (R887) and again when NEXT collided (R897).
+                root = REVIEWS_DIR if action in ("verdict_dir", "empty_verdict") else REPORTS_DIR
+                assert root.is_dir(), (
+                    f"state {state!r} plants into {root}, which is not a directory, so "
+                    f"the plant dies in `_build` before the guard runs (R910)."
+                )
                 continue
+            elif action in _NO_PLANT_PATH:
+                continue
+            else:
+                # **R910: THE SILENCE WAS THE DEFECT.** This arm was `else: continue`, so
+                # the loop inspected 16 of 29 actions and skipped 13 without a word --
+                # `report_dir` and `verdict_dir` among them, the two verbs whose
+                # src == dst collision R897 was about. A verb added later would be
+                # skipped the same way, which is the hand-list shape (R926) inside the
+                # repair for a hand list.
+                raise AssertionError(
+                    f"state {state!r} uses action {action!r}, which this check classifies "
+                    f"nowhere. Every verb in `STATES` is a copying pair, a destination "
+                    f"with no source, or declared as planting no path -- an unclassified "
+                    f"verb is silently unchecked, which is what R910 was."
+                )
             assert src.exists(), (
                 f"state {state!r} copies FROM {src.name}, which does not exist. Every "
                 f"state built by that `copy2` dies in `_build` before planting anything, "

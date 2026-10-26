@@ -60,7 +60,10 @@ from floatfea.model.platform import (  # noqa: E402
     _outer_diameter,
     build_superstructure,
 )
-from floatfea.run.pipeline import wave_basis_from_sidecar  # noqa: E402
+from floatfea.run.pipeline import (  # noqa: E402
+    validated_export_scale,
+    wave_basis_from_sidecar,
+)
 
 # s.6's `f` sensitivity reuses `member_forces_table.py`'s OWN static solve and stress
 # definition rather than restating either, so the sweep and the published CSV cannot
@@ -280,6 +283,15 @@ def main(argv: list[str] | None = None) -> int:
         default=ROOT / "data" / "f4" / "dynamic_inputs.provenance.json",
     )
     ap.add_argument(
+        "--npz",
+        type=Path,
+        default=ROOT / "data" / "f4" / "dynamic_inputs.npz",
+        help=(
+            "the dynamic-inputs file the scale is RESOLVED from; this report printed the "
+            "sidecar's `run.lambda` cross-checked by nothing (R926)"
+        ),
+    )
+    ap.add_argument(
         "--no-gates",
         dest="gates",
         action="store_false",
@@ -298,6 +310,14 @@ def main(argv: list[str] | None = None) -> int:
     # 0 and written into a deliverable: measured at `full=-24.2, model=-0.484`, which
     # published "wave height, full scale  : -24.2 m (-0.484 m model, ...)".
     basis = wave_basis_from_sidecar(args.provenance)
+    # R926: THE SCALE IS RESOLVED, NOT ECHOED. This report printed
+    # `Froude lambda = {run['lambda']}` straight from the sidecar with nothing comparing
+    # it against the npz's own key, so `run.lambda = 25.0` beside an npz recording `50.0`
+    # published "Froude lambda = 25.0" at EXIT 0 -- above forces computed at 50 -- while
+    # `member_forces_table.py` refused the identical pair. Same quantity, same file pair,
+    # two readers, opposite outcomes: that is R908 again at a site R908's own repair did
+    # not reach, because the test holding it listed two filenames by hand.
+    lam_scale = validated_export_scale(args.npz, args.provenance)
     run = {**prov["run"], **basis}
     f_b, f_b_branch = allowable_bending(sec["D"], sec["t"], FY_S355, E_STEEL)
 
@@ -425,7 +445,7 @@ def main(argv: list[str] | None = None) -> int:
     w(f"provenance tag           : {prov['hsp_tag']}")
     w(
         f"wave height, full scale  : {run['wave_height_full_m']} m "
-        f"({run['wave_height_model_m']} m model, Froude lambda = {run['lambda']})"
+        f"({run['wave_height_model_m']} m model, Froude lambda = {lam_scale})"
     )
     w(f"heading                  : {run['heading_deg']} deg   -- ONE heading only")
     w(
