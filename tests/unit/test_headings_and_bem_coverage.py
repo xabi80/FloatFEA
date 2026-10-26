@@ -648,4 +648,13 @@ def test_R919_the_SIDECAR_alone_still_answers(tmp_path: Path) -> None:
     """FN0's fallback is intact: the sidecar answers when the npz carries no key."""
     from floatfea.run.pipeline import validated_export_scale
 
-    assert validated_export_scale(_pair(tmp_path, None, 50.0)) == 50.0
+    assert (
+        validated_export_scale(_pair(tmp_path, None, 50.0))
+        # not-a-tolerance: the scale written INTO the synthetic sidecar on the same line.
+        # The assertion is that the resolver returned the value it was GIVEN when the npz
+        # carries no key -- an identity on an input, not a comparison of two computed
+        # quantities, so there is nothing here a tolerance could be loosened against.
+        # Same form and same reason as `test_FN0_the_npz_key_is_PREFERRED_over_the_sidecar`
+        # in `tests/regression/test_r1_example_golden.py`.
+        == 50.0
+    )

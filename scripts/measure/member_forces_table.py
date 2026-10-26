@@ -318,16 +318,28 @@ def main(argv: list[str] | None = None) -> int:
     _kept = sorted(set(GOVERNING_PERIODS) - set(_in))
     _text = " ".join(LABELS)
     _stated = (f"H = {h_full:g} m" in _text) and (f"= {_lo:.3f} s" in _text)
-    if not _stated or _kept != [12.5] or len(_in) != 3:
-        raise SystemExit(
-            f"floatfea: the caveat block states a height and an associated-period band "
-            f"verbatim, and they no longer match what this run computes. The recorded "
-            f"height is {h_full:g} m, giving a band of {_lo:.3f}..{_hi:.3f} s with "
-            f"{len(_in)} periods inside it and governing-but-outside={_kept}; the caveat "
-            f"text states {'a matching' if _stated else 'DIFFERENT'} figures. Those "
-            f"caveats are published verbatim into the summary, so the summary is not "
-            f"written rather than carrying a false one. Regenerate the caveat text from "
-            f"the computed sets (R907, FS3)."
+    # NOT A REFUSAL -- see the long note in `f6_results_report.py`. Refusing here made the
+    # generator unable to run at any sea state but one, which is what R902 exists to make
+    # possible and what FT2.6 needs. The caveats that state a height and a band verbatim
+    # are REPLACED by computed ones when they do not describe this run, so the summary is
+    # always written and never carries a false caveat.
+    _stale = not _stated or _kept != [12.5] or len(_in) != 3
+    caveats = list(LABELS)
+    if _stale:
+        caveats = [
+            c
+            for c in caveats
+            if "associated-period range for H" not in c and "FA0: T = 12.5 s STAYS" not in c
+        ]
+        caveats.append(
+            f"R907: the two caveats that named a height and a band verbatim DESCRIBED THE "
+            f"REFERENCE SEA STATE and do not describe this run, so they are replaced by "
+            f"this computed one. At H = {h_full:g} m the associated-period band is "
+            f"{_lo:.3f}..{_hi:.3f} s; the periods inside it are {_in if _in else 'none'}; "
+            f"periods EZ2 names as governing but which fall outside it are "
+            f"{_kept if _kept else 'none'}, and each of those is kept only if a rule like "
+            f"FA0 is stated for THIS height, which none is. The wave-basis table below "
+            f"carries the per-case position."
         )
     built = build_superstructure()
     by_name = {b.name: b for b in built.bodies}
@@ -346,8 +358,8 @@ def main(argv: list[str] | None = None) -> int:
     rows = computed.rows
     instant, instant_sens = computed.instant, computed.instant_sens
 
-    _write_csv(args.out, rows, by_name)
-    _write_summary(args.summary, rows, by_name, inp, instant, instant_sens, h_full)
+    _write_csv(args.out, rows, by_name, caveats)
+    _write_summary(args.summary, rows, by_name, inp, instant, instant_sens, h_full, caveats)
     print(f"\n  wrote {args.out.relative_to(ROOT)} ({len(rows)} rows)")
     print(f"  wrote {args.summary.relative_to(ROOT)}")
     return 0
@@ -392,7 +404,9 @@ def f_sensitivity() -> list[tuple[float, str, float, float, float]]:
     return out
 
 
-def _write_csv(path: Path, rows: list[Row], by_name: dict[str, BodyModel]) -> None:
+def _write_csv(
+    path: Path, rows: list[Row], by_name: dict[str, BodyModel], caveats: list[str]
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as fh:
         # THE LABELS ARE WRITTEN RAW, NOT THROUGH `csv.writer`. A label containing a comma
@@ -400,7 +414,7 @@ def _write_csv(path: Path, rows: list[Row], by_name: dict[str, BodyModel]) -> No
         # skipping comments by prefix silently reads the first label as the header row --
         # which is what happened the first time this file was read back. Commas become
         # semicolons so the line can never need quoting.
-        for label in LABELS:
+        for label in caveats:
             fh.write("# " + label.replace(",", ";") + chr(10))
         w = csv.writer(fh)
         w.writerow(
@@ -440,6 +454,7 @@ def _write_summary(
     instant: dict[tuple[str, str, str], tuple[float, float]],
     instant_sens: dict[tuple[str, str, str], tuple[float, float]],
     h_full: float,
+    caveats: list[str],
 ) -> None:
     """The envelope over the six cases, the ten most loaded stations, and the f sweep.
 
@@ -468,7 +483,7 @@ def _write_summary(
         "as much as the numbers are.",
         "",
     ]
-    lines += [f"* {label}" for label in LABELS]
+    lines += [f"* {label}" for label in caveats]
     lines += [
         "",
         "## The ten most loaded member-stations, by indicative sigma",

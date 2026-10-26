@@ -523,26 +523,53 @@ def main(argv: list[str] | None = None) -> int:
     # The sentence is corrected below and the deliverable regenerated; the premise checked
     # here is the one that is true: four GOVERNING periods, three in band and one kept at
     # the lower edge by FA0.
-    if _breaking != [10.0] or _past_long != [20.0] or len(_in_band) != 3 or _kept != [12.5]:
-        raise SystemExit(
-            f"floatfea: the narrative in s.4 states that `T = 10 s` is the breaking case, "
-            f"that `T = 20 s` alone sits past the long edge, and that the governing basis "
-            f"is three in-band periods plus `T = 12.5 s` kept at the lower edge by FA0. "
-            f"At H = {h_full} m the computed sets are breaking={_breaking}, past the long "
-            f"edge={_past_long}, in band={_in_band}, governing-but-outside={_kept}. Those "
-            f"sentences are facts about ONE sea state and would be false here, so the "
-            f"report is not written. Regenerate that paragraph from the computed sets "
-            f"(R907) before publishing at a height other than the one it describes."
+    _reference = (
+        _breaking == [10.0] and _past_long == [20.0] and len(_in_band) == 3 and _kept == [12.5]
+    )
+    # **AND REFUSING WAS THE WRONG ANSWER, WHICH MY OWN R902 TEST IS WHAT SAID SO.**
+    # My first repair ASSERTED these premises and raised when they failed. That made the
+    # generator unable to run at any sea state but one -- which destroys the property
+    # R902 exists to establish (the band TRACKS the recorded height) and blocks FT2.6,
+    # whose entire job is producing sidecars at other sea states.
+    # `test_R902_the_BAND_is_computed_at_the_RECORDED_height` went red on the refusal and
+    # that is the measurement: a guard that makes the correct behaviour unreachable is
+    # not a guard. The reviewer asked for the narrative GENERATED from the computed sets
+    # and I declined once; this is that, and it was the right instruction.
+    #
+    # Two branches, both exercised: the hand-written paragraph is emitted verbatim for the
+    # sea state it was written about, so the shipped deliverable stays byte-identical, and
+    # a computed paragraph is emitted otherwise. Neither states anything the table above
+    # it contradicts. R902's test covers the computed branch at H = 50 m and the
+    # regeneration check covers the verbatim one.
+    if not _reference:
+        w(f"**This is not the reference sea state** (`H = {h_full:g} m`), so the paragraph")
+        w("below is generated from the sets computed above rather than the one written for")
+        w("`H = 24.2 m`. The reasoning in EZ2 and FA0 still applies; the membership does")
+        w("not carry over.")
+        w("")
+        w(
+            f"Breaking, so unable to describe a real wave of this height: "
+            f"{_breaking if _breaking else 'none'}. Past the band's long edge: "
+            f"{_past_long if _past_long else 'none'}. Inside the band: "
+            f"{_in_band if _in_band else 'none'}. Named as governing by EZ2 but outside "
+            f"the band: {_kept if _kept else 'none'} -- each of those is kept only if a "
+            f"rule like FA0 says so for THIS height, and no such ruling is asserted here."
         )
-    w("**`T = 10 s` exceeds the deep-water breaking steepness**, so it cannot describe a")
-    w("real wave of this height. It is reported as sensitivity only, and it is also the")
-    w("largest of the six on the bound above. `T = 20 s` is outside the band at the long")
-    w("end. **The governing basis is the four periods EZ2 admits: the three in band, and")
-    w("`T = 12.5 s`, which is NOT in band.** It sits just")
-    w("below `sqrt(6.5 H)` by the offset in the block and is kept as the band's lower")
-    w("edge: across the band the bound falls monotonically as `T` rises, so the lower edge")
-    w("is what governs and this case is the one that represents it. The monotonicity holds")
-    w("across the band only — `T = 20 s` ticks back up above `T = 16.2 s`.")
+        w("")
+        w("Across the band's interior the bound still falls monotonically as `T` rises, so")
+        w("the lower edge is what governs there. That argument is about the interior and")
+        w("does not say which periods are in it at this height; the sets above do.")
+        w("")
+    else:
+        w("**`T = 10 s` exceeds the deep-water breaking steepness**, so it cannot describe a")
+        w("real wave of this height. It is reported as sensitivity only, and it is also the")
+        w("largest of the six on the bound above. `T = 20 s` is outside the band at the long")
+        w("end. **The governing basis is the four periods EZ2 admits: the three in band, and")
+        w("`T = 12.5 s`, which is NOT in band.** It sits just")
+        w("below `sqrt(6.5 H)` by the offset in the block and is kept as the band's lower")
+        w("edge: across the band the bound falls monotonically as `T` rises, so the lower edge")
+        w("is what governs and this case is the one that represents it. The monotonicity holds")
+        w("across the band only — `T = 20 s` ticks back up above `T = 16.2 s`.")
     w("")
     w("**Loads applied:** self-weight, plus the FloatSim joint reactions and each body's")
     w("own d'Alembert field over the window. FloatSim is linearised about static")
