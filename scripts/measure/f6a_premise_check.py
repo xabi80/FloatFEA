@@ -61,6 +61,7 @@ from floatfea.basis import E_STEEL, FY_S355  # noqa: E402
 from floatfea.checks.api_wsd import CM_JOINT_TRANSLATION, check_member  # noqa: E402
 from floatfea.model.material import Section  # noqa: E402
 from floatfea.model.platform import build_superstructure  # noqa: E402
+from floatfea.run.pipeline import exported_froude_lambda  # noqa: E402
 
 
 def _load(name: str, path: Path):
@@ -163,6 +164,27 @@ def dynamic_half(shipped, sized, answers: list[dict]) -> dict[str, object]:
     fdr = _load("f4_dynamic_residual", ROOT / "scripts" / "f4_dynamic_residual.py")
     inp = fdr.load()
     raw = np.load(fdr.NPZ, allow_pickle=False)
+    # R906: THE SCALE COMES FROM THE FILE, NOT FROM ANOTHER SCRIPT'S MODULE CONSTANT.
+    # This read used to be the `FROUDE_LAMBDA` constant that `member_forces_table` carried,
+    # reached by attribute off the by-path module object. R902 deleted that constant along
+    # with the wave-height literal beside it, and deleting it left this line raising
+    # `AttributeError: module 'member_forces_table' has no attribute ...`, which took CI's
+    # `unit tests` step red and SKIPPED `guards and meta-tests` behind it.
+    #
+    # The name is deliberately NOT written here in its `<module>.<attr>` form:
+    # `test_forces_table_reexports.py` greps this file's TEXT for that pattern and adds
+    # every hit to the set it requires `CONSUMED` to cover, so a comment mentioning the
+    # old spelling re-creates the very dependency this line removed. The guard is right to
+    # be text-blind -- a comment is how a dead lookup gets resurrected -- and it caught my
+    # first wording of this paragraph.
+    #
+    # `exported_froude_lambda` consults the npz's own `froude_lambda` first and the
+    # sidecar's `run.lambda` second, so the scale is the one THIS FILE was exported at --
+    # which is the scale its `lam` multipliers are already in. A constant in a sibling
+    # script was never that, and FN0 is the finding that said so.
+    lam_scale, lam_where = exported_froude_lambda(fdr.NPZ)
+    if lam_scale is None:
+        raise SystemExit(f"floatfea: {fdr.NPZ.name}: {lam_where}. The scale is not assumed.")
     deck_a = [str(x) for x in raw["case0/joint_body_a"]]
     deck_b = [str(x) for x in raw["case0/joint_body_b"]]
     by_answer = {a["group"]: a for a in answers}
@@ -185,7 +207,7 @@ def dynamic_half(shipped, sized, answers: list[dict]) -> dict[str, object]:
             for step in range(lam.shape[0]):
                 steps += 1
                 loads = MFT.map_joint_reactions(
-                    MFT._lam_full_scale(lam[step], MFT.FROUDE_LAMBDA), order, nodes, n_dof
+                    MFT._lam_full_scale(lam[step], lam_scale), order, nodes, n_dof
                 )
                 for name, body in by_name.items():
                     relief = MFT.solve_inertia_relief(

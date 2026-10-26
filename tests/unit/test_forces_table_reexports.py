@@ -43,13 +43,19 @@ SCRIPT = ROOT / "scripts" / "measure" / "member_forces_table.py"
 # cannot execute -- so nothing would ever have checked it. A triple whose command cannot
 # run is exactly what CW0 calls not a triple.
 CONSUMED = (
-    # ADDED BY FN0, AND THIS TEST IS WHAT NOTICED. Threading the Froude scale out of
-    # `floatfea.post.forces_table` meant `f6a_premise_check.py` had to state a scale when
-    # it calls `_lam_full_scale`, and the nearest declared one is the script's own
-    # `MFT.FROUDE_LAMBDA`. That made the consumers reach for a NINTH attribute, which the
-    # second test below caught on the first whole-suite run after the change -- exactly
-    # the drift it was written to prevent.
-    "FROUDE_LAMBDA",
+    # `FROUDE_LAMBDA` WAS HERE AND IS NOT A RE-EXPORT ANY MORE (R906). FN0 threaded the
+    # Froude scale out of `floatfea.post.forces_table`, so `f6a_premise_check.py` had to
+    # state a scale when calling `_lam_full_scale` and reached for the nearest declared
+    # one, `MFT.FROUDE_LAMBDA` -- and this list is what noticed, on the first whole-suite
+    # run after that change.
+    #
+    # R902 then deleted that constant, because a module literal standing in for a
+    # recorded input is R805/FN0's own defect. So the consumer now reads the scale from
+    # the npz through `exported_froude_lambda`, and this entry asserted the existence of
+    # a symbol a guard added in the SAME COMMIT asserts is absent -- two guards claiming
+    # opposite things, with CI's `unit tests` red and `guards and meta-tests` skipped
+    # behind it. The entry is removed rather than the newer guard relaxed: the scale
+    # belongs to the file, not to a sibling script's namespace.
     "_joint_wiring",
     "_lam_full_scale",
     "_net_field",
