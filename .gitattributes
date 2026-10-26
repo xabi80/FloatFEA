@@ -10,3 +10,22 @@
 # resolution is always to regenerate with `scripts/export_f4_dynamic_inputs.py`, never to
 # pick a side.
 data/f4/*.npz binary merge=binary -diff
+
+# R959: THE GENERATED CSVs ARE STORED EXACTLY AS THEIR GENERATOR WRITES THEM.
+#
+# `csv.writer` terminates rows CRLF; the comment header is written with `chr(10)` and is
+# LF. With `core.autocrlf=true` and no rule here, git normalised every CRLF away on
+# commit, so the blob carried 0 CRLF where the generator writes 1249 -- and the committed
+# file could not equal its own generator's output on ANY platform. On Windows a checkout
+# re-added CRLF to all 1266 lines, matching neither; on Linux it matched the blob and so
+# not the generator.
+#
+# That made every "the deliverable regenerates at 0 diff" measurement MACHINE-DEPENDENT,
+# on both the implementer's and the reviewer's side, for four rounds. It surfaced as a red
+# ladder rung in CI: `test_R918_a_GENERATOR_can_be_pointed_outside_the_repository` compares
+# the generator's bytes against the committed file, which is the first thing in this
+# repository that could have noticed.
+#
+# `-text` means "store the bytes". Every tracked CSV here is a generator artifact, so the
+# rule is the file set rather than a list of names (R926's shape).
+*.csv -text

@@ -568,14 +568,36 @@ def main(argv: list[str] | None = None) -> int:
     # slack and a period with no case rejoins the table.
     _solved = {float(r["period_full_s"]) for r in forces if r.get("period_full_s")}
     _recorded = [float(x) for x in run["periods_full_s"]]
-    _orphans = sorted(set(_recorded) - _solved)
-    if _orphans:
+    # **R958: THE JOIN WAS ONE-DIRECTIONAL.** `set(_recorded) - _solved` refuses a declared
+    # period with no case; a SOLVED case with no declaration was silent. At H = 24.1 m
+    # with a declared subset the report published "Breaking ...: none. Past the band's
+    # long edge: none" above a response table printing `T = 10 s` at 762.151 MPa --
+    # breaking at that height -- and `T = 20 s` at 338.226 MPa. Three readers of "which
+    # periods were analysed", and the one that builds the published band table is the raw
+    # sidecar. The comment at :558 states the property this violated.
+    #
+    # **AND IT IS WHY R957's INPUT EXISTED.** The R951 repair keys the reference branch on
+    # the HEIGHT alone, having dropped the four membership conjuncts -- so a sidecar at
+    # H = 24.2 m declaring `[12.5, 14, 15]` published the hand-written paragraph, which
+    # says "the four periods EZ2 admits: the three in band", over a three-row table with
+    # two in band and naming two periods the run does not record.
+    #
+    # Both sides must agree, so the sets are compared as sets. With that, a declaration
+    # that is not exactly the solved case set cannot be built -- which is what makes the
+    # height comparison sufficient for the reference branch rather than merely narrow.
+    _missing = sorted(set(_recorded) - _solved)
+    _undeclared = sorted(_solved - set(_recorded))
+    if _missing or _undeclared:
         raise SystemExit(
-            f"floatfea: {args.provenance.name} records periods {_orphans} s that "
-            f"{args.forces.name} has no solved case for; it carries {sorted(_solved)} s. "
-            f"The band table is published per recorded period and the response table per "
-            f"solved case, so a recorded period with no case behind it prints a sea state "
-            f"that was never analysed. Re-export, or re-run the member forces."
+            f"floatfea: {args.provenance.name} and {args.forces.name} do not describe the "
+            f"same set of cases. Recorded with no solved case: {_missing or 'none'}. "
+            f"Solved with no declaration: {_undeclared or 'none'}. The sidecar records "
+            f"{sorted(_recorded)} s and the table carries {sorted(_solved)} s. The band "
+            f"table is published per RECORDED period and the response table per SOLVED "
+            f"case, so either direction publishes a sea state the other half of the "
+            f"document does not describe -- a recorded period with no case was never "
+            f"analysed, and a solved case with no declaration is missing from every "
+            f"membership claim in s.4. Re-export, or re-run the member forces (R909, R958)."
         )
     for period in _recorded:
         steep = _steepness(period, h_full)

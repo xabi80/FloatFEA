@@ -136,7 +136,10 @@ def test_R933_an_ORPHAN_PERIOD_is_refused(tmp_path: Path) -> None:
     side = _sidecar(tmp_path, periods_full_s=[*recorded["run"]["periods_full_s"], 25.0])
     proc = _run("f6_results_report.py", tmp_path, "--provenance", str(side))
     assert proc.returncode != 0, (proc.stdout + proc.stderr)[-700:]
-    assert "has no solved case for" in proc.stdout + proc.stderr
+    # R958 made the join two-directional and rewrote this refusal, so the needle moved
+    # with it. The property is unchanged: a RECORDED period with no solved case behind it
+    # is refused, and the message names which.
+    assert "Recorded with no solved case" in proc.stdout + proc.stderr
     assert _wrote_nothing(tmp_path)
 
 
@@ -499,3 +502,74 @@ def test_R918_a_GENERATOR_can_be_pointed_outside_the_repository(tmp_path: Path) 
     assert proc.returncode == 0, (proc.stdout + proc.stderr)[-700:]
     assert (tmp_path / "outside.csv").is_file() and (tmp_path / "outside.md").is_file()
     assert (tmp_path / "outside.csv").read_bytes() == FORCES.read_bytes()
+
+
+def test_R958_the_PERIOD_JOIN_is_two_directional(tmp_path: Path) -> None:
+    """A solved case with no declaration was silent, and that is what built R957.
+
+    `set(_recorded) - _solved` refused a declared period with no case; the other
+    direction was unchecked. At H = 24.1 m with a declared subset the report published
+    "Breaking ...: none. Past the band's long edge: none" above a response table printing
+    `T = 10 s` at 762.151 MPa -- breaking at that height -- and `T = 20 s` at
+    338.226 MPa.
+
+    **AND IT IS WHY R957's INPUT EXISTED.** The R951 repair keys the reference branch on
+    the height alone, so a sidecar at the committed height declaring a SUBSET published
+    the hand-written paragraph -- "the four periods EZ2 admits: the three in band" -- over
+    a three-row table with two in band, naming two periods the run does not record. With
+    both directions joined that input cannot be built, which is what makes the height
+    comparison sufficient rather than merely narrow.
+    """
+    out = _out_dir(tmp_path)
+    recorded = json.loads(SIDECAR.read_text(encoding="utf-8"))["run"]["periods_full_s"]
+
+    # (a) a SOLVED case with no declaration -- R957's input, previously accepted
+    subset = _sidecar(tmp_path, periods_full_s=[12.5, 14.0, 15.0])
+    proc = _run("f6_results_report.py", tmp_path, "--provenance", str(subset))
+    assert proc.returncode != 0, (
+        "a declared SUBSET was accepted: the hand-written membership paragraph is then "
+        "published over a table that does not match it (R957)."
+    )
+    assert "Solved with no declaration" in proc.stdout + proc.stderr
+    assert not (out / "o.md").exists()
+
+    # (b) a RECORDED period with no case -- R909's direction, still refused
+    extra = _sidecar(tmp_path, periods_full_s=[*recorded, 25.0])
+    proc = _run("f6_results_report.py", tmp_path, "--provenance", str(extra))
+    assert proc.returncode != 0, (proc.stdout + proc.stderr)[-700:]
+    assert "Recorded with no solved case" in proc.stdout + proc.stderr
+    assert not (out / "o.md").exists()
+
+
+def test_R959_the_COMMITTED_CSVs_are_byte_identical_to_their_own_BLOBS() -> None:
+    """The deliverables are stored as their generators write them (R959).
+
+    **THIS IS WHAT MADE FOUR ROUNDS OF "0 DIFF" MACHINE-DEPENDENT**, on both sides of the
+    review. `csv.writer` terminates rows CRLF and the comment header is written LF; with
+    `core.autocrlf=true` and no `.gitattributes` rule, git normalised every CRLF away, so
+    the blob carried 0 CRLF where the generator writes 1249. The committed file could not
+    equal its own generator's output on ANY platform -- on Windows a checkout re-added
+    CRLF to all 1266 lines, matching neither; on Linux it matched the blob and so not the
+    generator. It surfaced as a RED LADDER RUNG in CI, which skipped rungs 4 and 5.
+
+    `*.csv -text` stores the bytes. This asserts the property directly, rather than
+    leaving it to a cell that happens to compare bytes on one machine.
+    """
+    import subprocess
+
+    tracked = subprocess.run(
+        ["git", "ls-files", "*.csv"], capture_output=True, text=True, cwd=ROOT, check=True
+    ).stdout.split()
+    assert tracked, "no tracked CSVs found, so this check is measuring nothing"
+
+    mismatched = []
+    for rel in tracked:
+        blob = subprocess.run(["git", "show", f"HEAD:{rel}"], capture_output=True, cwd=ROOT).stdout
+        if blob != (ROOT / rel).read_bytes():
+            mismatched.append(rel)
+    assert not mismatched, (
+        f"these committed CSVs differ from their own blobs: {mismatched}. Line endings "
+        f"are being normalised on commit, so no regeneration check comparing a generator "
+        f"against a checkout can be trusted on any platform (R959). `.gitattributes` "
+        f"carries `*.csv -text` for this reason."
+    )
