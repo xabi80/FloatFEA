@@ -49,7 +49,7 @@ from floatfea.model.platform import (
     build_superstructure,
 )
 from floatfea.post.forces_table import Row, compute_rows
-from floatfea.run.config import HEADING, ConfigError, RunConfig
+from floatfea.run.config import HEADING, WAVE_HEIGHT, Bound, ConfigError, RunConfig
 
 __all__ = [
     "RunResult",
@@ -680,6 +680,22 @@ WAVE_BASIS_KEYS: Final[tuple[str, ...]] = (
 )
 """The four fields a recorded wave basis carries, and every published artifact states."""
 
+RECORDED_BOUNDS: Final[dict[str, Bound]] = {
+    "heading_deg": HEADING,
+    "wave_height_full_m": WAVE_HEIGHT,
+    "wave_height_model_m": WAVE_HEIGHT,
+}
+"""The declared domain each RECORDED numeric field is checked against (R881).
+
+**One domain per quantity, not one per side of the boundary.** A recorded value is
+checked against the same bound its CONFIGURED counterpart gets in `config.py`, because
+the question both ask is identical: is this a value a declaration could legally express?
+A sidecar recording something no `load_cases` block could declare records something the
+run cannot have been computed at.
+
+`window` is absent because it is not a number; it keeps its own `isinstance` check below.
+"""
+
 
 def _validated_wave_basis(present: dict[str, Any], sidecar: Path) -> dict[str, Any]:
     """The recorded basis, validated AT THE READER, or a refusal (R877, R878, R879).
@@ -728,7 +744,7 @@ def _validated_wave_basis(present: dict[str, Any], sidecar: Path) -> dict[str, A
             f"rather than absent -- delete the sidecar to run with the basis NOT RECORDED, "
             f"which every artifact then says, or record the missing field."
         )
-    for key in ("heading_deg", "wave_height_full_m", "wave_height_model_m"):
+    for key, (unit, low, high) in RECORDED_BOUNDS.items():
         value = present[key]
         if isinstance(value, bool) or not isinstance(value, (int, float)):
             raise ConfigError(
@@ -744,28 +760,40 @@ def _validated_wave_basis(present: dict[str, Any], sidecar: Path) -> dict[str, A
                 f"refused here by name rather than further down, where only a comparison "
                 f"would have noticed and only when one was asked for."
             )
-    heading = float(present["heading_deg"])
-    low, high = HEADING[1], HEADING[2]
-    # **THE RAW VALUE, NOT THE NORMALISED ONE, AND MY FIRST VERSION GOT THIS WRONG.** It
-    # tested `heading % 360.0`, so a recorded `450.0` passed -- `450 % 360` is `90`, which
-    # is inside the domain -- and the run published `450.0 deg` in all three artifacts at
-    # exit 0. Measured: `member_forces.csv` 193718 bytes against the control's 193716, the
-    # two extra bytes being the digits.
-    #
-    # The two uses of 360 pull in opposite directions and both are right:
-    #   * COMPARING two headings asks whether they are the same DIRECTION, so it
-    #     normalises -- `uncovered_headings` does, and the reviewer measured `450` against
-    #     a covered `90` as correctly the same direction of travel.
-    #   * RANGE-CHECKING a recorded heading asks whether it is a value the configuration
-    #     could legally have declared, and `HEADING` bounds that to `0..360` RAW. A
-    #     sidecar recording `450.0` records something no declaration could express.
-    if not low <= heading <= high:
-        raise ConfigError(
-            f"{sidecar.name}: `run.heading_deg` is {heading}, outside the declared domain "
-            f"{low}..{high} deg that every declared heading is checked against. One domain, "
-            f"not two -- a recorded heading the configuration could not legally declare "
-            f"cannot be compared against one that it could."
-        )
+        # **THE RAW VALUE, NOT A NORMALISED OR ABSOLUTE ONE, AND I GOT THIS WRONG TWICE.**
+        # The first version tested `heading % 360.0`, so a recorded `450.0` passed --
+        # `450 % 360` is `90`, inside the domain -- and the run published `450.0 deg` in
+        # all three artifacts at exit 0. Measured: `member_forces.csv` 193718 bytes
+        # against the control's 193716, the two extra bytes being the digits.
+        #
+        # The second version range-checked the HEADING ONLY and left both wave heights
+        # with a type check and no domain (R881). One variable moved, the committed
+        # sidecar with its two heights negated, through the real CLI:
+        #
+        #     wave_height_full_m =  24.2  ->  EXIT=0, "24.2 m full scale (0.484 m model)"
+        #     wave_height_full_m = -24.2  ->  EXIT=0, "-24.2 m full scale (-0.484 m model)"
+        #
+        # with `member_forces.csv` at 193716 against the control's 193714. A negative
+        # wave height is not a wave, and it reached all three published artifacts.
+        #
+        # The two uses of 360 pull in opposite directions and both are right, which is the
+        # reason this check is on the raw value for EVERY field rather than the heading's
+        # own special case:
+        #   * COMPARING two headings asks whether they are the same DIRECTION, so it
+        #     normalises -- `uncovered_headings` does, and the reviewer measured `450`
+        #     against a covered `90` as correctly the same direction of travel.
+        #   * RANGE-CHECKING a recorded value asks whether it is a value the configuration
+        #     could legally have declared. `HEADING` bounds that to `0..360` RAW and
+        #     `WAVE_HEIGHT` to `0..100` m, so a sidecar recording `450.0` deg or `-24.2` m
+        #     records something no declaration could express.
+        if not low <= float(value) <= high:
+            raise ConfigError(
+                f"{sidecar.name}: `run.{key}` is {float(value):g}, outside the declared "
+                f"domain {low:g}..{high:g} {unit} that every declared value of this "
+                f"quantity is checked against. One domain per quantity, not one per side "
+                f"-- a recorded value the configuration could not legally declare cannot "
+                f"describe the run that produced these artifacts."
+            )
     if not isinstance(present["window"], str):
         raise ConfigError(
             f"{sidecar.name}: `run.window` is {present['window']!r} "

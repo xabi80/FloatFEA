@@ -413,6 +413,57 @@ def test_R879_the_domain_is_INCLUSIVE_at_both_ends(value: float) -> None:
     assert _validated_wave_basis(dict(GOOD) | {"heading_deg": value}, SIDECAR)
 
 
+@pytest.mark.parametrize("key", ["wave_height_full_m", "wave_height_model_m"])
+@pytest.mark.parametrize("value", [-24.2, -0.484, -1e-9, 100.1, 1000.0])
+def test_R881_a_recorded_WAVE_HEIGHT_outside_its_declared_domain_is_refused(
+    key: str, value: float
+) -> None:
+    """R879 range-checked the HEADING and left both heights typed but unbounded.
+
+    One variable moved, the committed sidecar with its two heights negated, through the
+    real CLI:
+
+        wave_height_full_m =  24.2  ->  EXIT=0, "24.2 m full scale (0.484 m model)"
+        wave_height_full_m = -24.2  ->  EXIT=0, "-24.2 m full scale (-0.484 m model)"
+
+    with `member_forces.csv` at 193716 bytes against the control's 193714. A negative
+    wave height is not a wave, and it reached all three published artifacts at exit 0.
+    """
+    with pytest.raises(ConfigError) as caught:
+        _validated_wave_basis(dict(GOOD) | {key: value}, SIDECAR)
+    message = str(caught.value)
+    assert "outside the declared domain" in message and f"run.{key}" in message, message
+
+
+@pytest.mark.parametrize("value", [0.0, 100.0, 24.2])
+def test_R881_the_WAVE_HEIGHT_domain_is_INCLUSIVE_at_both_ends(value: float) -> None:
+    """`WAVE_HEIGHT` is `(0.0, 100.0)` inclusive, as the configured side already is.
+
+    A calm sea is `0.0` m and the bound admits it; the refusal above is about values no
+    declaration could express, not about small ones.
+    """
+    assert _validated_wave_basis(dict(GOOD) | {"wave_height_full_m": value}, SIDECAR)
+
+
+def test_R881_EVERY_numeric_recorded_field_HAS_a_declared_domain() -> None:
+    """The shape of the defect, not the two instances of it.
+
+    R881 was a field carrying a type check and no domain. A fifth field added to
+    `WAVE_BASIS_KEYS` with a type check and no entry in `RECORDED_BOUNDS` would be the
+    same defect again, and nothing above would notice: the cases are keyed on the names
+    that exist today.
+    """
+    from floatfea.run.pipeline import RECORDED_BOUNDS, WAVE_BASIS_KEYS
+
+    numeric = [k for k in WAVE_BASIS_KEYS if not isinstance(GOOD[k], str)]
+    assert set(numeric) == set(RECORDED_BOUNDS), (
+        f"these recorded numeric fields have no declared domain: "
+        f"{sorted(set(numeric) - set(RECORDED_BOUNDS))}"
+    )
+    for key, (unit, low, high) in RECORDED_BOUNDS.items():
+        assert low < high and unit, (key, unit, low, high)
+
+
 @pytest.mark.parametrize("missing", list(GOOD))
 def test_R878_a_PARTIAL_sidecar_is_refused_rather_than_downgraded(missing: str) -> None:
     """A sidecar missing a field is WRONG, not absent.
@@ -460,6 +511,15 @@ def test_R877_the_READER_ITSELF_validates_not_only_the_helper(tmp_path: Path) ->
     with pytest.raises(ConfigError) as caught:
         exported_wave_basis(npz)
     assert "PARTIAL wave basis" in str(caught.value), str(caught.value)
+
+    # R881 AT THE CALL SITE TOO. The helper cases above are green with the call removed
+    # from the reader, which is exactly how R866, R877 and R881 each shipped.
+    sidecar.write_text(
+        _json.dumps({"run": dict(GOOD) | {"wave_height_full_m": -24.2}}), encoding="utf-8"
+    )
+    with pytest.raises(ConfigError) as caught:
+        exported_wave_basis(npz)
+    assert "run.wave_height_full_m" in str(caught.value), str(caught.value)
 
     # AND A MISSING SIDECAR IS STILL NOT RECORDED rather than an error (FL1(a)).
     sidecar.unlink()
