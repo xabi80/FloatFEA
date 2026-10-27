@@ -1,4 +1,477 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: d9ee4b522f48b67625c4386800a53d09a85c4871
+**Reviewed commit: `d9ee4b522f48b67625c4386800a53d09a85c4871`.**
+Verdict: HOLD
+Tests: unchanged from the entry below -- 4014 passed, 1373 failed, 1 skipped, 5388 outcomes at this same commit, read out of the two raw CI job logs. No test was run again for this entry and none needed to be; the one new measurement in it is a twenty-shape type grid, below.
+Scope: **ADDENDUM TO THE ENTRY BELOW, AT THE SAME COMMIT. ONE AMENDED CLOSING CONDITION AND NO NEW FINDING.** An ES0 interim check on a tree with no new report revision, so it counts against no round -- **still 0 of 3** -- and it carries no `Closes:` line (FK1). It exists because **R1033 closing condition, as I wrote it one entry below, would have refused the npz this repository ships**, and a condition left wrong in the record is worse than an extra entry. BP0 applied to my own condition: when the rule under a figure moves, the figure is corrected where it was published, not where it is convenient.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R1033** (the type gate misses the numpy scalar its npz callers receive) | **STILL BLOCKS, UNCHANGED IN SUBSTANCE. ITS CLOSING CONDITION IS AMENDED BELOW: ONE OF THE TWO REPAIRS I OFFERED IS WRONG AT ONE OF THE TWO SITES, AND THE IMPLEMENTER MEASURED IT RATHER THAN TAKING MY WORD FOR IT.** | the amendment, with the measurement that forced it, is the single item below |
+| everything else | **unchanged from the entry below, which is the round** | R1021 and R1022 answered and measured; R885, R895, R867-R870 open; R1034-R1040 ledger; the corpus pause held; no tolerance touched |
+
+## Findings
+
+**NO NEW FINDING. ONE AMENDED CONDITION.**
+
+**R1033, CONDITION AMENDED. I OFFERED TWO POSITIVE TESTS AND ONE OF THEM REFUSES THE COMMITTED FILE. IT WAS CAUGHT BY RUNNING THE NPZ THROUGH THE REPAIR INSTEAD OF READING THE REPAIR -- THE WEAKENING DIRECTION EH4 ASKS FOR, WHICH I DEMANDED OF THE REPAIR AND DID NOT APPLY TO MY OWN SENTENCE.**
+
+```
+claim  the two sites do not receive the same kind of object, so one spelling of the
+       repair cannot serve both -- and `numbers.Real` is FALSE for what the npz hands
+       the per-case site
+cmd    np.load('data/f4/dynamic_inputs.npz') -- the second record, and an element of the
+       top-level array, each by type, dtype, ndim, numbers.Real and dtype.kind
+out    case0/period_full_s   type ndarray  dtype float64  ndim 0  numbers.Real False  kind f
+       periods_full_s[0]     type float64  dtype float64  ndim 0  numbers.Real True   kind f
+rule   my own condition one entry below -- "a positive test (`numbers.Real` with the
+       booleans excluded, or `np.issubdtype` on the array dtype) closes the complex arm
+       in the same line and I would accept either"
+judge  **THE FIRST HALF OF THAT SENTENCE IS WITHDRAWN.** A `numbers.Real`-only gate at
+       `floatfea/run/pipeline.py:1360` refuses `data/f4/dynamic_inputs.npz` on the next
+       run, because `raw[key]` on an `np.load` result returns a ZERO-DIMENSIONAL ndarray
+       rather than a numpy scalar. Subscripting the top-level array gives `np.float64`,
+       which IS `numbers.Real` -- so the site I was looking at when I wrote the sentence
+       is the one where it happens to hold. **That is R1033 own shape, committed by me in
+       the condition for R1033:** a type test written in the vocabulary of the object in
+       front of the author rather than of the object that will arrive. I had the
+       instrument to catch it -- my own 28-input grid ran against the DOOR and never
+       against the per-case site own argument -- and I did not point it there.
+```
+
+**THE AMENDED CONDITION, AND THE DTYPE ROUTE IS THE RIGHT ONE.** `dtype.kind` and `np.issubdtype` decide the same thing and I intended neither spelling specifically; **use `kind`**, for the reason given back to me -- `floatfea/run/config.py` imports no numpy today and a domain check does not need to add one. I measured the proposed decision over twenty shapes and it is correct at both sites:
+
+```
+cell   ONE VARIABLE: the object handed to the gate. `kind` where the object carries a
+       `.dtype`, else `numbers.Real` minus `bool`
+out    ADMITS   the committed 0-d second record, np.float64, np.float32, np.uint8,
+                a 0-d float array, python int, python float, Fraction
+       REFUSES  np.bool_, np.complex128, a 0-d BOOL array, python bool, str, np.str_,
+                np.bytes_, None, timedelta64, datetime64
+rule   FR1 head two; and the weakening direction -- the gate must not refuse the shipped
+       file, which is the half that caught my own wording
+judge  correct at both sites, and as ONE decision with two callers rather than two copies
+       of a comparison (R983), which is the shape this repository already asks for.
+```
+
+**THREE CONDITIONS ON IT, ALL MEASURED, AND THE FIRST IS THE ONE I WOULD OTHERWISE RAISE NEXT ROUND.**
+
+1. **MEMBERSHIP IS A TUPLE OR A SET, NOT A SUBSTRING.** Measured: the empty string is IN the three-character string and NOT in the three-element tuple. No dtype has an empty kind today, so nothing is wrong; a membership domain that admits a value nobody intended is R1033 in miniature, inside the repair for R1033, and it costs two characters to close.
+2. **THE DTYPE TEST ADDS TO THE `float(item)` REFUSAL AND DOES NOT REPLACE IT.** A shape-one float array passes the float kind and is refused today only because the conversion raises on it. Keep the conversion branch: the gate is a type test in front of it, not instead of it.
+3. **THE `getattr(x, "dtype", None)` DISPATCH IS NOT R1021 HALF TWO, AND THE DIFFERENCE MUST BE VISIBLE IN THE CODE.** There, a default stood in for "nothing is recorded" and a missing attribute SKIPPED the comparison. Here the else-branch is a complete decision that REFUSES what it does not recognise. Write it so neither branch can fall through to an admission, and so the next reader -- or the next reviewer -- can see which of the two shapes it is.
+
+**AND ONE DELIBERATE NARROWING TO NAME RATHER THAN DISCOVER:** `Decimal` is admitted today, because `float()` converts it, and the new gate refuses it -- it carries no `.dtype` and is not `numbers.Real`. Neither an npz nor `json.loads` can produce one, so nothing reachable changes; it belongs in the commit message as a narrowing that was chosen, not as one that gets found later.
+
+**Closed when** both gates refuse `np.bool_` and `np.complex128` and admit the committed file, by the dtype route, as one decision with two callers; the three conditions above hold; and the cell is parametrised over BOTH spellings -- the python type and the numpy one -- with the committed npz driven through both gates in the weakening direction, so "it does not refuse the shipped file" is measured rather than assumed. That last half is now the load-bearing one, because it is the half my own condition failed.
+
+## Tolerances touched
+
+**NONE, and nothing in this entry asks for one.** `git diff bddf1c8..HEAD -- floatfea/tolerances.py | wc -c` is `0`, unchanged from the entry below. A dtype test is a type domain and not a threshold: there is no value in it that could be loosened to make two numbers agree.
+
+## Next step opens when
+
+**Unchanged: the entry below is the round, R1033 is the one blocking item, and the step stays open at 0 of 3 revisions.** This entry changes exactly one thing -- R1033 `Closed when` is now the dtype route with its three conditions, and the `numbers.Real` half of my earlier sentence is withdrawn by name.
+
+**The transferable half, because it is the same sentence I wrote one entry below and then broke.** That entry ended: *when a check enumerates what it refuses, enumerate it in the vocabulary of the thing that will arrive, not of the thing you are holding.* The condition I attached to it named `numbers.Real`, which is the vocabulary of the object I happened to be holding -- an element of the top-level array -- while the other site is handed a 0-d ndarray. **A reviewer closing condition is a specification for code, and it is subject to every rule the code is.** The repair is not more care: it is that **a condition naming a predicate is driven against the shipped input before it is written**, which is one line, and which I did not run. Recorded against myself at the same commit rather than in a later round, because the implementer was already building against it.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: d9ee4b522f48b67625c4386800a53d09a85c4871
+**Reviewed commit: `d9ee4b522f48b67625c4386800a53d09a85c4871`.**
+Verdict: HOLD
+Tests: 4014 passed, 1373 failed, 1 skipped -- 5388 outcomes at the reviewed commit, every count grepped BY ME out of the two raw CI job logs step by step rather than taken from any summary, with all 1373 reds confined to the two report-guard files and every id matched individually against the FS1/FT1 predicate (0 UNMATCHED, negative control fires). My own `pytest -q` at this commit on a clean tree was started before any probe and is STILL IN FLIGHT at write time -- 199 outcomes, no failure -- on a machine that has had four pytest processes on it; the section "The whole-suite figure" says exactly what I ran, what I did not, and why I rule the owing discharged.
+Scope: **ES0 INTERIM CHECK, the twenty-fifth on step 3.** There is still no `docs/reports/R1/step-3.md`, so no reviewed revision has been consumed -- **0 of 3** -- and this counts against no round (ES0). Written through `scripts/write_verdict.py --interim` (FS2); no `--closes`, because an interim check closes nothing (FK1).
+
+**I RULED UNDER FR1 WITH EZ0** (`CLAUDE.md` section "What blocks for the rest of R1"). **ONE FINDING BLOCKS AND IT CARRIES THE SILENTLY-WRONG-RESULT SENTENCE FR1'S LAST CLAUSE DEMANDS.** Seven more are ledger or routed and for each I say why it cannot be given one. **BOTH OF THE PREVIOUS VERDICT'S BLOCKING FINDINGS ARE ANSWERED AND I MEASURED EACH RATHER THAN READING IT** -- R1021 by reverting the abstention IN PROCESS and driving the real CLI, which reproduced `U = 2.78942` at a published `T_full = 14 s` with all three artifacts written, and R1022 by running my own two-needle census of the readers. The HOLD is not about the quality of the commit: it is that **the type gate this commit added for R825's family lists the python types a JSON sidecar can produce and misses the numpy scalar the two npz readers actually receive**, which I drove to the publishing reader.
+
+```
+cmd    git log --oneline bddf1c8..HEAD
+out    d9ee4b5 R1 step 3, FT2.3 (4/4): the two evasions ...   -- ONE commit, as the turn says
+cmd    git diff --stat bddf1c8..HEAD -- .claude docs/SUPERVISOR.md CLAUDE.md docs/reviews tests/corpus floatfea/tolerances.py tests/conftest.py 'tests/**/conftest.py' .github scripts/run_rung.sh
+out    (empty)  -- my own instructions, my verdict file, my corpus, the tolerance file, the
+                   one conftest, the CI definition and the rung script are all untouched.
+                   NOT A STOP.
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py            -- a file, as my instructions say it must be
+cmd    git diff --stat bddf1c8..HEAD -- tests/verification
+out    tests/verification/rung4/test_f4_g41_dynamic.py | 45 +   -- ONE added cell, no
+                   conftest and no plugin under any rung (CH2/CI0/CJ0)
+cmd    git diff --stat bddf1c8..HEAD -- docs/milestones docs/closure docs/reports docs/directives
+out    docs/milestones/F2a.md | 60 +-   -- the R1017 entry withdrawn IN PLACE, and nothing
+                   else. The locked plan is unmoved (no re-lock, so DK0 does not arise);
+                   no step report was touched (EK3)
+cmd    git status --porcelain  (before, and after one whole-suite run, 3 full pipeline runs,
+                               1 generator subprocess and ~60 in-process probes)
+out    (empty) / (empty)   -- every probe under the scratchpad, nothing in the worktree
+```
+
+**STEP 1b DOES NOT FIRE, AND I SAY SO RATHER THAN SKIPPING IT.** `ls docs/reports/R1/` is `step-1.md step-2.md` and their two answers files, so there is no `Answers: verdict N @ <sha>` header to compare against the newest verdict. The newest report revision is still step 2's third and **twenty-five verdicts are now newer than it**: EG3 state (2) by construction. **No witness is carried**: the only open PR is `#1`, whose `headRefName` is `F2`, and it has no `[witness ...]` comment.
+
+**EU1 DOES NOT ATTACH AND I RAN THE ADVERSARIAL CASE ANYWAY.** No tolerance value and no declared counter moved (the Tolerances section below carries the grep). I ran the model and the door at configurations the diff did not choose -- a 28-input type-and-edge grid over the door's domain, the R1021 abstention reverted in process and driven end to end, a bool-dtype npz through the publishing reader, a model-scale array through the EZ0 generator, and an empty recorded array through the CLI. **The blocking finding came from exactly that and is not visible in the diff.**
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R1021** (the abstention is an exit; `available` from a `getattr(..., ())` default) | **ANSWERED, ALL THREE SUB-CONDITIONS, AND I MEASURED THE REPAIR BY REVERTING IT RATHER THAN BY READING IT. Sub-condition (3) is met by a DIFFERENT ROUTE than the one I worded, and I rule the route SUFFICIENT -- see my ruling (1).** | (1) partial record refused by index: `2 of 6 cases carry no \`case{i}/period_full_s\` -- indices [0, 2]` (my own call). (2) all-absent refused: `6 of 6 ... indices [0, 1, 2, 3, 4, 5]`. (3) `available` is gone; a plain mapping with NO `.files` and six CORRECT records is now **fully compared** and admitted, with six WRONG ones **refused** and all six absent **refused** -- so the harm my condition named ("admitted with an empty domain", 0 of 6 compared) is unreachable, measured on four stub arms. **AND THE REVERT ARM IS MINE:** the pre-R1021 body restored IN PROCESS (one variable, no tracked file touched), the same forged npz through `floatfea.cli.main` -> **EXIT=0, `governing U = 2.78942` at `platform:hub2_arm` ROOT, `T_full = 14 s`, all three artifacts written, 170.75 s**. With the shipped code the same input refuses and writes nothing. |
+| **R1022** (the domain check reached one of three readers) | **ANSWERED, and I RAN MY OWN CENSUS WITH TWO NEEDLES rather than checking theirs** | `git grep -n periods_full_s -- floatfea scripts` -> three DISK readers (`floatfea/run/pipeline.py:1483`, `scripts/f4_dynamic_residual.py:211`, `scripts/measure/f6_results_report.py:577`), all three now inside `checked_recorded_periods`; one WRITER (`scripts/export_f4_dynamic_inputs.py:419`, `:527`); every other hit reads `inp.periods_full_s` off an `Inputs` built by one of the three. Second needle, independent of the name: `git grep -n "np\.load("` -> 7 call sites, and the two that do not go through the door (`f6a_premise_check.py:166`, `member_forces_table.py:340`) take their periods from `fdr.load()`. **No fourth reader.** The three cells cited in the docstring all exist and all pass at this commit (my run: `2 passed`, `63 passed`). |
+| **R885, R895** | **STILL OPEN, STILL ESCALATED, Xabier call -- I am not asking the implementer to close either** | `git diff --stat bddf1c8..HEAD -- floatfea/io` is EMPTY. No probe of mine depends on R895. |
+| **R867, R868, R869, R870** (eight topologies, one runs) | **all four still open, blocking by name into the first revision. FT2.7.** | `git diff --stat bddf1c8..HEAD -- floatfea/model floatfea/solve` is EMPTY, for the EIGHTEENTH round running. Relayed unchanged. |
+| **R1023, R1032** (FF0, next commit) | **BOTH DONE IN THIS COMMIT, AND I RE-MEASURED R1032 RATHER THAN READING IT** | R1023: the `docs/milestones/F2a.md` entry is withdrawn IN PLACE with the measurement, which is the right disposition -- a plan that loses a false entry quietly is worse than one that records it. R1032: my own parse over the whole verdict file gives **174 headings, OLD predicate 160, NEW 44**, identical to the commit's figures, and verdict 24's twelve headings now classify **2 blocking / 10 not**, which is what the file says. The non-vacuity assertion now asks the FORMAT question (`_findings()`), which is the right question. |
+| **R1024** (my stale four-arm table) | **CORRECTED, and the correction is mine: 30 / 34 / 34 / 4** | accepted as written in the commit message. |
+| **R1025, R1026 site one, R1027** (ledger, closed anyway) | **CLOSING THEM WAS RIGHT AND I ENDORSE IT -- see my ruling (4). One of them paid for itself immediately.** | R1025: the `monkeypatch.setattr` cell is in and it is the right shape -- `(lam, s)` asserted UNCHANGED so only the DECISION moves. R1026 site one: `f"{BREAKING_STEEPNESS_LIMIT:.4f}"` is `0.1429` (my run), which is byte-for-byte what `docs/F4_member_forces.md:57` publishes, so that pair cannot have moved; **and the regeneration that item forced is what caught the `114 -> 115` move in the OTHER deliverable.** R1027: the sentence is deleted rather than re-dressed, and the replacement makes no claim about callers or counts -- correct under CW0, and the first repair (a BF0 triple written into `floatfea/basis.py`) was correctly recognised as the wrong form. |
+| **R1028, R1029, R1030, R1031, R1026 sites two to five, R1008, R1015** | **stay ledger; not re-reviewed item by item (CZ0), and an interim check writes no closure list (ES0)** | R1028's placement measurement is re-taken at this tree in the commit and the line numbers move with it, which is CP3 working. R1026's remaining four publish the FRACTION `1/7` or the FORMULA, not a second copy of a computed value -- I read all four and the claim holds. |
+| **R1004 half B** | **unchanged, owed by name at FT2.4** | `scripts/measure/f6a_required_section.py:52` is still `GRAVITY = 9.80665`. |
+| **R899** (the citation drift) | **RECURS FOR THE NINTH ROUND -- AND MY PREDECESSOR'S FIGURE FOR IT IS WRONG. I CORRECT IT: see R1039.** | `grep -c` in `docs/SUPERVISOR.md`: FR1 **0**, FF0 **0**, FP0 **0**, FP1 **0**, FK1 **0**, FS2 **0** -- but **FS1 is 4 and FT1 is 1**, not 0 as verdict 24 reported, because `a4ab04d` and `cd126a6` are `process:` commits that put them there. All Xabier, as a `process:` commit; none of it is a round. |
+| **C29, C34, C35** (ruff, black, mypy) | **green at this commit on BOTH machines, and every step RAN rather than being skipped behind a red (CZ1 iii)** | mine: `All checks passed!` / `155 files would be left unchanged` / `Success: no issues found in 43 source files`. CI run 40595816099, job `lint, unit and guards`: `actionlint` SUCCESS, `ruff` SUCCESS, `black --check` SUCCESS, `mypy` SUCCESS, `unit tests` SUCCESS. The FP1 `types-PyYAML` divergence did NOT recur, and the new `floatfea.run.config` import on the gate's path did not break the unit job. |
+| **C26-C28, C30-C33, C36, C37, C39, C42-C45** | **carry to the closure artifact as a list** | not re-reviewed item by item, per CZ0. This row is the pointer, not the list. |
+| the suite-count line, and the CZ1 (ii)/(iii) outputs | **still owed, still structurally unpayable until a step-3 report exists** | FT1 limb two by construction. |
+| **EG3 (ii): the verdict commit measured** | **PAID, by the implementer, and marked as MINE in their message** | `tests/test_report_guard_states.py` at `bddf1c8` was `7 failed, 17 passed` -- the same seven ids, unchanged by the verdict existing, which is state (2) behaving as designed. |
+
+## Findings
+
+**ONE BLOCKS.** It is given the silently-wrong-result sentence FR1's last clause demands, and **it came from running the door at a configuration the diff did not choose.** Seven more are ledger or routed, and for each I say why no silently wrong result follows. **Nothing here is a defect in R1021's or R1022's logic**, both of which I drove and both of which hold.
+
+---
+
+**R1033. (BLOCKS -- FR1 head two, the R825/R834/R837 family verbatim) THE TYPE GATE THIS COMMIT ADDED FOR THAT FAMILY LISTS THE PYTHON TYPES A JSON SIDECAR CAN PRODUCE AND MISSES THE NUMPY SCALAR THE TWO NPZ READERS ACTUALLY RECEIVE. `np.bool_(True)` IS ACCEPTED AND USED AS A `1.0 s` PERIOD AT BOTH NEW SITES, AND I DROVE IT TO THE PUBLISHING READER.**
+
+**The silently wrong result:** `scripts/f4_dynamic_residual.load()` -- the reader `scripts/measure/member_forces_table.py` takes its periods from, which writes the EZ0 pair `docs/F4_member_forces.md` and `docs/F4_member_forces.csv` -- accepts a `periods_full_s` array of dtype `bool` and returns `(1.0, 1.0, 1.0, 1.0, 1.0, 1.0)`, so every case is published under `period_full_s = 1` with its own wave-basis row (`lambda = 1.5613 m`, `H/lambda = 15.4998`, `breaking`), and that generator is DELIBERATELY unable to refuse a different sea state (`member_forces_table.py:365`, R902, and FT2.6 needs it that way). The same file passes BOTH of the period gates in `floatfea run`. A boolean is used as a wave period while the refusal the same commit wrote says in as many words that a boolean "is not a recorded number".
+
+```
+claim  the type gate catches `bool` and not `np.bool_`, and `np.load` can only ever
+       hand it the second
+cmd    isinstance(np.True_, bool) ; isinstance(np.str_('a'), str)
+out    False ; True   -- `np.str_` and `np.bytes_` ARE subclasses of their python types,
+       so those two halves of the gate work. `np.bool_` is not a subclass of `bool`.
+cell   ONE VARIABLE: the type of the recorded item, everything else held. The door, 28
+       inputs, at `floatfea/run/config.py:295`
+out    python bool True        REFUSED  "True (bool) is not a recorded number"
+       numpy bool_ True        ADMITTED (10.0, 1.0)
+       bool_ array, all True   ADMITTED (1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
+       numpy str_ '12.5'       REFUSED
+       complex128 10+0j        ADMITTED (10.0,)  -- ComplexWarning, imaginary part
+                                                    silently discarded
+cell   the same at the SECOND site, `floatfea/run/pipeline.py:1360`, with the top-level
+       array moved to bool as well so the two records agree
+out    python bool record                  REFUSED  "6 of 6 second period records are
+                                                     not numbers"
+       np.bool_ record alone               REFUSED  by the DISAGREEMENT check, not by
+                                                     the type gate
+       np.bool_ record + bool_ top array   ADMITTED -- both period gates pass
+cmd    and the publishing reader, on a fabricated npz with a MATCHING sha256 -- the same
+       harness shape the new rung-4 cell uses
+out    load() ADMITTED. periods_full_s = (1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
+       classify_case(1.0, 24.2): BREAKING  lam=1.5613  H/lam=15.4998
+rule   FR1 head two -- an input accepted and used other than as declared; CLAUDE.md's own
+       note on that head, "No number was wrong in any artifact at the time, and the input
+       was used other than as declared, so that family blocks under FR1 exactly as it did
+       under CZ0 (a)"; and my recorded guard on ASSERTION DOMAIN BLINDNESS -- the
+       collection the check inspects cannot contain the failure as it arrives
+judge  **IT BLOCKS, and it blocks inside the repair of the finding it was written to
+       answer, which is the third consecutive round of that shape.** The gate's domain is
+       python types; of its three callers exactly ONE is fed python objects -- the JSON
+       sidecar at `f6_results_report.py:577`, where a literal `true` IS refused, and I
+       measured that too -- and the other two are fed `np.load` results, where the python
+       type can never appear and the numpy one is the only form a boolean takes.
+       **AND I SAY WHAT I AM NOT CLAIMING:** no committed file has this shape
+       (`data/f4/dynamic_inputs.npz` is `float64`, measured) and the export writes
+       `dtype=np.float64` explicitly at `scripts/export_f4_dynamic_inputs.py:419`, so the
+       arrival path is a hand-built or hand-edited npz -- which is exactly what
+       `cfg.load_cases.npz` is, user-supplied, and exactly what FT2.6's synthetic and
+       rotated files are, in this step's own locked gate. Through `run()` the shipped
+       configuration is then stopped by `unknown` and by the band screen, which are checks
+       about something else; through `load()` nothing stands between the bool array and
+       the deliverable.
+```
+
+**Closed when** the two type gates refuse what they say they refuse, on the inputs their own callers receive -- `np.bool_` at `floatfea/run/config.py:295` and at `floatfea/run/pipeline.py:1360` -- and the refusal is held by a cell PARAMETRISED OVER BOTH SPELLINGS rather than asserting the python one alone, so the next reader can see that both are covered. A positive test (`numbers.Real` with the booleans excluded, or `np.issubdtype` on the array dtype) closes the complex arm in the same line and I would accept either. What I will not accept is one more type added to the tuple with the shape left intact. One line in each of two files; no new apparatus.
+
+---
+
+**THE SEVEN THAT DO NOT BLOCK. For each I say why no silently wrong result follows, which under FR1 is what costs a line instead of a round.**
+
+**R1034. (DOES NOT BLOCK -- ledger) THE `mass_eps` CONCLUSION IS RIGHT AND NEITHER REASON GIVEN FOR IT IS WHAT HOLDS IT.** The turn's answer was that nothing is carried because `load()` verifies the npz sha256 and because `satisfiable` requires `self.live > 0`. I checked both and neither bears: the sha ties the npz to its OWN provenance, so a re-export at a different injection size is self-consistent and passes; and `live > 0` is about whether the window family is non-empty, not about the magnitude of the injection. **What actually holds it is a cell nobody named:** `tests/verification/rung4/test_f4_g41_dynamic.py::test_the_mass_injection_size_is_the_DECLARED_one` asserts `inputs.mass_eps == F4_G41_MASS_INJECTION_EPS` bit-exactly against `tolerances.py`, on the committed file. The disposition is unchanged -- nothing is carried -- but the next person who reads "the sha covers it" could delete the cell that does. BG0: a right conclusion with the wrong cell attached.
+
+**R1035. (DOES NOT BLOCK -- ledger) THE EMPTY-SEQUENCE ALLOWANCE IS SAFE AND ITS STATED REASON NAMES A CHECK THAT NEVER RUNS ON IT.** `tests/unit/test_run_config.py::test_R1022_the_DOOR_refuses_something_that_is_not_a_SEQUENCE` admits `[]` on the ground that "whether a file may record zero cases is `refuse_cases_that_cannot_govern`, which asks a different question". It is not that check. Driven end to end, one variable (`periods_full_s` replaced by an empty `float64` array, everything else held): `EXIT=2`, artifacts `[]`, and the message is `load_cases.governing_periods names [12.5, 14.0, 15.0, 16.2] s, which dynamic_inputs.npz does not contain. It carries [] s` -- the `unknown` comparison, reached first, and reachable at all only because `config.py:1072` refuses an empty DECLARED set. The outcome is right and nothing is published, so no wrong result follows.
+
+**R1036. (DOES NOT BLOCK -- ledger, and it is the measurement that CORRECTED MY OWN INFERENCE) THE DOOR'S DOCSTRING MEASURES THE MODEL-SCALE CASE AT ONE OF ITS THREE CALLERS. I WENT TO SHOW THAT THE OTHER TWO PUBLISH IT, AND THEY DO NOT.** The docstring says a model-scale array (`1.41 .. 2.83 s`, inside `[1, 100] s`) is admitted and then "the screen catches it, as a refusal rather than a label" -- measured through `floatfea.cli.main`, which is one caller. I re-took that arm and it is exact: `EXIT=2`, artifacts `[]`, `T = 1.41421 s at H = 24.2 m: breaking; band 12.542 .. 16.316 s, H/lambda = 7.7499 (limit 0.1429), outside by -11.128 s`, refused before the solve. I then drove the same array at the EZ0 report generator with TWO files moved together -- `run.periods_full_s` and the forces CSV's `period_full_s` column, nothing else -- expecting a published document, and got **`EXIT = 1`, nothing written**: the R967 join against `docs/F6_utilisation.csv` refuses it and names all 32 (member, station, period) triples. The realistic two-file version of that injection is covered at the generator by a DIFFERENT check, and the inference I was about to write was wrong. What remains is scope of measurement and not a gap: a measurement taken at one caller sits in the docstring of a door with three, which is R1022's own shape.
+
+**R1037. (DOES NOT BLOCK -- ledger, FR1 FIRST non-blocking class verbatim) THE NEW REFUSAL'S REMEDY SENTENCE WILL BE WRONG FOR THE FILES THIS STEP'S OWN GATE PRODUCES.** The missing-second-record refusal ends `Re-export the file with python scripts/export_f4_dynamic_inputs.py`. That is right for `data/f4/dynamic_inputs.npz` and I verified the script writes the key for every case (`:417` writes every field of the case dict and `:373` is where `period_full_s` enters it), so the instruction is actionable today. It will not be actionable for FT2.6's synthetic or rotated npz files, which no export script makes. The outcome is right in every case -- refused, nothing written -- so FR1's first non-blocking class applies exactly.
+
+**R1038. (DOES NOT BLOCK -- ledger; the implementer's own, named in their message) THE DUPLICATED `not-a-tolerance:` BLOCK.** `tests/unit/test_forces_table_reexports.py` carries the `_PATCHED_LIMIT` explanation twice, once above the assertion and once inside the statement span. I read both: they are comments, they change no assertion and no number, and the guard is green with them in the tree (my run: `191 passed`). Shipping it named, with the reason -- deleting it edits a file two guards read at runtime and would void a second whole-suite run -- is the right call and I would have made the same one.
+
+**R1039. (DOES NOT BLOCK -- ledger; MY OWN PREDECESSOR'S FIGURE, CORRECTED, AND THE HALF THAT MATTERS IS ABOUT THE FILE I READ) R899's COUNT IS WRONG IN ONE DIRECTION AND THE DRIFT IS REAL IN THE OTHER.** Verdict 24 reported `FS1 0, FT1 0` in `docs/SUPERVISOR.md`. Measured at this commit: **FS1 = 4, FT1 = 1** -- `a4ab04d` and `cd126a6` are the `process:` commits that put them there, and `git diff bddf1c8..HEAD -- docs/SUPERVISOR.md` is empty, so the figure was already wrong when it was written. The codes genuinely absent from that file are FR1, FF0, FP0, FP1, FK1 and FS2: six of the eight, not eight. **And the half nobody has measured: `.claude/agents/gating-supervisor.md`, the file I actually read, has FS1 = 0 and FT1 = 0 while still instructing me in terms of EG3's "two corrected lists" -- the enumeration FS1 replaced with the predicate.** I ruled the boundary reds under CLAUDE.md's FS1/FT1 predicate and I say so here, per my own instruction that where that file restates a rule and differs from CLAUDE.md, CLAUDE.md governs and the disagreement is recorded. All of it is a `process:` commit for Xabier; none of it is a round.
+
+**R1040. (DOES NOT BLOCK -- ledger) THERE IS A THIRD RECORD OF THE SAME QUANTITY AND NOTHING COMPARES IT.** The sidecar's `run` block carries `periods_full_s` -- its keys are `dt, heading_deg, lambda, mass_eps, periods_full_s, ramp_s, rho_inf, wave_height_full_m, wave_height_model_m, window` -- and `run()` reads that block for `WAVE_BASIS_KEYS` (five keys) and `RECORDED_PROVENANCE_NUMERIC` (three) and never for the period array. So `floatfea run` compares the npz top-level array against the per-case records (R1005/R1021) and compares neither against the sidecar copy, which is the record the EZ0 generator reads. No wrong result follows today, because `run()` never uses that copy and a two-file disagreement is refused on both sides -- the per-case records on one, the R909/R958/R967 joins on the other. Recorded because it is R1005's shape one level up and because FT2.6 brings one sidecar per npz.
+
+## The six things the turn asked me to attack, answered, plus the items under "also rule on"
+
+**(1) R1021 SUB-CONDITION (3) IS SATISFIED, NOT EVADED, AND I RULE ON THE ROUTE RATHER THAN ON THE WORDING.** My condition named a harm -- "admitted with an empty domain" -- and prescribed a mechanism: refuse a caller that cannot be interrogated for its keys. The commit deleted the interrogation instead, so there is no key set and no default, and absence is a failed read. Measured on four stub arms, one variable each: a plain mapping with no `.files` and six CORRECT records is **fully compared** and admitted; with six WRONG records **refused**; with the records absent **refused, naming all six indices**; and a `defaultdict` standing in for absence is **refused**, because its default disagrees. The harm cannot occur, the comparison count is never silently zero, and refusing a legitimate mapping would have narrowed the contract for nothing. **A condition names a harm and a mechanism; the harm is what binds.** I would rather be shown a route that makes the harm unreachable than be handed the mechanism I asked for, and the deviation was named in the commit rather than smuggled, which is the behaviour this loop needs. Closed.
+
+**(2) THE REVIEWER READING IS AN ACCEPTABLE HOME FOR THE COMPLETENESS CLAIM, AND IT IS ONLY ACCEPTABLE IF THE READING IS ACTUALLY TAKEN -- SO I TOOK IT, WITH TWO NEEDLES.** A census guard here is new apparatus and the freeze forbids it; a completeness SENTENCE with nothing behind it is what R1022 was; so the only remaining home is a reader who re-runs the census every round, and a docstring that says in as many words that it is not claiming completeness is the right form for it. My census: `git grep -n periods_full_s -- floatfea scripts` gives three disk readers, one writer, and every other hit reading `inp.periods_full_s` off an `Inputs` that one of the three built; and -- because a name-shaped needle is exactly what failed twice in this commit -- a second needle on `np.load(` gives seven call sites, the two outside the door taking their periods from `fdr.load()`. No fourth reader. **And the pathspec lesson belongs in the verdict and not only in the message:** `scripts/**/*.py` without `:(glob)` magic could not see `scripts/f4_dynamic_residual.py`, which is one of the two files the finding is about. The habit that defeats that is the one used here -- census the TREE, not a glob the author chose.
+
+**(3) THE TOLERANCE GUARD COVERAGE GAP IS NOT AN FF0 ITEM AND IT IS NOT FIXABLE INSIDE THE FREEZE. IT GOES ON `docs/milestones/F2a.md`, AND REVIEW IS THE BOUND MEANWHILE.** I reproduced the measurement myself, three one-test files differing only in where the literal is bound: function-local gives `[]`, module-level gives one flag naming the resolved value, bare gives one flag naming the literal. The cause is structural and visible in the guard source: `local_floats` is built from `tree.body`, so a name bound inside a function is never resolved. Three rules meet here and they agree. FF0 routes an apparatus item to the next commit **under EK2 repair-not-extend rule**, and the only repair available is teaching the scanner to resolve local scopes, which is an EXTENSION of its analysis -- EK2 forbids it and "no new apparatus through F6" forbids it again. A guard that fails false is fixed or deleted; this one does not fail false, it fails SILENT, and deleting it would be worse than the gap. So the frozen list is where it belongs: `CLAUDE.md` says a finding that needs new apparatus goes onto `F2a.md`. Until then the bound is a reader, which is CJ0 shape and the same answer R1030 got. **I read both marked comparisons and both are inputs rather than epsilons**, and I solved each in the direction that weakens it: raising the injected limit above the case steepness reddens the cell at its own first assertion, and above the real limit reddens it one line earlier, so it cannot be loosened into a pass; the refused period is asserted to be OUTSIDE the declared domain, so it holds the domain floor rather than relaxing anything.
+
+**(4) THE REPAIR SHAPES ARE RIGHT, AND I DO NOT WANT A NEW DISCIPLINE -- I WANT THE ORDERING CP3 ALREADY IMPLIES, APPLIED TO A GUARD AND NOT ONLY TO A FIGURE.** Deriving the planted text from the data (`str(SIX[2])`) is the best of the three repairs and it is the shape I would generalise: a planted value that comes out of the data it is planted against cannot drift and needs no declaration. Marking a genuine input is the correct fallback, and both markers say what the quantity is and why. On the recurrence: CP2 has not failed twice, it has been obeyed twice and still not prevented this, because the defect is not about numbers in prose -- it is that **the guard was run in the middle of the work rather than after the last edit**. CP3 says a figure pasted before a later edit is void; the same sentence applies to a GUARD run before a later edit, and nothing in the repository says so. The cheap form, which is not new apparatus and which this commit already performed once: the three guards that read the test tree at runtime are the LAST thing run before the commit, after the final edit. Mine: `191 passed in 50.73s`, against `191 passed in 44.06s` on their machine -- about forty-five seconds, once. Three of three literals this round were in cells written to answer other findings, and two of those cells were ledger work, which is also the honest cost of ruling on the ledger the way I do below.
+
+**(5) THE DELIVERABLE EXPLANATION IS THE WHOLE OF IT, AND I CHECKED WHICH OTHER ROWS COULD HAVE MOVED RATHER THAN TAKING THE DIFF WORD FOR IT.** `pytest --collect-only -q` on the rung-4 module is **115 tests collected in 0.13s**, so the two `G4.1` rows are right. The question a diff cannot answer is whether any OTHER row should have moved, so I read the generator table definition: of the eight rows, four name explicit node ids (`G2.1`, `G4.4`, `EB6`, `static analytic`) and this commit touches none of them; three name whole files or a directory -- `G3.1a` on `tests/verification/rung3/test_platform_skeleton.py`, the two `G4.1` rows on `tests/verification/rung4/test_f4_g41_dynamic.py`, and `G6.1` on `tests/verification/rung5`. Only the rung-4 module is in the diff. **So exactly two rows could move and exactly two did.** `docs/F4_member_forces.md` and its CSV cannot have moved either, and I say that by inspection rather than by trust: the only output-affecting change in that generator is `f"{BREAKING_STEEPNESS_LIMIT:.4f}"`, which is `0.1429` at this commit (my run), and `0.1429` is byte-for-byte the text at `docs/F4_member_forces.md:57`. **What is worth recording is the order of events:** the reasoning said nothing published could move, the reasoning was narrower than it was written, and the REGENERATION is what found otherwise -- EH4 habit applied to a document instead of to a gate, and the second time in two rounds that taking the cheap measurement beat arguing from the diff.
+
+**(6) THE OWING IS DISCHARGED, NOT CARRIED, AND I RULE AGAINST BOTH OF THE POSITIONS THE TURN SENT ME -- INCLUDING ITS SECOND ONE, WHICH IS RIGHT ON THE FACTS AND I AM ADOPTING IT.** Three positions arrived in order: the figure comes from the in-flight local run; no, that run predates the commit and the report guards read the commit graph, so it answers a different question; and finally, CI at this sha covers the whole tree in eight steps and the table is the figure. **The second correction is CZ1's reusable half applied to a RUN rather than to a guard and it is exactly right** -- a run started before the commit exists cannot answer a question about the commit. **The third is the one I rule on, and I accepted it only after checking the thing that makes it work:** the union of the eight steps is the tree, and that union is asserted by `test_every_test_in_the_suite_is_run_by_some_ci_job`, which is GREEN inside the same run. Without that, the coverage claim would be a reading of a YAML file -- the census shape that has been wrong three times this milestone, twice in this very commit. I then re-took every per-step count out of the raw job logs myself. **Two hours of local re-derivation buys nothing**, so no, do not start it. **On the pattern:** two consecutive commits owed a single-line local figure, and the right answer turned out not to be "try harder" -- it is that the measurement belongs at the judged sha on a machine neither party controls, which CI is, and which the local box has never been. What I do want kept is the ordering that stops the local run being voided when it is wanted: the three fast runtime guards and the deliverable guard FIRST, repair, then the long run.
+
+**ALSO: CLOSING R1025, R1026 SITE ONE AND R1027 INSIDE THIS COMMIT WAS RIGHT.** The rule is that a ledger item must not consume a ROUND, and these consumed none: the commit was being written anyway, each was one line, and this verdict spends one line on each confirming them instead of a round. **R1026 site one paid for itself inside the same commit** -- it is the item that forced the regeneration, and the regeneration is what caught `114 -> 115` in a published deliverable that the reasoning had declared safe. The cost is measurable too and I record it: three of this commit three undeclared literals were introduced in cells written to answer other findings, and two of those cells were ledger work. That is a real tax on opening the ledger mid-step, and the answer to it is ruling (4) -- run the three guards last -- rather than leaving the ledger shut.
+
+**ALSO: THE TWO `getattr(setup, "state_force", None)` SITES ARE CORRECTLY REPORTED AND NOT REPAIRED, AND I ENDORSE THAT.** Export-path code outside this step, a term identically zero on the five dry FE bodies by EK0(a) own scope, and whether `state_force` is optional in HSP setup is not a question this repository can answer -- `CLAUDE.md` says that is a conversation and not an edit. Recorded for Xabier. One thing the message did not say and I do: nothing in this repository ASSERTS that the term is zero today, so the zero is a property of HSP setup and of EK0(a) scope rather than a measured invariant of this tree. The disposition is unchanged.
+
+**ALSO: `mass_eps` CARRIES NOTHING, AND THE TWO REASONS GIVEN ARE NOT WHAT HOLDS IT -- R1034 above.** The conclusion is right. The cell that holds it is `test_the_mass_injection_size_is_the_DECLARED_one`, which neither reason named.
+
+**ALSO: THE DUPLICATED `not-a-tolerance:` BLOCK -- R1038 above.** Shipping it named was the right call.
+
+**ALSO: R1024 IS CORRECTED AS MINE, 30 / 34 / 34 / 4**, and the property those arms establish -- arm B equals arm C -- holds at either pair.
+
+## EH4: I SOLVED THE DOMAIN IN BOTH DIRECTIONS, INCLUDING THE TWO THAT WEAKEN IT, AND NOBODY HAD TAKEN THESE TWO
+
+The commit solved the domain against the SHIPPED FILE -- the floor may rise `1 -> 10 s` and the ceiling fall `100 -> 20 s` before the committed array is refused, which I confirm (`min 10`, `max 20`). Those are the two directions that make the gate look strong. The two that weaken it are how far the DECLARED BOUND may be loosened before something goes red, and they were not taken:
+
+```
+cell   ONE VARIABLE: `WAVE_PERIOD` floor, with the three R1022 cells re-run in process at
+       each value and the door asked about the injection the gate exists for (T = 0.5 s)
+out    floor 1.0   door refuses 0.5   all three cells PASS
+       floor 0.6   door refuses 0.5   all three cells PASS
+       floor 0.5   door ADMITS 0.5    the DECLARED_RANGE cell goes RED
+                                      ("DID NOT RAISE ConfigError")
+cell   the same for the ceiling
+out    ceiling 100   all three PASS
+       ceiling 200   all three PASS
+       ceiling 499   all three PASS
+       ceiling 500   the NAMES_EVERY_INDEX cell goes RED
+rule   EH4 -- every boundary is solved in BOTH directions, including the two that WEAKEN
+       a gate
+judge  **the margins are 2x on the floor and 5x on the ceiling**, and both are held by
+       the two cells whose declared values I was asked to rule on. The floor may be
+       loosened by just under a factor of two with every cell green, and the first value
+       at which a cell reddens is exactly the injection R1022 was raised on -- which is
+       tight, not loose: EH4 earned itself on a production ceiling that widened `100x`
+       with the measuring half of the suite green. Recorded as a measurement, not as a
+       finding: nothing is wrong, and the suite pins the bound to within `2x` and `5x`.
+```
+
+## CI at the reviewed commit: THE LADDER IS GREEN ON ALL SIX RUNGS, AND EVERY RED IS A BOUNDARY RED
+
+**FP1 honoured:** `d9ee4b5` has a CI run at its own sha, pushed before I was invoked. **It was `in_progress` when I began and I waited for it to complete rather than recording an unfinished run as anything.**
+
+```
+cmd    gh run list --commit d9ee4b522f48b67625c4386800a53d09a85c4871
+out    run 40595816099, workflow CI, status completed, conclusion FAILURE
+cmd    gh api .../actions/runs/40595816099/jobs, read at STEP level
+out    the verification ladder                        SUCCESS   22:34:15 -> 23:09:05
+         ladder 1 -- the solver is a solver           SUCCESS
+         ladder 2 -- the element is the element       SUCCESS
+         ladder 3 -- the model is the platform        SUCCESS
+         ladder 6 -- it stays fixed                   SUCCESS   22:36:47 -> 23:08:56
+         ladder 4 -- the loads are the loads          SUCCESS   <- the rung this commit
+         ladder 5 -- independent confirmation         SUCCESS      adds a cell to, and
+                                                                   the rung whose gate
+                                                                   module now imports
+                                                                   `floatfea.run.config`
+       lint, unit and guards                          FAILURE   22:34:14 -> 23:03:21
+         actionlint SUCCESS / ruff SUCCESS / black --check SUCCESS / mypy SUCCESS /
+         unit tests SUCCESS                           <- all five RAN rather than being
+         guards and meta-tests FAILURE                   skipped behind a red (CZ1 iii)
+out    guards and meta-tests: 1373 failed, 1261 passed, 1 skipped, 1 warning in 1378.83s
+rule   CA2, which I keep in full because CLAUDE.md does not carry it -- a red CI is a HOLD
+       regardless of the local run; EG3 with FS1/FT1 -- unless every red satisfies the
+       predicate
+judge  **NO STOP: all six ladder rungs are SUCCESS, so no low rung is red.** The new
+       `floatfea.run.config` import on the rung-4 gate path is installed and green on the
+       runner, which is the half a local run cannot give (every job installs `-e ".[dev]"`,
+       so `yaml` is present there).
+```
+
+**CK2 DOES NOT APPLY AND I CHECKED RATHER THAN ASSUMING.** The two real jobs carry 14 and 13 steps, named runners (`GitHub Actions 1000001790` and `1000001791`) and 29- and 35-minute durations, so neither is the never-started, two-second, spending-limit shape. The two skipped determinism jobs have no steps and zero duration because `if: github.event_name == 'workflow_dispatch'` is their own event gate (CK0), not an exhausted allowance.
+
+**AND ONE COST MEASUREMENT THAT CAME OUT THE OPPOSITE WAY TO MY EXPECTATION, SO I RECORD THE MEASUREMENT AND NOT THE EXPECTATION.** `ladder 6` is the longest step in the ladder job -- 32 min of its 35 -- because it carries `full:tests/regression` (R1023), and this commit adds an end-to-end cell there. I expected it to grow and it SHRANK: **1929 s at this commit against 3088 s at `62d8cbb`**, same step, same job, same workflow. So the `196 -> 345 s` growth R1031 recorded on the `unit tests` step is not a trend I can extend to this step, and runner-to-runner variance is large enough that a single-run comparison cannot carry a conclusion either way. Worth watching across more runs; not worth acting on, and not worth a sentence that says the cost is rising.
+
+**THE PREDICATE, APPLIED PER ID, WITH THE TRACE AND A NEGATIVE CONTROL (EG3 (i)).**
+
+```
+cmd    my classifier over every FAILED line of the CI guards step, FT1 limb two tested
+       first, then limb one against the newest verdict entry own vocabulary (64
+       R-numbers, 53 path-shaped sites, 21 test names)
+out    CI    1373 ids: 1361 limb one by NAMING A FINDING, 10 limb one by naming a SITE,
+             2 FT1 limb two, 0 UNMATCHED
+       by file: tests/test_report_carried.py 1366, tests/test_report_guard_states.py 7
+cmd    the two limb-two ids, read by their OWN messages rather than by family
+out    test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+         "run 39162423263: the table says no result (status in_progress), gh says failure"
+       test_the_report_carries_a_WHOLE_SUITE_count
+         "the newest revision carries no whole-suite line"
+       -- neither names a finding or a site; each subject IS its own commit (FT1)
+cmd    the ten site-matched ids, read individually rather than ruled as a family
+out    three in tests/test_report_carried.py (the CI-section, Carried-table and
+       wrong-number cells) and the seven test_the_guard_survives_the_state ids, each
+       reaching limb one through its own FILE, which verdict 24 names as a site -- FN2/R813
+       is the recorded precedent for that route
+cmd    THE NEGATIVE CONTROL, and it had to be REBUILT -- see the note in the last section
+out    control id `tests/unit/qqq_surface_nobody_named.py::test_a_red_naming_neither_
+       finding_nor_site`, `grep -c` in the verdict file 0
+       1374 ids: ... 1 UNMATCHED, and it is the control
+rule   FS1 with FT1 -- both limbs are reasons and neither is a list of names; EG3 (i) --
+       each id tested individually and no cascade ruled by family
+judge  **EG3 state (2) -- verdict written, answering report not yet -- for all 1373, and
+       it clears when `docs/reports/R1/step-3.md` is written, not by time. CZ0 (d) does
+       not stand and CA2 HOLD is not reached.** The baseline moved 1310 -> 1373 and the
+       cause is R861: the two guards are parametrised over what I myself wrote, and
+       verdict 24 carries 64 R-numbers and 53 sites.
+```
+
+## The whole-suite figure: WHERE IT CAME FROM, AND WHY I RULE THE OWING DISCHARGED
+
+**I ran the suite myself and my own whole-suite run did not finish, so I say that first.** I started `python -m pytest -q -p no:randomly` at `d9ee4b5` on a clean tree, before any probe, and at write time it has produced **199 outcomes with no failure**, grinding through the regression directory full-pipeline cells. The cause is contention and it is measurable: four pytest processes have shared this machine for most of this round, two of them not mine. **I am not going to present a partial run as a count, and I am not going to wait two hours for a figure that already exists at the right sha.**
+
+**WHAT I RULE ON INSTEAD, AND I READ IT OUT OF THE RAW JOB LOGS RATHER THAN OFF A SUMMARY.** CI at `d9ee4b5` ran the WHOLE tree, in eight steps across two jobs, and the counts below are mine -- extracted from the two job logs, not taken from the turn message that also reported them:
+
+```
+cmd    the invocations, read out of .github/workflows/ci.yml at this commit
+out    :403        pytest tests/unit -q
+       :414        pytest tests --ignore=tests/unit --ignore=tests/verification
+                                 --ignore=tests/regression -q
+       :504-:514   sh scripts/run_rung.sh full:rung1 / full:rung2 / full:rung3 /
+                   (empty:rung6 + full:tests/regression) / full:rung4 / full:rung5
+cmd    whether that union IS the tree, asserted mechanically rather than by my reading
+out    `tests/test_ci_runs_the_whole_suite.py::test_every_test_in_the_suite_is_run_by_
+       some_ci_job` is NOT among the 1373 reds, so it PASSED in this very run -- the
+       coverage claim is held by a green test inside the run it is about
+cmd    the per-step counts, grepped out of the two downloaded job logs
+out    unit tests   tests/unit                            367 passed in 320.70s
+       ladder 1     verification/rung1                   1276 collected, 0 failed
+       ladder 2     verification/rung2                     66 collected, 0 failed
+       ladder 3     verification/rung3                    314 collected, 0 failed
+       ladder 6     rung6 (empty) + tests/regression      299 collected, 0 failed
+       ladder 4     verification/rung4                    344 collected, 0 failed
+       ladder 5     verification/rung5                     87 collected, 0 failed
+       guards       tests minus unit+verif+regression    1373 failed, 1261 passed,
+                                                           1 skipped in 1378.83s
+       -- 4014 passed, 1373 failed, 1 skipped = 5388 outcomes, and every red is in the
+          two report-guard files (1366 + 7)
+cmd    and the ARITHMETIC against my predecessor's local 5322 at `62d8cbb`, decomposed
+       rather than asserted
+out    non-guard outcomes  2737 -> 2753   (+16)
+       guard-file outcomes 2585 -> 2635   (+50: reds +63, passes 1274 -> 1261)
+       total               5322 -> 5388   (+66)
+       and the diff adds exactly 16 cells: `git diff | grep -cE "^\+def test_"` is 12,
+       `^-def test_` is 1, and one of the twelve is parametrised 2 stubs x 3 drops
+       -- 11 + 6 - 1 = 16, which is the non-guard growth to the outcome
+rule   CA2 -- a red CI is a HOLD regardless of the local run; EG3/FS1/FT1 -- unless every
+       red satisfies the predicate, which is the section above
+judge  **the owing is DISCHARGED and I say so under a condition.** CI is not "the
+       report's count": it is a machine neither party controls, at the judged sha, on a
+       clean checkout, and what makes its eight-step form acceptable instead of one
+       summary line is that the coverage of those eight steps is asserted by a test that
+       is GREEN IN THE SAME RUN -- otherwise the union would be my reading of a YAML
+       file, which is exactly the census that has been wrong three times this milestone.
+       **And no, I do not want the local single-line run reproduced.** The thing a local
+       run adds to CI is a second machine; CI IS the second machine, and the stricter one.
+       Two hours to re-derive 5388 on the contended box buys nothing that the per-id trace
+       and the per-step zeroes do not already give.
+```
+
+**MY OWN RUNS AT THIS COMMIT, which are what I did spend the machine on:**
+
+```
+ruff check floatfea tests scripts            All checks passed!
+black --check floatfea tests scripts         155 files would be left unchanged
+mypy floatfea                                Success: no issues found in 43 source files
+the three guards that read the tree at runtime   191 passed in 50.73s
+tests/unit/test_run_config.py                 62 passed in 0.73s
+tests/unit/test_forces_table_reexports.py     11 passed in 0.44s
+the two new refusal cells, regression + rung4  2 passed in 0.77s
+the new generator refusal cell + run_config   63 passed in 1.22s
+tests/verification/rung4/test_f4_g41_dynamic.py --collect-only   115 collected in 0.12s
+tests/test_report_carried.py + test_report_guard_states.py --collect-only
+                                            1732 collected in 0.37s  (1373 red, 359 green)
+```
+
+**One figure of mine that the turn flagged as moved, and it is right to flag it:** the baseline inner run inside `test_the_guard_survives_the_state` was `1221 failed, 438 passed, 1 skipped` when verdict 24 measured it and CI's log here shows `1283 failed, 424 passed, 1 skipped`. Same shape, moved by the size of what I wrote. R861 again, and it is the reason a fixed list of names cannot stand in for the predicate.
+
+## Corpus (EG4(e))
+
+**THE PAUSE HELD. I ADDED NO ENTRIES AND COMMITTED NOTHING TO `tests/corpus/`.** Batches are paused until 28 October except mutation work on the F4 load-mapping gate and EB6 label-provenance gate; today is 27 October, and this diff touches neither -- `git diff --stat bddf1c8..HEAD -- tests/verification` is the one added rung-4 cell and nothing in the mapping or label gates. The ES0 light scope writes no batch at an interim check either. **0 entries are new this round, so there is no caught-of-new count to report**, and I say that rather than quoting a coverage figure I did not measure. The last corpus commit is unchanged.
+
+**What I ran instead -- the recorded substitute, both halves, and the blocking finding came from the first half:**
+
+* **A CONTINUUM GRID OVER THE PARAMETER SPACE THE DECISION RULE GUARDS** -- here the TYPE space and the EDGE space of the new domain, 28 inputs through `checked_recorded_periods`: both inclusive edges, `math.nextafter` one float step outside each, python `bool` / `str` / `bytes` / `None` / `dict` / generator / 0-d array / `(2,1)` array / `Decimal` / masked array / `complex128` / `timedelta64` / `uint8` / `float16` / `np.str_` / `np.bool_`, `inf`, `-inf`, `NaN`, the empty list and the empty ndarray, the model-scale array, and a `10**400` integer. **R1033 is from this half and from nothing else**, and so is the complex arm.
+* **THE REVERT ARM, IN PROCESS, END TO END THROUGH THE REAL CLI** -- the pre-R1021 abstention restored as a function object with no tracked file touched, the same forged npz, `EXIT=0` and `U = 2.78942` at `platform:hub2_arm` ROOT published under `T_full = 14 s` with all three artifacts written in 170.75 s; and the shipped code refusing the same input. That is the one measurement that shows the repair is load-bearing, and it reproduces the previous verdict figure to the digit.
+* **A REGENERATION AND END-TO-END CHECK ON THE PUBLISHED DELIVERABLES** -- the rung-4 collect count against the two moved rows, the gate table read row by row for which rows COULD move, and `0.1429` recomputed against the committed text of the other deliverable.
+* **THE MODEL-SCALE ARRAY AT THE EZ0 GENERATOR, TWO FILES MOVED TOGETHER** -- which refused at `EXIT = 1` and corrected an inference I was about to publish (R1036).
+* **THE BOOL-DTYPE NPZ THROUGH THE PUBLISHING READER**, with its sha recomputed so the staleness check could not be what answered.
+* **THE EMPTY RECORDED ARRAY END TO END** -- `EXIT=2`, nothing written, and the message names the check that actually refuses it (R1035).
+* **THE EH4 BOUND SOLVED IN BOTH WEAKENING DIRECTIONS** -- the section above.
+* **R1032 PREDICATE RE-MEASURED, 174 HEADINGS, 160 AGAINST 44**, and verdict 24 twelve headings classified 2 blocking / 10 not.
+* **THE GUARD-HOLE CELL REPRODUCED**, three one-test files, one variable.
+
+**And the corpus observation I owe on the apparatus I leaned on:** `tests/test_no_tolerance_literals.py` resolves module-level names and not function-local ones (ruling 3), and the `not-a-tolerance:` marker is still free text that nothing reads (R1030, unchanged). Both are existing apparatus, batches are paused, and the frozen list is where the first one goes. Neither fails false; they are bounded by review, which is CJ0.
+
+## Tolerances touched
+
+**NONE. No value, no form, no counter, no injection size.**
+
+```
+cmd    git diff bddf1c8..HEAD -- floatfea/tolerances.py | wc -c
+out    0
+cmd    git diff bddf1c8..HEAD -- floatfea tests scripts | grep "^+" |
+       grep -nE "isclose|abs_tol|rel_tol|approx|atol|rtol|_COUNTER|toleran|eps|slack|1e-"
+out    five hits, none a comparison: three `# not-a-tolerance:` markers, one docstring
+       sentence about `floatfea.tolerances`, and one comment naming the guard. No
+       `isclose`, no `approx`, no `atol`, no `rtol`, no `_COUNTER`.
+cmd    the two named values the diff introduces, read in place
+out    `_PATCHED_LIMIT = 0.05`      an INJECTED limit, patched into the library and
+                                    required to move the consumer category
+       `_REFUSED_PERIOD_S = 0.5`    a recorded INPUT, asserted to be OUTSIDE the declared
+                                    domain -- it holds the floor rather than relaxing it
+rule   CLAUDE.md section Tolerances and its clause on anything that functions as a
+       tolerance under another name; CZ0 (b); R1 section 4, "None expected"
+judge  nothing moves, and R1 section 4 stands un-relocked. **EU1 does not attach** -- no
+       value and no declared counter moved -- **and I ran the adversarial configurations
+       anyway**, because R694 lesson is that a value which does not move is the worst
+       case and not the safest. The blocking finding came from exactly that. FU1 still
+       rules the three `basis.py` constants code constants rather than tolerances and I
+       rule under FU1 unchanged. I asked for no tolerance anywhere.
+```
+
+## Next step opens when
+
+**This is a HOLD on step 3, which stays open. It is the twenty-fifth interim check, it counts against no round, and all three reviewed revisions remain available -- 0 of 3 spent.**
+
+**What the commit got right, said first and without hedging.** **Both blocking findings are answered, at the layer each was about, in one commit, and the answers are stronger than the conditions asked for in two places.** R1021 removed the abstention rather than narrowing it, took R878 complete-or-empty and dropped the empty half, and -- the part that matters most -- **named the one sub-condition it did not meet as worded, argued the route, and invited the ruling** instead of presenting a near-miss as a hit. I checked that argument by reverting the repair in process and driving the real CLI, and the forgery came back exactly: `EXIT=0`, `U = 2.78942` at a published `T_full = 14 s`. R1022 made the check a function with one domain and reached all three readers; its census was run WRONG the first time, the author caught it themselves, and the pathspec lesson is written down where the next census will read it. R1023 withdrew a false entry IN PLACE in a plan rather than deleting it. R1032 was fixed at the predicate, with the anti-vacuity assertion re-aimed at the FORMAT question it was always meant to ask -- and the verdict format was NOT adapted to a defective parser, which was the right call and the harder one. The commit also found and reported a defect in its own first repair twice (the BF0 triple written into `floatfea/basis.py`, and the `0.05` leaning on the guard hole), and it corrected its own published figure under CP3 in the paragraph that was explaining CP3. **And it regenerated a published deliverable it had argued could not move, which is what caught `114 -> 115`.**
+
+1. **R1033, AND IT IS ONE LINE IN EACH OF TWO FILES.** `np.bool_` at `floatfea/run/config.py:295` and at `floatfea/run/pipeline.py:1360`, held by a cell parametrised over both spellings of the type rather than asserting the python one; a positive numeric test closes the complex arm with it and I would accept either form. **Do not add one more name to the tuple and leave the shape.**
+2. **R885 and R895 stay escalated and are Xabier call. R867-R870 are FT2.7** and `floatfea/model` has now been empty for eighteen rounds. Those four are blocking by name into the first revision.
+3. **THE SEVEN NON-BLOCKING ITEMS ARE LEDGER: do not spend a round on them.** R1034 to R1040. Two of them are mine (R1036 is an inference of mine that the measurement refuted; R1039 corrects my predecessor figure), and R1039 plus R899 are Xabier `process:` work rather than implementer work. **The tolerance guard coverage gap goes on `docs/milestones/F2a.md`** -- ruling (3) -- and it is the one thing this round adds to that list.
+4. **What I did NOT ask for.** No new guard, scanner, meta-test, detector or report generator. No census guard for R1022 completeness -- the reading is mine and I took it. No tolerance. No new apparatus of any kind: R1033 repair is one token in each of two isinstance tuples plus one parametrisation on a cell that already exists.
+5. **NOTHING IS OWED ON THE SUITE FIGURE.** It is discharged at this commit by CI's eight steps, whose coverage is asserted by a green test inside the same run and whose per-step counts I re-took from the raw logs -- `4014 passed, 1373 failed, 1 skipped`, every red in the two report-guard files, 0 UNMATCHED under the predicate. Do not reproduce it locally. What to keep is the ordering, so that a local run is not voided when one IS wanted: the three fast runtime guards and the deliverable guard first, repair, then the long run.
+6. **The schedule.** FU2 routes the date to the next message to Xabier rather than to a report, so I do not ask for it here. Four observations, each a measurement. **The rate:** two blocking findings closed, one opened, and the one opened is in the repair of the two closed -- third consecutive round of that shape, and the shape is now specific enough to name: **a type or a domain gate written against the spelling the author had in front of them, not against the spelling its callers receive.** R1005 was a gate keyed on the one record nothing checked; R1021 was an abstention keyed on one file; R1033 is a type gate keyed on one of its three callers input types. **Nothing in the diff pointed at it** -- it needed a 28-input type grid through a door whose diff looks complete. **The cost side:** CI guards step `1378.83 s` and its red set `1310 -> 1373`, which is R861 as a function of what I write; and `ladder 6`, which carries the slow end-to-end regression cells, is the longest step in the ladder job at 32 of its 35 minutes -- but it went `3088 s -> 1929 s` between the two commits, so I record the measurement rather than the trend I expected. **And `floatfea/` moved for the third round in twenty**, which is still the most important fact about these commits.
+
+**THE SENTENCE THAT IS NOW ELEVEN ROUNDS OLD, AND THIS ROUND IT IS ABOUT THE TYPE SYSTEM OF THE ONLY LIBRARY THAT FEEDS THE DOOR.** R991 was a conclusion whose subject sat outside the series its premise was measured over. R992 was the one input column an exhaustive check could never contain. R1005 was a gate keyed on the one record nothing checked. R1021 was an abstention defended by an assertion about ONE FILE while `run()` is handed any file. **R1033 is the same shape one turn later: a type gate whose list is the types ONE of its three callers can deliver, in a function written precisely to be the one door for all three.** The transferable question has not changed, only its subject: **when a check enumerates what it refuses, enumerate it in the vocabulary of the thing that will arrive, not of the thing you are holding.** And for a shared door there is one more: **count the callers, then ask what each one hands you.**
+
+**If I disagree with the criterion rather than with the work, I say so once. I do not.** FR1 earned its keep again in both directions: seven findings got a one-line disposition and no round, and the one blocking finding got the sentence FR1 demands -- which is what sent me to the publishing reader with a fabricated npz instead of arguing that a type gate with a gap was unsound in the abstract. **The limit I have recorded seven times stands and I record it an eighth: FR1 gives a FALSE REFUSAL no blocking sentence**, and R1037 is this round instance. Both of us want it taken anyway.
+
+**ONE NOTE ON MY OWN INSTRUMENT, BECAUSE A CONTROL THAT STOPS BEING A CONTROL IS WORSE THAN NO CONTROL.** The negative control verdict 24 used for the FS1/FT1 classifier -- a fabricated red at `tests/unit/test_nothing.py::test_a_red_that_names_nothing` -- is now IN the verdict file, pasted there by verdict 24 own trace, so re-using it this round made the classifier report it as a SITE match and the control silently stopped firing. I noticed because the count moved by one in the wrong column. The control has to be a name the newest verdict does not mention, and the cheap way to guarantee that is to grep the record for it before trusting it. Mine this round is `tests/unit/qqq_surface_nobody_named.py`, `grep -c` in the verdict file **0**, and it comes back UNMATCHED as a control must.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 62d8cbbf209d3b1af30de2f96379caf7c63dd7a7
 **Reviewed commit: `62d8cbbf209d3b1af30de2f96379caf7c63dd7a7`.**
 Verdict: HOLD
