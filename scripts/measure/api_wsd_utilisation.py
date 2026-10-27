@@ -44,6 +44,7 @@ import argparse
 import csv
 import math
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -145,6 +146,80 @@ def _kl_over_r(body: str) -> tuple[float, float]:
     return K_LOCKED * span / r, K_SENSITIVITY * span / r
 
 
+def csv_text(value: object) -> str:
+    """This module's own rendering of one cell, so a reader can reproduce it exactly.
+
+    **R978: THE REPORT JOINS THE TWO PUBLISHED TABLES ON VALUES, AND THE JOIN HAS TO USE
+    THIS FUNCTION RATHER THAN A SECOND COPY OF IT.** The first attempt at that join
+    compared `f_a_MPa + f_b_MPa` against the forces table's own `sigma_Pa` and was
+    reported as impossible, because three values each rounded to `_CSV_FIGURES`
+    independently do not satisfy `a + b == c` -- `2.25161 + 186.6500 = 188.9016` against a
+    published `188.9022`. The disagreement was a property of that join and not of the
+    tables: componentwise, recomputed at full precision and rendered HERE, all 32 rows are
+    string-identical.
+    """
+    return f"{value:.{_CSV_FIGURES}g}" if isinstance(value, float) else str(value)
+
+
+def utilisation_row(
+    r: Mapping[str, str],
+    section: tuple[float, float, float, float, float],
+    kl: tuple[float, float],
+) -> dict[str, object]:
+    """One published row from one `total_instant` forces row -- the ONLY definition of it.
+
+    It is a function rather than a block inside `main()` so that a check which recomputes a
+    published row recomputes THIS, and not a paraphrase of it. A second copy of the
+    arithmetic would be green whenever the two copies agreed, whether or not either agreed
+    with the clause module -- which is R978 judgement (2) in another form: a copy compared
+    against its source detects a stale PAIRING and never a wrong VALUE.
+    """
+    area, w_bend, w_tors, d_outer, wall = section
+    kl2, kl1 = kl
+    common = dict(
+        axial_n=float(r["N"]),
+        shear_y_n=float(r["Vy"]),
+        shear_z_n=float(r["Vz"]),
+        torsion_nm=float(r["T"]),
+        moment_y_nm=float(r["My"]),
+        moment_z_nm=float(r["Mz"]),
+        area_m2=area,
+        section_modulus_m3=w_bend,
+        torsional_modulus_m3=w_tors,
+        d_outer_m=d_outer,
+        wall_m=wall,
+    )
+    locked = check_member(k_l_over_r=kl2, cm=CM_LOCKED, **common)
+    sens = check_member(k_l_over_r=kl1, cm=CM_LOCKED, **common)
+    # FB2: the SECOND sensitivity, at the locked K. One variable moved from `locked`.
+    sens_cm = check_member(k_l_over_r=kl2, cm=CM_SENSITIVITY, **common)
+    return {
+        "body": r["body"],
+        "member": r["member"],
+        "station": r["station"],
+        "period_full_s": r["period_full_s"],
+        "basis": r["basis"],
+        "f_a_MPa": locked.f_a / 1e6,
+        "F_a_MPa": locked.allow_axial / 1e6,
+        "f_b_MPa": locked.f_b / 1e6,
+        "F_b_MPa": locked.allow_bending / 1e6,
+        "f_v_MPa": locked.f_v / 1e6,
+        "f_vt_MPa": locked.f_vt / 1e6,
+        "axial_branch": locked.axial_branch,
+        "bending_branch": locked.bending_branch,
+        "interaction_form": locked.interaction_form,
+        "u_axial": locked.u_axial,
+        "u_bending": locked.u_bending,
+        "u_shear": locked.u_shear,
+        "u_torsion": locked.u_torsion,
+        "u_combined": locked.u_combined,
+        "utilisation_K2": locked.utilisation,
+        "utilisation_K1": sens.utilisation,
+        "utilisation_Cm1": sens_cm.utilisation,
+        "governing_clause": locked.governing,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--forces", type=Path, default=ROOT / "docs" / "F4_member_forces.csv")
@@ -152,7 +227,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--summary", type=Path, default=ROOT / "docs" / "F6_utilisation.md")
     args = ap.parse_args(argv)
 
-    area, w_bend, w_tors, d_outer, wall = _section()
+    section = _section()
+    area, w_bend, w_tors, d_outer, wall = section
     lines = [ln for ln in args.forces.read_text(encoding="utf-8").splitlines() if ln[:1] != "#"]
     rows = list(csv.DictReader(lines))
     if not rows:
@@ -179,51 +255,7 @@ def main(argv: list[str] | None = None) -> int:
             continue
         if r["body"] not in kl_cache:
             kl_cache[r["body"]] = _kl_over_r(r["body"])
-        kl2, kl1 = kl_cache[r["body"]]
-        common = dict(
-            axial_n=float(r["N"]),
-            shear_y_n=float(r["Vy"]),
-            shear_z_n=float(r["Vz"]),
-            torsion_nm=float(r["T"]),
-            moment_y_nm=float(r["My"]),
-            moment_z_nm=float(r["Mz"]),
-            area_m2=area,
-            section_modulus_m3=w_bend,
-            torsional_modulus_m3=w_tors,
-            d_outer_m=d_outer,
-            wall_m=wall,
-        )
-        locked = check_member(k_l_over_r=kl2, cm=CM_LOCKED, **common)
-        sens = check_member(k_l_over_r=kl1, cm=CM_LOCKED, **common)
-        # FB2: the SECOND sensitivity, at the locked K. One variable moved from `locked`.
-        sens_cm = check_member(k_l_over_r=kl2, cm=CM_SENSITIVITY, **common)
-        out_rows.append(
-            {
-                "body": r["body"],
-                "member": r["member"],
-                "station": r["station"],
-                "period_full_s": r["period_full_s"],
-                "basis": r["basis"],
-                "f_a_MPa": locked.f_a / 1e6,
-                "F_a_MPa": locked.allow_axial / 1e6,
-                "f_b_MPa": locked.f_b / 1e6,
-                "F_b_MPa": locked.allow_bending / 1e6,
-                "f_v_MPa": locked.f_v / 1e6,
-                "f_vt_MPa": locked.f_vt / 1e6,
-                "axial_branch": locked.axial_branch,
-                "bending_branch": locked.bending_branch,
-                "interaction_form": locked.interaction_form,
-                "u_axial": locked.u_axial,
-                "u_bending": locked.u_bending,
-                "u_shear": locked.u_shear,
-                "u_torsion": locked.u_torsion,
-                "u_combined": locked.u_combined,
-                "utilisation_K2": locked.utilisation,
-                "utilisation_K1": sens.utilisation,
-                "utilisation_Cm1": sens_cm.utilisation,
-                "governing_clause": locked.governing,
-            }
-        )
+        out_rows.append(utilisation_row(r, section, kl_cache[r["body"]]))
 
     if not out_rows:
         raise SystemExit("no governing ROOT/TIP rows found; check the basis filters.")
@@ -235,7 +267,7 @@ def main(argv: list[str] | None = None) -> int:
         w = csv.DictWriter(fh, fieldnames=list(out_rows[0]))
         w.writeheader()
         for row in out_rows:
-            w.writerow({k: (f"{v:.6g}" if isinstance(v, float) else v) for k, v in row.items()})
+            w.writerow({k: csv_text(v) for k, v in row.items()})
 
     _write_summary(args.summary, out_rows, area, w_bend, w_tors, d_outer, wall, kl_cache)
     print(f"  wrote {args.out.relative_to(ROOT)} ({len(out_rows)} rows)")

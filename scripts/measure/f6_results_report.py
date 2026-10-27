@@ -38,6 +38,7 @@ import math
 import re
 import subprocess
 import sys
+import textwrap
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -78,7 +79,24 @@ MFT = importlib.util.module_from_spec(_MFT_SPEC)
 sys.modules["member_forces_table"] = MFT
 _MFT_SPEC.loader.exec_module(MFT)
 
-GOVERNING_PERIODS = (12.5, 14.0, 15.0, 16.2)
+# **R978: s.7's VALUES ARE RECOMPUTED THROUGH THE MODULE THAT PUBLISHED THEM**, for the
+# same reason s.6's sweep reuses `member_forces_table.py`'s own solve: a join that
+# recomputes a published quantity from a second copy of the arithmetic is green when the
+# two copies agree and wrong together, which is R983's class. The loader is the same.
+_AWU_PATH = Path(__file__).resolve().parent / "api_wsd_utilisation.py"
+_AWU_SPEC = importlib.util.spec_from_file_location("api_wsd_utilisation", _AWU_PATH)
+assert _AWU_SPEC is not None and _AWU_SPEC.loader is not None, _AWU_PATH
+AWU = importlib.util.module_from_spec(_AWU_SPEC)
+sys.modules["api_wsd_utilisation"] = AWU
+_AWU_SPEC.loader.exec_module(AWU)
+
+# R988: the governing basis is READ from the module that applies it, not declared a second
+# time here. The two agreed at `(12.5, 14.0, 15.0, 16.2)`, so no published figure moves --
+# but a set that the run configuration is acquiring a field for is exactly the kind that
+# drifts between two declarations, which is what R902 and R983 are both about. The sentence
+# in s.6 about "the envelope over the four governing periods" is a count of THIS tuple from
+# here on, so the prose cannot outlive the basis.
+GOVERNING_PERIODS = AWU.GOVERNING_PERIODS
 # R902: NO MODULE LITERAL FOR THE WAVE HEIGHT. `WAVE_HEIGHT_FULL_M = 24.2` used to live
 # here and the band, the steepness and the BREAKING verdict were all computed from it,
 # while the HEADER printed the recorded value from the sidecar. The two agree at `24.2`
@@ -184,6 +202,83 @@ GATES: tuple[tuple[str, str, str, tuple[str, ...]], ...] = (
 def _read_csv(path: Path) -> list[dict[str, str]]:
     lines = [ln for ln in path.read_text(encoding="utf-8").splitlines() if ln[:1] != "#"]
     return list(csv.DictReader(lines))
+
+
+_COUNT_WORDS = (
+    "zero",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+    "eleven",
+    "twelve",
+    "thirteen",
+    "fourteen",
+    "fifteen",
+    "sixteen",
+    "seventeen",
+    "eighteen",
+    "nineteen",
+    "twenty",
+)
+
+
+def _wrapped(text: str, indent: str = "") -> list[str]:
+    """`text` broken on spaces at the width the document's hand-written prose uses.
+
+    R986 and R987 turned paragraphs that were wrapped BY HAND into interpolated ones, and a
+    generated sentence is one string however long it is. Markdown joins a paragraph's soft
+    breaks, so wrapping changes no rendered character; what it keeps is the raw file
+    readable, which is the form this deliverable is read in. A FORMAT, like `_count_word`:
+    nothing downstream may read a line break as information.
+    """
+    return textwrap.wrap(
+        text,
+        width=85,
+        subsequent_indent=indent,
+        break_long_words=False,
+        break_on_hyphens=False,
+    ) or [""]
+
+
+def _count_word(n: int) -> str:
+    """`six`, `sixteen`, `21` -- a spelled count in prose, a numeral past the table.
+
+    R987/R988: this exists so that a count IN PROSE can be interpolated without the
+    sentence reading `6 periods`. It is a FORMAT and nothing else -- it must never become a
+    comparison, a rounding or a threshold, which is the warning R937 attached to the other
+    format helper in this pair of generators.
+    """
+    return _COUNT_WORDS[n] if 0 <= n < len(_COUNT_WORDS) else str(n)
+
+
+def _rank_by_value(values: dict[float, float], key: float) -> int:
+    """1-based rank of `key` among `values` by DESCENDING value; ties share the rank."""
+    return 1 + sum(1 for v in values.values() if v > values[key])
+
+
+def _monotonic_word(ordered: list[float]) -> str:
+    """How a series behaves over the order it is given: the measured word, not an assumed one.
+
+    R986: three sentences about the per-case stress bound were written for the ordering the
+    shipped run happens to have. The ordering is a property of the STRUCTURE and of
+    FloatSim's response, which FT2.6's heading envelope and FT2.7's topologies both move at
+    an unchanged sea state -- so the word is read off the series.
+    """
+    pairs = list(zip(ordered[:-1], ordered[1:], strict=True))
+    if not pairs:
+        return "has too few cases to be monotonic"
+    if all(a > b for a, b in pairs):
+        return "falls monotonically"
+    if all(a < b for a, b in pairs):
+        return "rises monotonically"
+    return "is not monotonic"
 
 
 def _steepness(period_s: float, height_m: float) -> float:
@@ -414,10 +509,22 @@ def main(argv: list[str] | None = None) -> int:
             f"it was generated from."
         )
     run = {**prov["run"], **basis}
+    # R987: BOUND HERE BECAUSE s.1's LIMITATIONS BLOCK PUBLISHES ITS LENGTH, 130 lines
+    # above the band table that was the only reader of it. The join that compares it
+    # against the solved cases stays where it was, at s.4; this is the same list, read
+    # once, so the two sites cannot drift. Nothing is written to the file before the join
+    # raises -- `out` is a buffer and the artifact is written at the end -- so moving the
+    # binding earlier does not let a refused run publish anything.
+    _recorded = [float(x) for x in run["periods_full_s"]]
     f_b, f_b_branch = allowable_bending(sec["D"], sec["t"], FY_S355, E_STEEL)
 
     out: list[str] = []
     w = out.append
+
+    def wp(text: str, indent: str = "") -> None:
+        """One paragraph of GENERATED prose, wrapped to the document's own width."""
+        for line in _wrapped(text, indent):
+            w(line)
 
     w("# FloatFEA — structural results, platform superstructure")
     w("")
@@ -437,8 +544,24 @@ def main(argv: list[str] | None = None) -> int:
     w("* **Superstructure only.** The buoys, the gimbals' internals and the moorings are")
     w("  not modelled here. Shell buckling of the cans is DNV-RP-C202 and is sub-model")
     w("  work, exported to CalculiX rather than solved in this tool.")
-    w("* **Regular design waves at one heading, 0°.** Six periods at a single wave height.")
-    w("  No irregular sea, no spectrum, no return period.")
+    # **R987: THE LIMITATIONS BLOCK STATED THE HEADING AND THE CASE COUNT AS LITERALS.**
+    # This is the part of the document a reader consults to learn what the analysis covers,
+    # and `heading_deg = 90.0` in the sidecar -- one field, and one a shipped exporter
+    # writes -- published `heading : 90.0 deg` in s.4 and
+    # "one heading, 0°" here, seventy-five lines apart in one file, at exit 0. Every member
+    # force, stress and utilisation in s.6 and s.7 is a function of the heading that was
+    # run, which s.8(iii) says in as many words. A five-period sidecar likewise published
+    # "Six periods" above a five-row band table.
+    #
+    # R902's rule, in its own terms: a literal standing in for a RECORDED quantity. The
+    # gate the last four rounds built covers the sea state (`H` and the period SET); the
+    # heading and the count were never in its domain, and `_reference` cannot reach them.
+    wp(
+        f"* **Regular design waves at one heading, {float(run['heading_deg']):g}°.** "
+        f"{_count_word(len(_recorded)).capitalize()} periods at a single wave height. "
+        f"No irregular sea, no spectrum, no return period.",
+        indent="  ",
+    )
     w("* **The section is a stiffness stand-in** for a triangulated truss whose depth is")
     w("  not decided. Utilisations on it locate the governing members and clauses; they do")
     w("  not size steel.")
@@ -568,7 +691,6 @@ def main(argv: list[str] | None = None) -> int:
     # `pipeline.py:1123-1130` for the CONFIGURED list. Not a tolerance: give it any
     # slack and a period with no case rejoins the table.
     _solved = {float(r["period_full_s"]) for r in forces if r.get("period_full_s")}
-    _recorded = [float(x) for x in run["periods_full_s"]]
     # **R958: THE JOIN WAS ONE-DIRECTIONAL.** `set(_recorded) - _solved` refuses a declared
     # period with no case; a SOLVED case with no declaration was silent. At H = 24.1 m
     # with a declared subset the report published "Breaking ...: none. Past the band's
@@ -673,6 +795,80 @@ def main(argv: list[str] | None = None) -> int:
             f"(R967)."
         )
 
+    # **R978: THE TWO TABLES WERE JOINED ON KEYS AND ON PERIODS, AND NOT ON VALUES.** Every
+    # join above compares which member-stations and which periods appear; none compares a
+    # NUMBER. s.6 publishes forces-derived stresses and s.7 publishes utilisation-derived
+    # counts, so a forces table scaled by 1.5 moves s.6 and leaves s.7 identical -- the
+    # report then publishes `over unity : 4 of 32` and `worst U = 1.71167` for a structure
+    # whose stresses are half again as large. An UNDERSTATED utilisation on all thirty-two
+    # stations, at exit 0, with keys and periods green.
+    #
+    # **THE JOIN RECOMPUTES EACH PUBLISHED ROW FROM ITS FORCES ROW THROUGH THE PRODUCER'S
+    # OWN `utilisation_row`, AND COMPARES THE PRODUCER'S OWN RENDERING.** Three things
+    # about the form, each of which was a wrong answer first:
+    #
+    #   * NOT the sum. `f_a_MPa + f_b_MPa` against the forces row's `sigma_Pa` cannot be
+    #     made exact at any precision -- `2.25161 + 186.6500 = 188.9016` against a
+    #     published `188.9022` -- because three values are each rounded independently. I
+    #     escalated that as a choice between a comparison epsilon and a new CSV column.
+    #     Both arms were unnecessary: componentwise, at full precision, rendered by
+    #     `AWU.csv_text`, all rows are string-identical. No tolerance, no epsilon, no
+    #     schema change, and `tolerances.py` is untouched.
+    #   * NOT an echoed `sigma_Pa` in the utilisation CSV. That compares a COPY against its
+    #     source: it detects a stale pairing and never a wrong value, which is this
+    #     finding's own diagnosis unrepaired.
+    #   * NOT a column list written here. The expectation is the producer's whole row dict,
+    #     so a column added there and not joined here is impossible by construction -- the
+    #     recurring defect in this file has been a check applied to the sites its author was
+    #     looking at rather than the list the repository has.
+    _forces_instant: dict[tuple[str, str, str], list[dict[str, str]]] = {}
+    for r in forces:
+        if r.get("basis") == "total_instant":
+            _forces_instant.setdefault(
+                (r["member"], r["station"], r.get("period_full_s", "")), []
+            ).append(r)
+    # R976 from the other side: the expectation is read per key, so a repeated forces row
+    # would make the recomputation depend on which copy is reached first.
+    _forces_dupes = sorted(k for k, v in _forces_instant.items() if len(v) > 1)
+    if _forces_dupes:
+        raise SystemExit(
+            f"floatfea: {args.forces.name} carries more than one `total_instant` row for "
+            f"{_forces_dupes}. The utilisation of a member-station is computed from "
+            f"exactly one such row, so a repeat makes the published value depend on row "
+            f"order (R978, R976)."
+        )
+    _awu_section = AWU._section()
+    _awu_kl: dict[str, tuple[float, float]] = {}
+    _value_rows = 0
+    _value_cells = 0
+    _value_bad: list[str] = []
+    for r in util:
+        src = _forces_instant[(r["member"], r["station"], r.get("period_full_s", ""))][0]
+        if src["body"] not in _awu_kl:
+            _awu_kl[src["body"]] = AWU._kl_over_r(src["body"])
+        _value_rows += 1
+        for col, value in AWU.utilisation_row(src, _awu_section, _awu_kl[src["body"]]).items():
+            _value_cells += 1
+            want = AWU.csv_text(value)
+            if r.get(col, "") != want:
+                _value_bad.append(
+                    f"{r['member']} {r['station']} {r.get('period_full_s', '')} s "
+                    f"{col}: table {r.get(col, 'absent')!r}, recomputed {want!r}"
+                )
+    if _value_bad:
+        raise SystemExit(
+            f"floatfea: {args.util.name} does not carry the values "
+            f"{args.forces.name} produces. Recomputed every row through "
+            f"`api_wsd_utilisation.utilisation_row` and rendered it with that module's own "
+            f"`csv_text`: {len(_value_bad)} of {_value_cells} cells over "
+            f"{_value_rows} rows disagree. First five: {_value_bad[:5]}. The two tables "
+            f"would describe different solves, and s.7's over-unity count, worst station "
+            f"and ranked top ten would be published for forces that are not s.6's -- "
+            f"understated or overstated on every station, at exit 0, with the key and "
+            f"period joins green (R978). Re-run `api_wsd_utilisation.py` against this "
+            f"forces table."
+        )
+
     # **R969: SETS WERE COMPARED AND A LIST WAS ITERATED.** One duplicate in
     # `periods_full_s` passed both new directions -- `set(_recorded)` equals `_solved`
     # while `_recorded` has seven entries -- giving a seven-row band table with
@@ -710,7 +906,12 @@ def main(argv: list[str] | None = None) -> int:
             f"{'GOVERNING' if period in GOVERNING_PERIODS else 'sensitivity':>14s}"
         )
     w("")
-    w("the worst ROOT stress BOUND each case produces, over all sixteen members. This is")
+    # R988: the member count is the built model's, not a word. FL2's topology item and
+    # FT2.7's eight topologies both move it, and it is already published at s.2.
+    w(
+        f"the worst ROOT stress BOUND each case produces, over all "
+        f"{_count_word(sum(len(b.members) for b in built.bodies))} members. This is"
+    )
     w("the per-component envelope of the total basis: the six components are each")
     w("maximised independently over the window, so they do not occur together and the")
     w("stress formed from them is an UPPER BOUND, not a stress at any instant. It is the")
@@ -745,6 +946,39 @@ def main(argv: list[str] | None = None) -> int:
     _past_long = sorted(T for T in _recorded if hi < T)
     _in_band = sorted(T for T in _recorded if lo <= T <= hi)
     _kept = sorted(set(GOVERNING_PERIODS) - set(_in_band))
+    # **R986: THREE OF THE PARAGRAPH'S SEVEN CLAIMS ARE ABOUT THE STRESS BOUND, AND THE
+    # SEA-STATE PREDICATE DOES NOT READ IT.** `_reference` compares `h_full` and the
+    # recorded period set; the bound comes from `--forces`, an INDEPENDENT input it does not
+    # touch at all. One variable moved -- the `total_max` ROOT `sigma_Pa` values scaled per
+    # period, every key, period and column else identical, so every join above stays green
+    # and the argmax MEMBER at each period is unchanged -- and the document published, at
+    # exit 0, on the reference branch:
+    #
+    #     10.0  299.983   <- the SMALLEST     "it is also the largest of the six"
+    #     16.2  599.991   <- the LARGEST      "the bound falls monotonically as `T` rises"
+    #     20.0  400.021   <- BELOW 16.2       "`T = 20 s` ticks back up above `T = 16.2 s`"
+    #
+    # three false sentences directly above the table that contradicts them. There is NO
+    # value of the bound that trips `_reference`, so a fourth conjunct is not the repair --
+    # and could not be, because the same claim has a duplicate in s.8(iv) that sits outside
+    # both branches. **The bound sentences are read off the bound from here on**, which is
+    # the end of the sequence R907 -> R951 -> R957/R968 -> R977: four rounds of gating a
+    # hand-written claim one input space at a time.
+    # And the bound must cover every recorded period, because the sentences below count it.
+    # A `total_max` ROOT row missing for one period shrinks `len(_bound_mpa)` and publishes
+    # "the largest of the five" above a six-row band table -- the same wrong-denominator
+    # shape as R976, one table along.
+    _bound_absent = sorted(T for T in _recorded if T not in peak_by_period)
+    if _bound_absent:
+        raise SystemExit(
+            f"floatfea: {args.forces.name} carries no `total_max` ROOT row for "
+            f"{_bound_absent} s, which the sidecar records. The per-case stress bound is "
+            f"published per RECORDED period and counted in the paragraph beneath it, so a "
+            f"missing case would be left out of a count the band table contradicts (R986)."
+        )
+    _bound_mpa = {T: peak_by_period[T] / 1e6 for T in peak_by_period}
+    _bound_top = max(_bound_mpa, key=lambda T: _bound_mpa[T])
+    _band_dir = _monotonic_word([_bound_mpa[T] for T in _in_band])
     # **AND THE FIRST VERSION OF THIS ASSERTION FAILED AT THE SHIPPED SEA STATE, WHICH IS
     # HOW THE PROSE DEFECT TURNED OUT TO BE LIVE RATHER THAN LATENT.** I wrote
     # `len(_in_band) != 4` from the sentence "the governing basis is the four in-band
@@ -801,18 +1035,22 @@ def main(argv: list[str] | None = None) -> int:
     # not a guard. The reviewer asked for the narrative GENERATED from the computed sets
     # and I declined once; this is that, and it was the right instruction.
     #
-    # Two branches, both exercised: the hand-written paragraph is emitted verbatim for the
-    # sea state it was written about, so the shipped deliverable stays byte-identical, and
-    # a computed paragraph is emitted otherwise. Neither states anything the table above
-    # it contradicts. R902's test covers the computed branch at H = 50 m and the
-    # regeneration check covers the verbatim one.
+    # Two branches, both exercised. `_reference` chooses which NARRATIVE applies -- whether
+    # FA0's ruling about keeping the band's lower-edge case was made about this sea state --
+    # and every figure inside either branch is interpolated from the sets and the bound
+    # computed above. **R986: NO SENTENCE IN EITHER BRANCH IS A HAND-WRITTEN FACT ABOUT
+    # THIS RUN ANY MORE**, which is what makes the branch choice the only thing the
+    # predicate has to be right about. R902's test covers the computed branch at H = 50 m
+    # and the regeneration check covers the other one.
     if not _reference:
-        w(f"**This is not the reference sea state** (`H = {h_full:g} m`), so the paragraph")
-        w("below is generated from the sets computed above rather than the one written for")
-        w("`H = 24.2 m`. The reasoning in EZ2 and FA0 still applies; the membership does")
-        w("not carry over.")
+        wp(
+            f"**This is not the reference sea state** (`H = {h_full:g} m`), so the paragraph "
+            f"below is generated from the sets computed above rather than the one written "
+            f"for `H = {FA0_EZ2_REFERENCE_H_M:g} m`. The reasoning in EZ2 and FA0 still "
+            f"applies; the membership does not carry over."
+        )
         w("")
-        w(
+        wp(
             f"Breaking, so unable to describe a real wave of this height: "
             f"{_breaking if _breaking else 'none'}. Past the band's long edge: "
             f"{_past_long if _past_long else 'none'}. Inside the band: "
@@ -821,20 +1059,68 @@ def main(argv: list[str] | None = None) -> int:
             f"rule like FA0 says so for THIS height, and no such ruling is asserted here."
         )
         w("")
-        w("Across the band's interior the bound still falls monotonically as `T` rises, so")
-        w("the lower edge is what governs there. That argument is about the interior and")
-        w("does not say which periods are in it at this height; the sets above do.")
+        # R986 reaches this branch too: "the bound still falls monotonically" was written
+        # here as well, about the same unread quantity.
+        wp(
+            f"Across the band's interior the bound {_band_dir} as `T` rises. That is read "
+            f"off the table above and not assumed; it does not say which periods are in the "
+            f"band at this height, and the sets above do."
+        )
         w("")
     else:
-        w("**`T = 10 s` exceeds the deep-water breaking steepness**, so it cannot describe a")
-        w("real wave of this height. It is reported as sensitivity only, and it is also the")
-        w("largest of the six on the bound above. `T = 20 s` is outside the band at the long")
-        w("end. **The governing basis is the four periods EZ2 admits: the three in band, and")
-        w("`T = 12.5 s`, which is NOT in band.** It sits just")
-        w("below `sqrt(6.5 H)` by the offset in the block and is kept as the band's lower")
-        w("edge: across the band the bound falls monotonically as `T` rises, so the lower edge")
-        w("is what governs and this case is the one that represents it. The monotonicity holds")
-        w("across the band only — `T = 20 s` ticks back up above `T = 16.2 s`.")
+        # Every period set below is FIXED by `_reference` -- the height and the recorded set
+        # determine the band, so on this branch `_breaking == [10.0]`,
+        # `_past_long == [20.0]`, `_kept == [12.5]` and `_in_band == [14.0, 15.0, 16.2]`.
+        # The STRESS BOUND is not fixed by it, which is R986, so the three sentences about
+        # the bound are read off `_bound_mpa`.
+        _bk, _pl, _lower, _top_band = _breaking[0], _past_long[0], _kept[0], _in_band[-1]
+        _rank_bk = _rank_by_value(_bound_mpa, _bk)
+        _rank_text = (
+            f"it is also the largest of the {_count_word(len(_bound_mpa))} on the bound above."
+            if _rank_bk == 1
+            else (
+                f"on the bound above it ranks {_rank_bk} of {len(_bound_mpa)} — "
+                f"{_bound_mpa[_bk]:.3f} MPa against {_bound_mpa[_bound_top]:.3f} MPa at "
+                f"`T = {_bound_top:g} s`."
+            )
+        )
+        _governs_text = (
+            "so the lower edge is what governs and this case is the one that represents it."
+            if _band_dir == "falls monotonically"
+            else (
+                "so the lower edge is NOT what governs on this bound, and FA0's reason for "
+                "keeping this case is not reproduced at it."
+            )
+        )
+        wp(
+            f"**`T = {_bk:g} s` exceeds the deep-water breaking steepness**, so it cannot "
+            f"describe a real wave of this height. It is reported as sensitivity only, and "
+            f"{_rank_text}"
+        )
+        wp(
+            f"`T = {_pl:g} s` is outside the band at the long end. **The governing basis is "
+            f"the {_count_word(len(GOVERNING_PERIODS))} periods EZ2 admits: the "
+            f"{_count_word(len(_in_band))} in band, and `T = {_lower:g} s`, which is NOT in "
+            f"band.**"
+        )
+        wp(
+            f"It sits just below `sqrt(6.5 H)` by the offset in the block and is kept as "
+            f"the band's lower edge: across the band the bound {_band_dir} as `T` rises, "
+            f"{_governs_text}"
+        )
+        wp(
+            (
+                f"The trend reverses past the long edge: `T = {_pl:g} s` ticks back up "
+                f"above `T = {_top_band:g} s`, {_bound_mpa[_pl]:.3f} against "
+                f"{_bound_mpa[_top_band]:.3f} MPa."
+            )
+            if _bound_mpa[_pl] > _bound_mpa[_top_band]
+            else (
+                f"Past the long edge the bound does not tick back up: `T = {_pl:g} s` "
+                f"reads {_bound_mpa[_pl]:.3f} MPa against "
+                f"{_bound_mpa[_top_band]:.3f} MPa at `T = {_top_band:g} s`."
+            )
+        )
     w("")
     w("**Loads applied:** self-weight, plus the FloatSim joint reactions and each body's")
     w("own d'Alembert field over the window. FloatSim is linearised about static")
@@ -959,7 +1245,12 @@ def main(argv: list[str] | None = None) -> int:
     w(f"  on the governing basis, per-instant      : {len(gov)}")
     w(f"  on a static-only basis                   : {len(static)}")
     w("")
-    w("the envelope over the four governing periods: the largest |value| of each")
+    # R988: the count is of `GOVERNING_PERIODS`, which is the producer's tuple and which
+    # `floatfea/run/config.py` already makes configurable.
+    w(
+        f"the envelope over the {_count_word(len(GOVERNING_PERIODS))} governing periods: "
+        f"the largest |value| of each"
+    )
     w("component at each station, with the member and case it occurs on")
     w("")
     w(
@@ -1199,9 +1490,18 @@ def main(argv: list[str] | None = None) -> int:
     w("platform inertia assumption are declared inputs, and the hub arms' assumed line")
     w("mass does not fit inside the assumed section.")
     w("")
-    w("**(iii) One heading has been run, and the heading dependence is untested.** Three")
-    w("of the six force components are IDENTICALLY zero on the static basis, so whatever")
-    w("those components carry is entirely a function of the one heading that was run:")
+    # R988: the heading is named rather than counted. "One heading has been run" is true
+    # while one sidecar is read and goes false the moment FT2.6's union is; the heading
+    # VALUE is the thing a reader needs either way, and R987 is what a stated one costs.
+    _zero_comps = sum(
+        1 for comp, _u, _d in comps if all(abs(float(r[comp])) == 0.0 for r in static)
+    )
+    wp(
+        f"**(iii) Only heading {float(run['heading_deg']):g}° has been run, and the heading "
+        f"dependence is untested.** {_count_word(_zero_comps).capitalize()} of the "
+        f"{_count_word(len(comps))} force components are IDENTICALLY zero on the static "
+        f"basis, so whatever those components carry is entirely a function of that heading:"
+    )
     w("")
     w("```")
     w(f"{'component':>10s} {'exactly zero on':>16s} {'max |value| on the static basis':>32s}")
@@ -1216,10 +1516,45 @@ def main(argv: list[str] | None = None) -> int:
     w("exercised by the present case set at all, which makes the corresponding assertion")
     w("vacuous rather than passing.")
     w("")
-    w("**(iv) `T = 10 s` is excluded from the governing basis** because it exceeds the")
-    w("deep-water breaking steepness at this height (§ 4). It is also the largest of the")
-    w("six on § 4's stress bound, so excluding it is the expensive direction — and")
-    w("reporting it as governing would have meant reporting a wave that cannot exist.")
+    # **R986's OTHER HALF, AND IT IS WHY A FOURTH CONJUNCT ON `_reference` WAS NOT THE
+    # REPAIR: THIS SITE IS OUTSIDE BOTH BRANCHES OF THAT GATE.** It restated s.4's
+    # "largest of the six" at four-space indent, so it published in every cell the
+    # reordered bound was measured in -- including the one where `T = 10 s` is the
+    # SMALLEST of the six. Read off `_bound_mpa`, like s.4's.
+    #
+    # **AND THE DIRECTION WORD IS NOT REPRODUCED, DELIBERATELY.** The sentence said
+    # "excluding it is the expensive direction", and that word carries a convention whose
+    # two readings give opposite conclusions: *the exclusion gives up the largest number in
+    # the set*, or *the exclusion lowers the design basis, which is the cheaper direction*.
+    # The rule here is to ask rather than pick a convention that makes the current sentence
+    # true, so what is published is the RELATION measured -- what the exclusion does to the
+    # largest bound in the recorded set -- which needs no convention at all. The word
+    # itself is a question for Xabier, and the step report carries it.
+    # `_breaking` is s.4's own set, not a second copy of the steepness test here.
+    if _breaking:
+        _ex = _breaking[0]
+        _ex_rank = _rank_by_value(_bound_mpa, _ex)
+        wp(
+            f"**(iv) `T = {_ex:g} s` is excluded from the governing basis** because it "
+            f"exceeds the deep-water breaking steepness at this height (§ 4). On § 4's "
+            + (
+                f"stress bound it is the largest of the {_count_word(len(_bound_mpa))}, so "
+                f"the governing basis leaves out the largest bound in the recorded set"
+                if _ex_rank == 1
+                else f"stress bound it ranks {_ex_rank} of {len(_bound_mpa)} — "
+                f"{_bound_mpa[_ex]:.3f} MPa against {_bound_mpa[_bound_top]:.3f} MPa at "
+                f"`T = {_bound_top:g} s` — so the governing basis retains the largest "
+                f"bound in the recorded set"
+            )
+            + " — and reporting it as governing would have meant reporting a wave that "
+            "cannot exist."
+        )
+    else:
+        wp(
+            f"**(iv) No recorded period exceeds the deep-water breaking steepness at "
+            f"`H = {h_full:g} m`**, so nothing is excluded from the governing basis on that "
+            f"ground at this sea state."
+        )
     w("")
     w("**(v) The truss equivalence is a stiffness equivalence only.** The stand-in tube")
     w("stands in for the intended truss in `EI` and `EA`. It does not represent that")
@@ -1247,13 +1582,21 @@ def main(argv: list[str] | None = None) -> int:
     w("2. **The real arm section, or the truss depth.** The governing finding is about the")
     w("   stand-in, so replacing the stand-in replaces the finding. A truss of realistic")
     w("   depth changes the bending allowable and the governing clause together.")
-    w("3. **More headings.** One is run, and § 8(iii) measures what that costs: three of")
-    w("   the six force components are identically zero without a wave, so nothing in this")
-    w("   report constrains them at any other heading.")
-    w("4. **An irregular-sea or extreme-value basis.** Six regular waves with no return")
-    w("   period cannot support a design statement. It would also settle whether API's")
-    w("   one-third increase applies; it is deliberately not applied here, for exactly the")
-    w("   reason that these cases carry no declared return period.")
+    wp(
+        f"3. **More headings.** Only {float(run['heading_deg']):g}° is run, and § 8(iii) "
+        f"measures what that costs: {_count_word(_zero_comps)} of the "
+        f"{_count_word(len(comps))} force components are identically zero without a wave, "
+        f"so nothing in this report constrains them at any other heading.",
+        indent="   ",
+    )
+    wp(
+        f"4. **An irregular-sea or extreme-value basis.** "
+        f"{_count_word(len(_recorded)).capitalize()} regular waves with no return period "
+        f"cannot support a design statement. It would also settle whether API's one-third "
+        f"increase applies; it is deliberately not applied here, for exactly the reason "
+        f"that these cases carry no declared return period.",
+        indent="   ",
+    )
     w("")
     w("---")
     w("")

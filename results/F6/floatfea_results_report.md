@@ -122,13 +122,14 @@ below is made on it; the stresses that are checked in s.7 are per-instant.
 
 **`T = 10 s` exceeds the deep-water breaking steepness**, so it cannot describe a
 real wave of this height. It is reported as sensitivity only, and it is also the
-largest of the six on the bound above. `T = 20 s` is outside the band at the long
-end. **The governing basis is the four periods EZ2 admits: the three in band, and
-`T = 12.5 s`, which is NOT in band.** It sits just
-below `sqrt(6.5 H)` by the offset in the block and is kept as the band's lower
-edge: across the band the bound falls monotonically as `T` rises, so the lower edge
-is what governs and this case is the one that represents it. The monotonicity holds
-across the band only — `T = 20 s` ticks back up above `T = 16.2 s`.
+largest of the six on the bound above.
+`T = 20 s` is outside the band at the long end. **The governing basis is the four
+periods EZ2 admits: the three in band, and `T = 12.5 s`, which is NOT in band.**
+It sits just below `sqrt(6.5 H)` by the offset in the block and is kept as the band's
+lower edge: across the band the bound falls monotonically as `T` rises, so the lower
+edge is what governs and this case is the one that represents it.
+The trend reverses past the long edge: `T = 20 s` ticks back up above `T = 16.2 s`,
+338.226 against 330.610 MPa.
 
 **Loads applied:** self-weight, plus the FloatSim joint reactions and each body's
 own d'Alembert field over the window. FloatSim is linearised about static
@@ -385,9 +386,9 @@ under unity, and no tolerance was touched to make it look better.
 platform inertia assumption are declared inputs, and the hub arms' assumed line
 mass does not fit inside the assumed section.
 
-**(iii) One heading has been run, and the heading dependence is untested.** Three
+**(iii) Only heading 0° has been run, and the heading dependence is untested.** Three
 of the six force components are IDENTICALLY zero on the static basis, so whatever
-those components carry is entirely a function of the one heading that was run:
+those components carry is entirely a function of that heading:
 
 ```
  component  exactly zero on  max |value| on the static basis
@@ -405,9 +406,10 @@ exercised by the present case set at all, which makes the corresponding assertio
 vacuous rather than passing.
 
 **(iv) `T = 10 s` is excluded from the governing basis** because it exceeds the
-deep-water breaking steepness at this height (§ 4). It is also the largest of the
-six on § 4's stress bound, so excluding it is the expensive direction — and
-reporting it as governing would have meant reporting a wave that cannot exist.
+deep-water breaking steepness at this height (§ 4). On § 4's stress bound it is the
+largest of the six, so the governing basis leaves out the largest bound in the
+recorded set — and reporting it as governing would have meant reporting a wave that
+cannot exist.
 
 **(v) The truss equivalence is a stiffness equivalence only.** The stand-in tube
 stands in for the intended truss in `EI` and `EA`. It does not represent that
@@ -435,7 +437,7 @@ In the order I would spend effort:
 2. **The real arm section, or the truss depth.** The governing finding is about the
    stand-in, so replacing the stand-in replaces the finding. A truss of realistic
    depth changes the bending allowable and the governing clause together.
-3. **More headings.** One is run, and § 8(iii) measures what that costs: three of
+3. **More headings.** Only 0° is run, and § 8(iii) measures what that costs: three of
    the six force components are identically zero without a wave, so nothing in this
    report constrains them at any other heading.
 4. **An irregular-sea or extreme-value basis.** Six regular waves with no return
